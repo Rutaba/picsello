@@ -669,7 +669,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                 </div>
               <% else %>
                 <div class="flex flex-col ml-8">
-                  <div class="flex w-full my-2">  
+                  <div class="flex w-full my-2">
                     <div class="w-2/12">
                       <%= select p, :count_interval, 1..10, wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
                     </div>
@@ -684,7 +684,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                     <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
                   <% end %>
                 </div>
-              <% end %>     
+              <% end %>
             <% end %>
             <div class="flex my-2">
               <%= input p, :price, placeholder: "$0.00", class: classes("w-32 text-center p-3 border rounded-lg border-blue-planning-300 ml-auto", %{"hidden" => !input_value(pc, :fixed)}), phx_hook: "PriceMask" %>
@@ -941,7 +941,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         else: package
 
     socket
-    |> assign_changeset(params, :validate)
+    |> assign_changeset(params)
     |> assign_contract_changeset(params)
     |> then(fn %{assigns: %{changeset: changeset}} = socket ->
       job_type = if job, do: job.type, else: changeset |> Changeset.get_field(:job_type)
@@ -972,7 +972,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   @impl true
   def handle_event(
         "submit",
-        %{"step" => "payment", "custom_payments" => payment_params} = params,
+        %{"step" => "payment", "custom_payments" => payment_params},
         %{
           assigns: %{
             is_template: false,
@@ -982,22 +982,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         } = socket
       ) do
     socket
-    |> assign_changeset(params)
-    |> maybe_assign_custom(payment_params)
+   |> maybe_assign_custom(payment_params)
     |> then(fn %{assigns: %{changeset: changeset, payments_changeset: payments_changeset}} =
                  socket ->
-      payment_schedules =
-        payments_changeset
-        |> current()
-        |> Map.from_struct()
-        |> Map.get(:payment_schedules, [])
-        |> Enum.map(fn schedule ->
-          schedule |> Map.from_struct() |> Map.drop([:package_payment_preset_id])
-        end)
+      payment_schedules = payments_changeset |> current() |> Map.from_struct()
+      |> Map.get(:payment_schedules, [])
+      |> Enum.map(fn schedule ->
+        schedule |> Map.from_struct() |> Map.drop([:package_payment_preset_id])
+      end)
 
       total_price = Changeset.get_field(payments_changeset, :total_price)
       opts = %{total_price: total_price, payment_schedules: payment_schedules, action: :insert}
-      insert_package_and_update_job(socket, changeset, job, opts)
+      insert_package_and_update_job(socket, update_package_changeset(changeset, payments_changeset), job, opts)
     end)
   end
 
@@ -1017,12 +1013,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     payment_preset = PackagePayments.get_package_presets(organization.id, job_type)
 
     socket
-    |> assign_changeset(params)
     |> maybe_assign_custom(payment_params)
     |> then(fn %{assigns: %{changeset: changeset, payments_changeset: payments_changeset}} =
                  socket ->
+
       case Packages.insert_or_update_package(
-             changeset,
+            update_package_changeset(changeset, payments_changeset),
              Map.get(params, "contract"),
              get_preset_options(payments_changeset, payment_preset)
            ) do
@@ -1091,6 +1087,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> noreply()
   end
 
+  defp update_package_changeset(changeset, payments_changeset) do
+    payments_struct = payments_changeset |> current() |> Map.from_struct()
+
+    changeset
+    |> Changeset.put_change(:schedule_type, Map.get(payments_struct, :schedule_type))
+    |> Changeset.put_change(:fixed, Map.get(payments_struct, :fixed))
+  end
+
   defp schedule_type_switch(
          %{assigns: %{job: job, changeset: changeset}} = socket,
          price,
@@ -1129,7 +1133,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp get_price(total_price, presets_count, index) do
     remainder = rem(total_price.amount, presets_count) * 100
     amount = if remainder == 0, do: total_price, else: Money.subtract(total_price, remainder)
-    
+
     if index + 1 == presets_count do
       Money.divide(amount, presets_count) |> List.first() |> Money.add(remainder)
     else
@@ -1140,7 +1144,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp get_percentage(presets_count, index) do
     remainder = rem(100, presets_count)
     percentage = if remainder == 0, do: 100, else: 100 - remainder
-    
+
     if index + 1 == presets_count do
       (percentage / presets_count) + remainder
     else
@@ -1150,9 +1154,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp get_price_or_percentage(total_price, fixed, presets_count, index) do
-    if fixed do 
+    if fixed do
       %{"price" => get_price(total_price, presets_count, index)}
-    else 
+    else
       %{"percentage" => get_percentage(presets_count, index)}
     end
   end
@@ -1227,7 +1231,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp price_to_percentage(_, nil), do: nil
 
   defp price_to_percentage(total_price, value) do
-    (value.amount / total_price.amount * 100) |> Kernel.trunc()
+    if Money.zero?(value), do: 0, else: (value.amount / total_price.amount * 100) |> Kernel.trunc()
   end
 
   defp get_default_price(schedule, x_schedule, price, params, index) do
@@ -1309,7 +1313,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp save_payment(socket, %{"custom_payments" => payment_params} = params, job_id \\ nil) do
     socket
-    |> assign_changeset(params)
     |> maybe_assign_custom(payment_params)
     |> then(fn %{assigns: %{changeset: changeset, payments_changeset: payments_changeset}} =
                  socket ->
@@ -1321,6 +1324,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         |> Enum.map(&Map.from_struct(&1))
 
       total_price = Changeset.get_field(payments_changeset, :total_price)
+      changeset = update_package_changeset(changeset, payments_changeset)
 
       opts = %{
         job_id: job_id,
@@ -1435,10 +1439,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     download = current(download_changeset)
 
     package_params =
-      Map.get(params, "custom_payments", %{})
-      |> Map.take(["schedule_type", "fixed"])
-
-    package_params =
       params
       |> Map.get("package", %{})
       |> PackagePricing.handle_package_params(params)
@@ -1448,7 +1448,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         "download_each_price" => Download.each_price(download),
         "buy_all" => Download.buy_all(download)
       })
-      |> Map.merge(package_params)
 
     changeset = build_changeset(socket, package_params) |> Map.put(:action, action)
 
@@ -1629,11 +1628,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp is_value_set(value), do: value
 
   defp get_remaining_price(fixed, value, total) do
-    if fixed do
-      value
-    else
-      percentage = value.amount / div(total.amount, 100)
-      "#{value} (#{percentage}%)"
+    cond do
+      fixed == true -> value
+      Money.zero?(value) -> "#{value} (#{0.0}%)"
+      true ->
+        percentage = value.amount / div(total.amount, 100)
+        "#{value} (#{percentage}%)"
     end
   end
 

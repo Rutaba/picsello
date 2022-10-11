@@ -110,7 +110,10 @@ defmodule PicselloWeb.PackageLive.Shared do
             Set my own download price
           </label>
           <%= if d |> current() |> Map.get(:is_custom_price) do %>
-            <%= input(d, :each_price, class: "mt-3 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+            <div class="flex items-center mt-3">
+              <%= input(d, :each_price, class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+              <%= error_tag d, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
+            </div>
           <% end %>
           <div class="flex flex-col justify-between mt-3 sm:flex-row ">
             <div class="w-full sm:w-auto">

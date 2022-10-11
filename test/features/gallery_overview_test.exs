@@ -100,6 +100,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> find(select("date[day]"), &click(&1, option("2")))
     |> find(select("date[year]"), &click(&1, option("2023")))
     |> click(css("#saveGalleryExpiration"))
+    |> assert_text("Expiration date")
 
     updated_gallery = Galleries.get_gallery!(gallery.id)
 

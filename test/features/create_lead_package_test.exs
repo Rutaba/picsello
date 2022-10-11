@@ -100,8 +100,8 @@ defmodule Picsello.CreateLeadPackageTest do
         name: "lame wedding"
       )
 
-    insert(:package_payment_schedule, %{user: user, package: template1})
-    insert(:package_payment_schedule, %{user: user, package: template2})
+    insert(:package_payment_schedule, %{package: template1})
+    insert(:package_payment_schedule, %{package: template2})
     insert(:package_template, user: user, job_type: "other")
 
     selected_card = css("[data-testid='template-card'] > .border-blue-planning-300")
@@ -175,7 +175,7 @@ defmodule Picsello.CreateLeadPackageTest do
         download_each_price: download_each_price
       )
 
-    insert(:package_payment_schedule, %{user: user, package: template})
+    insert(:package_payment_schedule, %{package: template})
 
     session
     |> visit("/leads/#{lead.id}")
@@ -214,7 +214,7 @@ defmodule Picsello.CreateLeadPackageTest do
         name: "best wedding"
       )
 
-    insert(:package_payment_schedule, %{user: user, package: template})
+    insert(:package_payment_schedule, %{package: template})
 
     contract_template =
       insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")

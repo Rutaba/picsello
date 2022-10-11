@@ -47,7 +47,7 @@ defmodule PicselloWeb.LeadLive.Show do
         socket
         |> assign(payment_schedules: payment_schedules)
         |> validate_payment_schedule()
-        |> assign_disabled_copy_link()  
+        |> assign_disabled_copy_link()
       else
         socket
       end
@@ -75,24 +75,24 @@ defmodule PicselloWeb.LeadLive.Show do
   @impl true
   def handle_event("copy-client-link", _, %{assigns: %{proposal: proposal, job: job}} = socket) do
     if proposal do
-      socket 
+      socket
     else
-      socket 
+      socket
       |> upsert_booking_proposal()
       |> Repo.transaction()
       |> case do
         {:ok, %{proposal: proposal}} ->
             job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
-  
+
           socket
           |> assign(proposal: proposal)
           |> assign(job: job, package: job.package)
           |> push_event("CopyToClipboard", %{"url" => BookingProposal.url(proposal.id)})
-      
+
         {:error, _} ->
           socket
           |> put_flash(:error, "Failed to fetch booking proposal. Please try again.")
-      end  
+      end
     end
     |> noreply()
   end
@@ -240,7 +240,7 @@ defmodule PicselloWeb.LeadLive.Show do
   @impl true
   def handle_info({:proposal_message_composed, message_changeset}, %{assigns: %{job: job}} = socket) do
     result =
-      socket 
+      socket
       |> upsert_booking_proposal(true)
       |> Ecto.Multi.insert(
         :message,
@@ -291,8 +291,8 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_info({:stripe_status, status}, socket) do
-    socket 
-    |> assign(stripe_status: status) 
+    socket
+    |> assign(stripe_status: status)
     |> assign_disabled_copy_link()
     |> noreply()
   end
@@ -311,13 +311,15 @@ defmodule PicselloWeb.LeadLive.Show do
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
 
   def next_reminder_on(nil), do: nil
-  def next_reminder_on(%{sent_to_client: true}), do: nil
+
+  def next_reminder_on(%{sent_to_client: false}), do: nil
+
   defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder
 
-  defp upsert_booking_proposal(%{assigns: %{proposal: proposal, job: job, package: package, include_questionnaire: include_questionnaire}}, sent_to_client \\ false) do    
+  defp upsert_booking_proposal(%{assigns: %{proposal: proposal, job: job, package: package, include_questionnaire: include_questionnaire}}, sent_to_client \\ false) do
     questionnaire_id =
     if include_questionnaire, do: job |> Questionnaire.for_job() |> Repo.one() |> Map.get(:id)
-    
+
     changeset = BookingProposal.create_changeset(
       %{
         job_id: job.id,

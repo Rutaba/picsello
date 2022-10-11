@@ -157,6 +157,7 @@ defmodule Picsello.Packages do
         )
       )
       |> validate_buy_all()
+      |> validate_each_price()
     end
 
     defp validate_buy_all(changeset) do
@@ -167,6 +168,20 @@ defmodule Picsello.Packages do
         greater_than: download_each_price.amount,
         message: "Must be greater than digital image price"
       )
+    end
+
+    defp validate_each_price(changeset) do
+      buy_all = get_field(changeset, :buy_all) || @zero_price
+
+      if Money.zero?(buy_all) do
+        changeset
+      else
+        changeset
+        |> validate_money(:each_price,
+          less_than: buy_all.amount,
+          message: "Must be less than buy all price"
+        )
+      end
     end
 
     def from_package(%{download_each_price: each_price, download_count: count} = package)

@@ -49,8 +49,14 @@ defmodule Picsello.CreateBookingProposalTest do
     |> visit("/leads/#{lead.id}")
     |> assert_has(css("button:disabled", text: "Send proposal", count: 2))
     |> assert_disabled(button("Copy client link"))
-    |> find(testid("card-Package details"), &assert_has(&1, button("Edit", count: 1)))
-    |> assert_text("50% retainer and 50% on day of shoot")
+    |> find(testid("card-Package details"), &click(&1, button("Edit", count: 1)))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Next"))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Next"))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
+    |> assert_text("$0.50 to To Book, $0.50 to Day Before Shoot")
     |> assert_text("Add all shoots")
     |> click(button("Add shoot details"))
     |> fill_in(text_field("Shoot Title"), with: "chute")
@@ -69,7 +75,6 @@ defmodule Picsello.CreateBookingProposalTest do
     |> click(@send_email_button)
     |> assert_has(css("h1", text: "Email sent"))
     |> click(button("Close"))
-    |> find(testid("card-Package details"), &assert_has(&1, button("Edit", count: 0)))
 
     assert_receive {:delivered_email, email}
 
@@ -121,6 +126,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> visit(current_path(session))
     |> assert_text("Questionnaire answered")
     |> assert_text("Pending payment")
+    |> find(testid("card-Package details"), &assert_has(&1, button("Edit", count: 0)))
     |> click(button("Copy client link"))
     |> assert_text("Copied!")
   end

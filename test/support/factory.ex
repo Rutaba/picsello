@@ -135,7 +135,7 @@ defmodule Picsello.Factory do
       shoot_count: 2,
       turnaround_weeks: 1,
       fixed: true,
-      schedule_type: "wedding",
+      schedule_type: "headshot",
       organization: fn ->
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
@@ -145,49 +145,6 @@ defmodule Picsello.Factory do
     }
     |> merge_attributes(Map.drop(attrs, [:user]))
     |> evaluate_lazy_attributes()
-  end
-
-  def package_payment_schedule_factory(attrs) do
-    package =
-      case attrs do
-        %{package: package} -> package
-        _ -> build(:package, attrs)
-      end
-
-    ["To Book", "1 Month Before", "Day Before"]
-    |> Enum.with_index(fn due_interval, index ->
-      %PackagePaymentSchedule{
-        price: get_price(package, 3, index) * 100,
-        interval: true,
-        due_interval: due_interval,
-        description: "$#{get_price(package, 3, index)} to #{due_interval}",
-        schedule_date: "3022-01-01 00:00:00"
-      }
-      |> merge_attributes(Map.drop(attrs, [:user]))
-      |> evaluate_lazy_attributes()
-    end)
-    |> List.first()
-  end
-
-  def get_price(%{base_multiplier: base_multiplier, base_price: base_price}, presets_count, index) do
-    base_price = if(base_price, do: base_price.amount, else: 0)
-
-    amount =
-      Decimal.mult(base_price, base_multiplier)
-      |> Decimal.round(0, :floor)
-      |> Decimal.to_integer()
-
-    total_price = div(amount, 100)
-
-    remainder = rem(total_price, presets_count)
-    amount = if remainder == 0, do: total_price, else: total_price - remainder
-
-    if index + 1 == presets_count do
-      amount / presets_count + remainder
-    else
-      amount / presets_count
-    end
-    |> Kernel.trunc()
   end
 
   def package_template_factory(attrs) do
@@ -331,6 +288,31 @@ defmodule Picsello.Factory do
       job: fn -> build(:lead, %{user: insert(:user)}) end
     }
     |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
+  def package_payment_schedule_factory(attrs) do
+    package =
+    case attrs do
+      %{package: package} -> package
+      _ -> build(:package, attrs)
+    end
+
+    price =
+      case attrs do
+        %{price: price} -> price
+        _ -> Money.new(100)
+      end
+
+    %PackagePaymentSchedule{
+      price: price,
+      interval: true,
+      due_interval: "To Book",
+      description: "#{price} to To Book",
+      schedule_date: "3022-01-01 00:00:00",
+      package: package
+    }
+    |> merge_attributes(Map.drop(attrs, [:user]))
     |> evaluate_lazy_attributes()
   end
 

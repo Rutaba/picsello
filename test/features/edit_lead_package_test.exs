@@ -73,13 +73,13 @@ defmodule Picsello.EditLeadPackageTest do
     |> assert_has(testid("payment-count-card", count: 2))
     |> find(
       select("custom_payments_payment_schedules_0_due_interval"),
-      &assert_text(&1, "50% To Book")
+      &assert_text(&1, "To Book")
     )
     |> find(
       select("custom_payments_payment_schedules_1_due_interval"),
-      &assert_text(&1, "50% Day Before")
+      &assert_text(&1, "Day Before Shoot")
     )
-    |> assert_has(testid("remaining-to-collect", text: "$0.00 (0%)"))
+    |> assert_has(testid("remaining-to-collect", text: "$0.00 (0.0%)"))
     |> click(radio_button("Fixed amount", checked: false))
     |> fill_in(css("#custom_payments_payment_schedules_0_price"), with: "0.50")
     |> fill_in(css("#custom_payments_payment_schedules_1_price"), with: "0.50")
@@ -87,7 +87,7 @@ defmodule Picsello.EditLeadPackageTest do
     |> click(css("#custom_payments_payment_schedules_1_interval_false", checked: false))
     |> fill_in(css("#custom_payments_payment_schedules_1_due_at"), with: "09/01/2092")
     |> scroll_into_view(testid("select-preset-type"))
-    |> assert_has(testid("preset-summary", text: "$0.50 to To Book, $0.50 at 01-09-2092"))
+    |> assert_has(testid("preset-summary", text: "$0.50 to To Book"))
     |> fill_in(css("#custom_payments_payment_schedules_1_price"), with: "1.50")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
@@ -123,6 +123,7 @@ defmodule Picsello.EditLeadPackageTest do
     |> scroll_into_view(css("#package_pricing_is_enabled"))
     |> click(radio_button("Do not charge for downloads", checked: false))
     |> click(checkbox("package_pricing_is_enabled", checked: false))
+    |> click(button("Next"))
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> find(testid("card-Package details"), &assert_text(&1, "My updated package"))

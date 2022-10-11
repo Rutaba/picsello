@@ -363,7 +363,7 @@ defmodule PicselloWeb.JobLive.Shared do
         <%= unless @package |> Package.print_credits() |> Money.zero?() do %>
           <p><%= "#{Money.to_string(@package.print_credits, fractional_unit: false)} print credit" %></p>
         <% end %>
-        <%= if Job.lead?(@job) && (!@proposal || (@proposal && !@proposal.sent_to_client)) do %>
+        <%= if Job.lead?(@job) && (!@proposal || (@proposal && (!@proposal.sent_to_client || is_nil(@proposal.accepted_at)))) do %>
           <.icon_button color="blue-planning-300" icon="pencil" phx-click="edit-package" class="mt-auto self-end">
             Edit
           </.icon_button>
@@ -455,7 +455,7 @@ defmodule PicselloWeb.JobLive.Shared do
     assigns = assigns |> Enum.into(%{disabled_copy_link: false})
     ~H"""
     <.section id="booking-details" icon="camera-laptop" title="Booking details" collapsed_sections={@collapsed_sections}>
-      <.card title={if @proposal && @proposal.sent_to_client, do: "Here’s what you sent your client", else: "Here’s what you’ll be sending your client"}>
+      <.card title={if @proposal && (@proposal.sent_to_client || @proposal.accepted_at), do: "Here’s what you sent your client", else: "Here’s what you’ll be sending your client"}>
         <div {testid("contract")} class="grid sm:grid-cols-2 gap-5">
           <div class="flex flex-col border border-base-200 rounded-lg p-4">
             <h3 class="font-bold">Contract:</h3>
@@ -465,7 +465,7 @@ defmodule PicselloWeb.JobLive.Shared do
                 <button {testid("view-contract")} phx-click="add-package" class="mt-auto btn-primary self-end">
                   Add a package
                 </button>
-              <% !@proposal || (@proposal && !@proposal.sent_to_client) -> %>
+              <% !@proposal || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at))) -> %>
                 <p class="mt-2">We’ve created a contract for you to start with. If you have your own or would like to tweak the language of ours—this is the place to change. We have Business Coaching available if you need advice.</p>
                 <div class="border rounded-lg px-4 py-2 mt-4">
                   <span class="font-bold">Selected contract:</span> <%= if @package.contract, do: @package.contract.name, else: "Picsello Default Contract" %>
@@ -486,7 +486,7 @@ defmodule PicselloWeb.JobLive.Shared do
           <div {testid("questionnaire")} class="flex flex-col border border-base-200 rounded-lg p-4">
             <h3 class="font-bold">Questionnaire:</h3>
             <%= cond do %>
-              <% !@proposal  || (@proposal && !@proposal.sent_to_client)-> %>
+              <% !@proposal  || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at)))-> %>
                 <p class="mt-2">We’ve created a questionnaire for you to start with. Soon you’ll be able to include your own custom questionnaire whether it be a link or PDF. If you don’t want to use ours, uncheck the box below.</p>
                 <label class="flex mt-4">
                   <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-questionnaire" checked={@include_questionnaire} />
@@ -517,7 +517,7 @@ defmodule PicselloWeb.JobLive.Shared do
             </dd>
             <dd>
               <%= PaymentSchedules.get_description(@job) %>
-              <%= if @proposal  && @proposal.sent_to_client do %>
+              <%= if @proposal  && (@proposal.sent_to_client || @proposal.accepted_at) do %>
                 <button phx-click="open-proposal" phx-value-action="invoice" class="block link mt-2">View invoice</button>
               <% end %>
             </dd>
@@ -555,7 +555,7 @@ defmodule PicselloWeb.JobLive.Shared do
               Copied!
             </div>
           </.icon_button>
-          <%= if @proposal && @proposal.sent_to_client do %>
+          <%= if @proposal && (@proposal.sent_to_client || @proposal.accepted_at) do %>
             <button class="btn-primary" phx-click="open-proposal" phx-value-action="details">View proposal</button>
           <% else %>
             <%= render_slot(@send_proposal_button) %>
@@ -688,7 +688,7 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def assign_disabled_copy_link(%{assigns: %{is_schedule_valid: is_schedule_valid} = assigns} = socket) do
-    socket 
+    socket
     |> assign(disabled_copy_link: !is_schedule_valid || !!proposal_disabled_message(assigns))
   end
 
