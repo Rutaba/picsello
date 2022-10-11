@@ -64,7 +64,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   def render(assigns) do
     ~H"""
     <div class="relative">
-      <div class="fixed pl-16 w-full px-6 mx-auto z-40 bg-white">
+      <div class="fixed pl-16 w-full px-6 mx-auto z-40 max-w-screen-xl bg-white">
         <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery %>
       </div>
 
@@ -228,6 +228,11 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     socket |> update(:page, &(&1 + 1)) |> assign(update: "append") |> fetch() |> noreply()
   end
 
+  def handle_event("apply-filters", %{"_target" => ["clear all"]}, socket) do
+    __MODULE__.handle_event("apply-filters", %{}, socket)
+  end
+
+
   def handle_event(
         "apply-filters",
         data,
@@ -362,14 +367,16 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     ~H"""
       <ul class="flex flex-wrap w-full" {testid("pills")}>
         <%= for %{id: filter_id, options: options} <- @filter, %{checked: true, id: option_id} = option <- options do %>
-          <li>
-            <label class="mx-4 mt-7 first:ml-0 py-2.5 px-4 text-xl border border-base-250 items-center justify-center font-medium text-base-250 flex">
-              <input type="checkbox" class="hidden" value={option_id} name={"filter[remove][#{filter_id}][]"}/>
-              <.filter_option_label option={option} />
-
-              <.icon name="close-x" class="w-3 h-3 ml-3 stroke-current cursor-pointer stroke-[5px]" />
-            </label>
-          </li>
+          <.filter_li class="border border-base-250 text-base-250">
+            <input type="checkbox" class="hidden" value={option_id} name={"filter[remove][#{filter_id}][]"}/>
+            <.filter_option_label option={option} />
+          </.filter_li>
+        <% end %>
+        <%= if Enum.any?(@filter, fn %{options: options} -> Enum.any?(options, & &1.checked) end) do %>
+          <.filter_li class="text-base-300 cursor-pointer">
+            <input type="checkbox" class="hidden" value="clear all" name={"clear all"}/>
+            Clear all
+          </.filter_li>
         <% end %>
       </ul>
     """
@@ -432,6 +439,19 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       </div>
     """
   end
+
+  defp filter_li(assigns) do
+    assigns = Enum.into(assigns, %{class: ""})
+
+    ~H"""
+      <li>
+        <label class={"mx-4 mt-7 first:ml-0 py-2.5 px-4 text-xl items-center justify-center font-medium flex #{@class}"}>
+          <%= render_slot(@inner_block) %>
+          <.icon name="close-x" class="w-3 h-3 ml-3 stroke-current stroke-[5px] cursor-pointer" />
+        </label>
+      </li>
+    """
+    end
 
   defp self_path(socket, gallery, params \\ %{}),
     do:
