@@ -1,28 +1,38 @@
 defmodule Picsello.ClientBuysGreetingCardTest do
   use Picsello.FeatureCase, async: true
 
-  import Picsello.TestSupport.ClientGallery, only: [click_photo: 2]
-  alias Picsello.Repo
+  alias Picsello.{Repo, Accounts.User}
+
+  setup :onboarded
+  setup :authenticated
+  setup :authenticated_gallery
+  setup %{user: user} do
+    user = user |> User.assign_stripe_customer_changeset("cus_123") |> Repo.update!()
+
+    Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "cus_123", _ ->
+      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
+    end)
+
+    [user: user]
+  end
 
   setup do
-    Mox.verify_on_exit!()
     Picsello.Test.WHCCCatalog.sync_catalog()
-    [gallery: insert(:gallery)]
   end
 
   setup %{gallery: gallery} do
     gallery |> Ecto.assoc(:photographer) |> Repo.one!() |> Map.put(:onboarding, nil) |> onboard!()
-
+    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
     [photo | _] = insert_list(10, :photo, gallery: gallery)
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 5})
 
     for category <- Repo.all(Picsello.Category) do
       insert(:gallery_product, category: category, gallery: gallery, preview_photo: photo)
     end
 
     :ok
+    [photo_ids: photo_ids]
   end
-
-  setup :authenticated_gallery_client
 
   def click_filter_option(session, label_text, options \\ []) do
     options = Keyword.put_new(options, :visible, false)
@@ -50,10 +60,11 @@ defmodule Picsello.ClientBuysGreetingCardTest do
     end
   end
 
-  feature "filter designs", %{session: session} do
+  feature "filter designs", %{session: session, photo_ids: photo_ids, gallery: gallery} do
     session
+    |> visit("/gallery/#{gallery.client_link_hash}")
     |> click(css("a", text: "View Gallery"))
-    |> click_photo(1)
+    |> click(css("#img-#{List.first(photo_ids)}"))
     |> within_modal(fn modal ->
       modal
       |> assert_text("Select an option")
@@ -63,36 +74,26 @@ defmodule Picsello.ClientBuysGreetingCardTest do
     |> click(link("holiday"))
     |> assert_has(css("h1", text: "Holiday"))
     |> assert_text("Showing 5 of 5 designs")
-    |> click(button("Filters"))
-    |> find(css("#filter-form", visible: true), fn form ->
-      form
-      |> click(button("Foil"))
-      |> click_filter_option("Has Foil", selected: false)
-      |> assert_has(testid("pills", text: "Has Foil"))
-      |> click_filter_option("Has Foil", selected: true)
-      |> click(button("Orientation"))
-      |> click_filter_option("Landscape", selected: false)
-      |> assert_has(testid("pills", text: "Landscape"))
-      |> click(button("Type"))
-      |> click_filter_option("New")
-    end)
-    |> click(button("Show results"))
+    |> click(button("Foil"))
+    |> click_filter_option("Has Foil", selected: false)
+    |> assert_has(testid("pills", text: "Has Foil"))
+    |> click_filter_option("Has Foil", selected: true)
+    |> click(button("Orientation"))
+    |> click_filter_option("Landscape", selected: false)
+    |> assert_has(testid("pills", text: "Landscape"))
+    |> click(button("Type"))
+    |> click_filter_option("New")
     |> assert_has(testid("pills", text: "Landscape\nNew", visible: true))
     |> assert_text("Showing 1 of 5 designs")
     |> find(testid("pills", visible: true), fn pills ->
       pills
-      |> assert_has(css("label", count: 2))
+      |> assert_has(css("label", count: 3))
       |> click_filter_option("Landscape")
-      |> assert_has(css("label", count: 1))
+      |> assert_has(css("label", count: 2))
     end)
-    |> assert_text("Showing 5 of 5 designs")
-    |> click(button("Filters"))
-    |> find(css("#filter-form", visible: true), fn form ->
-      form
-      |> click(button("Type"))
-      |> assert_has(checkbox("new", visible: false, selected: true))
-      |> find(testid("pills", visible: true), &click_filter_option(&1, "New"))
-      |> assert_has(checkbox("new", visible: false, selected: false))
-    end)
+    |> click(button("Type"))
+    |> assert_has(checkbox("new", visible: false, selected: true))
+    |> find(testid("pills", visible: true), &click_filter_option(&1, "New"))
+    |> assert_has(checkbox("new", visible: false, selected: false))
   end
 end

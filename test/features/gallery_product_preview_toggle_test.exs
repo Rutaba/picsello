@@ -46,7 +46,6 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     session
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> assert_text("Product Previews")
-    |> take_screenshot()
     |> scroll_to_bottom()
     |> click(css("label", text: "Product enabled to sell", count: 7, at: 0))
     |> find(checkbox("Product enabled to sell", count: 7, at: 0), fn checkbox ->

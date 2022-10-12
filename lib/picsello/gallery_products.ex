@@ -134,7 +134,7 @@ defmodule Picsello.GalleryProducts do
           attributes in jsonb_path_query_args(
             product.attribute_categories,
             "$[*] \? (@._id == $id).attributes[*]",
-            ^[%{id: "size"}]
+            ^%{id: "size"}
           ),
         group_by: product.id,
         select: %{
