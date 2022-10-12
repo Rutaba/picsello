@@ -1,5 +1,6 @@
 defmodule Picsello.ViewLeadTest do
   use Picsello.FeatureCase, async: true
+  import Money.Sigils
 
   setup :onboarded
   setup :authenticated
@@ -44,6 +45,7 @@ defmodule Picsello.ViewLeadTest do
     session: session,
     leads: [lead | _]
   } do
+    insert(:payment_schedule, job: lead, price: ~M[5000]USD)
     insert(:proposal, job: lead)
 
     first_reminder_on =

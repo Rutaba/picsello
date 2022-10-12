@@ -3,6 +3,10 @@ import { createPopper } from '@popperjs/core';
 
 export default {
   mounted() {
+    this.handleEvent('CopyToClipboard', ({ url: url }) => {
+      navigator.clipboard.writeText(url);
+    });
+
     this.clipboard = new Clipboard(this.el);
     this.clipboard.on('success', () => {
       const tooltip = this.el.querySelector('[role="tooltip"]');

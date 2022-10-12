@@ -89,6 +89,7 @@ defmodule Picsello.Subscriptions do
       _ -> Payments.retrieve_customer(stripe_customer_id) |> check_card_source()
     end
   end
+  def subscription_payment_method?(_), do: false
 
   def subscription_plans() do
     Repo.all(from(s in SubscriptionPlan, where: s.active == true, order_by: s.price))

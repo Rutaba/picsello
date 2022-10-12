@@ -20,7 +20,7 @@
         <% end %>
         <.footer>
             <%= unless PaymentSchedules.all_paid?(@job) do%>
-            <button class="btn-primary" phx-click="pay_invoice" phx-target={@myself}>
+            <button {testid("pay-invoice")} class="btn-primary" phx-click="pay_invoice" phx-target={@myself}>
                 <%= button_text_for_status(@job.payment_schedules) %>
             </button>
             <% end %>

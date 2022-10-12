@@ -49,6 +49,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         ]
       })
 
+    insert(:payment_schedule, %{job: lead})
+    insert(:package_payment_schedule, %{package: lead.package, price: Money.new(0)})
     insert(:email_preset, job_type: lead.type, state: :lead)
 
     insert(:email_preset,
@@ -125,7 +127,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
            }
          }}
       end)
-
+      insert(:payment_schedule, %{job: lead})
       [deposit_payment, remainder_payment] = Picsello.PaymentSchedules.payment_schedules(lead)
 
       Picsello.MockPayments
@@ -192,11 +194,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
       |> assert_has(button("Completed Read and agree to your contract"))
+      |> click(testid("show-schedule"))
+      |> assert_text("$5")
+      |> assert_has(button("Pay overdue invoice"))
+      |> click(button("Close"))
       |> click(button("To-Do Pay your retainer"))
-      |> assert_has(definition("Discount", text: "20%"))
-      |> assert_has(definition("Total", text: "$0.80"))
-      |> assert_has(definition("50% retainer due today", text: "$0.40"))
-      |> assert_has(definition("50% remainder due on Sep 29, 2029", text: "$0.40"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -224,10 +226,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                           %{
                             price_data: %{
                               product_data: %{
-                                name: "John Newborn 50% retainer",
+                                name: "John Newborn invoice",
                                 tax_code: "txcd_20030000"
                               },
-                              unit_amount: 40,
+                              unit_amount: 500,
                               tax_behavior: "exclusive"
                             }
                           }
@@ -245,11 +247,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Pay your invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
-        definition("50% retainer paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$0.40"
+        definition("invoice paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+          text: "$5.00"
         )
       )
-      |> assert_has(definition("50% remainder due on Sep 29, 2029", text: "$0.40"))
+      |> assert_has(definition("invoice due today", text: "$5.00"))
       |> click(button("Pay Invoice"))
       |> assert_url_contains("stripe-checkout")
 
@@ -272,10 +274,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
                           %{
                             price_data: %{
                               product_data: %{
-                                name: "John Newborn 50% remainder",
+                                name: "John Newborn invoice",
                                 tax_code: "txcd_20030000"
                               },
-                              unit_amount: 40,
+                              unit_amount: 500,
                               tax_behavior: "exclusive"
                             }
                           }
@@ -290,13 +292,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Completed Pay your invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
-        definition("50% retainer paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$0.40"
-        )
-      )
-      |> assert_has(
-        definition("50% remainder paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$0.40"
+        definition("invoice paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+          text: "$5.00", count: 2
         )
       )
       |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
@@ -313,7 +310,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       proposal: %{id: proposal_id},
       url: url
     } do
-      [deposit_payment | _] = Picsello.PaymentSchedules.payment_schedules(lead)
+      deposit_payment = Picsello.PaymentSchedules.payment_schedules(lead) |> List.first()
 
       Picsello.MockPayments
       |> Mox.stub(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
@@ -346,7 +343,6 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       client_session
       |> visit(stripe_success_url)
       |> assert_has(css("h1", text: "Thank you"))
-      |> assert_has(css("h1", text: "Your session is now booked."))
 
       photographer_session |> visit("/leads/#{lead.id}") |> assert_path("/jobs/#{lead.id}")
     end
@@ -358,7 +354,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       proposal: %{id: proposal_id},
       url: url
     } do
-      [deposit_payment | _] = Picsello.PaymentSchedules.payment_schedules(lead)
+      deposit_payment = Picsello.PaymentSchedules.payment_schedules(lead) |> List.first()
 
       deposit_payment
       |> Picsello.PaymentSchedule.stripe_ids_changeset("old_intent_id", "old_session_id")
@@ -513,7 +509,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(checkbox("Questionnaire included", selected: true))
-    |> assert_text("100% discount")
+    |> assert_text("$0.00 to To Book")
     |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
     |> click(@send_email_button)

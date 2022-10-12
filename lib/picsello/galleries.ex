@@ -7,7 +7,6 @@ defmodule Picsello.Galleries do
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
   alias Ecto.Multi
-
   alias Picsello.{
     Galleries,
     Repo,
@@ -236,13 +235,13 @@ defmodule Picsello.Galleries do
   end
 
   defp move_photos_from_album_transaction(photo_ids) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.update_all(
+    Multi.new()
+    |> Multi.update_all(
       :thumbnail,
       fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
       []
     )
-    |> Ecto.Multi.update_all(
+    |> Multi.update_all(
       :photos,
       fn _ ->
         from(p in Photo,
@@ -271,7 +270,7 @@ defmodule Picsello.Galleries do
     photo_ids = Enum.map(album.photos, & &1.id)
 
     move_photos_from_album_transaction(photo_ids)
-    |> Ecto.Multi.delete(:album, album)
+    |> Multi.delete(:album, album)
     |> Repo.transaction()
     |> then(fn
       {:ok, _} ->
@@ -294,23 +293,23 @@ defmodule Picsello.Galleries do
     photos = get_photos_by_ids(photo_ids)
     [photo | _] = photos
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.update_all(
+    Multi.new()
+    |> Multi.update_all(
       :preview,
       fn _ -> GalleryProducts.remove_photo_preview(photo_ids) end,
       []
     )
-    |> Ecto.Multi.update(
+    |> Multi.update(
       :cover_photo,
       fn _ -> delete_gallery_cover_photo(photo.gallery_id, photos) end,
       []
     )
-    |> Ecto.Multi.update_all(
+    |> Multi.update_all(
       :thumbnail,
       fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
       []
     )
-    |> Ecto.Multi.update_all(
+    |> Multi.update_all(
       :photos,
       fn _ -> from(p in Photo, where: p.id in ^photo_ids, update: [set: [active: false]]) end,
       []
@@ -398,9 +397,9 @@ defmodule Picsello.Galleries do
       {:error, %Ecto.Changeset{}}
   """
   def create_gallery(attrs \\ %{}) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
-    |> Ecto.Multi.insert_all(
+    Multi.new()
+    |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
+    |> Multi.insert_all(
       :gallery_products,
       GalleryProduct,
       fn %{
@@ -466,9 +465,9 @@ defmodule Picsello.Galleries do
   def regenerate_gallery_password(%Gallery{} = gallery) do
     changeset = Gallery.update_changeset(gallery, %{password: Gallery.generate_password()})
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:gallery, changeset)
-    |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
+    Multi.new()
+    |> Multi.update(:gallery, changeset)
+    |> Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
     |> Repo.transaction()
     |> then(fn
       {:ok, %{gallery: gallery}} -> gallery
