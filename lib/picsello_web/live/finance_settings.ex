@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
-  alias Picsello.Payments
+  alias Picsello.{Payments, Accounts.User}
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
@@ -51,6 +51,33 @@ defmodule PicselloWeb.Live.FinanceSettings do
             stripe_status: @stripe_status %>
           </div>
         </.card>
+        <.card title="Accepted payment types" class="intro-payments">
+          <p class="mt-2">Here you can enable if you’d like to accept offline payments. Be careful, you are opening yourself up to more manual work!</p>
+          <p class="font-bold mt-4">I would like to accept:</p>
+          <p class="font-semibold mt-4">Cash/check payments</p>
+          <div class="flex items-center justify-between -mt-8">
+          <p class="font-normal mt-2 flex justify-left">Accept offline payments</p>
+          <div class="flex mt-6 justify-end">
+          <.form for={:toggle} phx-change="toggle">
+          <label class="mt-4 text-2xl flex">
+            <input type="checkbox" class="peer hidden" checked={User.enabled?(@current_user)}/>
+            <div class="hidden peer-checked:flex">
+              <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
+                <div class="rounded-full h-7 w-7 bg-base-100"></div>
+              </div>
+              Enabled
+            </div>
+            <div class="flex peer-checked:hidden">
+              <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
+                <div class="rounded-full h-7 w-7 bg-blue-planning-300"></div>
+              </div>
+              Disabled
+            </div>
+          </label>
+          </.form>
+          </div>
+          </div>
+        </.card>
       </div>
     </.settings_nav>
     """
@@ -59,6 +86,55 @@ defmodule PicselloWeb.Live.FinanceSettings do
   @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+
+  def handle_event("toggle", %{}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "allow-cash",
+      confirm_label: "Yes, allow cash/check",
+      icon: "warning-orange",
+      title: "Are you sure?",
+      subtitle: "Are you sure you want to allow cash and checks as a payment option? \n\nYou will need to communicate directly with your client to capture payment and manually enter those into your job payment details."
+    })
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "allow-cash"},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+
+      socket
+      |> assign(current_user: User.toggle(current_user))
+      |> close_modal()
+      |> put_flash(:success, "Settings updated")
+      |> noreply()
+    # changeset = changeset |> Map.put(:action, nil)
+
+
+    # case Picsello.Accounts.change_user_settings(current_user, %{allow_cash_payment: true}) do
+    #   {:ok, _current_user} ->
+    #   socket
+    # |> close_modal()
+    # |> put_flash(:success, "Settings updated")
+    # |> noreply()
+    # {:error, _} ->
+    #   socket
+    #   |> put_flash(:success, "Settings not updated")
+    #   end
+
+
+    # case Picsello.Accounts.User.user_setting_changeset() do
+    #   {:ok, _current_user} ->
+    #     socket
+    #     |> close_modal()
+    #     |> put_flash(:success, "Settings updated")
+    #     |> noreply()
+    #   {:error, changeset} ->
+    #     socket |> close_modal() |> assign(current_user: current_user) |> noreply()
+    # end
+  end
 
   def handle_info({:stripe_status, status}, socket) do
     socket |> assign(stripe_status: status) |> noreply()

@@ -4,6 +4,7 @@ defmodule Picsello.Accounts.User do
   import Ecto.Changeset
   import TzExtra.Changeset
   alias Picsello.Onboardings.Onboarding
+  alias Picsello.Repo
 
   @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
   @derive {Inspect, except: [:password]}
@@ -13,6 +14,7 @@ defmodule Picsello.Accounts.User do
     field :email, :string
     field :hashed_password, :string
     field :name, :string
+    field :allow_cash_payment, :boolean, default: false
     field :password, :string, virtual: true
     field :time_zone, :string
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
@@ -57,6 +59,22 @@ defmodule Picsello.Accounts.User do
         with: {Picsello.Organization, :registration_changeset, [get_field(&1, :name)]}
       )
     )
+  end
+
+  def enabled?(%__MODULE__{allow_cash_payment: allow_cash_payment}), do: allow_cash_payment
+
+  def enabled?(%{user: %{allow_cash_payment: allow_cash_payment}}), do: Picsello.Accounts.User.enabled?(allow_cash_payment)
+
+  def toggle( %__MODULE__{} = current_user) do
+    current_user
+    |> Ecto.Changeset.change(%{allow_cash_payment: !enabled?(current_user)})
+    |> Repo.update!()
+  end
+
+  # def enabled?(%User{allow_cash_payment: allow_cash_payment}), do: User.enabled?(allow_cash_payment)
+  def user_setting_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
+    user
+    |> cast(attrs, [:allow_cash_payment])
   end
 
   def new_session_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
