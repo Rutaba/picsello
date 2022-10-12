@@ -17,6 +17,7 @@ defmodule PicselloWeb.HomeLive.Index do
   }
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
+  import PicselloWeb.GalleryLive.Index, only: [put_assigns: 1]
   import Ecto.Query
 
   @impl true
@@ -43,14 +44,15 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("create-gallery", %{}, socket),
-    do:
+  def handle_event("create-gallery", %{}, socket)
+    do
       socket
       |> open_modal(
         PicselloWeb.GalleryLive.CreateComponent,
         Map.take(socket.assigns, [:current_user])
       )
       |> noreply()
+    end
 
   @impl true
   def handle_event("redirect", %{"to" => path}, socket),
@@ -472,9 +474,23 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
-  def handle_info(:gallery_created, socket) do
+  def handle_info({:gallery_created, %{job_id: job_id}}, socket) do
     socket
-    |> push_redirect(to: Routes.gallery_path(socket, :galleries))
+    |> PicselloWeb.SuccessComponent.open(%{
+      title: "Gallery Created!",
+      subtitle: "Hooray! Your gallery has been created. you are now ready to upload photos.",
+      success_label: "View new job",
+      success_event: "view-job",
+      close_label: "Great! Close window.",
+      payload: %{job_id: job_id}
+    })
+    |> put_assigns()
+    |> noreply()
+  end
+
+  def handle_info({:success_event, "view-job", %{job_id: job_id}}, socket) do
+    socket
+    |> push_redirect(to: Routes.job_path(socket, :jobs, job_id))
     |> noreply()
   end
 

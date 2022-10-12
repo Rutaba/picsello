@@ -288,10 +288,13 @@ defmodule PicselloWeb.GalleryLive.Index do
     end)
   end
 
-  defp put_assigns(
-         %{assigns: %{current_user: current_user, live_action: action, pagination: pagination}} =
+  def put_assigns(
+         %{assigns: %{current_user: current_user} = assigns} =
            socket
        ) do
+    assigns = Map.put_new(assigns, :pagination, %Pagination{})
+    pagination = Map.get(assigns, :pagination)
+    action = Map.get(assigns, :live_action)
     organization_id = Map.get(current_user, :organization).id
 
     %{entries: galleries, metadata: metadata} =
