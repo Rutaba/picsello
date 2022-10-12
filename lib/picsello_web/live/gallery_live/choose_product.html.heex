@@ -54,6 +54,11 @@
           <% end %>
 
           <.button_option {assigns} />
+          <%= if @cart_count > 0 do %>
+            <.go_to_cart_wrapper route={@checkout_routes.cart} count={@cart_count} >
+              <button type="button" class="text-base-100 bg-base-300 border-base-250 text-base-250 text-sm w-full py-2 mb-4 h-10">Go to cart</button>
+            </.go_to_cart_wrapper>
+          <% end %>
         </div>
       </div>
     </div>

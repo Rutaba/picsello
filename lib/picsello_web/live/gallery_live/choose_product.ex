@@ -5,11 +5,25 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   alias PicselloWeb.GalleryLive.Photos.PhotoView
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [credits_footer: 1, credits: 1, assign_cart_count: 2, get_unconfirmed_order: 2]
+    only: [
+      credits_footer: 1,
+      credits: 1,
+      assign_cart_count: 2,
+      get_unconfirmed_order: 2,
+      assign_checkout_routes: 1
+    ]
+
+  @defaults %{
+    cart_count: 0,
+    cart_route: nil,
+    cart: true,
+    is_proofing: false
+  }
 
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id} = assigns, socket) do
     socket
+    |> assign(Map.merge(@defaults, assigns))
     |> assign(assigns)
     |> assign_details(photo_id)
     |> assign(:download_each_price, Galleries.download_each_price(gallery))
@@ -21,6 +35,11 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
         socket
         |> assign(:products, GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false))
     end)
+    |> then(fn %{assigns: %{gallery: gallery}} = socket ->
+      socket
+      |> assign(:organization, gallery.job.client.organization)
+    end)
+    |> assign_checkout_routes()
     |> ok()
   end
 
@@ -83,6 +102,16 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     socket
     |> open_modal(PhotoView, %{assigns: assigns})
     |> noreply
+  end
+
+  def go_to_cart_wrapper(assigns) do
+    ~H"""
+    <%= if @count > 0 do %>
+      <%= live_redirect to: @route, title: "cart", class: "block" do %><%= render_slot @inner_block %><% end %>
+    <% else %>
+      <div title="cart" ><%= render_slot @inner_block %></div>
+    <% end %>
+    """
   end
 
   defp add_to_cart(%{assigns: %{is_proofing: true} = assigns} = socket) do
