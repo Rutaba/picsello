@@ -28,6 +28,7 @@ defmodule PicselloWeb.LeadLive.Show do
       title_header: 1
     ]
 
+
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do
     socket
@@ -136,30 +137,15 @@ defmodule PicselloWeb.LeadLive.Show do
     |> noreply()
   end
 
-  @impl true
-  def handle_event(
-        "manage",
-        %{},
-        %{assigns: %{job: job}} = socket
-      ) do
-    actions =
-      [%{title: "Send an email", action_event: "open_email_compose"},
-       %{title: "Change lead name", action_event: "open_lead_name_change"}]
-      |> Enum.concat(
-        if job.archived_at,
-          do: [],
-          else: [%{title: "Archive lead", action_event: "confirm_archive_lead"}]
-      )
 
-    socket
-    |> PicselloWeb.ActionSheetComponent.open(%{
-      title: "Manage #{Job.name(job)}",
-      actions: actions
-    })
-    |> noreply()
-  end
 
-  def handle_event("open_lead_name_change", assigns, socket) do
+  def handle_event("open_lead_name_change", %{}, %{assigns: %{job: job}} = socket) do
+
+    assigns = %{
+      job: job,
+      current_user: Map.take(socket.assigns, [:current_user])
+    }
+
     socket
     |> open_modal(PicselloWeb.Live.Profile.EditLeadNameComponent, Map.put(assigns, :parent_pid, self()))
     |> noreply()
@@ -223,6 +209,14 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
+
+  def handle_info({:update, job}, socket) do
+    IO.inspect("running?")
+    assign_job(socket, job.job_id)
+    socket
+    |> put_flash(:success, "Lead Name Changed")
+    |> noreply()
+  end
 
   @impl true
   def handle_info({:action_event, "confirm_archive_lead"}, socket) do

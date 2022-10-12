@@ -15,8 +15,10 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
   def compose_email(session, job) do
     session
     |> click(button("Manage"))
-    |> click(@compose_email_button)
+    |> take_screenshot()
+    |> click(link("Send an email"))
     |> assert_has(css("h1", text: "Send an email"))
+    |> take_screenshot()
     |> assert_text(job.client.email)
     |> fill_in(text_field("Subject line"), with: "Check this out")
     |> assert_has(css(".ql-size"))
