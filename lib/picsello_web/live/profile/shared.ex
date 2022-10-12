@@ -78,6 +78,11 @@ defmodule PicselloWeb.Live.Profile.Shared do
     assign_organization(socket, organization)
   end
 
+  def assign_organization_by_slug_on_profile_disabled(socket, slug) do
+    organization = Profiles.find_organization_by_slug(slug: slug)
+    assign_organization(socket, organization)
+  end
+
   def assign_organization(socket, organization) do
     %{profile: profile, user: user, brand_links: brand_links} = organization
 
