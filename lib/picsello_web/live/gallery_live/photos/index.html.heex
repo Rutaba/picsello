@@ -179,7 +179,7 @@
         <%= case @photos == [] && @inprogress_photos == [] && !@selection_filter do %>
           <% true when @photographer_favorites_filter -> %>
             <div class="relative justify-between mt-60 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
-                Oops, there's no liked photos!
+                Oops, you have no liked photos!
             </div>
           <% false when @selection_filter -> %>
             <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container center-container px-0 pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0})} id="gallery">
