@@ -2,7 +2,6 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, ClientMessage}
 
-  @compose_email_button button("Send an email")
   @send_email_button button("Send Email")
 
   setup :onboarded
