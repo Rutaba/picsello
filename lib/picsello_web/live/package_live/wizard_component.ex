@@ -20,6 +20,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   }
 
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
 
   import PicselloWeb.PackageLive.Shared,
     only: [
@@ -288,22 +289,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     <div class="modal">
       <.close_x />
 
-      <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself, title: "back"}, else: %{}} class="flex">
-        <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
-          Step <%= step_number(@step, @steps) %>
-        </span>
-
-        <ul class="flex items-center inline-block">
-          <%= for step <- @steps do %>
-            <li class={classes(
-              "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
-              %{ "bg-blue-planning-300" => step == @step, "bg-gray-200" => step != @step }
-              )}>
-            </li>
-          <% end %>
-        </ul>
-      </a>
-
+      <.steps step={@step} steps={@steps} target={@myself} />
       <.step_heading name={@step} is_edit={@package.id} />
 
       <%= unless @is_template do %>
@@ -1468,8 +1454,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp total_price(form), do: form |> current() |> Package.price()
-
-  defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
   defp next_step(%{step: step, steps: steps}) do
     Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)

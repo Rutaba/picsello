@@ -21,6 +21,7 @@ defmodule Picsello.Job do
     field(:type, :string)
     field(:notes, :string)
     field(:archived_at, :utc_datetime)
+    field(:is_gallery_only, :boolean, default: false)
     field(:completed_at, :utc_datetime)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
@@ -39,7 +40,7 @@ defmodule Picsello.Job do
 
   def create_changeset(attrs \\ %{}) do
     %__MODULE__{}
-    |> cast(attrs, [:type, :client_id, :notes])
+    |> cast(attrs, [:type, :client_id, :notes, :is_gallery_only])
     |> cast_assoc(:client, with: &Client.create_changeset/2)
     |> validate_required([:type])
     |> foreign_key_constraint(:type)
@@ -97,7 +98,10 @@ defmodule Picsello.Job do
     do: current_status == :imported
 
   def leads(query \\ __MODULE__) do
-    from(job in query, join: status in assoc(job, :job_status), where: status.is_lead)
+    from(job in query,
+      join: status in assoc(job, :job_status),
+      where: status.is_lead and job.is_gallery_only == false
+    )
   end
 
   def not_booking(query \\ __MODULE__) do
@@ -105,7 +109,10 @@ defmodule Picsello.Job do
   end
 
   def not_leads(query \\ __MODULE__) do
-    from(job in query, join: status in assoc(job, :job_status), where: not status.is_lead)
+    from(job in query,
+      join: status in assoc(job, :job_status),
+      where: not status.is_lead or job.is_gallery_only
+    )
   end
 
   def token(%__MODULE__{id: id, inserted_at: inserted_at}),

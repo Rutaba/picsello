@@ -486,7 +486,7 @@ defmodule PicselloWeb.JobLive.Shared do
           <div {testid("questionnaire")} class="flex flex-col border border-base-200 rounded-lg p-4">
             <h3 class="font-bold">Questionnaire:</h3>
             <%= cond do %>
-              <% !@proposal  || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at)))-> %>
+              <% !@proposal && !@job.is_gallery_only || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at)))-> %>
                 <p class="mt-2">We’ve created a questionnaire for you to start with. Soon you’ll be able to include your own custom questionnaire whether it be a link or PDF. If you don’t want to use ours, uncheck the box below.</p>
                 <label class="flex mt-4">
                   <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-questionnaire" checked={@include_questionnaire} />
@@ -497,7 +497,7 @@ defmodule PicselloWeb.JobLive.Shared do
                 </button>
               <% @package && @package.collected_price -> %>
                 <p class="mt-2">During your job import, you marked this as an external document.</p>
-              <% @proposal.questionnaire_id -> %>
+              <% @proposal && @proposal.questionnaire_id -> %>
                 <p class="mt-2">You sent the Picsello Default Questionnaire to your client.</p>
                 <button {testid("view-questionnaire")} phx-click="open-proposal" phx-value-action="questionnaire" class="mt-4 btn-primary self-end">
                   View
@@ -548,6 +548,7 @@ defmodule PicselloWeb.JobLive.Shared do
             </dd>
           </dl>
         </div>
+        <%= unless @job.is_gallery_only do %>
         <div class="flex justify-end items-center mt-8">
           <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 mx-4 transition-colors" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-client-link" phx-hook="Clipboard" disabled={@disabled_copy_link}>
             <span>Copy client link</span>
@@ -561,6 +562,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <%= render_slot(@send_proposal_button) %>
           <% end %>
         </div>
+        <% end %>
       </.card>
     </.section>
     """
