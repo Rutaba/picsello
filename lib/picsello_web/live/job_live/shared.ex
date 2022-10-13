@@ -259,24 +259,24 @@ defmodule PicselloWeb.JobLive.Shared do
         <%= Job.name @job %>
       </div>
       <div class="px-5">
-        <div phx-hook="Select" class="mt-2 ml-auto items-center flex">
-          <button  class="sticky" id="manage">
+        <div id="meatball-manage" phx-hook="Select" class="mt-2 ml-auto items-center flex">
+          <button class="sticky" id="Manage">
             <.icon name="meatballs" class="w-4 h-4 stroke-current stroke-2 opacity-100 open-icon border rounded w-9 border-blue-planning-300 text-blue-planning-300" />
             <.icon name="close-x" class="hidden w-3 h-4 stroke-current stroke-2 close-icon opacity-100 border rounded w-9 border-blue-planning-300 text-blue-planning-300"/>
           </button>
           <ul class="absolute hidden bg-white rounded-md popover-content meatballsdropdown w-40 overflow-visible cursor-pointer">
           <li phx-click="open_email_compose" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-          <.icon name="envelope" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
-            <a class="hover-drop-down" >Send an email</a>
+            <.icon name="envelope" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+            <a class="hover-drop-down">Send an email</a>
           </li>
           <%= if @job.job_status.is_lead  do %>
             <li phx-click="open_lead_name_change"  class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-            <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+              <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
               <a class="hover-drop-down" phx-click="open_lead_name_change"> Edit lead name</a>
             </li>
           <% else %>
             <li phx-click="open_lead_name_change" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-            <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+              <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
               <a class="hover-drop-down"> Edit job name</a>
             </li>
           <% end %>

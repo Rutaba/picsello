@@ -88,10 +88,13 @@ defmodule Picsello.ViewLeadTest do
   } do
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> click(button("manage"))
-    |> click(link("Edit lead name"))
+    |> click(css("#meatball-manage"))
+    |> click(css("li", text: "Edit lead name"))
     |> assert_has(button("Save"))
+    |> take_screenshot()
     |> fill_in(text_field("Client name:"), with: "New")
+    |> within_modal(&wait_for_enabled_submit_button/1)
+    |> take_screenshot()
     |> assert_text("New Family")
   end
 end
