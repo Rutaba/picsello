@@ -22,7 +22,7 @@
       <div class="my-0 py-0 mx-auto h-full px-7 sm:px-16">
         <ul class="pt-2 pb-5 mx-auto grid gap-6 sm:gap-8 grid-cols-2 xl:grid-cols-4 lg:pb-4 lg:pt-6 productPreview__client">
           <%= for product <- @products do %>
-            <%= if product.preview_enabled do %>
+            <%= if product.product_preview_enabled do %>
               <.live_component module={PicselloWeb.GalleryLive.ProductPreviewComponent} id={product.id} photo={product.preview_photo} category={product.category} click_params={product.id} />
             <% end %>
           <% end %>

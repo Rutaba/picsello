@@ -169,7 +169,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   end
 
   def handle_info(
-        {:add_digital_to_cart, digital, _},
+        {:add_digital_to_cart, digital, _finals_album_id},
         %{assigns: %{gallery: gallery}} = socket
       ) do
     order = Cart.place_product(digital, gallery.id)

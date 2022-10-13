@@ -24,7 +24,10 @@ defmodule PicselloWeb.JobLive.Shared do
   import PicselloWeb.FormHelpers
   import Phoenix.HTML.Form
   import PicselloWeb.Gettext, only: [ngettext: 3]
+
   use Phoenix.Component
+
+  def handle_event("copy-client-link", _, socket), do: socket |> noreply()
 
   def handle_event(
         "toggle-section",
@@ -129,6 +132,7 @@ defmodule PicselloWeb.JobLive.Shared do
       shoots: shoots |> Enum.into(%{}) |> Map.put(shoot_number, new_shoot) |> Map.to_list(),
       job: job |> Repo.preload(:shoots, force: true)
     )
+    |> assign_disabled_copy_link()
     |> noreply()
   end
 
@@ -138,6 +142,14 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> assign(package: package, job: %{job | package: package, package_id: package.id})
     |> assign_shoots()
+    |> then(fn %{assigns: %{job: job}} = socket ->
+      payment_schedules =
+        job |> Repo.preload(:payment_schedules, force: true) |> Map.get(:payment_schedules)
+
+      socket
+      |> assign(payment_schedules: payment_schedules)
+      |> validate_payment_schedule()
+    end)
     |> noreply()
   end
 
@@ -382,7 +394,7 @@ defmodule PicselloWeb.JobLive.Shared do
         <%= unless @package |> Package.print_credits() |> Money.zero?() do %>
           <p><%= "#{Money.to_string(@package.print_credits, fractional_unit: false)} print credit" %></p>
         <% end %>
-        <%= if Job.lead?(@job) && !@proposal do %>
+        <%= if Job.lead?(@job) && (!@proposal || (@proposal && (!@proposal.sent_to_client || is_nil(@proposal.accepted_at)))) do %>
           <.icon_button color="blue-planning-300" icon="pencil" phx-click="edit-package" class="mt-auto self-end">
             Edit
           </.icon_button>
@@ -471,9 +483,10 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def booking_details_section(assigns) do
+    assigns = assigns |> Enum.into(%{disabled_copy_link: false})
     ~H"""
     <.section id="booking-details" icon="camera-laptop" title="Booking details" collapsed_sections={@collapsed_sections}>
-      <.card title={if @proposal, do: "Here’s what you sent your client", else: "Here’s what you’ll be sending your client"}>
+      <.card title={if @proposal && (@proposal.sent_to_client || @proposal.accepted_at), do: "Here’s what you sent your client", else: "Here’s what you’ll be sending your client"}>
         <div {testid("contract")} class="grid sm:grid-cols-2 gap-5">
           <div class="flex flex-col border border-base-200 rounded-lg p-4">
             <h3 class="font-bold">Contract:</h3>
@@ -483,7 +496,7 @@ defmodule PicselloWeb.JobLive.Shared do
                 <button {testid("view-contract")} phx-click="add-package" class="mt-auto btn-primary self-end">
                   Add a package
                 </button>
-              <% !@proposal -> %>
+              <% !@proposal || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at))) -> %>
                 <p class="mt-2">We’ve created a contract for you to start with. If you have your own or would like to tweak the language of ours—this is the place to change. We have Business Coaching available if you need advice.</p>
                 <div class="border rounded-lg px-4 py-2 mt-4">
                   <span class="font-bold">Selected contract:</span> <%= if @package.contract, do: @package.contract.name, else: "Picsello Default Contract" %>
@@ -504,7 +517,7 @@ defmodule PicselloWeb.JobLive.Shared do
           <div {testid("questionnaire")} class="flex flex-col border border-base-200 rounded-lg p-4">
             <h3 class="font-bold">Questionnaire:</h3>
             <%= cond do %>
-              <% !@proposal -> %>
+              <% !@proposal  || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at)))-> %>
                 <p class="mt-2">We’ve created a questionnaire for you to start with. Soon you’ll be able to include your own custom questionnaire whether it be a link or PDF. If you don’t want to use ours, uncheck the box below.</p>
                 <label class="flex mt-4">
                   <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-questionnaire" checked={@include_questionnaire} />
@@ -529,8 +542,13 @@ defmodule PicselloWeb.JobLive.Shared do
           <dl class="flex flex-col">
             <dt class="font-bold">Payment schedule:</dt>
             <dd>
-              <%= @job |> PaymentSchedules.build_payment_schedules_for_lead() |> Map.get(:details) %>
-              <%= if @proposal do %>
+              <%= if !@is_schedule_valid do %>
+                <.badge color={:red}>You changed a shoot date. You need to review or fix your payment schedule date.</.badge>
+              <% end %>
+            </dd>
+            <dd>
+              <%= PaymentSchedules.get_description(@job) %>
+              <%= if @proposal  && (@proposal.sent_to_client || @proposal.accepted_at) do %>
                 <button phx-click="open-proposal" phx-value-action="invoice" class="block link mt-2">View invoice</button>
               <% end %>
             </dd>
@@ -562,13 +580,13 @@ defmodule PicselloWeb.JobLive.Shared do
           </dl>
         </div>
         <div class="flex justify-end items-center mt-8">
-          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 mx-4 transition-colors" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-hook="Clipboard" disabled={!@proposal}>
+          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 mx-4 transition-colors" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-client-link" phx-hook="Clipboard" disabled={@disabled_copy_link}>
             <span>Copy client link</span>
             <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
               Copied!
             </div>
           </.icon_button>
-          <%= if @proposal do %>
+          <%= if @proposal && (@proposal.sent_to_client || @proposal.accepted_at) do %>
             <button class="btn-primary" phx-click="open-proposal" phx-value-action="details">View proposal</button>
           <% else %>
             <%= render_slot(@send_proposal_button) %>
@@ -682,6 +700,67 @@ defmodule PicselloWeb.JobLive.Shared do
       |> Repo.get!(job_id)
 
     socket |> do_assign_job(job)
+  end
+
+  def validate_payment_schedule(%{assigns: %{payment_schedules: payment_schedules}} = socket) do
+    due_at_list = payment_schedules |> Enum.sort_by(& &1.id, :asc) |> Enum.map(& &1.due_at)
+    updated_due_at_list = due_at_list |> Enum.sort_by(& &1, {:asc, DateTime})
+
+    validity =
+      if due_at_list == updated_due_at_list do
+        dates = due_at_list |> Enum.map(&(&1 |> Timex.to_date()))
+        dates == dates |> Enum.uniq()
+      else
+        false
+      end
+
+    socket
+    |> assign(is_schedule_valid: validity)
+  end
+
+  def assign_disabled_copy_link(%{assigns: %{is_schedule_valid: is_schedule_valid} = assigns} = socket) do
+    socket
+    |> assign(disabled_copy_link: !is_schedule_valid || !!proposal_disabled_message(assigns))
+  end
+
+  def proposal_disabled_message(%{package: package, shoots: shoots, stripe_status: stripe_status}) do
+    cond do
+      !Enum.member?([:charges_enabled, :loading], stripe_status) ->
+        "Set up Stripe"
+
+      package == nil ->
+        "Add a package first"
+
+      package.shoot_count != Enum.count(shoots, &elem(&1, 1)) ->
+        "Add all shoots"
+
+        true ->
+        nil
+    end
+  end
+
+  def error(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: nil,
+        icon_class: "hidden",
+        button: %{class: "hidden", title: nil, action: nil}
+      })
+
+    ~H"""
+    <div class={"px-4 bg-orange-inbox-400 md:flex md:justify-between grid rounded-lg py-2 my-2 #{@class}"}>
+      <div class="flex justify-start items-center">
+        <.icon name="warning-orange", class={"md:w-6 md:h-6 w-10 h-10 stroke-[4px] #{@icon_class}"} />
+        <div class="pl-4"><%= @message %></div>
+      </div>
+      <div class="flex items-center md:justify-end justify-center">
+      <button type="button" class={"btn-primary px-8 intro-message #{@button.class}"} phx-click={@button.action}>
+        <%= @button.title %>
+      </button>
+      </div>
+    </div>
+    """
   end
 
   defp do_assign_job(socket, job) do

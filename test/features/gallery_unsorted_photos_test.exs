@@ -155,7 +155,7 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     |> click(css("#select"))
     |> click(button("All"))
     |> click(css("#actions"))
-    |> click(button("Create new album with selected"))
+    |> click(button("Create album with selected"))
     |> click(css("span", text: "Off"))
     |> fill_in(css("#album_name"), with: "Test album 2")
     |> click(css("#toggle-visibility"))

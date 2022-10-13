@@ -300,8 +300,8 @@ defmodule PicselloWeb.LiveHelpers do
     do: Size.humanize!(byte_size, spacer: "")
 
   def to_integer(int) when is_integer(int), do: int
-  def to_integer(bin) when is_binary(bin), do: String.to_integer(bin)
-  def to_integer(nil), do: nil
+  def to_integer(bin) when is_binary(bin), do: if(String.length(bin) > 0, do: String.to_integer(bin), else: nil)
+  def to_integer(_), do: nil
 
   def display_cover_photo(%{cover_photo: %{id: photo_id}}),
     do: %{

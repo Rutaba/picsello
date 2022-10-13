@@ -42,6 +42,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       )
 
     product = insert(:product, category: category)
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
 
     insert(:gallery_product,
       category: category,
@@ -61,7 +62,8 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       gallery: gallery,
       organization: organization,
       product: product,
-      package: package
+      package: package,
+      photo_ids: photo_ids
     ]
   end
 
@@ -276,13 +278,14 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     feature "only charges photographer", %{
       session: session,
-      stripe_invoice: invoice
+      stripe_invoice: invoice,
+      photo_ids: photo_ids
     } do
       session
       |> click(link("View Gallery"))
       |> assert_has(definition("Print Credit", text: "$100.00"))
       |> scroll_to_bottom()
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> click(button("Select"))
       |> click(button("Customize & buy"))
       |> assert_text("Cart Review")
@@ -345,12 +348,16 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc]
 
-    feature("only charges photographer", %{session: session, stripe_invoice: invoice}) do
+    feature("only charges photographer", %{
+      session: session,
+      stripe_invoice: invoice,
+      photo_ids: photo_ids
+    }) do
       session
       |> click(link("View Gallery"))
       |> assert_has(definition("Print Credit", text: "$100.00"))
       |> scroll_to_bottom()
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> click(button("Select"))
       |> click(button("Customize & buy"))
       |> assert_text("Cart Review")
@@ -407,16 +414,16 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     setup [:stub_whcc, :expect_stripe_checkout]
 
-    feature("only charges client", %{session: session}) do
+    feature("only charges client", %{session: session, photo_ids: photo_ids}) do
       session
       |> click(link("View Gallery"))
       |> scroll_to_bottom()
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> click(button("Add to cart"))
       |> click(link("Home"))
       |> assert_has(definition("Print Credit", text: "$100.00"))
       |> scroll_to_bottom()
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> click(button("Select"))
       |> click(button("Customize & buy"))
       |> assert_text("Cart Review")
@@ -480,12 +487,12 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     setup [:stub_whcc, :expect_create_invoice, :expect_stripe_checkout]
 
-    def place_order(session) do
+    def place_order(session, photo_ids) do
       session
       |> click(link("View Gallery"))
       |> assert_has(definition("Print Credit", text: "$100.00"))
       |> scroll_to_bottom()
-      |> click_photo(1)
+      |> click(css("#img-#{List.first(photo_ids)}"))
       |> click(button("Select"))
       |> click(button("Customize & buy"))
       |> assert_text("Cart Review")
@@ -501,9 +508,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       session
     end
 
-    feature("charges both client and photographer", %{session: session, stripe_invoice: invoice}) do
+    feature("charges both client and photographer", %{
+      session: session,
+      stripe_invoice: invoice,
+      photo_ids: photo_ids
+    }) do
       session
-      |> place_order()
+      |> place_order(photo_ids)
       |> assert_url_contains("orders")
       |> assert_text("Order details")
       |> assert_has(definition("Total", text: "20.00"))
@@ -531,14 +542,15 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     feature("cancels if client hold expires", %{
       session: session,
       stripe_invoice: %{id: invoice_id} = invoice,
-      stripe_payment_intent: intent
+      stripe_payment_intent: intent,
+      photo_ids: photo_ids
     }) do
       Mox.expect(Picsello.MockPayments, :void_invoice, fn ^invoice_id, _ ->
         {:ok, %{invoice | status: "void"}}
       end)
 
       session
-      |> place_order()
+      |> place_order(photo_ids)
       |> trigger_stripe_webhook(:connect, "payment_intent.canceled", %{
         intent
         | status: "canceled"

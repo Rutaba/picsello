@@ -163,7 +163,7 @@ export default {
         return true;
       }
     });
-    
+
     if (isMobile()) {
       this.el.style.width = '100%';
       const offset = (w - iw - count * 12) / 2;
@@ -229,7 +229,7 @@ export default {
     this.handleEvent('select_mode', ({ mode: mode }) => this.select_mode(mode));
   },
 
-  remove_loader() { 
+  remove_loader() {
     const items_class = '#' + this.el.dataset.id + ' .photo-loader';
     const elements = document.querySelectorAll(items_class)
     const grid = this.get_grid();
@@ -320,20 +320,20 @@ export default {
   reconnected() {
     this.pending = this.page();
   },
-  
+
   /**
    * Updated callback
    */
   updated() {
     this.pending = this.page();
-    
+
     if (this.pending === '0') {
       this.load_more();
     } else {
       this.inject_new_items();
     }
 
-    if(grid['_layout']['items'].length > 0) {
+    if (grid['_layout']['items'].length > 0) {
       this.el.style.height = grid['_layout']['styles']['height'];
     }
     this.grid_alignment();

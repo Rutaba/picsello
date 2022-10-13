@@ -123,8 +123,8 @@ defmodule Picsello.ImportJobTest do
     |> fill_in_payments_form()
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_has(testid("shoot-card", count: 2, at: 0, text: "Missing information"))
     |> assert_has(testid("shoot-card", count: 2, at: 1, text: "Missing information"))
     |> find(

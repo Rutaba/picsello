@@ -27,7 +27,8 @@ defmodule Picsello.Factory do
     Galleries.Watermark,
     Galleries.Photo,
     Profiles.Profile,
-    BrandLink
+    BrandLink,
+    PackagePaymentSchedule
   }
 
   def valid_user_password(), do: "hello world!"
@@ -133,6 +134,8 @@ defmodule Picsello.Factory do
       description: "<p>Package description</p>",
       shoot_count: 2,
       turnaround_weeks: 1,
+      fixed: true,
+      schedule_type: "headshot",
       organization: fn ->
         case attrs do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
@@ -285,6 +288,31 @@ defmodule Picsello.Factory do
       job: fn -> build(:lead, %{user: insert(:user)}) end
     }
     |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
+  def package_payment_schedule_factory(attrs) do
+    package =
+    case attrs do
+      %{package: package} -> package
+      _ -> build(:package, attrs)
+    end
+
+    price =
+      case attrs do
+        %{price: price} -> price
+        _ -> Money.new(100)
+      end
+
+    %PackagePaymentSchedule{
+      price: price,
+      interval: true,
+      due_interval: "To Book",
+      description: "#{price} to To Book",
+      schedule_date: "3022-01-01 00:00:00",
+      package: package
+    }
+    |> merge_attributes(Map.drop(attrs, [:user]))
     |> evaluate_lazy_attributes()
   end
 

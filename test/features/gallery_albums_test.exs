@@ -154,5 +154,6 @@ defmodule Picsello.GalleryAlbumsTest do
     |> assert_has(css("*[phx-click='back_to_navbar']", count: 0))
     |> click(css("*[phx-click='select_albums_dropdown']"))
     |> click(button(album.name))
+    |> assert_text("Test album")
   end
 end

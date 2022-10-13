@@ -18,6 +18,17 @@ defmodule Picsello.PaymentSchedules do
 
   @zero_price ~M[0]USD
 
+  def get_description(%Job{package: nil} = job),
+    do: build_payment_schedules_for_lead(job) |> Map.get(:details)
+
+  def get_description(%Job{package: package}) do
+    package
+    |> Repo.preload(:package_payment_schedules, force: true)
+    |> Map.get(:package_payment_schedules)
+    |> Enum.map(& &1.description)
+    |> Enum.join(", ")
+  end
+
   def build_payment_schedules_for_lead(%Job{} = job) do
     %{package: package, shoots: shoots} = job |> Repo.preload([:package, :shoots])
 

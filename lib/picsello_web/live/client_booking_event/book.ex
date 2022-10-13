@@ -5,7 +5,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
-      assign_organization_by_slug: 2,
+      assign_organization_by_slug_on_profile_disabled: 2,
       photographer_logo: 1,
       profile_footer: 1
     ]
@@ -16,7 +16,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
   def mount(%{"organization_slug" => slug, "id" => event_id}, session, socket) do
     socket
     |> assign_defaults(session)
-    |> assign_organization_by_slug(slug)
+    |> assign_organization_by_slug_on_profile_disabled(slug)
     |> assign_booking_event(event_id)
     |> then(fn socket ->
       Picsello.Shoots.subscribe_shoot_change(socket.assigns.organization.id)

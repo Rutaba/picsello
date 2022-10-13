@@ -10,7 +10,6 @@ defmodule PicselloWeb.LeadLive.Show do
     BookingProposal,
     Notifiers.ClientNotifier,
     Questionnaire,
-    PaymentSchedules,
     Contracts
   }
 
@@ -18,6 +17,8 @@ defmodule PicselloWeb.LeadLive.Show do
     only: [
       assign_job: 2,
       assign_proposal: 1,
+      assign_disabled_copy_link: 1,
+      proposal_disabled_message: 1,
       booking_details_section: 1,
       communications_card: 1,
       history_card: 1,
@@ -25,7 +26,9 @@ defmodule PicselloWeb.LeadLive.Show do
       private_notes_card: 1,
       section: 1,
       shoot_details_section: 1,
-      title_header: 1
+      title_header: 1,
+      validate_payment_schedule: 1,
+      error: 1
     ]
 
 
@@ -36,6 +39,20 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign(include_questionnaire: true)
     |> assign_job(job_id)
     |> assign(:collapsed_sections, [])
+    |> then(fn %{assigns: assigns} = socket ->
+      job = Map.get(assigns, :job)
+
+      if(job) do
+        payment_schedules = job |> Repo.preload(:payment_schedules) |> Map.get(:payment_schedules)
+
+        socket
+        |> assign(payment_schedules: payment_schedules)
+        |> validate_payment_schedule()
+        |> assign_disabled_copy_link()
+      else
+        socket
+      end
+    end)
     |> ok()
   end
 
@@ -48,7 +65,7 @@ defmodule PicselloWeb.LeadLive.Show do
 
     ~H"""
     <div class={"flex flex-col items-center #{@class}"}>
-      <button id="finish-proposal" title="finish proposal" class="w-full md:w-auto btn-primary intro-finish-proposal" phx-click="finish-proposal" disabled={@disabled_message}>Send proposal</button>
+      <button id="finish-proposal" title="finish proposal" class="w-full md:w-auto btn-primary intro-finish-proposal" phx-click="finish-proposal" disabled={!@is_schedule_valid || @disabled_message}>Send proposal</button>
       <%= if @show_message && @disabled_message do %>
         <em class="pt-1 text-xs text-red-sales-300"><%= @disabled_message %></em>
       <% end %>
@@ -56,20 +73,29 @@ defmodule PicselloWeb.LeadLive.Show do
     """
   end
 
-  defp proposal_disabled_message(%{package: package, shoots: shoots, stripe_status: stripe_status}) do
-    cond do
-      !Enum.member?([:charges_enabled, :loading], stripe_status) ->
-        "Set up Stripe"
+  @impl true
+  def handle_event("copy-client-link", _, %{assigns: %{proposal: proposal, job: job}} = socket) do
+    if proposal do
+      socket
+    else
+      socket
+      |> upsert_booking_proposal()
+      |> Repo.transaction()
+      |> case do
+        {:ok, %{proposal: proposal}} ->
+            job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
 
-      package == nil ->
-        "Add a package first"
+          socket
+          |> assign(proposal: proposal)
+          |> assign(job: job, package: job.package)
+          |> push_event("CopyToClipboard", %{"url" => BookingProposal.url(proposal.id)})
 
-      package.shoot_count != Enum.count(shoots, &elem(&1, 1)) ->
-        "Add all shoots"
-
-      true ->
-        nil
+        {:error, _} ->
+          socket
+          |> put_flash(:error, "Failed to fetch booking proposal. Please try again.")
+      end
     end
+    |> noreply()
   end
 
   @impl true
@@ -80,6 +106,7 @@ defmodule PicselloWeb.LeadLive.Show do
         PicselloWeb.PackageLive.WizardComponent,
         assigns |> Map.take([:current_user, :job])
       )
+      |> assign_disabled_copy_link()
       |> noreply()
 
   @impl true
@@ -94,6 +121,7 @@ defmodule PicselloWeb.LeadLive.Show do
           PicselloWeb.PackageLive.WizardComponent,
           assigns |> Map.take([:current_user, :job, :package])
         )
+        |> assign_disabled_copy_link()
         |> noreply()
 
   @impl true
@@ -228,26 +256,10 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  def handle_info(
-        {:proposal_message_composed, message_changeset},
-        %{assigns: %{job: job, package: package, include_questionnaire: include_questionnaire}} =
-          socket
-      ) do
-    questionnaire_id =
-      if include_questionnaire, do: job |> Questionnaire.for_job() |> Repo.one() |> Map.get(:id)
-
+  def handle_info({:proposal_message_composed, message_changeset}, %{assigns: %{job: job}} = socket) do
     result =
-      Ecto.Multi.new()
-      |> Ecto.Multi.insert(
-        :proposal,
-        BookingProposal.create_changeset(%{job_id: job.id, questionnaire_id: questionnaire_id})
-      )
-      |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn _ ->
-        PaymentSchedules.build_payment_schedules_for_lead(job) |> Map.get(:payments)
-      end)
-      |> Ecto.Multi.merge(fn _ ->
-        Contracts.maybe_add_default_contract_to_package_multi(package)
-      end)
+      socket
+      |> upsert_booking_proposal(true)
       |> Ecto.Multi.insert(
         :message,
         Ecto.Changeset.put_change(message_changeset, :job_id, job.id)
@@ -297,7 +309,10 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_info({:stripe_status, status}, socket) do
-    socket |> assign(stripe_status: status) |> noreply()
+    socket
+    |> assign(stripe_status: status)
+    |> assign_disabled_copy_link()
+    |> noreply()
   end
 
   @impl true
@@ -306,6 +321,7 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign(package: %{package | contract: contract})
     |> put_flash(:success, "New contract added successfully")
     |> close_modal()
+    |> assign_disabled_copy_link()
     |> noreply()
   end
 
@@ -313,7 +329,34 @@ defmodule PicselloWeb.LeadLive.Show do
   defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
 
   def next_reminder_on(nil), do: nil
+
+  def next_reminder_on(%{sent_to_client: false}), do: nil
+
   defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder
+
+  defp upsert_booking_proposal(%{assigns: %{proposal: proposal, job: job, package: package, include_questionnaire: include_questionnaire}}, sent_to_client \\ false) do
+    questionnaire_id =
+    if include_questionnaire, do: job |> Questionnaire.for_job() |> Repo.one() |> Map.get(:id)
+
+    changeset = BookingProposal.create_changeset(
+      %{
+        job_id: job.id,
+        questionnaire_id: questionnaire_id,
+        sent_to_client: sent_to_client,
+      }
+    )
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(
+          :proposal,
+          (if proposal, do: Ecto.Changeset.put_change(changeset, :id, proposal.id), else: changeset),
+          on_conflict: {:replace, [:questionnaire_id, :sent_to_client]},
+          conflict_target: :id
+        )
+    |> Ecto.Multi.merge(fn _ ->
+      Contracts.maybe_add_default_contract_to_package_multi(package)
+    end)
+  end
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))

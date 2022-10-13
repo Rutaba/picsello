@@ -41,7 +41,7 @@ defmodule Picsello.Albums do
       left_join: thumbnail_photo in subquery(Picsello.Photos.watermarked_query()),
       on: a.thumbnail_photo_id == thumbnail_photo.id,
       where: a.gallery_id == ^gallery_id,
-      order_by: a.id,
+      order_by: [a.is_finals, a.is_proofing],
       select_merge: %{thumbnail_photo: thumbnail_photo}
     )
     |> Repo.all()

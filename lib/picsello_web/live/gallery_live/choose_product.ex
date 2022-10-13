@@ -5,11 +5,25 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   alias PicselloWeb.GalleryLive.Photos.PhotoView
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [credits_footer: 1, credits: 1, assign_cart_count: 2, get_unconfirmed_order: 2]
+    only: [
+      credits_footer: 1,
+      credits: 1,
+      assign_cart_count: 2,
+      get_unconfirmed_order: 2,
+      assign_checkout_routes: 1
+    ]
+
+  @defaults %{
+    cart_count: 0,
+    cart_route: nil,
+    cart: true,
+    is_proofing: false
+  }
 
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id} = assigns, socket) do
     socket
+    |> assign(Map.merge(@defaults, assigns))
     |> assign(assigns)
     |> assign_details(photo_id)
     |> assign(:download_each_price, Galleries.download_each_price(gallery))
@@ -21,6 +35,11 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
         socket
         |> assign(:products, GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false))
     end)
+    |> then(fn %{assigns: %{gallery: gallery}} = socket ->
+      socket
+      |> assign(:organization, gallery.job.client.organization)
+    end)
+    |> assign_checkout_routes()
     |> ok()
   end
 
@@ -85,16 +104,28 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> noreply
   end
 
+  def go_to_cart_wrapper(assigns) do
+    ~H"""
+    <%= if @count > 0 do %>
+      <%= live_redirect to: @route, title: "cart", class: "block" do %><%= render_slot @inner_block %><% end %>
+    <% else %>
+      <div title="cart" ><%= render_slot @inner_block %></div>
+    <% end %>
+    """
+  end
+
   defp add_to_cart(%{assigns: %{is_proofing: true} = assigns} = socket) do
     %{gallery: gallery, photo: photo, download_each_price: price} = assigns
     send(self(), :update_cart_count)
+
+    date_time = DateTime.truncate(DateTime.utc_now(), :second)
 
     Cart.place_product(
       %Digital{
         photo: photo,
         price: price,
-        inserted_at: DateTime.truncate(DateTime.utc_now(), :second),
-        updated_at: DateTime.truncate(DateTime.utc_now(), :second)
+        inserted_at: date_time,
+        updated_at: date_time
       },
       gallery,
       photo.album_id
@@ -108,7 +139,6 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
            socket
        ) do
     finals_album_id = get_finals_album_id(album)
-
     send(root_pid, {:add_digital_to_cart, %Digital{photo: photo, price: price}, finals_album_id})
     socket
   end
@@ -135,6 +165,9 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> assign(:order, nil)
     |> assign_cart_count(gallery)
   end
+
+  defp get_finals_album_id(%{is_finals: true, id: album_id}), do: album_id
+  defp get_finals_album_id(_album), do: nil
 
   defp button_option(%{is_proofing: false} = assigns) do
     opts = [testid: "digital_download", title: "Digital Download"]
@@ -199,9 +232,6 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       <% end %>
     """
   end
-
-  defp get_finals_album_id(%{is_finals: true, id: album_id}), do: album_id
-  defp get_finals_album_id(_album), do: nil
 
   defdelegate option(assigns), to: PicselloWeb.GalleryLive.Shared, as: :product_option
   defdelegate min_price(category), to: Galleries

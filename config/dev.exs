@@ -79,7 +79,9 @@ config :phoenix, :plug_init_mode, :runtime
 config :picsello, Picsello.Mailer,
   adapter: Bamboo.SendgridLocalAdapter,
   api_key: System.get_env("SENDGRID_API_KEY"),
-  reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN", "dev-inbox.picsello.com")
+  reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN", "dev-inbox.picsello.com"),
+  download_being_prepared_photog: System.get_env("SENDGRID_DOWNLOAD_BEING_PREPARED_PHOTOG"),
+  download_ready_photog: System.get_env("SENDGRID_DOWNLOAD_READY_PHOTOG")
 
 config :picsello, :google_maps_api_key, System.get_env("GOOGLE_MAPS_API_KEY")
 
