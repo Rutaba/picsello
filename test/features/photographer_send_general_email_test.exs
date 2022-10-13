@@ -15,7 +15,7 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
     session
     |> take_screenshot()
     |> click(css("#meatball-manage"))
-    |> click(css("li", text: "Send an email", count: 2, at: 0))
+    |> click(css("li", text: "Send an email"))
     |> assert_has(css("h1", text: "Send an email"))
     |> take_screenshot()
     |> assert_text(job.client.email)
