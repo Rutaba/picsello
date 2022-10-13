@@ -3,6 +3,7 @@ defmodule Picsello.GalleryProofingAlbumTest do
 
   import Money.Sigils
   alias Picsello.Cart.{Digital, DeliveryInfo}
+  alias Picsello.Repo
 
   setup :onboarded
   setup :authenticated
@@ -32,12 +33,13 @@ defmodule Picsello.GalleryProofingAlbumTest do
     [proofing_album: proofing_album, order: order]
   end
 
-  feature "Photographer views client selections", %{
-    session: session,
-    proofing_album: album,
-    gallery: gallery,
-    order: order
-  } do
+  feature "Photographer views client selections, and delete opt disappears from edit-album on order-placing",
+          %{
+            session: session,
+            proofing_album: album,
+            gallery: gallery,
+            order: order
+          } do
     session
     |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
     |> assert_has(css("span", text: "#{album.name}", count: 3))
@@ -52,6 +54,23 @@ defmodule Picsello.GalleryProofingAlbumTest do
     |> assert_has(
       testid("selection-name", text: "Client Selection - #{DateTime.to_date(order.placed_at)}")
     )
+    |> click(testid("edit-album-settings"))
+    |> refute_has(button("Delete"))
+  end
+
+  feature "Delete opts appears in edit-popup if there's no order in proofing-album", %{
+    session: session,
+    proofing_album: album,
+    gallery: gallery,
+    order: order
+  } do
+    order
+    |> Repo.delete!()
+
+    session
+    |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
+    |> click(testid("edit-album-settings"))
+    |> assert_has(button("Delete"))
   end
 
   feature "Photographer downloads client selections as zip", %{
