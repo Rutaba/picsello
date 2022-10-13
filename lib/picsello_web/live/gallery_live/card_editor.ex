@@ -148,7 +148,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   defp step(assigns) do
     ~H"""
     <div class="px-6 pt-5 mx-auto lg:pt-10 w-screen">
-      <div class="fixed pr-8 sm:mt-16 lg:mt-8 pt-8 lg:pt-16 w-full z-10 bg-white">
+      <div class="fixed pr-8 sm:mt-16 lg:mt-8 pt-4 lg:pt-8 w-full z-10 bg-white">
         <nav class="mb-9 text-base-250">
           <ol class="flex items-center list-reset">
             <li>
@@ -201,7 +201,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         </.form>
       </div>
 
-        <ul class={"relative pb-16 pt-9 grid grid-cols-2 lg:grid-cols-4 gap-6 #{top(@filter_applied?)}"} id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
+        <ul class={"relative pt-9 grid grid-cols-2 lg:grid-cols-4 gap-6 #{top(@filter_applied?)}"} id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
           <%= for design <- @designs do %>
             <li id={"design-#{design.id}"}>
               <button class="w-full h-full" phx-click="open-editor" value={design.id}>
@@ -217,8 +217,8 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     """
   end
 
-  defp top(true), do: "top-[320px]"
-  defp top(false), do: "top-[250px]"
+  defp top(true), do: "top-[320px] lg:pb-96 pb-[394px]"
+  defp top(false), do: "top-[250px] pb-80"
 
   @impl true
   # if it fires but we are choosing an occasion
