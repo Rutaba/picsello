@@ -471,8 +471,8 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     designs_task = Task.async(fn -> load_designs(filtered_designs, page) end)
     filtered_count_task = Task.async(fn -> Repo.aggregate(filtered_designs, :count, :id) end)
     total_count = Task.await(total_count_task)
-    filtered_count = Task.await(filtered_count_task, 2_000)
-    designs = Task.await(designs_task, 2_000)
+    filtered_count = Task.await(filtered_count_task, 15_000)
+    designs = Task.await(designs_task, 15_000)
 
     assign(socket,
       designs: designs,
