@@ -35,12 +35,6 @@ defmodule Picsello.Client do
     |> unique_constraint([:email, :organization_id])
   end
 
-  def edit_client_changeset(%__MODULE__{} = client, attrs) do
-    client
-    |> cast(attrs, [:name])
-    |> validate_required([:name])
-  end
-
   def edit_contact_changeset(%__MODULE__{} = client, attrs) do
     client
     |> cast(attrs, [:name, :email, :phone])

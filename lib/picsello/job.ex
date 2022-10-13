@@ -22,6 +22,7 @@ defmodule Picsello.Job do
     field(:notes, :string)
     field(:archived_at, :utc_datetime)
     field(:completed_at, :utc_datetime)
+    field(:job_name, :string)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
     belongs_to(:booking_event, Picsello.BookingEvent)
@@ -62,6 +63,12 @@ defmodule Picsello.Job do
 
   def notes_changeset(job \\ %__MODULE__{}, attrs) do
     job |> cast(attrs, [:notes])
+  end
+
+  def edit_job_changeset(job \\ %__MODULE__{}, attrs) do
+    job
+    |> cast(attrs, [:job_name])
+    |> validate_required([:job_name])
   end
 
   def name(%__MODULE__{type: type} = job) do

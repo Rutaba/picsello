@@ -2,22 +2,22 @@ defmodule PicselloWeb.Live.Profile.EditLeadNameComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  alias Picsello.{Repo, Client}
+  alias Picsello.{Repo, Job}
 
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign(:changeset, Client.edit_client_changeset(assigns.job.client, %{}))
+    |> assign(:changeset, Job.edit_job_changeset(assigns.job, %{}))
     |> ok()
   end
 
   @impl true
-  def handle_event("save", %{"client" => params}, socket) do
+  def handle_event("save", %{"job" => params}, socket) do
     changeset = socket |> build_changeset(params)
     case Repo.update(changeset) do
-      {:ok, client} ->
-        send(socket.parent_pid, {:update, client})
+      {:ok, job} ->
+        send(socket.parent_pid, {:update, job})
         socket
         |> close_modal()
       {:error, changeset} ->
@@ -26,14 +26,14 @@ defmodule PicselloWeb.Live.Profile.EditLeadNameComponent do
     |> noreply()
   end
 
-  def handle_event("validate", %{"client" => params}, socket) do
+  def handle_event("validate", %{"job" => params}, socket) do
     socket
     |> assign(:changeset, build_changeset(socket, params))
     |> noreply()
   end
 
-  defp build_changeset(%{assigns: %{job: %{client: client}}} = _socket, params) do
-    Client.edit_client_changeset(client, params)
+  defp build_changeset(%{assigns: %{job: job}} = _socket, params) do
+    Job.edit_job_changeset(job, params)
   end
 
   @impl true
@@ -48,7 +48,7 @@ defmodule PicselloWeb.Live.Profile.EditLeadNameComponent do
       <% end %>
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <div class="py-5">
-          <%= labeled_input f, :name, label: "Client name:", class: "h-12", phx_debounce: "500" %>
+          <%= labeled_input f, :job_name, label: "Name:", class: "h-12", phx_debounce: "500" %>
         </div>
 
         <.footer>

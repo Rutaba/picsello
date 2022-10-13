@@ -257,6 +257,7 @@ defmodule PicselloWeb.JobLive.Shared do
           <.icon name="back" class="w-4 h-4 stroke-2"/>
         </.live_link>
         <%= Job.name @job %>
+        <%= @job.job_name %>
       </div>
       <div class="px-5">
         <div id="meatball-manage" phx-hook="Select" class="mt-2 ml-auto items-center flex">
