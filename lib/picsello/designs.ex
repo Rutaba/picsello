@@ -2,7 +2,7 @@ defmodule Picsello.Designs do
   @moduledoc """
     context module for whcc designs
   """
-  import Ecto.Query, only: [from: 2]
+  import Ecto.Query, only: [from: 2, with_cte: 3]
   alias Picsello.Repo
   import Picsello.Repo.CustomMacros
 
@@ -52,7 +52,7 @@ defmodule Picsello.Designs do
         }
       )
 
-      from(designs in filtered_designs,
+      from(designs in with_cte(filtered_designs, "slots", as: ^photo_slots_query),
       join:
         preview in jsonb_path_query(
           designs.api,
@@ -60,7 +60,7 @@ defmodule Picsello.Designs do
           :first
         ),
       join: product in assoc(designs, :product),
-      join: photo_slots in subquery(photo_slots_query),
+      join: photo_slots in "slots",
       on: photo_slots.design_id == designs.id,
       order_by: [asc: designs.position],
       select: %{

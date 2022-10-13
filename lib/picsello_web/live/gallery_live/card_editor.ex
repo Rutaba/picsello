@@ -51,7 +51,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
               nil -> occasion_id |> occasion_designs_query() |> Filter.load()
               filter -> filter
             end
-            |> Filter.update(Map.get(params, "filter", %{})))
+            |> Filter.update(Map.get(params, "filter", %{}))
         )
         |> assign(:filter_applied?, Map.get(params, "filter", %{}) != %{})
         |> fetch()
@@ -464,18 +464,14 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
   def fetch(%{assigns: %{page: page, occasion: occasion, filter: filter}} = socket) do
     occasion_designs = occasion_designs_query(occasion)
-    total_count_task = Task.async(fn -> Repo.aggregate(occasion_designs, :count, :id) end)
+    total_count = Repo.aggregate(occasion_designs, :count, :id)
 
     filtered_designs = Filter.query(occasion_designs, filter)
 
-    designs_task = Task.async(fn -> load_designs(filtered_designs, page) end)
-    filtered_count_task = Task.async(fn -> Repo.aggregate(filtered_designs, :count, :id) end)
-    total_count = Task.await(total_count_task)
-    filtered_count = Task.await(filtered_count_task, 15_000)
-    designs = Task.await(designs_task, 15_000)
+    filtered_count = Repo.aggregate(filtered_designs, :count, :id)
 
     assign(socket,
-      designs: designs,
+      designs: load_designs(filtered_designs, page),
       total_count: total_count,
       filtered_count: filtered_count
     )
