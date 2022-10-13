@@ -47,5 +47,55 @@ defmodule Picsello.Repo do
         fragment("initcap(?)", unquote(string))
       end
     end
+
+    defmacro jsonb ~> key do
+      quote do
+        fragment("(? -> ?)", unquote(jsonb), unquote(key))
+      end
+    end
+
+    defmacro jsonb ~>> key do
+      quote do
+        fragment("(? ->> ?)", unquote(jsonb), unquote(key))
+      end
+    end
+
+    defmacro jsonb_agg(jsonb) do
+      quote do
+        fragment("jsonb_agg(?)", unquote(jsonb))
+      end
+    end
+
+    defmacro jsonb_path_query_args(jsonb, path_query, args) do
+      quote do
+        fragment(
+          "jsonb_path_query(?,?,?)",
+          unquote(jsonb),
+          unquote(path_query),
+          unquote(args)
+        )
+      end
+    end
+
+    defmacro jsonb_path_query(jsonb, path_query, type \\ nil) do
+      type =
+        case type do
+          :first -> "jsonb_path_query_first"
+          :array -> "jsonb_path_query_array"
+          nil -> "jsonb_path_query"
+        end
+
+      frag = type <> "(?, ?)"
+
+      quote do
+        fragment(unquote(frag), unquote(jsonb), unquote(path_query))
+      end
+    end
+
+    defmacro jsonb_object(array) do
+      quote do
+        fragment("jsonb_object(?)", unquote(array))
+      end
+    end
   end
 end
