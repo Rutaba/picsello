@@ -141,6 +141,13 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_info({:update, data}, %{assigns: %{job: job}} = socket) do
+    socket
+    |> assign(:job, Map.put(job, :client, data))
+    |> put_flash(:success, "Name updated successfully")
+    |> noreply()
+  end
+
   def handle_info({:update, assigns}, socket),
     do: socket |> assign(assigns) |> noreply()
 
@@ -231,7 +238,6 @@ defmodule PicselloWeb.JobLive.Shared do
   def status_content(_, status), do: {status |> Phoenix.Naming.humanize(), :blue}
 
   def title_header(assigns) do
-    IO.inspect(assigns)
     ~H"""
     <h1 class="flex items-center justify-between mt-4 text-4xl font-bold md:justify-start">
       <div class="flex items-center">
@@ -242,7 +248,7 @@ defmodule PicselloWeb.JobLive.Shared do
       </div>
       <div class="px-5">
         <div phx-hook="Select" class="mt-2 ml-auto items-center flex">
-          <button  class="sticky" id="Manage">
+          <button  class="sticky" id="manage">
             <.icon name="meatballs" class="w-4 h-4 stroke-current stroke-2 opacity-100 open-icon border rounded w-9 border-blue-planning-300 text-blue-planning-300" />
             <.icon name="close-x" class="hidden w-3 h-4 stroke-current stroke-2 close-icon opacity-100 border rounded w-9 border-blue-planning-300 text-blue-planning-300"/>
           </button>

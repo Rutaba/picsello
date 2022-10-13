@@ -79,4 +79,17 @@ defmodule Picsello.ViewLeadTest do
     |> assert_text("Read-only")
     |> assert_text("What do you like to do as a family?")
   end
+
+  feature "edit name of lead changes name", %{
+    session: session,
+    leads: [lead | _]
+  } do
+    session
+    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
+    |> click(button("manage"))
+    |> click(link("Edit lead name"))
+    |> assert_has(button("Save"))
+    |> fill_in(text_field("Client name:"), with: "New")
+    |> assert_text("New Family")
+  end
 end

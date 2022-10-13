@@ -137,10 +137,7 @@ defmodule PicselloWeb.LeadLive.Show do
     |> noreply()
   end
 
-
-
   def handle_event("open_lead_name_change", %{}, %{assigns: %{job: job}} = socket) do
-
     assigns = %{
       job: job,
       current_user: Map.take(socket.assigns, [:current_user])
@@ -210,11 +207,10 @@ defmodule PicselloWeb.LeadLive.Show do
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
-  def handle_info({:update, job}, socket) do
-    IO.inspect("running?")
-    assign_job(socket, job.job_id)
+  def handle_info({:update, data}, %{assigns: %{job: job}} = socket) do
     socket
-    |> put_flash(:success, "Lead Name Changed")
+    |> assign(:job, Map.put(job, :client, data))
+    |> put_flash(:success, "Name updated successfully")
     |> noreply()
   end
 
