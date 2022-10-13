@@ -63,17 +63,17 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
   defp gallerypage_assertions(session) do
     session
     |> assert_text("Your Galleries")
+    |> assert_has(testid("create-a-gallery"))
     |> assert_text("Gallery Details")
     |> assert_text("Actions")
-    |> assert_has(link("Create a gallery"))
-    |> assert_has(button("Upload photos"))
-    |> assert_has(button("Copy Link"))
+    |> assert_has(link("Upload photos"))
+    |> assert_has(testid("copy-link"))
     |> assert_has(css("#menu-button", count: 1))
   end
 
   defp upload_photos_redirect_to_gallery_details(session, gallery) do
     session
-    |> click(button("Upload photos"))
+    |> click(link("Upload photos"))
     |> assert_url_contains("/galleries/#{gallery.id}")
     |> assert_text("Overview")
     |> assert_text("Photos")
@@ -83,7 +83,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
 
   defp copy_link_copies_the_gallery_link_to_clipboard(session) do
     session
-    |> click(button("Copy Link"))
+    |> click(testid("copy-link"))
     |> assert_text("Copied!")
   end
 

@@ -8,7 +8,7 @@
       </div>
       <%= if Enum.any?(@galleries)do %>
           <div class="fixed bottom-0 left-0 right-0 z-20 md:bg-none bg-white flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto cursor-pointer">
-            <a title="create a gallery" class="w-full md:w-auto btn-primary text-center" phx-click="create_gallery">
+            <a {testid("create-a-gallery")} title="Create a gallery" class="w-full md:w-auto btn-primary text-center" phx-click="create_gallery">
               Create a gallery
             </a>
           </div>
@@ -23,7 +23,7 @@
         <p class="block text-lg lg:text-2xl lg:w-1/2">You don't have any galleries at the moment.</p>
       </div>
       <div class="lg:inline-flex">
-        <a title="create a gallery" href="#" class="flex justify-center mt-5 text-lg px-7 btn-primary intro-galleries" phx-click="create_gallery">
+        <a {testid("create-a-gallery")} title="Create a gallery" href="#" class="flex justify-center mt-5 text-lg px-7 btn-primary intro-galleries" phx-click="create_gallery">
           Create a gallery
         </a>
       </div>
@@ -55,7 +55,7 @@
             <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class="items-center text-center h-fit w-full mr-2 py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300">
               Upload photos
             </a>
-            <button id="copy-link" class="h-fit w-full py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300" data-clipboard-text={Routes.gallery_photographer_index_url(@socket, :index, gallery.id)} phx-hook="Clipboard">
+            <button {testid("copy-link")} id="copy-link" class="h-fit w-full py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300" data-clipboard-text={Routes.gallery_photographer_index_url(@socket, :index, gallery.id)} phx-hook="Clipboard">
               <.icon name="anchor" class="w-4 h-4 fill-current text-blue-planning-300 inline mr-1" />
               Copy link
               <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
