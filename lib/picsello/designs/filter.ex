@@ -178,9 +178,8 @@ defmodule Picsello.Designs.Filter do
               ) < @threshold
             )
         end
-        |> Repo.all()
 
-        from(design in query, where: design.id in ^ids)
+        from(design in query, where: design.id in subquery(ids))
     end
 
     defp distance({r1, g1, b1}, {r2, g2, b2}) do
