@@ -154,8 +154,9 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def handle_info({:update, data}, %{assigns: %{job: job}} = socket) do
+    IO.inspect("got here")
     socket
-    |> assign(:job, Map.put(job, :client, data))
+    |> assign(:job, job)
     |> put_flash(:success, "Name updated successfully")
     |> noreply()
   end
@@ -256,8 +257,8 @@ defmodule PicselloWeb.JobLive.Shared do
         <.live_link to={@back_path} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
           <.icon name="back" class="w-4 h-4 stroke-2"/>
         </.live_link>
+
         <%= Job.name @job %>
-        <%= @job.job_name %>
       </div>
       <div class="px-5">
         <div id="meatball-manage" phx-hook="Select" class="mt-2 ml-auto items-center flex">
@@ -778,7 +779,7 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign(
       orders_count: Orders.placed_orders_count(gallery),
       job: job,
-      page_title: job |> Job.name(),
+      page_title: Job.name(job),
       package: job.package
     )
     |> assign_shoots()
