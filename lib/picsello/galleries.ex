@@ -16,7 +16,9 @@ defmodule Picsello.Galleries do
     Galleries,
     Albums,
     Orders,
-    Cart.Digital
+    Cart.Digital,
+    Job,
+    Client
   }
 
   alias Picsello.Workers.CleanStore
@@ -49,6 +51,17 @@ defmodule Picsello.Galleries do
   def list_expired_galleries do
     from(g in active_galleries(), where: g.status == "expired")
     |> Repo.all()
+  end
+
+  def list_all_galleries_by_organization_query(organization_id) do
+    from(g in active_galleries(),
+      join: j in Job,
+      on: j.id == g.job_id,
+      join: c in Client,
+      on: c.id == j.client_id,
+      preload: [:albums, [job: :client]],
+      where: c.organization_id == ^organization_id
+    )
   end
 
   @doc """
@@ -397,9 +410,20 @@ defmodule Picsello.Galleries do
       {:error, %Ecto.Changeset{}}
   """
   def create_gallery(attrs \\ %{}) do
-    Multi.new()
-    |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
-    |> Multi.insert_all(
+    attrs
+    |> create_gallery_multi()
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{gallery: gallery}} -> {:ok, gallery}
+      {:error, :gallery, changeset, _} -> {:error, changeset}
+      other -> other
+    end
+  end
+
+  def create_gallery_multi(attrs) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
+    |> Ecto.Multi.insert_all(
       :gallery_products,
       GalleryProduct,
       fn %{
@@ -417,12 +441,6 @@ defmodule Picsello.Galleries do
         )
       end
     )
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{gallery: gallery}} -> {:ok, gallery}
-      {:error, :gallery, changeset, _} -> {:error, changeset}
-      other -> other
-    end
   end
 
   @doc """
@@ -494,6 +512,8 @@ defmodule Picsello.Galleries do
   def delete_gallery(%Gallery{} = gallery) do
     update_gallery(gallery, %{active: false})
   end
+
+  def delete_gallery_by_id(id), do: get_gallery!(id) |> delete_gallery()
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking gallery changes.
@@ -957,6 +977,16 @@ defmodule Picsello.Galleries do
     |> Picsello.WHCC.min_price_details()
     |> Picsello.Cart.Product.new()
     |> Picsello.Cart.Product.example_price()
+  end
+
+  def preview_image(gallery) do
+    photo_query = Photos.watermarked_query()
+
+    photo =
+      from(p in photo_query, where: p.gallery_id == ^gallery.id, order_by: p.position, limit: 1)
+      |> Repo.one()
+
+    if photo, do: Photos.preview_url(photo, [])
   end
 
   defp selected_photo_query(query) do

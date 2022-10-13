@@ -859,6 +859,28 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def assign_is_proofing(socket), do: assign(socket, is_proofing: false)
 
+  def steps(assigns) do
+    ~H"""
+    <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @target, title: "back"}, else: %{}} class="flex">
+      <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
+        Step <%= step_number(@step, @steps) %>
+      </span>
+
+      <ul class="flex items-center inline-block">
+        <%= for step <- @steps do %>
+          <li class={classes(
+            "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
+            %{ "bg-blue-planning-300" => step == @step, "bg-gray-200" => step != @step }
+            )}>
+          </li>
+        <% end %>
+      </ul>
+    </a>
+    """
+  end
+
+  defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
+
   defdelegate item_image_url(item), to: Cart
   defdelegate item_image_url(item, opts), to: Cart
   defdelegate product_name(order), to: Cart
