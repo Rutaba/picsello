@@ -388,12 +388,6 @@ defmodule Picsello.Accounts do
     end
   end
 
-  def change_user_settings(user, attrs) do
-    user
-    |> User.user_setting_changeset(attrs)
-    |> Repo.update()
-  end
-
   def generate_password(length \\ 20) do
     :crypto.strong_rand_bytes(length) |> Base.encode64() |> binary_part(0, length)
   end

@@ -87,7 +87,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
-  def handle_event("toggle", %{}, socket) do
+  def handle_event("toggle", %{}, %{assigns: %{current_user: %{allow_cash_payment: false}}} = socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
       close_label: "No, go back",
@@ -97,6 +97,12 @@ defmodule PicselloWeb.Live.FinanceSettings do
       title: "Are you sure?",
       subtitle: "Are you sure you want to allow cash and checks as a payment option? \n\nYou will need to communicate directly with your client to capture payment and manually enter those into your job payment details."
     })
+    |> noreply()
+  end
+
+  def handle_event("toggle", %{}, %{assigns: %{current_user: %{allow_cash_payment: true} = current_user}} = socket) do
+    socket
+    |> assign(current_user: User.toggle(current_user))
     |> noreply()
   end
 
@@ -110,30 +116,6 @@ defmodule PicselloWeb.Live.FinanceSettings do
       |> close_modal()
       |> put_flash(:success, "Settings updated")
       |> noreply()
-    # changeset = changeset |> Map.put(:action, nil)
-
-
-    # case Picsello.Accounts.change_user_settings(current_user, %{allow_cash_payment: true}) do
-    #   {:ok, _current_user} ->
-    #   socket
-    # |> close_modal()
-    # |> put_flash(:success, "Settings updated")
-    # |> noreply()
-    # {:error, _} ->
-    #   socket
-    #   |> put_flash(:success, "Settings not updated")
-    #   end
-
-
-    # case Picsello.Accounts.User.user_setting_changeset() do
-    #   {:ok, _current_user} ->
-    #     socket
-    #     |> close_modal()
-    #     |> put_flash(:success, "Settings updated")
-    #     |> noreply()
-    #   {:error, changeset} ->
-    #     socket |> close_modal() |> assign(current_user: current_user) |> noreply()
-    # end
   end
 
   def handle_info({:stripe_status, status}, socket) do

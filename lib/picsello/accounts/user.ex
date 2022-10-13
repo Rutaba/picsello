@@ -61,20 +61,14 @@ defmodule Picsello.Accounts.User do
     )
   end
 
-  def enabled?(%__MODULE__{allow_cash_payment: allow_cash_payment}), do: allow_cash_payment
+  def enabled?(%{allow_cash_payment: allow_cash_payment}), do: allow_cash_payment
 
-  def enabled?(%{user: %{allow_cash_payment: allow_cash_payment}}), do: Picsello.Accounts.User.enabled?(allow_cash_payment)
+  def enabled?(_), do: false
 
   def toggle( %__MODULE__{} = current_user) do
     current_user
     |> Ecto.Changeset.change(%{allow_cash_payment: !enabled?(current_user)})
     |> Repo.update!()
-  end
-
-  # def enabled?(%User{allow_cash_payment: allow_cash_payment}), do: User.enabled?(allow_cash_payment)
-  def user_setting_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
-    user
-    |> cast(attrs, [:allow_cash_payment])
   end
 
   def new_session_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
