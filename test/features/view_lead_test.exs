@@ -94,6 +94,7 @@ defmodule Picsello.ViewLeadTest do
     |> take_screenshot()
     |> fill_in(text_field("Client name:"), with: "New")
     |> within_modal(&wait_for_enabled_submit_button/1)
+    |> click(button("Save"))
     |> take_screenshot()
     |> assert_text("New Family")
   end

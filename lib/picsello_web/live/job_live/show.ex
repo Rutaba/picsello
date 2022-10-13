@@ -114,6 +114,20 @@ defmodule PicselloWeb.JobLive.Show do
       })
       |> noreply()
 
+      def handle_event("confirm_job_complete", %{}, socket) do
+        socket
+        |> PicselloWeb.ConfirmationComponent.open(%{
+          confirm_event: "complete_job",
+          confirm_label: "Yes, complete",
+          confirm_class: "btn-primary",
+          subtitle:
+            "After you complete the job this becomes read-only. This action cannot be undone.",
+          title: "Are you sure you want to complete this job?",
+          icon: "warning-blue"
+        })
+        |> noreply()
+      end
+
       def handle_event("open_lead_name_change", %{}, %{assigns: %{job: job}} = socket) do
         assigns = %{
           job: job

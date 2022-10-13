@@ -280,10 +280,16 @@ defmodule PicselloWeb.JobLive.Shared do
               <a class="hover-drop-down"> Edit job name</a>
             </li>
           <% end %>
-          <%= if !@job.archived_at do %>
+          <%= if !@job.archived_at and @job.job_status.is_lead  do  %>
             <li phx-click="confirm_archive_lead" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
               <.icon name="trash" class="inline-block w-4 h-4 mx-2 fill-current text-red-sales-300" />
               <a class="hover-drop-down" >Archive lead</a>
+            </li>
+          <% end %>
+          <%= if !@job.job_status.is_lead and !@job.completed_at do  %>
+            <li phx-click="confirm_job_complete" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+              <.icon name="trash" class="inline-block w-4 h-4 mx-2 fill-current text-red-sales-300" />
+              <a class="hover-drop-down">Complete job</a>
             </li>
           <% end %>
           </ul>
