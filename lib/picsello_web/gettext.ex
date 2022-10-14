@@ -32,6 +32,8 @@ defmodule PicselloWeb.Gettext do
       {:jobs, :plural} -> "Jobs"
       {:leads, :singular} -> "Lead"
       {:leads, :plural} -> "Leads"
+      {:galleries, :singular} -> "Gallery"
+      {:galleries, :plural} -> "Galleries"
       _ -> action |> Atom.to_string() |> dyn_gettext()
     end
   end

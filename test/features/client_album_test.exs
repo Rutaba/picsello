@@ -44,6 +44,9 @@ defmodule Picsello.ClientAlbumTest do
     |> assert_has(css("#muuri-grid", count: 1))
     |> assert_has(css(".item", count: Enum.count(photo_ids)))
     |> click(css("#img-#{List.first(photo_ids)}"))
-    |> click(button("Add to cart"))
+    |> within_modal(fn modal ->
+      modal
+      |> click(button("Add to cart"))
+    end)
   end
 end

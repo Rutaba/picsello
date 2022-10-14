@@ -12,10 +12,12 @@ defmodule PicselloWeb.HomeLive.Index do
     Accounts.User,
     ClientMessage,
     Subscriptions,
-    Orders
+    Orders,
+    Galleries
   }
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
+  import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
   import Ecto.Query
 
   @impl true
@@ -40,6 +42,16 @@ defmodule PicselloWeb.HomeLive.Index do
       socket
       |> open_modal(PicselloWeb.JobLive.NewComponent, Map.take(socket.assigns, [:current_user]))
       |> noreply()
+
+  @impl true
+  def handle_event("create-gallery", %{}, socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.GalleryLive.CreateComponent,
+      Map.take(socket.assigns, [:current_user])
+    )
+    |> noreply()
+  end
 
   @impl true
   def handle_event("redirect", %{"to" => path}, socket),
@@ -123,6 +135,7 @@ defmodule PicselloWeb.HomeLive.Index do
   defp maybe_show_success_subscription(socket, %{}), do: socket
 
   defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
+    organization_id = Map.get(current_user, :organization).id
     job_count_by_status = current_user |> job_count_by_status() |> Repo.all()
 
     lead_stats =
@@ -163,6 +176,14 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(
       lead_stats: lead_stats,
       lead_count: lead_stats |> Keyword.values() |> Enum.sum(),
+      gallery_count:
+        Galleries.list_all_galleries_by_organization_query(organization_id)
+        |> Repo.all()
+        |> Enum.count(),
+      galleries_empty?:
+        Galleries.list_all_galleries_by_organization_query(organization_id)
+        |> Repo.all()
+        |> Enum.empty?(),
       leads_empty?: Enum.empty?(job_count_by_status),
       jobs_empty?: !Enum.any?(job_count_by_status, &(!&1.lead?)),
       job_count: job_count,
@@ -451,6 +472,28 @@ defmodule PicselloWeb.HomeLive.Index do
     |> Repo.aggregate(:count)
   end
 
+  @impl true
+  def handle_info({:gallery_created, %{job_id: job_id}}, socket) do
+    socket
+    |> PicselloWeb.SuccessComponent.open(%{
+      title: "Gallery Created!",
+      subtitle: "Hooray! Your gallery has been created. you are now ready to upload photos.",
+      success_label: "View new job",
+      success_event: "view-job",
+      close_label: "Great! Close window.",
+      payload: %{job_id: job_id}
+    })
+    |> update_gallery_listing()
+    |> noreply()
+  end
+
+  def handle_info({:success_event, "view-job", %{job_id: job_id}}, socket) do
+    socket
+    |> push_redirect(to: Routes.job_path(socket, :jobs, job_id))
+    |> noreply()
+  end
+
+  @impl true
   def handle_info({:stripe_status, status}, socket) do
     socket |> assign(stripe_status: status) |> assign_attention_items() |> noreply()
   end

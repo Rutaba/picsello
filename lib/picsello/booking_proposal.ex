@@ -9,6 +9,7 @@ defmodule Picsello.BookingProposal do
     field :accepted_at, :utc_datetime
     field :signed_at, :utc_datetime
     field :signed_legal_name, :string
+    field :sent_to_client, :boolean, default: true
 
     belongs_to(:job, Job)
     belongs_to(:questionnaire, Questionnaire)
@@ -20,8 +21,8 @@ defmodule Picsello.BookingProposal do
   @doc false
   def create_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:job_id, :questionnaire_id])
-    |> validate_required([:job_id])
+    |> cast(attrs, [:sent_to_client, :job_id, :questionnaire_id])
+    |> validate_required([:job_id, :sent_to_client])
   end
 
   @doc false

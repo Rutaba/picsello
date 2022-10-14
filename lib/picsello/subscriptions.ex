@@ -90,6 +90,8 @@ defmodule Picsello.Subscriptions do
     end
   end
 
+  def subscription_payment_method?(_), do: false
+
   def subscription_plans() do
     Repo.all(from(s in SubscriptionPlan, where: s.active == true, order_by: s.price))
   end

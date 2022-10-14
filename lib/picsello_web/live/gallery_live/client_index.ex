@@ -163,9 +163,12 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> noreply()
   end
 
-  @impl true
-  def handle_info({:customize_and_buy_product, whcc_product, photo, size}, socket) do
-    socket |> customize_and_buy_product(whcc_product, photo, size)
+  def handle_info(
+        {:customize_and_buy_product, whcc_product, photo, size},
+        %{assigns: %{favorites_filter: favorites_only}} = socket
+      ) do
+    socket
+    |> customize_and_buy_product(whcc_product, photo, size: size, favorites_only: favorites_only)
   end
 
   def handle_info(

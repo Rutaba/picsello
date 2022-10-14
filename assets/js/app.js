@@ -25,14 +25,18 @@ import '@fontsource/be-vietnam/700.css';
 import Analytics from './hooks/analytics';
 import AutoHeight from './hooks/auto-height';
 import Calendar from './hooks/calendar';
+import ClientGalleryCookie from './hooks/client-gallery-cookie';
 import Clipboard from './hooks/clipboard';
+import DefaultCostTooltip from './hooks/default-cost-tooltip';
 import DragDrop from './hooks/drag-drop';
 import Flash from './hooks/flash';
+import GalleryMobile from './hooks/gallery-mobile';
+import GallerySelector from './hooks/gallery-selector';
 import HandleTrialCode from './hooks/handle-trial-code';
-import IFrameAutoHeight from './hooks/iframe-auto-height';
-import PrefixHttp from './hooks/prefix-http';
 import HelpScout from './hooks/help-scout';
+import IFrameAutoHeight from './hooks/iframe-auto-height';
 import ImageUploadInput from './hooks/image-upload-input';
+import InfiniteScroll from './hooks/infinite-scroll';
 import IntroJS from './hooks/intro';
 import MasonryGrid from './hooks/masonry-grid';
 import PackageDescription from './hooks/package-description';
@@ -41,18 +45,15 @@ import PercentMask from './hooks/percent-mask';
 import Phone from './hooks/phone';
 import PhotoUpdate from './hooks/photo-update';
 import PlacesAutocomplete from './hooks/places-autocomplete';
+import PrefixHttp from './hooks/prefix-http';
 import Preview from './hooks/preview';
 import PriceMask from './hooks/price-mask';
 import Quill, { ClearQuillInput } from './hooks/quill';
+import ResumeUpload from './hooks/resume_upload';
 import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import ToggleSiblings from './hooks/toggle-siblings';
-import GalleryMobile from './hooks/gallery-mobile';
-import ResumeUpload from './hooks/resume_upload';
-import GallerySelector from './hooks/gallery-selector';
-import DefaultCostTooltip from './hooks/default-cost-tooltip';
-import ClientGalleryCookie from './hooks/client-gallery-cookie';
 
 const Modal = {
   mounted() {
@@ -131,15 +132,18 @@ const Hooks = {
   Calendar,
   ClearInput,
   ClearQuillInput,
+  ClientGalleryCookie,
   Clipboard,
   DefaultCostTooltip,
   DragDrop,
   Flash,
   GalleryMobile,
+  GallerySelector,
   HandleTrialCode,
-  IFrameAutoHeight,
   HelpScout,
+  IFrameAutoHeight,
   ImageUploadInput,
+  InfiniteScroll,
   IntroJS,
   MasonryGrid,
   Modal,
@@ -153,14 +157,12 @@ const Hooks = {
   Preview,
   PriceMask,
   Quill,
+  ResumeUpload,
   ScrollIntoView,
   Select,
   TZCookie,
   ToggleContent,
   ToggleSiblings,
-  ResumeUpload,
-  GallerySelector,
-  ClientGalleryCookie,
 };
 
 let Uploaders = {};
