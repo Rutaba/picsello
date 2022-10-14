@@ -80,7 +80,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       |> Multi.insert(:job, fn %{client: client} ->
         Changeset.put_change(changeset, :client_id, client.id)
       end)
-      |> Multi.run(:package, fn _repo, %{job: job} ->
+      |> Multi.merge(fn %{job: job} ->
         Packages.insert_package_and_update_job(package_changeset, job)
       end)
       |> Multi.merge(fn %{job: %{id: job_id}} ->

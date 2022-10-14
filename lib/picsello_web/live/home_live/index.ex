@@ -17,7 +17,7 @@ defmodule PicselloWeb.HomeLive.Index do
   }
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
-  import PicselloWeb.GalleryLive.Index, only: [put_assigns: 1]
+  import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
   import Ecto.Query
 
   @impl true
@@ -483,7 +483,7 @@ defmodule PicselloWeb.HomeLive.Index do
       close_label: "Great! Close window.",
       payload: %{job_id: job_id}
     })
-    |> put_assigns()
+    |> update_gallery_listing()
     |> noreply()
   end
 

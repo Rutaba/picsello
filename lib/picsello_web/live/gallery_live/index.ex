@@ -24,7 +24,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       ) do
     socket
     |> assign_new(:pagination, fn -> %Pagination{} end)
-    |> put_assigns()
+    |> update_gallery_listing()
     |> ok()
   end
 
@@ -54,7 +54,10 @@ defmodule PicselloWeb.GalleryLive.Index do
         "forth" -> &%{&1 | after: cursor, before: nil, first_index: &1.first_index + &1.limit}
       end
 
-    socket |> update(:pagination, update_fn) |> put_assigns() |> noreply()
+    socket
+    |> update(:pagination, update_fn)
+    |> pagination()
+    |> noreply()
   end
 
   @impl true
@@ -67,7 +70,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
     socket
     |> assign(:pagination, %Pagination{limit: limit, last_index: limit})
-    |> put_assigns()
+    |> pagination()
     |> noreply()
   end
 
@@ -165,7 +168,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     {:ok, _} = String.to_integer(gallery_id) |> Galleries.delete_gallery_by_id()
 
     socket
-    |> put_assigns()
+    |> update_gallery_listing()
     |> close_modal()
     |> put_flash(:success, "Gallery deleted successfully")
     |> noreply()
@@ -182,7 +185,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       close_label: "Great! Close window.",
       payload: %{job_id: job_id}
     })
-    |> put_assigns()
+    |> update_gallery_listing()
     |> noreply()
   end
 
@@ -288,8 +291,17 @@ defmodule PicselloWeb.GalleryLive.Index do
     end)
   end
 
-  def put_assigns(%{assigns: %{current_user: current_user} = assigns} = socket) do
+  def pagination(%{assigns: assigns} = socket) do
     assigns = Map.put_new(assigns, :pagination, %Pagination{})
+    put_assigns(socket, assigns)
+  end
+
+  def update_gallery_listing(%{assigns: assigns} = socket) do
+    assigns = Map.put(assigns, :pagination, %Pagination{})
+    put_assigns(socket, assigns)
+  end
+
+  def put_assigns(socket, %{current_user: current_user} = assigns) do
     pagination = Map.get(assigns, :pagination)
     action = Map.get(assigns, :live_action)
     organization_id = Map.get(current_user, :organization).id
