@@ -196,8 +196,17 @@ defmodule Picsello.PaymentSchedules do
     |> Enum.reduce(Money.new(0), fn payment, acc -> Money.add(acc, payment.price) end)
   end
 
+  def owed_offline_price(%Job{} = job) do
+    total = Package.price(job.package) |> Map.get(:amount)
+    total - paid_amount(job) |> Money.new()
+  end
+
   def owed_amount(%Job{} = job) do
     owed_price(job) |> Map.get(:amount)
+  end
+
+  def base(%Job{} = job) do
+    job.package.base_price |> Map.get(:amount)
   end
 
   def remainder_due_on(%Job{} = job) do
@@ -215,6 +224,12 @@ defmodule Picsello.PaymentSchedules do
   def payment_schedules(job) do
     Repo.preload(job, [:payment_schedules])
     |> Map.get(:payment_schedules)
+  end
+
+  def get_offline_payment_schedules(job_id) do
+    from(p in PaymentSchedule,
+    where: p.type in ["check", "cash"] and p.job_id == ^job_id)
+    |> Repo.all()
   end
 
   def payment_schedules_count(job) do
