@@ -210,6 +210,30 @@ defmodule Picsello.Profiles do
     end
   end
 
+  def find_organization_by_slug(slug: slug) do
+    from(
+      o in Organization,
+      where: o.slug == ^slug or o.previous_slug == ^slug,
+      order_by:
+        fragment(
+          """
+          case
+            when ?.slug = ? then 0
+            when ?.previous_slug = ? then 1
+          end asc
+          """,
+          o,
+          ^slug,
+          o,
+          ^slug
+        ),
+      limit: 1,
+      preload: [:user]
+    )
+    |> Repo.one!()
+    |> Repo.preload(brand_links: from(bl in BrandLink, where: bl.link_id == "website"))
+  end
+
   def find_organization_by(slug: slug) do
     from(
       o in Organization,

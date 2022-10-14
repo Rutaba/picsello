@@ -177,7 +177,7 @@ defmodule Picsello.BookingEvents do
     |> Ecto.Multi.merge(fn %{job: job} ->
       package_template
       |> Picsello.Packages.changeset_from_template()
-      |> Picsello.Packages.insert_package_and_update_job_multi(job)
+      |> Picsello.Packages.insert_package_and_update_job(job)
     end)
     |> Ecto.Multi.merge(fn %{package: package} ->
       Picsello.Contracts.maybe_add_default_contract_to_package_multi(package)

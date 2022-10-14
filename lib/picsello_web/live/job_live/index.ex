@@ -138,7 +138,7 @@ defmodule PicselloWeb.JobLive.Index do
           <label class={"p-2 pr-6 flex items-center cursor-pointer hover:bg-blue-planning-100 #{if @value == option, do: "bg-blue-planning-100", else: "bg-white"}"}>
             <input type="radio" class="hidden" name={@name} value={option} />
             <div class={"flex items-center justify-center w-5 h-5 mr-2 rounded-full #{if @value == option, do: "bg-blue-planning-300", else: "border"}"}>
-              <.icon name="checkmark" class="w-3 h-3 stroke-current" />
+              <.icon name="checkmark" class="w-3 h-3 stroke-current text-base-100" />
             </div>
             <%= option %>
           </label>

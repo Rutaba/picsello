@@ -86,6 +86,26 @@
         <% end %>
       </.card>
 
+      <.card {testid("gallery-card")} color="blue-planning-300" icon="proof_notifier" title="Galleries" badge={@gallery_count} phx-click="redirect" phx-value-to={Routes.gallery_path(@socket, :galleries)} class="cursor-pointer intro-galleries-card" hint_content={if @galleries_empty? do "You can create a new gallery by clicking this button below" end}>
+        <%= if @galleries_empty? do %>
+        <p class="my-2">
+          Create your first gallery! You don’t have any galleries at the moment.
+        </p>
+
+        <button type="button" class="w-full py-2 mt-auto text-sm btn-primary" phx-click="create-gallery">Create a gallery</button>
+        <% else %>
+        <ul class="grid grid-flow-col gap-2 my-2 auto-cols-fr">
+          <li class="text-left"><span class="font-bold"><%= @gallery_count %></span> galleries created so far</li>
+        </ul>
+
+        <div class="flex items-stretch mt-4">
+          <button type="button" class="flex-1 py-2 mr-4 text-sm btn-primary" phx-click="create-gallery">Create a gallery</button>
+
+          <button type="button" class="flex-1 py-2 text-sm btn-secondary px-2">View all galleries</button>
+        </div>
+        <% end %>
+      </.card>
+
       <.card {testid("jobs-card")} color="blue-planning-300" icon="camera-check" title="Jobs" badge={@job_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer" hint_content={if @jobs_empty? do "Review contracts, payments, and package settings. Once your photos are ready to share with your client, you’ll also create their gallery here." end}>
         <%= if @jobs_empty? do %>
         <p class="my-2">
@@ -94,12 +114,6 @@
         <% else %>
           <p class="my-2"><span class="font-bold"><%= @job_count %></span> upcoming <%= ngettext "job", "jobs", @job_count %> within the next seven days</p>
         <% end %>
-      </.card>
-
-      <.card color="blue-planning-300" icon="package" title="Packages" phx-click="redirect" phx-value-to={Routes.package_templates_path(@socket, :index)} class="cursor-pointer">
-        <p class="my-2">
-          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "calculate your pricing", class: "underline text-blue-planning-300" do %>calculate your pricing<% end %>.
-        </p>
       </.card>
     </ul>
 
@@ -117,6 +131,12 @@
 
           <%= live_redirect to: Routes.calendar_index_path(@socket, :index), title: "View calendar", class: "underline text-blue-planning-300 text-center sm:text-left mt-4 sm:mt-0 sm:w-auto w-full" do %>View calendar<% end %>
         </div>
+      </.card>
+
+      <.card color="blue-planning-300" icon="package" title="Packages" phx-click="redirect" phx-value-to={Routes.package_templates_path(@socket, :index)} class="cursor-pointer">
+        <p class="my-2">
+          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "calculate your pricing", class: "underline text-blue-planning-300" do %>calculate your pricing<% end %>.
+        </p>
       </.card>
 
       <.card {testid("inbox-card")} color="orange-inbox-300" icon="envelope" title="Inbox" badge={@inbox_count} phx-click="redirect" phx-value-to={Routes.inbox_path(@socket, :index)} class="cursor-pointer intro-inbox">

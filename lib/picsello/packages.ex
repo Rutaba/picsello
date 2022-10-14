@@ -8,7 +8,8 @@ defmodule Picsello.Packages do
     Job,
     JobType,
     Packages.BasePrice,
-    Packages.CostOfLivingAdjustment
+    Packages.CostOfLivingAdjustment,
+    PackagePayments
   }
 
   import Picsello.Repo.CustomMacros
@@ -156,6 +157,7 @@ defmodule Picsello.Packages do
         )
       )
       |> validate_buy_all()
+      |> validate_each_price()
     end
 
     defp validate_buy_all(changeset) do
@@ -166,6 +168,20 @@ defmodule Picsello.Packages do
         greater_than: download_each_price.amount,
         message: "Must be greater than digital image price"
       )
+    end
+
+    defp validate_each_price(changeset) do
+      buy_all = get_field(changeset, :buy_all) || @zero_price
+
+      if Money.zero?(buy_all) do
+        changeset
+      else
+        changeset
+        |> validate_money(:each_price,
+          less_than: buy_all.amount,
+          message: "Must be less than buy all price"
+        )
+      end
     end
 
     def from_package(%{download_each_price: each_price, download_count: count} = package)
@@ -224,33 +240,49 @@ defmodule Picsello.Packages do
   def templates_for_organization(%Organization{id: id}),
     do: id |> Package.templates_for_organization_id() |> Repo.all()
 
-  def insert_package_and_update_job(changeset, job),
-    do:
-      insert_package_and_update_job_multi(changeset, job)
-      |> Repo.transaction()
+  def insert_package_and_update_job(changeset, job, opts \\ %{}) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:package, changeset)
+    |> Ecto.Multi.update(:job_update, fn changes ->
+      Job.add_package_changeset(job, %{package_id: changes.package.id})
+    end)
+    |> Ecto.Multi.merge(fn %{package: package} ->
+      if Map.get(opts, :action) in [:insert, :insert_preset] do
+        PackagePayments.insert_schedules(package, opts)
+      else
+        Ecto.Multi.new()
+      end
+    end)
+    |> Ecto.Multi.merge(fn _ ->
+      payment_schedules = Map.get(opts, :payment_schedules)
 
-  def insert_package_and_update_job_multi(changeset, job),
-    do:
-      Ecto.Multi.new()
-      |> Ecto.Multi.insert(:package, changeset)
-      |> Ecto.Multi.update(:job_update, fn changes ->
-        Job.add_package_changeset(job, %{package_id: changes.package.id})
-      end)
-      |> Ecto.Multi.merge(fn %{package: package} ->
-        case package |> Repo.preload(package_template: :contract) do
-          %{package_template: %{contract: %Picsello.Contract{} = contract}} ->
-            contract_params = %{
-              "name" => contract.name,
-              "content" => contract.content,
-              "contract_template_id" => contract.contract_template_id
-            }
+      shoot_date =
+        if payment_schedules,
+          do: payment_schedules |> List.first() |> Map.get(:shoot_date),
+          else: false
 
-            Picsello.Contracts.insert_contract_multi(package, contract_params)
+      if Map.get(opts, :action) == :insert && shoot_date do
+        PackagePayments.insert_job_payment_schedules(Map.put(opts, :job_id, job.id))
+      else
+        Ecto.Multi.new()
+      end
+    end)
+    |> Ecto.Multi.merge(fn %{package: package} ->
+      case package |> Repo.preload(package_template: :contract) do
+        %{package_template: %{contract: %Picsello.Contract{} = contract}} ->
+          contract_params = %{
+            "name" => contract.name,
+            "content" => contract.content,
+            "contract_template_id" => contract.contract_template_id
+          }
 
-          _ ->
-            Ecto.Multi.new()
-        end
-      end)
+          Picsello.Contracts.insert_contract_multi(package, contract_params)
+
+        _ ->
+          Ecto.Multi.new()
+      end
+    end)
+  end
 
   def build_package_changeset(
         %{
@@ -264,34 +296,71 @@ defmodule Picsello.Packages do
       ) do
     params = Map.put(params, "organization_id", current_user.organization_id)
 
-    Package.changeset(package, params,
+    package
+    |> Map.put(:package_payment_schedules, [])
+    |> Package.changeset(params,
       step: step,
       is_template: is_template,
       validate_shoot_count: job && package.id
     )
   end
 
-  def insert_or_update_package(changeset, contract_params) do
+  def insert_or_update_package(changeset, contract_params, opts) do
+    action = Map.get(opts, :action)
+    shoot_date = opts.payment_schedules |> List.first() |> Map.get(:shoot_date)
+
     result =
       Ecto.Multi.new()
       |> Ecto.Multi.insert_or_update(:package, changeset)
-      |> Ecto.Multi.merge(fn %{package: package} ->
-        cond do
-          is_nil(contract_params) ->
-            Ecto.Multi.new()
-
-          Map.get(contract_params, "edited") ->
-            Picsello.Contracts.insert_template_and_contract_multi(package, contract_params)
-
-          !Map.get(contract_params, "edited") ->
-            Picsello.Contracts.insert_contract_multi(package, contract_params)
+      |> Ecto.Multi.merge(fn %{package: %{id: id}} ->
+        if action in [:insert, :insert_preset, :update, :update_preset] do
+          PackagePayments.delete_schedules(id, Map.get(opts, :payment_preset))
+        else
+          Ecto.Multi.new()
         end
+      end)
+      |> Ecto.Multi.merge(fn _ ->
+        if action == :update && shoot_date do
+          PackagePayments.delete_job_payment_schedules(Map.get(opts, :job_id))
+        else
+          Ecto.Multi.new()
+        end
+      end)
+      |> Ecto.Multi.merge(fn %{package: package} ->
+        if action in [:insert, :insert_preset, :update, :update_preset] do
+          PackagePayments.insert_schedules(package, opts)
+        else
+          Ecto.Multi.new()
+        end
+      end)
+      |> Ecto.Multi.merge(fn _ ->
+        if action == :update && shoot_date do
+          PackagePayments.insert_job_payment_schedules(opts)
+        else
+          Ecto.Multi.new()
+        end
+      end)
+      |> Ecto.Multi.merge(fn %{package: package} ->
+        contract_multi(package, contract_params)
       end)
       |> Repo.transaction()
 
     case result do
       {:ok, %{package: package}} -> {:ok, package}
       _ -> {:error}
+    end
+  end
+
+  defp contract_multi(package, contract_params) do
+    cond do
+      is_nil(contract_params) ->
+        Ecto.Multi.new()
+
+      Map.get(contract_params, "edited") ->
+        Picsello.Contracts.insert_template_and_contract_multi(package, contract_params)
+
+      !Map.get(contract_params, "edited") ->
+        Picsello.Contracts.insert_contract_multi(package, contract_params)
     end
   end
 

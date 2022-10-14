@@ -5,7 +5,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
-      assign_organization_by_slug: 2,
+      assign_organization_by_slug_on_profile_disabled: 2,
       photographer_logo: 1,
       profile_footer: 1
     ]
@@ -23,7 +23,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
   def mount(%{"organization_slug" => slug, "id" => event_id} = params, session, socket) do
     socket
     |> assign_defaults(session)
-    |> assign_organization_by_slug(slug)
+    |> assign_organization_by_slug_on_profile_disabled(slug)
     |> assign_booking_event(event_id)
     |> maybe_show_expired_message(params)
     |> ok()
@@ -65,7 +65,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
   defp assign_booking_event(%{assigns: %{organization: organization}} = socket, event_id) do
     booking_event = BookingEvents.get_booking_event!(organization.id, event_id)
     title = "#{booking_event.name} | Book with #{organization.name}"
-    
+
     socket
     |> assign(booking_event: booking_event)
     |> assign(:page_title, title)

@@ -450,7 +450,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     event = current(event_form)
     event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
   end
-  
+
   defp is_checked("" <> id, package) do
     if String.length(id) > 0 do
       id |> to_integer() == package.id
@@ -458,6 +458,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       false
     end
   end
-  
+
   defp is_checked(_, _), do: false
 end

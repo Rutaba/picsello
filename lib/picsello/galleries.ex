@@ -17,7 +17,9 @@ defmodule Picsello.Galleries do
     Galleries,
     Albums,
     Orders,
-    Cart.Digital
+    Cart.Digital,
+    Job,
+    Client
   }
 
   alias Picsello.Workers.CleanStore
@@ -50,6 +52,17 @@ defmodule Picsello.Galleries do
   def list_expired_galleries do
     from(g in active_galleries(), where: g.status == "expired")
     |> Repo.all()
+  end
+
+  def list_all_galleries_by_organization_query(organization_id) do
+    from(g in active_galleries(),
+      join: j in Job,
+      on: j.id == g.job_id,
+      join: c in Client,
+      on: c.id == j.client_id,
+      preload: [:albums, [job: :client]],
+      where: c.organization_id == ^organization_id
+    )
   end
 
   @doc """
@@ -236,13 +249,13 @@ defmodule Picsello.Galleries do
   end
 
   defp move_photos_from_album_transaction(photo_ids) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.update_all(
+    Multi.new()
+    |> Multi.update_all(
       :thumbnail,
       fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
       []
     )
-    |> Ecto.Multi.update_all(
+    |> Multi.update_all(
       :photos,
       fn _ ->
         from(p in Photo,
@@ -271,7 +284,7 @@ defmodule Picsello.Galleries do
     photo_ids = Enum.map(album.photos, & &1.id)
 
     move_photos_from_album_transaction(photo_ids)
-    |> Ecto.Multi.delete(:album, album)
+    |> Multi.delete(:album, album)
     |> Repo.transaction()
     |> then(fn
       {:ok, _} ->
@@ -294,23 +307,23 @@ defmodule Picsello.Galleries do
     photos = get_photos_by_ids(photo_ids)
     [photo | _] = photos
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.update_all(
+    Multi.new()
+    |> Multi.update_all(
       :preview,
       fn _ -> GalleryProducts.remove_photo_preview(photo_ids) end,
       []
     )
-    |> Ecto.Multi.update(
+    |> Multi.update(
       :cover_photo,
       fn _ -> delete_gallery_cover_photo(photo.gallery_id, photos) end,
       []
     )
-    |> Ecto.Multi.update_all(
+    |> Multi.update_all(
       :thumbnail,
       fn _ -> Albums.remove_album_thumbnail(photo_ids) end,
       []
     )
-    |> Ecto.Multi.update_all(
+    |> Multi.update_all(
       :photos,
       fn _ -> from(p in Photo, where: p.id in ^photo_ids, update: [set: [active: false]]) end,
       []
@@ -398,6 +411,17 @@ defmodule Picsello.Galleries do
       {:error, %Ecto.Changeset{}}
   """
   def create_gallery(attrs \\ %{}) do
+    attrs
+    |> create_gallery_multi()
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{gallery: gallery}} -> {:ok, gallery}
+      {:error, :gallery, changeset, _} -> {:error, changeset}
+      other -> other
+    end
+  end
+
+  def create_gallery_multi(attrs) do
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
     |> Ecto.Multi.insert_all(
@@ -418,12 +442,6 @@ defmodule Picsello.Galleries do
         )
       end
     )
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{gallery: gallery}} -> {:ok, gallery}
-      {:error, :gallery, changeset, _} -> {:error, changeset}
-      other -> other
-    end
   end
 
   @doc """
@@ -466,9 +484,9 @@ defmodule Picsello.Galleries do
   def regenerate_gallery_password(%Gallery{} = gallery) do
     changeset = Gallery.update_changeset(gallery, %{password: Gallery.generate_password()})
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:gallery, changeset)
-    |> Ecto.Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
+    Multi.new()
+    |> Multi.update(:gallery, changeset)
+    |> Multi.delete_all(:session_tokens, gallery_session_tokens_query(gallery))
     |> Repo.transaction()
     |> then(fn
       {:ok, %{gallery: gallery}} -> gallery
@@ -495,6 +513,8 @@ defmodule Picsello.Galleries do
   def delete_gallery(%Gallery{} = gallery) do
     update_gallery(gallery, %{active: false})
   end
+
+  def delete_gallery_by_id(id), do: get_gallery!(id) |> delete_gallery()
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking gallery changes.
@@ -958,6 +978,16 @@ defmodule Picsello.Galleries do
     |> Picsello.WHCC.min_price_details()
     |> Picsello.Cart.Product.new()
     |> Picsello.Cart.Product.example_price()
+  end
+
+  def preview_image(gallery) do
+    photo_query = Photos.watermarked_query()
+
+    photo =
+      from(p in photo_query, where: p.gallery_id == ^gallery.id, order_by: p.position, limit: 1)
+      |> Repo.one()
+
+    if photo, do: Photos.preview_url(photo, [])
   end
 
   defp selected_photo_query(query) do

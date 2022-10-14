@@ -20,7 +20,7 @@
       <div class="flex flex-col justify-between md:flex-row">
         <.title_header job={@job} back_path={Routes.job_path(@socket, @live_action)} />
         <%= unless @proposal do %>
-          <.send_proposal_button package={@package} shoots={@shoots} stripe_status={@stripe_status} class="hidden md:flex" />
+          <.send_proposal_button is_schedule_valid={@is_schedule_valid} package={@package} shoots={@shoots} stripe_status={@stripe_status} class="hidden md:flex" />
         <% end %>
       </div>
 
@@ -38,6 +38,9 @@
           </div>
         </div>
       <% end %>
+      
+      <.error message="You changed a shoot date. You need to review or fix your payment schedule date." button={%{title: "Edit payment schedule", action: "edit-package", class: "py-1 md:my-1 my-2"}} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => @is_schedule_valid})}/>
+
     </div>
   </header>
 
@@ -55,9 +58,9 @@
 
     <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} collapsed_sections={@collapsed_sections} />
 
-    <.booking_details_section proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} include_questionnaire={@include_questionnaire} collapsed_sections={@collapsed_sections}>
+    <.booking_details_section disabled_copy_link={@disabled_copy_link} is_schedule_valid={@is_schedule_valid} proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} include_questionnaire={@include_questionnaire} collapsed_sections={@collapsed_sections}>
       <:send_proposal_button>
-        <.send_proposal_button package={@package} shoots={@shoots} stripe_status={@stripe_status} show_message={false} />
+        <.send_proposal_button is_schedule_valid={@is_schedule_valid} package={@package} shoots={@shoots} stripe_status={@stripe_status} show_message={false} />
       </:send_proposal_button>
     </.booking_details_section>
   </div>
