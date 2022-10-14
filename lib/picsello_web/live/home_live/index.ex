@@ -44,15 +44,14 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("create-gallery", %{}, socket)
-    do
-      socket
-      |> open_modal(
-        PicselloWeb.GalleryLive.CreateComponent,
-        Map.take(socket.assigns, [:current_user])
-      )
-      |> noreply()
-    end
+  def handle_event("create-gallery", %{}, socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.GalleryLive.CreateComponent,
+      Map.take(socket.assigns, [:current_user])
+    )
+    |> noreply()
+  end
 
   @impl true
   def handle_event("redirect", %{"to" => path}, socket),

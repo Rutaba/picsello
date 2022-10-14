@@ -293,10 +293,10 @@ defmodule Picsello.Factory do
 
   def package_payment_schedule_factory(attrs) do
     package =
-    case attrs do
-      %{package: package} -> package
-      _ -> build(:package, attrs)
-    end
+      case attrs do
+        %{package: package} -> package
+        _ -> build(:package, attrs)
+      end
 
     price =
       case attrs do

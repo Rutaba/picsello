@@ -213,8 +213,7 @@ defmodule Picsello.Profiles do
   def find_organization_by_slug(slug: slug) do
     from(
       o in Organization,
-      where:
-        (o.slug == ^slug or o.previous_slug == ^slug),
+      where: o.slug == ^slug or o.previous_slug == ^slug,
       order_by:
         fragment(
           """

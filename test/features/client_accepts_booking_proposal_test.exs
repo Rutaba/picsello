@@ -127,6 +127,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
            }
          }}
       end)
+
       insert(:payment_schedule, %{job: lead})
       [deposit_payment, remainder_payment] = Picsello.PaymentSchedules.payment_schedules(lead)
 
@@ -293,7 +294,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
         definition("invoice paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$5.00", count: 2
+          text: "$5.00",
+          count: 2
         )
       )
       |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))

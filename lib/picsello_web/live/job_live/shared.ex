@@ -453,6 +453,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def booking_details_section(assigns) do
     assigns = assigns |> Enum.into(%{disabled_copy_link: false})
+
     ~H"""
     <.section id="booking-details" icon="camera-laptop" title="Booking details" collapsed_sections={@collapsed_sections}>
       <.card title={if @proposal && (@proposal.sent_to_client || @proposal.accepted_at), do: "Here’s what you sent your client", else: "Here’s what you’ll be sending your client"}>
@@ -689,7 +690,9 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign(is_schedule_valid: validity)
   end
 
-  def assign_disabled_copy_link(%{assigns: %{is_schedule_valid: is_schedule_valid} = assigns} = socket) do
+  def assign_disabled_copy_link(
+        %{assigns: %{is_schedule_valid: is_schedule_valid} = assigns} = socket
+      ) do
     socket
     |> assign(disabled_copy_link: !is_schedule_valid || !!proposal_disabled_message(assigns))
   end
@@ -705,7 +708,7 @@ defmodule PicselloWeb.JobLive.Shared do
       package.shoot_count != Enum.count(shoots, &elem(&1, 1)) ->
         "Add all shoots"
 
-        true ->
+      true ->
         nil
     end
   end

@@ -82,7 +82,7 @@ defmodule PicselloWeb.LeadLive.Show do
       |> Repo.transaction()
       |> case do
         {:ok, %{proposal: proposal}} ->
-            job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
+          job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
 
           socket
           |> assign(proposal: proposal)
@@ -238,7 +238,10 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  def handle_info({:proposal_message_composed, message_changeset}, %{assigns: %{job: job}} = socket) do
+  def handle_info(
+        {:proposal_message_composed, message_changeset},
+        %{assigns: %{job: job}} = socket
+      ) do
     result =
       socket
       |> upsert_booking_proposal(true)
@@ -316,25 +319,34 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder
 
-  defp upsert_booking_proposal(%{assigns: %{proposal: proposal, job: job, package: package, include_questionnaire: include_questionnaire}}, sent_to_client \\ false) do
+  defp upsert_booking_proposal(
+         %{
+           assigns: %{
+             proposal: proposal,
+             job: job,
+             package: package,
+             include_questionnaire: include_questionnaire
+           }
+         },
+         sent_to_client \\ false
+       ) do
     questionnaire_id =
-    if include_questionnaire, do: job |> Questionnaire.for_job() |> Repo.one() |> Map.get(:id)
+      if include_questionnaire, do: job |> Questionnaire.for_job() |> Repo.one() |> Map.get(:id)
 
-    changeset = BookingProposal.create_changeset(
-      %{
+    changeset =
+      BookingProposal.create_changeset(%{
         job_id: job.id,
         questionnaire_id: questionnaire_id,
-        sent_to_client: sent_to_client,
-      }
-    )
+        sent_to_client: sent_to_client
+      })
 
     Ecto.Multi.new()
     |> Ecto.Multi.insert(
-          :proposal,
-          (if proposal, do: Ecto.Changeset.put_change(changeset, :id, proposal.id), else: changeset),
-          on_conflict: {:replace, [:questionnaire_id, :sent_to_client]},
-          conflict_target: :id
-        )
+      :proposal,
+      if(proposal, do: Ecto.Changeset.put_change(changeset, :id, proposal.id), else: changeset),
+      on_conflict: {:replace, [:questionnaire_id, :sent_to_client]},
+      conflict_target: :id
+    )
     |> Ecto.Multi.merge(fn _ ->
       Contracts.maybe_add_default_contract_to_package_multi(package)
     end)
