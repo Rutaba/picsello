@@ -72,7 +72,7 @@ defmodule Picsello.Job do
   end
 
   def name(%__MODULE__{type: type} = job) do
-    if (job.job_name == nil) do
+    if job.job_name == nil do
       %{client: %{name: client_name}} = job |> Repo.preload(:client)
       [client_name, Phoenix.Naming.humanize(type)] |> Enum.join(" ")
     else
