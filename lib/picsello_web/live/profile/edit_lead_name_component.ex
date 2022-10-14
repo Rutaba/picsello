@@ -17,7 +17,7 @@ defmodule PicselloWeb.Live.Profile.EditLeadNameComponent do
     changeset = socket |> build_changeset(params)
     case Repo.update(changeset) do
       {:ok, job} ->
-        send(socket.parent_pid, {:update, job})
+        send(socket.parent_pid, {:update, %{job: job}})
         socket
         |> close_modal()
       {:error, changeset} ->

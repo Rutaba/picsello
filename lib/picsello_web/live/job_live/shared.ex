@@ -103,6 +103,8 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+
+
  def handle_info({:action_event, "open_email_compose"}, socket), do: open_email_compose(socket)
 
   def handle_info(
@@ -136,9 +138,15 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_info({:update, %{job: job}}, socket) do
+    socket
+    |> assign(:job, job)
+    |> put_flash(:success, "Name updated successfully")
+    |> noreply()
+  end
+
   def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket) do
     package = package |> Repo.preload(:contract, force: true)
-
     socket
     |> assign(package: package, job: %{job | package: package, package_id: package.id})
     |> assign_shoots()
@@ -150,14 +158,6 @@ defmodule PicselloWeb.JobLive.Shared do
       |> assign(payment_schedules: payment_schedules)
       |> validate_payment_schedule()
     end)
-    |> noreply()
-  end
-
-  def handle_info({:update, data}, %{assigns: %{job: job}} = socket) do
-    IO.inspect("got here")
-    socket
-    |> assign(:job, job)
-    |> put_flash(:success, "Name updated successfully")
     |> noreply()
   end
 
