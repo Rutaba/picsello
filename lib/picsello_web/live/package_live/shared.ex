@@ -96,15 +96,11 @@ defmodule PicselloWeb.PackageLive.Shared do
     ~H"""
     <% d = form_for(@download, "#") %>
     <.download_fields_heading
-      title={if @for, do: "Digital Collection", else: "Digital Downloads"}
+      title="Digital Collection"
       d={d}
       for={@for}
       >
-      <%= if @for == :create_gallery do %>
-        High-Resolution Digital Images available via digital download.
-      <% else %>
-        Digital downloads are valued at <b><%= download_price(@package_form) %></b> / ea
-      <% end %>
+      High-Resolution Digital Images available via download.
     </.download_fields_heading>
 
     <.build_download_fields d={d} {assigns} />
@@ -122,53 +118,29 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  defp build_download_fields(%{for: _, d: d} = assigns) do
+  defp build_download_fields(%{for: key, d: d} = assigns) do
     ~H"""
     <div class="flex flex-col w-full mt-3">
       <label class="flex items-center">
         <%= radio_button(d, :is_enabled, true, class: "w-5 h-5 mr-2 radio") %>
-        Charge for downloads
+        <%= package_or_gallery_content(@for) %> includes a specified number of Digital Images
       </label>
 
       <%= if check?(d, :is_enabled) do %>
         <div class="flex flex-col ml-7">
-          <.inner_fields {assigns} />
-          <.is_buy_all d={d} />
+          <.set_download_price d={d} for={key} />
         </div>
       <% end %>
 
       <label class="flex items-center mt-3">
         <%= radio_button(d, :is_enabled, false, class: "w-5 h-5 mr-2 radio") %>
-        <%= if @for == :create_gallery do %>
-          Gallery includes unlimited digital downloads
-        <% else %>
-          Do not charge for downloads
-        <% end %>
+        <%= package_or_gallery_content(@for) %> includes unlimited digital downloads
       </label>
 
       <%= if @for == :create_gallery do %>
-        <span class="italic ml-7">(Do not charge for downloads)</span>
+        <span class="italic ml-7">(Do not charge for any Digital Image)</span>
       <% end %>
     </div>
-    """
-  end
-
-  defp inner_fields(%{d: d, for: :create_gallery} = assigns) do
-    ~H"""
-    <.include_download_credits d={d} />
-    <h3 class="mt-2 text-sm leading-6 font-normal justify-self-start whitespace-nowrap">
-      <%= if check?(d, :is_enabled) do %>
-        Digital downloads are set at <b><%= download_price(@package_form) %></b> / ea
-      <% end %>
-    </h3>
-    <.set_download_price d={d} />
-    """
-  end
-
-  defp inner_fields(%{d: d} = assigns) do
-    ~H"""
-    <.set_download_price d={d} />
-    <.include_download_credits d={d} />
     """
   end
 
@@ -176,16 +148,15 @@ defmodule PicselloWeb.PackageLive.Shared do
     ~H"""
     <label class="flex items-center mt-3">
       <%= checkbox(d, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
-      Set a "buy them all" price
+      <span>Set a <em>Buy Them All</em> price</span>
     </label>
 
     <%= if check?(d, :is_buy_all) do %>
-      <div class="flex items-center mt-3">
+      <div class="flex items-center mt-3 md:ml-7">
         <%= input(d, :buy_all, placeholder: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
         <%= error_tag d, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
       </div>
     <% end %>
-
     """
   end
 
@@ -195,12 +166,12 @@ defmodule PicselloWeb.PackageLive.Shared do
       <div class="w-full sm:w-auto">
         <label class="flex items-center">
           <%= checkbox(d, :includes_credits, class: "w-5 h-5 mr-2.5 checkbox") %>
-          Include download credits
+          <span>Set my own <em>per Digital Image</em> price</span>
         </label>
         <%= if check?(d, :includes_credits) do %>
           <%= input(
             d, :count, type: :number_input, phx_debounce: 200, step: 1,
-            min: 1, placeholder: 1, class: "mt-3 w-full sm:w-28 text-lg text-center"
+            min: 1, placeholder: 1, class: "mt-3 w-full sm:w-32 text-lg text-center md:ml-7"
           ) %>
         <% end %>
       </div>
@@ -208,16 +179,23 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  defp set_download_price(%{d: d} = assigns) do
+  defp set_download_price(%{for: key, d: d} = assigns) do
     ~H"""
     <label class="flex items-center mt-3">
       <%= checkbox(d, :is_custom_price, class: "w-5 h-5 mr-2.5 checkbox") %>
-      Set my own download price
+      Digital Images are included in the <%= package_or_gallery_content(key) |> String.downcase() %>
     </label>
     <%= if check?(d, :is_custom_price) do %>
-      <div class="flex items-center mt-3">
+      <div class="flex items-center mt-3 ml-7 mt-3">
         <%= input(d, :each_price, class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
         <%= error_tag d, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
+      </div>
+      <div class="ml-7 mt-3">
+        <h3 class="font-bold">Upsell options</h3>
+        <p class="mb-3">For additional Digital Images beyond what’s included in the <%= package_or_gallery_content(key) |> String.downcase() %></p>
+        <p class="mb-3">Digital Images are automatically set at $50/each</p>
+        <.include_download_credits d={d} />
+        <.is_buy_all d={d} />
       </div>
     <% end %>
     """
@@ -249,4 +227,12 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   defp download_price(form),
     do: form |> current() |> Map.get(:download_each_price, Money.new(5000))
+
+  defp package_or_gallery_content(key) do
+    if key == :create_gallery do
+      "Gallery"
+    else
+      "Package"
+    end
+  end
 end
