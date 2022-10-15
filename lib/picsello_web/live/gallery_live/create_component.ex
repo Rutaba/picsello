@@ -19,7 +19,10 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   alias Ecto.Changeset
 
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
-  import PicselloWeb.PackageLive.Shared, only: [digital_download_fields: 1, current: 1]
+
+  import PicselloWeb.PackageLive.Shared,
+    only: [digital_download_fields: 1, print_credit_fields: 1, current: 1]
+
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @steps [:details, :pricing]
@@ -167,33 +170,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         <%= hidden_input package, :shoot_count, value: 1 %>
         <%= hidden_input package, :turnaround_weeks, value: 1 %>
 
-        <div class="mt-6 sm:mt-9">
-          <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
-          <p>Print Credits allow your clients to order professional prints and products from your gallery.</p>
-        </div>
-        <div class="mt-4 font-normal text-base leading-6">
-          <% p = form_for(@package_pricing, "#") %>
-
-          <div class="mt-2">
-            <label class="flex items-center">
-              <%= radio_button(p, :is_enabled, true, class: "w-5 h-5 mr-2.5 radio") %>
-              Gallery includes Print Credits
-            </label>
-            <div class="flex items-center gap-4 ml-7">
-              <%= if p |> current() |> Map.get(:is_enabled) do %>
-                <%= input(package, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-                <div class="flex items-center">
-                  <%= label_for package, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
-                </div>
-              <% end %>
-            </div>
-          </div>
-
-          <label class="flex items-center mt-3">
-            <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio") %>
-            Gallery does not include Print Credits
-          </label>
-        </div>
+        <.print_credit_fields f={package} package_pricing={@package_pricing} />
 
         <.digital_download_fields for={:create_gallery} package_form={package} download={@download} package_pricing={@package_pricing} />
         <%= if @job_id do %>

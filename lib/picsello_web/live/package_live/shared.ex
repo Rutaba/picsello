@@ -89,6 +89,35 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
+  def print_credit_fields(assigns) do
+    ~H"""
+    <% p = form_for(@package_pricing, "#") %>
+    <.print_fields_heading />
+
+    <div class="mt-4 font-normal text-base leading-6">
+      <div class="mt-2">
+        <label class="flex items-center">
+          <%= radio_button(p, :is_enabled, true, class: "w-5 h-5 mr-2.5 radio") %>
+          Gallery includes Print Credits
+        </label>
+        <div class="flex items-center gap-4 ml-7">
+          <%= if p |> current() |> Map.get(:is_enabled) do %>
+            <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+            <div class="flex items-center">
+              <%= label_for @f, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <label class="flex items-center mt-3">
+        <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio") %>
+        Gallery does not include Print Credits
+      </label>
+    </div>
+    """
+  end
+
   # digital download fields for package & pricing
   def digital_download_fields(assigns) do
     assigns = Map.put_new(assigns, :for, nil)
@@ -99,8 +128,8 @@ defmodule PicselloWeb.PackageLive.Shared do
       title="Digital Collection"
       d={d}
       for={@for}
-      >
-      High-Resolution Digital Images available via download.
+    >
+      <p>High-Resolution Digital Images available via download.</p>
     </.download_fields_heading>
 
     <.build_download_fields d={d} {assigns} />
@@ -201,6 +230,15 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
+  defp print_fields_heading(assigns) do
+    ~H"""
+    <div class="mt-6 sm:mt-9" {testid("print")}>
+      <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
+      <p>Print Credits allow your clients to order professional prints and products from your gallery.</p>
+    </div>
+    """
+  end
+
   defp check?(d, field), do: d |> current() |> Map.get(field)
 
   def current(%{source: changeset}), do: current(changeset)
@@ -224,9 +262,6 @@ defmodule PicselloWeb.PackageLive.Shared do
       <% end %>
     """
   end
-
-  defp download_price(form),
-    do: form |> current() |> Map.get(:download_each_price, Money.new(5000))
 
   defp package_or_gallery_content(key) do
     if key == :create_gallery do

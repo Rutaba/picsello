@@ -27,6 +27,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       package_card: 1,
       package_basic_fields: 1,
       digital_download_fields: 1,
+      print_credit_fields: 1,
       current: 1
     ]
 
@@ -517,34 +518,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           <% end %>
         </div>
 
-        <div class="mt-6 sm:mt-9">
-          <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
-          <p>Print Credits allow your clients to order professional prints and products from your gallery.</p>
-        </div>
-
-        <div class="mt-4 font-normal text-base leading-6">
-          <% p = form_for(@package_pricing, "#") %>
-
-          <div class="mt-2">
-            <label class="flex items-center">
-              <%= radio_button(p, :is_enabled, true, class: "w-5 h-5 mr-2.5 radio") %>
-              Gallery includes Print Credits
-            </label>
-            <div class="flex items-center gap-4 ml-7">
-              <%= if p |> current() |> Map.get(:is_enabled) do %>
-                <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-                <div class="flex items-center">
-                  <%= label_for @f, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
-                </div>
-              <% end %>
-            </div>
-          </div>
-
-          <label class="flex items-center mt-3">
-            <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio") %>
-            Gallery does not include Print Credits
-          </label>
-        </div>
+        <.print_credit_fields f={@f} package_pricing={@package_pricing} />
 
         <hr class="block w-full mt-6 sm:hidden"/>
 
