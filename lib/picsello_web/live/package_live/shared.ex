@@ -189,19 +189,19 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  defp include_download_credits(%{d: d} = assigns) do
+  defp include_download_price(%{d: d} = assigns) do
     ~H"""
     <div class="flex flex-col justify-between mt-3 sm:flex-row ">
       <div class="w-full sm:w-auto">
         <label class="flex items-center">
-          <%= checkbox(d, :includes_credits, class: "w-5 h-5 mr-2.5 checkbox") %>
+          <%= checkbox(d, :is_custom_price, class: "w-5 h-5 mr-2.5 checkbox") %>
           <span>Set my own <em>per Digital Image</em> price</span>
         </label>
-        <%= if check?(d, :includes_credits) do %>
-          <%= input(
-            d, :count, type: :number_input, phx_debounce: 200, step: 1,
-            min: 1, placeholder: 1, class: "mt-3 w-full sm:w-32 text-lg text-center md:ml-7"
-          ) %>
+        <%= if check?(d, :is_custom_price) do %>
+          <div class="flex items-center mt-3 ml-7 mt-3">
+            <%= input(d, :each_price, class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+            <%= error_tag d, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
+          </div>
         <% end %>
       </div>
     </div>
@@ -211,19 +211,19 @@ defmodule PicselloWeb.PackageLive.Shared do
   defp set_download_price(%{for: key, d: d} = assigns) do
     ~H"""
     <label class="flex items-center mt-3">
-      <%= checkbox(d, :is_custom_price, class: "w-5 h-5 mr-2.5 checkbox") %>
+      <%= checkbox(d, :includes_credits, class: "w-5 h-5 mr-2.5 checkbox") %>
       Digital Images are included in the <%= package_or_gallery_content(key) |> String.downcase() %>
     </label>
-    <%= if check?(d, :is_custom_price) do %>
-      <div class="flex items-center mt-3 ml-7 mt-3">
-        <%= input(d, :each_price, class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-        <%= error_tag d, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
-      </div>
+    <%= if check?(d, :includes_credits) do %>
+      <%= input(
+        d, :count, type: :number_input, phx_debounce: 200, step: 1,
+        min: 1, placeholder: 1, class: "mt-3 w-full sm:w-32 text-lg text-center md:ml-7"
+      ) %>
       <div class="ml-7 mt-3">
         <h3 class="font-bold">Upsell options</h3>
         <p class="mb-3">For additional Digital Images beyond what’s included in the <%= package_or_gallery_content(key) |> String.downcase() %></p>
         <p class="mb-3">Digital Images are automatically set at $50/each</p>
-        <.include_download_credits d={d} />
+        <.include_download_price d={d} />
         <.is_buy_all d={d} />
       </div>
     <% end %>

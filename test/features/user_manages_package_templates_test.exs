@@ -125,14 +125,19 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(option("Surcharge"))
     |> assert_text("+$30.00")
     |> scroll_into_view(testid("download"))
-    |> click(checkbox("Set my own download price"))
+    |> click(css("#download_is_enabled_true"))
+    |> click(checkbox("download[includes_credits]"))
     |> find(
-      text_field("download_each_price"),
+      text_field("download_count"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
+    )
+    |> scroll_into_view(css("#download_is_custom_price"))
+    |> click(checkbox("download[is_custom_price]"))
+    |> find(
+      text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
     )
-    |> click(checkbox("Include download credits"))
-    |> fill_in(text_field("download_count"), with: "2")
-    |> assert_has(definition("Total Price", text: "$130.00"))
+    |> assert_has(definition("Total", text: "$130.00"))
     |> wait_for_enabled_submit_button()
     |> payment_screen()
     |> wait_for_enabled_submit_button(text: "Save")
@@ -221,10 +226,10 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
         |> scroll_into_view(testid("download"))
-        |> assert_has(radio_button("Do not charge for downloads", checked: true))
-        |> click(radio_button("Charge for downloads", checked: false))
-        |> assert_text("downloads are valued at #{Download.default_each_price()}")
-        |> click(radio_button("Do not charge for downloads"))
+        |> assert_has(css("#download_is_enabled_false", checked: true))
+        |> click(css("#download_is_enabled_true"))
+        |> assert_text("Digital Images are included in the package")
+        |> click(css("#download_is_enabled_false"))
         |> Kernel.tap(fn modal ->
           refute Regex.match?(~r/downloads are valued/, Element.text(modal))
         end)
