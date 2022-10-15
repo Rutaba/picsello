@@ -1,6 +1,6 @@
 defmodule Picsello.UserManagesPackageTemplatesTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Repo, Package, Packages.Download, JobType}
+  alias Picsello.{Repo, Package, JobType}
 
   setup :onboarded
   setup :authenticated
