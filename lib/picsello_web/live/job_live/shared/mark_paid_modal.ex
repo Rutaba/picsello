@@ -20,10 +20,10 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   def render(assigns) do
     ~H"""
     <div class="modal">
-      <h1 class="flex justify-between mb-4 text-3xl font-bold">
+      <h1 id="payment-modal" class="flex justify-between mb-4 text-3xl font-bold">
         Mark <%= action_name(@live_action, :plural) %> as paid
 
-        <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
+        <button id="close" phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
           <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
 
@@ -34,16 +34,16 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
               <dl class="flex flex-col">
                 <dd class="pr-32 font-bold">
                   Balance to collect
-                  <button class="link block mt-2 text-xs" phx-click="open-compose" phx-target={@myself}>Send reminder email</button>
+                  <button id="send-email-link" class="link block mt-2 text-xs" phx-click="open-compose" phx-target={@myself}>Send reminder email</button>
                 </dd>
               </dl>
-              <h1 class="rounded-lg bg-gray-300 px-5 py-2"><%= PaymentSchedules.owed_offline_price(assigns.job) %></h1>
+              <h1 id="amount" class="rounded-lg bg-gray-300 px-5 py-2"><%= PaymentSchedules.owed_offline_price(assigns.job) %></h1>
             </div>
 
         <table class="table-auto text-left w-full mt-8">
            <thead class="bg-gray-300 h-11">
              <tr>
-               <th>Elizabeth Tylor Wedding Shoot</th>
+               <th id="job-name"><%= Job.name(@job) %></th>
                <th>Ammount</th>
                <th>Type</th>
                <th>Status</th>
@@ -52,8 +52,8 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
            <tbody>
            <%= @payment_schedules |> Enum.with_index |> Enum.map(fn({payment_schedules, index}) -> %>
              <tr>
-               <td class="font-bold font-sans">Payment <%= index + 1 %></td>
-               <td><%= payment_schedules.price || "-" %></td>
+               <td id="payments" class="font-bold font-sans">Payment <%= index + 1 %></td>
+               <td id="offline-amount"><%= payment_schedules.price || "-" %></td>
                <td><%= payment_schedules.type || "-" %></td>
                <td class="text-green-finances-300">Paid <%= strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y") || "-" %></td>
              </tr>
@@ -62,7 +62,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         </table>
 
         <%= if !@add_payment_show do %>
-      <button class="border-solid border-2 border-blue-planning-300 rounded-md my-8 px-10 pb-1.5 flex items-center" phx-click="select_add_payment" phx-target={@myself}>
+      <button id="add-payment" class="border-solid border-2 border-blue-planning-300 rounded-md my-8 px-10 pb-1.5 flex items-center" phx-click="select_add_payment" phx-target={@myself}>
         <span class="text-blue-planning-300 font-bold text-3xl">+</span>
         <p class="mt-1.5 ml-2">Add a payment</p>
       </button>
@@ -72,7 +72,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       <%= if @add_payment_show do %>
       <div class="rounded-lg border border-gray-300 mt-2">
       <h1 class="mb-4 rounded-t-lg bg-gray-300 px-5 text-2xl font-bold">Add a payment</h1>
-      <.form let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
+      <.form id={"add-payment-form"} let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
         <div class="mx-5 grid grid-cols-3 gap-12">
           <dl>
             <dt class="text-red-sales-300 mb-2 font-sans font-bold">Amount must be within what remains</dt>
@@ -103,7 +103,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
           </div>
           <div class="flex justify-end items-center my-4 mr-5 gap-2">
-            <button class="button rounded-lg border border-blue-300 py-1 px-9" type="submit" phx-submit="save">Save</button>
+            <button id="save-payment" class="button rounded-lg border border-blue-300 py-1 px-9" type="submit" phx-submit="save">Save</button>
 
             <button class="button rounded-lg border border-blue-300 py-1 px-7" type="button" title="cancel" phx-click="select_add_payment" phx-target={@myself} phx-value-action="close">Cancel</button>
           </div>
@@ -119,7 +119,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
 
         <div class="flex justify-end mt-4">
-          <button class="rounded-md bg-black px-8 py-3 text-white" phx-click="modal" phx-value-action="close">Done</button>
+          <button id="done" class="rounded-md bg-black px-8 py-3 text-white" phx-click="modal" phx-value-action="close">Done</button>
         </div>
 
       </div>
@@ -171,9 +171,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     |> noreply()
   end
 
-  def handle_event("open-compose", %{}, socket) do
-    open_email_compose(socket)
-  end
+  def handle_event("open-compose", %{}, socket), do: open_email_compose(socket)
 
   def build_changeset(%{}, params \\ %{}) do
     PaymentSchedule.add_payment_changeset(params)
@@ -184,9 +182,9 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     job =
       current_user
       |> Job.for_user()
-      |> Ecto.Query.preload([:package, :payment_schedules])
+      |> Job.not_leads()
+      |> Ecto.Query.preload([:client, :package, :payment_schedules])
       |> Repo.get!(job.id)
-
 
     socket
     |> assign(:job, job)
