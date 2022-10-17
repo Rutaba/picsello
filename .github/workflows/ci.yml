@@ -29,6 +29,7 @@ jobs:
 
     name: Build and test
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     services:
       db:
@@ -79,6 +80,7 @@ jobs:
       run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
     - name: Run tests
       run: mix test --trace --cover --warnings-as-errors
+      timeout-minutes: 45
     - name: Archive screenshots
       if: ${{failure()}}
       uses: actions/upload-artifact@v2
