@@ -27,6 +27,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       package_card: 1,
       package_basic_fields: 1,
       digital_download_fields: 1,
+      print_credit_fields: 1,
       current: 1
     ]
 
@@ -292,15 +293,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <.steps step={@step} steps={@steps} target={@myself} />
       <.step_heading name={@step} is_edit={@package.id} />
 
-      <%= unless @is_template do %>
-        <div class="py-4 mb-4 bg-gray-100 modal-banner">
-          <h2 class="text-2xl font-bold"><%= Packages.job_name @job %></h2>
-          <%= unless @package.id do %>
-            <.step_subheading name={@step} />
-          <% end %>
-        </div>
-      <% end %>
-
       <.form for={@changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
         <input type="hidden" name="step" value={@step} />
 
@@ -491,71 +483,49 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def step(%{name: :pricing} = assigns) do
     ~H"""
       <div>
+        <div class="bg-gray-100 mt-6 p-6 rounded-lg">
           <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
             <label for={input_id(@f, :base_price)}>
               <h2 class="mb-1 text-xl font-bold">Package Price</h2>
-              Includes creative session fee, professional print credits, and any digital downloads you decide to include.
+              Includes your Creative Session Fee, any Professional Print Credits, and/or High-Resolution Digital Images you decide to include.
             </label>
 
             <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center", phx_hook: "PriceMask" %>
           </div>
 
+          <% m = form_for(@multiplier, "#") %>
 
-        <% m = form_for(@multiplier, "#") %>
+          <label class="flex items-center mt-6 sm:mt-8 justify-self-start">
+            <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
 
-        <label class="flex items-center mt-6 sm:mt-8 justify-self-start">
-          <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
+            Apply a discount or surcharge
+          </label>
 
-          Apply a discount or surcharge
-        </label>
+          <%= if m |> current() |> Map.get(:is_enabled) do %>
+            <div class="flex flex-col items-center pl-0 my-6 sm:flex-row sm:pl-16">
+              <h2 class="self-start mt-3 text-xl font-bold sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
 
-        <%= if m |> current() |> Map.get(:is_enabled) do %>
-          <div class="flex flex-col items-center pl-0 my-6 sm:flex-row sm:pl-16">
-            <h2 class="self-start mt-3 text-xl font-bold sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
+              <div class="flex w-full mt-3 sm:mt-0">
+                <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
 
-            <div class="flex w-full mt-3 sm:mt-0">
-              <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
+                <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-14 py-4") %>
+              </div>
 
-              <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-14 py-4") %>
+              <div class="self-end mt-3 sm:self-auto justify-self-end sm:mt-0">
+                <%= base_adjustment(@f) %>
+              </div>
             </div>
+          <% end %>
+        </div>
 
-            <div class="self-end mt-3 sm:self-auto justify-self-end sm:mt-0">
-              <%= base_adjustment(@f) %>
-            </div>
-          </div>
-        <% end %>
+        <.print_credit_fields f={@f} package_pricing={@package_pricing} />
 
         <hr class="block w-full mt-6 sm:hidden"/>
 
         <.digital_download_fields package_form={@f} download={@download} package_pricing={@package_pricing} />
-
-        <div class="mt-6 sm:mt-9">
-          <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Print Credits</h2>
-        </div>
-
-        <div class="flex flex-col justify-between mt-6 sm:flex-row ">
-          <% p = form_for(@package_pricing, "#") %>
-
-          <div class="flex flex-row space-x-8">
-            <label class="flex items-center">
-              <%= checkbox(p, :is_enabled, class: "w-5 h-5 mr-2.5 checkbox") %>
-
-              Include
-            </label>
-
-            <%= if p |> current() |> Map.get(:is_enabled) do %>
-              <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-
-              <div class="flex items-center">
-                <%= label_for @f, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
-              </div>
-            <% end %>
-          </div>
-        </div>
       </div>
-      <hr class="w-full mt-8"/>
-      <dl class="flex justify-between mt-4">
-        <dt class="font-bold">Total Price</dt>
+      <dl class="flex justify-between gap-8 mt-8 bg-gray-100 p-6 rounded-lg">
+        <dt class="text-xl font-bold md:ml-auto uppercase">Total</dt>
         <dd class="text-xl font-bold"><%= total_price(@f) %></dd>
       </dl>
     """
