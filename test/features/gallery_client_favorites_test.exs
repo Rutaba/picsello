@@ -91,7 +91,10 @@ defmodule Picsello.GalleryClientFavoritesTest do
     |> fill_in(text_field("Album Name"), with: "New Test Album")
     |> wait_for_enabled_submit_button()
     |> click(button("Create new album"))
-    |> find(css("#album_name"), &click(&1, css("span", text: "New Test Album")))
+    |> assert_flash(:success, text: "Album successfully created")
+    |> visit("/galleries/#{gallery_id}/albums/client_liked")
+    |> assert_has(css("#album_name", text: "New Test Album"))
+    |> click(css("#album_name", text: "New Test Album"))
     |> find(css("#page-scroll span span", text: "New Test Album"))
   end
 
