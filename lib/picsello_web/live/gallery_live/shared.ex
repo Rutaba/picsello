@@ -634,14 +634,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
           is_proofing: false,
           cart_count: 0,
           total_count: 0,
-          for: nil
+          for: nil,
+          is_fixed: false
         }
       )
 
     ~H"""
-      <div class={"relative #{@for == :proofing_album_order && 'hidden'}"}>
-          <div class="absolute bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 shadow-top">
-            <div class="container flex items-center justify-between h-full mx-auto px-7">
+      <div class={classes("relative", %{"hidden" => @for == :proofing_album_order})}>
+          <div class={classes("bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 pointer-events-none", %{"fixed shadow-top" => @is_fixed and @for != :proofing_album, "absolute border-t border-base-225" => !@is_fixed or @for == :proofing_album })}>
+            <div class="container flex items-center justify-between h-full mx-auto px-7 sm:px-16">
               <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
                 <%= for {label, value} <- build_credits(@for, @credits, @total_count) do %>
                   <div>

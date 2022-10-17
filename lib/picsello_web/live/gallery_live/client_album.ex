@@ -228,9 +228,9 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     ~H"""
       <div class="relative justify-between mb-12 text-2xl font-bold text-center text-base-250">
         <%= if !@is_proofing do %>
-          Oops, there's no liked photo!
+          Oops, you have no liked photos!
         <% else %>
-          Oops, there's no selected photo!
+          Oops, you have no selected photos!
         <% end %>
       </div>
     """
