@@ -110,6 +110,16 @@ defmodule Picsello.GalleryClientFavoritesTest do
       |> visit("/galleries/#{gallery.id}/albums/client_liked")
       |> find(css("#album_name", text: "Test album"))
     end
+  end
+
+  describe "Client creates favorites" do
+    setup %{gallery: gallery} do
+      Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+
+      photo_ids = insert_photo(%{gallery: gallery, total_photos: 5})
+
+      [gallery: gallery, photo_ids: photo_ids, photos_count: length(photo_ids)]
+    end
 
     feature "Show Unsorted photos if photo doesn't belongs to album", %{
       session: session,
@@ -121,16 +131,6 @@ defmodule Picsello.GalleryClientFavoritesTest do
       session
       |> visit("/galleries/#{gallery.id}/albums/client_liked")
       |> find(css("#album_name", text: "Unsorted photos"))
-    end
-  end
-
-  describe "Client creates favorites" do
-    setup %{gallery: gallery} do
-      Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-
-      photo_ids = insert_photo(%{gallery: gallery, total_photos: 5})
-
-      [gallery: gallery, photo_ids: photo_ids, photos_count: length(photo_ids)]
     end
 
     feature "Create Client Favourite Album", %{
