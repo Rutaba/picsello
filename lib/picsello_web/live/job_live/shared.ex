@@ -95,6 +95,16 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_event("open_email_compose", %{}, %{assigns: %{current_user: current_user}} = socket) do
+    socket
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true
+    })
+    |> noreply()
+  end
+
   def handle_event("open-compose", %{}, socket), do: open_email_compose(socket)
 
   def handle_event("open-inbox", _, %{assigns: %{job: job}} = socket) do
@@ -797,13 +807,5 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_event("open_email_compose", %{}, %{assigns: %{current_user: current_user}} = socket) do
-    socket
-    |> PicselloWeb.ClientMessageComponent.open(%{
-      current_user: current_user,
-      enable_size: true,
-      enable_image: true
-    })
-    |> noreply()
-  end
+
 end
