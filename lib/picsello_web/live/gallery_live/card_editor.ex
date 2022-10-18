@@ -205,7 +205,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
           <%= for design <- @designs do %>
             <li id={"design-#{design.id}"}>
               <button class="w-full h-full" phx-click="open-editor" value={design.id}>
-                <.img_box src={design.preview_url} />
+                <.img_box src={design.preview_url} card_design={true}/>
 
                 <h3 class="pt-2 text-lg"><%= design.name %></h3>
                 <p class="mt-1 text-sm text-base-250"><%= photo_range_summary(design) %></p>
@@ -428,6 +428,25 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   end
 
   def ranges([]), do: []
+
+  defp img_box(%{card_design: true} = assigns) do
+    ~H"""
+      <div class="aspect-h-1 aspect-w-1">
+        <div class="relative bg-gradient-to-bl from-[#f5f6f7] to-[#ededed] flex flex-col justify-center group">
+          <div phx-click="prev" phx-window-keyup="keydown" class="left-0 absolute top-1/2 -translate-y-1/2 swiper-button-prev hidden group-hover:block">
+            <.icon name="back" class="w-8 h-8 cursor-pointer text-base-250" />
+          </div>
+          <div phx-click="next" class="right-0 absolute top-1/2 -translate-y-1/2 swiper-button-next hidden group-hover:block">
+            <.icon name="forth" class="w-8 h-8 cursor-pointer text-base-250" />
+          </div>
+          <img class="object-scale-down min-h-0 p-12 drop-shadow-md" src={@src}/>
+          <div class="absolute right-0 left-0 mx-auto bottom-2 w-[90%] btn-primary hidden group-hover:block" phx-click="select_card">
+            Continue with this design
+          </div>
+        </div>
+      </div>
+    """
+  end
 
   defp img_box(assigns) do
     ~H"""
