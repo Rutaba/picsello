@@ -58,6 +58,20 @@ defmodule Picsello.GalleryProofingAlbumTest do
     |> refute_has(button("Delete"))
   end
 
+  feature "Delete opt disappears from edit-album as well as from actions in gallery-albums if there is any order",
+          %{
+            session: session,
+            proofing_album: album,
+            gallery: gallery
+          } do
+    session
+    |> visit("/galleries/#{gallery.id}/albums")
+    |> click(testid("dropdown-actions-#{album.id}"))
+    |> refute_has(button("Delete"))
+    |> click(button("Go to album settings"))
+    |> refute_has(button("Delete"))
+  end
+
   feature "Delete opts appears in edit-popup if there's no order in proofing-album", %{
     session: session,
     proofing_album: album,
