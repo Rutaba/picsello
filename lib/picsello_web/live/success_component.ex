@@ -90,7 +90,7 @@ defmodule PicselloWeb.SuccessComponent do
     ~H"""
       <span class="font-bold">We have created a client and a job under the hood for you.</span> A job is the hub for your gallery,
       transaction history, and communication with your client for this shoot. Don't forget you can
-      use Picselo to handle every thing!
+      use Picsello to handle every thing!
     """
   end
 
