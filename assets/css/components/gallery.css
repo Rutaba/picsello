@@ -43,6 +43,10 @@
     @apply h-full px-16 py-0 mx-auto my-0;
   }
 
+  .center-container.gallery__container {
+    @apply max-w-[1376px];
+  }
+
   .gallery__coverImg .gallery__container h1,
   .gallery__coverImg .gallery__container h3,
   .gallery__coverImg .gallery__container .gallery__button {

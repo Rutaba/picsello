@@ -5,9 +5,9 @@
 
   <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
 
-  <footer class="mt-auto text-white footer-cookie">
-    <hr class="border-base-300" />
-    <div class="center-container p-6">
+  <footer class="mt-auto text-white footer-cookie mb-24">
+    <div class="center-container gallery__container px-7 sm:px-16">
+      <hr class="mb-6 opacity-30 border-base-300" />
       <.footer_nav gallery={@gallery} />
     </div>
   </footer>

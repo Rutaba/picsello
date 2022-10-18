@@ -63,8 +63,10 @@
       </div>
     </div>
   </div>
-  <%= unless @album && @album.is_finals do %>
+  <%= if @album && Map.get(@album, :is_proofing) do %>
     <.credits_footer total_count={@gallery.package.download_count} for={:proofing_album_product_modal} cart_count={@cart_count} credits={@credits}/>
+  <% else %>
+    <.credits_footer total_count={@gallery.package.download_count} cart_count={@cart_count} credits={@credits}/>
   <% end %>
 </div>
 

@@ -1,11 +1,11 @@
 <div>
-  <div class="gallery__container">
+  <div class="gallery__container center-container">
     <%= live_component ClientMenuComponent, id: @client_menu_id, live_action: @live_action, gallery: @gallery, cart_count: @cart_count, cart: show_cart?(@live_action), album: assigns[:album], is_proofing: @is_proofing %>
   </div>
 
   <hr>
 
-  <div class="gallery__container mb-24">
+  <div class="gallery__container center-container mb-24">
     <%= case @live_action do %>
       <% live_action when live_action in [:cart, :proofing_album] -> %>
         <.top_section {assigns} />
@@ -65,7 +65,7 @@
               <% end %>
 
               <%= if digitals?(@order) do %>
-                <div class="border border-base-200">
+                <div class="border border-base-225">
                   <div class="divide-y divide-base-200">
                     <%= unless @is_proofing do %>
                       <div class="mx-8 mb-5 mt-7">
@@ -137,7 +137,7 @@
           </div>
         </div>
 
-        <div class="w-full m-auto max-w-screen-xl">
+        <div class="w-full m-auto">
           <%= live_patch to: @checkout_routes.cart, class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>
             <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
 
@@ -221,6 +221,6 @@
     <% end %>
   </div>
   <%= if @is_proofing do %>
-    <.credits_footer for={:proofing_album} total_count={@gallery.package.download_count} cart_count={@cart_count} credits={@credits}/>
+    <.credits_footer for={:proofing_album} total_count={@gallery.package.download_count} cart_count={@cart_count} credits={@credits} is_fixed={true} />
   <% end %>
 </div>

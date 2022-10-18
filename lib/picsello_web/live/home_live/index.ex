@@ -17,7 +17,7 @@ defmodule PicselloWeb.HomeLive.Index do
   }
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
-  import PicselloWeb.GalleryLive.Index, only: [put_assigns: 1]
+  import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
   import Ecto.Query
 
   @impl true
@@ -44,15 +44,14 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("create-gallery", %{}, socket)
-    do
-      socket
-      |> open_modal(
-        PicselloWeb.GalleryLive.CreateComponent,
-        Map.take(socket.assigns, [:current_user])
-      )
-      |> noreply()
-    end
+  def handle_event("create-gallery", %{}, socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.GalleryLive.CreateComponent,
+      Map.take(socket.assigns, [:current_user])
+    )
+    |> noreply()
+  end
 
   @impl true
   def handle_event("redirect", %{"to" => path}, socket),
@@ -484,7 +483,7 @@ defmodule PicselloWeb.HomeLive.Index do
       close_label: "Great! Close window.",
       payload: %{job_id: job_id}
     })
-    |> put_assigns()
+    |> update_gallery_listing()
     |> noreply()
   end
 

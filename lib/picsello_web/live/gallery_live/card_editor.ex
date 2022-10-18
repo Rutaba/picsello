@@ -232,7 +232,6 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     __MODULE__.handle_event("apply-filters", %{}, socket)
   end
 
-
   def handle_event(
         "apply-filters",
         data,
@@ -451,7 +450,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         </label>
       </li>
     """
-    end
+  end
 
   defp self_path(socket, gallery, params \\ %{}),
     do:
@@ -464,14 +463,19 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
   def fetch(%{assigns: %{page: page, occasion: occasion, filter: filter}} = socket) do
     occasion_designs = occasion_designs_query(occasion)
-    total_count = Repo.aggregate(occasion_designs, :count, :id)
+    total_count_task = Task.async(fn -> Repo.aggregate(occasion_designs, :count, :id) end)
 
     filtered_designs = Filter.query(occasion_designs, filter)
 
-    filtered_count = Repo.aggregate(filtered_designs, :count, :id)
+    designs_task = Task.async(fn -> load_designs(filtered_designs, page) end)
+    filtered_count_task = Task.async(fn -> Repo.aggregate(filtered_designs, :count, :id) end)
+
+    total_count = Task.await(total_count_task)
+    filtered_count = Task.await(filtered_count_task, 10_000)
+    designs = Task.await(designs_task, 10_000)
 
     assign(socket,
-      designs: load_designs(filtered_designs, page),
+      designs: designs,
       total_count: total_count,
       filtered_count: filtered_count
     )

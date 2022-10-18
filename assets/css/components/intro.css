@@ -41,10 +41,10 @@
 }
 
 .introjs-skipbutton {
-    @apply font-thin text-5xl pr-0;
-    line-height: 0px;
+    @apply font-thin text-5xl pr-0 p-[15px] leading-[0px];
 }
 
+.introjs-tooltiptext,
 .introjs-tooltiptext p {
     @apply text-sm;
 }

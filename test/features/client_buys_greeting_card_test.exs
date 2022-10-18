@@ -6,6 +6,7 @@ defmodule Picsello.ClientBuysGreetingCardTest do
   setup :onboarded
   setup :authenticated
   setup :authenticated_gallery
+
   setup %{user: user} do
     user = user |> User.assign_stripe_customer_changeset("cus_123") |> Repo.update!()
 
