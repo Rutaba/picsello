@@ -23,7 +23,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       gallery_id: gallery_id,
       is_finals: is_finals,
       is_mobile: is_mobile,
-      is_redirect: is_redirect
+      is_redirect: is_redirect,
       has_order?: has_order?
     )
     |> assign_album_changeset()
