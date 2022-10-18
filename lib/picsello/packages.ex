@@ -257,7 +257,7 @@ defmodule Picsello.Packages do
       payment_schedules = Map.get(opts, :payment_schedules)
 
       shoot_date =
-        if payment_schedules,
+        if payment_schedules && Enum.any?(payment_schedules),
           do: payment_schedules |> List.first() |> Map.get(:shoot_date),
           else: false
 
