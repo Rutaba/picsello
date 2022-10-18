@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.AddJobNameToJob do
 
   def up do
     alter table(:jobs) do
-      add_if_not_exists(:job_name, :string)
+      add_if_not_exists(:job_name, :string, null: false, default: "")
     end
   end
 

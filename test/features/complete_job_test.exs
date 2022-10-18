@@ -23,6 +23,6 @@ defmodule Picsello.CompleteJobTest do
     |> click(link(Job.name(job)))
     |> assert_has(css("*[role='status']", text: "Completed"))
     |> click(button("Manage"))
-    |> refute_has(css("li", text: "Complete job"))
+    |> assert_has(css("li", text: "Complete job", count: 0))
   end
 end

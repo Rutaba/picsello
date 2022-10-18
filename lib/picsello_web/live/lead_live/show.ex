@@ -172,7 +172,7 @@ defmodule PicselloWeb.LeadLive.Show do
     }
 
     socket
-    |> open_modal(PicselloWeb.Live.Profile.EditLeadNameComponent, Map.put(assigns, :parent_pid, self()))
+    |> open_modal(PicselloWeb.Live.Profile.EditNameSharedComponent, Map.put(assigns, :parent_pid, self()))
     |> noreply()
   end
 
@@ -184,16 +184,6 @@ defmodule PicselloWeb.LeadLive.Show do
       confirm_label: "Yes, archive the lead",
       icon: "warning-orange",
       title: "Are you sure you want to archive this lead?"
-    })
-    |> noreply()
-  end
-
-  def handle_event("open_email_compose", %{}, %{assigns: %{current_user: current_user}} = socket) do
-    socket
-    |> PicselloWeb.ClientMessageComponent.open(%{
-      current_user: current_user,
-      enable_size: true,
-      enable_image: true
     })
     |> noreply()
   end
@@ -235,9 +225,9 @@ defmodule PicselloWeb.LeadLive.Show do
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
-  def handle_info({:update, data}, %{assigns: %{job: job}} = socket) do
+  def handle_info({:update, %{job: job}}, socket) do
     socket
-    |> assign(:job, Map.put(job, :client, data))
+    |> assign(:job, job)
     |> put_flash(:success, "Name updated successfully")
     |> noreply()
   end

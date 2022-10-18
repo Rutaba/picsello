@@ -277,7 +277,7 @@ defmodule PicselloWeb.JobLive.Shared do
               <a class="hover-drop-down" phx-click="open_lead_name_change"> Edit lead name</a>
             </li>
           <% else %>
-            <li phx-click="open_lead_name_change" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+            <li phx-click="open_job_name_change" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
               <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
               <a class="hover-drop-down"> Edit job name</a>
             </li>
@@ -788,6 +788,16 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   defp open_email_compose(%{assigns: %{current_user: current_user}} = socket) do
+    socket
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true
+    })
+    |> noreply()
+  end
+
+  def handle_event("open_email_compose", %{}, %{assigns: %{current_user: current_user}} = socket) do
     socket
     |> PicselloWeb.ClientMessageComponent.open(%{
       current_user: current_user,

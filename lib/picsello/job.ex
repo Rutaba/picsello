@@ -22,7 +22,7 @@ defmodule Picsello.Job do
     field(:notes, :string)
     field(:archived_at, :utc_datetime)
     field(:completed_at, :utc_datetime)
-    field(:job_name, :string, default: nil)
+    field(:job_name, :string, default: "")
     belongs_to(:client, Client)
     belongs_to(:package, Package)
     belongs_to(:booking_event, Picsello.BookingEvent)
@@ -72,8 +72,8 @@ defmodule Picsello.Job do
   end
 
   def name(%__MODULE__{type: type} = job) do
-    if job.job_name == nil do
-      %{client: %{name: client_name}} = job |> Repo.preload(:client)
+    if job.job_name == "" do
+     %{client: %{name: client_name}} = job |> Repo.preload(:client)
       [client_name, Phoenix.Naming.humanize(type)] |> Enum.join(" ")
     else
       job.job_name

@@ -11,7 +11,7 @@ defmodule Picsello.EditJobNameTest do
     end
 
 
-    test "edit name of Job changes name", %{session: session, job: job} do
+    test "Edit job name", %{session: session, job: job} do
       session
       |> visit("/jobs/#{job.id}")
       |> assert_text("Mary Jane Wedding")

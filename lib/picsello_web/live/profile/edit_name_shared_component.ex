@@ -1,4 +1,4 @@
-defmodule PicselloWeb.Live.Profile.EditLeadNameComponent do
+defmodule PicselloWeb.Live.Profile.EditNameSharedComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
