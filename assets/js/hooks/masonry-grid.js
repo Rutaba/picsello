@@ -165,11 +165,14 @@ export default {
     });
 
     if (isMobile()) {
+      console.log('abcdefg')
       this.el.style.width = '100%';
       const offset = (w - iw - count * 12) / 2;
       if (offset > 0) {
+        console.log('margin')
         this.el.style.marginLeft = offset + 'px';
       } else {
+        console.log('nomargin')
         this.el.style.marginLeft = '10px';
       }
     }

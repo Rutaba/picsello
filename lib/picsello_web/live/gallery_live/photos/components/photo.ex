@@ -199,7 +199,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   defp wrapper_style(true, width, %{aspect_ratio: aspect_ratio}),
     do: "width: #{width}px;height: #{width / aspect_ratio}px;"
 
-  defp wrapper_style(_, _, _), do: nil
+  # defp wrapper_style(_, _, _), do: nil
 
   defp album_name(assigns) do
     cond do
