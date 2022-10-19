@@ -5,41 +5,47 @@
       <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "product_previews", album_dropdown_show: false, is_mobile: @is_mobile %>
     </div>
     <div class={classes("w-full h-full mb-36 lg:mb-20 lg:bg-base-100 bg-white lg:pl-96 lg:pt-16 pt-24", %{"lg:block hidden" => @is_mobile})} {intro_hints_only("intro_hints_only")}>
-      <div class="relative items-center justify-between lg:px-16 pb-10">
-        <div class="flex flex-row lg:px-0 px-6 items-center">
-          <div class="lg:hidden flex w-8 h-8 mr-4 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back-to-navbar">
-            <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+      <div class="relative items-center justify-between lg:px-10 pb-10">
+        <div class="center-container">
+          <div class="flex flex-row lg:px-0 px-6 items-center">
+            <div class="lg:hidden flex w-8 h-8 mr-4 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back-to-navbar">
+              <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+            </div>
+            <span class="font-sans lg:text-2xl text-3xl font-black" >
+              Product Previews
+            </span>
+            <.intro_hint class="ml-2 hidden lg:block" content="You can edit your products to showcase your favorite photos, and create product previews that are meaningful to your client.<br>
+            100% of product sales go to you. You only pay what the print and product seller charges. The rest of the money goes to you!"/>
           </div>
-          <span class="font-sans lg:text-2xl text-3xl font-black" >
-            Product Previews
-          </span>
-          <.intro_hint class="ml-2 hidden lg:block" content="You can edit your products to showcase your favorite photos, and create product previews that are meaningful to your client.<br>
-          100% of product sales go to you. You only pay what the print and product seller charges. The rest of the money goes to you!"/>
         </div>
 
         <div class="flex mt-3 lg:py-0 py-4 lg:px-0 px-6 text-xl lg:text-base text-gray-400 lg:bg-gray-100 bg-base-200">
-          <%= cond do %>
-            <% Picsello.Onboardings.non_us_state?(@gallery.photographer) -> %>
-                <p>Product ordering is not available in your country yet. Please <a class="link" href="javascript:void(0);" {help_scout_output(@current_user, :help_scout_id, data_ask: true)}>contact us</a> if there is a favorite vendor / lab partner you would like to see available on Picsello.</p>
-              <% !Picsello.Subscriptions.subscription_payment_method?(@gallery.photographer) -> %>
-                <div class="flex flex-col items-center px-4 py-2 mt-8 text-center rounded-lg md:flex-row bg-red-sales-300/10 sm:text-left">
-                  <.icon name="warning-orange-dark" class="inline-block w-8 h-8 mr-2"/>
-                  <p class="text-black md:mr-4">It looks like you're missing a payment method. You won’t be able to sell physical products until you add one in the billing portal. Don't worry, you can still sell digitals! <a href="https://support.picsello.com/article/131-why-do-you-need-a-payment-method-on-file-for-physical-products" class="underline" target="_blank" rel="noopener noreferrer">Learn more</a></p>
-                  <div class="flex-shrink-0 my-1 mt-4 md:ml-auto sm:max-w-xs sm:mt-0">
-                    <button type="button" phx-click="open-billing-portal" class="btn-primary text-sm w-full py-2 mt-2">Open Billing Portal</button>
+          <div class="center-container">
+            <%= cond do %>
+              <% Picsello.Onboardings.non_us_state?(@gallery.photographer) -> %>
+                  <p>Product ordering is not available in your country yet. Please <a class="link" href="javascript:void(0);" {help_scout_output(@current_user, :help_scout_id, data_ask: true)}>contact us</a> if there is a favorite vendor / lab partner you would like to see available on Picsello.</p>
+                <% !Picsello.Subscriptions.subscription_payment_method?(@gallery.photographer) -> %>
+                  <div class="flex flex-col items-center px-4 py-2 mt-8 text-center rounded-lg md:flex-row bg-red-sales-300/10 sm:text-left">
+                    <.icon name="warning-orange-dark" class="inline-block w-8 h-8 mr-2"/>
+                    <p class="text-black md:mr-4">It looks like you're missing a payment method. You won’t be able to sell physical products until you add one in the billing portal. Don't worry, you can still sell digitals! <a href="https://support.picsello.com/article/131-why-do-you-need-a-payment-method-on-file-for-physical-products" class="underline" target="_blank" rel="noopener noreferrer">Learn more</a></p>
+                    <div class="flex-shrink-0 my-1 mt-4 md:ml-auto sm:max-w-xs sm:mt-0">
+                      <button type="button" phx-click="open-billing-portal" class="btn-primary text-sm w-full py-2 mt-2">Open Billing Portal</button>
+                    </div>
                   </div>
-                </div>
-              <% true -> %>
-                <p>Showcase products your clients will love.</p>
-                <.intro_hint class="lg:hidden" content="You can edit your products to showcase your favorite photos, and create product previews that are meaningful to your client.<br>
-              100% of product sales go to you. You only pay what the print and product seller charges. The rest of the money goes to you!"/>       
-          <% end %>
+                <% true -> %>
+                  <p>Showcase products your clients will love.</p>
+                  <.intro_hint class="lg:hidden" content="You can edit your products to showcase your favorite photos, and create product previews that are meaningful to your client.<br>
+                100% of product sales go to you. You only pay what the print and product seller charges. The rest of the money goes to you!"/>       
+            <% end %>
+          </div>
         </div>
 
-        <div class="2xl:grid-cols-3 lg:grid-cols-2 grid-cols-1 gap-7 lg:px-0 px-6 grid">
-          <%= for product <- @products do %>
-            <.live_component id={product.id} module={Preview} product={product} />
-          <% end %>
+        <div class="center-container">
+          <div class="2xl:grid-cols-3 lg:grid-cols-2 grid-cols-1 gap-7 lg:px-0 px-6 grid">
+            <%= for product <- @products do %>
+              <.live_component id={product.id} module={Preview} product={product} />
+            <% end %>
+          </div>
         </div>
       </div>
     </div>

@@ -179,8 +179,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   def step(%{name: :customize} = assigns) do
     ~H"""
     <div class="flex flex-col mt-4">
-      <h2 class="text-xl font-bold">Customize your package</h2>
-      <p>Upload an image and write a short description to entice your clients to book your event.</p>
+      <h2 class="text-xl font-bold">Customize your booking event</h2>
+      <p>Upload an image and write a short description to entice clients to book a session with you.</p>
 
       <div class="grid sm:grid-cols-2 gap-7 mt-2">
         <div>
@@ -204,7 +204,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
             html_field={:description}
             current_user={@current_user}
             class="aspect-[5/3] mt-2"
-            placeholder="Type your event description…"
+            placeholder="Use this area to describe your mini-session event or limited-edition session. Describe what is included in the package (eg, the location, length of time, digital images etc)."
           />
         </div>
       </div>
@@ -450,7 +450,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     event = current(event_form)
     event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
   end
-  
+
   defp is_checked("" <> id, package) do
     if String.length(id) > 0 do
       id |> to_integer() == package.id
@@ -458,6 +458,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       false
     end
   end
-  
+
   defp is_checked(_, _), do: false
 end

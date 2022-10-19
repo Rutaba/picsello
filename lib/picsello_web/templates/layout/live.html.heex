@@ -93,5 +93,7 @@
     </div>
   </footer>
 </main>
-<.sticky_upload current_user={@current_user} />
+<%= if System.get_env("MIX_ENV") != "test" do %>
+  <.sticky_upload current_user={@current_user} />
+<% end %>
 <.help_scout_menu current_user={@current_user} />

@@ -227,7 +227,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign(:select_mode, "selected_none")
     |> assign(:selected_photos, [])
     |> push_event("reload_grid", %{})
-    |> put_flash(:success, "Download request sent at #{current_user.email}! The ZIP file with your images is on the way to your inbox")
+    |> put_flash(
+      :success,
+      "Download request sent at #{current_user.email}! The ZIP file with your images is on the way to your inbox"
+    )
     |> noreply()
   end
 

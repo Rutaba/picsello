@@ -10,15 +10,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Galleries,
     GalleryProducts,
     Messages,
-    Cart.Digital,
     Cart,
     Galleries.Album,
-    Albums
+    Albums,
+    Notifiers.ClientNotifier
   }
 
-  alias PicselloWeb.GalleryLive.{Shared.ConfirmationComponent}
-  alias Picsello.Notifiers.ClientNotifier
-  alias Picsello.Cart.Order
+  alias Cart.{Order, Digital}
+  alias Galleries.{GalleryProduct, Photo}
+  alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
   alias PicselloWeb.Router.Helpers, as: Routes
 
   def toggle_favorites(
@@ -97,6 +97,36 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def product_preview_photo_popup(
+        %{assigns: %{gallery: gallery}} = socket,
+        %GalleryProduct{} = product,
+        %Photo{} = photo
+      ) do
+    case GalleryProducts.editor_type(product) do
+      :card ->
+        socket
+        |> push_redirect(
+          to: Routes.gallery_card_editor_path(socket, :index, gallery.client_link_hash)
+        )
+
+      _ ->
+        socket
+        |> open_modal(PicselloWeb.GalleryLive.EditProduct, %{
+          category: product.category,
+          photo: photo
+        })
+    end
+    |> noreply()
+  end
+
+  def product_preview_photo_popup(socket, photo_id, template_id) do
+    socket
+    |> product_preview_photo_popup(
+      GalleryProducts.get(id: to_integer(template_id)),
+      Galleries.get_photo(photo_id)
+    )
+  end
+
+  def product_preview_photo_popup(
         %{
           assigns: %{
             products: products
@@ -104,64 +134,37 @@ defmodule PicselloWeb.GalleryLive.Shared do
         } = socket,
         product_id
       ) do
-    gallery_product =
-      Enum.find(products, fn product -> product.id == String.to_integer(product_id) end)
+    gallery_product = Enum.find(products, fn product -> product.id == to_integer(product_id) end)
 
-    socket
-    |> open_modal(
-      PicselloWeb.GalleryLive.EditProduct,
-      %{
-        category: gallery_product.category,
-        photo: gallery_product.preview_photo
-      }
-    )
-    |> noreply()
-  end
-
-  def product_preview_photo_popup(socket, photo_id, template_id) do
-    photo = Galleries.get_photo(photo_id)
-
-    template_id = template_id |> to_integer()
-
-    category =
-      GalleryProducts.get(id: template_id)
-      |> then(& &1.category)
-
-    socket
-    |> open_modal(
-      PicselloWeb.GalleryLive.EditProduct,
-      %{
-        category: category,
-        photo: photo
-      }
-    )
-    |> noreply()
+    socket |> product_preview_photo_popup(gallery_product, gallery_product.preview_photo)
   end
 
   def customize_and_buy_product(
         %{
           assigns: %{
-            gallery: gallery,
-            favorites_filter: favorites
+            gallery: gallery
           }
         } = socket,
         whcc_product,
         photo,
-        size
+        opts \\ []
       ) do
     created_editor =
       Picsello.WHCC.create_editor(
         whcc_product,
         photo,
-        complete_url:
-          Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-            "?editorId=%EDITOR_ID%",
-        secondary_url:
-          Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-            "?editorId=%EDITOR_ID%&clone=true",
-        cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash),
-        size: size,
-        favorites_only: favorites
+        Keyword.merge(
+          [
+            complete_url:
+              Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+                "?editorId=%EDITOR_ID%",
+            secondary_url:
+              Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+                "?editorId=%EDITOR_ID%&clone=true",
+            cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
+          ],
+          opts
+        )
       )
 
     socket
@@ -389,19 +392,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def assign_cart_count(
-        %{assigns: %{order: %Picsello.Cart.Order{placed_at: %DateTime{}}}} = socket,
+        %{assigns: %{order: %Order{placed_at: %DateTime{}}}} = socket,
         _
       ),
       do: assign(socket, cart_count: 0)
 
   def assign_cart_count(
-        %{assigns: %{order: %Picsello.Cart.Order{products: products, digitals: digitals} = order}} =
-          socket,
+        %{assigns: %{order: %Order{products: products, digitals: digitals} = order}} = socket,
         _
       )
       when is_list(products) and is_list(digitals) do
     socket
-    |> assign(cart_count: Picsello.Cart.item_count(order))
+    |> assign(cart_count: Cart.item_count(order))
   end
 
   def assign_cart_count(socket, gallery) do
@@ -632,14 +634,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
           is_proofing: false,
           cart_count: 0,
           total_count: 0,
-          for: nil
+          for: nil,
+          is_fixed: false
         }
       )
 
     ~H"""
-      <div class={"relative #{@for == :proofing_album_order && 'hidden'}"}>
-          <div class="absolute bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 shadow-top">
-            <div class="container flex items-center justify-between h-full mx-auto px-7">
+      <div class={classes("relative", %{"hidden" => @for == :proofing_album_order})}>
+          <div class={classes("bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 pointer-events-none", %{"fixed shadow-top" => @is_fixed and @for != :proofing_album, "absolute border-t border-base-225" => !@is_fixed or @for == :proofing_album })}>
+            <div class="container flex items-center justify-between h-full mx-auto px-7 sm:px-16">
               <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
                 <%= for {label, value} <- build_credits(@for, @credits, @total_count) do %>
                   <div>
@@ -662,7 +665,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def credits(%Galleries.Gallery{} = gallery),
-    do: gallery |> Picsello.Cart.credit_remaining() |> credits()
+    do: gallery |> Cart.credit_remaining() |> credits()
 
   def credits(credits) do
     for {label, key, zero} <- [
@@ -677,6 +680,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         end
     end
   end
+
+  def cards_width(frame_image), do: if(frame_image == "card.png", do: "198")
 
   def mobile_gallery_header(assigns) do
     ~H"""
@@ -854,6 +859,28 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def assign_is_proofing(socket), do: assign(socket, is_proofing: false)
+
+  def steps(assigns) do
+    ~H"""
+    <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @target, title: "back"}, else: %{}} class="flex">
+      <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
+        Step <%= step_number(@step, @steps) %>
+      </span>
+
+      <ul class="flex items-center inline-block">
+        <%= for step <- @steps do %>
+          <li class={classes(
+            "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
+            %{ "bg-blue-planning-300" => step == @step, "bg-gray-200" => step != @step }
+            )}>
+          </li>
+        <% end %>
+      </ul>
+    </a>
+    """
+  end
+
+  defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
   defdelegate item_image_url(item), to: Cart
   defdelegate item_image_url(item, opts), to: Cart

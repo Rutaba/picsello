@@ -2,7 +2,7 @@ defmodule Picsello.Package do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Repo, Shoot, Accounts.User}
+  alias Picsello.{Repo, Shoot, Accounts.User, PackagePaymentSchedule}
   require Ecto.Query
   import Ecto.Query
 
@@ -20,11 +20,17 @@ defmodule Picsello.Package do
     field :collected_price, Money.Ecto.Amount.Type
     field :buy_all, Money.Ecto.Amount.Type
     field :turnaround_weeks, :integer, default: 1
+    field :schedule_type, :string
+    field :fixed, :boolean, default: true
 
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
     has_one(:job, Picsello.Job)
     has_one(:contract, Picsello.Contract)
+
+    has_many(:package_payment_schedules, PackagePaymentSchedule,
+      where: [package_payment_preset_id: nil]
+    )
 
     timestamps()
   end
@@ -41,6 +47,20 @@ defmodule Picsello.Package do
     Enum.reduce_while(steps, package, fn {step_name, initializer}, changeset ->
       {if(step_name == step, do: :halt, else: :cont), initializer.(changeset, attrs, opts)}
     end)
+  end
+
+  @fields ~w[base_price organization_id name download_count download_each_price base_multiplier print_credits buy_all shoot_count turnaround_weeks]a
+  def changeset_for_create_gallery(package \\ %__MODULE__{}, attrs) do
+    package
+    |> cast(attrs, @fields)
+    |> put_change(:base_price, Money.new(0))
+    |> validate_required(~w[download_count name download_each_price organization_id shoot_count]a)
+    |> validate_number(:download_count, greater_than_or_equal_to: 0)
+    |> validate_money(:download_each_price)
+    |> validate_money(:print_credits,
+      greater_than_or_equal_to: 0,
+      message: "must be equal to or less than total price"
+    )
   end
 
   def import_changeset(package \\ %__MODULE__{}, attrs) do
@@ -80,7 +100,7 @@ defmodule Picsello.Package do
     package
     |> cast(
       attrs,
-      ~w[description name organization_id shoot_count print_credits turnaround_weeks]a
+      ~w[schedule_type fixed description name organization_id shoot_count print_credits turnaround_weeks]a
     )
     |> validate_required(~w[name organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
@@ -115,7 +135,7 @@ defmodule Picsello.Package do
     package
     |> cast(
       attrs,
-      ~w[base_price download_count download_each_price base_multiplier print_credits buy_all]a
+      ~w[schedule_type fixed base_price download_count download_each_price base_multiplier print_credits buy_all]a
     )
     |> validate_required(~w[base_price download_count download_each_price]a)
     |> then(fn changeset ->

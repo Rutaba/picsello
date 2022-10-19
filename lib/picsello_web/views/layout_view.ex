@@ -142,6 +142,11 @@ defmodule PicselloWeb.LayoutView do
     [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
+      %{
+        title: "Galleries",
+        icon: "proof_notifier",
+        path: Routes.gallery_path(socket, :galleries)
+      },
       %{title: "Orders", icon: "cart"},
       %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
       %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)},
@@ -220,15 +225,15 @@ defmodule PicselloWeb.LayoutView do
         <.photographer_logo organization={organization} />
       </div>
       <div class="ml-auto pt-3">
-        <a class="flex items-center justify-center px-2.5 py-1 text-base-300 bg-base-100 border border-base-300 hover:text-base-100 hover:bg-base-300" href={public_url(organization)}>
+        <a class="flex items-center justify-center px-2.5 py-1 text-base-300 bg-base-100 border border-base-300 hover:text-base-100 hover:bg-base-300" href={"#{public_url(organization)}#contact-form"}>
           <.icon name="envelope" class="mr-2 w-4 h-4 fill-current"/>
           Contact
         </a>
       </div>
     </nav>
-    <hr class="my-8 opacity-40 border-base-300" />
+    <hr class="my-8 opacity-30 border-base-300" />
     <div class="flex text-base-250 flex-col sm:flex-row">
-      <div class="flex justify-center">© <%= DateTime.utc_now.year %> <span class="font-base-300 font-bold"><%= organization.name %></span>. All Rights Reserved</div>
+      <div class="flex justify-center">©<%= DateTime.utc_now.year %> <span class="font-base-300 font-bold ml-2"><%= organization.name %></span>. All Rights Reserved</div>
       <div class="flex md:ml-auto justify-center">
         Powered by
         <a href="https://www.picsello.com/terms-conditions" class="underline ml-1" target="_blank" rel="noopener noreferrer"> <b>Picsello</b></a>

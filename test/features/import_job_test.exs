@@ -46,17 +46,20 @@ defmodule Picsello.ImportJobTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
     )
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
-    |> scroll_into_view(css("#download_is_enabled_false"))
-    |> click(checkbox("Set my own download price"))
-    |> find(
-      text_field("download_each_price"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
-    )
-    |> click(checkbox("download_includes_credits"))
+    |> scroll_into_view(css("#download_is_enabled_true"))
+    |> click(radio_button("Package includes a specified number of Digital Images"))
+    |> click(checkbox("download[includes_credits]"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
+    |> scroll_into_view(css("#download_is_custom_price"))
+    |> click(checkbox("download[is_custom_price]"))
+    |> find(
+      text_field("download[each_price]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
+    )
+    |> scroll_into_view(css("#download_is_buy_all"))
     |> click(checkbox("download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
@@ -123,8 +126,8 @@ defmodule Picsello.ImportJobTest do
     |> fill_in_payments_form()
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_has(testid("shoot-card", count: 2, at: 0, text: "Missing information"))
     |> assert_has(testid("shoot-card", count: 2, at: 1, text: "Missing information"))
     |> find(

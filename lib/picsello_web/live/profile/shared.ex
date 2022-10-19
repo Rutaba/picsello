@@ -78,6 +78,11 @@ defmodule PicselloWeb.Live.Profile.Shared do
     assign_organization(socket, organization)
   end
 
+  def assign_organization_by_slug_on_profile_disabled(socket, slug) do
+    organization = Profiles.find_organization_by_slug(slug: slug)
+    assign_organization(socket, organization)
+  end
+
   def assign_organization(socket, organization) do
     %{profile: profile, user: user, brand_links: brand_links} = organization
 
@@ -147,9 +152,12 @@ defmodule PicselloWeb.Live.Profile.Shared do
   end
 
   defp get_website_link([]), do: nil
+  defp get_website_link(nil), do: nil
 
-  defp get_website_link(brand_links),
-    do: Enum.find(brand_links, &(&1.link_id == "website")) |> Map.get(:link)
+  defp get_website_link(brand_links) do
+    website = Enum.find(brand_links, &(&1.link_id == "website"))
+    if website, do: website |> Map.get(:link), else: nil
+  end
 
   def photographer_logo(assigns) do
     ~H"""

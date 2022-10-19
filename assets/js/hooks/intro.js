@@ -36,47 +36,6 @@ function startIntroJsTour(component, introSteps, introId) {
     });
 }
 
-function addEventListeners() {
-  document.querySelectorAll('.introjs-hint').forEach((el) => {
-    el.style.zIndex = 30;
-    if (el) {
-      const step = el.dataset.step;
-      if (!step) return;
-
-      el.addEventListener('mouseenter', () => {
-        const hintDialog = document.querySelector(
-          `[data-step="${step}"].introjs-hintReference`
-        );
-
-        if (hintDialog) {
-          // if this element exists, means the dialog is open
-          // edge case that a rehover resets the DOM
-          return;
-        } else {
-          // We have to setup hints in order for them
-          // to use the showHintDialog method
-          introJs()
-            .addHints()
-            .setOptions({
-              hintShowButton: false,
-            })
-            .showHintDialog(JSON.parse(el.dataset.step));
-        }
-      });
-
-      el.addEventListener('mouseleave', () => {
-        const hintDialog = document.querySelector(
-          `[data-step="${step}"].introjs-hintReference`
-        );
-
-        // IntroJS does not export a decent API to remove
-        // an active hint dialog, so we'll force it
-        hintDialog?.remove();
-      });
-    }
-  });
-}
-
 export default {
   mounted() {
     // When using phx-hook, it requires a unique ID on the element
@@ -92,9 +51,11 @@ export default {
     // using the data-attribute API to embed directly
     // into the HTML to avoid JS bloat
     // see https://introjs.com/docs/hints/attributes
-    introJs().addHints().setOptions({
-      hintShowButton: false,
-    });
+    introJs()
+      .setOptions({
+        hintShowButton: false,
+      })
+      .addHints();
 
     if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
@@ -128,21 +89,13 @@ export default {
 
       startIntroJsTour(this, introSteps, introId);
     }
-
-    // no api for triggering hints on hover so we make our own
-    // should add debouncing down the road
-    addEventListeners();
   },
   updated() {
     // remove existing intro elements of previous page
-    document.querySelectorAll('.introjs-hint').forEach((el) => {
-      el.remove();
-    });
+    document.querySelectorAll('.introjs-hint').forEach((el) => el.remove());
 
     // add new intro elements to current page
     introJs().addHints();
-
-    addEventListeners();
   },
   destroyed() {
     // Intro js doesn't have a method

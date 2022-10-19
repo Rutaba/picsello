@@ -14,6 +14,7 @@ defmodule Picsello.ManageLeadShootTest do
         package: %{}
       })
 
+    insert(:package_payment_schedule, %{package: lead.package})
     [lead: lead, session: session]
   end
 
@@ -23,7 +24,7 @@ defmodule Picsello.ManageLeadShootTest do
     session
     |> visit(lead_path)
     |> scroll_into_view(testid("booking-summary"))
-    |> assert_text("70% retainer and 30% one month before shoot")
+    |> assert_text("$1.00 to To Book")
     |> click(button("Add shoot details", count: 2, at: 1))
     |> fill_in(text_field("Shoot Title"), with: " ")
     |> assert_has(css("label", text: "Shoot Title can't be blank"))
@@ -34,9 +35,6 @@ defmodule Picsello.ManageLeadShootTest do
     |> fill_in(text_field("Shoot Notes"), with: "my notes")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_text(
-      "35% retainer, 35% six months to the wedding, 30% one month before the wedding"
-    )
     |> click(link("chute"))
     |> wait_for_path_to_change_from(lead_path)
     |> click(button("Edit"))

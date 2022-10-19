@@ -23,6 +23,12 @@ defmodule Picsello.Shoot do
     timestamps()
   end
 
+  def changeset_for_create_gallery(%__MODULE__{} = shoot, attrs \\ %{}) do
+    shoot
+    |> cast(attrs, [:starts_at, :job_id])
+    |> validate_required([:starts_at])
+  end
+
   def create_changeset(attrs) do
     %__MODULE__{}
     |> cast(attrs, [:starts_at, :duration_minutes, :name, :location, :notes, :job_id, :address])

@@ -68,7 +68,14 @@ defmodule Picsello.Pack do
     defp to_acc([_ | _] = iodata), do: {IO.iodata_length(iodata), iodata}
   end
 
-  alias Picsello.{Orders, Galleries.Gallery, Galleries, Repo, Cart.Order, Galleries.Workers.PhotoStorage}
+  alias Picsello.{
+    Orders,
+    Galleries.Gallery,
+    Galleries,
+    Repo,
+    Cart.Order,
+    Galleries.Workers.PhotoStorage
+  }
 
   @chunk_size Integer.pow(2, 18) *
                 trunc(Application.compile_env(:picsello, :chunks_per_request, 32))

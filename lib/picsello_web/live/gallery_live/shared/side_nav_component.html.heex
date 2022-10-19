@@ -54,7 +54,7 @@
             <%= live_redirect class: "flex w-full", to: get_select_photo_route(@socket, @albums, @gallery, if(@is_mobile, do: [is_mobile: false], else: [])) do %>
               <div class="flex items-center justify-start">
                 <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
-                  <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/photos.png")} width="16" height="16"/>
+                  <.icon name="photos-2" class="w-4 h-4 text-white fill-current"/>
                 </div>
                 <div class="justify-start ml-3">
                   <span class={@arrow_show in ["photos", "albums"] && "text-blue-planning-300"}>Photos</span>

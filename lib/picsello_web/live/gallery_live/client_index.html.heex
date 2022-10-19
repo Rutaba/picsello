@@ -28,14 +28,14 @@
 </div>
 
 <div {testid("gallery-client")} class={classes(%{"block sm:hidden" => !@active})}>
-  <div class="h-full py-0 mx-auto my-0 px-7 sm:px-16">
+  <div class="h-full py-0 mx-auto center-container gallery__container my-0 px-7 sm:px-16">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, live_action: @live_action, cart_count: @cart_count, gallery: @gallery %>
   </div>
 
-  <hr>
+  <hr />
 
   <%= unless Enum.empty?(@products) do %>
-    <div class="h-full py-0 mx-auto my-0 px-7 sm:px-16">
+    <div class="h-full py-0 mx-auto center-container gallery__container my-0 px-7 sm:px-16">
       <div class="pt-8 lg:pt-14">
         <div class="text-base font-bold lg:text-3xl">
           Order custom products with <%= @creator.name %>
@@ -67,9 +67,11 @@
   <% end %>
 
   <!-- Content -->
-  <hr class="mx-8 mt-8 lg:mx-16 ">
+  <div class="center-container gallery__container">
+    <hr class="mt-8 opacity-30 border-base-300" />
+  </div>
 
-  <div class="h-full pt-0 mx-auto my-0 pb-28 sm:pb-24 px-7 sm:px-16">
+  <div class="h-full pt-0 mx-auto center-container gallery__container my-0 pb-28 sm:pb-24 px-7 sm:px-16">
     <div class="pt-5 lg:pt-16" id="gallery">
       <div class="flex flex-col mb-8 sm:flex-row sm:justify-between sm:items-end lg:mb-16">
         <div>
@@ -124,7 +126,7 @@
       <% else %>
         <%= if(Enum.empty?(@photos) && @favorites_filter) do %>
           <div class="relative justify-between mb-12 text-2xl font-bold text-center text-base-250">
-              Oops, there's no liked photo!
+              Oops, you have no liked photos!
           </div>
         <% else %>
           <!-- images -->
@@ -159,5 +161,5 @@
     </div>
   </div>
 
-  <.credits_footer credits={@credits} />
+  <.credits_footer credits={@credits} is_fixed={true} />
 </div>

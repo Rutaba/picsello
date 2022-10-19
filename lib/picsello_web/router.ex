@@ -153,6 +153,8 @@ defmodule PicselloWeb.Router do
         live "/:album_id", Photos.Index, :index
       end
 
+      live "/galleries", GalleryLive.Index, :galleries, as: :gallery
+
       live "/home", HomeLive.Index, :index, as: :home
       live "/leads/:id", LeadLive.Show, :leads, as: :job
       live "/leads", JobLive.Index, :leads, as: :job
@@ -210,6 +212,7 @@ defmodule PicselloWeb.Router do
         pipe_through :param_auth
         live "/", GalleryLive.ClientIndex, :index
         live "/album/:album_id", GalleryLive.ClientAlbum, :album
+        live "/cards", GalleryLive.CardEditor, :index
         get "/zip", GalleryDownloadsController, :download_all
         get "/photos/:photo_id/download", GalleryDownloadsController, :download_photo
       end

@@ -17,5 +17,5 @@ defmodule Picsello.Design do
     timestamps(type: :utc_datetime)
   end
 
-  def active, do: from(product in __MODULE__, where: is_nil(product.deleted_at))
+  def active, do: from(design in __MODULE__, where: is_nil(design.deleted_at))
 end

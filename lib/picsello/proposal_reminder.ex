@@ -42,7 +42,7 @@ defmodule Picsello.ProposalReminder do
       join: job_status in JobStatus,
       on: job_status.job_id == proposal.job_id,
       group_by: proposal.id,
-      where: job_status.is_lead == true,
+      where: job_status.is_lead == true and proposal.sent_to_client,
       select:
         {proposal.id,
          %{
