@@ -34,8 +34,8 @@
 
   <hr />
 
-  <%= unless Enum.empty?(@products) do %>
-    <div class="h-full py-0 mx-auto center-container gallery__container my-0 px-7 sm:px-16">
+  <%= unless Enum.empty?(@products) || @gallery.disabled do %>
+    <div class="h-full py-0 mx-auto my-0 px-7 sm:px-16">
       <div class="pt-8 lg:pt-14">
         <div class="text-base font-bold lg:text-3xl">
           Order custom products with <%= @creator.name %>
@@ -52,7 +52,7 @@
     </div>
   <% end %>
 
-  <%= if @package.buy_all && !@download_all_visible do %>
+  <%= if @package.buy_all && !@download_all_visible && !@gallery.disabled do %>
     <div class="py-8 sm:py-6 bg-blue-planning-100">
       <div class="flex flex-col justify-center px-7 sm:mx-16 sm:flex-row">
         <div class="sm:mr-28">
