@@ -23,7 +23,9 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       filter: nil,
       occasion: nil,
       show_filter_form: false,
-      filter_applied?: false
+      filter_applied?: false,
+      hide_next: false,
+      hide_prev: false
     )
     |> ok(temporary_assigns: [designs: []])
   end
@@ -204,7 +206,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         <ul class={"relative pt-9 grid grid-cols-2 lg:grid-cols-4 gap-6 #{top(@filter_applied?)}"} id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
           <%= for design <- @designs do %>
             <li id={"design-#{design.id}"}>
-                <.img_box src={design.preview_url} card_design={true} value={design.id}/>
+                <.img_box src={design.preview_url} card_design={true} value={design.id} hide_next={@hide_next} hide_prev={@hide_prev}/>
 
                 <h3 class="pt-2 text-lg"><%= design.name %></h3>
                 <p class="mt-1 text-sm text-base-250"><%= photo_range_summary(design) %></p>
@@ -274,6 +276,52 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     photo = gallery |> Ecto.assoc(:photos) |> Repo.all() |> hd
 
     customize_and_buy_product(socket, product, photo, design: design_id)
+  end
+
+  def handle_event(
+        "next",
+        %{"value" => design_id},
+        socket
+      ) do
+    socket = socket |> fetch()
+
+    item_index =
+      Enum.find_index(socket.assigns.designs, fn design ->
+        design.id == String.to_integer(design_id)
+      end)
+
+    new_design = Repo.one(Picsello.Designs.single_design_back_query(design_id))
+
+    designs = List.replace_at(socket.assigns.designs, item_index, new_design)
+
+    socket
+    |> assign(:designs, designs)
+    |> assign(:hide_next, true)
+    |> assign(:hide_prev, false)
+    |> noreply()
+  end
+
+  def handle_event(
+        "prev",
+        %{"value" => design_id},
+        socket
+      ) do
+    socket = socket |> fetch()
+
+    item_index =
+      Enum.find_index(socket.assigns.designs, fn design ->
+        design.id == String.to_integer(design_id)
+      end)
+
+    new_design = Repo.one(Picsello.Designs.single_design_front_query(design_id))
+
+    designs = List.replace_at(socket.assigns.designs, item_index, new_design)
+
+    socket
+    |> assign(:designs, designs)
+    |> assign(:hide_prev, true)
+    |> assign(:hide_next, false)
+    |> noreply()
   end
 
   def handle_event("toggle-filter-form", _, socket),
@@ -427,18 +475,22 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
   def ranges([]), do: []
 
-  defp img_box(%{card_design: true} = assigns) do
+  defp img_box(%{card_design: true, hide_next: hide_next, hide_prev: hide_prev} = assigns) do
     value = if assigns.value, do: assigns.value, else: nil
 
     ~H"""
       <div class="aspect-h-1 aspect-w-1">
         <div class="relative bg-gradient-to-bl from-[#f5f6f7] to-[#ededed] flex flex-col justify-center group">
-          <div phx-click="prev" phx-window-keyup="keydown" class="left-0 absolute top-1/2 -translate-y-1/2 swiper-button-prev hidden group-hover:block">
+          <%= if !hide_prev do %>
+          <div phx-click="prev" phx-value-value={value} class="">
             <.icon name="back" class="w-8 h-8 cursor-pointer text-base-250" />
           </div>
-          <div phx-click="next" class="right-0 absolute top-1/2 -translate-y-1/2 swiper-button-next hidden group-hover:block">
+          <% end %>
+          <%= if !hide_next do %>
+          <div phx-click="next" phx-value-value={value} class="">
             <.icon name="forth" class="w-8 h-8 cursor-pointer text-base-250" />
           </div>
+          <% end %>
           <img class="object-scale-down min-h-0 p-12 drop-shadow-md" src={@src}/>
           <div class="absolute right-0 left-0 mx-auto bottom-2 w-[90%] btn-primary hidden group-hover:block text-center hover:cursor-pointer" phx-click="open-editor" phx-value-value={value}>
             Continue with this design
