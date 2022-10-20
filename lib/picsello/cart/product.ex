@@ -7,6 +7,7 @@ defmodule Picsello.Cart.Product do
   import Money.Sigils
 
   use Ecto.Schema
+  alias Picsello.{Product, Repo}
 
   schema "product_line_items" do
     field :editor_id, :string
@@ -88,18 +89,24 @@ defmodule Picsello.Cart.Product do
   @doc "merges values for price, volume_discount, and print_credit_discount"
   def update_price(%__MODULE__{} = product, opts \\ []) do
     {credit, opts} = Keyword.pop(opts, :credits, ~M[0]USD)
-    fake_price = fake_price(product)
     real_price = real_price(product, opts)
+    whcc_product = Product |> Repo.get(product.whcc_product.id) |> Repo.preload(:category)
+    card_category_id = get_card_category_id()
 
-    # real_price | credit | credit_used
-    # 10         | 0      | 0
-    # 10         | 1      | 1
-    # 10         | 11     | 10
+    {price, volume_discount} =
+      case whcc_product.category.whcc_id do
+        ^card_category_id ->
+          {real_price, Money.new(0)}
+
+        _ ->
+          fake_price = product |> fake_price()
+          {fake_price, fake_price |> Money.subtract(real_price)}
+      end
 
     %{
       product
-      | price: fake_price,
-        volume_discount: Money.subtract(fake_price, real_price),
+      | price: price,
+        volume_discount: volume_discount,
         print_credit_discount:
           case Money.cmp(credit, real_price) do
             :lt -> credit
@@ -165,4 +172,6 @@ defmodule Picsello.Cart.Product do
       |> Decimal.to_integer()
     end)
   end
+
+  defp get_card_category_id(), do: Application.get_env(:picsello, :card_category_id)
 end
