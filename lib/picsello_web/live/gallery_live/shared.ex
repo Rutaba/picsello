@@ -219,7 +219,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     selected_filter = assigns[:selected_filter] || false
     photographer_favorites_filter = assigns[:photographer_favorites_filter] || false
 
-    if exclude_all && exclude_all != "is_client" do
+    if exclude_all do
       []
     else
       album = Map.get(assigns, :album, nil)
