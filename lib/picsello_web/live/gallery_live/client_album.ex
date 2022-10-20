@@ -21,6 +21,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> assign(:photo_updates, "false")
     |> assign(:download_all_visible, false)
     |> assign(:selected_filter, false)
+    |> assign(:client_proofing, "true")
     |> ok()
   end
 

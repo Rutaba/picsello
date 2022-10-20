@@ -219,7 +219,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     selected_filter = assigns[:selected_filter] || false
     photographer_favorites_filter = assigns[:photographer_favorites_filter] || false
 
-    if exclude_all do
+    if exclude_all && exclude_all != "is_client" do
       []
     else
       album = Map.get(assigns, :album, nil)
@@ -250,8 +250,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
       ) do
     opts = make_opts(socket, per_page, exclude_all)
     photos = Galleries.get_gallery_photos(id, opts)
-
-    if Enum.empty?(photos) do
+    client_proofing = Map.get(socket.assigns, :client_proofing)
+    if Enum.empty?(photos) && client_proofing do
       assign_new(socket, :photos, fn -> photos end)
     else
       socket
