@@ -3,7 +3,7 @@ defmodule Picsello.Questionnaire do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Job}
+  alias Picsello.{Job, Repo}
 
   defmodule Question do
     @moduledoc false
@@ -33,6 +33,7 @@ defmodule Picsello.Questionnaire do
     field(:job_type, :string)
     field(:name, :string)
     field(:is_organization_default, :boolean)
+    field(:is_picsello_default, :boolean)
     belongs_to :organization, Picsello.Organization
 
     timestamps()
@@ -41,10 +42,15 @@ defmodule Picsello.Questionnaire do
   @doc false
   def changeset(questionnaire, attrs) do
     questionnaire
-    |> cast(attrs, [:job_type, :name, :organization_id, :is_organization_default])
+    |> cast(attrs, [
+      :job_type,
+      :name,
+      :organization_id,
+      :is_organization_default,
+      :is_picsello_default
+    ])
     |> cast_embed(:questions, required: true)
     |> validate_required([:questions, :job_type, :name])
-    |> foreign_key_constraint(:job_type)
   end
 
   def for_job(%Job{type: job_type}) do
@@ -63,5 +69,27 @@ defmodule Picsello.Questionnaire do
         ),
       limit: 1
     )
+  end
+
+  def all() do
+    from(q in __MODULE__)
+    |> Repo.all()
+  end
+
+  def for_organization(organization_id) do
+    from(q in __MODULE__,
+      where: q.organization_id == ^organization_id,
+      order_by: [asc: q.organization_id, desc: q.inserted_at]
+    )
+    |> Repo.all()
+  end
+
+  def delete_one(questionnaire_id) do
+    from(q in __MODULE__, where: q.id == ^questionnaire_id)
+    |> Repo.delete_all()
+  end
+
+  def get_one(questionnaire_id) do
+    from(q in __MODULE__, where: q.id == ^questionnaire_id) |> Repo.one()
   end
 end

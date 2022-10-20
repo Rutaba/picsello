@@ -7,6 +7,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign_job_types()
     |> assign_changeset(%{}, %{})
     |> ok()
   end
@@ -15,23 +16,54 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   def render(assigns) do
     ~H"""
     <div class="modal">
-      <h1 class="text-3xl font-bold mb-4">Add Custom Questionnaire Template</h1>
+      <div class="sm:flex items-center gap-4">
+      <.step_heading state={@state} />
+        <%= if @state === "" do %>
+          <div><.badge color={:gray}>View Only</.badge></div>
+        <% end %>
+      </div>
+
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-        <%= labeled_input f, :name, label: "Name", phx_debounce: "500" %>
+        <%= labeled_input f, :name, label: "Name", phx_debounce: "500", disabled: @state === "" %>
+
+        <div class="sm:col-span-3">
+        <%= label_for f, :type, label: "Type of Photography" %>
+        <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
+          <%= for job_type <- @job_types do %>
+            <.job_type_option type="radio" name={input_name(f, :job_type)} job_type={job_type} checked={input_value(f, :job_type) == job_type} disabled={@state === ""} />
+          <% end %>
+        </div>
+      </div>
 
         <PicselloWeb.LiveModal.footer>
+          <%= if @state !== "" do %>
           <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Save">
             Save
           </button>
+          <% end %>
 
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-            Cancel
+            <%= if @state == "" do %>Close<% else %>Cancel<% end %>
           </button>
         </PicselloWeb.LiveModal.footer>
       </.form>
     </div>
     """
+  end
+
+  def step_heading(assigns) do
+    ~H"""
+      <h1 class="mt-2 mb-4 text-3xl font-bold"><%= heading_title(@state) %></h1>
+    """
+  end
+
+  def heading_title(state) do
+    case state do
+      :edit -> "Edit custom questionnaire"
+      :create -> "Add custom questionnaire"
+      _ -> "View custom questionnaire"
+    end
   end
 
   def open(%{assigns: assigns} = socket, opts \\ %{}),
@@ -69,8 +101,9 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
          assigns: %{questionnaire: questionnaire}
        }) do
     questionnaire
+    |> Map.drop([:organization])
     |> Questionnaire.changeset(params)
-    |> Repo.insert()
+    |> Repo.insert_or_update()
   end
 
   defp assign_changeset(
@@ -87,5 +120,12 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign(changeset: changeset)
+  end
+
+  defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
+    socket
+    |> assign_new(:job_types, fn ->
+      (organization.profile.job_types ++ [Picsello.JobType.other_type()]) |> Enum.uniq()
+    end)
   end
 end

@@ -3,7 +3,7 @@
     <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
     <.crumbs class="text-base text-base-250">
       <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
-      <:crumb>Booking events</:crumb>
+      <:crumb>Custom Questionnaires</:crumb>
     </.crumbs>
   </div>
 
@@ -40,10 +40,30 @@
   </div>
 <% else %>
   <div class="p-6 center-container">
-    <div class="hidden sm:grid sm:grid-cols-4 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
-      <div class="sm:col-span-2">Event Details</div>
-      <div>Bookings so far</div>
-      <div>Actions</div>
+    <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
+      <div class="sm:col-span-6">Name</div>
+      <div class="sm:col-span-2">Job Type</div>
+      <div class="sm:col-span-2"># of questions</div>
+      <div class="sm:col-span-2">Actions</div>
     </div>
+    <%= for questionnaire <- @questionnaires do %>
+      <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
+        <div class="sm:col-span-6 grid sm:flex items-center gap-4">
+          <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}}} class="block text-2xl font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
+          <%= if questionnaire.is_picsello_default do %>
+            <div><.badge color={:gray}>View Only</.badge></div>
+          <% end %>
+        </div>
+        <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
+          <%= questionnaire.job_type  %>
+        </div>
+        <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
+          -
+        </div>
+        <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
+          <.actions_cell questionnaire={questionnaire} />
+        </div>
+      </div>
+    <% end %>
   </div>
 <% end %>
