@@ -476,18 +476,17 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   def ranges([]), do: []
 
   defp img_box(%{card_design: true, hide_next: hide_next, hide_prev: hide_prev} = assigns) do
-    value = if assigns.value, do: assigns.value, else: nil
-
+    value = Map.get(assigns, :value)
     ~H"""
       <div class="aspect-h-1 aspect-w-1">
         <div class="relative bg-gradient-to-bl from-[#f5f6f7] to-[#ededed] flex flex-col justify-center group">
           <%= if !hide_prev do %>
-          <div phx-click="prev" phx-value-value={value} class="">
+          <div phx-click="prev" phx-value-value={value} class="z-40 left-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
             <.icon name="back" class="w-8 h-8 cursor-pointer text-base-250" />
           </div>
           <% end %>
           <%= if !hide_next do %>
-          <div phx-click="next" phx-value-value={value} class="">
+          <div phx-click="next" phx-value-value={value} class="z-40 right-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
             <.icon name="forth" class="w-8 h-8 cursor-pointer text-base-250" />
           </div>
           <% end %>
