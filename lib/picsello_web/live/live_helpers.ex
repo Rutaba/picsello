@@ -397,8 +397,8 @@ defmodule PicselloWeb.LiveHelpers do
   def is_custom_brand_link("link_" <> _), do: true
   def is_custom_brand_link(_), do: false
 
-  def remove_cache(user_id, gallery_id) do
-    PicselloWeb.UploaderCache.delete(user_id, gallery_id)
+  def remove_cache(user_id, _gallery_id) do
+    PicselloWeb.UploaderCache.delete(user_id)
   end
 
   def stripe_checkout(%{assigns: %{proposal: proposal, job: job}} = socket) do
