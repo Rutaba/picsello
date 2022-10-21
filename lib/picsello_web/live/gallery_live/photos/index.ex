@@ -759,7 +759,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         {:photo_processed, _, photo},
         %{assigns: %{total_progress: total_progress}} = socket
       ) do
-    if total_progress == 100 do
+    if total_progress == 100 || total_progress == 0 do
       photo_update =
         %{
           id: photo.id,
