@@ -904,7 +904,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         id: "client_liked",
         photos: photos,
         name: "Client Favorites",
-        is_client_liked: true
+        is_client_liked: true,
+        orders: []
       }
     end
   end
