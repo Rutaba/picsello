@@ -153,14 +153,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   defp get_questionnaire(%{assigns: %{current_user: current_user}} = socket) do
     %Questionnaire{
       job_type: "other",
-      organization_id: current_user.organization_id,
-      questions: [
-        %{
-          prompt: "Tell me about your shoot",
-          type: :text,
-          placeholder: "e.g. Headshot, Birthday party"
-        }
-      ]
+      organization_id: current_user.organization_id
     }
   end
 

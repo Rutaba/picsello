@@ -58,7 +58,7 @@
           <%= questionnaire.job_type  %>
         </div>
         <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
-          -
+          <%= questionnaire.questions |> length()  %>
         </div>
         <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
           <.actions_cell questionnaire={questionnaire} />
