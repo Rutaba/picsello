@@ -113,9 +113,21 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_event("open_name_change", %{}, %{assigns: %{job: job}} = socket) do
+    assigns = %{
+      job: job,
+      current_user: Map.take(socket.assigns, [:current_user])
+    }
 
+    socket
+    |> open_modal(
+      PicselloWeb.Live.Profile.EditNameSharedComponent,
+      Map.put(assigns, :parent_pid, self())
+    )
+    |> noreply()
+  end
 
- def handle_info({:action_event, "open_email_compose"}, socket), do: open_email_compose(socket)
+  def handle_info({:action_event, "open_email_compose"}, socket), do: open_email_compose(socket)
 
   def handle_info(
         {:message_composed, message_changeset},
@@ -157,6 +169,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket) do
     package = package |> Repo.preload(:contract, force: true)
+
     socket
     |> assign(package: package, job: %{job | package: package, package_id: package.id})
     |> assign_shoots()
@@ -282,12 +295,12 @@ defmodule PicselloWeb.JobLive.Shared do
             <a class="hover-drop-down">Send an email</a>
           </li>
           <%= if @job.job_status.is_lead  do %>
-            <li phx-click="open_lead_name_change"  class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+            <li phx-click="open_name_change"  class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
               <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
-              <a class="hover-drop-down" phx-click="open_lead_name_change"> Edit lead name</a>
+              <a class="hover-drop-down" phx-click="open_name_change"> Edit lead name</a>
             </li>
           <% else %>
-            <li phx-click="open_job_name_change" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+            <li phx-click="open_name_change" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
               <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
               <a class="hover-drop-down"> Edit job name</a>
             </li>
@@ -502,6 +515,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def booking_details_section(assigns) do
     assigns = assigns |> Enum.into(%{disabled_copy_link: false})
+
     ~H"""
     <.section id="booking-details" icon="camera-laptop" title="Booking details" collapsed_sections={@collapsed_sections}>
       <.card title={if @proposal && (@proposal.sent_to_client || @proposal.accepted_at), do: "Here’s what you sent your client", else: "Here’s what you’ll be sending your client"}>
@@ -736,7 +750,9 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign(is_schedule_valid: validity)
   end
 
-  def assign_disabled_copy_link(%{assigns: %{is_schedule_valid: is_schedule_valid} = assigns} = socket) do
+  def assign_disabled_copy_link(
+        %{assigns: %{is_schedule_valid: is_schedule_valid} = assigns} = socket
+      ) do
     socket
     |> assign(disabled_copy_link: !is_schedule_valid || !!proposal_disabled_message(assigns))
   end
@@ -752,7 +768,7 @@ defmodule PicselloWeb.JobLive.Shared do
       package.shoot_count != Enum.count(shoots, &elem(&1, 1)) ->
         "Add all shoots"
 
-        true ->
+      true ->
         nil
     end
   end
@@ -806,6 +822,4 @@ defmodule PicselloWeb.JobLive.Shared do
     })
     |> noreply()
   end
-
-
 end

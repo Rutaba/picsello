@@ -111,15 +111,6 @@ defmodule PicselloWeb.JobLive.Show do
     |> noreply()
   end
 
-  def handle_event("open_job_name_change", %{}, %{assigns: %{job: job}} = socket) do
-    assigns = %{
-      job: job
-    }
-    socket
-    |> open_modal(PicselloWeb.Live.Profile.EditNameSharedComponent, Map.put(assigns, :parent_pid, self()))
-    |> noreply()
-  end
-
   @impl true
   def handle_event("open-stripe", _, %{assigns: %{job: job, current_user: current_user}} = socket) do
     client = job |> Repo.preload(:client) |> Map.get(:client)
