@@ -7,10 +7,11 @@ defmodule Picsello.Workers.CleanUploader do
   import Ecto.Query, only: [from: 2]
 
   def perform(_) do
-    _memory = Picsello.Repo.all(from u in "users", select: u.id)
-    |> Enum.map(fn user_id ->
-      PicselloWeb.UploaderCache.delete(user_id)
-    end)
+    _memory =
+      Picsello.Repo.all(from u in "users", select: u.id)
+      |> Enum.map(fn user_id ->
+        PicselloWeb.UploaderCache.delete(user_id)
+      end)
 
     :ok
   end
