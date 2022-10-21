@@ -25,7 +25,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       show_filter_form: false,
       filter_applied?: false,
       hide_next: false,
-      hide_prev: false
+      hide_prev: true
     )
     |> ok(temporary_assigns: [designs: []])
   end
