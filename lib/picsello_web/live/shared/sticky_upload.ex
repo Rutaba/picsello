@@ -15,8 +15,8 @@ defmodule PicselloWeb.Shared.StickyUpload do
 
     gallery_ids =
       user_id
+      |> clean_data()
       |> PicselloWeb.UploaderCache.get()
-      |> clean_data(user_id)
       |> subscribe_upload()
 
     socket
@@ -53,7 +53,7 @@ defmodule PicselloWeb.Shared.StickyUpload do
       <div class="flex pl-2 items-center">
         <div class={"w-52 h-2 rounded-lg bg-[#0094ad]"}>
           <div class="h-full rounded-lg bg-white" style={"width: #{@accumulated_progress}%"}></div>
-        </div>  
+        </div>
       </div>
     </div>
     """
@@ -71,11 +71,9 @@ defmodule PicselloWeb.Shared.StickyUpload do
     gallery_ids
   end
 
-  defp clean_data(upload_data, user_id) do
-    data = upload_data |> Enum.filter(fn {pid, _, _} -> Process.alive?(pid) end)
-    PicselloWeb.UploaderCache.update(user_id, data)
-
-    data
+  defp clean_data(user_id) do
+    PicselloWeb.UploaderCache.delete(user_id)
+    user_id
   end
 
   def sticky_upload(%{current_user: nil} = assigns), do: ~H""

@@ -111,7 +111,8 @@ config :picsello, Oban,
        {"*/20 * * * *", Picsello.Workers.SendShootReminder},
        {"0 * * * *", Picsello.Workers.SendPaymentScheduleReminder},
        {"0 8 * * *", Picsello.Workers.SendGalleryExpirationReminder},
-       {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog}
+       {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog},
+       {"0 1 * * *", Picsello.Workers.CleanUploader}
      ]}
   ]
 
