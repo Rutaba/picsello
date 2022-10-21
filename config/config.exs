@@ -50,6 +50,7 @@ config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGE
 config :picsello, :help_scout_id, System.get_env("HELP_SCOUT_ID")
 config :picsello, :help_scout_id_business, System.get_env("HELP_SCOUT_ID_BUSINESS")
 config :picsello, :booking_reservation_seconds, 60 * 10
+config :picsello, :card_category_id, System.get_env("CARD_CATEGORY_ID")
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
