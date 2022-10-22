@@ -65,7 +65,7 @@ defmodule Picsello.Accounts.User do
 
   def enabled?(_), do: false
 
-  def toggle( %__MODULE__{} = current_user) do
+  def toggle(%__MODULE__{} = current_user) do
     current_user
     |> Ecto.Changeset.change(%{allow_cash_payment: !enabled?(current_user)})
     |> Repo.update!()
