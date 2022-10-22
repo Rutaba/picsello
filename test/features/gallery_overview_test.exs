@@ -180,7 +180,6 @@ defmodule Picsello.GalleryOverviewTest do
     |> assert_disabled(select("date[month]"))
     |> assert_disabled(select("date[day]"))
     |> assert_disabled(select("date[year]"))
-
   end
 
   feature "Enable Gallery", %{session: session, gallery: gallery} do
@@ -194,7 +193,6 @@ defmodule Picsello.GalleryOverviewTest do
     |> click(css("#deleteGalleryPopupButton"))
     |> within_modal(&click(&1, button("Yes, enable")))
     |> assert_url_contains("/jobs")
-
   end
 
   feature "Delete Gallery", %{session: session, job: job, gallery: gallery} do

@@ -19,11 +19,12 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
         _,
         %{assigns: %{is_never_expires: is_never_expires}} = socket
       ) do
-    if !socket.assigns.gallery.disabled, do:
-      socket
-      |> assign(is_never_expires: !is_never_expires)
-      |> react_form(),
-    else: socket
+    if !socket.assigns.gallery.disabled,
+      do:
+        socket
+        |> assign(is_never_expires: !is_never_expires)
+        |> react_form(),
+      else: socket
   end
 
   @impl true
@@ -203,7 +204,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
 
   def save_disabled?(year, month, day, is_never_expires, gallery) do
     (!is_never_expires && !valid_date_controls?([year, month, day], gallery.expired_at)) ||
-      (is_never_expires && is_nil(gallery.expired_at) || gallery.disabled)
+      ((is_never_expires && is_nil(gallery.expired_at)) || gallery.disabled)
   end
 
   @impl true

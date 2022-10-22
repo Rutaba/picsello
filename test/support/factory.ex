@@ -456,7 +456,8 @@ defmodule Picsello.Factory do
       job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
       client_link_hash: UUID.uuid4(),
-      active: true
+      active: true,
+      disabled: false
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
@@ -480,7 +481,8 @@ defmodule Picsello.Factory do
       original_url: Photo.original_path("name", 333, "4444"),
       width: 300,
       height: 300,
-      active: true
+      active: true,
+      disabled: false
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
