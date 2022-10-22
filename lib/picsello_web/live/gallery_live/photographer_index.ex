@@ -400,8 +400,8 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
       _any ->
         socket
-        |> close_modal()
         |> assign(:gallery, gallery)
+        |> close_modal()
         |> put_flash(:success, "The gallery has been #{type}")
         |> noreply()
     end
@@ -444,5 +444,46 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       <.icon name="remove-icon" class={classes("w-3.5 h-3.5 ml-1 text-base-250", %{"pointer-events-none" => assigns.disabled})}/>
     </button>
     """
+  end
+
+  defp delete_gallery_section(assigns) do
+    if assigns.has_order? do
+      case assigns.gallery.disabled do
+        true ->
+          ~H"""
+            <h3 class="font-sans">Enable Gallery</h3>
+            <p class="font-sans">
+            Gallery orders are disabled, your client has made purchases from this gallery, so you can't delete it, or they'll lose their order
+            history. This action will enable additional gallery orders moving forward.
+            </p>
+            <button {testid("deleteGalleryPopupButton")} phx-click={"enable_gallery_popup"} class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">
+              Enable gallery
+            </button>
+          """
+
+        false ->
+          ~H"""
+            <h3 class="font-sans">Disable Gallery</h3>
+            <p class="font-sans">
+            Your client has made orders or selections from this gallery, so you can't delete it, or they'll lose their order
+              history. If you'd like, you can still disable the gallery.
+            </p>
+            <button {testid("deleteGalleryPopupButton")} phx-click={"disable_gallery_popup"} class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">
+              Disable gallery
+            </button>
+          """
+      end
+    else
+      ~H"""
+        <h3 class="font-sans">Delete gallery</h3>
+        <p class="font-sans">
+          If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is
+          the place for you.
+        </p>
+        <button {testid("deleteGalleryPopupButton")} phx-click={"delete_gallery_popup"} class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">
+          Delete gallery
+        </button>
+      """
+    end
   end
 end

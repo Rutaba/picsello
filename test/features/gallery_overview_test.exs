@@ -155,7 +155,6 @@ defmodule Picsello.GalleryOverviewTest do
     )
   end
 
-  @tag :dev
   feature "Disable Gallery", %{session: session, gallery: gallery} do
     _order = insert_order(gallery)
 
@@ -192,7 +191,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> scroll_to_bottom()
     |> click(css("#deleteGalleryPopupButton"))
     |> within_modal(&click(&1, button("Yes, enable")))
-    |> assert_url_contains("/jobs")
+    |> assert_url_contains("/galleries")
   end
 
   feature "Delete Gallery", %{session: session, job: job, gallery: gallery} do
@@ -202,9 +201,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> scroll_to_bottom()
     |> click(css("#deleteGalleryPopupButton"))
     |> within_modal(&click(&1, button("Yes, delete")))
-    |> assert_has(testid("card-Gallery", text: "Looks like you need to upload photos."))
-
-    assert current_path(session) == "/jobs/#{job.id}"
+    |> assert_url_contains("/jobs/#{job.id}")
   end
 
   feature "Set first photo of gallery as cover photo", %{

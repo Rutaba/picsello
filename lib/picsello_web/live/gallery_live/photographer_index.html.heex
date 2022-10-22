@@ -112,24 +112,7 @@
                   </div>
                <% end %>
                <div id="deleteGallery" class="flex flex-col mb-40 lg:mb-3 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
-                  <h3 class="font-sans"><%= if @has_order?, do: (if @gallery.disabled, do: "Enable gallery", else: "Disable gallery"), else: "Delete gallery" %></h3>
-                  <p class="font-sans">
-                  <%= if @has_order? do %>
-                     <%= if @gallery.disabled do %>
-                        Gallery orders are disabled, your client has made purchases from this gallery, so you can't delete it, or they'll lose their order
-                        history. This action will enable additional gallery orders moving forward.
-                     <% else %>
-                        Your client has made orders or selections from this gallery, so you can't delete it, or they'll lose their order
-                        history. If you'd like, you can still disable the gallery.
-                     <% end %>
-                  <% else %>
-                     If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is 
-                     the place for you.
-                  <% end %>
-                  </p>
-                  <button {testid("deleteGalleryPopupButton")} phx-click={if @has_order?, do: (if @gallery.disabled, do: "enable_gallery_popup", else: "disable_gallery_popup"), else: "delete_gallery_popup"} class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">
-                     <%= if @has_order?, do: (if @gallery.disabled, do: "Enable gallery", else: "Disable gallery"), else: "Delete gallery" %>
-                  </button>
+                  <.delete_gallery_section has_order?={@has_order?} gallery={@gallery} />
                </div>
             </div>
          </div>

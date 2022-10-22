@@ -19,12 +19,12 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
         _,
         %{assigns: %{is_never_expires: is_never_expires}} = socket
       ) do
-    if !socket.assigns.gallery.disabled,
-      do:
+    if socket.assigns.gallery.disabled,
+      do: socket,
+      else:
         socket
         |> assign(is_never_expires: !is_never_expires)
-        |> react_form(),
-      else: socket
+        |> react_form()
   end
 
   @impl true
