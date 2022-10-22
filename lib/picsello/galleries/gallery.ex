@@ -24,7 +24,7 @@ defmodule Picsello.Galleries.Gallery do
     field :expired_at, :utc_datetime
     field :total_count, :integer, default: 0
     field :active, :boolean, default: true
-    field :disabled, :boolean
+    field :disabled, :boolean, default: false
 
     belongs_to(:job, Job)
     has_many(:photos, Photo)

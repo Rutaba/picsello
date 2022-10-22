@@ -51,7 +51,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
                 <% else %>
                   <%= if @product.product_preview_enabled and @product.sell_product_enabled do %>
                     <button
-                    class={"flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer #{@disabled && 'pointer-events-none opacity-30 hover:opacity-30 hover:cursor-not-allowed'}"}
+                    class={classes("flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer", %{"pointer-events-none opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}
                     phx-click="edit"
                     id={"product-id-#{@product_id}"}
                     phx-value-product_id={@product_id}>

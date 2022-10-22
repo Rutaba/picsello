@@ -165,8 +165,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> scroll_to_bottom()
     |> click(css("#deleteGalleryPopupButton"))
     |> within_modal(&click(&1, button("Yes, disable")))
-    |> assert_url_contains("/jobs")
-
+    |> assert_url_contains("/galleries")
   end
 
   feature "Unable to update gallery settings when disabled", %{session: session, gallery: gallery} do
@@ -178,14 +177,12 @@ defmodule Picsello.GalleryOverviewTest do
     |> resize_window(1280, 800)
     |> assert_disabled(css(".galleryName"))
     |> assert_disabled(css("#galleryPasswordInput"))
-    |> assert_disabled(css(".month"))
-    |> assert_disabled(css(".day"))
-    |> assert_disabled(css(".year"))
-    |> assert_disabled(css(".month"))
+    |> assert_disabled(select("date[month]"))
+    |> assert_disabled(select("date[day]"))
+    |> assert_disabled(select("date[year]"))
 
   end
 
-  @tag :dev
   feature "Enable Gallery", %{session: session, gallery: gallery} do
     _order = insert_order(gallery)
     {:ok, gallery} = Galleries.update_gallery(gallery, %{disabled: true})

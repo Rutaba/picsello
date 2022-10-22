@@ -49,12 +49,12 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
         </a>
       </div>
       <div {testid("password_component")} class="flex items-center justify-between w-full mt-3 lg:items-start">
-        <button phx-click="regenerate" disabled={@gallery.disabled} phx-target={@myself} class={"p-4 font-bold font-sans cursor-pointer text-blue-planning-300 lg:pt-0 #{@gallery.disabled && 'text-gray-200'}"} id="regeneratePasswordButton">
+        <button phx-click="regenerate" disabled={@gallery.disabled} phx-target={@myself} class={classes("p-4 font-bold font-sans cursor-pointer text-blue-planning-300 lg:pt-0", %{"text-gray-200" => @gallery.disabled})} id="regeneratePasswordButton">
             Re-generate
         </button>
         <button disabled={@gallery.disabled} id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@gallery.password}
-        class={"py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36 mt-2 #{@gallery.disabled && 'border-gray-200 text-gray-200'}"}>
-        <div class={"hidden p-1 text-sm rounded font-sans shadow bg-white"} role="tooltip">
+        class={classes("py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36 mt-2", %{"border-gray-200 text-gray-200" => @gallery.disabled})}>
+        <div class="hidden p-1 text-sm rounded font-sans shadow bg-white" role="tooltip">
             Copied!
         </div>
           Copy password

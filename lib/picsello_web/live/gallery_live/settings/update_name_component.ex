@@ -61,7 +61,7 @@ defmodule PicselloWeb.GalleryLive.Settings.UpdateNameComponent do
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameForm">
         <%= text_input f, :name, disabled: @gallery.disabled, class: "galleryName gallerySettingsInput" %>
         <div class="flex items-center justify-between w-full mt-5 lg:items-start">
-          <button type="button" phx-click="reset" phx-target={@myself} class={"p-4 font-bold cursor-pointer text-blue-planning-300 lg:pt-0 #{@gallery.disabled && 'pointer-events-none text-gray-200'}"}>Reset</button>
+          <button type="button" phx-click="reset" phx-target={@myself} class={classes("p-4 font-bold cursor-pointer text-blue-planning-300 lg:pt-0", %{"pointer-events-none text-gray-200" => @gallery.disabled})}>Reset</button>
           <%= submit "Save", id: "saveGalleryName", class: "btn-settings font-sans w-32 px-11 cursor-pointer", disabled: !@changeset.valid? || @gallery.disabled, phx_disable_with: "Saving..." %>
         </div>
       </.form>

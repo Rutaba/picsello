@@ -57,11 +57,11 @@
           </div>
           <hr class="block md:hidden base-250 w-full my-4"/>
           <div class="flex flex-cols md:col-span-2 lg:col-span-1 align-top md:w-auto w-full items-center md:text-sm lg:text-base">
-            <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class={"items-center text-center h-fit w-full mr-2 py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300 #{gallery.disabled && 'pointer-events-none text-gray-200 border-gray-200'}"}>
+            <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class={classes("items-center text-center h-fit w-full mr-2 py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => @gallery.disabled})}>
               Upload photos
             </a>
-            <button id="copy-link" class={"h-fit w-full py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300 #{gallery.disabled && 'pointer-events-none text-gray-200 border-gray-200'}"} data-clipboard-text={Routes.gallery_photographer_index_url(@socket, :index, gallery.id)} phx-hook="Clipboard">
-              <.icon name="anchor" class={"w-4 h-4 fill-current text-blue-planning-300 inline mr-1 #{gallery.disabled && 'text-gray-200'}"} />
+            <button id="copy-link" class={classes("h-fit w-full py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => @gallery.disabled})} data-clipboard-text={Routes.gallery_photographer_index_url(@socket, :index, gallery.id)} phx-hook="Clipboard">
+              <.icon name="anchor" class={classes("w-4 h-4 fill-current text-blue-planning-300 inline mr-1", %{"text-gray-200" => @gallery.disabled})} />
               Copy link
               <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
                 Copied!

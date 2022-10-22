@@ -371,7 +371,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   defp process_gallery(result, socket, type) do
-    {succuss, failure} =
+    {success, failure} =
       case type do
         :delete -> {"deleted", "delete"}
         :enabled -> {"enabled", "enable"}
@@ -380,15 +380,29 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
     case result do
       {:ok, gallery} ->
-        socket
-        |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
-        |> put_flash(:success, "The gallery has been #{succuss}")
-        |> noreply()
+        process_gallery(socket, success, gallery)
 
       _any ->
         socket
         |> put_flash(:error, "Could not #{failure} gallery")
         |> close_modal()
+        |> noreply()
+    end
+  end
+
+  defp process_gallery(socket, type, gallery) do
+    case type do
+      "deleted" ->
+        socket
+        |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
+        |> put_flash(:success, "The gallery has been #{type}")
+        |> noreply()
+
+      _any ->
+        socket
+        |> close_modal()
+        |> assign(:gallery, gallery)
+        |> put_flash(:success, "The gallery has been #{type}")
         |> noreply()
     end
   end
@@ -427,7 +441,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   defp remove_watermark_button(assigns) do
     ~H"""
     <button type="button" disabled={assigns.disabled} title="remove watermark" phx-click="delete_watermark_popup" class="pl-14">
-      <.icon name="remove-icon" class={"w-3.5 h-3.5 ml-1 text-base-250 #{assigns.disabled && 'pointer-events-none'}"}/>
+      <.icon name="remove-icon" class={classes("w-3.5 h-3.5 ml-1 text-base-250", %{"pointer-events-none" => assigns.disabled})}/>
     </button>
     """
   end
