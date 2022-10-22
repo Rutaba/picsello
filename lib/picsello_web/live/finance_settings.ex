@@ -54,28 +54,30 @@ defmodule PicselloWeb.Live.FinanceSettings do
         <.card title="Accepted payment types" class="intro-payments">
           <p class="mt-2">Here you can enable if you’d like to accept offline payments. Be careful, you are opening yourself up to more manual work!</p>
           <p class="font-bold mt-4">I would like to accept:</p>
-          <p class="font-semibold mt-4">Cash/check payments</p>
-          <div class="flex items-center justify-between -mt-8">
-          <p class="font-normal mt-2 flex justify-left">Accept offline payments</p>
-          <div class="flex mt-6 justify-end">
-          <.form for={:toggle} phx-change="toggle">
-          <label class="mt-4 text-2xl flex">
-            <input type="checkbox" class="peer hidden" checked={User.enabled?(@current_user)}/>
-            <div class="hidden peer-checked:flex">
-              <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
-                <div class="rounded-full h-7 w-7 bg-base-100"></div>
-              </div>
-              Enabled
+          <div class="flex items-center mt-2 justify-between">
+            <div class="flex flex-col">
+              <p class="font-semibold">Cash/check payments</p>
+              <p class="font-normal flex">Accept offline payments</p>
             </div>
-            <div class="flex peer-checked:hidden">
-              <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
-                <div class="rounded-full h-7 w-7 bg-blue-planning-300"></div>
-              </div>
-              Disabled
+            <div class="flex justify-end items-center">
+              <.form for={:toggle} phx-change="toggle">
+                <label class="mt-4 text-lg flex">
+                  <input type="checkbox" class="peer hidden" checked={User.enabled?(@current_user)}/>
+                  <div class="hidden peer-checked:flex">
+                    <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
+                      <div class="rounded-full h-5 w-5 bg-base-100"></div>
+                    </div>
+                    Enabled
+                  </div>
+                  <div class="flex peer-checked:hidden">
+                    <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
+                      <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+                    </div>
+                    Disabled
+                  </div>
+                </label>
+              </.form>
             </div>
-          </label>
-          </.form>
-          </div>
           </div>
         </.card>
       </div>
