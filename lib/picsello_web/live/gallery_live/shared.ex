@@ -250,9 +250,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
       ) do
     opts = make_opts(socket, per_page, exclude_all)
     photos = Galleries.get_gallery_photos(id, opts)
+    client_proofing = Map.get(socket.assigns, :client_proofing)
 
-    socket
-    |> assign(:photos, photos |> Enum.take(per_page))
+    if Enum.empty?(photos) && client_proofing do
+      assign_new(socket, :photos, fn -> photos end)
+    else
+      socket
+      |> assign(:photos, photos |> Enum.take(per_page))
+    end
     |> assign(:has_more_photos, photos |> length > per_page)
   end
 
