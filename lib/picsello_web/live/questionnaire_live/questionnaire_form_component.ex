@@ -55,10 +55,10 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
                   <button class="bg-red-sales-100 border border-red-sales-300 hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="delete-question" phx-target={@myself} phx-value-id={f_questions.index}>
                     <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
                   </button>
-                  <button class="bg-white border hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="down">
+                  <button class="bg-white border hover:border-white rounded-lg flex items-center p-2" type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="down">
                     <.icon name="down" class="inline-block w-4 h-4 stroke-current stroke-3 text-black" />
                   </button>
-                  <button class="bg-white border hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="up">
+                  <button class="bg-white border hover:border-white rounded-lg flex items-center p-2" type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="up">
                     <.icon name="up" class="inline-block w-4 h-4 stroke-current stroke-3 text-black" />
                   </button>
                 </div>
@@ -194,18 +194,71 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   end
 
   @impl true
-  def handle_event("edit-option", %{}, %{assigns: %{questionnaire: questionnaire}} = socket) do
-    socket |> noreply()
+  def handle_event(
+        "edit-option",
+        %{"id" => id, "option-id" => option_id, "value" => value},
+        %{assigns: %{questionnaire: %{questions: questions}}} = socket
+      ) do
+    index = String.to_integer(id)
+    option_index = String.to_integer(option_id)
+
+    new_option_list =
+      questions
+      |> Enum.fetch!(index)
+      |> Map.get(:options)
+      |> List.replace_at(option_index, value)
+
+    new_question = questions |> Enum.fetch!(index) |> Map.put(:options, new_option_list)
+
+    questions
+    |> List.replace_at(index, new_question)
+    |> assign_question_changeset(socket)
+    |> save_questionnaire()
   end
 
   @impl true
-  def handle_event("delete-option", %{}, %{assigns: %{questionnaire: questionnaire}} = socket) do
-    socket |> noreply()
+  def handle_event(
+        "delete-option",
+        %{"id" => id, "option-id" => option_id},
+        %{assigns: %{questionnaire: %{questions: questions}}} = socket
+      ) do
+    index = String.to_integer(id)
+    option_index = String.to_integer(option_id)
+
+    new_option_list =
+      questions
+      |> Enum.fetch!(index)
+      |> Map.get(:options)
+      |> List.delete_at(option_index)
+
+    new_question = questions |> Enum.fetch!(index) |> Map.put(:options, new_option_list)
+
+    questions
+    |> List.replace_at(index, new_question)
+    |> assign_question_changeset(socket)
+    |> save_questionnaire()
   end
 
   @impl true
-  def handle_event("add-option", %{}, %{assigns: %{questionnaire: questionnaire}} = socket) do
-    socket |> noreply()
+  def handle_event(
+        "add-option",
+        %{"id" => id},
+        %{assigns: %{questionnaire: %{questions: questions}}} = socket
+      ) do
+    index = String.to_integer(id)
+
+    new_option_list =
+      questions
+      |> Enum.fetch!(index)
+      |> Map.get(:options)
+      |> List.insert_at(-1, "")
+
+    new_question = questions |> Enum.fetch!(index) |> Map.put(:options, new_option_list)
+
+    questions
+    |> List.replace_at(index, new_question)
+    |> assign_question_changeset(socket)
+    |> save_questionnaire()
   end
 
   @impl true
@@ -236,7 +289,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       <ul>
         <%= for {option, index} <- input_value(@f_questions, :options) |> Enum.with_index() do %>
           <li>
-            <input type="text" class="input" value={option} placeholder="Enter an option…" phx-keydown="edit-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-value-type={option} phx-target={@myself} />
+            <input type="text" class="input" value={option} placeholder="Enter an option…" phx-blur="edit-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-target={@myself} />
             <button type="button" phx-click="delete-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-target={@myself}>
               <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
             </button>
