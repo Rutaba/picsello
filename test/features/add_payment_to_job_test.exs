@@ -66,8 +66,6 @@ defmodule Picsello.AddPaymentsToJobTest do
     |> fill_in(text_field("add-payment-form_price"), with: "5")
     |> fill_in(text_field("add-payment-form_paid_at"), with: "~U[01-01-003022]~T09:00PM")
     |> click(button("Save"))
-    |> click(css("#options"))
-    |> click(button("Mark as paid"))
     |> assert_has(css("#payments", count: 1, text: "Payment 1"))
     |> assert_has(css("#offline-amount", count: 1, text: "$5.00"))
   end
