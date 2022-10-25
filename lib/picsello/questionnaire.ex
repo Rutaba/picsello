@@ -40,7 +40,7 @@ defmodule Picsello.Questionnaire do
   end
 
   @doc false
-  def changeset(questionnaire, attrs) do
+  def changeset(questionnaire, attrs \\ %{}) do
     questionnaire
     |> cast(attrs, [
       :job_type,

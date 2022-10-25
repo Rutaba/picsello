@@ -24,6 +24,8 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
         assigns = Map.merge(assigns, %{questionnaire: questionnaire})
 
         socket
+        |> put_flash(:success, "Questionnaire created")
+        |> assign_questionnaires()
         |> PicselloWeb.QuestionnaireFormComponent.open(
           Map.merge(Map.take(assigns, [:questionnaire, :current_user]), %{state: :create})
         )
@@ -74,25 +76,32 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
       ) do
     id = String.to_integer(questionnaire_id)
 
-    assigns =
-      Map.merge(assigns, %{
-        questionnaire:
-          get_questionnaire(id)
-          |> Map.put(:id, nil)
-          |> Map.put(:name, "Copy of " <> get_questionnaire(id).name)
-          |> Map.put(:organization_id, socket.assigns.current_user.organization_id)
-          |> Map.put(:is_picsello_default, false)
-          |> Map.put(:is_organization_default, false)
-          |> Map.put(:inserted_at, nil)
-          |> Map.put(:updated_at, nil)
-          |> Map.put(:__meta__, %Picsello.Questionnaire{} |> Map.get(:__meta__))
-      })
+    case Questionnaire.changeset(
+           get_questionnaire(id)
+           |> Map.put(:id, nil)
+           |> Map.put(:name, "Copy of " <> get_questionnaire(id).name)
+           |> Map.put(:organization_id, socket.assigns.current_user.organization_id)
+           |> Map.put(:is_picsello_default, false)
+           |> Map.put(:is_organization_default, false)
+           |> Map.put(:inserted_at, nil)
+           |> Map.put(:updated_at, nil)
+           |> Map.put(:__meta__, %Picsello.Questionnaire{} |> Map.get(:__meta__))
+         )
+         |> Repo.insert() do
+      {:ok, questionnaire} ->
+        assigns = Map.merge(assigns, %{questionnaire: questionnaire})
 
-    socket
-    |> PicselloWeb.QuestionnaireFormComponent.open(
-      Map.merge(Map.take(assigns, [:questionnaire, :current_user]), %{state: :edit})
-    )
-    |> noreply()
+        socket
+        |> put_flash(:success, "Questionnaire duplicated")
+        |> assign_questionnaires()
+        |> PicselloWeb.QuestionnaireFormComponent.open(
+          Map.merge(Map.take(assigns, [:questionnaire, :current_user]), %{state: :edit})
+        )
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset) |> noreply()
+    end
   end
 
   @impl true

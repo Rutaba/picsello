@@ -314,7 +314,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   defp options_editor(assigns) do
     ~H"""
     <div class="mt-6">
-      <h4 class="font-bold mb-2">Options</h4>
+      <h4 class="mb-1 input-label">Question Answers</h4>
       <ul class="mb-6">
         <%= for {option, index} <- input_value(@f_questions, :options) |> Enum.with_index() do %>
           <li class="mb-2 flex items-center gap-2">
