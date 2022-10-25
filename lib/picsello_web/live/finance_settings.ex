@@ -63,13 +63,13 @@ defmodule PicselloWeb.Live.FinanceSettings do
               <.form for={:toggle} phx-change="toggle">
                 <label class="mt-4 text-lg flex">
                   <input type="checkbox" class="peer hidden" checked={User.enabled?(@current_user)}/>
-                  <div class="hidden peer-checked:flex">
+                  <div class="hidden peer-checked:flex cursor-pointer">
                     <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
                       <div class="rounded-full h-5 w-5 bg-base-100"></div>
                     </div>
                     Enabled
                   </div>
-                  <div class="flex peer-checked:hidden">
+                  <div class="flex peer-checked:hidden cursor-pointer">
                     <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
                       <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
                     </div>
