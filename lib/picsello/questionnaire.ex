@@ -19,7 +19,7 @@ defmodule Picsello.Questionnaire do
       )
 
       field(:optional, :boolean)
-      field(:options, {:array, :string})
+      field(:options, {:array, :string}, default: [""])
     end
 
     def changeset(question, attrs) do

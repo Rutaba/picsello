@@ -76,7 +76,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
                 </div>
                 <div class="flex flex-col mt-6">
                   <%= label_for f_questions, :type, label: "Question Type" %>
-                  <%= select f_questions, :type, field_options(), class: "select", disabled: @state === "" %>
+                  <%= select f_questions, :type, field_options(), class: "select", disabled: @state === "", phx_blur: "edit-type", phx_target: @myself, phx_value_id: f_questions.index %>
                 </div>
 
                 <%= case input_value(f_questions, :type) do %>
@@ -147,6 +147,22 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
         }
       )
 
+  def handle_event(
+        "edit-type",
+        %{"value" => value, "id" => id},
+        %{assigns: %{questionnaire: questionnaire}} = socket
+      ) do
+    index = String.to_integer(id)
+
+    questions = questionnaire.questions
+    new_question = questions |> Enum.fetch!(index) |> Map.put(:type, value |> String.to_atom())
+
+    questions
+    |> List.replace_at(index, new_question)
+    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
+    |> save_questionnaire()
+  end
+
   @impl true
   def handle_event("add-question", %{}, %{assigns: %{questionnaire: questionnaire}} = socket) do
     questions = questionnaire.questions
@@ -159,7 +175,10 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       prompt: "",
       type: :text
     })
-    |> assign_question_changeset(socket)
+    |> assign_question_changeset(
+      socket,
+      insert_or_update?(questionnaire.id)
+    )
     |> save_questionnaire()
   end
 
@@ -167,11 +186,13 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   def handle_event(
         "reorder-question",
         %{"direction" => direction},
-        %{assigns: %{questionnaire: %{questions: questions}}} = socket
+        %{assigns: %{questionnaire: questionnaire}} = socket
       ) do
+    questions = questionnaire.questions
+
     questions
     |> swap(direction)
-    |> assign_question_changeset(socket)
+    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
     |> save_questionnaire()
   end
 
@@ -179,13 +200,15 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   def handle_event(
         "delete-question",
         %{"id" => id},
-        %{assigns: %{questionnaire: %{questions: questions}}} = socket
+        %{assigns: %{questionnaire: questionnaire}} = socket
       ) do
     index = String.to_integer(id)
 
+    questions = questionnaire.questions
+
     questions
     |> List.delete_at(index)
-    |> assign_question_changeset(socket)
+    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
     |> save_questionnaire()
   end
 
@@ -193,10 +216,12 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   def handle_event(
         "edit-option",
         %{"id" => id, "option-id" => option_id, "value" => value},
-        %{assigns: %{questionnaire: %{questions: questions}}} = socket
+        %{assigns: %{questionnaire: questionnaire}} = socket
       ) do
     index = String.to_integer(id)
     option_index = String.to_integer(option_id)
+
+    questions = questionnaire.questions
 
     new_option_list =
       questions
@@ -208,7 +233,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     questions
     |> List.replace_at(index, new_question)
-    |> assign_question_changeset(socket)
+    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
     |> save_questionnaire()
   end
 
@@ -216,10 +241,12 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   def handle_event(
         "delete-option",
         %{"id" => id, "option-id" => option_id},
-        %{assigns: %{questionnaire: %{questions: questions}}} = socket
+        %{assigns: %{questionnaire: questionnaire}} = socket
       ) do
     index = String.to_integer(id)
     option_index = String.to_integer(option_id)
+
+    questions = questionnaire.questions
 
     new_option_list =
       questions
@@ -231,7 +258,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     questions
     |> List.replace_at(index, new_question)
-    |> assign_question_changeset(socket)
+    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
     |> save_questionnaire()
   end
 
@@ -239,9 +266,11 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   def handle_event(
         "add-option",
         %{"id" => id},
-        %{assigns: %{questionnaire: %{questions: questions}}} = socket
+        %{assigns: %{questionnaire: questionnaire}} = socket
       ) do
     index = String.to_integer(id)
+
+    questions = questionnaire.questions
 
     new_option_list =
       questions
@@ -253,7 +282,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     questions
     |> List.replace_at(index, new_question)
-    |> assign_question_changeset(socket)
+    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
     |> save_questionnaire()
   end
 
@@ -298,15 +327,14 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       <.icon_button {testid("add-option")} phx-click="add-option" phx-value-id={@f_questions.index} phx-target={@myself} class="py-1 px-4 w-full sm:w-auto justify-center" title="Add question" color="blue-planning-300" icon="plus">
         Add option
       </.icon_button>
-      <%= end %>
+      <% end %>
     </div>
     """
   end
 
-  defp assign_question_changeset(questions, socket) do
+  defp assign_question_changeset(questions, socket, action \\ :update) do
     map = questions |> Enum.map(fn question -> question |> Map.from_struct() end)
-
-    socket |> assign_changeset(%{questions: map}, :update)
+    socket |> assign_changeset(%{questions: map}, action)
   end
 
   defp save_questionnaire(params, %{
@@ -315,6 +343,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     questionnaire
     |> Map.drop([:organization])
     |> Questionnaire.changeset(params)
+    |> IO.inspect()
     |> Repo.insert_or_update()
   end
 
@@ -366,6 +395,14 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       {"Phone", :phone},
       {"Email", :email}
     ]
+  end
+
+  defp insert_or_update?(question_id) do
+    if is_nil(question_id) do
+      :insert
+    else
+      :update
+    end
   end
 
   defp swap(questions, direction) do

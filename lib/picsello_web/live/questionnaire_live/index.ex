@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Questionnaires.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Questionnaire}
+  alias Picsello.{Questionnaire, Repo}
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
 
   @impl true
@@ -18,13 +18,20 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
 
   @impl true
   def handle_event("create-questionnaire", %{}, %{assigns: assigns} = socket) do
-    assigns = Map.merge(assigns, %{questionnaire: get_questionnaire(socket)})
+    case Questionnaire.changeset(%Questionnaire{}, get_questionnaire(socket))
+         |> Repo.insert() do
+      {:ok, questionnaire} ->
+        assigns = Map.merge(assigns, %{questionnaire: questionnaire})
 
-    socket
-    |> PicselloWeb.QuestionnaireFormComponent.open(
-      Map.merge(Map.take(assigns, [:questionnaire, :current_user]), %{state: :create})
-    )
-    |> noreply()
+        socket
+        |> PicselloWeb.QuestionnaireFormComponent.open(
+          Map.merge(Map.take(assigns, [:questionnaire, :current_user]), %{state: :create})
+        )
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset) |> noreply()
+    end
   end
 
   @impl true
@@ -151,8 +158,15 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   end
 
   defp get_questionnaire(%{assigns: %{current_user: current_user}} = socket) do
-    %Questionnaire{
+    %{
       job_type: "other",
+      name: "New Questionnaire",
+      questions: [
+        %{
+          prompt: "New question",
+          type: :text
+        }
+      ],
       organization_id: current_user.organization_id
     }
   end
