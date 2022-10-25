@@ -140,7 +140,7 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket) do
-    package = package |> Repo.preload(:contract, force: true)
+    package = package |> Repo.preload([:contract, :questionnaire_template], force: true)
 
     socket
     |> assign(package: package, job: %{job | package: package, package_id: package.id})
@@ -487,11 +487,19 @@ defmodule PicselloWeb.JobLive.Shared do
           <div {testid("questionnaire")} class="flex flex-col border border-base-200 rounded-lg p-4">
             <h3 class="font-bold">Questionnaire:</h3>
             <%= cond do %>
+              <% !@package -> %>
+                <p class="my-2">You haven’t selected a package yet.</p>
+                <button {testid("view-contract")} phx-click="add-package" class="mt-auto btn-primary self-end">
+                  Add a package
+                </button>
               <% !@proposal && !@job.is_gallery_only || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at)))-> %>
-                <p class="mt-2">We’ve created a questionnaire for you to start with. Soon you’ll be able to include your own custom questionnaire whether it be a link or PDF. If you don’t want to use ours, uncheck the box below.</p>
+                <p class="mt-2">Lorem ipsum new copy here</p>
+                <div class="border rounded-lg px-4 py-2 mt-4">
+                  <span class="font-bold">Selected questionnaire:</span> <%= if @package.questionnaire_template, do: @package.questionnaire_template.name, else: "Picsello Default Questionnaire" %>
+                </div>
                 <label class="flex mt-4">
                   <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-questionnaire" checked={@include_questionnaire} />
-                  <p class="ml-3">Questionnaire included</p>
+                  <p class="ml-3">Include questionnaire in proposal?</p>
                 </label>
                 <button {testid("view-questionnaire")} phx-click="open-questionnaire" class="mt-auto btn-primary self-end">
                   View
@@ -648,7 +656,11 @@ defmodule PicselloWeb.JobLive.Shared do
     job =
       current_user
       |> Job.for_user()
-      |> Ecto.Query.preload([:client, :job_status, package: :contract])
+      |> Ecto.Query.preload([
+        :client,
+        :job_status,
+        package: [:contract, :questionnaire_template]
+      ])
       |> Repo.get!(job_id)
 
     if job.job_status.is_lead do
@@ -667,7 +679,7 @@ defmodule PicselloWeb.JobLive.Shared do
         :client,
         :job_status,
         :payment_schedules,
-        package: :contract
+        package: [:contract, :questionnaire_template]
       ])
       |> Repo.get!(job_id)
 

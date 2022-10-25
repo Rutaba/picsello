@@ -49,7 +49,7 @@
     <%= for questionnaire <- @questionnaires do %>
       <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
         <div class="sm:col-span-6 grid sm:flex items-center gap-4">
-          <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}}} class="block text-2xl font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
+          <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}}} class="block text-xl font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
           <%= if questionnaire.is_picsello_default do %>
             <div><.badge color={:gray}>View Only</.badge></div>
           <% end %>

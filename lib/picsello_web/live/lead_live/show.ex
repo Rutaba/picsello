@@ -82,7 +82,11 @@ defmodule PicselloWeb.LeadLive.Show do
       |> Repo.transaction()
       |> case do
         {:ok, %{proposal: proposal}} ->
-          job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
+          job =
+            job
+            |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
+              force: true
+            )
 
           socket
           |> assign(proposal: proposal)

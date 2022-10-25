@@ -512,18 +512,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           <%= if Enum.empty?(@questionnaires) do %>
             <p>Looks like you don't have any questionnaires. Please add one first here. (You're modal will close and you'll have to come back)</p>
           <% else %>
-            <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6 mt-4">
-              <div class="sm:col-span-6">Questionnaire name</div>
-              <div class="sm:col-span-6">Select questionnaire</div>
+            <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-6 mt-4">
+              <div class="w-3/4">Questionnaire name</div>
+              <div class="w-1/4 text-center">Select questionnaire</div>
             </div>
             <%= for questionnaire <- @questionnaires do %>
-              <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
-                <div class="sm:col-span-6">
-                  <h3><%= questionnaire.name %></h3>
+              <div class="border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
+              <label class="flex items-center justify-between cursor-pointer">
+                <h3 class="underline text-blue-planning-300 font-xl font-bold w-3/4"><%= questionnaire.name %></h3>
+                <div class="w-1/4 text-center">
+                  <%= radio_button(@f, :questionnaire_template_id, questionnaire.id, class: "w-5 h-5 mr-2.5 radio") %>
                 </div>
-                <div class="sm:col-span-6">
-                  <%= radio_button @f, :questionnaire_template_id, questionnaire.id, class: "mr-2" %>
-                </div>
+              </label>
               </div>
             <% end %>
           <% end %>

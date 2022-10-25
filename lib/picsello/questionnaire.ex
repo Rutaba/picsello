@@ -53,7 +53,7 @@ defmodule Picsello.Questionnaire do
     |> validate_required([:questions, :job_type, :name])
   end
 
-  def for_job(%Job{type: job_type}) do
+  def for_job(%Job{type: job_type, package: %Picsello.Package{questionnaire_template_id: nil}}) do
     from(q in __MODULE__,
       where: q.job_type in [^job_type, "other"],
       order_by:
@@ -71,14 +71,22 @@ defmodule Picsello.Questionnaire do
     )
   end
 
-  def all() do
-    from(q in __MODULE__)
-    |> Repo.all()
+  def for_job(%Job{package: %Picsello.Package{questionnaire_template_id: questionnaire_id}}) do
+    from(q in __MODULE__, where: q.id == ^questionnaire_id, limit: 1)
   end
 
   def for_organization(organization_id) do
     from(q in __MODULE__,
       where: q.organization_id == ^organization_id or q.is_picsello_default == true,
+      order_by: [asc: q.organization_id, desc: q.inserted_at]
+    )
+    |> Repo.all()
+  end
+
+  def for_organization_by_job_type(organization_id, nil) do
+    from(q in __MODULE__,
+      where: q.organization_id == ^organization_id or q.is_picsello_default == true,
+      where: q.job_type == "other",
       order_by: [asc: q.organization_id, desc: q.inserted_at]
     )
     |> Repo.all()
