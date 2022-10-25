@@ -210,8 +210,8 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
                   card_design={true}
                   value={design.id}
                   img_index={design_index}
-                  hide_next={if @toggle_arrows? != design_index, do: false, else: true}
-                  hide_prev={if @toggle_arrows? != design_index, do: true, else: false}/>
+                  hide_next={if @toggle_arrows? == design_index, do: true, else: false}
+                  hide_prev={if @toggle_arrows? == design_index, do: false, else: true}/>
 
                 <h3 class="pt-2 text-lg"><%= design.name %></h3>
                 <p class="mt-1 text-sm text-base-250"><%= photo_range_summary(design) %></p>
