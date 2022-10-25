@@ -155,7 +155,11 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     index = String.to_integer(id)
 
     questions = questionnaire.questions
-    new_question = questions |> Enum.fetch!(index) |> Map.put(:type, value |> String.to_atom())
+
+    new_question =
+      questions
+      |> Enum.fetch!(index)
+      |> Map.put(:type, value |> String.to_atom())
 
     questions
     |> List.replace_at(index, new_question)
@@ -332,7 +336,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     """
   end
 
-  defp assign_question_changeset(questions, socket, action \\ :update) do
+  defp assign_question_changeset(questions, socket, action) do
     map = questions |> Enum.map(fn question -> question |> Map.from_struct() end)
     socket |> assign_changeset(%{questions: map}, action)
   end
