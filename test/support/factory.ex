@@ -481,8 +481,7 @@ defmodule Picsello.Factory do
       original_url: Photo.original_path("name", 333, "4444"),
       width: 300,
       height: 300,
-      active: true,
-      disabled: false
+      active: true
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

@@ -380,7 +380,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
     case result do
       {:ok, gallery} ->
-        process_gallery(socket, success, gallery)
+        process_gallery_message(socket, success, gallery)
 
       _any ->
         socket
@@ -390,7 +390,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     end
   end
 
-  defp process_gallery(socket, type, gallery) do
+  defp process_gallery_message(socket, type, gallery) do
     case type do
       "deleted" ->
         socket
