@@ -1070,6 +1070,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     if album, do: Map.get(album, album_return), else: other
   end
 
+  defp proofing_album_hash(album, socket) do
+    album = Albums.set_album_hash(album)
+    Routes.gallery_client_album_path(socket, :proofing_album, album.client_link_hash)
+  end
+
   defp truncate(string) do
     case get_class(string) do
       "tooltip" ->

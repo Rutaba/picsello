@@ -33,6 +33,27 @@ defmodule Picsello.GalleryProofingAlbumTest do
     [proofing_album: proofing_album, order: order]
   end
 
+  feature "Validate preview proofing button", %{
+    session: session,
+    proofing_album: album,
+    gallery: gallery
+  } do
+    session
+    |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
+    |> assert_has(css("a[href*='/album/#{album.client_link_hash}']", text: "Preview"))
+  end
+
+  feature "Validate disabled footer buttons in proofing album", %{
+    session: session,
+    proofing_album: album,
+    gallery: gallery
+  } do
+    session
+    |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
+    |> assert_has(css("button:disabled", text: "Share gallery"))
+    |> assert_has(css("button:disabled", text: "Preview Gallery"))
+  end
+
   feature "Photographer views client selections, and delete opt disappears from edit-album on order-placing",
           %{
             session: session,
