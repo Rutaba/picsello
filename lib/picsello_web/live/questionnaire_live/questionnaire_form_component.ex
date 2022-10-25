@@ -347,7 +347,6 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     questionnaire
     |> Map.drop([:organization])
     |> Questionnaire.changeset(params)
-    |> IO.inspect()
     |> Repo.insert_or_update()
   end
 
