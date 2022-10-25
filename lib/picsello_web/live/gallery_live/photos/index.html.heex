@@ -42,8 +42,8 @@
                 </button>
                 <%=if @album.is_proofing do %>
                   <a href={proofing_album_hash(@album, @socket)} target="_blank" class="flex justify-center items-center">
-                    <button type="button" class="flex items-center px-2 py-2 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-sm ml-2.5 bg-white shadow-lg lg:my-0 mt-2" phx-click="preview_proofs">
-                    <.icon name="eye" class="w-4 h-4 fill-current text-blue-planning-300 mr-1" />
+                    <button type="button" class="flex items-center px-2 py-2 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-sm ml-2.5 bg-white shadow-lg lg:my-0 mt-2">
+                      <.icon name="eye" class="w-4 h-4 fill-current text-blue-planning-300 mr-1" />
                       Preview 
                     </button>
                   </a>

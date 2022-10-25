@@ -13,7 +13,9 @@ defmodule PicselloWeb.GalleryLive.Shared.FooterComponent do
       |> Map.get(:client_link_hash)
 
     albums = Albums.get_albums_by_gallery_id(gallery.id)
-    proofing_album = for album <- albums do
+
+    proofing_album =
+      for album <- albums do
         if album.is_proofing, do: true, else: false
       end
 
