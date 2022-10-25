@@ -23,7 +23,6 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
         <% end %>
       </div>
 
-
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <h2 class="text-2xl leading-6 text-gray-900 mb-8 font-bold">Details</h2>
 
@@ -79,12 +78,19 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
                   <%= label_for f_questions, :type, label: "Question Type" %>
                   <%= select f_questions, :type, field_options(), class: "select", disabled: @state === "" %>
                 </div>
+
                 <%= case input_value(f_questions, :type) do %>
                   <% :multiselect -> %>
-                  <.options_editor myself={@myself} f_questions={f_questions} />
+                  <.options_editor myself={@myself} f_questions={f_questions} state={@state} />
 
                   <% :select -> %>
-                  <.options_editor myself={@myself} f_questions={f_questions} />
+                  <.options_editor myself={@myself} f_questions={f_questions} state={@state} />
+
+                  <% "multiselect" -> %>
+                  <.options_editor myself={@myself} f_questions={f_questions} state={@state} />
+
+                  <% "select" -> %>
+                  <.options_editor myself={@myself} f_questions={f_questions} state={@state} />
 
                   <% _ -> %>
                 <% end %>
@@ -93,11 +99,13 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
           <% end %>
         </fieldset>
 
+        <%= if @state !== "" do %>
         <div class="mt-8">
           <.icon_button {testid("add-question")} phx-click="add-question" phx-target={@myself} class="py-1 px-4 w-full sm:w-auto justify-center" title="Add question" color="blue-planning-300" icon="plus">
             Add question
           </.icon_button>
         </div>
+        <% end %>
 
         <PicselloWeb.LiveModal.footer>
           <%= if @state !== "" do %>
@@ -161,22 +169,10 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
         %{"direction" => direction},
         %{assigns: %{questionnaire: %{questions: questions}}} = socket
       ) do
-    case direction do
-      "up" ->
-        questions
-        |> swap_up()
-        |> assign_question_changeset(socket)
-        |> save_questionnaire()
-
-      "down" ->
-        questions
-        |> swap_down()
-        |> assign_question_changeset(socket)
-        |> save_questionnaire()
-
-      _ ->
-        questions |> assign_question_changeset(socket)
-    end
+    questions
+    |> swap(direction)
+    |> assign_question_changeset(socket)
+    |> save_questionnaire()
   end
 
   @impl true
@@ -285,20 +281,24 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   defp options_editor(assigns) do
     ~H"""
     <div class="mt-6">
-      <h4 class="font-bold">Options</h4>
-      <ul>
+      <h4 class="font-bold mb-2">Options</h4>
+      <ul class="mb-6">
         <%= for {option, index} <- input_value(@f_questions, :options) |> Enum.with_index() do %>
-          <li>
-            <input type="text" class="input" value={option} placeholder="Enter an option…" phx-blur="edit-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-target={@myself} />
-            <button type="button" phx-click="delete-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-target={@myself}>
+          <li class="mb-2 flex items-center gap-2">
+            <input type="text" class="text-input" value={option} placeholder="Enter an option…" phx-blur="edit-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-target={@myself} disabled={@state === ""} />
+            <%= if @state !== "" do %>
+            <button class="bg-red-sales-100 border border-red-sales-300 hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="delete-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-target={@myself}>
               <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
             </button>
+            <% end %>
           </li>
         <% end %>
       </ul>
-      <button type="button" phx-click="add-option" phx-value-id={@f_questions.index} phx-target={@myself}>
+      <%= if @state !== "" do %>
+      <.icon_button {testid("add-option")} phx-click="add-option" phx-value-id={@f_questions.index} phx-target={@myself} class="py-1 px-4 w-full sm:w-auto justify-center" title="Add question" color="blue-planning-300" icon="plus">
         Add option
-      </button>
+      </.icon_button>
+      <%= end %>
     </div>
     """
   end
@@ -368,15 +368,20 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     ]
   end
 
-  defp swap_down(a) do
-    {el, list} = a |> List.pop_at(length(a) - 1)
+  defp swap(questions, direction) do
+    case direction do
+      "up" ->
+        {el, list} = questions |> List.pop_at(0)
 
-    [el | list]
-  end
+        list |> List.insert_at(length(list), el)
 
-  defp swap_up(a) do
-    {el, list} = a |> List.pop_at(0)
+      "down" ->
+        {el, list} = questions |> List.pop_at(length(questions) - 1)
 
-    list |> List.insert_at(length(list), el)
+        [el | list]
+
+      _ ->
+        questions
+    end
   end
 end
