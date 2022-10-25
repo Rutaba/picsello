@@ -24,8 +24,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       occasion: nil,
       show_filter_form: false,
       filter_applied?: false,
-      hide_next: false,
-      hide_prev: true
+      toggle_arrows?: false
     )
     |> ok(temporary_assigns: [designs: []])
   end
@@ -204,9 +203,15 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       </div>
 
         <ul class={"relative pt-9 grid grid-cols-2 lg:grid-cols-4 gap-6 #{top(@filter_applied?)}"} id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
-          <%= for design <- @designs do %>
+          <%= for {design, design_index} <- @designs |> Enum.with_index() do %>
             <li id={"design-#{design.id}"}>
-                <.img_box src={design.preview_url} card_design={true} value={design.id} hide_next={@hide_next} hide_prev={@hide_prev}/>
+                <.img_box
+                  src={design.preview_url}
+                  card_design={true}
+                  value={design.id}
+                  img_index={design_index}
+                  hide_next={if @toggle_arrows? != design_index, do: false, else: true}
+                  hide_prev={if @toggle_arrows? != design_index, do: true, else: false}/>
 
                 <h3 class="pt-2 text-lg"><%= design.name %></h3>
                 <p class="mt-1 text-sm text-base-250"><%= photo_range_summary(design) %></p>
@@ -280,10 +285,13 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
   def handle_event(
         "next",
-        %{"value" => design_id},
-        socket
+        %{"value" => design_id, "img_index" => img_index},
+        %{assigns: %{toggle_arrows?: toggle_arrows?}} = socket
       ) do
+
     socket = socket |> fetch()
+    change_arrows = String.to_integer(img_index)
+    show? = if change_arrows == toggle_arrows?, do: false, else: change_arrows
 
     item_index =
       Enum.find_index(socket.assigns.designs, fn design ->
@@ -296,17 +304,19 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
     socket
     |> assign(:designs, designs)
-    |> assign(:hide_next, true)
-    |> assign(:hide_prev, false)
+    |> assign(:toggle_arrows?, show?)
     |> noreply()
   end
 
   def handle_event(
         "prev",
-        %{"value" => design_id},
-        socket
+        %{"value" => design_id, "img_index" => img_index},
+        %{assigns: %{toggle_arrows?: toggle_arrows?}} = socket
       ) do
+
     socket = socket |> fetch()
+    change_arrows = String.to_integer(img_index)
+    show? = if change_arrows == toggle_arrows?, do: false, else: change_arrows
 
     item_index =
       Enum.find_index(socket.assigns.designs, fn design ->
@@ -319,8 +329,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
     socket
     |> assign(:designs, designs)
-    |> assign(:hide_prev, true)
-    |> assign(:hide_next, false)
+    |> assign(:toggle_arrows?, show?)
     |> noreply()
   end
 
@@ -475,18 +484,18 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
   def ranges([]), do: []
 
-  defp img_box(%{card_design: true, hide_next: hide_next, hide_prev: hide_prev} = assigns) do
+  defp img_box(%{card_design: true, hide_next: hide_next, hide_prev: hide_prev, img_index: img_index} = assigns) do
     value = Map.get(assigns, :value)
     ~H"""
       <div class="aspect-h-1 aspect-w-1">
         <div class="relative bg-gradient-to-bl from-[#f5f6f7] to-[#ededed] flex flex-col justify-center group">
           <%= if !hide_prev do %>
-          <div phx-click="prev" phx-value-value={value} class="z-40 left-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
+          <div phx-click="prev" phx-value-value={value} phx-value-img_index={img_index} class="z-40 left-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
             <.icon name="back" class="w-8 h-8 cursor-pointer text-base-250" />
           </div>
           <% end %>
           <%= if !hide_next do %>
-          <div phx-click="next" phx-value-value={value} class="z-40 right-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
+          <div phx-click="next" phx-value-value={value} phx-value-img_index={img_index} class="z-40 right-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
             <.icon name="forth" class="w-8 h-8 cursor-pointer text-base-250" />
           </div>
           <% end %>
