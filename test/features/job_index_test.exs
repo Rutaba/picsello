@@ -113,7 +113,7 @@ defmodule Picsello.JobIndexTest do
     session
     |> click(@leads_card)
     |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
-    |> refute_has(link(Job.name(archived_lead), text: "Archived"))
+    |> assert_has(link(Job.name(archived_lead), count: 0))
     |> assert_has(link(Job.name(created_lead), text: "Created"))
   end
 
