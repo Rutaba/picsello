@@ -9,6 +9,10 @@ defmodule Picsello.Repo.Migrations.AddQuestionnaireExternal do
       add(:name, :string, null: false, default: "")
     end
 
+    alter table(:packages) do
+      add(:questionnaire_template_id, references(:questionnaires, on_delete: :nothing))
+    end
+
     execute("""
       update questionnaires set is_picsello_default = true where organization_id is null and name = '';
     """)
@@ -20,6 +24,10 @@ defmodule Picsello.Repo.Migrations.AddQuestionnaireExternal do
       remove(:is_organization_default)
       remove(:is_picsello_default)
       remove(:name)
+    end
+
+    alter table(:packages) do
+      remove(:questionnaire_template_id, references(:questionnaires, on_delete: :nothing))
     end
   end
 end

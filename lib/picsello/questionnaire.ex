@@ -78,7 +78,16 @@ defmodule Picsello.Questionnaire do
 
   def for_organization(organization_id) do
     from(q in __MODULE__,
-      where: q.organization_id == ^organization_id,
+      where: q.organization_id == ^organization_id or q.is_picsello_default == true,
+      order_by: [asc: q.organization_id, desc: q.inserted_at]
+    )
+    |> Repo.all()
+  end
+
+  def for_organization_by_job_type(organization_id, job_type) do
+    from(q in __MODULE__,
+      where: q.organization_id == ^organization_id or q.is_picsello_default == true,
+      where: q.job_type == ^job_type or q.job_type == "other",
       order_by: [asc: q.organization_id, desc: q.inserted_at]
     )
     |> Repo.all()

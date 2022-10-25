@@ -188,7 +188,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
     socket
     |> assign(
       :questionnaires,
-      Questionnaire.all()
+      Questionnaire.for_organization(socket.assigns.current_user.organization_id)
     )
   end
 end
