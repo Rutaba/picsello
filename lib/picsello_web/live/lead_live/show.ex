@@ -31,7 +31,6 @@ defmodule PicselloWeb.LeadLive.Show do
       error: 1
     ]
 
-
   @impl true
   def mount(%{"id" => job_id}, _session, socket) do
     socket

@@ -113,18 +113,10 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_event("open_name_change", %{}, %{assigns: %{job: job}} = socket) do
-    assigns = %{
-      job: job,
-      current_user: Map.take(socket.assigns, [:current_user])
-    }
+  def handle_event("open_name_change", %{}, %{assigns: assigns} = socket) do
+    params = Map.take(assigns, [:current_user, :job]) |> Map.put(:parent_pid, self())
 
-    socket
-    |> open_modal(
-      PicselloWeb.Live.Profile.EditNameSharedComponent,
-      Map.put(assigns, :parent_pid, self())
-    )
-    |> noreply()
+    socket |> open_modal(PicselloWeb.Live.Profile.EditNameSharedComponent, params) |> noreply()
   end
 
   def handle_info({:action_event, "open_email_compose"}, socket), do: open_email_compose(socket)
