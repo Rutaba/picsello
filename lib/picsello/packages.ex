@@ -9,7 +9,8 @@ defmodule Picsello.Packages do
     JobType,
     Packages.BasePrice,
     Packages.CostOfLivingAdjustment,
-    PackagePayments
+    PackagePayments,
+    Questionnaire
   }
 
   import Picsello.Repo.CustomMacros
@@ -242,7 +243,35 @@ defmodule Picsello.Packages do
 
   def insert_package_and_update_job(changeset, job, opts \\ %{}) do
     Ecto.Multi.new()
-    |> Ecto.Multi.insert(:package, changeset)
+    |> Ecto.Multi.insert(:questionnaire, fn changes ->
+      opts.questionnaire
+      |> Map.replace!(
+        :questions,
+        opts.questionnaire
+        |> Map.get(:questions)
+        |> Enum.map(fn question ->
+          question |> Map.from_struct() |> Map.drop([:id])
+        end)
+      )
+      |> Map.put(:id, nil)
+      |> Map.put(:organization_id, changeset.changes.organization_id)
+      |> Map.put(:is_picsello_default, false)
+      |> Map.put(:is_organization_default, false)
+      |> Map.put(:inserted_at, nil)
+      |> Map.put(:updated_at, nil)
+      |> Map.put(:__meta__, %Picsello.Questionnaire{} |> Map.get(:__meta__))
+      |> Questionnaire.changeset()
+    end)
+    |> Ecto.Multi.insert(:package, fn changes ->
+      changeset
+      |> Ecto.Changeset.put_change(:questionnaire_template_id, changes.questionnaire.id)
+    end)
+    |> Ecto.Multi.update(
+      :questionnaire_update,
+      fn changes ->
+        Questionnaire.changeset(changes.questionnaire, %{package_id: changes.package.id})
+      end
+    )
     |> Ecto.Multi.update(:job_update, fn changes ->
       Job.add_package_changeset(job, %{package_id: changes.package.id})
     end)

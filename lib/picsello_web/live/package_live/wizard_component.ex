@@ -905,6 +905,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         },
         %{assigns: %{job: job}} = socket
       ) do
+    questionnaire =
+      find_template(socket, package_template_id)
+      |> Questionnaire.for_package()
+
     package_payment_schedules =
       socket
       |> find_template(package_template_id)
@@ -919,7 +923,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         schedule |> Map.from_struct() |> Map.drop([:package_payment_preset_id])
       end)
 
-    opts = %{payment_schedules: payment_schedules, action: :insert}
+    opts = %{
+      payment_schedules: payment_schedules,
+      action: :insert,
+      questionnaire: questionnaire
+    }
+
     insert_package_and_update_job(socket, changeset, job, opts)
   end
 
@@ -943,7 +952,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def handle_event("submit", %{"step" => "documents"} = params, socket) do
     case socket |> assign_changeset(params, :validate) |> assign_contract_changeset(params) do
       %{assigns: %{contract_changeset: %{valid?: true}}} ->
-        socket |> assign(step: :pricing) |> assign_changeset(params) |> IO.inspect()
+        socket |> assign(step: :pricing) |> assign_changeset(params)
 
       socket ->
         socket
@@ -1009,6 +1018,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           }
         } = socket
       ) do
+    questionnaire =
+      socket.assigns.package
+      |> Questionnaire.for_package()
+
     socket
     |> maybe_assign_custom(payment_params)
     |> then(fn %{assigns: %{changeset: changeset, payments_changeset: payments_changeset}} =
@@ -1023,7 +1036,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         end)
 
       total_price = Changeset.get_field(payments_changeset, :total_price)
-      opts = %{total_price: total_price, payment_schedules: payment_schedules, action: :insert}
+
+      opts = %{
+        total_price: total_price,
+        payment_schedules: payment_schedules,
+        action: :insert,
+        questionnaire: questionnaire
+      }
 
       insert_package_and_update_job(
         socket,
