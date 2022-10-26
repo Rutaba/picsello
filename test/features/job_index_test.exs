@@ -102,7 +102,7 @@ defmodule Picsello.JobIndexTest do
 
     session
     |> visit("/leads")
-    |> assert_has(css("main > ul > li", count: 2))
+    |> assert_has(css("main > ul > li", count: 1))
   end
 
   feature "leads show status", %{session: session, lead: created_lead, user: user} do
@@ -113,7 +113,7 @@ defmodule Picsello.JobIndexTest do
     session
     |> click(@leads_card)
     |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
-    |> assert_has(link(Job.name(archived_lead), text: "Archived"))
+    |> assert_has(link(Job.name(archived_lead), count: 0))
     |> assert_has(link(Job.name(created_lead), text: "Created"))
   end
 
