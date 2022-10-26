@@ -302,7 +302,7 @@ defmodule PicselloWeb.JobLive.Shared do
     <div {testid("card-#{@title}")} class={"flex overflow-hidden border border-base-200 rounded-lg #{@class}"}>
       <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-#{@color}"} />
       <div class="flex flex-col w-full p-4">
-        <h3 class={"mb-2 mr-4 text-xl font-bold text-#{@color}"}><%= @title %></h3>
+        <h3 class={"mb-4 mr-4 text-xl font-bold text-#{@color}"}><%= @title %></h3>
         <%= render_slot(@inner_block) %>
       </div>
     </div>
@@ -459,25 +459,25 @@ defmodule PicselloWeb.JobLive.Shared do
       <.card title={if @proposal && (@proposal.sent_to_client || @proposal.accepted_at), do: "Here’s what you sent your client", else: "Here’s what you’ll be sending your client"}>
         <div {testid("contract")} class="grid sm:grid-cols-2 gap-5">
           <div class="flex flex-col border border-base-200 rounded-lg p-4">
-            <h3 class="font-bold">Contract:</h3>
+            <h3 class="font-bold text-xl">Contract</h3>
             <%= cond do %>
               <% !@package -> %>
-                <p class="my-2">You haven’t selected a package yet.</p>
+                <p class="my-2 text-base-250">You haven’t selected a package yet.</p>
                 <button {testid("view-contract")} phx-click="add-package" class="mt-auto btn-primary self-end">
                   Add a package
                 </button>
               <% !@proposal || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at))) -> %>
-                <p class="mt-2">We’ve created a contract for you to start with. If you have your own or would like to tweak the language of ours—this is the place to change. We have Business Coaching available if you need advice.</p>
-                <div class="border rounded-lg px-4 py-2 mt-4">
+                <p class="mt-2 text-base-250">We’ve created a contract for you to start with. If you have your own or would like to tweak the language of ours—this is the place to change. We have Business Coaching available if you need advice.</p>
+                <div class="border rounded-lg px-4 py-2 mb-4 mt-auto">
                   <span class="font-bold">Selected contract:</span> <%= if @package.contract, do: @package.contract.name, else: "Picsello Default Contract" %>
                 </div>
-                <button phx-click="edit-contract" class="mt-4 btn-primary self-end">
+                <button phx-click="edit-contract" class="btn-primary self-end">
                   Edit or Select New
                 </button>
               <% @package && @package.collected_price -> %>
-                <p class="mt-2">During your job import, you marked this as an external document.</p>
+                <p class="mt-2 text-base-250">During your job import, you marked this as an external document.</p>
               <% @package.contract -> %>
-                <p class="mt-2">You sent the <%= @package.contract.name %> to your client.</p>
+                <p class="mt-2 text-base-250">You sent the <%= @package.contract.name %> to your client.</p>
                 <button {testid("view-contract")} phx-click="open-proposal" phx-value-action="contract" class="mt-4 btn-primary self-end">
                   View
                 </button>
@@ -485,20 +485,20 @@ defmodule PicselloWeb.JobLive.Shared do
             <% end %>
           </div>
           <div {testid("questionnaire")} class="flex flex-col border border-base-200 rounded-lg p-4">
-            <h3 class="font-bold">Questionnaire:</h3>
+            <h3 class="font-bold text-xl">Questionnaire</h3>
             <%= cond do %>
               <% !@package -> %>
-                <p class="my-2">You haven’t selected a package yet.</p>
+                <p class="my-2 text-base-250">You haven’t selected a package yet.</p>
                 <button {testid("view-contract")} phx-click="add-package" class="mt-auto btn-primary self-end">
                   Add a package
                 </button>
               <% !@proposal && !@job.is_gallery_only || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at)))-> %>
-                <p class="mt-2">Lorem ipsum new copy here</p>
-                <label class="flex mt-4">
+                <p class="mt-2 text-base-250">We've created a questionnaire for you to start with. You can build your own templates <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. You can come back and select your new one or add to your package templates for ease of future reuse!</p>
+                <label class="flex my-4 cursor-pointer">
                   <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-questionnaire" checked={@include_questionnaire} />
                   <p class="ml-3">Include questionnaire in proposal?</p>
                 </label>
-                <div class={classes("border rounded-lg px-4 py-2 mt-4", %{"opacity-50" => !@include_questionnaire})}>
+                <div class={classes("border rounded-lg px-4 py-2 mb-4 mt-auto", %{"opacity-50" => !@include_questionnaire})}>
                   <span class="font-bold">Selected questionnaire:</span> <%= if @package.questionnaire_template, do: @package.questionnaire_template.name, else: "Picsello Default Questionnaire" %>
                 </div>
                 <div class="self-end mt-auto">
@@ -510,9 +510,9 @@ defmodule PicselloWeb.JobLive.Shared do
                   </button>
                 </div>
               <% @package && @package.collected_price -> %>
-                <p class="mt-2">During your job import, you marked this as an external document.</p>
+                <p class="mt-2 text-base-250">During your job import, you marked this as an external document.</p>
               <% @proposal && @proposal.questionnaire_id -> %>
-                <p class="mt-2">You sent the Picsello Default Questionnaire to your client.</p>
+                <p class="mt-2 text-base-250">You sent the Picsello Default Questionnaire to your client.</p>
                 <button {testid("view-questionnaire")} phx-click="open-proposal" phx-value-action="questionnaire" class="mt-4 btn-primary self-end">
                   View answers
                 </button>

@@ -475,7 +475,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           </div>
         </div>
         <div class={classes("p-4", %{"hidden" => Enum.member?(@collapsed_documents, 0)})}>
-          <p>lorem ipsum</p>
+          <p>Here you can copy and paste your own contract or use the legally approved contract we have developed. You're also able to version your contract for different needs if you want!</p>
           <% c = form_for(@contract_changeset, "#") %>
           <div class="grid grid-flow-col auto-cols-fr gap-4 mt-4">
             <%= labeled_select c, :contract_template_id, @contract_options, label: "Select a Contract Template" %>
@@ -508,9 +508,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           </div>
         </div>
         <div class={classes("p-4", %{"hidden" => Enum.member?(@collapsed_documents, 1)})}>
-          <p>lorem ipsum</p>
+          <p>As with most things in Picsello, we have created a default questionnaire for you to use. If you don't select one here, we'll provide a default that you can turn off if you want when creating a lead. If you'd like to create your own template to apply to packages templates for feature use, you can do so <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link> (modal will close and you can come back).</p>
           <%= if Enum.empty?(@questionnaires) do %>
-            <p>Looks like you don't have any questionnaires. Please add one first here. (You're modal will close and you'll have to come back)</p>
+            <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
           <% else %>
             <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-6 mt-4">
               <div class="w-3/4">Questionnaire name</div>
