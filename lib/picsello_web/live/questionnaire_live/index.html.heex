@@ -55,7 +55,7 @@
           <% end %>
         </div>
         <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
-          <%= questionnaire.job_type  %>
+          <%= questionnaire.job_type |> String.capitalize()  %>
         </div>
         <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
           <%= questionnaire.questions |> length()  %>
