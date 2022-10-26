@@ -166,7 +166,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
     """
   end
 
-  defp get_questionnaire(%{assigns: %{current_user: current_user}} = socket) do
+  defp get_questionnaire(%{assigns: %{current_user: current_user}} = _socket) do
     %{
       job_type: "other",
       name: "New Questionnaire",

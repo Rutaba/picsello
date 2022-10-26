@@ -494,22 +494,27 @@ defmodule PicselloWeb.JobLive.Shared do
                 </button>
               <% !@proposal && !@job.is_gallery_only || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at)))-> %>
                 <p class="mt-2">Lorem ipsum new copy here</p>
-                <div class="border rounded-lg px-4 py-2 mt-4">
-                  <span class="font-bold">Selected questionnaire:</span> <%= if @package.questionnaire_template, do: @package.questionnaire_template.name, else: "Picsello Default Questionnaire" %>
-                </div>
                 <label class="flex mt-4">
                   <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-questionnaire" checked={@include_questionnaire} />
                   <p class="ml-3">Include questionnaire in proposal?</p>
                 </label>
-                <button {testid("view-questionnaire")} phx-click="open-questionnaire" class="mt-auto btn-primary self-end">
-                  View
-                </button>
+                <div class={classes("border rounded-lg px-4 py-2 mt-4", %{"opacity-50" => !@include_questionnaire})}>
+                  <span class="font-bold">Selected questionnaire:</span> <%= if @package.questionnaire_template, do: @package.questionnaire_template.name, else: "Picsello Default Questionnaire" %>
+                </div>
+                <div class="self-end mt-auto">
+                  <button {testid("view-questionnaire")} phx-click="open-questionnaire" class={classes("underline text-blue-planning-300 mr-4", %{"opacity-50 cursor-not-allowed" => !@include_questionnaire})} disabled={!@include_questionnaire}>
+                    Preview
+                  </button>
+                  <button {testid("edit-questionnaire")} phx-click="open-questionnaire" class="btn-primary" disabled={!@include_questionnaire}>
+                    Edit or Select New
+                  </button>
+                </div>
               <% @package && @package.collected_price -> %>
                 <p class="mt-2">During your job import, you marked this as an external document.</p>
               <% @proposal && @proposal.questionnaire_id -> %>
                 <p class="mt-2">You sent the Picsello Default Questionnaire to your client.</p>
                 <button {testid("view-questionnaire")} phx-click="open-proposal" phx-value-action="questionnaire" class="mt-4 btn-primary self-end">
-                  View
+                  View answers
                 </button>
               <% true -> %>
                 <p class="mt-2">Questionnaire wasn't included in the proposal</p>
