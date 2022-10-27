@@ -216,13 +216,56 @@ defmodule PicselloWeb.LeadLive.Show do
   def handle_event(
         "edit-questionnaire",
         %{},
-        %{assigns: %{current_user: current_user, package: package}} = socket
+        %{assigns: %{current_user: current_user, package: package, job: job}} = socket
       ) do
+    questionnaire =
+      if is_nil(package.questionnaire_template) do
+        template = Questionnaire.for_job(job) |> Repo.one()
+
+        {:ok, %{questionnaire_insert: questionnaire_insert}} =
+          Ecto.Multi.new()
+          |> Ecto.Multi.insert(:questionnaire_insert, fn changes ->
+            questions =
+              template
+              |> Map.get(:questions)
+              |> Enum.map(fn question ->
+                question |> Map.from_struct() |> Map.drop([:id])
+              end)
+
+            template
+            |> Map.replace!(
+              :questions,
+              questions
+            )
+            |> Map.put(:id, nil)
+            |> Map.put(:organization_id, current_user.organization_id)
+            |> Map.put(:is_picsello_default, false)
+            |> Map.put(:is_organization_default, false)
+            |> Map.put(:inserted_at, nil)
+            |> Map.put(:package_id, package.id)
+            |> Map.put(:updated_at, nil)
+            |> Map.put(:__meta__, %Picsello.Questionnaire{} |> Map.get(:__meta__))
+            |> Questionnaire.changeset()
+          end)
+          |> Ecto.Multi.update(:package_update, fn %{questionnaire_insert: questionnaire} ->
+            package
+            |> Picsello.Package.changeset(
+              %{questionnaire_template_id: questionnaire.id},
+              step: :details
+            )
+          end)
+          |> Repo.transaction()
+
+        questionnaire_insert
+      else
+        package.questionnaire_template
+      end
+
     socket
     |> PicselloWeb.QuestionnaireFormComponent.open(%{
       state: :edit_lead,
       current_user: current_user,
-      questionnaire: package.questionnaire_template
+      questionnaire: questionnaire
     })
     |> noreply()
   end
@@ -377,5 +420,23 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
+  end
+
+  defp get_questionnaire(%{assigns: %{current_user: current_user}} = _socket) do
+    %{
+      job_type: "other",
+      name: "New Questionnaire",
+      questions: [
+        %{
+          prompt: "New question",
+          type: :text
+        }
+      ],
+      organization_id: current_user.organization_id
+    }
+  end
+
+  defp get_questionnaire(id) do
+    Questionnaire.get_one(id)
   end
 end
