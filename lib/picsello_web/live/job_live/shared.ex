@@ -139,12 +139,20 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_info({:update, %{questions: _questions}}, socket) do
-    socket |> put_flash(:success, "Questionnaire saved") |> noreply()
+  def handle_info(
+        {:update, %{questionnaire: questionnaire}},
+        %{assigns: %{package: package}} = socket
+      ) do
+    package = package |> Repo.preload(:questionnaire_template, force: true)
+
+    socket
+    |> assign(:package, package)
+    |> put_flash(:success, "Questionnaire saved")
+    |> noreply()
   end
 
   def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket) do
-    package = package |> Repo.preload([:contract, :questionnaire_template], force: true)
+    package = package |> Repo.preload(:contract, force: true)
 
     socket
     |> assign(package: package, job: %{job | package: package, package_id: package.id})

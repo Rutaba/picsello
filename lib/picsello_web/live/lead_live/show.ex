@@ -220,7 +220,7 @@ defmodule PicselloWeb.LeadLive.Show do
       ) do
     socket
     |> PicselloWeb.QuestionnaireFormComponent.open(%{
-      state: :edit,
+      state: :edit_lead,
       current_user: current_user,
       questionnaire: package.questionnaire_template
     })

@@ -29,9 +29,17 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <h2 class="text-2xl leading-6 text-gray-900 mb-8 font-bold">Details</h2>
 
-        <%= labeled_input f, :name, label: "Name", phx_debounce: "500", disabled: @state === "" %>
+        <div class={classes("", %{"grid sm:grid-cols-2 gap-3" => @state == :edit_lead})}>
+          <%= if @state == :edit_lead do %>
+            <div class="flex flex-col">
+              <label class="input-label">Select template to reset</label>
+              <%= select f, :change_template, template_options(@current_user.organization_id), selected: "", class: "select", disabled: @state === "", phx_blur: "change-template", phx_target: @myself %>
+            </div>
+          <% end %>
+          <%= labeled_input f, :name, label: "Name", phx_debounce: "500", disabled: @state === "" %>
+        </div>
 
-        <div class="mt-8">
+        <div class={classes("mt-8", %{"hidden" => @state == :edit_lead})}>
           <%= label_for f, :type, label: "Type of Photography" %>
           <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
             <%= for job_type <- @job_types do %>
@@ -135,6 +143,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   def heading_title(state) do
     case state do
       :edit -> "Edit custom questionnaire"
+      :edit_lead -> "Edit custom questionnaire"
       :create -> "Add custom questionnaire"
       _ -> "View custom questionnaire"
     end
@@ -167,6 +176,36 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     questions
     |> List.replace_at(index, new_question)
     |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
+    |> save_questionnaire()
+  end
+
+  def handle_event(
+        "change-template",
+        %{"value" => value},
+        %{assigns: %{questionnaire: questionnaire}} = socket
+      ) do
+    case value do
+      "blank" ->
+        [
+          %Picsello.Questionnaire.Question{
+            optional: false,
+            options: [],
+            placeholder: "",
+            prompt: ""
+          }
+        ]
+
+      _ ->
+        Questionnaire.get_one(value |> String.to_integer())
+        |> Map.get(:questions)
+        |> Enum.map(fn question ->
+          question |> Map.drop([:id])
+        end)
+    end
+    |> assign_question_changeset(
+      socket,
+      insert_or_update?(questionnaire.id)
+    )
     |> save_questionnaire()
   end
 
@@ -306,7 +345,8 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       ) do
     case save_questionnaire(params, socket) do
       {:ok, questionnaire} ->
-        send(socket.parent_pid, {:update, questionnaire})
+        send(socket.parent_pid, {:update, %{questionnaire: questionnaire}})
+
         socket |> close_modal() |> noreply()
 
       {:error, changeset} ->
@@ -401,6 +441,17 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       {"Phone", :phone},
       {"Email", :email}
     ]
+  end
+
+  defp template_options(current_user) do
+    questionnaires =
+      Questionnaire.for_organization(current_user)
+      |> Enum.map(fn q -> [key: q.name, value: q.id] end)
+
+    [
+      [key: "select a template to reset", value: "", disabled: true],
+      [key: "Blank questionnaire", value: "blank"]
+    ] ++ questionnaires
   end
 
   defp insert_or_update?(question_id) do

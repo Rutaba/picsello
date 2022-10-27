@@ -12,7 +12,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   end
 
   @impl true
-  def handle_info({:update, _questionnaire}, socket) do
+  def handle_info({:update, %{questionnaire: _questionnaire}}, socket) do
     socket |> assign_questionnaires() |> put_flash(:success, "Questionnaire saved") |> noreply()
   end
 
