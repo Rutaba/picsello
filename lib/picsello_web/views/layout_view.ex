@@ -150,6 +150,11 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Orders", icon: "cart"},
       %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
       %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)},
+      %{
+        title: "Questionnaires",
+        icon: "package",
+        path: Routes.questionnaires_index_path(socket, :index)
+      },
       %{title: "Contacts", icon: "phone", path: Routes.contacts_path(socket, :index)},
       %{
         title: "Finances",
