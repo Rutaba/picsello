@@ -137,4 +137,27 @@ defmodule Picsello.Questionnaire do
   def get_one(questionnaire_id) do
     from(q in __MODULE__, where: q.id == ^questionnaire_id) |> Repo.one()
   end
+
+  def clean_questionnaire_for_changeset(questionnaire, current_user, package_id \\ nil) do
+    questions =
+      questionnaire
+      |> Map.get(:questions)
+      |> Enum.map(fn question ->
+        question |> Map.from_struct() |> Map.drop([:id])
+      end)
+
+    questionnaire
+    |> Map.replace!(
+      :questions,
+      questions
+    )
+    |> Map.put(:id, nil)
+    |> Map.put(:organization_id, current_user.organization_id)
+    |> Map.put(:is_picsello_default, false)
+    |> Map.put(:is_organization_default, false)
+    |> Map.put(:inserted_at, nil)
+    |> Map.put(:package_id, package_id)
+    |> Map.put(:updated_at, nil)
+    |> Map.put(:__meta__, %Picsello.Questionnaire{} |> Map.get(:__meta__))
+  end
 end

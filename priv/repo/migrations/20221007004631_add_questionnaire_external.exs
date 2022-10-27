@@ -11,7 +11,7 @@ defmodule Picsello.Repo.Migrations.AddQuestionnaireExternal do
     end
 
     alter table(:packages) do
-      add(:questionnaire_template_id, references(:questionnaires, on_delete: :nothing))
+      add(:questionnaire_template_id, references(:questionnaires, on_delete: :delete_all))
     end
 
     execute("""
@@ -21,15 +21,15 @@ defmodule Picsello.Repo.Migrations.AddQuestionnaireExternal do
 
   def down do
     alter table(:questionnaires) do
-      remove(:organization_id, references(:organizations, on_delete: :nothing))
-      remove(:package_id, references(:packages, on_delete: :nothing))
+      remove(:organization_id)
+      remove(:package_id)
       remove(:is_organization_default)
       remove(:is_picsello_default)
       remove(:name)
     end
 
     alter table(:packages) do
-      remove(:questionnaire_template_id, references(:questionnaires, on_delete: :nothing))
+      remove(:questionnaire_template_id)
     end
   end
 end

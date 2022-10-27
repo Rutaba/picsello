@@ -460,27 +460,14 @@ defmodule Picsello.Packages do
   defp insert_multi_if_questionnaire(multi, opts, changeset) do
     case opts do
       opts when opts != %{} ->
-        questions =
-          opts.questionnaire
-          |> Map.get(:questions)
-          |> Enum.map(fn question ->
-            question |> Map.from_struct() |> Map.drop([:id])
-          end)
-
         multi
         |> Ecto.Multi.insert(:questionnaire, fn _changes ->
-          opts.questionnaire
-          |> Map.replace!(
-            :questions,
-            questions
+          Questionnaire.clean_questionnaire_for_changeset(
+            opts.questionnaire,
+            %{
+              organization_id: changeset.changes.organization_id
+            }
           )
-          |> Map.put(:id, nil)
-          |> Map.put(:organization_id, changeset.changes.organization_id)
-          |> Map.put(:is_picsello_default, false)
-          |> Map.put(:is_organization_default, false)
-          |> Map.put(:inserted_at, nil)
-          |> Map.put(:updated_at, nil)
-          |> Map.put(:__meta__, %Picsello.Questionnaire{} |> Map.get(:__meta__))
           |> Questionnaire.changeset()
         end)
 

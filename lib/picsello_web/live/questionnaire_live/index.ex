@@ -76,17 +76,12 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
       ) do
     id = String.to_integer(questionnaire_id)
 
-    case Questionnaire.changeset(
-           get_questionnaire(id)
-           |> Map.put(:id, nil)
-           |> Map.put(:name, "Copy of " <> get_questionnaire(id).name)
-           |> Map.put(:organization_id, socket.assigns.current_user.organization_id)
-           |> Map.put(:is_picsello_default, false)
-           |> Map.put(:is_organization_default, false)
-           |> Map.put(:inserted_at, nil)
-           |> Map.put(:updated_at, nil)
-           |> Map.put(:__meta__, %Picsello.Questionnaire{} |> Map.get(:__meta__))
+    case Questionnaire.clean_questionnaire_for_changeset(
+           get_questionnaire(id),
+           socket.assigns.current_user
          )
+         |> Map.put(:name, "Copy of " <> get_questionnaire(id).name)
+         |> Questionnaire.changeset()
          |> Repo.insert() do
       {:ok, questionnaire} ->
         assigns = Map.merge(assigns, %{questionnaire: questionnaire})
@@ -126,7 +121,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex items-center justify-start">
-      <div phx-update="ignore" data-offset="0" phx-hook="Select">
+      <div data-offset="0" phx-hook="Select">
         <button title="Manage" type="button" class="flex flex-shrink-0 ml-2 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
           <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
           <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
