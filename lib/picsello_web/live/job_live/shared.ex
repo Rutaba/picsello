@@ -140,7 +140,7 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def handle_info(
-        {:update, %{questionnaire: questionnaire}},
+        {:update, %{questionnaire: _questionnaire}},
         %{assigns: %{package: package}} = socket
       ) do
     package = package |> Repo.preload(:questionnaire_template, force: true)
