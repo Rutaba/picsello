@@ -24,6 +24,65 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> deliver_transactional_email(to_email, job)
   end
 
+  def deliver_payment_made(proposal) do
+    %{job: %{client: %{organization: organization} = client} = job} =
+      proposal |> Repo.preload(job: [client: [organization: :user]])
+
+    %{
+      subject: "Thank you for your payment",
+      body: """
+      <p>#{organization.name} has recieved #{Picsello.PaymentSchedules.paid_amount(job)} towards #{Picsello.Job.name(job)}. Your remaining balance for #{Picsello.Job.name(job)} is #{Picsello.PaymentSchedules.owed_amount(job)}</p>
+      <p>Your can pay either through: </p>
+      <p>  &bull; check or cash to your photographer directly using the invoice found here</p>
+      <p>  &bull; via card here through your photographer's secure payment portal</p>
+      <p>We can't wait to work with you!</p>
+      <p>CTA: <a href="#{BookingProposal.url(proposal.id)}">View Booking </a></p>
+      """
+    }
+    |> deliver_transactional_email(client)
+  end
+
+  def deliver_payment_due(proposal) do
+    %{job: %{client: %{organization: organization} = client} = job} =
+      proposal |> Repo.preload(job: [client: [organization: :user]])
+
+    %{
+      subject: "You have an upcoming payment",
+      body: """
+      <p>You have an upcoming payment for #{organization.name}. Your remaining balance for #{Picsello.Job.name(job)} is #{Picsello.PaymentSchedules.owed_amount(job)}</p>
+      <p>Your can pay either through: </p>
+      <p>  &bull; check or cash to your photographer directly using the invoice found here</p>
+      <p>  &bull; via card here through your photographer's secure payment portal</p>
+      <p>We can't wait to work with you!</p>
+      <p>CTA: <a href="#{BookingProposal.url(proposal.id)}"> View Booking </a></p>
+      """
+    }
+    |> deliver_transactional_email(client)
+  end
+
+  def deliver_paying_by_invoice(proposal) do
+    %{job: %{client: %{organization: organization} = client} = job} =
+      proposal |> Repo.preload(job: [client: [organization: :user]])
+
+    %{
+      subject: "Cash or check payment",
+      body: """
+      <p>You said you will pay #{organization.name} for #{Picsello.Job.name(job)} through a cash or check for the following #{Picsello.PaymentSchedules.owed_amount(job)} it is due on #{(Picsello.PaymentSchedules.remainder_due_on(job)) |> Calendar.strftime("%B %d, %Y")}.</p>
+      <p>Please arrange payment with me by replying to this email</p>
+      <p>We can't wait to work with you!</p>
+      <p>CTA: Download PDF</p>
+      """
+    }
+    |> deliver_transactional_email(client)
+  end
+
+  defp deliver_transactional_email(params, client) do
+    sendgrid_template(:generic_transactional_template, params)
+    |> to(client.email)
+    |> from("noreply@picsello.com")
+    |> deliver_later()
+  end
+
   def deliver_balance_due_email(job, helpers) do
     with client <- job |> Repo.preload(:client) |> Map.get(:client),
          proposal <- BookingProposal.last_for_job(job.id),
