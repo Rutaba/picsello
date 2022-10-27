@@ -23,6 +23,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
       )
       when live_action in ~w(paid proofing_album_paid)a do
     album = Map.get(assigns, :album)
+
     case Orders.handle_session(order_number, session_id) do
       {:ok, _order, :already_confirmed} ->
         get_order!(gallery, order_number, album)

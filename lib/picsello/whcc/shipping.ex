@@ -4,6 +4,7 @@ defmodule Picsello.WHCC.Shipping do
   @doc "Returns options available for category, size"
   def options(%{whcc_product: product, selections: selections}) do
     category = product |> Picsello.Product.whcc_category()
+
     %{"height" => height, "width" => width} =
       Picsello.WHCC.Product.selection_details(product, selections, category)
       |> get_in(["size", "metadata"])
