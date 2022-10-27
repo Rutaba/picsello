@@ -213,6 +213,21 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
+  def handle_event(
+        "edit-questionnaire",
+        %{},
+        %{assigns: %{current_user: current_user, package: package}} = socket
+      ) do
+    socket
+    |> PicselloWeb.QuestionnaireFormComponent.open(%{
+      state: :edit,
+      current_user: current_user,
+      questionnaire: package.questionnaire_template
+    })
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
@@ -258,7 +273,11 @@ defmodule PicselloWeb.LeadLive.Show do
     case result do
       {:ok, %{message: message}} ->
         %{client: client} =
-          job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
+          job =
+          job
+          |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
+            force: true
+          )
 
         ClientNotifier.deliver_booking_proposal(message, client.email)
 

@@ -2,6 +2,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Questionnaire, Repo}
+  import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -16,6 +17,8 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   def render(assigns) do
     ~H"""
     <div class="modal">
+      <.close_x />
+
       <div class="sm:flex items-center gap-4">
       <.step_heading state={@state} />
         <%= if @state === "" do %>
@@ -107,7 +110,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
         </div>
         <% end %>
 
-        <PicselloWeb.LiveModal.footer>
+        <.footer>
           <%= if @state !== "" do %>
           <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Save">
             Save
@@ -117,7 +120,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
             <%= if @state == "" do %>Close<% else %>Cancel<% end %>
           </button>
-        </PicselloWeb.LiveModal.footer>
+        </.footer>
       </.form>
     </div>
     """

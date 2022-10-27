@@ -139,6 +139,10 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_info({:update, %{questions: _questions}}, socket) do
+    socket |> put_flash(:success, "Questionnaire saved") |> noreply()
+  end
+
   def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket) do
     package = package |> Repo.preload([:contract, :questionnaire_template], force: true)
 
@@ -505,7 +509,7 @@ defmodule PicselloWeb.JobLive.Shared do
                   <button {testid("view-questionnaire")} phx-click="open-questionnaire" class={classes("underline text-blue-planning-300 mr-4", %{"opacity-50 cursor-not-allowed" => !@include_questionnaire})} disabled={!@include_questionnaire}>
                     Preview
                   </button>
-                  <button {testid("edit-questionnaire")} phx-click="open-questionnaire" class="btn-primary" disabled={!@include_questionnaire}>
+                  <button {testid("edit-questionnaire")} phx-click="edit-questionnaire" class="btn-primary" disabled={!@include_questionnaire}>
                     Edit or Select New
                   </button>
                 </div>
