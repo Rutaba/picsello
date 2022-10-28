@@ -87,7 +87,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
                 </div>
                 <div class="flex flex-col mt-6">
                   <%= label_for f_questions, :type, label: "Question Type" %>
-                  <%= select f_questions, :type, field_options(), class: "select", disabled: @state === "", phx_blur: "edit-type", phx_target: @myself, phx_value_id: f_questions.index %>
+                  <%= select f_questions, :type, field_options(), class: "select", disabled: @state === "", phx_target: @myself, phx_value_id: f_questions.index %>
                 </div>
 
                 <%= case input_value(f_questions, :type) do %>
@@ -160,176 +160,153 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       )
 
   def handle_event(
-        "edit-type",
-        %{"value" => value, "id" => id},
-        %{assigns: %{questionnaire: questionnaire}} = socket
-      ) do
-    index = String.to_integer(id)
-
-    questions = questionnaire.questions
-
-    new_question =
-      questions
-      |> Enum.fetch!(index)
-      |> Map.put(:type, value |> String.to_atom())
-
-    questions
-    |> List.replace_at(index, new_question)
-    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
-    |> save_questionnaire()
-  end
-
-  def handle_event(
         "change-template",
         %{"value" => value},
         %{assigns: %{questionnaire: questionnaire}} = socket
       ) do
-    case value do
-      "blank" ->
-        [
-          %Picsello.Questionnaire.Question{
-            optional: false,
-            options: [],
-            placeholder: "",
-            prompt: ""
-          }
-        ]
+    questions =
+      case value do
+        "blank" ->
+          [
+            %Picsello.Questionnaire.Question{
+              optional: false,
+              options: [],
+              placeholder: "",
+              prompt: ""
+            }
+          ]
 
-      _ ->
-        Questionnaire.get_one(value |> String.to_integer())
-        |> Map.get(:questions)
-        |> Enum.map(fn question ->
-          question |> Map.drop([:id])
-        end)
-    end
-    |> assign_question_changeset(
-      socket,
+        _ ->
+          Questionnaire.get_one(value |> String.to_integer())
+          |> Map.get(:questions)
+          |> Enum.map(fn question ->
+            question |> Map.drop([:id])
+          end)
+      end
+      |> Enum.map(&Map.from_struct/1)
+
+    socket
+    |> assign_changeset(
+      %{questions: questions},
       insert_or_update?(questionnaire.id)
     )
     |> save_questionnaire()
   end
 
   @impl true
-  def handle_event("add-question", %{}, %{assigns: %{questionnaire: questionnaire}} = socket) do
-    questions = questionnaire.questions
+  def handle_event(
+        "add-question",
+        %{},
+        %{assigns: %{questionnaire: questionnaire, changeset: changeset}} = socket
+      ) do
+    questions =
+      changeset
+      |> Ecto.Changeset.get_field(:questions)
+      |> Enum.map(&Map.from_struct/1)
+      |> List.insert_at(-1, %{
+        optional: false,
+        options: [],
+        placeholder: "",
+        prompt: "",
+        type: :text
+      })
 
-    questions
-    |> List.insert_at(-1, %Picsello.Questionnaire.Question{
-      optional: false,
-      options: [],
-      placeholder: "",
-      prompt: "",
-      type: :text
-    })
-    |> assign_question_changeset(
-      socket,
+    socket
+    |> assign_changeset(
+      %{questions: questions},
       insert_or_update?(questionnaire.id)
     )
-    |> save_questionnaire()
+    |> noreply()
   end
 
   @impl true
   def handle_event(
         "reorder-question",
         %{"direction" => direction},
-        %{assigns: %{questionnaire: questionnaire}} = socket
+        %{assigns: %{questionnaire: questionnaire, changeset: changeset}} = socket
       ) do
-    questions = questionnaire.questions
+    questions =
+      changeset
+      |> Ecto.Changeset.get_field(:questions)
+      |> Enum.map(&Map.from_struct/1)
 
-    questions
-    |> swap(direction)
-    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
-    |> save_questionnaire()
+    socket
+    |> assign_changeset(
+      %{questions: swap(questions, direction)},
+      insert_or_update?(questionnaire.id)
+    )
+    |> noreply()
   end
 
   @impl true
   def handle_event(
         "delete-question",
         %{"id" => id},
-        %{assigns: %{questionnaire: questionnaire}} = socket
+        %{assigns: %{questionnaire: questionnaire, changeset: changeset}} = socket
       ) do
     index = String.to_integer(id)
 
-    questions = questionnaire.questions
+    questions =
+      changeset
+      |> Ecto.Changeset.get_field(:questions)
+      |> Enum.map(&Map.from_struct/1)
+      |> List.delete_at(index)
 
-    questions
-    |> List.delete_at(index)
-    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
-    |> save_questionnaire()
-  end
-
-  @impl true
-  def handle_event(
-        "edit-option",
-        %{"id" => id, "option-id" => option_id, "value" => value},
-        %{assigns: %{questionnaire: questionnaire}} = socket
-      ) do
-    index = String.to_integer(id)
-    option_index = String.to_integer(option_id)
-
-    questions = questionnaire.questions
-
-    new_option_list =
-      questions
-      |> Enum.fetch!(index)
-      |> Map.get(:options)
-      |> List.replace_at(option_index, value)
-
-    new_question = questions |> Enum.fetch!(index) |> Map.put(:options, new_option_list)
-
-    questions
-    |> List.replace_at(index, new_question)
-    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
-    |> save_questionnaire()
-  end
-
-  @impl true
-  def handle_event(
-        "delete-option",
-        %{"id" => id, "option-id" => option_id},
-        %{assigns: %{questionnaire: questionnaire}} = socket
-      ) do
-    index = String.to_integer(id)
-    option_index = String.to_integer(option_id)
-
-    questions = questionnaire.questions
-
-    new_option_list =
-      questions
-      |> Enum.fetch!(index)
-      |> Map.get(:options)
-      |> List.delete_at(option_index)
-
-    new_question = questions |> Enum.fetch!(index) |> Map.put(:options, new_option_list)
-
-    questions
-    |> List.replace_at(index, new_question)
-    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
-    |> save_questionnaire()
+    socket
+    |> assign_changeset(
+      %{questions: questions},
+      insert_or_update?(questionnaire.id)
+    )
+    |> noreply()
   end
 
   @impl true
   def handle_event(
         "add-option",
         %{"id" => id},
-        %{assigns: %{questionnaire: questionnaire}} = socket
+        %{assigns: %{questionnaire: questionnaire, changeset: changeset}} = socket
       ) do
     index = String.to_integer(id)
 
-    questions = questionnaire.questions
+    questions =
+      changeset
+      |> Ecto.Changeset.get_field(:questions)
+      |> Enum.map(&Map.from_struct/1)
+      |> List.update_at(index, fn question ->
+        question |> Map.put(:options, (question.options || []) ++ [""])
+      end)
 
-    new_option_list =
-      questions
-      |> Enum.fetch!(index)
-      |> Map.get(:options)
-      |> List.insert_at(-1, "")
+    socket
+    |> assign_changeset(
+      %{questions: questions},
+      insert_or_update?(questionnaire.id)
+    )
+    |> noreply()
+  end
 
-    new_question = questions |> Enum.fetch!(index) |> Map.put(:options, new_option_list)
+  @impl true
+  def handle_event(
+        "delete-option",
+        %{"id" => id, "option-id" => option_id},
+        %{assigns: %{questionnaire: questionnaire, changeset: changeset}} = socket
+      ) do
+    index = String.to_integer(id)
+    option_id = String.to_integer(option_id)
 
-    questions
-    |> List.replace_at(index, new_question)
-    |> assign_question_changeset(socket, insert_or_update?(questionnaire.id))
-    |> save_questionnaire()
+    questions =
+      changeset
+      |> Ecto.Changeset.get_field(:questions)
+      |> Enum.map(&Map.from_struct/1)
+      |> List.update_at(index, fn question ->
+        question |> Map.put(:options, List.delete_at(question.options, option_id))
+      end)
+
+    socket
+    |> assign_changeset(
+      %{questions: questions},
+      insert_or_update?(questionnaire.id)
+    )
+    |> noreply()
   end
 
   @impl true
@@ -361,7 +338,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       <ul class="mb-6">
         <%= for {option, index} <- input_value(@f_questions, :options) |> Enum.with_index() do %>
           <li class="mb-2 flex items-center gap-2">
-            <input type="text" class="text-input" value={option} placeholder="Enter an option…" phx-blur="edit-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-target={@myself} disabled={@state === ""} />
+            <input type="text" class="text-input" name={"questionnaire[questions][#{@f_questions.index}][options][]"} value={option} placeholder="Enter an option…" disabled={@state === ""} />
             <%= if @state !== "" do %>
             <button class="bg-red-sales-100 border border-red-sales-300 hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="delete-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-target={@myself}>
               <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
@@ -377,11 +354,6 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       <% end %>
     </div>
     """
-  end
-
-  defp assign_question_changeset(questions, socket, action) do
-    map = questions |> Enum.map(fn question -> question |> Map.from_struct() end)
-    socket |> assign_changeset(%{questions: map}, action)
   end
 
   defp save_questionnaire(params, %{

@@ -19,7 +19,7 @@ defmodule Picsello.Questionnaire do
       )
 
       field(:optional, :boolean)
-      field(:options, {:array, :string}, default: [])
+      field(:options, {:array, :string}, default: [""])
     end
 
     def changeset(question, attrs) do
@@ -115,6 +115,7 @@ defmodule Picsello.Questionnaire do
     from(q in __MODULE__,
       where: q.organization_id == ^organization_id or q.is_picsello_default == true,
       where: q.job_type == "other",
+      where: is_nil(q.package_id),
       order_by: [asc: q.organization_id, desc: q.inserted_at]
     )
     |> Repo.all()
@@ -124,6 +125,7 @@ defmodule Picsello.Questionnaire do
     from(q in __MODULE__,
       where: q.organization_id == ^organization_id or q.is_picsello_default == true,
       where: q.job_type == ^job_type or q.job_type == "other",
+      where: is_nil(q.package_id),
       order_by: [asc: q.organization_id, desc: q.inserted_at]
     )
     |> Repo.all()
