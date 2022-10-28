@@ -225,7 +225,7 @@ defmodule PicselloWeb.HomeLive.Index do
                body: "Check your email to confirm your account before you can start anything.",
                icon: "envelope",
                button_label: "Resend email",
-               button_class: "btn-primary",
+               button_class: "btn-warning btn-tertiary",
                external_link: "",
                color: "red-sales-300",
                class: "intro-confirmation border-red-sales-300"
@@ -238,7 +238,7 @@ defmodule PicselloWeb.HomeLive.Index do
                  "You have #{ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0))} left before your subscription ends. You will lose access on #{Map.get(subscription, :subscription_end_at, nil)}. Your data will not be deleted and you can resubscribe at any time",
                icon: "clock-filled",
                button_label: "Go to acccount settings",
-               button_class: "btn-secondary",
+               button_class: "btn-tertiary",
                external_link: "",
                color: "red-sales-300",
                class: "intro-confirmation border-red-sales-300"
@@ -251,7 +251,7 @@ defmodule PicselloWeb.HomeLive.Index do
                  "Check out our guide on how best to start running your business with Picsello.",
                icon: "question-mark",
                button_label: "Open guide",
-               button_class: "btn-secondary",
+               button_class: "btn-tertiary",
                external_link:
                  "https://support.picsello.com/article/117-getting-started-with-picsello-guide",
                color: "blue-planning-300",
@@ -264,7 +264,7 @@ defmodule PicselloWeb.HomeLive.Index do
                body: "We use Stripe to make payment collection as seamless as possible for you.",
                icon: "money-bags",
                button_label: "Setup your Stripe Account",
-               button_class: "btn-secondary",
+               button_class: "btn-tertiary",
                external_link: "",
                color: "blue-planning-300",
                class: "intro-stripe"
@@ -276,7 +276,7 @@ defmodule PicselloWeb.HomeLive.Index do
                body: "Your clients will go from looking to direct booking in under 10 minutes.",
                icon: "calendar",
                button_label: "Check it out",
-               button_class: "btn-secondary",
+               button_class: "btn-tertiary",
                external_link: "",
                color: "blue-planning-300",
                class: ""
@@ -289,7 +289,7 @@ defmodule PicselloWeb.HomeLive.Index do
                  "Oh no! We don't have an updated credit card on file. Please resolve in the Billing Portal to ensure continued service and product delivery for clients.",
                icon: "money-bags",
                button_label: "Open Billing Portal",
-               button_class: "btn-primary",
+               button_class: "btn-warning btn-tertiary",
                external_link: "",
                color: "red-sales-300",
                class: "border-red-sales-300"
@@ -302,7 +302,7 @@ defmodule PicselloWeb.HomeLive.Index do
                  "Oh no! You won't be able to sell physical gallery products until we have a payment method. If you're having trouble, please contact support.",
                icon: "money-bags",
                button_label: "Open Billing Portal",
-               button_class: "btn-primary",
+               button_class: "btn-warning btn-tertiary",
                external_link: "",
                color: "red-sales-300",
                class: "border-red-sales-300"
@@ -315,7 +315,7 @@ defmodule PicselloWeb.HomeLive.Index do
                  "We’ve created a video overview of how galleries work to help you get started.",
                icon: "add-photos",
                button_label: "Watch video",
-               button_class: "btn-secondary",
+               button_class: "btn-tertiary",
                external_link: "",
                color: "blue-planning-300",
                class: "intro-resources"
@@ -327,7 +327,7 @@ defmodule PicselloWeb.HomeLive.Index do
                body: "Leads are the first step to getting started with Picsello.",
                icon: "three-people",
                button_label: "Create your first lead",
-               button_class: "btn-secondary",
+               button_class: "btn-tertiary",
                external_link: "",
                color: "blue-planning-300",
                class: "intro-first-lead"
@@ -339,7 +339,7 @@ defmodule PicselloWeb.HomeLive.Index do
                body: "Stuck? We have a variety of resources to help you out.",
                icon: "question-mark",
                button_label: "See available resources",
-               button_class: "btn-secondary",
+               button_class: "btn-tertiary",
                external_link: "https://support.picsello.com/",
                color: "blue-planning-300",
                class: "intro-resources"
