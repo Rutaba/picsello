@@ -56,9 +56,11 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
               <button type="submit" class="btn-primary" style="background-color: black; color: white;" phx-disabled-with="Pay with card">
                 Pay with card  <br /> Fast easy and secure
               </button>
+              <%= if(@organization.user.allow_cash_payment) do %>
               <button class="btn-primary" phx-click="pay_offline" phx-target={@myself} type="button">
                 Pay with cash/check <br /> We will send you an invoice
               </button>
+              <% end %>
           <% end %>
               <button class="btn-secondary" phx-click="modal" phx-value-action="close" type="button">
                 Close
