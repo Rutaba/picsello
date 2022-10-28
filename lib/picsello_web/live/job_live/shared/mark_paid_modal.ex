@@ -78,11 +78,8 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
             <%= labeled_input f, :price, placeholder: "$0.00", label: "Payment amount", class: "w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center h-12", phx_hook: "PriceMask" %>
 
-
             </dd>
           </dl>
-
-
 
           <dl>
 
@@ -104,18 +101,13 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
             <button id="save-payment" class="btn-primary button rounded-lg border border-blue-300 py-1 px-7 bg-white text-black hover:bg-base-200" type="submit" phx-submit="save" disabled={!@changeset.valid?}>Save</button>
           </div>
         </.form>
-
-
     </div>
     <% end %>
 
-
-
-
-
-
         <div class="flex justify-end mt-4 gap-8">
-        <button class="link block leading-5 text-black text-base">Download invoice</button>
+          <%= link to: Routes.job_download_path(@socket, :download_invoice_pdf, @proposal.job_id, @proposal.id) do %>
+            <button class="link block leading-5 text-black text-base">Download invoice</button>
+          <% end %>
           <button id="done" class="rounded-md bg-black px-8 py-3 text-white" phx-click="modal" phx-value-action="close">Done</button>
         </div>
 
@@ -137,21 +129,24 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         },
         socket
       ) do
+    socket = assign_changeset(socket, params)
 
-        socket = assign_changeset(socket, params)
+    owed = PaymentSchedules.owed_offline_price(socket.assigns.job)
 
-          owed = PaymentSchedules.owed_offline_price(socket.assigns.job)
-          price = (Ecto.Changeset.get_field(socket.assigns.changeset, :price)) || %Money{amount: 0, currency: :USD}
+    price =
+      Ecto.Changeset.get_field(socket.assigns.changeset, :price) ||
+        %Money{amount: 0, currency: :USD}
 
-          case Money.cmp(price, owed) do
-            :gt ->
-              socket.assigns.changeset
-              |> Ecto.Changeset.add_error(:price, "must be within what remains")
-              |> then(&assign(socket, :changeset, &1))
-              _ ->
-                socket
-          end
-          |> noreply()
+    case Money.cmp(price, owed) do
+      :gt ->
+        socket.assigns.changeset
+        |> Ecto.Changeset.add_error(:price, "must be within what remains")
+        |> then(&assign(socket, :changeset, &1))
+
+      _ ->
+        socket
+    end
+    |> noreply()
   end
 
   @impl true
@@ -165,7 +160,12 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
               "type" => _
             } = params
         },
-        %{assigns: %{add_payment_show: add_payment_show, job: %{payment_schedules: payment_schedules} = job}} = socket
+        %{
+          assigns: %{
+            add_payment_show: add_payment_show,
+            job: %{payment_schedules: payment_schedules} = job
+          }
+        } = socket
       ) do
     due_at = Enum.sort_by(payment_schedules, & &1.due_at, :asc) |> hd() |> Map.get(:due_at)
 
@@ -203,6 +203,11 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
   def handle_event("open-compose", %{}, socket), do: open_email_compose(socket)
 
+  def handle_event("download-pdf", %{}, socket) do
+    send(self(), :download_pdf)
+    socket |> noreply()
+  end
+
   def build_changeset(%{}, params \\ %{}) do
     PaymentSchedule.add_payment_changeset(params)
   end
@@ -219,8 +224,13 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     |> assign(:job, job)
   end
 
-  def open(%{assigns: %{job: job}} = socket) do
-    socket |> open_modal(__MODULE__, %{job: job, current_user: socket.assigns.current_user})
+  def open(%{assigns: %{job: job, proposal: proposal}} = socket) do
+    socket
+    |> open_modal(__MODULE__, %{
+      proposal: proposal,
+      job: job,
+      current_user: socket.assigns.current_user
+    })
   end
 
   defp assign_payments(%{assigns: %{job: job}} = socket) do

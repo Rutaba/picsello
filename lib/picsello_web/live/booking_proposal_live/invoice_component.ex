@@ -1,9 +1,8 @@
 defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-
-  alias Picsello.{Repo, PaymentSchedules, Notifiers}
-
+  alias Picsello.{Repo, PaymentSchedules, Notifiers, BookingProposal}
+  import Phoenix.HTML, only: [raw: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,
@@ -100,12 +99,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
           shoots: shoots,
           package: %{organization: %{user: photographer} = organization} = package
         } = job
-    } =
-      proposal
-      |> Repo.preload(
-        [job: [:client, :shoots, :payment_schedules, package: [organization: :user]]],
-        force: true
-      )
+    } = BookingProposal.preloads(proposal)
 
     socket
     |> open_modal(__MODULE__, %{
