@@ -27,6 +27,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> Organization.assign_stripe_account_changeset("stripe_id")
     |> Repo.update!()
 
+    questionnaire = insert(:questionnaire)
+
     lead =
       insert(:lead, %{
         user: user,
@@ -35,6 +37,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 1,
+          questionnaire_template_id: questionnaire.id,
           base_multiplier: 0.8,
           base_price: 100
         },
@@ -67,7 +70,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     setup %{sessions: [photographer_session, _], lead: lead} do
       photographer_session
       |> visit("/leads/#{lead.id}")
-      |> click(checkbox("Questionnaire included", selected: true))
+      |> click(checkbox("Include questionnaire in proposal?", selected: true))
       |> click(@send_proposal_button)
       |> assert_has(@send_email_button)
       |> refute_has(select("Select email preset"))
@@ -458,8 +461,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{lead.id}")
-    |> click(checkbox("Questionnaire included", selected: true))
-    |> click(button("Edit or Select New"))
+    |> click(checkbox("Include questionnaire in proposal?", selected: true))
+    |> click(button("Edit or Select New", at: 0, count: 2))
     |> find(select("Select a Contract Template"), &click(&1, option("Contract 1")))
     |> fill_in(text_field("Contract Name"), with: "Contract 2")
     |> within_modal(&wait_for_enabled_submit_button/1)
@@ -482,8 +485,6 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     sessions: [photographer_session, client_session],
     lead: lead
   } do
-    insert(:questionnaire)
-
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(@send_proposal_button)
@@ -510,7 +511,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{lead.id}")
-    |> click(checkbox("Questionnaire included", selected: true))
+    |> click(checkbox("Include questionnaire in proposal?", selected: true))
     |> assert_text("$0.00 to To Book")
     |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()
