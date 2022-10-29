@@ -152,7 +152,10 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def handle_info({:update, %{package: package}}, %{assigns: %{job: job}} = socket) do
-    package = package |> Repo.preload(:contract, force: true)
+    package =
+      package
+      |> Repo.preload(:contract, force: true)
+      |> Repo.preload(:questionnaire_template, force: true)
 
     socket
     |> assign(package: package, job: %{job | package: package, package_id: package.id})

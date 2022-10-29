@@ -136,22 +136,151 @@ defmodule Picsello.QuestionnaireTest do
     end
   end
 
-  # describe "for_organization" do
-  #   test "check if org can see default questionnaires" do
-  #   end
+  describe "for_organization" do
+    setup do
+      organization = insert(:organization)
+      user = insert(:user, organization: organization, name: "Jane Doe")
+      package = insert(:package, organization: organization)
 
-  #   test "check if org can see their custom questionnaires that don't have package_ids" do
-  #   end
+      [organization: organization, user: user, package: package]
+    end
 
-  #   test "check if another org cannot see current orgs questionnaires" do
-  #   end
-  # end
+    test "check if org can see default questionnaires", %{organization: organization} do
+      assert [
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               }
+             ] = Questionnaire.for_organization(organization.id)
+    end
 
-  # describe "for_organization_by_job_type when job_type is not set" do
-  # end
+    test "check if org can see their custom questionnaires that don't have package_ids", %{
+      organization: organization,
+      package: package
+    } do
+      # belongs to a package that has been copied
+      insert(:questionnaire,
+        name: "Event Questionnaire",
+        job_type: "event",
+        is_picsello_default: false,
+        is_organization_default: false,
+        organization_id: organization.id,
+        package_id: package.id,
+        questions: [
+          %{
+            type: "textarea",
+            prompt: "What is the vibe of your upcoming event?",
+            optional: false
+          }
+        ]
+      )
 
-  # describe "for_organization_by_job_type when job_type is set" do
-  # end
+      # no package_id
+      insert(:questionnaire,
+        name: "Event Questionnaire 2",
+        job_type: "event",
+        is_picsello_default: false,
+        is_organization_default: false,
+        organization_id: organization.id,
+        package_id: nil,
+        questions: [
+          %{
+            type: "textarea",
+            prompt: "What is the vibe of your upcoming event?",
+            optional: false
+          }
+        ]
+      )
+
+      assert [
+               %Picsello.Questionnaire{
+                 is_picsello_default: false
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true
+               }
+             ] = Questionnaire.for_organization(organization.id)
+    end
+  end
+
+  describe "for_organization_by_job_type" do
+    setup do
+      organization = insert(:organization)
+
+      insert(:questionnaire,
+        name: "Custom Other Questionnaire",
+        job_type: "other",
+        is_picsello_default: false,
+        is_organization_default: false,
+        organization_id: organization.id,
+        package_id: nil,
+        questions: [
+          %{
+            type: "textarea",
+            prompt: "What is the vibe?",
+            optional: false
+          }
+        ]
+      )
+
+      [organization: organization]
+    end
+
+    test "when job type is nil", %{organization: organization} do
+      assert [
+               %Picsello.Questionnaire{
+                 is_picsello_default: false,
+                 job_type: "other",
+                 name: "Custom Other Questionnaire"
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true,
+                 job_type: "other"
+               }
+             ] = Questionnaire.for_organization_by_job_type(organization.id, nil)
+    end
+
+    test "when job type is not nil", %{organization: organization} do
+      assert [
+               %Picsello.Questionnaire{
+                 is_picsello_default: false,
+                 job_type: "other",
+                 name: "Custom Other Questionnaire"
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true,
+                 job_type: "family"
+               },
+               %Picsello.Questionnaire{
+                 is_picsello_default: true,
+                 job_type: "other"
+               }
+             ] = Questionnaire.for_organization_by_job_type(organization.id, "family")
+    end
+  end
 
   describe "delete_ and get_ one" do
     setup do
