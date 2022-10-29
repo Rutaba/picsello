@@ -750,9 +750,8 @@ defmodule Picsello.Galleries do
     |> Repo.update()
     |> tap(fn
       {:ok, gallery} ->
-        gallery
-        |> Repo.preload([:watermark, :photos])
-        |> Map.get(:photos)
+        gallery = gallery |> Repo.preload([:watermark])
+        get_gallery_photos(gallery.id)
         |> Enum.each(&ProcessingManager.update_watermark(&1, gallery.watermark))
 
       x ->
