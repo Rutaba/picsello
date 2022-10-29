@@ -19,6 +19,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
+  alias Picsello.Galleries
+  alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
 
   def toggle_favorites(
@@ -477,7 +479,16 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def actions(assigns) do
     assigns =
-      assigns |> Enum.into(%{photo_selected: true, selection_filter: false, has_orders: true})
+      assigns
+      |> Enum.into(%{
+        photo_selected: true,
+        selection_filter: false,
+        client_liked_album: false,
+        selected_photos: [],
+        has_orders: true
+      })
+
+    any_client_liked_photo? = Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
 
     ~H"""
     <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected})} phx-update={@update_mode} data-offset-y="10" phx-hook="Select">
@@ -491,7 +502,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       <ul class="absolute z-30 hidden w-full mt-2 bg-white border rounded-md popover-content border-base-200">
         <%= render_slot(@inner_block) %>
         <%= if @has_orders do %>
-        <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter})}>
+        <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter || @client_liked_album || any_client_liked_photo?})}>
           <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
             <%= @delete_title %>
           </button>

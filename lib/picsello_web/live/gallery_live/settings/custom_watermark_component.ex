@@ -13,7 +13,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
     external: &__MODULE__.presign_image/2,
     progress: &__MODULE__.handle_image_progress/3
   ]
-  @bucket "picsello-staging"
+  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
   @impl true
   def mount(socket) do
