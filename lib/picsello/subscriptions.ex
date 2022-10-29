@@ -50,7 +50,7 @@ defmodule Picsello.Subscriptions do
     end
   end
 
-  def subscription_ending_soon_info(nil), do: %{hidden?: true}
+  def subscription_ending_soon_info(nil), do: %{hidden?: true, hidden_30_days?: true}
 
   def subscription_ending_soon_info(%User{subscription: %Ecto.Association.NotLoaded{}} = user),
     do: user |> Repo.preload(:subscription) |> subscription_ending_soon_info()
