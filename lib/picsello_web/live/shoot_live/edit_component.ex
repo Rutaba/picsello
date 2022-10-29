@@ -103,7 +103,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       |> Multi.insert_or_update(:shoot, changeset)
       |> Multi.merge(fn _ ->
         {updated_package_payment_schedules, updated_payment_schedules} = get_schedules(socket)
-        
+
         Multi.new()
         |> Multi.insert_all(
           :package_payment_schedules,

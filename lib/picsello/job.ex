@@ -100,7 +100,7 @@ defmodule Picsello.Job do
   def leads(query \\ __MODULE__) do
     from(job in query,
       join: status in assoc(job, :job_status),
-      where: status.is_lead and job.is_gallery_only == false
+      where: status.is_lead and job.is_gallery_only == false and is_nil(job.archived_at)
     )
   end
 

@@ -19,29 +19,32 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_text("Add a Package: Set Pricing")
     |> find(button("Next"), &assert(Element.attr(&1, :disabled)))
     |> fill_in(@price_text_field, with: "$100")
-    |> scroll_into_view(css("#package_pricing_is_enabled"))
-    |> click(checkbox("Set my own download price"))
+    |> scroll_into_view(css("#package_pricing_is_enabled_true"))
+    |> click(radio_button("Gallery includes Print Credits"))
     |> find(
-      text_field("download_each_price"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
+      text_field("package[print_credits]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$30"))
     )
-    |> click(checkbox("download_includes_credits"))
+    |> scroll_into_view(css("#download_is_enabled_true"))
+    |> click(radio_button("Package includes a specified number of Digital Images"))
+    |> click(checkbox("download[includes_credits]"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
+    |> scroll_into_view(css("#download_is_custom_price"))
+    |> click(checkbox("download[is_custom_price]"))
+    |> find(
+      text_field("download[each_price]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
+    )
+    |> scroll_into_view(css("#download_is_buy_all"))
     |> click(checkbox("download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
     )
-    |> scroll_into_view(css("#package_pricing_is_enabled"))
-    |> click(checkbox("package_pricing_is_enabled"))
-    |> find(
-      text_field("package[print_credits]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$30"))
-    )
-    |> assert_has(definition("Total Price", text: "$100.00"))
+    |> assert_has(definition("Total", text: "$100.00"))
   end
 
   defp package_payment_screen(session) do
@@ -363,28 +366,32 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_disabled_submit(text: "Next")
     |> fill_in(@price_text_field, with: " ")
     |> scroll_into_view(css("#package_pricing_is_enabled"))
-    |> click(checkbox("Set my own download price"))
+    |> scroll_into_view(css("#package_pricing_is_enabled_true"))
+    |> click(radio_button("Gallery includes Print Credits"))
     |> find(
-      text_field("download_each_price"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: " "))
+      text_field("package[print_credits]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: ""))
     )
-    |> click(checkbox("download_includes_credits"))
+    |> scroll_into_view(css("#download_is_enabled_true"))
+    |> click(radio_button("Package includes a specified number of Digital Images"))
+    |> click(checkbox("download[includes_credits]"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: " "))
     )
+    |> scroll_into_view(css("#download_is_custom_price"))
+    |> click(checkbox("download[is_custom_price]"))
+    |> find(
+      text_field("download[each_price]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: " "))
+    )
+    |> scroll_into_view(css("#download_is_buy_all"))
     |> click(checkbox("download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: " "))
     )
-    |> scroll_into_view(css("#package_pricing_is_enabled"))
-    |> click(checkbox("package_pricing_is_enabled"))
-    |> find(
-      text_field("package[print_credits]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: " "))
-    )
-    |> assert_has(definition("Total Price", text: "$0.00"))
+    |> assert_has(definition("Total", text: "$0.00"))
     |> assert_disabled_submit()
   end
 

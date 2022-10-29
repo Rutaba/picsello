@@ -5,21 +5,23 @@
       <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count,  arrow_show: "albums", album_dropdown_show: true, is_mobile: @is_mobile %>
     </div>
     <div class={classes("lg:block w-full min-h-screen pb-16 lg:pb-6 lg:bg-gray-100 bg-white lg:pl-96", %{"hidden" => @is_mobile})}>
-      <div id="page-scroll" phx-hook="PageScroll" class="lg:sticky top-0 z-20 lg:pb-5 pl-10 pr-10 lg:bg-gray-100 bg-white lg:pt-14 pt-20">
-       <.mobile_banner albums={@albums} title="Photos" class="py-4">
-          <div class="flex lg:mt-4 font-sans text-gray-400"><%= length(@albums) %> <%= ngettext("album", "albums", length(@albums)) %></div>        
-       </.mobile_banner>
-       <div class="hidden lg:flex justify-between">
-          <div class="font-sans text-2xl mt-2 font-bold">Photos</div>
-          <.add_album_button class="ml-5"/>
+      <div id="page-scroll" phx-hook="PageScroll" class="lg:sticky top-0 z-20 lg:pb-5 lg:bg-gray-100 bg-white lg:pt-14 pt-20">
+        <div class="center-container px-10">
+          <.mobile_banner albums={@albums} title="Photos" class="py-4">
+            <div class="flex lg:mt-4 font-sans text-gray-400"><%= length(@albums) %> <%= ngettext("album", "albums", length(@albums)) %></div>        
+          </.mobile_banner>
+          <div class="hidden lg:flex justify-between">
+            <div class="font-sans text-2xl mt-2 font-bold">Photos</div>
+            <.add_album_button class="ml-5"/>
+          </div>
+          <p class="mt-4 font-sans hidden lg:flex text-gray-400"><%= length(@albums) %> <%= ngettext("album", "albums", length(@albums)) %></p>
         </div>
-        <p class="mt-4 font-sans hidden lg:flex text-gray-400"><%= length(@albums) %> <%= ngettext("album", "albums", length(@albums)) %></p>
       </div>
       <div class="lg:hidden bg-base-200 px-10 py-4">
       <.add_album_button class="py-1.5"/>
       </div>
       <div id="albums" class="relative flex flex-col w-full mb-20 lg:mb-10">
-        <div class="pl-10 grid lg:grid-cols-2 grid-cols-1 pr-7 sm:gap-2 md:gap-2">
+        <div class="px-10 grid 2xl:grid-cols-3 xl:grid-cols-2 grid-cols-1 sm:gap-2 md:gap-2 center-container">
             <div class="flex flex-col mb-2 mr-2 album">
             <.thumbnail event="go_to_unsorted_photos" album={album_params(@albums)}/>
             <div class="cursor-pointer actionBlock">
@@ -46,7 +48,8 @@
               class="flex-row justify-between -mt-1 font-sans border-2 rounded-b-lg md:w-full bg-base-100"
               delete_event="delete_album_popup"
               delete_title="Delete Album"
-              delete_value={album.id}>
+              delete_value={album.id}
+              has_orders={Enum.empty?(album.orders)}>
                 <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
                   <button class="w-full album-actions">Go to album</button>
                 </li>

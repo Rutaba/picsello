@@ -1,11 +1,11 @@
 <div>
-  <div class="px-4 mx-auto max-w-screen-xl">
+  <div class="mx-auto center-container gallery__container px-7 sm:px-16">
     <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery, album: assigns[:album], is_proofing: @is_proofing %>
   </div>
 
   <hr>
 
-  <div class="px-4 pt-5 pb-10 mx-auto lg:pt-9 max-w-screen-xl">
+  <div class="pt-5 pb-10 mx-auto lg:pt-9 center-container gallery__container px-7 sm:px-16">
     <%= if @orders == [] do %>
       <%= live_redirect to: @checkout_routes.home_page, class: "flex font-extrabold text-base-250 items-center mb-7" do %>
         <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
@@ -90,6 +90,6 @@
     <% end %>
   </div>
   <%= if @is_proofing do %>
-    <.credits_footer for={:proofing_album_order} credits={[]} />
+    <.credits_footer for={:proofing_album_order} credits={[]} is_fixed={true} />
   <% end %>
 </div>

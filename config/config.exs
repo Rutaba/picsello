@@ -50,6 +50,7 @@ config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGE
 config :picsello, :help_scout_id, System.get_env("HELP_SCOUT_ID")
 config :picsello, :help_scout_id_business, System.get_env("HELP_SCOUT_ID_BUSINESS")
 config :picsello, :booking_reservation_seconds, 60 * 10
+config :picsello, :card_category_id, System.get_env("CARD_CATEGORY_ID")
 
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
@@ -111,7 +112,8 @@ config :picsello, Oban,
        {"*/20 * * * *", Picsello.Workers.SendShootReminder},
        {"0 * * * *", Picsello.Workers.SendPaymentScheduleReminder},
        {"0 8 * * *", Picsello.Workers.SendGalleryExpirationReminder},
-       {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog}
+       {"0 0 * * 0", Picsello.Workers.SyncWHCCCatalog},
+       {"0 1 * * *", Picsello.Workers.CleanUploader}
      ]}
   ]
 

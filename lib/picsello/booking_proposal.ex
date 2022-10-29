@@ -24,7 +24,7 @@ defmodule Picsello.BookingProposal do
     |> cast(attrs, [:sent_to_client, :job_id, :questionnaire_id])
     |> validate_required([:job_id, :sent_to_client])
   end
-  
+
   @doc false
   def accept_changeset(proposal) do
     attrs = %{accepted_at: DateTime.utc_now()}

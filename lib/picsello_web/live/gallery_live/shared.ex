@@ -19,6 +19,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
+  alias Picsello.Galleries
+  alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
 
   def toggle_favorites(
@@ -250,9 +252,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
       ) do
     opts = make_opts(socket, per_page, exclude_all)
     photos = Galleries.get_gallery_photos(id, opts)
+    client_proofing = Map.get(socket.assigns, :client_proofing)
 
-    socket
-    |> assign(:photos, photos |> Enum.take(per_page))
+    if Enum.empty?(photos) && client_proofing do
+      assign_new(socket, :photos, fn -> photos end)
+    else
+      socket
+      |> assign(:photos, photos |> Enum.take(per_page))
+    end
     |> assign(:has_more_photos, photos |> length > per_page)
   end
 
@@ -471,11 +478,21 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def actions(assigns) do
-    assigns = assigns |> Enum.into(%{photo_selected: true, selection_filter: false})
+    assigns =
+      assigns
+      |> Enum.into(%{
+        photo_selected: true,
+        selection_filter: false,
+        client_liked_album: false,
+        selected_photos: [],
+        has_orders: true
+      })
+
+    any_client_liked_photo? = Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
 
     ~H"""
     <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected})} phx-update={@update_mode} data-offset-y="10" phx-hook="Select">
-      <div class={"flex items-center lg:p-0 p-3 dropdown " <> @class}>
+      <div {testid("dropdown-#{@id}")} class={"flex items-center lg:p-0 p-3 dropdown " <> @class}>
         <div class="lg:mx-3">
           <span>Actions</span>
         </div>
@@ -484,12 +501,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
       </div>
       <ul class="absolute z-30 hidden w-full mt-2 bg-white border rounded-md popover-content border-base-200">
         <%= render_slot(@inner_block) %>
-        <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter})}>
+        <%= if @has_orders do %>
+        <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter || @client_liked_album || any_client_liked_photo?})}>
           <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
             <%= @delete_title %>
           </button>
           <.icon name="trash" class="flex w-4 h-5 mr-3 text-red-400 hover:opacity-75" />
         </li>
+        <% end %>
       </ul>
     </div>
     """
@@ -634,14 +653,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
           is_proofing: false,
           cart_count: 0,
           total_count: 0,
-          for: nil
+          for: nil,
+          is_fixed: false
         }
       )
 
     ~H"""
-      <div class={"relative #{@for == :proofing_album_order && 'hidden'}"}>
-          <div class="absolute bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 shadow-top">
-            <div class="container flex items-center justify-between h-full mx-auto px-7">
+      <div class={classes("relative", %{"hidden" => @for == :proofing_album_order})}>
+          <div class={classes("bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 pointer-events-none", %{"fixed shadow-top" => @is_fixed and @for != :proofing_album, "absolute border-t border-base-225" => !@is_fixed or @for == :proofing_album })}>
+            <div class="container flex items-center justify-between h-full mx-auto px-7 sm:px-16">
               <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
                 <%= for {label, value} <- build_credits(@for, @credits, @total_count) do %>
                   <div>
@@ -895,7 +915,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         id: "client_liked",
         photos: photos,
         name: "Client Favorites",
-        is_client_liked: true
+        is_client_liked: true,
+        orders: []
       }
     end
   end

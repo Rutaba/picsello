@@ -7,6 +7,7 @@ defmodule Picsello.Galleries do
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
   alias Ecto.Multi
+
   alias Picsello.{
     Galleries,
     Repo,
@@ -348,6 +349,11 @@ defmodule Picsello.Galleries do
       where: p.id in ^photo_ids
     )
     |> Repo.update_all(set: [active: false])
+  end
+
+  def get_photo_by_id(photo_id) do
+    from(p in Photos.active_photos(), where: p.id == ^photo_id)
+    |> Repo.one()
   end
 
   @spec get_photos_by_ids(photo_ids :: list(any)) :: list(Photo)

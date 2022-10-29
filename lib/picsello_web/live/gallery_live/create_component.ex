@@ -19,7 +19,10 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   alias Ecto.Changeset
 
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
-  import PicselloWeb.PackageLive.Shared, only: [digital_download_fields: 1, current: 1]
+
+  import PicselloWeb.PackageLive.Shared,
+    only: [digital_download_fields: 1, print_credit_fields: 1, current: 1]
+
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @steps [:details, :pricing]
@@ -80,7 +83,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       |> Multi.insert(:job, fn %{client: client} ->
         Changeset.put_change(changeset, :client_id, client.id)
       end)
-      |> Multi.run(:package, fn _repo, %{job: job} ->
+      |> Multi.merge(fn %{job: job} ->
         Packages.insert_package_and_update_job(package_changeset, job)
       end)
       |> Multi.merge(fn %{job: %{id: job_id}} ->
@@ -115,7 +118,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
       <.steps step={@step} steps={@steps} target={@myself} />
 
-      <h1 class="mt-2 mb-4 text-xl leading-9">
+      <h1 class="mt-2 mb-4 text-3xl">
         <span class="font-bold">Create a Gallery:</span>
         <%= if @step == :details, do: "General Details", else: "Pricing" %>
       </h1>
@@ -167,34 +170,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         <%= hidden_input package, :shoot_count, value: 1 %>
         <%= hidden_input package, :turnaround_weeks, value: 1 %>
 
-        <div class="mt-6 sm:mt-9">
-          <h2 class="mb-2 text-base font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
-        </div>
-        <div class="mt-4 font-normal text-base leading-6">
-          <% p = form_for(@package_pricing, "#") %>
-
-          Print Credits allow your clients to order professional prints and products from your gallery.
-          <div class="mt-2 flex flex-row space-x-8">
-
-            <label class="flex items-center">
-              <%= radio_button(p, :is_enabled, true, class: "w-5 h-5 mr-2.5 radio") %>
-
-              Include
-            </label>
-            <%= if p |> current() |> Map.get(:is_enabled) do %>
-              <%= input(package, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-
-              <div class="flex items-center">
-                <%= label_for package, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
-              </div>
-            <% end %>
-          </div>
-
-          <label class="flex items-center mt-3">
-            <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio") %>
-            Gallery does not include print credits
-          </label>
-        </div>
+        <.print_credit_fields f={package} package_pricing={@package_pricing} />
 
         <.digital_download_fields for={:create_gallery} package_form={package} download={@download} package_pricing={@package_pricing} />
         <%= if @job_id do %>
