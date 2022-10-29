@@ -31,7 +31,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
     %{
       subject: "Thank you for your payment",
       body: """
-      <p>#{organization.name} has recieved #{Picsello.PaymentSchedules.paid_amount(job)} towards #{Picsello.Job.name(job)}. Your remaining balance for #{Picsello.Job.name(job)} is #{Picsello.PaymentSchedules.owed_amount(job)}</p>
+      <p>#{organization.name} has recieved #{Picsello.PaymentSchedules.paid_price(job) |> Money.to_string(fractional_unit: false)} towards #{Picsello.Job.name(job)}. Your remaining balance for #{Picsello.Job.name(job)} is #{Picsello.PaymentSchedules.owed_price(job) |> Money.to_string(fractional_unit: false)}</p>
       <p>Your can pay either through: </p>
       <p>  &bull; check or cash to your photographer directly using the invoice found here</p>
       <p>  &bull; via card here through your photographer's secure payment portal</p>
@@ -49,7 +49,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
     %{
       subject: "You have an upcoming payment",
       body: """
-      <p>You have an upcoming payment for #{organization.name}. Your remaining balance for #{Picsello.Job.name(job)} is #{Picsello.PaymentSchedules.owed_amount(job)}</p>
+      <p>You have an upcoming payment for #{organization.name}. Your remaining balance for #{Picsello.Job.name(job)} is #{Picsello.PaymentSchedules.owed_price(job) |> Money.to_string(fractional_unit: false)}</p>
       <p>Your can pay either through: </p>
       <p>  &bull; check or cash to your photographer directly using the invoice found here</p>
       <p>  &bull; via card here through your photographer's secure payment portal</p>
@@ -67,7 +67,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
     %{
       subject: "Cash or check payment",
       body: """
-      <p>You said you will pay #{organization.name} for #{Picsello.Job.name(job)} through a cash or check for the following #{Picsello.PaymentSchedules.owed_amount(job)} it is due on #{(Picsello.PaymentSchedules.remainder_due_on(job)) |> Calendar.strftime("%B %d, %Y")}.</p>
+      <p>You said you will pay #{organization.name} for #{Picsello.Job.name(job)} through a cash or check for the following #{Picsello.PaymentSchedules.owed_price(job) |> Money.to_string(fractional_unit: false)} it is due on #{(Picsello.PaymentSchedules.remainder_due_on(job)) |> Calendar.strftime("%B %d, %Y")}.</p>
       <p>Please arrange payment with me by replying to this email</p>
       <p>We can't wait to work with you!</p>
       <p>CTA: Download PDF</p>
