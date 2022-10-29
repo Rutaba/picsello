@@ -23,8 +23,8 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
 
     albums =
       case client_liked_album(gallery.id) do
-        nil -> Albums.get_albums_by_gallery_id(gallery.id)
-        album -> Albums.get_albums_by_gallery_id(gallery.id) ++ [album]
+        nil -> Albums.get_albums_by_gallery_id(gallery.id) |> Repo.preload(:orders)
+        album -> (Albums.get_albums_by_gallery_id(gallery.id) |> Repo.preload(:orders)) ++ [album]
       end
 
     socket
@@ -88,12 +88,13 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
           }
         } = socket
       ) do
-    album = Albums.get_album!(album_id)
+    album = Albums.get_album!(album_id) |> Repo.preload(:orders)
 
     socket
     |> open_modal(AlbumSettings, %{
       gallery_id: gallery_id,
-      album: album
+      album: album,
+      has_order?: !Enum.empty?(album.orders)
     })
     |> noreply()
   end

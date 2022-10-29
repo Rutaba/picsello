@@ -46,7 +46,7 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                         </button>
                     <% end %>
                 
-                    <%= if @proofing_photo_icons && @is_removable do %>
+                    <%= if @proofing_photo_icons && @is_removable && !@photo.client_liked do %>
                         <.actions id={"photo-#{@id}-remove"} class="removeBtn" event="delete_photo_popup" photo_id={@id} icon="remove-icon" />
                     <% end %>
                     <%= if @proofing_photo_icons && @is_viewable do %>

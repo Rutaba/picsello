@@ -106,15 +106,15 @@ defmodule Picsello.WHCC.Product do
       %{"size" => %{"metadata" => get_in(product, [:api, "metadata"])}}
     else
       map =
-      for(
-        %{"_id" => category_id, "attributes" => attributes} <- product.attribute_categories,
-        into: %{}
-      ) do
-        {category_id,
-         for(%{"id" => attribute_id} = attribute <- attributes, into: %{}) do
-           {attribute_id, attribute}
-         end}
-      end
+        for(
+          %{"_id" => category_id, "attributes" => attributes} <- product.attribute_categories,
+          into: %{}
+        ) do
+          {category_id,
+           for(%{"id" => attribute_id} = attribute <- attributes, into: %{}) do
+             {attribute_id, attribute}
+           end}
+        end
 
       for({category_id, attribute_id} <- selections, into: %{}) do
         {category_id, get_in(map, [category_id, attribute_id])}

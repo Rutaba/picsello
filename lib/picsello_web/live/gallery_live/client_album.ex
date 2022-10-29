@@ -176,7 +176,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     socket
     |> assigns()
     |> elem(1)
-    |> assign(:update_mode, "append")
+    |> assign(:update_mode, "replace")
     |> push_event("reload_grid", %{})
     |> noreply()
   end

@@ -14,6 +14,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
     selected_photos = Map.get(assigns, :selected_photos, [])
     is_finals = Map.get(assigns, :is_finals, false)
     is_redirect = Map.get(assigns, :is_redirect)
+    has_order? = Map.get(assigns, :has_order?, false)
 
     socket
     |> assign(
@@ -22,7 +23,8 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       gallery_id: gallery_id,
       is_finals: is_finals,
       is_mobile: is_mobile,
-      is_redirect: is_redirect
+      is_redirect: is_redirect,
+      has_order?: has_order?
     )
     |> assign_album_changeset()
     |> assign(:visibility, false)
@@ -229,7 +231,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           <% end %>
         </div>
         <div class="flex flex-row items-center justify-end w-full mt-5 lg:items-start">
-          <%= if @album do %>
+          <%= if @album && !@has_order? do %>
           <div class="flex flex-row items-center justify-start w-full lg:items-start">
             <button type="button" phx-click="delete_album_popup" phx-target={@myself} phx-value-id={@album.id} class="btn-settings-secondary flex items-center border-gray-200" id="close">
               <.icon name="trash" class="flex w-4 h-5 mr-2 text-red-400" />
