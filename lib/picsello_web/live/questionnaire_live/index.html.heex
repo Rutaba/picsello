@@ -16,9 +16,7 @@
     </div>
     <%= unless Enum.empty?(@questionnaires) do %>
       <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
-        <a title="create questionnaire" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-questionnaire">
-        Create Questionnaire
-      </a>
+        <button type="button" title="create questionnaire" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-questionnaire">Create Questionnaire</button>
       </div>
     <% end %>
   </div>
@@ -33,9 +31,7 @@
       <p class="block text-lg lg:text-2xl lg:w-1/2">You don’t have any custom questionnaires at the moment. We do have defaults you can start from!</p>
     </div>
     <div class="lg:inline-flex">
-      <a title="create questionnaire" href="#" class="w-full md:w-auto btn-primary text-center mt-5" phx-click="create-questionnaire">
-        Create Questionnaire
-      </a>
+      <button type="button" title="create questionnaire" href="#" class="w-full md:w-auto btn-primary text-center mt-5" phx-click="create-questionnaire">Create Questionnaire</button>
     </div>
   </div>
 <% else %>
@@ -47,9 +43,9 @@
       <div class="sm:col-span-2">Actions</div>
     </div>
     <%= for questionnaire <- @questionnaires do %>
-      <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
+      <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("questionnaire-row")}>
         <div class="sm:col-span-6 grid sm:flex items-center gap-4">
-          <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}}} class="block text-xl font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
+          <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}} class="block text-xl font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
           <%= if questionnaire.is_picsello_default do %>
             <div><.badge color={:gray}>View Only</.badge></div>
           <% end %>

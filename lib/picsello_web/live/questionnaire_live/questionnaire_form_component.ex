@@ -36,7 +36,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
               <%= select f, :change_template, template_options(@current_user.organization_id), selected: "", class: "select", disabled: @state === "", phx_blur: "change-template", phx_target: @myself %>
             </div>
           <% end %>
-          <%= labeled_input f, :name, label: "Name", phx_debounce: "500", disabled: @state === "" %>
+          <%= labeled_input f, :name, label: "Name", disabled: @state === "" %>
         </div>
 
         <div class={classes("mt-8", %{"hidden" => @state == :edit_lead})}>
@@ -54,7 +54,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
         <fieldset>
           <%= for f_questions <- inputs_for(f, :questions) do %>
-            <div class="mb-8 border rounded-lg">
+            <div class="mb-8 border rounded-lg" {testid("question-#{f_questions.index}")}>
               <%= hidden_inputs_for(f_questions) %>
               <%= if @state !== "" do %>
               <div class="sm:flex items-center justify-between bg-gray-100 p-4 rounded-t-lg">
@@ -62,13 +62,13 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
                   <h3 class="text-lg font-bold">Question <%= f_questions.index + 1 %></h3>
                 </div>
                 <div class="flex items-center gap-4">
-                  <button class="bg-red-sales-100 border border-red-sales-300 hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="delete-question" phx-target={@myself} phx-value-id={f_questions.index}>
+                  <button class="bg-red-sales-100 border border-red-sales-300 hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="delete-question" phx-target={@myself} phx-value-id={f_questions.index} {testid("delete-question")}>
                     <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
                   </button>
-                  <button class="bg-white border hover:border-white rounded-lg flex items-center p-2" type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="down">
+                  <button class="bg-white border hover:border-white rounded-lg flex items-center p-2" type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="down" {testid("reorder-question-down")}>
                     <.icon name="down" class="inline-block w-4 h-4 stroke-current stroke-3 text-black" />
                   </button>
-                  <button class="bg-white border hover:border-white rounded-lg flex items-center p-2" type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="up">
+                  <button class="bg-white border hover:border-white rounded-lg flex items-center p-2" type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="up" {testid("reorder-question-up")}>
                     <.icon name="up" class="inline-block w-4 h-4 stroke-current stroke-3 text-black" />
                   </button>
                 </div>
@@ -77,9 +77,9 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
               <div class="p-4">
                 <div class="grid sm:grid-cols-3 gap-6">
                   <%= labeled_input f_questions, :prompt, phx_debounce: 200, label: "Question Prompt", type: :textarea, placeholder: "Enter the question you'd like to ask…", disabled: @state === "", wrapper_class: "sm:col-span-2" %>
-                  <label class="flex items-center mt-6 sm:mt-8 justify-self-start sm:col-span-1 cursor-pointer">
+                  <label class="flex items-center mt-6 sm:mt-8 justify-self-start sm:col-span-1 cursor-pointer font-bold" {testid("question-optional")}>
                     <%= checkbox f_questions, :optional, class: "w-5 h-5 mr-2 checkbox", disabled: @state === "" %>
-                    <strong>Optional</strong> <em>(your client can skip this question)</em>
+                    Optional <em class="font-normal">(your client can skip this question)</em>
                   </label>
                 </div>
                 <div class="flex flex-col mt-6">
@@ -213,7 +213,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign_changeset(
-      %{questions: questions},
+      merge_changes(questions, changeset),
       insert_or_update?(questionnaire.id)
     )
     |> noreply()
@@ -229,10 +229,11 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       changeset
       |> Ecto.Changeset.get_field(:questions)
       |> Enum.map(&Map.from_struct/1)
+      |> swap(direction)
 
     socket
     |> assign_changeset(
-      %{questions: swap(questions, direction)},
+      merge_changes(questions, changeset),
       insert_or_update?(questionnaire.id)
     )
     |> noreply()
@@ -254,7 +255,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign_changeset(
-      %{questions: questions},
+      merge_changes(questions, changeset),
       insert_or_update?(questionnaire.id)
     )
     |> noreply()
@@ -278,7 +279,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign_changeset(
-      %{questions: questions},
+      merge_changes(questions, changeset),
       insert_or_update?(questionnaire.id)
     )
     |> noreply()
@@ -303,7 +304,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign_changeset(
-      %{questions: questions},
+      merge_changes(questions, changeset),
       insert_or_update?(questionnaire.id)
     )
     |> noreply()
@@ -337,7 +338,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       <h4 class="mb-1 input-label">Question Answers</h4>
       <ul class="mb-6">
         <%= for {option, index} <- input_value(@f_questions, :options) |> Enum.with_index() do %>
-          <li class="mb-2 flex items-center gap-2">
+          <li class="mb-2 flex items-center gap-2" {testid("question-option-#{index}")}>
             <input type="text" class="text-input" name={"questionnaire[questions][#{@f_questions.index}][options][]"} value={option} placeholder="Enter an option…" disabled={@state === ""} />
             <%= if @state !== "" do %>
             <button class="bg-red-sales-100 border border-red-sales-300 hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="delete-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-target={@myself}>
@@ -348,7 +349,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
         <% end %>
       </ul>
       <%= if @state !== "" do %>
-      <.icon_button {testid("add-option")} phx-click="add-option" phx-value-id={@f_questions.index} phx-target={@myself} class="py-1 px-4 w-full sm:w-auto justify-center" title="Add question" color="blue-planning-300" icon="plus">
+      <.icon_button {testid("add-option")} phx-click="add-option" phx-value-id={@f_questions.index} phx-target={@myself} class="py-1 px-4 w-full sm:w-auto justify-center" title="Add question option" color="blue-planning-300" icon="plus">
         Add option
       </.icon_button>
       <% end %>
@@ -449,5 +450,9 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       _ ->
         questions
     end
+  end
+
+  defp merge_changes(questions, changeset) do
+    Map.merge(%{questions: questions}, changeset.changes |> Map.drop([:questions]))
   end
 end

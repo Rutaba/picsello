@@ -121,7 +121,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex items-center justify-start">
-      <div data-offset="0" phx-hook="Select">
+      <div data-offset="0" phx-hook="Select" id={"manage-questionnaire-#{@questionnaire.id}"}>
         <button title="Manage" type="button" class="flex flex-shrink-0 ml-2 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
           <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
           <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
