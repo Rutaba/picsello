@@ -60,7 +60,7 @@
             <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class={classes("items-center text-center h-fit w-full mr-2 py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => gallery.disabled})}>
               Upload photos
             </a>
-            <button id="copy-link" class={classes("h-fit w-full py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => gallery.disabled})} data-clipboard-text={Routes.gallery_photographer_index_url(@socket, :index, gallery.id)} phx-hook="Clipboard">
+            <button {testid("copy-link")} id="copy-link" class={classes("h-fit w-full py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => gallery.disabled})} data-clipboard-text={Routes.gallery_photographer_index_url(@socket, :index, gallery.id)} phx-hook="Clipboard">
               <.icon name="anchor" class={classes("w-4 h-4 fill-current text-blue-planning-300 inline mr-1", %{"text-gray-200" => gallery.disabled})} />
               Copy link
               <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
@@ -76,10 +76,10 @@
             </button>
             <div id="dropdown-items" class={classes("absolute right-9 md:top-20 top-8 z-10 w-36 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none cursor-pointer", %{"hidden" => @index != gallery_index})} role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
               <div class="py-1" role="none">
-                <.dropdown_item {assigns} item_num="0" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes("", %{"hidden" => gallery.disabled})} />
-                <.dropdown_item {assigns} item_num="1" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} />
-                <.dropdown_item {assigns} item_num="2" icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
-                <.dropdown_item {assigns} item_num="3" icon="trash" title="Delete" link={[phx_click: "delete_gallery_popup", phx_value_gallery_id: gallery.id]} class={classes("", %{"hidden" => gallery.disabled})} />
+                <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes("", %{"hidden" => gallery.disabled})} />
+                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} />
+                <.dropdown_item {assigns} id="send_email_link" icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
+                <.dropdown_item {assigns} id="delete_link" icon="trash" title="Delete" link={[phx_click: "delete_gallery_popup", phx_value_gallery_id: gallery.id]} class={classes("", %{"hidden" => gallery.disabled})} />
               </div>
             </div>
           </div>

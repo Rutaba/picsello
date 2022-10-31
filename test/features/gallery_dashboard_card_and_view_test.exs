@@ -92,8 +92,8 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> click(css("#menu-button"))
     |> assert_has(link("Edit"))
     |> assert_has(link("Go to Job"))
-    |> assert_has(css("#send-email-link"))
-    |> assert_has(css("#delete-link"))
+    |> assert_has(css("#send_email_link"))
+    |> assert_has(css("#delete_link"))
   end
 
   defp edit_button_redirects_to_gallery_details(session, gallery) do
@@ -120,10 +120,10 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
 
   defp send_email_opens_email_modal(session) do
     session
-    |> click(css("#send-email-link"))
+    |> click(css("#send_email_link"))
     |> assert_text("Send an email")
     |> click(button("Cancel"))
-    |> click(css("#send-email-link"))
+    |> click(css("#send_email_link"))
     |> fill_in(css("#client_message_subject"), with: "Test subject")
     |> fill_in(css(".ql-editor"), with: "Test message")
     |> wait_for_enabled_submit_button()
@@ -134,7 +134,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
 
   defp delete_button_deletes_the_selected_gallery(session) do
     session
-    |> click(css("#delete-link"))
+    |> click(css("#delete_link"))
     |> click(button("Yes, delete"))
   end
 
