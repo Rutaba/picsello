@@ -49,14 +49,19 @@
                 <.icon name="close-x" class="pl-1 w-4 h-4 mx-1 stroke-current close-icon stroke-2 text-blue-planning-300" />
               <% end %>
             </button>
+            <%= if gallery.disabled do %>
+              <div class="flex items-center">
+                <span class="font-bold text-xs text-base-250 bg-slate-200 mb-8 ml-2 rounded px-1">Disabled</span>
+              </div>
+            <% end %>
           </div>
           <hr class="block md:hidden base-250 w-full my-4"/>
           <div class="flex flex-cols md:col-span-2 lg:col-span-1 align-top md:w-auto w-full items-center md:text-sm lg:text-base">
-            <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class="items-center text-center h-fit w-full mr-2 py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300">
+            <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class={classes("items-center text-center h-fit w-full mr-2 py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => gallery.disabled})}>
               Upload photos
             </a>
-            <button {testid("copy-link")} id="copy-link" class="h-fit w-full py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300" data-clipboard-text={Routes.gallery_photographer_index_url(@socket, :index, gallery.id)} phx-hook="Clipboard">
-              <.icon name="anchor" class="w-4 h-4 fill-current text-blue-planning-300 inline mr-1" />
+            <button id="copy-link" class={classes("h-fit w-full py-1 px-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => gallery.disabled})} data-clipboard-text={Routes.gallery_photographer_index_url(@socket, :index, gallery.id)} phx-hook="Clipboard">
+              <.icon name="anchor" class={classes("w-4 h-4 fill-current text-blue-planning-300 inline mr-1", %{"text-gray-200" => gallery.disabled})} />
               Copy link
               <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
                 Copied!
@@ -71,22 +76,10 @@
             </button>
             <div id="dropdown-items" class={classes("absolute right-9 md:top-20 top-8 z-10 w-36 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none cursor-pointer", %{"hidden" => @index != gallery_index})} role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
               <div class="py-1" role="none">
-                <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100" role="menuitem" tabindex="-1" id="menu-item-0">
-                  <.icon name="pencil" class="w-4 h-4 fill-current text-blue-planning-300 inline mr-1" />
-                  Edit
-                </a>
-                <a href={Routes.job_path(@socket, :jobs, gallery.job.id)} class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100" role="menuitem" tabindex="-1" id="menu-item-1">
-                  <.icon name="camera-check" class="w-4 h-4 fill-current text-blue-planning-300 inline mr-1" />
-                  Go to Job
-                </a>
-                <a phx-click="open_compose" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100" id="send-email-link" role="menuitem" tabindex="-1" id="menu-item-2">
-                  <.icon name="envelope" class="w-4 h-4 fill-current text-blue-planning-300 inline mr-1" />
-                  Send Email
-                </a>
-                <a phx-click="delete_gallery_popup" phx-value-gallery_id={gallery.id} id="delete-link" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100" role="menuitem" tabindex="-1" id="menu-item-3">
-                  <.icon name="trash" class="w-4 h-4 fill-current text-red-sales-300 inline mr-1" />
-                  Delete
-                </a>
+                <.dropdown_item {assigns} item_num="0" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes("", %{"hidden" => gallery.disabled})} />
+                <.dropdown_item {assigns} item_num="1" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} />
+                <.dropdown_item {assigns} item_num="2" icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
+                <.dropdown_item {assigns} item_num="3" icon="trash" title="Delete" link={[phx_click: "delete_gallery_popup", phx_value_gallery_id: gallery.id]} class={classes("", %{"hidden" => gallery.disabled})} />
               </div>
             </div>
           </div>

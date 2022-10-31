@@ -93,7 +93,12 @@ defmodule Picsello.Galleries do
       ** (Ecto.NoResultsError)
 
   """
-  def get_gallery!(id), do: Repo.get_by!(active_galleries(), id: id)
+  def get_gallery!(id) do
+    from(gallery in active_galleries(),
+      where: gallery.id == ^id
+    )
+    |> Repo.one!()
+  end
 
   @doc """
   Gets a single gallery by job id parameter.
@@ -751,6 +756,7 @@ defmodule Picsello.Galleries do
     |> tap(fn
       {:ok, gallery} ->
         gallery = gallery |> Repo.preload([:watermark])
+
         get_gallery_photos(gallery.id)
         |> Enum.each(&ProcessingManager.update_watermark(&1, gallery.watermark))
 
