@@ -1,9 +1,13 @@
 defmodule PicselloWeb.BookingProposalLive.Shared do
   @moduledoc false
   use Phoenix.Component
+  use Phoenix.HTML
+
   import PicselloWeb.LiveHelpers, only: [strftime: 3, testid: 1, badge: 1, shoot_location: 1]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
+
   alias Picsello.{Job, Package, Packages}
+  alias PicselloWeb.Router.Helpers, as: Routes
 
   def banner(assigns) do
     ~H"""
@@ -59,7 +63,9 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         <dt class="inline-block font-bold">Order #:</dt>
         <dl class="flex justify-between">
           <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %></dd>
-          <dd class="inline link text-black">Download Invoice</dd>
+          <%= link to: Routes.job_download_path(@socket, :download_invoice_pdf, @proposal.job_id, @proposal.id) do %>
+            <dd class="inline link text-black">Download Invoice</dd>
+          <% end %>
         </dl>
       </dl>
 

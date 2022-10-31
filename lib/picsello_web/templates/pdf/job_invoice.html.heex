@@ -1,20 +1,8 @@
  <div class="">
     <form>
       <h1 style="margin-bottom: 1rem; font-size: 1.875rem; line-height: 2.25rem; font-weight: 700;">
-        Invoice
+        Invoice for <%= @job.client.name %>
       </h1>
-
-    <div style="background-color: #f0f0f0; padding-left: 2px; padding-top: 1px; padding-bottom: 1px">
-      <div style="font-size: 1.5rem; line-height: 2rem; font-weight: 700; ">
-        <h2><%= Picsello.Job.name @job %> Shoot <%= if @package, do: @package.name %></h2>
-      </div>
-
-      <div style="margin-top: -8px" id={"package-description-#{@package.id}"}>
-        <div style="">
-          <%= raw @package.description %>
-        </div>
-      </div>
-    </div>
 
     <div style="margin-top: 1rem;">
       <div>
@@ -70,7 +58,6 @@
             <%= dyn_gettext("duration-#{shoot.duration_minutes}") %>
             starting at <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
           </p>
-
           <p><%= PicselloWeb.LiveHelpers.shoot_location(shoot) %></p>
         </div>
 
@@ -120,7 +107,7 @@
         <% end %>
         <%= unless Picsello.PaymentSchedules.free?(@job) do %>
           <%= for payment <- @job.payment_schedules do %>
-            <div>
+            <div style="background-color: #f0f0f0; padding: 5px">
               <%= if Picsello.PaymentSchedules.paid?(payment) do %>
                 <div style="display:inline-block;"><%= payment.description %> paid on <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></div>
               <% else %>
