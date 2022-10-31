@@ -488,7 +488,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         has_orders: true
       })
 
-    any_client_liked_photo? = Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
+    any_client_liked_photo? =
+      Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
 
     ~H"""
     <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected || @disabled})} phx-update={@update_mode} data-offset-y="10" phx-hook="Select">

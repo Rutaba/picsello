@@ -756,6 +756,7 @@ defmodule Picsello.Galleries do
     |> tap(fn
       {:ok, gallery} ->
         gallery = gallery |> Repo.preload([:watermark])
+
         get_gallery_photos(gallery.id)
         |> Enum.each(&ProcessingManager.update_watermark(&1, gallery.watermark))
 
