@@ -89,20 +89,29 @@ defmodule PicselloWeb.Live.FinanceSettings do
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
-  def handle_event("toggle", %{}, %{assigns: %{current_user: %{allow_cash_payment: false}}} = socket) do
-    socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
+  def handle_event(
+        "toggle",
+        %{},
+        %{assigns: %{current_user: %{allow_cash_payment: false}}} = socket
+      ) do
+    PicselloWeb.ConfirmationComponent.open(socket, %{
+      close_event: "toggle_close_event",
       close_label: "No, go back",
       confirm_event: "allow-cash",
       confirm_label: "Yes, allow cash/check",
       icon: "warning-orange",
       title: "Are you sure?",
-      subtitle: "Are you sure you want to allow cash and checks as a payment option? \n\nYou will need to communicate directly with your client to capture payment and manually enter those into your job payment details."
+      subtitle:
+        "Are you sure you want to allow cash and checks as a payment option? \n\nYou will need to communicate directly with your client to capture payment and manually enter those into your job payment details."
     })
     |> noreply()
   end
 
-  def handle_event("toggle", %{}, %{assigns: %{current_user: %{allow_cash_payment: true} = current_user}} = socket) do
+  def handle_event(
+        "toggle",
+        %{},
+        %{assigns: %{current_user: %{allow_cash_payment: true} = current_user}} = socket
+      ) do
     socket
     |> assign(current_user: User.toggle(current_user))
     |> noreply()
@@ -112,12 +121,21 @@ defmodule PicselloWeb.Live.FinanceSettings do
         {:confirm_event, "allow-cash"},
         %{assigns: %{current_user: current_user}} = socket
       ) do
+    socket
+    |> assign(current_user: User.toggle(current_user))
+    |> close_modal()
+    |> put_flash(:success, "Settings updated")
+    |> noreply()
+  end
 
-      socket
-      |> assign(current_user: User.toggle(current_user))
-      |> close_modal()
-      |> put_flash(:success, "Settings updated")
-      |> noreply()
+  def handle_info(
+        {:close_event, "toggle_close_event"},
+        socket
+      ) do
+    socket
+    |> push_redirect(to: Routes.finance_settings_path(socket, :index))
+    |> close_modal()
+    |> noreply()
   end
 
   def handle_info({:stripe_status, status}, socket) do

@@ -94,6 +94,7 @@ defmodule Picsello.UserSettingsTest do
     |> click(css("label", text: "Disabled"))
     |> click(button("Yes, allow cash/check"))
     |> assert_has(css("label", text: "Enabled"))
+
     user = user |> Repo.reload()
 
     assert %{allow_cash_payment: true} = user
