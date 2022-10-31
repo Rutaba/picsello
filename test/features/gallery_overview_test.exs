@@ -163,7 +163,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> resize_window(1280, 800)
     |> scroll_to_bottom()
     |> click(css("#deleteGalleryPopupButton"))
-    |> within_modal(&click(&1, button("Yes, disable")))
+    |> within_modal(&click(&1, button("Yes, disable orders")))
     |> assert_url_contains("/galleries")
   end
 

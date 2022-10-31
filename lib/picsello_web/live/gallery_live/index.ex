@@ -269,30 +269,6 @@ defmodule PicselloWeb.GalleryLive.Index do
             <.preview_icons albums={@gallery.albums} />
           </div>
         <% end %>
-        <div class="py-0 md:py-2">
-          <div class="font-bold">
-            <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %>
-          </div>
-          <div class="font-bold w-full">
-            <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id) do %>
-                <span class="w-full text-blue-planning-300 underline">
-                  <%= if String.length(@gallery.name) < 30 do
-                    @gallery.name
-                  else
-                    "#{@gallery.name |> String.slice(0..29)} ..."
-                  end %>
-                </span>
-            <% end %>
-          </div>
-          <div class="text-base-250 font-normal ">
-            <%= @gallery.albums |> Enum.count() %> albums
-          </div>
-          <%= if Enum.any?(@gallery.albums) do %>
-            <div class="text-base-250 font-normal">
-              <.preview_icons albums={@gallery.albums} />
-            </div>
-          <% end %>
-        </div>
       </div>
     """
   end

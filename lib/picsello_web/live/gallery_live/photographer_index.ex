@@ -151,11 +151,10 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   def handle_event("disable_gallery_popup", _, socket) do
     opts = [
       event: "disable_gallery",
-      title: "Disable Gallery?",
-      confirm_label: "Yes, disable",
+      title: "Disable Orders?",
+      confirm_label: "Yes, disable orders",
       subtitle:
-        "If you disable the gallery, it will remain intact, but you won't be able to update it anymore.
-      Your client will still be able to view the gallery."
+        "If you disable orders, the gallery will remain intact, but you won’t be able to update it anymore. Your client will still be able to view the gallery."
     ]
 
     make_popup(socket, opts)
@@ -165,8 +164,8 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   def handle_event("enable_gallery_popup", _, socket) do
     opts = [
       event: "enable_gallery",
-      title: "Enable Gallery?",
-      confirm_label: "Yes, enable",
+      title: "Enable Orders?",
+      confirm_label: "Yes, enable orders",
       subtitle:
         "If you enable the gallery, your clients will be able to make additional gallery purchases moving forward."
     ]
@@ -463,13 +462,12 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
         false ->
           ~H"""
-            <h3 class="font-sans">Disable Gallery</h3>
+            <h3 class="font-sans">Disable Future Gallery Orders</h3>
             <p class="font-sans">
-            Your client has made orders or selections from this gallery, so you can't delete it, or they'll lose their order
-              history. If you'd like, you can still disable the gallery.
+              Your client has made purchases from this gallery. This action will prohibit them from being able to make additional gallery orders moving forward.
             </p>
             <button {testid("deleteGalleryPopupButton")} phx-click={"disable_gallery_popup"} class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">
-              Disable gallery
+              Disable Future Gallery Orders
             </button>
           """
       end
