@@ -13,7 +13,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
     external: &__MODULE__.presign_image/2,
     progress: &__MODULE__.handle_image_progress/3
   ]
-  @bucket "picsello-staging"
+  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
   @impl true
   def mount(socket) do
@@ -158,11 +158,15 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
     |> assign(:ready_to_save, changeset.valid?)
   end
 
-  defp delete_watermark(%{assigns: %{watermark: watermark}} = socket) do
+  defp delete_watermark(%{assigns: %{gallery: gallery, watermark: watermark}} = socket) do
     Galleries.delete_gallery_watermark(watermark)
+    send(self(), :clear_watermarks)
     send(self(), :preload_watermark)
 
-    socket |> assign(watermark: nil)
+    socket
+    |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery))
+    |> assign(watermark: nil)
+    |> assign_default_changeset()
   end
 
   defp watermark_type(%{type: "image"}), do: :image

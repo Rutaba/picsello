@@ -3,6 +3,7 @@ defmodule Picsello.GalleryProofingAlbumTest do
 
   import Money.Sigils
   alias Picsello.Cart.{Digital, DeliveryInfo}
+  alias Picsello.Repo
 
   setup :onboarded
   setup :authenticated
@@ -32,12 +33,34 @@ defmodule Picsello.GalleryProofingAlbumTest do
     [proofing_album: proofing_album, order: order]
   end
 
-  feature "Photographer views client selections", %{
+  feature "Validate preview proofing button", %{
     session: session,
     proofing_album: album,
-    gallery: gallery,
-    order: order
+    gallery: gallery
   } do
+    session
+    |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
+    |> assert_has(css("a[href*='/album/#{album.client_link_hash}']", text: "Preview"))
+  end
+
+  feature "Validate disabled footer buttons in proofing album", %{
+    session: session,
+    proofing_album: album,
+    gallery: gallery
+  } do
+    session
+    |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
+    |> assert_has(css("button:disabled", text: "Share gallery"))
+    |> assert_has(css("button:disabled", text: "Preview Gallery"))
+  end
+
+  feature "Photographer views client selections, and delete opt disappears from edit-album on order-placing",
+          %{
+            session: session,
+            proofing_album: album,
+            gallery: gallery,
+            order: order
+          } do
     session
     |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
     |> assert_has(css("span", text: "#{album.name}", count: 3))
@@ -52,6 +75,37 @@ defmodule Picsello.GalleryProofingAlbumTest do
     |> assert_has(
       testid("selection-name", text: "Client Selection - #{DateTime.to_date(order.placed_at)}")
     )
+    |> click(testid("edit-album-settings"))
+    |> refute_has(button("Delete"))
+  end
+
+  feature "Delete opt disappears from edit-album as well as from actions in gallery-albums if there is any order",
+          %{
+            session: session,
+            proofing_album: album,
+            gallery: gallery
+          } do
+    session
+    |> visit("/galleries/#{gallery.id}/albums")
+    |> click(testid("dropdown-actions-#{album.id}"))
+    |> refute_has(button("Delete"))
+    |> click(button("Go to album settings"))
+    |> refute_has(button("Delete"))
+  end
+
+  feature "Delete opts appears in edit-popup if there's no order in proofing-album", %{
+    session: session,
+    proofing_album: album,
+    gallery: gallery,
+    order: order
+  } do
+    order
+    |> Repo.delete!()
+
+    session
+    |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
+    |> click(testid("edit-album-settings"))
+    |> assert_has(button("Delete"))
   end
 
   feature "Photographer downloads client selections as zip", %{

@@ -21,6 +21,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> assign(:photo_updates, "false")
     |> assign(:download_all_visible, false)
     |> assign(:selected_filter, false)
+    |> assign(:client_proofing, "true")
     |> ok()
   end
 
@@ -50,6 +51,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
 
       album.photos
+      |> Enum.filter(&is_nil(&1.watermarked_url))
       |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name)))
     end
 
@@ -174,7 +176,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     socket
     |> assigns()
     |> elem(1)
-    |> assign(:update_mode, "append")
+    |> assign(:update_mode, "replace")
     |> push_event("reload_grid", %{})
     |> noreply()
   end

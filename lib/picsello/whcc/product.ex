@@ -100,4 +100,27 @@ defmodule Picsello.WHCC.Product do
       {category_id, get_in(map, [category_id, attribute_id])}
     end
   end
+
+  def selection_details(product, %{} = selections, %{id: category_id}) do
+    if category_id == get_card_category_id() do
+      %{"size" => %{"metadata" => get_in(product, [:api, "metadata"])}}
+    else
+      map =
+        for(
+          %{"_id" => category_id, "attributes" => attributes} <- product.attribute_categories,
+          into: %{}
+        ) do
+          {category_id,
+           for(%{"id" => attribute_id} = attribute <- attributes, into: %{}) do
+             {attribute_id, attribute}
+           end}
+        end
+
+      for({category_id, attribute_id} <- selections, into: %{}) do
+        {category_id, get_in(map, [category_id, attribute_id])}
+      end
+    end
+  end
+
+  defp get_card_category_id(), do: Application.get_env(:picsello, :card_category_id)
 end

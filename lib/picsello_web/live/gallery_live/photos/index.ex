@@ -199,12 +199,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{
           assigns: %{
             gallery: gallery,
-            album: album
+            album: album,
+            orders: orders
           }
         } = socket
       ) do
     socket
-    |> open_modal(AlbumSettings, %{gallery_id: gallery.id, album: album, target: self()})
+    |> open_modal(AlbumSettings, %{
+      gallery_id: gallery.id,
+      album: album,
+      target: self(),
+      has_order?: !Enum.empty?(orders)
+    })
     |> noreply()
   end
 
@@ -759,7 +765,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         {:photo_processed, _, photo},
         %{assigns: %{total_progress: total_progress}} = socket
       ) do
-    if total_progress == 100 do
+    if total_progress == 100 || total_progress == 0 do
       photo_update =
         %{
           id: photo.id,
@@ -1062,6 +1068,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   defp extract_album(album, album_return, other) do
     if album, do: Map.get(album, album_return), else: other
+  end
+
+  defp proofing_album_hash(album, socket) do
+    album = Albums.set_album_hash(album)
+    Routes.gallery_client_album_path(socket, :proofing_album, album.client_link_hash)
   end
 
   defp truncate(string) do

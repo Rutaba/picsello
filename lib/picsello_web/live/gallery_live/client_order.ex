@@ -152,7 +152,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   defp get_order!(
          gallery,
          order_number,
-         %{album: %{is_proofing: is_proofing, is_finals: is_finals, id: album_id}}
+         %{is_proofing: is_proofing, is_finals: is_finals, id: album_id}
        )
        when is_proofing or is_finals do
     %{album_id: ^album_id} = Orders.get!(gallery, order_number)
