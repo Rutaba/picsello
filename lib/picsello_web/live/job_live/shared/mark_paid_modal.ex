@@ -61,10 +61,12 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
            </tbody>
         </table>
 
-        <%= if !@add_payment_show do %>
-          <.icon_button id="add-payment" class="border-solid border-2 border-blue-planning-300 rounded-md my-8 px-10 pb-1.5 flex items-center" title="Add a payment" color="blue-planning-300" icon="plus" phx-click="select_add_payment" phx-target={@myself}>
-            Add a payment
-          </.icon_button>
+        <%= if PaymentSchedules.owed_offline_price(assigns.job) |> Map.get(:amount) > 0 do %>
+          <%= if !@add_payment_show do %>
+            <.icon_button id="add-payment" class="border-solid border-2 border-blue-planning-300 rounded-md my-8 px-10 pb-1.5 flex items-center" title="Add a payment" color="blue-planning-300" icon="plus" phx-click="select_add_payment" phx-target={@myself}>
+              Add a payment
+            </.icon_button>
+          <% end %>
         <% end %>
 
 
@@ -108,13 +110,20 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
           <%= link to: Routes.job_download_path(@socket, :download_invoice_pdf, @proposal.job_id, @proposal.id) do %>
             <button class="link block leading-5 text-black text-base">Download invoice</button>
           <% end %>
-          <button id="done" class="rounded-md bg-black px-8 py-3 text-white" phx-click="modal" phx-value-action="close">Done</button>
+          <button id="done" class="rounded-md bg-black px-8 py-3 text-white" phx-click="close-modal" phx-target={@myself}>Done</button>
         </div>
 
       </div>
 
     </div>
     """
+  end
+
+  def handle_event("close-modal", %{}, %{assigns: %{job: job}} = socket) do
+    socket
+    |> push_redirect(to: Routes.job_path(socket, :jobs, job.id))
+    |> close_modal()
+    |> noreply()
   end
 
   def handle_event(

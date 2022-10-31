@@ -29,7 +29,7 @@
             <%= unless PaymentSchedules.all_paid?(@job) do %>
               <dl>
                 <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">Owed</dt>
-                <dd class="font-bold text-red-sales-300 rounded-lg border border-base-200 text-center py-2"><%= PaymentSchedules.owed_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
+                <dd class="font-bold text-red-sales-300 rounded-lg border border-base-200 text-center py-2"><%= PaymentSchedules.owed_offline_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
               </dl>
             <% end %>
           </div>
@@ -48,11 +48,12 @@
                 <.icon name="money-bags" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                   Go to Stripe
                 </button>
-
+                <%= if(@current_user.allow_cash_payment) do %>
                 <button title="Mark as paid" type="button" phx-click="open-mark-as-paid" phx-value-user={@current_user.email} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
                   <.icon name="tick" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                   Mark as paid
                 </button>
+                <% end %>
               </div>
             </div>
           </div>
