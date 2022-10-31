@@ -97,22 +97,19 @@ defmodule PicselloWeb.JobLive.Show do
     end
   end
 
-  @impl true
-  def handle_event("manage", %{}, %{assigns: %{job: job}} = socket),
-    do:
-      socket
-      |> PicselloWeb.ActionSheetComponent.open(%{
-        title: Job.name(job),
-        actions:
-          Enum.concat(
-            [%{title: "Send an email", action_event: "open_email_compose"}],
-            if(job.job_status.current_status == :completed,
-              do: [],
-              else: [%{title: "Complete job", action_event: "confirm_job_complete"}]
-            )
-          )
-      })
-      |> noreply()
+  def handle_event("confirm_job_complete", %{}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      confirm_event: "complete_job",
+      confirm_label: "Yes, complete",
+      confirm_class: "btn-primary",
+      subtitle:
+        "After you complete the job this becomes read-only. This action cannot be undone.",
+      title: "Are you sure you want to complete this job?",
+      icon: "warning-blue"
+    })
+    |> noreply()
+  end
 
   @impl true
   def handle_event("open-stripe", _, %{assigns: %{job: job, current_user: current_user}} = socket) do

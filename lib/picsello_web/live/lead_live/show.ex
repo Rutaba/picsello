@@ -164,27 +164,31 @@ defmodule PicselloWeb.LeadLive.Show do
     |> noreply()
   end
 
-  @impl true
-  def handle_event(
-        "manage",
-        %{},
-        %{assigns: %{job: job}} = socket
-      ) do
-    actions =
-      [%{title: "Send an email", action_event: "open_email_compose"}]
-      |> Enum.concat(
-        if job.archived_at,
-          do: [],
-          else: [%{title: "Archive lead", action_event: "confirm_archive_lead"}]
-      )
+  def handle_event("open_lead_name_change", %{}, %{assigns: %{job: job}} = socket) do
+    assigns = %{
+      job: job,
+      current_user: Map.take(socket.assigns, [:current_user])
+    }
 
     socket
-    |> PicselloWeb.ActionSheetComponent.open(%{
-      title: "Manage #{Job.name(job)}",
-      actions: actions
+    |> open_modal(PicselloWeb.Live.Profile.EditNameSharedComponent, Map.put(assigns, :parent_pid, self()))
+    |> noreply()
+  end
+
+  def handle_event("confirm_archive_lead", %{}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No! Get me out of here",
+      confirm_event: "archive",
+      confirm_label: "Yes, archive the lead",
+      icon: "warning-orange",
+      title: "Are you sure you want to archive this lead?"
     })
     |> noreply()
   end
+
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
   def handle_event(
@@ -209,10 +213,6 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  def handle_event("intro_js" = event, params, socket),
-    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
-
-  @impl true
   def handle_event("edit-contract", %{}, socket) do
     socket
     |> PicselloWeb.ContractFormComponent.open(
@@ -223,6 +223,13 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
+
+  def handle_info({:update, %{job: job}}, socket) do
+    socket
+    |> assign(:job, job)
+    |> put_flash(:success, "Name updated successfully")
+    |> noreply()
+  end
 
   @impl true
   def handle_info({:action_event, "confirm_archive_lead"}, socket) do
