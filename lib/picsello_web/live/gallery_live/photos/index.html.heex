@@ -21,7 +21,6 @@
           </div>
           <div class="center-container">
             <span class="lg:hidden flex items-center px-10 pt-2 lg:pb-2 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "Unsorted photos") %></span>
-
             <div class="lg:flex hidden items-center font-sans lg:justify-start">
               <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
                 <.crumbs class="mt-2 lg:mb-0 mb-4 font-sans text-xs text-base-250 lg:pl-0 pl-6">
@@ -37,7 +36,7 @@
               <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "All photos") %></span>
               <% end %>
               <%= if @album && !@client_liked_album  do %>
-                <button type="button" {testid("edit-album-settings")} class="flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white shadow-lg border rounded-lg hover:opacity-75 border-blue-planning-300 lg:mt-0 mt-2" title="Album settings" phx-click="album_settings_popup" >
+                <button type="button" {testid("edit-album-settings")} class={"flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white shadow-lg border rounded-lg hover:opacity-75 border-blue-planning-300 lg:mt-0 mt-2 #{@gallery.disabled && 'opacity-50 cursor-not-allowed pointer-events-none'}"} title="Album settings" phx-click="album_settings_popup" >
                     <.icon name="gear" class="w-5 h-5 fill-current text-blue-planning-300" />
                 </button>
                 <%=if @album.is_proofing do %>
@@ -49,7 +48,7 @@
                   </a>
                 <% end %>
                 <%= if Enum.any?(@photos) && !@album.is_proofing do %>
-                  <.icon_button {testid("edit-album-thumbnail")} class="text-sm ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:mt-0 mt-2" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
+                  <.icon_button {testid("edit-album-thumbnail")} disabled={@gallery.disabled} class="text-sm ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:mt-0 mt-2" title="Edit thumbnail" phx-click="edit_album_thumbnail_popup" color="blue-planning-300" icon="pencil">
                     Edit thumbnail
                   </.icon_button>
                 <% end %>
@@ -61,15 +60,15 @@
                 <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
               </div>
               <%= if @album && (@album.is_proofing || @album.is_finals) do %>
-                <.icon_button {testid("send-proofs-popup")} class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
+                <.icon_button {testid("send-proofs-popup")} disabled={@gallery.disabled} class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
                   Send <%=if @album.is_proofing, do: "proofs", else: "album" %> to client
                 </.icon_button>
-                <.icon_button {testid("add-finals-album-popup")} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_finals_album_popup" color="blue-planning-300" icon="plus">
+                <.icon_button {testid("add-finals-album-popup")} disabled={@gallery.disabled} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_finals_album_popup" color="blue-planning-300" icon="plus">
                   Add finals album
                 </.icon_button>
               <% end %>
               <%= unless @album do %>
-                <.add_album_button class="lg:ml-2.5 lg:py-2 py-1.5"/>
+                <.add_album_button disabled={@gallery.disabled} class="lg:ml-2.5 lg:py-2 py-1.5"/>
               <% end %>
             </div>
           </div>
@@ -111,7 +110,7 @@
                 </div>
 
                 <div class="h-10 lg:mx-2.5 mx-10 mb-4 md:w-72 font-sans bg-white rounded-md">
-                  <.actions id="actions" update_mode={if @total_progress > 0 && @total_progress < 100, do: "ignore", else: "replace"} photo_selected={Enum.any?(@selected_photos)} selection_filter={@selection_filter} class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
+                  <.actions id="actions" disabled={@gallery.disabled} update_mode={if @total_progress > 0 && @total_progress < 100, do: "ignore", else: "replace"} photo_selected={Enum.any?(@selected_photos)} selection_filter={@selection_filter} class="text-ellipsis" delete_event="delete_selected_photos_popup" delete_title="Delete" delete_value={@gallery.id}>
                     <%= if(is_nil(@album)) do %>
                       <.album_actions albums={@gallery.albums} />
                     <% else %>
@@ -177,8 +176,8 @@
       <div class= "lg:pt-16 pt-60 pb-10 pl-10 pr-8">
         <div class={classes(%{"hidden" => @photos != [] || @inprogress_photos != [] || @selection_filter || @favorites_filter})}>
           <div class="relative justify-between mt-36 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
-              <span class="hidden lg:block">Oops, there's nothing here - upload photos now to get started!</span>
-              <span class="lg:hidden">Oops, there's nothing here - upload photos from your desktop to get started!</span>
+              <span class={classes("hidden lg:block", %{"text-gray-400" => @gallery.disabled})}>Oops, there's nothing here - upload photos now to get started!</span>
+              <span class={classes("lg:hidden", %{"text-gray-400" => @gallery.disabled})}>Oops, there's nothing here - upload photos from your desktop to get started!</span>
           </div>
           <div class="hidden lg:block relative overflow-hidden font-sans cursor-pointer dragDrop__wrapper h-96">
             <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "drag-drop-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "drag_drop"}, sticky: true) %>
@@ -221,6 +220,7 @@
                     photo: photo,
                     album: @album,
                     albums_length: @albums_length,
+                    gallery_disable: @gallery.disabled,
                     photo_width: 300,
                     is_likable: true,
                     is_removable: true,

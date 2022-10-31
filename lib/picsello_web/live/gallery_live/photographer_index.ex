@@ -53,6 +53,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
     socket
     |> is_mobile(params)
+    |> assign(:has_order?, Picsello.Orders.placed_orders_count(gallery) > 0)
     |> assign(:gallery, gallery)
     |> noreply()
   end
@@ -144,6 +145,32 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @impl true
   def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
     socket |> assign(:is_mobile, !is_mobile) |> noreply
+  end
+
+  @impl true
+  def handle_event("disable_gallery_popup", _, socket) do
+    opts = [
+      event: "disable_gallery",
+      title: "Disable Orders?",
+      confirm_label: "Yes, disable orders",
+      subtitle:
+        "If you disable orders, the gallery will remain intact, but you won’t be able to update it anymore. Your client will still be able to view the gallery."
+    ]
+
+    make_popup(socket, opts)
+  end
+
+  @impl true
+  def handle_event("enable_gallery_popup", _, socket) do
+    opts = [
+      event: "enable_gallery",
+      title: "Enable Orders?",
+      confirm_label: "Yes, enable orders",
+      subtitle:
+        "If you enable the gallery, your clients will be able to make additional gallery purchases moving forward."
+    ]
+
+    make_popup(socket, opts)
   end
 
   def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
@@ -289,19 +316,9 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         {:confirm_event, "delete_gallery"},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    case Galleries.delete_gallery(gallery) do
-      {:ok, _gallery} ->
-        socket
-        |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
-        |> put_flash(:success, "The gallery has been deleted")
-        |> noreply()
-
-      _any ->
-        socket
-        |> put_flash(:error, "Could not delete gallery")
-        |> close_modal()
-        |> noreply()
-    end
+    gallery
+    |> Galleries.delete_gallery()
+    |> process_gallery(socket, :delete)
   end
 
   @impl true
@@ -333,6 +350,61 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
+
+  def handle_info(
+        {:confirm_event, "disable_gallery", _},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    gallery
+    |> Galleries.update_gallery(%{disabled: true})
+    |> process_gallery(socket, :disabled)
+  end
+
+  def handle_info(
+        {:confirm_event, "enable_gallery", _},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    gallery
+    |> Galleries.update_gallery(%{disabled: false})
+    |> process_gallery(socket, :enabled)
+  end
+
+  defp process_gallery(result, socket, type) do
+    {success, failure} =
+      case type do
+        :delete -> {"deleted", "delete"}
+        :enabled -> {"enabled", "enable"}
+        _ -> {"disabled", "disable"}
+      end
+
+    case result do
+      {:ok, gallery} ->
+        process_gallery_message(socket, success, gallery)
+
+      _any ->
+        socket
+        |> put_flash(:error, "Could not #{failure} gallery")
+        |> close_modal()
+        |> noreply()
+    end
+  end
+
+  defp process_gallery_message(socket, type, gallery) do
+    case type do
+      "deleted" ->
+        socket
+        |> push_redirect(to: Routes.job_path(socket, :jobs, gallery.job_id))
+        |> put_flash(:success, "The gallery has been #{type}")
+        |> noreply()
+
+      _any ->
+        socket
+        |> assign(:gallery, gallery)
+        |> close_modal()
+        |> put_flash(:success, "The gallery has been #{type}")
+        |> noreply()
+    end
+  end
 
   def presign_cover_entry(entry, %{assigns: %{gallery: gallery}} = socket) do
     key = CoverPhoto.original_path(gallery.id, entry.uuid)
@@ -367,9 +439,49 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   defp remove_watermark_button(assigns) do
     ~H"""
-    <button type="button" title="remove watermark" phx-click="delete_watermark_popup" class="pl-14">
-      <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
+    <button type="button" disabled={assigns.disabled} title="remove watermark" phx-click="delete_watermark_popup" class="pl-14">
+      <.icon name="remove-icon" class={classes("w-3.5 h-3.5 ml-1 text-base-250", %{"pointer-events-none" => assigns.disabled})}/>
     </button>
     """
+  end
+
+  defp delete_gallery_section(assigns) do
+    if assigns.has_order? do
+      case assigns.gallery.disabled do
+        true ->
+          ~H"""
+            <h3 class="font-sans">Enable Gallery</h3>
+            <p class="font-sans">
+            Gallery orders are disabled, your client has made purchases from this gallery, so you can't delete it, or they'll lose their order
+            history. This action will enable additional gallery orders moving forward.
+            </p>
+            <button {testid("deleteGalleryPopupButton")} phx-click={"enable_gallery_popup"} class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">
+              Enable gallery
+            </button>
+          """
+
+        false ->
+          ~H"""
+            <h3 class="font-sans">Disable Future Gallery Orders</h3>
+            <p class="font-sans">
+              Your client has made purchases from this gallery. This action will prohibit them from being able to make additional gallery orders moving forward.
+            </p>
+            <button {testid("deleteGalleryPopupButton")} phx-click={"disable_gallery_popup"} class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">
+              Disable Future Gallery Orders
+            </button>
+          """
+      end
+    else
+      ~H"""
+        <h3 class="font-sans">Delete gallery</h3>
+        <p class="font-sans">
+          If you want to start completely over, or there’s another reason you want to delete the whole gallery, this is
+          the place for you.
+        </p>
+        <button {testid("deleteGalleryPopupButton")} phx-click={"delete_gallery_popup"} class="justify-center w-full py-3 font-sans border border-black rounded-lg mt-7" id="deleteGalleryPopupButton">
+          Delete gallery
+        </button>
+      """
+    end
   end
 end

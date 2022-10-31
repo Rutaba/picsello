@@ -22,6 +22,7 @@ defmodule PicselloWeb.GalleryLive.Shared.FooterComponent do
     socket
     |> assign(:proofing_exists?, Enum.any?(proofing_album))
     |> assign(url: Routes.gallery_client_index_path(socket, :index, hash))
+    |> assign(disabled: gallery.disabled)
     |> ok()
   end
 end

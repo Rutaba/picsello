@@ -39,11 +39,10 @@
             <% end %>
           </div>
         </div>
-
         <div class="center-container">
           <div class="2xl:grid-cols-3 lg:grid-cols-2 grid-cols-1 gap-7 lg:px-0 px-6 grid">
             <%= for product <- @products do %>
-              <.live_component id={product.id} module={Preview} product={product} />
+              <.live_component id={product.id} module={Preview} product={product} disabled={@gallery.disabled}/>
             <% end %>
           </div>
         </div>

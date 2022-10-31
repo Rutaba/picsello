@@ -288,7 +288,6 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         %{"value" => design_id, "img_index" => img_index},
         %{assigns: %{toggle_arrows?: toggle_arrows?}} = socket
       ) do
-
     socket = socket |> fetch()
     change_arrows = String.to_integer(img_index)
     show? = if change_arrows == toggle_arrows?, do: false, else: change_arrows
@@ -313,7 +312,6 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         %{"value" => design_id, "img_index" => img_index},
         %{assigns: %{toggle_arrows?: toggle_arrows?}} = socket
       ) do
-
     socket = socket |> fetch()
     change_arrows = String.to_integer(img_index)
     show? = if change_arrows == toggle_arrows?, do: false, else: change_arrows
@@ -484,8 +482,12 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
   def ranges([]), do: []
 
-  defp img_box(%{card_design: true, hide_next: hide_next, hide_prev: hide_prev, img_index: img_index} = assigns) do
+  defp img_box(
+         %{card_design: true, hide_next: hide_next, hide_prev: hide_prev, img_index: img_index} =
+           assigns
+       ) do
     value = Map.get(assigns, :value)
+
     ~H"""
       <div class="aspect-h-1 aspect-w-1">
         <div class="relative bg-gradient-to-bl from-[#f5f6f7] to-[#ededed] flex flex-col justify-center group">
