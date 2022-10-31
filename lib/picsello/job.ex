@@ -23,6 +23,7 @@ defmodule Picsello.Job do
     field(:archived_at, :utc_datetime)
     field(:is_gallery_only, :boolean, default: false)
     field(:completed_at, :utc_datetime)
+    field(:job_name, :string)
     belongs_to(:client, Client)
     belongs_to(:package, Package)
     belongs_to(:booking_event, Picsello.BookingEvent)
@@ -65,9 +66,19 @@ defmodule Picsello.Job do
     job |> cast(attrs, [:notes])
   end
 
+  def edit_job_changeset(job \\ %__MODULE__{}, attrs) do
+    job
+    |> cast(attrs, [:job_name])
+    |> validate_required([:job_name])
+  end
+
   def name(%__MODULE__{type: type} = job) do
-    %{client: %{name: client_name}} = job |> Repo.preload(:client)
-    [client_name, Phoenix.Naming.humanize(type)] |> Enum.join(" ")
+    if job.job_name do
+      job.job_name
+    else
+      %{client: %{name: client_name}} = job |> Repo.preload(:client)
+      [client_name, Phoenix.Naming.humanize(type)] |> Enum.join(" ")
+    end
   end
 
   def for_user(%Picsello.Accounts.User{organization_id: organization_id}) do
