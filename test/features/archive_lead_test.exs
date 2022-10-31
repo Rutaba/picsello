@@ -13,8 +13,8 @@ defmodule Picsello.ArchiveLeadTest do
   feature "user archives lead", %{session: session, lead: lead} do
     session
     |> visit("/leads/#{lead.id}")
-    |> click(button("Manage"))
-    |> click(button("Archive lead"))
+    |> click(css("#meatball-manage"))
+    |> click(css("li", text: "Archive lead"))
     |> click(button("Yes, archive the lead"))
     |> assert_flash(:info, text: "Lead archived")
     |> assert_has(css("*[role='status']", text: "Lead archived"))

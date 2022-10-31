@@ -2,7 +2,6 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, ClientMessage}
 
-  @compose_email_button button("Send an email")
   @send_email_button button("Send Email")
 
   setup :onboarded
@@ -14,9 +13,11 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
 
   def compose_email(session, job) do
     session
-    |> click(button("Manage"))
-    |> click(@compose_email_button)
+    |> take_screenshot()
+    |> click(css("#meatball-manage"))
+    |> click(css("li", text: "Send an email"))
     |> assert_has(css("h1", text: "Send an email"))
+    |> take_screenshot()
     |> assert_text(job.client.email)
     |> fill_in(text_field("Subject line"), with: "Check this out")
     |> assert_has(css(".ql-size"))
@@ -47,7 +48,17 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
   feature "user sends booking proposal from lead", %{session: session, lead: lead} do
     session
     |> visit("/leads/#{lead.id}")
-    |> compose_email(lead)
+    |> take_screenshot()
+    |> click(css("#meatball-manage"))
+    |> click(css("li", text: "Send an email", count: 2, at: 0))
+    |> assert_has(css("li", text: "Send an email"))
+    |> take_screenshot()
+    |> fill_in(text_field("Subject line"), with: "Check this out")
+    |> assert_has(css(".ql-size"))
+    |> assert_has(css(".ql-image"))
+    |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
+    |> send_keys(["This is 1st line", :enter, "2nd line"])
+    |> within_modal(&wait_for_enabled_submit_button/1)
     |> send_email(lead)
   end
 
