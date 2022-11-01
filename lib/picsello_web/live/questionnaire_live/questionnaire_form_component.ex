@@ -402,9 +402,9 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     [
       {"Text (simple text box)", :text},
       {"Textarea (multiline text box)", :textarea},
-      {"Select (dropdown of options)", :select},
+      {"Select (radio buttons, client picks one)", :select},
       {"Date (date picker)", :date},
-      {"Multiselect (checkboxes)", :multiselect},
+      {"Multiselect (checkboxes, client picks multiple)", :multiselect},
       {"Phone", :phone},
       {"Email", :email}
     ]
