@@ -29,6 +29,11 @@ defmodule Picsello.GalleryProofingAlbumTest do
         digitals: [%Digital{photo_id: List.first(photo_ids), price: ~M[0]USD}]
       )
 
+    insert(:proofs_organization_card,
+      data: %{order_id: order.id},
+      organization_id: order.gallery.job.client.organization_id
+    )
+
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
     [proofing_album: proofing_album, order: order]
   end
