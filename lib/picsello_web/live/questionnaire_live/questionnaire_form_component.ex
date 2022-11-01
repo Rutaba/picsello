@@ -29,18 +29,20 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <h2 class="text-2xl leading-6 text-gray-900 mb-8 font-bold">Details</h2>
 
-        <div class={classes("", %{"grid sm:grid-cols-2 gap-3" => @state == :edit_lead})}>
+        <div class={classes("", %{"grid gap-3" => @state == :edit_lead})}>
           <%= if @state == :edit_lead do %>
             <div class="flex flex-col">
               <label class="input-label">Select template to reset</label>
-              <%= select f, :change_template, template_options(@current_user.organization_id), selected: "", class: "select", disabled: @state === "", phx_blur: "change-template", phx_target: @myself %>
+              <%= select f, :change_template, template_options(@current_user.organization_id), selected: "", class: "select", disabled: @state === "" %>
+              <%= hidden_input f, :name, label: "Name" %>
             </div>
+          <% else %>
+            <%= labeled_input f, :name, label: "Name", disabled: @state === "" %>
           <% end %>
-          <%= labeled_input f, :name, label: "Name", disabled: @state === "" %>
         </div>
 
         <div class={classes("mt-8", %{"hidden" => @state == :edit_lead})}>
-          <%= label_for f, :type, label: "Type of Photography" %>
+          <%= label_for f, :type, label: "Type of Photography (select Other to use for all types)" %>
           <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
             <%= for job_type <- @job_types do %>
               <.job_type_option type="radio" name={input_name(f, :job_type)} job_type={job_type} checked={input_value(f, :job_type) == job_type} disabled={@state === ""} />
@@ -76,17 +78,14 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
               <% end %>
               <div class="p-4">
                 <div class="grid sm:grid-cols-3 gap-6">
-                  <%= labeled_input f_questions, :prompt, phx_debounce: 200, label: "Question Prompt", type: :textarea, placeholder: "Enter the question you'd like to ask…", disabled: @state === "", wrapper_class: "sm:col-span-2" %>
+                  <%= labeled_input f_questions, :prompt, phx_debounce: 200, label: "What question would you like to ask your client?", type: :textarea, placeholder: "Enter the question you'd like to ask…", disabled: @state === "", wrapper_class: "sm:col-span-2" %>
                   <label class="flex items-center mt-6 sm:mt-8 justify-self-start sm:col-span-1 cursor-pointer font-bold" {testid("question-optional")}>
                     <%= checkbox f_questions, :optional, class: "w-5 h-5 mr-2 checkbox", disabled: @state === "" %>
                     Optional <em class="font-normal">(your client can skip this question)</em>
                   </label>
                 </div>
                 <div class="flex flex-col mt-6">
-                  <%= labeled_input f_questions, :placeholder, phx_debounce: 200, label: "Question Preview", placeholder: "Enter the preview you'd like you're client to see…", disabled: @state === "" %>
-                </div>
-                <div class="flex flex-col mt-6">
-                  <%= label_for f_questions, :type, label: "Question Type" %>
+                  <%= label_for f_questions, :type, label: "What type of question is this? Text, checkboxes, etc" %>
                   <%= select f_questions, :type, field_options(), class: "select", disabled: @state === "", phx_target: @myself, phx_value_id: f_questions.index %>
                 </div>
 
@@ -158,40 +157,6 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
           assigns: Enum.into(opts, Map.take(assigns, [:questionnaire]))
         }
       )
-
-  def handle_event(
-        "change-template",
-        %{"value" => value},
-        %{assigns: %{questionnaire: questionnaire}} = socket
-      ) do
-    questions =
-      case value do
-        "blank" ->
-          [
-            %Picsello.Questionnaire.Question{
-              optional: false,
-              options: [],
-              placeholder: "",
-              prompt: ""
-            }
-          ]
-
-        _ ->
-          Questionnaire.get_one(value |> String.to_integer())
-          |> Map.get(:questions)
-          |> Enum.map(fn question ->
-            question |> Map.drop([:id])
-          end)
-      end
-      |> Enum.map(&Map.from_struct/1)
-
-    socket
-    |> assign_changeset(
-      %{questions: questions},
-      insert_or_update?(questionnaire.id)
-    )
-    |> save_questionnaire()
-  end
 
   @impl true
   def handle_event(
@@ -311,6 +276,50 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   end
 
   @impl true
+  def handle_event(
+        "validate",
+        %{"questionnaire" => %{"change_template" => change_template}},
+        %{assigns: %{questionnaire: questionnaire, changeset: changeset}} = socket
+      ) do
+    selected_template =
+      case change_template do
+        "blank" ->
+          %{
+            name: "Custom",
+            questions: [
+              %{
+                optional: false,
+                options: [],
+                placeholder: "",
+                prompt: ""
+              }
+            ]
+          }
+
+        _ ->
+          questionnaire = Questionnaire.get_one(change_template |> String.to_integer())
+
+          questions =
+            questionnaire.questions
+            |> Enum.map(fn question ->
+              question |> Map.from_struct() |> Map.drop([:id])
+            end)
+
+          %{
+            name: questionnaire.name,
+            questions: questions
+          }
+      end
+
+    socket
+    |> assign_changeset(
+      merge_changes(selected_template.name, selected_template.questions, changeset),
+      :validate
+    )
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("validate", %{"questionnaire" => params}, socket) do
     socket |> assign_changeset(params, :validate) |> noreply()
   end
@@ -364,21 +373,6 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     |> Map.drop([:organization])
     |> Questionnaire.changeset(params)
     |> Repo.insert_or_update()
-  end
-
-  defp save_questionnaire(
-         %{
-           assigns: %{changeset: changeset}
-         } = socket
-       ) do
-    case changeset
-         |> Repo.insert_or_update() do
-      {:ok, questionnaire} ->
-        socket |> assign(questionnaire: questionnaire) |> noreply()
-
-      {:error, changeset} ->
-        socket |> assign(changeset: changeset) |> noreply()
-    end
   end
 
   defp assign_changeset(
@@ -454,5 +448,12 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
   defp merge_changes(questions, changeset) do
     Map.merge(%{questions: questions}, changeset.changes |> Map.drop([:questions]))
+  end
+
+  defp merge_changes(name, questions, changeset) do
+    Map.merge(
+      %{name: name, questions: questions},
+      changeset.changes |> Map.drop([:name, :questions])
+    )
   end
 end

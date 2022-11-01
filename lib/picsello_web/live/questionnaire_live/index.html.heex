@@ -37,23 +37,24 @@
 <% else %>
   <div class="p-6 center-container">
     <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
-      <div class="sm:col-span-6">Name</div>
-      <div class="sm:col-span-2">Job Type</div>
-      <div class="sm:col-span-2"># of questions</div>
+      <div class="sm:col-span-4">Name</div>
+      <div class="sm:col-span-3">Job Type</div>
+      <div class="sm:col-span-3"># of questions</div>
       <div class="sm:col-span-2">Actions</div>
     </div>
     <%= for questionnaire <- @questionnaires do %>
       <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("questionnaire-row")}>
-        <div class="sm:col-span-6 grid sm:flex items-center gap-4">
-          <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}} class="block text-xl font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
+        <div class="sm:col-span-4 grid sm:flex flex-wrap sm:items-center gap-x-4 col-y-3">
+          <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}} class="block text-xl text-left font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
           <%= if questionnaire.is_picsello_default do %>
             <div><.badge color={:gray}>View Only</.badge></div>
           <% end %>
+          <p class="w-full text-sm text-base-250">Created <%= questionnaire.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
         </div>
-        <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
+        <div class="sm:col-span-3 grid sm:flex gap-2 sm:gap-0">
           <%= questionnaire.job_type |> String.capitalize()  %>
         </div>
-        <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
+        <div class="sm:col-span-3 grid sm:flex gap-2 sm:gap-0 text-center">
           <%= questionnaire.questions |> length()  %>
         </div>
         <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">

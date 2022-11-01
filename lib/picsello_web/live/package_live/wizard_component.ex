@@ -238,7 +238,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign_new(:contract_changeset, fn -> nil end)
-    |> assign_new(:collapsed_documents, fn -> [] end)
+    |> assign_new(:collapsed_documents, fn -> [0, 1] end)
     |> assign(is_template: assigns |> Map.get(:job) |> is_nil(), job_types: Packages.job_types())
     |> choose_initial_step()
     |> assign_changeset(%{})
@@ -513,14 +513,16 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
           <% else %>
             <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-6 mt-4">
-              <div class="w-3/4">Questionnaire name</div>
-              <div class="w-1/4 text-center">Select questionnaire</div>
+              <div class="w-1/3">Questionnaire name</div>
+              <div class="w-1/3 text-center"># of questions</div>
+              <div class="w-1/3 text-center">Select questionnaire</div>
             </div>
             <%= for questionnaire <- @questionnaires do %>
               <div class="border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
               <label class="flex items-center justify-between cursor-pointer">
-                <h3 class="underline text-blue-planning-300 font-xl font-bold w-3/4"><%= questionnaire.name %></h3>
-                <div class="w-1/4 text-center">
+                <h3 class="font-xl font-bold w-1/3"><%= questionnaire.name %></h3>
+                <p class="w-1/3 text-center"><%= questionnaire.questions |> length()  %></p>
+                <div class="w-1/3 text-center">
                   <%= radio_button(@f, :questionnaire_template_id, questionnaire.id, class: "w-5 h-5 mr-2.5 radio") %>
                 </div>
               </label>
