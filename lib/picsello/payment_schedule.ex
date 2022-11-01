@@ -12,6 +12,7 @@ defmodule Picsello.PaymentSchedule do
     field :stripe_payment_intent_id, :string
     field :stripe_session_id, :string
     field :type, :string
+    field :is_with_cash, :boolean
     belongs_to :job, Picsello.Job
 
     timestamps(type: :utc_datetime)

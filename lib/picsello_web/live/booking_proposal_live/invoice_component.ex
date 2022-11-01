@@ -83,6 +83,8 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
     if PaymentSchedules.free?(job) do
       finish_booking(socket) |> noreply()
     else
+      proposal.job.payment_schedules
+      |> Enum.each(&(&1 |> Ecto.Changeset.change(%{is_with_cash: true}) |> Repo.update!()))
       Notifiers.ClientNotifier.deliver_payment_made(proposal)
       Notifiers.ClientNotifier.deliver_payment_due(proposal)
       Notifiers.ClientNotifier.deliver_paying_by_invoice(proposal)
