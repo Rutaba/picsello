@@ -93,7 +93,7 @@ defmodule PicselloWeb.GalleryLive.Index do
   @impl true
   def handle_event(
         "delete_gallery_popup",
-        %{"gallery_id" => gallery_id},
+        %{"gallery-id" => gallery_id},
         socket
       ) do
     socket
@@ -335,14 +335,14 @@ defmodule PicselloWeb.GalleryLive.Index do
     )
   end
 
-  defp dropdown_item(%{item_num: item_num, link: link, icon: icon, title: title} = assigns) do
+  defp dropdown_item(%{icon: icon} = assigns) do
     assigns = Map.put_new(assigns, :class, "")
     icon_text_class = if icon == "trash", do: "text-red-sales-300", else: "text-blue-planning-300"
 
     ~H"""
-    <a {link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={"menu-item-#{item_num}"}>
+    <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={@id} }>
       <.icon name={icon} class={"w-4 h-4 fill-current #{icon_text_class} inline mr-1"} />
-      <%= title %>
+      <%= @title %>
     </a>
     """
   end
