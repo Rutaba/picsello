@@ -86,26 +86,36 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   end
 
   @impl true
-  def render(assigns) do
+  def render(%{job_changeset: %{changes: %{client: client_changeset}}} = assigns) do
     ~H"""
     <div class="modal">
       <.close_x />
 
-      <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself, title: "back"}, else: %{}} class="flex">
-        <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
-          Step <%= step_number(@step, @steps) %>
-        </span>
+      <div class="flex">
+        <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself, title: "back"}, else: %{}} class="flex">
+          <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
+            Step <%= step_number(@step, @steps) %>
+          </span>
 
-        <ul class="flex items-center inline-block">
-          <%= for step <- @steps do %>
-            <li class={classes(
-              "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
-              %{ "bg-blue-planning-300" => step == @step, "bg-gray-200" => step != @step }
-              )}>
-            </li>
-          <% end %>
-        </ul>
-      </a>
+          <ul class="flex items-center inline-block">
+            <%= for step <- @steps do %>
+              <li class={classes(
+                "block w-5 h-5 sm:w-3 sm:h-3 rounded-full ml-3 sm:ml-2",
+                %{ "bg-blue-planning-300" => step == @step, "bg-gray-200" => step != @step }
+                )}>
+              </li>
+            <% end %>
+          </ul>
+        </a>
+
+        <%= if step_number(@step, @steps) > 2 do%>
+          <div class="flex hover:cursor-auto">
+            <div class="ml-3 mr-3 text-base-200">|</div>
+            <.icon name="client-icon" class="w-7 h-7 mr-1"></.icon>
+            <p class="font-bold">Client: <span class="font-normal"><%= Changeset.get_field(client_changeset, :name) %></span></p>
+          </div>
+        <% end %>
+      </div>
 
       <h1 class="mt-2 mb-4 text-3xl"><strong class="font-bold">Import Existing Job:</strong> <%= heading_subtitle(@step) %></h1>
 
