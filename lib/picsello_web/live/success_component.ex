@@ -24,7 +24,7 @@ defmodule PicselloWeb.SuccessComponent do
     assigns = Enum.into(assigns, %{class: "bg-white p-6 rounded-lg"})
 
     ~H"""
-    <div class={@class <> " w-[642px]"}>
+    <div class={@class <> " max-w-[642px]"}>
 
       <h1 class="font-bold text-3xl">
         <%= @title %>
