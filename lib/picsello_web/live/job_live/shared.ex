@@ -161,6 +161,7 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> assign(:package, package)
     |> put_flash(:success, "Questionnaire saved")
+    |> noreply()
   end
 
   def handle_info({:update, %{job: job}}, socket) do
@@ -539,14 +540,14 @@ defmodule PicselloWeb.JobLive.Shared do
                 <div class="border rounded-lg px-4 py-2 mb-4 mt-auto">
                   <span class="font-bold">Selected contract:</span> <%= if @package.contract, do: @package.contract.name, else: "Picsello Default Contract" %>
                 </div>
-                <button phx-click="edit-contract" class="btn-primary self-end">
+                <button type="button" phx-click="edit-contract" class="btn-primary self-end">
                   Edit or Select New
                 </button>
               <% @package && @package.collected_price -> %>
                 <p class="mt-2 text-base-250">During your job import, you marked this as an external document.</p>
               <% @package.contract -> %>
                 <p class="mt-2 text-base-250">You sent the <%= @package.contract.name %> to your client.</p>
-                <button {testid("view-contract")} phx-click="open-proposal" phx-value-action="contract" class="mt-4 btn-primary self-end">
+                <button {testid("view-contract")} type="button" phx-click="open-proposal" phx-value-action="contract" class="mt-4 btn-primary self-end">
                   View
                 </button>
               <% true -> %>
@@ -557,7 +558,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <%= cond do %>
               <% !@package -> %>
                 <p class="my-2 text-base-250">You haven’t selected a package yet.</p>
-                <button {testid("view-contract")} phx-click="add-package" class="mt-auto btn-primary self-end">
+                <button {testid("view-contract")} type="button" phx-click="add-package" class="mt-auto btn-primary self-end">
                   Add a package
                 </button>
               <% !@proposal && !@job.is_gallery_only || (@proposal && (!@proposal.sent_to_client && is_nil(@proposal.accepted_at)))-> %>
@@ -570,10 +571,10 @@ defmodule PicselloWeb.JobLive.Shared do
                   <span class="font-bold">Selected questionnaire:</span> <%= if @package.questionnaire_template, do: @package.questionnaire_template.name, else: "Picsello Default Questionnaire" %>
                 </div>
                 <div class="self-end mt-auto">
-                  <button {testid("view-questionnaire")} phx-click="open-questionnaire" class={classes("underline text-blue-planning-300 mr-4", %{"opacity-50 cursor-not-allowed" => !@include_questionnaire})} disabled={!@include_questionnaire}>
+                  <button {testid("view-questionnaire")} type="button" phx-click="open-questionnaire" class={classes("underline text-blue-planning-300 mr-4", %{"opacity-50 cursor-not-allowed" => !@include_questionnaire})} disabled={!@include_questionnaire}>
                     Preview
                   </button>
-                  <button {testid("edit-questionnaire")} phx-click="edit-questionnaire" class="btn-primary" disabled={!@include_questionnaire}>
+                  <button {testid("edit-questionnaire")} type="button" phx-click="edit-questionnaire" class="btn-primary" disabled={!@include_questionnaire}>
                     Edit or Select New
                   </button>
                 </div>

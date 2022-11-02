@@ -117,18 +117,12 @@ defmodule Picsello.EditQuestionnaireTest do
           |> Element.clear()
           |> Element.fill_in(with: "What is your favorite color?"))
       )
-      |> fill_in(text_field("questionnaire_questions_0_placeholder"),
-        with: "Enter your favorite color"
-      )
       |> scroll_into_view(testid("add-question"))
       |> click(button("Add question"))
       |> assert_text("Question 2")
       |> scroll_into_view(testid("question-1"))
       |> fill_in(text_field("questionnaire_questions_1_prompt"),
         with: "Testing test test?"
-      )
-      |> fill_in(text_field("questionnaire_questions_1_placeholder"),
-        with: "What would you like to test?"
       )
       |> find(
         select("questionnaire_questions_1_type"),
@@ -143,9 +137,6 @@ defmodule Picsello.EditQuestionnaireTest do
       |> scroll_into_view(testid("question-2"))
       |> fill_in(text_field("questionnaire_questions_2_prompt"),
         with: "Testing with multiple options?"
-      )
-      |> fill_in(text_field("questionnaire_questions_2_placeholder"),
-        with: "Select one of my options"
       )
       |> find(
         select("questionnaire_questions_2_type"),
@@ -225,9 +216,6 @@ defmodule Picsello.EditQuestionnaireTest do
         |> scroll_into_view(testid("question-1"))
         |> fill_in(text_field("questionnaire_questions_1_prompt"),
           with: "Testing test test?"
-        )
-        |> fill_in(text_field("questionnaire_questions_1_placeholder"),
-          with: "What would you like to test?"
         )
         |> find(
           select("questionnaire_questions_1_type"),

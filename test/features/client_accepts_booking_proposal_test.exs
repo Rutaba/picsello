@@ -27,8 +27,6 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> Organization.assign_stripe_account_changeset("stripe_id")
     |> Repo.update!()
 
-    questionnaire = insert(:questionnaire)
-
     lead =
       insert(:lead, %{
         user: user,
@@ -37,7 +35,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 1,
-          questionnaire_template_id: questionnaire.id,
+          questionnaire_template_id: nil,
           base_multiplier: 0.8,
           base_price: 100
         },
@@ -400,11 +398,15 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   end
 
   @sessions 2
-  feature "client fills out booking proposal questionnaire", %{
+  feature "client fills out default booking proposal questionnaire", %{
     sessions: [photographer_session, client_session],
     lead: lead
   } do
-    insert(:questionnaire)
+    insert(:questionnaire, %{
+      name: "Questionnaire name",
+      is_picsello_default: true,
+      job_type: "other"
+    })
 
     photographer_session
     |> visit("/leads/#{lead.id}")
