@@ -487,6 +487,12 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     sessions: [photographer_session, client_session],
     lead: lead
   } do
+    insert(:questionnaire, %{
+      name: "Questionnaire name",
+      is_picsello_default: true,
+      job_type: "other"
+    })
+
     photographer_session
     |> visit("/leads/#{lead.id}")
     |> click(@send_proposal_button)

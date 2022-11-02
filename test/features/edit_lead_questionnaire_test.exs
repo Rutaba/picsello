@@ -1,6 +1,8 @@
 defmodule Picsello.EditLeadQuestionnaireTest do
   use Picsello.FeatureCase, async: true
 
+  alias Picsello.{Repo, Organization}
+
   @edit_questionnaire_button testid("edit-questionnaire")
 
   setup :onboarded
@@ -11,6 +13,14 @@ defmodule Picsello.EditLeadQuestionnaireTest do
   end
 
   setup %{user: user} do
+    Mox.stub(Picsello.MockPayments, :retrieve_account, fn _, _ ->
+      {:ok, %Stripe.Account{charges_enabled: true}}
+    end)
+
+    user.organization
+    |> Organization.assign_stripe_account_changeset("stripe_id")
+    |> Repo.update!()
+
     wedding_lead =
       insert(:lead, %{
         type: "wedding",
@@ -37,6 +47,9 @@ defmodule Picsello.EditLeadQuestionnaireTest do
         type: "headshot",
         user: user
       })
+
+    insert(:email_preset, job_type: wedding_lead.type, state: :booking_proposal)
+    insert(:email_preset, job_type: headshot_lead.type, state: :booking_proposal)
 
     [wedding_lead: wedding_lead, headshot_lead: headshot_lead]
   end
