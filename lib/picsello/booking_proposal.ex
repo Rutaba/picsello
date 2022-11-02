@@ -66,8 +66,8 @@ defmodule Picsello.BookingProposal do
     Repo.get!(__MODULE__, id)
   end
 
-  def preloads(proposa) do
-    proposa
+  def preloads(proposal) do
+    proposal
     |> Repo.preload(
       [job: [:client, :shoots, :payment_schedules, package: [organization: :user]]],
       force: true
