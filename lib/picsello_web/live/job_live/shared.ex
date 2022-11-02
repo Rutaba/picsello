@@ -381,7 +381,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <button type="button" class="link mx-8 my-4" phx-click="open-inbox">
               Go to inbox
             </button>
-            <button type="button" class="btn-primary px-8 intro-message" phx-click="open-compose">
+            <button type="button" class="btn-primary intro-message" phx-click="open-compose">
               Send message
             </button>
           </div>
@@ -783,7 +783,7 @@ defmodule PicselloWeb.JobLive.Shared do
         <div class="pl-4"><%= @message %></div>
       </div>
       <div class="flex items-center md:justify-end justify-center">
-      <button type="button" class={"btn-primary px-8 intro-message #{@button.class}"} phx-click={@button.action}>
+      <button type="button" class={"btn-primary intro-message #{@button.class}"} phx-click={@button.action}>
         <%= @button.title %>
       </button>
       </div>
