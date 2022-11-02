@@ -55,7 +55,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
                <td id="payments" class="font-bold font-sans">Payment <%= index + 1 %></td>
                <td id="offline-amount"><%= payment_schedules.price || "-" %></td>
                <td><%= payment_schedules.type || "-" %></td>
-               <td class="text-green-finances-300">Paid <%= strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y") || "-" %></td>
+               <td class="text-green-finances-300">Paid <%= strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y") %></td>
              </tr>
              <% end ) %>
            </tbody>
@@ -106,7 +106,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     </div>
     <% end %>
 
-        <div class="flex justify-end mt-4 gap-8">
+        <div class="flex justify-end items-center mt-4 gap-8">
           <%= link to: Routes.job_download_path(@socket, :download_invoice_pdf, @proposal.job_id, @proposal.id) do %>
             <button class="link block leading-5 text-black text-base">Download invoice</button>
           <% end %>
