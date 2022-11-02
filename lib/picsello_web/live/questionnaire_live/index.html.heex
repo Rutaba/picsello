@@ -48,8 +48,9 @@
           <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}} class="block text-xl text-left font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
           <%= if questionnaire.is_picsello_default do %>
             <div><.badge color={:gray}>View Only</.badge></div>
+          <% else %>
+            <p class="w-full text-sm text-base-250">Created <%= questionnaire.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
           <% end %>
-          <p class="w-full text-sm text-base-250">Created <%= questionnaire.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
         </div>
         <div class="sm:col-span-3 grid sm:flex gap-2 sm:gap-0">
           <%= questionnaire.job_type |> String.capitalize()  %>
