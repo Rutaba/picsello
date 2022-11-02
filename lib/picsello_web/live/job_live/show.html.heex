@@ -73,7 +73,5 @@
    </div>
   </.section>
 
-  <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} collapsed_sections={@collapsed_sections} />
-
   <.booking_details_section is_schedule_valid={@is_schedule_valid} proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} collapsed_sections={@collapsed_sections} socket={@socket} />
 </div>
