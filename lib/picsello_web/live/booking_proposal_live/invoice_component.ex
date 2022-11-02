@@ -1,8 +1,7 @@
 defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, PaymentSchedules, Notifiers, BookingProposal}
-  import Phoenix.HTML, only: [raw: 1]
+  alias Picsello.{PaymentSchedules, Notifiers, BookingProposal}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,
