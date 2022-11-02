@@ -43,14 +43,20 @@ style={wrapper_style(@is_client_gallery, @photo_width, @photo)}>
                     <% else %>
                         <button class={classes("likeBtn", %{"hidden" => !@is_liked})}>
                             <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
+
+                        <div id={"photo-#{@id}-to-like"} style={@photo.client_liked && "display: none"}>
+                            <.icon
+                            name="heart-white"
+                            class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"
+                            />
+                        </div>
                         </button>
                     <% end %>
-                
                     <%= if @proofing_photo_icons && @is_removable && !@photo.client_liked do %>
-                        <.actions id={"photo-#{@id}-remove"} class="removeBtn" event="delete_photo_popup" photo_id={@id} icon="remove-icon" />
+                        <.actions disabled={false} id={"photo-#{@id}-remove"} class="removeBtn" event="delete_photo_popup" photo_id={@id} icon="remove-icon" />
                     <% end %>
                     <%= if @proofing_photo_icons && @is_viewable do %>
-                        <.actions id={"photo-#{@id}-view"} class="viewBtn" event="photo_view" photo_id={@id} icon="eye" />
+                        <.actions disabled={false} id={"photo-#{@id}-view"} class="viewBtn" event="photo_view" photo_id={@id} icon="eye" />
                     <% end %>
                 <% end %>
                 <%= if @proofing_photo_icons && @is_meatball do %>

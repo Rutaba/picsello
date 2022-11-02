@@ -10,7 +10,7 @@
 
     <div class="flex flex-col justify-between md:flex-row">
       <.title_header job={@job} back_path={Routes.job_path(@socket, @live_action)} />
-      <button phx-click="open-compose" class="hidden md:block px-8 btn-primary">Create an email</button>
+      <button phx-click="open-compose" class="hidden md:block btn-primary">Create an email</button>
     </div>
   </div>
 </header>
@@ -38,7 +38,7 @@
               <button class="link mr-4" phx-click="open-compose">Send reminder</button>
             <% end %>
             <.icon_button phx-click="open-stripe" color="blue-planning-300" icon="money-bags">
-              Go to Stripe
+              View details in Stripe
             </.icon_button>
           </div>
         </.card>
@@ -48,6 +48,8 @@
       <.history_card job={@job} current_user={@current_user} steps_title="Tips & tricks" steps={["Keep in contact with your client","Remember to remind them about their upcoming shoots"]} />
     </div>
   </.section>
+
+  <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} collapsed_sections={@collapsed_sections} />
 
   <.section id="gallery" badge={@orders_count} icon="camera-check" title="Gallery & Orders" collapsed_sections={@collapsed_sections}>
     <div class="grid md:grid-cols-2 gap-5">

@@ -95,6 +95,16 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_event("open_email_compose", %{}, %{assigns: %{current_user: current_user}} = socket) do
+    socket
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true
+    })
+    |> noreply()
+  end
+
   def handle_event("open-compose", %{}, socket), do: open_email_compose(socket)
 
   def handle_event("open-inbox", _, %{assigns: %{job: job}} = socket) do
@@ -103,8 +113,11 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_event("intro_js" = event, params, socket),
-    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+  def handle_event("open_name_change", %{}, %{assigns: assigns} = socket) do
+    params = Map.take(assigns, [:current_user, :job]) |> Map.put(:parent_pid, self())
+
+    socket |> open_modal(PicselloWeb.Live.Profile.EditNameSharedComponent, params) |> noreply()
+  end
 
   def handle_info({:action_event, "open_email_compose"}, socket), do: open_email_compose(socket)
 
@@ -148,6 +161,12 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> assign(:package, package)
     |> put_flash(:success, "Questionnaire saved")
+  end
+
+  def handle_info({:update, %{job: job}}, socket) do
+    socket
+    |> assign(:job, job)
+    |> put_flash(:success, "Name updated successfully")
     |> noreply()
   end
 
@@ -267,12 +286,46 @@ defmodule PicselloWeb.JobLive.Shared do
         <.live_link to={@back_path} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
           <.icon name="back" class="w-4 h-4 stroke-2"/>
         </.live_link>
+
         <%= Job.name @job %>
       </div>
-
-      <button title="Manage" type="button" phx-click="manage" class="relative flex items-center justify-center pb-4 h-5 ml-4 mt-2 text-2xl font-bold leading-3 border rounded w-9 border-blue-planning-300 text-blue-planning-300">
-        &hellip;
-      </button>
+      <div class="px-5">
+        <div id="meatball-manage" phx-hook="Select" class="mt-2 ml-auto items-center flex">
+          <button class="sticky" id="Manage">
+            <.icon name="meatballs" class="w-4 h-4 stroke-current stroke-2 opacity-100 open-icon border rounded w-9 border-blue-planning-300 text-blue-planning-300" />
+            <.icon name="close-x" class="hidden w-3 h-4 stroke-current stroke-2 close-icon opacity-100 border rounded w-9 border-blue-planning-300 text-blue-planning-300"/>
+          </button>
+          <ul class="absolute hidden bg-white rounded-md popover-content meatballsdropdown w-40 overflow-visible cursor-pointer">
+          <li phx-click="open_email_compose" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+            <.icon name="envelope" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+            <a class="hover-drop-down">Send an email</a>
+          </li>
+          <%= if @job.job_status.is_lead  do %>
+            <li phx-click="open_name_change"  class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+              <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+              <a class="hover-drop-down" phx-click="open_name_change"> Edit lead name</a>
+            </li>
+          <% else %>
+            <li phx-click="open_name_change" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+              <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+              <a class="hover-drop-down"> Edit job name</a>
+            </li>
+          <% end %>
+          <%= if !@job.archived_at and @job.job_status.is_lead  do  %>
+            <li phx-click="confirm_archive_lead" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+              <.icon name="trash" class="inline-block w-4 h-4 mx-2 fill-current text-red-sales-300" />
+              <a class="hover-drop-down" >Archive lead</a>
+            </li>
+          <% end %>
+          <%= if !@job.job_status.is_lead and !@job.completed_at do  %>
+            <li phx-click="confirm_job_complete" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+              <.icon name="trash" class="inline-block w-4 h-4 mx-2 fill-current text-red-sales-300" />
+              <a class="hover-drop-down">Complete job</a>
+            </li>
+          <% end %>
+          </ul>
+        </div>
+      </div>
     </h1>
     """
   end
@@ -342,7 +395,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <button type="button" class="link mx-8 my-4" phx-click="open-inbox">
               Go to inbox
             </button>
-            <button type="button" class="btn-primary px-8 intro-message" phx-click="open-compose">
+            <button type="button" class="btn-primary intro-message" phx-click="open-compose">
               Send message
             </button>
           </div>
@@ -761,7 +814,7 @@ defmodule PicselloWeb.JobLive.Shared do
         <div class="pl-4"><%= @message %></div>
       </div>
       <div class="flex items-center md:justify-end justify-center">
-      <button type="button" class={"btn-primary px-8 intro-message #{@button.class}"} phx-click={@button.action}>
+      <button type="button" class={"btn-primary intro-message #{@button.class}"} phx-click={@button.action}>
         <%= @button.title %>
       </button>
       </div>
@@ -777,7 +830,7 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign(
       orders_count: Orders.placed_orders_count(gallery),
       job: job,
-      page_title: job |> Job.name(),
+      page_title: Job.name(job),
       package: job.package
     )
     |> assign_shoots()
