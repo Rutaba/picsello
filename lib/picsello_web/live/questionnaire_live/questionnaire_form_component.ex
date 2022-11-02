@@ -279,7 +279,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   def handle_event(
         "validate",
         %{"questionnaire" => %{"change_template" => change_template}},
-        %{assigns: %{questionnaire: questionnaire, changeset: changeset}} = socket
+        %{assigns: %{changeset: changeset}} = socket
       ) do
     selected_template =
       case change_template do
