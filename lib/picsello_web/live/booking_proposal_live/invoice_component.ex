@@ -1,7 +1,7 @@
 defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{PaymentSchedules, Notifiers, BookingProposal}
+  alias Picsello.{Repo, PaymentSchedules, Notifiers, BookingProposal}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,
@@ -84,7 +84,6 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
     else
       proposal.job.payment_schedules
       |> Enum.each(&(&1 |> Ecto.Changeset.change(%{is_with_cash: true}) |> Repo.update!()))
-      Notifiers.ClientNotifier.deliver_payment_made(proposal)
       Notifiers.ClientNotifier.deliver_payment_due(proposal)
       Notifiers.ClientNotifier.deliver_paying_by_invoice(proposal)
       Notifiers.UserNotifier.deliver_paying_by_invoice(proposal)

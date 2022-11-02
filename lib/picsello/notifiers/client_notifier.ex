@@ -64,16 +64,19 @@ defmodule Picsello.Notifiers.ClientNotifier do
     %{job: %{client: %{organization: organization} = client} = job} =
       proposal |> Repo.preload(job: [client: [organization: :user]])
 
-    %{
+    params = %{
       subject: "Cash or check payment",
       body: """
       <p>You said you will pay #{organization.name} for #{Picsello.Job.name(job)} through a cash or check for the following #{Picsello.PaymentSchedules.owed_price(job) |> Money.to_string(fractional_unit: false)} it is due on #{(Picsello.PaymentSchedules.remainder_due_on(job)) |> Calendar.strftime("%B %d, %Y")}.</p>
       <p>Please arrange payment with me by replying to this email</p>
       <p>We can't wait to work with you!</p>
-      <p>CTA: Download PDF</p>
+      <p>CTA: <a href="#{PicselloWeb.Helpers.invoice_url(job.id, proposal.id)}"> Download PDF </a></p>
       """
     }
-    |> deliver_transactional_email(client)
+    sendgrid_template(:generic_transactional_template, params)
+    |> to(client.email)
+    |> from(organization.user.email)
+    |> deliver_later()
   end
 
   defp deliver_transactional_email(params, client) do
