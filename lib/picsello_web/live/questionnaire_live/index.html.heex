@@ -14,10 +14,11 @@
       <div>
         <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
       </div>
+      
       <div>
         <h1 class="text-4xl font-bold">Questionnaires</h1>
         <div class="max-w-4xl mt-2 text-base-250">
-          <p>Pre-written templates are linked to photography types you have selected in your public profile. Go here to select additional photography types if you don’t see a sample template below that you would like to use or modify. Alternately, create a custom questionnaire to best suit your specific shoot needs. Answers to your questionnaires will show up in your jobs.</p>
+          <p>Pre-written templates are linked to photography types you have selected in your public profile. Go <.live_link to={Routes.profile_settings_path(@socket, :edit)} class="underline text-blue-planning-300">here</.live_link> to select additional photography types if you don’t see a sample template below that you would like to use or modify. Alternately, create a custom questionnaire to best suit your specific shoot needs. Answers to your questionnaires will show up in your jobs.</p>
         </div>  
       </div>
     </div>
