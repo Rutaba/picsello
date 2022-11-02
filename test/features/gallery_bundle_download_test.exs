@@ -1,6 +1,7 @@
 defmodule Picsello.GalleryBundleDownloadTest do
   use Picsello.FeatureCase, async: true
   import Mox
+  import Money.Sigils
   use Oban.Testing, repo: Picsello.Repo
 
   setup :verify_on_exit!
@@ -39,6 +40,8 @@ defmodule Picsello.GalleryBundleDownloadTest do
   setup %{sessions: [photographer_session, client_session]} do
     %{session: client_session, gallery: gallery} =
       %{session: client_session} |> authenticated_gallery_client() |> Enum.into(%{})
+
+    insert(:order, gallery: gallery, bundle_price: ~M[5000]USD, placed_at: DateTime.utc_now())
 
     photographer =
       gallery
