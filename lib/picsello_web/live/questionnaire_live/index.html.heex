@@ -3,16 +3,23 @@
     <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
     <.crumbs class="text-base text-base-250">
       <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
-      <:crumb>Custom Questionnaires</:crumb>
+      <:crumb>Questionnaires</:crumb>
     </.crumbs>
   </div>
 
   <hr class="mt-2 border-white" />
 
-  <div class="flex items-center justify-between lg:mt-2 md:justify-start">
-    <div class="flex text-4xl font-bold items-center">
-      <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
-      Custom Questionnaires
+  <div class="flex justify-between lg:mt-2 md:justify-start">
+    <div class="flex">
+      <div>
+        <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
+      </div>
+      <div>
+        <h1 class="text-4xl font-bold">Questionnaires</h1>
+        <div class="max-w-4xl mt-2 text-base-250">
+          <p>Pre-written templates are linked to photography types you have selected in your public profile. Go here to select additional photography types if you don’t see a sample template below that you would like to use or modify. Alternately, create a custom questionnaire to best suit your specific shoot needs. Answers to your questionnaires will show up in your jobs.</p>
+        </div>  
+      </div>
     </div>
     <%= unless Enum.empty?(@questionnaires) do %>
       <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
@@ -28,7 +35,7 @@
   <div class="flex flex-col justify-between flex-auto mt-4 p-6 center-container lg:flex-none">
     <div class="flex flex-col">
       <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
-      <p class="block text-lg lg:text-2xl lg:w-1/2">You don’t have any custom questionnaires at the moment. We do have defaults you can start from!</p>
+      <p class="block text-lg lg:text-2xl lg:w-1/2">You don’t have any questionnaires at the moment. We do have defaults you can start from!</p>
     </div>
     <div class="lg:inline-flex">
       <button type="button" title="create questionnaire" href="#" class="w-full md:w-auto btn-primary text-center mt-5" phx-click="create-questionnaire">Create Questionnaire</button>
@@ -37,14 +44,14 @@
 <% else %>
   <div class="p-6 center-container">
     <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
-      <div class="sm:col-span-4">Name</div>
-      <div class="sm:col-span-3">Job Type</div>
-      <div class="sm:col-span-3"># of questions</div>
-      <div class="sm:col-span-2">Actions</div>
+      <div class="sm:col-span-5">Name</div>
+      <div class="sm:col-span-2">Job Type</div>
+      <div class="sm:col-span-2 flex sm:justify-center"># of questions</div>
+      <div class="sm:col-span-2 flex justify-end">Actions</div>
     </div>
     <%= for questionnaire <- @questionnaires do %>
       <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("questionnaire-row")}>
-        <div class="sm:col-span-4 grid sm:flex flex-wrap sm:items-center gap-x-4 col-y-3">
+        <div class="sm:col-span-5 flex flex-wrap items-center gap-x-4 col-y-3">
           <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}} class="block text-xl text-left font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
           <%= if questionnaire.is_picsello_default do %>
             <div><.badge color={:gray}>View Only</.badge></div>
@@ -52,13 +59,13 @@
             <p class="w-full text-sm text-base-250">Created <%= questionnaire.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
           <% end %>
         </div>
-        <div class="sm:col-span-3 grid sm:flex gap-2 sm:gap-0">
-          <%= questionnaire.job_type |> String.capitalize()  %>
+        <div class="sm:col-span-2">
+          <span class="sm:hidden font-bold">Job type: </span> <%= questionnaire.job_type |> String.capitalize()  %>
         </div>
-        <div class="sm:col-span-3 grid sm:flex gap-2 sm:gap-0 text-center">
-          <%= questionnaire.questions |> length()  %>
+        <div class="sm:col-span-2 sm:flex sm:justify-center">
+          <span class="sm:hidden font-bold"># of questions: </span> <%= questionnaire.questions |> length()  %>
         </div>
-        <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
+        <div class="sm:col-span-2 flex justify-end">
           <.actions_cell questionnaire={questionnaire} />
         </div>
       </div>

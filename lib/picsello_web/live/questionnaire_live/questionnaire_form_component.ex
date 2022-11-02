@@ -59,7 +59,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
             <div class="mb-8 border rounded-lg" {testid("question-#{f_questions.index}")}>
               <%= hidden_inputs_for(f_questions) %>
               <%= if @state !== "" do %>
-              <div class="sm:flex items-center justify-between bg-gray-100 p-4 rounded-t-lg">
+              <div class="flex items-center justify-between bg-gray-100 p-4 rounded-t-lg">
                 <div>
                   <h3 class="text-lg font-bold">Question <%= f_questions.index + 1 %></h3>
                 </div>
