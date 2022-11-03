@@ -6,6 +6,7 @@ defmodule Picsello.Organization do
 
   alias Picsello.{
     PackagePaymentPreset,
+    OrganizationCard,
     Package,
     Campaign,
     Client,
@@ -42,6 +43,7 @@ defmodule Picsello.Organization do
     has_many(:package_payment_presets, PackagePaymentPreset)
     has_many(:brand_links, Picsello.BrandLink)
     has_many(:clients, Client)
+    has_many(:organization_cards, OrganizationCard)
     has_one(:user, User)
 
     timestamps()
@@ -68,6 +70,7 @@ defmodule Picsello.Organization do
   def registration_changeset(organization, attrs) do
     organization
     |> cast(attrs, [:name, :slug])
+    |> cast_assoc(:organization_cards, with: &OrganizationCard.changeset/2)
     |> validate_required([:name])
     |> prepare_changes(fn changeset ->
       case get_change(changeset, :slug) do

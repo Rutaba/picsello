@@ -15,11 +15,14 @@ defmodule PicselloWeb.Live.Profile.EditNameSharedComponent do
   @impl true
   def handle_event("save", %{"job" => params}, socket) do
     changeset = socket |> build_changeset(params)
+
     case Repo.update(changeset) do
       {:ok, job} ->
         send(socket.parent_pid, {:update, %{job: job}})
+
         socket
         |> close_modal()
+
       {:error, changeset} ->
         socket |> assign(changeset: changeset)
     end

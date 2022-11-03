@@ -119,7 +119,8 @@ defmodule Picsello.Factory do
   def organization_factory do
     %Organization{
       name: "Camera User Group",
-      slug: sequence(:slug, &"camera-user-group-#{&1}")
+      slug: sequence(:slug, &"camera-user-group-#{&1}"),
+      organization_cards: Picsello.OrganizationCard.for_new_changeset()
     }
   end
 
@@ -913,4 +914,11 @@ defmodule Picsello.Factory do
       PicselloWeb.Endpoint.struct_url()
       |> Map.put(:path, PicselloWeb.Endpoint.static_path("/images/phoenix.png"))
       |> URI.to_string()
+
+  @concise_name "proofing-album-order"
+  def proofs_organization_card_factory,
+    do: %Picsello.OrganizationCard{
+      status: :active,
+      card_id: Repo.get_by(Picsello.Card, concise_name: @concise_name).id
+    }
 end

@@ -171,7 +171,10 @@ defmodule PicselloWeb.LeadLive.Show do
     }
 
     socket
-    |> open_modal(PicselloWeb.Live.Profile.EditNameSharedComponent, Map.put(assigns, :parent_pid, self()))
+    |> open_modal(
+      PicselloWeb.Live.Profile.EditNameSharedComponent,
+      Map.put(assigns, :parent_pid, self())
+    )
     |> noreply()
   end
 

@@ -569,6 +569,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         } = socket
       ) do
     photo_id = String.to_integer(photo_id)
+
     order_photo_ids =
       case orders do
         [] ->

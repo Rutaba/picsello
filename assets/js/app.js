@@ -127,6 +127,14 @@ const TZCookie = {
   },
 };
 
+const CardStatus = {
+  mounted() {
+    this.el.addEventListener('click', () => {
+      this.pushEvent('card_status', { status: this.el.dataset.status, org_card_id: this.el.id });
+    });
+  }
+};
+
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -163,6 +171,10 @@ const Hooks = {
   TZCookie,
   ToggleContent,
   ToggleSiblings,
+  ResumeUpload,
+  GallerySelector,
+  ClientGalleryCookie,
+  CardStatus
 };
 
 let Uploaders = {};
