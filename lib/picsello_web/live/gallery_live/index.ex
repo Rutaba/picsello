@@ -154,9 +154,9 @@ defmodule PicselloWeb.GalleryLive.Index do
     socket |> flash.() |> noreply()
   end
 
-  def handle_info({:success_event, "view-job", %{job_id: job_id}}, socket) do
+  def handle_info({:success_event, "view-gallery", %{gallery_id: gallery_id}}, socket) do
     socket
-    |> push_redirect(to: Routes.job_path(socket, :jobs, job_id))
+    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id))
     |> noreply()
   end
 
@@ -175,15 +175,15 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   @impl true
-  def handle_info({:gallery_created, %{job_id: job_id}}, socket) do
+  def handle_info({:gallery_created, %{gallery_id: gallery_id}}, socket) do
     socket
     |> PicselloWeb.SuccessComponent.open(%{
       title: "Gallery Created!",
-      subtitle: "Hooray! Your gallery has been created. you are now ready to upload photos.",
-      success_label: "View new job",
-      success_event: "view-job",
-      close_label: "Great! Close window.",
-      payload: %{job_id: job_id}
+      subtitle: "Hooray! Your gallery has been created. You're now ready to upload photos.",
+      success_label: "View gallery",
+      success_event: "view-gallery",
+      close_label: "Close",
+      payload: %{gallery_id: gallery_id}
     })
     |> update_gallery_listing()
     |> noreply()

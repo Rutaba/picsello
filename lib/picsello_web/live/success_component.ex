@@ -5,10 +5,10 @@ defmodule PicselloWeb.SuccessComponent do
 
   @default_assigns %{
     close_label: "Close",
-    close_class: "btn-primary font-semibold text-lg",
+    close_class: "border border-current p-3 rounded-lg font-semibold text-lg",
     success_event: nil,
     success_label: "Go to item",
-    success_class: "border border-current p-3 rounded-lg font-semibold text-lg",
+    success_class: "btn-primary font-semibold text-lg",
     subtitle: nil
   }
 
@@ -24,7 +24,7 @@ defmodule PicselloWeb.SuccessComponent do
     assigns = Enum.into(assigns, %{class: "bg-white p-6 rounded-lg"})
 
     ~H"""
-    <div class={@class <> " w-[642px]"}>
+    <div class={@class <> " max-w-[642px]"}>
 
       <h1 class="font-bold text-3xl">
         <%= @title %>
@@ -43,15 +43,15 @@ defmodule PicselloWeb.SuccessComponent do
         </div>
       </div>
 
-    <button class={"w-full mt-6 " <> @close_class} type="button" phx-click="modal" phx-value-action="close">
-      <%= @close_label %>
-    </button>
-
       <%= if @success_event do %>
         <button class={"w-full mt-6 " <> @success_class} title={@success_label} type="button" phx-click={@success_event} phx-disable-with="Saving&hellip;" phx-target={@myself}>
           <%= @success_label %>
         </button>
       <% end %>
+
+      <button class={"w-full mt-6 " <> @close_class} type="button" phx-click="modal" phx-value-action="close">
+        <%= @close_label %>
+      </button>
     </div>
     """
   end
@@ -88,9 +88,9 @@ defmodule PicselloWeb.SuccessComponent do
 
   defp description(assigns) do
     ~H"""
-      <span class="font-bold">We have created a client and a job under the hood for you.</span> A job is the hub for your gallery,
-      transaction history, and communication with your client for this shoot. Don't forget you can
-      use Picsello to handle every thing!
+      <span class="font-bold">We've created a client and a job under the hood for you.</span> A job is the hub for your gallery,
+      transaction history, and communication with your client. Don't forget you can
+      use Picsello to handle everything!
     """
   end
 
