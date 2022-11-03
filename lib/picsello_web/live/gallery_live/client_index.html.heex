@@ -67,7 +67,7 @@
   <% end %>
 
   <!-- Content -->
-  <div class={"center-container gallery__container #{@gallery.disabled && 'hidden'}"}>
+  <div class={classes("center-container gallery__container", %{"hidden" => @gallery.disabled})}>
     <hr class="mt-8 opacity-30 border-base-300" />
   </div>
 
