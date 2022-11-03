@@ -185,16 +185,26 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}
     ]
 
-  def subscription_ending_soon(%{current_user: current_user} = assigns) do
+  def subscription_ending_soon(%{current_user: current_user, socket: socket} = assigns) do
     subscription = current_user |> Picsello.Subscriptions.subscription_ending_soon_info()
 
     case assigns.type do
+      "header" ->
+        ~H"""
+        <div class={classes(%{"hidden" => subscription.hidden_30_days?})}>
+          <%= live_redirect to: Routes.user_settings_path(socket, :edit), class: "flex gap-2 items-center mr-4" do %>
+            <h6 class="text-xs italic text-gray-250 opacity-50">Trial ending soon! <%= ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)) %> left.</h6>
+            <button class="hidden sm:block text-xs rounded-lg px-4 py-1 border border-blue-planning-300 font-semibold hover:bg-blue-planning-100">Renew plan</button>
+          <% end %>
+        </div>
+        """
+
       "banner" ->
         ~H"""
         <div {testid("subscription-top-banner")} class={classes(@class, %{"hidden" => subscription.hidden?})}>
           <.icon name="clock-filled" class="lg:w-5 lg:h-5 w-8 h-8 mr-2"/>
           <span>You have <%= ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)) %> left before your subscription ends.
-            <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Click here" do %>
+            <%= live_redirect to: Routes.user_settings_path(socket, :edit), title: "Click here" do %>
               <span class="font-bold underline px-1 cursor-pointer">Click here</span>
             <% end %>
             to upgrade.
@@ -205,7 +215,7 @@ defmodule PicselloWeb.LayoutView do
       _ ->
         ~H"""
         <div {testid("subscription-footer")} class={classes(@class, %{"hidden" => subscription.hidden?})}>
-          <%= live_redirect to: Routes.user_settings_path(@socket, :edit) do %>
+          <%= live_redirect to: Routes.user_settings_path(socket, :edit) do %>
             <%= ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)) %> left until your subscription ends
           <% end %>
         </div>
