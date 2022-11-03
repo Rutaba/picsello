@@ -50,7 +50,7 @@ defmodule Picsello.Subscriptions do
     end
   end
 
-  def subscription_ending_soon_info(nil), do: %{hidden?: true}
+  def subscription_ending_soon_info(nil), do: %{hidden?: true, hidden_30_days?: true}
 
   def subscription_ending_soon_info(%User{subscription: %Ecto.Association.NotLoaded{}} = user),
     do: user |> Repo.preload(:subscription) |> subscription_ending_soon_info()
@@ -61,13 +61,14 @@ defmodule Picsello.Subscriptions do
         days_left = days_distance(current_period_end)
 
         %{
-          hidden?: days_left > 7 || days_left < 0,
+          hidden?: calculate_days_left_boolean(days_left, 7),
+          hidden_30_days?: calculate_days_left_boolean(days_left, 30),
           days_left: days_left |> Kernel.max(0),
           subscription_end_at: DateTime.to_date(current_period_end)
         }
 
       _ ->
-        %{hidden?: true}
+        %{hidden?: true, hidden_30_days?: true}
     end
   end
 
@@ -263,5 +264,9 @@ defmodule Picsello.Subscriptions do
       nil -> false
       _ -> true
     end
+  end
+
+  defp calculate_days_left_boolean(days_left, max) do
+    days_left > max || days_left < 0
   end
 end

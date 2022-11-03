@@ -47,7 +47,7 @@
           Create leads to start bringing in new business. Manage existing leads as they are created.
         </p>
 
-        <button type="button" class="w-full py-2 mt-auto text-sm btn-secondary" phx-click="create-lead">Create a lead</button>
+        <button type="button" class="w-full py-2 mt-auto text-sm btn-primary" phx-click="create-lead">Create a lead</button>
         <% else %>
         <ul class="grid grid-flow-col gap-2 my-2 auto-cols-fr">
         <%= for {lead_state, number} <- @lead_stats do %>
