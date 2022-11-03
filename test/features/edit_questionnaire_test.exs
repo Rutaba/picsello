@@ -25,7 +25,7 @@ defmodule Picsello.EditQuestionnaireTest do
     |> visit("/home")
     |> click(css("[title='Questionnaires']"))
     |> assert_path("/custom-questionnaires")
-    |> click(button("Picsello Default Other"))
+    |> click(button("Picsello Other Template"))
     |> within_modal(fn modal ->
       modal
       |> assert_text("View custom questionnaire")
