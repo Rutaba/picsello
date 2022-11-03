@@ -488,10 +488,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
         has_orders: true
       })
 
-    any_client_liked_photo? = Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
+    any_client_liked_photo? =
+      Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
 
     ~H"""
-    <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected})} phx-update={@update_mode} data-offset-y="10" phx-hook="Select">
+    <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected || @disabled})} phx-update={@update_mode} data-offset-y="10" phx-hook="Select">
       <div {testid("dropdown-#{@id}")} class={"flex items-center lg:p-0 p-3 dropdown " <> @class}>
         <div class="lg:mx-3">
           <span>Actions</span>
@@ -712,7 +713,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def add_album_button(assigns) do
     ~H"""
-      <.icon_button {testid("add-album-popup")} class={"text-sm bg-white shadow-lg #{@class}"} title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
+      <.icon_button {testid("add-album-popup")} disabled={@disabled} class={"text-sm bg-white shadow-lg #{@class}"} title="Add Album" phx-click="add_album_popup" color="blue-planning-300" icon="plus">
         Add Album
       </.icon_button>
     """

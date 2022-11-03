@@ -12,6 +12,22 @@ defmodule Picsello.GalleryOverviewTest do
     [job: gallery.job]
   end
 
+  def insert_order(gallery) do
+    order =
+      insert(:order,
+        gallery: gallery,
+        placed_at: DateTime.utc_now(),
+        delivery_info: %Picsello.Cart.DeliveryInfo{}
+      )
+
+    insert(:digital,
+      order: order,
+      photo: insert(:photo, gallery: gallery, original_url: image_url())
+    )
+
+    order
+  end
+
   feature "Validate preview gallery button", %{
     session: session,
     gallery: gallery
@@ -139,6 +155,45 @@ defmodule Picsello.GalleryOverviewTest do
     )
   end
 
+  feature "Disable Gallery", %{session: session, gallery: gallery} do
+    _order = insert_order(gallery)
+
+    session
+    |> visit("/galleries/#{gallery.id}/")
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
+    |> click(css("#deleteGalleryPopupButton"))
+    |> within_modal(&click(&1, button("Yes, disable orders")))
+    |> assert_url_contains("/galleries")
+  end
+
+  feature "Unable to update gallery settings when disabled", %{session: session, gallery: gallery} do
+    _order = insert_order(gallery)
+    {:ok, gallery} = Galleries.update_gallery(gallery, %{disabled: true})
+
+    session
+    |> visit("/galleries/#{gallery.id}/")
+    |> resize_window(1280, 800)
+    |> assert_disabled(css(".galleryName"))
+    |> assert_disabled(css("#galleryPasswordInput"))
+    |> assert_disabled(select("date[month]"))
+    |> assert_disabled(select("date[day]"))
+    |> assert_disabled(select("date[year]"))
+  end
+
+  feature "Enable Gallery", %{session: session, gallery: gallery} do
+    _order = insert_order(gallery)
+    {:ok, gallery} = Galleries.update_gallery(gallery, %{disabled: true})
+
+    session
+    |> visit("/galleries/#{gallery.id}/")
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
+    |> click(css("#deleteGalleryPopupButton"))
+    |> within_modal(&click(&1, button("Yes, enable")))
+    |> assert_url_contains("/galleries")
+  end
+
   feature "Delete Gallery", %{session: session, job: job, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
@@ -146,9 +201,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> scroll_to_bottom()
     |> click(css("#deleteGalleryPopupButton"))
     |> within_modal(&click(&1, button("Yes, delete")))
-    |> assert_has(testid("card-Gallery", text: "Looks like you need to upload photos."))
-
-    assert current_path(session) == "/jobs/#{job.id}"
+    |> assert_url_contains("/jobs/#{job.id}")
   end
 
   feature "Set first photo of gallery as cover photo", %{

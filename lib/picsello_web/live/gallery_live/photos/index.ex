@@ -563,17 +563,33 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         %{"photo_id" => photo_id},
         %{
           assigns: %{
-            selected_photos: selected_photos
+            selected_photos: selected_photos,
+            orders: orders
           }
         } = socket
       ) do
     photo_id = String.to_integer(photo_id)
 
+    order_photo_ids =
+      case orders do
+        [] ->
+          []
+
+        orders ->
+          Enum.flat_map(orders, fn %{digitals: digitals} ->
+            Enum.map(digitals, & &1.photo.id)
+          end)
+      end
+
     selected_photos =
-      if Enum.member?(selected_photos, photo_id) do
-        List.delete(selected_photos, photo_id)
+      if Enum.member?(order_photo_ids, photo_id) do
+        selected_photos
       else
-        [photo_id | selected_photos]
+        if Enum.member?(selected_photos, photo_id) do
+          List.delete(selected_photos, photo_id)
+        else
+          [photo_id | selected_photos]
+        end
       end
 
     socket

@@ -119,7 +119,8 @@ defmodule Picsello.Factory do
   def organization_factory do
     %Organization{
       name: "Camera User Group",
-      slug: sequence(:slug, &"camera-user-group-#{&1}")
+      slug: sequence(:slug, &"camera-user-group-#{&1}"),
+      organization_cards: Picsello.OrganizationCard.for_new_changeset()
     }
   end
 
@@ -456,7 +457,8 @@ defmodule Picsello.Factory do
       job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
       client_link_hash: UUID.uuid4(),
-      active: true
+      active: true,
+      disabled: false
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
@@ -912,4 +914,11 @@ defmodule Picsello.Factory do
       PicselloWeb.Endpoint.struct_url()
       |> Map.put(:path, PicselloWeb.Endpoint.static_path("/images/phoenix.png"))
       |> URI.to_string()
+
+  @concise_name "proofing-album-order"
+  def proofs_organization_card_factory,
+    do: %Picsello.OrganizationCard{
+      status: :active,
+      card_id: Repo.get_by(Picsello.Card, concise_name: @concise_name).id
+    }
 end

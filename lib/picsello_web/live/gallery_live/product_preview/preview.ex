@@ -32,13 +32,13 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
             <%= @category.name %>
           </div>
           <div class=" mx-4 pt-4 flex flex-col justify-between" >
-            <.toggle_preview click="sell_product_enabled" checked={@product.sell_product_enabled} text="Product enabled to sell" myself={@myself} />
+            <.toggle_preview disabled={@disabled} click="sell_product_enabled" checked={@product.sell_product_enabled} text="Product enabled to sell" myself={@myself} />
           </div>
 
           <div class={classes("mt-4 pb-4 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>
             <div class=" mx-4 pt-4 flex flex-col justify-between" >
               <%= if @product.sell_product_enabled do %>
-                <.toggle_preview click="product_preview_enabled" checked={@product.product_preview_enabled} text="Show product preview in gallery" myself={@myself} />
+                <.toggle_preview disabled={@disabled} click="product_preview_enabled" checked={@product.product_preview_enabled} text="Show product preview in gallery" myself={@myself} />
               <% end %>
             </div>
 
@@ -51,7 +51,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
                 <% else %>
                   <%= if @product.product_preview_enabled and @product.sell_product_enabled do %>
                     <button
-                    class="flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer"
+                    class={classes("flex items-center font-sans text-sm py-2 pr-3.5 pl-3 bg-white border border-blue-planning-300 rounded-lg cursor-pointer", %{"pointer-events-none opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}
                     phx-click="edit"
                     id={"product-id-#{@product_id}"}
                     phx-value-product_id={@product_id}>
@@ -75,9 +75,9 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
   defp toggle_preview(assigns) do
     ~H"""
     <label class="inline-flex relative items-center cursor-pointer">
-      <input type="checkbox" class="sr-only peer" phx-click={@click} checked={@checked} phx-target={@myself}>
-      <div class="w-11 h-6 bg-gray-300 rounded-full peer  peer-focus:ring-toggle-100 dark:peer-focus:ring-toggle-300 dark:bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-toggle-100"></div>
-      <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300"><%= @text %></span>
+    <input type="checkbox" disabled={@disabled} class="sr-only peer disabled:opacity-75 disabled:cursor-default" phx-click={@click} checked={@checked} phx-target={@myself} >
+    <div class="w-11 h-6 bg-gray-300 rounded-full peer  peer-focus:ring-toggle-100 dark:peer-focus:ring-toggle-300 dark:bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-toggle-100"></div>
+    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300"><%= @text %></span>
     </label>
     """
   end

@@ -48,6 +48,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
      |> assign(:estimate, "n/a")
      |> assign(:update_mode, "append")
      |> allow_upload(:photo, @upload_options), layout: false}
+
+    # socket = if gallery.disabled, do: disallow_upload(socket, :photo)
+    # {:ok, socket}
   end
 
   @impl true
