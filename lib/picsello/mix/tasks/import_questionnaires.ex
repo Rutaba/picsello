@@ -49,7 +49,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
             type: :textarea
           }
         ],
-        name: "Picsello Default Wedding",
+        name: "Picsello Wedding Template",
         is_picsello_default: true,
         is_organizaton_default: false,
         job_type: "wedding"
@@ -92,7 +92,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
             ]
           }
         ],
-        name: "Picsello Default Family",
+        name: "Picsello Family Template",
         is_picsello_default: true,
         is_organizaton_default: false,
         job_type: "family"
@@ -140,7 +140,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
             optional: true
           }
         ],
-        name: "Picsello Default Newborn",
+        name: "Picsello Newborn Template",
         is_picsello_default: true,
         is_organizaton_default: false,
         job_type: "newborn"
@@ -170,7 +170,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
             ]
           }
         ],
-        name: "Picsello Default Other",
+        name: "Picsello Other Template",
         is_picsello_default: true,
         is_organizaton_default: false,
         job_type: "other"
@@ -194,7 +194,7 @@ defmodule Mix.Tasks.ImportQuestionnaires do
             ]
           }
         ],
-        name: "Picsello Default Boudoir",
+        name: "Picsello Boudoir Template",
         is_picsello_default: true,
         is_organizaton_default: false,
         job_type: "boudoir"
