@@ -16,7 +16,8 @@ defmodule Picsello.Orders.Confirmations do
     Invoices.Invoice,
     Payments,
     Repo,
-    WHCC
+    WHCC,
+    OrganizationCard
   }
 
   import Ecto.Query, only: [from: 2]
@@ -156,6 +157,9 @@ defmodule Picsello.Orders.Confirmations do
         new()
         |> run(:stripe_invoice, fn _, _ -> create_stripe_invoice(order, photographer_owes) end)
         |> insert(:invoice, &insert_invoice_changeset(&1, order))
+    end)
+    |> run(:insert_card, fn _repo, %{order: order} ->
+      OrganizationCard.insert_for_proofing_order(order)
     end)
     |> Repo.transaction()
     |> case do

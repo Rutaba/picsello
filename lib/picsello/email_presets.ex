@@ -5,7 +5,7 @@ defmodule Picsello.EmailPresets do
   import Ecto.Query
   import Picsello.Repo.CustomMacros
 
-  alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset}
+  alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset, Utils}
   alias Picsello.Galleries.Gallery
 
   def for(%Gallery{}, state) do
@@ -83,11 +83,8 @@ defmodule Picsello.EmailPresets do
 
     %{
       preset
-      | body_template: render(preset.body_template, data),
-        subject_template: render(preset.subject_template, data)
+      | body_template: Utils.render(preset.body_template, data),
+        subject_template: Utils.render(preset.subject_template, data)
     }
   end
-
-  defp render(template, data),
-    do: :bbmustache.render(template, data, key_type: :binary, value_serializer: &to_string/1)
 end

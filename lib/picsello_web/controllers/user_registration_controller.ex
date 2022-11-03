@@ -3,11 +3,17 @@ defmodule PicselloWeb.UserRegistrationController do
 
   use PicselloWeb, :controller
 
-  alias Picsello.Accounts
+  alias Picsello.{Accounts, OrganizationCard}
   alias PicselloWeb.UserAuth
 
   def create(%{req_cookies: cookies} = conn, %{"user" => user_params}) do
-    case user_params |> Enum.into(Map.take(cookies, ["time_zone"])) |> Accounts.register_user() do
+    user_params
+    |> Map.put("organization", %{
+      organization_cards: OrganizationCard.for_new_changeset()
+    })
+    |> Enum.into(Map.take(cookies, ["time_zone"]))
+    |> Accounts.register_user()
+    |> case do
       {:ok, user} ->
         {:ok, _} =
           Accounts.deliver_user_confirmation_instructions(
