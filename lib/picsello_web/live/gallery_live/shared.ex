@@ -103,7 +103,20 @@ defmodule PicselloWeb.GalleryLive.Shared do
         %GalleryProduct{} = product,
         %Photo{} = photo
       ) do
+    is_finals = Map.get(socket.assigns, :album, %{}) |> Map.get(:is_finals, false)
+
     case GalleryProducts.editor_type(product) do
+      :card when is_finals ->
+        socket
+        |> push_redirect(
+          to:
+            Routes.gallery_card_editor_path(
+              socket,
+              :finals_album,
+              socket.assigns.album.client_link_hash
+            )
+        )
+
       :card ->
         socket
         |> push_redirect(

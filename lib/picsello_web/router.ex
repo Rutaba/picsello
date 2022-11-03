@@ -251,6 +251,8 @@ defmodule PicselloWeb.Router do
       live "/cart", GalleryLive.ClientShow.Cart, :proofing_album
       live "/cart/address", GalleryLive.ClientShow.Cart, :proofing_album_address
 
+      live "/cards", GalleryLive.CardEditor, :finals_album
+
       scope "/orders" do
         live "/", GalleryLive.ClientOrders, :proofing_album
         live "/:order_number", GalleryLive.ClientOrder, :proofing_album

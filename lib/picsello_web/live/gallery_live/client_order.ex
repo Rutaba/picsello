@@ -11,6 +11,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   def mount(_params, _session, socket) do
     socket
     |> assign(from_checkout: false)
+    |> assign_new(:album, fn -> nil end)
     |> assign_is_proofing()
     |> ok()
   end
