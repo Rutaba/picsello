@@ -29,7 +29,7 @@
             <%= unless PaymentSchedules.all_paid?(@job) do %>
               <dl>
                 <dt class="text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">Owed</dt>
-                <dd class="font-bold text-red-sales-300 rounded-lg border border-base-200 text-center py-2"><%= PaymentSchedules.owed_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
+                <dd class="font-bold text-red-sales-300 rounded-lg border border-base-200 text-center py-2"><%= PaymentSchedules.owed_offline_price(@job) |> Money.to_string(fractional_unit: false) %></dd>
               </dl>
             <% end %>
           </div>
@@ -37,9 +37,25 @@
             <%= unless PaymentSchedules.all_paid?(@job) do %>
               <button class="link mr-4" phx-click="open-compose">Send reminder</button>
             <% end %>
-            <.icon_button phx-click="open-stripe" color="blue-planning-300" icon="money-bags">
-              View details in Stripe
-            </.icon_button>
+            <div id="options" phx-update="ignore" data-offset="0" phx-hook="Select" >
+              <button title="Options" type="button" class="flex flex-shrink-0 ml-2 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+                <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+                <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+              </button>
+
+              <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">            
+                <button title="Go to Stripe" type="button" phx-click="open-stripe"  class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                <.icon name="money-bags" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                  Go to Stripe
+                </button>
+                <%= if(@current_user.allow_cash_payment) do %>
+                <button title="Mark as paid" type="button" phx-click="open-mark-as-paid" phx-value-user={@current_user.email} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                  <.icon name="tick" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                  Mark as paid
+                </button>
+                <% end %>
+              </div>
+            </div>
           </div>
         </.card>
         <.package_details_card package={@package} job={@job} proposal={@proposal} />

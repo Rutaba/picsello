@@ -8,6 +8,9 @@ defmodule PicselloWeb.Helpers do
 
   def job_url(id), do: Routes.job_url(Endpoint, :jobs, id)
 
+  def invoice_url(job_id, proposal_id),
+    do: Routes.job_download_url(Endpoint, :download_invoice_pdf, job_id, proposal_id)
+
   def lead_url(id), do: Routes.job_url(Endpoint, :leads, id)
 
   def inbox_thread_url(id), do: Routes.inbox_url(Endpoint, :show, id)

@@ -38,7 +38,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponentTest do
   test "include credits" do
     html = render_package(download_count: 1, download_each_price: 50)
 
-    assert String.contains?(html, "1 download credit included")
+    assert String.contains?(html, "1 photo download")
     assert String.contains?(html, "Additional downloads @ $0.50/ea")
   end
 end

@@ -143,7 +143,7 @@ defmodule Picsello.ClientBooksEventTest do
     |> click(button("Accept Contract"))
     |> click(button("To-Do Pay your retainer"))
     |> assert_has(definition("100% retainer due today", text: "$15.00"))
-    |> click(button("Pay Invoice"))
+    |> click(button("Pay with card Fast easy and secure"))
     |> assert_url_contains("stripe-checkout")
 
     assert [
