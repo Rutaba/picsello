@@ -41,6 +41,29 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assertions_for_no_galleries_page()
   end
 
+  feature "when there are orders in gallery, you see enable-disable feature in dropdown", %{session: session, gallery: gallery} do
+    insert(:order, gallery: gallery)
+
+    visit_homepage(session)
+    |> visit_view_all_galleries()
+    |> click(css("#menu-button"))
+    |> assert_text("Disable")
+    |> click(css(".disable-link"))
+    |> click(button("Yes, disable orders"))
+
+    visit_homepage(session)
+    |> visit_view_all_galleries()
+    |> click(css("#menu-button"))
+    |> assert_text("Enable")
+    |> click(css(".enable-link"))
+    |> click(button("Yes, enable orders"))
+
+    visit_homepage(session)
+    |> visit_view_all_galleries()
+    |> click(css("#menu-button"))
+    |> assert_text("Disable")
+  end
+
   defp visit_homepage(session) do
     session
     |> visit("/")
@@ -93,7 +116,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_has(link("Edit"))
     |> assert_has(link("Go to Job"))
     |> assert_has(css("#send_email_link"))
-    |> assert_has(css("#delete_link"))
+    |> assert_has(css(".delete-link"))
   end
 
   defp edit_button_redirects_to_gallery_details(session, gallery) do
@@ -134,7 +157,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
 
   defp delete_button_deletes_the_selected_gallery(session) do
     session
-    |> click(css("#delete_link"))
+    |> click(css(".delete-link"))
     |> click(button("Yes, delete"))
   end
 
