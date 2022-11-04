@@ -496,7 +496,7 @@ defmodule Picsello.ImportJobTest do
     |> assert_has(button("Contract", count: 0))
     |> assert_has(button("Questionnaire", count: 0))
     |> assert_has(button("Invoice", count: 1))
-    |> click(button("Invoice"))
+    |> click(button("Pay with card Fast easy and secure"))
     |> assert_has(definition("Previously collected", text: "$200.00"))
     |> assert_has(definition("Payment 1 due on Jan 01, 2030", text: "$300.00"))
     |> assert_has(definition("Payment 2 due on Feb 01, 2030", text: "$500.00"))

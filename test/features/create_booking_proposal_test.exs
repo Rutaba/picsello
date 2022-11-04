@@ -108,7 +108,6 @@ defmodule Picsello.CreateBookingProposalTest do
     |> assert_text("Proposal sent")
     |> assert_text("Awaiting acceptance")
     |> click(button("View proposal"))
-    |> assert_has(definition("Quote #:", text: Integer.to_string(last_proposal_id)))
     |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
     |> click(button("Close"))
     |> click(testid("view-contract"))

@@ -26,6 +26,7 @@ defmodule Picsello.PaymentSchedule do
     :job_id,
     :description
   ]
+
   # @required_attrs [:paid_at, :type, :price]
 
   def create_changeset(attrs \\ %{}) do

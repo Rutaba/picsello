@@ -6,19 +6,25 @@ defmodule Picsello.AddPaymentsToJobTest do
   setup :authenticated
 
   setup %{session: session, user: user} do
-    job = insert(:lead, %{
-      user: user,
-      type: "newborn",
-      package: %{
-        name: "My Package",
-        description: "My custom description",
-        shoot_count: 1,
-        base_price: 297_000
-      },
-      client: %{name: "John"},
-    }) |> promote_to_job()
+    job =
+      insert(:lead, %{
+        user: user,
+        type: "newborn",
+        package: %{
+          name: "My Package",
+          description: "My custom description",
+          shoot_count: 1,
+          base_price: 297_000
+        },
+        client: %{name: "John"}
+      })
+      |> promote_to_job()
 
-    [job: job, session: session]
+    user
+    |> Ecto.Changeset.change(%{allow_cash_payment: true})
+    |> Picsello.Repo.update!()
+
+    [job: job, session: session, user: user]
   end
 
   feature "renders mark as paid modal", %{session: session, job: job} do

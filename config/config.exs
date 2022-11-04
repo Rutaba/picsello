@@ -151,7 +151,7 @@ config :picsello, :zapier,
   trial_user_webhook_url: System.get_env("ZAPIER_TRIAL_USER_WEBHOOK_URL")
 
 config :pdf_generator,
-    raise_on_missing_wkhtmltopdf_binary: false
+  raise_on_missing_wkhtmltopdf_binary: false
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

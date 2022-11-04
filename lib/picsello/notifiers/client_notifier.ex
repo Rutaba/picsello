@@ -67,7 +67,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
     %{
       subject: "Cash or check payment",
       body: """
-      <p>You said you will pay #{organization.name} for #{Picsello.Job.name(job)} through a cash or check for the following #{Picsello.PaymentSchedules.owed_price(job) |> Money.to_string(fractional_unit: false)} it is due on #{(Picsello.PaymentSchedules.remainder_due_on(job)) |> Calendar.strftime("%B %d, %Y")}.</p>
+      <p>You said you will pay #{organization.name} for #{Picsello.Job.name(job)} through a cash or check for the following #{Picsello.PaymentSchedules.owed_price(job) |> Money.to_string(fractional_unit: false)} it is due on #{Picsello.PaymentSchedules.remainder_due_on(job) |> Calendar.strftime("%B %d, %Y")}.</p>
       <p>Please arrange payment with me by replying to this email</p>
       <p>We can't wait to work with you!</p>
       <p>CTA: <a href="#{PicselloWeb.Helpers.invoice_url(job.id, proposal.id)}"> Download PDF </a></p>

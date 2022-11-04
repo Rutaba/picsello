@@ -53,13 +53,15 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
            <%= @payment_schedules |> Enum.with_index |> Enum.map(fn({payment_schedules, index}) -> %>
              <tr>
                <td id="payments" class="font-bold font-sans">Payment <%= index + 1 %></td>
-               <td id="offline-amount"><%= payment_schedules.price || "-" %></td>
-               <td><%= payment_schedules.type || "-" %></td>
+               <td id="offline-amount"><%= payment_schedules.price %></td>
+               <td><%= payment_schedules.type %></td>
                <td class="text-green-finances-300">Paid <%= strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y") %></td>
              </tr>
              <% end ) %>
            </tbody>
         </table>
+
+        <hr class="my-4 sm:mt-8" />
 
         <%= if PaymentSchedules.owed_offline_price(assigns.job) |> Map.get(:amount) > 0 do %>
           <%= if !@add_payment_show do %>

@@ -198,7 +198,7 @@ defmodule Picsello.PaymentSchedules do
 
   def owed_offline_price(%Job{} = job) do
     total = Package.price(job.package) |> Map.get(:amount)
-    total - paid_amount(job) |> Money.new()
+    (total - paid_amount(job)) |> Money.new()
   end
 
   def owed_amount(%Job{} = job) do
@@ -228,7 +228,8 @@ defmodule Picsello.PaymentSchedules do
 
   def get_offline_payment_schedules(job_id) do
     from(p in PaymentSchedule,
-    where: p.type in ["check", "cash"] and p.job_id == ^job_id)
+      where: p.type in ["check", "cash"] and p.job_id == ^job_id
+    )
     |> Repo.all()
   end
 

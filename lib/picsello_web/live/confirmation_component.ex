@@ -59,7 +59,11 @@ defmodule PicselloWeb.ConfirmationComponent do
   end
 
   @impl true
-  def handle_event("close_event", %{}, %{assigns: %{parent_pid: parent_pid, close_event: close_event}} = socket) do
+  def handle_event(
+        "close_event",
+        %{},
+        %{assigns: %{parent_pid: parent_pid, close_event: close_event}} = socket
+      ) do
     send(parent_pid, {:close_event, close_event})
 
     socket |> noreply()
