@@ -10,7 +10,8 @@ defmodule Picsello.Cart.Checkouts do
     Invoices,
     Payments,
     Repo,
-    WHCC
+    WHCC,
+    OrganizationCard
   }
 
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
@@ -51,7 +52,11 @@ defmodule Picsello.Cart.Checkouts do
       |> run(:client_total, &client_total/2)
       |> merge(fn
         %{client_total: ~M[0]USD, cart: %{products: []} = cart} ->
-          update(new(), :order, place_order(cart))
+          new()
+          |> update(:order, place_order(cart))
+          |> run(:insert_card, fn _repo, %{order: order} ->
+            OrganizationCard.insert_for_proofing_order(order)
+          end)
 
         %{cart: %{products: []} = cart} ->
           create_session(cart, opts)

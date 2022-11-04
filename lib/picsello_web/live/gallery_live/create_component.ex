@@ -103,9 +103,9 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       {:error, :package, changeset, _} ->
         assign(socket, :package_changeset, changeset)
 
-      {:ok, %{job: %{id: job_id}}} ->
-        send(self(), {:gallery_created, %{job_id: job_id}})
-        socket |> assign(:job_id, job_id)
+      {:ok, %{gallery: %{id: gallery_id}}} ->
+        send(self(), {:gallery_created, %{gallery_id: gallery_id}})
+        socket |> assign(:gallery_id, gallery_id)
     end
     |> noreply()
   end
