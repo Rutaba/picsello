@@ -59,9 +59,12 @@ export default {
       const introSteps = intros[introId](el);
 
       if (introId === 'intro_dashboard') {
-        // click to start the tour
+        document
+          .querySelector('#start-tour')
+          .addEventListener('click', () =>
+            startIntroJsTour(this, introSteps, introId)
+          );
 
-        // startIntroJsTour(this, introSteps, introId);
         return;
       }
 

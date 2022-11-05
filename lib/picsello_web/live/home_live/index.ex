@@ -501,14 +501,10 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def handle_info(
         {:close_event, %{event_name: "toggle_welcome_event", link: "gallery"}},
-        %{assigns: %{current_user: current_user}} = socket
+        socket
       ) do
     socket
-    |> close_modal
-    |> assign(
-      current_user:
-        Picsello.Onboardings.save_intro_state(current_user, "intro_dashboard_modal", "completed")
-    )
+    |> welcome_modal_state()
     |> push_redirect(to: Routes.gallery_path(socket, :galleries))
     |> noreply()
   end
@@ -516,14 +512,10 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def handle_info(
         {:close_event, %{event_name: "toggle_welcome_event", link: "client_booking"}},
-        %{assigns: %{current_user: current_user}} = socket
+        socket
       ) do
     socket
-    |> close_modal
-    |> assign(
-      current_user:
-        Picsello.Onboardings.save_intro_state(current_user, "intro_dashboard_modal", "completed")
-    )
+    |> welcome_modal_state()
     |> push_redirect(to: Routes.calendar_booking_events_path(socket, :index))
     |> noreply()
   end
@@ -531,7 +523,7 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def handle_info(
         {:close_event, %{event_name: "toggle_welcome_event", link: "demo"}},
-        %{assigns: %{current_user: current_user}} = socket
+        socket
       ) do
     socket
     |> noreply()
@@ -540,14 +532,10 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def handle_info(
         {:close_event, %{event_name: "toggle_welcome_event"}},
-        %{assigns: %{current_user: current_user}} = socket
+        socket
       ) do
     socket
-    |> close_modal
-    |> assign(
-      current_user:
-        Picsello.Onboardings.save_intro_state(current_user, "intro_dashboard_modal", "completed")
-    )
+    |> welcome_modal_state()
     |> push_patch(to: Routes.home_path(socket, :index), replace: true)
     |> noreply()
   end
@@ -624,6 +612,15 @@ defmodule PicselloWeb.HomeLive.Index do
     )
 
     socket
+  end
+
+  defp welcome_modal_state(%{assigns: %{current_user: current_user}} = socket) do
+    socket
+    |> close_modal
+    |> assign(
+      current_user:
+        Picsello.Onboardings.save_intro_state(current_user, "intro_dashboard_modal", "completed")
+    )
   end
 
   defdelegate get_all_proofing_album_orders(organization_id), to: Orders
