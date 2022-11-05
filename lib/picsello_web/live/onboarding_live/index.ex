@@ -329,7 +329,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         socket
         |> assign(current_user: user)
         |> update_user_contact_trial(user)
-        |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
+        |> push_redirect(to: Routes.home_path(socket, :index, new_user: true), replace: true)
 
       {:error, reason} ->
         socket |> assign(changeset: reason)

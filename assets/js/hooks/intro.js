@@ -1,7 +1,5 @@
 import introJs from 'intro.js';
 
-import { loadHelpScout, initHelpScout, toggleMenu } from './help-scout';
-
 import intros from '../data/intros';
 import isMobile from '../utils/isMobile';
 
@@ -60,28 +58,10 @@ export default {
     if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
 
-      if (introId === 'intro_dashboard' && el?.dataset?.id) {
-        loadHelpScout();
-        initHelpScout(
-          el.dataset.id,
-          el.dataset.email,
-          el.dataset.name,
-          '',
-          '',
-          ''
-        );
+      if (introId === 'intro_dashboard') {
+        // click to start the tour
 
-        if (window?.Beacon) {
-          toggleMenu();
-          window?.Beacon('article', el.dataset.article);
-
-          window?.Beacon('on', 'close', () =>
-            startIntroJsTour(this, introSteps, introId)
-          );
-        } else {
-          startIntroJsTour(this, introSteps, introId);
-        }
-
+        // startIntroJsTour(this, introSteps, introId);
         return;
       }
 
