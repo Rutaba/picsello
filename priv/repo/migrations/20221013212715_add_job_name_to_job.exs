@@ -12,5 +12,4 @@ defmodule Picsello.Repo.Migrations.AddJobNameToJob do
       remove(:job_name, :string)
     end
   end
-
 end

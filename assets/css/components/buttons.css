@@ -11,6 +11,10 @@
     @apply px-6 py-3 font-medium font-sans text-base-300 bg-white border border-base-300 rounded-lg transition-colors hover:bg-base-300/10 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75;
   }
 
+  .btn-tertiary {
+    @apply px-6 py-3 font-medium font-sans text-base-300 bg-gray-100 transition-colors hover:bg-gray-100/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75;
+  }
+
   .btn-row {
     @apply flex items-center justify-between w-full p-3 font-semibold text-left border border-gray-100 rounded-lg hover:bg-gray-50;
   }
@@ -21,5 +25,9 @@
 
   .btn-warning {
     @apply btn-primary bg-red-sales-300 border-red-sales-300 focus:ring-red-sales-300 hover:bg-red-sales-200;
+  }
+
+  .btn-warning.btn-tertiary {
+    @apply bg-red-sales-100 border-none text-red-sales-300  hover:bg-red-sales-100/60 focus:ring-red-sales-300;
   }
 }

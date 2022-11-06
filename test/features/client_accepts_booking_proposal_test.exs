@@ -168,11 +168,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(
         definition("Dated:", text: Calendar.strftime(proposal.inserted_at, "%b %d, %Y"))
       )
-      |> assert_has(definition("Quote #:", text: Integer.to_string(proposal.id)))
       |> assert_has(definition("For:", text: "John"))
       |> assert_has(definition("From:", text: "Photography LLC"))
       |> assert_has(definition("Email:", text: "photographer@example.com"))
-      |> assert_has(definition("Package:", text: "My Package"))
       |> assert_has(definition("Session fee", text: "$1.00"))
       |> assert_has(definition("Discount", text: "20%"))
       |> assert_has(definition("Total", text: "$0.80"))
@@ -201,7 +199,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(button("Pay overdue invoice"))
       |> click(button("Close"))
       |> click(button("To-Do Pay your retainer"))
-      |> click(button("Pay Invoice"))
+      |> click(button("Pay with card Fast easy and secure"))
       |> assert_url_contains("stripe-checkout")
 
       refute deposit_payment |> Repo.reload() |> then(&PaymentSchedule.paid?/1)
@@ -254,7 +252,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         )
       )
       |> assert_has(definition("invoice due today", text: "$5.00"))
-      |> click(button("Pay Invoice"))
+      |> click(button("Pay with card Fast easy and secure"))
       |> assert_url_contains("stripe-checkout")
 
       refute remainder_payment |> Repo.reload() |> PaymentSchedule.paid?()
@@ -338,7 +336,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
       |> click(button("To-Do Pay your retainer"))
-      |> click(button("Pay Invoice"))
+      |> click(button("Pay with card Fast easy and secure"))
       |> assert_url_contains("stripe-checkout")
 
       assert_receive {:checkout_linked, %{success_url: stripe_success_url}}
@@ -389,7 +387,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
       |> click(button("To-Do Pay your retainer"))
-      |> click(button("Pay Invoice"))
+      |> click(button("Pay with card Fast easy and secure"))
       |> assert_url_contains("stripe-checkout")
 
       assert %{stripe_payment_intent_id: "new_intent_id", stripe_session_id: "new_session_id"} =

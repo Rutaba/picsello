@@ -5,7 +5,14 @@ defmodule Picsello.Accounts do
 
   import Ecto.Query, warn: false
   import Picsello.Zapier.User, only: [user_created_webhook: 1]
-  alias Picsello.{Repo, Accounts.User, Accounts.UserToken, Notifiers.UserNotifier}
+
+  alias Picsello.{
+    Repo,
+    Accounts.User,
+    Accounts.UserToken,
+    OrganizationCard,
+    Notifiers.UserNotifier
+  }
 
   ## Database getters
 
@@ -367,7 +374,10 @@ defmodule Picsello.Accounts do
           email: email,
           name: name,
           password: generate_password(),
-          time_zone: time_zone
+          time_zone: time_zone,
+          organization: %{
+            organization_cards: OrganizationCard.for_new_changeset()
+          }
         })
         |> Ecto.Changeset.put_change(:sign_up_auth_provider, provider)
         |> Repo.insert()

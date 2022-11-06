@@ -13,7 +13,9 @@ defmodule PicselloWeb.HomeLive.Index do
     ClientMessage,
     Subscriptions,
     Orders,
-    Galleries
+    Galleries,
+    OrganizationCard,
+    Utils
   }
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
@@ -122,6 +124,24 @@ defmodule PicselloWeb.HomeLive.Index do
     end
   end
 
+  @impl true
+  def handle_event(
+        "card_status",
+        %{"org_card_id" => org_card_id, "status" => status},
+        socket
+      ) do
+    org_card_id = String.to_integer(org_card_id)
+
+    case status do
+      "viewed" -> OrganizationCard.viewed!(org_card_id)
+      "inactive" -> OrganizationCard.inactive!(org_card_id)
+    end
+
+    send(self(), :card_status)
+
+    socket |> noreply()
+  end
+
   defp maybe_show_success_subscription(socket, %{
          "session_id" => "" <> session_id
        }) do
@@ -207,180 +227,170 @@ defmodule PicselloWeb.HomeLive.Index do
         %{
           assigns: %{
             stripe_status: stripe_status,
-            current_user: %{organization_id: organization_id} = current_user,
-            leads_empty?: leads_empty?
+            leads_empty?: leads_empty?,
+            current_user: %{organization_id: organization_id} = current_user
           }
         } = socket
       ) do
     subscription = current_user |> Subscriptions.subscription_ending_soon_info()
+    orders = get_all_proofing_album_orders(organization_id) |> Map.new(&{&1.id, &1})
 
-    items =
-      for(
-        {true, item} <-
-          [
-            {!User.confirmed?(current_user),
-             %{
-               action: "send-confirmation-email",
-               title: "Confirm your email",
-               body: "Check your email to confirm your account before you can start anything.",
-               icon: "envelope",
-               button_label: "Resend email",
-               button_class: "btn-primary",
-               external_link: "",
-               color: "red-sales-300",
-               class: "intro-confirmation border-red-sales-300"
-             }},
-            {!subscription.hidden?,
-             %{
-               action: "open-user-settings",
-               title: "Subscription ending soon",
-               body:
-                 "You have #{ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0))} left before your subscription ends. You will lose access on #{Map.get(subscription, :subscription_end_at, nil)}. Your data will not be deleted and you can resubscribe at any time",
-               icon: "clock-filled",
-               button_label: "Go to acccount settings",
-               button_class: "btn-secondary",
-               external_link: "",
-               color: "red-sales-300",
-               class: "intro-confirmation border-red-sales-300"
-             }},
-            {Application.get_env(:picsello, :help_scout_id) != nil,
-             %{
-               action: "external-link",
-               title: "Getting started with Picsello guide",
-               body:
-                 "Check out our guide on how best to start running your business with Picsello.",
-               icon: "question-mark",
-               button_label: "Open guide",
-               button_class: "btn-secondary",
-               external_link:
-                 "https://support.picsello.com/article/117-getting-started-with-picsello-guide",
-               color: "blue-planning-300",
-               class: "intro-help-scout"
-             }},
-            {stripe_status != :charges_enabled,
-             %{
-               action: "set-up-stripe",
-               title: "Set up Stripe",
-               body: "We use Stripe to make payment collection as seamless as possible for you.",
-               icon: "money-bags",
-               button_label: "Setup your Stripe Account",
-               button_class: "btn-secondary",
-               external_link: "",
-               color: "blue-planning-300",
-               class: "intro-stripe"
-             }},
-            {true,
-             %{
-               action: "client-booking",
-               title: "Client booking is here!",
-               body: "Your clients will go from looking to direct booking in under 10 minutes.",
-               icon: "calendar",
-               button_label: "Check it out",
-               button_class: "btn-secondary",
-               external_link: "",
-               color: "blue-planning-300",
-               class: ""
-             }},
-            {Picsello.Invoices.pending_invoices?(current_user.organization_id),
-             %{
-               action: "open-billing-portal",
-               title: "Balance(s) Due",
-               body:
-                 "Oh no! We don't have an updated credit card on file. Please resolve in the Billing Portal to ensure continued service and product delivery for clients.",
-               icon: "money-bags",
-               button_label: "Open Billing Portal",
-               button_class: "btn-primary",
-               external_link: "",
-               color: "red-sales-300",
-               class: "border-red-sales-300"
-             }},
-            {!Picsello.Subscriptions.subscription_payment_method?(current_user),
-             %{
-               action: "open-billing-portal",
-               title: "Missing Payment Method",
-               body:
-                 "Oh no! You won't be able to sell physical gallery products until we have a payment method. If you're having trouble, please contact support.",
-               icon: "money-bags",
-               button_label: "Open Billing Portal",
-               button_class: "btn-primary",
-               external_link: "",
-               color: "red-sales-300",
-               class: "border-red-sales-300"
-             }},
-            {true,
-             %{
-               action: "gallery-links",
-               title: "Preview the gallery experience",
-               body:
-                 "We’ve created a video overview of how galleries work to help you get started.",
-               icon: "add-photos",
-               button_label: "Watch video",
-               button_class: "btn-secondary",
-               external_link: "",
-               color: "blue-planning-300",
-               class: "intro-resources"
-             }},
-            {leads_empty?,
-             %{
-               action: "create-lead",
-               title: "Create your first lead",
-               body: "Leads are the first step to getting started with Picsello.",
-               icon: "three-people",
-               button_label: "Create your first lead",
-               button_class: "btn-secondary",
-               external_link: "",
-               color: "blue-planning-300",
-               class: "intro-first-lead"
-             }},
-            {true,
-             %{
-               action: "external-link",
-               title: "Helpful resources",
-               body: "Stuck? We have a variety of resources to help you out.",
-               icon: "question-mark",
-               button_label: "See available resources",
-               button_class: "btn-secondary",
-               external_link: "https://support.picsello.com/",
-               color: "blue-planning-300",
-               class: "intro-resources"
-             }}
-          ],
-        do: item
+    organization_id
+    |> OrganizationCard.list()
+    |> Enum.reduce([], fn
+      %{card: %{concise_name: "open-user-settings", body: body}} = org_card, acc ->
+        data = build_data(subscription)
+        acc ++ [add(org_card, Utils.render(body, data))]
+
+      %{card: %{concise_name: "proofing-album-order", body: body}} = org_card, acc ->
+        orders
+        |> Map.get(org_card.data.order_id)
+        |> then(fn %{gallery: %{job: %{client: client}}} = order ->
+          buttons = build_buttons(socket, org_card.card.buttons, order)
+
+          add(org_card, Utils.render(body, %{"name" => client.name}), buttons)
+        end)
+        |> then(&(acc ++ [&1]))
+
+      org_card, acc ->
+        acc ++ [org_card]
+    end)
+    |> Enum.sort_by(& &1.card.index)
+    |> Enum.map(fn %{card: %{concise_name: concise_name}} = org_card ->
+      case concise_name do
+        "send-confirmation-email" ->
+          {!User.confirmed?(current_user), org_card}
+
+        "open-user-settings" ->
+          {!subscription.hidden?, org_card}
+
+        "getting-started-picsello" ->
+          {Application.get_env(:picsello, :help_scout_id) != nil, org_card}
+
+        "set-up-stripe" ->
+          {stripe_status != :charges_enabled, org_card}
+
+        "open-billing-portal" ->
+          {Picsello.Invoices.pending_invoices?(current_user.organization_id), org_card}
+
+        "missing-payment-method" ->
+          {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card}
+
+        "create-lead" ->
+          {leads_empty?, org_card}
+
+        _ ->
+          {true, org_card}
+      end
+    end)
+    |> then(
+      &(socket
+        |> assign(
+          attention_items: &1,
+          should_attention_items_overflow: Enum.count(&1) > 4
+        ))
+    )
+  end
+
+  defp build_data(subscription) do
+    %{
+      "days_left" => ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)),
+      "subscription_end_at" => Map.get(subscription, :subscription_end_at, nil)
+    }
+  end
+
+  defp build_buttons(socket, [button_1, button_2], %{
+         album: album,
+         number: number,
+         gallery: gallery
+       }) do
+    [
+      Map.put(
+        button_1,
+        :link,
+        Routes.gallery_photos_index_path(socket, :index, gallery.id, album.id)
+      ),
+      Map.put(
+        button_2,
+        :link,
+        Routes.gallery_downloads_url(
+          socket,
+          :download_csv,
+          gallery.client_link_hash,
+          number
+        )
       )
+    ]
+  end
 
-    items =
-      Enum.concat(
-        organization_id
-        |> Orders.get_all_proofing_album_orders()
-        |> Enum.map(fn %{
-                         number: number,
-                         album: album,
-                         gallery: %{job: %{client: %{name: name}}} = gallery
-                       } ->
-          %{
-            action: "proofing-album",
-            title: "A client selected their proofs!",
-            body: "Your client, #{name}, has sent their selection from their proofing album!",
-            icon: "proof_notifier",
-            button_label: "Go to Proof list",
-            button_class: "btn-secondary",
-            params: %{album: album},
-            external_link:
-              Routes.gallery_downloads_url(
-                socket,
-                :download_csv,
-                gallery.client_link_hash,
-                number
-              ),
-            color: "blue-planning-300",
-            class: "intro-resources"
-          }
-        end),
-        items
-      )
+  defp add(%{card: card} = org_card, body, buttons \\ nil) do
+    card = if buttons, do: %{card | buttons: buttons}, else: card
 
-    socket
-    |> assign(attention_items: items, should_attention_items_overflow: Enum.count(items) > 4)
+    %{org_card | card: %{card | body: body}}
+  end
+
+  def card_buttons(%{concise_name: concise_name, buttons: buttons} = assigns) do
+    ~H"""
+    <%= case concise_name do %>
+      <% "set-up-stripe" -> %>
+        <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
+          error_class: "text-center",
+          class: "#{List.first(buttons).class} text-sm w-full py-2 mt-2",
+          current_user: @current_user,
+          return_url: Routes.home_url(@socket, :index),
+          org_card_id: @org_card_id,
+          stripe_status: @stripe_status %>
+      <% _ -> %>
+      <span class="flex-shrink-0 flex flex-col justify-between" data-status="viewed" id={"#{@org_card_id}"} phx-hook="CardStatus">
+        <.card_button buttons={buttons} />
+      </span>
+    <% end %>
+    """
+  end
+
+  def card_button(%{buttons: [%{external_link: external_link} = button]} = assigns)
+      when not is_nil(external_link) do
+    ~H"""
+    <.link
+    link={external_link}
+    class={button.class}
+    label={button.label}
+    target="_blank"
+    rel="noopener noreferrer" />
+    """
+  end
+
+  def card_button(%{buttons: [%{link: link} = button]} = assigns) when not is_nil(link) do
+    ~H"""
+    <.link link={link} class={button.class} label={button.label} />
+    """
+  end
+
+  def card_button(%{buttons: [%{action: action} = button]} = assigns) when not is_nil(action) do
+    ~H"""
+    <button type="button" phx-click={action} phx-click="sss" class={"#{button.class} text-sm w-full py-2 mt-2"}>
+      <%= button.label %>
+    </button>
+    """
+  end
+
+  def card_button(%{buttons: [button_1, button_2]} = assigns) do
+    ~H"""
+    <div class="flex gap-4">
+     <.card_button buttons={[button_1]} />
+     <.card_button buttons={[button_2]} />
+    </div>
+    """
+  end
+
+  def link(%{class: class, link: link, label: label} = assigns) do
+    assigns = Enum.into(assigns, %{target: "", rel: ""})
+
+    ~H"""
+     <a href={link} class={"#{class} text-center text-sm w-full py-2 mt-2"} target={@target} rel={@rel}>
+        <%= label %>
+      </a>
+    """
   end
 
   def card(assigns) do
@@ -473,23 +483,23 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
-  def handle_info({:gallery_created, %{job_id: job_id}}, socket) do
+  def handle_info({:gallery_created, %{gallery_id: gallery_id}}, socket) do
     socket
     |> PicselloWeb.SuccessComponent.open(%{
       title: "Gallery Created!",
-      subtitle: "Hooray! Your gallery has been created. you are now ready to upload photos.",
-      success_label: "View new job",
-      success_event: "view-job",
-      close_label: "Great! Close window.",
-      payload: %{job_id: job_id}
+      subtitle: "Hooray! Your gallery has been created. You're now ready to upload photos.",
+      success_label: "View gallery",
+      success_event: "view-gallery",
+      close_label: "Close",
+      payload: %{gallery_id: gallery_id}
     })
     |> update_gallery_listing()
     |> noreply()
   end
 
-  def handle_info({:success_event, "view-job", %{job_id: job_id}}, socket) do
+  def handle_info({:success_event, "view-gallery", %{gallery_id: gallery_id}}, socket) do
     socket
-    |> push_redirect(to: Routes.job_path(socket, :jobs, job_id))
+    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id))
     |> noreply()
   end
 
@@ -501,6 +511,12 @@ defmodule PicselloWeb.HomeLive.Index do
   def handle_info({:inbound_messages, _message}, %{assigns: %{inbox_count: count}} = socket) do
     socket
     |> assign(:inbox_count, count + 1)
+    |> noreply()
+  end
+
+  def handle_info(:card_status, socket) do
+    socket
+    |> assign_attention_items()
     |> noreply()
   end
 
@@ -539,4 +555,6 @@ defmodule PicselloWeb.HomeLive.Index do
 
     socket
   end
+
+  defdelegate get_all_proofing_album_orders(organization_id), to: Orders
 end

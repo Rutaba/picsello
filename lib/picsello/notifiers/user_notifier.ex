@@ -98,6 +98,20 @@ defmodule Picsello.Notifiers.UserNotifier do
     |> deliver_transactional_email(user)
   end
 
+  def deliver_paying_by_invoice(proposal) do
+    %{job: %{client: %{organization: %{user: user}}} = job} =
+      proposal |> Repo.preload(job: [client: [organization: :user]])
+
+    %{
+      subject: "Cash or check payment",
+      body: """
+      <p>Your client said they will pay #{Picsello.Job.name(job)} offline for the following #{Picsello.PaymentSchedules.owed_price(job) |> Money.to_string(fractional_unit: false)} it is due on #{Picsello.PaymentSchedules.remainder_due_on(job) |> Calendar.strftime("%B %d, %Y")}.</p>
+      <p>Please arrange payment with them.</p>
+      """
+    }
+    |> deliver_transactional_email(user)
+  end
+
   @doc """
   Deliver new lead email.
   """

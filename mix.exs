@@ -21,7 +21,7 @@ defmodule Picsello.MixProject do
   def application do
     [
       mod: {Picsello.Application, []},
-      extra_applications: [:logger, :os_mon, :runtime_tools, :crypto]
+      extra_applications: [:logger, :os_mon, :runtime_tools, :crypto, :pdf_generator]
     ]
   end
 
@@ -84,7 +84,8 @@ defmodule Picsello.MixProject do
         {:cors_plug, "~> 2.0"},
         {:floki, "~> 0.32"},
         {:icalendar, "~> 1.1.0"},
-        {:con_cache, "~> 0.13"}
+        {:con_cache, "~> 0.13"},
+        {:pdf_generator, ">=0.6.0"}
       ],
       [
         {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},

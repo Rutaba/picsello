@@ -1,9 +1,13 @@
 defmodule PicselloWeb.BookingProposalLive.Shared do
   @moduledoc false
   use Phoenix.Component
+  use Phoenix.HTML
+
   import PicselloWeb.LiveHelpers, only: [strftime: 3, testid: 1, badge: 1, shoot_location: 1]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
+
   alias Picsello.{Job, Package, Packages}
+  alias PicselloWeb.Router.Helpers, as: Routes
 
   def banner(assigns) do
     ~H"""
@@ -36,7 +40,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
           <dd><%= discount_percent %>%</dd>
         </dl>
       <% end %>
-      <dl class="flex justify-between text-xl font-bold">
+      <dl class="flex justify-between text-xl font-bold mt-4">
         <dt>Total</dt>
         <dd><%= Package.price(@package) %></dd>
       </dl>
@@ -49,15 +53,20 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     assigns = Enum.into(assigns, %{inner_block: nil})
 
     ~H"""
-    <div class="mt-4 grid grid-cols-2 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
+    <div class="mt-4 grid grid-cols-3 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
       <dl class="flex flex-col">
         <dt class="inline-block font-bold">Dated:</dt>
         <dd class="inline"><%= strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
       </dl>
 
       <dl class="flex flex-col">
-        <dt class="inline-block font-bold">Quote #:</dt>
-        <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %></dd>
+        <dt class="inline-block font-bold">Order #:</dt>
+        <dl class="flex justify-between">
+          <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %></dd>
+          <%= link to: Routes.job_download_path(@socket, :download_invoice_pdf, @proposal.job_id, @proposal.id) do %>
+            <dd class="inline link text-black">Download Invoice</dd>
+          <% end %>
+        </dl>
       </dl>
 
       <hr class="col-span-2">
@@ -66,9 +75,6 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         <dt class="font-bold">For:</dt>
         <dd><%= @client.name %></dd>
         <dd class="inline"><%= @client.email %></dd>
-
-        <dt class="mt-4 font-bold">Package:</dt>
-        <dd><%= @package.name %></dd>
       </dl>
 
       <dl class="flex flex-col col-span-2 sm:col-span-1">
@@ -106,18 +112,21 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         <hr class="col-span-2">
       <% end %>
 
-      <div class="col-span-2 sm:col-span-1">
+      <div class="flex flex-col col-span-2 sm:col-span-1">
         <h3 class="font-bold">Photo Downloads</h3>
+      </div>
+
+      <div class="flex flex-col col-span-2 sm:col-span-1">
         <%= case Packages.Download.from_package(@package) do %>
           <% %{includes_credits: true} = d -> %>
-            <p><%= ngettext "1 download credit", "%{count} download credits", d.count %> included</p>
+            <p><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></p>
             <p> Additional downloads @ <%= d.each_price %>/ea </p>
           <% %{is_enabled: true} = d -> %>
             <p> Download photos @ <%= d.each_price %>/ea </p>
           <% _ -> %>
             <p> All photos downloadable </p>
-        <% end %>
-      </div>
+          <% end %>
+        </div>
 
       <hr class="hidden col-span-2 sm:block">
 

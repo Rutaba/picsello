@@ -107,7 +107,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
        end)
 
   # Encode header value same way as Packmatic https://github.com/evadne/packmatic/blob/5fe031896dae48665d31be3d287508aa5887be24/lib/packmatic/conn.ex#L22
-  defp encode_header_value(filename) do
+  def encode_header_value(filename) do
     "attachment; filename*=UTF-8''" <> encode_filename(filename)
   end
 
