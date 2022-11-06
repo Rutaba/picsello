@@ -141,10 +141,10 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
   def heading_title(state) do
     case state do
-      :edit -> "Edit custom questionnaire"
-      :edit_lead -> "Edit custom questionnaire"
-      :create -> "Add custom questionnaire"
-      _ -> "View custom questionnaire"
+      :edit -> "Edit questionnaire"
+      :edit_lead -> "Edit questionnaire"
+      :create -> "Add questionnaire"
+      _ -> "View questionnaire template"
     end
   end
 

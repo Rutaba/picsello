@@ -8,14 +8,14 @@ defmodule Picsello.EditQuestionnaireTest do
     Mix.Tasks.ImportQuestionnaires.run(nil)
   end
 
-  feature "user goes home from custom questionnaires", %{session: session} do
+  feature "user goes home from questionnaires", %{session: session} do
     session
-    |> visit("/custom-questionnaires")
+    |> visit("/questionnaires")
     |> click(css("a[href='/home']", at: 1, count: 3))
     |> assert_path("/home")
 
     session
-    |> visit("/custom-questionnaires")
+    |> visit("/questionnaires")
     |> click(css("a[href='/home']", at: 2, count: 3))
     |> assert_path("/home")
   end
@@ -24,11 +24,11 @@ defmodule Picsello.EditQuestionnaireTest do
     session
     |> visit("/home")
     |> click(css("[title='Questionnaires']"))
-    |> assert_path("/custom-questionnaires")
+    |> assert_path("/questionnaires")
     |> click(button("Picsello Other Template"))
     |> within_modal(fn modal ->
       modal
-      |> assert_text("View custom questionnaire")
+      |> assert_text("View questionnaire")
       |> click(button("Close"))
     end)
     |> find(testid("questionnaire-row", count: 5, at: 3), fn row ->
@@ -47,7 +47,7 @@ defmodule Picsello.EditQuestionnaireTest do
 
   feature "user sees default questionnaires and duplicates it", %{session: session} do
     session
-    |> visit("/custom-questionnaires")
+    |> visit("/questionnaires")
     |> find(testid("questionnaire-row", count: 5, at: 3), fn row ->
       row
       |> click(css("[phx-hook='Select']"))
@@ -98,9 +98,9 @@ defmodule Picsello.EditQuestionnaireTest do
 
   feature "user creates new questionnaire", %{session: session} do
     session
-    |> visit("/custom-questionnaires")
+    |> visit("/questionnaires")
     |> click(button("Create Questionnaire"))
-    |> assert_text("Add custom questionnaire")
+    |> assert_text("Add questionnaire")
     |> within_modal(fn modal ->
       modal
       |> find(
@@ -198,9 +198,9 @@ defmodule Picsello.EditQuestionnaireTest do
       session: session
     } do
       session
-      |> visit("/custom-questionnaires")
+      |> visit("/questionnaires")
       |> click(button("Custom Other Questionnaire"))
-      |> assert_text("Edit custom questionnaire")
+      |> assert_text("Edit questionnaire")
       |> within_modal(fn modal ->
         modal
         |> find(
@@ -289,9 +289,9 @@ defmodule Picsello.EditQuestionnaireTest do
     # } do
     # end
 
-    feature "user duplicates custom questionnaire from table", %{session: session} do
+    feature "user duplicates questionnaire from table", %{session: session} do
       session
-      |> visit("/custom-questionnaires")
+      |> visit("/questionnaires")
       |> find(testid("questionnaire-row", count: 6, at: 0), fn row ->
         row
         |> click(css("[phx-hook='Select']"))
@@ -307,9 +307,9 @@ defmodule Picsello.EditQuestionnaireTest do
       end)
     end
 
-    feature "user deletes custom questionnaire", %{session: session} do
+    feature "user deletes questionnaire", %{session: session} do
       session
-      |> visit("/custom-questionnaires")
+      |> visit("/questionnaires")
       |> find(testid("questionnaire-row", count: 6, at: 0), fn row ->
         row
         |> click(css("[phx-hook='Select']"))

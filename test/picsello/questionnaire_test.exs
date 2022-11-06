@@ -165,7 +165,7 @@ defmodule Picsello.QuestionnaireTest do
              ] = Questionnaire.for_organization(organization.id)
     end
 
-    test "check if org can see their custom questionnaires that don't have package_ids", %{
+    test "check if org can see their questionnaires that don't have package_ids", %{
       organization: organization,
       package: package
     } do

@@ -80,7 +80,7 @@ defmodule Picsello.EditLeadQuestionnaireTest do
       |> assert_text("Selected questionnaire: Picsello Default Questionnaire")
       |> click(@edit_questionnaire_button)
     end)
-    |> assert_text("Edit custom questionnaire")
+    |> assert_text("Edit questionnaire")
     |> assert_text("Fiance / Fiancee full name")
   end
 
@@ -98,7 +98,7 @@ defmodule Picsello.EditLeadQuestionnaireTest do
       |> assert_text("Selected questionnaire: Picsello Default Questionnaire")
       |> click(@edit_questionnaire_button)
     end)
-    |> assert_text("Edit custom questionnaire")
+    |> assert_text("Edit questionnaire")
     |> assert_text("Who will we be photographing during our session?")
   end
 
@@ -117,7 +117,7 @@ defmodule Picsello.EditLeadQuestionnaireTest do
       |> assert_text("Selected questionnaire: My Custom Questionnaire")
       |> click(@edit_questionnaire_button)
     end)
-    |> assert_text("Edit custom questionnaire")
+    |> assert_text("Edit questionnaire")
     |> assert_text("What is the vibe?")
   end
 
@@ -136,7 +136,7 @@ defmodule Picsello.EditLeadQuestionnaireTest do
       |> assert_text("Selected questionnaire: My Custom Questionnaire")
       |> click(@edit_questionnaire_button)
     end)
-    |> assert_text("Edit custom questionnaire")
+    |> assert_text("Edit questionnaire")
     |> within_modal(fn modal ->
       modal
       |> scroll_into_view(testid("add-question"))
@@ -232,10 +232,10 @@ defmodule Picsello.EditLeadQuestionnaireTest do
       |> assert_text("Selected questionnaire: Picsello Default Questionnaire")
       |> click(@edit_questionnaire_button)
     end)
-    |> assert_text("Edit custom questionnaire")
+    |> assert_text("Edit questionnaire")
   end
 
-  feature "user views sent booking proposal custom questionnaire without a template id", %{
+  feature "user views sent booking proposal questionnaire without a template id", %{
     session: session,
     wedding_lead: wedding_lead,
     user: user
