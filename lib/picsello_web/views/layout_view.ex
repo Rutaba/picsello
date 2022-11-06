@@ -142,7 +142,11 @@ defmodule PicselloWeb.LayoutView do
     [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
-      %{title: "Galleries", icon: "proof_notifier", path: Routes.gallery_path(socket, :galleries)},
+      %{
+        title: "Galleries",
+        icon: "proof_notifier",
+        path: Routes.gallery_path(socket, :galleries)
+      },
       %{title: "Calendar", icon: "calendar", path: Routes.calendar_index_path(socket, :index)},
       %{title: "Orders", icon: "cart"},
       %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
@@ -173,16 +177,25 @@ defmodule PicselloWeb.LayoutView do
     |> Enum.filter(&Map.get(&1, :path))
   end
 
-  def top_nav(socket),
+  def sub_nav(socket, _current_user),
     do: [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
+      %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
       %{
-        title: "Calendar",
-        icon: "calendar",
-        path: Routes.calendar_index_path(socket, :index)
+        title: "Galleries",
+        icon: "proof_notifier",
+        path: Routes.gallery_path(socket, :galleries)
       },
-      %{title: "Help", icon: "question-mark", path: "https://support.picsello.com/"},
-      %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)}
+      %{
+        title: "Packages",
+        icon: "package",
+        path: Routes.package_templates_path(socket, :index)
+      },
+      %{
+        title: "Booking Events",
+        icon: "calendar",
+        path: Routes.calendar_booking_events_path(socket, :index)
+      }
     ]
 
   def subscription_ending_soon(%{current_user: current_user, socket: socket} = assigns) do
