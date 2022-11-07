@@ -2,6 +2,7 @@ defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
   alias Picsello.{Job, Repo, PaymentSchedules}
+  alias Picsello.Galleries
 
   import PicselloWeb.JobLive.Shared,
     only: [
@@ -92,7 +93,7 @@ defmodule PicselloWeb.JobLive.Show do
           button_text: "View gallery",
           button_click: "view-gallery",
           button_disabled: false,
-          text: "#{gallery.total_count || 0} photos"
+          text: "#{Galleries.get_gallery_photos_count(gallery.id)} photos"
         }
     end
   end
