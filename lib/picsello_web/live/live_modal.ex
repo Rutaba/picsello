@@ -110,10 +110,18 @@ defmodule PicselloWeb.LiveModal do
   end
 
   def close_x(assigns) do
+    assigns = Enum.into(assigns, %{close_event: nil})
+
     ~H"""
+    <%= if @close_event do %>
+      <button phx-click="close_event" phx-value-action={@close_event} phx-target={@myself} type="button" title="cancel" class="absolute p-2 top-3 right-3 sm:top-6 sm:right-6">
+        <.icon name="close-x" class="w-6 h-6 stroke-current" />
+      </button>
+    <% else %>
       <button phx-click="modal" phx-value-action="close" type="button" title="cancel" class="absolute p-2 top-3 right-3 sm:top-6 sm:right-6">
         <.icon name="close-x" class="w-6 h-6 stroke-current" />
       </button>
+    <% end %>
     """
   end
 end
