@@ -6,7 +6,7 @@
           <%= time_of_day_greeting @current_user %>
         </h1>
         <%= if show_intro?(@current_user, "intro_dashboard") === "true" do %>
-        <button type="button" class="underline text-base-250 font-sm mt-4" id="start-tour">Start product tour</button>
+        <button type="button" class="underline text-base-250 font-sm mt-4 hidden lg:block" id="start-tour">Start product tour</button>
         <% end %>
       </div>
 
