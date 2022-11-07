@@ -44,12 +44,11 @@ export default {
       },
       {
         title: 'Create your first lead',
-        element: el.querySelector('.intro-first-lead'),
+        element: el.querySelector('.intro-leads-card'),
         intro:
           'Next up, you’ll need to create your first lead. Once you get to this step, we’ll guide you through how.',
         position: 'bottom-middle-aligned',
       },
-
       {
         title: 'Packages',
         element: '',
