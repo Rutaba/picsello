@@ -105,6 +105,16 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_event(
+        "open-mark-as-paid",
+        %{},
+        socket
+      ) do
+    socket
+    |> PicselloWeb.JobLive.Shared.MarkPaidModal.open()
+    |> noreply()
+  end
+
   def handle_event("open-compose", %{}, socket), do: open_email_compose(socket)
 
   def handle_event("open-inbox", _, %{assigns: %{job: job}} = socket) do

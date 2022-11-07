@@ -7,6 +7,7 @@ defmodule PicselloWeb.ConfirmationComponent do
     close_label: "Close",
     close_class: "btn-secondary",
     confirm_event: nil,
+    close_event: nil,
     confirm_label: "Yes",
     confirm_class: "btn-warning",
     icon: "confetti",
@@ -44,16 +45,44 @@ defmodule PicselloWeb.ConfirmationComponent do
         </button>
       <% end %>
 
-      <button class={"w-full mt-6 " <> @close_class} type="button" phx-click="modal" phx-value-action="close">
-        <%= @close_label %>
-      </button>
+      <%= if @close_event do %>
+        <button class={"w-full mt-6 " <> @close_class} title={@close_label} type="button" phx-click={"close_event"} phx-target={@myself}>
+          <%= @close_label %>
+        </button>
+        <% else %>
+          <button class={"w-full mt-6 " <> @close_class} type="button" phx-click="modal" phx-value-action="close">
+            <%= @close_label %>
+          </button>
+      <% end %>
     </div>
     """
   end
 
   @impl true
+  def handle_event(
+        "close_event",
+        %{},
+        %{assigns: %{parent_pid: parent_pid, close_event: close_event}} = socket
+      ) do
+    send(parent_pid, {:close_event, close_event})
+
+    socket |> noreply()
+  end
+
+  @impl true
   def handle_event(event, %{}, %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket) do
     send(parent_pid, {:confirm_event, event, payload})
+
+    socket |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "close_event",
+        %{},
+        %{assigns: %{parent_pid: parent_pid, close_event: close_event}} = socket
+      ) do
+    send(parent_pid, {:close_event, close_event})
 
     socket |> noreply()
   end
@@ -69,6 +98,7 @@ defmodule PicselloWeb.ConfirmationComponent do
           optional(:close_label) => binary,
           optional(:close_class) => binary,
           optional(:confirm_event) => any,
+          optional(:close_event) => any,
           optional(:confirm_label) => binary,
           optional(:confirm_class) => binary,
           optional(:class) => binary | nil,

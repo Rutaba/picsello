@@ -171,6 +171,10 @@ defmodule PicselloWeb.Router do
       live "/inbox/:id", InboxLive.Index, :show, as: :inbox
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
+
+      get "/jobs/:id/booking_proposals/:booking_proposal_id",
+          JobDownloadController,
+          :download_invoice_pdf
     end
   end
 

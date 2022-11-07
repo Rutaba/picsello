@@ -84,4 +84,19 @@ defmodule Picsello.UserSettingsTest do
              onboarding: %{phone: "(222) 222-2222"}
            } = user
   end
+
+  feature "enables offline payments", %{session: session, user: user} do
+    session
+    |> click(link("Settings"))
+    |> click(link("Finances"))
+    |> scroll_to_bottom()
+    |> assert_has(css("label", text: "Disabled"))
+    |> click(css("label", text: "Disabled"))
+    |> click(button("Yes, allow cash/check"))
+    |> assert_has(css("label", text: "Enabled"))
+
+    user = user |> Repo.reload()
+
+    assert %{allow_cash_payment: true} = user
+  end
 end
