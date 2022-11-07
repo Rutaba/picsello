@@ -42,13 +42,11 @@ defmodule PicselloWeb.HomeLive.Index do
         %{assigns: %{current_user: current_user}} = socket
       ) do
     if show_intro?(current_user, "intro_dashboard_modal") === "true" do
-      socket
-      |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
-      |> noreply()
+      socket |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
     else
       socket
-      |> noreply()
     end
+    |> noreply()
   end
 
   @impl true
