@@ -154,37 +154,44 @@ defmodule PicselloWeb.GalleryLive.Shared do
     socket |> product_preview_photo_popup(gallery_product, gallery_product.preview_photo)
   end
 
-  def customize_and_buy_product(
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket,
-        whcc_product,
-        photo,
-        opts \\ []
-      ) do
-    created_editor =
-      Picsello.WHCC.create_editor(
-        whcc_product,
-        photo,
-        Keyword.merge(
-          [
-            complete_url:
-              Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-                "?editorId=%EDITOR_ID%",
-            secondary_url:
-              Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-                "?editorId=%EDITOR_ID%&clone=true",
-            cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
-          ],
-          opts
-        )
+  def customize_and_buy_product(socket, whcc_product, photo, opts \\ []) do
+    Picsello.WHCC.create_editor(
+      whcc_product,
+      photo,
+      Keyword.merge(
+        editor_urls(socket),
+        opts
       )
+    )
+    |> then(
+      &(socket
+        |> redirect(external: &1.url)
+        |> noreply())
+    )
+  end
 
-    socket
-    |> redirect(external: created_editor.url)
-    |> noreply()
+  defp editor_urls(%{assigns: %{album: %Album{is_finals: true} = album}} = socket) do
+    [
+      complete_url:
+        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
+          "?editorId=%EDITOR_ID%",
+      secondary_url:
+        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
+          "?editorId=%EDITOR_ID%&clone=true",
+      cancel_url: Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
+    ]
+  end
+
+  defp editor_urls(%{assigns: %{gallery: %Galleries.Gallery{} = gallery}} = socket) do
+    [
+      complete_url:
+        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+          "?editorId=%EDITOR_ID%",
+      secondary_url:
+        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+          "?editorId=%EDITOR_ID%&clone=true",
+      cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
+    ]
   end
 
   def get_all_gallery_albums(gallery_id) do
@@ -1012,5 +1019,22 @@ defmodule PicselloWeb.GalleryLive.Shared do
       {:ok, album} -> {:ok, album.album}
       _ -> {nil, "something went wrong"}
     end
+  end
+
+  def place_product_in_cart(
+        %{
+          assigns: %{
+            gallery: gallery
+          }
+        } = socket,
+        whcc_editor_id
+      ) do
+    album_id = Map.get(socket.assigns[:album], :id)
+
+    gallery_account_id = Galleries.account_id(gallery)
+    cart_product = Cart.new_product(whcc_editor_id, gallery_account_id)
+    Cart.place_product(cart_product, gallery.id, album_id)
+
+    socket
   end
 end

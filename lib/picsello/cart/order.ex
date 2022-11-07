@@ -65,7 +65,6 @@ defmodule Picsello.Cart.Order do
   def create_changeset(%Digital{} = digital, attrs, opts) do
     attrs
     |> do_create_changeset()
-    |> cast(attrs, [:album_id])
     |> put_assoc(:digitals, [%{digital | is_credit: is_credit(opts)}])
   end
 
@@ -77,7 +76,7 @@ defmodule Picsello.Cart.Order do
 
   defp do_create_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:gallery_id])
+    |> cast(attrs, [:gallery_id, :album_id])
     |> validate_required([:gallery_id])
     |> foreign_key_constraint(:gallery_id)
   end
