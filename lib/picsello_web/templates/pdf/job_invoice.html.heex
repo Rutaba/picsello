@@ -1,130 +1,226 @@
- <div class="">
-    <form>
-      <h1 style="margin-bottom: 1rem; font-size: 1.875rem; line-height: 2.25rem; font-weight: 700; padding-left: 16px;">
-        Invoice for <%= @job.client.name %>
-      </h1>
+<style>
+  body {
+    font-family: sans-serif; 
+    font-size: 14px;
+    line-height: 22px;
+  }
 
-    <div style="margin-top: 1rem;">
-      <div style="padding-left: 16px;">
-        <dl style="display:inline-block; width: 250px">
-          <dt style="display: inline-block; font-weight: 700; ">Dated:</dt>
-          <dd style="display: inline; "><%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
-        </dl>
+  h1 {
+    margin-bottom: 1rem;
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    font-weight: 700;
+  }
 
-        <dl style="display:inline-block;">
-          <dt style="display: inline-block; font-weight: 700; ">Quote #:</dt>
-          <dd style="display: inline; "><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %></dd>
-        </dl>
+  hr {
+    margin: 1rem 0rem;
+    opacity: 0.3;
+  }
+
+  .mt1 {
+    margin-top: 1rem;
+  }
+
+  .mb1 {
+    margin-bottom: 1rem;
+  }
+
+  .mlauto {
+    margin-left: auto;
+  }
+
+  .pl1 {
+    padding-left: 1rem;
+  }
+
+  .text-green {
+    color: #429467;
+  }
+
+  .invoice-flex {
+    display: -webkit-box;
+    display: flex;
+    width: 100%;
+  }
+
+  .quote-flex {
+    display: -webkit-box;
+    display: flex;
+    width: 50%;
+  }
+
+  .bold {
+    font-weight: bold;
+  }
+
+  .invoice-header,
+  .invoice-row {
+    display: -webkit-box;
+    display: flex;
+  }
+
+  .invoice-between {
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+  }
+
+  .invoice-header {
+    margin: 1rem 0rem;
+    background-color: #f0f0f0; 
+  }
+
+  .invoice-header h3 {
+    font-size: 14px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .invoice-column {
+    width: 50%;
+  }
+
+  .invoice-column-header {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+  }
+
+  .invoice-info-row {
+    display: -webkit-box;
+    display: flex;
+  }
+
+  .invoice-payment-container {
+    background-color: #f0f0f0;
+    padding: 7px;
+  }
+</style>
+<div>
+  <h1>
+    Invoice for <%= @job.client.name %>
+  </h1>
+
+  <div class="mt1">
+    <div class="invoice-flex">
+      <dl class="quote-flex">
+        <dt class="bold">Dated:</dt>
+        <dd><%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
+      </dl>
+
+      <dl class="quote-flex">
+        <dt class="bold">Quote #:</dt>
+        <dd><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %></dd>
+      </dl>
+    </div>
+
+    <hr />
+
+    <div class="invoice-info-row">
+      <div class="invoice-column">
+        <div class="bold">For:</div>
+        <div><%= @client.name %></div>
+        <div><%= @client.email %></div>
+
+        <div class="bold mt1">Package:</div>
+        <div><%= @package.name %></div>
       </div>
 
-      <hr style="padding-left: 16px; margin-bottom: 10px; margin-top: 10px;"/>
+      <div class="invoice-column">
+        <div class="bold">From:</div>
+        <div><%= @organization.name %></div>
 
-      <div style="padding-left: 16px;">
-        <div style="display:inline-block; width: 250px">
-          <div style="font-weight: 700; ">For:</div>
-          <div><%= @client.name %></div>
-          <div style="display: inline; "><%= @client.email %></div>
-
-          <div style="margin-top: 1rem; font-weight: 700; ">Package:</div>
-          <div><%= @package.name %></div>
-        </div>
-
-        <div style="display:inline-block;">
-          <div style="font-weight: 700; margin-top: -10px">From:</div>
-          <div><%= @organization.name %></div>
-          <div style="margin-top: 1rem; font-weight: 700; ">Email:</div>
-          <div><%= @photographer.email %></div>
-        </div>
+        <div class="bold mt1">Email:</div>
+        <div><%= @photographer.email %></div>
       </div>
+    </div>
 
-      <div style="margin-top: 10px; background-color: #f0f0f0; padding-left: 16px; margin-bottom: 10px;">
-        <div style="display:inline-block; width: 250px; font-weight: 700; text-transform: uppercase;">
-          <h3>Item</h3>
-        </div>
-
-        <div style="display:inline-block; font-weight: 700; text-transform: uppercase;">
-          <h3>Details</h3>
-        </div>
+    <div class="invoice-header">
+      <div class="invoice-column invoice-column-header">
+        <h3 class="pl1">Item</h3>
       </div>
+      <div class="invoice-column invoice-column-header">
+        <h3>Details</h3>
+      </div>
+    </div>
 
-      <%= for shoot <- @shoots do %>
-        <div style="display:inline-block; padding-left: 16px;">
-          <h3 style="font-weight: 700; width: 250px;"><%= shoot.name %></h3>
+    <%= for shoot <- @shoots do %>
+      <div class="invoice-row">
+        <div class="invoice-column">
+          <h3 class="bold"><%= shoot.name %></h3>
           <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, shoot.starts_at, "%B %d, %Y") %>
         </div>
-
-        <div style="display:inline-block;">
+        <div class="invoice-column">
           <p>
             <%= dyn_gettext("duration-#{shoot.duration_minutes}") %>
             starting at <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
           </p>
           <p><%= PicselloWeb.LiveHelpers.shoot_location(shoot) %></p>
         </div>
-
-        <hr style="margin-bottom: 10px; margin-top: 10px;"/>
-      <% end %>
-
-      <div style="padding-left: 16px;">
-        <h3 style="font-weight: 700; width: 250px; display:inline-block;">Photo Downloads
-        </h3>
-        <%= case Picsello.Packages.Download.from_package(@package) do %>
-          <% %{includes_credits: true} = d -> %>
-            <div style="display:inline-block;">
-              <div><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></div>
-              <div> Additional downloads @ <%= d.each_price %>/ea </div>
-            </div>
-          <% %{is_enabled: true} = d -> %>
-            <div style="display:inline-block;">
-              <div> Download photos @ <%= d.each_price %>/ea </div>
-            </div>
-          <% _ -> %>
-            <div style="display:inline-block;">
-              <p> All photos downloadable </p>
-            </div>
-        <% end %>
       </div>
+      <hr />
+    <% end %>
 
-      <hr style="margin-bottom: 10px; margin-top: 10px;"/>
+    <div class="invoice-row">
+      <div class="invoice-column">
+        <div class="bold pl1">Photo Downloads</div>
+      </div>
+      <%= case Picsello.Packages.Download.from_package(@package) do %>
+        <% %{includes_credits: true} = d -> %>
+          <div class="invoice-column">
+            <div><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></div>
+            <div>Additional downloads @ <%= d.each_price %>/ea</div>
+          </div>
+        <% %{is_enabled: true} = d -> %>
+          <div class="invoice-column">
+            <div>Download photos @ <%= d.each_price %>/ea</div>
+          </div>
+        <% _ -> %>
+          <div class="invoice-column">
+            <div>All photos downloadable</div>
+          </div>
+      <% end %>
+    </div>
 
-      <div style="margin-left: 266px; margin-top: 10px;">
-        <div class="contents">
-            <%= with discount_percent when discount_percent != nil <- Picsello.Packages.discount_percent(@package) do %>
-              <div style="margin-bottom: 10px; padding-right: 7px;">
-                <div style="display:inline-block">Session fee</div>
-                <div style="display:inline-block float: right;"><%= Picsello.Package.base_price(@package) %></div>
-              </div>
-              <div style="color: green; margin-bottom: 10px; padding-right: 7px;">
-                <div style="display:inline-block">Discount</div>
-                <div style="display:inline-block float: right;"><%= discount_percent %>%</div>
-              </div>
-            <% end %>
-            <div style="padding-right: 7px;">
-              <div style="display:inline-block; margin-bottom: 10px;"><b>Total</b></div>
-              <div style="display:inline-block; float: right"><b><%= Picsello.Package.price(@package) %></b></div>
-            </div>
-        </div>
+    <hr />
 
-        <hr/>
-
-        <%= if @package.collected_price do %>
-          <div class={"flex justify-between"} style="padding-right: 7px;">
-            <div style="display:inline-block;">Previously collected</div>
-            <div style="display:inline-block; float: right;"><%= @package.collected_price %></div>
+    <div class="invoice-column pl1 mlauto">
+      <div class="contents">
+        <%= with discount_percent when discount_percent != nil <- Picsello.Packages.discount_percent(@package) do %>
+          <div class="invoice-row invoice-between mb1">
+            <div class="bold">Session fee</div>
+            <div><%= Picsello.Package.base_price(@package) %></div>
+          </div>
+          <div class="invoice-row invoice-between mb1 text-green">
+            <div>Discount</div>
+            <div><%= discount_percent %>%</div>
           </div>
         <% end %>
-        <%= unless Picsello.PaymentSchedules.free?(@job) do %>
-          <%= for payment <- @job.payment_schedules do %>
-            <div style="background-color: #f0f0f0; padding: 7px;">
-              <%= if Picsello.PaymentSchedules.paid?(payment) do %>
-                <div style="display:inline-block; padding-right: 10px;"><%= payment.description %> paid on <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></div>
-              <% else %>
-                <div style="display:inline-block; padding-right: 10px;"><%= payment.description %> <%= if Picsello.PaymentSchedules.past_due?(payment), do: "due today", else: "due on #{PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.due_at, "%b %d, %Y")}" %></div>
-              <% end %>
-              <div style="display:inline-block; float: right;"><%= payment.price %></div>
-            </div>
-          <% end %>
-        <% end %>
+        <div class="invoice-row invoice-between">
+          <div class="bold">Total</div>
+          <div class="bold"><%= Picsello.Package.price(@package) %></div>
+        </div>
       </div>
+
+      <hr />
+
+      <%= if @package.collected_price do %>
+        <div class="invoice-row invoice-between mb1">
+          <div class="bold">Previously collected</div>
+          <div><%= @package.collected_price %></div>
+        </div>
+      <% end %>
+      <%= unless Picsello.PaymentSchedules.free?(@job) do %>
+        <%= for payment <- @job.payment_schedules do %>
+          <div class="invoice-row invoice-between invoice-payment-container">
+            <%= if Picsello.PaymentSchedules.paid?(payment) do %>
+              <div class="bold"><%= payment.description %> paid on <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></div>
+            <% else %>
+              <div class="bold"><%= payment.description %> <%= if Picsello.PaymentSchedules.past_due?(payment), do: "due today", else: "due on #{PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.due_at, "%b %d, %Y")}" %></div>
+            <% end %>
+            <div><%= payment.price %></div>
+          </div>
+        <% end %>
+      <% end %>
     </div>
-  </form>
+  </div>
 </div>
