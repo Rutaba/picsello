@@ -335,7 +335,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> assign(booking_countdown: countdown)
   end
 
-  def show_booking_countdown?(job), do: job.booking_event && !PaymentSchedules.all_paid?(job)
+  def show_booking_countdown?(job), do: job.booking_event && !PaymentSchedules.all_paid?(job) && !PaymentSchedules.is_with_cash?(job)
 
   defp maybe_expire_booking(
          %{assigns: %{booking_countdown: booking_countdown, job: job, organization: organization}} =
