@@ -89,11 +89,12 @@ defmodule PicselloWeb.JobLive.Show do
         }
 
       _ ->
+        photos_count = Galleries.get_gallery_photos_count(gallery.id)
         %{
           button_text: "View gallery",
           button_click: "view-gallery",
           button_disabled: false,
-          text: "#{Galleries.get_gallery_photos_count(gallery.id)} photos"
+          text: "#{photos_count} #{ngettext("photo", "photos", photos_count)}"
         }
     end
   end
