@@ -84,6 +84,14 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       |> noreply()
 
   @impl true
+  def handle_info({:update_offline_payment_schedules}, %{assigns: %{job: job}} = socket),
+    do:
+      socket
+      |> put_flash(:success, "Booking session completed successfully")
+      |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
+      |> noreply()
+
+  @impl true
   def handle_info(
         {:confetti, stripe_session_id},
         %{assigns: %{organization: organization, job: job}} = socket
