@@ -92,7 +92,6 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       send(self(), {:update_offline_payment_schedules})
 
       socket
-      |> close_modal()
       |> noreply()
     end
   end

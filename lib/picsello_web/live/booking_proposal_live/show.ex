@@ -87,8 +87,14 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_info({:update_offline_payment_schedules}, %{assigns: %{job: job}} = socket),
     do:
       socket
-      |> put_flash(:success, "Booking session completed successfully")
       |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
+      |> PicselloWeb.ConfirmationComponent.open(%{
+          title: "Session Booked",
+          subtitle: "Your session is booked with an in-person cash or check payment. Thank you!",
+          close_label: "Got it",
+          icon: nil,
+          close_class: "btn-primary"
+          })
       |> noreply()
 
   @impl true
