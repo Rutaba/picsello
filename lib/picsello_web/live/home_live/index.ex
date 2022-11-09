@@ -260,11 +260,13 @@ defmodule PicselloWeb.HomeLive.Index do
         orders
         |> Map.get(org_card.data.order_id)
         |> then(fn %{gallery: %{job: %{client: client}}} = order ->
-          buttons = build_buttons(socket, org_card.card.buttons, order)
+            buttons = build_buttons(socket, org_card.card.buttons, order)
 
-          add(org_card, Utils.render(body, %{"name" => client.name}), buttons)
+            acc ++ [add(org_card, Utils.render(body, %{"name" => client.name}), buttons)]
+
+          _ ->
+            acc
         end)
-        |> then(&(acc ++ [&1]))
 
       org_card, acc ->
         acc ++ [org_card]
