@@ -36,6 +36,20 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
+  def handle_params(
+        %{"new_user" => _new_user},
+        _uri,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    if show_intro?(current_user, "intro_dashboard_modal") === "true" do
+      socket |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
+    else
+      socket
+    end
+    |> noreply()
+  end
+
+  @impl true
   def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
@@ -246,11 +260,13 @@ defmodule PicselloWeb.HomeLive.Index do
         orders
         |> Map.get(org_card.data.order_id)
         |> then(fn %{gallery: %{job: %{client: client}}} = order ->
-          buttons = build_buttons(socket, org_card.card.buttons, order)
+            buttons = build_buttons(socket, org_card.card.buttons, order)
 
-          add(org_card, Utils.render(body, %{"name" => client.name}), buttons)
+            acc ++ [add(org_card, Utils.render(body, %{"name" => client.name}), buttons)]
+
+          _ ->
+            acc
         end)
-        |> then(&(acc ++ [&1]))
 
       org_card, acc ->
         acc ++ [org_card]
@@ -483,6 +499,48 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
+  def handle_info(
+        {:close_event, %{event_name: "toggle_welcome_event", link: "gallery"}},
+        socket
+      ) do
+    socket
+    |> welcome_modal_state()
+    |> push_redirect(to: Routes.gallery_path(socket, :galleries))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:close_event, %{event_name: "toggle_welcome_event", link: "client_booking"}},
+        socket
+      ) do
+    socket
+    |> welcome_modal_state()
+    |> push_redirect(to: Routes.calendar_booking_events_path(socket, :index))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:close_event, %{event_name: "toggle_welcome_event", link: "demo"}},
+        socket
+      ) do
+    socket
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:close_event, %{event_name: "toggle_welcome_event"}},
+        socket
+      ) do
+    socket
+    |> welcome_modal_state()
+    |> push_patch(to: Routes.home_path(socket, :index), replace: true)
+    |> noreply()
+  end
+
+  @impl true
   def handle_info({:gallery_created, %{gallery_id: gallery_id}}, socket) do
     socket
     |> PicselloWeb.SuccessComponent.open(%{
@@ -554,6 +612,15 @@ defmodule PicselloWeb.HomeLive.Index do
     )
 
     socket
+  end
+
+  defp welcome_modal_state(%{assigns: %{current_user: current_user}} = socket) do
+    socket
+    |> close_modal
+    |> assign(
+      current_user:
+        Picsello.Onboardings.save_intro_state(current_user, "intro_dashboard_modal", "completed")
+    )
   end
 
   defdelegate get_all_proofing_album_orders(organization_id), to: Orders

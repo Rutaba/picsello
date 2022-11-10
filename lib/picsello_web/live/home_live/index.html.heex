@@ -1,9 +1,14 @@
-<div {intro(@current_user, "intro_dashboard")} {help_scout_output(@current_user, :help_scout_id)} data-article="6297fdaaa2c316231c2021cd">
+<div {intro(@current_user, "intro_dashboard")} {help_scout_output(@current_user, :help_scout_id)}>
   <header class="bg-gray-100">
     <div class="pt-10 pb-8 center-container">
-      <h1 class="px-6 text-4xl font-bold">
-        <%= time_of_day_greeting @current_user %>
-      </h1>
+      <div class="sm:flex justify-between px-6">
+        <h1 class="text-4xl font-bold">
+          <%= time_of_day_greeting @current_user %>
+        </h1>
+        <%= if show_intro?(@current_user, "intro_dashboard") === "true" do %>
+        <button type="button" class="underline text-base-250 font-sm mt-4 hidden lg:block" id="start-tour">Start product tour</button>
+        <% end %>
+      </div>
 
       <%= case @attention_items do %>
         <% [] -> %>
@@ -43,7 +48,7 @@
     <ul class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
       <.card {testid("leads-card")} color="blue-planning-300" icon="three-people" title="Leads" badge={@lead_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer intro-leads-card" hint_content={if @leads_empty? do "Create your first lead! We’ll help you log your potential client’s contact info and guide you through the process of sending them a proposal. Once they accept, your lead will become a job!" end}>
         <%= if @leads_empty? do %>
-        <p class="my-2">
+        <p class="my-2 text-base-250">
           Create leads to start bringing in new business. Manage existing leads as they are created.
         </p>
 
@@ -65,7 +70,7 @@
 
       <.card {testid("gallery-card")} color="blue-planning-300" icon="proof_notifier" title="Galleries" badge={@gallery_count} phx-click="redirect" phx-value-to={Routes.gallery_path(@socket, :galleries)} class="cursor-pointer intro-galleries-card" hint_content={if @galleries_empty? do "You can create a new gallery by clicking this button below" end}>
         <%= if @galleries_empty? do %>
-        <p class="my-2">
+        <p class="my-2 text-base-250">
           Create your first gallery! You don’t have any galleries at the moment.
         </p>
 
@@ -85,7 +90,7 @@
 
       <.card {testid("jobs-card")} color="blue-planning-300" icon="camera-check" title="Jobs" badge={@job_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer" hint_content={if @jobs_empty? do "Review contracts, payments, and package settings. Once your photos are ready to share with your client, you’ll also create their gallery here." end}>
         <%= if @jobs_empty? do %>
-        <p class="my-2">
+        <p class="my-2 text-base-250">
           Leads will become jobs when your client accepts your quote and pays the first 50% of your contract.
         </p>
         <% else %>
@@ -98,7 +103,7 @@
 
     <ul class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
       <.card color="blue-planning-300" icon="calendar" title="Booking Events & Calendar" phx-click="redirect" phx-value-to={Routes.calendar_index_path(@socket, :index)} class="cursor-pointer">
-        <p class="my-2">
+        <p class="my-2 text-base-250">
           Create client booking events and see all of your upcoming shoots in one place.
         </p>
         <div class="flex items-center mt-4 flex-wrap">
@@ -111,13 +116,13 @@
       </.card>
 
       <.card color="blue-planning-300" icon="package" title="Packages" phx-click="redirect" phx-value-to={Routes.package_templates_path(@socket, :index)} class="cursor-pointer">
-        <p class="my-2">
+        <p class="my-2 text-base-250">
           Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "calculate your pricing", class: "underline text-blue-planning-300" do %>calculate your pricing<% end %>.
         </p>
       </.card>
 
       <.card {testid("inbox-card")} color="orange-inbox-300" icon="envelope" title="Inbox" badge={@inbox_count} phx-click="redirect" phx-value-to={Routes.inbox_path(@socket, :index)} class="cursor-pointer intro-inbox">
-        <p class="my-2">
+        <p class={classes("my-2", %{"text-base-250" => !@inbox_count > 0})}>
           <%= if @inbox_count > 0 do %>
             <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
           <% else %>
@@ -127,7 +132,7 @@
       </.card>
 
       <.card color="purple-marketing-300" icon="bullhorn" title="Marketing" phx-click="redirect" phx-value-to={Routes.marketing_path(@socket, :index)} class="cursor-pointer intro-marketing">
-        <p class="my-2">
+        <p class="my-2 text-base-250">
           Send marketing emails to your contacts to encourage new business.
         </p>
       </.card>
