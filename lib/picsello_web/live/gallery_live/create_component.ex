@@ -152,12 +152,10 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "email@example.com", phx_debounce: "500" %>
       <% end %>
 
-      <%= inputs_for @f, :shoots, fn shoot_form -> %>
-        <%= labeled_input shoot_form, :starts_at, type: :datetime_local_input, label: "Shoot Date", min: Date.utc_today(), time_zone: @current_user.time_zone %>
-      <% end %>
+      <%= labeled_select form_for(@package_changeset, "#"), :shoot_count, Enum.to_list(1..10), label: "# of Shoots", phx_debounce: "500"%>
 
       <%= hidden_input @f, :is_gallery_only, value: true %>
-      <%= labeled_select @f, :type, @job_types, type: :telephone_input, label: "Type of Photography", prompt: "Select below", phx_debounce: "500"%>
+      <%= labeled_select @f, :type, @job_types, type: :telephone_input, label: "Type of Photography", prompt: "Select below", phx_debounce: "500" %>
       </div>
     """
   end
@@ -167,7 +165,6 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       <div class="">
         <% package = form_for(@package_changeset, "#") %>
 
-        <%= hidden_input package, :shoot_count, value: 1 %>
         <%= hidden_input package, :turnaround_weeks, value: 1 %>
 
         <.print_credit_fields f={package} package_pricing={@package_pricing} />
@@ -212,7 +209,6 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     params
     |> put_in(["client", "organization_id"], organization_id)
     |> Job.create_changeset()
-    |> Changeset.cast_assoc(:shoots, with: &Picsello.Shoot.changeset_for_create_gallery/2)
     |> Map.put(:action, action)
     |> then(&assign(socket, :changeset, &1))
   end
