@@ -243,7 +243,7 @@ defmodule Picsello.Packages do
 
   def insert_package_and_update_job(changeset, job, opts \\ %{}) do
     Ecto.Multi.new()
-    |> insert_multi_if_questionnaire(opts, changeset)
+    |> insert_questionnaire_copy_multi_if_in_opts(opts, changeset)
     |> Ecto.Multi.insert(:package, fn changes ->
       if Map.has_key?(changes, :questionnaire) do
         changeset
@@ -255,7 +255,7 @@ defmodule Picsello.Packages do
         changeset
       end
     end)
-    |> update_multi_if_questionnaire(opts)
+    |> update_questionnaire_multi_with_package_id_if_in_opts(opts)
     |> Ecto.Multi.update(:job_update, fn changes ->
       Job.add_package_changeset(job, %{package_id: changes.package.id})
     end)
@@ -457,7 +457,7 @@ defmodule Picsello.Packages do
 
   def create_initial(_user), do: []
 
-  defp insert_multi_if_questionnaire(multi, opts, changeset) do
+  defp insert_questionnaire_copy_multi_if_in_opts(multi, opts, changeset) do
     if !is_map(opts) do
       multi
     else
@@ -474,7 +474,7 @@ defmodule Picsello.Packages do
     end
   end
 
-  defp update_multi_if_questionnaire(multi, opts) do
+  defp update_questionnaire_multi_with_package_id_if_in_opts(multi, opts) do
     if !is_map(opts) do
       multi
     else
