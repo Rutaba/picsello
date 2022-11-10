@@ -54,7 +54,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
              <tr class="">
                <td id="payments" class="font-bold font-sans pl-3 my-2">Payment <%= index + 1 %></td>
                <td class="pl-3 py-2" id="offline-amount"><%= payment_schedules.price %></td>
-               <td class="pl-3 py-2"><%= payment_schedules.type %></td>
+               <td class="pl-3 py-2"><%= String.capitalize(payment_schedules.type) %></td>
                <td class="text-green-finances-300 pl-3 py-2">Paid <%= strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y") %></td>
              </tr>
              <% end ) %>
@@ -80,7 +80,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
           <dl>
             <dd>
 
-            <%= labeled_input f, :price, placeholder: "$0.00", label: "Payment amount", class: "w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center h-12", phx_hook: "PriceMask" %>
+            <%= labeled_input f, :price, placeholder: "$0.00", label: "Amount", class: "w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center h-12", phx_hook: "PriceMask" %>
 
             </dd>
           </dl>
