@@ -232,8 +232,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
          %{
            assigns: %{
              gallery: %{
-               id: id,
-               total_count: total_count
+               id: id
              },
              albums: albums
            }
@@ -241,7 +240,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
        ) do
     photos_count =
       case Enum.count(albums) do
-        0 -> total_count
+        0 -> Galleries.get_gallery_photos_count(id)
         _ -> Galleries.get_albums_photo_count(id)
       end
 

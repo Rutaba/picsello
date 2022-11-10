@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   require Ecto.Query
   alias Ecto.Query
-  alias Picsello.{Galleries, Repo, Messages}
+  alias Picsello.{Galleries, Repo, Messages, Orders}
 
   import PicselloWeb.GalleryLive.Shared
 
@@ -368,6 +368,11 @@ defmodule PicselloWeb.GalleryLive.Index do
       )
 
     jobs = get_jobs_list(galleries)
+    galleries =
+          Enum.map(galleries, fn gallery ->
+            orders = Orders.all(gallery.id)
+            Map.put(gallery, :orders, orders)
+          end)
 
     socket
     |> assign(:page_title, action |> Phoenix.Naming.humanize())

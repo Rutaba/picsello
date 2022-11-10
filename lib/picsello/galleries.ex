@@ -383,6 +383,17 @@ defmodule Picsello.Galleries do
     |> Oban.insert()
   end
 
+  @spec get_gallery_photos_count(gallery_id :: integer) :: integer
+  def get_gallery_photos_count(gallery_id) do
+    from(g in active_galleries(),
+      join: p in Photo,
+      on: p.gallery_id == g.id,
+      where: p.active == true and g.id == ^gallery_id,
+      select: count(p.id)
+    )
+    |> Repo.one()
+  end
+
   @spec get_albums_photo_count(gallery_id :: integer) :: integer
   def get_albums_photo_count(gallery_id) do
     from(p in Photos.active_photos(),
