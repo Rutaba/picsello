@@ -458,37 +458,33 @@ defmodule Picsello.Packages do
   def create_initial(_user), do: []
 
   defp insert_multi_if_questionnaire(multi, opts, changeset) do
-    case opts do
-      opts when opts != %{} ->
-        multi
-        |> Ecto.Multi.insert(:questionnaire, fn _changes ->
-          Questionnaire.clean_questionnaire_for_changeset(
-            opts.questionnaire,
-            %{
-              organization_id: changeset.changes.organization_id
-            }
-          )
-          |> Questionnaire.changeset()
-        end)
-
-      _ ->
-        multi
+    if !is_map(opts) do
+      multi
+    else
+      multi
+      |> Ecto.Multi.insert(:questionnaire, fn _changes ->
+        Questionnaire.clean_questionnaire_for_changeset(
+          opts.questionnaire,
+          %{
+            organization_id: changeset.changes.organization_id
+          }
+        )
+        |> Questionnaire.changeset()
+      end)
     end
   end
 
   defp update_multi_if_questionnaire(multi, opts) do
-    case opts do
-      opts when opts != %{} ->
-        multi
-        |> Ecto.Multi.update(
-          :questionnaire_update,
-          fn changes ->
-            Questionnaire.changeset(changes.questionnaire, %{package_id: changes.package.id})
-          end
-        )
-
-      _ ->
-        multi
+    if !is_map(opts) do
+      multi
+    else
+      multi
+      |> Ecto.Multi.update(
+        :questionnaire_update,
+        fn changes ->
+          Questionnaire.changeset(changes.questionnaire, %{package_id: changes.package.id})
+        end
+      )
     end
   end
 end

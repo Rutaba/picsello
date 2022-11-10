@@ -7,7 +7,7 @@ defmodule Picsello.Repo.Migrations.AddQuestionnaireExternal do
       add(:package_id, references(:packages, on_delete: :nothing))
       add(:is_organization_default, :boolean, default: false)
       add(:is_picsello_default, :boolean, default: false)
-      add(:name, :string, null: false, default: "")
+      add(:name, :string)
     end
 
     alter table(:packages) do

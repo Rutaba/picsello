@@ -229,22 +229,7 @@ defmodule PicselloWeb.LeadLive.Show do
       if is_nil(package.questionnaire_template) do
         template = Questionnaire.for_job(job) |> Repo.one()
 
-        {:ok, %{questionnaire_insert: questionnaire_insert}} =
-          Ecto.Multi.new()
-          |> Ecto.Multi.insert(:questionnaire_insert, fn _ ->
-            Questionnaire.clean_questionnaire_for_changeset(template, current_user, package.id)
-            |> Questionnaire.changeset()
-          end)
-          |> Ecto.Multi.update(:package_update, fn %{questionnaire_insert: questionnaire} ->
-            package
-            |> Picsello.Package.changeset(
-              %{questionnaire_template_id: questionnaire.id},
-              step: :details
-            )
-          end)
-          |> Repo.transaction()
-
-        questionnaire_insert
+        handle_questionnaire_insert(template, current_user, package)
       else
         package.questionnaire_template
       end
@@ -411,5 +396,24 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
+  end
+
+  defp handle_questionnaire_insert(template, current_user, %{id: package_id} = package) do
+    {:ok, %{questionnaire_insert: questionnaire_insert}} =
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:questionnaire_insert, fn _ ->
+        Questionnaire.clean_questionnaire_for_changeset(template, current_user, package_id)
+        |> Questionnaire.changeset()
+      end)
+      |> Ecto.Multi.update(:package_update, fn %{questionnaire_insert: questionnaire} ->
+        package
+        |> Picsello.Package.changeset(
+          %{questionnaire_template_id: questionnaire.id},
+          step: :details
+        )
+      end)
+      |> Repo.transaction()
+
+    questionnaire_insert
   end
 end

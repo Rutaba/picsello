@@ -19,7 +19,7 @@ defmodule Picsello.Questionnaire do
       )
 
       field(:optional, :boolean)
-      field(:options, {:array, :string}, default: [""])
+      field(:options, {:array, :string}, default: [])
     end
 
     def changeset(question, attrs) do
@@ -32,8 +32,8 @@ defmodule Picsello.Questionnaire do
     embeds_many(:questions, Question, on_replace: :delete)
     field(:job_type, :string)
     field(:name, :string)
-    field(:is_organization_default, :boolean)
-    field(:is_picsello_default, :boolean)
+    field(:is_organization_default, :boolean, default: false)
+    field(:is_picsello_default, :boolean, default: false)
     belongs_to :organization, Picsello.Organization
     belongs_to :package, Picsello.Package
 
@@ -153,13 +153,15 @@ defmodule Picsello.Questionnaire do
       :questions,
       questions
     )
-    |> Map.put(:id, nil)
-    |> Map.put(:organization_id, current_user.organization_id)
-    |> Map.put(:is_picsello_default, false)
-    |> Map.put(:is_organization_default, false)
-    |> Map.put(:inserted_at, nil)
-    |> Map.put(:package_id, package_id)
-    |> Map.put(:updated_at, nil)
-    |> Map.put(:__meta__, %Picsello.Questionnaire{} |> Map.get(:__meta__))
+    |> Map.merge(%{
+      id: nil,
+      organization_id: current_user.organization_id,
+      is_picsello_default: false,
+      is_organization_default: false,
+      inserted_at: nil,
+      package_id: package_id,
+      updated_at: nil,
+      __meta__: %Picsello.Questionnaire{} |> Map.get(:__meta__)
+    })
   end
 end
