@@ -458,9 +458,7 @@ defmodule Picsello.Packages do
   def create_initial(_user), do: []
 
   defp insert_questionnaire_copy_multi_if_in_opts(multi, opts, changeset) do
-    if !is_map(opts) do
-      multi
-    else
+    if is_map(opts) do
       multi
       |> Ecto.Multi.insert(:questionnaire, fn _changes ->
         Questionnaire.clean_questionnaire_for_changeset(
@@ -471,13 +469,13 @@ defmodule Picsello.Packages do
         )
         |> Questionnaire.changeset()
       end)
+    else
+      multi
     end
   end
 
   defp update_questionnaire_multi_with_package_id_if_in_opts(multi, opts) do
-    if !is_map(opts) do
-      multi
-    else
+    if is_map(opts) do
       multi
       |> Ecto.Multi.update(
         :questionnaire_update,
@@ -485,6 +483,8 @@ defmodule Picsello.Packages do
           Questionnaire.changeset(changes.questionnaire, %{package_id: changes.package.id})
         end
       )
+    else
+      multi
     end
   end
 end
