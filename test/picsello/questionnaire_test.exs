@@ -357,7 +357,7 @@ defmodule Picsello.QuestionnaireTest do
                questions: [
                  %{
                    optional: false,
-                   options: [""],
+                   options: [],
                    placeholder: nil,
                    prompt: "What is the vibe of your upcoming event?",
                    type: :textarea
@@ -385,7 +385,7 @@ defmodule Picsello.QuestionnaireTest do
                questions: [
                  %{
                    optional: false,
-                   options: [""],
+                   options: [],
                    placeholder: nil,
                    prompt: "What is the vibe of your upcoming event?",
                    type: :textarea

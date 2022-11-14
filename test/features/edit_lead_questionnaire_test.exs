@@ -155,6 +155,7 @@ defmodule Picsello.EditLeadQuestionnaireTest do
         testid("question-1"),
         &(&1
           |> assert_text("Question Answers")
+          |> click(testid("add-option"))
           |> fill_in(text_field("questionnaire[questions][1][options][]"), with: "Option 1")
           |> click(testid("add-option"))
           |> fill_in(text_field("questionnaire[questions][1][options][]", at: 1, count: 2),
