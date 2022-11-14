@@ -259,7 +259,8 @@ defmodule PicselloWeb.HomeLive.Index do
       %{card: %{concise_name: "proofing-album-order", body: body}} = org_card, acc ->
         orders
         |> Map.get(org_card.data.order_id)
-        |> then(fn %{gallery: %{job: %{client: client}}} = order ->
+        |> then(fn
+          %{gallery: %{job: %{client: client}}} = order ->
             buttons = build_buttons(socket, org_card.card.buttons, order)
 
             acc ++ [add(org_card, Utils.render(body, %{"name" => client.name}), buttons)]

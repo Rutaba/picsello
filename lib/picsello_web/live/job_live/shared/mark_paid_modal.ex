@@ -183,11 +183,13 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       ) do
     due_at = Enum.sort_by(payment_schedules, & &1.due_at, :asc) |> hd() |> Map.get(:due_at)
     paid_at = date_to_datetime(paid_at, current_user.time_zone)
+
     params =
       Map.put(params, "due_at", due_at)
       |> Map.put("paid_at", paid_at)
       |> Map.put("job_id", job.id)
       |> Map.put("description", "Offline Payment")
+
     case socket |> build_changeset(params) |> Repo.insert() do
       {:ok, _} ->
         socket
@@ -263,6 +265,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       socket
       |> build_changeset(params)
       |> Map.put(:action, :validate)
+
     assign(socket, changeset: changeset)
   end
 

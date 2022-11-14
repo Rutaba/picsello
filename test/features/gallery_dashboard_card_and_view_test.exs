@@ -41,7 +41,10 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assertions_for_no_galleries_page()
   end
 
-  feature "when there are orders in gallery, you see enable-disable feature in dropdown", %{session: session, gallery: gallery} do
+  feature "when there are orders in gallery, you see enable-disable feature in dropdown", %{
+    session: session,
+    gallery: gallery
+  } do
     insert(:order, gallery: gallery, placed_at: DateTime.utc_now())
 
     visit_homepage(session)

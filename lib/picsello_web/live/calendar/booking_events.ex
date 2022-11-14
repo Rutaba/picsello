@@ -327,6 +327,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
           )
         )
       end)
+      |> Enum.sort_by(& &1.date, :asc)
 
     socket
     |> assign(booking_events: booking_events)
