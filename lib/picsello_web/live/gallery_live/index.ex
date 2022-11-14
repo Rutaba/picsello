@@ -4,7 +4,9 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   require Ecto.Query
   alias Ecto.Query
-  alias Picsello.{Galleries, Repo, Messages}
+  alias Picsello.{Galleries, Repo, Messages, Orders}
+
+  import PicselloWeb.GalleryLive.Shared
 
   defmodule Pagination do
     @moduledoc false
@@ -110,6 +112,34 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   @impl true
+  def handle_event("disable_gallery_popup", params, socket) do
+    opts = [
+      event: "disable_gallery",
+      title: "Disable Orders?",
+      confirm_label: "Yes, disable orders",
+      payload: params,
+      subtitle:
+        "If you disable orders, the gallery will remain intact, but you won’t be able to update it anymore. Your client will still be able to view the gallery."
+    ]
+
+    make_popup(socket, opts)
+  end
+
+  @impl true
+  def handle_event("enable_gallery_popup", params, socket) do
+    opts = [
+      event: "enable_gallery",
+      title: "Enable Orders?",
+      confirm_label: "Yes, enable orders",
+      payload: params,
+      subtitle:
+        "If you enable the gallery, your clients will be able to make additional gallery purchases moving forward."
+    ]
+
+    make_popup(socket, opts)
+  end
+
+  @impl true
   def handle_event("create_gallery", %{}, socket),
     do:
       socket
@@ -158,6 +188,26 @@ defmodule PicselloWeb.GalleryLive.Index do
     socket
     |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id))
     |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "disable_gallery", %{"gallery-id" => gallery_id}},
+        socket
+      ) do
+    Galleries.get_gallery!(String.to_integer(gallery_id))
+    |> Galleries.update_gallery(%{disabled: true})
+    |> process_gallery(socket, :disabled)
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "enable_gallery", %{"gallery-id" => gallery_id}},
+        socket
+      ) do
+    Galleries.get_gallery!(String.to_integer(gallery_id))
+    |> Galleries.update_gallery(%{disabled: false})
+    |> process_gallery(socket, :enabled)
   end
 
   @impl true
@@ -318,10 +368,15 @@ defmodule PicselloWeb.GalleryLive.Index do
       )
 
     jobs = get_jobs_list(galleries)
+    galleries =
+          Enum.map(galleries, fn gallery ->
+            orders = Orders.all(gallery.id)
+            Map.put(gallery, :orders, orders)
+          end)
 
     socket
     |> assign(:page_title, action |> Phoenix.Naming.humanize())
-    |> assign(:galleries, galleries)
+    |> assign(:galleries, galleries |> Repo.preload([:orders]))
     |> assign(:jobs, jobs)
     |> assign(:index, false)
     |> assign(
@@ -336,8 +391,8 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   defp dropdown_item(%{icon: icon} = assigns) do
-    assigns = Map.put_new(assigns, :class, "")
-    icon_text_class = if icon == "trash", do: "text-red-sales-300", else: "text-blue-planning-300"
+    assigns = Enum.into(assigns, %{class: "", id: ""})
+    icon_text_class = if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
 
     ~H"""
     <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={@id} }>
@@ -345,5 +400,42 @@ defmodule PicselloWeb.GalleryLive.Index do
       <%= @title %>
     </a>
     """
+  end
+
+  def process_gallery(result, socket, type) do
+    {success, failure} =
+      case type do
+        :delete -> {"deleted", "delete"}
+        :enabled -> {"enabled", "enable"}
+        _ -> {"disabled", "disable"}
+      end
+
+    case result do
+      {:ok, gallery} ->
+        process_gallery_message(socket, success, gallery)
+
+      _any ->
+        socket
+        |> put_flash(:error, "Could not #{failure} gallery")
+        |> close_modal()
+        |> noreply()
+    end
+  end
+
+  defp process_gallery_message(socket, type, _gallery) do
+    case type do
+      "deleted" ->
+        socket
+        |> push_redirect(to: Routes.gallery_path(socket, :galleries))
+        |> put_flash(:success, "The gallery has been #{type}")
+        |> noreply()
+
+      _any ->
+        socket
+        |> push_redirect(to: Routes.gallery_path(socket, :galleries))
+        |> close_modal()
+        |> put_flash(:success, "The gallery has been #{type}")
+        |> noreply()
+    end
   end
 end

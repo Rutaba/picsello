@@ -249,7 +249,7 @@ defmodule Picsello.Subscriptions do
         "Your 30-day free trial lets you explore and use all of our amazing features. To get started we’ll ask you to enter your credit card to keep your account secure and for us to focus the team on those who are really interested in Picsello.",
       onboarding_title: "Start your 30-day free trial",
       signup_description: "Start your free trial",
-      signup_title: "Get started with your free 30-day free trial today",
+      signup_title: "Get started with your 30-day free trial today",
       success_title: "Your 30-day free trial has started!"
     }
 

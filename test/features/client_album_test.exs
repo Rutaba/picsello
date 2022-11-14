@@ -2,6 +2,7 @@ defmodule Picsello.ClientAlbumTest do
   use Picsello.FeatureCase, async: true
 
   import Money.Sigils
+  alias Picsello.Galleries
 
   setup do
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
@@ -48,5 +49,25 @@ defmodule Picsello.ClientAlbumTest do
       modal
       |> click(button("Add to cart"))
     end)
+  end
+
+  feature "Client gallery could not add to cart when gallery disabled", %{
+    session: session,
+    album: album,
+    gallery: gallery,
+    photo_ids: photo_ids
+  } do
+    {:ok, _gallery} = Galleries.update_gallery(gallery, %{disabled: true})
+
+    session
+    |> click(css("a", text: "View Gallery"))
+    |> assert_has(css(".albumPreview", count: 1))
+    |> refute_has(css("#muuri-grid", count: 1))
+    |> click(css(".albumPreview"))
+    |> click(css("h3", text: album.name))
+    |> assert_has(css("#muuri-grid", count: 1))
+    |> assert_has(css(".item", count: Enum.count(photo_ids)))
+    |> click(css("#img-#{List.first(photo_ids)}"))
+    |> refute_has(button("Add to cart"))
   end
 end

@@ -1,0 +1,12 @@
+.welcome-column {
+    @apply relative;
+}
+
+.welcome-column > div {
+    @apply z-20;
+}
+
+.welcome-column:after {
+    @apply absolute w-full clear-both block z-10 rounded-b-lg bottom-0 h-4/6 bg-gray-100;
+    content: "";
+}

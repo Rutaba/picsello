@@ -61,4 +61,5 @@ defmodule Picsello.PaymentSchedule do
   end
 
   def paid?(%__MODULE__{paid_at: paid_at}), do: paid_at != nil
+  def is_with_cash?(%__MODULE__{is_with_cash: is_with_cash}), do: is_with_cash == true
 end
