@@ -88,7 +88,11 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       Notifiers.ClientNotifier.deliver_payment_due(proposal)
       Notifiers.ClientNotifier.deliver_paying_by_invoice(proposal)
       Notifiers.UserNotifier.deliver_paying_by_invoice(proposal)
-      socket |> close_modal() |> noreply()
+
+      send(self(), {:update_offline_payment_schedules})
+
+      socket
+      |> noreply()
     end
   end
 

@@ -441,7 +441,7 @@ defmodule PicselloWeb.JobLive.Shared do
         <%= unless @package |> Package.print_credits() |> Money.zero?() do %>
           <p><%= "#{Money.to_string(@package.print_credits, fractional_unit: false)} print credit" %></p>
         <% end %>
-        <%= if Job.lead?(@job) && (!@proposal || (@proposal && (!@proposal.sent_to_client || is_nil(@proposal.accepted_at)))) do %>
+        <%= if (Job.lead?(@job) && (!@proposal || (@proposal && (!@proposal.sent_to_client || is_nil(@proposal.accepted_at))))) && !@job.is_gallery_only do %>
           <.icon_button color="blue-planning-300" icon="pencil" phx-click="edit-package" class="mt-auto self-end">
             Edit
           </.icon_button>
@@ -788,6 +788,8 @@ defmodule PicselloWeb.JobLive.Shared do
   def assign_disabled_copy_link(
         %{assigns: %{is_schedule_valid: is_schedule_valid} = assigns} = socket
       ) do
+    assigns = Map.put_new(assigns, :stripe_status, nil)
+
     socket
     |> assign(disabled_copy_link: !is_schedule_valid || !!proposal_disabled_message(assigns))
   end

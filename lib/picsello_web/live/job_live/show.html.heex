@@ -89,5 +89,7 @@
    </div>
   </.section>
 
-  <.booking_details_section is_schedule_valid={@is_schedule_valid} proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} collapsed_sections={@collapsed_sections} socket={@socket} />
+  <%= unless @job.is_gallery_only do %>
+    <.booking_details_section is_schedule_valid={@is_schedule_valid} proposal={@proposal} job={@job} shoots={@shoots} package={@package} current_user={@current_user} collapsed_sections={@collapsed_sections} socket={@socket} />
+  <% end %>
 </div>

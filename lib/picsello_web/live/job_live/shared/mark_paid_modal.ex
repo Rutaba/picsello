@@ -20,7 +20,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   def render(assigns) do
     ~H"""
     <div class="modal">
-      <h1 id="payment-modal" class="flex justify-between mb-4 text-3xl font-bold">
+      <h1 id="payment-modal" class="flex justify-between mb-4 pl-3 text-3xl font-bold">
         Mark <%= action_name(@live_action, :plural) %> as paid
 
         <button id="close" phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
@@ -30,38 +30,38 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       </h1>
 
       <div>
-              <div class="flex items-center justify-start">
-              <dl class="flex flex-col">
-                <dd class="pr-32 font-bold">
-                  Balance to collect
-                  <button id="send-email-link" class="link block mt-2 text-xs" phx-click="open-compose" phx-target={@myself}>Send reminder email</button>
-                </dd>
-              </dl>
-              <h1 id="amount" class="rounded-lg bg-base-200 px-5 py-2"><%= PaymentSchedules.owed_offline_price(assigns.job) %></h1>
-            </div>
+        <div class="flex items-center justify-start">
+          <dl class="flex flex-col">
+            <dd class="pr-32 pl-3">
+              <b> Balance to collect </b>
+              <button id="send-email-link" class="link block text-xs" phx-click="open-compose" phx-target={@myself}>Send reminder email</button>
+            </dd>
+          </dl>
+          <h1 id="amount" class="rounded-lg bg-base-200 px-5 py-2"><%= PaymentSchedules.owed_offline_price(assigns.job) %></h1>
+        </div>
 
-        <table class="table-auto text-left w-full mt-8">
-           <thead class="bg-base-200 h-11">
-             <tr>
-               <th id="job-name"><%= Job.name(@job) %></th>
-               <th>Amount</th>
-               <th>Type</th>
-               <th>Status</th>
+        <table class="table-auto w-full mt-8">
+           <thead class="bg-base-200 pl-3 py-2">
+             <tr class="border-base-200">
+               <th class="p-3 text-left bg-base-200" id="job-name"><%= Job.name(@job) %></th>
+               <th class="p-3 text-left bg-base-200">Amount</th>
+               <th class="p-3 text-left bg-base-200">Type</th>
+               <th class="p-3 text-left bg-base-200">Status</th>
              </tr>
            </thead>
            <tbody>
            <%= @payment_schedules |> Enum.with_index |> Enum.map(fn({payment_schedules, index}) -> %>
-             <tr>
-               <td id="payments" class="font-bold font-sans">Payment <%= index + 1 %></td>
-               <td id="offline-amount"><%= payment_schedules.price %></td>
-               <td><%= payment_schedules.type %></td>
-               <td class="text-green-finances-300">Paid <%= strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y") %></td>
+             <tr class="">
+               <td id="payments" class="font-bold font-sans pl-3 my-2">Payment <%= index + 1 %></td>
+               <td class="pl-3 py-2" id="offline-amount"><%= payment_schedules.price %></td>
+               <td class="pl-3 py-2"><%= String.capitalize(payment_schedules.type) %></td>
+               <td class="text-green-finances-300 pl-3 py-2">Paid <%= strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y") %></td>
              </tr>
              <% end ) %>
            </tbody>
         </table>
 
-        <hr class="my-4 sm:mt-8" />
+
 
         <%= if PaymentSchedules.owed_offline_price(assigns.job) |> Map.get(:amount) > 0 do %>
           <%= if !@add_payment_show do %>
@@ -73,14 +73,14 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
 
       <%= if @add_payment_show do %>
-      <div class="rounded-lg border border-gray-300 mt-2">
-      <h1 class="mb-4 rounded-t-lg bg-gray-300 px-5 text-2xl font-bold">Add a payment</h1>
+      <div class="rounded-lg border border-base-200 mt-2">
+      <h1 class="mb-4 rounded-t-lg bg-base-200 p-3 text-xl font-bold">Add a payment</h1>
       <.form id={"add-payment-form"} let={f} for={@changeset} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="mx-5 grid grid-cols-3 gap-12">
           <dl>
             <dd>
 
-            <%= labeled_input f, :price, placeholder: "$0.00", label: "Payment amount", class: "w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center h-12", phx_hook: "PriceMask" %>
+            <%= labeled_input f, :price, placeholder: "$0.00", label: "Amount", class: "w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center h-12", phx_hook: "PriceMask" %>
 
             </dd>
           </dl>
@@ -93,16 +93,16 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
           <dl>
             <dd>
 
-            <%= labeled_input f, :paid_at, label: "Payment Date", type: :datetime_local_input, min: Date.utc_today(), time_zone: @current_user.time_zone, class: "w-full h-12" %>
+            <%= labeled_input f, :paid_at, label: "Payment Date", type: :date_input, min: Date.utc_today(), class: "w-full h-12" %>
 
             </dd>
           </dl>
 
           </div>
           <div class="flex justify-end items-center my-4 mr-5 gap-2">
-            <button class="btn-primary button rounded-lg border border-blue-300 py-1 px-7 bg-white text-black hover:bg-base-200" type="button" title="cancel" phx-click="select_add_payment" phx-target={@myself} phx-value-action="close">Cancel</button>
+            <button class="button rounded-lg border border-blue-planning-300 py-1 px-7 bg-white hover:bg-blue-planning-100" type="button" title="cancel" phx-click="select_add_payment" phx-target={@myself} phx-value-action="close">Cancel</button>
 
-            <button id="save-payment" class="btn-primary button rounded-lg border border-blue-300 py-1 px-7 bg-white text-black hover:bg-base-200" type="submit" phx-submit="save" disabled={!@changeset.valid?}>Save</button>
+            <button id="save-payment" class="button rounded-lg border border-blue-planning-300 py-1 px-7 bg-white hover:bg-blue-planning-100 disabled:cursor-not-allowed disabled:bg-base-200" type="submit" phx-submit="save" disabled={!@changeset.valid?}>Save</button>
           </div>
         </.form>
     </div>
@@ -133,13 +133,15 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         %{
           "payment_schedule" =>
             %{
-              "paid_at" => _,
+              "paid_at" => paid_at,
               "price" => _,
               "type" => _
             } = params
         },
-        socket
+        %{assigns: %{current_user: current_user}} = socket
       ) do
+    paid_at = date_to_datetime(paid_at, current_user.time_zone)
+    params = Map.put(params, "paid_at", paid_at)
     socket = assign_changeset(socket, params)
 
     owed = PaymentSchedules.owed_offline_price(socket.assigns.job)
@@ -166,7 +168,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         %{
           "payment_schedule" =>
             %{
-              "paid_at" => _,
+              "paid_at" => paid_at,
               "price" => _,
               "type" => _
             } = params
@@ -174,17 +176,18 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         %{
           assigns: %{
             add_payment_show: add_payment_show,
-            job: %{payment_schedules: payment_schedules} = job
+            job: %{payment_schedules: payment_schedules} = job,
+            current_user: current_user
           }
         } = socket
       ) do
     due_at = Enum.sort_by(payment_schedules, & &1.due_at, :asc) |> hd() |> Map.get(:due_at)
-
+    paid_at = date_to_datetime(paid_at, current_user.time_zone)
     params =
       Map.put(params, "due_at", due_at)
+      |> Map.put("paid_at", paid_at)
       |> Map.put("job_id", job.id)
       |> Map.put("description", "Offline Payment")
-
     case socket |> build_changeset(params) |> Repo.insert() do
       {:ok, _} ->
         socket
@@ -223,6 +226,12 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     PaymentSchedule.add_payment_changeset(params)
   end
 
+  defp date_to_datetime(paid_at, time_zone) do
+    {:ok, datetime} = DateTime.now(time_zone)
+    time = DateTime.to_time(datetime) |> Time.to_iso8601()
+    "#{paid_at}T#{time}"
+  end
+
   def assign_job(%{assigns: %{current_user: current_user, job: job}} = socket) do
     job =
       current_user
@@ -246,7 +255,6 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
   defp assign_payments(%{assigns: %{job: job}} = socket) do
     payment_schedules = PaymentSchedules.get_offline_payment_schedules(job.id)
-
     socket |> assign(:payment_schedules, payment_schedules)
   end
 
@@ -255,7 +263,6 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       socket
       |> build_changeset(params)
       |> Map.put(:action, :validate)
-
     assign(socket, changeset: changeset)
   end
 

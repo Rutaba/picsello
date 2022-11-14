@@ -172,6 +172,10 @@ defmodule Picsello.PaymentSchedules do
     job |> payment_schedules() |> Enum.all?(&PaymentSchedule.paid?/1)
   end
 
+  def is_with_cash?(%Job{} = job) do
+    job |> payment_schedules() |> Enum.all?(&PaymentSchedule.is_with_cash?/1)
+  end
+
   def total_price(%Job{} = job) do
     job
     |> payment_schedules()
@@ -356,5 +360,6 @@ defmodule Picsello.PaymentSchedules do
     unpaid_payment(job) || %PaymentSchedule{}
   end
 
+  defdelegate is_with_cash?(payment_schedule), to: PaymentSchedule
   defdelegate paid?(payment_schedule), to: PaymentSchedule
 end
