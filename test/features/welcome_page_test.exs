@@ -17,6 +17,7 @@ defmodule Picsello.WelcomePageTest do
 
     feature "user navigates to leads from navbar", %{session: session} do
       session
+      |> click(css("#sub-menu", text: "Your work"))
       |> click(css("nav a", text: "Leads"))
       |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
     end
