@@ -233,6 +233,24 @@ defmodule Picsello.PricingCalculations do
     calculate_after_tax_income(income_bracket, desired_salary)
   end
 
+  def calculate_tax_amount(desired_salary, take_home) do
+    take_home_parsed =
+      case take_home do
+        %Money{} -> take_home
+        "$" -> Money.new(0)
+        nil -> Money.new(0)
+        _ -> Money.parse!(take_home)
+      end
+
+    case desired_salary do
+      %Money{} -> desired_salary
+      "$" -> Money.new(0)
+      nil -> Money.new(0)
+      _ -> Money.parse!(desired_salary)
+    end
+    |> Money.subtract(take_home_parsed)
+  end
+
   def calculate_take_home_income(percentage, after_tax_income),
     do:
       after_tax_income

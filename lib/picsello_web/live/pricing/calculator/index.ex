@@ -264,6 +264,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             <p class="w-full p-4 mt-4 mb-6 font-bold text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= take_home %></p>
           </div>
         </div>
+
+        <.tax_review tax_amount={PricingCalculations.calculate_tax_amount(desired_salary, take_home)} desired_salary={desired_salary} take_home={take_home} />
+
         <div class="flex justify-end mt-8">
           <button type="button" class="mr-4 btn-secondary" phx-click="previous">Back</button>
           <button type="submit" class="btn-primary" disabled={!@changeset.valid?}>Next</button>
@@ -562,7 +565,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <div class="flex flex-wrap items-center justify-between p-8 my-6 bg-gray-100 rounded-lg" {intro_hints_only("intro_hints_only")}>
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @desired_salary %></h5>
-          <p class="italic text-center">Desired Take Home</p>
+          <p class="italic text-center">Gross Salary (Before Taxes)</p>
         </div>
         <p class="w-full text-5xl font-bold text-center sm:mb-8 sm:w-auto">+</p>
         <div class="w-full sm:w-auto">
@@ -573,6 +576,27 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= PricingCalculations.calculate_revenue(@desired_salary, @costs) %></h5>
           <p class="italic text-center">Gross Revenue <.intro_hint content="Your revenue is the total amount of sales you made before any deductions. This includes your costs because you should be including those in your pricing!" class="ml-1" /></p>
+        </div>
+      </div>
+    """
+  end
+
+  def tax_review(assigns) do
+    ~H"""
+      <div class="flex flex-wrap items-center justify-between p-8 my-6 bg-gray-100 rounded-lg" {intro_hints_only("intro_hints_only")}>
+        <div class="w-full sm:w-auto">
+          <h5 class="mb-2 text-4xl font-bold text-center"><%= @desired_salary %></h5>
+          <p class="italic text-center">Gross Salary before taxes</p>
+        </div>
+        <p class="w-full text-5xl font-bold text-center sm:mb-8 sm:w-auto">-</p>
+        <div class="w-full sm:w-auto">
+          <h5 class="mb-2 text-4xl font-bold text-center"><%= @tax_amount %></h5>
+          <p class="italic text-center">Approx. income tax + SE tax</p>
+        </div>
+        <p class="w-full text-5xl font-bold text-center sm:mb-8 sm:w-auto">=</p>
+        <div class="w-full sm:w-auto">
+          <h5 class="mb-2 text-4xl font-bold text-center"><%= @take_home %></h5>
+          <p class="italic text-center">Total Take Home Pay <.intro_hint content="This doesn't include your expenses or any savings from business cost deductions" class="ml-1" /></p>
         </div>
       </div>
     """
