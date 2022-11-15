@@ -894,6 +894,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Routes.gallery_client_show_cart_path(socket, method, client_link_hash)
   end
 
+  def assign_is_proofing(%{assigns: %{album: nil}} = socket) do
+    assign(socket, is_proofing: false)
+  end
+
   def assign_is_proofing(%{assigns: %{album: album}} = socket) do
     assign(socket, is_proofing: album.is_proofing)
   end
@@ -1025,11 +1029,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
         %{
           assigns: %{
             gallery: gallery
-          }
+          } = assigns
         } = socket,
         whcc_editor_id
       ) do
-    album_id = Map.get(socket.assigns[:album], :id)
+    album = Map.get(assigns, :album)
+    album_id = if album, do: Map.get(album, :id), else: nil
 
     gallery_account_id = Galleries.account_id(gallery)
     cart_product = Cart.new_product(whcc_editor_id, gallery_account_id)
