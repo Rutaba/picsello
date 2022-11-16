@@ -1,4 +1,4 @@
-defmodule PicselloWeb.Live.Profile.ContactFormComponent do
+defmodule PicselloWeb.Live.Profile.ClientFormComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Profiles}
@@ -20,7 +20,7 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
       <h2 class="text-3xl font-bold max-w-md">Get in touch<%= @header_suffix %></h2>
 
       <%= if @changeset do %>
-        <.form for={@changeset} let={f} phx-change="validate-contact" phx-submit="save-contact" id="contact-form" phx_target={@myself}>
+        <.form for={@changeset} let={f} phx-change="validate-client" phx-submit="save-client" id="contact-form" phx_target={@myself}>
           <div class="flex flex-col mt-3">
             <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-bold" %>
 
@@ -71,7 +71,7 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
   end
 
   defp assign_changeset(%{assigns: %{job_type: job_type}} = socket) do
-    assign(socket, :changeset, Profiles.contact_changeset(%{job_type: job_type}))
+    assign(socket, :changeset, Profiles.client_changeset(%{job_type: job_type}))
   end
 
   defp assign_changeset(%{assigns: %{job_types: types}} = socket) do
@@ -81,30 +81,30 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
         _ -> %{}
       end
 
-    assign(socket, :changeset, Profiles.contact_changeset(params))
+    assign(socket, :changeset, Profiles.client_changeset(params))
   end
 
   @impl true
-  def handle_event("validate-contact", %{"contact" => params}, socket) do
+  def handle_event("validate-client", %{"client" => params}, socket) do
     socket
-    |> assign(changeset: params |> Profiles.contact_changeset() |> Map.put(:action, :validate))
+    |> assign(changeset: params |> Profiles.client_changeset() |> Map.put(:action, :validate))
     |> noreply()
   end
 
   @impl true
   def handle_event(
-        "save-contact",
-        %{"contact" => params},
+        "save-client",
+        %{"client" => params},
         %{assigns: %{organization: organization}} = socket
       ) do
-    case Profiles.handle_contact(organization, params, PicselloWeb.Helpers) do
-      {:ok, _contact} ->
+    case Profiles.handle_client(organization, params, PicselloWeb.Helpers) do
+      {:ok, _client} ->
         socket
         |> assign(changeset: nil)
-        |> noreply()
 
       {:error, changeset} ->
-        socket |> assign(changeset: changeset) |> noreply()
+        socket |> assign(changeset: changeset)
     end
+    |> noreply()
   end
 end

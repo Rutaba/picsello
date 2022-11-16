@@ -281,4 +281,12 @@ defmodule Picsello.Orders do
     )
     |> Repo.all()
   end
+
+  def get_order_from_order_number(order_number) do
+    from(order in Order,
+      preload: [gallery: :job],
+      where: order.number == ^order_number
+    )
+    |> Repo.one()
+  end
 end

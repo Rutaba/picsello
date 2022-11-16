@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   require Ecto.Query
   alias Ecto.Query
-  alias Picsello.{Galleries, Repo, Messages, Orders, Albums}
+  alias Picsello.{Galleries, Job, Repo, Messages, Orders, Albums}
 
   import PicselloWeb.GalleryLive.Shared
 
@@ -323,7 +323,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     """
   end
 
-  defp open_compose(socket),
+  defp open_compose(%{assigns: %{job: job}} = socket),
     do:
       socket
       |> PicselloWeb.ClientMessageComponent.open(%{
@@ -331,7 +331,8 @@ defmodule PicselloWeb.GalleryLive.Index do
         show_client_email: true,
         show_subject: true,
         presets: [],
-        send_button: "Send"
+        send_button: "Send",
+        client: Job.client(job)
       })
       |> noreply()
 

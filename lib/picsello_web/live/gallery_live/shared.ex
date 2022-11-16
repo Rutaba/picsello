@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import Money.Sigils
 
   alias Picsello.{
+    Job,
     Repo,
     Galleries,
     GalleryProducts,
@@ -19,7 +20,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
-  alias Picsello.Galleries
+  alias Picsello.{Galleries, Client}
   alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
 
@@ -326,7 +327,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
           modal_title: "Share gallery",
           presets: [],
           enable_image: true,
-          enable_size: true
+          enable_size: true,
+          client: Job.client(gallery.job)
         })
         |> noreply()
 
@@ -403,6 +405,23 @@ defmodule PicselloWeb.GalleryLive.Shared do
       socket
       |> close_modal()
       |> put_flash(:success, "#{String.capitalize(shared_item)} shared!")
+      |> noreply()
+    else
+      _error ->
+        socket
+        |> put_flash(:error, "Something went wrong")
+        |> close_modal()
+        |> noreply()
+    end
+  end
+
+  def add_message_and_notify(socket, message_changeset) do
+    with {:ok, message} <- Messages.add_message_to_client(message_changeset),
+         %Client{name: name, email: email} <- Repo.get(Client, message.client_id),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, email) do
+      socket
+      |> close_modal()
+      |> put_flash(:success, "Email sent to " <> if(name, do: name, else: email) <> "!")
       |> noreply()
     else
       _error ->

@@ -77,10 +77,10 @@ defmodule PicselloWeb.AuthControllerTest do
 
       assert %{
                "list_ids" => [
-                 "contact-list-transactional-id",
-                 "contact-list-trial-welcome-id"
+                 "client-list-transactional-id",
+                 "client-list-trial-welcome-id"
                ],
-               "contacts" => [
+               "clients" => [
                  %{
                    "custom_fields" => %{
                      "w1_T" => "pre_trial"

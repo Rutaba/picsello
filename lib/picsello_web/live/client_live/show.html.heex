@@ -1,0 +1,54 @@
+<.header socket={@socket} client={@client} />
+<div class="lg:flex mt-10 center-container">
+  <div class="h-48">
+    <%= live_component PicselloWeb.Live.ClientLive.SideNavComponent, id: @client.id, client: @client, arrow_show: "contact-details" %>
+  </div>
+  <div class="w-full">
+    <.card color="blue-planning-300" title="Details" class="md:col-span-2 ml-20">
+    <div {testid("client-details")} class="flex flex-col lg:flex-row">
+      <div class="flex-1 text-base-250">
+        <%= if @client.phone do %>
+          <a href={"tel:#{@client.phone}"} class="flex items-center">
+            <.icon name="phone" class="text-blue-planning-300 mr-2 w-4 h-4" />
+            <span class="text-black font-bold">Phone: </span>
+            <span class="text-black ml-2"><%= @client.phone %></span>
+          </a>
+        <% end %>
+        <a phx-click="open-compose" class="flex items-center mt-2">
+          <.icon name="envelope" class="text-blue-planning-300 mr-2 w-4 h-4" />
+          <span class="text-black font-bold">Email: </span>
+          <span class="text-black ml-2"><%= @client.email %></span>
+        </a>
+        <%= if @client.address do %>
+          <a class="flex items-center mt-2">
+            <.icon name="phone" class="text-blue-planning-300 mr-2 w-4 h-4" />
+            <span class="text-black font-bold">Address: </span>
+            <span class="text-black ml-2"><%= @client.address %></span>
+          </a>
+        <% end %>
+        <div class="mt-10">
+          <.tags client={@client} tags_changeset={@tags_changeset} job_types={@job_types} />
+        </div>
+        <div class="mt-10 flex gap-2 text-black">
+          <.icon_button color="blue-planning-300" icon="pencil" phx-click="edit-client" phx-value-id={@client.id}>
+            Edit Contact
+          </.icon_button>
+          <.icon_button color="red-sales-300" icon="trash" phx-click="confirm-archive" phx-value-id={@client.id}>
+            Delete Contact
+          </.icon_button>
+        </div>
+      </div>
+    </div>
+  </.card>
+  <.card {testid("card-Private notes")} title="Private notes" class={"h-100 md:col-span-2 md:h-40 ml-20 mt-5"}>
+    <%= if @client.notes do %>
+      <p class={"whitespace-pre-line line-clamp-4"}><%= @client.notes %></p>
+    <% else %>
+      <p class={"text-base-250 line-clamp-4"}>Click edit to add a note about your client and any details you want to remember.</p>
+    <% end %>
+    <.icon_button color="blue-planning-300" icon="pencil" phx-click="open-notes" class="mt-auto self-start">
+      Edit
+    </.icon_button>
+  </.card>
+  </div>
+</div>

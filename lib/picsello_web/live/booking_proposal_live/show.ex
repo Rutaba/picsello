@@ -296,7 +296,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         show_subject: false,
         subject: "#{Job.name(job)} proposal",
         presets: [],
-        send_button: "Send"
+        send_button: "Send",
+        client: Job.client(job)
       })
       |> noreply()
 

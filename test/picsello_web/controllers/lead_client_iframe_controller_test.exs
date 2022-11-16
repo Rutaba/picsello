@@ -1,4 +1,4 @@
-defmodule PicselloWeb.LeadContactIframeControllerTest do
+defmodule PicselloWeb.LeadClientIframeControllerTest do
   use PicselloWeb.ConnCase, async: true
 
   setup do
@@ -27,7 +27,7 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
       assert_error_sent :not_found, fn ->
         conn
         |> get(
-          Routes.lead_contact_iframe_path(
+          Routes.lead_client_iframe_path(
             conn,
             :index,
             "mary"
@@ -39,7 +39,7 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
     test "photographer form renders", %{conn: conn, user: user} do
       assert conn
              |> get(
-               Routes.lead_contact_iframe_path(
+               Routes.lead_client_iframe_path(
                  conn,
                  :index,
                  user.organization.slug
@@ -54,7 +54,7 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
     test "user submits empty form", %{conn: conn, user: user} do
       assert conn
              |> post(
-               Routes.lead_contact_iframe_path(
+               Routes.lead_client_iframe_path(
                  conn,
                  :index,
                  user.organization.slug
@@ -68,13 +68,13 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
     test "user submits incomplete form", %{conn: conn, user: user} do
       assert conn
              |> post(
-               Routes.lead_contact_iframe_path(
+               Routes.lead_client_iframe_path(
                  conn,
                  :index,
                  user.organization.slug
                ),
                %{
-                 "contact" => %{
+                 "client" => %{
                    "email" => "hey@you.com",
                    "message" => "test",
                    "name" => "Hey You",
@@ -90,13 +90,13 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
     test "user submits complete form", %{conn: conn, user: user} do
       assert conn
              |> post(
-               Routes.lead_contact_iframe_path(
+               Routes.lead_client_iframe_path(
                  conn,
                  :index,
                  user.organization.slug
                ),
                %{
-                 "contact" => %{
+                 "client" => %{
                    "email" => "hey@you.com",
                    "message" => "test",
                    "name" => "Hey You",
@@ -113,13 +113,13 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
       assert_error_sent :not_found, fn ->
         conn
         |> post(
-          Routes.lead_contact_iframe_path(
+          Routes.lead_client_iframe_path(
             conn,
             :index,
             "test"
           ),
           %{
-            "contact" => %{
+            "client" => %{
               "email" => "hey@you.com",
               "message" => "test",
               "name" => "Hey You",

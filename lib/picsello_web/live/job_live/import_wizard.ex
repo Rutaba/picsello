@@ -8,6 +8,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   alias Picsello.{
     Job,
     Jobs,
+    Clients,
     Package,
     Packages.Download,
     Packages.PackagePricing,
@@ -16,61 +17,25 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     Galleries.Workers.PhotoStorage
   }
 
+  alias PicselloWeb.Live.Shared.CustomPayments
+
+  import PicselloWeb.Live.Shared
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1]
-  import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
+
+  import PicselloWeb.JobLive.Shared,
+    only: [
+      job_form_fields: 1,
+      drag_drop: 1,
+      check_max_entries: 1,
+      check_dulplication: 1,
+      renew_uploads: 3,
+      files_to_upload: 1,
+      error_action: 1,
+      search_clients: 1
+    ]
 
   import PicselloWeb.PackageLive.Shared,
     only: [package_basic_fields: 1, digital_download_fields: 1, current: 1]
-
-  @string_length 15
-  defmodule CustomPaymentSchedule do
-    @moduledoc false
-    use Ecto.Schema
-    import Ecto.Changeset
-
-    @primary_key false
-    embedded_schema do
-      field :price, Money.Ecto.Amount.Type
-      field :due_date, :date
-    end
-
-    def changeset(payment_schedule, attrs \\ %{}) do
-      payment_schedule
-      |> cast(attrs, [:price, :due_date])
-      |> validate_required([:price, :due_date])
-      |> Picsello.Package.validate_money(:price, greater_than: 0)
-    end
-  end
-
-  defmodule CustomPayments do
-    @moduledoc "For setting payments on last step"
-    use Ecto.Schema
-    import Ecto.Changeset
-
-    @primary_key false
-    embedded_schema do
-      field(:remaining_price, Money.Ecto.Amount.Type)
-      embeds_many(:payment_schedules, CustomPaymentSchedule)
-    end
-
-    def changeset(attrs) do
-      %__MODULE__{}
-      |> cast(attrs, [:remaining_price])
-      |> cast_embed(:payment_schedules)
-      |> validate_total_amount()
-    end
-
-    defp validate_total_amount(changeset) do
-      remaining = PicselloWeb.JobLive.ImportWizard.remaining_to_collect(changeset)
-
-      if Money.zero?(remaining) do
-        changeset
-      else
-        add_error(changeset, :remaining_price, "is not valid")
-      end
-    end
-  end
 
   @upload_options [
     accept: ~w(.pdf .docx .txt),
@@ -84,19 +49,18 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     |> assign(assigns)
     |> assign_new(:job, fn -> nil end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1} end)
-    |> assign(
-      step: :get_started,
-      steps: [:get_started, :job_details, :package_payment, :invoice, :documents]
-    )
+    |> assign_new(:step, fn -> :get_started end)
+    |> assign(steps: [:get_started, :job_details, :package_payment, :invoice, :documents])
     |> assign_job_changeset(%{"client" => %{}})
     |> assign_package_changeset(%{})
     |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]})
     |> allow_upload(:documents, @upload_options)
+    |> search_assigns()
     |> ok()
   end
 
   @impl true
-  def render(%{job_changeset: %{changes: %{client: client_changeset}}} = assigns) do
+  def render(%{searched_client: searched_client, selected_client: selected_client} = assigns) do
     ~H"""
     <div class="modal">
       <.close_x />
@@ -122,7 +86,13 @@ defmodule PicselloWeb.JobLive.ImportWizard do
           <div class="flex hover:cursor-auto">
             <div class="ml-3 mr-3 text-base-200">|</div>
             <.icon name="client-icon" class="w-7 h-7 mr-1"></.icon>
-            <p class="font-bold">Client: <span class="font-normal"><%= Changeset.get_field(client_changeset, :name) %></span></p>
+            <p class="font-bold">Client: <span class="font-normal"><%=
+            cond do
+              searched_client -> searched_client.name
+              selected_client -> selected_client.name
+              true -> Changeset.get_field(assigns.job_changeset.changes.client, :name)
+            end
+          %></span></p>
           </div>
         <% end %>
       </div>
@@ -130,27 +100,10 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       <h1 class="mt-2 mb-4 text-3xl">
         <strong class="font-bold">Import Existing Job:</strong>
         <%= heading_subtitle(@step) %>
-
-        <%= if @step == :documents do %>
-          <span class="italic">(Optional)</span>
-        <% end %>
       </h1>
       <.step {assigns} />
     </div>
     """
-  end
-
-  def heading_subtitle(step) do
-    Map.get(
-      %{
-        get_started: "Get Started",
-        job_details: "General Details",
-        package_payment: "Package & Payment",
-        invoice: "Custom Invoice",
-        documents: "Documents"
-      },
-      step
-    )
   end
 
   def step(%{step: :get_started} = assigns) do
@@ -167,7 +120,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
           <h1 class="hidden text-2xl font-bold sm:block">Import a job</h1>
 
           <p class="max-w-xl mt-1 mr-2">
-            Use this option if you have shoot dates confirmed, have partial/scheduled payment, client contact info, and a form of a contract or questionnaire.
+            Use this option if you have shoot dates confirmed, have partial/scheduled payment, client client info, and a form of a contract or questionnaire.
           </p>
         </div>
         <button type="button" class="self-center w-full px-8 mt-6 ml-auto btn-primary sm:w-auto sm:mt-0" phx-click="go-job-details" phx-target={@myself}>Next</button>
@@ -196,8 +149,10 @@ defmodule PicselloWeb.JobLive.ImportWizard do
 
   def step(%{step: :job_details} = assigns) do
     ~H"""
+    <.search_clients new_client={@new_client} search_results={@search_results} search_phrase={@search_phrase} selected_client={@selected_client} searched_client={@searched_client} current_focus={@current_focus} clients={@clients} myself={@myself}/>
+
     <.form for={@job_changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
-      <.job_form_fields form={f} job_types={@current_user.organization.profile.job_types} />
+      <.job_form_fields form={f} job_types={@current_user.organization.profile.job_types} new_client={@new_client} myself={@myself} />
 
       <.footer>
         <button class="px-8 btn-primary" title="Next" type="submit" disabled={!@job_changeset.valid?} phx-disable-with="Next">
@@ -341,22 +296,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   def step(%{step: :documents} = assigns) do
     ~H"""
     <form phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
-      <div class="dragDrop border-dashed border-2 border-blue-planning-300 rounded-lg" id="dropzone-upload" phx-hook="DragDrop" phx-drop-target={@uploads.documents.ref}>
-          <label class="flex flex-col py-32 items-center justify-center w-full h-full gap-8 cursor-pointer">
-          <div class="max-w-xs mx-auto">
-             <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76" class="mx-auto cursor-pointer opacity-75 cursor-defaul" alt="add photos icon"/>
-              <div class="flex flex-col items-center justify-center dragDrop__content">
-                <p class="text-center">
-                  <span class="font-bold gray">Drag your images or </span>
-                  <span class="font-bold cursor-pointer primary gray">browse</span>
-                    <%= live_file_input @uploads.documents, class: "dragDropInput" %>
-                 </p>
-                <p class="text-center gray">Supports .PDF, .docx, .txt</p>
-              </div>
-          </div>
-        </label>
-      </div>
-      <div class="uploadingList__wrapper mt-8">
+      <.drag_drop upload_entity={@uploads.documents} supported_types=".PDF, .docx, .txt" />
+      <div class={classes("uploadingList__wrapper mt-8", %{"hidden" => Enum.empty?(@uploads.documents.entries)})}>
         <div class="flex justify-between pb-4 items-center text-lg font-bold">
           <span>Name</span>
           <span>Status</span>
@@ -364,20 +305,16 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         </div>
         <hr class="md:block border-blue-planning-300 border-2 mb-2">
         <%= Enum.filter(@uploads.documents.entries, & !&1.valid?) |> Enum.map(fn entry -> %>
-          <.uploaded_files myself={@myself} entry={entry}>
-            <%= for err <- upload_errors(@uploads.documents, entry) do %>
-              <p class="error btn items-center"><%= err %></p>
-              <p class={"retry rounded ml-2 py-1 px-2 text-xs cursor-pointer #{!retryable?(err) && 'cursor-not-allowed'}"}
-                phx-value-ref={entry.ref} phx-click={retryable?(err) && "retry"} phx-target={@myself}>
-                Retry?
-              </p>
+          <.files_to_upload myself={@myself} entry={entry}>
+            <%= for error <- upload_errors(@uploads.documents, entry) do %>
+            <.error_action error={error} entry={entry} target={@myself} />
             <% end %>
-          </.uploaded_files>
+          </.files_to_upload>
         <% end) %>
         <%= Enum.filter(@uploads.documents.entries, & &1.valid?) |> Enum.map(fn entry -> %>
-          <.uploaded_files myself={@myself}  entry={entry}>
+          <.files_to_upload myself={@myself}  entry={entry}>
             <p class="btn items-center">Uploaded</p>
-          </.uploaded_files>
+          </.files_to_upload>
         <% end) %>
       </div>
 
@@ -397,55 +334,32 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     """
   end
 
-  defp retryable?(err) when err in ~w(too_large not_accepted)a, do: false
-  defp retryable?(_err), do: true
-
-  defp uploaded_files(assigns) do
-    string_length = @string_length
-    assigns = Map.put_new(assigns, :myself, nil)
-
-    ~H"""
-      <div class="uploadEntry grid grid-cols-5 pb-4 items-center">
-        <p class="col-span-2 max-w-md">
-        <%= truncate_name(@entry, string_length) %>
-        </p>
-        <div class="flex ml-[80px] col-span-2 photoUploadingIsFailed items-center">
-          <%= render_slot(@inner_block) %>
-        </div>
-          <div id="file_options" data-offset="0" phx-hook="Select" class="w-4 ml-48">
-              <button type="button" class="flex flex-shrink-0 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
-                <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
-                <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
-              </button>
-
-              <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content w-48">
-                <span phx-click="cancel-upload" phx-target={@myself} phx-value-ref={@entry.ref} aria-label="remove" class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
-                  <span>delete</span>
-                  <.icon name="remove-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300"/>
-                </span>
-              </div>
-          </div>
-      </div>
-    """
-  end
-
   @impl true
   def handle_event(
         "back",
         %{},
-        %{assigns: %{step: step, steps: steps}} = socket
+        %{assigns: %{step: step, steps: steps, selected_client: selected_client}} = socket
       ) do
     previous_step = Enum.at(steps, Enum.find_index(steps, &(&1 == step)) - 1)
 
     socket
-    |> assign(step: previous_step)
+    |> assign(
+      step:
+        if(!is_nil(selected_client) and previous_step == :get_started,
+          do: step,
+          else: previous_step
+        )
+    )
     |> noreply()
   end
 
   @impl true
-  def handle_event("create-lead", %{}, socket) do
+  def handle_event("create-lead", %{}, %{assigns: %{current_user: current_user}} = socket) do
     socket
-    |> open_modal(PicselloWeb.JobLive.NewComponent, Map.take(socket.assigns, [:current_user]))
+    |> open_modal(
+      PicselloWeb.JobLive.NewComponent,
+      %{current_user: current_user}
+    )
     |> noreply()
   end
 
@@ -523,8 +437,32 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   end
 
   @impl true
-  def handle_event("validate", %{"job" => params}, socket) do
+  def handle_event("validate", %{"job" => %{"client" => _client_params} = params}, socket) do
     socket |> assign_job_changeset(params, :validate) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{"job" => %{"type" => _job_type} = params},
+        %{assigns: %{searched_client: searched_client, selected_client: selected_client}} = socket
+      ) do
+    client_id =
+      cond do
+        searched_client -> searched_client.id
+        selected_client -> selected_client.id
+        true -> nil
+      end
+
+    socket
+    |> assign_job_changeset(
+      Map.put(
+        params,
+        "client_id",
+        client_id
+      )
+    )
+    |> noreply()
   end
 
   @impl true
@@ -550,9 +488,13 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   end
 
   @impl true
-  def handle_event("submit", %{"job" => params}, %{assigns: %{step: :job_details}} = socket) do
-    case socket |> assign_job_changeset(params, :validate) do
-      %{assigns: %{job_changeset: %{valid?: true}}} ->
+  def handle_event(
+        "submit",
+        %{"job" => _params},
+        %{assigns: %{step: :job_details, job_changeset: job_changeset}} = socket
+      ) do
+    case job_changeset do
+      %{valid?: true} ->
         socket |> assign(step: :package_payment)
 
       socket ->
@@ -601,43 +543,26 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     |> noreply()
   end
 
-  defp import_job(%{assigns: %{current_user: current_user, uploads: uploads} = assigns} = socket) do
-    job = assigns.job_changeset |> Changeset.apply_changes()
+  @impl true
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
-    result =
-      Ecto.Multi.new()
-      |> Jobs.maybe_upsert_client(job.client, current_user)
-      |> Ecto.Multi.insert(:job, fn changes ->
-        assigns.job_changeset
-        |> Changeset.delete_change(:client)
-        |> Changeset.put_change(:client_id, changes.client.id)
-        |> Map.put(:action, nil)
-      end)
-      |> Ecto.Multi.insert(:package, assigns.package_changeset |> Map.put(:action, nil))
-      |> Ecto.Multi.update(:job_update, fn changes ->
-        Job.add_package_changeset(changes.job, %{package_id: changes.package.id})
-      end)
-      |> Ecto.Multi.insert(:proposal, fn changes ->
-        BookingProposal.create_changeset(%{job_id: changes.job.id})
-      end)
-      |> maybe_insert_payment_schedules(socket)
-      |> Repo.transaction()
+  defp import_job(
+         %{
+           assigns:
+             %{
+               selected_client: selected_client,
+               searched_client: searched_client,
+               job_changeset: job_changeset
+             } = _assigns
+         } = socket
+       ) do
+    job = job_changeset |> Changeset.apply_changes()
 
-    case result do
+    client = get_client(selected_client, searched_client, job.client)
+
+    case insert_multi(client, socket) do
       {:ok, %{job: %Job{id: job_id} = job}} ->
-        uploads.documents.entries
-        |> Enum.filter(& &1.valid?)
-        |> Task.async_stream(fn entry ->
-          consume_uploaded_entry(socket, entry, fn %{path: path} ->
-            url = Job.document_path(job_id, entry.client_name)
-            {:ok, _} = PhotoStorage.insert(url, File.read!(path))
-
-            {:ok, %{url: url, name: entry.client_name}}
-          end)
-        end)
-        |> Enum.reduce([], fn {:ok, document}, acc -> [document | acc] end)
-        |> then(&Job.document_changeset(job, %{documents: &1}))
-        |> Repo.update!()
+        upload_docs(job, socket)
 
         socket |> push_redirect(to: Routes.job_path(socket, :jobs, job_id)) |> noreply()
 
@@ -646,18 +571,81 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     end
   end
 
-  defp maybe_insert_payment_schedules(multi_changes, %{assigns: assigns}) do
-    if remaining_amount_zero?(assigns.package_changeset) do
-      multi_changes
-    else
-      multi_changes
-      |> Ecto.Multi.insert_all(:payment_schedules, Picsello.PaymentSchedule, fn changes ->
-        assigns.payments_changeset
-        |> current()
-        |> Map.get(:payment_schedules)
-        |> Enum.with_index()
-        |> make_payment_schedule(changes)
+  defp upload_docs(
+         job,
+         %{
+           assigns:
+             %{
+               uploads: uploads
+             } = _assigns
+         } = socket
+       ) do
+    uploads.documents.entries
+    |> Enum.filter(& &1.valid?)
+    |> Task.async_stream(fn entry ->
+      consume_uploaded_entry(socket, entry, fn %{path: path} ->
+        url = Job.document_path(job.id, entry.client_name)
+        {:ok, _} = PhotoStorage.insert(url, File.read!(path))
+
+        {:ok, %{url: url, name: entry.client_name}}
       end)
+    end)
+    |> Enum.reduce([], fn {:ok, document}, acc -> [document | acc] end)
+    |> then(&Job.document_changeset(job, %{documents: &1}))
+    |> Repo.update!()
+  end
+
+  defp insert_multi(
+         client,
+         %{
+           assigns:
+             %{
+               current_user: current_user,
+               job_changeset: job_changeset,
+               package_changeset: package_changeset
+             } = _assigns
+         } = socket
+       ) do
+    Ecto.Multi.new()
+    |> Jobs.maybe_upsert_client(client, current_user)
+    |> Ecto.Multi.insert(:job, fn changes ->
+      job_changeset
+      |> Changeset.delete_change(:client)
+      |> Changeset.put_change(:client_id, changes.client.id)
+      |> Map.put(:action, nil)
+    end)
+    |> Ecto.Multi.insert(:package, package_changeset |> Map.put(:action, nil))
+    |> Ecto.Multi.update(:job_update, fn changes ->
+      Job.add_package_changeset(changes.job, %{package_id: changes.package.id})
+    end)
+    |> Ecto.Multi.insert(:proposal, fn changes ->
+      BookingProposal.create_changeset(%{job_id: changes.job.id})
+    end)
+    |> maybe_insert_payment_schedules(socket)
+    |> Repo.transaction()
+  end
+
+  defp search_assigns(%{assigns: %{current_user: current_user}} = socket) do
+    socket
+    |> assign(:clients, Clients.find_all_by(user: current_user))
+    |> assign(:search_results, [])
+    |> assign(:search_phrase, nil)
+    |> assign(:searched_client, nil)
+    |> assign(:new_client, false)
+    |> assign(current_focus: -1)
+    |> assign_new(:selected_client, fn -> nil end)
+  end
+
+  defp get_client(selected_client, searched_client, client) do
+    cond do
+      selected_client ->
+        selected_client
+
+      searched_client ->
+        searched_client
+
+      true ->
+        client
     end
   end
 
@@ -667,10 +655,18 @@ defmodule PicselloWeb.JobLive.ImportWizard do
          action \\ nil
        ) do
     changeset =
-      params
-      |> put_in(["client", "organization_id"], current_user.organization_id)
-      |> Job.create_changeset()
-      |> Map.put(:action, action)
+      case params do
+        %{"client_id" => _client_id} ->
+          params
+          |> Job.new_job_changeset()
+          |> Map.put(:action, action)
+
+        %{"client" => _client_params} ->
+          params
+          |> put_in(["client", "organization_id"], current_user.organization_id)
+          |> Job.create_changeset()
+          |> Map.put(:action, action)
+      end
 
     assign(socket, job_changeset: changeset)
   end
@@ -725,109 +721,5 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       |> Map.put(:action, action)
 
     assign(socket, payments_changeset: changeset)
-  end
-
-  defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
-
-  defp total_remaining_amount(package_changeset) do
-    base_price = Changeset.get_field(package_changeset, :base_price) || Money.new(0)
-
-    collected_price = Changeset.get_field(package_changeset, :collected_price) || Money.new(0)
-
-    base_price |> Money.subtract(collected_price)
-  end
-
-  def remaining_to_collect(payments_changeset) do
-    %{
-      remaining_price: remaining_price,
-      payment_schedules: payments
-    } = payments_changeset |> current()
-
-    total_collected =
-      payments
-      |> Enum.reduce(Money.new(0), fn payment, acc ->
-        Money.add(acc, payment.price || Money.new(0))
-      end)
-
-    Money.subtract(remaining_price, total_collected)
-  end
-
-  defp remaining_amount_zero?(package_changeset),
-    do: package_changeset |> total_remaining_amount() |> Money.zero?()
-
-  defp base_price_zero?(package_changeset),
-    do: (Changeset.get_field(package_changeset, :base_price) || Money.new(0)) |> Money.zero?()
-
-  defp make_payment_schedule(multi_changes, changes) do
-    multi_changes
-    |> Enum.map(fn {payment_schedule, i} ->
-      now = DateTime.utc_now() |> DateTime.truncate(:second)
-
-      {:ok, due_at} =
-        payment_schedule.due_date
-        |> DateTime.new(~T[00:00:00])
-
-      %{
-        price: payment_schedule.price,
-        due_at: due_at,
-        job_id: changes.job.id,
-        inserted_at: now,
-        updated_at: now,
-        description: "Payment #{i + 1}"
-      }
-    end)
-  end
-
-  defp check_max_entries(%{assigns: %{uploads: %{documents: %{entries: entries}}}} = socket) do
-    case Enum.count(entries, & &1.valid?) > @upload_options[:max_entries] do
-      true ->
-        entries
-        |> Enum.with_index()
-        |> Enum.filter(&elem(&1, 0).valid?)
-        |> Enum.split(@upload_options[:max_entries])
-        |> then(fn {_valid, invalid} ->
-          renew_uploads(socket, invalid, :max_limit_reach)
-        end)
-
-      false ->
-        socket
-    end
-  end
-
-  defp check_dulplication(%{assigns: %{uploads: %{documents: %{entries: entries}}}} = socket) do
-    entries
-    |> Enum.with_index()
-    |> Enum.group_by(fn {entry, _i} -> entry.client_name && to_string(entry.client_size) end)
-    |> Enum.reduce(socket, fn {_k, [_valid | invalid]}, socket ->
-      renew_uploads(socket, invalid, :duplicate)
-    end)
-  end
-
-  defp renew_uploads(socket, entries, error) when is_list(entries) do
-    Enum.reduce(entries, socket, fn {entry, i}, socket ->
-      if entry.valid?, do: renew_uploads(socket, {entry, i}, error), else: socket
-    end)
-  end
-
-  defp renew_uploads(
-         %{assigns: %{uploads: %{documents: %{entries: entries}}}} = socket,
-         {entry, i},
-         error
-       ) do
-    entries
-    |> List.replace_at(i, %{entry | valid?: false})
-    |> renew_uploads(entry, socket, [{entry.ref, error}])
-  end
-
-  defp renew_uploads(entries, entry, %{assigns: %{uploads: uploads}} = socket, errs \\ []) do
-    entries
-    |> then(&Map.put(uploads.documents, :entries, &1))
-    |> Map.update(
-      :errors,
-      {},
-      &Enum.concat(Enum.filter(&1, fn {ref, _} -> ref != entry.ref end), errs)
-    )
-    |> then(&Map.put(uploads, :documents, &1))
-    |> then(&assign(socket, :uploads, &1))
   end
 end

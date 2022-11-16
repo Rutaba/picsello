@@ -396,8 +396,8 @@ defmodule Picsello.Accounts do
     case changeset do
       {:ok, user} ->
         %{
-          list_ids: SendgridClient.get_all_contact_list_env(),
-          contacts: [
+          list_ids: SendgridClient.get_all_client_list_env(),
+          clients: [
             %{
               email: user.email,
               first_name: User.first_name(user),
@@ -409,7 +409,7 @@ defmodule Picsello.Accounts do
             }
           ]
         }
-        |> SendgridClient.add_contacts()
+        |> SendgridClient.add_clients()
 
         user_created_webhook(%{
           email: user.email,

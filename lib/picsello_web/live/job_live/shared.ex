@@ -5,6 +5,7 @@ defmodule PicselloWeb.JobLive.Shared do
   alias Picsello.{
     Galleries,
     Job,
+    Client,
     Shoot,
     ClientMessage,
     Repo,
@@ -24,8 +25,10 @@ defmodule PicselloWeb.JobLive.Shared do
   import PicselloWeb.FormHelpers
   import Phoenix.HTML.Form
   import PicselloWeb.Gettext, only: [ngettext: 3]
+  import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
 
   use Phoenix.Component
+  use Phoenix.HTML
 
   def handle_event("copy-client-link", _, socket), do: socket |> noreply()
 
@@ -95,15 +98,12 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_event("open_email_compose", %{}, %{assigns: %{current_user: current_user}} = socket) do
-    socket
-    |> PicselloWeb.ClientMessageComponent.open(%{
-      current_user: current_user,
-      enable_size: true,
-      enable_image: true
-    })
-    |> noreply()
-  end
+  def handle_event(
+        "open-compose",
+        %{"client_id" => client_id},
+        socket
+      ),
+      do: open_email_compose(socket, client_id)
 
   def handle_event(
         "open-mark-as-paid",
@@ -115,11 +115,24 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_event("open-compose", %{}, socket), do: open_email_compose(socket)
-
   def handle_event("open-inbox", _, %{assigns: %{job: job}} = socket) do
     socket
     |> push_redirect(to: Routes.inbox_path(socket, :show, job.id))
+    |> noreply()
+  end
+
+  def handle_event("delete_document", %{"name" => name, "document_id" => id} = _params, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No, go back",
+      confirm_event: "delete_docs",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      title: "Delete File?",
+      subtitle:
+        "Are you sure you wish to permanently delete #{name} from the job #{Job.name(socket.assigns.job)} ?",
+      payload: %{documents_id: id}
+    })
     |> noreply()
   end
 
@@ -129,7 +142,175 @@ defmodule PicselloWeb.JobLive.Shared do
     socket |> open_modal(PicselloWeb.Live.Profile.EditNameSharedComponent, params) |> noreply()
   end
 
-  def handle_info({:action_event, "open_email_compose"}, socket), do: open_email_compose(socket)
+  def handle_event("search", %{"search_phrase" => search_phrase}, socket) do
+    socket
+    |> assign(search_results: search(search_phrase, socket))
+    |> assign(search_phrase: search_phrase)
+    |> noreply()
+  end
+
+  def handle_event("new-client", _, socket) do
+    socket
+    |> assign(:new_client, true)
+    |> search_assigns()
+    |> noreply()
+  end
+
+  def handle_event("cancel-new-client", _, socket) do
+    socket
+    |> assign(:changeset, Picsello.Job.create_changeset(%{}))
+    |> assign(:new_client, false)
+    |> noreply()
+  end
+
+  def handle_event("clear-search", _, %{assigns: %{job_changeset: job_changeset}} = socket) do
+    socket
+    |> search_assigns()
+    |> assign(
+      :job_changeset,
+      Job.new_job_changeset(Map.delete(job_changeset.changes, :client_id))
+    )
+    |> noreply()
+  end
+
+  def handle_event("clear-search", _, %{assigns: %{changeset: changeset}} = socket) do
+    socket
+    |> search_assigns()
+    |> assign(:changeset, Job.new_job_changeset(Map.delete(changeset.changes, :client_id)))
+    |> noreply()
+  end
+
+  def handle_event(
+        "pick",
+        %{"client_id" => client_id},
+        %{assigns: %{search_results: search_results, job_changeset: job_changeset}} = socket
+      ) do
+    socket
+    |> assign(:search_results, [])
+    |> assign(:searched_client, Enum.find(search_results, &(&1.id == to_integer(client_id))))
+    |> then(fn socket ->
+      socket
+      |> assign(:search_phrase, socket.assigns.searched_client.name)
+    end)
+    |> assign(
+      :job_changeset,
+      Job.new_job_changeset(Map.merge(job_changeset.changes, %{:client_id => client_id}))
+    )
+    |> noreply()
+  end
+
+  def handle_event(
+        "pick",
+        %{"client_id" => client_id},
+        %{assigns: %{search_results: search_results, changeset: changeset}} = socket
+      ) do
+    socket
+    |> assign(:search_results, [])
+    |> assign(:searched_client, Enum.find(search_results, &(&1.id == to_integer(client_id))))
+    |> then(fn socket ->
+      socket
+      |> assign(:search_phrase, socket.assigns.searched_client.name)
+    end)
+    |> assign(
+      :changeset,
+      Job.new_job_changeset(Map.merge(changeset.changes, %{:client_id => client_id}))
+    )
+    |> noreply()
+  end
+
+  # prevent search from submit
+  def handle_event("submit", _, socket), do: socket |> noreply()
+
+  # up
+  def handle_event(
+        "set-focus",
+        %{"key" => "ArrowUp"},
+        %{assigns: %{current_focus: current_focus}} = socket
+      ) do
+    socket
+    |> assign(:current_focus, Enum.max([current_focus - 1, 0]))
+    |> noreply()
+  end
+
+  # down
+  def handle_event(
+        "set-focus",
+        %{"key" => "ArrowDown"},
+        %{assigns: %{search_results: search_results, current_focus: current_focus}} = socket
+      ) do
+    socket
+    |> assign(
+      :current_focus,
+      Enum.min([current_focus + 1, length(search_results) - 1])
+    )
+    |> noreply()
+  end
+
+  # enter
+  def handle_event(
+        "set-focus",
+        %{"key" => "Enter"},
+        %{assigns: %{search_results: search_results, current_focus: current_focus}} = socket
+      ) do
+    case Enum.at(search_results, current_focus) do
+      nil ->
+        socket |> noreply()
+
+      search_phrase ->
+        __MODULE__.handle_event("pick", %{"client_id" => "#{search_phrase.id}"}, socket)
+    end
+  end
+
+  # fallback for non related search key strokes
+  def handle_event("set-focus", _value, socket), do: noreply(socket)
+
+  defp search_assigns(socket) do
+    socket
+    |> assign(:search_results, [])
+    |> assign(:search_phrase, nil)
+    |> assign(:searched_client, nil)
+  end
+
+  defp search(nil, _socket), do: []
+
+  defp search("", _socket), do: []
+
+  defp search(search_phrase, %{assigns: %{clients: clients}}) do
+    clients
+    |> Enum.filter(&client_matches?(&1, search_phrase))
+  end
+
+  defp client_matches?(client, query) do
+    (client.name && do_match?(client.name, query)) ||
+      (client.name && do_match?(List.last(String.split(client.name)), query)) ||
+      do_match?(client.email, query) ||
+      (client.phone && String.contains?(client.phone, query))
+  end
+
+  defp do_match?(data, query) do
+    String.starts_with?(
+      String.downcase(data),
+      String.downcase(query)
+    )
+  end
+
+  def handle_info({:action_event, "open_email_compose"}, socket),
+    do: open_email_compose(socket, socket.assigns.client.id)
+
+  def handle_info(
+        {:confirm_event, "delete_docs", %{documents_id: documents_id}},
+        %{assigns: %{job: %{documents: documents} = job}} = socket
+      ) do
+    job =
+      Ecto.Changeset.change(job, %{documents: Enum.reject(documents, &(&1.id == documents_id))})
+      |> Repo.update!()
+
+    socket
+    |> close_modal()
+    |> assign(:job, job)
+    |> put_flash(:success, "Document deleted successfully!")
+    |> noreply()
+  end
 
   def handle_info(
         {:message_composed, message_changeset},
@@ -166,7 +347,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def handle_info({:update, %{job: job}}, socket) do
     socket
     |> assign(:job, job)
-    |> put_flash(:success, "Name updated successfully")
+    |> put_flash(:success, "Job updated successfully")
     |> noreply()
   end
 
@@ -292,7 +473,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <.icon name="close-x" class="hidden w-3 h-4 stroke-current stroke-2 close-icon opacity-100 border rounded w-9 border-blue-planning-300 text-blue-planning-300"/>
           </button>
           <ul class="absolute hidden bg-white rounded-md popover-content meatballsdropdown w-40 overflow-visible cursor-pointer">
-          <li phx-click="open_email_compose" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+          <li phx-click="open-compose" phx-value-client_id={@job.client_id} class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
             <.icon name="envelope" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
             <a class="hover-drop-down">Send an email</a>
           </li>
@@ -391,7 +572,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <button type="button" class="link mx-8 my-4" phx-click="open-inbox">
               Go to inbox
             </button>
-            <button type="button" class="btn-primary intro-message" phx-click="open-compose">
+            <button type="button" class="btn-primary intro-message" phx-click="open-compose" phx-value-client_id={@job.client_id}>
               Send message
             </button>
           </div>
@@ -521,6 +702,59 @@ defmodule PicselloWeb.JobLive.Shared do
     ~H"""
     <.section id="booking-details" icon="camera-laptop" title="Booking details" collapsed_sections={@collapsed_sections}>
       <.card title={if @proposal && (@proposal.sent_to_client || @proposal.accepted_at), do: "Here’s what you sent your client", else: "Here’s what you’ll be sending your client"}>
+      <%= if(!@job.job_status.is_lead) do %>
+      <div class="grid sm:grid-cols-2 gap-5 border border-base-200 rounded-lg my-5">
+        <div class="flex flex-col p-4">
+          <div class="flex flex-row font-bold">
+            Additional files
+          </div>
+          <div class="flex flex-col">
+          <%= if(@job.documents == nil || @job.documents == []) do %>
+          <div class="p-12 text-gray-400 italic">No additional files have been uploaded</div>
+          <% end %>
+            <%= @job.documents |> Enum.map(fn documents  -> %>
+            <div id={documents.id} class="flex flex-row justify-between items-center">
+              <dl class="flex items-center">
+                <dd>
+                <.icon name="files-icon" class="w-4 h-4" />
+                </dd>
+                <dd class="block link pl-1"><%= documents.name %></dd>
+              </dl>
+              <div id="options" phx-update="ignore" data-offset="0" phx-hook="Select" >
+                <button title="Options" type="button" class="flex flex-shrink-0 ml-2 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+                  <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+                  <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+                </button>
+
+                <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
+                  <button title="Deletes" type="button" phx-click="delete_document" phx-value-name={documents.name} phx-value-document_id={documents.id} class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                    Delete
+                    <.icon name="trash" class="inline-block w-4 h-4 mx-3 fill-current text-red-sales-300" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <% end ) %>
+          </div>
+          <div>
+          </div>
+        </div>
+        <div class="flex flex-col p-4" id={"document-upload-#{@job.id}"} phx-hook="ResumeUpload">
+          <form phx-change="validate" phx-submit="submit" id="upload_documents">
+            <.drag_drop
+            upload_entity={@uploads.documents}
+            label_class="py-8"
+            job_view?={true}
+            />
+          </form>
+          <%= Enum.map(@invalid_entries, fn entry -> %>
+            <.files_to_upload entry={entry} for={:job_detail} >
+              <.error_action error={@invalid_entries_errors[entry.ref]} entry={entry} />
+            </.files_to_upload>
+          <% end) %>
+        </div>
+      </div>
+      <% end %>
         <div {testid("contract")} class="grid sm:grid-cols-2 gap-5">
           <div class="flex flex-col border border-base-200 rounded-lg p-4">
             <h3 class="font-bold">Contract:</h3>
@@ -661,27 +895,77 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  def job_form_fields(assigns) do
-    assigns = assigns |> Enum.into(%{email: nil, name: nil, phone: nil})
-
+  def search_clients(assigns) do
     ~H"""
-    <div class="px-1.5 grid grid-cols-1 sm:grid-cols-3 gap-5">
-      <%= inputs_for @form, :client, fn client_form -> %>
-        <%= labeled_input client_form, :name, label: "Client Name", placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500", disabled: @name != nil %>
-        <%= if @name != nil do %>
-          <%= hidden_input client_form, :name %>
-        <% end %>
-        <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "email@example.com", phx_debounce: "500", disabled: @email != nil %>
-        <%= if @email != nil do %>
-          <%= hidden_input client_form, :email %>
-        <% end %>
-        <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", optional: true, placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", disabled: @phone != nil  %>
-        <%= if @phone != nil do %>
-          <%= hidden_input client_form, :phone %>
-        <% end %>
+      <%= form_tag("#", [phx_change: :search, phx_submit: :submit, phx_target: @myself]) do %>
+        <div class="flex flex-col justify-between items-center px-1.5 md:flex-row">
+          <div class="relative flex md:w-2/3 w-full">
+            <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+              <%= if Enum.any?(@search_results) || @searched_client do %>
+                <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
+                  <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
+                </span>
+              <% else %>
+                <.icon name="search" class="w-4 ml-1 fill-current" />
+              <% end %>
+            </a>
+            <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients by email or first and last names..." />
+            <%= if Enum.any?(@search_results) do %>
+              <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
+                <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
+                  <%= for {search_result, idx} <- Enum.with_index(@search_results) do %>
+                    <div class={"flex items-center cursor-pointer p-2"} phx-click="pick" phx-target={@myself} phx-value-client_id={"#{search_result.id}"}>
+                      <%= radio_button(:search_radio, :name, search_result.name, checked: idx == @current_focus, class: "mr-5 w-5 h-5 radio") %>
+                      <div>
+                        <p><%= search_result.name %></p>
+                        <p class="text-sm"><%= search_result.email %></p>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% else %>
+              <%= if @search_phrase && @search_phrase !== "" && Enum.empty?(@search_results) && is_nil(@selected_client) && is_nil(@searched_client) do %>
+                <div class="absolute top-14 w-full">
+                  <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 cursor-pointer shadow py-2 px-2 bg-white">
+                    <p class="font-bold">No client found with that information</p>
+                    <p>You'll need to add a new client</p>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+          <p class={classes("flex", %{"text-gray-400" => (!is_nil(@selected_client) || @new_client)})}>or</p>
+          <button disabled={!is_nil(@selected_client) || @new_client} type="button" class="justify-right text-lg px-7 btn-primary" phx-click="new-client" phx-target={@myself}>
+            Add a new client
+          </button>
+        </div>
       <% end %>
+    """
+  end
 
-      <div class="sm:col-span-3">
+  def job_form_fields(assigns) do
+    ~H"""
+    <div class="px-1.5">
+      <%= if @new_client do %>
+        <div class="rounded-lg border border-gray-300 mt-10">
+          <h3 class="rounded-t-lg bg-gray-300 px-5 py-2 text-2xl font-bold">Add a new client</h3>
+          <div class="row grid grid-cols-1 px-5 py-2 sm:grid-cols-3 gap-5 mt-3">
+            <%= inputs_for @form, :client, fn client_form -> %>
+              <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "email@example.com", phx_debounce: "500" %>
+              <%= labeled_input client_form, :name, label: "Client Name", placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
+              <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", optional: true, placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500" %>
+            <% end %>
+          </div>
+          <div class="flex px-5 py-5 ml-auto">
+            <button class="btn-secondary button rounded-lg border border-blue-300 ml-auto" title="cancel" type="button" phx-click="cancel-new-client" phx-target={@myself}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      <% end %>
+      <hr class="mt-10">
+      <div class="sm:col-span-3 mt-3">
         <%= label_for @form, :type, label: "Type of Photography" %>
         <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
           <%= for job_type <- @job_types do %>
@@ -819,12 +1103,15 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_inbox_count()
   end
 
-  defp open_email_compose(%{assigns: %{current_user: current_user}} = socket) do
+  defp open_email_compose(%{assigns: %{current_user: current_user}} = socket, client_id) do
+    client = Repo.get(Client, client_id)
+
     socket
     |> PicselloWeb.ClientMessageComponent.open(%{
       current_user: current_user,
       enable_size: true,
-      enable_image: true
+      enable_image: true,
+      client: client
     })
     |> noreply()
   end
@@ -839,5 +1126,159 @@ defmodule PicselloWeb.JobLive.Shared do
       |> assign(payment_schedules: payment_schedules)
       |> validate_payment_schedule()
     end)
+  end
+
+  def drag_drop(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        label_class: "py-32",
+        job_view?: nil,
+        text_color: "text-black",
+        item_name: "files",
+        supported_types: ".PDF, .docx, .txt"
+      })
+
+    ~H"""
+    <div class="dragDrop border-dashed border-2 border-blue-planning-300 rounded-lg" id="dropzone-upload" phx-hook="DragDrop" phx-drop-target={@upload_entity.ref}>
+      <label class={"flex flex-col items-center justify-center w-full h-full gap-8 cursor-pointer #{@label_class}"}>
+        <div class={"max-w-xs mx-auto #{@job_view? && 'flex gap-4'}"}>
+          <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76" class="mx-auto cursor-pointer opacity-75 cursor-defaul" alt="add photos icon"/>
+            <div class="flex flex-col items-center justify-center dragDrop__content">
+              <p class="text-center">
+                <span class={"font-bold #{@text_color}"}>Drag your <%= @item_name %> or </span>
+                <span class="font-bold cursor-pointer primary gray">browse</span>
+                  <%= live_file_input @upload_entity, class: "dragDropInput" %>
+              </p>
+              <p class="text-center gray">Supports <%= @supported_types %></p>
+            </div>
+        </div>
+      </label>
+    </div>
+    """
+  end
+
+  @string_length 15
+  def files_to_upload(assigns) do
+    assigns = Enum.into(assigns, %{myself: nil, for: nil, string_length: @string_length})
+    photos? = assigns[:for] == :photos
+
+    ~H"""
+      <div class={classes("uploadEntry grid grid-cols-5 pb-4 items-center", %{"px-14" => photos?})}>
+        <p class={"#{if photos?, do: 'col-span-3', else: 'col-span-2'} max-w-md"}>
+        <%= truncate_name(@entry, @string_length) %>
+        </p>
+        <div class={"#{if photos?, do: 'gap-x-4 grid-cols-1', else: 'ml-[80px] col-span-2'} flex photoUploadingIsFailed items-center"}>
+          <%= render_slot(@inner_block) %>
+        </div>
+          <%= case @for do %>
+            <% :job_detail -> %>
+              <.removal_button phx-click="cancel-upload" phx-value-ref={@entry.ref} />
+            <% :photos -> %>
+              <.removal_button phx-target={@target} phx-click="delete_photo" phx-value-index={@index} phx-value-delete_from={@delete_from} />
+            <% _ -> %>
+              <div id="file_options" data-offset-x="30" phx-hook="Select" class="w-4 ml-48">
+                  <button type="button" class="flex flex-shrink-0 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+                    <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+                    <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+                  </button>
+
+                  <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
+                    <span phx-click="cancel-upload" phx-target={@myself} phx-value-ref={@entry.ref} aria-label="remove" class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 cursor-pointer">
+                      <span class="pr-2">delete</span>
+                      <.icon name="remove-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300"/>
+                    </span>
+                  </div>
+              </div>
+          <% end %>
+      </div>
+    """
+  end
+
+  defp removal_button(assigns) do
+    ~H"""
+    <button {assigns} aria-label="remove" class="justify-self-end grid-cols-1 cursor-pointer">
+      <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
+    </button>
+    """
+  end
+
+  def error_action(%{error: error, entry: entry} = assigns) do
+    assigns = Map.put_new(assigns, :target, nil)
+
+    ~H"""
+    <p class="error btn items-center px-2"><%= Phoenix.Naming.humanize(error) %></p>
+    <p class={"retry rounded ml-2 py-1 px-2 text-xs cursor-pointer #{!retryable?(error) && 'cursor-not-allowed'}"}
+      phx-value-ref={entry.ref} phx-click={retryable?(error) && "retry"} phx-target={@target}>
+      Retry?
+    </p>
+    """
+  end
+
+  defp retryable?(err) when err in ~w(too_large not_accepted)a, do: false
+  defp retryable?(_err), do: true
+
+  def check_max_entries(
+        %{assigns: %{uploads: %{documents: %{entries: entries} = documents}}} = socket
+      ) do
+    case Enum.count(entries, & &1.valid?) > documents.max_entries do
+      true ->
+        entries
+        |> Enum.with_index()
+        |> Enum.filter(&elem(&1, 0).valid?)
+        |> Enum.split(documents.max_entries)
+        |> then(fn {_valid, invalid} ->
+          renew_uploads(socket, invalid, :max_limit_reach)
+        end)
+
+      false ->
+        socket
+    end
+  end
+
+  @error :duplicate
+  def check_dulplication(
+        %{assigns: %{uploads: %{documents: %{entries: entries}}}} = socket,
+        ex_docs \\ []
+      ) do
+    entries
+    |> Enum.with_index()
+    |> Enum.group_by(fn {entry, _i} -> entry.client_name end)
+    |> Enum.reduce(socket, fn {_k, [{valid, i} | invalid_entries]}, socket ->
+      socket = renew_uploads(socket, invalid_entries, @error)
+
+      if valid.client_name in ex_docs do
+        renew_uploads(socket, {valid, i}, @error)
+      else
+        socket
+      end
+    end)
+  end
+
+  def renew_uploads(socket, invalid_entries, error) when is_list(invalid_entries) do
+    Enum.reduce(invalid_entries, socket, fn {entry, i}, socket ->
+      if entry.valid?, do: renew_uploads(socket, {entry, i}, error), else: socket
+    end)
+  end
+
+  def renew_uploads(
+        %{assigns: %{uploads: %{documents: %{entries: entries}}}} = socket,
+        {entry, i},
+        error
+      ) do
+    entries
+    |> List.replace_at(i, %{entry | valid?: false})
+    |> renew_uploads(entry, socket, [{entry.ref, error}])
+  end
+
+  def renew_uploads(entries, entry, %{assigns: %{uploads: uploads}} = socket, errs \\ []) do
+    entries
+    |> then(&Map.put(uploads.documents, :entries, &1))
+    |> Map.update(
+      :errors,
+      {},
+      &Enum.concat(Enum.filter(&1, fn {ref, _} -> ref != entry.ref end), errs)
+    )
+    |> then(&Map.put(uploads, :documents, &1))
+    |> then(&assign(socket, :uploads, &1))
   end
 end

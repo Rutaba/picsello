@@ -153,7 +153,8 @@ defmodule PicselloWeb.LeadLive.Show do
       enable_image: true,
       presets: [],
       body_html: body_html,
-      subject: subject
+      subject: subject,
+      client: Job.client(job)
     })
     |> noreply()
   end
@@ -224,7 +225,7 @@ defmodule PicselloWeb.LeadLive.Show do
   def handle_info({:update, %{job: job}}, socket) do
     socket
     |> assign(:job, job)
-    |> put_flash(:success, "Name updated successfully")
+    |> put_flash(:success, "Job updated successfully")
     |> noreply()
   end
 

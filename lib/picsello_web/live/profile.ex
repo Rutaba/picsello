@@ -100,7 +100,7 @@ defmodule PicselloWeb.Live.Profile do
 
         <hr class="mt-12" />
 
-        <%= if !Enum.empty?(@booking_events) do %>
+        <%= if Enum.any?(@booking_events) do %>
           <section class="mt-20">
             <h2 class="text-4xl font-bold mb-8" {testid("events-heading")}>Book a session with me!</h2>
             <div class="grid sm:grid-cols-2 gap-8">
@@ -148,7 +148,7 @@ defmodule PicselloWeb.Live.Profile do
 
         <hr class="my-20" />
 
-        <%= live_component PicselloWeb.Live.Profile.ContactFormComponent, id: "contact-component", organization: @organization, color: @color, job_types: @job_types, job_type: @job_type %>
+        <%= live_component PicselloWeb.Live.Profile.ClientFormComponent, id: "client-component", organization: @organization, color: @color, job_types: @job_types, job_type: @job_type %>
       </div>
 
       <.profile_footer color={@color} photographer={@photographer} organization={@organization} />

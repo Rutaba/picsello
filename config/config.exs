@@ -131,8 +131,8 @@ config :picsello, Picsello.Mailer,
   marketing_template: System.get_env("SENDGRID_MARKETING_TEMPLATE"),
   marketing_unsubscribe_id:
     System.get_env("SENDGRID_MARKETING_UNSUBSCRIBE_ID") |> Integer.parse(),
-  contact_list_transactional: System.get_env("SENDGRID_CONTACT_LIST_TRANSACTIONAL"),
-  contact_list_trial_welcome: System.get_env("SENDGRID_CONTACT_LIST_TRIAL_WELCOME"),
+  client_list_transactional: System.get_env("SENDGRID_CLIENT_LIST_TRANSACTIONAL"),
+  client_list_trial_welcome: System.get_env("SENDGRID_CLIENT_LIST_TRIAL_WELCOME"),
   proofing_selection_confirmation_template:
     System.get_env("SENDGRID_PROOFING_SELECTION_CONFIMATION_TEMPLATE"),
   photographer_proofing_selection_confirmation_template:

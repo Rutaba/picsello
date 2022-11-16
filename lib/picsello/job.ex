@@ -34,7 +34,7 @@ defmodule Picsello.Job do
     has_many(:booking_proposals, BookingProposal, preload_order: [desc: :inserted_at])
     has_many(:client_messages, ClientMessage)
 
-    embeds_many :documents, Documents do
+    embeds_many :documents, Documents, on_replace: :delete do
       field :name, :string
       field :url, :string
     end
@@ -42,7 +42,13 @@ defmodule Picsello.Job do
     timestamps(type: :utc_datetime)
   end
 
-  def types, do: from(t in "job_types", select: t.name) |> Repo.all()
+  def new_job_changeset(attrs \\ %{}) do
+    %__MODULE__{}
+    |> cast(attrs, [:type, :client_id, :notes, :is_gallery_only])
+    |> validate_required([:type, :client_id])
+    |> foreign_key_constraint(:type)
+    |> foreign_key_constraint(:client_id)
+  end
 
   def create_changeset(attrs \\ %{}) do
     %__MODULE__{}
@@ -94,6 +100,8 @@ defmodule Picsello.Job do
     end
   end
 
+  def client(%__MODULE__{} = job), do: job |> Repo.preload(:client) |> Map.get(:client)
+
   def for_user(%Picsello.Accounts.User{organization_id: organization_id}) do
     from(job in __MODULE__,
       join: client in Client,
@@ -108,6 +116,12 @@ defmodule Picsello.Job do
 
   def by_client_id(id) do
     from(job in __MODULE__, where: job.client_id == ^id)
+  end
+
+  def by_type(query \\ __MODULE__, type) do
+    from(job in query,
+      where: job.type == ^type
+    )
   end
 
   def lead?(%__MODULE__{} = job) do

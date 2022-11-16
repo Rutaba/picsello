@@ -19,20 +19,20 @@ defmodule Picsello.UserSendsMarketingCampaignTest do
     [session: session]
   end
 
-  feature "sends campaign to new contacts", %{session: session} do
+  feature "sends campaign to new clients", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Marketing"))
     |> click(button("Create an email"))
-    |> assert_text("Unassigned contacts (1)")
-    |> assert_text("All contacts (2)")
+    |> assert_text("Unassigned clients (1)")
+    |> assert_text("All clients (2)")
     |> fill_in(text_field("Subject"), with: "My subject")
     |> fill_in_quill("This is the body")
     |> click(button("Review"))
     |> focus_frame(css("iframe#template-preview"))
     |> assert_text("TEMPLATE_PREVIEW")
     |> focus_parent_frame()
-    |> assert_text("Recipient list: 1 contact")
+    |> assert_text("Recipient list: 1 client")
     |> click(button("Send"))
     |> assert_flash(:success, text: "Promotional Email sent")
     |> assert_text("MOST RECENT")
@@ -45,18 +45,18 @@ defmodule Picsello.UserSendsMarketingCampaignTest do
     session
     |> click(testid("campaign-item"))
     |> within_modal(&assert_text(&1, "My subject"))
-    |> within_modal(&assert_text(&1, "Recipient list: 1 contact"))
+    |> within_modal(&assert_text(&1, "Recipient list: 1 client"))
     |> focus_frame(css("iframe#template-preview"))
     |> assert_text("TEMPLATE_PREVIEW")
   end
 
-  feature "sends campaign to all contacts", %{session: session} do
+  feature "sends campaign to all clients", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Marketing"))
     |> click(button("Create an email"))
     |> fill_in(text_field("Subject"), with: "My subject")
-    |> click(css("label", text: "All contacts (2)"))
+    |> click(css("label", text: "All clients (2)"))
     |> click(button("Review"))
     |> assert_text("Review email")
     |> click(button("Send"))

@@ -3,10 +3,15 @@
     <div class="flex justify-between">
       <h1 class="flex items-center justify-between mt-4 text-4xl font-bold md:justify-start">
         <div class="flex items-center font-bold">
-          <.live_link to={Routes.transaction_path(@socket, :transactions, @job.id)} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
+          <.live_link to={if @request_from != "order_history", do: Routes.transaction_path(@socket, :transactions, @job.id), else: Routes.client_path(@socket, :order_history, @job.client_id)} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
             <.icon name="back" class="w-4 h-4 stroke-2"/>
           </.live_link>
-          Gallery Order:<p class="font-normal md:pl-4 pl-2"><%= Job.name @job %></p>
+          <%= if @request_from == "order_history" do %>
+            Client Order:
+          <% else %>
+            Gallery Order:
+          <% end %>
+          <p class="font-normal md:pl-4 pl-2"><%= Job.name @job %></p>
         </div>
       </h1>
     </div>

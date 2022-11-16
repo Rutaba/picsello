@@ -4,20 +4,21 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
 
   alias Phoenix.PubSub
 
-  import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
+  import PicselloWeb.JobLive.Shared, only: [files_to_upload: 1]
 
   @string_length 35
 
   @impl true
   def mount(socket) do
     socket
+    |> assign(:string_length, @string_length)
     |> ok()
   end
 
   @impl true
   def handle_event(
         "delete_photo",
-        %{"index" => index, "delete_from" => delete_from},
+        %{"index" => index, "delete-from" => delete_from},
         %{assigns: assigns} = socket
       ) do
     delete_from = String.to_atom(delete_from)
@@ -138,25 +139,6 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
         , so some of your photos are still in the upload queue. You can retry uploading these photos below.
       <% end %>
     </div>
-    """
-  end
-
-  defp errors(assigns) do
-    string_length = @string_length
-
-    ~H"""
-      <div class="uploadEntry px-14 grid grid-cols-5 pb-4 items-center">
-        <p class="col-span-3 max-w-md">
-        <%= truncate_name(@entry, string_length) %>
-        </p>
-        <div class="flex gap-x-4 grid-cols-1 photoUploadingIsFailed items-center">
-          <%= render_slot(@inner_block) %>
-        </div>
-        <button phx-target={@target} phx-click="delete_photo" phx-value-index={@index} phx-value-delete_from={@delete_from}
-              aria-label="remove" class="justify-self-end grid-cols-1 cursor-pointer">
-          <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
-        </button>
-      </div>
     """
   end
 end

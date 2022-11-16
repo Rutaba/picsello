@@ -110,6 +110,7 @@ defmodule Picsello.InboxTest do
     session
     |> click(testid("inbox-card"))
     |> click(testid("thread-card", count: 2, at: 0))
+    |> scroll_to_bottom()
     |> click(button("Reply"))
     |> assert_has(css("div.ql-editor[data-placeholder='Compose message...']"))
     |> fill_in_quill("This is my response")

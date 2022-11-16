@@ -89,7 +89,7 @@ defmodule PicselloWeb.Live.Marketing do
           </.card>
         </div>
         <.card title="Marketing Emails" class={classes("relative", %{"sm:col-span-2" => Enum.any?(@campaigns)})}>
-          <p class="mb-8">Send marketing campaigns to your current/past clients and new contacts.</p>
+          <p class="mb-8">Send marketing campaigns to your current/past and new clients.</p>
           <div class="p-4 border rounded">
             <header class="flex items-center flex-wrap justify-between">
               <div class="flex items-center lg:mb-0 mb-4">
