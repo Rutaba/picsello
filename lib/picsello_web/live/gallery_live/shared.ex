@@ -1043,4 +1043,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
     socket
   end
+
+  def truncate_name(%{client_name: client_name, client_type: client_type}, max_length) do
+    if String.length(client_name) > max_length do
+      String.slice(client_name, 0..max_length) <> "..." <> String.slice(client_type, 6..15)
+    else
+      client_name
+    end
+  end
 end

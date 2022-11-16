@@ -12,15 +12,18 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     Packages.Download,
     Packages.PackagePricing,
     Repo,
-    BookingProposal
+    BookingProposal,
+    Galleries.Workers.PhotoStorage
   }
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
 
   import PicselloWeb.PackageLive.Shared,
     only: [package_basic_fields: 1, digital_download_fields: 1, current: 1]
 
+  @string_length 15
   defmodule CustomPaymentSchedule do
     @moduledoc false
     use Ecto.Schema
@@ -69,6 +72,12 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     end
   end
 
+  @upload_options [
+    accept: ~w(.pdf .docx .txt),
+    max_entries: String.to_integer(Application.compile_env(:picsello, :documents_max_entries)),
+    max_file_size: String.to_integer(Application.compile_env(:picsello, :document_max_size))
+  ]
+
   @impl true
   def update(assigns, socket) do
     socket
@@ -77,11 +86,12 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     |> assign_new(:package, fn -> %Package{shoot_count: 1} end)
     |> assign(
       step: :get_started,
-      steps: [:get_started, :job_details, :package_payment, :invoice]
+      steps: [:get_started, :job_details, :package_payment, :invoice, :documents]
     )
     |> assign_job_changeset(%{"client" => %{}})
     |> assign_package_changeset(%{})
     |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]})
+    |> allow_upload(:documents, @upload_options)
     |> ok()
   end
 
@@ -117,8 +127,14 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         <% end %>
       </div>
 
-      <h1 class="mt-2 mb-4 text-3xl"><strong class="font-bold">Import Existing Job:</strong> <%= heading_subtitle(@step) %></h1>
+      <h1 class="mt-2 mb-4 text-3xl">
+        <strong class="font-bold">Import Existing Job:</strong>
+        <%= heading_subtitle(@step) %>
 
+        <%= if @step == :documents do %>
+          <span class="italic">(Optional)</span>
+        <% end %>
+      </h1>
       <.step {assigns} />
     </div>
     """
@@ -130,7 +146,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         get_started: "Get Started",
         job_details: "General Details",
         package_payment: "Package & Payment",
-        invoice: "Custom Invoice"
+        invoice: "Custom Invoice",
+        documents: "Documents"
       },
       step
     )
@@ -245,12 +262,11 @@ defmodule PicselloWeb.JobLive.ImportWizard do
 
       <.digital_download_fields package_form={f} download={@download_changeset} package_pricing={@package_pricing_changeset} />
 
-      <.footer>
-        <button class="px-8 btn-primary" title="Next" type="submit" disabled={Enum.any?([@download_changeset, @package_pricing_changeset, @package_changeset], &(!&1.valid?))} phx-disable-with="Next">
-          Next
-        </button>
-        <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>Go back</button>
-      </.footer>
+      <.step_footer
+        title="Next"
+        disabled={Enum.any?([@download_changeset, @package_pricing_changeset, @package_changeset], &(!&1.valid?))}
+        myself={@myself}
+      />
     </.form>
     """
   end
@@ -312,13 +328,104 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         </div>
         <p class="mb-2 text-sm italic font-light">limit two payments</p>
       </div>
-      <.footer>
-        <button class="px-8 btn-primary" title="Next" type="submit" disabled={if remaining_amount_zero?, do: false, else: !@payments_changeset.valid?} phx-disable-with="Next">
-          Save
-        </button>
-        <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>Go back</button>
-      </.footer>
+
+      <.step_footer
+        title="Next"
+        disabled={if remaining_amount_zero?, do: false, else: !@payments_changeset.valid?}
+        myself={@myself}
+      />
     </.form>
+    """
+  end
+
+  def step(%{step: :documents} = assigns) do
+    ~H"""
+    <form phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
+      <div class="dragDrop border-dashed border-2 border-blue-planning-300 rounded-lg" id="dropzone-upload" phx-hook="DragDrop" phx-drop-target={@uploads.documents.ref}>
+          <label class="flex flex-col py-32 items-center justify-center w-full h-full gap-8 cursor-pointer">
+          <div class="max-w-xs mx-auto">
+             <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76" class="mx-auto cursor-pointer opacity-75 cursor-defaul" alt="add photos icon"/>
+              <div class="flex flex-col items-center justify-center dragDrop__content">
+                <p class="text-center">
+                  <span class="font-bold gray">Drag your images or </span>
+                  <span class="font-bold cursor-pointer primary gray">browse</span>
+                    <%= live_file_input @uploads.documents, class: "dragDropInput" %>
+                 </p>
+                <p class="text-center gray">Supports .PDF, .docx, .txt</p>
+              </div>
+          </div>
+        </label>
+      </div>
+      <div class="uploadingList__wrapper mt-8">
+        <div class="flex justify-between pb-4 items-center text-lg font-bold">
+          <span>Name</span>
+          <span>Status</span>
+          <span>Actions</span>
+        </div>
+        <hr class="md:block border-blue-planning-300 border-2 mb-2">
+        <%= Enum.filter(@uploads.documents.entries, & !&1.valid?) |> Enum.map(fn entry -> %>
+          <.uploaded_files myself={@myself} entry={entry}>
+            <%= for err <- upload_errors(@uploads.documents, entry) do %>
+              <p class="error btn items-center"><%= err %></p>
+              <p class={"retry rounded ml-2 py-1 px-2 text-xs cursor-pointer #{!retryable?(err) && 'cursor-not-allowed'}"}
+                phx-value-ref={entry.ref} phx-click={retryable?(err) && "retry"} phx-target={@myself}>
+                Retry?
+              </p>
+            <% end %>
+          </.uploaded_files>
+        <% end) %>
+        <%= Enum.filter(@uploads.documents.entries, & &1.valid?) |> Enum.map(fn entry -> %>
+          <.uploaded_files myself={@myself}  entry={entry}>
+            <p class="btn items-center">Uploaded</p>
+          </.uploaded_files>
+        <% end) %>
+      </div>
+
+      <.step_footer title="Finish" disabled={Enum.any?(@uploads.documents.entries, & !&1.valid?)} myself={@myself} />
+    </form>
+    """
+  end
+
+  defp step_footer(assigns) do
+    ~H"""
+    <.footer>
+      <button class="px-8 btn-primary" title={@title} type="submit" disabled={@disabled} phx-disable-with={@title}>
+        <%= @title %>
+      </button>
+      <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>Go back</button>
+    </.footer>
+    """
+  end
+
+  defp retryable?(err) when err in ~w(too_large not_accepted)a, do: false
+  defp retryable?(_err), do: true
+
+  defp uploaded_files(assigns) do
+    string_length = @string_length
+    assigns = Map.put_new(assigns, :myself, nil)
+
+    ~H"""
+      <div class="uploadEntry grid grid-cols-5 pb-4 items-center">
+        <p class="col-span-2 max-w-md">
+        <%= truncate_name(@entry, string_length) %>
+        </p>
+        <div class="flex ml-[80px] col-span-2 photoUploadingIsFailed items-center">
+          <%= render_slot(@inner_block) %>
+        </div>
+          <div id="file_options" data-offset="0" phx-hook="Select" class="w-4 ml-48">
+              <button type="button" class="flex flex-shrink-0 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+                <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+                <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+              </button>
+
+              <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content w-48">
+                <span phx-click="cancel-upload" phx-target={@myself} phx-value-ref={@entry.ref} aria-label="remove" class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                  <span>delete</span>
+                  <.icon name="remove-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300"/>
+                </span>
+              </div>
+          </div>
+      </div>
     """
   end
 
@@ -394,6 +501,28 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   end
 
   @impl true
+  def handle_event(
+        "retry",
+        %{"ref" => ref},
+        %{assigns: %{uploads: %{documents: %{entries: entries}}}} = socket
+      ) do
+    entry = Enum.find(entries, &(&1.ref == ref))
+
+    entries
+    |> Enum.reject(&(&1.ref == ref))
+    |> Enum.concat([%{entry | valid?: true}])
+    |> renew_uploads(entry, socket)
+    |> check_max_entries()
+    |> check_dulplication()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :documents, ref)}
+  end
+
+  @impl true
   def handle_event("validate", %{"job" => params}, socket) do
     socket |> assign_job_changeset(params, :validate) |> noreply()
   end
@@ -406,6 +535,18 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   @impl true
   def handle_event("validate", %{"custom_payments" => params}, socket) do
     socket |> assign_payments_changeset(params, :validate) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{"_target" => ["documents"]},
+        socket
+      ) do
+    socket
+    |> check_max_entries()
+    |> check_dulplication()
+    |> noreply()
   end
 
   @impl true
@@ -450,11 +591,17 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   end
 
   @impl true
-  def handle_event("submit", %{}, %{assigns: %{step: :invoice}} = socket) do
+  def handle_event("submit", %{}, %{assigns: %{step: :documents}} = socket) do
     import_job(socket)
   end
 
-  defp import_job(%{assigns: %{current_user: current_user} = assigns} = socket) do
+  def handle_event("submit", %{}, %{assigns: %{step: :invoice}} = socket) do
+    socket
+    |> assign(:step, :documents)
+    |> noreply()
+  end
+
+  defp import_job(%{assigns: %{current_user: current_user, uploads: uploads} = assigns} = socket) do
     job = assigns.job_changeset |> Changeset.apply_changes()
 
     result =
@@ -477,7 +624,21 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       |> Repo.transaction()
 
     case result do
-      {:ok, %{job: %Job{id: job_id}}} ->
+      {:ok, %{job: %Job{id: job_id} = job}} ->
+        uploads.documents.entries
+        |> Enum.filter(& &1.valid?)
+        |> Task.async_stream(fn entry ->
+          consume_uploaded_entry(socket, entry, fn %{path: path} ->
+            url = Job.document_path(job_id, entry.client_name)
+            {:ok, _} = PhotoStorage.insert(url, File.read!(path))
+
+            {:ok, %{url: url, name: entry.client_name}}
+          end)
+        end)
+        |> Enum.reduce([], fn {:ok, document}, acc -> [document | acc] end)
+        |> then(&Job.document_changeset(job, %{documents: &1}))
+        |> Repo.update!()
+
         socket |> push_redirect(to: Routes.job_path(socket, :jobs, job_id)) |> noreply()
 
       {:error, _} ->
@@ -615,5 +776,58 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         description: "Payment #{i + 1}"
       }
     end)
+  end
+
+  defp check_max_entries(%{assigns: %{uploads: %{documents: %{entries: entries}}}} = socket) do
+    case Enum.count(entries, & &1.valid?) > @upload_options[:max_entries] do
+      true ->
+        entries
+        |> Enum.with_index()
+        |> Enum.filter(&elem(&1, 0).valid?)
+        |> Enum.split(@upload_options[:max_entries])
+        |> then(fn {_valid, invalid} ->
+          renew_uploads(socket, invalid, :max_limit_reach)
+        end)
+
+      false ->
+        socket
+    end
+  end
+
+  defp check_dulplication(%{assigns: %{uploads: %{documents: %{entries: entries}}}} = socket) do
+    entries
+    |> Enum.with_index()
+    |> Enum.group_by(fn {entry, _i} -> entry.client_name && to_string(entry.client_size) end)
+    |> Enum.reduce(socket, fn {_k, [_valid | invalid]}, socket ->
+      renew_uploads(socket, invalid, :duplicate)
+    end)
+  end
+
+  defp renew_uploads(socket, entries, error) when is_list(entries) do
+    Enum.reduce(entries, socket, fn {entry, i}, socket ->
+      if entry.valid?, do: renew_uploads(socket, {entry, i}, error), else: socket
+    end)
+  end
+
+  defp renew_uploads(
+         %{assigns: %{uploads: %{documents: %{entries: entries}}}} = socket,
+         {entry, i},
+         error
+       ) do
+    entries
+    |> List.replace_at(i, %{entry | valid?: false})
+    |> renew_uploads(entry, socket, [{entry.ref, error}])
+  end
+
+  defp renew_uploads(entries, entry, %{assigns: %{uploads: uploads}} = socket, errs \\ []) do
+    entries
+    |> then(&Map.put(uploads.documents, :entries, &1))
+    |> Map.update(
+      :errors,
+      {},
+      &Enum.concat(Enum.filter(&1, fn {ref, _} -> ref != entry.ref end), errs)
+    )
+    |> then(&Map.put(uploads, :documents, &1))
+    |> then(&assign(socket, :uploads, &1))
   end
 end

@@ -34,6 +34,11 @@ defmodule Picsello.Job do
     has_many(:booking_proposals, BookingProposal, preload_order: [desc: :inserted_at])
     has_many(:client_messages, ClientMessage)
 
+    embeds_many :documents, Documents do
+      field :name, :string
+      field :url, :string
+    end
+
     timestamps(type: :utc_datetime)
   end
 
@@ -47,6 +52,14 @@ defmodule Picsello.Job do
     |> foreign_key_constraint(:type)
     |> assoc_constraint(:client)
   end
+
+  def document_changeset(job, attrs) do
+    job
+    |> change(attrs)
+    |> cast_embed(:documents, with: &document/2)
+  end
+
+  def document(document, attrs), do: cast(document, attrs, [:url, :name])
 
   defp timestamp_changeset(job, field) do
     change(job, [{field, DateTime.utc_now() |> DateTime.truncate(:second)}])
@@ -142,4 +155,7 @@ defmodule Picsello.Job do
       _ -> nil
     end
   end
+
+  def document_path(job_id, name),
+    do: "jobs/#{job_id}/documents/#{UUID.uuid4()}#{Path.extname(name)}"
 end

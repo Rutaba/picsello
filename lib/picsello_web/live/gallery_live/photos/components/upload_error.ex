@@ -4,6 +4,8 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
 
   alias Phoenix.PubSub
 
+  import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
+
   @string_length 35
 
   @impl true
@@ -113,14 +115,6 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
     )
   end
 
-  defp truncate_name(%{client_name: client_name, client_type: client_type}) do
-    if String.length(client_name) > @string_length do
-      String.slice(client_name, 0..@string_length) <> "..." <> String.slice(client_type, 6..15)
-    else
-      client_name
-    end
-  end
-
   defp error_type(assigns) do
     ~H"""
     <div class="pl-4">
@@ -148,10 +142,12 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
   end
 
   defp errors(assigns) do
+    string_length = @string_length
+
     ~H"""
       <div class="uploadEntry px-14 grid grid-cols-5 pb-4 items-center">
         <p class="col-span-3 max-w-md">
-        <%= truncate_name(@entry) %>
+        <%= truncate_name(@entry, string_length) %>
         </p>
         <div class="flex gap-x-4 grid-cols-1 photoUploadingIsFailed items-center">
           <%= render_slot(@inner_block) %>

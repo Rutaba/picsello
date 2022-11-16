@@ -85,6 +85,8 @@ config :picsello,
   photo_storage_bucket: System.get_env("PHOTO_STORAGE_BUCKET"),
   photos_max_entries: System.get_env("PHOTOS_MAX_ENTRIES") || "1500",
   photo_max_file_size: System.get_env("PHOTO_MAX_FILE_SIZE") || "104857600",
+  documents_max_entries: System.get_env("DOCUMENTS_MAX_ENTRIES") || "5",
+  document_max_size: System.get_env("DOCUMENT_MAX_SIZE") || "104822",
   logo_max_size: System.get_env("LOGO_MAX_SIZE") || "10485760"
 
 config :picsello, :whcc,
