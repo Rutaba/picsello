@@ -4,19 +4,13 @@ defmodule Picsello.PricingCalculations do
     Repo,
     Organization,
     PricingCalculatorTaxSchedules,
-    PricingCalculatorBusinessCosts,
-    Packages.BasePrice,
-    Packages.CostOfLivingAdjustment
+    PricingCalculatorBusinessCosts
   }
 
   import Ecto.Changeset
   import Ecto.Query
 
   use Ecto.Schema
-
-  import Picsello.Repo.CustomMacros
-
-  @zipcode_regex ~r/^\d{5}([-]|\s*)?(\d{4})?$/
 
   defmodule LineItem do
     @moduledoc false
@@ -53,32 +47,15 @@ defmodule Picsello.PricingCalculations do
     end
   end
 
-  @days_of_the_week [
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-    "sunday"
-  ]
-
   schema "pricing_calculations" do
     belongs_to(:organization, Organization)
     field(:average_time_per_week, :integer)
-
-    field(:average_days_per_week, {:array, :string}, values: @days_of_the_week)
-
     field(:desired_salary, Money.Ecto.Amount.Type)
     field(:tax_bracket, :integer)
     field(:after_income_tax, Money.Ecto.Amount.Type)
     field(:self_employment_tax_percentage, :decimal)
     field(:take_home, Money.Ecto.Amount.Type)
     field(:job_types, {:array, :string})
-    field(:schedule, :string)
-    field(:min_years_experience, :integer)
-    field(:state, :string)
-    field(:zipcode, :string)
     embeds_many(:business_costs, BusinessCost)
     embeds_many(:pricing_suggestions, PricingSuggestion)
 
@@ -90,23 +67,18 @@ defmodule Picsello.PricingCalculations do
     |> cast(attrs, [
       :organization_id,
       :job_types,
-      :state,
-      :min_years_experience,
-      :schedule,
-      :zipcode,
       :after_income_tax,
-      :average_days_per_week,
       :average_time_per_week,
       :desired_salary,
       :self_employment_tax_percentage,
       :tax_bracket,
       :take_home
     ])
-    |> validate_required([:job_types, :state, :min_years_experience])
-    |> maybe_validate_zipcode()
+    |> validate_required([:job_types, :average_time_per_week])
     |> validate_number(:average_time_per_week,
+      greater_than_or_equal_to: 1,
       less_than_or_equal_to: 168,
-      message: "There are not that many hours in a week"
+      message: "Must be between 1 and 168 hours"
     )
     |> Picsello.Package.validate_money(:desired_salary,
       greater_than_or_equal_to: 0,
@@ -115,18 +87,6 @@ defmodule Picsello.PricingCalculations do
     )
     |> cast_embed(:business_costs, with: &business_cost_changeset(&1, &2))
     |> cast_embed(:pricing_suggestions, with: &pricing_suggestions_changeset(&1, &2))
-  end
-
-  defp maybe_validate_zipcode(changeset) do
-    state = get_field(changeset, :state)
-
-    if Picsello.Onboardings.non_us_state?(state) do
-      changeset
-    else
-      changeset
-      |> validate_required([:zipcode])
-      |> validate_format(:zipcode, @zipcode_regex, message: "is invalid")
-    end
   end
 
   defp business_cost_changeset(business_cost, attrs) do
@@ -326,10 +286,16 @@ defmodule Picsello.PricingCalculations do
   end
 
   def calculate_revenue(
-        desired_salary,
+        %Money{} = desired_salary,
         costs
       ),
       do: Money.add(desired_salary, costs)
+
+  def calculate_revenue(
+        desired_salary,
+        costs
+      ),
+      do: Money.add(Money.parse!(desired_salary), costs)
 
   def calculate_all_costs(business_costs) do
     business_costs
@@ -368,47 +334,15 @@ defmodule Picsello.PricingCalculations do
     do: calculate_costs_by_category(line_items)
 
   def calculate_pricing_by_job_types(%{
-        min_years_experience: min_years_experience,
-        state: state,
-        schedule: schedule,
         job_types: job_types
       }) do
-    full_time = schedule == :full_time
-    nearest = 500
-
-    min_years_query =
-      from(base in BasePrice,
-        select: max(base.min_years_experience),
-        where: base.min_years_experience <= ^min_years_experience
-      )
-
-    from(base in BasePrice,
-      where:
-        base.full_time == ^full_time and base.job_type in ^job_types and
-          base.min_years_experience in subquery(min_years_query),
-      join: adjustment in CostOfLivingAdjustment,
-      on: adjustment.state == ^state,
-      group_by: base.job_type,
-      select: %{
-        record_count: count(base.job_type),
-        job_type: base.job_type,
-        base_price:
-          cast_money(
-            avg(
-              type(
-                nearest(adjustment.multiplier * base.base_price, ^nearest),
-                base.base_price
-              )
-            )
-          ),
-        shoot_count: type(avg(base.shoot_count), :integer),
-        max_session_per_year: type(avg(base.max_session_per_year), :integer),
-        max_session_per_month: type(avg(base.max_session_per_year / 12), :integer)
+    [
+      %{
+        job_type: "wedding",
+        base_price: Money.new(0),
+        min_sessions_per_year: 1,
+        max_session_per_year: 1
       }
-    )
-    |> Repo.all()
+    ]
   end
-
-  def calculate_min_sessions_a_year(%Money{amount: gross_revenue}, %Money{amount: base_price}),
-    do: div(gross_revenue, base_price)
 end
