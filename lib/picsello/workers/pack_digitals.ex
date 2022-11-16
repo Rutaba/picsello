@@ -15,12 +15,8 @@ defmodule Picsello.Workers.PackDigitals do
     case Pack.upload(packable) do
       {:ok, url} ->
         broadcast(packable, :ok, %{packable: packable, status: {:ready, url}})
-
-        Picsello.Notifiers.ClientNotifier.deliver_download_ready(
-          packable,
-          url,
-          PicselloWeb.Helpers
-        )
+        
+        maybe_notify(packable, url)
 
         :ok
 
@@ -64,9 +60,22 @@ defmodule Picsello.Workers.PackDigitals do
     )
   end
 
+  defp maybe_notify(%Gallery{} = gallery, url) do
+    if bundle_purchased?(gallery) do
+      Picsello.Notifiers.ClientNotifier.deliver_download_ready(
+        gallery,
+        url,
+        PicselloWeb.Helpers
+      )
+    end
+  end
+  defp maybe_notify(_, _), do: nil
+
   defp to_packable(%{"packable" => module_name, "id" => id}),
     do: module_name |> String.to_existing_atom() |> Repo.get!(id)
 
   defp context_module(%Order{}), do: Orders
   defp context_module(%Gallery{}), do: Galleries
+
+  defdelegate bundle_purchased?(gallery), to: Picsello.Orders
 end
