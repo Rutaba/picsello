@@ -543,7 +543,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def preview(assigns) do
     ~H"""
-    <div class="fixed z-30 lg:h-[45%] bg-white scroll-shadow">
+    <div class="fixed z-30 bg-white scroll-shadow">
         <div class="absolute 2xl:top-5 top-2 2xl:right-6 right-4">
             <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
             <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2 sm:stroke-1"/>
