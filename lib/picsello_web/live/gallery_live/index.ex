@@ -368,11 +368,12 @@ defmodule PicselloWeb.GalleryLive.Index do
       )
 
     jobs = get_jobs_list(galleries)
+
     galleries =
-          Enum.map(galleries, fn gallery ->
-            orders = Orders.all(gallery.id)
-            Map.put(gallery, :orders, orders)
-          end)
+      Enum.map(galleries, fn gallery ->
+        orders = Orders.all(gallery.id)
+        Map.put(gallery, :orders, orders)
+      end)
 
     socket
     |> assign(:page_title, action |> Phoenix.Naming.humanize())
@@ -392,7 +393,9 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   defp dropdown_item(%{icon: icon} = assigns) do
     assigns = Enum.into(assigns, %{class: "", id: ""})
-    icon_text_class = if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
+
+    icon_text_class =
+      if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
 
     ~H"""
     <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={@id} }>
