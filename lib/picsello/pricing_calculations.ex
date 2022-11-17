@@ -319,9 +319,7 @@ defmodule Picsello.PricingCalculations do
       %{
         job_type: job_type,
         base_price: calculate_shoot_base_price(desired_salary, shoots_per_year),
-        min_sessions_per_year: 1,
-        max_session_per_year: 1,
-        total_shoots: shoots_per_year |> Decimal.round(0)
+        max_session_per_year: shoots_per_year |> Decimal.round(0)
       }
     end)
   end

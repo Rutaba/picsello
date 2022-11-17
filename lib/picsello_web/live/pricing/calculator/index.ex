@@ -303,7 +303,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <div class="my-6">
           <h4 class="my-4 text-xl font-bold text-base-250">Shoot breakdown</h4>
           <%= for {pricing_suggestion, index} <- Enum.with_index(PricingCalculations.calculate_pricing_by_job_types(@pricing_calculations)) do %>
-            <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={@gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} index={index} min_sessions_per_year={pricing_suggestion.min_sessions_per_year} total_shoots={pricing_suggestion.total_shoots} />
+            <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={@gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} index={index} />
           <% end %>
         </div>
 
@@ -600,21 +600,21 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
       <div class="p-4 mb-4 border rounded-lg">
         <div class="grid lg:grid-cols-3 grid-cols-1 gap-3 sm:gap-5">
-          <div class="flex">
+          <div class="flex items-center">
             <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 ml-1 mr-3 bg-gray-100 rounded-full">
               <.icon name={@job_type} class="fill-current" width="24" height="24" />
             </div>
             <div>
               <h3 class="text-lg font-bold"><%= dyn_gettext @job_type %></h3>
-              <p class="text-sm">These numbers reflect if you only focused on <%= dyn_gettext @job_type %> shoots this year.</p>
+              <p class="text-xs text-base-250">Results reflect if you only focused on <%= dyn_gettext @job_type %> shoots this year</p>
               <input id={"calculator-step-5_pricing_suggestions_#{@index}_job_type"} name={"pricing_calculations[pricing_suggestions][#{@index}][job_type]"} type="hidden" value={@job_type}>
-              <input id={"calculator-step-5_pricing_suggestions_#{@index}_max_session_per_year"} name={"pricing_calculations[pricing_suggestions][#{@index}][total_shoots]"} type="hidden" value={@total_shoots}>
+              <input id={"calculator-step-5_pricing_suggestions_#{@index}_max_session_per_year"} name={"pricing_calculations[pricing_suggestions][#{@index}][max_session_per_year]"} type="hidden" value={@max_session_per_year}>
               <input id={"calculator-step-5_pricing_suggestions_#{@index}_base_price"} name={"pricing_calculations[pricing_suggestions][#{@index}][base_price]"} type="hidden" value={@base_price}>
             </div>
           </div>
           <div class="flex flex-col flex-wrap items-center justify-center p-4 bg-gray-100 rounded-lg">
             <span class="block w-full text-2xl font-bold text-center">
-            <%= @total_shoots %>
+            <%= @max_session_per_year %>
             </span>
             <span class="block w-full text-center font-italic">
               Total Shoots per year
