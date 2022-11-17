@@ -78,7 +78,11 @@ export default {
     document.querySelectorAll('.introjs-hint').forEach((el) => el.remove());
 
     // add new intro elements to current page
-    introJs().addHints();
+    introJs()
+      .setOptions({
+        hintShowButton: false,
+      })
+      .addHints();
   },
   destroyed() {
     // Intro js doesn't have a method

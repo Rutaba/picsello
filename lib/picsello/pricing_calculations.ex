@@ -12,6 +12,19 @@ defmodule Picsello.PricingCalculations do
 
   use Ecto.Schema
 
+  @total_hours_by_shoot %{
+    boudoir: 27.94,
+    event: 27.94,
+    family: 18.97,
+    headshot: 10.4,
+    maternity: 18.97,
+    mini: 10.4,
+    other: 10.4,
+    newborn: 27.94,
+    portrait: 18.97,
+    wedding: 66.57
+  }
+
   defmodule LineItem do
     @moduledoc false
     use Ecto.Schema
@@ -139,15 +152,8 @@ defmodule Picsello.PricingCalculations do
   def get_income_bracket(value) do
     %{income_brackets: income_brackets} = tax_schedule()
 
-    scrub_input =
-      case value do
-        "$" -> Money.new(0)
-        nil -> Money.new(0)
-        _ -> value
-      end
-
     income_brackets
-    |> Enum.find(fn bracket -> find_income_tax_bracket?(bracket, scrub_input) end)
+    |> Enum.find(fn bracket -> find_income_tax_bracket?(bracket, scrub_money_input(value)) end)
   end
 
   def calculate_after_tax_income(
@@ -182,33 +188,12 @@ defmodule Picsello.PricingCalculations do
         } = income_bracket,
         "" <> desired_salary_text
       ) do
-    scrub_input =
-      case desired_salary_text do
-        "$" -> "$0.00"
-        _ -> desired_salary_text
-      end
-
-    {:ok, desired_salary} = Money.parse(scrub_input)
-
-    calculate_after_tax_income(income_bracket, desired_salary)
+    calculate_after_tax_income(income_bracket, scrub_money_input(desired_salary_text))
   end
 
   def calculate_tax_amount(desired_salary, take_home) do
-    take_home_parsed =
-      case take_home do
-        %Money{} -> take_home
-        "$" -> Money.new(0)
-        nil -> Money.new(0)
-        _ -> Money.parse!(take_home)
-      end
-
-    case desired_salary do
-      %Money{} -> desired_salary
-      "$" -> Money.new(0)
-      nil -> Money.new(0)
-      _ -> Money.parse!(desired_salary)
-    end
-    |> Money.subtract(take_home_parsed)
+    scrub_money_input(desired_salary)
+    |> Money.subtract(scrub_money_input(take_home))
   end
 
   def calculate_take_home_income(percentage, after_tax_income),
@@ -219,14 +204,7 @@ defmodule Picsello.PricingCalculations do
   def calculate_monthly(%Money{amount: amount}), do: Money.new(div(amount, 12))
 
   def calculate_monthly(amount) do
-    scrub_input =
-      case amount do
-        "$" -> "$0.00"
-        nil -> "$0.00"
-        _ -> amount
-      end
-
-    Money.parse!(scrub_input)
+    scrub_money_input(amount)
     |> Money.divide(12)
     |> List.first()
   end
@@ -286,16 +264,12 @@ defmodule Picsello.PricingCalculations do
   end
 
   def calculate_revenue(
-        %Money{} = desired_salary,
-        costs
-      ),
-      do: Money.add(desired_salary, costs)
-
-  def calculate_revenue(
         desired_salary,
         costs
-      ),
-      do: Money.add(Money.parse!(desired_salary), costs)
+      ) do
+    scrub_money_input(desired_salary)
+    |> Money.add(costs)
+  end
 
   def calculate_all_costs(business_costs) do
     business_costs
@@ -334,15 +308,48 @@ defmodule Picsello.PricingCalculations do
     do: calculate_costs_by_category(line_items)
 
   def calculate_pricing_by_job_types(%{
-        job_types: job_types
+        job_types: job_types,
+        average_time_per_week: average_time_per_week,
+        desired_salary: desired_salary
       }) do
-    [
+    job_types
+    |> Enum.map(fn job_type ->
+      shoots_per_year = calculate_shoots_per_year(average_time_per_week, job_type)
+
       %{
-        job_type: "wedding",
-        base_price: Money.new(0),
+        job_type: job_type,
+        base_price: calculate_shoot_base_price(desired_salary, shoots_per_year),
         min_sessions_per_year: 1,
-        max_session_per_year: 1
+        max_session_per_year: 1,
+        total_shoots: shoots_per_year |> Decimal.round(0)
       }
-    ]
+    end)
+  end
+
+  defp calculate_shoots_per_year(average_time_per_week, job_type) do
+    (calculate_hours_per_year(average_time_per_week) / get_shoot_hours_by_job_type(job_type))
+    |> Decimal.from_float()
+  end
+
+  defp calculate_hours_per_year(average_time_per_week),
+    do: average_time_per_week * 49
+
+  defp get_shoot_hours_by_job_type(job_type),
+    do: Map.fetch!(@total_hours_by_shoot, String.to_atom(job_type))
+
+  defp calculate_shoot_base_price(desired_salary, shoots_per_year) do
+    scrub_money_input(desired_salary)
+    |> Money.to_decimal()
+    |> Decimal.div(shoots_per_year)
+    |> Money.parse!()
+  end
+
+  defp scrub_money_input(input) do
+    case input do
+      %Money{} -> input
+      "$" -> Money.new(0)
+      nil -> Money.new(0)
+      _ -> Money.parse!(input)
+    end
   end
 end
