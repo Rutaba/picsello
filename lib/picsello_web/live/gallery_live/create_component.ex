@@ -37,7 +37,10 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> assign(templates: [], step: :details, steps: @steps)
     |> assign_package_changesets()
     |> assign_job_changeset(%{"client" => %{}, "shoots" => [%{"starts_at" => nil}]})
-    |> assign(:job_types, (profile.job_types ++ [Picsello.JobType.other_type()]) |> Enum.uniq())
+    |> assign(
+      :job_types,
+      ((profile.job_types || []) ++ [Picsello.JobType.other_type()]) |> Enum.uniq()
+    )
     |> ok()
   end
 
@@ -76,6 +79,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> assign_package_changesets(params)
     |> then(fn %{assigns: %{changeset: changeset, package_changeset: package_changeset}} ->
       client = changeset |> Changeset.apply_changes() |> Map.get(:client)
+      type = changeset |> Changeset.get_field(:type)
       changeset = Changeset.delete_change(changeset, :client)
 
       Multi.new()
@@ -88,7 +92,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       end)
       |> Multi.merge(fn %{job: %{id: job_id}} ->
         Galleries.create_gallery_multi(%{
-          name: "New Gallery",
+          name: client.name <> " " <> type,
           job_id: job_id,
           status: "active",
           password: Gallery.generate_password()

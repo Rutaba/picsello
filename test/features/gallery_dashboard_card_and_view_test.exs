@@ -67,6 +67,16 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_text("Disable")
   end
 
+  feature "renders create-gallery modal from dashboard-card", %{session: session} do
+    visit_homepage(session)
+    |> click(button("Create a gallery"))
+    |> assert_text("Create a Gallery: General Details")
+    |> assert_text("Client Name")
+    |> assert_text("Client Email")
+    |> assert_text("# of Shoots")
+    |> assert_text("Type of Photography")
+  end
+
   defp visit_homepage(session) do
     session
     |> visit("/")
