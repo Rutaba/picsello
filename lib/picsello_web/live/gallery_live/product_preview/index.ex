@@ -23,6 +23,8 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   def handle_params(%{"id" => id} = params, _, socket) do
     gallery = Galleries.get_gallery!(id) |> Repo.preload([:albums, :photographer])
 
+    prepare_gallery(gallery)
+
     socket
     |> assign(
       gallery: gallery,
