@@ -468,9 +468,7 @@ defmodule Picsello.Packages do
     |> Ecto.Multi.insert(:questionnaire, fn _changes ->
       Questionnaire.clean_questionnaire_for_changeset(
         questionnaire,
-        %{
-          current_user: %{organization_id: organization_id}
-        }
+        organization_id
       )
     end)
     |> Questionnaire.changeset()

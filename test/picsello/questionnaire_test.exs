@@ -351,7 +351,11 @@ defmodule Picsello.QuestionnaireTest do
                  }
                ],
                updated_at: nil
-             } = Questionnaire.clean_questionnaire_for_changeset(questionnaire, user)
+             } =
+               Questionnaire.clean_questionnaire_for_changeset(
+                 questionnaire,
+                 user.organization_id
+               )
     end
 
     test "with package_id", %{questionnaire: questionnaire, user: user, package: package} do
@@ -377,7 +381,12 @@ defmodule Picsello.QuestionnaireTest do
                  }
                ],
                updated_at: nil
-             } = Questionnaire.clean_questionnaire_for_changeset(questionnaire, user, package.id)
+             } =
+               Questionnaire.clean_questionnaire_for_changeset(
+                 questionnaire,
+                 user.organization_id,
+                 package.id
+               )
     end
   end
 end

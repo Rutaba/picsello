@@ -142,7 +142,7 @@ defmodule Picsello.Questionnaire do
 
   def clean_questionnaire_for_changeset(
         questionnaire,
-        current_user,
+        organization_id,
         package_id \\ nil
       ) do
     questions =
@@ -152,7 +152,7 @@ defmodule Picsello.Questionnaire do
       end)
 
     %Picsello.Questionnaire{
-      organization_id: current_user.organization_id,
+      organization_id: organization_id,
       questions: questions,
       package_id: package_id,
       name: questionnaire.name,

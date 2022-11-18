@@ -410,7 +410,11 @@ defmodule PicselloWeb.LeadLive.Show do
   defp maybe_insert_questionnaire(template, current_user, %{id: package_id} = package) do
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:questionnaire_insert, fn _ ->
-      Questionnaire.clean_questionnaire_for_changeset(template, current_user, package_id)
+      Questionnaire.clean_questionnaire_for_changeset(
+        template,
+        current_user.organization_id,
+        package_id
+      )
       |> Questionnaire.changeset()
     end)
     |> Ecto.Multi.update(:package_update, fn %{questionnaire_insert: questionnaire} ->

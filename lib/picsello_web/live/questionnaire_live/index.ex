@@ -73,7 +73,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
 
     case Questionnaire.clean_questionnaire_for_changeset(
            get_questionnaire(id),
-           socket.assigns.current_user
+           socket.assigns.current_user.organization_id
          )
          |> Map.put(:name, "Copy of " <> get_questionnaire(id).name)
          |> Questionnaire.changeset()
