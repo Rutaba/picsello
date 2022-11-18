@@ -156,7 +156,6 @@ defmodule Picsello.Questionnaire do
     |> Map.merge(%{
       id: nil,
       organization_id: current_user.organization_id,
-      is_picsello_default: false,
       is_organization_default: false,
       inserted_at: nil,
       package_id: package_id,

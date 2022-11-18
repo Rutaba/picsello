@@ -41,7 +41,6 @@ defmodule Picsello.QuestionnaireTest do
       questionnaire =
         insert(:questionnaire,
           job_type: "family",
-          is_picsello_default: false,
           questions: [
             %{
               type: "textarea",
@@ -104,7 +103,6 @@ defmodule Picsello.QuestionnaireTest do
       questionnaire =
         insert(:questionnaire,
           job_type: "event",
-          is_picsello_default: false,
           questions: [
             %{
               type: "textarea",
@@ -173,7 +171,6 @@ defmodule Picsello.QuestionnaireTest do
       insert(:questionnaire,
         name: "Event Questionnaire",
         job_type: "event",
-        is_picsello_default: false,
         is_organization_default: false,
         organization_id: organization.id,
         package_id: package.id,
@@ -190,7 +187,6 @@ defmodule Picsello.QuestionnaireTest do
       insert(:questionnaire,
         name: "Event Questionnaire 2",
         job_type: "event",
-        is_picsello_default: false,
         is_organization_default: false,
         organization_id: organization.id,
         package_id: nil,
@@ -233,7 +229,6 @@ defmodule Picsello.QuestionnaireTest do
       insert(:questionnaire,
         name: "Custom Other Questionnaire",
         job_type: "other",
-        is_picsello_default: false,
         is_organization_default: false,
         organization_id: organization.id,
         package_id: nil,
@@ -252,7 +247,6 @@ defmodule Picsello.QuestionnaireTest do
     test "when job type is nil", %{organization: organization} do
       assert [
                %Picsello.Questionnaire{
-                 is_picsello_default: false,
                  job_type: "other",
                  name: "Custom Other Questionnaire"
                },
@@ -266,7 +260,6 @@ defmodule Picsello.QuestionnaireTest do
     test "when job type is not nil", %{organization: organization} do
       assert [
                %Picsello.Questionnaire{
-                 is_picsello_default: false,
                  job_type: "other",
                  name: "Custom Other Questionnaire"
                },
@@ -287,7 +280,6 @@ defmodule Picsello.QuestionnaireTest do
       questionnaire =
         insert(:questionnaire,
           job_type: "newborn",
-          is_picsello_default: false,
           questions: [
             %{
               type: "text",
