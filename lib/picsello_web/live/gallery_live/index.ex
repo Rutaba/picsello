@@ -443,11 +443,6 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   defp clip_board(socket, gallery) do
-    hash =
-      gallery
-      |> Galleries.set_gallery_hash()
-      |> Map.get(:client_link_hash)
-
     albums = Albums.get_albums_by_gallery_id(gallery.id)
 
     proofing_album =
@@ -461,9 +456,15 @@ defmodule PicselloWeb.GalleryLive.Index do
       |> List.first()
 
     cond do
-      final_album != nil -> proofing_and_final_album_url(socket, final_album)
-      proofing_album != nil -> proofing_and_final_album_url(socket, proofing_album)
-      true -> Routes.gallery_client_index_url(socket, :index, hash)
+      final_album -> proofing_and_final_album_url(socket, final_album)
+      proofing_album -> proofing_and_final_album_url(socket, proofing_album)
+      true ->
+        hash =
+        gallery
+        |> Galleries.set_gallery_hash()
+        |> Map.get(:client_link_hash)
+        
+        Routes.gallery_client_index_url(socket, :index, hash)
     end
   end
 
