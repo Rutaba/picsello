@@ -295,7 +295,6 @@ defmodule Picsello.QuestionnaireTest do
     test "get_questionnaire_by_id", %{questionnaire: questionnaire} do
       assert %{
                job_type: "newborn",
-               is_picsello_default: false,
                questions: [%{prompt: "When are you due?"}]
              } = Questionnaire.get_questionnaire_by_id(questionnaire.id)
     end
@@ -315,7 +314,6 @@ defmodule Picsello.QuestionnaireTest do
         insert(:questionnaire,
           name: "Event Questionnaire",
           job_type: "event",
-          is_picsello_default: false,
           is_organization_default: false,
           organization_id: organization.id,
           package_id: nil,
@@ -342,7 +340,6 @@ defmodule Picsello.QuestionnaireTest do
                id: nil,
                inserted_at: nil,
                is_organization_default: false,
-               is_picsello_default: false,
                job_type: "event",
                name: "Event Questionnaire",
                package_id: nil,
@@ -371,7 +368,6 @@ defmodule Picsello.QuestionnaireTest do
                id: nil,
                inserted_at: nil,
                is_organization_default: false,
-               is_picsello_default: false,
                job_type: "event",
                name: "Event Questionnaire",
                questions: [
