@@ -179,7 +179,6 @@ defmodule Picsello.EditQuestionnaireTest do
       insert(:questionnaire,
         name: "Custom Other Questionnaire",
         job_type: "other",
-        is_organization_default: false,
         organization_id: user.organization.id,
         questions: [
           %{

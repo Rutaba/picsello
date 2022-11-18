@@ -171,7 +171,6 @@ defmodule Picsello.QuestionnaireTest do
       insert(:questionnaire,
         name: "Event Questionnaire",
         job_type: "event",
-        is_organization_default: false,
         organization_id: organization.id,
         package_id: package.id,
         questions: [
@@ -187,7 +186,6 @@ defmodule Picsello.QuestionnaireTest do
       insert(:questionnaire,
         name: "Event Questionnaire 2",
         job_type: "event",
-        is_organization_default: false,
         organization_id: organization.id,
         questions: [
           %{
@@ -228,7 +226,6 @@ defmodule Picsello.QuestionnaireTest do
       insert(:questionnaire,
         name: "Custom Other Questionnaire",
         job_type: "other",
-        is_organization_default: false,
         organization_id: organization.id,
         questions: [
           %{
@@ -312,7 +309,6 @@ defmodule Picsello.QuestionnaireTest do
         insert(:questionnaire,
           name: "Event Questionnaire",
           job_type: "event",
-          is_organization_default: false,
           organization_id: organization.id,
           questions: [
             %{
@@ -336,7 +332,6 @@ defmodule Picsello.QuestionnaireTest do
       assert %{
                id: nil,
                inserted_at: nil,
-               is_organization_default: false,
                job_type: "event",
                name: "Event Questionnaire",
                questions: [
@@ -363,7 +358,6 @@ defmodule Picsello.QuestionnaireTest do
       assert %{
                id: nil,
                inserted_at: nil,
-               is_organization_default: false,
                job_type: "event",
                name: "Event Questionnaire",
                questions: [

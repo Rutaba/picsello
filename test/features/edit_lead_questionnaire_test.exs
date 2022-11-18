@@ -254,7 +254,6 @@ defmodule Picsello.EditLeadQuestionnaireTest do
     insert(:questionnaire,
       name: "My Custom Questionnaire",
       job_type: "headshot",
-      is_organization_default: false,
       organization_id: user.organization.id,
       questions: [
         %{
