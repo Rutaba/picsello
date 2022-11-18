@@ -269,6 +269,13 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       )
 
     desired_salary = input_value(assigns.f, :desired_salary)
+    average_time_per_week = input_value(assigns.f, :average_time_per_week)
+
+    calculations = %{
+      job_types: assigns.pricing_calculations.job_types,
+      average_time_per_week: average_time_per_week,
+      desired_salary: desired_salary
+    }
 
     assigns =
       Enum.into(assigns, %{
@@ -302,7 +309,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
         <div class="my-6">
           <h4 class="my-4 text-xl font-bold text-base-250">Shoot breakdown</h4>
-          <%= for {pricing_suggestion, index} <- Enum.with_index(PricingCalculations.calculate_pricing_by_job_types(@pricing_calculations)) do %>
+          <%= for {pricing_suggestion, index} <- Enum.with_index(PricingCalculations.calculate_pricing_by_job_types(calculations)) do %>
             <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={@gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} index={index} />
           <% end %>
         </div>
@@ -721,22 +728,19 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   defp handle_step(
          %{
-           assigns:
-             %{
-               current_user: %{email: email, name: name}
-             } = assigns
+           assigns: %{
+             current_user: %{email: email, name: name},
+             pricing_calculations: %{
+               business_costs: business_costs,
+               take_home: take_home,
+               pricing_suggestions: pricing_suggestions
+             }
+           }
          } = socket,
          step
        ) do
     case step do
       5 ->
-        #  TODO: Take_home is wrong given the user can now change on last step
-        %{
-          business_costs: business_costs,
-          take_home: take_home,
-          pricing_suggestions: pricing_suggestions
-        } = assigns.pricing_calculations
-
         opts = [
           take_home: take_home |> Money.to_string(),
           projected_costs:

@@ -292,14 +292,7 @@ defmodule Picsello.PricingCalculations do
   def calculate_costs_by_category(_line_items, %{"line_items" => line_items} = _params) do
     line_items
     |> Enum.map(fn {_k, %{"yearly_cost" => yearly_cost}} ->
-      scrub_input =
-        case yearly_cost do
-          "$" -> "$0.00"
-          "" -> "$0.00"
-          _ -> yearly_cost
-        end
-
-      %{yearly_cost: Money.parse!(scrub_input, :USD)}
+      %{yearly_cost: scrub_money_input(yearly_cost)}
     end)
     |> calculate_costs_by_category()
   end
@@ -314,7 +307,8 @@ defmodule Picsello.PricingCalculations do
       }) do
     job_types
     |> Enum.map(fn job_type ->
-      shoots_per_year = calculate_shoots_per_year(average_time_per_week, job_type)
+      shoots_per_year =
+        calculate_shoots_per_year(scrub_time_per_week(average_time_per_week), job_type)
 
       %{
         job_type: job_type,
@@ -342,10 +336,30 @@ defmodule Picsello.PricingCalculations do
     |> Money.parse!()
   end
 
+  defp scrub_time_per_week(input) do
+    case input do
+      0 ->
+        1
+
+      "0" ->
+        1
+
+      "" ->
+        1
+
+      _ ->
+        case Kernel.is_integer(input) do
+          true -> input
+          false -> String.to_integer(input)
+        end
+    end
+  end
+
   defp scrub_money_input(input) do
     case input do
       %Money{} -> input
       "$" -> Money.new(0)
+      "" -> Money.new(0)
       nil -> Money.new(0)
       _ -> Money.parse!(input)
     end
