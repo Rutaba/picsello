@@ -310,13 +310,20 @@ defmodule Picsello.PricingCalculations do
       shoots_per_year =
         calculate_shoots_per_year(scrub_time_per_week(average_time_per_week), job_type)
 
+      base_price = calculate_shoot_base_price(desired_salary, shoots_per_year)
+      shoots_per_year = shoots_per_year |> Decimal.round(0, :ceiling)
+
       %{
         job_type: job_type,
         base_price: calculate_shoot_base_price(desired_salary, shoots_per_year),
-        max_session_per_year: shoots_per_year |> Decimal.round(0)
+        max_session_per_year: shoots_per_year |> Decimal.round(0, :ceiling),
+        actual_salary: calculate_actual_salary(base_price, shoots_per_year)
       }
     end)
   end
+
+  defp calculate_actual_salary(base_price, shoots_per_year),
+    do: Money.multiply(base_price, shoots_per_year)
 
   defp calculate_shoots_per_year(average_time_per_week, job_type) do
     (calculate_hours_per_year(average_time_per_week) / get_shoot_hours_by_job_type(job_type))

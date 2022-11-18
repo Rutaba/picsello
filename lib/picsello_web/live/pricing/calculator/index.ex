@@ -308,9 +308,10 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         </div>
 
         <div class="my-6">
-          <h4 class="my-4 text-xl font-bold text-base-250">Shoot breakdown</h4>
+          <h4 class="mt-4 text-xl font-bold text-base-250">Shoot breakdown based on desired salary</h4>
+          <p class="mb-4 text-base-250">If you only focused on 100% of that shoot type per year</p>
           <%= for {pricing_suggestion, index} <- Enum.with_index(PricingCalculations.calculate_pricing_by_job_types(calculations)) do %>
-            <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={@gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} index={index} />
+            <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={@gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} actual_salary={pricing_suggestion.actual_salary} index={index} />
           <% end %>
         </div>
 
@@ -567,12 +568,12 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @desired_salary %></h5>
           <p class="italic text-center">Gross Salary (Before Taxes)</p>
         </div>
-        <p class="w-full text-5xl font-bold text-center sm:mb-8 sm:w-auto">+</p>
+        <p class="w-full text-5xl font-bold text-center text-base-250 sm:mb-8 sm:w-auto">+</p>
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @costs %></h5>
           <p class="italic text-center">Projected Costs</p>
         </div>
-        <p class="w-full text-5xl font-bold text-center sm:mb-8 sm:w-auto">=</p>
+        <p class="w-full text-5xl font-bold text-center text-base-250 sm:mb-8 sm:w-auto">=</p>
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= PricingCalculations.calculate_revenue(@desired_salary, @costs) %></h5>
           <p class="italic text-center">Gross Revenue <.intro_hint content="Your revenue is the total amount of sales you made before any deductions. This includes your costs because you should be including those in your pricing!" class="ml-1" /></p>
@@ -589,12 +590,12 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @desired_salary %></h5>
           <p class="italic text-center">Gross Salary (before taxes)</p>
         </div>
-        <p class="w-full text-5xl font-bold text-center sm:mb-8 sm:w-auto">-</p>
+        <p class="w-full text-5xl font-bold text-center text-base-250 sm:mb-8 sm:w-auto">-</p>
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @tax_amount %></h5>
           <p class="italic text-center">Approx. income tax + SE tax</p>
         </div>
-        <p class="w-full text-5xl font-bold text-center sm:mb-8 sm:w-auto">=</p>
+        <p class="w-full text-5xl font-bold text-center text-base-250 sm:mb-8 sm:w-auto">=</p>
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @take_home %></h5>
           <p class="italic text-center">Total Take Home Pay <.intro_hint content="This doesn't include your expenses or any savings from business cost deductions" class="ml-1" /></p>
@@ -606,33 +607,43 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   def pricing_suggestion(assigns) do
     ~H"""
       <div class="p-4 mb-4 border rounded-lg">
-        <div class="grid lg:grid-cols-3 grid-cols-1 gap-3 sm:gap-5">
-          <div class="flex items-center">
-            <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 ml-1 mr-3 bg-gray-100 rounded-full">
-              <.icon name={@job_type} class="fill-current" width="24" height="24" />
-            </div>
-            <div>
-              <h3 class="text-lg font-bold"><%= dyn_gettext @job_type %></h3>
-              <p class="text-xs text-base-250">Results reflect if you only focused on <%= dyn_gettext @job_type %> shoots this year</p>
-              <input id={"calculator-step-5_pricing_suggestions_#{@index}_job_type"} name={"pricing_calculations[pricing_suggestions][#{@index}][job_type]"} type="hidden" value={@job_type}>
-              <input id={"calculator-step-5_pricing_suggestions_#{@index}_max_session_per_year"} name={"pricing_calculations[pricing_suggestions][#{@index}][max_session_per_year]"} type="hidden" value={@max_session_per_year}>
-              <input id={"calculator-step-5_pricing_suggestions_#{@index}_base_price"} name={"pricing_calculations[pricing_suggestions][#{@index}][base_price]"} type="hidden" value={@base_price}>
-            </div>
+        <div class="flex items-center">
+          <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 ml-1 mr-3 bg-gray-100 rounded-full">
+            <.icon name={@job_type} class="fill-current" width="24" height="24" />
           </div>
-          <div class="flex flex-col flex-wrap items-center justify-center p-4 bg-gray-100 rounded-lg">
+          <div>
+            <h3 class="text-lg font-bold"><%= dyn_gettext @job_type %></h3>
+            <p class="text-xs text-base-250">Results reflect if you only focused on <%= dyn_gettext @job_type %> shoots this year</p>
+            <input id={"calculator-step-5_pricing_suggestions_#{@index}_job_type"} name={"pricing_calculations[pricing_suggestions][#{@index}][job_type]"} type="hidden" value={@job_type}>
+            <input id={"calculator-step-5_pricing_suggestions_#{@index}_max_session_per_year"} name={"pricing_calculations[pricing_suggestions][#{@index}][max_session_per_year]"} type="hidden" value={@max_session_per_year}>
+            <input id={"calculator-step-5_pricing_suggestions_#{@index}_base_price"} name={"pricing_calculations[pricing_suggestions][#{@index}][base_price]"} type="hidden" value={@base_price}>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-4 mt-4">
+          <div class="flex flex-col flex-wrap items-center justify-center p-4 bg-gray-100 rounded-lg w-full sm:w-auto sm:grow">
             <span class="block w-full text-2xl font-bold text-center">
             <%= @max_session_per_year %>
             </span>
-            <span class="block w-full text-center font-italic">
+            <span class="block w-full text-center italic">
               Total Shoots per year
             </span>
           </div>
-          <div class="flex flex-col flex-wrap items-center justify-center p-4 text-white bg-blue-planning-300 rounded-lg">
+          <p class="w-full text-4xl font-bold text-base-250 text-center sm:mb-6 sm:w-auto">x</p>
+          <div class="flex flex-col flex-wrap items-center justify-center p-4 text-white bg-blue-planning-300 rounded-lg w-full sm:w-auto sm:grow">
             <span class="block w-full text-2xl font-bold text-center">
               <%= @base_price %>
             </span>
-            <span class="block w-full text-center font-italic">
+            <span class="block w-full text-center italic">
               Charge Per Shoot
+            </span>
+          </div>
+          <p class="w-full text-5xl font-bold text-base-250 text-center sm:mb-6 sm:w-auto">=</p>
+          <div class="flex flex-col flex-wrap items-center justify-center p-4 text-white bg-blue-planning-300 rounded-lg w-full sm:w-auto sm:grow">
+            <span class="block w-full text-2xl font-bold text-center">
+              <%= @actual_salary %>
+            </span>
+            <span class="block w-full text-center italic">
+              Desired Salary
             </span>
           </div>
         </div>
