@@ -140,10 +140,13 @@ defmodule Picsello.Questionnaire do
     from(q in __MODULE__, where: q.id == ^questionnaire_id) |> Repo.one()
   end
 
-  def clean_questionnaire_for_changeset(questionnaire, current_user, package_id \\ nil) do
+  def clean_questionnaire_for_changeset(
+        %{name: name, job_type: job_type, questions: questions} = _questionnaire,
+        current_user,
+        package_id \\ nil
+      ) do
     questions =
-      questionnaire
-      |> Map.get(:questions)
+      questions
       |> Enum.map(fn question ->
         question |> Map.from_struct() |> Map.drop([:id])
       end)
@@ -151,7 +154,9 @@ defmodule Picsello.Questionnaire do
     %Picsello.Questionnaire{
       organization_id: current_user.organization_id,
       questions: questions,
-      package_id: package_id
+      package_id: package_id,
+      name: name,
+      job_type: job_type
     }
   end
 end

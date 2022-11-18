@@ -181,7 +181,6 @@ defmodule Picsello.EditQuestionnaireTest do
         job_type: "other",
         is_organization_default: false,
         organization_id: user.organization.id,
-        package_id: nil,
         questions: [
           %{
             type: "textarea",

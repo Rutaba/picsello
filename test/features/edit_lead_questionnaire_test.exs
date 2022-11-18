@@ -256,7 +256,6 @@ defmodule Picsello.EditLeadQuestionnaireTest do
       job_type: "headshot",
       is_organization_default: false,
       organization_id: user.organization.id,
-      package_id: nil,
       questions: [
         %{
           type: "textarea",

@@ -189,7 +189,6 @@ defmodule Picsello.QuestionnaireTest do
         job_type: "event",
         is_organization_default: false,
         organization_id: organization.id,
-        package_id: nil,
         questions: [
           %{
             type: "textarea",
@@ -231,7 +230,6 @@ defmodule Picsello.QuestionnaireTest do
         job_type: "other",
         is_organization_default: false,
         organization_id: organization.id,
-        package_id: nil,
         questions: [
           %{
             type: "textarea",
@@ -316,7 +314,6 @@ defmodule Picsello.QuestionnaireTest do
           job_type: "event",
           is_organization_default: false,
           organization_id: organization.id,
-          package_id: nil,
           questions: [
             %{
               type: "textarea",
@@ -342,7 +339,6 @@ defmodule Picsello.QuestionnaireTest do
                is_organization_default: false,
                job_type: "event",
                name: "Event Questionnaire",
-               package_id: nil,
                questions: [
                  %{
                    optional: false,
