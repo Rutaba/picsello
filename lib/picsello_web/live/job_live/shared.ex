@@ -158,6 +158,7 @@ defmodule PicselloWeb.JobLive.Shared do
       shoots: shoots |> Enum.into(%{}) |> Map.put(shoot_number, new_shoot) |> Map.to_list(),
       job: job |> Repo.preload(:shoots, force: true)
     )
+    |> assign_payment_schedules()
     |> assign_disabled_copy_link()
     |> noreply()
   end
@@ -189,19 +190,18 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> assign(package: package, job: %{job | package: package, package_id: package.id})
     |> assign_shoots()
-    |> then(fn %{assigns: %{job: job}} = socket ->
-      payment_schedules =
-        job |> Repo.preload(:payment_schedules, force: true) |> Map.get(:payment_schedules)
-
-      socket
-      |> assign(payment_schedules: payment_schedules)
-      |> validate_payment_schedule()
-    end)
+    |> assign_payment_schedules()
+    |> assign_disabled_copy_link()
     |> noreply()
   end
 
   def handle_info({:update, assigns}, socket),
-    do: socket |> assign(assigns) |> noreply()
+    do:
+      socket
+      |> assign(assigns)
+      |> assign_payment_schedules()
+      |> assign_disabled_copy_link()
+      |> noreply()
 
   def handle_info(
         {:inbound_messages, message},
@@ -858,5 +858,17 @@ defmodule PicselloWeb.JobLive.Shared do
       enable_image: true
     })
     |> noreply()
+  end
+
+  defp assign_payment_schedules(socket) do
+    socket
+    |> then(fn %{assigns: %{job: job}} = socket ->
+      payment_schedules =
+        job |> Repo.preload(:payment_schedules, force: true) |> Map.get(:payment_schedules)
+
+      socket
+      |> assign(payment_schedules: payment_schedules)
+      |> validate_payment_schedule()
+    end)
   end
 end

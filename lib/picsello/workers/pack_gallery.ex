@@ -3,6 +3,8 @@ defmodule Picsello.Workers.PackGallery do
   use Oban.Worker,
     unique: [states: ~w[available scheduled executing retryable]a, fields: [:args, :worker]]
 
+  require Logger
+
   alias Picsello.{Pack, Galleries, Workers.PackDigitals}
 
   @cooldown Application.compile_env(:picsello, :gallery_pack_cooldown_seconds, 60)
@@ -21,6 +23,8 @@ defmodule Picsello.Workers.PackGallery do
       {:error, _} ->
         PackDigitals.cancel(gallery)
     end
+
+    Logger.info("[Enqueue] PackDigitals for gallery: #{gallery_id}")
 
     PackDigitals.enqueue(gallery, replace: [:scheduled_at], schedule_in: @cooldown)
 

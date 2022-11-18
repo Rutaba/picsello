@@ -155,7 +155,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> assert_text("Paid #{upcoming_schedule.paid_at |> Calendar.strftime("%B %-d, %Y")}")
 
     payment = Repo.one(from(p in PaymentSchedule, order_by: [desc: p.id], limit: 1))
-    Repo.update((Ecto.Changeset.change payment, paid_at: nil))
+    Repo.update(Ecto.Changeset.change(payment, paid_at: nil))
 
     session
     |> visit(path)
@@ -168,8 +168,8 @@ defmodule Picsello.CreateBookingProposalTest do
     session
     |> visit(path)
     |> refute_has(css("a", text: "Show schedule"))
-    [path: path]
 
+    [path: path]
   end
 
   defp complete_proposal(proposal, :accept),

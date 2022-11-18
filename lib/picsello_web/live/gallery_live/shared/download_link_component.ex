@@ -6,6 +6,9 @@ defmodule PicselloWeb.GalleryLive.Shared.DownloadLinkComponent do
   """
 
   use PicselloWeb, :live_component
+
+  require Logger
+
   alias Picsello.Pack
 
   @impl true
@@ -53,6 +56,7 @@ defmodule PicselloWeb.GalleryLive.Shared.DownloadLinkComponent do
           {:ready, url}
 
         _ ->
+          Logger.info("[Enqueue] PackDigitals from download_link_component line 56")
           enqueue(packable)
           :uploading
       end

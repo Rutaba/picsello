@@ -89,12 +89,12 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       socket
       |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
       |> PicselloWeb.ConfirmationComponent.open(%{
-          title: "Session Booked",
-          subtitle: "Your session is booked with an in-person cash or check payment. Thank you!",
-          close_label: "Got it",
-          icon: nil,
-          close_class: "btn-primary"
-          })
+        title: "Session Booked",
+        subtitle: "Your session is booked with an in-person cash or check payment. Thank you!",
+        close_label: "Got it",
+        icon: nil,
+        close_class: "btn-primary"
+      })
       |> noreply()
 
   @impl true
@@ -341,7 +341,10 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> assign(booking_countdown: countdown)
   end
 
-  def show_booking_countdown?(job), do: job.booking_event && !PaymentSchedules.all_paid?(job) && !PaymentSchedules.is_with_cash?(job)
+  def show_booking_countdown?(job),
+    do:
+      job.booking_event && !PaymentSchedules.all_paid?(job) &&
+        !PaymentSchedules.is_with_cash?(job)
 
   defp maybe_expire_booking(
          %{assigns: %{booking_countdown: booking_countdown, job: job, organization: organization}} =
