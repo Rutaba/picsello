@@ -141,12 +141,12 @@ defmodule Picsello.Questionnaire do
   end
 
   def clean_questionnaire_for_changeset(
-        %{name: name, job_type: job_type, questions: questions} = _questionnaire,
+        questionnaire,
         current_user,
         package_id \\ nil
       ) do
     questions =
-      questions
+      questionnaire.questions
       |> Enum.map(fn question ->
         question |> Map.from_struct() |> Map.drop([:id])
       end)
@@ -155,8 +155,8 @@ defmodule Picsello.Questionnaire do
       organization_id: current_user.organization_id,
       questions: questions,
       package_id: package_id,
-      name: name,
-      job_type: job_type
+      name: questionnaire.name,
+      job_type: questionnaire.job_type
     }
   end
 end
