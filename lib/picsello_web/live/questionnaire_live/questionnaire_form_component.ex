@@ -297,7 +297,8 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
           }
 
         _ ->
-          questionnaire = Questionnaire.get_one(change_template |> String.to_integer())
+          questionnaire =
+            Questionnaire.get_questionnaire_by_id(change_template |> String.to_integer())
 
           questions =
             questionnaire.questions

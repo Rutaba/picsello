@@ -103,7 +103,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   def handle_event("delete-questionnaire", %{"questionnaire-id" => questionnaire_id}, socket) do
     id = String.to_integer(questionnaire_id)
 
-    case Questionnaire.delete_one(id) do
+    case Questionnaire.delete_questionnaire_by_id(id) do
       {1, nil} ->
         socket
         |> put_flash(:success, "Questionnaire deleted")
@@ -176,7 +176,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   end
 
   defp get_questionnaire(id) do
-    Questionnaire.get_one(id)
+    Questionnaire.get_questionnaire_by_id(id)
   end
 
   defp assign_questionnaires(socket) do

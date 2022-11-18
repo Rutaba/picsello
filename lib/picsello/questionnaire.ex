@@ -3,7 +3,7 @@ defmodule Picsello.Questionnaire do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Job, Repo}
+  alias Picsello.{Job, Repo, Package}
 
   defmodule Question do
     @moduledoc false
@@ -55,10 +55,10 @@ defmodule Picsello.Questionnaire do
     |> validate_required([:questions, :job_type, :name])
   end
 
-  def for_job(%Job{type: job_type, package: %Picsello.Package{questionnaire_template_id: nil}}) do
+  def for_job(%Job{type: job_type, package: %Package{questionnaire_template_id: nil}}) do
     from(q in __MODULE__,
       where: q.job_type in [^job_type, "other"],
-      where: q.is_picsello_default == true,
+      where: q.is_picsello_default,
       order_by:
         fragment(
           """
@@ -74,14 +74,14 @@ defmodule Picsello.Questionnaire do
     )
   end
 
-  def for_job(%Job{package: %Picsello.Package{questionnaire_template_id: questionnaire_id}}) do
+  def for_job(%Job{package: %Package{questionnaire_template_id: questionnaire_id}}) do
     from(q in __MODULE__, where: q.id == ^questionnaire_id, limit: 1)
   end
 
-  def for_package(%Picsello.Package{questionnaire_template_id: nil, job_type: job_type}) do
+  def for_package(%Package{questionnaire_template_id: nil, job_type: job_type}) do
     from(q in __MODULE__,
       where: q.job_type in [^job_type, "other"],
-      where: q.is_picsello_default == true,
+      where: q.is_picsello_default,
       order_by:
         fragment(
           """
@@ -98,13 +98,13 @@ defmodule Picsello.Questionnaire do
     |> Repo.one!()
   end
 
-  def for_package(%Picsello.Package{questionnaire_template_id: questionnaire_id}) do
+  def for_package(%Package{questionnaire_template_id: questionnaire_id}) do
     from(q in __MODULE__, where: q.id == ^questionnaire_id, limit: 1) |> Repo.one!()
   end
 
   def for_organization(organization_id) do
     from(q in __MODULE__,
-      where: q.organization_id == ^organization_id or q.is_picsello_default == true,
+      where: q.organization_id == ^organization_id or q.is_picsello_default,
       where: is_nil(q.package_id),
       order_by: [asc: q.organization_id, desc: q.inserted_at]
     )
@@ -113,7 +113,7 @@ defmodule Picsello.Questionnaire do
 
   def for_organization_by_job_type(organization_id, nil) do
     from(q in __MODULE__,
-      where: q.organization_id == ^organization_id or q.is_picsello_default == true,
+      where: q.organization_id == ^organization_id or q.is_picsello_default,
       where: q.job_type == "other",
       where: is_nil(q.package_id),
       order_by: [asc: q.organization_id, desc: q.inserted_at]
@@ -123,7 +123,7 @@ defmodule Picsello.Questionnaire do
 
   def for_organization_by_job_type(organization_id, job_type) do
     from(q in __MODULE__,
-      where: q.organization_id == ^organization_id or q.is_picsello_default == true,
+      where: q.organization_id == ^organization_id or q.is_picsello_default,
       where: q.job_type == ^job_type or q.job_type == "other",
       where: is_nil(q.package_id),
       order_by: [asc: q.organization_id, desc: q.inserted_at]
@@ -131,12 +131,12 @@ defmodule Picsello.Questionnaire do
     |> Repo.all()
   end
 
-  def delete_one(questionnaire_id) do
+  def delete_questionnaire_by_id(questionnaire_id) do
     from(q in __MODULE__, where: q.id == ^questionnaire_id)
     |> Repo.delete_all()
   end
 
-  def get_one(questionnaire_id) do
+  def get_questionnaire_by_id(questionnaire_id) do
     from(q in __MODULE__, where: q.id == ^questionnaire_id) |> Repo.one()
   end
 
@@ -148,19 +148,10 @@ defmodule Picsello.Questionnaire do
         question |> Map.from_struct() |> Map.drop([:id])
       end)
 
-    questionnaire
-    |> Map.replace!(
-      :questions,
-      questions
-    )
-    |> Map.merge(%{
-      id: nil,
+    %Picsello.Questionnaire{
       organization_id: current_user.organization_id,
-      is_organization_default: false,
-      inserted_at: nil,
-      package_id: package_id,
-      updated_at: nil,
-      __meta__: %Picsello.Questionnaire{} |> Map.get(:__meta__)
-    })
+      questions: questions,
+      package_id: package_id
+    }
   end
 end

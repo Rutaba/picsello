@@ -457,13 +457,15 @@ defmodule Picsello.Packages do
 
   def create_initial(_user), do: []
 
-  defp maybe_insert_questionnaire_multi(multi, changeset, %{questionnaire: questionnaire}) do
+  defp maybe_insert_questionnaire_multi(multi, %{changes: %{organization_id: organization_id}}, %{
+         questionnaire: questionnaire
+       }) do
     multi
     |> Ecto.Multi.insert(:questionnaire, fn _changes ->
       Questionnaire.clean_questionnaire_for_changeset(
         questionnaire,
         %{
-          organization_id: changeset.changes.organization_id
+          organization_id: organization_id
         }
       )
     end)
@@ -476,8 +478,8 @@ defmodule Picsello.Packages do
     multi
     |> Ecto.Multi.update(
       :questionnaire_update,
-      fn changes ->
-        Questionnaire.changeset(changes.questionnaire, %{package_id: changes.package.id})
+      fn %{questionnaire: questionnaire, package: %{id: package_id}} ->
+        Questionnaire.changeset(questionnaire, %{package_id: package_id})
       end
     )
   end

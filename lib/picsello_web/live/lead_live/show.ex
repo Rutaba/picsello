@@ -228,7 +228,7 @@ defmodule PicselloWeb.LeadLive.Show do
     if is_nil(package.questionnaire_template) do
       template = Questionnaire.for_job(job) |> Repo.one()
 
-      case insert_questionnaire_if_needed(template, current_user, package) do
+      case maybe_insert_questionnaire(template, current_user, package) do
         {:ok, %{questionnaire_insert: questionnaire_insert}} ->
           socket
           |> PicselloWeb.QuestionnaireFormComponent.open(%{
@@ -238,8 +238,6 @@ defmodule PicselloWeb.LeadLive.Show do
           })
 
         {:error, _} ->
-          nil
-
           socket
           |> put_flash(:error, "Failed to fetch questionnaire. Please try again.")
       end
@@ -409,7 +407,7 @@ defmodule PicselloWeb.LeadLive.Show do
     socket |> assign(stripe_status: Payments.status(current_user))
   end
 
-  defp insert_questionnaire_if_needed(template, current_user, %{id: package_id} = package) do
+  defp maybe_insert_questionnaire(template, current_user, %{id: package_id} = package) do
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:questionnaire_insert, fn _ ->
       Questionnaire.clean_questionnaire_for_changeset(template, current_user, package_id)

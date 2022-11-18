@@ -292,16 +292,16 @@ defmodule Picsello.QuestionnaireTest do
       [questionnaire: questionnaire]
     end
 
-    test "get_one", %{questionnaire: questionnaire} do
+    test "get_questionnaire_by_id", %{questionnaire: questionnaire} do
       assert %{
                job_type: "newborn",
                is_picsello_default: false,
                questions: [%{prompt: "When are you due?"}]
-             } = Questionnaire.get_one(questionnaire.id)
+             } = Questionnaire.get_questionnaire_by_id(questionnaire.id)
     end
 
-    test "delete_one", %{questionnaire: questionnaire} do
-      assert {1, nil} = Questionnaire.delete_one(questionnaire.id)
+    test "delete_questionnaire_by_id", %{questionnaire: questionnaire} do
+      assert {1, nil} = Questionnaire.delete_questionnaire_by_id(questionnaire.id)
     end
   end
 
