@@ -12,11 +12,6 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   end
 
   @impl true
-  def handle_info({:update, %{questionnaire: _questionnaire}}, socket) do
-    socket |> assign_questionnaires() |> put_flash(:success, "Questionnaire saved") |> noreply()
-  end
-
-  @impl true
   def handle_event("create-questionnaire", %{}, %{assigns: assigns} = socket) do
     case Questionnaire.changeset(%Questionnaire{}, get_questionnaire(socket))
          |> Repo.insert() do
@@ -47,7 +42,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
 
     socket
     |> PicselloWeb.QuestionnaireFormComponent.open(
-      Map.merge(Map.take(assigns, [:questionnaire, :current_user]), %{state: ""})
+      Map.merge(Map.take(assigns, [:questionnaire, :current_user]), %{state: nil})
     )
     |> noreply()
   end
@@ -116,6 +111,11 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
         |> assign_questionnaires()
         |> noreply()
     end
+  end
+
+  @impl true
+  def handle_info({:update, %{questionnaire: _questionnaire}}, socket) do
+    socket |> assign_questionnaires() |> put_flash(:success, "Questionnaire saved") |> noreply()
   end
 
   defp actions_cell(assigns) do

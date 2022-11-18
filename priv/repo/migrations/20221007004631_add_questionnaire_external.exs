@@ -15,7 +15,7 @@ defmodule Picsello.Repo.Migrations.AddQuestionnaireExternal do
     end
 
     execute("""
-      update questionnaires set is_picsello_default = true where organization_id is null and name = '';
+      update questionnaires set is_picsello_default = true where organization_id is null and name = nil;
     """)
   end
 

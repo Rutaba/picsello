@@ -731,7 +731,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{"index" => index},
         %{assigns: %{collapsed_documents: collapsed_documents}} = socket
       ) do
-    {index, _} = Integer.parse(index)
+    index = String.to_integer(index)
 
     collapsed_documents =
       if Enum.member?(collapsed_documents, index) do
