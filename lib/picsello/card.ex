@@ -39,7 +39,7 @@ defmodule Picsello.Card do
   @doc false
   def changeset(campaign \\ %__MODULE__{}, attrs) do
     campaign
-    |> cast(attrs, [:concise_name, :title, :body, :icon, :color, :class])
+    |> cast(attrs, [:concise_name, :title, :body, :icon, :color, :class, :index])
     |> cast_embed(:buttons)
     |> validate_required([:concise_name, :title])
   end
