@@ -306,6 +306,9 @@ defmodule PicselloWeb.HomeLive.Index do
         "create-lead" ->
           {leads_empty?, org_card}
 
+        "black-friday" ->
+          {Subscriptions.monthly?(current_user.subscription), org_card}
+
         _ ->
           {true, org_card}
       end
