@@ -15,6 +15,7 @@ defmodule PicselloWeb.HomeLive.Index do
     Orders,
     Galleries,
     OrganizationCard,
+    Card,
     Utils
   }
 
@@ -141,6 +142,14 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def handle_event(
         "card_status",
+        %{"org_card_id" => "", "status" => _},
+        socket
+      ) do
+    socket |> noreply()
+  end
+
+  def handle_event(
+        "card_status",
         %{"org_card_id" => org_card_id, "status" => status},
         socket
       ) do
@@ -251,6 +260,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
     organization_id
     |> OrganizationCard.list()
+    |> Enum.concat(Card.list_global_for_dashboard())
     |> Enum.reduce([], fn
       %{card: %{concise_name: "open-user-settings", body: body}} = org_card, acc ->
         data = build_data(subscription)
