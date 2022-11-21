@@ -329,7 +329,7 @@ defmodule PicselloWeb.HomeLive.Index do
     case card_actions(org_card, current_user, stripe_status, leads_empty?, subscription)
          |> Map.fetch(concise_name) do
       {:ok, action} -> action
-      :error -> %{"base" => {true, org_card}}
+      :error -> {true, org_card}
     end
   end
 
