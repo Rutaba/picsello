@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   require Ecto.Query
   alias Ecto.Query
-  alias Picsello.{Galleries, Repo, Messages, Orders}
+  alias Picsello.{Galleries, Repo, Messages, Orders, Albums}
 
   import PicselloWeb.GalleryLive.Shared
 
@@ -440,5 +440,36 @@ defmodule PicselloWeb.GalleryLive.Index do
         |> put_flash(:success, "The gallery has been #{type}")
         |> noreply()
     end
+  end
+
+  defp clip_board(socket, gallery) do
+    albums = Albums.get_albums_by_gallery_id(gallery.id)
+
+    proofing_album =
+      albums
+      |> Enum.filter(&(&1.is_proofing))
+      |> List.first()
+
+    final_album =
+      albums
+      |> Enum.filter(&(&1.is_finals))
+      |> List.first()
+
+    cond do
+      final_album -> proofing_and_final_album_url(socket, final_album)
+      proofing_album -> proofing_and_final_album_url(socket, proofing_album)
+      true ->
+        hash =
+        gallery
+        |> Galleries.set_gallery_hash()
+        |> Map.get(:client_link_hash)
+
+        Routes.gallery_client_index_url(socket, :index, hash)
+    end
+  end
+
+  defp proofing_and_final_album_url(socket, album) do
+    album = Albums.set_album_hash(album)
+    Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
   end
 end
