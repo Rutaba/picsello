@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
   @moduledoc "Manage Next Up Cards for the app"
   use PicselloWeb, live_view: [layout: false]
 
-  alias Picsello.{Repo, Card}
+  alias Picsello.{Repo, Card, OrganizationCard}
 
   import Ecto.Query
 
@@ -29,20 +29,18 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
       <div class="flex items-center justify-between  mb-8">
         <div>
           <h3 class="text-2xl font-bold">Cards</h3>
-          <p class="text-md">Add a card here (we still do have to run a deploy to get them to populate)</p>
+          <p class="text-md"><span class="text-red-sales-300 font-bold block">CAREFUL deleting cards, it will remove from all organizations on Picsello!</span> Add a card here (we still do have to run a deploy to get them to populate)</p>
         </div>
         <button class="mb-4 btn-primary" phx-click="add-card">Add card</button>
       </div>
-      <%= for({%{card: %{id: id, is_global: is_global, buttons: buttons}, changeset: changeset}, index} <- @cards |> Enum.with_index()) do %>
+      <%= for({%{card: %{id: id, buttons: buttons}, changeset: changeset}, index} <- @cards |> Enum.with_index()) do %>
         <.form let={f} for={changeset} class="contents" phx-change="save-cards" id={"form-cards-#{id}"}>
           <%= hidden_input f, :id %>
           <div class="flex items-center gap-4 bg-gray-100 rounded-t-lg py-4 px-6">
             <h4 class="font-bold text-lg">Card—<%= input_value f, :title %></h4>
-            <%= if is_global do %>
             <button title="Trash" type="button" phx-click="delete-card" phx-value-id={id} class="flex items-center px-3 py-2 rounded-lg border border-red-sales-300 hover:bg-red-sales-100 hover:font-bold">
               <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
             </button>
-            <% end %>
           </div>
           <div class="p-6 border rounded-b-lg mb-8">
             <div>
@@ -52,7 +50,6 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
               <%= labeled_input f, :body, label: "Card Body", wrapper_class: "", phx_debounce: "500" %>
             </div>
             <h4 class="mt-6 mb-2 font-bold text-lg">Card Options</h4>
-            <%= labeled_select f, :is_global, [true, false], label: "Is global card?" %>
             <div class="sm:grid grid-cols-5 gap-2 items-center">
               <%= labeled_input f, :concise_name, label: "Concise Name", wrapper_class: "col-start-1", phx_debounce: "500" %>
               <%= labeled_input f, :icon, label: "Icon", wrapper_class: "col-start-2", phx_debounce: "500" %>
@@ -99,15 +96,30 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
 
   @impl true
   def handle_event("add-card", _, socket) do
-    case Card.changeset(%Card{concise_name: "simple-card", title: "New card…"}, %{})
-         |> Repo.insert() do
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Something went wrong")
-
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(
+      :card,
+      Card.changeset(%Card{concise_name: "simple-card", title: "New card…"}, %{})
+    )
+    |> Ecto.Multi.insert(
+      :organization_card,
+      fn %{card: %{id: id}} ->
+        OrganizationCard.changeset(%OrganizationCard{}, %{
+          status: "active",
+          card_id: id,
+          organization_id: nil
+        })
+      end
+    )
+    |> Repo.transaction()
+    |> case do
       {:ok, _} ->
         socket
         |> put_flash(:success, "Added card")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Something went wrong")
     end
     |> assign_next_up_cards()
     |> noreply()
@@ -117,9 +129,24 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
   def handle_event("delete-card", %{"id" => id}, socket) do
     id = String.to_integer(id)
 
-    case from(card in Card, where: card.id == ^id) |> Repo.delete_all() do
-      {1, nil} -> socket |> put_flash(:success, "Deleted card")
-      {0, nil} -> socket |> put_flash(:error, "Something went wrong")
+    Ecto.Multi.new()
+    |> Ecto.Multi.delete_all(
+      :delete_org_card,
+      from(org_card in OrganizationCard, where: org_card.card_id == ^id)
+    )
+    |> Ecto.Multi.delete_all(
+      :delete_card,
+      from(card in Card, where: card.id == ^id)
+    )
+    |> Repo.transaction()
+    |> case do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Deleted card")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Something went wrong")
     end
     |> assign_next_up_cards()
     |> noreply()

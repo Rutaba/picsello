@@ -4,7 +4,7 @@ defmodule Picsello.Card do
   alias Picsello.{Repo}
 
   import Ecto.Changeset
-  import Ecto.Query, only: [from: 2, order_by: 2]
+  import Ecto.Query, only: [order_by: 2]
 
   defmodule Button do
     @moduledoc false
@@ -33,7 +33,6 @@ defmodule Picsello.Card do
     field :color, :string
     field :class, :string
     field :index, :integer
-    field :is_global, :boolean
 
     embeds_many :buttons, Button, on_replace: :delete
 
@@ -43,17 +42,9 @@ defmodule Picsello.Card do
   @doc false
   def changeset(campaign \\ %__MODULE__{}, attrs) do
     campaign
-    |> cast(attrs, [:concise_name, :title, :body, :icon, :color, :class, :index, :is_global])
+    |> cast(attrs, [:concise_name, :title, :body, :icon, :color, :class, :index])
     |> cast_embed(:buttons)
     |> validate_required([:concise_name, :title])
-  end
-
-  def list_global_for_dashboard() do
-    from(card in Picsello.Card,
-      where: card.is_global
-    )
-    |> Repo.all()
-    |> Enum.map(&%{card: &1, status: "active", id: nil})
   end
 
   def list() do

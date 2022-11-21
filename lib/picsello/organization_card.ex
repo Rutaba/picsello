@@ -33,7 +33,8 @@ defmodule Picsello.OrganizationCard do
 
   def for_new_changeset() do
     for %{concise_name: concise_name, id: id} <- Picsello.Repo.all(Picsello.Card),
-        concise_name != "proofing-album-order" do
+        concise_name != "proofing-album-order",
+        concise_name != "black-friday" do
       %{
         card_id: id,
         status: "active"
@@ -71,7 +72,9 @@ defmodule Picsello.OrganizationCard do
 
   def list(organization_id) when is_integer(organization_id) do
     from(org_card in Picsello.OrganizationCard,
-      where: org_card.organization_id == ^organization_id and org_card.status != :inactive,
+      where:
+        (org_card.organization_id == ^organization_id and org_card.status != :inactive) or
+          is_nil(org_card.organization_id),
       preload: [:card]
     )
     |> Repo.all()
