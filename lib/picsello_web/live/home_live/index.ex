@@ -149,6 +149,7 @@ defmodule PicselloWeb.HomeLive.Index do
     end
   end
 
+  @impl true
   def handle_event(
         "card_status",
         %{"org_card_id" => org_card_id, "status" => status},
