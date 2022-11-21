@@ -447,12 +447,12 @@ defmodule PicselloWeb.GalleryLive.Index do
 
     proofing_album =
       albums
-      |> Enum.filter(&(&1.is_proofing == true))
+      |> Enum.filter(&(&1.is_proofing))
       |> List.first()
 
     final_album =
       albums
-      |> Enum.filter(&(&1.is_finals == true))
+      |> Enum.filter(&(&1.is_finals))
       |> List.first()
 
     cond do
@@ -463,7 +463,7 @@ defmodule PicselloWeb.GalleryLive.Index do
         gallery
         |> Galleries.set_gallery_hash()
         |> Map.get(:client_link_hash)
-        
+
         Routes.gallery_client_index_url(socket, :index, hash)
     end
   end
