@@ -109,26 +109,20 @@ defmodule PicselloWeb.LeadLive.Show do
       |> noreply()
 
   @impl true
-  def handle_event(
-        "edit-package",
-        %{},
-        %{assigns: %{proposal: nil} = assigns} = socket
-      ),
-      do:
-        socket
-        |> open_modal(
-          PicselloWeb.PackageLive.WizardComponent,
-          assigns |> Map.take([:current_user, :job, :package])
-        )
-        |> assign_disabled_copy_link()
-        |> noreply()
-
-  @impl true
-  def handle_event("edit-package", %{}, %{assigns: %{proposal: %BookingProposal{}}} = socket),
-    do:
+  def handle_event("edit-package", %{}, %{assigns: %{proposal: proposal} = assigns} = socket) do
+    if is_nil(proposal) || is_nil(proposal.accepted_at) do 
+      socket
+      |> open_modal(
+        PicselloWeb.PackageLive.WizardComponent,
+        assigns |> Map.take([:current_user, :job, :package])
+      )
+      |> assign_disabled_copy_link()
+    else
       socket
       |> put_flash(:error, "Package can't be changed")
-      |> noreply()
+    end
+    |> noreply()
+  end
 
   @impl true
   def handle_event(
