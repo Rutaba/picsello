@@ -4,6 +4,8 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
 
   alias Picsello.{Repo, Card, OrganizationCard}
 
+  import Ecto.Query, only: [order_by: 2]
+
   import PicselloWeb.LayoutView,
     only: [
       flash: 1
@@ -32,7 +34,7 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
         <button class="mb-4 btn-primary" phx-click="add-card">Add card</button>
       </div>
       <%= for({%{card: %{id: id, buttons: buttons}, changeset: changeset}, index} <- @cards |> Enum.with_index()) do %>
-        <.form let={f} for={changeset} class="contents" phx-change="save-cards" id={"form-cards-#{id}"}>
+        <.form let={f} for={changeset} class="contents" phx-change="update-card" id={"form-cards-#{id}"}>
           <%= hidden_input f, :id %>
           <div class="flex items-center gap-4 bg-gray-100 rounded-t-lg py-4 px-6">
             <h4 class="font-bold text-lg">Card—<%= input_value f, :title %></h4>
@@ -151,7 +153,7 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
   end
 
   @impl true
-  def handle_event("save-cards", params, socket) do
+  def handle_event("update-card", params, socket) do
     socket
     |> update_cards(params, fn card, params ->
       case card |> Card.changeset(params) |> Repo.update() do
@@ -238,7 +240,9 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
     socket
     |> assign(
       cards:
-        Card.list()
+        Card
+        |> order_by(desc: :index)
+        |> Repo.all()
         |> Enum.map(&%{card: &1, changeset: Card.changeset(&1, %{})})
     )
   end
