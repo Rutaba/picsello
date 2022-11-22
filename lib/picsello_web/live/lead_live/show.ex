@@ -110,7 +110,7 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_event("edit-package", %{}, %{assigns: %{proposal: proposal} = assigns} = socket) do
-    if is_nil(proposal) || is_nil(proposal.accepted_at) do 
+    if is_nil(proposal) || is_nil(proposal.accepted_at) do
       socket
       |> open_modal(
         PicselloWeb.PackageLive.WizardComponent,

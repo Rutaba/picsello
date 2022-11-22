@@ -100,8 +100,7 @@ config :picsello, :whcc,
         host -> host <> "/whcc/webhook"
       end
     ),
-    whcc_sync_process_count: System.get_env("WHCC_SYNC_PROCESS_COUNT") || "2"
-      
+  whcc_sync_process_count: System.get_env("WHCC_SYNC_PROCESS_COUNT") || "2"
 
 config :picsello, Oban,
   repo: Picsello.Repo,

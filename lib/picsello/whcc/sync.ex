@@ -91,9 +91,10 @@ defmodule Picsello.WHCC.Sync do
   end
 
   defp sync_table(rows, schema, to_row, replace_fields \\ []) do
-    whcc_sync_process_count = Application.get_env(:picsello, :whcc)
-    |> Keyword.get(:whcc_sync_process_count)
-    |> String.to_integer()
+    whcc_sync_process_count =
+      Application.get_env(:picsello, :whcc)
+      |> Keyword.get(:whcc_sync_process_count)
+      |> String.to_integer()
 
     updated_at = DateTime.truncate(DateTime.utc_now(), :second)
 
@@ -102,8 +103,8 @@ defmodule Picsello.WHCC.Sync do
 
     for(
       chunk <-
-        rows 
-        |> Stream.with_index() 
+        rows
+        |> Stream.with_index()
         |> Stream.chunk_every(whcc_sync_process_count),
       reduce: []
     ) do
