@@ -130,13 +130,13 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
     id = String.to_integer(id)
 
     Ecto.Multi.new()
-    |> Ecto.Multi.delete_all(
+    |> Ecto.Multi.delete(
       :delete_org_card,
-      from(org_card in OrganizationCard, where: org_card.card_id == ^id)
+      OrganizationCard |> Repo.get_by!(card_id: id)
     )
-    |> Ecto.Multi.delete_all(
+    |> Ecto.Multi.delete(
       :delete_card,
-      from(card in Card, where: card.id == ^id)
+      Card |> Repo.get!(id)
     )
     |> Repo.transaction()
     |> case do
