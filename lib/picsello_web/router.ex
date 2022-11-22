@@ -83,6 +83,7 @@ defmodule PicselloWeb.Router do
     live_dashboard "/dashboard", metrics: Telemetry, ecto_repos: [Repo]
     live "/categories", Live.Admin.Categories, :index
     live "/pricing_calculator", Live.Admin.PricingCalculator, :index
+    live "/next_up_cards", Live.Admin.NextUpCards, :index
     live "/subscription_pricing", Live.Admin.SubscriptionPricing, :index
     live "/product_pricing", Live.Admin.ProductPricing, :index
     live "/product_pricing/:id", Live.Admin.ProductPricing, :show

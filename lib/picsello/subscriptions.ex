@@ -78,6 +78,9 @@ defmodule Picsello.Subscriptions do
   def monthly?(%Subscription{recurring_interval: recurring_interval}),
     do: recurring_interval == "month"
 
+  def monthly?(_),
+    do: false
+
   def subscription_expired?(%User{subscription: %Ecto.Association.NotLoaded{}} = user),
     do: user |> Repo.preload(:subscription) |> subscription_expired?()
 
