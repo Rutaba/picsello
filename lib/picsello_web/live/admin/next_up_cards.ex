@@ -4,8 +4,6 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
 
   alias Picsello.{Repo, Card, OrganizationCard}
 
-  import Ecto.Query
-
   import PicselloWeb.LayoutView,
     only: [
       flash: 1
