@@ -15,7 +15,7 @@ defmodule Picsello.Workers.PackDigitals do
     case Pack.upload(packable) do
       {:ok, url} ->
         broadcast(packable, :ok, %{packable: packable, status: {:ready, url}})
-        
+
         maybe_notify(packable, url)
 
         :ok
@@ -69,6 +69,7 @@ defmodule Picsello.Workers.PackDigitals do
       )
     end
   end
+
   defp maybe_notify(_, _), do: nil
 
   defp to_packable(%{"packable" => module_name, "id" => id}),
