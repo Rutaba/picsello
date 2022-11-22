@@ -269,6 +269,8 @@ defmodule Picsello.Subscriptions do
     end
   end
 
+  defp check_card_source({:error, _}), do: false
+
   defp calculate_days_left_boolean(days_left, max) do
     days_left > max || days_left < 0
   end
