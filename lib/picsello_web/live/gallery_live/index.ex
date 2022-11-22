@@ -447,22 +447,26 @@ defmodule PicselloWeb.GalleryLive.Index do
 
     proofing_album =
       albums
-      |> Enum.filter(&(&1.is_proofing))
+      |> Enum.filter(& &1.is_proofing)
       |> List.first()
 
     final_album =
       albums
-      |> Enum.filter(&(&1.is_finals))
+      |> Enum.filter(& &1.is_finals)
       |> List.first()
 
     cond do
-      final_album -> proofing_and_final_album_url(socket, final_album)
-      proofing_album -> proofing_and_final_album_url(socket, proofing_album)
+      final_album ->
+        proofing_and_final_album_url(socket, final_album)
+
+      proofing_album ->
+        proofing_and_final_album_url(socket, proofing_album)
+
       true ->
         hash =
-        gallery
-        |> Galleries.set_gallery_hash()
-        |> Map.get(:client_link_hash)
+          gallery
+          |> Galleries.set_gallery_hash()
+          |> Map.get(:client_link_hash)
 
         Routes.gallery_client_index_url(socket, :index, hash)
     end
