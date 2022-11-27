@@ -2,8 +2,9 @@ defmodule Picsello.Galleries.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
   alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album, SessionToken}
-  alias Picsello.{Job, Cart.Order}
+  alias Picsello.{Job, GlobalGallerySettings, Cart.Order, Repo}
 
   @status_options [
     values: ~w(draft active expired disabled),
@@ -25,6 +26,7 @@ defmodule Picsello.Galleries.Gallery do
     field :total_count, :integer, default: 0
     field :active, :boolean, default: true
     field :disabled, :boolean, default: false
+    field :use_global, :boolean
 
     belongs_to(:job, Job)
     has_many(:photos, Photo)
@@ -53,7 +55,8 @@ defmodule Picsello.Galleries.Gallery do
     :expired_at,
     :client_link_hash,
     :total_count,
-    :active
+    :active,
+    :use_global
   ]
   @update_attrs [
     :name,
@@ -68,7 +71,8 @@ defmodule Picsello.Galleries.Gallery do
   @required_attrs [:name, :job_id, :status, :password]
 
   def create_changeset(gallery, attrs \\ %{}) do
-    attrs = Map.put(attrs, :expired_at, next_year_expiration_datetime())
+    attrs = Map.put(attrs, :expired_at, global_expiration_datetime(gallery))
+    attrs = Map.put(attrs, :use_global, true)
 
     gallery
     |> cast(attrs, @create_attrs)
@@ -133,7 +137,28 @@ defmodule Picsello.Galleries.Gallery do
   defp validate_name(changeset),
     do: validate_length(changeset, :name, max: 50)
 
-  defp next_year_expiration_datetime do
-    Date.utc_today() |> Date.add(365) |> DateTime.new!(~T[12:00:00])
+  defp global_expiration_datetime(gallery) do
+    organization_id =
+      from(j in Picsello.Job,
+        join: c in assoc(j, :client),
+        join: o in assoc(c, :organization),
+        where: j.id == ^gallery.job_id,
+        select: o.id
+      )
+      |> Repo.one()
+
+    shoot = get_shoots(gallery.job_id) |> List.last()
+
+    settings =
+      from(gss in GlobalGallerySettings,
+        where: gss.organization_id == ^organization_id
+      )
+      |> Repo.one()
+
+    if settings && settings.expiration_days > 0 do
+      Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
+    end
   end
+
+  defp get_shoots(job_id), do: Picsello.Shoot.for_job(job_id) |> Repo.all()
 end

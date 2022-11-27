@@ -29,7 +29,8 @@ defmodule Picsello.Factory do
     Profiles.Profile,
     BrandLink,
     Questionnaire,
-    PackagePaymentSchedule
+    PackagePaymentSchedule,
+    GlobalGallerySettings
   }
 
   def valid_user_password(), do: "hello world!"
@@ -463,6 +464,12 @@ defmodule Picsello.Factory do
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
+  end
+
+  def global_gallery_settings_factory do
+    %GlobalGallerySettings{}
+    |> GlobalGallerySettings.expiration_changeset(%{})
+    |> Ecto.Changeset.apply_changes()
   end
 
   def watermark_factory(attrs) do

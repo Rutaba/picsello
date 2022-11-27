@@ -155,6 +155,7 @@ defmodule PicselloWeb.Router do
       end
 
       live "/galleries", GalleryLive.Index, :galleries, as: :gallery
+      live "/galleries/settings", GelleryLive.GlobalSettings, :edit
 
       live "/home", HomeLive.Index, :index, as: :home
       live "/leads/:id", LeadLive.Show, :leads, as: :job
