@@ -20,7 +20,6 @@ defmodule Picsello.Galleries.SessionToken do
     |> cast(attrs, [:resource_id, :resource_type])
     |> validate_required([:resource_id, :resource_type])
     |> put_token()
-    |> foreign_key_constraint(:gallery_id)
   end
 
   def session_validity_in_days, do: @session_validity_in_days
