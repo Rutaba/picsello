@@ -7,23 +7,41 @@ on:
     branches: [ main ]
 
 jobs:
-  test_1-4:
-    uses: ./.github/workflows/reusable_elixir.yml
-    with:
-      partition: "1"
-      partitions: "4"
-  test_2-4:
-    uses: ./.github/workflows/reusable_elixir.yml
-    with:
-      partition: "2"
-      partitions: "4"
-  test_3-4:
-    uses: ./.github/workflows/reusable_elixir.yml
-    with:
-      partition: "3"
-      partitions: "4"
-  test_4-4:
-    uses: ./.github/workflows/reusable_elixir.yml
-    with:
-      partition: "4"
-      partitions: "4"
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      db:
+        image: postgres:13
+        ports: ['5432:5432']
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: test_1-4
+        uses: ./.github/workflows/reusable_elixir.yml
+        with:
+          partition: "1"
+          partitions: "4"
+      - name: test_2-4
+        uses: ./.github/workflows/reusable_elixir.yml
+        with:
+          partition: "2"
+          partitions: "4"
+      - name: test_3-4
+        uses: ./.github/workflows/reusable_elixir.yml
+        with:
+          partition: "3"
+          partitions: "4"
+      - name: test_4-4
+        uses: ./.github/workflows/reusable_elixir.yml
+        with:
+          partition: "4"
+          partitions: "4"
