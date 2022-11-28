@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Shared.FooterComponent do
   alias Picsello.Albums
 
   @impl true
-  def update(%{gallery: gallery}, socket) do
+  def update(%{gallery: gallery, total_progress: total_progress}, socket) do
     hash =
       gallery
       |> Galleries.set_gallery_hash()
@@ -19,10 +19,18 @@ defmodule PicselloWeb.GalleryLive.Shared.FooterComponent do
         if album.is_proofing, do: true, else: false
       end
 
+    uploading =
+      if total_progress == 100 || total_progress == 0 do
+        false
+      else
+        true
+      end
+
     socket
     |> assign(:proofing_exists?, Enum.any?(proofing_album))
     |> assign(url: Routes.gallery_client_index_path(socket, :index, hash))
     |> assign(disabled: gallery.disabled)
+    |> assign(uploading: uploading)
     |> ok()
   end
 end
