@@ -31,63 +31,31 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
-    services:
-      db:
-        image: postgres:13
-        ports: ['5432:5432']
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Elixir
-      uses: erlef/setup-elixir@885971a72ed1f9240973bd92ab57af8c1aa68f24
-      with:
-        elixir-version: '1.12.3' # Define the elixir version [required]
-        otp-version: '24.1.4' # Define the OTP version [required]
-    - name: Restore dependencies cache
-      uses: actions/cache@v2
-      id: cache-mix
-      with:
-        path: |
-          deps
-          _build
-        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-mix-
-    - name: Install dependencies
-      if: steps.cache-mix.outputs.cache-hit != 'true'
-      run: mix deps.get
-    - name: Compile deps for tests
-      run: MIX_ENV=test mix deps.compile
-    - name: Compile code for tests
-      run: MIX_ENV=test mix compile --warnings-as-errors
-    - name: Run Credo
-      run: MIX_ENV=test mix credo
-    - name: Run Dialyzer
-      run: mix dialyzer
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '16.14.2' # WARNING: *must* match ../.node-version
-        cache: 'npm'
-        cache-dependency-path: assets/package-lock.json
-    - name: Build js
-      run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
-    - name: Run tests
-      run: mix test --trace --cover --warnings-as-errors
+    - name: "Run tests_1-4"
+      uses: ./.github/workflows/reusable_elixir.yml
       timeout-minutes: 45
-    - name: Archive screenshots
-      if: ${{failure()}}
-      uses: actions/upload-artifact@v2
-      with:
-        name: screenshots
-        path: |
-          screenshots/*.png
+      secrets:
+        partition: "1"
+        partitions: "4"
+    - name: "Run tests_2-4"
+      uses: ./.github/workflows/reusable_elixir.yml
+      timeout-minutes: 45
+      secrets:
+        partition: "3"
+        partitions: "4"
+    - name: "Run tests_4-4"
+      uses: ./.github/workflows/reusable_elixir.yml
+      timeout-minutes: 45
+      secrets:
+        partition: "4"
+        partitions: "4"
+    - name: "Run tests_4-4"
+      uses: ./.github/workflows/reusable_elixir.yml
+      timeout-minutes: 45
+      secrets:
+        partition: "4"
+        partitions: "4"
     - name: Notify slack of success
       uses: rtCamp/action-slack-notify@v2
       env:
