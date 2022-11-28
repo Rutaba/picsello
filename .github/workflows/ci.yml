@@ -32,6 +32,7 @@ jobs:
     timeout-minutes: 45
 
     steps:
+    - uses: actions/checkout@v2
     - name: "Run tests_1-4"
       uses: ./.github/workflows/reusable_elixir.yml
       timeout-minutes: 45
