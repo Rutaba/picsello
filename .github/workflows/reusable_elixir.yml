@@ -5,8 +5,10 @@ on:
     inputs:
       partition:
         required: true
+        type: string
       partitions:
         required: true
+        type: string
 
 env:
   GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 }}
