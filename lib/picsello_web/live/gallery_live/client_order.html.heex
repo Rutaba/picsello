@@ -9,7 +9,7 @@
     <%= if @from_checkout do %>
       <%= live_redirect class: "flex items-center font-extrabold text-base-250", to: @checkout_routes.home_page do %>
         <.icon name="back" class="h-3 w-2 mr-2 stroke-[3px]" />
-        Back to  <%= if @is_proofing, do: "album", else: "gallery" %>
+        Back to  <%= if @is_proofing || @album && @album.is_finals, do: "album", else: "gallery" %>
       <% end %>
 
     <.success_message {assigns} />

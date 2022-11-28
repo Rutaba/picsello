@@ -17,7 +17,7 @@ defmodule PicselloWeb.WelcomeComponent do
     ~H"""
     <div class="modal">
       <.close_x close_event={@close_event} myself={@myself} />
-      <div class="flex items-center mb-4 justify-center">
+      <div class="flex items-center mb-1 justify-center">
         <.icon name="confetti-welcome" class="w-12 h-12" />
         <h1 class="text-center text-4xl ml-4 font-bold">Welcome to the Picsello Family!</h1>
       </div>
@@ -43,6 +43,18 @@ defmodule PicselloWeb.WelcomeComponent do
             <iframe src="https://www.youtube.com/embed/THCQu4BZgqY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video my-12"></iframe>
             <a href="https://www.picsello.com/request-a-demo" target="_blank" rel="noreferrer" class="btn-secondary" phx-click="modal_action" phx-value-id="demo" phx-target={@myself}>Join a demo</a>
           </div>
+        </div>
+      </div>
+      <div class="p-8 bg-blue-planning-100 rounded-lg mt-8 sm:flex justify-between gap-4 items-center">
+        <div>
+          <h5 class="text-blue-planning-300 font-bold"><.icon name="clock-2" class="w-6 h-6 inline-block" /> 11/25 to 11/28</h5>
+          <h4 class="text-3xl font-bold">Don’t miss our Black Friday Sale!</h4>
+          <p class="text-lg">Sign up for a yearly subscription and get a free 12-month membership to <a href="https://www.picsello.com/day-after-thanksgiving-sale" target="_blank" rel="noreferrer" class="text-blue-planning-300 font-bold"><span class="underline">Picsello’s Business Mastermind</span> <.icon name="external-link" class="w-4 h-4 inline-block" /></a></p>
+        </div>
+        <div class="ml-auto block mt-4">
+          <.live_link to={Routes.user_settings_path(@socket, :edit)} class="btn-primary text-center inline-block">
+            Count me in
+          </.live_link>
         </div>
       </div>
     </div>

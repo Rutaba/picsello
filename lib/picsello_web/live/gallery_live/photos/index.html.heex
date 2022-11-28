@@ -60,7 +60,7 @@
                 <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
               </div>
               <%= if @album && (@album.is_proofing || @album.is_finals) do %>
-                <.icon_button {testid("send-proofs-popup")} disabled={@gallery.disabled} class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
+                <.icon_button {testid("send-proofs-popup")} disabled={@gallery.disabled || (@total_progress > 0 && @total_progress < 100) } class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
                   Send <%=if @album.is_proofing, do: "proofs", else: "album" %> to client
                 </.icon_button>
                 <.icon_button {testid("add-finals-album-popup")} disabled={@gallery.disabled} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_finals_album_popup" color="blue-planning-300" icon="plus">
@@ -246,6 +246,6 @@
   </div>
   <.sticky_upload current_user={@current_user} exclude_gallery_id={@gallery.id} />
   <div class={classes("z-30 lg:h-14", %{"relative" => !@is_mobile})}>
-    <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id, gallery: @gallery %>
+    <%= live_component PicselloWeb.GalleryLive.Shared.FooterComponent , id: @gallery.id, gallery: @gallery,total_progress: @total_progress %>
   </div>
 </div>

@@ -105,7 +105,6 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
             <%= dyn_gettext("duration-#{shoot.duration_minutes}") %>
             starting at <%= strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
           </p>
-
           <p><%= shoot_location(shoot) %></p>
         </div>
 

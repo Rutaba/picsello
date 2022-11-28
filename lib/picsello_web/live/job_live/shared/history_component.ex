@@ -46,7 +46,7 @@ defmodule PicselloWeb.JobLive.Shared.HistoryComponent do
         %{is_gallery_only: true} -> {nil, "Active"}
         _ -> current_statuses(job_status.current_status)
       end
-    
+
     date = strftime(current_user.time_zone, job_status.changed_at, "%B %-d, %Y")
 
     socket

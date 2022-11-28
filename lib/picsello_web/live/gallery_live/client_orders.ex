@@ -30,6 +30,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     |> assign_is_proofing()
     |> assign_cart_count(gallery)
     |> assign_checkout_routes()
+    |> assign_new(:album, fn -> nil end)
     |> noreply()
   end
 

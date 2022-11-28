@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [assign_cart_count: 2, customize_and_buy_product: 4]
+    only: [assign_cart_count: 2, customize_and_buy_product: 4, assign_checkout_routes: 1]
 
   import Picsello.Designs, only: [load_occasion: 1, occasion_designs_query: 1, occasions: 0]
 
@@ -26,6 +26,8 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       filter_applied?: false,
       toggle_arrows?: false
     )
+    |> assign_new(:album, fn -> nil end)
+    |> assign_checkout_routes()
     |> ok(temporary_assigns: [designs: []])
   end
 
@@ -66,7 +68,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     ~H"""
     <div class="relative">
       <div class="fixed md:pl-16 w-full md:px-6 px-2 mx-auto z-40 bg-white">
-        <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery %>
+        <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery, album: @album, is_finals: @album && @album.is_finals %>
       </div>
 
       <hr>
@@ -83,15 +85,15 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       <nav class="pb-7 mt-8 lg:mt-16 text-base-250">
         <ol class="flex items-center list-reset">
           <li>
-            <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash) do %>
-              Gallery Home
+            <%= live_redirect to: @checkout_routes.home_page do %>
+            <%= if @album && @album.is_finals, do: "Album Home", else: "Gallery Home" %>
             <% end %>
           </li>
 
           <li><.icon name="forth" class="w-2 h-2 mx-1 stroke-2"/></li>
 
           <li>
-            <%= live_patch to: self_path(@socket, @gallery), class: "font-bold" do %>
+            <%= live_patch to: self_path(@socket, @gallery, @album), class: "font-bold" do %>
               Choose occasion
             <% end %>
           </li>
@@ -106,7 +108,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       <ul class="mt-48 pt-6 pb-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
         <%= for occasion <- @occasions do %>
           <li>
-            <%= live_patch to: self_path(@socket, @gallery, %{"occasion_id" => occasion.id}) do %>
+            <%= live_patch to: self_path(@socket, @gallery, @album, %{"occasion_id" => occasion.id}) do %>
               <.img_box src={occasion.preview_url} />
 
               <h3 class="pt-2 text-lg font-extrabold capitalize"><%= occasion.name %></h3>
@@ -153,15 +155,15 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         <nav class="mb-9 text-base-250">
           <ol class="flex items-center list-reset">
             <li>
-              <%= live_redirect to: Routes.gallery_client_index_path(@socket, :index, @gallery.client_link_hash) do %>
-                Gallery Home
-              <% end %>
+            <%= live_redirect to: @checkout_routes.home_page do %>
+              <%= if @album && @album.is_finals, do: "Album Home", else: "Gallery Home" %>
+            <% end %>
             </li>
 
             <li><.icon name="forth" class="w-2 h-2 mx-1 stroke-2"/></li>
 
             <li>
-              <%= live_patch to: self_path(@socket, @gallery) do %>
+              <%= live_patch to: self_path(@socket, @gallery, @album) do %>
                 Choose occasion
               <% end %>
             </li>
@@ -169,7 +171,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
             <li><.icon name="forth" class="w-2 h-2 mx-1 stroke-2"/></li>
 
             <li>
-              <%= live_patch to: self_path(@socket, @gallery, %{"occasion_id" => @occasion.id}), class: "font-bold capitalize" do %>
+              <%= live_patch to: self_path(@socket, @gallery, @album, %{"occasion_id" => @occasion.id}), class: "font-bold capitalize" do %>
                 <%= @occasion.name %>
               <% end %>
             </li>
@@ -240,13 +242,15 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   def handle_event(
         "apply-filters",
         data,
-        %{assigns: %{filter: filter, gallery: gallery, occasion: %{id: occasion_id}}} = socket
+        %{
+          assigns: %{filter: filter, gallery: gallery, occasion: %{id: occasion_id}, album: album}
+        } = socket
       ) do
     filter_params = filter |> Filter.update(Map.get(data, "filter", %{})) |> Filter.to_params()
 
     socket
     |> push_patch(
-      to: self_path(socket, gallery, %{occasion_id: occasion_id, filter: filter_params})
+      to: self_path(socket, gallery, album, %{occasion_id: occasion_id, filter: filter_params})
     )
     |> assign(:filter_applied?, filter_params != %{})
     |> noreply()
@@ -533,7 +537,18 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
     """
   end
 
-  defp self_path(socket, gallery, params \\ %{}),
+  defp self_path(socket, gallery, album, params \\ %{})
+
+  defp self_path(socket, _gallery, %{is_finals: true} = album, params),
+    do:
+      Routes.gallery_card_editor_path(
+        socket,
+        :finals_album,
+        album.client_link_hash,
+        params
+      )
+
+  defp self_path(socket, gallery, _album, params),
     do:
       Routes.gallery_card_editor_path(
         socket,

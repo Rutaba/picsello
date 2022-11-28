@@ -48,7 +48,6 @@ defmodule Picsello.Repo.Migrations.AddIsWithCashToPaymentSchedules do
       left join packages on packages.id = jobs.package_id
   )
   """
-
   @new_view """
   create or replace view job_statuses as (
     with proposal_statuses as (
@@ -100,7 +99,6 @@ defmodule Picsello.Repo.Migrations.AddIsWithCashToPaymentSchedules do
       left join packages on packages.id = jobs.package_id
   )
   """
-
   def change do
     alter table(:payment_schedules) do
       add(:is_with_cash, :boolean, default: false)

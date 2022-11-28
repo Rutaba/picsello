@@ -41,7 +41,10 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assertions_for_no_galleries_page()
   end
 
-  feature "when there are orders in gallery, you see enable-disable feature in dropdown", %{session: session, gallery: gallery} do
+  feature "when there are orders in gallery, you see enable-disable feature in dropdown", %{
+    session: session,
+    gallery: gallery
+  } do
     insert(:order, gallery: gallery, placed_at: DateTime.utc_now())
 
     visit_homepage(session)
@@ -62,6 +65,16 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> visit_view_all_galleries()
     |> click(css("#menu-button"))
     |> assert_text("Disable")
+  end
+
+  feature "renders create-gallery modal from dashboard-card", %{session: session} do
+    visit_homepage(session)
+    |> click(button("Create a gallery"))
+    |> assert_text("Create a Gallery: General Details")
+    |> assert_text("Client Name")
+    |> assert_text("Client Email")
+    |> assert_text("# of Shoots")
+    |> assert_text("Type of Photography")
   end
 
   defp visit_homepage(session) do

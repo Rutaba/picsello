@@ -90,6 +90,7 @@ defmodule PicselloWeb.JobLive.Show do
 
       _ ->
         photos_count = Galleries.get_gallery_photos_count(gallery.id)
+
         %{
           button_text: "View gallery",
           button_click: "view-gallery",

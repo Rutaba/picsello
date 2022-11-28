@@ -103,7 +103,20 @@ defmodule PicselloWeb.GalleryLive.Shared do
         %GalleryProduct{} = product,
         %Photo{} = photo
       ) do
+    is_finals = Map.get(socket.assigns, :album, %{}) |> Map.get(:is_finals, false)
+
     case GalleryProducts.editor_type(product) do
+      :card when is_finals ->
+        socket
+        |> push_redirect(
+          to:
+            Routes.gallery_card_editor_path(
+              socket,
+              :finals_album,
+              socket.assigns.album.client_link_hash
+            )
+        )
+
       :card ->
         socket
         |> push_redirect(
@@ -141,37 +154,44 @@ defmodule PicselloWeb.GalleryLive.Shared do
     socket |> product_preview_photo_popup(gallery_product, gallery_product.preview_photo)
   end
 
-  def customize_and_buy_product(
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket,
-        whcc_product,
-        photo,
-        opts \\ []
-      ) do
-    created_editor =
-      Picsello.WHCC.create_editor(
-        whcc_product,
-        photo,
-        Keyword.merge(
-          [
-            complete_url:
-              Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-                "?editorId=%EDITOR_ID%",
-            secondary_url:
-              Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-                "?editorId=%EDITOR_ID%&clone=true",
-            cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
-          ],
-          opts
-        )
+  def customize_and_buy_product(socket, whcc_product, photo, opts \\ []) do
+    Picsello.WHCC.create_editor(
+      whcc_product,
+      photo,
+      Keyword.merge(
+        editor_urls(socket),
+        opts
       )
+    )
+    |> then(
+      &(socket
+        |> redirect(external: &1.url)
+        |> noreply())
+    )
+  end
 
-    socket
-    |> redirect(external: created_editor.url)
-    |> noreply()
+  defp editor_urls(%{assigns: %{album: %Album{is_finals: true} = album}} = socket) do
+    [
+      complete_url:
+        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
+          "?editorId=%EDITOR_ID%",
+      secondary_url:
+        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
+          "?editorId=%EDITOR_ID%&clone=true",
+      cancel_url: Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
+    ]
+  end
+
+  defp editor_urls(%{assigns: %{gallery: %Galleries.Gallery{} = gallery}} = socket) do
+    [
+      complete_url:
+        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+          "?editorId=%EDITOR_ID%",
+      secondary_url:
+        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+          "?editorId=%EDITOR_ID%&clone=true",
+      cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
+    ]
   end
 
   def get_all_gallery_albums(gallery_id) do
@@ -543,7 +563,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def preview(assigns) do
     ~H"""
-    <div class="fixed z-30 lg:h-[45%] bg-white scroll-shadow">
+    <div class="fixed z-30 bg-white scroll-shadow">
         <div class="absolute 2xl:top-5 top-2 2xl:right-6 right-4">
             <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
             <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2 sm:stroke-1"/>
@@ -874,6 +894,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Routes.gallery_client_show_cart_path(socket, method, client_link_hash)
   end
 
+  def assign_is_proofing(%{assigns: %{album: nil}} = socket) do
+    assign(socket, is_proofing: false)
+  end
+
   def assign_is_proofing(%{assigns: %{album: album}} = socket) do
     assign(socket, is_proofing: album.is_proofing)
   end
@@ -999,5 +1023,23 @@ defmodule PicselloWeb.GalleryLive.Shared do
       {:ok, album} -> {:ok, album.album}
       _ -> {nil, "something went wrong"}
     end
+  end
+
+  def place_product_in_cart(
+        %{
+          assigns: %{
+            gallery: gallery
+          } = assigns
+        } = socket,
+        whcc_editor_id
+      ) do
+    album = Map.get(assigns, :album)
+    album_id = if album, do: Map.get(album, :id), else: nil
+
+    gallery_account_id = Galleries.account_id(gallery)
+    cart_product = Cart.new_product(whcc_editor_id, gallery_account_id)
+    Cart.place_product(cart_product, gallery.id, album_id)
+
+    socket
   end
 end

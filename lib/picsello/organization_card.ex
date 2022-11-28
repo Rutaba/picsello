@@ -1,7 +1,7 @@
 defmodule Picsello.OrganizationCard do
   @moduledoc false
   use Ecto.Schema
-  alias Picsello.{Card, Organization, Cart.Order, Repo}
+  alias Picsello.{Card, Organization, OrganizationCard, Cart.Order, Repo}
 
   import Ecto.Changeset
   import Ecto.Query, only: [from: 2]
@@ -32,8 +32,9 @@ defmodule Picsello.OrganizationCard do
   end
 
   def for_new_changeset() do
-    for %{concise_name: concise_name, id: id} <- Picsello.Repo.all(Picsello.Card),
-        concise_name != "proofing-album-order" do
+    for %{concise_name: concise_name, id: id} <- Repo.all(Card),
+        concise_name != "proofing-album-order",
+        concise_name != "black-friday" do
       %{
         card_id: id,
         status: "active"
@@ -70,8 +71,10 @@ defmodule Picsello.OrganizationCard do
   end
 
   def list(organization_id) when is_integer(organization_id) do
-    from(org_card in Picsello.OrganizationCard,
-      where: org_card.organization_id == ^organization_id and org_card.status != :inactive,
+    from(org_card in OrganizationCard,
+      where:
+        (org_card.organization_id == ^organization_id and org_card.status != :inactive) or
+          is_nil(org_card.organization_id),
       preload: [:card]
     )
     |> Repo.all()

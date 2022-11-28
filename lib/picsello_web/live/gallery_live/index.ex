@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   require Ecto.Query
   alias Ecto.Query
-  alias Picsello.{Galleries, Repo, Messages, Orders}
+  alias Picsello.{Galleries, Repo, Messages, Orders, Albums}
 
   import PicselloWeb.GalleryLive.Shared
 
@@ -368,11 +368,12 @@ defmodule PicselloWeb.GalleryLive.Index do
       )
 
     jobs = get_jobs_list(galleries)
+
     galleries =
-          Enum.map(galleries, fn gallery ->
-            orders = Orders.all(gallery.id)
-            Map.put(gallery, :orders, orders)
-          end)
+      Enum.map(galleries, fn gallery ->
+        orders = Orders.all(gallery.id)
+        Map.put(gallery, :orders, orders)
+      end)
 
     socket
     |> assign(:page_title, action |> Phoenix.Naming.humanize())
@@ -392,7 +393,9 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   defp dropdown_item(%{icon: icon} = assigns) do
     assigns = Enum.into(assigns, %{class: "", id: ""})
-    icon_text_class = if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
+
+    icon_text_class =
+      if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
 
     ~H"""
     <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={@id} }>
@@ -437,5 +440,40 @@ defmodule PicselloWeb.GalleryLive.Index do
         |> put_flash(:success, "The gallery has been #{type}")
         |> noreply()
     end
+  end
+
+  defp clip_board(socket, gallery) do
+    albums = Albums.get_albums_by_gallery_id(gallery.id)
+
+    proofing_album =
+      albums
+      |> Enum.filter(& &1.is_proofing)
+      |> List.first()
+
+    final_album =
+      albums
+      |> Enum.filter(& &1.is_finals)
+      |> List.first()
+
+    cond do
+      final_album ->
+        proofing_and_final_album_url(socket, final_album)
+
+      proofing_album ->
+        proofing_and_final_album_url(socket, proofing_album)
+
+      true ->
+        hash =
+          gallery
+          |> Galleries.set_gallery_hash()
+          |> Map.get(:client_link_hash)
+
+        Routes.gallery_client_index_url(socket, :index, hash)
+    end
+  end
+
+  defp proofing_and_final_album_url(socket, album) do
+    album = Albums.set_album_hash(album)
+    Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
   end
 end

@@ -22,6 +22,17 @@ defmodule PicselloWeb.HomeLive.Index do
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
   import Ecto.Query
 
+  @card_concise_name_list [
+    "send-confirmation-email",
+    "open-user-settings",
+    "getting-started-picsello",
+    "set-up-stripe",
+    "open-billing-portal",
+    "missing-payment-method",
+    "create-lead",
+    "black-friday"
+  ]
+
   @impl true
   def mount(params, _session, socket) do
     socket
@@ -240,8 +251,6 @@ defmodule PicselloWeb.HomeLive.Index do
   def assign_attention_items(
         %{
           assigns: %{
-            stripe_status: stripe_status,
-            leads_empty?: leads_empty?,
             current_user: %{organization_id: organization_id} = current_user
           }
         } = socket
@@ -259,7 +268,8 @@ defmodule PicselloWeb.HomeLive.Index do
       %{card: %{concise_name: "proofing-album-order", body: body}} = org_card, acc ->
         orders
         |> Map.get(org_card.data.order_id)
-        |> then(fn %{gallery: %{job: %{client: client}}} = order ->
+        |> then(fn
+          %{gallery: %{job: %{client: client}}} = order ->
             buttons = build_buttons(socket, org_card.card.buttons, order)
 
             acc ++ [add(org_card, Utils.render(body, %{"name" => client.name}), buttons)]
@@ -274,26 +284,13 @@ defmodule PicselloWeb.HomeLive.Index do
     |> Enum.sort_by(& &1.card.index)
     |> Enum.map(fn %{card: %{concise_name: concise_name}} = org_card ->
       case concise_name do
-        "send-confirmation-email" ->
-          {!User.confirmed?(current_user), org_card}
-
-        "open-user-settings" ->
-          {!subscription.hidden?, org_card}
-
-        "getting-started-picsello" ->
-          {Application.get_env(:picsello, :help_scout_id) != nil, org_card}
-
-        "set-up-stripe" ->
-          {stripe_status != :charges_enabled, org_card}
-
-        "open-billing-portal" ->
-          {Picsello.Invoices.pending_invoices?(current_user.organization_id), org_card}
-
-        "missing-payment-method" ->
-          {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card}
-
-        "create-lead" ->
-          {leads_empty?, org_card}
+        card_concise_name
+        when card_concise_name in @card_concise_name_list ->
+          map_card_to_action_logic(
+            org_card,
+            subscription,
+            socket
+          )
 
         _ ->
           {true, org_card}
@@ -306,6 +303,36 @@ defmodule PicselloWeb.HomeLive.Index do
           should_attention_items_overflow: Enum.count(&1) > 4
         ))
     )
+  end
+
+  defp map_card_to_action_logic(
+         %{card: %{concise_name: concise_name}} = org_card,
+         subscription,
+         %{
+           assigns: %{
+             stripe_status: stripe_status,
+             leads_empty?: leads_empty?,
+             current_user: current_user
+           }
+         }
+       ) do
+    case %{
+           "send-confirmation-email" => {!User.confirmed?(current_user), org_card},
+           "open-user-settings" => {!subscription.hidden?, org_card},
+           "getting-started-picsello" =>
+             {Application.get_env(:picsello, :help_scout_id) != nil, org_card},
+           "set-up-stripe" => {stripe_status != :charges_enabled, org_card},
+           "open-billing-portal" =>
+             {Picsello.Invoices.pending_invoices?(current_user.organization_id), org_card},
+           "missing-payment-method" =>
+             {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card},
+           "create-lead" => {leads_empty?, org_card},
+           "black-friday" => {Subscriptions.monthly?(current_user.subscription), org_card}
+         }
+         |> Map.fetch(concise_name) do
+      {:ok, action} -> action
+      :error -> {true, org_card}
+    end
   end
 
   defp build_data(subscription) do
