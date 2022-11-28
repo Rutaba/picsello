@@ -28,8 +28,11 @@ env:
   SLACK_USERNAME: Picsello CI
   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
+permissions:
+  contents: read
+  
 jobs:
-  build:
+  test:
 
     name: Build and test
     runs-on: ubuntu-latest
@@ -83,7 +86,7 @@ jobs:
       - name: Build js
         run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
       - name: Run tests (${{ inputs.partition }}/${{ inputs.partitions }})
-        run: MIX_TEST_PARTITION=${{ inputs.partition }} mix test --partitions ${{ inputs.partitions }}
+        run: MIX_TEST_PARTITION=${{ inputs.partition }} mix test --trace --cover --warnings-as-errors --partitions ${{ inputs.partitions }}
       - name: Archive screenshots
         if: ${{failure()}}
         uses: actions/upload-artifact@v2
