@@ -2,7 +2,7 @@ name: Reusable Elixir CI
 
 on:
   workflow_call:
-    secrets:
+    inputs:
       partition:
         required: true
       partitions:
@@ -80,8 +80,8 @@ jobs:
         cache-dependency-path: assets/package-lock.json
     - name: Build js
       run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
-    - name: Run tests (${{ secrets.partition }}/${{ secrets.partitions }})
-      run: MIX_TEST_PARTITION=${{ secrets.partition }} mix test --partitions ${{ secrets.partitions }}
+    - name: Run tests (${{ inputs.partition }}/${{ inputs.partitions }})
+      run: MIX_TEST_PARTITION=${{ inputs.partition }} mix test --partitions ${{ inputs.partitions }}
     - name: Archive screenshots
       if: ${{failure()}}
       uses: actions/upload-artifact@v2

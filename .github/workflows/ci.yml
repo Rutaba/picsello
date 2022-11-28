@@ -36,23 +36,20 @@ jobs:
       uses: ./.github/workflows/reusable_elixir.yml
       timeout-minutes: 45
       with:
-        secrets:
-          partition: "1"
-          partitions: "4"
+        partition: "1"
+        partitions: "4"
     - name: "Run tests_2-4"
       uses: ./.github/workflows/reusable_elixir.yml
       timeout-minutes: 45
       with:
-        secrets:
-          partition: "3"
-          partitions: "4"
+        partition: "2"
+        partitions: "4"
     - name: "Run tests_4-4"
       uses: ./.github/workflows/reusable_elixir.yml
       timeout-minutes: 45
       with:
-        secrets:
-          partition: "4"
-          partitions: "4"
+        partition: "3"
+        partitions: "4"
     - name: "Run tests_4-4"
       uses: ./.github/workflows/reusable_elixir.yml
       timeout-minutes: 45
