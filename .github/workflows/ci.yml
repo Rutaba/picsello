@@ -23,24 +23,24 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
-  test_1-4:
-    uses: ./.github/workflows/reusable_elixir.yml
-    with:
-      partition: "1"
-      partitions: "4"
-  test_2-4:
-    uses: ./.github/workflows/reusable_elixir.yml
-    with:
-      partition: "2"
-      partitions: "4"
-  test_3-4:
-    uses: ./.github/workflows/reusable_elixir.yml
-    with:
-      partition: "3"
-      partitions: "4"
-  test_4-4:
-    uses: ./.github/workflows/reusable_elixir.yml
-    with:
-      partition: "4"
-      partitions: "4"
+
+    test_1-4:
+      uses: ./.github/workflows/reusable_elixir.yml
+      with:
+        partition: "1"
+        partitions: "4"
+    test_2-4:
+      uses: ./.github/workflows/reusable_elixir.yml
+      with:
+        partition: "2"
+        partitions: "4"
+    test_3-4:
+      uses: ./.github/workflows/reusable_elixir.yml
+      with:
+        partition: "3"
+        partitions: "4"
+    test_4-4:
+      uses: ./.github/workflows/reusable_elixir.yml
+      with:
+        partition: "4"
+        partitions: "4"
