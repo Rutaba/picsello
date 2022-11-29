@@ -78,7 +78,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
                 </label>
               </.form>
             </div>
-          </div>
+            </div>
         </.card>
       </div>
     </.settings_nav>

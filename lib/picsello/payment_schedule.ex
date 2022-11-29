@@ -28,7 +28,6 @@ defmodule Picsello.PaymentSchedule do
   ]
 
   # @required_attrs [:paid_at, :type, :price]
-
   def create_changeset(attrs \\ %{}) do
     %__MODULE__{}
     |> cast(attrs, ~w[price due_at description job_id]a)

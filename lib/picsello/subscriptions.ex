@@ -78,6 +78,9 @@ defmodule Picsello.Subscriptions do
   def monthly?(%Subscription{recurring_interval: recurring_interval}),
     do: recurring_interval == "month"
 
+  def monthly?(_),
+    do: false
+
   def subscription_expired?(%User{subscription: %Ecto.Association.NotLoaded{}} = user),
     do: user |> Repo.preload(:subscription) |> subscription_expired?()
 
@@ -265,6 +268,8 @@ defmodule Picsello.Subscriptions do
       _ -> true
     end
   end
+
+  defp check_card_source({:error, _}), do: false
 
   defp calculate_days_left_boolean(days_left, max) do
     days_left > max || days_left < 0

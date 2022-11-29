@@ -33,8 +33,25 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> assigns()
   end
 
-  def handle_params(%{"hash" => hash}, _, socket) do
-    album = Albums.get_album_by_hash!(hash) |> Repo.preload(:gallery)
+  def handle_params(
+        %{"editorId" => whcc_editor_id},
+        _,
+        %{
+          assigns: %{
+            album: album
+          }
+        } = socket
+      ) do
+    socket
+    |> place_product_in_cart(whcc_editor_id)
+    |> push_redirect(
+      to: Routes.gallery_client_show_cart_path(socket, :proofing_album, album.client_link_hash)
+    )
+    |> noreply()
+  end
+
+  def handle_params(%{"hash" => _hash}, _, %{assigns: %{album: album}} = socket) do
+    album = album |> Repo.preload(:gallery)
 
     socket
     |> assign(:album, album)

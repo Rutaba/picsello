@@ -202,21 +202,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   def handle_info({:upload_success_message, _}, socket), do: noreply(socket)
   def handle_info({:photo_processed, _, _}, socket), do: noreply(socket)
 
-  defp place_product_in_cart(
-         %{
-           assigns: %{
-             gallery: gallery
-           }
-         } = socket,
-         whcc_editor_id
-       ) do
-    gallery_account_id = Galleries.account_id(gallery)
-    cart_product = Cart.new_product(whcc_editor_id, gallery_account_id)
-    Cart.place_product(cart_product, gallery.id)
-
-    socket
-  end
-
   defp cover_photo(%{cover_photo: nil}), do: %{style: "background-image: url('#{@blank_image}')"}
   defp cover_photo(gallery), do: display_cover_photo(gallery)
 
