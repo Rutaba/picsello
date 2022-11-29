@@ -8,7 +8,6 @@ defmodule Picsello.PricingCalculations do
   }
 
   import Ecto.Changeset
-  import Ecto.Query
 
   use Ecto.Schema
 
@@ -228,15 +227,6 @@ defmodule Picsello.PricingCalculations do
 
   def tax_schedule(),
     do: Repo.get_by(PricingCalculatorTaxSchedules, active: true)
-
-  def state_options(),
-    do:
-      from(adjustment in Picsello.Packages.CostOfLivingAdjustment,
-        select: adjustment.state,
-        order_by: adjustment.state
-      )
-      |> Repo.all()
-      |> Enum.map(&{&1, &1})
 
   defp busines_cost_map(
          %{

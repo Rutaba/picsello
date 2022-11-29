@@ -398,7 +398,6 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       page_title: "Pricing Calculator step 1",
       change: "validate"
     )
-    |> assign_new(:states, &states/0)
   end
 
   defp assign_step(socket, 3) do
@@ -803,7 +802,6 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   defdelegate job_types(), to: JobType, as: :all
-  defdelegate states(), to: PricingCalculations, as: :state_options
   defdelegate days(), to: PricingCalculations, as: :day_options
   defdelegate cost_categories(), to: PricingCalculations, as: :cost_categories
   defdelegate tax_schedule(), to: PricingCalculations, as: :tax_schedule
