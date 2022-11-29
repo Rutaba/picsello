@@ -508,7 +508,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           </div>
         </div>
         <div class={classes("p-4", %{"hidden" => Enum.member?(@collapsed_documents, 1)})}>
-          <p>As with most things in Picsello, we have created a default questionnaire for you to use. If you don't select one here, we'll provide a default that you can turn off if you want when creating a lead. If you'd like to create your own template to apply to packages templates for feature use, you can do so <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link> (modal will close and you can come back).</p>
+          <p>As with most things in Picsello, we have created a default questionnaire for you to use. If you don't select one here, we'll provide a default that you can turn off if you want when creating a lead. If you'd like to create your own template to apply to packages templates for future use, you can do so <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link> (modal will close and you can come back).</p>
           <%= if Enum.empty?(@questionnaires) do %>
             <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
           <% else %>
@@ -1578,13 +1578,20 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp assign_contract_options(socket), do: socket
 
-  defp assign_questionnaires(socket) do
+  defp assign_questionnaires(
+         %{
+           assigns: %{
+             current_user: %{organization_id: organization_id},
+             package: %{job_type: job_type}
+           }
+         } = socket
+       ) do
     socket
     |> assign(
       :questionnaires,
       Questionnaire.for_organization_by_job_type(
-        socket.assigns.current_user.organization_id,
-        socket.assigns.package.job_type
+        organization_id,
+        job_type
       )
     )
   end

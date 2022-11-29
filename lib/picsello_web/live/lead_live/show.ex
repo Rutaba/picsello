@@ -225,11 +225,7 @@ defmodule PicselloWeb.LeadLive.Show do
       case maybe_insert_questionnaire(template, current_user, package) do
         {:ok, %{questionnaire_insert: questionnaire_insert}} ->
           socket
-          |> PicselloWeb.QuestionnaireFormComponent.open(%{
-            state: :edit_lead,
-            current_user: current_user,
-            questionnaire: questionnaire_insert
-          })
+          |> open_questionnaire_modal(current_user, questionnaire_insert)
 
         {:error, _} ->
           socket
@@ -237,11 +233,7 @@ defmodule PicselloWeb.LeadLive.Show do
       end
     else
       socket
-      |> PicselloWeb.QuestionnaireFormComponent.open(%{
-        state: :edit_lead,
-        current_user: current_user,
-        questionnaire: package.questionnaire_template
-      })
+      |> open_questionnaire_modal(current_user, package.questionnaire_template)
     end
     |> noreply()
   end
@@ -399,6 +391,15 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
+  end
+
+  defp open_questionnaire_modal(socket, current_user, questionnaire) do
+    socket
+    |> PicselloWeb.QuestionnaireFormComponent.open(%{
+      state: :edit_lead,
+      current_user: current_user,
+      questionnaire: questionnaire
+    })
   end
 
   defp maybe_insert_questionnaire(template, current_user, %{id: package_id} = package) do
