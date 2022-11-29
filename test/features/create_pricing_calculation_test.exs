@@ -9,8 +9,6 @@ defmodule Picsello.CreatePricingCalculationTest do
   setup do
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
-    insert(:cost_of_living_adjustment)
-
     user = %{
       user:
         insert(:user,
@@ -24,8 +22,6 @@ defmodule Picsello.CreatePricingCalculationTest do
         )
         |> onboard!
     }
-
-    insert(:brand_link, user)
 
     user
   end
@@ -42,17 +38,11 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> assert_path("/pricing/calculator")
     |> click(css("label", text: "Wedding"))
     |> assert_has(css("label.border-blue-planning-300", count: 3))
-    |> assert_has(css("select#calculator-step-2_schedule", text: "Part-time"))
-    |> fill_in(css("#calculator-step-2_zipcode"), with: "98661")
-    |> assert_has(css("#calculator-step-2_min_years_experience", value: "1"))
+    |> assert_has(css("#calculator-step-2_average_time_per_week", value: "26"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
-    |> assert_text("Financial & time goals")
+    |> assert_text("Financial goals")
     |> assert_text("15.3%")
-    |> fill_in(css("#calculator-step-3_average_time_per_week"), with: "26")
-    |> click(css("label.capitalize:first-child"))
-    |> click(css("label.capitalize:nth-child(3)"))
-    |> assert_has(css("label.capitalize.border-blue-planning-300", count: 2))
     |> find(
       text_field("calculator-step-3_desired_salary"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$36000"))
@@ -91,7 +81,23 @@ defmodule Picsello.CreatePricingCalculationTest do
                         send_grid_template: %{
                           dynamic_template_data: %{
                             "gross_revenue" => "$31,858.91",
-                            "pricing_suggestions" => [],
+                            "pricing_suggestions" => [
+                              %{
+                                base_price: "$1,200.00",
+                                job_type: "Wedding",
+                                max_session_per_year: 30
+                              },
+                              %{
+                                base_price: "$507.04",
+                                job_type: "Event",
+                                max_session_per_year: 71
+                              },
+                              %{
+                                base_price: "$346.15",
+                                job_type: "Portrait",
+                                max_session_per_year: 104
+                              }
+                            ],
                             "projected_costs" => "$7,500.00",
                             "take_home" => "$24,358.91"
                           }
@@ -107,8 +113,7 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> assert_path("/pricing/calculator")
     |> click(css("label", text: "Wedding"))
     |> assert_has(css("label.border-blue-planning-300", count: 3))
-    |> assert_has(css("select#calculator-step-2_schedule", text: "Part-time"))
-    |> assert_has(css("#calculator-step-2_min_years_experience", value: "1"))
+    |> fill_in(css("#calculator-step-2_average_time_per_week"), with: "0")
     |> assert_disabled(css("button", text: "Next"))
   end
 
