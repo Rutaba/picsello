@@ -55,90 +55,44 @@ defmodule Picsello.Questionnaire do
     |> validate_required([:questions, :job_type, :name])
   end
 
-  def for_job(%Job{type: job_type, package: %Package{questionnaire_template_id: nil}}) do
-    from(q in __MODULE__,
-      where: q.job_type in [^job_type, "other"],
-      where: q.is_picsello_default,
-      order_by:
-        fragment(
-          """
-          case
-            when ?.job_type != 'other' then 0
-            when ?.job_type = 'other' then 1
-          end asc
-          """,
-          q,
-          q
-        ),
-      limit: 1
-    )
-  end
+  def for_job(%Job{type: job_type, package: %Package{questionnaire_template_id: nil}}),
+    do: get_default_questionnaire(job_type)
 
-  def for_job(%Job{package: %Package{questionnaire_template_id: questionnaire_id}}) do
-    from(q in __MODULE__, where: q.id == ^questionnaire_id, limit: 1)
-  end
+  def for_job(%Job{package: %Package{questionnaire_template_id: questionnaire_id}}),
+    do: get_questionnaire(questionnaire_id)
 
-  def for_package(%Package{questionnaire_template_id: nil, job_type: job_type}) do
-    from(q in __MODULE__,
-      where: q.job_type in [^job_type, "other"],
-      where: q.is_picsello_default,
-      order_by:
-        fragment(
-          """
-          case
-            when ?.job_type != 'other' then 0
-            when ?.job_type = 'other' then 1
-          end asc
-          """,
-          q,
-          q
-        ),
-      limit: 1
-    )
-    |> Repo.one!()
-  end
+  def for_package(%Package{questionnaire_template_id: nil, job_type: job_type}),
+    do:
+      get_default_questionnaire(job_type)
+      |> Repo.one!()
 
-  def for_package(%Package{questionnaire_template_id: questionnaire_id}) do
-    from(q in __MODULE__, where: q.id == ^questionnaire_id, limit: 1) |> Repo.one!()
-  end
+  def for_package(%Package{questionnaire_template_id: questionnaire_id}),
+    do: get_questionnaire(questionnaire_id) |> Repo.one!()
 
   def for_organization(organization_id) do
-    from(q in __MODULE__,
-      where: q.organization_id == ^organization_id or q.is_picsello_default,
-      where: is_nil(q.package_id),
-      order_by: [asc: q.organization_id, desc: q.inserted_at]
-    )
+    get_organization_questionnaires(organization_id)
     |> Repo.all()
   end
 
   def for_organization_by_job_type(organization_id, nil) do
-    from(q in __MODULE__,
-      where: q.organization_id == ^organization_id or q.is_picsello_default,
-      where: q.job_type == "other",
-      where: is_nil(q.package_id),
-      order_by: [asc: q.organization_id, desc: q.inserted_at]
-    )
+    get_organization_questionnaires(organization_id)
+    |> where([q], q.job_type == "other")
     |> Repo.all()
   end
 
   def for_organization_by_job_type(organization_id, job_type) do
-    from(q in __MODULE__,
-      where: q.organization_id == ^organization_id or q.is_picsello_default,
-      where: q.job_type == ^job_type or q.job_type == "other",
-      where: is_nil(q.package_id),
-      order_by: [asc: q.organization_id, desc: q.inserted_at]
-    )
+    get_organization_questionnaires(organization_id)
+    |> where([q], q.job_type == ^job_type or q.job_type == "other")
     |> Repo.all()
   end
 
-  def delete_questionnaire_by_id(questionnaire_id) do
-    from(q in __MODULE__, where: q.id == ^questionnaire_id)
-    |> Repo.delete_all()
-  end
+  def delete_questionnaire_by_id(questionnaire_id),
+    do:
+      get_questionnaire(questionnaire_id)
+      |> Repo.delete_all()
 
-  def get_questionnaire_by_id(questionnaire_id) do
-    from(q in __MODULE__, where: q.id == ^questionnaire_id) |> Repo.one()
-  end
+  def get_questionnaire_by_id(questionnaire_id),
+    do: get_questionnaire(questionnaire_id) |> Repo.one()
 
   def clean_questionnaire_for_changeset(
         questionnaire,
@@ -159,4 +113,34 @@ defmodule Picsello.Questionnaire do
       job_type: questionnaire.job_type
     }
   end
+
+  defp get_organization_questionnaires(organization_id) do
+    from(q in __MODULE__,
+      where: q.organization_id == ^organization_id or q.is_picsello_default,
+      where: is_nil(q.package_id),
+      order_by: [asc: q.organization_id, desc: q.inserted_at]
+    )
+  end
+
+  defp get_default_questionnaire(job_type) do
+    from(q in __MODULE__,
+      where: q.job_type in [^job_type, "other"],
+      where: q.is_picsello_default,
+      order_by:
+        fragment(
+          """
+          case
+            when ?.job_type != 'other' then 0
+            when ?.job_type = 'other' then 1
+          end asc
+          """,
+          q,
+          q
+        ),
+      limit: 1
+    )
+  end
+
+  defp get_questionnaire(questionnaire_id),
+    do: from(q in __MODULE__, where: q.id == ^questionnaire_id)
 end
