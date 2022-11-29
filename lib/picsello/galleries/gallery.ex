@@ -34,7 +34,7 @@ defmodule Picsello.Galleries.Gallery do
     has_many(:albums, Album)
     has_many(:orders, Order)
     has_many(:session_tokens, SessionToken, @session_opts)
-    has_one(:watermark, Watermark)
+    has_one(:watermark, Watermark, on_replace: :update)
     embeds_one(:cover_photo, CoverPhoto, on_replace: :update)
     has_one(:organization, through: [:job, :client, :organization])
     has_one(:package, through: [:job, :package])
@@ -71,7 +71,7 @@ defmodule Picsello.Galleries.Gallery do
   @required_attrs [:name, :job_id, :status, :password]
 
   def create_changeset(gallery, attrs \\ %{}) do
-    attrs = Map.put(attrs, :expired_at, global_expiration_datetime(gallery))
+    attrs = Map.put(attrs, :expired_at, global_expiration_datetime(attrs))
     attrs = Map.put(attrs, :use_global, true)
 
     gallery
@@ -138,6 +138,31 @@ defmodule Picsello.Galleries.Gallery do
     do: validate_length(changeset, :name, max: 50)
 
   defp global_expiration_datetime(gallery) do
+    case gallery do
+      %{} ->
+        nil
+      _ ->
+        organization_id =
+          from(j in Picsello.Job,
+            join: c in assoc(j, :client),
+            join: o in assoc(c, :organization),
+            where: j.id == ^gallery.job_id,
+            select: o.id
+          )
+          |> Repo.one()
+        shoot = get_shoots(gallery.job_id) |> List.last()
+        settings =
+          from(gss in GlobalGallerySettings,
+            where: gss.organization_id == ^organization_id
+          )
+          |> Repo.one()
+        if settings && settings.expiration_days && settings.expiration_days > 0 do
+          Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
+        end
+    end
+  end
+
+  def global_gallery_watermark(gallery) do
     organization_id =
       from(j in Picsello.Job,
         join: c in assoc(j, :client),
@@ -146,17 +171,25 @@ defmodule Picsello.Galleries.Gallery do
         select: o.id
       )
       |> Repo.one()
-
-    shoot = get_shoots(gallery.job_id) |> List.last()
-
     settings =
       from(gss in GlobalGallerySettings,
         where: gss.organization_id == ^organization_id
       )
       |> Repo.one()
-
-    if settings && settings.expiration_days > 0 do
-      Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
+    if settings do
+      case settings.watermark_type do
+        "image" ->
+          %{
+            gallery_id: gallery.id,
+            name: settings.watermark_name,
+            size: settings.watermark_size,
+            type: "image"
+          }
+        "text" ->
+          %{text: settings.watermark_text, type: "text", gallery_id: gallery.id}
+        _ ->
+          nil
+      end
     end
   end
 

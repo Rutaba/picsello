@@ -52,6 +52,11 @@ config :picsello, :help_scout_id_business, System.get_env("HELP_SCOUT_ID_BUSINES
 config :picsello, :booking_reservation_seconds, 60 * 10
 config :picsello, :card_category_id, System.get_env("CARD_CATEGORY_ID")
 
+config :picsello,
+       :global_watermarked_path,
+       System.get_env("GLOBAL_WATERMARKED_PATH") ||
+         "picsello/temp/watermarked/ac5d398c-0838-4d32-b306-7a7728928ae2"
+         
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
   connect_signing_secret: System.get_env("STRIPE_CONNECT_SIGNING_SECRET"),

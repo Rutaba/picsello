@@ -10,6 +10,8 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
   alias Broadway.Message
   alias Picsello.Galleries.PhotoProcessing.Context
   alias Picsello.Galleries.PhotoProcessing.Waiter
+  alias Picsello.Workers.CleanStore
+  alias Phoenix.PubSub
 
   def start_link(opts) do
     producer_module = Keyword.fetch!(opts, :producer_module)
@@ -37,6 +39,26 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
         Logger.error(msg)
         Message.failed(message, msg)
     end
+  end
+
+  defp do_handle_message(%{
+    "task" =>
+      %{
+        "is_global" => true,
+        "watermarkedPreviewPath" => watermarked_preview_path,
+        "watermarkedOriginalPath" => watermarked_original_path,
+        "user_id" => user_id
+      } = task
+    }) do
+    PubSub.broadcast(Picsello.PubSub, "preview_watermark:#{user_id}", {:preview_watermark, task})
+    scheduled_at = Timex.shift(DateTime.utc_now(), minutes: 1)
+    [watermarked_preview_path, watermarked_original_path]
+    |> Enum.map(fn path ->
+    CleanStore.new(%{path: path}, scheduled_at: scheduled_at)
+    end)
+    |> Oban.insert_all()
+
+    :ok
   end
 
   defp do_handle_message(%{"task" => task} = context) do

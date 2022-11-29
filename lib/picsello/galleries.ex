@@ -463,6 +463,20 @@ defmodule Picsello.Galleries do
         )
       end
     )
+    |> Ecto.Multi.merge(fn %{gallery: gallery} ->
+      case Picsello.Galleries.Gallery.global_gallery_watermark(gallery) do
+        nil ->
+          Ecto.Multi.new()
+        changeset ->
+          Ecto.Multi.new()
+          |> Ecto.Multi.insert(:watermark, fn _ ->
+            Ecto.Changeset.change(
+              %Picsello.Galleries.Watermark{},
+              changeset
+            )
+          end)
+      end
+    end)
   end
 
   @doc """
