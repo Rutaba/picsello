@@ -61,7 +61,7 @@ defmodule Picsello.PricingCalculations do
 
   schema "pricing_calculations" do
     belongs_to(:organization, Organization)
-    field(:average_time_per_week, :integer, default: 1)
+    field(:average_time_per_week, :integer, default: 0)
     field(:desired_salary, Money.Ecto.Amount.Type)
     field(:tax_bracket, :integer)
     field(:after_income_tax, Money.Ecto.Amount.Type)
