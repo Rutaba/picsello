@@ -61,7 +61,7 @@ defmodule Picsello.PricingCalculations do
 
   schema "pricing_calculations" do
     belongs_to(:organization, Organization)
-    field(:average_time_per_week, :integer)
+    field(:average_time_per_week, :integer, default: 1)
     field(:desired_salary, Money.Ecto.Amount.Type)
     field(:tax_bracket, :integer)
     field(:after_income_tax, Money.Ecto.Amount.Type)
@@ -152,7 +152,12 @@ defmodule Picsello.PricingCalculations do
     %{income_brackets: income_brackets} = tax_schedule()
 
     income_brackets
-    |> Enum.find(fn bracket -> find_income_tax_bracket?(bracket, scrub_money_input(value)) end)
+    |> Enum.find(fn bracket ->
+      find_income_tax_bracket?(
+        bracket,
+        scrub_money_input(value)
+      )
+    end)
   end
 
   def calculate_after_tax_income(
@@ -187,12 +192,15 @@ defmodule Picsello.PricingCalculations do
         } = income_bracket,
         "" <> desired_salary_text
       ) do
-    calculate_after_tax_income(income_bracket, scrub_money_input(desired_salary_text))
+    calculate_after_tax_income(
+      income_bracket,
+      scrub_money_input(desired_salary_text)
+    )
   end
 
   def calculate_tax_amount(desired_salary, take_home) do
     scrub_money_input(desired_salary)
-    |> Money.subtract(scrub_money_input(take_home))
+    |> Money.subtract(take_home)
   end
 
   def calculate_take_home_income(percentage, after_tax_income),
@@ -202,8 +210,8 @@ defmodule Picsello.PricingCalculations do
 
   def calculate_monthly(%Money{amount: amount}), do: Money.new(div(amount, 12))
 
-  def calculate_monthly(amount) do
-    scrub_money_input(amount)
+  def calculate_monthly(yearly_cost) do
+    scrub_money_input(yearly_cost)
     |> Money.divide(12)
     |> List.first()
   end
@@ -298,7 +306,10 @@ defmodule Picsello.PricingCalculations do
     job_types
     |> Enum.map(fn job_type ->
       shoots_per_year =
-        calculate_shoots_per_year(scrub_time_per_week(average_time_per_week), job_type)
+        calculate_shoots_per_year(
+          scrub_time_per_week(%{average_time_per_week: average_time_per_week}),
+          job_type
+        )
 
       base_price = calculate_shoot_base_price(desired_salary, shoots_per_year)
       shoots_per_year = shoots_per_year |> Decimal.round(0, :ceiling)
@@ -333,32 +344,16 @@ defmodule Picsello.PricingCalculations do
     |> Money.parse!()
   end
 
-  defp scrub_time_per_week(input) do
-    case input do
-      0 ->
-        1
-
-      "0" ->
-        1
-
-      "" ->
-        1
-
-      _ ->
-        case Kernel.is_integer(input) do
-          true -> input
-          false -> String.to_integer(input)
-        end
-    end
+  defp scrub_time_per_week(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, [:average_time_per_week])
+    |> Ecto.Changeset.get_field(:average_time_per_week)
   end
 
-  defp scrub_money_input(input) do
-    case input do
-      %Money{} -> input
-      "$" -> Money.new(0)
-      "" -> Money.new(0)
-      nil -> Money.new(0)
-      _ -> Money.parse!(input)
+  defp scrub_money_input(value) do
+    case Money.Ecto.Amount.Type.cast(value) do
+      {:ok, value} -> value
+      _ -> Money.new(0)
     end
   end
 end
