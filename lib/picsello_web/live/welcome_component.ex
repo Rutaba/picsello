@@ -47,8 +47,7 @@ defmodule PicselloWeb.WelcomeComponent do
       </div>
       <div class="p-8 bg-blue-planning-100 rounded-lg mt-8 sm:flex justify-between gap-4 items-center">
         <div>
-          <h5 class="text-blue-planning-300 font-bold"><.icon name="clock-2" class="w-6 h-6 inline-block" /> 11/25 to 11/28</h5>
-          <h4 class="text-3xl font-bold">Don’t miss our Black Friday Sale!</h4>
+          <h4 class="text-3xl font-bold"><.icon name="clock-2" class="w-6 h-6 inline-block" /> Don’t miss our holiday sale!</h4>
           <p class="text-lg">Sign up for a yearly subscription and get a free 12-month membership to <a href="https://www.picsello.com/day-after-thanksgiving-sale" target="_blank" rel="noreferrer" class="text-blue-planning-300 font-bold"><span class="underline">Picsello’s Business Mastermind</span> <.icon name="external-link" class="w-4 h-4 inline-block" /></a></p>
         </div>
         <div class="ml-auto block mt-4">
