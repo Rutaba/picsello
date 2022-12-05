@@ -277,3 +277,23 @@ li.custom-tooltip:hover span {
   text-decoration: none;
   white-space: nowrap;
 }
+
+// Calendar CSS overrides for mobile
+@media screen and (max-width: 767px) {
+  .fc .fc-header-toolbar .fc-toolbar-title {
+    @apply text-2xl;
+  }
+
+  .fc .fc-header-toolbar .fc-toolbar-chunk:first-child {
+    @apply order-2 flex flex-row-reverse;
+  }
+
+  .fc-direction-ltr .fc-toolbar > * > :not(:first-child) {
+    @apply mr-3 ml-0;
+  }
+
+  .fc .fc-header-toolbar .fc-dayGridMonth-button,
+  .fc .fc-header-toolbar .fc-timeGridWeek-button {
+    @apply hidden;
+  }
+}
