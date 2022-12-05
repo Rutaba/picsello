@@ -31,10 +31,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         } = socket,
         per_page
       ) do
-    toggle_state = !favorites_filter
-
     socket
-    |> assign(:favorites_filter, toggle_state)
+    |> assign(:favorites_filter, !favorites_filter)
     |> process_favorites(per_page)
   end
 
@@ -272,14 +270,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
       ) do
     opts = make_opts(socket, per_page, exclude_all)
     photos = Galleries.get_gallery_photos(id, opts)
-    client_proofing = Map.get(socket.assigns, :client_proofing)
-
-    if Enum.empty?(photos) && client_proofing do
-      assign_new(socket, :photos, fn -> photos end)
-    else
-      socket
-      |> assign(:photos, photos |> Enum.take(per_page))
-    end
+    
+    socket
+    |> assign(:photos, photos |> Enum.take(per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
   end
 

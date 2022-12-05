@@ -1,57 +1,39 @@
 defmodule PicselloWeb.GalleryLive.Photos.Photo do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Phoenix.LiveView.JS
   alias Picsello.Photos
   alias PicselloWeb.Router.Helpers, as: Routes
-
+  alias Phoenix.LiveView.JS
+  
   import PicselloWeb.GalleryLive.Shared, only: [original_album_link: 2]
+  import PicselloWeb.GalleryLive.Photos.Photo.Shared
 
   @impl true
   def update(%{photo: photo} = assigns, socket) do
-    album = Map.get(assigns, :album)
-    album_name = Photos.get_album_name(photo)
-
     socket
     |> assign(
-      album_name: album_name,
+      album_name: Photos.get_album_name(photo),
       preview_photo_id: nil,
       is_likable: false,
       is_removable: false,
       is_viewable: false,
       is_meatball: false,
-      proofing_photo_icons: if(album && album.is_proofing, do: false, else: true),
       is_gallery_category_page: false,
-      is_client_gallery: false,
       album: nil,
       component: false,
       selected_photo_id: nil,
-      client_liked_album: false,
       is_proofing: assigns[:is_proofing] || false,
       client_link_hash: Map.get(assigns, :client_link_hash),
+      is_liked: photo.is_photographer_liked,
       url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")
     )
     |> assign(assigns)
-    |> then(fn
-      %{assigns: %{is_client_gallery: true}} = socket ->
-        assign(socket, :is_liked, photo.client_liked)
-
-      socket ->
-        assign(socket, :is_liked, photo.is_photographer_liked)
-    end)
     |> ok
   end
 
   @impl true
-  def handle_event(
-        "like",
-        %{"id" => id},
-        %{assigns: %{is_client_gallery: is_client_gallery}} = socket
-      ) do
-    {:ok, _} =
-      if is_client_gallery,
-        do: Photos.toggle_liked(id),
-        else: Photos.toggle_photographer_liked(id)
+  def handle_event("like", %{"id" => id}, socket) do
+    {:ok, _} = Photos.toggle_photographer_liked(id)
 
     socket |> noreply()
   end
@@ -88,67 +70,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     |> noreply()
   end
 
-  defp toggle_border(js \\ %JS{}, id, is_gallery_category_page) do
-    if is_gallery_category_page do
-      js
-      |> JS.dispatch("click", to: "#photo-#{id} > img")
-      |> JS.add_class("item-border", to: "#item-#{id}")
-    else
-      js |> JS.dispatch("click", to: "#photo-#{id} > img")
-    end
-  end
-
-  defp js_like_click(js \\ %JS{}, id, target) do
-    js
-    |> JS.push("like", target: target, value: %{id: id})
-    |> JS.toggle(to: "#photo-#{id}-liked")
-    |> JS.toggle(to: "#photo-#{id}-to-like")
-  end
-
-  defp meatball(album, id) do
-    if album && !album.is_client_liked do
-      [
-        %{
-          id: "photo-thumbnail-#{id}",
-          event: "set_album_thumbnail_popup",
-          title: "Set as album thumbnail"
-        },
-        %{id: "photo-remove-#{id}", event: "remove_from_album_popup", title: "Remove from album"}
-      ]
-    else
-      [
-        %{id: "photo-remove-#{id}", event: "photo_view", title: "View"}
-      ]
-    end ++
-      [
-        %{id: "photo-preview-#{id}", event: "photo_preview_pop", title: "Set as product preview"}
-      ]
-  end
-
   defp photo_wrapper(assigns) do
     ~H"""
-    <%= if @is_client_gallery do %>
-      <div id={"img-#{@id}"} class="galleryItem" phx-click="click" phx-value-preview_photo_id={@id}>
-      <%= render_block(@inner_block) %>
-      </div>
-    <% else %>
-        <div id={"img-#{@id}"} class="galleryItem" data-selected_photo_id={"img-#{@selected_photo_id}"} phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
-            <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
-            <%= render_block(@inner_block) %>
-        </div>
-    <% end%>
-    """
-  end
-
-  defp photo(%{target: false} = assigns) do
-    ~H"""
-    <img src={@url} class="relative" />
-    """
-  end
-
-  defp photo(assigns) do
-    ~H"""
-    <img phx-click="click" phx-target={@target} phx-value-preview={@preview} phx-value-preview_photo_id={@photo_id} src={@url} class="relative" />
+    <div id={"img-#{@id}"} class="galleryItem" data-selected_photo_id={"img-#{@selected_photo_id}"} phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
+        <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
+        <%= render_block(@inner_block) %>
+    </div>
     """
   end
 
@@ -188,6 +115,36 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     """
   end
 
+  defp toggle_border(js \\ %JS{}, id, is_gallery_category_page) do
+    if is_gallery_category_page do
+      js
+      |> JS.dispatch("click", to: "#photo-#{id} > img")
+      |> JS.add_class("item-border", to: "#item-#{id}")
+    else
+      js |> JS.dispatch("click", to: "#photo-#{id} > img")
+    end
+  end
+
+  defp meatball(album, id) do
+    if album && !album.is_client_liked do
+      [
+        %{
+          id: "photo-thumbnail-#{id}",
+          event: "set_album_thumbnail_popup",
+          title: "Set as album thumbnail"
+        },
+        %{id: "photo-remove-#{id}", event: "remove_from_album_popup", title: "Remove from album"}
+      ]
+    else
+      [
+        %{id: "photo-remove-#{id}", event: "photo_view", title: "View"}
+      ]
+    end ++
+      [
+        %{id: "photo-preview-#{id}", event: "photo_preview_pop", title: "Set as product preview"}
+      ]
+  end
+
   defp actions(assigns) do
     ~H"""
     <div id={@id} class={"absolute #{@class}"} phx-click={@event} phx-value-photo_id={@photo_id}>
@@ -195,11 +152,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     </div>
     """
   end
-
-  defp wrapper_style(true, width, %{aspect_ratio: aspect_ratio}),
-    do: "width: #{width}px;height: #{width / aspect_ratio}px;"
-
-  defp wrapper_style(_, _, _), do: nil
 
   defp album_name(assigns) do
     cond do

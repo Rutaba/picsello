@@ -264,6 +264,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       |> Enum.map(
         &%{
           job_id: job.id,
+          type: "stripe",
           price: PackagePayments.get_price(&1, Package.price(job.package)),
           due_at: &1.schedule_date,
           description: &1.description,
@@ -305,6 +306,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
   defp find_and_map_payment_schedule(payment_schedules, package_schedule) do
     Enum.find_value(payment_schedules, [], fn %{description: description} = pyment_schedule ->
+      pyment_schedule = Map.put(pyment_schedule, :type, "stripe")
       if description == package_schedule.description,
         do: Map.put(pyment_schedule, :due_at, package_schedule.schedule_date)
     end)
