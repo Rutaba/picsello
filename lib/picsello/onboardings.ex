@@ -1,6 +1,6 @@
 defmodule Picsello.Onboardings do
   @moduledoc "context module for photographer onboarding"
-  alias Picsello.{Repo, Accounts.User, Organization, Profiles.Profile}
+  alias Picsello.{Repo, Accounts.User, Organization, OrganizationJobType, Profiles.Profile}
   import Ecto.Changeset
   import Picsello.Accounts.User, only: [put_new_attr: 3, update_attr_in: 3]
   import Ecto.Query, only: [from: 2]
@@ -102,7 +102,9 @@ defmodule Picsello.Onboardings do
       |> put_new_attr(:onboarding, %{})
       |> update_attr_in(
         [:organization],
-        &((&1 || %{}) |> put_new_attr(:profile, %{}) |> put_new_attr(:id, user.organization_id))
+        &((&1 || %{})
+          |> put_new_attr(:profile, %{color: Profile.default_color()})
+          |> put_new_attr(:id, user.organization_id))
       ),
       []
     )
@@ -199,15 +201,26 @@ defmodule Picsello.Onboardings do
     organization
     |> Organization.registration_changeset(attrs)
     |> cast_embed(:profile, required: step > 2, with: &profile_onboarding_changeset(&1, &2, step))
+    |> cast_assoc(:organization_job_types,
+      required: step > 2,
+      with: &job_types_changeset(&1, &2, step)
+    )
   end
 
-  defp profile_onboarding_changeset(profile, attrs, 2), do: Profile.changeset(profile, attrs)
+  defp job_types_changeset(job_types, attrs, step) when step in [2, 3] do
+    attrs =
+      if attrs && Map.has_key?(attrs, "job_type"),
+        do:
+          Map.put(attrs, "show_on_business?", true)
+          |> Map.replace("id", String.to_integer(attrs["id"])),
+        else: attrs
+
+    OrganizationJobType.changeset(job_types, attrs)
+  end
 
   defp profile_onboarding_changeset(profile, attrs, 3) do
     profile
-    |> profile_onboarding_changeset(attrs, 2)
-    |> validate_required([:job_types])
-    |> validate_length(:job_types, min: 1)
+    |> Profile.changeset(attrs)
   end
 
   defp profile_onboarding_changeset(profile, attrs, step) when step in [2, 3] do

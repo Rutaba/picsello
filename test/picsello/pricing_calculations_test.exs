@@ -5,6 +5,7 @@ defmodule Picsello.PricingCalculationsTest do
 
   alias Picsello.{
     Repo,
+    Profiles,
     PricingCalculatorTaxSchedules,
     PricingCalculatorBusinessCosts,
     PricingCalculations
@@ -57,7 +58,7 @@ defmodule Picsello.PricingCalculationsTest do
   def generate_base_pricing_calculation(user, average_time_per_week \\ nil),
     do: %{
       organization_id: user.organization_id,
-      job_types: user.organization.profile.job_types,
+      job_types: Profiles.enabled_job_types(user.organization.organization_job_types),
       take_home: ~M[000],
       business_costs: PricingCalculations.cost_categories(),
       self_employment_tax_percentage:
@@ -73,10 +74,18 @@ defmodule Picsello.PricingCalculationsTest do
       insert(:organization,
         profile: %{
           name: "Mary Jane Photography",
-          slug: "mary-jane-photos",
-          job_types: ~w(portrait event)
+          slug: "mary-jane-photos"
         }
       )
+      |> Repo.preload([:organization_job_types])
+
+    Enum.map(organization.organization_job_types, fn job_type ->
+      if job_type.job_type in ["event", "portrait"],
+        do:
+          Repo.update(
+            Ecto.Changeset.change(job_type, %{show_on_business?: true, show_on_profile?: true})
+          )
+    end)
 
     PricingCalculatorTaxSchedules.changeset(
       %PricingCalculatorTaxSchedules{},

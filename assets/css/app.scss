@@ -250,21 +250,21 @@ canvas {
   }
 }
 
-li.custom-tooltip {
+*.custom-tooltip {
   border-bottom: 1px;
   text-decoration: none;
 }
 
-li.custom-tooltip:hover {
+*.custom-tooltip:hover {
   position: relative;
 }
 
-li.custom-tooltip span {
+*.custom-tooltip span {
   display: none;
   text-align: center;
 }
 
-li.custom-tooltip:hover span {
+*.custom-tooltip:hover span {
   padding: 5px;
   display: block;
   z-index: 100;

@@ -27,6 +27,43 @@ defmodule Picsello.PackagePaymentSchedule do
     timestamps()
   end
 
+  @castable_attrs [
+    :description,
+    :shoot_date,
+    :last_shoot_date,
+    :price,
+    :percentage,
+    :interval,
+    :due_interval,
+    :count_interval,
+    :time_interval,
+    :shoot_interval,
+    :due_at,
+    :schedule_date,
+    :package_payment_preset_id,
+    :package_id,
+    :payment_field_index,
+    :fields_count
+  ]
+
+  def changeset_for_duplication(payment_schedule \\ %__MODULE__{}, attrs) do
+    interval = Map.get(attrs, :interval)
+
+    attrs =
+      attrs
+      |> prepare_percentage()
+      |> set_shoot_interval(interval, false)
+
+    payment_schedule
+    |> cast(attrs, @castable_attrs)
+    |> validate_required([:interval])
+    |> then(fn changeset ->
+      changeset
+      |> validate_price_percentage(true)
+      |> validate_custom_time(false)
+    end)
+  end
+
   def changeset(
         %__MODULE__{} = payment_schedule,
         attrs \\ %{},
@@ -41,24 +78,7 @@ defmodule Picsello.PackagePaymentSchedule do
       |> set_shoot_interval(interval, default_payment_changeset)
 
     payment_schedule
-    |> cast(attrs, [
-      :description,
-      :shoot_date,
-      :last_shoot_date,
-      :price,
-      :percentage,
-      :interval,
-      :due_interval,
-      :count_interval,
-      :time_interval,
-      :shoot_interval,
-      :due_at,
-      :schedule_date,
-      :package_payment_preset_id,
-      :package_id,
-      :payment_field_index,
-      :fields_count
-    ])
+    |> cast(attrs, @castable_attrs)
     |> validate_required([:interval])
     |> then(fn changeset ->
       changeset

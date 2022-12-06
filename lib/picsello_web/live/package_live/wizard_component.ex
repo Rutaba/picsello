@@ -8,6 +8,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   alias Picsello.{
     Repo,
     Package,
+    Profiles,
     Packages,
     Packages.Multiplier,
     Packages.Download,
@@ -231,15 +232,19 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   @impl true
-  def update(assigns, socket) do
+  def update(%{current_user: current_user} = assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_new(:job, fn -> nil end)
+    |> assign_new(:show_on_public_profile, fn -> false end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign_new(:contract_changeset, fn -> nil end)
     |> assign_new(:collapsed_documents, fn -> [0, 1] end)
-    |> assign(is_template: assigns |> Map.get(:job) |> is_nil(), job_types: Packages.job_types())
+    |> assign(is_template: assigns |> Map.get(:job) |> is_nil())
+    |> assign(
+      job_types: Profiles.enabled_job_types(current_user.organization.organization_job_types)
+    )
     |> choose_initial_step()
     |> assign_changeset(%{})
     |> assign_questionnaires()
@@ -455,6 +460,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <%= for job_type <- @job_types do %>
               <.job_type_option type="radio" name={input_name(@f, :job_type)} job_type={job_type} checked={input_value(@f, :job_type) == job_type} />
             <% end %>
+          </div>
+          <div class="col-start-7">
+            <label class="flex items-center mt-8" {intro_hints_only("intro_hints_only_1")}>
+              <%= checkbox @f, :show_on_public_profile, class: "w-6 h-6 checkbox" %>
+              <h1 class="text-xl ml-2 mr-1 font-bold">Show package on my Public Profile</h1>
+              <.intro_hint content="Default Packages are hidden. All currently created packages are public. All new packages are off by default." />
+            </label>
+            <p class="ml-7 text-gray-500"> Keep this package hidden from potential clients until you're ready to showcase it</p>
           </div>
         </div>
       <% end %>
@@ -897,6 +910,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def handle_event("validate", params, socket) do
     socket |> assign_changeset(params, :validate) |> noreply()
   end
+
+  # @impl true
+  # def handle_event(
+  #       "toggle-public-profile-option",
+  #       _,
+  #       %{assigns: %{show_on_public_profile: show_on_public_profile}} = socket
+  #     ) do
+  #   socket
+  #   |> assign(:show_on_public_profile, !show_on_public_profile)
+  #   |> noreply()
+  # end
 
   @impl true
   def handle_event(

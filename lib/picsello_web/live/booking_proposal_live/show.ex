@@ -219,7 +219,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
                :payment_schedules,
                :booking_event,
                :shoots,
-               package: [organization: [:user, :brand_links]]
+               package: [organization: [:user, :brand_links, :organization_job_types]]
              ]
            ]) do
       %{

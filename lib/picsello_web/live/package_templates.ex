@@ -1,25 +1,49 @@
 defmodule PicselloWeb.Live.PackageTemplates do
   @moduledoc false
   use PicselloWeb, :live_view
+
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
   import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
   alias Picsello.{Package, Repo}
 
+  alias PicselloWeb.PaginationLive
+  alias Ecto.Changeset
+
+  alias Picsello.{
+    Package,
+    Packages,
+    Repo,
+    Profiles,
+    PackagePaymentSchedule,
+    Contract,
+    OrganizationJobType
+  }
+
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket
-    |> assign(:page_title, "Settings")
+    |> assign(
+      page_title: "Settings",
+      package_name: "All",
+      show_on_public_profile: nil
+    )
+    |> is_mobile(params)
+    |> assign_new(:pagination, fn -> PaginationLive.changeset() |> Changeset.apply_changes() end)
+    |> assign_new(:pagination_changeset, fn -> PaginationLive.changeset() end)
+    |> assign_job_types()
+    |> assign_job_type_packages()
     |> assign_templates()
+    |> assign_template_counts()
     |> ok()
   end
 
   @impl true
-  def handle_params(_, _, %{assigns: %{live_action: :new}} = socket) do
-    socket
-    |> open_wizard()
-    |> noreply()
-  end
+  def handle_params(_, _, %{assigns: %{live_action: :new}} = socket),
+    do:
+      socket
+      |> open_wizard()
+      |> noreply()
 
   @impl true
   def handle_params(
@@ -36,12 +60,11 @@ defmodule PicselloWeb.Live.PackageTemplates do
   end
 
   @impl true
-  def handle_params(_, _, %{assigns: %{live_action: :index}} = socket) do
-    socket |> noreply()
-  end
+  def handle_params(_, _, %{assigns: %{live_action: :index}} = socket),
+    do: socket |> noreply()
 
   @impl true
-  def render(assigns) do
+  def render(%{current_user: %{organization: %{id: org_id}}} = assigns) do
     ~H"""
     <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
       <div class={classes("flex flex-col justify-between flex-1 mt-5 sm:flex-row", %{"flex-grow-0" => Enum.any?(@templates) })}>
@@ -66,38 +89,230 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
       <%= unless Enum.empty? @templates do %>
         <hr class="my-4" />
+        <div class={classes("lg:mt-10", %{"hidden" => is_nil(@is_mobile)})}>
+          <div class="flex flex-col lg:flex-row lg:mt-8">
+            <div class={classes("lg:block", %{"hidden" => !@is_mobile})}>
+              <div class="h-auto">
+                <div phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
+                  <%= for(job_type <- @job_types) do %>
+                    <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == job_type})} phx-click="assign_templates_by_job_type" phx-value-job-type={job_type}>
+                      <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
+                          <a class={"flex w-full #{job_type}-anchor-click"}>
+                            <div class="flex items-center justify-start">
+                              <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
+                                <.icon name={job_type} class="w-3 h-3 m-1 fill-current text-white" />
+                              </div>
+                              <div class="justify-start ml-3">
+                                <span class="capitalize"><%= job_type %> <span class="font-normal">(<%= @job_type_packages |> Map.get(job_type, [])|> Enum.count() %>)</span></span>
+                              </div>
+                            </div>
+                            <div class="flex items-center px-2 ml-auto" phx-click="edit-job-type" phx-value-job-type-id={get_id_by_job_name(job_type, org_id)}>
+                                <span class="text-blue-planning-300 link font-normal">Edit</span>
+                            </div>
+                          </a>
+                      </div>
+                      <%= if @package_name == job_type do %>
+                        <span class="arrow show lg:block hidden">
+                          <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+                        </span>
+                      <% end %>
+                    </div>
+                  <% end %>
 
-        <div class="my-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-        <%= for template <- @templates do %>
-          <div {testid("package-template-card")} class="relative">
-            <div class="absolute z-10 top-6 right-5" phx-update="ignore" data-offset="0" phx-hook="Select" id={"mange-template-#{template.id}"}>
-              <button title="Manage" type="button" class="flex flex-shrink-0 p-1 text-2xl font-bold bg-white border rounded border-blue-planning-300 text-blue-planning-300">
-                <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+                  <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == "All"})} phx-click="assign_all_templates">
+                    <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
+                        <a class="flex w-full">
+                          <div class="flex items-center justify-start">
+                            <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
+                              <.icon name="archieved" class="w-3 h-3 m-1 fill-current text-white" />
+                            </div>
+                            <div class="justify-start ml-3">
+                              <span class="">All <span class="font-normal">(<%= @all_templates_count %>)</span></span>
+                            </div>
+                          </div>
+                        </a>
+                    </div>
+                    <%= if @package_name == "All" do %>
+                      <span class="arrow show lg:block hidden">
+                        <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+                      </span>
+                    <% end %>
+                  </div>
 
-                <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
-              </button>
+                  <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == "Archived"})} phx-click="assign_archieved_templated">
+                    <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
+                        <a class="flex w-full archived-anchor-click">
+                          <div class="flex items-center justify-start">
+                            <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
+                              <.icon name="archieved" class="w-3 h-3 m-1 fill-current text-white" />
+                            </div>
+                            <div class="justify-start ml-3">
+                              <span class="">Archived <span class="font-normal">(<%= @archived_templates_count %>)</span></span>
+                            </div>
+                          </div>
+                        </a>
+                    </div>
+                    <%= if @package_name == "Archived" do %>
+                      <span class="arrow show lg:block hidden">
+                        <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+                      </span>
+                    <% end %>
+                  </div>
 
-              <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
-                <button title="Edit" type="button" phx-click="edit-package" phx-value-package-id={template.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                  <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                  Edit
-                </button>
+                  <div class="font-bold rounded-lg cursor-pointer grid-item" phx-click="edit-job-types">
+                    <div class="flex items-center lg:h-11 pr-4 lg:pl-2 border border-blue-planning-300 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
+                        <a class="flex w-full">
+                          <div class="flex items-center justify-start">
+                            <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
+                              <.icon name="pencil" class="w-3 h-3 m-1 fill-current text-white" />
+                            </div>
 
-                <button title="Archive" type="button" phx-click="confirm-archive-package" phx-value-package-id={template.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-                  <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
-                  Archive
-                </button>
+                            <div class="justify-start ml-3">
+                              <span class="">Edit photography types</span>
+                            </div>
+                          </div>
+                        </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div phx-click="edit-package" phx-value-package-id={template.id} class="h-full"><.package_card package={template} class="h-full"/></div>
+            <div class={classes("w-full lg:p-0 lg:block", %{"hidden" => @is_mobile})}>
+              <div class="flex items-center lg:mt-0 mb-2">
+                <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
+                  <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+                </div>
+                <div class="ml-3 lg:hidden">
+                  <span class="font-sans lg:text-2xl font-bold text-3xl capitalize"><%= @package_name %> Packages</span>
+                </div>
+              </div>
+              <div class="flex-1 ml-8">
+                <div class="flex items-center mt-6">
+                  <div class="font-bold text-xl capitalize"><%= @package_name %> Packages</div>
+                  <%= if @package_name not in ["All", "Archived"] do%>
+                    <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={get_id_by_job_name(@package_name, org_id)}>
+                      <.icon name={if @show_on_public_profile, do: "eye", else: "closed-eye"} class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
+                      <span class="shadow-lg rounded-lg pb-2 px-2 text-xs capitalize"><%= @package_name %> Photography is <%= if @show_on_public_profile, do: "showing", else: "hidden" %> as an <br />offering on your public profile & contact form</span>
+                    </div>
+                  <% end %>
+                </div>
+                <%= unless Enum.empty? @templates do %>
+                  <div class="font-bold grid grid-cols-6 mt-2">
+                    <div class="col-span-2 pl-2">Package Details</div>
+                    <div class="col-span-2 pl-2">Pricing</div>
+                    <div class="col-span-2 pl-2">Actions</div>
+                  </div>
+
+                  <hr class="my-8 border-blue-planning-300 border-2 mt-4 mb-1" />
+
+                  <div class="my-4 flex flex-col">
+                    <%= for template <- @templates do %>
+                      <.package_card update_mode="replace" package={template} class="h-full"/>
+                    <% end %>
+                  </div>
+                <% else %>
+                  <div class="flex flex-col md:flex-row mt-2">
+                    <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{Routes.static_path(@socket,"/images/empty-state.png")}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
+                    <div class="py-0 md:py-2">
+                      <div class="font-bold">
+                        Missing packages
+                      </div>
+                      <div class={"font-normal w-72"}>
+                        You don’t have any packages! Click add a package to get started. If you need help, check out this guide!
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+                <%= if @pagination.total_count > 4 do %>
+                  <div class="flex items-center px-6 pb-6 center-container">
+                    <.form let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
+                      <%= select f, :limit, [4, 8, 12, 16], class: "cursor-pointer"%>
+                    </.form>
+
+                    <div class="flex ml-2 text-xs font-bold text-gray-500">
+                      Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
+                    </div>
+
+                    <div class="flex items-center ml-auto">
+                      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={@pagination.first_index == 1}>
+                        <.icon name="back" class="w-3 h-3 mr-1 stroke-current stroke-2" />
+                        Prev
+                      </button>
+                      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={@pagination.last_index == @pagination.total_count}>
+                        Next
+                        <.icon name="forth" class="w-3 h-3 ml-1 stroke-current stroke-2" />
+                      </button>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
           </div>
-        <% end %>
         </div>
-      <% end %>
     </.settings_nav>
     """
   end
+
+  @impl true
+  def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
+    socket |> assign(:is_mobile, !is_mobile) |> noreply
+  end
+
+  @impl true
+  def handle_event(
+        "page",
+        %{"direction" => direction},
+        %{assigns: %{pagination: pagination, package_name: package_name}} = socket
+      ) do
+    updated_pagination =
+      case direction do
+        "back" ->
+          pagination
+          |> PaginationLive.changeset(%{
+            first_index: pagination.first_index - pagination.limit,
+            offset: pagination.offset - pagination.limit
+          })
+          |> Changeset.apply_changes()
+
+        "forth" ->
+          pagination
+          |> PaginationLive.changeset(%{
+            first_index: pagination.first_index + pagination.limit,
+            offset: pagination.offset + pagination.limit
+          })
+          |> Changeset.apply_changes()
+      end
+
+    socket
+    |> assign(:package_name, package_name)
+    |> assign(:pagination, updated_pagination)
+    |> assign_templates()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "page",
+        %{"pagination" => %{"limit" => limit}},
+        %{assigns: %{pagination: pagination, package_name: package_name}} = socket
+      ) do
+    limit = to_integer(limit)
+
+    updated_pagination_changeset =
+      pagination
+      |> PaginationLive.changeset(%{limit: limit, last_index: limit, first_index: 1, offset: 0})
+
+    socket
+    |> assign(:pagination_changeset, updated_pagination_changeset)
+    |> assign(:pagination, updated_pagination_changeset |> Changeset.apply_changes())
+    |> assign(:package_name, package_name)
+    |> assign_templates()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("page", %{}, socket), do: socket |> noreply()
 
   @impl true
   def handle_event("add-package", %{}, socket),
@@ -118,18 +333,27 @@ defmodule PicselloWeb.Live.PackageTemplates do
         |> noreply()
 
   @impl true
-  def handle_event("confirm-archive-package", %{"package-id" => package_id}, socket),
+  def handle_event("toggle-archive", %{"package-id" => package_id, "type" => type}, socket),
     do:
       socket
       |> assign(:archive_package_id, package_id)
       |> PicselloWeb.ConfirmationComponent.open(%{
         close_label: "No! Get me out of here",
-        confirm_event: "archive",
-        confirm_label: "Yes, archive",
+        confirm_event: "archive_unarchive",
+        confirm_label: if(type == "archive", do: "Yes, archive", else: "Yes, unarchive"),
         icon: "warning-orange",
         subtitle:
-          "Archiving a package template doesn’t affect active leads or jobs—this will remove the option to create anything with this package template.",
-        title: "Are you sure you want to archive this package template?"
+          if(type == "archive",
+            do:
+              "Archiving a package template doesn’t affect active leads or jobs—this will remove the option to create anything with this package template.",
+            else:
+              "Un-archiving a package template doesn’t affect active leads or jobs—this will just add back the option to create anything with this package template."
+          ),
+        title:
+          if(type == "archive",
+            do: "Are you sure you want to archive this package template?",
+            else: "Are you sure you want to un-archive this package template?"
+          )
       })
       |> noreply()
 
@@ -145,29 +369,347 @@ defmodule PicselloWeb.Live.PackageTemplates do
   end
 
   @impl true
+  def handle_event(
+        "duplicate-package",
+        %{"package-id" => package_id},
+        %{assigns: %{package_name: package_name}} = socket
+      ) do
+    package =
+      Repo.get(Package, package_id)
+      |> Repo.preload([
+        :organization,
+        :job,
+        :contract,
+        :package_template,
+        :package_payment_schedules
+      ])
+
+    case create_duplicate_package(package) |> Repo.insert() do
+      {:ok, _package} ->
+        socket
+        |> put_flash(:success, "The package: #{package.name} has been duplicated")
+        |> close_modal()
+
+      _ ->
+        socket
+        |> put_flash(:error, "Failed to duplicate package: #{package.name}")
+    end
+    |> assign_template_counts()
+    |> assign(:package_name, package_name)
+    |> assign_templates()
+    |> assign_job_type_packages()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "edit-visibility-confirmation",
+        %{"package-id" => package_id},
+        socket
+      ) do
+    package = Repo.get!(Package, package_id)
+
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "Cancel",
+      confirm_event: "hide_or_show",
+      confirm_class: if(package.show_on_public_profile, do: "btn-warning", else: "btn-primary"),
+      confirm_label:
+        if(package.show_on_public_profile,
+          do: "Hide on my Public Profile",
+          else: "Great! Show on my Public Profile"
+        ),
+      icon: "warning-orange",
+      subtitle:
+        if(package.show_on_public_profile,
+          do:
+            "Don’t worry! You aren’t deleting or archiving your package. You’re just hiding it form potential clients on your Public Profile.",
+          else:
+            "You also have access to a Public Profile where you can book clients, share your contact form, and showcase some of your packages and pricing to get you booked!"
+        ),
+      title:
+        if(package.show_on_public_profile,
+          do: "Hide on your Public Profile?",
+          else: "Show on your Public Profile?"
+        ),
+      payload: %{
+        package_id: package_id,
+        is_hide: if(package.show_on_public_profile, do: true, else: false)
+      }
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "assign_all_templates",
+        _,
+        socket
+      ) do
+    socket
+    |> assign(package_name: "All")
+    |> assign(is_mobile: false)
+    |> assign_templates()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "assign_templates_by_job_type",
+        %{"job-type" => job_type},
+        %{assigns: %{current_user: %{organization: %{id: org_id}}}} = socket
+      ) do
+    socket
+    |> assign(package_name: job_type)
+    |> assign(is_mobile: false)
+    |> then(fn socket ->
+      socket
+      |> assign(
+        :show_on_public_profile,
+        if(socket.assigns.package_name not in ["All", "Archived"],
+          do: show_on_profile?(socket.assigns.package_name, org_id)
+        )
+      )
+    end)
+    |> assign_templates()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "assign_archieved_templated",
+        _,
+        socket
+      ) do
+    socket
+    |> assign(package_name: "Archived")
+    |> assign(is_mobile: false)
+    |> assign_templates()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "edit-job-types",
+        %{},
+        %{assigns: %{current_user: %{organization: organization}, package_name: package_name}} =
+          socket
+      ) do
+    socket
+    |> assign(:package_name, package_name)
+    |> assign_job_types()
+    |> assign(organization: organization)
+    |> PicselloWeb.PackageLive.EditJobTypeComponent.open()
+    |> noreply()
+  end
+
   def handle_info(
-        {:confirm_event, "archive"},
-        %{assigns: %{archive_package_id: package_id}} = socket
+        {:confirm_event, "save", %{changeset: changeset},
+         %{"check" => %{"check_enabled" => check_enabled} = params}},
+        %{
+          assigns: %{
+            current_user: %{organization_id: organization_id},
+            package_name: package_name
+          }
+        } = socket
+      ) do
+    if check_enabled == "true" do
+      changeset =
+        changeset
+        |> Changeset.put_change(:show_on_business?, String.to_atom(check_enabled))
+        |> Changeset.put_change(
+          :show_on_profile?,
+          String.to_atom(Map.get(params, "check_profile", "false"))
+        )
+
+      {:ok, org_job_type} = Repo.update(changeset)
+
+      message =
+        cond do
+          Map.has_key?(changeset.changes, :show_on_business?) ->
+            "The type has been enabled, alongwith its associated packages"
+
+          org_job_type.show_on_profile? ->
+            "The type will now be displayed on your public profile"
+
+          true ->
+            "The type has been hidden from your public profile"
+        end
+
+      case unarchive_packages_for_job_type(org_job_type.job_type, organization_id) do
+        {_row_count, nil} ->
+          socket
+          |> assign_template_counts()
+          |> assign_job_types()
+          |> assign_job_type_packages()
+          |> close_modal()
+
+        _ ->
+          socket
+      end
+      |> put_flash(:success, message)
+    else
+      socket
+    end
+    |> assign(
+      :show_on_public_profile,
+      if(package_name not in ["All", "Archived"],
+        do: show_on_profile?(package_name, organization_id)
+      )
+    )
+    |> noreply()
+  end
+
+  @impl true
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.PackageLive.Shared
+
+  def handle_info(
+        {:confirm_event, "save", %{changeset: changeset},
+         %{"check" => %{"check_profile" => check_profile}}},
+        socket
+      ) do
+    changeset =
+      changeset
+      |> Changeset.put_change(:show_on_profile?, String.to_atom(check_profile))
+
+    {:ok, org_job_type} = Repo.update(changeset)
+
+    message =
+      if org_job_type.show_on_profile?,
+        do: "The type will now be displayed on your public profile",
+        else: "The type has been hidden from your public profile"
+
+    socket
+    |> assign_template_counts()
+    |> assign_job_types()
+    |> assign_job_type_packages()
+    |> close_modal()
+    |> put_flash(
+      :success,
+      message
+    )
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "visibility_for_business", %{job_type_id: job_type_id} = params, _},
+        %{
+          assigns: %{
+            current_user: %{organization: %{organization_job_types: org_job_types, id: org_id}}
+          }
+        } = socket
+      ) do
+    org_job_type =
+      org_job_types
+      |> Enum.find(fn job_type -> job_type.id == String.to_integer(job_type_id) end)
+
+    if org_job_type.show_on_business? do
+      socket
+      |> PicselloWeb.PackageLive.ConfirmationComponent.open(%{
+        close_label: "Cancel",
+        confirm_event: "disable_job_type_for_business",
+        confirm_label: "Yes, disable",
+        icon: "warning-orange",
+        subtitle:
+          "You are disabling this photography type for your business. You will not be able to select it when creating a job, gallery, or lead. We will also hide it on your Public Profile.",
+        subtitle2:
+          "Your packages will remain intact in case you enable this photography type again in the future.",
+        title: "Are you sure?",
+        payload: params
+      })
+    else
+      socket
+      |> assign(:show_on_public_profile, show_on_profile?(org_job_type, org_id))
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "disable_job_type_for_business", %{changeset: changeset}, _params},
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+      ) do
+    changeset =
+      changeset
+      |> Changeset.put_change(:show_on_business?, false)
+      |> Changeset.put_change(:show_on_profile?, false)
+
+    {:ok, org_job_type} = Repo.update(changeset)
+
+    case archive_packages_for_job_type(org_job_type.job_type, organization_id) do
+      {_row_count, nil} ->
+        socket
+        |> assign_template_counts()
+        |> assign_job_types()
+        |> assign_job_type_packages()
+        |> close_modal()
+
+      _ ->
+        socket
+    end
+    |> put_flash(:success, "The type has been disabled, alongwith its associated packages")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "hide_or_show", %{package_id: package_id, is_hide: is_hide}},
+        %{assigns: %{package_name: package_name}} = socket
       ) do
     with %Package{} = package <- Repo.get(Package, package_id),
-         {:ok, _package} <- package |> Package.archive_changeset() |> Repo.update() do
+         {:ok, _package} <- package |> Package.edit_visibility_changeset() |> Repo.update() do
       socket
-      |> assign_templates()
-      |> put_flash(:success, "The package has been archived")
+      |> put_flash(
+        :success,
+        if(is_hide, do: "The package has been hidden", else: "The package has been shown")
+      )
       |> close_modal()
-      |> noreply()
+    else
+      _ ->
+        socket
+        |> put_flash(:error, "Failed to show/hide package")
+    end
+    |> assign_job_type_packages()
+    |> assign(:package_name, package_name)
+    |> assign_templates()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "archive_unarchive"},
+        %{assigns: %{archive_package_id: package_id, package_name: package_name}} = socket
+      ) do
+    with %Package{} = package <- Repo.get(Package, package_id),
+         {:ok, _package} <- archive_unarchive_package(package) do
+      socket
+      |> assign(:package_name, package_name)
+      |> assign_template_counts()
+      |> assign_templates()
+      |> assign_job_type_packages()
+      |> put_flash(
+        :success,
+        if(package.archived_at,
+          do: "The package has been un-archived",
+          else: "The package has been archived"
+        )
+      )
+      |> close_modal()
     else
       _ ->
         socket
         |> put_flash(:error, "Failed to archive package")
-        |> noreply()
     end
+    |> noreply()
   end
 
   @impl true
-  def handle_info({:update, _package}, socket) do
+  def handle_info({:update, _package}, %{assigns: %{package_name: package_name}} = socket) do
     socket
+    |> assign(:package_name, package_name)
     |> assign_templates()
+    |> assign_job_type_packages()
+    |> assign_template_counts()
     |> put_flash(:success, "The package has been successfully saved")
     |> noreply()
   end
@@ -181,8 +723,75 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> noreply()
   end
 
-  defp assign_templates(%{assigns: %{current_user: user}} = socket) do
-    socket |> assign(templates: user |> Package.templates_for_user() |> Repo.all())
+  defp archive_unarchive_package(package) do
+    if is_nil(package.archived_at),
+      do: package |> Package.archive_changeset() |> Repo.update(),
+      else: Packages.unarchive_package(package.id)
+  end
+
+  defp assign_templates(
+         %{assigns: %{current_user: %{organization_id: organization_id}, package_name: "All"}} =
+           socket
+       ),
+       do:
+         Package.templates_for_organization_id_query(organization_id)
+         |> assign_templates_and_pagination(socket)
+
+  defp assign_templates(
+         %{
+           assigns: %{current_user: %{organization_id: organization_id}, package_name: "Archived"}
+         } = socket
+       ),
+       do:
+         Package.archived_templates_for_organization_id(organization_id)
+         |> assign_templates_and_pagination(socket)
+
+  defp assign_templates(%{assigns: %{current_user: user, package_name: package_name}} = socket),
+    do:
+      Package.templates_for_user(user, package_name, "all")
+      |> assign_templates_and_pagination(socket)
+
+  defp assign_templates_and_pagination(query, %{assigns: %{pagination: pagination}} = socket) do
+    templates = Package.find_templates_by_pagination_via_query(query, pagination) |> Repo.all()
+    updated_pagination = update_pagination(query, templates, socket)
+
+    socket
+    |> assign(
+      templates: templates,
+      pagination: updated_pagination
+    )
+  end
+
+  defp update_pagination(query, templates, %{assigns: %{pagination: pagination}}) do
+    pagination
+    |> PaginationLive.changeset(%{
+      total_count: template_count_by_query(query),
+      last_index: pagination.first_index + Enum.count(templates) - 1
+    })
+    |> Changeset.apply_changes()
+  end
+
+  defp template_count_by_query(query),
+    do:
+      query
+      |> Repo.all()
+      |> Enum.count()
+
+  defp assign_job_type_packages(
+         %{
+           assigns: %{
+             current_user: %{organization_id: organization_id},
+             job_types: job_types
+           }
+         } = socket
+       ) do
+    {packages, _} =
+      Package.templates_for_organization_id_query(organization_id)
+      |> Repo.all()
+      |> Enum.group_by(& &1.job_type)
+      |> Map.split(job_types)
+
+    socket |> assign(:job_type_packages, packages)
   end
 
   defp open_wizard(socket, assigns \\ %{}) do
@@ -192,4 +801,81 @@ defmodule PicselloWeb.Live.PackageTemplates do
       assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
     })
   end
+
+  defp assign_template_counts(
+         %{assigns: %{current_user: %{organization: %{id: org_id}}}} = socket
+       ) do
+    socket
+    |> assign(
+      archived_templates_count:
+        Package.archived_templates_for_organization_id(org_id) |> Repo.all() |> Enum.count(),
+      all_templates_count:
+        Package.all_templates_for_organization_id(org_id) |> Repo.all() |> Enum.count()
+    )
+  end
+
+  defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
+    socket
+    |> assign(:job_types, Profiles.enabled_job_types(organization.organization_job_types))
+  end
+
+  defp archive_packages_for_job_type(job_type, organization_id) do
+    Packages.archive_packages_for_job_type(job_type, organization_id)
+  end
+
+  defp unarchive_packages_for_job_type(job_type, organization_id) do
+    Packages.unarchive_packages_for_job_type(job_type, organization_id)
+  end
+
+  defp create_duplicate_package(package) do
+    package_payment_schedules =
+      if Enum.any?(package.package_payment_schedules),
+        do:
+          Enum.map(package.package_payment_schedules, fn payment_schedule ->
+            payment_schedule
+            |> create_attrs_from_struct()
+            |> then(fn params ->
+              PackagePaymentSchedule.changeset_for_duplication(%PackagePaymentSchedule{}, params)
+            end)
+            |> Ecto.Changeset.apply_changes()
+          end),
+        else: []
+
+    contract =
+      if is_map(package.contract) do
+        package.contract
+        |> create_attrs_from_struct()
+        |> Contract.changeset()
+        |> Ecto.Changeset.apply_changes()
+      end
+
+    package
+    |> Map.put(:id, nil)
+    |> Map.put(:name, "#{package.name} - Duplicate")
+    |> Map.put(:contract, contract)
+    |> Map.put(:package_payment_schedules, package_payment_schedules)
+    |> Map.put(:inserted_at, NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second))
+    |> Map.put(:updated_at, NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second))
+    |> Repo.preload([:questionnaire_template])
+  end
+
+  defp create_attrs_from_struct(struct) do
+    struct
+    |> Map.from_struct()
+    |> Map.delete(:__struct__)
+    |> Map.delete(:__meta__)
+    |> Map.delete(:id)
+    |> Map.put(:inserted_at, NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second))
+    |> Map.put(:updated_at, NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second))
+  end
+
+  defp get_id_by_job_name(name, organization_id) do
+    OrganizationJobType.get_job_type_by(name, organization_id).id
+  end
+
+  defp show_on_profile?(name, organization_id) do
+    OrganizationJobType.get_job_type_by(name, organization_id).show_on_profile
+  end
+
+  defdelegate job_types(), to: Picsello.Profiles
 end

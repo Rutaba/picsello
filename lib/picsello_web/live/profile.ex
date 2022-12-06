@@ -165,13 +165,6 @@ defmodule PicselloWeb.Live.Profile do
     ~H"""
     <div class="flex items-center mt-8">
       <h3 class="uppercase font-bold">Specializing In:</h3>
-      <%= if @edit do %>
-        <div class="ml-4">
-          <.icon_button {testid("edit-photography-types-button")} class="shadow-lg" title="edit photography types" phx-click="edit-job-types" color="blue-planning-300" icon="pencil">
-            Edit Photography Types
-          </.icon_button>
-        </div>
-      <% end %>
     </div>
 
     <div class="w-auto mt-4">
@@ -222,7 +215,7 @@ defmodule PicselloWeb.Live.Profile do
 
   @impl true
   def handle_event("edit-job-types", %{}, socket) do
-    socket |> PicselloWeb.Live.Profile.EditJobTypeComponent.open() |> noreply()
+    socket |> PicselloWeb.PackageLive.EditJobTypeComponent.open() |> noreply()
   end
 
   @impl true

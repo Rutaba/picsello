@@ -3,6 +3,7 @@ defmodule Picsello.Packages do
   alias Picsello.{
     Accounts.User,
     Organization,
+    Profiles,
     Package,
     Repo,
     Job,
@@ -394,9 +395,10 @@ defmodule Picsello.Packages do
       when is_integer(years_experience) and is_atom(schedule) and is_binary(state) do
     full_time = schedule == :full_time
 
-    %{organization: %{id: organization_id, profile: %{job_types: [_ | _] = job_types}}} =
-      Repo.preload(user, :organization)
+    %{organization: %{id: organization_id, organization_job_types: job_types}} =
+      Repo.preload(user, organization: :organization_job_types)
 
+    enabled_job_types = Profiles.enabled_job_types(job_types)
     default_each_price = Download.default_each_price()
 
     min_years_query =
@@ -411,7 +413,7 @@ defmodule Picsello.Packages do
     templates_query =
       from(base in BasePrice,
         where:
-          base.full_time == ^full_time and base.job_type in ^job_types and
+          base.full_time == ^full_time and base.job_type in ^enabled_job_types and
             base.min_years_experience in subquery(min_years_query),
         inner_lateral_join:
           name in ([base.tier, base.job_type] |> array_to_string(" ") |> initcap()),
@@ -472,4 +474,35 @@ defmodule Picsello.Packages do
   end
 
   defp maybe_update_questionnaire_package_id_multi(multi, _, _), do: multi
+
+  def get_current_user(user_id) do
+    from(user in Picsello.Accounts.User,
+      where: user.id == ^user_id,
+      join: org in assoc(user, :organization),
+      left_join: subscription in assoc(user, :subscription),
+      preload: [:subscription, [organization: :organization_job_types]]
+    )
+    |> Repo.one()
+  end
+
+  def archive_packages_for_job_type(job_type, organization_id) do
+    from(p in Package,
+      where: p.organization_id == ^organization_id and p.job_type == ^job_type
+    )
+    |> Repo.update_all(set: [archived_at: DateTime.truncate(DateTime.utc_now(), :second)])
+  end
+
+  def unarchive_packages_for_job_type(job_type, organization_id) do
+    from(p in Package,
+      where: p.organization_id == ^organization_id and p.job_type == ^job_type
+    )
+    |> Repo.update_all(set: [archived_at: nil])
+  end
+
+  def unarchive_package(package_id) do
+    package = Repo.get!(Package, package_id)
+
+    Ecto.Changeset.change(package, archived_at: nil)
+    |> Repo.update()
+  end
 end
