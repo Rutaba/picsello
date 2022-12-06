@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   alias Picsello.Photos
   alias PicselloWeb.Router.Helpers, as: Routes
   alias Phoenix.LiveView.JS
-  
+
   import PicselloWeb.GalleryLive.Shared, only: [original_album_link: 2]
   import PicselloWeb.GalleryLive.Photos.Photo.Shared
 
@@ -22,6 +22,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       album: nil,
       component: false,
       selected_photo_id: nil,
+      client_liked_album: false,
       is_proofing: assigns[:is_proofing] || false,
       client_link_hash: Map.get(assigns, :client_link_hash),
       is_liked: photo.is_photographer_liked,

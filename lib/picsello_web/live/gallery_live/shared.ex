@@ -270,7 +270,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       ) do
     opts = make_opts(socket, per_page, exclude_all)
     photos = Galleries.get_gallery_photos(id, opts)
-    
+
     socket
     |> assign(:photos, photos |> Enum.take(per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
@@ -1020,9 +1020,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def place_product_in_cart(
         %{
-          assigns: %{
-            gallery: gallery
-          } = assigns
+          assigns:
+            %{
+              gallery: gallery
+            } = assigns
         } = socket,
         whcc_editor_id
       ) do

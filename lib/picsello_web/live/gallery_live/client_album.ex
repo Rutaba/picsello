@@ -87,7 +87,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_event("toggle_selected", _, %{assigns: assigns} = socket) do
     %{gallery: gallery, album: album, selected_filter: selected_filter} = assigns
-    IO.inspect(!selected_filter, label: "selected_filter-------------")
+
     gallery.id
     |> Galleries.get_album_photo_count(album.id, false, !selected_filter)
     |> then(&assign(socket, :photos_count, &1))
@@ -157,7 +157,6 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   end
 
   def handle_info({:update_assigns_state, _modal}, socket) do
-    IO.inspect("abc", label: "------------------------")
     socket
     |> assigns()
     |> elem(1)
@@ -244,7 +243,6 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   end
 
   defp toggle_empty_state(assigns) do
-    IO.inspect "----------------reached here"
     ~H"""
       <div class="relative justify-between mb-12 text-2xl font-bold text-center text-base-250">
         <%= if !@is_proofing do %>

@@ -20,16 +20,16 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       match?(%{shoot: %{address: address}} when not is_nil(address), assigns)
     end)
     |> assign_changeset(%{}, nil)
-    |> then(fn %{assigns: %{job: %{job_status: job_status}}} = socket ->  
+    |> then(fn %{assigns: %{job: %{job_status: job_status}}} = socket ->
       if job_status.is_lead do
         socket
         |> assign(package_payment_schedules: preload_package_payment_schedules(job.package))
         |> assign(payment_schedules: preload_payment_schedules(job))
-        |> assign(x_shoots: Shoot.for_job(job.id) |> Repo.all())    
+        |> assign(x_shoots: Shoot.for_job(job.id) |> Repo.all())
       else
         socket
       end
-    end)    
+    end)
     |> ok()
   end
 
@@ -307,6 +307,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   defp find_and_map_payment_schedule(payment_schedules, package_schedule) do
     Enum.find_value(payment_schedules, [], fn %{description: description} = pyment_schedule ->
       pyment_schedule = Map.put(pyment_schedule, :type, "stripe")
+
       if description == package_schedule.description,
         do: Map.put(pyment_schedule, :due_at, package_schedule.schedule_date)
     end)
