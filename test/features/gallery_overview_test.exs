@@ -96,8 +96,8 @@ defmodule Picsello.GalleryOverviewTest do
 
     session
     |> visit("/galleries/#{gallery.id}/")
-    |> resize_window(1280, 800)
-    |> scroll_to_bottom()
+    |> resize_window(1280, 1000)
+    |> scroll_into_view(css("#updateGalleryNeverExpire"))
     |> click(css("#updateGalleryNeverExpire"))
     |> click(css("#saveGalleryExpiration"))
 
@@ -109,8 +109,8 @@ defmodule Picsello.GalleryOverviewTest do
   feature "Expiration date, set gallery expiry", %{session: session, gallery: gallery} do
     session
     |> visit("/galleries/#{gallery.id}/")
-    |> resize_window(1280, 800)
-    |> scroll_to_bottom()
+    |> resize_window(1280, 1000)
+    |> scroll_into_view(css("#updateGalleryNeverExpire"))
     |> click(css("#updateGalleryNeverExpire"))
     |> find(select("date[month]"), &click(&1, option("January")))
     |> find(select("date[day]"), &click(&1, option("2")))

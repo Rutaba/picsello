@@ -366,17 +366,15 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(link("Package Templates"))
     |> click(css("#menu-btn-#{package.id}"))
     |> click(button("Archive"))
-
-    session
+    |> assert_text("Are you sure you want to archive this package template?")
     |> click(button("Yes, archive"))
     |> assert_flash(:success, text: "The package has been archived")
-
-    session
     |> click(css(".archived-anchor-click"))
+    |> assert_text("Archived Packages")
+    |> scroll_to_bottom()
     |> click(css("#menu-btn-#{package.id}"))
     |> click(button("archive-unarchive-btn-#{package.id}"))
-
-    session
+    |> assert_text("Are you sure you want to un-archive this package template?")
     |> click(button("Yes, unarchive"))
     |> assert_flash(:success, text: "The package has been un-archived")
 
@@ -385,7 +383,9 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     package = Repo.all(Package) |> hd()
 
     session
+    |> scroll_to_top()
     |> click(link("Package Templates"))
+    |> scroll_into_view(css("#menu-btn-#{package.id}"))
     |> click(css("#menu-btn-#{package.id}"))
     |> click(button("Show on public profile"))
     |> assert_text("Show on your Public Profile?")

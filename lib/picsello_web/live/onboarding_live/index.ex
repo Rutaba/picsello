@@ -184,7 +184,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     </label>
     """
   end
-  
+
   defp assign_step(%{assigns: %{current_user: %{onboarding: onboarding}}} = socket) do
     if is_nil(onboarding.state) && is_nil(onboarding.photographer_years) &&
          is_nil(onboarding.schedule),

@@ -220,7 +220,7 @@ defmodule Picsello.Profiles do
           ^slug
         ),
       limit: 1,
-      preload: [:user]
+      preload: [:user, :organization_job_types]
     )
     |> Repo.one!()
     |> Repo.preload(brand_links: from(bl in BrandLink, where: bl.link_id == "website"))
