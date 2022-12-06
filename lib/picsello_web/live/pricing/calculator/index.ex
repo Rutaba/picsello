@@ -14,9 +14,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         pricing_calculations: %PricingCalculations{
           organization_id: user.organization_id,
           job_types: user.organization.profile.job_types,
-          state: user.onboarding.state,
-          min_years_experience: user.onboarding.photographer_years,
-          schedule: user.onboarding.schedule,
+          average_time_per_week: 40,
           take_home: Money.new(0),
           self_employment_tax_percentage: tax_schedule().self_employment_percentage,
           desired_salary: Money.new(1_500_000),
@@ -145,12 +143,13 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defp step(%{step: 2} = assigns) do
     ~H"""
       <.container {assigns}>
-        <h4 class="text-xl font-bold sm:text-2xl">We need to know a little about what you do currently in order to build accurate results.</h4>
+        <h4 class="text-4xl font-bold">Let us know about what you do</h4>
+        <p class="py-2 text-base-250 text-lg">We'll need this in order to generate how much you should charge per shoot.</p>
 
         <% input_name = input_name(@f, :job_types) <> "[]" %>
         <div class="flex flex-col pb-1">
           <p class="py-2 font-extrabold">
-            What types of photography do you do?
+            What types of photography do you offer?
             <i class="italic font-light">(Select one or more)</i>
           </p>
 
@@ -161,32 +160,14 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
         </div>
 
-        <div class="grid md:grid-cols-2 grid-cols-1 gap-3 sm:gap-5">
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
-            <%= select @f, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
-          </label>
-
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
-            <%= input @f, :min_years_experience, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: "p-4" %>
-            <%= error_tag @f, :min_years_experience, class: "text-red-sales-300 text-sm" %>
-          </label>
-        </div>
-
-        <div class="grid sm:grid-cols-2 grid-cols-1 gap-3 sm:gap-5">
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">Where’s your business based?</p>
-            <%= select @f, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
-            <%= error_tag @f, :state, class: "text-red-sales-300 text-sm" %>
-          </label>
-
-          <label class={classes("flex flex-col mt-4", %{"opacity-50" => @f |> input_value(:state) |> Picsello.Onboardings.non_us_state?()})}>
-            <p class="py-2 font-extrabold">What's your zipcode?</p>
-            <%= input @f, :zipcode, type: :text_input, disabled: @f |> input_value(:state) |> Picsello.Onboardings.non_us_state?(), phx_debounce: 500, min: 0, placeholder: "00000", class: "p-4" %>
-            <%= error_tag @f, :zipcode, class: "text-red-sales-300 text-sm" %>
-          </label>
-        </div>
+        <p class="py-2 font-extrabold mt-4">How much time do you spend on your photography business per week? <br /><span class="italic font-normal text-sm text-base-250">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
+        <label class="flex flex-col">
+          <div class="flex items-center">
+            <%= input @f, :average_time_per_week, type: :text_input, phx_debounce: 500, min: 0, placeholder: "40", class: "p-4 w-24 text-center" %>
+            <span class="ml-4">hours</span>
+          </div>
+          <%= error_tag @f, :average_time_per_week, class: "text-red-sales-300 text-sm" %>
+        </label>
 
         <div class="flex justify-end mt-8">
           <button type="submit" class="btn-primary" disabled={!@changeset.valid?}>Next</button>
@@ -208,62 +189,45 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
     ~H"""
       <.container {assigns}>
-        <h4 class="text-2xl font-bold">Let us know how much time you spend and how much you’d like to make.</h4>
-        <p class="py-2 font-extrabold">How much time do you spend on your photography business per week? <span class="italic font-normal font-xs text-base-250">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
-        <div class="flex flex-wrap w-full mt-4 sm:mb-8">
-          <div class="w-full sm:w-1/3">
-            <label class="flex flex-col sm:border-r-2">
-              <p class="pb-2">My average time each week is:</p>
-              <div class="flex items-center">
-                <%= input @f, :average_time_per_week, type: :text_input, phx_debounce: 500, min: 0, placeholder: "40", class: "p-4 w-24 text-center" %>
-                <%= error_tag @f, :average_time_per_week, class: "text-red-sales-300 text-sm" %>
-                <span class="ml-4 font-bold">hours</span>
-              </div>
-            </label>
-          </div>
-          <div class="w-full mt-4 sm:w-2/3 sm:pl-12 sm:mt-0">
-            <label class="flex flex-col">
-              <p class="pb-2">I frequently work the following days:</p>
-              <div class="flex flex-wrap mt-2">
-              <% input_name = input_name(@f, :average_days_per_week) <> "[]" %>
-              <%= for(day <- days(), checked <- [Enum.member?(input_value(@f, :average_days_per_week) || [], day)]) do %>
-                <.day_option type="checkbox" name={input_name} day={day} checked={checked} />
-              <% end %>
+        <h4 class="text-4xl font-bold">Let us know how much you’d like to make</h4>
+        <p class="py-2 text-base-250 text-lg">Make sure to notice how taxes affect your take home pay. You can easily adjust your Gross Salary needed if the amount of taxes surprises you!</p>
+
+        <div {intro_hints_only("intro_hints_only")}>
+          <label class="flex flex-wrap md:flex-nowrap items-center justify-between mt-4 bg-blue-planning-100 p-4 rounded-t-lg gap-12">
+            <p class="font-extrabold shrink text-xl">Gross Salary Needed <br /> <span class="italic font-normal text-sm">Remember, this isn't your take home pay. Adjust to make sure your take home is what you need.</span></p>
+            <div>
+              <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center text-blue-planning-300 font-bold border-blue-planning-300 transition-colors focus:border-white", phx_hook: "PriceMask" %>
+              <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm block" %>
             </div>
-            </label>
-          </div>
-        </div>
-        <p class="py-2 font-extrabold">Let’s see how much you need to make before taxes! <span class="italic font-normal font-xs text-base-250">(Make sure to notice how taxes affect your take home pay. You can easily adjust your Gross Salary needed if the amount of taxes surprises you!).</span></p>
-        <div class="max-w-md" {intro_hints_only("intro_hints_only")}>
-          <label class="flex flex-wrap items-center justify-between mt-4">
-            <p class="font-extrabold">Gross Salary Needed:</p>
-            <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center", phx_hook: "PriceMask" %>
-            <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm" %>
           </label>
-          <hr class="hidden mt-4 mb-4 sm:block"/>
-          <div class="flex flex-wrap items-center justify-between">
-            <p class="font-extrabold">Approximate Tax Bracket <br /> <span class="italic font-normal font-xs text-base-250">How did you calculate this? <.intro_hint content="Based on the salary you entered, we looked at what the IRS has listed as the percentage band of income you are in." class="ml-1" /></span></p>
+          <hr class="hidden mb-4 sm:block"/>
+          <div class="flex flex-wrap items-center justify-between px-4">
+            <p class="font-extrabold">Approximate Tax Bracket <br /><span class="italic font-normal text-sm text-base-250">How did you calculate this? <.intro_hint content="Based on the salary you entered, we looked at what the IRS has listed as the percentage band of income you are in." class="ml-1" /></span></p>
             <%= hidden_input(@f, :tax_bracket, value: tax_bracket.percentage ) %>
-            <p class="w-full p-4 mt-4 mb-6 font-bold text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= tax_bracket.percentage %>%</p>
+            <p class="text-base-250 w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= tax_bracket.percentage %>%</p>
           </div>
           <hr class="hidden mt-4 mb-4 sm:block" />
-          <div class="flex flex-wrap items-center justify-between">
-            <p class="py-2 font-extrabold">Approximate After Income Tax <br /> <span class="italic font-normal font-xs text-base-250"><a class="underline" target="_blank" rel="noopener noreferrer" href="https://support.picsello.com/article/122-how-federal-tax-brackets-work">Learn more</a> about this calculation</span></p>
+          <div class="flex flex-wrap items-center justify-between px-4">
+            <p class="py-2 font-extrabold">Approximate After Income Tax <br /><span class="italic font-normal text-sm text-base-250"><a class="underline" target="_blank" rel="noopener noreferrer" href="https://support.picsello.com/article/122-how-federal-tax-brackets-work">Learn more</a> about this calculation</span></p>
             <%= hidden_input(@f, :after_income_tax, value: after_tax_income ) %>
-            <p class="w-full p-4 mt-4 mb-6 font-bold text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= after_tax_income %></p>
+            <p class="text-base-250 w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= after_tax_income %></p>
           </div>
           <hr class="hidden mt-4 mb-4 sm:block" />
-          <div class="flex flex-wrap items-center justify-between">
-            <p class="py-2 font-extrabold">Self-employment tax <br /> <span class="italic font-normal font-xs text-base-250">What's this? <.intro_hint content="Since you are technically self-employed, the IRS has a special tax percentage, this is calculated after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
-            <p class="w-full p-4 mt-4 mb-6 font-bold text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= @pricing_calculations.self_employment_tax_percentage %>%</p>
+          <div class="flex flex-wrap items-center justify-between px-4">
+            <p class="py-2 font-extrabold">Self-employment tax <br /><span class="italic font-normal text-sm text-base-250">What's this? <.intro_hint content="Since you are technically self-employed, the IRS has a special tax percentage, this is calculated after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
+            <p class="text-base-250 w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= @pricing_calculations.self_employment_tax_percentage %>%</p>
           </div>
           <hr class="hidden mt-4 mb-4 sm:block" />
-          <div class="flex flex-wrap items-center justify-between">
-            <p class="py-2 font-extrabold">Approximate After Income Tax<br>and SE Tax ‘aka your take home pay’</p>
+          <div class="flex flex-wrap items-center justify-between px-4">
+            <p class="py-2 font-extrabold">Approximate After Income Tax & SE Tax <br /><span class="italic font-normal text-sm text-base-250">‘aka your take home pay’</span></p>
             <%= hidden_input(@f, :take_home, value: take_home ) %>
-            <p class="w-full p-4 mt-4 mb-6 font-bold text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= take_home %></p>
+            <p class="text-blue-planning-300 font-bold w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= take_home %></p>
           </div>
+          <hr class="hidden mt-4 mb-4 sm:block" />
         </div>
+
+        <.tax_review tax_amount={PricingCalculations.calculate_tax_amount(desired_salary, take_home)} desired_salary={desired_salary} take_home={take_home} />
+
         <div class="flex justify-end mt-8">
           <button type="button" class="mr-4 btn-secondary" phx-click="previous">Back</button>
           <button type="submit" class="btn-primary" disabled={!@changeset.valid?}>Next</button>
@@ -275,15 +239,18 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defp step(%{step: 4} = assigns) do
     ~H"""
       <.container {assigns}>
-        <h4 class="text-2xl font-bold">Let’s figure out how much you spend on your business.</h4>
-        <p class="italic">(We provide you a rough estimate on what your costs should be based on industry standards and by what you’ve answered so far. You can go in and tweak based on your actual costs.)</p>
-        <.financial_review desired_salary={@pricing_calculations.desired_salary} costs={PricingCalculations.calculate_all_costs(@pricing_calculations.business_costs)} />
-        <h4 class="mb-4 text-2xl font-bold">Cost categories</h4>
+        <h4 class="text-4xl font-bold">Let’s see how much you spend on your business</h4>
+        <p class="py-2 text-base-250 text-lg">We've provided an estimate on what your costs should be based on industry standards. You can go in and tweak based on your actuals.</p>
+
+        <h4 class="my-4 text-xl font-bold text-base-250">Cost categories</h4>
         <ul>
           <%= inputs_for @f, :business_costs, fn fp -> %>
             <.category_option type="checkbox" form={fp} />
           <% end %>
         </ul>
+
+        <.financial_review desired_salary={@pricing_calculations.desired_salary} costs={PricingCalculations.calculate_all_costs(@pricing_calculations.business_costs)} />
+
         <div class="flex justify-end mt-8">
           <button type="button" class="mr-4 btn-secondary" phx-click="previous">Back</button>
           <button type="submit" class="btn-primary" disabled={!@changeset.valid?}>Next</button>
@@ -301,19 +268,60 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         costs
       )
 
-    assigns = Enum.into(assigns, %{costs: costs, gross_revenue: gross_revenue})
+    desired_salary = input_value(assigns.f, :desired_salary)
+    average_time_per_week = input_value(assigns.f, :average_time_per_week)
+
+    calculations = %{
+      job_types: assigns.pricing_calculations.job_types,
+      average_time_per_week:
+        if average_time_per_week === 0 do
+          1
+        else
+          average_time_per_week
+        end,
+      desired_salary: desired_salary
+    }
+
+    assigns =
+      Enum.into(assigns, %{
+        costs: costs,
+        gross_revenue: gross_revenue
+      })
 
     ~H"""
       <.container {assigns}>
-        <h4 class="text-2xl font-bold">Based on what you told us—we’ve calculated some suggestions on how much to charge and how many shoots you should do.</h4>
-        <p class="text-xl">The suggested pricing and shoot counts are calculated for the entire year if you focused on one.</p>
+        <h4 class="text-4xl font-bold">Here's your results!</h4>
+        <p class="py-2 text-base-250 text-lg">Based on what you told us—we’ve calculated some suggestions on how much to charge and how many shoots you should do. The suggested pricing and shoot counts are calculated for the entire year if you focused on one. You can go ahead and adjust your work week length and salary if you'd like.</p>
+
+        <h4 class="mt-4 mb-4 text-xl font-bold text-base-250">Adjust calculation</h4>
+        <div class="grid sm:grid-cols-2 gap-8 p-4 border rounded-lg">
+          <label class="flex gap-4 items-center">
+            <p class="pb-2 font-bold shrink-0">Gross Salary Needed:</p>
+            <div class="flex flex-col items-center">
+              <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center", phx_hook: "PriceMask" %>
+              <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm block" %>
+            </div>
+          </label>
+          <label class="flex gap-4 items-center">
+            <p class="pb-2 font-bold shrink-0">My average time each week is:</p>
+            <div class="flex flex-wrap items-center">
+              <%= input @f, :average_time_per_week, type: :text_input, phx_debounce: 500, min: 0, placeholder: "40", class: "p-4 w-24 text-center" %>
+              <span class="ml-4">hours</span>
+              <%= error_tag @f, :average_time_per_week, class: "text-red-sales-300 text-sm block" %>
+            </div>
+          </label>
+        </div>
+
         <div class="my-6">
-          <%= for {pricing_suggestion, index} <- Enum.with_index(PricingCalculations.calculate_pricing_by_job_types(@pricing_calculations)) do %>
-            <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={@gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} index={index} />
+          <h4 class="mt-4 text-xl font-bold text-base-250">Shoot breakdown based on desired salary</h4>
+          <p class="mb-4 text-base-250">If you only focused on 100% of that shoot type per year</p>
+          <%= for {pricing_suggestion, index} <- Enum.with_index(PricingCalculations.calculate_pricing_by_job_types(calculations)) do %>
+            <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={@gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} actual_salary={pricing_suggestion.actual_salary} index={index} />
           <% end %>
         </div>
-        <h4 class="mb-4 text-2xl font-bold">Financial Summary</h4>
-        <.financial_review desired_salary={@pricing_calculations.desired_salary} costs={@costs} />
+
+        <.financial_review desired_salary={desired_salary} costs={@costs} />
+
         <div class="flex justify-end mt-8">
           <button type="button" class="mr-4 btn-secondary" phx-click="previous">Back</button>
           <button type="submit" class="btn-primary">Email results</button>
@@ -371,12 +379,12 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <.icon name="logo" class="w-32 mb-10 h-7 sm:h-11 sm:w-48" />
       <div class="container px-6 pt-8 pb-6 bg-white rounded-lg shadow-md max-w-screen-sm sm:p-14">
         <h1 class="mb-10 text-4xl font-bold md:text-6xl">Pricing <span class="border-b-4 md:border-b-8 border-blue-planning-300">Calculator</span></h1>
-        <p class="mb-4 text-xl">Really easy to use and backed by 3 years of industry research our calculator helps you set your prices so your business can be profitable. We have 4 quick sections for you to fill out so let’s go!</p>
+        <p class="mb-4 text-xl text-base-250">Easy-to-use and backed by 3 years of industry research our calculator helps you set your prices so your business can be profitable. We have 4 quick sections for you to fill out so let’s go!</p>
         <ul class="flex flex-wrap columns-2">
-          <li class="flex items-center w-full mb-2 md:w-1/2"><span class="flex items-center justify-center block w-8 h-8 mr-2 font-bold text-white rounded-full bg-blue-planning-300"><span class="-mt-1">1</span></span>Information about your business</li>
-          <li class="flex items-center w-full mb-2 md:w-1/2"><span class="flex items-center justify-center block w-8 h-8 mr-2 font-bold text-white rounded-full bg-blue-planning-300"><span class="-mt-1">2</span></span>Financial & time goals</li>
-          <li class="flex items-center w-full mb-2 md:w-1/2"><span class="flex items-center justify-center block w-8 h-8 mr-2 font-bold text-white rounded-full bg-blue-planning-300"><span class="-mt-1">3</span></span>Business costs</li>
-          <li class="flex items-center w-full mb-2 md:w-1/2"><span class="flex items-center justify-center block w-8 h-8 mr-2 font-bold text-white rounded-full bg-blue-planning-300"><span class="-mt-1">4</span></span>Results</li>
+          <li class="flex items-center w-full mb-2 md:w-1/2 text-base-250 font-bold"><span class="flex items-center justify-center block w-8 h-8 mr-2 font-bold text-white rounded-full bg-blue-planning-300"><span class="-mt-1">1</span></span>Business information</li>
+          <li class="flex items-center w-full mb-2 md:w-1/2 text-base-250 font-bold"><span class="flex items-center justify-center block w-8 h-8 mr-2 font-bold text-white rounded-full bg-blue-planning-300"><span class="-mt-1">2</span></span>Financial goals</li>
+          <li class="flex items-center w-full mb-2 md:w-1/2 text-base-250 font-bold"><span class="flex items-center justify-center block w-8 h-8 mr-2 font-bold text-white rounded-full bg-blue-planning-300"><span class="-mt-1">3</span></span>Business costs</li>
+          <li class="flex items-center w-full mb-2 md:w-1/2 text-base-250 font-bold"><span class="flex items-center justify-center block w-8 h-8 mr-2 font-bold text-white rounded-full bg-blue-planning-300"><span class="-mt-1">4</span></span>Results</li>
         </ul>
         <div class="flex justify-end mt-8">
             <%= live_redirect "Go back", to: Routes.home_path(@socket, :index), class: "btn-secondary inline-block mr-4" %>
@@ -391,18 +399,17 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     socket
     |> assign(
       step: 2,
-      step_title: "Information about your business",
+      step_title: "Business information",
       page_title: "Pricing Calculator step 1",
       change: "validate"
     )
-    |> assign_new(:states, &states/0)
   end
 
   defp assign_step(socket, 3) do
     socket
     |> assign(
       step: 3,
-      step_title: "Financial & time goals",
+      step_title: "Financial goals",
       page_title: "Pricing Calculator step 2",
       change: "validate"
     )
@@ -559,17 +566,18 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   def financial_review(assigns) do
     ~H"""
-      <div class="flex flex-wrap items-center justify-between p-8 my-6 bg-gray-100 rounded-lg" {intro_hints_only("intro_hints_only")}>
+      <h4 class="mt-4 mb-6 text-xl font-bold text-base-250">Financial summary</h4>
+      <div class="flex flex-wrap items-center justify-between p-8 mt-2 mb-6 bg-gray-100 rounded-lg" {intro_hints_only("intro_hints_only")}>
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @desired_salary %></h5>
-          <p class="italic text-center">Desired Take Home</p>
+          <p class="italic text-center">Gross Salary (Before Taxes)</p>
         </div>
-        <p class="w-full text-5xl font-bold text-center sm:mb-8 sm:w-auto">+</p>
+        <p class="w-full text-5xl font-bold text-center text-base-250 sm:mb-8 sm:w-auto">+</p>
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @costs %></h5>
           <p class="italic text-center">Projected Costs</p>
         </div>
-        <p class="w-full text-5xl font-bold text-center sm:mb-8 sm:w-auto">=</p>
+        <p class="w-full text-5xl font-bold text-center text-base-250 sm:mb-8 sm:w-auto">=</p>
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= PricingCalculations.calculate_revenue(@desired_salary, @costs) %></h5>
           <p class="italic text-center">Gross Revenue <.intro_hint content="Your revenue is the total amount of sales you made before any deductions. This includes your costs because you should be including those in your pricing!" class="ml-1" /></p>
@@ -578,49 +586,71 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     """
   end
 
+  def tax_review(assigns) do
+    ~H"""
+      <h4 class="mt-8 mb-6 text-xl font-bold text-base-250">Tax summary</h4>
+      <div class="flex flex-wrap items-center justify-between p-8 mt-2 mb-6 bg-gray-100 rounded-lg" {intro_hints_only("intro_hints_only")}>
+        <div class="w-full sm:w-auto">
+          <h5 class="mb-2 text-4xl font-bold text-center"><%= @desired_salary %></h5>
+          <p class="italic text-center">Gross Salary (before taxes)</p>
+        </div>
+        <p class="w-full text-5xl font-bold text-center text-base-250 sm:mb-8 sm:w-auto">-</p>
+        <div class="w-full sm:w-auto">
+          <h5 class="mb-2 text-4xl font-bold text-center"><%= @tax_amount %></h5>
+          <p class="italic text-center">Approx. income tax + SE tax</p>
+        </div>
+        <p class="w-full text-5xl font-bold text-center text-base-250 sm:mb-8 sm:w-auto">=</p>
+        <div class="w-full sm:w-auto">
+          <h5 class="mb-2 text-4xl font-bold text-center"><%= @take_home %></h5>
+          <p class="italic text-center">Total Take Home Pay <.intro_hint content="This doesn't include your expenses or any savings from business cost deductions" class="ml-1" /></p>
+        </div>
+      </div>
+    """
+  end
+
   def pricing_suggestion(assigns) do
-    min_sessions_per_year =
-      PricingCalculations.calculate_min_sessions_a_year(assigns.gross_revenue, assigns.base_price)
-
-    assigns = Enum.into(assigns, %{min_sessions_per_year: min_sessions_per_year})
-
     ~H"""
       <div class="p-4 mb-4 border rounded-lg">
-        <div class="grid lg:grid-cols-3 grid-cols-1 gap-3 sm:gap-5">
-          <div class="flex">
-            <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 ml-1 mr-3 bg-gray-100 rounded-full">
-              <.icon name={@job_type} class="fill-current" width="24" height="24" />
-            </div>
-            <div>
-              <h3 class="text-lg font-bold"><%= dyn_gettext @job_type %></h3>
-              <p class="text-sm">These numbers reflect if you only focused on <%= dyn_gettext @job_type %> shoots this year.</p>
-              <input id={"calculator-step-5_pricing_suggestions_#{@index}_job_type"} name={"pricing_calculations[pricing_suggestions][#{@index}][job_type]"} type="hidden" value={@job_type}>
-              <input id={"calculator-step-5_pricing_suggestions_#{@index}_max_session_per_year"} name={"pricing_calculations[pricing_suggestions][#{@index}][max_session_per_year]"} type="hidden" value={@max_session_per_year}>
-              <input id={"calculator-step-5_pricing_suggestions_#{@index}_base_price"} name={"pricing_calculations[pricing_suggestions][#{@index}][base_price]"} type="hidden" value={@base_price}>
-            </div>
+        <div class="flex items-center">
+          <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 ml-1 mr-3 bg-gray-100 rounded-full">
+            <.icon name={@job_type} class="fill-current" width="24" height="24" />
           </div>
-          <div class="flex flex-col flex-wrap items-center justify-center p-4 bg-gray-100 rounded-lg">
+          <div>
+            <h3 class="text-lg font-bold"><%= dyn_gettext @job_type %></h3>
+            <p class="text-xs text-base-250">Results reflect if you only focused on <%= dyn_gettext @job_type %> shoots this year</p>
+            <input id={"calculator-step-5_pricing_suggestions_#{@index}_job_type"} name={"pricing_calculations[pricing_suggestions][#{@index}][job_type]"} type="hidden" value={@job_type}>
+            <input id={"calculator-step-5_pricing_suggestions_#{@index}_max_session_per_year"} name={"pricing_calculations[pricing_suggestions][#{@index}][max_session_per_year]"} type="hidden" value={@max_session_per_year}>
+            <input id={"calculator-step-5_pricing_suggestions_#{@index}_base_price"} name={"pricing_calculations[pricing_suggestions][#{@index}][base_price]"} type="hidden" value={@base_price}>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-4 mt-4">
+          <div class="flex flex-col flex-wrap items-center justify-center p-4 bg-gray-100 rounded-lg w-full sm:w-auto sm:grow">
             <span class="block w-full text-2xl font-bold text-center">
-            <%= @min_sessions_per_year %>
+            <%= @max_session_per_year %>
             </span>
-            <span class="block w-full text-center font-italic">
-              Min. Shoots per year
+            <span class="block w-full text-center italic">
+              Total Shoots per year
             </span>
           </div>
-          <div class="flex flex-col flex-wrap items-center justify-center p-4 text-white bg-black rounded-lg">
+          <p class="w-full text-4xl font-bold text-base-250 text-center sm:mb-6 sm:w-auto">x</p>
+          <div class="flex flex-col flex-wrap items-center justify-center p-4 text-white bg-blue-planning-300 rounded-lg w-full sm:w-auto sm:grow">
             <span class="block w-full text-2xl font-bold text-center">
               <%= @base_price %>
             </span>
-            <span class="block w-full text-center font-italic">
-              Avg. Charge Per Shoot
+            <span class="block w-full text-center italic">
+              Charge Per Shoot
+            </span>
+          </div>
+          <p class="w-full text-5xl font-bold text-base-250 text-center sm:mb-6 sm:w-auto">=</p>
+          <div class="flex flex-col flex-wrap items-center justify-center p-4 text-white bg-blue-planning-300 rounded-lg w-full sm:w-auto sm:grow">
+            <span class="block w-full text-2xl font-bold text-center">
+              <%= @actual_salary %>
+            </span>
+            <span class="block w-full text-center italic">
+              Desired Salary
             </span>
           </div>
         </div>
-        <%= if @min_sessions_per_year > @max_session_per_year do %>
-        <div class="p-4 mt-4 rounded-lg bg-orange-inbox-100">
-          Based on our experience, you're only able to physically handle <strong><%= @max_session_per_year %> sessions</strong> a year for <strong><%= dyn_gettext @job_type %> shoots</strong>. Keep that in mind when deciding what to charge and what you offer.
-        </div>
-        <% end %>
       </div>
     """
   end
@@ -629,8 +659,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
     <nav class="hidden px-4 pt-4 mt-4 bg-gray-100 rounded-lg lg:block">
       <ul>
-        <.sidebar_step current_step={@step} step={1} title="Information about your business" />
-        <.sidebar_step current_step={@step} step={2} title="Financial & time goals" />
+        <.sidebar_step current_step={@step} step={1} title="Business information" />
+        <.sidebar_step current_step={@step} step={2} title="Financial goals" />
         <.sidebar_step current_step={@step} step={3} title="Business costs" />
         <.sidebar_step current_step={@step} step={4} title="Results" />
       </ul>
@@ -673,7 +703,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             <.icon name="logo" class="w-32 ml-16 lg:ml-0 h-7 lg:h-11 lg:w-48 lg:mb-4" />
             <h3 class="text-xl font-bold lg:text-4xl lg:mb-4">Smart Profit Pricing Calculator </h3>
           </div>
-          <p class="hidden text-2xl lg:block">Let’s figure out your prices so your business can be a profitable one!</p>
+          <p class="hidden text-xl text-base-250 lg:block">Let’s figure out your prices so your business can be a profitable one!</p>
           <.sidebar_nav step={@step} />
           <div class="absolute bottom-auto circleBtn lg:bottom-8 lg:left-8 lg:top-auto top-5 left-5">
             <ul>
@@ -688,13 +718,13 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         </div>
         <div class="flex flex-col w-full px-4 pb-12 ml-auto lg:w-3/4 sm:pb-32 sm:px-16">
           <div class="w-full max-w-5xl mx-auto mt-32 sm:mt-40">
-            <h1 class="flex items-center mb-12 text-2xl font-bold sm:text-4xl lg:-ml-14">
+            <h1 class="flex items-center mb-8 text-xl font-bold sm:text-2xl text-base-250">
               <%= if @step == 6 do %>
-                <div phx-click="previous" class="flex items-center justify-center inline-block w-12 h-12 mr-2 leading-none text-white rounded-full cursor-pointer bg-blue-planning-300">
+                <div phx-click="previous" class="flex items-center justify-center inline-block w-8 h-8 mr-2 leading-none text-white rounded-full cursor-pointer bg-blue-planning-300">
                   <.icon name="back" class="w-4 h-4 stroke-current" />
                 </div>
               <% else %>
-                <span class="flex items-center justify-center inline-block w-12 h-12 mr-2 text-xl leading-none text-white rounded-full bg-blue-planning-300">
+                <span class="flex items-center justify-center inline-block w-8 h-8 mr-2 text-xl leading-none text-white rounded-full bg-blue-planning-300">
                   <span class="-mt-1"><%= @step - 1 %></span>
                 </span>
               <% end %>
@@ -713,21 +743,19 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   defp handle_step(
          %{
-           assigns:
-             %{
-               current_user: %{email: email, name: name}
-             } = assigns
+           assigns: %{
+             current_user: %{email: email, name: name},
+             pricing_calculations: %{
+               business_costs: business_costs,
+               take_home: take_home,
+               pricing_suggestions: pricing_suggestions
+             }
+           }
          } = socket,
          step
        ) do
     case step do
       5 ->
-        %{
-          business_costs: business_costs,
-          take_home: take_home,
-          pricing_suggestions: pricing_suggestions
-        } = assigns.pricing_calculations
-
         opts = [
           take_home: take_home |> Money.to_string(),
           projected_costs:
@@ -779,7 +807,6 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   defdelegate job_types(), to: JobType, as: :all
-  defdelegate states(), to: PricingCalculations, as: :state_options
   defdelegate days(), to: PricingCalculations, as: :day_options
   defdelegate cost_categories(), to: PricingCalculations, as: :cost_categories
   defdelegate tax_schedule(), to: PricingCalculations, as: :tax_schedule
