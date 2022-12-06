@@ -171,8 +171,8 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       |> List.insert_at(-1, %{
         optional: false,
         options: [],
-        placeholder: "",
-        prompt: "",
+        placeholder: nil,
+        prompt: nil,
         type: :text
       })
 
@@ -239,7 +239,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       |> Ecto.Changeset.get_field(:questions)
       |> Enum.map(&Map.from_struct/1)
       |> List.update_at(index, fn question ->
-        question |> Map.put(:options, (question.options || []) ++ [""])
+        question |> Map.put(:options, (question.options || []) ++ [nil])
       end)
 
     socket
@@ -290,8 +290,8 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
               %{
                 optional: false,
                 options: [],
-                placeholder: "",
-                prompt: ""
+                placeholder: nil,
+                prompt: nil
               }
             ]
           }
@@ -335,11 +335,12 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       {:ok, questionnaire} ->
         send(socket.parent_pid, {:update, %{questionnaire: questionnaire}})
 
-        socket |> close_modal() |> noreply()
+        socket |> close_modal()
 
       {:error, changeset} ->
-        socket |> assign(changeset: changeset) |> noreply()
+        socket |> assign(changeset: changeset)
     end
+    |> noreply()
   end
 
   defp options_editor(assigns) do
