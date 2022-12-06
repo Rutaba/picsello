@@ -273,7 +273,12 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
     calculations = %{
       job_types: assigns.pricing_calculations.job_types,
-      average_time_per_week: average_time_per_week,
+      average_time_per_week:
+        if average_time_per_week === 0 do
+          1
+        else
+          average_time_per_week
+        end,
       desired_salary: desired_salary
     }
 
