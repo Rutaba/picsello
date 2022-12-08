@@ -570,7 +570,6 @@ defmodule Picsello.ClientOrdersTest do
       |> click(css("a", text: "View Gallery"))
       |> click(button("Buy now"))
       |> assert_text("Bundle - all digital downloads")
-      |> within_modal(&assert_has(&1, css("img[src$='/watermarked_preview.jpg']", count: 3)))
       |> find(testid("product_option_bundle_download"), fn option ->
         option
         |> assert_text("All digital downloads")
