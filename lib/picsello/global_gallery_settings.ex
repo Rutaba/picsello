@@ -19,6 +19,8 @@ defmodule Picsello.GlobalGallerySettings do
     field(:watermark_type, :string, values: @types)
     field(:watermark_size, :integer)
     field(:watermark_text, :string)
+    field(:global_watermark_path, :string)
+    
     belongs_to(:organization, Organization)
     timestamps()
   end

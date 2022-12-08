@@ -61,6 +61,18 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
     :ok
   end
 
+  defp do_handle_message(%{
+    "task" =>
+      %{
+        "is_image" => true,
+        "user_id" => user_id
+      } = task
+    }) do
+    PubSub.broadcast(Picsello.PubSub, "save_watermark:#{user_id}", {:save_watermark, task})
+
+    :ok
+  end
+
   defp do_handle_message(%{"task" => task} = context) do
     with {:ok, photo} <- Context.save_processed(context) do
       task

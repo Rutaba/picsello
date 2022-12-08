@@ -443,9 +443,9 @@ defmodule Picsello.Galleries do
   end
 
   def create_gallery_multi(attrs) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
-    |> Ecto.Multi.insert_all(
+    Multi.new()
+    |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
+    |> Multi.insert_all(
       :gallery_products,
       GalleryProduct,
       fn %{
@@ -463,26 +463,26 @@ defmodule Picsello.Galleries do
         )
       end
     )
-    |> Ecto.Multi.merge(fn %{gallery: gallery} ->
+    |> Multi.merge(fn %{gallery: gallery} ->
       check_watermark(gallery)
     end)
   end
 
   defp check_watermark(gallery) do
-    case Picsello.Galleries.Gallery.global_gallery_watermark(gallery) do
+    case Gallery.global_gallery_watermark(gallery) do
       nil ->
-        Ecto.Multi.new()
+        Multi.new()
       changeset ->
-        Ecto.Multi.new()
-        |> Ecto.Multi.insert(:watermark, fn _ ->
+        Multi.new()
+        |> Multi.insert(:watermark, fn _ ->
           Ecto.Changeset.change(
-            %Picsello.Galleries.Watermark{},
+            %Watermark{},
             changeset
           )
         end)
     end
   end
-  
+
   @doc """
   Updates a gallery.
 

@@ -33,8 +33,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
   def full_task_by_photo(%Photo{} = photo, %Watermark{} = watermark) do
     gallery = Picsello.Repo.get_by!(Picsello.Galleries.Gallery, id: watermark.gallery_id)
     organization = load_organization(gallery)
-    ggs = Picsello.Repo.get_by!(Picsello.GlobalGallerySettings, organization_id: organization.id)
-    watermark_path = path(gallery, ggs, watermark, organization)
+    global_settings = Picsello.Repo.get_by!(Picsello.GlobalGallerySettings, organization_id: organization.id)
+    watermark_path = path(gallery, global_settings, watermark, organization)
 
     %{
       "photoId" => photo.id,
@@ -46,6 +46,28 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       "watermarkedOriginalPath" => Photo.watermarked_path(photo),
       "watermarkPath" => watermark_path,
       "watermarkText" => watermark.type == "text" && watermark.text
+    }
+  end
+
+  def watermark_photo_task_by_global_photo(
+        %GlobalPhoto{} = photo,
+        %Watermark{} = watermark,
+        organization_id
+      ) do
+    watermark_path = "galleries/#{organization_id}/watermark.png"
+    
+    %{
+      "is_image" => true,
+      "photoId" => photo.id,
+      "user_id" => photo.user_id,
+      "bucket" => @bucket,
+      "pubSubTopic" => @output_topic,
+      "originalPath" => photo.original_url,
+      "previewPath" => nil,
+      "watermarkedPreviewPath" => GlobalGallerySettings.watermarked_path(),
+      "watermarkedOriginalPath" => GlobalGallerySettings.watermarked_path(),
+      "watermarkPath" => watermark_path,
+      "watermarkText" => nil
     }
   end
 
@@ -193,7 +215,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
 
   defp path(%{use_global: true}, %{}, %{type: "image"}, organization),
     do: "galleries/#{organization.id}/watermark.png"
-    
+
   defp path(%{id: id}, _, %{type: "image"}, _), do: "galleries/#{id}/watermark.png"
   defp path(_gallery, _, _, _), do: nil
 end
