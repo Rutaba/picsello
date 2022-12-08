@@ -23,6 +23,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
 
+  @card_blank "/images/card_gray.png"
+
   def toggle_favorites(
         %{
           assigns: %{
@@ -1008,6 +1010,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
       |> noreply()
     end
   end
+
+  def cover_photo_url(%{cover_photo: nil}), do: @card_blank
+
+  def cover_photo_url(%{cover_photo: %{id: photo_id}}),
+    do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(photo_id)
 
   defp upsert_album(result, message) do
     case result do
