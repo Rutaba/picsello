@@ -181,11 +181,14 @@ defmodule PicselloWeb.GelleryLive.GlobalSettings do
               "text" ->
                 %{text: ggs.watermark_text, type: "text"}
             end
+
+        _gallery =
           gallery
           |> Enum.reject(&(&1.use_global == false))
           |> Enum.map(fn x ->
             {:ok, _gallery} = Galleries.save_gallery_watermark(x, attr)
-          end)
+            end)
+
           socket
           |> assign(global_gallery_settings: ggs)
           |> put_flash(:success, "Watermark Updated!")
@@ -409,11 +412,12 @@ defmodule PicselloWeb.GelleryLive.GlobalSettings do
           socket
           |> put_flash(:error, "Failed to Delete Watermark")
       end
+  _gallery =
     gallery
     |> Enum.reject(&(&1.use_global == false))
     |> Enum.map(fn x ->
-      gal = Galleries.load_watermark_in_gallery(x)
-      Galleries.delete_gallery_watermark(gal.watermark)
+      gallery = Galleries.load_watermark_in_gallery(x)
+      Galleries.delete_gallery_watermark(gallery.watermark)
     end)
     socket
     |> noreply()
@@ -450,6 +454,7 @@ defmodule PicselloWeb.GelleryLive.GlobalSettings do
           socket
           |> put_flash(:error, "Failed to Delete Watermark")
       end
+  _gallery =
     gallery
     |> Enum.reject(&(&1.use_global == false))
     |> Enum.map(fn x ->
@@ -555,7 +560,7 @@ defmodule PicselloWeb.GelleryLive.GlobalSettings do
 
   defp preview_button_text(true), do: "Hide Preview"
   defp preview_button_text(false), do: "Show Preview"
-  
+
   defp watermark_type(%{watermark_type: "image"}), do: :image
   defp watermark_type(%{watermark_type: "text"}), do: :text
   defp watermark_type(_), do: :undefined

@@ -5,6 +5,7 @@ defmodule Picsello.GlobalGallerySettings do
   alias Picsello.Organization
 
   defmodule Photo do
+  @moduledoc false
     defstruct original_url: nil,
               user_id: nil,
               id: nil,
@@ -83,7 +84,7 @@ defmodule Picsello.GlobalGallerySettings do
   defp nilify_fields(changeset, fields) do
     Enum.reduce(fields, changeset, fn key, changeset -> put_change(changeset, key, nil) end)
   end
-  
+
   def watermarked_path(),
     do: "picsello/temp/watermarked/#{UUID.uuid4()}"
 end
