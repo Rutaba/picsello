@@ -51,11 +51,10 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
 
   def watermark_photo_task_by_global_photo(
         %GlobalPhoto{} = photo,
-        %Watermark{} = watermark,
         organization_id
       ) do
     watermark_path = "galleries/#{organization_id}/watermark.png"
-    
+
     %{
       "is_image" => true,
       "photoId" => photo.id,

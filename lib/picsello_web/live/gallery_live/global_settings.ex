@@ -7,7 +7,7 @@ defmodule PicselloWeb.GelleryLive.GlobalSettings do
     Shoot,
     GlobalGallerySettings
   }
-  alias Galleries.{Watermark, PhotoProcessing.ProcessingManager, Workers.PhotoStorage}
+  alias Galleries.{PhotoProcessing.ProcessingManager, Workers.PhotoStorage}
   alias Picsello.GlobalGallerySettings.Photo, as: GlobalPhoto
   alias Phoenix.PubSub
   alias Ecto.Changeset
@@ -175,11 +175,6 @@ defmodule PicselloWeb.GelleryLive.GlobalSettings do
             user_id: current_user.id,
             original_url: path,
             text: "nil"
-          },
-          %Watermark{
-            name: changes.watermark_name,
-            size: changes.watermark_size,
-            type: "image"
           },
           changes.organization_id
         )
@@ -687,7 +682,7 @@ defmodule PicselloWeb.GelleryLive.GlobalSettings do
     <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @watermark_option})}>Watermark</h1>
     <.card color="blue-planning-300" icon="three-people" title="Custom Watermark" badge={0} class="cursor-pointer mt-8" >
       <%= if @case == :image and watermark_type(@global_gallery_settings) == :image do  %>
-        
+
         <img src={"#{@global_gallery_settings.global_watermark_path && PhotoStorage.path_to_url(@global_gallery_settings.global_watermark_path)}"} />
         <div class="flex justify-between mb-8 mt-11 font-sans">
             <p><%= @global_gallery_settings.watermark_name %></p>

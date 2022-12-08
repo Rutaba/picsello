@@ -27,8 +27,8 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessingManager do
     Waiter.start_tracking(photo.gallery_id, photo.id)
   end
 
-  def update_watermark(%GlobalPhoto{} = global_photo, %Watermark{} = watermark, organization_id) do
-    Context.watermark_photo_task_by_global_photo(global_photo, watermark, organization_id)
+  def update_watermark(%GlobalPhoto{} = global_photo, organization_id) do
+    Context.watermark_photo_task_by_global_photo(global_photo, organization_id)
     |> send()
   end
 
