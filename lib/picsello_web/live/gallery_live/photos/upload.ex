@@ -350,7 +350,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   defp start_photo_processing(%{album: %{is_proofing: true}} = photo, %{watermark: nil} = gallery) do
     %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
-    ProcessingManager.start(photo, Watermark.build(name))
+    ProcessingManager.start(photo, Watermark.build(name, gallery))
   end
 
   defp start_photo_processing(photo, %{watermark: watermark}) do

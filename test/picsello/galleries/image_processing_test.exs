@@ -1,22 +1,31 @@
 defmodule Picsello.Galleries.ImageProcessingTest do
-  use ExUnit.Case, async: true
+  use Picsello.DataCase
 
   alias Picsello.Galleries.Photo
   alias Picsello.Galleries.PhotoProcessing.Context
   alias Picsello.Galleries.Watermark
 
-  @gallery_id 1234
   @original_path "test/path/here"
 
-  setup_all do
+  setup do
+    organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
+    gallery =
+        insert(:gallery,
+          job:
+            insert(:lead,
+              client: insert(:client, organization: organization)
+            )
+        )
+    insert(:global_gallery_settings, organization: organization)
     [
-      photo: %Photo{gallery_id: @gallery_id, original_url: @original_path, name: "test.jpg"},
-      watermark: %Watermark{gallery_id: @gallery_id, type: "image"}
+      photo: %Photo{gallery_id: gallery.id, original_url: @original_path, name: "test.jpg"},
+      watermark: %Watermark{gallery_id: gallery.id, type: "image"},
+      gallery: gallery
     ]
   end
 
   describe "fix image processing data structures" do
-    test "simple task", %{photo: photo} do
+    test "simple task", %{photo: photo, gallery: gallery} do
       assert match?(
                %{
                  "bucket" => _,
@@ -27,10 +36,10 @@ defmodule Picsello.Galleries.ImageProcessingTest do
                task = Context.simple_task_by_photo(photo)
              )
 
-      assert task["previewPath"] |> String.starts_with?("galleries/#{@gallery_id}/preview/")
+      assert task["previewPath"] |> String.starts_with?("galleries/#{gallery.id}/preview/")
     end
 
-    test "full task", %{photo: photo, watermark: watermark} do
+    test "full task", %{photo: photo, watermark: watermark, gallery: gallery} do
       assert match?(
                %{
                  "bucket" => _,
@@ -45,13 +54,13 @@ defmodule Picsello.Galleries.ImageProcessingTest do
                task = Context.full_task_by_photo(photo, watermark)
              )
 
-      assert task["previewPath"] |> String.starts_with?("galleries/#{@gallery_id}/preview/")
+      assert task["previewPath"] |> String.starts_with?("galleries/#{gallery.id}/preview/")
 
       assert task["watermarkedOriginalPath"]
-             |> String.starts_with?("galleries/#{@gallery_id}/watermarked/")
+             |> String.starts_with?("galleries/#{gallery.id}/watermarked/")
 
       assert task["watermarkedPreviewPath"]
-             |> String.starts_with?("galleries/#{@gallery_id}/watermarked_preview/")
+             |> String.starts_with?("galleries/#{gallery.id}/watermarked_preview/")
     end
 
     test "image watermark task", %{photo: photo, watermark: watermark} do

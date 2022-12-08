@@ -38,21 +38,6 @@ defmodule Picsello.GlobalGallerySettingsTest do
     |> assert_flash(:success, text: "Setting Updated")
   end
 
-  test "set expiration date of galleries to never expires", %{session: session, gallery: gallery, global_gallery_settings: global_gallery_settings} do
-    gallery |> Ecto.Changeset.change(%{expired_at: ~U[2022-11-15 18:53:19Z]}) |> Repo.update!()
-    gallery = gallery |> Repo.reload()
-    session
-    |> visit("/galleries")
-    |> click(css("#gallery-settings"))
-    |> click(css("#neverExpire"))
-    |> click(css("#saveGalleryExpiration"))
-    |> click(button("Yes, set galleries to never expire"))
-    gallery = gallery |> Repo.reload()
-    global_gallery_settings = global_gallery_settings |> Repo.reload()
-    assert %{expired_at: nil} = gallery
-    assert %{expiration_days: 0} = global_gallery_settings
-  end
-
   test "creates watermark", %{global_gallery_settings: global_gallery_settings, gallery: gallery} do
     global_watermark_change = GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{watermark_text: "Watermark"})
     global_gallery_settings
@@ -112,7 +97,7 @@ defmodule Picsello.GlobalGallerySettingsTest do
       Galleries.save_gallery_watermark(gallery, attr)
     assert text_watermark.id == image_watermark.id
   end
-  
+
   test "preloads watermark", %{gallery: gallery} do
     global_watermark_change = GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{watermark_text: "Watermark"})
     attr =

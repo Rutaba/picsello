@@ -820,7 +820,7 @@ defmodule Picsello.Galleries do
     |> Map.get(:photos)
     |> Enum.reduce({[], []}, fn
       %{album: %{is_proofing: true}} = photo, acc ->
-        ProcessingManager.start(photo, Watermark.build(name))
+        ProcessingManager.start(photo, Watermark.build(name, gallery))
         acc
 
       photo, {photo_ids, oban_jobs} ->

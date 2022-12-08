@@ -466,10 +466,12 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
-  def global_gallery_settings_factory do
+  def global_gallery_settings_factory(attrs) do
     %GlobalGallerySettings{}
     |> GlobalGallerySettings.expiration_changeset(%{})
     |> Ecto.Changeset.apply_changes()
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
   end
 
   def watermark_factory(attrs) do
