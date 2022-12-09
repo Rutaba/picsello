@@ -12,7 +12,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
     photographer = Galleries.gallery_photographer(gallery)
     current_user = Map.get(conn.assigns, :current_user)
 
-    if current_user && photographer.id == current_user.id do
+    if current_user && photographer && photographer.id == current_user.id do
       parse_and_download(conn, gallery, photo_ids)
     else
       conn |> put_view(ErrorView) |> render("403.html")

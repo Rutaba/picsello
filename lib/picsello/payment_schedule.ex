@@ -11,7 +11,7 @@ defmodule Picsello.PaymentSchedule do
     field :description, :string
     field :stripe_payment_intent_id, :string
     field :stripe_session_id, :string
-    field :type, :string
+    field :type, :string, default: "stripe"
     field :is_with_cash, :boolean
     belongs_to :job, Picsello.Job
 
