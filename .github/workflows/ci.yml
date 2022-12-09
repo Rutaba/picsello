@@ -57,16 +57,13 @@ jobs:
       - test_5-6
       - test_6-6
     runs-on: ubuntu-latest
-    # actions.read permission is required.
     permissions:
       actions: 'read'
     steps:
       - name: Slack Workflow Notification
         uses: Gamesight/slack-workflow-status@master
         with:
-          # Required Input
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           slack_webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-          # Optional Input
           name: 'Picsello CI'
           icon_emoji: ':camera:'

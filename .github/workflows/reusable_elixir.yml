@@ -12,7 +12,6 @@ on:
 
 env:
   GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 }}
-  MSG_MINIMAL: ref,commit
   PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE: 'Cost of Living Adjustments!A1:B51'
   PACKAGES_CALCULATOR_PRICES_RANGE: 'Sheet1!A1:E200'
   PACKAGES_CALCULATOR_SHEET_ID: '1o-jjICzCgevEyf4Kw5keOyTEu8IK5EgfOXfeV_lSMVI'
@@ -23,10 +22,6 @@ env:
   PUBLIC_BUCKET: 'test-profiles'
   SENDGRID_MARKETING_UNSUBSCRIBE_ID: '1234'
   SHELL: /usr/bin/bash
-  SLACK_ICON_EMOJI: ':camera:'
-  SLACK_MESSAGE: ${{github.event.workflow_run.html_url}}
-  SLACK_USERNAME: Picsello CI
-  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
   MIX_ENV: test
 
 permissions:
@@ -97,7 +92,11 @@ jobs:
             priv/plts
 
       - name: Install dependencies
+        if: steps.cache-elixir-deps.outputs.cache-hit != 'true'
         run: mix deps.get
+
+      - name: Compile deps for tests
+        run: mix deps.compile
 
       - name: Compile code for tests
         run: mix compile --warnings-as-errors
