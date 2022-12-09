@@ -27,6 +27,7 @@ env:
   SLACK_MESSAGE: ${{github.event.workflow_run.html_url}}
   SLACK_USERNAME: Picsello CI
   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  MIX_ENV: test
 
 permissions:
   contents: read
@@ -58,6 +59,33 @@ jobs:
         with:
           elixir-version: '1.12.3' # Define the elixir version [required]
           otp-version: '24.1.4' # Define the OTP version [required]
+      - name: Cache deps
+        id: cache-deps
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-elixir-deps
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ env.cache-name }}-
+      - name: Cache compiled build
+        id: cache-build
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-compiled-build
+        with:
+          path: _build
+          key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ env.cache-name }}-
+            ${{ runner.os }}-mix-
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile code for tests
+        run: mix compile --warnings-as-errors
+      - name: Run Credo
+        run: mix credo
       # Don't cache PLTs based on mix.lock hash, as Dialyzer can incrementally update even old ones
       # Cache key based on Elixir & Erlang version (also useful when running in matrix)
       - name: Restore PLT cache
@@ -70,19 +98,10 @@ jobs:
             ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
           path: |
             priv/plts
-      - name: Install dependencies
-        if: steps.plt_cache.outputs.cache-hit != 'true'
-        run: mix deps.get
       # Create PLTs if no cache was found
       - name: Create PLTs
         if: steps.plt_cache.outputs.cache-hit != 'true'
         run: mix dialyzer --plt
-      - name: Compile deps for tests
-        run: MIX_ENV=test mix deps.compile
-      - name: Compile code for tests
-        run: MIX_ENV=test mix compile --warnings-as-errors
-      - name: Run Credo
-        run: MIX_ENV=test mix credo
       - name: Run Dialyzer
         run: mix dialyzer
       - uses: actions/setup-node@v3
