@@ -70,13 +70,13 @@ jobs:
             ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
           path: |
             priv/plts
+      - name: Install dependencies
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        run: mix deps.get
       # Create PLTs if no cache was found
       - name: Create PLTs
         if: steps.plt_cache.outputs.cache-hit != 'true'
         run: mix dialyzer --plt
-      - name: Install dependencies
-        if: steps.cache-mix.outputs.cache-hit != 'true'
-        run: mix deps.get
       - name: Compile deps for tests
         run: MIX_ENV=test mix deps.compile
       - name: Compile code for tests
