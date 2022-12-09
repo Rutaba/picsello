@@ -1,0 +1,30 @@
+<div class="flex item flex-col" id={"photo-item-#{@photo.id}"} style={wrapper_style(@photo_width, @photo)}>
+    <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
+        <div class="galleryItem toggle-parent">
+            <div id={"img-#{@id}"} class="galleryItem" phx-click="click" phx-value-preview_photo_id={@photo.id}>
+                <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo, proofing_client_view?: @is_proofing)}/>
+            </div>
+            <%= if !@is_proofing do %>
+                <button
+                    class="likeBtn"
+                    phx-click={js_like_click(@id, @myself)}
+                >
+                    <div id={"photo-#{@id}-liked"} style={!@is_liked && "display: none"}>
+                        <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
+                    </div>
+
+                    <div id={"photo-#{@id}-to-like"} style={@is_liked && "display: none"}>
+                        <.icon
+                        name="heart-white"
+                        class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"
+                        />
+                    </div>
+                </button>
+            <% else %>
+                <button class={"absolute opacity-100 z-10 right-3 bottom-3 #{!@photo.is_selected && 'hidden'}"}>
+                    <.icon name="star" class="text-gray-200 w-7 h-7"/>
+                </button>
+            <% end %>
+        </div>
+    </div>
+</div>

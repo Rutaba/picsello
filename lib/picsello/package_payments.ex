@@ -34,7 +34,7 @@ defmodule Picsello.PackagePayments do
   def delete_job_payment_schedules(nil), do: Ecto.Multi.new()
 
   def delete_job_payment_schedules(job_id) do
-    query = from(p in PaymentSchedule, where: p.job_id == ^job_id)
+    query = from(p in PaymentSchedule, where: p.job_id == ^job_id and p.type == "stripe")
 
     Ecto.Multi.new()
     |> Ecto.Multi.delete_all(:delete_job_payments, query)
@@ -50,6 +50,7 @@ defmodule Picsello.PackagePayments do
         |> Enum.map(
           &%{
             job_id: job_id,
+            type: "stripe",
             price: get_price(&1, opts.total_price),
             due_at: &1.schedule_date,
             description: &1.description,

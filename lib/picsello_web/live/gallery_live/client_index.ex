@@ -16,7 +16,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     Orders
   }
 
-  alias PicselloWeb.GalleryLive.Photos.Photo
+  alias PicselloWeb.GalleryLive.Photos.Photo.ClientPhoto
   alias PicselloWeb.GalleryLive.Shared.DownloadLinkComponent
 
   @per_page 12
