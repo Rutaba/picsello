@@ -1015,6 +1015,17 @@ defmodule Picsello.Galleries do
   def min_price(category) do
     category
     |> Picsello.WHCC.min_price_details()
+    |> evaluate_price()
+  end
+
+  def max_price(category) do
+    category
+    |> Picsello.WHCC.max_price_details()
+    |> evaluate_price()
+  end
+
+  defp evaluate_price(details) do
+    details
     |> Picsello.Cart.Product.new()
     |> Picsello.Cart.Product.example_price()
   end

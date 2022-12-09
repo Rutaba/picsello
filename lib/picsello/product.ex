@@ -2,6 +2,7 @@ defmodule Picsello.Product do
   @moduledoc false
   use Ecto.Schema
   use StructAccess
+  alias Picsello.Repo
   import Ecto.Query, only: [from: 2, join: 5, with_cte: 3, order_by: 3, select: 3]
 
   @attributes_with_markups_cte """
@@ -67,6 +68,79 @@ defmodule Picsello.Product do
   group by
     product_id
   """
+ @uniquely_priced_selections """
+  with
+   attribute_categories as (
+    select
+      products.id as product_id,
+      _id as category_id,
+      attributes.id as attribute_id,
+      "pricingRefs" as pricing_refs,
+      pricing
+    from
+      products,
+      jsonb_to_recordset(products.attribute_categories) as attribute_categories(attributes jsonb, _id text, "pricingRefsKey" jsonb),
+      jsonb_to_recordset(attribute_categories.attributes) as attributes(
+        id text,
+        "pricingRefs" jsonb,
+        "pricing" jsonb,
+        metadata jsonb
+      )
+    where
+      attribute_categories."pricingRefsKey" is not null
+      or attributes.pricing is not null
+      or jsonb_path_exists(
+        products.attribute_categories,
+        '$[*].pricingRefsKey.keys ? (exists(@[*] ? (@ == $category_id)))',
+        jsonb_build_object('category_id', _id)
+      )
+  ),
+  keyed_attribute_categories as (
+    select
+      product_id,
+      category_id,
+      attribute_id,
+      jsonb_object_agg(refs.key, refs.value -> 'base' -> 'value') as pricing_key
+    from
+      attribute_categories,
+      jsonb_each(pricing_refs) as refs
+    group by
+      1,
+      2,
+      3
+  union
+    select
+      product_id,
+      category_id,
+      attribute_id,
+      pricing -> 'base' -> 'value' as pricing_key
+    from
+      attribute_categories
+    where
+      pricing is not null and pricing_refs is null
+  union
+    select
+      product_id,
+      category_id,
+      attribute_id,
+      jsonb_build_object('id', attribute_id) as pricing_key
+    from
+      attribute_categories
+    where
+      pricing is null
+      and pricing_refs is null
+  )
+  select
+    category_id,
+    (array_agg(attribute_id)) [1] as attribute_id,
+    string_agg(attribute_id, ', ') as name
+  from
+    keyed_attribute_categories
+  where product_id = $1
+  group by
+    category_id,
+    pricing_key
+  """
 
   schema "products" do
     field :api, :map
@@ -106,4 +180,84 @@ defmodule Picsello.Product do
       | variations: variation.variations
     })
   end
+
+  def selections_with_prices(product) do
+    selections = selections(product)
+
+    categories = multi_value_categories(selections)
+
+    rows =
+      for row_with_names <- selections do
+        row = for({k, %{id: id}} <- row_with_names, into: %{}, do: {k, id})
+
+        unit_price = Picsello.WHCC.Product.selection_unit_price(product, row)
+
+        %{
+          shipping_base_charge: shipping_base,
+          unit_markup: markup,
+          shipping_upcharge: shipping_upcharge
+        } =
+          product =
+          product
+          |> Picsello.WHCC.price_details(%{selections: row}, %{
+            unit_base_price: unit_price,
+            quantity: 1
+          })
+          |> Picsello.Cart.Product.new()
+
+        client_price = Picsello.Cart.Product.example_price(product)
+
+        [
+          client_price,
+          Money.add(shipping_base, Money.multiply(unit_price, shipping_upcharge)),
+          unit_price,
+          markup,
+          Money.subtract(
+            client_price,
+            Picsello.Cart.Product.example_price(%{product | round_up_to_nearest: 1})
+          )
+        ] ++
+          for(category_id <- categories, do: get_in(row_with_names, [category_id, :name]))
+      end
+
+    {categories, rows}
+  end
+
+  defp multi_value_categories(selections) do
+    for selection <- selections, reduce: %{} do
+      acc ->
+        Map.merge(acc, selection, fn
+          _k, v1, v2 when is_list(v1) -> [v2 | v1]
+          _k, v1, v2 -> [v1, v2]
+        end)
+    end
+    |> Enum.filter(&(&1 |> elem(1) |> Enum.uniq() |> length > 1))
+    |> Enum.into(%{})
+    |> Map.keys()
+  end
+
+  defp selections(%{id: product_id}) do
+    %{rows: rows} = Ecto.Adapters.SQL.query!(Repo, @uniquely_priced_selections, [product_id])
+
+    name_map =
+      Enum.group_by(rows, &hd/1, &tl/1)
+      |> Enum.map(fn {category_id, values} ->
+        {category_id, values |> Enum.map(&List.to_tuple/1) |> Enum.into(%{})}
+      end)
+      |> Enum.into(%{})
+
+    for({category_id, attributes} <- name_map, do: {category_id, Map.keys(attributes)})
+    |> do_selections()
+    |> Enum.map(fn selection ->
+      Enum.map(selection, fn {category_id, attribute_id} ->
+        {category_id, %{id: attribute_id, name: get_in(name_map, [category_id, attribute_id])}}
+      end)
+      |> Enum.into(%{})
+    end)
+  end
+
+  defp do_selections([{key, values}]), do: for(value <- values, do: [{key, value}])
+
+  defp do_selections([{key, values} | tail]),
+    do: for(selections <- do_selections(tail), value <- values, do: [{key, value} | selections])
 end

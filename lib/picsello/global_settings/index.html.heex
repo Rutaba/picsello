@@ -31,16 +31,23 @@
       <div class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
           <.nav_item open?={@is_expiration_date?} item_title="Expiration Date" event_name="select_expiration" />
           <.nav_item open?={@watermark_option} item_title="Watermark" event_name="select_watermark" />
-          <.nav_item open?={false} item_title="Product Settings & Prices" />
+          <.nav_item open?={@product_section?} print_price_section?={@print_price_section?} item_title="Product Settings & Prices" event_name="select_product" />
       </div>
     </div>
 
     <div class="flex-1 sm:ml-8">
-      <%= if(@is_expiration_date?) do %>
+      <%= if @is_expiration_date? do %>
         <.expiration_section {assigns} />
       <% end %>
-      <%= if(@watermark_option) do %>
+      <%= if @watermark_option do %>
         <.watermark_section {assigns} />
+      <% end %>
+      <%= if @product_section? && !@print_price_section? do %>
+        <.live_component id="products" module={ProductComponent} organization_id={@current_user.organization_id} />
+      <% end %>
+
+      <%= if @product_section? && @print_price_section? do %>
+        <.live_component id="print_pricing" module={PrintProductComponent} product={@product} />
       <% end %>
     </div>
   </div>

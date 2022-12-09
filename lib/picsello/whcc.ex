@@ -177,13 +177,22 @@ defmodule Picsello.WHCC do
     products
     |> Enum.map(&{&1, cheapest_selections(&1)})
     |> Enum.min_by(fn {_, %{price: price}} -> price end)
-    |> then(fn {product, %{price: price} = details} ->
-      price_details(
-        %{product | category: category},
-        details,
-        %{unit_base_price: price, quantity: 1}
-      )
-    end)
+    |> evaluate_price_details(category)
+  end
+
+  def max_price_details(%{products: [_ | _] = products} = category) do
+    products
+    |> Enum.map(&{&1, cheapest_selections(&1)})
+    |> Enum.max_by(fn {_, %{price: price}} -> price end)
+    |> evaluate_price_details(category)
+  end
+
+  defp evaluate_price_details({product, %{price: price} = details}, category) do
+    price_details(
+      %{product | category: category},
+      details,
+      %{unit_base_price: price, quantity: 1}
+    )
   end
 
   defp variations(%{variations: variations}),

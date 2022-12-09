@@ -1,0 +1,26 @@
+<div>
+  <.crumbs class="text-base text-base-250">
+    <:crumb to="">Product Settings</:crumb>
+    <:crumb>Print Pricing</:crumb>
+  </.crumbs>
+  <div class="flex flex-row lg:px-0 px-6 items-center" {intro_hints_only("intro_hints_only")}>
+    <button phx-click="back_to_products" class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4 md:block">
+      <.icon name="back" class="w-4 h-4 stroke-2"/>
+    </button>
+    <span class="font-sans lg:text-2xl text-3xl font-black" >
+      Print Pricing
+    </span>
+    <.intro_hint class="ml-2 hidden lg:block" content="Print Prices"/>
+  </div>
+  <div>
+    <div class="py-2 font-normal text-base-250">
+      So there are no surprises, the base costs include shipping with the wholesale costs for fine art and
+      photo prints. Adjust the final price to set the profit that makes sense for your business and client needs.
+    </div>
+  </div>
+  <div class="center-container flex flex-col gap-4">
+    <%= for product <- @products do %>
+        <.print_item title={product.whcc_name} product={product} selections={@selections} myself={@myself} print_products_map={@print_products_map} {assigns}/>
+    <% end %>
+  </div>
+</div>
