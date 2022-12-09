@@ -83,12 +83,11 @@ jobs:
             ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
           path: |
             priv/plts
-      # Create PLTs if no cache was found
+      - name: Compile code for tests
+        run: mix compile --warnings-as-errors
       - name: Create PLTs
         if: steps.plt_cache.outputs.cache-hit != 'true'
         run: mix dialyzer --plt
-      - name: Compile code for tests
-        run: mix compile --warnings-as-errors
       - name: Run Credo
         run: mix credo
       - name: Run Dialyzer
