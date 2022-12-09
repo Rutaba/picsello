@@ -4,19 +4,25 @@ defmodule Picsello.PricingCalculations do
     Repo,
     Organization,
     PricingCalculatorTaxSchedules,
-    PricingCalculatorBusinessCosts,
-    Packages.BasePrice,
-    Packages.CostOfLivingAdjustment
+    PricingCalculatorBusinessCosts
   }
 
   import Ecto.Changeset
-  import Ecto.Query
 
   use Ecto.Schema
 
-  import Picsello.Repo.CustomMacros
-
-  @zipcode_regex ~r/^\d{5}([-]|\s*)?(\d{4})?$/
+  @total_hours_by_shoot %{
+    boudoir: 27.94,
+    event: 27.94,
+    family: 18.97,
+    headshot: 10.4,
+    maternity: 18.97,
+    mini: 10.4,
+    other: 10.4,
+    newborn: 27.94,
+    portrait: 18.97,
+    wedding: 66.57
+  }
 
   defmodule LineItem do
     @moduledoc false
@@ -53,32 +59,15 @@ defmodule Picsello.PricingCalculations do
     end
   end
 
-  @days_of_the_week [
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-    "sunday"
-  ]
-
   schema "pricing_calculations" do
     belongs_to(:organization, Organization)
-    field(:average_time_per_week, :integer)
-
-    field(:average_days_per_week, {:array, :string}, values: @days_of_the_week)
-
+    field(:average_time_per_week, :integer, default: 0)
     field(:desired_salary, Money.Ecto.Amount.Type)
     field(:tax_bracket, :integer)
     field(:after_income_tax, Money.Ecto.Amount.Type)
     field(:self_employment_tax_percentage, :decimal)
     field(:take_home, Money.Ecto.Amount.Type)
     field(:job_types, {:array, :string})
-    field(:schedule, :string)
-    field(:min_years_experience, :integer)
-    field(:state, :string)
-    field(:zipcode, :string)
     embeds_many(:business_costs, BusinessCost)
     embeds_many(:pricing_suggestions, PricingSuggestion)
 
@@ -90,23 +79,18 @@ defmodule Picsello.PricingCalculations do
     |> cast(attrs, [
       :organization_id,
       :job_types,
-      :state,
-      :min_years_experience,
-      :schedule,
-      :zipcode,
       :after_income_tax,
-      :average_days_per_week,
       :average_time_per_week,
       :desired_salary,
       :self_employment_tax_percentage,
       :tax_bracket,
       :take_home
     ])
-    |> validate_required([:job_types, :state, :min_years_experience])
-    |> maybe_validate_zipcode()
+    |> validate_required([:job_types, :average_time_per_week])
     |> validate_number(:average_time_per_week,
+      greater_than_or_equal_to: 1,
       less_than_or_equal_to: 168,
-      message: "There are not that many hours in a week"
+      message: "Must be between 1 and 168 hours"
     )
     |> Picsello.Package.validate_money(:desired_salary,
       greater_than_or_equal_to: 0,
@@ -115,18 +99,6 @@ defmodule Picsello.PricingCalculations do
     )
     |> cast_embed(:business_costs, with: &business_cost_changeset(&1, &2))
     |> cast_embed(:pricing_suggestions, with: &pricing_suggestions_changeset(&1, &2))
-  end
-
-  defp maybe_validate_zipcode(changeset) do
-    state = get_field(changeset, :state)
-
-    if Picsello.Onboardings.non_us_state?(state) do
-      changeset
-    else
-      changeset
-      |> validate_required([:zipcode])
-      |> validate_format(:zipcode, @zipcode_regex, message: "is invalid")
-    end
   end
 
   defp business_cost_changeset(business_cost, attrs) do
@@ -179,15 +151,13 @@ defmodule Picsello.PricingCalculations do
   def get_income_bracket(value) do
     %{income_brackets: income_brackets} = tax_schedule()
 
-    scrub_input =
-      case value do
-        "$" -> Money.new(0)
-        nil -> Money.new(0)
-        _ -> value
-      end
-
     income_brackets
-    |> Enum.find(fn bracket -> find_income_tax_bracket?(bracket, scrub_input) end)
+    |> Enum.find(fn bracket ->
+      find_income_tax_bracket?(
+        bracket,
+        scrub_money_input(value)
+      )
+    end)
   end
 
   def calculate_after_tax_income(
@@ -222,15 +192,15 @@ defmodule Picsello.PricingCalculations do
         } = income_bracket,
         "" <> desired_salary_text
       ) do
-    scrub_input =
-      case desired_salary_text do
-        "$" -> "$0.00"
-        _ -> desired_salary_text
-      end
+    calculate_after_tax_income(
+      income_bracket,
+      scrub_money_input(desired_salary_text)
+    )
+  end
 
-    {:ok, desired_salary} = Money.parse(scrub_input)
-
-    calculate_after_tax_income(income_bracket, desired_salary)
+  def calculate_tax_amount(desired_salary, take_home) do
+    scrub_money_input(desired_salary)
+    |> Money.subtract(take_home)
   end
 
   def calculate_take_home_income(percentage, after_tax_income),
@@ -240,15 +210,8 @@ defmodule Picsello.PricingCalculations do
 
   def calculate_monthly(%Money{amount: amount}), do: Money.new(div(amount, 12))
 
-  def calculate_monthly(amount) do
-    scrub_input =
-      case amount do
-        "$" -> "$0.00"
-        nil -> "$0.00"
-        _ -> amount
-      end
-
-    Money.parse!(scrub_input)
+  def calculate_monthly(yearly_cost) do
+    scrub_money_input(yearly_cost)
     |> Money.divide(12)
     |> List.first()
   end
@@ -272,15 +235,6 @@ defmodule Picsello.PricingCalculations do
 
   def tax_schedule(),
     do: Repo.get_by(PricingCalculatorTaxSchedules, active: true)
-
-  def state_options(),
-    do:
-      from(adjustment in Picsello.Packages.CostOfLivingAdjustment,
-        select: adjustment.state,
-        order_by: adjustment.state
-      )
-      |> Repo.all()
-      |> Enum.map(&{&1, &1})
 
   defp busines_cost_map(
          %{
@@ -310,8 +264,10 @@ defmodule Picsello.PricingCalculations do
   def calculate_revenue(
         desired_salary,
         costs
-      ),
-      do: Money.add(desired_salary, costs)
+      ) do
+    scrub_money_input(desired_salary)
+    |> Money.add(costs)
+  end
 
   def calculate_all_costs(business_costs) do
     business_costs
@@ -334,14 +290,7 @@ defmodule Picsello.PricingCalculations do
   def calculate_costs_by_category(_line_items, %{"line_items" => line_items} = _params) do
     line_items
     |> Enum.map(fn {_k, %{"yearly_cost" => yearly_cost}} ->
-      scrub_input =
-        case yearly_cost do
-          "$" -> "$0.00"
-          "" -> "$0.00"
-          _ -> yearly_cost
-        end
-
-      %{yearly_cost: Money.parse!(scrub_input, :USD)}
+      %{yearly_cost: scrub_money_input(yearly_cost)}
     end)
     |> calculate_costs_by_category()
   end
@@ -350,47 +299,61 @@ defmodule Picsello.PricingCalculations do
     do: calculate_costs_by_category(line_items)
 
   def calculate_pricing_by_job_types(%{
-        min_years_experience: min_years_experience,
-        state: state,
-        schedule: schedule,
-        job_types: job_types
+        job_types: job_types,
+        average_time_per_week: average_time_per_week,
+        desired_salary: desired_salary
       }) do
-    full_time = schedule == :full_time
-    nearest = 500
+    job_types
+    |> Enum.map(fn job_type ->
+      shoots_per_year =
+        calculate_shoots_per_year(
+          scrub_time_per_week(%{average_time_per_week: average_time_per_week}),
+          job_type
+        )
 
-    min_years_query =
-      from(base in BasePrice,
-        select: max(base.min_years_experience),
-        where: base.min_years_experience <= ^min_years_experience
-      )
+      base_price = calculate_shoot_base_price(desired_salary, shoots_per_year)
+      shoots_per_year = shoots_per_year |> Decimal.round(0, :ceiling)
 
-    from(base in BasePrice,
-      where:
-        base.full_time == ^full_time and base.job_type in ^job_types and
-          base.min_years_experience in subquery(min_years_query),
-      join: adjustment in CostOfLivingAdjustment,
-      on: adjustment.state == ^state,
-      group_by: base.job_type,
-      select: %{
-        record_count: count(base.job_type),
-        job_type: base.job_type,
-        base_price:
-          cast_money(
-            avg(
-              type(
-                nearest(adjustment.multiplier * base.base_price, ^nearest),
-                base.base_price
-              )
-            )
-          ),
-        shoot_count: type(avg(base.shoot_count), :integer),
-        max_session_per_year: type(avg(base.max_session_per_year), :integer),
-        max_session_per_month: type(avg(base.max_session_per_year / 12), :integer)
+      %{
+        job_type: job_type,
+        base_price: calculate_shoot_base_price(desired_salary, shoots_per_year),
+        max_session_per_year: shoots_per_year |> Decimal.round(0, :ceiling),
+        actual_salary: calculate_actual_salary(base_price, shoots_per_year)
       }
-    )
-    |> Repo.all()
+    end)
   end
 
-  def calculate_min_sessions_a_year(%Money{amount: gross_revenue}, %Money{amount: base_price}),
-    do: div(gross_revenue, base_price)
+  defp calculate_actual_salary(base_price, shoots_per_year),
+    do: Money.multiply(base_price, shoots_per_year)
+
+  defp calculate_shoots_per_year(average_time_per_week, job_type) do
+    (calculate_hours_per_year(average_time_per_week) / get_shoot_hours_by_job_type(job_type))
+    |> Decimal.from_float()
+  end
+
+  defp calculate_hours_per_year(average_time_per_week),
+    do: average_time_per_week * 49
+
+  defp get_shoot_hours_by_job_type(job_type),
+    do: Map.fetch!(@total_hours_by_shoot, String.to_atom(job_type))
+
+  defp calculate_shoot_base_price(desired_salary, shoots_per_year) do
+    scrub_money_input(desired_salary)
+    |> Money.to_decimal()
+    |> Decimal.div(shoots_per_year)
+    |> Money.parse!()
+  end
+
+  defp scrub_time_per_week(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, [:average_time_per_week])
+    |> Ecto.Changeset.get_field(:average_time_per_week)
+  end
+
+  defp scrub_money_input(value) do
+    case Money.Ecto.Amount.Type.cast(value) do
+      {:ok, value} -> value
+      _ -> Money.new(0)
+    end
+  end
 end

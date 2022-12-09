@@ -20,9 +20,16 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       match?(%{shoot: %{address: address}} when not is_nil(address), assigns)
     end)
     |> assign_changeset(%{}, nil)
-    |> assign(package_payment_schedules: preload_package_payment_schedules(job.package))
-    |> assign(payment_schedules: preload_payment_schedules(job))
-    |> assign(x_shoots: Shoot.for_job(job.id) |> Repo.all())
+    |> then(fn %{assigns: %{job: %{job_status: job_status}}} = socket ->  
+      if job_status.is_lead do
+        socket
+        |> assign(package_payment_schedules: preload_package_payment_schedules(job.package))
+        |> assign(payment_schedules: preload_payment_schedules(job))
+        |> assign(x_shoots: Shoot.for_job(job.id) |> Repo.all())    
+      else
+        socket
+      end
+    end)    
     |> ok()
   end
 
@@ -94,7 +101,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   def handle_event(
         "save",
         %{"shoot" => params},
-        socket
+        %{assigns: %{job: %{job_status: job_status}}} = socket
       ) do
     socket
     |> build_changeset(params |> Enum.into(%{"address" => nil}))
@@ -102,23 +109,27 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       Multi.new()
       |> Multi.insert_or_update(:shoot, changeset)
       |> Multi.merge(fn _ ->
-        {updated_package_payment_schedules, updated_payment_schedules} = get_schedules(socket)
+        if job_status.is_lead do
+          {updated_package_payment_schedules, updated_payment_schedules} = get_schedules(socket)
 
-        Multi.new()
-        |> Multi.insert_all(
-          :package_payment_schedules,
-          PackagePaymentSchedule,
-          updated_package_payment_schedules,
-          on_conflict: {:replace, [:schedule_date]},
-          conflict_target: :id
-        )
-        |> Multi.insert_all(
-          :job_payment_schedules,
-          PaymentSchedule,
-          updated_payment_schedules,
-          on_conflict: {:replace, [:due_at]},
-          conflict_target: :id
-        )
+          Multi.new()
+          |> Multi.insert_all(
+            :package_payment_schedules,
+            PackagePaymentSchedule,
+            updated_package_payment_schedules,
+            on_conflict: {:replace, [:schedule_date]},
+            conflict_target: :id
+          )
+          |> Multi.insert_all(
+            :job_payment_schedules,
+            PaymentSchedule,
+            updated_payment_schedules,
+            on_conflict: {:replace, [:due_at]},
+            conflict_target: :id
+          )
+        else
+          Multi.new()
+        end
       end)
       |> Repo.transaction()
       |> then(fn
@@ -144,10 +155,10 @@ defmodule PicselloWeb.ShootLive.EditComponent do
          changeset: changeset
        }) do
     cond do
-      current_status != :not_sent && Changeset.get_change(changeset, :starts_at) ->
+      current_status not in [:not_sent, :imported] && Changeset.get_change(changeset, :starts_at) ->
         "Changing your shoot date after a proposal is sent or signed will result in your payment(s) being received at an earlier or later time depending on when you change it to."
 
-      shoot && Changeset.get_change(changeset, :starts_at) ->
+      shoot && current_status != :imported && Changeset.get_change(changeset, :starts_at) ->
         "Changing your shoot date will mean you may need to update or review your payment schedule."
 
       true ->

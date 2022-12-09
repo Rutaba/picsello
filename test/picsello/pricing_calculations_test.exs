@@ -54,23 +54,20 @@ defmodule Picsello.PricingCalculationsTest do
       ]
     }
 
-  def generate_base_pricing_calculation(user, zipcode \\ ""),
+  def generate_base_pricing_calculation(user, average_time_per_week \\ nil),
     do: %{
       organization_id: user.organization_id,
       job_types: user.organization.profile.job_types,
-      state: user.onboarding.state,
-      min_years_experience: user.onboarding.photographer_years,
-      schedule: Atom.to_string(user.onboarding.schedule),
       take_home: ~M[000],
       business_costs: PricingCalculations.cost_categories(),
       self_employment_tax_percentage:
         PricingCalculations.tax_schedule().self_employment_percentage,
       desired_salary: ~M[150000],
-      zipcode: zipcode
+      average_time_per_week: average_time_per_week
     }
 
   setup do
-    insert(:cost_of_living_adjustment)
+    # insert(:cost_of_living_adjustment)
 
     organization =
       insert(:organization,
@@ -95,13 +92,12 @@ defmodule Picsello.PricingCalculationsTest do
 
     user =
       insert(:user,
-        onboarding: %{schedule: :full_time, state: "OK", photographer_years: 3},
         organization: organization
       )
 
     pricing_calculation_changeset =
       PricingCalculations.changeset(
-        struct(PricingCalculations, generate_base_pricing_calculation(user, "98661")),
+        struct(PricingCalculations, generate_base_pricing_calculation(user, 40)),
         %{}
       )
 
@@ -112,7 +108,7 @@ defmodule Picsello.PricingCalculationsTest do
   end
 
   describe "create and modify changeset" do
-    test "creates default changeset with existing data but no zipcode", %{
+    test "creates default changeset with existing data but no average_time_per_week", %{
       user: user
     } do
       {:error, changeset} =
@@ -123,7 +119,7 @@ defmodule Picsello.PricingCalculationsTest do
         |> Repo.insert()
 
       assert %{
-               zipcode: ["can't be blank"]
+               average_time_per_week: ["can't be blank"]
              } = errors_on(changeset)
     end
 
@@ -359,10 +355,6 @@ defmodule Picsello.PricingCalculationsTest do
                  Picsello.Factory.tax_schedule_factory()
                )
                |> Picsello.Repo.insert!()
-    end
-
-    test "get state options" do
-      assert [{"OK", "OK"}] = PricingCalculations.state_options()
     end
 
     test "calculate_all_costs", %{pricing_calculation_changeset: pricing_calculation_changeset} do

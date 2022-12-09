@@ -1,9 +1,8 @@
 defmodule PicselloWeb.GalleryLive.ChooseBundle do
   @moduledoc "product info modal for digital bundle"
   use PicselloWeb, :live_component
-  import PicselloWeb.GalleryLive.Shared, only: [bundle_image: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [bundle_image: 1, cover_photo_url: 1]
   alias Picsello.{Cart, Galleries}
-  import Cart, only: [item_image_url: 1]
 
   def update(%{gallery: gallery} = assigns, socket) do
     socket
@@ -26,7 +25,7 @@ defmodule PicselloWeb.GalleryLive.ChooseBundle do
 
       <div class="flex-row w-full px-5 select-none grid lg:flex lg:h-full lg:overflow-y-auto lg:justify-between lg:px-0 lg:pl-16 xl:pl-20">
         <div class="w-full p-10 mb-5 choose-product-item h-96 lg:h-full lg:w-7/12 lg:mb-0">
-          <.bundle_image url={item_image_url({:bundle, @gallery})} />
+          <.bundle_image url={cover_photo_url(@gallery)} />
         </div>
 
         <div class="relative choose-product-item lg:w-5/12">
