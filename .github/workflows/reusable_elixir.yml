@@ -35,7 +35,7 @@ jobs:
   test:
 
     name: Build and test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     timeout-minutes: 45
 
     services:
@@ -51,14 +51,14 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Elixir
         uses: erlef/setup-elixir@885971a72ed1f9240973bd92ab57af8c1aa68f24
         with:
           elixir-version: '1.12.3' # Define the elixir version [required]
           otp-version: '24.1.4' # Define the OTP version [required]
       - name: Restore dependencies cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cache-mix
         with:
           path: |
@@ -78,7 +78,7 @@ jobs:
         run: MIX_ENV=test mix credo
       - name: Run Dialyzer
         run: mix dialyzer
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: '16.14.2' # WARNING: *must* match ../.node-version
           cache: 'npm'
@@ -89,7 +89,7 @@ jobs:
         run: MIX_TEST_PARTITION=${{ inputs.partition }} mix test --trace --cover --warnings-as-errors --partitions ${{ inputs.partitions }}
       - name: Archive screenshots
         if: ${{failure()}}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: screenshots
           path: |
