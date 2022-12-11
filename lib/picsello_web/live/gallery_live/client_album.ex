@@ -59,39 +59,6 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> assigns()
   end
 
-  defp assigns(%{assigns: %{album: album, gallery: gallery}} = socket) do
-    album = album |> Repo.preload(:photos)
-    gallery = gallery |> Repo.preload(:watermark)
-    gallery = Galleries.populate_organization_user(gallery)
-
-    if album.is_proofing && is_nil(gallery.watermark) do
-      %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
-
-      album.photos
-      |> Enum.filter(&is_nil(&1.watermarked_url))
-      |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name, gallery)))
-    end
-
-    socket
-    |> assign(
-      favorites_count: Galleries.gallery_favorites_count(gallery),
-      favorites_filter: false,
-      gallery: gallery,
-      album: album,
-      photos_count: Galleries.get_album_photo_count(gallery.id, album.id),
-      page: 0,
-      page_title: "Show Album",
-      download_all_visible: Orders.can_download_all?(gallery),
-      products: GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false),
-      update_mode: "append",
-      credits: Cart.credit_remaining(gallery) |> credits()
-    )
-    |> assign_cart_count(gallery)
-    |> assign_photos(@per_page)
-    |> push_event("reload_grid", %{})
-    |> noreply()
-  end
-
   @impl true
   def handle_event(
         "load-more",
@@ -200,28 +167,29 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   defp assigns(%{assigns: %{album: album, gallery: gallery}} = socket) do
     album = album |> Repo.preload(:photos)
-    gallery = gallery |> Repo.preload(:watermark) |> Galleries.populate_organization_user()
+    gallery = gallery |> Repo.preload(:watermark)
+    gallery = Galleries.populate_organization_user(gallery)
 
     if album.is_proofing && is_nil(gallery.watermark) do
       %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
 
       album.photos
       |> Enum.filter(&is_nil(&1.watermarked_url))
-      |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name)))
+      |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name, gallery)))
     end
 
     socket
     |> assign(
+      favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,
-      page: 0,
-      page_title: "Show Album",
-      update_mode: "append",
       gallery: gallery,
       album: album,
-      favorites_count: Galleries.gallery_favorites_count(gallery),
       photos_count: Galleries.get_album_photo_count(gallery.id, album.id),
+      page: 0,
+      page_title: "Show Album",
       download_all_visible: Orders.can_download_all?(gallery),
       products: GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false),
+      update_mode: "append",
       credits: Cart.credit_remaining(gallery) |> credits()
     )
     |> assign_cart_count(gallery)
