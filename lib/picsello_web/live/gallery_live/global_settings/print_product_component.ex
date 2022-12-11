@@ -28,9 +28,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
             <b class="text-lg">
               <%="#{@title}s"%>
             </b>
-            <div class={"flex ml-auto border rounded-lg items-center border-blue-planning-300 px-2 disabled:opacity-75 #{!open? && 'cursor-not-allowed'}"}>
+            <div class={"flex ml-auto border rounded-lg items-center border-blue-planning-300 px-2  cursor-pointer #{!open? && 'cursor-not-allowed pointer-events-none opacity-75'}"} phx-click="expand_product_all" phx-value-product_id={product.id} phx-target={@myself}>
               <.icon name="down" class={"#{icon_class} text-blue-planning-300 mr-3"} />
-              <span phx-click="expand_product_all" phx-value-product_id={product.id} phx-target={@myself} class={"cursor-pointer #{!open? && 'pointer-events-none'}"}>Expand All</span>
+              <span  class={"cursor-pointer #{!open? && 'pointer-events-none'}"}>Expand All</span>
             </div>
           </div>
           <div class={classes("grid grid-cols-4 p-2 pl-14 text-base-250", %{"text-base-300" => open?})}>

@@ -32,7 +32,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
   def full_task_by_photo(%Photo{} = photo, %Watermark{} = watermark) do
     gallery = Picsello.Repo.get_by!(Picsello.Galleries.Gallery, id: watermark.gallery_id)
     organization = load_organization(gallery)
-    global_settings = Picsello.Repo.get_by!(Picsello.GSGallery, organization_id: organization.id)
+    global_settings = Picsello.Repo.get_by!(GSGallery, organization_id: organization.id)
     watermark_path = path(gallery, global_settings, watermark, organization)
 
     %{

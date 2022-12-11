@@ -1,7 +1,8 @@
-defmodule Picsello.GlobalGallerySettingsTest do
+defmodule Picsello.GSGalleryTest do
   @moduledoc false
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Galleries, GlobalGallerySettings, Galleries.Watermark}
+  alias Picsello.{Galleries, Galleries.Watermark}
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Picsello.Repo
 
   setup :onboarded
@@ -46,7 +47,7 @@ defmodule Picsello.GlobalGallerySettingsTest do
 
   test "creates watermark", %{global_gallery_settings: global_gallery_settings, gallery: gallery} do
     global_watermark_change =
-      GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{
+      GSGallery.text_watermark_change(nil, %{
         watermark_text: "Watermark"
       })
 
@@ -79,7 +80,7 @@ defmodule Picsello.GlobalGallerySettingsTest do
     gallery: gallery
   } do
     global_text_watermark_change =
-      GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{
+      GSGallery.text_watermark_change(nil, %{
         watermark_text: "Watermark"
       })
 
@@ -105,7 +106,7 @@ defmodule Picsello.GlobalGallerySettingsTest do
     {:ok, %{watermark: text_watermark}} = Galleries.save_gallery_watermark(gallery, attr)
 
     global_image_watermark_change =
-      GlobalGallerySettings.global_gallery_image_watermark_change(global_gallery_settings, %{
+      GSGallery.image_watermark_change(global_gallery_settings, %{
         watermark_name: "hex.png",
         watermark_size: 12_345
       })
@@ -129,7 +130,7 @@ defmodule Picsello.GlobalGallerySettingsTest do
 
   test "preloads watermark", %{gallery: gallery} do
     global_watermark_change =
-      GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{
+      GSGallery.text_watermark_change(nil, %{
         watermark_text: "Watermark"
       })
 

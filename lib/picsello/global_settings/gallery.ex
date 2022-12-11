@@ -28,53 +28,36 @@ defmodule Picsello.GlobalSettings.Gallery do
 
   @image_attrs [:watermark_name, :watermark_size]
   @text_attrs [:watermark_text]
-  def expiration_changeset(global_gallery_settings, attrs) do
-    global_gallery_settings
+  def expiration_changeset(global_settings_gallery, attrs) do
+    global_settings_gallery
     |> cast(attrs, [:expiration_days])
   end
 
-  def global_gallery_watermark_change(nil),
-    do: Ecto.Changeset.change(%GSGallery{})
+  def watermark_change(nil), do: change(%GSGallery{})
 
-  def global_gallery_watermark_change(%GSGallery{} = global_gallery_settings),
-    do: Ecto.Changeset.change(global_gallery_settings)
+  def watermark_change(%GSGallery{} = global_settings_gallery),
+    do: change(global_settings_gallery)
 
-  def global_gallery_image_watermark_change(
-        %GSGallery{} = global_gallery_settings,
-        attrs
-      ),
-      do: GSGallery.watermark_image_changeset(global_gallery_settings, attrs)
+  def image_watermark_change(%GSGallery{} = global_settings_gallery, attrs),
+    do: watermark_image_changeset(global_settings_gallery, attrs)
 
-  def global_gallery_image_watermark_change(nil, attrs),
-    do:
-      GSGallery.watermark_image_changeset(
-        %GSGallery{},
-        attrs
-      )
+  def image_watermark_change(nil, attrs), do: watermark_image_changeset(%GSGallery{}, attrs)
 
-  def global_gallery_text_watermark_change(
-        %GSGallery{} = global_gallery_settings,
-        attrs
-      ),
-      do: GSGallery.watermark_text_changeset(global_gallery_settings, attrs)
+  def text_watermark_change(%GSGallery{} = global_settings_gallery, attrs),
+    do: watermark_text_changeset(global_settings_gallery, attrs)
 
-  def global_gallery_text_watermark_change(nil, attrs),
-    do:
-      GSGallery.watermark_text_changeset(
-        %GSGallery{},
-        attrs
-      )
+  def text_watermark_change(nil, attrs), do: watermark_text_changeset(%GSGallery{}, attrs)
 
-  def watermark_image_changeset(global_gallery_settings, attrs) do
-    global_gallery_settings
+  def watermark_image_changeset(global_settings_gallery, attrs) do
+    global_settings_gallery
     |> cast(attrs, @image_attrs)
     |> put_change(:watermark_type, "image")
     |> validate_required(@image_attrs)
     |> nilify_fields(@text_attrs)
   end
 
-  def watermark_text_changeset(global_gallery_settings, attrs) do
-    global_gallery_settings
+  def watermark_text_changeset(global_settings_gallery, attrs) do
+    global_settings_gallery
     |> cast(attrs, @text_attrs)
     |> put_change(:watermark_type, "text")
     |> validate_required(@text_attrs)
