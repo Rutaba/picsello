@@ -1,5 +1,5 @@
 defmodule Picsello.Repo.Migrations.CreateGlobalSettingsGalleryProduct do
-use Ecto.Migration
+  use Ecto.Migration
 
   def change do
     create table(:global_settings_gallery_products) do

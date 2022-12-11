@@ -7,8 +7,14 @@ defmodule Picsello.GlobalGallerySettingsTest do
   setup :onboarded
   setup :authenticated
   setup :authenticated_gallery
+
   setup %{gallery: gallery} do
-    global_gallery_settings = insert(:global_gallery_settings, expiration_days: 50, organization_id: gallery.job.client.organization.id)
+    global_gallery_settings =
+      insert(:global_gallery_settings,
+        expiration_days: 50,
+        organization_id: gallery.job.client.organization.id
+      )
+
     [
       gallery: gallery,
       global_gallery_settings: global_gallery_settings
@@ -39,10 +45,15 @@ defmodule Picsello.GlobalGallerySettingsTest do
   end
 
   test "creates watermark", %{global_gallery_settings: global_gallery_settings, gallery: gallery} do
-    global_watermark_change = GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{watermark_text: "Watermark"})
+    global_watermark_change =
+      GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{
+        watermark_text: "Watermark"
+      })
+
     global_gallery_settings
     |> Ecto.Changeset.change(global_watermark_change.changes)
     |> Repo.insert_or_update()
+
     attr =
       case global_watermark_change.changes.watermark_type do
         "image" ->
@@ -51,9 +62,11 @@ defmodule Picsello.GlobalGallerySettingsTest do
             size: global_gallery_settings.watermark_size,
             type: "image"
           }
-          "text" ->
+
+        "text" ->
           %{text: global_watermark_change.changes.watermark_text, type: "text"}
       end
+
     {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, attr)
     global_gallery_settings = global_gallery_settings |> Repo.reload()
     assert %{watermark_text: "Watermark"} = global_gallery_settings
@@ -61,12 +74,21 @@ defmodule Picsello.GlobalGallerySettingsTest do
     assert watermark.gallery_id == gallery.id
   end
 
-  test "updates global watermark", %{global_gallery_settings: global_gallery_settings, gallery: gallery} do
-    global_text_watermark_change = GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{watermark_text: "Watermark"})
+  test "updates global watermark", %{
+    global_gallery_settings: global_gallery_settings,
+    gallery: gallery
+  } do
+    global_text_watermark_change =
+      GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{
+        watermark_text: "Watermark"
+      })
+
     global_gallery_settings
     |> Ecto.Changeset.change(global_text_watermark_change.changes)
     |> Repo.insert_or_update()
+
     global_gallery_settings = global_gallery_settings |> Repo.reload()
+
     attr =
       case global_text_watermark_change.changes.watermark_type do
         "image" ->
@@ -75,31 +97,42 @@ defmodule Picsello.GlobalGallerySettingsTest do
             size: global_text_watermark_change.changes.watermark_size,
             type: "image"
           }
-          "text" ->
+
+        "text" ->
           %{text: global_text_watermark_change.changes.watermark_text, type: "text"}
       end
-    {:ok, %{watermark: text_watermark}} =
-      Galleries.save_gallery_watermark(gallery, attr)
+
+    {:ok, %{watermark: text_watermark}} = Galleries.save_gallery_watermark(gallery, attr)
+
     global_image_watermark_change =
-      GlobalGallerySettings.global_gallery_image_watermark_change(global_gallery_settings, %{watermark_name: "hex.png", watermark_size: 12_345})
-      attr =
-        case global_image_watermark_change.changes.watermark_type do
-          "image" ->
-            %{
-              name: global_image_watermark_change.changes.watermark_name,
-              size: global_image_watermark_change.changes.watermark_size,
-              type: "image"
-            }
-            "text" ->
-            %{text: global_image_watermark_change.changes.watermark_text, type: "text"}
-        end
-    {:ok, %{watermark: image_watermark}} =
-      Galleries.save_gallery_watermark(gallery, attr)
+      GlobalGallerySettings.global_gallery_image_watermark_change(global_gallery_settings, %{
+        watermark_name: "hex.png",
+        watermark_size: 12_345
+      })
+
+    attr =
+      case global_image_watermark_change.changes.watermark_type do
+        "image" ->
+          %{
+            name: global_image_watermark_change.changes.watermark_name,
+            size: global_image_watermark_change.changes.watermark_size,
+            type: "image"
+          }
+
+        "text" ->
+          %{text: global_image_watermark_change.changes.watermark_text, type: "text"}
+      end
+
+    {:ok, %{watermark: image_watermark}} = Galleries.save_gallery_watermark(gallery, attr)
     assert text_watermark.id == image_watermark.id
   end
 
   test "preloads watermark", %{gallery: gallery} do
-    global_watermark_change = GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{watermark_text: "Watermark"})
+    global_watermark_change =
+      GlobalGallerySettings.global_gallery_text_watermark_change(nil, %{
+        watermark_text: "Watermark"
+      })
+
     attr =
       case global_watermark_change.changes.watermark_type do
         "image" ->
@@ -108,9 +141,11 @@ defmodule Picsello.GlobalGallerySettingsTest do
             size: global_watermark_change.changes.watermark_size,
             type: "image"
           }
-          "text" ->
+
+        "text" ->
           %{text: global_watermark_change.changes.watermark_text, type: "text"}
       end
+
     {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, attr)
     gallery = Galleries.load_watermark_in_gallery(gallery)
     assert watermark == gallery.watermark

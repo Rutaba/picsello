@@ -13,8 +13,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
   alias Picsello.Galleries
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Photo
-  alias Picsello.GlobalGallerySettings.Photo, as: GlobalPhoto
-  alias Picsello.GlobalGallerySettings
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Picsello.Galleries.Watermark
 
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
@@ -33,7 +32,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
   def full_task_by_photo(%Photo{} = photo, %Watermark{} = watermark) do
     gallery = Picsello.Repo.get_by!(Picsello.Galleries.Gallery, id: watermark.gallery_id)
     organization = load_organization(gallery)
-    global_settings = Picsello.Repo.get_by!(Picsello.GlobalGallerySettings, organization_id: organization.id)
+    global_settings = Picsello.Repo.get_by!(Picsello.GSGallery, organization_id: organization.id)
     watermark_path = path(gallery, global_settings, watermark, organization)
 
     %{
@@ -50,7 +49,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
   end
 
   def watermark_photo_task_by_global_photo(
-        %GlobalPhoto{} = photo,
+        %GSGallery.Photo{} = photo,
         organization_id
       ) do
     watermark_path = "galleries/#{organization_id}/watermark.png"
@@ -63,8 +62,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       "pubSubTopic" => @output_topic,
       "originalPath" => photo.original_url,
       "previewPath" => nil,
-      "watermarkedPreviewPath" => GlobalGallerySettings.watermarked_path(),
-      "watermarkedOriginalPath" => GlobalGallerySettings.watermarked_path(),
+      "watermarkedPreviewPath" => GSGallery.watermarked_path(),
+      "watermarkedOriginalPath" => GSGallery.watermarked_path(),
       "watermarkPath" => watermark_path,
       "watermarkText" => nil
     }
@@ -76,7 +75,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
     |> Map.drop(["previewPath"])
   end
 
-  def watermark_task_by_global_photo(%GlobalPhoto{} = photo) do
+  def watermark_task_by_global_photo(%GSGallery.Photo{} = photo) do
     %{
       "is_global" => true,
       "photoId" => photo.id,
@@ -85,8 +84,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       "pubSubTopic" => @output_topic,
       "originalPath" => photo.original_url,
       "previewPath" => nil,
-      "watermarkedPreviewPath" => GlobalGallerySettings.watermarked_path(),
-      "watermarkedOriginalPath" => GlobalGallerySettings.watermarked_path(),
+      "watermarkedPreviewPath" => GSGallery.watermarked_path(),
+      "watermarkedOriginalPath" => GSGallery.watermarked_path(),
       "watermarkPath" => nil,
       "watermarkText" => photo.text
     }

@@ -4,7 +4,8 @@ defmodule Picsello.Galleries.Gallery do
   import Ecto.Changeset
   import Ecto.Query
   alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album, SessionToken}
-  alias Picsello.{Job, GlobalGallerySettings, Cart.Order, Repo}
+  alias Picsello.{Job, Cart.Order, Repo}
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
   @status_options [
     values: ~w(draft active expired disabled),
@@ -141,6 +142,7 @@ defmodule Picsello.Galleries.Gallery do
     case gallery do
       %{} ->
         nil
+
       _ ->
         organization_id =
           from(j in Picsello.Job,
@@ -150,12 +152,15 @@ defmodule Picsello.Galleries.Gallery do
             select: o.id
           )
           |> Repo.one()
+
         shoot = get_shoots(gallery.job_id) |> List.last()
+
         settings =
-          from(gss in GlobalGallerySettings,
+          from(gss in GSGallery,
             where: gss.organization_id == ^organization_id
           )
           |> Repo.one()
+
         if settings && settings.expiration_days && settings.expiration_days > 0 do
           Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
         end
@@ -171,11 +176,13 @@ defmodule Picsello.Galleries.Gallery do
         select: o.id
       )
       |> Repo.one()
+
     settings =
-      from(gss in GlobalGallerySettings,
+      from(gss in GSGallery,
         where: gss.organization_id == ^organization_id
       )
       |> Repo.one()
+
     if settings do
       case settings.watermark_type do
         "image" ->
@@ -185,8 +192,10 @@ defmodule Picsello.Galleries.Gallery do
             size: settings.watermark_size,
             type: "image"
           }
+
         "text" ->
           %{text: settings.watermark_text, type: "text", gallery_id: gallery.id}
+
         _ ->
           nil
       end

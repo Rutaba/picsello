@@ -1,11 +1,12 @@
-defmodule Picsello.GlobalGallerySettings do
+defmodule Picsello.GlobalSettings.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.Organization
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
   defmodule Photo do
-  @moduledoc false
+    @moduledoc false
     defstruct original_url: nil,
               user_id: nil,
               id: nil,
@@ -13,14 +14,14 @@ defmodule Picsello.GlobalGallerySettings do
   end
 
   @types ~w(image text)
-  schema "global_gallery_settings" do
+  schema "global_settings_galleries" do
     field(:expiration_days, :integer)
     field(:watermark_name, :string)
     field(:watermark_type, :string, values: @types)
     field(:watermark_size, :integer)
     field(:watermark_text, :string)
     field(:global_watermark_path, :string)
-    
+
     belongs_to(:organization, Organization)
     timestamps()
   end
@@ -33,36 +34,34 @@ defmodule Picsello.GlobalGallerySettings do
   end
 
   def global_gallery_watermark_change(nil),
-    do: Ecto.Changeset.change(%Picsello.GlobalGallerySettings{})
+    do: Ecto.Changeset.change(%GSGallery{})
 
-  def global_gallery_watermark_change(
-        %Picsello.GlobalGallerySettings{} = global_gallery_settings
-      ),
-      do: Ecto.Changeset.change(global_gallery_settings)
+  def global_gallery_watermark_change(%GSGallery{} = global_gallery_settings),
+    do: Ecto.Changeset.change(global_gallery_settings)
 
   def global_gallery_image_watermark_change(
-        %Picsello.GlobalGallerySettings{} = global_gallery_settings,
+        %GSGallery{} = global_gallery_settings,
         attrs
       ),
-      do: Picsello.GlobalGallerySettings.watermark_image_changeset(global_gallery_settings, attrs)
+      do: GSGallery.watermark_image_changeset(global_gallery_settings, attrs)
 
   def global_gallery_image_watermark_change(nil, attrs),
     do:
-      Picsello.GlobalGallerySettings.watermark_image_changeset(
-        %Picsello.GlobalGallerySettings{},
+      GSGallery.watermark_image_changeset(
+        %GSGallery{},
         attrs
       )
 
   def global_gallery_text_watermark_change(
-        %Picsello.GlobalGallerySettings{} = global_gallery_settings,
+        %GSGallery{} = global_gallery_settings,
         attrs
       ),
-      do: Picsello.GlobalGallerySettings.watermark_text_changeset(global_gallery_settings, attrs)
+      do: GSGallery.watermark_text_changeset(global_gallery_settings, attrs)
 
   def global_gallery_text_watermark_change(nil, attrs),
     do:
-      Picsello.GlobalGallerySettings.watermark_text_changeset(
-        %Picsello.GlobalGallerySettings{},
+      GSGallery.watermark_text_changeset(
+        %GSGallery{},
         attrs
       )
 

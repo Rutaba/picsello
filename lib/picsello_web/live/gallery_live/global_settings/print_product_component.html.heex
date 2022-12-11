@@ -1,8 +1,9 @@
 <div>
-  <.crumbs class="text-base text-base-250">
-    <:crumb to="">Product Settings</:crumb>
-    <:crumb>Print Pricing</:crumb>
-  </.crumbs>
+  <div class="text-base-250">
+    <span class="font-normal text-base cursor-pointer" phx-click="select_product">Product Settings</span>
+    <.icon name="forth" class="inline-block w-2 h-2 stroke-current stroke-2" />
+    <span class="text-sm  font-semibold">Print Pricing</span>
+  </div>
   <div class="flex flex-row lg:px-0 px-6 items-center" {intro_hints_only("intro_hints_only")}>
     <button phx-click="back_to_products" class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4 md:block">
       <.icon name="back" class="w-4 h-4 stroke-2"/>
@@ -13,7 +14,7 @@
     <.intro_hint class="ml-2 hidden lg:block" content="Print Prices"/>
   </div>
   <div>
-    <div class="py-2 font-normal text-base-250">
+    <div class="py-4 font-normal text-base-250">
       So there are no surprises, the base costs include shipping with the wholesale costs for fine art and
       photo prints. Adjust the final price to set the profit that makes sense for your business and client needs.
     </div>

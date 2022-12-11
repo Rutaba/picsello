@@ -68,7 +68,7 @@ defmodule Picsello.Product do
   group by
     product_id
   """
- @uniquely_priced_selections """
+  @uniquely_priced_selections """
   with
    attribute_categories as (
     select

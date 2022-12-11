@@ -15,27 +15,25 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
 
   defp print_item(%{selections: selections, product: product} = assigns) do
     p_selections = Map.get(selections, product.id)
+    open? = p_selections && p_selections.open?
+    icon_class = "w-3 h-3 stroke-current stroke-2"
 
     ~H"""
       <div class="flex flex-col">
-        <div class={"flex flex-col p-3 border-t border-r border-l border-b-8 rounded-lg #{if(p_selections && p_selections.open?, do: "border-blue-planning-300", else: "border-base-250")}"}>
+      <div class={"flex flex-col p-3 border-t border-r border-l border-b-8 rounded-lg #{if(open?, do: "border-blue-planning-300", else: "border-base-250")}"}>
           <div class="flex p-3">
             <div class="bg-black rounded-lg p-2 mr-4 text-white h-fit cursor-pointer" phx-click="expand_product" phx-value-product_id={@product.id} phx-target={@myself}>
-              <%= if p_selections && p_selections.open? do %>
-                <.icon name="up" class="text-white w-3 h-3 stroke-current stroke-2"/>
-              <% else %>
-                <.icon name="down" class="text-white w-3 h-3 stroke-current stroke-2"/>
-              <% end %>
+              <.icon name={if open?, do: "up", else: "down"} class={"#{icon_class} text-white"} />
             </div>
             <b class="text-lg">
               <%="#{@title}s"%>
             </b>
-            <div class="flex ml-auto border rounded-lg items-center border-blue-planning-300 px-2 disabled:opacity-75" disabled={p_selections && !p_selections.open?}>
-              <.icon name="down" class="text-blue-planning-300 w-3 h-3 stroke-current stroke-2 mr-3"/>
-              <span phx-click="expand_all_products" class="cursor-pointer">Expand All</span>
+            <div class={"flex ml-auto border rounded-lg items-center border-blue-planning-300 px-2 disabled:opacity-75 #{!open? && 'cursor-not-allowed'}"}>
+              <.icon name="down" class={"#{icon_class} text-blue-planning-300 mr-3"} />
+              <span phx-click="expand_product_all" phx-value-product_id={product.id} phx-target={@myself} class={"cursor-pointer #{!open? && 'pointer-events-none'}"}>Expand All</span>
             </div>
           </div>
-          <div class={classes("grid grid-cols-4 p-2 pl-14 text-base-250", %{"text-base-300" => p_selections && p_selections.open?})}>
+          <div class={classes("grid grid-cols-4 p-2 pl-14 text-base-250", %{"text-base-300" => open?})}>
             <%= for item <- ["Variation", "Your Profit", "Base Cost", "Final Price"] do %>
               <div class="font-bold"><%= item %></div>
             <% end %>
@@ -48,17 +46,19 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
               <.size_row size={size} value={value} values={values} open?={open?} myself={@myself} print_products_map={@print_products_map} product={product} />
               <%= for %{type: type, base_cost: base_cost} <- values, open? == true do %>
                 <div class="grid grid-cols-4 pl-12 py-2 cursor-pointer items-center hover:bg-blue-planning-100">
-                  <% final_cost = final_cost(@print_products_map, product.id, size, type) || to_decimal(base_cost) %>
+                  <% final_cost = final_cost(@print_products_map, product.id, size, type) %>
 
-                  <div class="font-bold pl-4"><%= type %> </div>
+                  <div class="font-bold pl-4"><%= split(type, "_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ") %> </div>
                   <div class="pl-4">$<%= sub(final_cost, base_cost) %></div>
                   <div class=""><%= base_cost %></div>
 
                   <.form let={f} for={:size} phx-target={@myself} phx-change="final_cost" id={size <> type}>
-                    <%= hidden_input f, :product_id, value: product.id %>
-                    <%= hidden_input f, :type, value: type %>
-                    <%= hidden_input f, :size, value: size %>
-                    <%= input f, :final_cost, type: :number_input, min: 0, value: final_cost, class: "w-24 mt-2 h-12 border rounded-md border-blue-planning-300 p-4 text-center" %>
+                    <%= for {name, value} <- [{:type, type}, {:product_id, product.id}, {:size, size}, {:base_cost, to_decimal(base_cost)}] do %>
+                      <%= hidden_input f, name, value: value %>
+                    <% end %>
+
+                    <%= input f, :final_cost, type: :number_input, value: final_cost, phx_target: @myself, class: "w-24 mt-2 h-12 border rounded-md border-blue-planning-300 p-4 text-center" %>
+
                   </.form>
                 </div>
               <% end %>
@@ -81,17 +81,13 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
     final_cost =
       values
       |> Enum.map(&final_cost(print_products_map, product.id, size, &1.type))
-      |> Enum.min() || to_decimal(base_cost)
+      |> Enum.min()
 
     ~H"""
     <div class={"grid grid-cols-4 pl-6 py-3 border-b border-base-200 cursor-pointer #{if @open?, do: "bg-blue-planning-300 rounded-lg"}"} phx-target={@myself} phx-click="expand_product_size" phx-value-size={size} phx-value-product_id={product.id}>
       <div class={"flex items-center font-bold pl-4 #{if @open?, do: "text-white", else: "text-black"}"}>
-        <%= if @open? do %>
-          <.icon name="up" class="w-3 h-3 stroke-current stroke-2 mr-4" />
-        <% else %>
-          <.icon name="down" class="w-3 h-3 stroke-current stroke-2 mr-4" />
-        <% end %>
-        <%= size %>
+        <.icon name={if @open?, do: "up", else: "down"} class="w-3 h-3 stroke-current stroke-2 mr-4" />
+        <%= split(size, "x") |> Enum.join(" x ") %>
       </div>
       <%= if !@open? do %>
         <div class="pl-6 text-base-250">$<%= sub(final_cost, base_cost) %></div>
@@ -117,12 +113,29 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
   end
 
   def handle_event(
+        "expand_product_all",
+        %{"product_id" => product_id},
+        %{assigns: %{selections: selections}} = socket
+      ) do
+    product_id = String.to_integer(product_id)
+
+    selections
+    |> update_in(
+      [product_id, :selections],
+      &Enum.reduce(&1, %{}, fn {size, value}, acc ->
+        Map.put(acc, size, %{value | open?: true})
+      end)
+    )
+    |> then(&(socket |> assign(:selections, &1) |> noreply()))
+  end
+
+  def handle_event(
         "expand_product_size",
         %{"size" => size, "product_id" => product_id},
         %{assigns: %{selections: selections}} = socket
       ) do
     selections
-    |> update_in([String.to_integer(product_id), :selections, size], &%{&1 | open?: !&1.open?})
+    |> update_in([String.to_integer(product_id), :selections], &updater(&1, size))
     |> then(&(socket |> assign(:selections, &1) |> noreply()))
   end
 
@@ -133,17 +146,20 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
             "final_cost" => final_cost,
             "product_id" => product_id,
             "size" => size,
-            "type" => type
+            "type" => type,
+            "base_cost" => base_cost
           }
         },
         %{assigns: %{print_products: print_products}} = socket
       ) do
     print_product = find(print_products, product_id, :product_id)
 
-    print_product
-    |> Map.get(:sizes)
-    |> Enum.map(&build_params(&1, size, type, final_cost))
-    |> then(&GlobalSettings.update_print_product!(print_product, %{sizes: &1}))
+    unless Decimal.lt?(new(final_cost), new(base_cost)) do
+      print_product
+      |> Map.get(:sizes)
+      |> Enum.map(&build_params(&1, size, type, final_cost))
+      |> then(&GlobalSettings.update_print_product!(print_product, %{sizes: &1}))
+    end
 
     socket |> assign_print_products() |> noreply()
   end
@@ -179,6 +195,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
     |> Enum.map(&GlobalSettings.size(&1, categories))
     |> Enum.group_by(& &1.size)
     |> Enum.reduce(%{}, fn {k, v}, acc -> Map.put(acc, k, %{open?: false, values: v}) end)
+    |> Enum.sort_by(fn {size, _value} ->
+      [height, width] = split(size, "x")
+      {to_integer(height), to_integer(width)}
+    end)
     |> then(&Map.put(selections, product.id, %{open?: true, selections: &1}))
   end
 
@@ -193,10 +213,18 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
     |> Map.get(:final_cost)
   end
 
-  defp sub(decimal, non_decimal), do: Decimal.sub(decimal, to_decimal(non_decimal))
+  defp updater(selections, size_for_update) do
+    Enum.map(selections, fn {size, value} ->
+      open? = if size == size_for_update, do: !value.open?, else: value.open?
+      {size, %{value | open?: open?}}
+    end)
+  end
 
-  defp to_decimal(%{amount: amount}), do: Decimal.new(to_string(amount / 100))
+  defp split(size, term), do: String.split(size, term, trim: true)
+  defp sub(decimal, non_decimal), do: Decimal.sub(decimal || new(0), to_decimal(non_decimal))
+  defp new(str_value), do: Decimal.new(str_value)
 
-  defp find(list, str_id, key \\ :id),
-    do: Enum.find(list, &(&1 |> Map.get(key) |> to_string() == str_id))
+  defp find(list, id, key \\ :id), do: Enum.find(list, &(&1 |> Map.get(key) |> to_string() == id))
+
+  defdelegate to_decimal(value), to: GlobalSettings
 end

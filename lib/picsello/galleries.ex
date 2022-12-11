@@ -472,6 +472,7 @@ defmodule Picsello.Galleries do
     case Gallery.global_gallery_watermark(gallery) do
       nil ->
         Multi.new()
+
       changeset ->
         Multi.new()
         |> Multi.insert(:watermark, fn _ ->

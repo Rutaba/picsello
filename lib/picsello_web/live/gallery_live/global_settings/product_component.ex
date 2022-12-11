@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
   use PicselloWeb, :live_component
 
-  alias Picsello.GlobalSettings
+  alias Picsello.{GlobalSettings, Category, Galleries}
   import PicselloWeb.GalleryLive.Shared, only: [toggle_preview: 1]
 
   @impl true
@@ -55,7 +55,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
                 <h4 class="font-bold text-xl">Pricing:</h4>
                 <span class="font-normal text-sm">From: <%= min_price(category) %> - <%= max_price(category) %></span>
               </div>
-              <%= if category.whcc_id == "h3GrtaTf5ipFicdrJ" do %>
+              <%= if category.whcc_id == Category.print_category() do %>
                   <div phx-target={@myself} phx-click="edit_pricing" phx-value-product_id={product.id} class="mt-2 h-12 text-base font-normal border rounded-md border-blue-planning-300 p-3 text-center flex justify-between cursor-pointer">
                     Edit Pricing
                     <.icon name="forth" class="w-3 h-3 mt-2 ml-1 stroke-current text-blue-planning-300 stroke-2" />
@@ -93,8 +93,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
   end
 
   defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
-  defdelegate min_price(category), to: Picsello.Galleries
-  defdelegate max_price(category), to: Picsello.Galleries
+  defdelegate min_price(category), to: Galleries
+  defdelegate max_price(category), to: Galleries
 
   @impl true
   def handle_event("product_enabled", %{"product_id" => product_id, "value" => "on"}, socket) do

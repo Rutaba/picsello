@@ -7,7 +7,7 @@ defmodule Picsello.GlobalSettings do
   alias Picsello.Category
   import Ecto.Query
 
-  @whcc_print_categroy "h3GrtaTf5ipFicdrJ"
+  @whcc_print_categroy Category.print_category()
 
   def update_gallery_product(%GSGalleryProduct{} = gs_gallery_product, opts)
       when is_list(opts) do
@@ -47,7 +47,7 @@ defmodule Picsello.GlobalSettings do
   end
 
   def insert_gallery_products(organization_id) when is_integer(organization_id) do
-    categories = from(c in Category, preload: :products) |> Repo.all()
+    categories = from(c in Category, preload: :products, where: not c.hidden) |> Repo.all()
 
     print_category =
       categories
@@ -76,9 +76,21 @@ defmodule Picsello.GlobalSettings do
     |> Repo.transaction()
   end
 
-  def size([base_cost, _, _, _, _, size, type], ["size", _]), do: size(base_cost, size, type)
-  def size([base_cost, _, _, _, _, type, size], [_, "size"]), do: size(base_cost, size, type)
-  def size(base_cost, size, type), do: %{base_cost: base_cost, size: size, type: type}
+  def size([total_cost, shipping_cost, print_cost, _, rounding, size, type], ["size", _]),
+    do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
+
+  def size([total_cost, shipping_cost, print_cost, _, rounding, type, size], [_, "size"]),
+    do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
+
+  def size(final_cost, base_cost, size, type),
+    do: %{final_cost: to_decimal(final_cost), base_cost: base_cost, size: size, type: type}
+
+  defp add(values) do
+    Enum.reduce(values, Money.new(0), fn value, total -> Money.add(total, value) end)
+  end
+
+  def to_decimal(%Money{amount: amount, currency: :USD}),
+    do: Decimal.new(to_string(amount / 100))
 
   defp build_selections(selections, categories, product_id) do
     selections

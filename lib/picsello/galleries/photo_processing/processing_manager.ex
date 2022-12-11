@@ -8,7 +8,7 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessingManager do
   alias Picsello.Galleries.PhotoProcessing.Context
   alias Picsello.Galleries.PhotoProcessing.Waiter
   alias Picsello.Galleries.Watermark
-  alias Picsello.GlobalGallerySettings.Photo, as: GlobalPhoto
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
   def start(photo, watermark \\ nil)
 
@@ -27,12 +27,12 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessingManager do
     Waiter.start_tracking(photo.gallery_id, photo.id)
   end
 
-  def update_watermark(%GlobalPhoto{} = global_photo, organization_id) do
+  def update_watermark(%GSGallery.Photo{} = global_photo, organization_id) do
     Context.watermark_photo_task_by_global_photo(global_photo, organization_id)
     |> send()
   end
 
-  def update_watermark(%GlobalPhoto{} = global_photo) do
+  def update_watermark(%GSGallery.Photo{} = global_photo) do
     Context.watermark_task_by_global_photo(global_photo) |> send()
   end
 

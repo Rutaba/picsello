@@ -42,19 +42,20 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
   end
 
   defp do_handle_message(%{
-    "task" =>
-      %{
-        "is_global" => true,
-        "watermarkedPreviewPath" => watermarked_preview_path,
-        "watermarkedOriginalPath" => watermarked_original_path,
-        "user_id" => user_id
-      } = task
-    }) do
+         "task" =>
+           %{
+             "is_global" => true,
+             "watermarkedPreviewPath" => watermarked_preview_path,
+             "watermarkedOriginalPath" => watermarked_original_path,
+             "user_id" => user_id
+           } = task
+       }) do
     PubSub.broadcast(Picsello.PubSub, "preview_watermark:#{user_id}", {:preview_watermark, task})
     scheduled_at = Timex.shift(DateTime.utc_now(), minutes: 1)
+
     [watermarked_preview_path, watermarked_original_path]
     |> Enum.map(fn path ->
-    CleanStore.new(%{path: path}, scheduled_at: scheduled_at)
+      CleanStore.new(%{path: path}, scheduled_at: scheduled_at)
     end)
     |> Oban.insert_all()
 
@@ -62,12 +63,12 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
   end
 
   defp do_handle_message(%{
-    "task" =>
-      %{
-        "is_image" => true,
-        "user_id" => user_id
-      } = task
-    }) do
+         "task" =>
+           %{
+             "is_image" => true,
+             "user_id" => user_id
+           } = task
+       }) do
     PubSub.broadcast(Picsello.PubSub, "save_watermark:#{user_id}", {:save_watermark, task})
 
     :ok

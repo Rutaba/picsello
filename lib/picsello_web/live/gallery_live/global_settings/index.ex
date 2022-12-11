@@ -1,16 +1,17 @@
 defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @moduledoc false
   use PicselloWeb, :live_view
+
   alias Picsello.{
     Repo,
     Galleries,
-    Shoot,
-    GlobalGallerySettings
+    Shoot
   }
+
   alias Galleries.{PhotoProcessing.ProcessingManager, Workers.PhotoStorage}
-  alias Picsello.GlobalGallerySettings.Photo, as: GlobalPhoto
   alias PicselloWeb.GalleryLive.GlobalSettings.{ProductComponent, PrintProductComponent}
   alias Phoenix.PubSub
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Ecto.Changeset
   require Logger
 
@@ -28,8 +29,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @impl true
   def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
     global_gallery_settings =
-      GlobalGallerySettings
+      GSGallery
       |> Repo.get_by(organization_id: current_user.organization.id)
+
     galleries =
       Galleries.list_all_galleries_by_organization_query(current_user.organization.id)
       |> Repo.all()
@@ -70,6 +72,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     month = to_int(month)
     year = to_int(year)
     total_days = day + month * 30 + year * 365
+
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
       close_label: "No! Go back",
@@ -136,14 +139,17 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         file = File.read!(@global_watermark_photo)
         path = Application.fetch_env!(:picsello, :global_watermarked_path)
         {:ok, _object} = PhotoStorage.insert(path, file)
-        ProcessingManager.update_watermark(%GlobalPhoto{
+
+        ProcessingManager.update_watermark(%GSGallery.Photo{
           id: UUID.uuid4(),
           user_id: current_user.id,
           original_url: path,
           text: Changeset.get_change(changeset, :watermark_text)
         })
+
         socket
         |> noreply()
+
       true ->
         socket
         |> assign(show_preview: false)
@@ -172,7 +178,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         {:ok, _object} = PhotoStorage.insert(path, file)
 
         ProcessingManager.update_watermark(
-          %GlobalPhoto{
+          %GSGallery.Photo{
             id: UUID.uuid4(),
             user_id: current_user.id,
             original_url: path,
@@ -186,7 +192,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     end
 
     global_gallery_settings ||
-      %GlobalGallerySettings{}
+      %GSGallery{}
       |> Ecto.Changeset.change(Map.put(changes, :organization_id, organization_id))
       |> Repo.insert_or_update()
       |> case do
@@ -195,12 +201,13 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           |> Enum.reject(&(!&1.use_global))
           |> Enum.each(fn gallery ->
             {:ok, _gallery} = Galleries.save_gallery_watermark(gallery, attrs(global_settings))
-            end)
+          end)
 
           socket
           |> assign(global_gallery_settings: global_settings)
           |> put_flash(:success, "Watermark Updated!")
           |> assign(:case, :image)
+
         {:error, _} ->
           socket
           |> put_flash(:error, "Failed to Update Watermark")
@@ -270,6 +277,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     socket
     |> assign(watermark_option: false)
     |> assign(is_expiration_date?: false)
+    |> assign(print_price_section?: false)
     |> assign(product_section?: true)
     |> assign_title()
     |> noreply()
@@ -283,7 +291,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> assign(:ready_to_save, false)
     |> noreply()
   end
-
 
   @impl true
   def handle_event("text_case", _params, socket) do
@@ -333,8 +340,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   @impl true
   def handle_event(
-    "back_to_products", _, socket
-  ) do
+        "back_to_products",
+        _,
+        socket
+      ) do
     send(self(), {:back_to_products})
 
     socket |> noreply()
@@ -400,7 +409,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     {:ok, global_settings} =
       socket.assigns.global_gallery_settings
       |> case do
-        nil -> %GlobalGallerySettings{}
+        nil -> %GSGallery{}
         settings -> settings
       end
       |> Ecto.Changeset.change(global_watermark_path: watermarked_preview_path)
@@ -423,15 +432,17 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         } = socket
       ) do
     global_gallery_settings ||
-      %GlobalGallerySettings{}
+      %GSGallery{}
       |> Ecto.Changeset.change(%{
         expiration_days: 0,
         organization_id: current_user.organization.id
       })
       |> Repo.insert_or_update()
+
     galleries
     |> Enum.reject(&(&1.use_global == false))
     |> Enum.each(&(&1 |> Ecto.Changeset.change(%{expired_at: nil}) |> Repo.update!()))
+
     socket
     |> close_modal()
     |> put_flash(:success, "Settings updated")
@@ -466,17 +477,20 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           |> assign_default_changeset()
           |> close_modal()
           |> put_flash(:success, "Settings updated")
+
         {:error, _} ->
           socket
           |> put_flash(:error, "Failed to Delete Watermark")
       end
-  _gallery =
-    galleries
-    |> Enum.reject(&(&1.use_global == false))
-    |> Enum.map(fn x ->
-      gallery = Galleries.load_watermark_in_gallery(x)
-      Galleries.delete_gallery_watermark(gallery.watermark)
-    end)
+
+    _gallery =
+      galleries
+      |> Enum.reject(&(&1.use_global == false))
+      |> Enum.map(fn x ->
+        gallery = Galleries.load_watermark_in_gallery(x)
+        Galleries.delete_gallery_watermark(gallery.watermark)
+      end)
+
     socket
     |> noreply()
   end
@@ -495,7 +509,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     socket =
       global_gallery_settings
       |> case do
-        nil -> %GlobalGallerySettings{}
+        nil -> %GSGallery{}
         settings -> settings
       end
       |> Ecto.Changeset.change(%{
@@ -508,26 +522,31 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           socket
           |> assign(gloabal_gallery_settings: global_settings)
           |> assign(is_never_expires: false)
+
         {:error, _} ->
           socket
           |> put_flash(:error, "Failed to Delete Watermark")
       end
-  _gallery =
-    galleries
-    |> Enum.reject(&(&1.use_global == false))
-    |> Enum.map(fn x ->
-      get_shoots(x.job_id)
-      |> List.last()
-      |> case do
-        nil ->
-          Ecto.Changeset.change(x, %{expired_at: nil})
-          |> Repo.update!()
-        shoot ->
-          expired_at = Timex.shift(shoot.starts_at, days: total_days) |> Timex.to_datetime()
-          Ecto.Changeset.change(x, %{expired_at: expired_at})
-          |> Repo.update!()
-      end
-    end)
+
+    _gallery =
+      galleries
+      |> Enum.reject(&(&1.use_global == false))
+      |> Enum.map(fn x ->
+        get_shoots(x.job_id)
+        |> List.last()
+        |> case do
+          nil ->
+            Ecto.Changeset.change(x, %{expired_at: nil})
+            |> Repo.update!()
+
+          shoot ->
+            expired_at = Timex.shift(shoot.starts_at, days: total_days) |> Timex.to_datetime()
+
+            Ecto.Changeset.change(x, %{expired_at: expired_at})
+            |> Repo.update!()
+        end
+      end)
+
     socket
     |> close_modal()
     |> put_flash(:success, "Setting Updated")
@@ -557,6 +576,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         } = socket
       ) do
     key = "galleries/#{current_user.organization_id}/watermark.png"
+
     sign_opts = [
       expires_in: 600,
       bucket: socket.assigns.upload_bucket,
@@ -573,12 +593,14 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         ]
       ]
     ]
+
     params = PhotoStorage.params_for_upload(sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
     {:ok, meta, socket}
   end
 
   def handle_image_progress(:image, %{done?: false}, socket), do: socket |> noreply()
+
   def handle_image_progress(:image, image, socket) do
     socket
     |> assign_image_watermark_change(image)
@@ -604,10 +626,11 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
          image
        ) do
     changeset =
-      GlobalGallerySettings.global_gallery_image_watermark_change(global_gallery_settings, %{
+      GSGallery.global_gallery_image_watermark_change(global_gallery_settings, %{
         watermark_name: image.client_name,
         watermark_size: image.client_size
       })
+
     socket
     |> assign(:changeset, changeset)
     |> assign(:ready_to_save, changeset.valid?)
@@ -619,7 +642,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     socket
     |> assign(
       :changeset,
-      GlobalGallerySettings.global_gallery_watermark_change(global_gallery_settings)
+      GSGallery.global_gallery_watermark_change(global_gallery_settings)
     )
     |> assign(show_preview: false)
   end
@@ -638,9 +661,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
          }
        ) do
     changeset =
-      GlobalGallerySettings.global_gallery_text_watermark_change(global_gallery_settings, %{
+      GSGallery.global_gallery_text_watermark_change(global_gallery_settings, %{
         watermark_text: watermark_text
       })
+
     socket
     |> assign(:changeset, changeset)
     |> assign(:ready_to_save, changeset.valid?)
@@ -655,6 +679,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   def card(assigns) do
     assigns = Enum.into(assigns, %{class: "", title_badge: nil})
+
     ~H"""
     <div class={"flex overflow-hidden border rounded-lg #{@class}"}>
       <div class="w-4 border-r bg-blue-planning-300" />
@@ -714,6 +739,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   defp watermark_section(%{uploads: uploads} = assigns) do
     entry = Enum.at(uploads.image.entries, 0)
+
     ~H"""
     <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @watermark_option})}>Watermark</h1>
     <.card color="blue-planning-300" icon="three-people" title="Custom Watermark" badge={0} class="cursor-pointer mt-8" >
@@ -819,18 +845,30 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp nav_item(assigns) do
-    assigns = Map.put_new(assigns, :event_name, nil)
+    assigns = Enum.into(assigns, %{event_name: nil, print_price_section?: nil})
+
     ~H"""
-    <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
-    <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" phx-click={@event_name}>
+    <div class={"bg-base-250/10 font-bold rounded-lg cursor-pointer grid-item"}>
+      <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" phx-click={@event_name}>
           <a class="flex w-full">
             <div class="flex items-center justify-start">
                 <div class="justify-start ml-3">
-                  <span class={"#{@open? && 'text-blue-planning-300'}"}><%= @item_title %></span>
+                <span class={"#{@open? && !@print_price_section? && 'text-blue-planning-300'}"}><%= @item_title %></span>
                 </div>
             </div>
           </a>
       </div>
+      <%= if @print_price_section? do %>
+        <div class={"#{@print_price_section? && 'bg-base-200'} flex items-center lg:h-11 pr-4 lg:pl-2 pl-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-b-lg border border-base-220 text-ellipsis hover:text-blue-planning-300"} phx-click={@event_name}>
+            <a class="flex w-full">
+              <div class="flex items-center justify-start">
+                  <div class="justify-start ml-3">
+                    <span class={"#{@open? && 'text-blue-planning-300'}"}>Print Pricing</span>
+                  </div>
+              </div>
+            </a>
+        </div>
+      <% end %>
       <%= if(@open?) do %>
         <span class="arrow show lg:block hidden">
           <svg class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" style="">
