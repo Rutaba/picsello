@@ -11,7 +11,7 @@ defmodule Picsello.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      dialyzer: [plt_add_apps: [:mix]]
+      dialyzer: [plt_add_apps: [:mix], plt_file: {:no_warn, "priv/plts/dialyzer.plt"}]
     ]
   end
 
@@ -88,7 +88,7 @@ defmodule Picsello.MixProject do
         {:pdf_generator, ">=0.6.0"}
       ],
       [
-        {:dialyxir, "~> 1.1.0", only: :dev, runtime: false},
+        {:dialyxir, "~> 1.1.0", only: [:dev, :test], runtime: false},
         {:phoenix_live_reload, "~> 1.3.3", only: :dev},
         {:phx_gen_auth, "~> 0.7", only: :dev, runtime: false},
         {:credo, "~> 1.5.6", only: [:dev, :test], runtime: false},
