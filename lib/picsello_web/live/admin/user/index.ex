@@ -62,10 +62,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
 
     socket
     |> assign(search_phrase: search_phrase)
-    |> then(fn socket ->
-      socket
-      |> find_users()
-    end)
+    |> find_users()
     |> noreply()
   end
 

@@ -92,11 +92,9 @@ defmodule PicselloWeb.Live.Admin.User.ContactUpload do
   def handle_event(
         "save",
         _params,
-        %{assigns: %{user: %{organization_id: organization_id} = user}} = socket
+        %{assigns: %{user: user}} = socket
       ) do
-    case consume_uploaded_entries(socket, :contact_csv, fn %{path: path}, _entry ->
-           handle_upload(path, organization_id) |> handle_response()
-         end) do
+    case process_uploaded_files(socket, :contact_csv) do
       [] ->
         socket
         |> put_flash(:error, "No file selected")
@@ -118,6 +116,15 @@ defmodule PicselloWeb.Live.Admin.User.ContactUpload do
     |> noreply()
   end
 
+  defp process_uploaded_files(
+         %{assigns: %{user: %{organization_id: organization_id}}} = socket,
+         entry_name
+       ) do
+    consume_uploaded_entries(socket, entry_name, fn %{path: path}, _entry ->
+      handle_upload(path, organization_id) |> handle_response()
+    end)
+  end
+
   defp handle_response({:ok, _}) do
     {:ok, :done}
   end
@@ -129,16 +136,21 @@ defmodule PicselloWeb.Live.Admin.User.ContactUpload do
   defp handle_upload(path, organization_id) do
     path
     |> File.stream!()
-    |> CSV.decode!(headers: true)
+    |> CSV.decode!(headers: true, field_transform: &String.trim/1)
     |> Enum.with_index()
     |> Enum.reduce(Ecto.Multi.new(), fn {client, index}, multi ->
       client_changeset =
         client
+        |> downcase_keys()
         |> Map.put("organization_id", organization_id)
         |> Client.create_contact_changeset()
 
       Ecto.Multi.insert(multi, index, client_changeset)
     end)
     |> Repo.transaction()
+  end
+
+  defp downcase_keys(map) do
+    for {key, value} <- map, into: %{}, do: {String.downcase(key), value}
   end
 end
