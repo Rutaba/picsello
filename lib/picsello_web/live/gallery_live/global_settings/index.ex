@@ -311,7 +311,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp assign_title(%{assigns: %{expiration_date?: true}} = socket),
-    do: socket |> assign(:title, "Global Expiration Days")
+    do: socket |> assign(:title, "Global Expiration Date")
 
   defp assign_title(%{assigns: %{watermark_option?: true}} = socket),
     do: socket |> assign(:title, "Watermark")
@@ -642,7 +642,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           </p>
           <.form let={f} for={:global_expiration_days} phx-submit="save" phx-change="validate_days">
             <div class="items-center">
-              <%= for {name, max, number, title} <- [{:day, 30, @day, "days,"}, {:month, 11, @month, "months,"}, {:year, 5, @year, "years after their shoot date."}] do %>
+              <%= for {name, max, number, title} <- [{:day, 31, @day, "days,"}, {:month, 11, @month, "months,"}, {:year, 5, @year, "years after their shoot date."}] do %>
                 <.date_input f={f} name={name} max={max} number={number} is_never_expires={@is_never_expires} />
                 <%= title %>
               <% end %>
@@ -779,6 +779,12 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   defp section(%{product_section?: true, print_price_section?: true} = assigns) do
     ~H"""
       <.live_component id="print_pricing" module={PrintProductComponent} product={@product} />
+    """
+  end
+
+  defp section(assigns) do
+    ~H"""
+      <div></div>
     """
   end
 

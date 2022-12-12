@@ -1,11 +1,11 @@
 <div>
-  <div class="text-base-250">
+  <div class="text-base-250 hidden md:block">
     <span class="font-normal text-base cursor-pointer" phx-click="select_product">Product Settings</span>
     <.icon name="forth" class="inline-block w-2 h-2 stroke-current stroke-2" />
     <span class="text-sm  font-semibold">Print Pricing</span>
   </div>
-  <div class="flex flex-row lg:px-0 px-6 items-center" {intro_hints_only("intro_hints_only")}>
-    <button phx-click="back_to_products" class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4 md:block">
+  <div class="flex flex-row items-center" {intro_hints_only("intro_hints_only")}>
+    <button phx-click="back_to_products" class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4 md:block hidden">
       <.icon name="back" class="w-4 h-4 stroke-2"/>
     </button>
     <span class="font-sans lg:text-2xl text-3xl font-black" >

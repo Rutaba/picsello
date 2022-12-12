@@ -53,7 +53,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
             <div class="py-2 px-4 flex justify-between">
               <div>
                 <h4 class="font-bold text-xl">Pricing:</h4>
-                <span class="font-normal text-sm">From: <%= min_price(category) %> - <%= max_price(category) %></span>
+                <i class="font-normal text-sm text-base-250">From <%= min_price(category) %> - <%= max_price(category) %></i>
               </div>
               <%= if category.whcc_id == Category.print_category() do %>
                   <div phx-target={@myself} phx-click="edit_pricing" phx-value-product_id={product.id} class="mt-2 h-12 text-base font-normal border rounded-md border-blue-planning-300 p-3 text-center flex justify-between cursor-pointer">
@@ -73,7 +73,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
             <div class="bg-gray-200 pb-4">
               <div class="mt-2 py-4 bg-gray-200">
                 <div class="flex items-center justify-center mt-4">
-                  <.framed_preview category={category} photo={nil} />
+                  <.framed_preview category={category} />
                 </div>
               </div>
               <div class="mx-4 pt-4 flex flex-col justify-between" >

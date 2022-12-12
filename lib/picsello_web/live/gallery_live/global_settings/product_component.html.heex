@@ -1,6 +1,6 @@
 <div>
-  <div class="flex flex-row lg:px-0 px-6 items-center" {intro_hints_only("intro_hints_only")}>
-    <span class="font-sans lg:text-2xl text-3xl font-black" >
+  <div class="flex flex-row pt-2 md:items-center" {intro_hints_only("intro_hints_only")}>
+    <span class="font-sans lg:text-2xl text-xl font-black" >
       Product Settings & Prices
     </span>
     <.intro_hint class="ml-2 hidden lg:block" content="Product Settings & Prices"/>
@@ -16,7 +16,7 @@
     </div>
   </div>
   <div class="center-container">
-    <div class="lg:grid-cols-2 grid-cols-1 gap-7 lg:px-0 px-6 grid">
+    <div class="lg:grid-cols-2 grid-cols-1 gap-7 grid">
       <%= for product <- @products do %>
         <.product_preview id={product.id} myself={@myself} product={product} disabled={false} />
       <% end %>
