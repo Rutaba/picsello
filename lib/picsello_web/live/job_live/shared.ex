@@ -30,6 +30,8 @@ defmodule PicselloWeb.JobLive.Shared do
   use Phoenix.Component
   use Phoenix.HTML
 
+  @string_length 15
+
   def handle_event("copy-client-link", _, socket), do: socket |> noreply()
 
   def handle_event(
@@ -697,7 +699,7 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def booking_details_section(assigns) do
-    assigns = assigns |> Enum.into(%{disabled_copy_link: false})
+    assigns = assigns |> Enum.into(%{disabled_copy_link: false, string_length: @string_length})
 
     ~H"""
     <.section id="booking-details" icon="camera-laptop" title="Booking details" collapsed_sections={@collapsed_sections}>
@@ -718,7 +720,7 @@ defmodule PicselloWeb.JobLive.Shared do
                 <dd>
                 <.icon name="files-icon" class="w-4 h-4" />
                 </dd>
-                <dd class="block link pl-1"><%= documents.name %></dd>
+                <dd class="block link pl-1"><%= truncate_name(%{client_name: documents.name}, @string_length) %></dd>
               </dl>
               <div id="options" phx-update="ignore" data-offset="0" phx-hook="Select" >
                 <button title="Options" type="button" class="flex flex-shrink-0 ml-2 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
@@ -1157,17 +1159,16 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  @string_length 15
   def files_to_upload(assigns) do
     assigns = Enum.into(assigns, %{myself: nil, for: nil, string_length: @string_length})
     photos? = assigns[:for] == :photos
 
     ~H"""
-      <div class={classes("uploadEntry grid grid-cols-5 pb-4 items-center", %{"px-14" => photos?})}>
-        <p class={"#{if photos?, do: 'col-span-3', else: 'col-span-2'} max-w-md"}>
+      <div class={classes("uploadEntry grid grid-cols-3 pb-4 items-center", %{"px-14" => photos?})}>
+        <p class={"#{if photos?, do: 'col-span-3', else: 'row-span-2'} max-w-md"}>
         <%= truncate_name(@entry, @string_length) %>
         </p>
-        <div class={"#{if photos?, do: 'gap-x-4 grid-cols-1', else: 'ml-[80px] col-span-2'} flex photoUploadingIsFailed items-center"}>
+        <div class={"#{if photos?, do: 'gap-x-4 grid-cols-1', else: 'ml-[80px] row-span-2'} flex photoUploadingIsFailed items-center"}>
           <%= render_slot(@inner_block) %>
         </div>
           <%= case @for do %>
@@ -1196,7 +1197,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   defp removal_button(assigns) do
     ~H"""
-    <button {assigns} aria-label="remove" class="justify-self-end grid-cols-1 cursor-pointer">
+    <button {assigns} aria-label="remove" class="justify-self-end grid-cols-1 cursor-pointer ml-5 lg:ml-auto">
       <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
     </button>
     """

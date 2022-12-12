@@ -7,12 +7,14 @@ defmodule PicselloWeb.Live.ClientLive.SideNavComponent do
         %{
           id: id,
           client: client,
-          arrow_show: arrow_show
+          arrow_show: arrow_show,
+          is_mobile: is_mobile
         },
         socket
       ) do
     socket
     |> assign(:id, id)
+    |> assign(:is_mobile, is_mobile)
     |> assign(:client, client)
     |> assign(:arrow_show, arrow_show)
     |> ok()

@@ -17,6 +17,18 @@ defmodule PicselloWeb.Live.ClientLive.OrderHistory do
   end
 
   @impl true
+  def handle_params(params, _, socket) do
+    socket
+    |> is_mobile(params)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
+    socket |> assign(:is_mobile, !is_mobile) |> noreply
+  end
+
+  @impl true
   def handle_event(
         "order-detail",
         %{"order_number" => order_number},

@@ -35,6 +35,18 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   end
 
   @impl true
+  def handle_params(params, _, socket) do
+    socket
+    |> is_mobile(params)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
+    socket |> assign(:is_mobile, !is_mobile) |> noreply
+  end
+
+  @impl true
   def handle_event("create-gallery", %{"job_id" => job_id}, socket) do
     job_id = String.to_integer(job_id)
     job = Jobs.get_job_by_id(job_id)

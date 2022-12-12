@@ -1,10 +1,18 @@
 <.header socket={@socket} client={@client} />
-<div class="lg:flex mt-10 center-container">
-    <div class="h-48">
-        <%= live_component PicselloWeb.Live.ClientLive.SideNavComponent, id: @client.id, client: @client, arrow_show: "job-details" %>
+<div class={classes("lg:flex lg:mt-10 center-container", %{"hidden" => is_nil(@is_mobile)})}>
+    <div class={classes("h-48 lg:block", %{"hidden" => !@is_mobile})}>
+        <%= live_component PicselloWeb.Live.ClientLive.SideNavComponent, id: @client.id, client: @client, arrow_show: "job-details", is_mobile: @is_mobile %>
     </div>
     <%= if Enum.any?(@jobs) do %>
-    <div class="ml-10 w-full">
+    <div class={classes("w-full p-5 lg:p-0 lg:block", %{"ml-10 hidden" => @is_mobile})}>
+        <div class="flex items-center lg:mt-0 mb-2">
+            <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
+               <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+            </div>
+            <div class="ml-3 lg:hidden">
+               <span class="font-sans lg:text-2xl font-bold text-3xl">Job Details</span>
+            </div>
+         </div>
     <div class="md:flex-row font-bold grid md:grid-cols-5 lg:grid-cols-4">
         <div class="lg:col-span-3 md:col-span-3 hidden md:block pl-2">Job Details</div>
         <div class="hidden md:block">Actions</div>
@@ -12,7 +20,7 @@
 
     <hr class="md:block border-blue-planning-300 border-2 mb-1 hidden"/>
     <%= for {job, job_index} <- @jobs |> Enum.with_index() do %>
-        <div {testid("client-job-#{job.id}")} class="md:py-0 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">
+        <div {testid("client-job-#{job.id}")} class="md:py-0 md:mb-0 mb-8 md:pl-3 md:pt-2 border border-base-200 rounded-lg md:border-none">
             <div class="relative md:grid md:grid-cols-5 lg:grid-cols-4 flex flex-wrap my-4 md:my-0 md:mx-0 mx-4">
                 <div class="flex flex-row w-full col-span-3 align-top">
                     <.table_item socket={@socket} job={job}/>

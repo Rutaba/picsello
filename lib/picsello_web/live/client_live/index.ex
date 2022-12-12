@@ -490,7 +490,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   def select_dropdown(assigns) do
     ~H"""
-    <div id="select" class="relative" data-offset-y="10" phx-hook="Select">
+    <div id="select" class={"relative w-full mt-3 md:mt-0 md:ml-5"} data-offset-y="10" phx-hook="Select">
       <h1 class="font-extrabold text-sm"><%= @title %></h1>
       <div class="flex flex-row items-center">
           <%= String.capitalize(String.replace(@selected_option, "_", " ")) %>
@@ -514,12 +514,12 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   def tags(assigns) do
     ~H"""
-      <div class="flex-wrap items-center sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
+      <div class="flex-wrap items-center sm:col-span-2 sm:flex gap-2 sm:gap-0">
         <%= if Enum.empty?(Clients.client_tags(@client)) do%>
             <p><%= "-" %></p>
         <% else %>
           <%= for tag <- Clients.client_tags(@client) do%>
-            <span class="inline-block mt-1 pb-1 text-s bg-gray-200 text-gray-800 px-2 mr-1 rounded" phx-value-client_id={@client.id} phx-value={tag}>
+            <span class="mb-2 inline-block mt-1 pb-1 text-s bg-gray-200 text-gray-800 px-2 mr-1 rounded" phx-value-client_id={@client.id} phx-value={tag}>
               <%= String.capitalize(tag) %>
               <%= if tag not in @job_types do %>
                 <a class="text-gray-800 hover:text-gray-600" phx-click="delete-tag" phx-value-client_id={@client.id} phx-value-tag={tag}>&times</a>

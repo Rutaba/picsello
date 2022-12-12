@@ -1,10 +1,18 @@
 <.header socket={@socket} client={@client} />
-<div class="lg:flex mt-10 center-container">
-  <div class="h-48">
-    <%= live_component PicselloWeb.Live.ClientLive.SideNavComponent, id: @client.id, client: @client, arrow_show: "contact-details" %>
+<div class={classes("lg:flex lg:mt-10 center-container", %{"hidden" => is_nil(@is_mobile)})}>
+  <div class={classes("h-48 lg:block", %{"hidden" => !@is_mobile})}>
+    <%= live_component PicselloWeb.Live.ClientLive.SideNavComponent, id: @client.id, client: @client, arrow_show: "contact-details", is_mobile: @is_mobile %>
   </div>
-  <div class="w-full">
-    <.card color="blue-planning-300" title="Details" class="md:col-span-2 ml-20">
+  <div class={classes("w-full p-5 lg:p-0 lg:block", %{"hidden" => @is_mobile})}>
+    <div class="flex items-center lg:mt-0 mb-2">
+      <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
+         <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+      </div>
+      <div class="ml-3 lg:hidden">
+         <span class="font-sans lg:text-2xl font-bold text-3xl">Contact Details</span>
+      </div>
+   </div>
+    <.card color="blue-planning-300" title="Details" class={classes("md:col-span-2", %{"ml-20" => @is_mobile})}>
     <div {testid("client-details")} class="flex flex-col lg:flex-row">
       <div class="flex-1 text-base-250">
         <%= if @client.phone do %>
@@ -40,13 +48,13 @@
       </div>
     </div>
   </.card>
-  <.card {testid("card-Private notes")} title="Private notes" class={"h-100 md:col-span-2 md:h-40 ml-20 mt-5"}>
+  <.card {testid("card-Private notes")} title="Private notes" class={classes("h-100 md:col-span-2 md:h-40 mt-5", %{"ml-20" => @is_mobile})}>
     <%= if @client.notes do %>
       <p class={"whitespace-pre-line line-clamp-4"}><%= @client.notes %></p>
     <% else %>
       <p class={"text-base-250 line-clamp-4"}>Click edit to add a note about your client and any details you want to remember.</p>
     <% end %>
-    <.icon_button color="blue-planning-300" icon="pencil" phx-click="open-notes" class="mt-auto self-start">
+    <.icon_button color="blue-planning-300" icon="pencil" phx-click="open-notes" class="self-start mt-5">
       Edit
     </.icon_button>
   </.card>

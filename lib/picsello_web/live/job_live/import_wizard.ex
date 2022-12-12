@@ -65,8 +65,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     <div class="modal">
       <.close_x />
 
-      <div class="flex">
-        <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself, title: "back"}, else: %{}} class="flex">
+      <div class="flex flex-col md:flex-row">
+        <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @myself, title: "back"}, else: %{}} class="flex w-full md:w-auto">
           <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
             Step <%= step_number(@step, @steps) %>
           </span>
@@ -83,8 +83,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         </a>
 
         <%= if step_number(@step, @steps) > 2 do%>
-          <div class="flex hover:cursor-auto">
-            <div class="ml-3 mr-3 text-base-200">|</div>
+          <div class="flex hover:cursor-auto mt-2">
+            <div class="ml-3 mr-3 text-base-200 hidden md:block">|</div>
             <.icon name="client-icon" class="w-7 h-7 mr-1"></.icon>
             <p class="font-bold">Client: <span class="font-normal"><%=
             cond do
@@ -97,7 +97,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         <% end %>
       </div>
 
-      <h1 class="mt-2 mb-4 text-3xl">
+      <h1 class="mt-2 mb-4 text-s md:text-3xl">
         <strong class="font-bold">Import Existing Job:</strong>
         <%= heading_subtitle(@step) %>
       </h1>
