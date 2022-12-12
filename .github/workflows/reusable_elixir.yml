@@ -1,0 +1,131 @@
+name: Reusable Elixir CI
+
+on:
+  workflow_call:
+    inputs:
+      partition:
+        required: true
+        type: string
+      partitions:
+        required: true
+        type: string
+
+env:
+  GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 }}
+  PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE: 'Cost of Living Adjustments!A1:B51'
+  PACKAGES_CALCULATOR_PRICES_RANGE: 'Sheet1!A1:E200'
+  PACKAGES_CALCULATOR_SHEET_ID: '1o-jjICzCgevEyf4Kw5keOyTEu8IK5EgfOXfeV_lSMVI'
+  PHOTO_PROCESSING_INPUT_TOPIC: 'projects/celtic-rite-323300/topics/stagging-photo-to-process'
+  PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION: 'projects/celtic-rite-323300/subscriptions/github-ci-processed-photos-sub'
+  PHOTO_PROCESSING_OUTPUT_TOPIC: 'github-ci-processed-photos'
+  PHOTO_STORAGE_BUCKET: 'picsello-staging'
+  PUBLIC_BUCKET: 'test-profiles'
+  SENDGRID_MARKETING_UNSUBSCRIBE_ID: '1234'
+  SHELL: /usr/bin/bash
+
+permissions:
+  contents: read
+  
+jobs:
+  test:
+
+    name: Build and test
+    runs-on: ubuntu-20.04
+    timeout-minutes: 45
+
+    services:
+      db:
+        image: postgres:13
+        ports: ['5432:5432']
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        id: beam
+        with:
+          elixir-version: '1.12.3' # Define the elixir version [required]
+          otp-version: '24.1.4' # Define the OTP version [required]
+
+      - name: Cache deps
+        id: cache-deps
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-elixir-deps
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ env.cache-name }}-
+      
+      - name: Cache compiled build
+        id: cache-build
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-compiled-build
+        with:
+          path: _build
+          key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ env.cache-name }}-
+            ${{ runner.os }}-mix-
+
+      - name: Restore PLT cache
+        uses: actions/cache@v3
+        id: plt-cache
+        with:
+          key: |
+            ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
+          path: |
+            priv/plts
+
+      - name: Install dependencies
+        if: steps.cache-elixir-deps.outputs.cache-hit != 'true'
+        run: mix deps.get
+
+      - name: Compile deps for tests
+        run: MIX_ENV=test mix deps.compile
+
+      - name: Compile code for tests
+        run: MIX_ENV=test mix compile --warnings-as-errors
+
+      - name: Run Credo
+        run: MIX_ENV=test mix credo
+
+      - name: Create PLTs
+        if: steps.plt-cache.outputs.cache-hit != 'true'
+        run: mix dialyzer --plt
+
+      - name: Run dialyzer
+        run: mix dialyzer --format github
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.14.2' # WARNING: *must* match ../.node-version
+          cache: 'npm'
+          cache-dependency-path: assets/package-lock.json
+
+      - name: Build js
+        run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
+
+      - name: Run tests (${{ inputs.partition }}/${{ inputs.partitions }})
+        run: MIX_TEST_PARTITION=${{ inputs.partition }} mix test --trace --cover --warnings-as-errors --partitions ${{ inputs.partitions }}
+
+      - name: Archive screenshots
+        if: ${{failure()}}
+        uses: actions/upload-artifact@v3
+        with:
+          name: screenshots
+          path: |
+            screenshots/*.png
