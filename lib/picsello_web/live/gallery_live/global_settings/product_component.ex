@@ -1,4 +1,5 @@
 defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
+  @moduledoc false
   use PicselloWeb, :live_component
 
   alias Picsello.{GlobalSettings, Category, Galleries}

@@ -72,7 +72,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Go back",
+      close_label: "No, Go back",
       confirm_event: "set_expire",
       confirm_label: "Yes, set expiration date",
       icon: "warning-orange",
@@ -105,7 +105,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       ) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Go back",
+      close_label: "No, go back",
       confirm_event: "never_expire",
       confirm_label: "Yes, set galleries to never expire",
       icon: "warning-orange",
@@ -160,12 +160,12 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           }
         } = socket
       ) do
-      if watermark_case == :image do
-        file = File.read!(@global_watermark_photo)
-        path = Application.fetch_env!(:picsello, :global_watermarked_path)
-        {:ok, _object} = PhotoStorage.insert(path, file)
+    if watermark_case == :image do
+      file = File.read!(@global_watermark_photo)
+      path = Application.fetch_env!(:picsello, :global_watermarked_path)
+      {:ok, _object} = PhotoStorage.insert(path, file)
 
-        ProcessingManager.update_watermark(
+      ProcessingManager.update_watermark(
         %GSGallery.Photo{
           id: UUID.uuid4(),
           user_id: current_user.id,
@@ -190,7 +190,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         socket
         |> assign(global_settings_gallery: global_settings)
         |> put_flash(:success, "Watermark Updated!")
-        |> assign(:case, :image)
 
       {:error, _} ->
         socket
@@ -203,7 +202,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   def handle_event("delete", _, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Go back",
+      close_label: "No, go back",
       confirm_event: "delete_watermarks",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
@@ -215,7 +214,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   def handle_event("select_expiration", _, socket),
-      do: new_section(socket, expiration_date?: true)
+    do: new_section(socket, expiration_date?: true)
 
   def handle_event("back_to_menu", _, socket), do: new_section(socket)
   def handle_event("select_watermark", _, socket), do: new_section(socket, watermark_option: true)
@@ -288,7 +287,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp assign_controls(%{assigns: %{global_settings_gallery: global_settings_gallery}} = socket)
-      when not is_nil(global_settings_gallery) do
+       when not is_nil(global_settings_gallery) do
     socket |> assign(is_never_expires: global_settings_gallery.expiration_days == 0)
   end
 
@@ -297,7 +296,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp assign_options(
-        %{assigns: %{global_settings_gallery: %{expiration_days: expiration_days}}} = socket
+         %{assigns: %{global_settings_gallery: %{expiration_days: expiration_days}}} = socket
        )
        when not is_nil(expiration_days) do
     year = trunc(expiration_days / 365)
@@ -358,11 +357,11 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket
       ) do
     global_settings_gallery
-      |> change(global_watermark_path: watermarked_preview_path)
-      |> Repo.insert_or_update()
-      |> then(fn {:ok, global_settings} ->
-        socket |> assign(global_settings_gallery: global_settings) |> noreply()
-      end)
+    |> change(global_watermark_path: watermarked_preview_path)
+    |> Repo.insert_or_update()
+    |> then(fn {:ok, global_settings} ->
+      socket |> assign(global_settings_gallery: global_settings) |> noreply()
+    end)
   end
 
   @impl true
@@ -467,6 +466,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           |> put_flash(:error, "Failed to Delete Watermark")
       end
 
+    _galleries =
       galleries
       |> Enum.reject(&(&1.use_global == false))
       |> Enum.map(fn x ->
@@ -560,7 +560,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp assign_image_watermark_change(
-        %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket,
+         %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket,
          image
        ) do
     changeset =
@@ -575,7 +575,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp assign_default_changeset(
-        %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket
+         %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket
        ) do
     socket
     |> assign(
@@ -593,8 +593,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp assign_text_watermark_change(
-        %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket,
-        %{"gallery" => %{"watermark_text" => watermark_text}}
+         %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket,
+         %{"gallery" => %{"watermark_text" => watermark_text}}
        ) do
     global_settings_gallery
     |> change(%{watermark_text: watermark_text, watermark_type: "text"})
@@ -778,7 +778,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   defp section(%{product_section?: true, print_price_section?: true} = assigns) do
     ~H"""
-      <.live_component id="print_pricing" module={PrintProductComponent} product={@product} />
+      <.live_component id="product_prints" module={PrintProductComponent} product={@product} />
     """
   end
 

@@ -1,4 +1,5 @@
 defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
+  @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Repo
   alias Picsello.GlobalSettings
@@ -45,8 +46,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
 
         <%= if p_selections && p_selections.open? do %>
           <div class="border-l border-r border-b rounded-b border-blue-planning-300">
-            <%= for {size, %{values: values, open?: open?}} <- p_selections.selections, value = Enum.min_by(values, & &1.base_cost) do %>
-              <.size_row size={size} value={value} values={values} open?={open?} myself={@myself} print_products_map={@print_products_map} product={product} />
+            <%= for {size, %{values: values, open?: open?}} <- p_selections.selections do %>
+              <.size_row size={size} values={values} open?={open?} myself={@myself} print_products_map={@print_products_map} product={product} />
               <%= for %{type: type, base_cost: base_cost} <- values, open? == true do %>
                   <div class="flex flex-col md:grid md:grid-cols-4 md:pl-12 md:py-2 cursor-pointer md:items-center hover:bg-blue-planning-100 md:border-none md:rounded-none m-6 p-8 rounded-lg border border-base-200">
                     <% final_cost = final_cost(@print_products_map, product.id, size, type) %>
@@ -55,12 +56,14 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
                     <div class="font-bold pl-4 hidden md:block"><%= split(type, "_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ") %> </div>
                     <div class="pl-4 hidden md:block">$<%= sub(final_cost, base_cost) %></div>
                     <div class="hidden md:block"><%= base_cost %></div>
-                    <.form let={f} for={:size} phx-target={@myself} phx-change="final_cost" id={size <> type} class="before:content-{$}">
+                    <.form let={f} for={:size} phx-target={@myself} phx-change="final_cost" id={size <> type <> "form"} class="flex items-center">
                       <%= for {name, value} <- [{:type, type}, {:product_id, product.id}, {:size, size}, {:base_cost, to_decimal(base_cost)}] do %>
                         <%= hidden_input f, name, value: value %>
                       <% end %>
                       <b class="md:hidden mr-3">Final Price</b>
-                      <%= input f, :final_cost, type: :number_input, step: :any, value: final_cost, phx_target: @myself, onkeydown: "return event.key != 'Enter';", class: "w-24 md:mt-2 h-12 border rounded-md border-blue-planning-300 p-4 text-center" %>
+
+                      <%= input f, :final_cost, type: :number_input, step: :any, value: final_cost, phx_target: @myself, onkeydown: "return event.key != 'Enter';", id: "final_cost", phx_hook: "FinalCostInput", data_span_id: size <> type, data_base_cost: to_decimal(base_cost), data_final_cost: final_cost, class: "w-24 h-12 border rounded-md border-blue-planning-300 p-4 text-center" %>
+                      <span id={size <> type} style="color: white;" class="text-[0.65rem] ml-1 md:w-auto w-20">must be greater than base cost</span>
                     </.form>
                   </div>
               <% end %>
@@ -73,7 +76,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
 
   defp pricing_card_mobile(assigns) do
     ~H"""
-
       <div class={"font-bold md:hidden"}><%= split(@type, "_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ") %> </div>
       <hr class="my-2 md:hidden" />
       <div class="flex flex-row justify-between md:hidden">
@@ -88,7 +90,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
           </div>
         </div>
       </div>
-
     """
   end
 
@@ -97,14 +98,14 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
            print_products_map: print_products_map,
            size: size,
            product: product,
-           values: values,
-           value: %{base_cost: base_cost}
+           values: values
          } = assigns
        ) do
-    final_cost =
-      values
-      |> Enum.map(&final_cost(print_products_map, product.id, size, &1.type))
-      |> Enum.min()
+    details =
+      Enum.map(values, fn %{type: type, base_cost: base_cost} ->
+        final_cost = final_cost(print_products_map, product.id, size, type)
+        %{final_cost: final_cost, profit: sub(final_cost, base_cost)}
+      end)
 
     ~H"""
     <div class={"grid md:grid-cols-4 grid-cols-2 pl-6 py-3 border-b border-base-200 cursor-pointer #{if @open?, do: "bg-blue-planning-300 rounded-lg"}"} phx-target={@myself} phx-click="expand_product_size" phx-value-size={size} phx-value-product_id={product.id}>
@@ -113,9 +114,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
         <%= split(size, "x") |> Enum.join(" x ") %>
       </div>
       <%= if !@open? do %>
-        <div class="pl-6 text-base-250 hidden md:flex">From $<%= sub(final_cost, base_cost) %></div>
-        <div class="pl-4 text-base-250 hidden md:flex">From <%= base_cost %></div>
-        <div class="pl-3 md:pl-0 text-base-250">From $<%= final_cost %> </div>
+        <div class="pl-6 text-base-250 hidden md:flex">From $<%= get_min(details, :profit) %></div>
+        <div class="pl-4 text-base-250 hidden md:flex">From <%= get_min(values, :base_cost) %></div>
+        <div class="pl-3 md:pl-0 text-base-250">From $<%= get_min(details, :final_cost) %> </div>
       <% end %>
     </div>
     """
@@ -177,6 +178,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
         %{assigns: %{print_products: print_products}} = socket
       ) do
     print_product = find(print_products, product_id, :product_id)
+
     unless Decimal.lt?(new(final_cost), new(base_cost)) do
       print_product
       |> Map.get(:sizes)
@@ -233,7 +235,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
     print_products
     |> Map.get(product_id)
     |> Map.get(size <> type)
-    |> Map.get(:final_cost)
+    |> Map.get(:final_cost, new())
   end
 
   defp updater(selections, size_for_update) do
@@ -244,10 +246,13 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
   end
 
   defp split(size, term), do: String.split(size, term, trim: true)
-  defp sub(decimal, non_decimal), do: Decimal.sub(decimal || new(0), to_decimal(non_decimal))
-  defp new(str_value), do: Decimal.new(str_value)
+  defp sub(decimal, non_decimal), do: Decimal.sub(decimal || new(), to_decimal(non_decimal))
 
   defp find(list, id, key \\ :id), do: Enum.find(list, &(&1 |> Map.get(key) |> to_string() == id))
+  defp get_min(details, key), do: Enum.min_by(details, & &1[key])[key]
+  defp new(value \\ 0)
+  defp new(""), do: new()
+  defp new(value), do: Decimal.new(value)
 
   defdelegate to_decimal(value), to: GlobalSettings
 end

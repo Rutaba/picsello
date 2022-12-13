@@ -1,4 +1,5 @@
 defmodule Picsello.GlobalSettings do
+  @moduledoc false
   alias Picsello.GlobalSettings.GalleryProduct, as: GSGalleryProduct
   alias Picsello.GlobalSettings.PrintProduct, as: GSPrintProduct
   alias Picsello.Repo
@@ -82,12 +83,30 @@ defmodule Picsello.GlobalSettings do
   def size([total_cost, shipping_cost, print_cost, _, rounding, type, size], [_, "size"]),
     do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
 
-  def size([total_cost, shipping_cost, print_cost, _, rounding, type, _mounting, size, _surface, _texture], [_, _, "size", _, _]),
-    do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
+  def size(
+        [
+          total_cost,
+          shipping_cost,
+          print_cost,
+          _,
+          rounding,
+          type,
+          _mounting,
+          size,
+          _surface,
+          _texture
+        ],
+        [_, _, "size", _, _]
+      ),
+      do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
 
-  def size([total_cost, shipping_cost, print_cost, _, rounding, _mounting, type , size], [_, _, "size"]),
-    do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
-    
+  def size([total_cost, shipping_cost, print_cost, _, rounding, _mounting, type, size], [
+        _,
+        _,
+        "size"
+      ]),
+      do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
+
   def size(final_cost, base_cost, size, type),
     do: %{final_cost: to_decimal(final_cost), base_cost: base_cost, size: size, type: type}
 
