@@ -459,7 +459,7 @@ defmodule Picsello.Packages do
 
   defp maybe_insert_questionnaire_multi(
          multi,
-         %{changeset: %{changes: %{organization_id: organization_id}}},
+         %Ecto.Changeset{changes: %{organization_id: organization_id}},
          %{
            questionnaire: questionnaire
          }
@@ -470,8 +470,8 @@ defmodule Picsello.Packages do
         questionnaire,
         organization_id
       )
+      |> Questionnaire.changeset()
     end)
-    |> Questionnaire.changeset()
   end
 
   defp maybe_insert_questionnaire_multi(multi, _, _), do: multi
