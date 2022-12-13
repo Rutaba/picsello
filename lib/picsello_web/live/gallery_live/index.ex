@@ -283,7 +283,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     ~H"""
       <div class="flex flex-col md:flex-row">
         <%= if Galleries.preview_image(@gallery) do %>
-          <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{Galleries.preview_image(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}>
+          <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{cover_photo_url(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}>
           </div>
         <% else %>
           <div class="rounded-lg h-full p-4 items-center flex flex-col w-[200px] h-[130px] mr-4 md:mr-7 bg-base-200">

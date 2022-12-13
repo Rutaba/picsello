@@ -18,13 +18,11 @@ export default {
       plugins: [dayGridPlugin, listPlugin, timeGridPlugin],
       timeZone,
       initialView: getView(),
-      headerToolbar: isMobile()
-        ? undefined
-        : {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek',
-          },
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek',
+      },
       eventSources: [{ url: feedPath }],
       editable: true,
       selectable: true,

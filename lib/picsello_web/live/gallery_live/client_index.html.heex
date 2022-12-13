@@ -144,11 +144,10 @@
             data-has-more-photos={ "#{@has_more_photos}" }
             data-photo-width="300">
             <%= for %{aspect_ratio: aspect_ratio} = photo when not is_nil(aspect_ratio) <- @photos do%>
-              <%= live_component Photo,
+              <%= live_component ClientPhoto,
                   id: photo.id,
                   photo: photo,
                   photo_width: 300,
-                  is_client_gallery: true,
                   is_likable: true
               %>
             <% end %>
