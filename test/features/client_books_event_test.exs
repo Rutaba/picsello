@@ -183,7 +183,7 @@ defmodule Picsello.ClientBooksEventTest do
                ],
                booking_proposals: [%{}],
                booking_event_id: ^event_id
-             }
+             } = job
            ] =
              Picsello.Repo.all(Picsello.Job)
              |> Picsello.Repo.preload([
@@ -194,8 +194,39 @@ defmodule Picsello.ClientBooksEventTest do
                [package: :contract]
              ])
 
+    [deposit_payment] = Picsello.PaymentSchedules.payment_schedules(job)
+
+    Mox.stub(Picsello.MockPayments, :construct_event, fn metadata, _, _ ->
+      %{id: proposal_id} = Picsello.BookingProposal.last_for_job(job_id)
+
+      {:ok,
+       %{
+         type: "checkout.session.completed",
+         data: %{
+           object: %Stripe.Session{
+             client_reference_id: "proposal_#{proposal_id}",
+             metadata: %{"paying_for" => metadata}
+           }
+         }
+       }}
+    end)
+
     assert [%{args: %{"id" => ^job_id}, worker: "Picsello.Workers.ExpireBooking"}] =
              Picsello.Repo.all(Oban.Job)
+
+    session
+    |> post(
+      "/stripe/connect-webhooks",
+      "#{deposit_payment.id}",
+      [
+        {"stripe-signature", "love, stripe"}
+      ]
+    )
+
+    assert_receive {:delivered_email, email}
+    %{"subject" => subject, "body" => body} = email |> email_substitutions
+    assert "Chad Smith just booked your event: Event 1!" = subject
+    assert body =~ "You have a new booking from: Event 1"
   end
 
   feature "client books event and package has contract", %{
