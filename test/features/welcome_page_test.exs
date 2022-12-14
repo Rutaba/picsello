@@ -50,7 +50,7 @@ defmodule Picsello.WelcomePageTest do
     feature "user resends confirmation email", %{session: session} do
       session
       |> assert_has(testid("attention-item", text: "Confirm your email"))
-      |> assert_has(testid("attention-item", count: 8))
+      |> assert_has(testid("attention-item", count: 7))
       |> click(button("Resend email"))
 
       assert_receive {:delivered_email, email}
@@ -63,7 +63,7 @@ defmodule Picsello.WelcomePageTest do
 
     feature "user sees attention card to create new lead", %{session: session, user: user} do
       session
-      |> assert_has(testid("attention-item", count: 8))
+      |> assert_has(testid("attention-item", count: 7))
       |> find(
         testid("attention-item", text: "Create your first lead"),
         &click(&1, button("Create your first lead"))
@@ -154,7 +154,7 @@ defmodule Picsello.WelcomePageTest do
       session
       |> sign_in(user)
       |> visit("/")
-      |> assert_has(testid("attention-item", count: 7))
+      |> assert_has(testid("attention-item", count: 6))
     end
   end
 

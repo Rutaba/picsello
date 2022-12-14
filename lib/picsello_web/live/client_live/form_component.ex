@@ -368,7 +368,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
     case save_client(params, socket) do
       {:ok, client} ->
         send(socket.parent_pid, {:update, client})
-        socket |> close_modal() |> noreply()
+        socket |> close_modal() |> redirect(to: "/clients/#{client.id}") |> noreply()
 
       {:error, changeset} ->
         socket |> assign(changeset: changeset) |> noreply()
