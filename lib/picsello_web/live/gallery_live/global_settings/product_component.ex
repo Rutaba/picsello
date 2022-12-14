@@ -64,7 +64,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
                 <div>
                   <.form let={f} for={:product} phx-change="markup" phx-target={@myself} >
                     <span class="font-bold text-sm mr-2">Markup by</span>
-                    <%= text_input f, :markup, class: "w-20 mt-2 h-12 border rounded-md border-blue-planning-300 p-4 text-center", phx_hook: "PercentMask", value: "#{Decimal.mult(product.markup, 100)}%" %>
+                    <%= text_input f, :markup, onkeydown: "return event.key != 'Enter';", class: "w-24 mt-2 h-12 border rounded-md border-blue-planning-300 p-4 text-center", phx_hook: "PercentMask", value: "#{Decimal.mult(product.markup, 100)}%" %>
                     <%= hidden_input f, :product_id, value: product.id %>
                   </.form>
                 </div>

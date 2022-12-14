@@ -44,8 +44,15 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> is_mobile(params)
     |> assign(galleries: galleries)
     |> assign(global_settings_gallery: global_settings_gallery)
-    |> new_section(expiration_date?: true)
-    |> then(&elem(&1, 1))
+    |> assign(print_price_section?: false)
+    |> assign(product_section?: false)
+    |> assign(product_section?: false)
+    |> assign(watermark_option: false)
+    |> then(fn socket ->
+      %{assigns: %{is_mobile: is_mobile}} = socket
+      assign(socket, expiration_date?: !is_mobile)
+      end)
+    |> assign_title()
     |> assign_controls()
     |> assign_options()
     |> assign_title()
@@ -226,7 +233,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> assign(:case, :image)
     |> assign_default_changeset()
     |> assign(:ready_to_save, false)
-    |> noreply()
   end
 
   @impl true
@@ -330,11 +336,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   defp new_section(socket, opts \\ []) do
     socket
-    |> assign(watermark_option: false)
-    |> assign(expiration_date?: false)
     |> assign(print_price_section?: false)
     |> assign(product_section?: false)
-    |> assign(product_section?: false)
+    |> assign(expiration_date?: false)
+    |> assign(watermark_option: false)
     |> assign(opts)
     |> assign_title()
     |> noreply()

@@ -62,7 +62,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
                       <% end %>
                       <b class="md:hidden mr-3">Final Price</b>
 
-                      <%= input f, :final_cost, type: :number_input, step: :any, value: final_cost, phx_target: @myself, onkeydown: "return event.key != 'Enter';", id: "final_cost", phx_hook: "FinalCostInput", data_span_id: size <> type, data_base_cost: to_decimal(base_cost), data_final_cost: final_cost, class: "w-24 h-12 border rounded-md border-blue-planning-300 p-4 text-center" %>
+                      <%= input f, :final_cost, type: :number_input, step: "0.01", value: final_cost |> Decimal.round(2), phx_target: @myself, onkeydown: "return event.key != 'Enter';", id: "final_cost", phx_hook: "FinalCostInput", data_span_id: size <> type, data_base_cost: to_decimal(base_cost), data_final_cost: final_cost, class: "w-24 h-12 border rounded-md border-blue-planning-300 p-4 text-center" %>
                       <span id={size <> type} style="color: white;" class="text-[0.65rem] ml-1 md:w-auto w-20">must be greater than base cost</span>
                     </.form>
                   </div>
@@ -71,25 +71,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
           </div>
         <% end %>
     </div>
-    """
-  end
-
-  defp pricing_card_mobile(assigns) do
-    ~H"""
-      <div class={"font-bold md:hidden"}><%= split(@type, "_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ") %> </div>
-      <hr class="my-2 md:hidden" />
-      <div class="flex flex-row justify-between md:hidden">
-        <div class="flex flex-col">
-          <div class="flex my-2">
-            <b class="mr-6">Your Profit</b>
-            $<%= sub(@final_cost, @base_cost) %>
-          </div>
-          <div class="flex my-2">
-            <b class="mr-6">Base Cost</b>
-            <%= @base_cost %>
-          </div>
-        </div>
-      </div>
     """
   end
 
@@ -116,9 +97,28 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
       <%= if !@open? do %>
         <div class="pl-6 text-base-250 hidden md:flex">From $<%= get_min(details, :profit) %></div>
         <div class="pl-4 text-base-250 hidden md:flex">From <%= get_min(values, :base_cost) %></div>
-        <div class="pl-3 md:pl-0 text-base-250">From $<%= get_min(details, :final_cost) %> </div>
+        <div class="pl-3 md:pl-0 text-base-250">From $<%= get_min(details, :final_cost) |> Decimal.round(2) %> </div>
       <% end %>
     </div>
+    """
+  end
+
+  defp pricing_card_mobile(assigns) do
+    ~H"""
+      <div class={"font-bold md:hidden"}><%= split(@type, "_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ") %> </div>
+      <hr class="my-2 md:hidden" />
+      <div class="flex flex-row justify-between md:hidden">
+        <div class="flex flex-col">
+          <div class="flex my-2">
+            <b class="mr-6">Your Profit</b>
+            $<%= sub(@final_cost, @base_cost) %>
+          </div>
+          <div class="flex my-2">
+            <b class="mr-6">Base Cost</b>
+            <%= @base_cost %>
+          </div>
+        </div>
+      </div>
     """
   end
 

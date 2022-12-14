@@ -118,7 +118,7 @@ defmodule Picsello.GlobalSettings do
   end
 
   def to_decimal(%Money{amount: amount, currency: :USD}),
-    do: Decimal.new(to_string(amount / 100))
+    do: Decimal.round(to_string(amount / 100), 2)
 
   defp build_selections(selections, categories, product_id) do
     selections
