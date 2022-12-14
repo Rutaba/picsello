@@ -42,7 +42,9 @@ defmodule Picsello.GlobalSettings do
 
   def list_gallery_products(organization_id) do
     GSGalleryProduct
+    |> join(:inner, [gs_gallery_product], category in assoc(gs_gallery_product, :category))
     |> where([gallery_product], gallery_product.organization_id == ^organization_id)
+    |> order_by([_, category], category.position)
     |> preload(category: [:products])
     |> Repo.all()
   end
@@ -67,6 +69,7 @@ defmodule Picsello.GlobalSettings do
         |> GSGalleryProduct.changeset(%{
           category_id: category.id,
           organization_id: organization_id,
+          markup: category.default_markup,
           global_settings_print_products: print_products(category.whcc_id, print_category)
         })
         |> repo.insert!()
