@@ -44,6 +44,8 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   @impl true
   def handle_params(%{"id" => id} = params, _, socket) do
+    Phoenix.PubSub.subscribe(Picsello.PubSub, "gallery:#{id}")
+
     gallery =
       Galleries.get_gallery!(id)
       |> Repo.preload(:photographer)
