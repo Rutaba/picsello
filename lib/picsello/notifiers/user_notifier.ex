@@ -82,19 +82,39 @@ defmodule Picsello.Notifiers.UserNotifier do
   Deliver lead converted to job email.
   """
   def deliver_lead_converted_to_job(proposal, helpers) do
-    %{job: %{client: %{organization: %{user: user}} = client} = job} =
-      proposal |> Repo.preload(job: [client: [organization: :user]])
-
     %{
-      subject: "#{client.name} just completed their booking proposal!",
-      body: """
-      <p>Hello #{User.first_name(user)},</p>
-      <p>Yay! You have a new job!</p>
-      <p>#{client.name} completed their proposal. We have moved them from a lead to a job. Congratulations!</p>
-      <p>Click <a href="#{helpers.job_url(job.id)}">here</a> to view and access your job on Picsello.</p>
-      <p>Cheers!</p>
-      """
-    }
+      job:
+        %{
+          client: %{organization: %{user: user}} = client,
+          booking_event: booking_event
+        } = job
+    } = proposal |> Repo.preload(job: [:booking_event, client: [organization: :user]])
+
+    case booking_event do
+      nil ->
+        %{
+          subject: "#{client.name} just completed their booking proposal!",
+          body: """
+          <p>Hello #{User.first_name(user)},</p>
+          <p>Yay! You have a new job!</p>
+          <p>#{client.name} completed their proposal. We have moved them from a lead to a job. Congratulations!</p>
+          <p>Click <a href="#{helpers.job_url(job.id)}">here</a> to view and access your job on Picsello.</p>
+          <p>Cheers!</p>
+          """
+        }
+
+      _ ->
+        %{
+          subject: "#{client.name} just booked your event: #{booking_event.name}!",
+          body: """
+          <p>Hello #{User.first_name(user)},</p>
+          <p>Yay! You have a new booking from: #{booking_event.name}</p>
+          <p>#{client.name} completed their proposal. We have added it to your jobs at the specified time. Congratulations!</p>
+          <p>Click <a href="#{helpers.job_url(job.id)}">here</a> to view and access your job on Picsello.</p>
+          <p>Cheers!</p>
+          """
+        }
+    end
     |> deliver_transactional_email(user)
   end
 
