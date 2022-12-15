@@ -29,10 +29,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
             <b class="text-lg">
               <%="#{@title}s"%>
             </b>
-            <div class={"flex ml-auto border rounded-lg items-center border-blue-planning-300 px-2  cursor-pointer #{!open? && 'cursor-not-allowed pointer-events-none opacity-75'}"} phx-click="expand_product_all" phx-value-product_id={product.id} phx-target={@myself}>
-              <.icon name="down" class={"#{icon_class} text-blue-planning-300 mr-3"} />
-              <span  class={"cursor-pointer #{!open? && 'pointer-events-none'}"}>Expand All</span>
-            </div>
+            <.icon_button color="blue-planning-300" icon="down" class="flex ml-auto px-2" disabled={!open?} phx-click="expand_product_all" phx-value-product-id={product.id} phx-target={@myself}>
+              Expand All
+            </.icon_button>
           </div>
           <div class={classes("grid md:grid-cols-4 grid-cols-2 p-2 pl-14 text-base-250", %{"text-base-300" => open?})}>
             <%= for item <- ["Variation", "Your Profit", "Base Cost", "Final Price"] do %>
@@ -49,20 +48,21 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
             <%= for {size, %{values: values, open?: open?}} <- p_selections.selections do %>
               <.size_row size={size} values={values} open?={open?} myself={@myself} print_products_map={@print_products_map} product={product} />
               <%= for %{type: type, base_cost: base_cost} <- values, open? == true do %>
-                  <div class="flex flex-col md:grid md:grid-cols-4 md:pl-12 md:py-2 cursor-pointer md:items-center hover:bg-blue-planning-100 md:border-none md:rounded-none m-6 p-8 rounded-lg border border-base-200">
+                  <div class="flex flex-col md:grid md:grid-cols-4 md:pl-12 md:py-2 cursor-pointer md:items-center hover:bg-blue-planning-100 md:border-none md:rounded-none m-6 rounded-lg border border-base-200">
                     <% final_cost = final_cost(@print_products_map, product.id, size, type) %>
                     <.pricing_card_mobile type={type} size={size} base_cost={base_cost} final_cost={final_cost} product={product} target={@myself}/>
 
-                    <div class="font-bold pl-4 hidden md:block"><%= split(type, "_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ") %> </div>
-                    <div class="pl-4 hidden md:block">$<%= sub(final_cost, base_cost) %></div>
+                    <div class="font-bold hidden md:block"><%= split(type, "_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ") %> </div>
+                    <div class="hidden md:block">$<%= sub(final_cost, base_cost) %></div>
                     <div class="hidden md:block"><%= base_cost %></div>
                     <.form let={f} for={:size} phx-target={@myself} phx-change="final_cost" id={size <> type <> "form"} class="flex items-center">
                       <%= for {name, value} <- [{:type, type}, {:product_id, product.id}, {:size, size}, {:base_cost, to_decimal(base_cost)}] do %>
                         <%= hidden_input f, name, value: value %>
                       <% end %>
                       <b class="md:hidden mr-3">Final Price</b>
-
-                      <%= input f, :final_cost, type: :number_input, step: "0.01", value: final_cost |> Decimal.round(2), phx_target: @myself, onkeydown: "return event.key != 'Enter';", id: "final_cost", phx_hook: "FinalCostInput", data_span_id: size <> type, data_base_cost: to_decimal(base_cost), data_final_cost: final_cost, class: "w-24 h-12 border rounded-md border-blue-planning-300 p-4 text-center" %>
+                      <span class="w-24 md:w-44 border rounded-md border-blue-planning-300 py-3 pl-2 relative">$
+                        <%= input f, :final_cost, type: :number_input, step: "0.01", value: final_cost |> Decimal.round(2), phx_target: @myself, onkeydown: "return event.key != 'Enter';", id: "final_cost", phx_hook: "FinalCostInput", data_span_id: size <> type, data_base_cost: to_decimal(base_cost), data_final_cost: final_cost, class: "absolute border-none bg-transparent top-0 left-1.5 w-full" %>
+                      </span>
                       <span id={size <> type} style="color: white;" class="text-[0.65rem] ml-1 md:w-auto w-20">must be greater than base cost</span>
                     </.form>
                   </div>
@@ -138,7 +138,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
 
   def handle_event(
         "expand_product_all",
-        %{"product_id" => product_id},
+        %{"product-id" => product_id},
         %{assigns: %{selections: selections}} = socket
       ) do
     product_id = String.to_integer(product_id)
@@ -154,6 +154,21 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
     |> then(&(socket |> assign(:selections, &1) |> noreply()))
   end
 
+  @impl true
+  def handle_event(
+        "expand_product",
+        %{"product_id" => product_id},
+        %{assigns: %{products: products, selections: selections}} = socket
+      ) do
+    product = find(products, product_id)
+
+    selections
+    |> Map.get(product.id)
+    |> process_product(selections, product)
+    |> then(&(socket |> assign(:selections, &1) |> noreply()))
+  end
+
+  @impl true
   def handle_event(
         "expand_product_size",
         %{"size" => size, "product_id" => product_id},

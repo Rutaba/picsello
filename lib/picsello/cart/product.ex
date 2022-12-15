@@ -8,6 +8,7 @@ defmodule Picsello.Cart.Product do
 
   use Ecto.Schema
   alias Picsello.{Product, Repo}
+  @card_category_id Application.compile_env(:picsello, :card_category_id)
 
   schema "product_line_items" do
     field :editor_id, :string
@@ -69,11 +70,11 @@ defmodule Picsello.Cart.Product do
         ~w[editor_id preview_url quantity round_up_to_nearest selections shipping_base_charge shipping_upcharge unit_markup unit_price print_credit_discount volume_discount price whcc_product_id]a
       )
 
+  def new(%{whcc_product: %{category: %{whcc_id: @card_category_id}}} = fields) do
+    %__MODULE__{round_up_to_nearest: 500} |> Map.merge(fields)
+  end
   def new(fields) do
-    %__MODULE__{
-      round_up_to_nearest: 500
-    }
-    |> Map.merge(fields)
+    %__MODULE__{round_up_to_nearest: 100} |> Map.merge(fields)
   end
 
   def charged_price(%__MODULE__{
@@ -91,11 +92,10 @@ defmodule Picsello.Cart.Product do
     {credit, opts} = Keyword.pop(opts, :credits, ~M[0]USD)
     real_price = real_price(product, opts)
     whcc_product = Product |> Repo.get(product.whcc_product.id) |> Repo.preload(:category)
-    card_category_id = get_card_category_id()
 
     {price, volume_discount} =
       case whcc_product.category.whcc_id do
-        ^card_category_id ->
+        @card_category_id ->
           {real_price, Money.new(0)}
 
         _ ->
@@ -116,7 +116,11 @@ defmodule Picsello.Cart.Product do
   end
 
   defp real_price(
-         %{round_up_to_nearest: nearest, shipping_base_charge: shipping_base_charge} = product,
+    %{
+      round_up_to_nearest: nearest,
+      shipping_base_charge: shipping_base_charge,
+      whcc_product: %{category: category}
+    } = product,
          opts
        ) do
     product
@@ -129,31 +133,43 @@ defmodule Picsello.Cart.Product do
       end
     )
     |> round_up_to_nearest(nearest)
+    |> apply_markup(category)
   end
 
-  defp fake_price(%{round_up_to_nearest: nearest} = product) do
+  defp fake_price(%{round_up_to_nearest: nearest, whcc_product: %{category: category}} = product) do
     %{product | quantity: 1}
     |> price()
     |> round_up_to_nearest(nearest)
     |> Money.multiply(quantity(product))
+    |> apply_markup(category)
   end
+
+  defp apply_markup(price, %{whcc_id: @card_category_id}), do: price
+
+  defp apply_markup(price, %{default_markup: markup}),
+    do: Money.add(price, Money.multiply(price, markup))
 
   defp price(
          %__MODULE__{
            unit_markup: markup,
            unit_price: unit_price,
            shipping_upcharge: shipping_upcharge,
-           shipping_base_charge: shipping_base_charge
+           shipping_base_charge: shipping_base_charge,
+           whcc_product: %{category: %{whcc_id: whcc_id}}
          } = product
        ) do
     base_price = Money.multiply(unit_price, quantity(product))
 
     for(
-      money <- [
+      money <-
+      [
         shipping_base_charge,
-        Money.multiply(markup, quantity(product)),
         Money.multiply(base_price, shipping_upcharge)
-      ],
+      ] ++
+        if(whcc_id == @card_category_id,
+          do: [Money.multiply(markup, quantity(product))],
+          else: []
+        ),
       reduce: base_price
     ) do
       sum -> Money.add(sum, money)
@@ -172,6 +188,4 @@ defmodule Picsello.Cart.Product do
       |> Decimal.to_integer()
     end)
   end
-
-  defp get_card_category_id(), do: Application.get_env(:picsello, :card_category_id)
 end
