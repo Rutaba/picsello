@@ -115,6 +115,10 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
+  def handle_event("intro_js" = event, params, socket),
+    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+
+  @impl true
   def handle_event("open-stripe", _, %{assigns: %{job: job, current_user: current_user}} = socket) do
     client = job |> Repo.preload(:client) |> Map.get(:client)
 
