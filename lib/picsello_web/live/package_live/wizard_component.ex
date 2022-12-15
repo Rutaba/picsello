@@ -1580,6 +1580,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp assign_contract_options(socket), do: socket
 
   defp assign_questionnaires(
+         %{
+           assigns: %{
+             package: %{job_type: nil},
+             job: %{type: job_type}
+           }
+         } = socket,
+         %{"package" => _package}
+       ) do
+    assign_questionnaires(socket, job_type)
+  end
+
+  defp assign_questionnaires(
          socket,
          %{"package" => %{"job_type" => job_type}}
        ) do
