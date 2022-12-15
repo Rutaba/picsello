@@ -1,4 +1,4 @@
-defmodule PicselloWeb.LeadClientIframeController do
+defmodule PicselloWeb.LeadContactIframeController do
   use PicselloWeb, :controller
 
   alias Picsello.{Profiles}
@@ -13,7 +13,7 @@ defmodule PicselloWeb.LeadClientIframeController do
   def create(conn, %{"organization_slug" => organization_slug, "client" => client} = params) do
     organization = Profiles.find_organization_by(slug: organization_slug)
 
-    case Profiles.handle_client(organization, client, PicselloWeb.Helpers) do
+    case Profiles.handle_contact(organization, client, PicselloWeb.Helpers) do
       {:ok, _client} ->
         conn
         |> render("thank-you.html")
@@ -47,7 +47,7 @@ defmodule PicselloWeb.LeadClientIframeController do
     conn
     |> assign(
       :changeset,
-      Profiles.client_changeset()
+      Profiles.contact_changeset()
     )
   end
 end

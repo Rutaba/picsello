@@ -71,7 +71,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
   end
 
   defp assign_changeset(%{assigns: %{job_type: job_type}} = socket) do
-    assign(socket, :changeset, Profiles.client_changeset(%{job_type: job_type}))
+    assign(socket, :changeset, Profiles.contact_changeset(%{job_type: job_type}))
   end
 
   defp assign_changeset(%{assigns: %{job_types: types}} = socket) do
@@ -81,13 +81,13 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
         _ -> %{}
       end
 
-    assign(socket, :changeset, Profiles.client_changeset(params))
+    assign(socket, :changeset, Profiles.contact_changeset(params))
   end
 
   @impl true
   def handle_event("validate-client", %{"client" => params}, socket) do
     socket
-    |> assign(changeset: params |> Profiles.client_changeset() |> Map.put(:action, :validate))
+    |> assign(changeset: params |> Profiles.contact_changeset() |> Map.put(:action, :validate))
     |> noreply()
   end
 
@@ -97,7 +97,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
         %{"client" => params},
         %{assigns: %{organization: organization}} = socket
       ) do
-    case Profiles.handle_client(organization, params, PicselloWeb.Helpers) do
+    case Profiles.handle_contact(organization, params, PicselloWeb.Helpers) do
       {:ok, _client} ->
         socket
         |> assign(changeset: nil)

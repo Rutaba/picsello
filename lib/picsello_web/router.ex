@@ -184,8 +184,8 @@ defmodule PicselloWeb.Router do
   scope "/photographer/embed", PicselloWeb do
     pipe_through [:browser_iframe]
 
-    get "/:organization_slug", LeadClientIframeController, :index
-    post "/:organization_slug", LeadClientIframeController, :create
+    get "/:organization_slug", LeadContactIframeController, :index
+    post "/:organization_slug", LeadContactIframeController, :create
   end
 
   scope "/", PicselloWeb do

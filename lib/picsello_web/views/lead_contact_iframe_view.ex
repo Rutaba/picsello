@@ -1,4 +1,4 @@
-defmodule PicselloWeb.LeadClientIframeView do
+defmodule PicselloWeb.LeadContactIframeView do
   use PicselloWeb, :view
 
   import PicselloWeb.LiveHelpers, only: [job_type_option: 1, icon: 1]

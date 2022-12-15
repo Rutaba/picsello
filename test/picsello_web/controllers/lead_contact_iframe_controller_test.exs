@@ -1,4 +1,4 @@
-defmodule PicselloWeb.LeadClientIframeControllerTest do
+defmodule PicselloWeb.LeadContactIframeControllerTest do
   use PicselloWeb.ConnCase, async: true
 
   setup do
@@ -27,7 +27,7 @@ defmodule PicselloWeb.LeadClientIframeControllerTest do
       assert_error_sent :not_found, fn ->
         conn
         |> get(
-          Routes.lead_client_iframe_path(
+          Routes.lead_contact_iframe_path(
             conn,
             :index,
             "mary"
@@ -39,7 +39,7 @@ defmodule PicselloWeb.LeadClientIframeControllerTest do
     test "photographer form renders", %{conn: conn, user: user} do
       assert conn
              |> get(
-               Routes.lead_client_iframe_path(
+               Routes.lead_contact_iframe_path(
                  conn,
                  :index,
                  user.organization.slug
@@ -54,7 +54,7 @@ defmodule PicselloWeb.LeadClientIframeControllerTest do
     test "user submits empty form", %{conn: conn, user: user} do
       assert conn
              |> post(
-               Routes.lead_client_iframe_path(
+               Routes.lead_contact_iframe_path(
                  conn,
                  :index,
                  user.organization.slug
@@ -68,7 +68,7 @@ defmodule PicselloWeb.LeadClientIframeControllerTest do
     test "user submits incomplete form", %{conn: conn, user: user} do
       assert conn
              |> post(
-               Routes.lead_client_iframe_path(
+               Routes.lead_contact_iframe_path(
                  conn,
                  :index,
                  user.organization.slug
@@ -90,7 +90,7 @@ defmodule PicselloWeb.LeadClientIframeControllerTest do
     test "user submits complete form", %{conn: conn, user: user} do
       assert conn
              |> post(
-               Routes.lead_client_iframe_path(
+               Routes.lead_contact_iframe_path(
                  conn,
                  :index,
                  user.organization.slug
@@ -113,7 +113,7 @@ defmodule PicselloWeb.LeadClientIframeControllerTest do
       assert_error_sent :not_found, fn ->
         conn
         |> post(
-          Routes.lead_client_iframe_path(
+          Routes.lead_contact_iframe_path(
             conn,
             :index,
             "test"

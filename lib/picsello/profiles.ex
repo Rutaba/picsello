@@ -95,8 +95,8 @@ defmodule Picsello.Profiles do
     end
   end
 
-  defmodule Client do
-    @moduledoc "container for the client form data"
+  defmodule Contact do
+    @moduledoc "container for the contact form data"
     use Ecto.Schema
     import Ecto.Changeset
     import Picsello.Client, only: [valid_phone: 2]
@@ -111,35 +111,35 @@ defmodule Picsello.Profiles do
       end
     end
 
-    def changeset(%__MODULE__{} = client, attrs) do
-      client
+    def changeset(%__MODULE__{} = contact, attrs) do
+      contact
       |> cast(attrs, @fields)
       |> validate_email_format()
       |> validate_required(@fields)
       |> validate_change(:phone, &valid_phone/2)
     end
 
-    def to_string(%__MODULE__{} = client) do
+    def to_string(%__MODULE__{} = contact) do
       """
-          name: #{client.name}
-         email: #{client.email}
-         phone: #{client.phone}
-      job type: #{dyn_gettext(client.job_type)}
-       message: #{client.message}
+          name: #{contact.name}
+         email: #{contact.email}
+         phone: #{contact.phone}
+      job type: #{dyn_gettext(contact.job_type)}
+       message: #{contact.message}
       """
     end
   end
 
-  def client_changeset(client, attrs) do
-    Client.changeset(client, attrs)
+  def contact_changeset(contact, attrs) do
+    Contact.changeset(contact, attrs)
   end
 
-  def client_changeset(attrs) do
-    Client.changeset(%Client{}, attrs)
+  def contact_changeset(attrs) do
+    Contact.changeset(%Contact{}, attrs)
   end
 
-  def client_changeset() do
-    Client.changeset(%Client{}, %{})
+  def contact_changeset() do
+    Contact.changeset(%Contact{}, %{})
   end
 
   defp brand_link_profile_changeset(organization, %{"brand_links" => _}) do
@@ -162,48 +162,48 @@ defmodule Picsello.Profiles do
     organization |> edit_organization_profile_changeset(attrs) |> Repo.update()
   end
 
-  def handle_client(%{id: organization_id} = _organization, params, helpers) do
-    changeset = client_changeset(params)
+  def handle_contact(%{id: organization_id} = _organization, params, helpers) do
+    changeset = contact_changeset(params)
 
     case changeset do
       %{valid?: true} ->
-        client = Ecto.Changeset.apply_changes(changeset)
+        contact = Ecto.Changeset.apply_changes(changeset)
 
         {:ok, _} =
           Ecto.Multi.new()
           |> Ecto.Multi.insert(
             :client,
-            client
+            contact
             |> Map.take([:name, :email, :phone])
             |> Map.put(:organization_id, organization_id)
-            |> Picsello.Client.create_changeset(),
+            |> Client.create_changeset(),
             on_conflict: {:replace, [:email]},
             conflict_target: [:organization_id, :email],
             returning: [:id]
           )
           |> Ecto.Multi.insert(
             :lead,
-            &Job.create_changeset(%{type: client.job_type, client_id: &1.client.id})
+            &Job.create_changeset(%{type: contact.job_type, client_id: &1.client.id})
           )
           |> Ecto.Multi.insert(
             :message,
             &ClientMessage.create_inbound_changeset(%{
               job_id: &1.lead.id,
               subject: "New lead from profile",
-              body_text: Client.to_string(client)
+              body_text: Contact.to_string(contact)
             })
           )
           |> Ecto.Multi.run(
             :email,
             fn _, changes ->
-              UserNotifier.deliver_new_lead_email(changes.lead, client.message, helpers)
+              UserNotifier.deliver_new_lead_email(changes.lead, contact.message, helpers)
 
               {:ok, :email}
             end
           )
           |> Repo.transaction()
 
-        {:ok, client}
+        {:ok, contact}
 
       _ ->
         {:error, Map.put(changeset, :action, :validate)}
@@ -289,7 +289,7 @@ defmodule Picsello.Profiles do
   end
 
   def embed_url(%Organization{slug: slug}) do
-    PicselloWeb.Router.Helpers.lead_client_iframe_url(
+    PicselloWeb.Router.Helpers.lead_contact_iframe_url(
       PicselloWeb.Endpoint,
       :index,
       slug
