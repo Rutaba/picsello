@@ -1164,11 +1164,11 @@ defmodule PicselloWeb.JobLive.Shared do
     photos? = assigns[:for] == :photos
 
     ~H"""
-      <div class={classes("uploadEntry grid grid-cols-3 pb-4 items-center", %{"px-14" => photos?})}>
-        <p class={"#{if photos?, do: 'col-span-3', else: 'row-span-2'} max-w-md"}>
+      <div class={classes("uploadEntry grid grid-cols-5 pb-4 items-center", %{"px-14" => photos?})}>
+        <p class={"#{if photos?, do: 'col-span-3', else: 'col-span-2'} max-w-md"}>
         <%= truncate_name(@entry, @string_length) %>
         </p>
-        <div class={"#{if photos?, do: 'gap-x-4 grid-cols-1', else: 'ml-[80px] row-span-2'} flex photoUploadingIsFailed items-center"}>
+        <div class={"#{if photos?, do: 'gap-x-4 grid-cols-1', else: 'col-span-2'} flex photoUploadingIsFailed items-center"}>
           <%= render_slot(@inner_block) %>
         </div>
           <%= case @for do %>
@@ -1177,7 +1177,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <% :photos -> %>
               <.removal_button phx-target={@target} phx-click="delete_photo" phx-value-index={@index} phx-value-delete_from={@delete_from} />
             <% _ -> %>
-              <div id="file_options" data-offset-x="30" phx-hook="Select" class="w-4 ml-48">
+              <div id="file_options" data-offset-x="-60" phx-hook="Select" class="justify-self-end grid-cols-1 cursor-pointer ml-5 lg:ml-auto">
                   <button type="button" class="flex flex-shrink-0 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
                     <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
                     <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
