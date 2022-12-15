@@ -301,7 +301,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
     ~H"""
     <form phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
       <.drag_drop upload_entity={@uploads.documents} supported_types=".PDF, .docx, .txt" />
-      <div class="uploadingList__wrapper mt-8">
+      <div class={classes("uploadingList__wrapper mt-8", %{"hidden" => Enum.empty?(@uploads.documents.entries)})}>
         <div class="grid grid-cols-5 pb-4 items-center text-lg font-bold">
           <span class="col-span-2">Name</span>
           <span class="col-span-2">Status</span>
@@ -497,7 +497,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
       {:ok, %{job: job, client: %Client{id: client_id}}} ->
         upload_docs(job, socket)
 
-        socket |> push_redirect(to: Routes.client_path(socket, :show, client_id))
+        socket |> push_redirect(to: Routes.client_path(socket, :job_history, client_id))
 
       {:error, _} ->
         socket
