@@ -67,10 +67,10 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
                   <button class="bg-red-sales-100 border border-red-sales-300 hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="delete-question" phx-target={@myself} phx-value-id={f_questions.index} {testid("delete-question")}>
                     <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
                   </button>
-                  <button class="bg-white border hover:border-white rounded-lg flex items-center p-2" type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="down" {testid("reorder-question-down")}>
+                  <button class={classes("bg-white border hover:border-white rounded-lg flex items-center p-2", %{"pointer-events-none hover:border opacity-40 cursor-disabled" => questions_length(f) === f_questions.index + 1})} type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="down" phx-disable-with={questions_length(f) === f_questions.index + 1} disabled={questions_length(f) === f_questions.index + 1} {testid("reorder-question-down")}>
                     <.icon name="down" class="inline-block w-4 h-4 stroke-current stroke-3 text-black" />
                   </button>
-                  <button class="bg-white border hover:border-white rounded-lg flex items-center p-2" type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="up" {testid("reorder-question-up")}>
+                  <button class={classes("bg-white border hover:border-white rounded-lg flex items-center p-2", %{"pointer-events-none hover:border opacity-40 cursor-disabled" => f_questions.index === 0})} type="button" phx-click="reorder-question" phx-target={@myself} phx-value-direction="up" phx-disable-with={f_questions.index === 0} disabled={f_questions.index === 0} {testid("reorder-question-up")}>
                     <.icon name="up" class="inline-block w-4 h-4 stroke-current stroke-3 text-black" />
                   </button>
                 </div>
@@ -286,14 +286,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
         "blank" ->
           %{
             name: "Custom",
-            questions: [
-              %{
-                optional: false,
-                options: [],
-                placeholder: nil,
-                prompt: nil
-              }
-            ]
+            questions: []
           }
 
         _ ->
@@ -368,6 +361,14 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     """
   end
 
+  defp save_questionnaire(params, %{assigns: %{questionnaire: %{id: nil} = questionnaire}}) do
+    questionnaire
+    |> Map.drop([:organization])
+    |> Map.put(:questions, [])
+    |> Questionnaire.changeset(params)
+    |> Repo.insert_or_update()
+  end
+
   defp save_questionnaire(params, %{
          assigns: %{questionnaire: questionnaire}
        }) do
@@ -375,6 +376,23 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     |> Map.drop([:organization])
     |> Questionnaire.changeset(params)
     |> Repo.insert_or_update()
+  end
+
+  defp assign_changeset(
+         %{assigns: %{questionnaire: %{id: nil} = questionnaire}} = socket,
+         params,
+         action
+       ) do
+    attrs = params
+
+    changeset =
+      questionnaire
+      |> Map.put(:questions, [])
+      |> maybe_duplicate_questions?(questionnaire, attrs)
+      |> Map.put(:action, action)
+
+    socket
+    |> assign(changeset: changeset)
   end
 
   defp assign_changeset(
@@ -391,6 +409,23 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign(changeset: changeset)
+  end
+
+  defp maybe_duplicate_questions?(questionnaire, original_questionnaire, attrs) do
+    case attrs do
+      %{"questions" => _} ->
+        Questionnaire.changeset(questionnaire, attrs)
+
+      %{questions: _} ->
+        Questionnaire.changeset(questionnaire, attrs)
+
+      _ ->
+        Questionnaire.changeset(questionnaire, attrs)
+        |> Ecto.Changeset.put_change(
+          :questions,
+          original_questionnaire.questions
+        )
+    end
   end
 
   defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
@@ -458,4 +493,6 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       changeset.changes |> Map.drop([:name, :questions])
     )
   end
+
+  defp questions_length(f), do: length(inputs_for(f, :questions))
 end

@@ -941,6 +941,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         socket
         |> assign(step: next_step(socket.assigns))
         |> assign_changeset(params)
+        |> assign_questionnaires(params)
         |> assign_contract_changeset(params)
         |> assign_contract_options()
 
@@ -1579,21 +1580,38 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp assign_contract_options(socket), do: socket
 
   defp assign_questionnaires(
+         socket,
+         %{"package" => %{"job_type" => job_type}}
+       ) do
+    assign_questionnaires(socket, job_type)
+  end
+
+  defp assign_questionnaires(
          %{
            assigns: %{
-             current_user: %{organization_id: organization_id},
+             current_user: %{organization_id: organization_id}
+           }
+         } = socket,
+         job_type
+       ),
+       do:
+         socket
+         |> assign(
+           :questionnaires,
+           Questionnaire.for_organization_by_job_type(
+             organization_id,
+             job_type
+           )
+         )
+
+  defp assign_questionnaires(
+         %{
+           assigns: %{
              package: %{job_type: job_type}
            }
          } = socket
        ) do
-    socket
-    |> assign(
-      :questionnaires,
-      Questionnaire.for_organization_by_job_type(
-        organization_id,
-        job_type
-      )
-    )
+    assign_questionnaires(socket, job_type)
   end
 
   defp package_contract(package) do

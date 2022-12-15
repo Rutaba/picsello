@@ -67,31 +67,24 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   def handle_event(
         "duplicate-questionnaire",
         %{"questionnaire-id" => questionnaire_id},
-        %{assigns: assigns} = socket
+        %{assigns: %{current_user: %{organization: %{id: organization_id}}} = assigns} = socket
       ) do
     id = String.to_integer(questionnaire_id)
 
-    case Questionnaire.clean_questionnaire_for_changeset(
-           get_questionnaire(id),
-           socket.assigns.current_user.organization_id
-         )
-         |> Map.put(:name, "Copy of " <> get_questionnaire(id).name)
-         |> Questionnaire.changeset()
-         |> Repo.insert() do
-      {:ok, questionnaire} ->
-        assigns = Map.merge(assigns, %{questionnaire: questionnaire})
+    questionnaire =
+      Questionnaire.clean_questionnaire_for_changeset(
+        get_questionnaire(id),
+        organization_id
+      )
+      |> Map.put(:name, nil)
 
-        socket
-        |> put_flash(:success, "Questionnaire duplicated")
-        |> assign_questionnaires()
-        |> PicselloWeb.QuestionnaireFormComponent.open(
-          Map.merge(Map.take(assigns, [:questionnaire, :current_user]), %{state: :edit})
-        )
-        |> noreply()
+    assigns = Map.merge(assigns, %{questionnaire: questionnaire})
 
-      {:error, changeset} ->
-        socket |> assign(changeset: changeset) |> noreply()
-    end
+    socket
+    |> PicselloWeb.QuestionnaireFormComponent.open(
+      Map.merge(Map.take(assigns, [:questionnaire, :current_user]), %{state: :edit})
+    )
+    |> noreply()
   end
 
   @impl true
@@ -127,7 +120,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
           <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
         </button>
 
-        <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
+        <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content z-20">
         <%= if @questionnaire.organization_id do %>
           <button title="Edit" type="button" phx-click="edit-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
           >

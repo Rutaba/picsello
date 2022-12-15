@@ -53,13 +53,11 @@ defmodule Picsello.EditQuestionnaireTest do
       |> click(css("[phx-hook='Select']"))
       |> click(button("Duplicate"))
     end)
-    |> assert_flash(:success, text: "Questionnaire duplicated")
     |> within_modal(fn modal ->
       modal
       |> find(
         text_field("questionnaire_name"),
         &(&1
-          |> Element.clear()
           |> Element.fill_in(with: "Custom Other"))
       )
       |> wait_for_enabled_submit_button()
@@ -283,11 +281,6 @@ defmodule Picsello.EditQuestionnaireTest do
       end)
     end
 
-    # feature "user edits existing questionnaire, changes from text to multiselect", %{
-    #   session: session
-    # } do
-    # end
-
     feature "user duplicates questionnaire from table", %{session: session} do
       session
       |> visit("/questionnaires")
@@ -296,12 +289,19 @@ defmodule Picsello.EditQuestionnaireTest do
         |> click(css("[phx-hook='Select']"))
         |> click(button("Duplicate"))
       end)
-      |> assert_flash(:success, text: "Questionnaire duplicated")
+      |> within_modal(fn modal ->
+        modal
+        |> find(
+          text_field("questionnaire_name"),
+          &(&1
+            |> Element.fill_in(with: "My Favorite Questionnaire"))
+        )
+      end)
       |> click(button("Save"))
       |> assert_flash(:success, text: "Questionnaire saved")
       |> find(testid("questionnaire-row", count: 7, at: 1), fn row ->
         row
-        |> assert_text("Copy of Custom Other Questionnaire")
+        |> assert_text("My Favorite Questionnaire")
         |> assert_text("1")
       end)
     end
