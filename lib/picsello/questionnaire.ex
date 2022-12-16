@@ -53,6 +53,7 @@ defmodule Picsello.Questionnaire do
     ])
     |> cast_embed(:questions, required: true)
     |> validate_required([:questions, :job_type, :name])
+    |> validate_name()
   end
 
   def for_job(%Job{type: job_type, package: %Package{questionnaire_template_id: nil}}),
@@ -112,6 +113,18 @@ defmodule Picsello.Questionnaire do
       name: questionnaire.name,
       job_type: questionnaire.job_type
     }
+  end
+
+  defp validate_name(changeset) do
+    name_field = get_field(changeset, :name)
+    name_change = get_change(changeset, :name)
+
+    if name_change &&
+         String.contains?(name_field, ["Picsello", "Template", "picsello", "template"]) do
+      changeset |> add_error(:name, "cannot contain 'Picsello' or 'Template'")
+    else
+      changeset
+    end
   end
 
   defp get_organization_questionnaires(organization_id) do
