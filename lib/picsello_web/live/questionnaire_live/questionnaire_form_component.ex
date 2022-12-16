@@ -361,25 +361,27 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     """
   end
 
-  defp save_questionnaire(params, %{assigns: %{questionnaire: %{id: nil} = questionnaire}}) do
+  defp save_questionnaire(params, %{
+         assigns: %{questionnaire: %{id: nil} = questionnaire, state: state}
+       }) do
     questionnaire
     |> Map.drop([:organization])
     |> Map.put(:questions, [])
-    |> Questionnaire.changeset(params)
+    |> Questionnaire.changeset(params, state)
     |> Repo.insert_or_update()
   end
 
   defp save_questionnaire(params, %{
-         assigns: %{questionnaire: questionnaire}
+         assigns: %{questionnaire: questionnaire, state: state}
        }) do
     questionnaire
     |> Map.drop([:organization])
-    |> Questionnaire.changeset(params)
+    |> Questionnaire.changeset(params, state)
     |> Repo.insert_or_update()
   end
 
   defp assign_changeset(
-         %{assigns: %{questionnaire: %{id: nil} = questionnaire}} = socket,
+         %{assigns: %{questionnaire: %{id: nil} = questionnaire, state: state}} = socket,
          params,
          action
        ) do
@@ -388,7 +390,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     changeset =
       questionnaire
       |> Map.put(:questions, [])
-      |> maybe_duplicate_questions?(questionnaire, attrs)
+      |> maybe_duplicate_questions?(questionnaire, attrs, state)
       |> Map.put(:action, action)
 
     socket
@@ -396,7 +398,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   end
 
   defp assign_changeset(
-         %{assigns: %{questionnaire: questionnaire}} = socket,
+         %{assigns: %{questionnaire: questionnaire, state: state}} = socket,
          params,
          action
        ) do
@@ -404,23 +406,23 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     changeset =
       questionnaire
-      |> Questionnaire.changeset(attrs)
+      |> Questionnaire.changeset(attrs, state)
       |> Map.put(:action, action)
 
     socket
     |> assign(changeset: changeset)
   end
 
-  defp maybe_duplicate_questions?(questionnaire, original_questionnaire, attrs) do
+  defp maybe_duplicate_questions?(questionnaire, original_questionnaire, attrs, state) do
     case attrs do
       %{"questions" => _} ->
-        Questionnaire.changeset(questionnaire, attrs)
+        Questionnaire.changeset(questionnaire, attrs, state)
 
       %{questions: _} ->
-        Questionnaire.changeset(questionnaire, attrs)
+        Questionnaire.changeset(questionnaire, attrs, state)
 
       _ ->
-        Questionnaire.changeset(questionnaire, attrs)
+        Questionnaire.changeset(questionnaire, attrs, state)
         |> Ecto.Changeset.put_change(
           :questions,
           original_questionnaire.questions

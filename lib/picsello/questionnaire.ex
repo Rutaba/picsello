@@ -41,7 +41,7 @@ defmodule Picsello.Questionnaire do
   end
 
   @doc false
-  def changeset(questionnaire, attrs \\ %{}) do
+  def changeset(questionnaire, attrs \\ %{}, state \\ nil) do
     questionnaire
     |> cast(attrs, [
       :job_type,
@@ -53,7 +53,8 @@ defmodule Picsello.Questionnaire do
     ])
     |> cast_embed(:questions, required: true)
     |> validate_required([:questions, :job_type, :name])
-    |> validate_name()
+    |> validate_name(state)
+    |> validate_is_picsello_default()
   end
 
   def for_job(%Job{type: job_type, package: %Package{questionnaire_template_id: nil}}),
@@ -115,14 +116,27 @@ defmodule Picsello.Questionnaire do
     }
   end
 
-  defp validate_name(changeset) do
+  defp validate_name(changeset, state) do
     name_field = get_field(changeset, :name)
     name_change = get_change(changeset, :name)
     is_picsello_default = get_field(changeset, :is_picsello_default)
 
-    if !is_picsello_default && name_change &&
+    if state !== :edit_lead && !is_picsello_default && name_change &&
          String.contains?(name_field, ["Picsello", "Template", "picsello", "template"]) do
       changeset |> add_error(:name, "cannot contain 'Picsello' or 'Template'")
+    else
+      changeset
+    end
+  end
+
+  defp validate_is_picsello_default(changeset) do
+    is_picsello_default = get_field(changeset, :is_picsello_default)
+    package_id = get_field(changeset, :package_id)
+    organization_id = get_field(changeset, :organization_id)
+
+    if is_picsello_default && (package_id || organization_id) do
+      changeset
+      |> add_error(:is_picsello_default, "cannot edit Picsello Template")
     else
       changeset
     end
