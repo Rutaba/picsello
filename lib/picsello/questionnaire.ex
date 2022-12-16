@@ -118,8 +118,9 @@ defmodule Picsello.Questionnaire do
   defp validate_name(changeset) do
     name_field = get_field(changeset, :name)
     name_change = get_change(changeset, :name)
+    is_picsello_default = get_field(changeset, :is_picsello_default)
 
-    if name_change &&
+    if !is_picsello_default && name_change &&
          String.contains?(name_field, ["Picsello", "Template", "picsello", "template"]) do
       changeset |> add_error(:name, "cannot contain 'Picsello' or 'Template'")
     else
