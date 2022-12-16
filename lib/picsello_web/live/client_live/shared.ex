@@ -21,7 +21,7 @@ defmodule PicselloWeb.Live.ClientLive.Shared do
               </h1>
             </div>
               <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
-                  <a title="import job" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="import-job" phx-value-id={@client.id}>
+                  <a title="import job" class="w-full md:w-auto btn-primary text-center" phx-click="import-job" phx-value-id={@client.id}>
                       Import job
                   </a>
               </div>

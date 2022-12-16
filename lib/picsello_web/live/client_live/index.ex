@@ -1,11 +1,12 @@
 defmodule PicselloWeb.Live.ClientLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Repo, Client, Clients, ClientTag}
 
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
   import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 2]
 
+  alias Ecto.Changeset
+  alias Picsello.{Repo, Client, Clients, ClientTag}
   alias PicselloWeb.JobLive.{NewComponent, ImportWizard, Shared}
 
   alias PicselloWeb.{
@@ -17,19 +18,33 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   defmodule Pagination do
     @moduledoc false
+
+    use Ecto.Schema
+
+    @types %{
+      first_index: :integer,
+      last_index: :integer,
+      total_count: :integer,
+      limit: :integer,
+      offset: :integer
+    }
     defstruct first_index: 1,
               last_index: 12,
               total_count: 0,
               limit: 12,
-              offset: 0,
-              after: nil,
-              before: nil
+              offset: 0
+
+    def changeset(struct \\ %__MODULE__{}, params \\ %{}) do
+      {struct, @types}
+      |> Changeset.cast(params, Map.keys(@types))
+    end
   end
 
   @impl true
   def mount(_params, _session, socket) do
     socket
-    |> assign_new(:pagination, fn -> %Pagination{} end)
+    |> assign_new(:pagination, fn -> Pagination.changeset() |> Changeset.apply_changes() end)
+    |> assign_new(:pagination_changeset, fn -> Pagination.changeset() end)
     |> assign_clients()
     |> ok()
   end
@@ -186,16 +201,29 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event(
         "page",
         %{"direction" => direction},
-        socket
+        %{assigns: %{pagination: pagination}} = socket
       ) do
-    update_fn =
+    updated_pagination =
       case direction do
-        "back" -> &%{&1 | first_index: &1.first_index - &1.limit, offset: &1.offset - &1.limit}
-        "forth" -> &%{&1 | first_index: &1.first_index + &1.limit, offset: &1.offset + &1.limit}
+        "back" ->
+          pagination
+          |> Pagination.changeset(%{
+            first_index: pagination.first_index - pagination.limit,
+            offset: pagination.offset - pagination.limit
+          })
+          |> Changeset.apply_changes()
+
+        "forth" ->
+          pagination
+          |> Pagination.changeset(%{
+            first_index: pagination.first_index + pagination.limit,
+            offset: pagination.offset + pagination.limit
+          })
+          |> Changeset.apply_changes()
       end
 
     socket
-    |> update(:pagination, update_fn)
+    |> assign(:pagination, updated_pagination)
     |> then(fn socket ->
       socket
       |> fetch_clients()
@@ -207,12 +235,17 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event(
         "page",
         %{"pagination" => %{"limit" => limit}},
-        socket
+        %{assigns: %{pagination: pagination}} = socket
       ) do
     limit = String.to_integer(limit)
 
+    updated_pagination_changeset =
+      pagination
+      |> Pagination.changeset(%{limit: limit, last_index: limit, first_index: 1, offset: 0})
+
     socket
-    |> assign(:pagination, %Pagination{limit: limit, last_index: limit})
+    |> assign(:pagination_changeset, updated_pagination_changeset)
+    |> assign(:pagination, updated_pagination_changeset |> Changeset.apply_changes())
     |> then(fn socket ->
       socket
       |> fetch_clients()
@@ -236,7 +269,9 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
     socket
     |> assign(search_phrase: search_phrase)
-    |> assign(:pagination, reset_pagination(pagination))
+    |> then(fn socket ->
+      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
+    end)
     |> then(fn socket ->
       socket
       |> fetch_clients()
@@ -248,7 +283,9 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event("clear-search", _, %{assigns: %{pagination: pagination}} = socket) do
     socket
     |> assign(:search_phrase, nil)
-    |> assign(:pagination, reset_pagination(pagination))
+    |> then(fn socket ->
+      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
+    end)
     |> then(fn socket ->
       socket
       |> fetch_clients()
@@ -264,7 +301,9 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       ) do
     socket
     |> assign(:job_status, status)
-    |> assign(:pagination, reset_pagination(pagination))
+    |> then(fn socket ->
+      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
+    end)
     |> then(fn socket ->
       socket
       |> fetch_clients()
@@ -280,7 +319,9 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       ) do
     socket
     |> assign(:job_type, type)
-    |> assign(:pagination, reset_pagination(pagination))
+    |> then(fn socket ->
+      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
+    end)
     |> then(fn socket ->
       socket
       |> fetch_clients()
@@ -298,7 +339,9 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     |> assign(:sort_by, sort_by)
     |> assign(:sort_col, Enum.find(sort_options(), fn op -> op.id == sort_by end).column)
     |> assign(:sort_direction, Enum.find(sort_options(), fn op -> op.id == sort_by end).direction)
-    |> assign(:pagination, reset_pagination(pagination))
+    |> then(fn socket ->
+      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
+    end)
     |> then(fn socket ->
       socket
       |> fetch_clients()
@@ -314,7 +357,9 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       ) do
     socket
     |> assign(:desc, !desc)
-    |> assign(:pagination, reset_pagination(pagination))
+    |> then(fn socket ->
+      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
+    end)
     |> then(fn socket ->
       socket
       |> fetch_clients()
@@ -528,7 +573,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
             <% end %>
         <% end %>
         <span class="cursor-pointer">
-          <%= if Ecto.Changeset.get_field(@tags_changeset, :client_id) == @client.id do%>
+          <%= if Changeset.get_field(@tags_changeset, :client_id) == @client.id do%>
             <div class="relative flex">
               <input type="text" autofocus class="border-gray-600 border-2 pl-2 rounded w-24" id={"save-tags-client-#{@client.id}"} name="client_tag_values" phx-debounce="500" spellcheck="false" placeholder="Add tag..." phx-window-keydown="save-tags" phx-value-client_id={@client.id} />
               <a class="absolute top-0 bottom-0 flex flex-row items-center text-xs text-gray-400 mr-1 right-0">
@@ -607,15 +652,16 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     {_count, _tag_records} = Repo.insert_all(ClientTag, changesets)
   end
 
-  defp reset_pagination(%{limit: limit, total_count: total_count}),
-    do: %Pagination{
-      limit: limit,
-      first_index: 1,
-      last_index: limit,
-      before: nil,
-      after: nil,
-      total_count: total_count
-    }
+  defp reset_pagination(%{limit: limit, offset: offset}, count),
+    do:
+      Pagination.changeset(%{
+        limit: limit,
+        offset: offset,
+        first_index: 1,
+        last_index: limit,
+        total_count: count
+      })
+      |> Changeset.apply_changes()
 
   defp assign_clients(socket) do
     socket
@@ -669,7 +715,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
          } = socket
        ) do
     clients =
-      Clients.find_all_by(
+      Clients.find_all_by_pagination(
         user: user,
         filters: %{
           status: status,
@@ -682,20 +728,47 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       )
       |> Repo.all()
 
+    updated_pagination =
+      pagination
+      |> Pagination.changeset(%{
+        total_count:
+          if(pagination.total_count == 0,
+            do: Repo.aggregate(Client, :count, :id),
+            else: pagination.total_count
+          ),
+        last_index: pagination.first_index + Enum.count(clients) - 1
+      })
+      |> Changeset.apply_changes()
+
     socket
     |> assign(
       clients: clients,
-      pagination: %{
-        pagination
-        | total_count: Repo.aggregate(Client, :count, :id),
-          last_index: pagination.first_index + Enum.count(clients) - 1
-      }
+      pagination: updated_pagination
     )
   end
 
-  defp fetch_clients(%{assigns: %{current_user: current_user, client: client}} = socket) do
-    socket
-    |> assign(:client, Clients.get_client(client.id, current_user))
+  defp client_count(%{
+         assigns: %{
+           current_user: user,
+           job_status: status,
+           job_type: type,
+           sort_col: sort_by,
+           sort_direction: sort_direction,
+           search_phrase: search_phrase
+         }
+       }) do
+    Clients.find_all_by(
+      user: user,
+      filters: %{
+        status: status,
+        type: type,
+        sort_by: String.to_atom(sort_by),
+        sort_direction: String.to_atom(sort_direction),
+        search_phrase: search_phrase
+      }
+    )
+    |> Repo.all()
+    |> Enum.count()
   end
 
   defp job_status_options do

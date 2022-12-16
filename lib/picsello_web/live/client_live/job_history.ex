@@ -297,7 +297,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
           <%= Calendar.strftime(@job.inserted_at, "%m/%d/%y") %>
         </div>
         <div class={"font-bold w-full"}>
-          <%= live_redirect to: Routes.job_path(@socket, :jobs, @job.id) do %>
+          <%= live_redirect to: Routes.job_path(@socket, :jobs, @job.id, %{"request_from" => "job_history"}) do %>
           <span class={classes("w-full text-blue-planning-300 underline", %{"truncate" => String.length(Job.name(@job)) > 29})}><%= Job.name(@job) %></span>
           <% end %>
         </div>

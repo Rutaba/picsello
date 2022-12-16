@@ -77,7 +77,7 @@
             <div id="dropdown-items" class={classes("absolute right-9 md:top-20 top-8 z-10 w-36 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none cursor-pointer", %{"hidden" => @index != gallery_index})} role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
               <div class="py-1" role="none">
                 <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes("", %{"hidden" => gallery.disabled})} />
-                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} />
+                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id, %{"request_from" => "gallery_index"})]} />
                 <.dropdown_item {assigns} id="send_email_link" icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
                 <%= if Enum.any?(gallery.orders) do %>
                   <%= case gallery.disabled do %>

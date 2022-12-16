@@ -23,7 +23,7 @@
   <div class="flex flex-col justify-between items-center px-1.5 md:flex-row mb-10">
     <div class="relative flex md:w-2/3 w-full">
       <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
-        <%= if @search_phrase && @search_phrase !== "" do %>
+        <%= if @search_phrase do %>
           <span phx-click="clear-search" class="cursor-pointer">
             <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
           </span>
@@ -79,20 +79,20 @@
     </div>
   <% end %>
   <div class="flex items-center px-6 pb-6 center-container">
-    <.form let={f} for={:pagination} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
+    <.form let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
       <%= select f, :limit, [12, 24, 36, 48], class: "cursor-pointer"%>
     </.form>
 
     <div class="flex ml-2 text-xs font-bold text-gray-500">
-        Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
+      Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
     </div>
 
     <div class="flex items-center ml-auto">
-      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={@pagination.first_index == 1} phx-value-cursor={@pagination.before}>
+      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={@pagination.first_index == 1}>
         <.icon name="back" class="w-3 h-3 mr-1 stroke-current stroke-2" />
         Prev
       </button>
-      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={@pagination.last_index == @pagination.total_count} phx-value-cursor={@pagination.after}>
+      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={@pagination.last_index == @pagination.total_count}>
         Next
         <.icon name="forth" class="w-3 h-3 ml-1 stroke-current stroke-2" />
       </button>
