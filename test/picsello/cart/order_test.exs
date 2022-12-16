@@ -51,7 +51,7 @@ defmodule Picsello.Cart.OrderTest do
         )
 
       assert [
-               %{price: ~M[400]USD, volume_discount: ~M[0]USD}
+               %{price: ~M[600]USD, volume_discount: ~M[0]USD}
              ] = order.products
     end
 
@@ -70,7 +70,7 @@ defmodule Picsello.Cart.OrderTest do
         )
 
       assert [
-               %{price: ~M[800]USD, volume_discount: ~M[300]USD}
+               %{price: ~M[1200]USD, volume_discount: ~M[600]USD}
              ] = order.products
     end
 

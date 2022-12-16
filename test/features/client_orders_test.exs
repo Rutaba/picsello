@@ -267,13 +267,13 @@ defmodule Picsello.ClientOrdersTest do
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
       assert [
-               {"Wall Displays", "$25.00"},
-               {"Albums", "$55.00"},
-               {"Books", "$45.00"},
+               {"Wall Displays", "$24.00"},
+               {"Albums", "$52.00"},
+               {"Books", "$44.00"},
                {"Ornaments", "$40.00"},
-               {"Loose Prints", "$25.00"},
-               {"Press Printed Cards", "$5.00"},
-               {"Display Products", "$80.00"},
+               {"Loose Prints", "$2.00"},
+               {"Press Printed Cards", "$2.00"},
+               {"Display Products", "$78.00"},
                {"Digital Download", "$25.00"}
              ] =
                options
@@ -310,7 +310,7 @@ defmodule Picsello.ClientOrdersTest do
            %{
              price_data: %{
                product_data: %{images: [_product_image], tax_code: "txcd_99999999"},
-               unit_amount: 1000,
+               unit_amount: 600,
                tax_behavior: "exclusive"
              }
            }
@@ -320,7 +320,7 @@ defmodule Picsello.ClientOrdersTest do
 
     session
     |> click(link("My orders"))
-    |> find(definition("Order total:"), &assert(Element.text(&1) == "$10.00"))
+    |> find(definition("Order total:"), &assert(Element.text(&1) == "$6.00"))
   end
 
   feature "client doesn't see products for non-US photographer", %{

@@ -70,9 +70,6 @@ defmodule Picsello.Cart.Product do
         ~w[editor_id preview_url quantity round_up_to_nearest selections shipping_base_charge shipping_upcharge unit_markup unit_price print_credit_discount volume_discount price whcc_product_id]a
       )
 
-  def new(%{whcc_product: %{category: %{whcc_id: @card_category_id}}} = fields) do
-    %__MODULE__{round_up_to_nearest: 500} |> Map.merge(fields)
-  end
   def new(fields) do
     %__MODULE__{round_up_to_nearest: 100} |> Map.merge(fields)
   end
@@ -144,18 +141,14 @@ defmodule Picsello.Cart.Product do
     |> apply_markup(category)
   end
 
-  defp apply_markup(price, %{whcc_id: @card_category_id}), do: price
-
   defp apply_markup(price, %{default_markup: markup}),
     do: Money.add(price, Money.multiply(price, markup))
 
   defp price(
          %__MODULE__{
-           unit_markup: markup,
            unit_price: unit_price,
            shipping_upcharge: shipping_upcharge,
-           shipping_base_charge: shipping_base_charge,
-           whcc_product: %{category: %{whcc_id: whcc_id}}
+           shipping_base_charge: shipping_base_charge
          } = product
        ) do
     base_price = Money.multiply(unit_price, quantity(product))
@@ -165,11 +158,7 @@ defmodule Picsello.Cart.Product do
       [
         shipping_base_charge,
         Money.multiply(base_price, shipping_upcharge)
-      ] ++
-        if(whcc_id == @card_category_id,
-          do: [Money.multiply(markup, quantity(product))],
-          else: []
-        ),
+      ],
       reduce: base_price
     ) do
       sum -> Money.add(sum, money)

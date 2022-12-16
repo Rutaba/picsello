@@ -100,7 +100,7 @@ defmodule Picsello.CartTest do
       end
 
       assert [
-               %{print_credit_discount: ~M[100000]USD}
+               %{print_credit_discount: ~M[79000]USD}
              ] = Repo.all(CartProduct)
     end
   end
@@ -358,7 +358,7 @@ defmodule Picsello.CartTest do
 
       assert {:loaded, order} = Cart.delete_product(order, digital_id: digital_id)
       assert [%{editor_id: "abc"}] = order |> Ecto.assoc(:products) |> Repo.all()
-      assert Order.total_cost(order) == ~M[1300]USD
+      assert Order.total_cost(order) == ~M[2600]USD
     end
 
     test "with a digital id and one digital the order", %{order: order} do
@@ -434,7 +434,7 @@ defmodule Picsello.CartTest do
 
     test "order price when more credit than needed" do
       assert ~M[1000]USD =
-               create_order(print_credits: ~M[1900]USD, total: ~M[1000]USD)
+               create_order(print_credits: ~M[1000]USD, total: ~M[1000]USD)
                |> print_credit_used()
     end
 
