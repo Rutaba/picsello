@@ -213,6 +213,10 @@ defmodule Picsello.EditLeadQuestionnaireTest do
       select("questionnaire_change_template"),
       &(&1 |> Element.set_value("blank"))
     )
+    |> within_modal(fn modal ->
+      modal
+      |> click(button("Add question"))
+    end)
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_flash(:success, text: "Questionnaire saved")
