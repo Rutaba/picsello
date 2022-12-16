@@ -59,12 +59,10 @@ defmodule PicselloWeb.Live.Admin.User.ContactUpload do
       <% end %>
       <table class="flex flex-row flex-no-wrap w-full mt-5 mb-32 responsive-table sm:bg-white sm:mb-5">
         <thead class="text-white">
-          <%= for _client <- @clients do %>
-            <tr class="flex flex-col mb-2 overflow-hidden rounded-l-lg flex-no wrap sm:table-row sm:mb-0">
-              <th class="p-3 text-left uppercase bg-base-300">Name</th>
-              <th class="p-3 text-left uppercase bg-base-300">Email</th>
-            </tr>
-          <% end %>
+          <tr class="flex flex-col mb-2 overflow-hidden rounded-l-lg flex-no wrap sm:table-row sm:mb-0">
+            <th class="p-3 text-left uppercase bg-base-300">Name</th>
+            <th class="p-3 text-left uppercase bg-base-300">Email</th>
+          </tr>
         </thead>
         <tbody class="flex-1 sm:flex-none">
             <%= for client <- @clients do %>
