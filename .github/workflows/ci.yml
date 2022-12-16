@@ -6,98 +6,65 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 }}
-  MSG_MINIMAL: ref,commit
-  PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE: 'Cost of Living Adjustments!A1:B51'
-  PACKAGES_CALCULATOR_PRICES_RANGE: 'Sheet1!A1:E200'
-  PACKAGES_CALCULATOR_SHEET_ID: '1o-jjICzCgevEyf4Kw5keOyTEu8IK5EgfOXfeV_lSMVI'
-  PHOTO_PROCESSING_INPUT_TOPIC: 'projects/celtic-rite-323300/topics/stagging-photo-to-process'
-  PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION: 'projects/celtic-rite-323300/subscriptions/github-ci-processed-photos-sub'
-  PHOTO_PROCESSING_OUTPUT_TOPIC: 'github-ci-processed-photos'
-  PHOTO_STORAGE_BUCKET: 'picsello-staging'
-  PUBLIC_BUCKET: 'test-profiles'
-  SENDGRID_MARKETING_UNSUBSCRIBE_ID: '1234'
-  SHELL: /usr/bin/bash
-  SLACK_ICON_EMOJI: ':camera:'
-  SLACK_MESSAGE: ${{github.event.workflow_run.html_url}}
-  SLACK_USERNAME: Picsello CI
-  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+permissions:
+  contents: read
 
 jobs:
-  build:
-
-    name: Build and test
-    runs-on: ubuntu-20.04
-    timeout-minutes: 45
-
-    services:
-      db:
-        image: postgres:13
-        ports: ['5432:5432']
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+  test_1-6:
+    uses: ./.github/workflows/reusable_elixir.yml
+    with:
+      partition: "1"
+      partitions: "6"
+    secrets: inherit
+  test_2-6:
+    uses: ./.github/workflows/reusable_elixir.yml
+    with:
+      partition: "2"
+      partitions: "6"
+    secrets: inherit
+  test_3-6:
+    uses: ./.github/workflows/reusable_elixir.yml
+    with:
+      partition: "3"
+      partitions: "6"
+    secrets: inherit
+  test_4-6:
+    uses: ./.github/workflows/reusable_elixir.yml
+    with:
+      partition: "4"
+      partitions: "6"
+    secrets: inherit
+  test_5-6:
+    uses: ./.github/workflows/reusable_elixir.yml
+    with:
+      partition: "5"
+      partitions: "6"
+    secrets: inherit
+  test_6-6:
+    uses: ./.github/workflows/reusable_elixir.yml
+    with:
+      partition: "6"
+      partitions: "6"
+    secrets: inherit
+  slack-workflow-status:
+    if: always()
+    name: Post Workflow Status To Slack
+    needs:
+      - test_1-6
+      - test_2-6
+      - test_3-6
+      - test_4-6
+      - test_5-6
+      - test_6-6
+    runs-on: ubuntu-latest
+    permissions:
+      actions: 'read'
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Elixir
-      uses: erlef/setup-elixir@885971a72ed1f9240973bd92ab57af8c1aa68f24
-      with:
-        elixir-version: '1.12.3' # Define the elixir version [required]
-        otp-version: '24.1.4' # Define the OTP version [required]
-    - name: Restore dependencies cache
-      uses: actions/cache@v2
-      id: cache-mix
-      with:
-        path: |
-          deps
-          _build
-        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-mix-
-    - name: Install dependencies
-      if: steps.cache-mix.outputs.cache-hit != 'true'
-      run: mix deps.get
-    - name: Compile deps for tests
-      run: MIX_ENV=test mix deps.compile
-    - name: Compile code for tests
-      run: MIX_ENV=test mix compile --warnings-as-errors
-    - name: Run Credo
-      run: MIX_ENV=test mix credo
-    - name: Run Dialyzer
-      run: mix dialyzer
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '16.14.2' # WARNING: *must* match ../.node-version
-        cache: 'npm'
-        cache-dependency-path: assets/package-lock.json
-    - name: Build js
-      run: npm install --prefix assets && npm run deploy --prefix assets && mix phx.digest
-    - name: Run tests
-      run: mix test --trace --cover --warnings-as-errors
-      timeout-minutes: 45
-    - name: Archive screenshots
-      if: ${{failure()}}
-      uses: actions/upload-artifact@v2
-      with:
-        name: screenshots
-        path: |
-          screenshots/*.png
-    - name: Notify slack of success
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_COLOR: ${{ job.status }}
-        SLACK_TITLE: ':rocket: build passed :rocket:'
-    - name: Notify slack of failure
-      if: ${{failure()}}
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_COLOR: ${{ job.status }}
-        SLACK_TITLE: ':skull: build failed :skull:'
-    - name: deploy to staging
-      run: curl ${{ secrets.RENDER_TRIGGER_DEPLOY }}
+      - name: Slack Workflow Notification
+        uses: Gamesight/slack-workflow-status@master
+        with:
+          include_commit_message: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          name: 'Picsello CI'
+          icon_emoji: ':camera:'
