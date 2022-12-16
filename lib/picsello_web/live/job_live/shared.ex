@@ -14,7 +14,8 @@ defmodule PicselloWeb.JobLive.Shared do
     Notifiers.ClientNotifier,
     Package,
     PaymentSchedules,
-    Orders
+    Orders,
+    Galleries.Workers.PhotoStorage
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -265,6 +266,113 @@ defmodule PicselloWeb.JobLive.Shared do
 
   # fallback for non related search key strokes
   def handle_event("set-focus", _value, socket), do: noreply(socket)
+
+  def handle_event(
+        "retry",
+        %{"ref" => ref},
+        %{
+          assigns: %{
+            invalid_entries: invalid_entries,
+            invalid_entries_errors: invalid_entries_errors,
+            uploads: %{documents: documents}
+          }
+        } = socket
+      ) do
+    {[entry], new_invalid_entries} = Enum.split_with(invalid_entries, &(&1.ref == ref))
+
+    [%{entry | valid?: true}]
+    |> renew_uploads(entry, socket)
+    |> assign(:invalid_entries, new_invalid_entries)
+    |> assign(:invalid_entries_errors, Map.delete(invalid_entries_errors, ref))
+    |> push_event("resume_upload", %{id: documents.ref})
+    |> then(&__MODULE__.handle_event("validate", %{"_target" => ["documents"]}, &1))
+  end
+
+  def handle_event(
+        "validate",
+        %{"_target" => ["documents"]},
+        %{
+          assigns:
+            %{
+              invalid_entries: invalid_entries,
+              invalid_entries_errors: invalid_entries_errors
+            } = assigns
+        } = socket
+      ) do
+    ex_docs = ex_docs(assigns)
+
+    socket
+    |> check_dulplication(ex_docs)
+    |> check_max_entries()
+    |> then(fn %{assigns: %{uploads: %{documents: %{entries: entries} = documents}}} ->
+      {valid, new_invalid_entries} = Enum.split_with(entries, & &1.valid?)
+
+      socket
+      |> assign_documents(valid)
+      |> assign(:invalid_entries, invalid_entries ++ new_invalid_entries)
+      |> assign(
+        :invalid_entries_errors,
+        Map.new(documents.errors, & &1) |> Map.merge(invalid_entries_errors)
+      )
+    end)
+    |> noreply()
+  end
+
+  def assign_uploads(socket, upload_options) do
+    socket
+    |> allow_upload(:documents, upload_options)
+    |> assign(:invalid_entries, [])
+    |> assign(:invalid_entries_errors, %{})
+  end
+
+  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
+  def presign_entry(entry, %{assigns: %{uploads: uploads}} = socket) do
+    %{documents: %{max_file_size: max_file_size}} = uploads
+    key = Job.document_path(entry.client_name, entry.uuid)
+
+    sign_opts = [
+      expires_in: 144_000,
+      bucket: @bucket,
+      key: key,
+      fields: %{
+        "content-type" => entry.client_type,
+        "cache-control" => "public, max-age=@upload_options"
+      },
+      conditions: [["content-length-range", 0, max_file_size]]
+    ]
+
+    params = PhotoStorage.params_for_upload(sign_opts)
+    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
+
+    {:ok, meta, socket}
+  end
+
+  def process_cancel_upload(
+        %{
+          assigns: %{
+            invalid_entries: invalid_entries,
+            invalid_entries_errors: invalid_entries_errors,
+            uploads: %{documents: documents}
+          }
+        } = socket,
+        ref
+      ) do
+    socket
+    |> assign_documents(Enum.reject(documents.entries, &(&1.ref == ref)))
+    |> assign(:invalid_entries, Enum.reject(invalid_entries, &(&1.ref == ref)))
+    |> assign(:invalid_entries_errors, Map.delete(invalid_entries_errors, ref))
+  end
+
+  defp assign_documents(%{assigns: %{uploads: uploads}} = socket, entries) do
+    %{documents: documents} = uploads
+
+    uploads
+    |> Map.put(:documents, Map.put(documents, :entries, entries) |> Map.put(:errors, []))
+    |> then(&assign(socket, :uploads, &1))
+  end
+
+  defp ex_docs(%{job: %{documents: documents}}), do: Enum.map(documents, & &1.name)
+  defp ex_docs(%{ex_documents: ex_documents}), do: Enum.map(ex_documents, & &1.client_name)
 
   defp search_assigns(socket) do
     socket
@@ -588,7 +696,7 @@ defmodule PicselloWeb.JobLive.Shared do
               <span class="text-base-250"><%= @job.client.phone %></span>
             </a>
           <% end %>
-          <a href="#" phx-click="open-compose" class="flex items-center text-xs mt-2">
+          <a phx-click="open-compose" class="flex items-center text-xs mt-2">
             <.icon name="envelope" class="text-blue-planning-300 mr-2 w-4 h-4" />
             <span class="text-base-250"><%= @job.client.email %></span>
           </a>
@@ -752,6 +860,11 @@ defmodule PicselloWeb.JobLive.Shared do
           <%= Enum.map(@invalid_entries, fn entry -> %>
             <.files_to_upload entry={entry} for={:job_detail} >
               <.error_action error={@invalid_entries_errors[entry.ref]} entry={entry} />
+            </.files_to_upload>
+          <% end) %>
+          <%= Enum.map(@uploads.documents.entries, fn entry -> %>
+            <.files_to_upload entry={entry} for={:job_detail} >
+              <p class="btn items-center">Uploading...</p>
             </.files_to_upload>
           <% end) %>
         </div>
@@ -1161,16 +1274,23 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def files_to_upload(assigns) do
     assigns = Enum.into(assigns, %{myself: nil, for: nil, string_length: @string_length})
-    photos? = assigns[:for] == :photos
+    photos? = assigns.for == :photos
+    job? = assigns.for in [:job, :job_detail]
 
     ~H"""
       <div class={classes("uploadEntry grid grid-cols-5 pb-4 items-center", %{"px-14" => photos?})}>
-        <p class={"#{if photos?, do: 'col-span-3', else: 'col-span-2'} max-w-md"}>
+        <p class={"#{if photos?, do: 'col-span-3', else: 'col-span-2'} max-w-md overflow-hidden"}>
         <%= truncate_name(@entry, @string_length) %>
         </p>
-        <div class={"#{if photos?, do: 'gap-x-4 grid-cols-1', else: 'col-span-2'} flex photoUploadingIsFailed items-center"}>
+        <div class={"#{if photos? || job?, do: 'gap-x-1 lg:gap-x-4 md:gap-x-4 grid-cols-1', else: 'col-span-2'} flex photoUploadingIsFailed items-center"}>
           <%= render_slot(@inner_block) %>
         </div>
+        <div class={"w-full ml-4 lg:ml-0 md:ml-0 #{!job? && 'hidden'}"}>
+          <div class={"sm:w-3/4 lg:w-full w-2/3 bg-green-finances-300 mt-4 mx-auto rounded-full h-1.5 mb-4 darkbg-green-finances-300 #{((!@entry.valid? || @entry.done?)) && 'invisible'}"}>
+            <div class="bg-green-finances-300 font-sans h-1.5 rounded-full" style={"width: #{@entry.progress}%"}></div>
+          </div>
+        </div>
+
           <%= case @for do %>
             <% :job_detail -> %>
               <.removal_button phx-click="cancel-upload" phx-value-ref={@entry.ref} />
@@ -1207,9 +1327,9 @@ defmodule PicselloWeb.JobLive.Shared do
     assigns = Map.put_new(assigns, :target, nil)
 
     ~H"""
-    <p class="error btn items-center px-2"><%= Phoenix.Naming.humanize(error) %></p>
-    <p class={"retry rounded ml-2 py-1 px-2 text-xs cursor-pointer #{!retryable?(error) && 'cursor-not-allowed'}"}
-      phx-value-ref={entry.ref} phx-click={retryable?(error) && "retry"} phx-target={@target}>
+    <p class="error btn items-center px-2 sm:px-1"><%= Phoenix.Naming.humanize(error) %></p>
+    <p class={"retry rounded ml-2 py-1 px-2 sm:px-1 text-xs cursor-pointer #{!retryable?(error) && 'hidden'}"}
+      phx-value-ref={entry.ref} phx-click="retry" phx-target={@target}>
       Retry?
     </p>
     """

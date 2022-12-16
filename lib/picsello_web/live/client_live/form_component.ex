@@ -4,40 +4,28 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
 
   alias Picsello.{
     Job,
-    Repo,
-    Client,
     Clients,
-    Package,
-    Packages.Download,
-    Packages.PackagePricing,
-    BookingProposal,
-    Galleries.Workers.PhotoStorage
+    Package
   }
-
-  alias PicselloWeb.Live.Shared.CustomPayments
 
   alias Ecto.Changeset
 
-  import PicselloWeb.LiveModal, only: [footer: 1]
   import PicselloWeb.Live.Shared
-
-  import PicselloWeb.PackageLive.Shared,
-    only: [package_basic_fields: 1, digital_download_fields: 1, current: 1]
 
   import PicselloWeb.JobLive.Shared,
     only: [
-      drag_drop: 1,
-      check_max_entries: 1,
-      check_dulplication: 1,
-      renew_uploads: 3,
-      files_to_upload: 1,
-      error_action: 1
+      presign_entry: 2,
+      assign_uploads: 2,
+      process_cancel_upload: 2
     ]
 
   @upload_options [
     accept: ~w(.pdf .docx .txt),
+    auto_upload: true,
     max_entries: String.to_integer(Application.compile_env(:picsello, :documents_max_entries)),
-    max_file_size: String.to_integer(Application.compile_env(:picsello, :document_max_size))
+    max_file_size: String.to_integer(Application.compile_env(:picsello, :document_max_size)),
+    external: &presign_entry/2,
+    progress: &handle_progress/3
   ]
 
   @impl true
@@ -53,7 +41,8 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
     |> assign(:pre_picsello_client, false)
     |> assign_new(:job, fn -> nil end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1} end)
-    |> allow_upload(:documents, @upload_options)
+    |> assign_uploads(@upload_options)
+    |> assign(:ex_documents, [])
     |> assign_job_changeset(%{})
     |> assign_package_changeset(%{})
     |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]})
@@ -169,174 +158,47 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
     """
   end
 
-  def step(%{step: :package_payment, package_changeset: package_changeset} = assigns) do
-    base_price_zero? = base_price_zero?(package_changeset)
+  def step(%{step: :package_payment} = assigns), do: package_payment_step(assigns)
 
-    ~H"""
-    <.form for={@package_changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
-      <h2 class="text-xl font-bold">Package Details</h2>
-      <.package_basic_fields form={f} job_type={@job_type} />
+  def step(%{step: :invoice} = assigns), do: invoice_step(assigns)
 
-      <hr class="mt-8 border-gray-100">
+  def step(%{step: :documents, changeset: changeset} = assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        searched_client: nil,
+        selected_client: nil,
+        client_name: Changeset.get_field(changeset, :name)
+      })
 
-      <h2 class="mt-4 mb-2 text-xl font-bold">Package Price</h2>
-      <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
-        <label for={input_id(f, :base_price)}>
-          The amount you’ve charged for your job <p>(including download credits)</p>
-        </label>
-        <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
-          <span class="mx-3 text-2xl font-bold text-base-250">+</span>
-          <%= input f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
-        </div>
-      </div>
-      <div class="flex flex-col items-start justify-between w-full mt-4 sm:items-center sm:flex-row sm:w-auto">
-        <label for={input_id(f, :print_credits)}>
-          How much of the creative session fee is for print credits?
-        </label>
-        <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
-          <span class="mx-4 text-2xl font-bold text-base-250">&nbsp;</span>
-          <%= input f, :print_credits, disabled: base_price_zero?, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
-        </div>
-      </div>
-
-      <hr class="hidden mt-4 border-gray-100 sm:block">
-
-      <div class="flex flex-col items-start justify-between w-full mt-4 sm:items-center sm:flex-row sm:w-auto sm:mt-0">
-        <label for={input_id(f, :collected_price)}>
-          The amount you’ve already collected
-        </label>
-        <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
-          <span class="mx-3 text-2xl font-bold text-base-250">-</span>
-          <%= input f, :collected_price, disabled: base_price_zero?, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
-        </div>
-      </div>
-
-      <dl class="flex flex-col justify-between mt-4 text-lg font-bold sm:flex-row">
-        <dt>Remaining balance to collect with Picsello</dt>
-        <dd class="w-full p-6 py-2 mt-2 text-center rounded-lg sm:w-32 text-green-finances-300 bg-green-finances-100/30 sm:mt-0"><%= total_remaining_amount(@package_changeset) %></dd>
-      </dl>
-
-      <hr class="mt-4 border-gray-100">
-
-      <.digital_download_fields package_form={f} download={@download_changeset} package_pricing={@package_pricing_changeset} />
-
-      <.footer>
-        <button class="px-8 btn-primary" title="Next" type="submit" disabled={Enum.any?([@download_changeset, @package_pricing_changeset, @package_changeset], &(!&1.valid?))} phx-disable-with="Next">
-          Next
-        </button>
-        <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>Go back</button>
-      </.footer>
-    </.form>
-    """
+    documents_step(assigns)
   end
 
-  def step(%{step: :invoice, package_changeset: package_changeset} = assigns) do
-    remaining_amount_zero? = remaining_amount_zero?(package_changeset)
+  @impl true
+  def handle_event("back", %{}, socket), do: go_back_event("back", %{}, socket) |> noreply()
 
-    ~H"""
-    <.form for={@payments_changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
-      <h3 class="font-bold">Balance to collect: <%= total_remaining_amount(@package_changeset) %></h3>
+  @impl true
+  def handle_event("remove-payment", %{}, socket),
+    do: remove_payment_event("remove-payment", %{}, socket) |> noreply()
 
-      <div class={classes("flex items-center bg-blue-planning-100 rounded-lg my-4 py-4", %{"hidden" => !remaining_amount_zero?})}}>
-        <.intro_hint class="ml-4" content={"#"}/>
-        <div class="pl-2">
-          <b>Since your remaining balance is $0.00, we'll mark your job as paid for.</b> Make sure to follow up with any emails as needed to your client.
-        </div>
-      </div>
+  @impl true
+  def handle_event("add-payment", %{}, socket),
+    do: add_payment_event("add-payment", %{}, socket) |> noreply()
 
-      <div class={classes(%{"pointer-events-none opacity-40" => remaining_amount_zero?})}>
-        <%= inputs_for f, :payment_schedules, fn p -> %>
-          <div {testid("payment-#{p.index + 1}")}>
-            <div class="flex items-center mt-4">
-              <div class="mb-2 text-xl font-bold">Payment <%= p.index + 1 %></div>
+  @impl true
+  def handle_event("submit", params, %{assigns: %{step: :package_payment}} = socket),
+    do: payment_package_submit_event("submit", params, socket) |> noreply()
 
-              <%= if p.index > 0 do %>
-                <.icon_button class="ml-8" title="remove" phx-click="remove-payment" phx-target={@myself} color="red-sales-300" icon="trash">
-                  Remove
-                </.icon_button>
-              <% end %>
-            </div>
+  @impl true
+  def handle_event("submit", %{}, %{assigns: %{step: :invoice}} = socket),
+    do: invoice_submit_event("submit", %{}, socket) |> noreply()
 
-            <div class="flex flex-wrap w-full mb-8">
-              <div class="w-full sm:w-auto">
-                <%= labeled_input p, :due_date, label: "Due", type: :date_input, placeholder: "mm/dd/yyyy", class: "sm:w-64 w-full px-4 text-lg" %>
-              </div>
-              <div class="w-full sm:ml-16 sm:w-auto">
-                <%= labeled_input p, :price, label: "Payment amount", placeholder: "$0.00", class: "sm:w-36 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
-              </div>
-            </div>
-          </div>
-        <% end %>
+  @impl true
+  def handle_event("validate", %{"package" => _} = params, socket),
+    do: validate_package_event("validate", params, socket) |> noreply()
 
-        <%= if f |> current() |> Map.get(:payment_schedules) |> Enum.count == 1 do %>
-          <button type="button" title="add" phx-click="add-payment" phx-target={@myself} class="px-2 py-1 mb-8 btn-secondary">
-            Add new payment
-          </button>
-        <% end %>
-
-        <div class="text-xl font-bold">
-          Remaining to collect:
-          <%= case remaining_to_collect(@payments_changeset) do %>
-            <% value -> %>
-            <%= if Money.zero?(value) do %>
-              <span class="text-green-finances-300"><%= value %></span>
-            <% else %>
-              <span class="text-red-sales-300"><%= value %></span>
-            <% end %>
-          <% end %>
-        </div>
-        <p class="mb-2 text-sm italic font-light">limit two payments</p>
-      </div>
-      <.footer>
-        <button class="px-8 btn-primary" title="Next" type="submit" disabled={if remaining_amount_zero?, do: false, else: !@payments_changeset.valid?} phx-disable-with="Next">
-          Next
-        </button>
-        <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>Go back</button>
-      </.footer>
-    </.form>
-    """
-  end
-
-  def step(%{step: :documents} = assigns) do
-    ~H"""
-    <form phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
-      <.drag_drop upload_entity={@uploads.documents} supported_types=".PDF, .docx, .txt" />
-      <div class={classes("uploadingList__wrapper mt-8", %{"hidden" => Enum.empty?(@uploads.documents.entries)})}>
-        <div class="grid grid-cols-5 pb-4 items-center text-lg font-bold">
-          <span class="col-span-2">Name</span>
-          <span class="col-span-2">Status</span>
-          <span class="ml-auto">Actions</span>
-        </div>
-        <hr class="md:block border-blue-planning-300 border-2 mb-2">
-        <%= Enum.filter(@uploads.documents.entries, & !&1.valid?) |> Enum.map(fn entry -> %>
-          <.files_to_upload myself={@myself} entry={entry}>
-            <%= for error <- upload_errors(@uploads.documents, entry) do %>
-            <.error_action error={error} entry={entry} target={@myself} />
-            <% end %>
-          </.files_to_upload>
-        <% end) %>
-        <%= Enum.filter(@uploads.documents.entries, & &1.valid?) |> Enum.map(fn entry -> %>
-          <.files_to_upload myself={@myself}  entry={entry}>
-            <p class="btn items-center">Uploaded</p>
-          </.files_to_upload>
-        <% end) %>
-      </div>
-
-      <.step_footer title="Finish" disabled={Enum.any?(@uploads.documents.entries, & !&1.valid?)} myself={@myself} />
-    </form>
-    """
-  end
-
-  defp step_footer(assigns) do
-    ~H"""
-    <.footer>
-      <button class="px-8 btn-primary" title={@title} type="submit" disabled={@disabled} phx-disable-with={@title}>
-        <%= @title %>
-      </button>
-      <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>Go back</button>
-    </.footer>
-    """
-  end
+  @impl true
+  def handle_event("validate", %{"custom_payments" => params}, socket),
+    do: validate_payments_event("validate", %{"custom_payments" => params}, socket) |> noreply()
 
   @impl true
   def handle_event(
@@ -387,28 +249,24 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
   end
 
   @impl true
-  def handle_event("submit", %{}, %{assigns: %{step: :invoice}} = socket),
-    do: socket |> assign(:step, :documents) |> noreply()
+  def handle_event("start_another_job", %{}, %{assigns: %{step: :documents}} = socket),
+    do:
+      socket
+      |> assign(:another_import, true)
+      |> import_job_for_form_component()
+      |> noreply()
 
   @impl true
   def handle_event("submit", %{}, %{assigns: %{step: :documents}} = socket),
-    do: import_job(socket)
+    do:
+      socket
+      |> assign(:another_import, false)
+      |> import_job_for_form_component()
+      |> noreply()
 
   @impl true
   def handle_event("validate", %{"client" => params}, socket) do
     socket |> assign_changeset(:validate, params) |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "validate",
-        %{"_target" => ["documents"]},
-        socket
-      ) do
-    socket
-    |> check_max_entries()
-    |> check_dulplication()
-    |> noreply()
   end
 
   @impl true
@@ -429,28 +287,18 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
 
   @impl true
   def handle_event(
-        "retry",
+        "cancel-upload",
         %{"ref" => ref},
-        %{assigns: %{uploads: %{documents: %{entries: entries}}}} = socket
+        %{assigns: %{ex_documents: ex_documents}} = socket
       ) do
-    entry = Enum.find(entries, &(&1.ref == ref))
-
-    entries
-    |> Enum.reject(&(&1.ref == ref))
-    |> Enum.concat([%{entry | valid?: true}])
-    |> renew_uploads(entry, socket)
-    |> check_max_entries()
-    |> check_dulplication()
+    socket
+    |> assign(:ex_documents, Enum.reject(ex_documents, &(&1.ref == ref)))
+    |> process_cancel_upload(ref)
     |> noreply()
   end
 
   @impl true
-  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
-    {:noreply, cancel_upload(socket, :documents, ref)}
-  end
-
-  @impl true
-  defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.ImportWizard
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
   defp save_client(params, %{assigns: %{current_user: current_user, client: nil}}) do
     Clients.save_new_client(params, current_user.organization_id)
@@ -492,114 +340,11 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
     socket |> open_modal(__MODULE__, %{current_user: current_user, client: client})
   end
 
-  defp import_job(socket) do
-    case insert_multi(socket) do
-      {:ok, %{job: job, client: %Client{id: client_id}}} ->
-        upload_docs(job, socket)
-
-        socket |> push_redirect(to: Routes.client_path(socket, :job_history, client_id))
-
-      {:error, _} ->
-        socket
-    end
-    |> noreply()
-  end
-
-  defp insert_multi(
-         %{
-           assigns:
-             %{
-               changeset: changeset,
-               job_changeset: job_changeset,
-               package_changeset: package_changeset
-             } = _assigns
-         } = socket
-       ) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:client, changeset |> Map.put(:action, nil))
-    |> Ecto.Multi.insert(:job, fn changes ->
-      job_changeset
-      |> Changeset.put_change(:client_id, changes.client.id)
-      |> Map.put(:action, nil)
-    end)
-    |> Ecto.Multi.insert(:package, package_changeset |> Map.put(:action, nil))
-    |> Ecto.Multi.update(:job_update, fn changes ->
-      Job.add_package_changeset(changes.job, %{package_id: changes.package.id})
-    end)
-    |> Ecto.Multi.insert(:proposal, fn changes ->
-      BookingProposal.create_changeset(%{job_id: changes.job.id})
-    end)
-    |> maybe_insert_payment_schedules(socket)
-    |> Repo.transaction()
-  end
-
-  defp upload_docs(
-         job,
-         %{
-           assigns:
-             %{
-               uploads: uploads
-             } = _assigns
-         } = socket
-       ) do
-    uploads.documents.entries
-    |> Enum.filter(& &1.valid?)
-    |> Task.async_stream(fn entry ->
-      consume_uploaded_entry(socket, entry, fn %{path: path} ->
-        url = Job.document_path(job.id, entry.client_name)
-        {:ok, _} = PhotoStorage.insert(url, File.read!(path))
-
-        {:ok, %{url: url, name: entry.client_name}}
-      end)
-    end)
-    |> Enum.reduce([], fn {:ok, document}, acc -> [document | acc] end)
-    |> then(&Job.document_changeset(job, %{documents: &1}))
-    |> Repo.update!()
-  end
-
   defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
     socket
     |> assign_new(:job_types, fn ->
       (organization.profile.job_types ++ [Picsello.JobType.other_type()]) |> Enum.uniq()
     end)
-  end
-
-  defp assign_package_changeset(
-         %{assigns: %{current_user: current_user}} = socket,
-         params,
-         action \\ nil
-       ) do
-    package_pricing_changeset =
-      Map.get(params, "package_pricing", %{})
-      |> PackagePricing.changeset()
-      |> Map.put(:action, action)
-
-    download_changeset =
-      socket.assigns.package
-      |> Download.from_package()
-      |> Download.changeset(Map.get(params, "download", %{}))
-      |> Map.put(:action, action)
-
-    download = current(download_changeset)
-
-    package_changeset =
-      params
-      |> Map.get("package", %{})
-      |> PackagePricing.handle_package_params(params)
-      |> Map.merge(%{
-        "download_count" => Download.count(download),
-        "download_each_price" => Download.each_price(download),
-        "organization_id" => current_user.organization_id,
-        "buy_all" => Download.buy_all(download)
-      })
-      |> Package.import_changeset()
-      |> Map.put(:action, action)
-
-    assign(socket,
-      package_changeset: package_changeset,
-      download_changeset: download_changeset,
-      package_pricing_changeset: package_pricing_changeset
-    )
   end
 
   defp assign_job_changeset(
@@ -613,19 +358,5 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
       |> Map.put(:action, action)
 
     assign(socket, job_changeset: changeset)
-  end
-
-  defp assign_payments_changeset(
-         %{assigns: %{package_changeset: package_changeset}} = socket,
-         params,
-         action \\ nil
-       ) do
-    changeset =
-      params
-      |> Map.put("remaining_price", total_remaining_amount(package_changeset))
-      |> CustomPayments.changeset()
-      |> Map.put(:action, action)
-
-    assign(socket, payments_changeset: changeset)
   end
 end

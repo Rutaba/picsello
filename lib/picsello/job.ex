@@ -170,6 +170,6 @@ defmodule Picsello.Job do
     end
   end
 
-  def document_path(job_id, name),
-    do: "jobs/#{job_id}/documents/#{UUID.uuid4()}#{Path.extname(name)}"
+  def document_path(name, uuid),
+    do: "jobs/documents/#{uuid}#{Path.extname(name)}"
 end

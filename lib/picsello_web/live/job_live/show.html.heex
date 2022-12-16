@@ -9,7 +9,13 @@
       </.crumbs>
 
       <div class="flex flex-col justify-between md:flex-row">
-        <.title_header job={@job} back_path={Routes.job_path(@socket, @live_action)} />
+        <.title_header job={@job} back_path={
+          case @request_from do
+            "job_history" -> Routes.client_path(@socket, :job_history, @job.client_id)
+            "gallery_index" -> Routes.gallery_path(@socket, :galleries)
+            _ -> Routes.job_path(@socket, @live_action)
+          end
+        } />
         <button phx-click="open-compose" class="hidden md:block btn-primary">Create an email</button>
       </div>
     </div>

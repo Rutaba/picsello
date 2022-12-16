@@ -13,24 +13,31 @@ defmodule Picsello.Clients do
 
   def find_all_by(
         user: user,
-        filters: %{sort_by: sort_by, sort_direction: sort_direction} = opts,
+        filters: %{sort_by: sort_by, sort_direction: sort_direction} = opts
+      ) do
+    from(client in Client,
+      preload: [:tags, :jobs],
+      left_join: jobs in assoc(client, :jobs),
+      left_join: job_status in assoc(jobs, :job_status),
+      where: client.organization_id == ^user.organization_id and is_nil(client.archived_at),
+      where: ^filters_where(opts),
+      where: ^filters_status(opts),
+      group_by: client.id,
+      order_by: ^filter_order_by(sort_by, sort_direction)
+    )
+  end
+
+  def find_all_by_pagination(
+        user: user,
+        filters: opts,
         pagination: %{limit: limit, offset: offset}
       ) do
-    query =
-      from(client in Client,
-        preload: [:tags, :jobs],
-        left_join: jobs in assoc(client, :jobs),
-        left_join: job_status in assoc(jobs, :job_status),
-        where: client.organization_id == ^user.organization_id and is_nil(client.archived_at),
-        where: ^filters_where(opts),
-        where: ^filters_status(opts),
-        group_by: client.id,
-        order_by: ^filter_order_by(sort_by, sort_direction),
-        limit: ^limit,
-        offset: ^offset
-      )
+    query = find_all_by(user: user, filters: opts)
 
-    query
+    from(c in query,
+      limit: ^limit,
+      offset: ^offset
+    )
   end
 
   defp filters_where(opts) do

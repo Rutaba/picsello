@@ -3,7 +3,6 @@ defmodule PicselloWeb.JobLive.Show do
   use PicselloWeb, :live_view
 
   alias Picsello.{Galleries, Job, Repo, PaymentSchedules}
-  alias Picsello.Galleries.Workers.PhotoStorage
 
   import PicselloWeb.JobLive.Shared,
     only: [
@@ -15,26 +14,31 @@ defmodule PicselloWeb.JobLive.Show do
       package_details_card: 1,
       private_notes_card: 1,
       section: 1,
+      presign_entry: 2,
       shoot_details_section: 1,
       validate_payment_schedule: 1,
       title_header: 1,
-      check_max_entries: 1,
-      check_dulplication: 2,
+      process_cancel_upload: 2,
       renew_uploads: 3
     ]
 
   @upload_options [
     accept: ~w(.pdf .docx .txt),
     auto_upload: true,
-    external: &__MODULE__.presign_entry/2,
+    external: &presign_entry/2,
+    progress: &__MODULE__.handle_progress/3,
     max_entries: 2,
     max_file_size: String.to_integer(Application.compile_env(:picsello, :document_max_size))
   ]
 
   @impl true
-  def mount(%{"id" => job_id}, _session, socket) do
+  def mount(%{"id" => job_id} = assigns, _session, socket) do
     socket
     |> assign_job(job_id)
+    |> assign(
+      :request_from,
+      if(assigns["request_from"], do: assigns["request_from"], else: "job_index")
+    )
     |> assign(:collapsed_sections, [])
     |> then(fn %{assigns: %{job: job}} = socket ->
       payment_schedules = job |> Repo.preload(:payment_schedules) |> Map.get(:payment_schedules)
@@ -172,73 +176,12 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   def handle_event(
-        "validate",
-        _,
-        %{
-          assigns: %{
-            job: %{documents: documents},
-            invalid_entries: invalid_entries,
-            invalid_entries_errors: invalid_entries_errors
-          }
-        } = socket
-      ) do
-    ex_docs = Enum.map(documents, & &1.name)
-
-    socket
-    |> check_dulplication(ex_docs)
-    |> check_max_entries()
-    |> then(fn %{assigns: %{uploads: %{documents: %{entries: entries} = documents} = uploads}} ->
-      {valid, new_invalid_entries} = Enum.split_with(entries, & &1.valid?)
-
-      new_documents = Map.put(documents, :entries, valid) |> Map.put(:errors, [])
-      uploads = Map.put(uploads, :documents, new_documents)
-
-      socket
-      |> assign(:uploads, uploads)
-      |> assign(:invalid_entries, invalid_entries ++ new_invalid_entries)
-      |> assign(
-        :invalid_entries_errors,
-        Map.new(documents.errors, & &1) |> Map.merge(invalid_entries_errors)
-      )
-    end)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "retry",
-        %{"ref" => ref},
-        %{
-          assigns: %{
-            invalid_entries: invalid_entries,
-            invalid_entries_errors: invalid_entries_errors,
-            uploads: %{documents: documents}
-          }
-        } = socket
-      ) do
-    {[entry], new_invalid_entries} = Enum.split_with(invalid_entries, &(&1.ref == ref))
-
-    [%{entry | valid?: true}]
-    |> renew_uploads(entry, socket)
-    |> assign(:invalid_entries, new_invalid_entries)
-    |> assign(:invalid_entries_errors, Map.delete(invalid_entries_errors, ref))
-    |> push_event("resume_upload", %{id: documents.ref})
-    |> then(&__MODULE__.handle_event("validate", %{}, &1))
-  end
-
-  def handle_event(
         "cancel-upload",
         %{"ref" => ref},
-        %{
-          assigns: %{
-            invalid_entries: invalid_entries,
-            invalid_entries_errors: invalid_entries_errors
-          }
-        } = socket
+        socket
       ) do
     socket
-    |> assign(:invalid_entries, Enum.reject(invalid_entries, &(&1.ref == ref)))
-    |> assign(:invalid_entries_errors, Map.delete(invalid_entries_errors, ref))
+    |> process_cancel_upload(ref)
     |> noreply()
   end
 
@@ -279,46 +222,36 @@ defmodule PicselloWeb.JobLive.Show do
     end
   end
 
-  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
-  def presign_entry(
+  def handle_progress(
+        :documents,
         entry,
         %{
           assigns: %{
-            uploads: %{documents: %{entries: entries}},
-            job: %{documents: documents} = job
+            job: %{documents: documents} = job,
+            uploads: %{documents: %{entries: entries}}
           }
         } = socket
       ) do
-    key = Job.document_path(job.id, entry.client_name)
+    if entry.done? do
+      key = Job.document_path(entry.client_name, entry.uuid)
 
-    sign_opts = [
-      expires_in: 144_000,
-      bucket: @bucket,
-      key: key,
-      fields: %{
-        "content-type" => entry.client_type,
-        "cache-control" => "public, max-age=@upload_options"
-      },
-      conditions: [["content-length-range", 0, @upload_options[:max_file_size]]]
-    ]
+      job =
+        Picsello.Job.document_changeset(job, %{
+          documents: [
+            %{name: entry.client_name, url: key}
+            | Enum.map(documents, &%{name: &1.name, url: &1.url})
+          ]
+        })
+        |> Repo.update!()
 
-    job =
-      Picsello.Job.document_changeset(job, %{
-        documents: [
-          %{name: entry.client_name, url: key}
-          | Enum.map(documents, &%{name: &1.name, url: &1.url})
-        ]
-      })
-      |> Repo.update!()
-
-    params = PhotoStorage.params_for_upload(sign_opts)
-    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
-
-    {:ok, meta,
-     entries
-     |> Enum.reject(&(&1.uuid == entry.uuid))
-     |> renew_uploads(entry, socket)
-     |> assign(:job, job)}
+      entries
+      |> Enum.reject(&(&1.uuid == entry.uuid))
+      |> renew_uploads(entry, socket)
+      |> assign(:job, job)
+      |> noreply()
+    else
+      socket |> noreply()
+    end
   end
 
   @impl true

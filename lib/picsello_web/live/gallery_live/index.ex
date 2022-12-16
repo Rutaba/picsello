@@ -150,6 +150,9 @@ defmodule PicselloWeb.GalleryLive.Index do
       |> noreply()
 
   @impl true
+  def handle_info({:confirm_event, "send_another"}, socket), do: open_compose(socket)
+
+  @impl true
   def handle_info(
         {:message_composed, changeset},
         %{
