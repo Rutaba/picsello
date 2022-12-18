@@ -92,28 +92,25 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     |> assert_text("Product Previews")
     |> scroll_to_bottom()
     |> click(css("span", text: "Product enabled to sell", count: 7, at: 0))
-    |> click(css("span", text: "Product enabled to sell", count: 7, at: 2))
-    |> click(css("span", text: "Product enabled to sell", count: 7, at: 3))
+    |> click(css("span", text: "Product enabled to sell", count: 7, at: 1))
     |> find(checkbox("Product enabled to sell", visible: true, count: 7, at: 0), fn checkbox ->
       refute Element.selected?(checkbox)
     end)
-    |> find(checkbox("Product enabled to sell", visible: true, count: 7, at: 2), fn checkbox ->
+    |> find(checkbox("Product enabled to sell", visible: true, count: 7, at: 1), fn checkbox ->
       refute Element.selected?(checkbox)
     end)
-    |> find(checkbox("Product enabled to sell", visible: true, count: 7, at: 3), fn checkbox ->
-      refute Element.selected?(checkbox)
-    end)
-    |> click(css("span", text: "Show product preview in gallery", count: 4, at: 0))
+    |> click(css("span", text: "Show product preview in gallery", count: 5, at: 0))
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> click(link("View Gallery"))
     |> assert_text("Test Client Wedding Gallery")
-    |> assert_has(css("*[data-testid='products'] li", count: 3))
+    |> assert_has(css("*[data-testid='products'] li", count: 5))
     |> scroll_to_bottom()
     |> click(css("#item-#{List.first(photo_ids)}"))
     |> assert_text("Select an option")
-    |> find(css("*[data-testid^='product_option']", count: 5), fn options ->
+    |> find(css("*[data-testid^='product_option']", count: 6), fn options ->
       assert [
-               {"Albums", "$55.00"},
+                {"Books", "$45.00"},
+                {"Ornaments", "$40.00"},
                {"Loose Prints", "$25.00"},
                {"Press Printed Cards", "$5.00"},
                {"Display Products", "$80.00"},
