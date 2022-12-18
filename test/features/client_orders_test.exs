@@ -394,6 +394,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_text("Select an option")
       |> click(button("Add to cart"))
+      |> click(css("p", text: "Added!"))
       |> assert_has(link("cart", text: "1"))
       |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_has(testid("product_option_digital_download", text: "In cart"))
