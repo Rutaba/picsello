@@ -301,11 +301,7 @@ defmodule Picsello.EditQuestionnaireTest do
       end)
       |> click(button("Save"))
       |> assert_flash(:success, text: "Questionnaire saved")
-      |> find(testid("questionnaire-row", count: 7, at: 1), fn row ->
-        row
-        |> assert_text("My Favorite Questionnaire")
-        |> assert_text("1")
-      end)
+      |> assert_text("My Favorite Questionnaire")
     end
 
     feature "user deletes questionnaire", %{session: session} do
