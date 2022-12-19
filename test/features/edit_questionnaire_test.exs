@@ -16,7 +16,7 @@ defmodule Picsello.EditQuestionnaireTest do
 
     session
     |> visit("/questionnaires")
-    |> click(css("a[href='/home']", at: 2, count: 3))
+    |> click(css("a[href='/home']", at: 2, count: 4))
     |> assert_path("/home")
   end
 
