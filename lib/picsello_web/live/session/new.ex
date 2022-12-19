@@ -27,7 +27,7 @@ defmodule PicselloWeb.Live.Session.New do
     <div class="flex flex-col items-center justify-start w-screen min-h-screen p-5 sm:justify-center bg-blue-planning-200">
       <div class="container px-6 pt-8 pb-6 bg-white rounded-lg shadow-md max-w-screen-sm sm:p-14">
         <.live_link to={Routes.page_path(@socket, :index)} >
-          <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48" />
+          <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
         </.live_link>
         <h1 class="mt-10 text-4xl font-bold">Log in</h1>
 

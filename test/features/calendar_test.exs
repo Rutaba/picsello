@@ -63,7 +63,7 @@ defmodule Picsello.CalendarTest do
     session
     |> visit("/calendar")
     |> assert_text("Calendar")
-    |> assert_has(css("a[href*='/home']", count: 2))
+    |> assert_has(css("a[href*='/home']", count: 3))
     |> assert_has(css("a[href*='/calendar/settings']", text: "Settings"))
     |> click(css("a[href*='/calendar/settings']", text: "Settings"))
     |> assert_url_contains("settings")

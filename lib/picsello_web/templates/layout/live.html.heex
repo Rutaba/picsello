@@ -94,16 +94,23 @@
   <div class="mt-12"></div>
   <footer class="mt-auto hidden sm:block bg-base-300 text-white">
     <div class="px-6 center-container py-10">
-      <nav class="flex text-lg font-bold mt-4">
-        <ul class="flex">
-          <li><a href="https://support.picsello.com/" target="_blank" rel="noopener noreferrer">Help center</a></li>
-          <%= if @current_user && Application.get_env(:picsello, :help_scout_id) do %>
-          <li><a href="#" class="ml-10" {help_scout_output(@current_user, :help_scout_id)}>Contact us</a></li>
+      <div class="flex justify-between">
+        <nav class="flex text-lg font-bold mt-4">
+          <ul class="flex">
+            <li><a href="https://support.picsello.com/" target="_blank" rel="noopener noreferrer">Help center</a></li>
+            <%= if @current_user && Application.get_env(:picsello, :help_scout_id) do %>
+            <li><a href="#" class="ml-10" {help_scout_output(@current_user, :help_scout_id)}>Contact us</a></li>
+            <% end %>
+            <li><a class="ml-10" href="https://www.picsello.com/blog" target="_blank" rel="noopener noreferrer">Blog</a></li>
+          </ul>
+          <.subscription_ending_soon type="footer" socket={@socket} current_user={@current_user} class="flex ml-auto bg-base-250 rounded px-2 py-1 items-center"/>
+        </nav>
+        <div>
+          <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Footer" do %>
+            <.icon name="logo-shoot-higher" class="h-12 sm:h-16 w-32 sm:w-36" />
           <% end %>
-          <li><a class="ml-10" href="https://www.picsello.com/blog" target="_blank" rel="noopener noreferrer">Blog</a></li>
-        </ul>
-        <.subscription_ending_soon type="footer" socket={@socket} current_user={@current_user} class="flex ml-auto bg-base-250 rounded px-2 py-1 items-center"/>
-      </nav>
+        </div>
+      </div>
       <hr class="my-8 opacity-30" />
       <div class="flex">
         <div>Copyright © <%= DateTime.utc_now.year %> Picsello</div>
