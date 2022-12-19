@@ -108,6 +108,8 @@ defmodule Picsello.EditQuestionnaireTest do
           |> Element.fill_in(with: "My Favorite Questionnaire"))
       )
       |> click(css("label", text: "Event"))
+      |> scroll_into_view(testid("add-question"))
+      |> click(button("Add question"))
       |> scroll_into_view(testid("question-0"))
       |> find(
         text_field("questionnaire_questions_0_prompt"),
