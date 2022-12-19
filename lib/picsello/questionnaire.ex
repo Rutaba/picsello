@@ -55,6 +55,8 @@ defmodule Picsello.Questionnaire do
     |> validate_required([:questions, :job_type, :name])
     |> validate_name(state)
     |> validate_is_picsello_default()
+    |> unsafe_validate_unique([:name, :organization_id], Repo)
+    |> unique_constraint([:name, :organization_id])
   end
 
   def for_job(%Job{type: job_type, package: %Package{questionnaire_template_id: nil}}),

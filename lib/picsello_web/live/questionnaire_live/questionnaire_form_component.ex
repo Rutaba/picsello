@@ -179,7 +179,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     socket
     |> assign_changeset(
       merge_changes(questions, changeset),
-      insert_or_update?(questionnaire.id)
+      insert_or_update?(questionnaire)
     )
     |> noreply()
   end
@@ -199,7 +199,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     socket
     |> assign_changeset(
       merge_changes(questions, changeset),
-      insert_or_update?(questionnaire.id)
+      insert_or_update?(questionnaire)
     )
     |> noreply()
   end
@@ -221,7 +221,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     socket
     |> assign_changeset(
       merge_changes(questions, changeset),
-      insert_or_update?(questionnaire.id)
+      insert_or_update?(questionnaire)
     )
     |> noreply()
   end
@@ -245,7 +245,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     socket
     |> assign_changeset(
       merge_changes(questions, changeset),
-      insert_or_update?(questionnaire.id)
+      insert_or_update?(questionnaire)
     )
     |> noreply()
   end
@@ -270,7 +270,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     socket
     |> assign_changeset(
       merge_changes(questions, changeset),
-      insert_or_update?(questionnaire.id)
+      insert_or_update?(questionnaire)
     )
     |> noreply()
   end
@@ -460,13 +460,9 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     ] ++ questionnaires
   end
 
-  defp insert_or_update?(question_id) do
-    if is_nil(question_id) do
-      :insert
-    else
-      :update
-    end
-  end
+  defp insert_or_update?(%{id: _}), do: :update
+
+  defp insert_or_update?(_), do: :insert
 
   defp swap(questions, direction) do
     case direction do
