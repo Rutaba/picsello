@@ -106,7 +106,7 @@
           <.subscription_ending_soon type="footer" socket={@socket} current_user={@current_user} class="flex ml-auto bg-base-250 rounded px-2 py-1 items-center"/>
         </nav>
         <div>
-          <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello Footer" do %>
+          <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Footer" do %>
             <.icon name="logo-shoot-higher" class="h-12 sm:h-16 w-32 sm:w-36" />
           <% end %>
         </div>
