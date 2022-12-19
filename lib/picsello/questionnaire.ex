@@ -55,7 +55,7 @@ defmodule Picsello.Questionnaire do
     |> validate_required([:questions, :job_type, :name])
     |> validate_name(state)
     |> validate_is_picsello_default()
-    |> unsafe_validate_unique([:name, :organization_id], Repo)
+    |> maybe_validate_unique_name?(questionnaire)
     |> unique_constraint([:name, :organization_id])
   end
 
@@ -142,6 +142,15 @@ defmodule Picsello.Questionnaire do
     else
       changeset
     end
+  end
+
+  defp maybe_validate_unique_name?(changeset, %{package_id: nil}) do
+    changeset
+    |> unsafe_validate_unique([:name, :organization_id], Repo)
+  end
+
+  defp maybe_validate_unique_name?(changeset, _) do
+    changeset
   end
 
   defp get_organization_questionnaires(organization_id) do
