@@ -243,19 +243,8 @@ defmodule Picsello.Packages do
 
   def insert_package_and_update_job(changeset, job, opts \\ %{}) do
     Ecto.Multi.new()
-    |> maybe_insert_questionnaire_multi(changeset, opts)
-    |> Ecto.Multi.insert(:package, fn changes ->
-      if Map.has_key?(changes, :questionnaire) do
-        changeset
-        |> Ecto.Changeset.put_change(
-          :questionnaire_template_id,
-          changes.questionnaire.id
-        )
-      else
-        changeset
-      end
-    end)
-    |> maybe_update_questionnaire_package_id_multi(opts)
+    |> Ecto.Multi.insert(:package, changeset)
+    |> maybe_update_questionnaire_package_id_multi(changeset, opts)
     |> Ecto.Multi.update(:job_update, fn changes ->
       Job.add_package_changeset(job, %{package_id: changes.package.id})
     end)
@@ -457,34 +446,30 @@ defmodule Picsello.Packages do
 
   def create_initial(_user), do: []
 
-  defp maybe_insert_questionnaire_multi(
+  defp maybe_update_questionnaire_package_id_multi(
          multi,
          %{changes: %{organization_id: organization_id}},
-         %{
-           questionnaire: questionnaire
-         }
+         %{questionnaire: questionnaire}
        ) do
     multi
-    |> Ecto.Multi.insert(:questionnaire, fn _changes ->
-      Questionnaire.clean_questionnaire_for_changeset(
-        questionnaire,
-        organization_id
-      )
-      |> Questionnaire.changeset()
+    |> Ecto.Multi.insert(
+      :questionnaire,
+      fn %{package: %{id: package_id}} ->
+        Questionnaire.clean_questionnaire_for_changeset(
+          questionnaire,
+          organization_id,
+          package_id
+        )
+      end
+    )
+    |> Ecto.Multi.update(:package_update, fn %{
+                                               package: package,
+                                               questionnaire: %{id: questionnaire_id}
+                                             } ->
+      package
+      |> Package.changeset(%{questionnaire_template_id: questionnaire_id}, step: nil)
     end)
   end
 
-  defp maybe_insert_questionnaire_multi(multi, _, _), do: multi
-
-  defp maybe_update_questionnaire_package_id_multi(multi, %{questionnaire: _}) do
-    multi
-    |> Ecto.Multi.update(
-      :questionnaire_update,
-      fn %{package: %{id: package_id}, questionnaire: questionnaire} ->
-        Questionnaire.changeset(questionnaire, %{package_id: package_id})
-      end
-    )
-  end
-
-  defp maybe_update_questionnaire_package_id_multi(multi, _), do: multi
+  defp maybe_update_questionnaire_package_id_multi(multi, _, _), do: multi
 end

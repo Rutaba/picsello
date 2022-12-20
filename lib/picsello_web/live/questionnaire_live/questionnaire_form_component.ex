@@ -28,6 +28,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <h2 class="text-2xl leading-6 text-gray-900 mb-8 font-bold">Details</h2>
+        <%= hidden_input f, :package_id %>
 
         <div class={classes("", %{"grid gap-3" => @state == :edit_lead})}>
           <%= if @state == :edit_lead do %>
@@ -178,7 +179,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign_changeset(
-      merge_changes(questions, changeset),
+      merge_changes(%{questions: questions}, changeset),
       insert_or_update?(questionnaire)
     )
     |> noreply()
@@ -198,7 +199,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign_changeset(
-      merge_changes(questions, changeset),
+      merge_changes(%{questions: questions}, changeset),
       insert_or_update?(questionnaire)
     )
     |> noreply()
@@ -220,7 +221,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign_changeset(
-      merge_changes(questions, changeset),
+      merge_changes(%{questions: questions}, changeset),
       insert_or_update?(questionnaire)
     )
     |> noreply()
@@ -244,7 +245,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign_changeset(
-      merge_changes(questions, changeset),
+      merge_changes(%{questions: questions}, changeset),
       insert_or_update?(questionnaire)
     )
     |> noreply()
@@ -269,7 +270,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign_changeset(
-      merge_changes(questions, changeset),
+      merge_changes(%{questions: questions}, changeset),
       insert_or_update?(questionnaire)
     )
     |> noreply()
@@ -307,7 +308,10 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
     socket
     |> assign_changeset(
-      merge_changes(selected_template.name, selected_template.questions, changeset),
+      merge_changes(
+        selected_template,
+        changeset
+      ),
       :validate
     )
     |> noreply()
@@ -481,15 +485,8 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     end
   end
 
-  defp merge_changes(questions, changeset) do
-    Map.merge(%{questions: questions}, changeset.changes |> Map.drop([:questions]))
-  end
-
-  defp merge_changes(name, questions, changeset) do
-    Map.merge(
-      %{name: name, questions: questions},
-      changeset.changes |> Map.drop([:name, :questions])
-    )
+  defp merge_changes(opts, %{changes: changes}) do
+    Map.merge(opts, changes |> Map.drop(Map.keys(opts)))
   end
 
   defp questions_length(f), do: length(inputs_for(f, :questions))
