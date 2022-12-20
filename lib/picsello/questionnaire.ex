@@ -57,8 +57,6 @@ defmodule Picsello.Questionnaire do
     |> validate_is_picsello_default()
     |> maybe_validate_unique_name?(questionnaire)
     |> unique_constraint([:name, :organization_id])
-
-    # |> IO.inspect()
   end
 
   def for_job(%Job{type: job_type, package: %Package{questionnaire_template_id: nil}}),
@@ -146,7 +144,7 @@ defmodule Picsello.Questionnaire do
     end
   end
 
-  defp maybe_validate_unique_name?(changeset, %{package_id: nil} = questionnaire) do
+  defp maybe_validate_unique_name?(changeset, %{package_id: nil}) do
     changeset
     |> unsafe_validate_unique([:name, :organization_id], Repo)
   end
