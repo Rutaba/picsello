@@ -169,7 +169,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
         <label {testid("template-card")}>
           <input class="hidden" type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: "", else: package.id} />
-          <.package_card package={package} class={classes(%{"bg-blue-planning-100 border-blue-planning-300" => checked})} />
+          <.package_card package={package} class={classes(%{"bg-blue-planning-100 border-blue-planning-300" => checked})}/>
         </label>
       <% end %>
     </div>
@@ -451,13 +451,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
   end
 
-  defp is_checked("" <> id, package) do
-    if String.length(id) > 0 do
+  defp is_checked(id, package) do
+    if id do
       id |> to_integer() == package.id
     else
       false
     end
   end
-
-  defp is_checked(_, _), do: false
 end

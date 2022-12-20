@@ -136,9 +136,9 @@ defmodule Picsello.EmailPresets.JobResolver do
         &with(
           %Picsello.BookingProposal{id: proposal_id} <- current_proposal(&1),
           do: """
-          <a style="display:inline-block;background:#1F1C1E;color:#ffffff;font-family:Be Vietnam, Arial;font-size:18px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:20px 30px;mso-padding-alt:0px;border-radius:12px;"
+          <a style="border:1px solid #1F1C1E;display:inline-block;background:white;color:#1F1C1E;font-family:Montserrat, sans-serif;font-size:18px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 15px;mso-padding-alt:0px;border-radius:0px;"
              target="_blank"
-             href="#{Picsello.BookingProposal.url(proposal_id)}">View Proposal</a>
+             href="#{Picsello.BookingProposal.url(proposal_id)}"> View Proposal <img src="http://cdn.mcauto-images-production.sendgrid.net/69570c0ddcda5224/92587672-4044-4829-8c53-05c260a89d16/8x12.png"></a>
           """
         ),
       "wardrobe_guide_link" => &noop/1,
