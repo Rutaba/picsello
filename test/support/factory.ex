@@ -29,8 +29,7 @@ defmodule Picsello.Factory do
     Profiles.Profile,
     BrandLink,
     Questionnaire,
-    PackagePaymentSchedule,
-    GlobalGallerySettings
+    PackagePaymentSchedule
   }
 
   alias Picsello.GlobalSettings.Gallery, as: GSGallery

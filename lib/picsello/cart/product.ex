@@ -86,9 +86,11 @@ defmodule Picsello.Cart.Product do
 
   @doc "merges values for price, volume_discount, and print_credit_discount"
   def update_price(%__MODULE__{} = product, opts \\ []) do
+    whcc_product = %Product{} = Repo.preload(product.whcc_product, :category)
+    product = Map.put(product, :whcc_product, whcc_product)
+
     {credit, opts} = Keyword.pop(opts, :credits, ~M[0]USD)
     real_price = real_price(product, opts)
-    whcc_product = Product |> Repo.get(product.whcc_product.id) |> Repo.preload(:category)
 
     {price, volume_discount} =
       case whcc_product.category.whcc_id do
@@ -155,10 +157,10 @@ defmodule Picsello.Cart.Product do
 
     for(
       money <-
-      [
-        shipping_base_charge,
-        Money.multiply(base_price, shipping_upcharge)
-      ],
+        [
+          shipping_base_charge,
+          Money.multiply(base_price, shipping_upcharge)
+        ],
       reduce: base_price
     ) do
       sum -> Money.add(sum, money)

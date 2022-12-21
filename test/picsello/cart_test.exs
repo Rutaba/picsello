@@ -88,8 +88,8 @@ defmodule Picsello.CartTest do
       end
 
       assert [
-               %{print_credit_discount: ~M[55500]USD},
-               %{print_credit_discount: ~M[44500]USD}
+               %{print_credit_discount: ~M[41000]USD},
+               %{print_credit_discount: ~M[41000]USD}
              ] = Repo.all(CartProduct)
     end
 
@@ -213,11 +213,11 @@ defmodule Picsello.CartTest do
             |> Cart.place_product(gallery)
         end
 
-      assert Order.total_cost(order) == ~M[4000]USD
+      assert Order.total_cost(order) == ~M[18000]USD
 
       assert {:loaded,
               %Order{
-                products: [%{editor_id: "123", print_credit_discount: ~M[7500]USD}]
+                products: [%{editor_id: "123", print_credit_discount: ~M[10000]USD}]
               }} = Cart.delete_product(order, editor_id: "abc")
     end
   end
@@ -256,7 +256,7 @@ defmodule Picsello.CartTest do
                 products: [%{editor_id: "123"}]
               } = order} = Cart.delete_product(order, editor_id: "abc")
 
-      assert Order.total_cost(order) == ~M[1200]USD
+      assert Order.total_cost(order) == ~M[2400]USD
     end
 
     test "with an editor id and some digitals removes the product", %{order: order} do

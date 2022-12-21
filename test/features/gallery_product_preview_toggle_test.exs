@@ -109,7 +109,8 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: 6), fn options ->
       assert [
-               {"Albums", "$52.00"},
+               {"Books", "$44.00"},
+               {"Ornaments", "$40.00"},
                {"Loose Prints", "$2.00"},
                {"Press Printed Cards", "$2.00"},
                {"Display Products", "$78.00"},
