@@ -49,6 +49,9 @@ defmodule Mix.Tasks.ImportQuestionnaires do
             type: :textarea
           }
         ],
+        name: "Picsello Wedding Template",
+        is_picsello_default: true,
+        is_organizaton_default: false,
         job_type: "wedding"
       },
       %{
@@ -89,6 +92,9 @@ defmodule Mix.Tasks.ImportQuestionnaires do
             ]
           }
         ],
+        name: "Picsello Family Template",
+        is_picsello_default: true,
+        is_organizaton_default: false,
         job_type: "family"
       },
       %{
@@ -134,6 +140,9 @@ defmodule Mix.Tasks.ImportQuestionnaires do
             optional: true
           }
         ],
+        name: "Picsello Newborn Template",
+        is_picsello_default: true,
+        is_organizaton_default: false,
         job_type: "newborn"
       },
       %{
@@ -161,6 +170,9 @@ defmodule Mix.Tasks.ImportQuestionnaires do
             ]
           }
         ],
+        name: "Picsello Other Template",
+        is_picsello_default: true,
+        is_organizaton_default: false,
         job_type: "other"
       },
       %{
@@ -182,11 +194,15 @@ defmodule Mix.Tasks.ImportQuestionnaires do
             ]
           }
         ],
+        name: "Picsello Boudoir Template",
+        is_picsello_default: true,
+        is_organizaton_default: false,
         job_type: "boudoir"
       }
     ]
     |> Enum.each(fn attrs ->
-      questionnaire = Repo.get_by(Questionnaire, job_type: attrs.job_type)
+      questionnaire =
+        Repo.get_by(Questionnaire, job_type: attrs.job_type, is_picsello_default: true)
 
       if questionnaire do
         questionnaire |> Questionnaire.changeset(attrs) |> Repo.update!()

@@ -28,6 +28,7 @@ defmodule Picsello.Factory do
     Galleries.Photo,
     Profiles.Profile,
     BrandLink,
+    Questionnaire,
     PackagePaymentSchedule
   }
 

@@ -23,6 +23,7 @@ defmodule Picsello.Package do
     field :schedule_type, :string
     field :fixed, :boolean, default: true
 
+    belongs_to :questionnaire_template, Picsello.Questionnaire
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
     has_one(:job, Picsello.Job)
@@ -100,7 +101,7 @@ defmodule Picsello.Package do
     package
     |> cast(
       attrs,
-      ~w[schedule_type fixed description name organization_id shoot_count print_credits turnaround_weeks]a
+      ~w[schedule_type fixed description questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks]a
     )
     |> validate_required(~w[name organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)

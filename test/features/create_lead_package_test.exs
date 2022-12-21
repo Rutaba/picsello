@@ -5,6 +5,10 @@ defmodule Picsello.CreateLeadPackageTest do
   setup :onboarded
   setup :authenticated
 
+  setup do
+    Mix.Tasks.ImportQuestionnaires.run(nil)
+  end
+
   @add_package_button testid("add-package-from-shoot")
   @price_text_field text_field("Package Price")
 
@@ -233,7 +237,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_text("best wedding")
     |> assert_text("Selected contract: Contract 1")
 
-    lead = lead |> Repo.reload() |> Repo.preload(package: :contract)
+    lead = lead |> Repo.reload() |> Repo.preload(package: [:contract, :questionnaire_template])
     assert %Package{name: "best wedding"} = lead.package
 
     contract_template_id = contract_template.id
@@ -336,7 +340,10 @@ defmodule Picsello.CreateLeadPackageTest do
 
     template_id = template.id
 
-    lead = lead |> Repo.reload() |> Repo.preload(package: :contract)
+    lead =
+      lead
+      |> Repo.reload()
+      |> Repo.preload(package: [:contract, :questionnaire_template])
 
     assert %Package{name: "Wedding Deluxe", package_template_id: ^template_id} = lead.package
 
