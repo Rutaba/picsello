@@ -1464,6 +1464,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp insert_package_and_update_job(socket, changeset, job, opts) do
     case Packages.insert_package_and_update_job(changeset, job, opts) |> Repo.transaction() do
+      {:ok, %{package_update: package}} ->
+        successfull_save(socket, package)
+
       {:ok, %{package: package}} ->
         successfull_save(socket, package)
 
