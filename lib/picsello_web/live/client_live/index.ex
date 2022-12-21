@@ -667,9 +667,9 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     socket
     |> assign(:job_status, "all")
     |> assign(:job_type, "all")
-    |> assign(:sort_by, "newest")
-    |> assign(:sort_col, "inserted_at")
-    |> assign(:sort_direction, "desc")
+    |> assign(:sort_by, "name")
+    |> assign(:sort_col, "name")
+    |> assign(:sort_direction, "asc")
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:searched_client, nil)
