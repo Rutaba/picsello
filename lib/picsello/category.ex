@@ -6,6 +6,7 @@ defmodule Picsello.Category do
   import Picsello.Package, only: [validate_money: 2]
 
   @album %{w: 2348, h: 2331, image: "album", slot: %{x: 768, y: 710, w: 915, h: 916}}
+  @whcc_print_categroy "h3GrtaTf5ipFicdrJ"
 
   @preview_templates %{
     "album" => %{portrait: @album, landscape: @album},
@@ -107,4 +108,5 @@ defmodule Picsello.Category do
   end
 
   def frame_image(%{frame_image: frame_image}), do: frame_image
+  def print_category(), do: @whcc_print_categroy
 end

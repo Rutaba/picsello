@@ -32,6 +32,8 @@ defmodule Picsello.Factory do
     PackagePaymentSchedule
   }
 
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
+
   def valid_user_password(), do: "hello world!"
 
   def extract_user_token(fun) do
@@ -461,6 +463,14 @@ defmodule Picsello.Factory do
       active: true,
       disabled: false
     }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
+  def global_gallery_settings_factory(attrs) do
+    %GSGallery{}
+    |> GSGallery.expiration_changeset(%{})
+    |> Ecto.Changeset.apply_changes()
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end

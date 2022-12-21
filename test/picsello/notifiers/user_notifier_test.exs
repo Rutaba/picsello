@@ -97,8 +97,8 @@ defmodule Picsello.Notifiers.UserNotifierTest do
              |> Map.merge(%{
                print_credit_remaining: ~M[0]USD,
                print_credit_used: ~M[10000]USD,
-               client_charge: ~M[45500]USD,
-               photographer_payment: ~M[45000]USD,
+               client_charge: ~M[31000]USD,
+               photographer_payment: ~M[30500]USD,
                print_cost: ~M[500]USD
              }) ==
                template_variables(email)
@@ -127,8 +127,8 @@ defmodule Picsello.Notifiers.UserNotifierTest do
       assert order
              |> shared_fields()
              |> Map.merge(%{
-               print_credit_remaining: ~M[4500]USD,
-               print_credit_used: ~M[55500]USD,
+               print_credit_remaining: ~M[19000]USD,
+               print_credit_used: ~M[41000]USD,
                client_charge: ~M[0]USD,
                photographer_charge: ~M[500]USD,
                print_cost: ~M[500]USD

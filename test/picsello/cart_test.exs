@@ -88,8 +88,8 @@ defmodule Picsello.CartTest do
       end
 
       assert [
-               %{print_credit_discount: ~M[55500]USD},
-               %{print_credit_discount: ~M[44500]USD}
+               %{print_credit_discount: ~M[41000]USD},
+               %{print_credit_discount: ~M[41000]USD}
              ] = Repo.all(CartProduct)
     end
 
@@ -100,7 +100,7 @@ defmodule Picsello.CartTest do
       end
 
       assert [
-               %{print_credit_discount: ~M[100000]USD}
+               %{print_credit_discount: ~M[79000]USD}
              ] = Repo.all(CartProduct)
     end
   end
@@ -213,11 +213,11 @@ defmodule Picsello.CartTest do
             |> Cart.place_product(gallery)
         end
 
-      assert Order.total_cost(order) == ~M[4000]USD
+      assert Order.total_cost(order) == ~M[18000]USD
 
       assert {:loaded,
               %Order{
-                products: [%{editor_id: "123", print_credit_discount: ~M[7500]USD}]
+                products: [%{editor_id: "123", print_credit_discount: ~M[10000]USD}]
               }} = Cart.delete_product(order, editor_id: "abc")
     end
   end
@@ -256,7 +256,7 @@ defmodule Picsello.CartTest do
                 products: [%{editor_id: "123"}]
               } = order} = Cart.delete_product(order, editor_id: "abc")
 
-      assert Order.total_cost(order) == ~M[1200]USD
+      assert Order.total_cost(order) == ~M[2400]USD
     end
 
     test "with an editor id and some digitals removes the product", %{order: order} do
@@ -358,7 +358,7 @@ defmodule Picsello.CartTest do
 
       assert {:loaded, order} = Cart.delete_product(order, digital_id: digital_id)
       assert [%{editor_id: "abc"}] = order |> Ecto.assoc(:products) |> Repo.all()
-      assert Order.total_cost(order) == ~M[1300]USD
+      assert Order.total_cost(order) == ~M[2600]USD
     end
 
     test "with a digital id and one digital the order", %{order: order} do
@@ -434,7 +434,7 @@ defmodule Picsello.CartTest do
 
     test "order price when more credit than needed" do
       assert ~M[1000]USD =
-               create_order(print_credits: ~M[1900]USD, total: ~M[1000]USD)
+               create_order(print_credits: ~M[1000]USD, total: ~M[1000]USD)
                |> print_credit_used()
     end
 

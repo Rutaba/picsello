@@ -49,7 +49,13 @@ defmodule Picsello.WHCC.Product do
   end
 
   @spec cheapest_selections(%{attribute_categories: [%{}]}) :: SelectionSummary.t()
-  def cheapest_selections(%{attribute_categories: attribute_categories} = _product) do
+  def cheapest_selections(product), do: selections(product, :min)
+
+  @spec highest_selections(%{attribute_categories: [%{}]}) :: SelectionSummary.t()
+  def highest_selections(product), do: selections(product, :max)
+
+  @types ~w(min max)a
+  def selections(%{attribute_categories: attribute_categories}, type) when type in @types do
     valid_selections =
       for(
         %{"_id" => category_id, "attributes" => attributes} <- attribute_categories,
@@ -67,7 +73,7 @@ defmodule Picsello.WHCC.Product do
         reduce: %{selections: %{}, price: Money.new(0), metadata: %{}} do
       acc ->
         attribute_category
-        |> AttributeCategory.cheapest_selections(valid_selections)
+        |> AttributeCategory.require_selections(valid_selections, type)
         |> SelectionSummary.merge(acc)
     end
   end

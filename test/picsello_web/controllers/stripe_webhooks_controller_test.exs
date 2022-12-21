@@ -249,14 +249,14 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
                  %{
                    item_is_digital: false,
                    item_name: "20×30 polo",
-                   item_price: ~M[1000]USD,
+                   item_price: ~M[2000]USD,
                    item_quantity: 1
                  }
                ],
                "order_number" => ^order_number,
                "order_shipping" => ~M[0]USD,
-               "order_subtotal" => ~M[1000]USD,
-               "order_total" => ~M[1000]USD,
+               "order_subtotal" => ~M[2000]USD,
+               "order_total" => ~M[2000]USD,
                "order_url" => order_url,
                "subject" => subject
              } = email_variables

@@ -743,7 +743,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
       gallery
       |> Galleries.get_photos_by_ids(selected_photos)
-      |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name)))
+      |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name, gallery)))
     end
 
     socket
