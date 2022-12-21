@@ -27,7 +27,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> Organization.assign_stripe_account_changeset("stripe_id")
     |> Repo.update!()
 
-    insert(:questionnaire)
+    questionnaire = insert(:questionnaire)
 
     lead =
       insert(:lead, %{
@@ -37,7 +37,8 @@ defmodule Picsello.CreateBookingProposalTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 1,
-          base_price: 100
+          base_price: 100,
+          questionnaire_template_id: questionnaire.id
         }
       })
 

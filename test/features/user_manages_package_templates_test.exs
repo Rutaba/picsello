@@ -5,6 +5,10 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
   setup :onboarded
   setup :authenticated
 
+  setup do
+    Mix.Tasks.ImportQuestionnaires.run(nil)
+  end
+
   defp payment_screen(session) do
     session
     |> click(button("Next"))
@@ -115,7 +119,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(css("label", text: "Portrait"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
-    |> assert_text("Add a Package: Choose a Contract")
+    |> assert_text("Add a Package: Select Documents")
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
     |> fill_in(text_field("Package Price"), with: "$100")
@@ -173,7 +177,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(css("label", text: "Portrait"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
-    |> assert_text("Add a Package: Choose a Contract")
+    |> assert_text("Add a Package: Select Documents")
+    |> click(css("section", text: "Add a contract"))
     |> find(select("Select a Contract Template"), &click(&1, option("New Contract")))
     |> fill_in(text_field("Contract Name"), with: "My custom contract")
     |> assert_has(css("div.ql-editor[data-placeholder='Paste contract text here']"))
@@ -222,7 +227,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> fill_in(text_field("Title"), with: "Wedding Super Deluxe")
         |> wait_for_enabled_submit_button()
         |> click(button("Next"))
-        |> assert_text("Edit Package: Choose a Contract")
+        |> assert_text("Edit Package: Select Documents")
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
         |> scroll_into_view(testid("download"))
@@ -260,7 +265,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     assert %Picsello.Contract{contract_template_id: ^contract_id} = package.contract
   end
 
-  feature "edit with contract", %{session: session, user: user} do
+  feature "edit with contract & questionnaire", %{session: session, user: user} do
     template = insert(:package_template, job_type: "wedding", user: user)
 
     contract_template =
@@ -284,20 +289,30 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> fill_in(text_field("Title"), with: "Wedding Super Deluxe")
         |> wait_for_enabled_submit_button()
         |> click(button("Next"))
-        |> assert_text("Edit Package: Choose a Contract")
+        |> assert_text("Edit Package: Select Documents")
+        |> click(css("h2", text: "Add a contract"))
         |> assert_has(css("*[role='status']", text: "No edits made"))
         |> assert_selected_option(select("Select a Contract Template"), "Contract 1")
         |> replace_inner_content(css("div.ql-editor"), "updated content")
         |> fill_in(text_field("Contract Name"), with: "Contract 2")
         |> assert_has(css("*[role='status']", text: "Edited—new template will be saved"))
+        |> click(css("h2", text: "Add a contract"))
+        |> click(css("h2", text: "Add a questionnaire"))
+        |> click(css("h3", text: "Picsello Other Template"))
+        |> click(radio_button("Picsello Other Template", checked: false))
         |> click(link("back"))
         |> assert_text("Edit Package: Provide Details")
         |> click(button("Next"))
-        |> assert_text("Edit Package: Choose a Contract")
+        |> assert_text("Edit Package: Select Documents")
+        |> click(css("h2", text: "Add a questionnaire"))
+        |> click(css("h2", text: "Add a contract"))
         |> assert_selected_option(select("Select a Contract Template"), "Contract 1")
         |> assert_value(text_field("Contract Name"), "Contract 2")
         |> assert_text("updated content")
         |> assert_has(css("*[role='status']", text: "Edited—new template will be saved"))
+        |> click(css("h2", text: "Add a contract"))
+        |> click(css("h2", text: "Add a questionnaire"))
+        |> assert_has(radio_button("Picsello Other Template", checked: true))
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
         |> edit_package_screen())
@@ -358,7 +373,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_flash(:success, text: "The package has been archived")
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> click(button("Add a package", at: 0, count: 2))
+    |> click(button("Add a package", at: 0, count: 3))
     |> find(testid("template-card", count: 1), &assert_text(&1, "deluxe"))
   end
 end

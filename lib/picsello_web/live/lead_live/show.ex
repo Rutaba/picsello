@@ -82,7 +82,11 @@ defmodule PicselloWeb.LeadLive.Show do
       |> Repo.transaction()
       |> case do
         {:ok, %{proposal: proposal}} ->
-          job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
+          job =
+            job
+            |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
+              force: true
+            )
 
           socket
           |> assign(proposal: proposal)
@@ -210,6 +214,31 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
+  def handle_event(
+        "edit-questionnaire",
+        %{},
+        %{assigns: %{current_user: current_user, package: package, job: job}} = socket
+      ) do
+    if is_nil(package.questionnaire_template) do
+      template = Questionnaire.for_job(job) |> Repo.one()
+
+      case maybe_insert_questionnaire(template, current_user, package) do
+        {:ok, %{questionnaire_insert: questionnaire_insert}} ->
+          socket
+          |> open_questionnaire_modal(current_user, questionnaire_insert)
+
+        {:error, _} ->
+          socket
+          |> put_flash(:error, "Failed to fetch questionnaire. Please try again.")
+      end
+    else
+      socket
+      |> open_questionnaire_modal(current_user, package.questionnaire_template)
+    end
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("edit-contract", %{}, socket) do
     socket
     |> PicselloWeb.ContractFormComponent.open(
@@ -258,7 +287,11 @@ defmodule PicselloWeb.LeadLive.Show do
     case result do
       {:ok, %{message: message}} ->
         %{client: client} =
-          job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
+          job =
+          job
+          |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
+            force: true
+          )
 
         ClientNotifier.deliver_booking_proposal(message, client.email)
 
@@ -358,5 +391,34 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
+  end
+
+  defp open_questionnaire_modal(socket, current_user, questionnaire) do
+    socket
+    |> PicselloWeb.QuestionnaireFormComponent.open(%{
+      state: :edit_lead,
+      current_user: current_user,
+      questionnaire: questionnaire
+    })
+  end
+
+  defp maybe_insert_questionnaire(template, current_user, %{id: package_id} = package) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:questionnaire_insert, fn _ ->
+      Questionnaire.clean_questionnaire_for_changeset(
+        template,
+        current_user.organization_id,
+        package_id
+      )
+      |> Questionnaire.changeset()
+    end)
+    |> Ecto.Multi.update(:package_update, fn %{questionnaire_insert: questionnaire} ->
+      package
+      |> Picsello.Package.changeset(
+        %{questionnaire_template_id: questionnaire.id},
+        step: :details
+      )
+    end)
+    |> Repo.transaction()
   end
 end

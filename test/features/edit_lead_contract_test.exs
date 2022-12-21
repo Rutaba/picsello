@@ -1,7 +1,7 @@
 defmodule Picsello.EditLeadContractTest do
   use Picsello.FeatureCase, async: true
 
-  @edit_contract_button button("Edit or Select New")
+  @edit_contract_button button("Edit or Select New", at: 0, count: 2)
 
   setup :onboarded
   setup :authenticated

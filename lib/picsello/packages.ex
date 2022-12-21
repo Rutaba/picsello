@@ -9,7 +9,8 @@ defmodule Picsello.Packages do
     JobType,
     Packages.BasePrice,
     Packages.CostOfLivingAdjustment,
-    PackagePayments
+    PackagePayments,
+    Questionnaire
   }
 
   import Picsello.Repo.CustomMacros
@@ -243,6 +244,7 @@ defmodule Picsello.Packages do
   def insert_package_and_update_job(changeset, job, opts \\ %{}) do
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:package, changeset)
+    |> maybe_update_questionnaire_package_id_multi(changeset, opts)
     |> Ecto.Multi.update(:job_update, fn changes ->
       Job.add_package_changeset(job, %{package_id: changes.package.id})
     end)
@@ -443,4 +445,31 @@ defmodule Picsello.Packages do
   end
 
   def create_initial(_user), do: []
+
+  defp maybe_update_questionnaire_package_id_multi(
+         multi,
+         %{changes: %{organization_id: organization_id}},
+         %{questionnaire: questionnaire}
+       ) do
+    multi
+    |> Ecto.Multi.insert(
+      :questionnaire,
+      fn %{package: %{id: package_id}} ->
+        Questionnaire.clean_questionnaire_for_changeset(
+          questionnaire,
+          organization_id,
+          package_id
+        )
+      end
+    )
+    |> Ecto.Multi.update(:package_update, fn %{
+                                               package: package,
+                                               questionnaire: %{id: questionnaire_id}
+                                             } ->
+      package
+      |> Package.changeset(%{questionnaire_template_id: questionnaire_id}, step: nil)
+    end)
+  end
+
+  defp maybe_update_questionnaire_package_id_multi(multi, _, _), do: multi
 end
