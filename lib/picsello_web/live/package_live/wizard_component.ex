@@ -123,7 +123,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           add_error(
             changeset,
             :schedule_date,
-            "Payment #{field_index + 1} and Payment #{index + 1} cann't be same"
+            "Payment #{field_index + 1} and Payment #{index + 1} can't be same"
           )
 
         _ ->
@@ -1538,6 +1538,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
   end
 
+  defp package_pricing_params(nil), do: %{}
+  
   defp package_pricing_params(package) do
     case package |> Map.get(:print_credits) do
       nil -> %{is_enabled: false}

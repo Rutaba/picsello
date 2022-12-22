@@ -1046,6 +1046,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def toggle_preview(assigns) do
     assigns = Enum.into(assigns, %{disabled: nil, product_id: nil})
+
     ~H"""
     <label class="inline-flex relative items-center cursor-pointer">
       <div class="relative">

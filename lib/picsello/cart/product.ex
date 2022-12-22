@@ -115,11 +115,11 @@ defmodule Picsello.Cart.Product do
   end
 
   defp real_price(
-    %{
-      round_up_to_nearest: nearest,
-      shipping_base_charge: shipping_base_charge,
-      whcc_product: %{category: category}
-    } = product,
+         %{
+           round_up_to_nearest: nearest,
+           shipping_base_charge: shipping_base_charge,
+           whcc_product: %{category: category}
+         } = product,
          opts
        ) do
     product
