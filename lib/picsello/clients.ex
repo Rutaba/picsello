@@ -40,6 +40,78 @@ defmodule Picsello.Clients do
     )
   end
 
+  def already_exists?(email) do
+    case email do
+      nil ->
+        false
+
+      email ->
+        query = from c in Client, where: c.email == ^email
+        Repo.exists?(query)
+    end
+  end
+
+  def new_client_changeset(attrs, organization_id) do
+    attrs
+    |> Map.put("organization_id", organization_id)
+    |> Client.create_client_changeset()
+  end
+
+  def edit_client_changeset(client, attrs) do
+    Client.edit_client_changeset(client, attrs)
+  end
+
+  def save_new_client(attrs, organization_id) do
+    new_client_changeset(attrs, organization_id) |> Repo.insert()
+  end
+
+  def update_client(client, attrs) do
+    edit_client_changeset(client, attrs) |> Repo.update()
+  end
+
+  def archive_client(id) do
+    Repo.get(Client, id)
+    |> Client.archive_changeset()
+    |> Repo.update()
+  end
+
+  def get_client_tags(client_id) do
+    from(tag in ClientTag,
+      where: tag.client_id == ^client_id
+    )
+    |> Repo.all()
+  end
+
+  def delete_tag(client_id, name) do
+    {:ok, _tag} =
+      from(tag in ClientTag,
+        where: tag.client_id == ^client_id and tag.name == ^name
+      )
+      |> Repo.one()
+      |> Repo.delete()
+  end
+
+  def get_client(id, user) do
+    from(c in Client,
+      preload: [:tags, :jobs],
+      where: c.id == ^id and c.organization_id == ^user.organization_id and is_nil(c.archived_at)
+    )
+    |> Repo.one()
+  end
+
+  def client_tags(client) do
+    (Enum.map(client.jobs, & &1.type)
+     |> Enum.uniq()) ++
+      Enum.map(client.tags, & &1.name)
+  end
+
+  def get_client_orders_query(client_id) do
+    from(c in Client,
+      preload: [jobs: [gallery: [orders: [:intent, :digitals, :products]]]],
+      where: c.id == ^client_id
+    )
+  end
+
   defp filters_where(opts) do
     Enum.reduce(opts, dynamic(true), fn
       {:type, "all"}, dynamic ->
@@ -126,77 +198,5 @@ defmodule Picsello.Clients do
 
   defp filter_order_by(column, order) do
     [{order, dynamic([client], field(client, ^column))}]
-  end
-
-  def already_exists?(email) do
-    case email do
-      nil ->
-        false
-
-      email ->
-        query = from c in Client, where: c.email == ^email
-        Repo.exists?(query)
-    end
-  end
-
-  def new_client_changeset(attrs, organization_id) do
-    attrs
-    |> Map.put("organization_id", organization_id)
-    |> Client.create_client_changeset()
-  end
-
-  def edit_client_changeset(client, attrs) do
-    Client.edit_client_changeset(client, attrs)
-  end
-
-  def save_new_client(attrs, organization_id) do
-    new_client_changeset(attrs, organization_id) |> Repo.insert()
-  end
-
-  def update_client(client, attrs) do
-    edit_client_changeset(client, attrs) |> Repo.update()
-  end
-
-  def archive_client(id) do
-    Repo.get(Client, id)
-    |> Client.archive_changeset()
-    |> Repo.update()
-  end
-
-  def get_client_tags(client_id) do
-    from(tag in ClientTag,
-      where: tag.client_id == ^client_id
-    )
-    |> Repo.all()
-  end
-
-  def delete_tag(client_id, name) do
-    {:ok, _tag} =
-      from(tag in ClientTag,
-        where: tag.client_id == ^client_id and tag.name == ^name
-      )
-      |> Repo.one()
-      |> Repo.delete()
-  end
-
-  def get_client(id, user) do
-    from(c in Client,
-      preload: [:tags, :jobs],
-      where: c.id == ^id and c.organization_id == ^user.organization_id and is_nil(c.archived_at)
-    )
-    |> Repo.one()
-  end
-
-  def client_tags(client) do
-    (Enum.map(client.jobs, & &1.type)
-     |> Enum.uniq()) ++
-      Enum.map(client.tags, & &1.name)
-  end
-
-  def get_client_orders_query(client_id) do
-    from(c in Client,
-      preload: [jobs: [gallery: [orders: [:intent, :digitals, :products]]]],
-      where: c.id == ^client_id
-    )
   end
 end

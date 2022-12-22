@@ -713,7 +713,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
              pagination: pagination
            }
          } = socket
-       ) do
+       ) do    
     clients =
       Clients.find_all_by_pagination(
         user: user,
@@ -733,7 +733,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       |> Pagination.changeset(%{
         total_count:
           if(pagination.total_count == 0,
-            do: Repo.aggregate(Client, :count, :id),
+            do: client_count(socket),
             else: pagination.total_count
           ),
         last_index: pagination.first_index + Enum.count(clients) - 1

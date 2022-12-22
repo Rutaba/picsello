@@ -73,7 +73,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
             </a>
 
             <%= if step_number(@step, @steps) > 1 do%>
-              <div class="flex hover:cursor-auto">
+              <div class="flex items-center hover:cursor-auto">
                 <div class="ml-3 mr-3 text-base-200">|</div>
                 <.icon name="client-icon" class="w-7 h-7 mr-1"></.icon>
                 <p class="font-bold">Client: <span class="font-normal"><%= Changeset.get_field(changeset, :name) %></span></p>

@@ -75,7 +75,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         </a>
 
         <%= if step_number(@step, @steps) > 2 do%>
-          <div class="flex hover:cursor-auto mt-2">
+          <div class="flex items-center hover:cursor-auto mt-2">
             <div class="ml-3 mr-3 text-base-200 hidden md:block">|</div>
             <.icon name="client-icon" class="w-7 h-7 mr-1"></.icon>
             <p class="font-bold">Client: <span class="font-normal"><%=
