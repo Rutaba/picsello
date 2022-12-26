@@ -46,7 +46,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> assign(global_settings_gallery: global_settings_gallery)
     |> assign(print_price_section?: false)
     |> assign(product_section?: false)
-    |> assign(product_section?: false)
+    |> assign(digital_pricing?: false)
     |> assign(watermark_option: false)
     |> then(fn socket ->
       %{assigns: %{is_mobile: is_mobile}} = socket
@@ -223,6 +223,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   def handle_event("select_expiration", _, socket),
     do: new_section(socket, expiration_date?: true)
 
+  def handle_event("select_digital_pricing", _, socket),
+    do: new_section(socket, digital_pricing?: true)
+
   def handle_event("back_to_menu", _, socket), do: new_section(socket)
   def handle_event("select_watermark", _, socket), do: new_section(socket, watermark_option: true)
   def handle_event("select_product", _, socket), do: new_section(socket, product_section?: true)
@@ -292,6 +295,114 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     socket |> noreply()
   end
 
+  def handle_event(
+        "validate_each_price",
+        %{"digital_pricing" => %{"each_price" => each_price}},
+        %{
+          assigns: %{
+            global_settings_gallery: global_settings_gallery,
+            current_user: current_user,
+            galleries: galleries
+          }
+        } = socket
+      ) do
+    buy_all_price =
+      if global_settings_gallery do
+        case global_settings_gallery.buy_all_price do
+          nil ->
+            %Money{amount: 75_000, currency: :USD}
+
+          buy_all_price ->
+            buy_all_price
+        end
+      else
+        %Money{amount: 75_000, currency: :USD}
+      end
+
+    case Money.parse(each_price, :USD) do
+      {:ok, download_each_price} ->
+        case validate_price(download_each_price, buy_all_price) do
+          true ->
+            socket =
+              change(global_settings_gallery, %{
+                download_each_price: download_each_price,
+                organization_id: current_user.organization.id
+              })
+              |> Repo.insert_or_update()
+              |> assign_update_settings(socket)
+
+            update_galleries_each_price(galleries, download_each_price)
+
+            socket
+            |> put_flash(:success, "Setting Updated")
+            |> noreply()
+
+          _ ->
+            socket
+            |> put_flash(:error, "Must be less than buy all price")
+            |> noreply()
+        end
+
+      :error ->
+        socket
+        |> noreply()
+    end
+  end
+
+  def handle_event(
+        "validate_buy_all_price",
+        %{"digital_pricing" => %{"buy_all" => buy_all}},
+        %{
+          assigns: %{
+            global_settings_gallery: global_settings_gallery,
+            current_user: current_user,
+            galleries: galleries
+          }
+        } = socket
+      ) do
+    download_each_price =
+      if global_settings_gallery do
+        case global_settings_gallery.download_each_price do
+          nil ->
+            %Money{amount: 5000, currency: :USD}
+
+          download_each_price ->
+            download_each_price
+        end
+      else
+        %Money{amount: 5000, currency: :USD}
+      end
+
+    case Money.parse(buy_all, :USD) do
+      {:ok, buy_all_price} ->
+        case validate_price(download_each_price, buy_all_price) do
+          true ->
+            socket =
+              change(global_settings_gallery, %{
+                buy_all_price: buy_all_price,
+                organization_id: current_user.organization.id
+              })
+              |> Repo.insert_or_update()
+              |> assign_update_settings(socket)
+
+            update_galleries_buy_all(galleries, buy_all_price)
+
+            socket
+            |> put_flash(:success, "Setting Updated")
+            |> noreply()
+
+          _ ->
+            socket
+            |> put_flash(:error, "Must be more than single image price")
+            |> noreply()
+        end
+
+      :error ->
+        socket
+        |> noreply()
+    end
+  end
+
   defp assign_controls(%{assigns: %{global_settings_gallery: global_settings_gallery}} = socket)
        when not is_nil(global_settings_gallery) do
     socket |> assign(is_never_expires: global_settings_gallery.expiration_days == 0)
@@ -299,6 +410,44 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   defp assign_controls(socket) do
     socket |> assign(is_never_expires: true)
+  end
+
+  defp assign_update_settings(result, socket) do
+    case result do
+      {:ok, global_settings} ->
+        socket
+        |> assign(global_settings_gallery: global_settings)
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Failed to Set Price")
+    end
+  end
+
+  defp update_galleries_buy_all(galleries, updated_price) do
+    galleries
+    |> Enum.reject(&(&1.use_global == false))
+    |> Enum.map(fn gallery ->
+      gal =
+        gallery.job
+        |> Repo.preload(:package)
+
+      Ecto.Changeset.change(gal.package, %{buy_all: updated_price})
+      |> Repo.update()
+    end)
+  end
+
+  defp update_galleries_each_price(galleries, updated_price) do
+    galleries
+    |> Enum.reject(&(&1.use_global == false))
+    |> Enum.map(fn gallery ->
+      gal =
+        gallery.job
+        |> Repo.preload(:package)
+
+      Ecto.Changeset.change(gal.package, %{download_each_price: updated_price})
+      |> Repo.update()
+    end)
   end
 
   defp assign_options(
@@ -327,6 +476,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   defp assign_title(%{assigns: %{product_section?: true}} = socket),
     do: socket |> assign(:title, "Product Settings & Prices")
 
+  defp assign_title(%{assigns: %{digital_pricing?: true}} = socket),
+    do: socket |> assign(:title, "Digital Pricing")
+
   defp assign_title(socket), do: socket |> assign(:title, "Gallery Settings")
 
   defp get_shoots(job_id), do: Shoot.for_job(job_id) |> Repo.all()
@@ -334,12 +486,27 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   defp to_int(""), do: 0
   defp to_int(value), do: String.to_integer(value)
 
+  defp validate_price(download_each_price, buy_all_price) do
+    download_each_price =
+      download_each_price
+      |> Map.get(:amount)
+
+    buy_all_price =
+      buy_all_price
+      |> Map.get(:amount)
+
+    if download_each_price < buy_all_price && download_each_price != 0 && buy_all_price != 0 do
+      true
+    end
+  end
+
   defp new_section(socket, opts \\ []) do
     socket
     |> assign(print_price_section?: false)
     |> assign(product_section?: false)
     |> assign(expiration_date?: false)
     |> assign(watermark_option: false)
+    |> assign(digital_pricing?: false)
     |> assign(opts)
     |> assign_title()
     |> noreply()
@@ -463,7 +630,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       |> case do
         {:ok, global_settings} ->
           socket
-          |> assign(gloabal_gallery_settings: global_settings)
+          |> assign(global_settings_gallery: global_settings)
           |> assign(is_never_expires: false)
 
         {:error, _} ->
@@ -633,6 +800,39 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         <%= render_slot(@inner_block) %>
       </div>
     </div>
+    """
+  end
+
+  defp section(%{digital_pricing?: true} = assigns) do
+    ~H"""
+      <h1 class="text-2xl font-bold mt-6 md:block">Digital Pricing</h1>
+      <span class="text-base-250">Set your default image pricing your gallery! This includes defaults for each image download and you buy all price. You can always override this when setting up your package or on your lead/job.</span>
+      <div class="grid gap-8 lg:grid-cols-2 grid-cols-1 mt-10">
+        <div>
+          <span class="text-xl font-bold">Single Image</span>
+          <div class="flex items-center border p-3 rounded-md border-base-250 mt-4">
+            <div class="flex flex-col">
+              <h1 class="text-xl font-bold">Pricing per image:</h1>
+              <span class="text-sm text-base-250 italic">Remember to be fair to yourself.<br /> This your business!</span>
+            </div>
+            <.form for={:digital_pricing} let={f} phx_change={:validate_each_price} class="ml-auto">
+              <%= input(f, :each_price, class: "w-full sm:w-32 text-lg text-center", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", placeholder: if((@global_settings_gallery && @global_settings_gallery.download_each_price), do: Money.to_string(@global_settings_gallery.download_each_price), else: "$50.00")) %>
+            </.form>
+          </div>
+        </div>
+        <div>
+          <span class="text-xl font-bold	">Buy them all</span>
+          <div class="flex items-center border p-3 rounded-md border-base-250 mt-4">
+            <div class="flex flex-col">
+              <h1 class="text-xl font-bold">Pricing for all images:</h1>
+              <span class="text-sm text-base-250 italic">Remember to be fair to yourself.<br /> This your business!</span>
+            </div>
+            <.form for={:digital_pricing} let={f} phx_change={:validate_buy_all_price} class="ml-auto">
+              <%= input(f, :buy_all, class: "w-full sm:w-32 text-lg text-center ml-auto", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", placeholder: if((@global_settings_gallery && @global_settings_gallery.buy_all_price), do: Money.to_string(@global_settings_gallery.buy_all_price), else: "$750.00")) %>
+            </.form>
+          </div>
+        </div>
+      </div>
     """
   end
 

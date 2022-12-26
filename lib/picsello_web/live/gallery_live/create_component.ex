@@ -250,10 +250,38 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         params \\ %{},
         action \\ nil
       ) do
+    ggs =
+      Repo.get_by(Picsello.GlobalSettings.Gallery, organization_id: current_user.organization_id)
+
+    new_param =
+      case ggs do
+        nil ->
+          params["download"] || %{}
+
+        ggs ->
+          params["download"] ||
+            %{}
+            |> Map.put(:download_each_price, ggs.download_each_price)
+            |> Map.put(:buy_all, ggs.buy_all_price)
+            |> Map.put(:is_custom_price, true)
+      end
+
+    package =
+      case ggs do
+        nil ->
+          package
+
+        ggs ->
+          package
+          |> Map.put(:download_each_price, ggs.download_each_price)
+          |> Map.put(:buy_all, ggs.buy_all_price)
+          |> Map.put(:is_custom_price, true)
+      end
+
     download_changeset =
       package
       |> Download.from_package()
-      |> Download.changeset(params["download"] || %{})
+      |> Download.changeset(new_param)
       |> Map.put(:action, action)
 
     download = current(download_changeset)

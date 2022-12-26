@@ -27,11 +27,12 @@
   </div>
 
   <div class="flex flex-col lg:flex-row lg:mt-8">
-    <div class={classes("h-44 md:block", %{"hidden" => @expiration_date? || @watermark_option || @product_section?})}>
+    <div class={classes("h-60 md:block", %{"hidden" => @expiration_date? || @watermark_option || @product_section?})}>
       <div class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
           <.nav_item open?={@expiration_date?} item_title="Expiration Date" event_name="select_expiration" />
           <.nav_item open?={@watermark_option} item_title="Watermark" event_name="select_watermark" />
           <.nav_item open?={@product_section?} print_price_section?={@print_price_section?} item_title="Product Settings & Prices" event_name="select_product" />
+          <.nav_item open?={@digital_pricing?} item_title="Digital Pricing" event_name="select_digital_pricing" />
       </div>
     </div>
 

@@ -1495,10 +1495,39 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Multiplier.from_decimal()
       |> Multiplier.changeset(Map.get(params, "multiplier", %{}))
 
+    ggs =
+      Repo.get_by(Picsello.GlobalSettings.Gallery,
+        organization_id: socket.assigns.current_user.organization_id
+      )
+
+    new_param =
+      case ggs do
+        nil ->
+          Map.get(params, "download", %{})
+
+        ggs ->
+          Map.get(params, "download", %{})
+          |> Map.merge(%{
+            "download_each_price" => ggs.download_each_price,
+            "buy_all" => ggs.buy_all_price
+          })
+      end
+
+    package =
+      case ggs do
+        nil ->
+          socket.assigns.package
+
+        ggs ->
+          socket.assigns.package
+          |> Map.put(:download_each_price, ggs.download_each_price)
+          |> Map.put(:buy_all, ggs.buy_all_price)
+      end
+
     download_changeset =
-      socket.assigns.package
+      package
       |> Download.from_package()
-      |> Download.changeset(Map.get(params, "download", %{}))
+      |> Download.changeset(new_param)
       |> Map.put(:action, action)
 
     download = current(download_changeset)
