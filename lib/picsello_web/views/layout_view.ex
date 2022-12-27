@@ -243,7 +243,7 @@ defmodule PicselloWeb.LayoutView do
 
   def main_header(assigns) do
     ~H"""
-    <header class="border-b fixed left-0 right-0 top-0 z-30 bg-white">
+    <header class="border-b fixed left-0 right-0 top-0 z-40 bg-white">
       <div class="flex items-center px-6 center-container">
         <div id="hamburger-menu" class="relative cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
           <%= if @current_user do %>

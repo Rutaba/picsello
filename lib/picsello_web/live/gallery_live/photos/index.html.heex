@@ -5,7 +5,7 @@
       <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "photos", selected_album: @album, album_dropdown_show: true, is_mobile: @is_mobile %>
     </div>
     <div class={classes("lg:block  w-full h-full lg:bg-gray-100 lg:pl-96", %{"hidden" => @is_mobile})}>
-      <div id="page-scroll" phx-hook="PageScroll" class="lg:fixed absolute top-0 w-screen lg:w-auto lg:right-0 z-20 lg:pl-10 lg:pr-10 lg:bg-gray-100 pt-36 bg-base-200 lg:left-96">
+      <div id="page-scroll" phx-hook="PageScroll" class="lg:fixed absolute top-0 w-screen lg:w-auto lg:right-0 z-20 lg:pl-10 lg:pr-10 lg:bg-gray-100 pt-14 lg:pt-36 bg-base-200 lg:left-96">
         <div class="flex flex-col">
           <div class="flex flex-col px-10 lg:hidden lg:mt-0 mt-6 py-4 bg-white">
             <.mobile_banner albums={@album} title="Photos" class="items-center">

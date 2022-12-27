@@ -3,7 +3,7 @@
 
   <%= flash(@flash) %>
 
-  <div class="pt-24">
+  <div class="pt-16 lg:pt-24">
     <.subscription_ending_soon type="banner" socket={@socket} current_user={@current_user} class="flex px-6 py-2 items-center bg-blue-planning-300 text-white justify-center"/>
     <%= @inner_content %>
   </div>

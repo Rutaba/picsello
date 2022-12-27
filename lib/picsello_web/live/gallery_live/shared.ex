@@ -720,7 +720,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def mobile_gallery_header(assigns) do
     ~H"""
-      <div class="absolute top-0 left-0 z-30 w-screen h-20 px-10 py-6 lg:hidden shrink-0 bg-base-200">
+      <div class="absolute top-0 left-0 z-30 w-screen h-20 px-10 py-6 lg:hidden shrink-0 bg-base-200 z-[32]">
         <p class="font-sans text-2xl font-bold"><%= @gallery_name %></p>
       </div>
     """
@@ -1046,6 +1046,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def toggle_preview(assigns) do
     assigns = Enum.into(assigns, %{disabled: nil, product_id: nil})
+
     ~H"""
     <label class="inline-flex relative items-center cursor-pointer">
       <div class="relative">

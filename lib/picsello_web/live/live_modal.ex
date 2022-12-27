@@ -75,7 +75,7 @@ defmodule PicselloWeb.LiveModal do
   @impl true
   def render(assigns) do
     ~H"""
-    <div role="dialog" id="modal-wrapper" data-closable={@modal.closable} phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full bg-base-300/90 z-40 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
+    <div role="dialog" id="modal-wrapper" data-closable={@modal.closable} phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full bg-base-300/90 z-50 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
       <%= if @modal.state != :closed do %>
         <div class="modal-container">
           <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
