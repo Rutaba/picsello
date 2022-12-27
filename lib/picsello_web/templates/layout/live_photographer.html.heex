@@ -1,7 +1,12 @@
-<main role="main" class="min-h-screen">
+<main role="main" class="min-h-screen flex flex-col">
+  <.main_header socket={@socket} current_user={@current_user} live_action={@live_action} />
+
   <%= flash(@flash) %>
 
-  <%= @inner_content %>
+  <div class="pt-24">
+    <.subscription_ending_soon type="banner" socket={@socket} current_user={@current_user} class="flex px-6 py-2 items-center bg-blue-planning-300 text-white justify-center"/>
+    <%= @inner_content %>
+  </div>
 
   <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
 </main>
