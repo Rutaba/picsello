@@ -69,7 +69,6 @@ defmodule PicselloWeb.StripeWebhooksController do
          data: %{object: subscription}
        }) do
     {:ok, _} = Picsello.Subscriptions.handle_trial_ending_soon(subscription)
-
     :ok
   end
 
