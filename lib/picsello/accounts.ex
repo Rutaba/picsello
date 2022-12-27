@@ -51,6 +51,23 @@ defmodule Picsello.Accounts do
   end
 
   @doc """
+  Gets a user by stripe customer id.
+
+  ## Examples
+
+      iex> get_user_by_stripe_customer_id(cus_1234)
+      %User{}
+
+      iex> get_user_by_stripe_customer_id(cus_invalid)
+      nil
+
+  """
+  def get_user_by_stripe_customer_id(stripe_customer_id)
+      when is_binary(stripe_customer_id) do
+    Repo.get_by(User, stripe_customer_id: stripe_customer_id)
+  end
+
+  @doc """
   Gets a single user.
 
   Raises `Ecto.NoResultsError` if the User does not exist.

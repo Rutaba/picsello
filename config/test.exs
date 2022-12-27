@@ -82,4 +82,5 @@ config :sentry, environment_name: :test, included_environments: [:prod]
 
 config :picsello, :zapier,
   new_user_webhook_url: "/zapier/1234",
-  trial_user_webhook_url: "/zapier/5678"
+  trial_user_webhook_url: "/zapier/5678",
+  subscription_ending_user_webhook_url: "/zapier/91011",

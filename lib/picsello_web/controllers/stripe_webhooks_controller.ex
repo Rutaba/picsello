@@ -64,6 +64,15 @@ defmodule PicselloWeb.StripeWebhooksController do
     :ok
   end
 
+  defp handle_webhook(:app, %{
+         type: "customer.subscription.trial_will_end",
+         data: %{object: subscription}
+       }) do
+    {:ok, _} = Picsello.Subscriptions.handle_trial_ending_soon(subscription)
+
+    :ok
+  end
+
   defp handle_webhook(:app, %{type: type, data: %{object: subscription}})
        when type in [
               "customer.subscription.created",

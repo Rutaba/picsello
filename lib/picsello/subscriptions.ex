@@ -10,6 +10,7 @@ defmodule Picsello.Subscriptions do
     SubscriptionPlansMetadata
   }
 
+  import Picsello.Zapier.User, only: [user_subscription_ending_soon_webhook: 1]
   import PicselloWeb.Helpers, only: [days_distance: 1]
   import Ecto.Query
   require Logger
@@ -195,6 +196,12 @@ defmodule Picsello.Subscriptions do
         Logger.warning("no match when retrieving stripe session: #{inspect(e)}")
         e
     end
+  end
+
+  def handle_trial_ending_soon(%Stripe.Subscription{customer: customer_id}) do
+    %{email: email} = Picsello.Accounts.get_user_by_stripe_customer_id(customer_id)
+
+    user_subscription_ending_soon_webhook(%{email: email})
   end
 
   def billing_portal_link(%User{stripe_customer_id: customer_id}, return_url) do
