@@ -55,10 +55,10 @@ defmodule Picsello.Accounts do
 
   ## Examples
 
-      iex> get_user_by_stripe_customer_id(cus_1234)
+      iex> get_user_by_stripe_customer_id("cus_1234")
       %User{}
 
-      iex> get_user_by_stripe_customer_id(cus_invalid)
+      iex> get_user_by_stripe_customer_id("cus_invalid")
       nil
 
   """
