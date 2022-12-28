@@ -47,7 +47,6 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     session
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> assert_text("Product Previews")
-    |> scroll_to_bottom()
     |> click(css("label", text: "Product enabled to sell", count: 7, at: 0))
     |> find(checkbox("Product enabled to sell", count: 7, at: 0), fn checkbox ->
       refute Element.selected?(checkbox)
@@ -90,7 +89,6 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     session
     |> visit("/galleries/#{gallery_id}/product-previews")
     |> assert_text("Product Previews")
-    |> scroll_to_bottom()
     |> click(css("span", text: "Product enabled to sell", count: 7, at: 0))
     |> click(css("span", text: "Product enabled to sell", count: 7, at: 1))
     |> find(checkbox("Product enabled to sell", visible: true, count: 7, at: 0), fn checkbox ->

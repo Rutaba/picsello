@@ -13,6 +13,9 @@ defmodule Picsello.FeatureCase do
     def scroll_to_bottom(session),
       do: execute_script(session, "window.scrollTo(0, document.body.clientHeight)")
 
+    def scroll_to_top(session),
+      do: execute_script(session, "window.scrollTo(0, 0)")
+
     def scroll_into_view(session, query) do
       case Wallaby.Query.compile(query) do
         {:css, css_selector} ->
