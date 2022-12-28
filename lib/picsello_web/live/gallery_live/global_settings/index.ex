@@ -236,6 +236,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> assign(:case, :image)
     |> assign_default_changeset()
     |> assign(:ready_to_save, false)
+    |> noreply()
   end
 
   @impl true
@@ -816,7 +817,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
               <span class="text-sm text-base-250 italic">Remember to be fair to yourself.<br /> This your business!</span>
             </div>
             <.form for={:digital_pricing} let={f} phx_change={:validate_each_price} class="ml-auto">
-              <%= input(f, :each_price, class: "w-full sm:w-32 text-lg text-center", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", placeholder: if((@global_settings_gallery && @global_settings_gallery.download_each_price), do: Money.to_string(@global_settings_gallery.download_each_price), else: "$50.00")) %>
+              <%= input(f, :each_price, class: "w-full w-24 text-lg text-center", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", placeholder: if((@global_settings_gallery && @global_settings_gallery.download_each_price), do: Money.to_string(@global_settings_gallery.download_each_price), else: "$50.00")) %>
             </.form>
           </div>
         </div>
@@ -828,7 +829,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
               <span class="text-sm text-base-250 italic">Remember to be fair to yourself.<br /> This your business!</span>
             </div>
             <.form for={:digital_pricing} let={f} phx_change={:validate_buy_all_price} class="ml-auto">
-              <%= input(f, :buy_all, class: "w-full sm:w-32 text-lg text-center ml-auto", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", placeholder: if((@global_settings_gallery && @global_settings_gallery.buy_all_price), do: Money.to_string(@global_settings_gallery.buy_all_price), else: "$750.00")) %>
+              <%= input(f, :buy_all, class: "w-full w-24 text-lg text-center ml-auto", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", placeholder: if((@global_settings_gallery && @global_settings_gallery.buy_all_price), do: Money.to_string(@global_settings_gallery.buy_all_price), else: "$750.00")) %>
             </.form>
           </div>
         </div>

@@ -1,9 +1,9 @@
 <div class="center-container mx-4 md:px-6 pt-6">
   <div class="flex items-center pb-2 mt-4 text-4xl font-bold md:justify-start">
-      <.live_link to={Routes.gallery_path(@socket, :galleries)} class={classes("rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4 md:block", %{"hidden" => @expiration_date? || @watermark_option || @product_section?})}>
+      <.live_link to={Routes.gallery_path(@socket, :galleries)} class={classes("rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4 md:block", %{"hidden" => @expiration_date? || @watermark_option || @product_section? || @digital_pricing?})}>
         <.icon name="back" class="w-4 h-4 stroke-2"/>
       </.live_link>
-      <div class={classes("rounded-full text-white bg-blue-planning-300 flex items-center justify-center p-2.5 mt-2 mr-4 md:hidden", %{"hidden" => !@expiration_date? && !@watermark_option && !@product_section?})} phx-click="back_to_menu">
+      <div class={classes("rounded-full text-white bg-blue-planning-300 flex items-center justify-center p-2.5 mt-2 mr-4 md:hidden", %{"hidden" => !@expiration_date? && !@watermark_option && !@product_section? && !@digital_pricing?})} phx-click="back_to_menu">
         <.icon name="back" class="w-4 h-4 stroke-2"/>
       </div>
     <h1 class="md:hidden text-3xl">
@@ -16,7 +16,7 @@
 
   <hr class="mt-8 border-gray-100">
 
-  <div class={classes("md:block", %{"hidden" => @expiration_date? || @watermark_option || @product_section?})}>
+  <div class={classes("md:block", %{"hidden" => @expiration_date? || @watermark_option || @product_section? || @digital_pricing?})}>
     <h1 class="mt-4 text-2xl font-bold">
       Galleries
     </h1>
@@ -27,7 +27,7 @@
   </div>
 
   <div class="flex flex-col lg:flex-row lg:mt-8">
-    <div class={classes("h-60 md:block", %{"hidden" => @expiration_date? || @watermark_option || @product_section?})}>
+    <div class={classes("h-60 md:block", %{"hidden" => @expiration_date? || @watermark_option || @product_section? || @digital_pricing?})}>
       <div class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
           <.nav_item open?={@expiration_date?} item_title="Expiration Date" event_name="select_expiration" />
           <.nav_item open?={@watermark_option} item_title="Watermark" event_name="select_watermark" />

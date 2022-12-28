@@ -151,20 +151,13 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
         Map.put(acc, size, %{value | open?: !value.open?})
       end)
     )
-    |> then(&(socket |> assign(:selections, &1) |> noreply()))
-  end
-
-  @impl true
-  def handle_event(
-        "expand_product",
-        %{"product_id" => product_id},
-        %{assigns: %{products: products, selections: selections}} = socket
-      ) do
-    product = find(products, product_id)
-
-    selections
-    |> Map.get(product.id)
-    |> process_product(selections, product)
+    |> update_in(
+      [product_id, :selections],
+      &Enum.sort_by(&1, fn {size, _value} ->
+        [height, width] = split(size, "x")
+        {to_integer(height), to_integer(width)}
+      end)
+    )
     |> then(&(socket |> assign(:selections, &1) |> noreply()))
   end
 
