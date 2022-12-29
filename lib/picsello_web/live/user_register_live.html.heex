@@ -1,13 +1,6 @@
 <.optimized_container step={1} color_class="bg-blue-planning-200">
   <div id="tz-cookie" phx-hook="TZCookie"></div>
   <div phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="save"></div>
-  <div class="border border-blue-planning-300 bg-blue-planning-100 rounded-lg p-4 mt-7 sm:mt-11">
-    <div class="flex items-center">
-      <.icon name="confetti-welcome" class="w-8 h-8 rotate-90" />
-      <h4 class="font-bold text-xl ml-2">Don’t miss our holiday sale!</h4>
-    </div>
-    <p>Upgrade to a yearly subscription after sign up and get a free 12-month membership to <a href="https://www.picsello.com/day-after-thanksgiving-sale" target="_blank" rel="noreferrer" class="text-blue-planning-300"><span class="underline">Picsello’s Business Mastermind</span> <.icon name="external-link" class="w-4 h-4 inline-block" /></a></p>
-  </div>
   <h1 class="text-3xl font-bold sm:leading-tight mt-2"><%= @subscription_plan_metadata.signup_title %></h1>
   <h2 class="text-base mt-4 font-normal"><%= @subscription_plan_metadata.signup_description %> or <%= link "log in", to: Routes.user_session_path(@socket, :new), class: "underline text-blue-planning-300" %>.</h2>
   <a href={Routes.auth_path(@socket,:request,:google)} class="flex items-center justify-center inline-block w-full mt-8 text-center btn-primary">
