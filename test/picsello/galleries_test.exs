@@ -42,7 +42,8 @@ defmodule Picsello.GalleriesTest do
     end
 
     test "create_gallery/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Galleries.create_gallery(@invalid_attrs)
+      %{id: job_id} = insert(:lead)
+      assert {:error, %Ecto.Changeset{}} = Galleries.create_gallery(Map.put(@invalid_attrs, :job_id, job_id))
     end
 
     test "update_gallery/2 with valid data updates the gallery" do
@@ -52,7 +53,7 @@ defmodule Picsello.GalleriesTest do
 
     test "update_gallery/2 with invalid data returns error changeset" do
       gallery = gallery_fixture(@valid_attrs)
-      assert {:error, %Ecto.Changeset{}} = Galleries.update_gallery(gallery, @invalid_attrs)
+      assert {:error, %Ecto.Changeset{}} = Galleries.update_gallery(gallery, Map.put(@invalid_attrs, :job_id, gallery.job_id))
     end
 
     test "delete_gallery/1 deletes the gallery" do

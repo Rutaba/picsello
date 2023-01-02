@@ -139,22 +139,20 @@ defmodule Picsello.Galleries.Gallery do
     do: validate_length(changeset, :name, max: 50)
 
   defp global_expiration_datetime(gallery) do
-    case gallery do
-      %{} ->
-        nil
+    if gallery == %{} do
+      nil
+    else
+      organization_id =
+        from(j in Picsello.Job,
+          join: c in assoc(j, :client),
+          join: o in assoc(c, :organization),
+          where: j.id == ^gallery.job_id,
+          select: o.id
+        )
+        |> Repo.one()
 
-      _ ->
-        organization_id =
-          from(j in Picsello.Job,
-            join: c in assoc(j, :client),
-            join: o in assoc(c, :organization),
-            where: j.id == ^gallery.job_id,
-            select: o.id
-          )
-          |> Repo.one()
-
-        shoot = get_shoots(gallery.job_id) |> List.last()
-
+      shoot = get_shoots(gallery.job_id) |> List.last()
+      if shoot do
         settings =
           from(gss in GSGallery,
             where: gss.organization_id == ^organization_id
@@ -164,6 +162,9 @@ defmodule Picsello.Galleries.Gallery do
         if settings && settings.expiration_days && settings.expiration_days > 0 do
           Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
         end
+      else
+        nil
+      end
     end
   end
 

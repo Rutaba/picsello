@@ -21,7 +21,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
 
     ~H"""
       <div class="flex flex-col">
-      <div class={"flex flex-col p-3 border-t border-r border-l border-b-8 rounded-lg #{if(open?, do: "border-blue-planning-300", else: "border-base-250")}"}>
+      <div class={"flex flex-col p-3 border-t border-r border-l border-b-8 rounded-t-lg #{if(open?, do: "border-blue-planning-300", else: "border-base-250 rounded-b-lg")}"}>
           <div class="flex p-3">
             <div class="bg-black rounded-lg p-2 mr-4 text-white h-fit cursor-pointer" phx-click="expand_product" phx-value-product_id={@product.id} phx-target={@myself}>
               <.icon name={if open?, do: "up", else: "down"} class={"#{icon_class} text-white"} />
@@ -61,7 +61,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
                       <% end %>
                       <b class="md:hidden mr-3">Final Price</b>
                       <span class="w-24 md:w-44 border rounded-md border-blue-planning-300 py-3 pl-2 relative">$
-                        <%= input f, :final_cost, type: :number_input, step: "0.01", value: final_cost |> Decimal.round(2), phx_target: @myself, onkeydown: "return event.key != 'Enter';", id: "final_cost", phx_hook: "FinalCostInput", data_span_id: size <> type, data_base_cost: to_decimal(base_cost), data_final_cost: final_cost, class: "absolute border-none bg-transparent top-0 left-1.5 w-full" %>
+                        <%= input f, :final_cost, type: :number_input, step: "0.01", value: final_cost |> Decimal.round(2), phx_hook: "PriceMask", onkeydown: "return event.key != 'Enter';", id: "final_cost", phx_hook: "FinalCostInput", phx_target: @myself, data_span_id: size <> type, data_base_cost: to_decimal(base_cost), data_final_cost: final_cost, class: "absolute border-none bg-transparent top-0 left-1.5 w-full" %>
                       </span>
                       <span id={size <> type} style="color: white;" class="text-[0.65rem] ml-1 md:w-auto w-20">must be greater than base cost</span>
                     </.form>
@@ -89,7 +89,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
       end)
 
     ~H"""
-    <div class={"grid md:grid-cols-4 grid-cols-2 pl-6 py-3 border-b border-base-200 cursor-pointer #{if @open?, do: "bg-blue-planning-300 rounded-lg"}"} phx-target={@myself} phx-click="expand_product_size" phx-value-size={size} phx-value-product_id={product.id}>
+    <div class={"grid md:grid-cols-4 grid-cols-2 pl-6 py-3 border-b border-base-200 cursor-pointer #{if @open?, do: "bg-blue-planning-300"}"} phx-target={@myself} phx-click="expand_product_size" phx-value-size={size} phx-value-product_id={product.id}>
       <div class={"flex items-center font-bold pl-4 #{if @open?, do: "text-white", else: "text-black"}"}>
         <.icon name={if @open?, do: "up", else: "down"} class="w-3 h-3 stroke-current stroke-2 mr-4" />
         <%= split(size, "x") |> Enum.join(" x ") %>
