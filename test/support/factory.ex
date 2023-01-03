@@ -780,7 +780,7 @@ defmodule Picsello.Factory do
 
   def tax_schedule_factory do
     %{
-      year: 2022,
+      year: 2023,
       self_employment_percentage: 15.3,
       active: true,
       income_brackets: [
