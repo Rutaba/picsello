@@ -114,13 +114,13 @@ defmodule Picsello.GalleryOverviewTest do
     |> click(css("#updateGalleryNeverExpire"))
     |> find(select("date[month]"), &click(&1, option("January")))
     |> find(select("date[day]"), &click(&1, option("2")))
-    |> find(select("date[year]"), &click(&1, option("2023")))
+    |> find(select("date[year]"), &click(&1, option("2024")))
     |> click(css("#saveGalleryExpiration"))
     |> assert_text("Expiration date")
 
     updated_gallery = Galleries.get_gallery!(gallery.id)
 
-    assert ~U[2023-01-02 12:00:00Z] == updated_gallery.expired_at
+    assert ~U[2024-01-02 12:00:00Z] == updated_gallery.expired_at
   end
 
   feature "Watermark, Set text watermark", %{session: session, gallery: gallery} do
