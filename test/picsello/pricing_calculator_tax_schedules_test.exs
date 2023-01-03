@@ -25,7 +25,7 @@ defmodule Picsello.PricingCalculatorTaxSchedulesTest do
   describe "create and modify changeset" do
     test "add pricing calculator tax_schedule with default income bracket" do
       assert %{
-               year: 2022,
+               year: 2023,
                active: false,
                income_brackets: [%{income_min: ~M[000]}]
              } =
@@ -73,7 +73,7 @@ defmodule Picsello.PricingCalculatorTaxSchedulesTest do
         |> Repo.insert!()
 
       assert %{
-               year: 2022,
+               year: 2023,
                active: false,
                income_brackets: [
                  %{
