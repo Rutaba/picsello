@@ -196,7 +196,7 @@ defmodule PicselloWeb.JobLive.Show do
           <% end %>
         </p>
         <div class={"flex self-end items-center gap-4 #{@btn_section_class}"} >
-          <%= link "View Orders", to: Routes.transaction_path(@socket, :transactions, @gallery.job_id), class: "font-normal text-sm text-blue-planning-300 underline #{@count == 0 && 'opacity-30 pointer-events-none'}" %>
+          <%= link "View Orders", to: Routes.transaction_path(@socket, :transactions, @gallery.id), class: "font-normal text-sm text-blue-planning-300 underline #{@count == 0 && 'opacity-30 pointer-events-none'}" %>
           <button class={"btn-primary intro-gallery py-2 font-normal rounded-lg #{@btn_class}"} phx-click={button_click} phx-value-gallery_id={@gallery.id} disabled={button_disabled}><%= button_text %></button>
         </div>
     <% end %>

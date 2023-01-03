@@ -7,16 +7,17 @@ defmodule PicselloWeb.JobLive.Transaction.Index do
   import PicselloWeb.JobLive.Shared, only: [assign_job: 2]
 
   @impl true
-  def mount(%{"id" => job_id}, _session, %{assigns: %{live_action: action}} = socket) do
+  def mount(%{"id" => gallery_id}, _session, %{assigns: %{live_action: action}} = socket) do
     socket
     |> assign(:page_title, action |> Phoenix.Naming.humanize())
-    |> assign_job(job_id)
     |> then(fn socket ->
       gallery =
-        Galleries.get_gallery_by_job_id(job_id)
+        gallery_id
+        |> Galleries.get_gallery!()
         |> Repo.preload(orders: [:intent, :products, :digitals])
 
       socket
+      |> assign_job(gallery.job_id)
       |> assign(:gallery, gallery)
     end)
     |> ok()
@@ -26,12 +27,12 @@ defmodule PicselloWeb.JobLive.Transaction.Index do
   def handle_event(
         "order-detail",
         %{"order_number" => order_number},
-        %{assigns: %{job: job}} = socket
+        %{assigns: %{gallery: gallery}} = socket
       ) do
     socket
     |> push_redirect(
       to:
-        Routes.order_detail_path(socket, :transactions, job.id, order_number, %{
+        Routes.order_detail_path(socket, :transactions, gallery.id, order_number, %{
           "request_from" => "transactions"
         })
     )
