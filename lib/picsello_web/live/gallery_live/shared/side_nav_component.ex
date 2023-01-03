@@ -27,12 +27,11 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     end
 
     album = Map.get(params, :selected_album, nil)
-    album_id = if !is_nil(album), do: album.id
 
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
       "upload_update:#{gallery.id}",
-      {:upload_update, %{album_id: album_id}}
+      {:upload_update, %{album_id: album && album.id}}
     )
 
     socket

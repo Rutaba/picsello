@@ -231,7 +231,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           <% end %>
         </div>
         <div class="flex flex-row items-center justify-end w-full mt-5 lg:items-start">
-          <%= if @album && !@has_order? do %>
+          <%= if @album && !@has_order? && !@album.is_finals && !@album.is_proofing do %>
           <div class="flex flex-row items-center justify-start w-full lg:items-start">
             <button type="button" phx-click="delete_album_popup" phx-target={@myself} phx-value-id={@album.id} class="btn-settings-secondary flex items-center border-gray-200" id="close">
               <.icon name="trash" class="flex w-4 h-5 mr-2 text-red-400" />

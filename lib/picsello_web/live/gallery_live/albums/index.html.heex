@@ -12,18 +12,20 @@
           </.mobile_banner>
           <div class="hidden lg:flex justify-between">
             <div class="font-sans text-2xl mt-2 font-bold">Photos</div>
-            <.add_album_button disabled={@gallery.disabled} class="ml-5"/>
+            <%= if standard?(@gallery) do %>
+               <.add_album_button disabled={@gallery.disabled} class="ml-5"/>
+            <% end %>
           </div>
           <p class="mt-4 font-sans hidden lg:flex text-gray-400"><%= length(@albums) %> <%= ngettext("album", "albums", length(@albums)) %></p>
         </div>
       </div>
-      <div class="lg:hidden bg-base-200 px-10 py-4">
-      <.add_album_button disabled={@gallery.disabled} class="py-1.5"/>
+      <div class={"lg:hidden bg-base-200 px-10 py-4 #{!standard?(@gallery) && 'hidden'}"}>
+        <.add_album_button disabled={@gallery.disabled} class="py-1.5"/>
       </div>
       <div id="albums" class="relative flex flex-col w-full mb-20 lg:mb-10">
         <div class="px-10 grid 2xl:grid-cols-3 xl:grid-cols-2 grid-cols-1 sm:gap-2 md:gap-2 center-container">
-            <div class="flex flex-col mb-2 mr-2 album">
-            <.thumbnail event="go_to_unsorted_photos" album={album_params(@albums)}/>
+            <div class={"flex flex-col mb-2 mr-2 album #{!standard?(@gallery) && 'hidden'}"}>
+              <.thumbnail event="go_to_unsorted_photos" album={album_params(@albums)}/>
             <div class="cursor-pointer actionBlock">
               <.actions
               id="unsorted_actions"
@@ -51,6 +53,7 @@
               delete_event="delete_album_popup"
               delete_title="Delete Album"
               delete_value={album.id}
+              galllery_type={@gallery.type}
               has_orders={Enum.empty?(album.orders)}>
                 <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
                   <button class="w-full album-actions">Go to album</button>

@@ -18,6 +18,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   alias Ecto.Multi
   alias Ecto.Changeset
+  alias PicselloWeb.JobLive.GalleryTypeComponent
 
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1, expired_at: 1]
 
@@ -26,17 +27,17 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
-  @steps [:details, :pricing]
+  @steps [:choose_type, :details, :pricing]
 
   @impl true
   def update(%{current_user: %{organization: %{profile: profile}}} = assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign(:job_id, nil)
+    |> assign(:new_gallery, nil)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign_new(:selected_client, fn -> nil end)
-    |> assign(templates: [], step: :details, steps: @steps)
+    |> assign(templates: [], step: :choose_type, steps: @steps)
     |> assign_package_changesets()
     |> assign_job_changeset(%{"client" => %{}, "shoots" => [%{"starts_at" => nil}]})
     |> assign(
@@ -52,6 +53,15 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
     socket
     |> assign(:step, previous_step)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("gallery_type", %{"type" => type}, socket)
+      when type in ~w(proofing standard) do
+    socket
+    |> assign(:gallery_type, type)
+    |> assign(:step, :details)
     |> noreply()
   end
 
@@ -79,7 +89,13 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   def handle_event(
         "submit",
         params,
-        %{assigns: %{current_user: current_user, selected_client: selected_client}} = socket
+        %{
+          assigns: %{
+            current_user: current_user,
+            selected_client: selected_client,
+            gallery_type: gallery_type
+          }
+        } = socket
       ) do
     socket
     |> assign_package_changesets(params)
@@ -106,7 +122,9 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
           job_id: job_id,
           status: "active",
           password: Gallery.generate_password(),
-          expired_at: expired_at(current_user.organization_id)
+          expired_at: expired_at(current_user.organization_id),
+          type: gallery_type,
+          albums: Galleries.album_params_for_new(gallery_type)
         })
       end)
       |> Repo.transaction()
@@ -118,24 +136,30 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       {:error, :package, changeset, _} ->
         assign(socket, :package_changeset, changeset)
 
-      {:ok, %{gallery: %{id: gallery_id}}} ->
-        send(self(), {:gallery_created, %{gallery_id: gallery_id}})
-        socket |> assign(:gallery_id, gallery_id)
+      {:ok, %{gallery: gallery}} ->
+        send(self(), {:redirect_to_gallery, gallery})
+        socket |> assign(:new_gallery, gallery)
     end
     |> noreply()
   end
 
   @impl true
-  def render(assigns) do
+  def render(%{step: step} = assigns) do
+    class = if step == :choose_type, do: "relative bg-white p-6", else: "modal"
+
     ~H"""
-    <div class="modal">
+    <div class={class}>
       <.close_x />
 
-      <.steps step={@step} steps={@steps} target={@myself} />
+      <.steps step={step} steps={@steps} target={@myself} />
 
       <h1 class="mt-2 mb-4 text-3xl">
         <span class="font-bold">Create a Gallery:</span>
-        <%= if @step == :details, do: "General Details", else: "Pricing" %>
+        <%= case step do %>
+          <% :choose_type -> %> Get Started
+          <% :details -> %> General Details
+          <% :pricing -> %> Pricing
+        <% end %>
       </h1>
 
       <.form
@@ -143,17 +167,31 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         let={f} phx_change={:validate}
         phx_submit={:submit}
         phx_target={@myself}
-        id={"form-#{@step}"}
+        id={"form-#{step}"}
         >
         <input type="hidden" name="step" value={@step} />
-        <.step name={@step} f={f} {assigns} />
+        <.step name={step} f={f} {assigns} />
 
+      <%= unless step == :choose_type do %>
         <.footer>
-          <.step_button name={@step} form={f} is_valid={valid?(assigns)} myself={@myself} />
+          <.step_button name={step} form={f} is_valid={valid?(assigns)} myself={@myself} />
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">Cancel</button>
         </.footer>
+      <% end %>
+
       </.form>
     </div>
+    """
+  end
+
+  def step(%{name: :choose_type} = assigns) do
+    ~H"""
+      <%= live_component GalleryTypeComponent,
+      id: "choose_gallery_type",
+      target: @myself,
+      main_class: "px-2",
+      button_title: "Next",
+      hide_close_button: true %>
     """
   end
 
@@ -187,8 +225,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         <.print_credit_fields f={package} package_pricing={@package_pricing} />
 
         <.digital_download_fields for={:create_gallery} package_form={package} download={@download} package_pricing={@package_pricing} />
-        <%= if @job_id do %>
-          <div id="set-job-cookie" data-job-id={@job_id} phx-hook="SetJobCookie">
+        <%= if @new_gallery do %>
+          <div id="set-gallery-cookie" data-gallery-type={@new_gallery.type} phx-hook="SetGalleryCookie">
           </div>
         <% end %>
     </div>

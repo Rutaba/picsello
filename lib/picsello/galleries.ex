@@ -120,6 +120,9 @@ defmodule Picsello.Galleries do
   @spec get_gallery_by_job_id(job_id :: integer) :: %Gallery{} | nil
   def get_gallery_by_job_id(job_id), do: Repo.get_by(active_galleries(), job_id: job_id)
 
+  def get_galleries_by_job_id(job_id),
+    do: where(active_galleries(), job_id: ^job_id) |> Repo.all()
+
   @doc """
   Gets a single gallery by hash parameter.
 
@@ -453,17 +456,24 @@ defmodule Picsello.Galleries do
       GalleryProduct,
       fn %{
            gallery: %{
-             id: gallery_id
+             id: gallery_id,
+             type: type
            }
          } ->
-        from(category in (Category.active() |> Category.shown()),
-          select: %{
-            inserted_at: now(),
-            updated_at: now(),
-            gallery_id: ^gallery_id,
-            category_id: category.id
-          }
-        )
+        case type do
+          :proofing ->
+            []
+
+          _ ->
+            from(category in (Category.active() |> Category.shown()),
+              select: %{
+                inserted_at: now(),
+                updated_at: now(),
+                gallery_id: ^gallery_id,
+                category_id: category.id
+              }
+            )
+        end
       end
     )
     |> Multi.merge(fn %{gallery: gallery} ->
@@ -486,6 +496,17 @@ defmodule Picsello.Galleries do
         end)
     end
   end
+
+  def album_params_for_new("standard"), do: []
+
+  def album_params_for_new("proofing"),
+    do: [
+      %{
+        name: "proofing",
+        is_proofing: true,
+        set_password: false
+      }
+    ]
 
   @doc """
   Updates a gallery.
@@ -771,7 +792,8 @@ defmodule Picsello.Galleries do
     |> Repo.update_all([])
   end
 
-  def gallery_current_status(nil), do: :none_created
+  def gallery_current_status(%Gallery{id: nil}), do: :none_created
+
   def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
 
   def gallery_current_status(%Gallery{} = gallery) do
@@ -1094,6 +1116,8 @@ defmodule Picsello.Galleries do
   defp selected_photo_query(query) do
     join(query, :inner, [photo], digital in Digital, on: photo.id == digital.photo_id)
   end
+
+  defp uploading_status(%{photos: []}), do: :no_photo
 
   defp uploading_status(gallery) do
     gallery

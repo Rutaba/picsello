@@ -48,6 +48,12 @@ defmodule Picsello.Galleries.Album do
     |> validate_name()
   end
 
+  def changeset_with_gallery(album \\ %__MODULE__{}, attrs) do
+    album
+    |> cast(attrs, @attrs)
+    |> validate_required(:name)
+  end
+
   def update_changeset(struct, attrs \\ %{}) do
     struct
     |> cast(attrs, @attrs)

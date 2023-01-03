@@ -17,24 +17,29 @@ defmodule Picsello.Galleries.Gallery do
     on_delete: :delete_all
   ]
 
+  @type_opts [values: ~w(proofing finals standard)a, default: :standard]
+
   schema "galleries" do
     field :name, :string
-    field(:status, :string, @status_options)
+    field :status, :string, @status_options
     field :password, :string
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
     field :total_count, :integer, default: 0
     field :active, :boolean, default: true
+    field :type, Ecto.Enum, @type_opts
     field :disabled, :boolean, default: false
     field :use_global, :boolean, default: true
 
     belongs_to(:job, Job)
+    belongs_to(:parent, __MODULE__)
     has_many(:photos, Photo)
     has_many(:gallery_products, GalleryProduct)
     has_many(:albums, Album)
     has_many(:orders, Order)
     has_many(:session_tokens, SessionToken, @session_opts)
     has_one(:watermark, Watermark, on_replace: :update)
+    has_one(:child, __MODULE__, foreign_key: :parent_id)
     embeds_one(:cover_photo, CoverPhoto, on_replace: :update)
     has_one(:organization, through: [:job, :client, :organization])
     has_one(:package, through: [:job, :package])
@@ -56,7 +61,9 @@ defmodule Picsello.Galleries.Gallery do
     :client_link_hash,
     :total_count,
     :active,
-    :use_global
+    :use_global,
+    :type,
+    :parent_id
   ]
   @update_attrs [
     :name,
@@ -73,6 +80,7 @@ defmodule Picsello.Galleries.Gallery do
   def create_changeset(gallery, attrs \\ %{}) do
     gallery
     |> cast(attrs, @create_attrs)
+    |> cast_assoc(:albums, with: &Album.changeset_with_gallery/2)
     |> cast_password()
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])

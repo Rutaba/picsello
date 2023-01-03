@@ -1,5 +1,5 @@
 <div class={classes("flex flex-col photographer-gallery lg:before:bg-gray-100", %{"hidden" => is_nil(@is_mobile)})}>
-  <div class="flex root lg:min-h-fit min-h-screen lg:static relative">
+  <div class="flex root lg:min-h-fit min-h-screen lg:static relative" id="get-gallery-cookie" phx-hook="GetGalleryCookie">
     <.mobile_gallery_header gallery_name={@gallery.name}/>
     <div class={classes("lg:flex", %{"hidden" => !@is_mobile})}>
       <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "photos", selected_album: @album, album_dropdown_show: true, is_mobile: @is_mobile %>
@@ -189,7 +189,7 @@
                 Oops, you have no liked photos!
             </div>
           <% false when @selection_filter -> %>
-            <div class={classes("px-0 lg:pb-16 pb-20 mx-0 gallery__container center-container px-0 pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0})} id="gallery">
+            <div class={classes("lg:pb-16 pb-20 mx-0 gallery__container center-container px-0 pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0})} id="gallery">
               <.proofing_grid orders={@orders} gallery={@gallery} />
             </div>
           <% false -> %>

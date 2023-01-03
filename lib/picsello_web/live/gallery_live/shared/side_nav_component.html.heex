@@ -102,9 +102,11 @@
             <div class="bg-base-200 border-2 border-gray-200 rounded-b-lg">
               <%= if @album_dropdown_show do %>
                 <%= if length(@albums) > 0 do %>
-                  <ul>
-                    <.li title={if List.last(@albums).is_client_liked && length(@albums) == 1, do: "All photos", else: "Unsorted photos"} name="unsorted" class="block" button_class={if @arrow_show == "photos" && @selected_album == nil , do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}/>
-                  </ul>
+                  <%= if standard?(@gallery) do %>
+                    <ul>
+                      <.li title={if List.last(@albums).is_client_liked && length(@albums) == 1, do: "All photos", else: "Unsorted photos"} name="unsorted" class="block" button_class={if @arrow_show == "photos" && @selected_album == nil , do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                    </ul>
+                  <% end %>
                 <% end %>
                 <%= for album <- @albums do %>
                   <ul>

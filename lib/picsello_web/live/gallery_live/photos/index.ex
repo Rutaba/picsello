@@ -655,6 +655,21 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   @impl true
+  def handle_event("gallery-created", %{"galleryType" => type}, socket) do
+    {title, subtitle} = success_component_items()[type]
+
+    socket
+    |> PicselloWeb.SuccessComponent.open(%{
+      title: title,
+      subtitle: subtitle,
+      close_label: "Great!",
+      close_class: "bg-black text-white",
+      for: type
+    })
+    |> noreply()
+  end
+
+  @impl true
   def handle_info({:album_settings, %{message: message, album: album}}, socket) do
     socket
     |> close_modal()
@@ -1150,5 +1165,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       </div>
     <% end %>
     """
+  end
+
+  defp success_component_items() do
+    %{
+      "proofing" => {
+        "Set Up Your Proofing Gallery",
+        "Your proofing gallery is up and running! Your first proofing album lives within your gallery for this job."
+      },
+      "standard" => {
+        "Gallery Created!",
+        "Hooray! Your gallery has been created. You're now ready to upload photos."
+      }
+    }
   end
 end

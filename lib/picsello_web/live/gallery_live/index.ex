@@ -227,17 +227,9 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   @impl true
-  def handle_info({:gallery_created, %{gallery_id: gallery_id}}, socket) do
+  def handle_info({:redirect_to_gallery, gallery}, socket) do
     socket
-    |> PicselloWeb.SuccessComponent.open(%{
-      title: "Gallery Created!",
-      subtitle: "Hooray! Your gallery has been created. You're now ready to upload photos.",
-      success_label: "View gallery",
-      success_event: "view-gallery",
-      close_label: "Close",
-      payload: %{gallery_id: gallery_id}
-    })
-    |> update_gallery_listing()
+    |> push_redirect(to: new_gallery_path(socket, gallery))
     |> noreply()
   end
 
