@@ -39,13 +39,6 @@ defmodule PicselloWeb.Live.ClientLive.Show do
     |> noreply()
   end
 
-  def handle_info({:update, client}, socket) do
-    socket
-    |> assign(:client, client)
-    |> put_flash(:success, "Client updated successfully")
-    |> noreply()
-  end
-
   @impl true
   defdelegate handle_info(message, socket), to: ClientLive.Index
 

@@ -6,7 +6,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 2]
 
   alias Ecto.Changeset
-  alias Picsello.{Repo, Client, Clients, ClientTag}
+  alias Picsello.{Repo, Clients, ClientTag}
   alias PicselloWeb.JobLive.{NewComponent, ImportWizard, Shared}
 
   alias PicselloWeb.{
@@ -179,8 +179,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"id" => id},
         %{assigns: %{clients: clients}} = socket
       ) do
-    {client_id, _} = Integer.parse(id)
-    client = clients |> Enum.find(&(&1.id == client_id))
+    id = String.to_integer(id)
+    client = clients |> Enum.find(&(&1.id == id))
     open_confirmation_component(socket, client)
   end
 
@@ -224,10 +224,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
     socket
     |> assign(:pagination, updated_pagination)
-    |> then(fn socket ->
-      socket
-      |> fetch_clients()
-    end)
+    |> fetch_clients()
     |> noreply()
   end
 
@@ -246,10 +243,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     socket
     |> assign(:pagination_changeset, updated_pagination_changeset)
     |> assign(:pagination, updated_pagination_changeset |> Changeset.apply_changes())
-    |> then(fn socket ->
-      socket
-      |> fetch_clients()
-    end)
+    |> fetch_clients()
     |> noreply()
   end
 
@@ -269,13 +263,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
     socket
     |> assign(search_phrase: search_phrase)
-    |> then(fn socket ->
-      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
-    end)
-    |> then(fn socket ->
-      socket
-      |> fetch_clients()
-    end)
+    |> assign(:pagination, reset_pagination(pagination, client_count(socket)))
+    |> fetch_clients()
     |> noreply()
   end
 
@@ -283,13 +272,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event("clear-search", _, %{assigns: %{pagination: pagination}} = socket) do
     socket
     |> assign(:search_phrase, nil)
-    |> then(fn socket ->
-      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
-    end)
-    |> then(fn socket ->
-      socket
-      |> fetch_clients()
-    end)
+    |> assign(:pagination, reset_pagination(pagination, client_count(socket)))
+    |> fetch_clients()
     |> noreply()
   end
 
@@ -301,13 +285,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       ) do
     socket
     |> assign(:job_status, status)
-    |> then(fn socket ->
-      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
-    end)
-    |> then(fn socket ->
-      socket
-      |> fetch_clients()
-    end)
+    |> assign(:pagination, reset_pagination(pagination, client_count(socket)))
+    |> fetch_clients()
     |> noreply()
   end
 
@@ -319,13 +298,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       ) do
     socket
     |> assign(:job_type, type)
-    |> then(fn socket ->
-      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
-    end)
-    |> then(fn socket ->
-      socket
-      |> fetch_clients()
-    end)
+    |> assign(:pagination, reset_pagination(pagination, client_count(socket)))
+    |> fetch_clients()
     |> noreply()
   end
 
@@ -339,13 +313,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     |> assign(:sort_by, sort_by)
     |> assign(:sort_col, Enum.find(sort_options(), fn op -> op.id == sort_by end).column)
     |> assign(:sort_direction, Enum.find(sort_options(), fn op -> op.id == sort_by end).direction)
-    |> then(fn socket ->
-      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
-    end)
-    |> then(fn socket ->
-      socket
-      |> fetch_clients()
-    end)
+    |> assign(:pagination, reset_pagination(pagination, client_count(socket)))
+    |> fetch_clients()
     |> noreply()
   end
 
@@ -357,13 +326,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       ) do
     socket
     |> assign(:desc, !desc)
-    |> then(fn socket ->
-      assign(socket, :pagination, reset_pagination(pagination, client_count(socket)))
-    end)
-    |> then(fn socket ->
-      socket
-      |> fetch_clients()
-    end)
+    |> assign(:pagination, reset_pagination(pagination, client_count(socket)))
+    |> fetch_clients()
     |> noreply()
   end
 
@@ -391,7 +355,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"id" => id},
         socket
       ) do
-    {id, _} = Integer.parse(id)
+    id = String.to_integer(id)
 
     socket
     |> redirect(to: "/clients/#{id}")
@@ -404,7 +368,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"id" => id},
         %{assigns: %{clients: clients, current_user: current_user}} = socket
       ) do
-    {id, _} = Integer.parse(id)
+    id = String.to_integer(id)
     client = clients |> Enum.find(&(&1.id == id))
 
     assigns = %{
@@ -423,7 +387,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"id" => id},
         %{assigns: %{clients: clients, current_user: current_user}} = socket
       ) do
-    {id, _} = Integer.parse(id)
+    id = String.to_integer(id)
     client = clients |> Enum.find(&(&1.id == id))
 
     assigns = %{
@@ -460,7 +424,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"id" => id},
         %{assigns: %{clients: clients}} = socket
       ) do
-    {id, _} = Integer.parse(id)
+    id = String.to_integer(id)
     client = clients |> Enum.find(&(&1.id == id))
 
     assigns = %{
@@ -498,7 +462,6 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         |> close_modal()
         |> push_redirect(to: Routes.clients_path(socket, :index))
         |> put_flash(:success, "Client archived successfully")
-        |> assign_clients()
         |> noreply()
 
       {:error, _} ->
@@ -678,10 +641,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     |> assign(:tags_changeset, tag_default_changeset(%{}))
     |> assign(:job_types, Picsello.JobType.all())
     |> assign_new(:selected_client, fn -> nil end)
-    |> then(fn socket ->
-      socket
-      |> fetch_clients()
-    end)
+    |> fetch_clients()
   end
 
   defp open_confirmation_component(socket, client),
@@ -713,7 +673,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
              pagination: pagination
            }
          } = socket
-       ) do    
+       ) do
     clients =
       Clients.find_all_by_pagination(
         user: user,

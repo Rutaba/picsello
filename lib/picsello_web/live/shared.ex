@@ -509,22 +509,41 @@ defmodule PicselloWeb.Live.Shared do
           assigns: %{
             selected_client: selected_client,
             searched_client: searched_client,
-            job_changeset: job_changeset,
-            current_user: current_user,
-            package_changeset: package_changeset,
-            ex_documents: ex_documents,
-            another_import: another_import
+            job_changeset: job_changeset
           }
         } = socket
       ) do
     job = job_changeset |> Changeset.apply_changes()
     client = get_client(selected_client, searched_client, job.client)
+    job_changeset = job_changeset |> Changeset.delete_change(:client)
 
+    socket
+    |> save_multi(client, job_changeset)
+  end
+
+  def import_job_for_form_component(%{assigns: %{changeset: changeset, job_changeset: job_changeset}} = socket) do
+    client = %Client{
+      name: Changeset.get_field(changeset, :name),
+      email: Changeset.get_field(changeset, :email)
+    }
+
+    socket
+    |> save_multi(client, job_changeset)
+  end
+
+
+  defp save_multi(%{
+    assigns: %{
+      current_user: current_user,
+      package_changeset: package_changeset,
+      ex_documents: ex_documents,
+      another_import: another_import
+    }
+  } = socket, client, job_changeset) do
     Multi.new()
     |> Jobs.maybe_upsert_client(client, current_user)
     |> Multi.insert(:job, fn changes ->
       job_changeset
-      |> Changeset.delete_change(:client)
       |> Changeset.put_change(:client_id, changes.client.id)
       |> Job.document_changeset(%{
         documents: Enum.map(ex_documents, &%{name: &1.client_name, url: &1.path})
@@ -556,68 +575,7 @@ defmodule PicselloWeb.Live.Shared do
             |> assign(%{step: :job_details})
             |> assign_package_changeset(%{})
             |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]}),
-          else: socket |> push_redirect(to: Routes.job_path(socket, :jobs, job.id))
-        )
-
-      {:error, _} ->
-        socket
-    end)
-  end
-
-  def import_job_for_form_component(
-        %{
-          assigns: %{
-            changeset: changeset,
-            current_user: current_user,
-            job_changeset: job_changeset,
-            package_changeset: package_changeset,
-            ex_documents: ex_documents,
-            another_import: another_import
-          }
-        } = socket
-      ) do
-    Multi.new()
-    |> Jobs.maybe_upsert_client(
-      %Client{
-        name: Changeset.get_field(changeset, :name),
-        email: Changeset.get_field(changeset, :email)
-      },
-      current_user
-    )
-    |> Multi.insert(:job, fn changes ->
-      job_changeset
-      |> Changeset.put_change(:client_id, changes.client.id)
-      |> Job.document_changeset(%{
-        documents: Enum.map(ex_documents, &%{name: &1.client_name, url: &1.path})
-      })
-      |> Map.put(:action, nil)
-    end)
-    |> Multi.run(:cancel_oban_jobs, fn _repo, _ ->
-      Oban.Job
-      |> Query.where(worker: "Picsello.Workers.CleanStore")
-      |> Query.where([oban], oban.id in ^Enum.map(ex_documents, & &1.oban_job_id))
-      |> Oban.cancel_all_jobs()
-    end)
-    |> Multi.insert(:package, package_changeset |> Map.put(:action, nil))
-    |> Multi.update(:job_update, fn changes ->
-      Job.add_package_changeset(changes.job, %{package_id: changes.package.id})
-    end)
-    |> Multi.insert(:proposal, fn changes ->
-      BookingProposal.create_changeset(%{job_id: changes.job.id})
-    end)
-    |> maybe_insert_payment_schedules(socket)
-    |> Repo.transaction()
-    |> then(fn
-      {:ok, %{client: %Client{id: client_id}}} ->
-        if(another_import,
-          do:
-            socket
-            |> assign(:another_import, false)
-            |> assign(:ex_documents, [])
-            |> assign(%{step: :package_payment})
-            |> assign_package_changeset(%{})
-            |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]}),
-          else: socket |> push_redirect(to: Routes.client_path(socket, :job_history, client_id))
+          else: socket |> push_redirect(to: Routes.client_path(socket, :job_history, job.client_id))
         )
 
       {:error, _} ->
