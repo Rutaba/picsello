@@ -346,4 +346,60 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       assert %{status: :paid} = invoice |> Repo.reload()
     end
   end
+
+  describe("trial ending soon") do
+    def stub_trial_ending_event(subscription) do
+      Mox.stub(Picsello.MockPayments, :construct_event, fn _, _, _ ->
+        {:ok,
+         %{
+           type: "customer.subscription.trial_will_end",
+           data: %{
+             object: subscription
+           }
+         }}
+      end)
+    end
+
+    test "fires off zapier webhook on trial ending soon event", %{
+      conn: conn,
+      user: %{email: email} = user
+    } do
+      user
+      |> Picsello.Accounts.User.assign_stripe_customer_changeset("cus_123")
+      |> Repo.update()
+
+      test_pid = self()
+
+      Tesla.Mock.mock_global(fn
+        %{method: :post} = request ->
+          send(test_pid, {:zapier_request, request})
+
+          body = %{
+            "attempt" => "1234",
+            "id" => "1234",
+            "request_id" => "1234",
+            "status" => "success"
+          }
+
+          %Tesla.Env{status: 200, body: body}
+      end)
+
+      stub_trial_ending_event(%Stripe.Subscription{
+        id: "s1",
+        status: "active",
+        current_period_start: DateTime.utc_now() |> DateTime.to_unix(),
+        current_period_end: DateTime.utc_now() |> DateTime.add(3) |> DateTime.to_unix(),
+        plan: %{id: "prod_1234"},
+        customer: "cus_123"
+      })
+
+      make_app_request(conn)
+
+      assert_received {:zapier_request, %{body: zapier_request_body}}
+
+      assert %{
+               "email" => ^email
+             } = Jason.decode!(zapier_request_body)
+    end
+  end
 end
