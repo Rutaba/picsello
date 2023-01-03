@@ -151,7 +151,9 @@ config :picsello, :photo_storage_service, Picsello.Galleries.Workers.PhotoStorag
 
 config :picsello, :zapier,
   new_user_webhook_url: System.get_env("ZAPIER_NEW_USER_WEBHOOK_URL"),
-  trial_user_webhook_url: System.get_env("ZAPIER_TRIAL_USER_WEBHOOK_URL")
+  trial_user_webhook_url: System.get_env("ZAPIER_TRIAL_USER_WEBHOOK_URL"),
+  subscription_ending_user_webhook_url:
+    System.get_env("ZAPIER_SUBSCRIPTION_ENDING_USER_WEBHOOK_URL")
 
 config :pdf_generator,
   raise_on_missing_wkhtmltopdf_binary: false
