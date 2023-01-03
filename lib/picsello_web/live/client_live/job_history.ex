@@ -48,16 +48,15 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
 
   @impl true
   def handle_event("create-gallery", %{"job_id" => job_id}, socket) do
-    job_id = String.to_integer(job_id)
-    job = Jobs.get_job_by_id(job_id)
+    job_id = to_integer(job_id)
 
     gallery =
-      case Galleries.get_gallery_by_job_id(job.id) do
+      case Galleries.get_gallery_by_job_id(job_id) do
         nil ->
           {:ok, gallery} =
             Galleries.create_gallery(%{
               job_id: job_id,
-              name: Job.name(job)
+              name: Job.name(Jobs.get_job_by_id(job_id))
             })
 
           gallery
@@ -77,17 +76,14 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
         %{"id" => id},
         %{assigns: %{clients: clients, current_user: current_user}} = socket
       ) do
-    id = String.to_integer(id)
-    client = clients |> Enum.find(&(&1.id == id))
+    client = clients |> Enum.find(&(&1.id == to_integer(id)))
 
-    payload = %{
+    socket
+    |> open_modal(ImportWizard, %{
       current_user: current_user,
       selected_client: client,
       step: :job_details
-    }
-
-    socket
-    |> open_modal(ImportWizard, payload)
+    })
     |> noreply()
   end
 
@@ -97,14 +93,12 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
         %{"id" => _id},
         %{assigns: %{client: client, current_user: current_user}} = socket
       ) do
-    payload = %{
+    socket
+    |> open_modal(ImportWizard, %{
       current_user: current_user,
       selected_client: client,
       step: :job_details
-    }
-
-    socket
-    |> open_modal(ImportWizard, payload)
+    })
     |> noreply()
   end
 
@@ -114,7 +108,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
         %{"show_index" => show_index},
         %{assigns: %{index: index}} = socket
       ) do
-    show_index = String.to_integer(show_index)
+    show_index = to_integer(show_index)
 
     socket
     |> assign(index: if(show_index == index, do: false, else: show_index))
@@ -142,7 +136,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
         %{"per-page" => per_page},
         %{assigns: %{client_id: client_id}} = socket
       ) do
-    limit = String.to_integer(per_page)
+    limit = to_integer(per_page)
 
     socket
     |> assign(:pagination, %Pagination{limit: limit, last_index: limit})

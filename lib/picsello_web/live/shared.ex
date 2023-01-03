@@ -521,7 +521,9 @@ defmodule PicselloWeb.Live.Shared do
     |> save_multi(client, job_changeset)
   end
 
-  def import_job_for_form_component(%{assigns: %{changeset: changeset, job_changeset: job_changeset}} = socket) do
+  def import_job_for_form_component(
+        %{assigns: %{changeset: changeset, job_changeset: job_changeset}} = socket
+      ) do
     client = %Client{
       name: Changeset.get_field(changeset, :name),
       email: Changeset.get_field(changeset, :email)
@@ -531,15 +533,18 @@ defmodule PicselloWeb.Live.Shared do
     |> save_multi(client, job_changeset)
   end
 
-
-  defp save_multi(%{
-    assigns: %{
-      current_user: current_user,
-      package_changeset: package_changeset,
-      ex_documents: ex_documents,
-      another_import: another_import
-    }
-  } = socket, client, job_changeset) do
+  defp save_multi(
+         %{
+           assigns: %{
+             current_user: current_user,
+             package_changeset: package_changeset,
+             ex_documents: ex_documents,
+             another_import: another_import
+           }
+         } = socket,
+         client,
+         job_changeset
+       ) do
     Multi.new()
     |> Jobs.maybe_upsert_client(client, current_user)
     |> Multi.insert(:job, fn changes ->
@@ -575,7 +580,8 @@ defmodule PicselloWeb.Live.Shared do
             |> assign(%{step: :job_details})
             |> assign_package_changeset(%{})
             |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]}),
-          else: socket |> push_redirect(to: Routes.client_path(socket, :job_history, job.client_id))
+          else:
+            socket |> push_redirect(to: Routes.client_path(socket, :job_history, job.client_id))
         )
 
       {:error, _} ->

@@ -53,17 +53,14 @@ defmodule PicselloWeb.Live.ClientLive.OrderHistory do
         %{"id" => id},
         %{assigns: %{clients: clients, current_user: current_user}} = socket
       ) do
-    id = String.to_integer(id)
-    client = clients |> Enum.find(&(&1.id == id))
+    client = clients |> Enum.find(&(&1.id == to_integer(id)))
 
-    assigns = %{
+    socket
+    |> open_modal(ImportWizard, %{
       current_user: current_user,
       selected_client: client,
       step: :job_details
-    }
-
-    socket
-    |> open_modal(ImportWizard, assigns)
+    })
     |> noreply()
   end
 
@@ -73,14 +70,12 @@ defmodule PicselloWeb.Live.ClientLive.OrderHistory do
         %{"id" => _id},
         %{assigns: %{client: client, current_user: current_user}} = socket
       ) do
-    assigns = %{
+    socket
+    |> open_modal(ImportWizard, %{
       current_user: current_user,
       selected_client: client,
       step: :job_details
-    }
-
-    socket
-    |> open_modal(ImportWizard, assigns)
+    })
     |> noreply()
   end
 

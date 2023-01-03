@@ -403,16 +403,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
     with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
          {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
       socket
-      |> close_modal()
       |> put_flash(:success, "#{String.capitalize(shared_item)} shared!")
-      |> noreply()
     else
       _error ->
         socket
         |> put_flash(:error, "Something went wrong")
-        |> close_modal()
-        |> noreply()
     end
+    |> close_modal()
+    |> noreply()
   end
 
   def add_message_and_notify(socket, message_changeset) do

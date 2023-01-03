@@ -69,13 +69,11 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"client-id" => client_id},
         socket
       ) do
-    client_id = String.to_integer(client_id)
-
     socket
     |> assign(
       :tags_changeset,
       ClientTag.create_changeset(%{
-        client_id: client_id
+        client_id: to_integer(client_id)
       })
     )
     |> noreply()
@@ -179,8 +177,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"id" => id},
         %{assigns: %{clients: clients}} = socket
       ) do
-    id = String.to_integer(id)
-    client = clients |> Enum.find(&(&1.id == id))
+    client = clients |> Enum.find(&(&1.id == to_integer(id)))
     open_confirmation_component(socket, client)
   end
 
@@ -234,7 +231,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"pagination" => %{"limit" => limit}},
         %{assigns: %{pagination: pagination}} = socket
       ) do
-    limit = String.to_integer(limit)
+    limit = to_integer(limit)
 
     updated_pagination_changeset =
       pagination
@@ -355,8 +352,6 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"id" => id},
         socket
       ) do
-    id = String.to_integer(id)
-
     socket
     |> redirect(to: "/clients/#{id}")
     |> noreply()
@@ -368,16 +363,13 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"id" => id},
         %{assigns: %{clients: clients, current_user: current_user}} = socket
       ) do
-    id = String.to_integer(id)
-    client = clients |> Enum.find(&(&1.id == id))
-
-    assigns = %{
-      current_user: current_user,
-      selected_client: client
-    }
+    client = clients |> Enum.find(&(&1.id == to_integer(id)))
 
     socket
-    |> open_modal(NewComponent, assigns)
+    |> open_modal(NewComponent, %{
+      current_user: current_user,
+      selected_client: client
+    })
     |> noreply()
   end
 
@@ -387,17 +379,14 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"id" => id},
         %{assigns: %{clients: clients, current_user: current_user}} = socket
       ) do
-    id = String.to_integer(id)
-    client = clients |> Enum.find(&(&1.id == id))
+    client = clients |> Enum.find(&(&1.id == to_integer(id)))
 
-    assigns = %{
+    socket
+    |> open_modal(ImportWizard, %{
       current_user: current_user,
       selected_client: client,
       step: :job_details
-    }
-
-    socket
-    |> open_modal(ImportWizard, assigns)
+    })
     |> noreply()
   end
 
@@ -407,14 +396,12 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{"id" => _id},
         %{assigns: %{client: client, current_user: current_user}} = socket
       ) do
-    assigns = %{
+    socket
+    |> open_modal(ImportWizard, %{
       current_user: current_user,
       selected_client: client,
       step: :job_details
-    }
-
-    socket
-    |> open_modal(ImportWizard, assigns)
+    })
     |> noreply()
   end
 
@@ -422,18 +409,15 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event(
         "create-gallery",
         %{"id" => id},
-        %{assigns: %{clients: clients}} = socket
+        %{assigns: %{clients: clients, current_user: current_user}} = socket
       ) do
-    id = String.to_integer(id)
-    client = clients |> Enum.find(&(&1.id == id))
-
-    assigns = %{
-      current_user: socket.assigns.current_user,
-      selected_client: client
-    }
+    client = clients |> Enum.find(&(&1.id == to_integer(id)))
 
     socket
-    |> open_modal(CreateComponent, assigns)
+    |> open_modal(CreateComponent, %{
+      current_user: current_user,
+      selected_client: client
+    })
     |> noreply()
   end
 
@@ -459,18 +443,15 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     case Clients.archive_client(id) do
       {:ok, _client} ->
         socket
-        |> close_modal()
-        |> push_redirect(to: Routes.clients_path(socket, :index))
         |> put_flash(:success, "Client archived successfully")
-        |> noreply()
 
       {:error, _} ->
         socket
         |> close_modal()
-        |> put_flash(:success, "Error archiving client")
-        |> push_redirect(to: Routes.clients_path(socket, :index))
-        |> noreply()
+        |> put_flash(:error, "Error archiving client")
     end
+    |> push_redirect(to: Routes.clients_path(socket, :index))
+    |> noreply()
   end
 
   @impl true
@@ -554,6 +535,19 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   end
 
   def actions(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        actions: [
+          %{title: "Details", action: "edit-client", icon: "pencil"},
+          %{title: "Send email", action: "open-compose", icon: "envelope"},
+          %{title: "Create a lead", action: "create-lead", icon: "three-people"},
+          %{title: "Create gallery", action: "create-gallery", icon: "gallery"},
+          %{title: "Import job", action: "import-job", icon: "camera-check"},
+          %{title: "Archive", action: "confirm-archive", icon: "trash"}
+        ]
+      })
+
     ~H"""
     <div class="flex items-center left-3 sm:left-8" data-offset-x="-21" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@client.id}"}>
       <button title="Manage" type="button" class="flex flex-shrink-0 p-1 text-2xl font-bold bg-white border rounded border-blue-planning-300 text-blue-planning-300">
@@ -563,30 +557,12 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       </button>
 
       <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
-        <button title="Edit" type="button" phx-click="edit-client" phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-          <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-          Details
-        </button>
-        <button title="send-email" type="button" phx-click="open-compose" phx-value-client_id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-          <.icon name="envelope" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-          Send email
-        </button>
-        <button title="Create a lead" type="button" phx-click="create-lead" phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-          <.icon name="three-people" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-          Create a lead
-        </button>
-        <button title="Create gallery" type="button" phx-click="create-gallery" phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-          <.icon name="gallery" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-          Create gallery
-        </button>
-        <button title="Import job" type="button" phx-click="import-job" phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-          <.icon name="camera-check" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-          Import job
-        </button>
-        <button title="Archive" type="button" phx-click="confirm-archive" phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-          <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
-          Archive
-        </button>
+        <%= for %{title: title, action: action, icon: icon} <- @actions do %>
+          <button title={title} type="button" phx-click={action} phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+            <.icon name={icon} class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+            <%= title %>
+          </button>
+        <% end %>
       </div>
     </div>
     """
