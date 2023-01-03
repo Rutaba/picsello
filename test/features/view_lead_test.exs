@@ -8,6 +8,7 @@ defmodule Picsello.ViewLeadTest do
   setup %{user: user} do
     insert(:questionnaire,
       job_type: "family",
+      is_picsello_default: true,
       questions: [
         %{
           type: "textarea",
@@ -73,11 +74,17 @@ defmodule Picsello.ViewLeadTest do
     |> find(testid("thread-card"), &assert_text(&1, "Rick Sanchez Family"))
   end
 
-  feature "users views questionnaire", %{session: session, leads: [lead | _]} do
+  feature "users views questionnaire", %{session: session, user: user, leads: [lead | _]} do
+    package = insert(:package, %{user: user, job_type: "family"})
+
+    lead
+    |> Picsello.Job.add_package_changeset(%{package_id: package.id})
+    |> Picsello.Repo.update!()
+
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
     |> assert_text("Booking details")
-    |> find(testid("questionnaire"), &click(&1, button("View")))
+    |> find(testid("questionnaire"), &click(&1, button("Preview")))
     |> assert_text("Read-only")
     |> assert_text("What do you like to do as a family?")
   end

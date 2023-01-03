@@ -28,8 +28,11 @@ defmodule Picsello.Factory do
     Galleries.Photo,
     Profiles.Profile,
     BrandLink,
+    Questionnaire,
     PackagePaymentSchedule
   }
+
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
   def valid_user_password(), do: "hello world!"
 
@@ -464,6 +467,14 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def global_gallery_settings_factory(attrs) do
+    %GSGallery{}
+    |> GSGallery.expiration_changeset(%{})
+    |> Ecto.Changeset.apply_changes()
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
   def watermark_factory(attrs) do
     %Watermark{
       type: "text",
@@ -769,7 +780,7 @@ defmodule Picsello.Factory do
 
   def tax_schedule_factory do
     %{
-      year: 2022,
+      year: 2023,
       self_employment_percentage: 15.3,
       active: true,
       income_brackets: [

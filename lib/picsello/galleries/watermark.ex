@@ -40,7 +40,7 @@ defmodule Picsello.Galleries.Watermark do
     Enum.reduce(fields, changeset, fn key, changeset -> put_change(changeset, key, nil) end)
   end
 
-  def build(organization_name) do
-    %Watermark{type: "text", text: organization_name}
+  def build(organization_name, gallery) do
+    %Watermark{type: "text", text: organization_name, gallery_id: gallery.id}
   end
 end

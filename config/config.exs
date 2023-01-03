@@ -52,6 +52,8 @@ config :picsello, :help_scout_id_business, System.get_env("HELP_SCOUT_ID_BUSINES
 config :picsello, :booking_reservation_seconds, 60 * 10
 config :picsello, :card_category_id, System.get_env("CARD_CATEGORY_ID")
 
+config :picsello, :global_watermarked_path, System.get_env("GLOBAL_WATERMARKED_PATH")
+
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_SECRET"),
   connect_signing_secret: System.get_env("STRIPE_CONNECT_SIGNING_SECRET"),
@@ -151,7 +153,9 @@ config :picsello, :photo_storage_service, Picsello.Galleries.Workers.PhotoStorag
 
 config :picsello, :zapier,
   new_user_webhook_url: System.get_env("ZAPIER_NEW_USER_WEBHOOK_URL"),
-  trial_user_webhook_url: System.get_env("ZAPIER_TRIAL_USER_WEBHOOK_URL")
+  trial_user_webhook_url: System.get_env("ZAPIER_TRIAL_USER_WEBHOOK_URL"),
+  subscription_ending_user_webhook_url:
+    System.get_env("ZAPIER_SUBSCRIPTION_ENDING_USER_WEBHOOK_URL")
 
 config :pdf_generator,
   raise_on_missing_wkhtmltopdf_binary: false

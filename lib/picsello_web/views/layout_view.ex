@@ -153,6 +153,11 @@ defmodule PicselloWeb.LayoutView do
       %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
       %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)},
       %{
+        title: "Questionnaires",
+        icon: "package",
+        path: Routes.questionnaires_index_path(socket, :index)
+      },
+      %{
         title: "Finances",
         icon: "money-bags",
         path: Routes.finance_settings_path(socket, :index)

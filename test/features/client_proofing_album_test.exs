@@ -20,6 +20,7 @@ defmodule Picsello.ClientProofingAlbumTest do
       )
 
     proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
+    insert(:watermark, gallery: gallery)
 
     photo_ids =
       Enum.map(1..10, fn index ->

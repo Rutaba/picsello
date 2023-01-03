@@ -443,9 +443,9 @@ defmodule Picsello.Galleries do
   end
 
   def create_gallery_multi(attrs) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
-    |> Ecto.Multi.insert_all(
+    Multi.new()
+    |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
+    |> Multi.insert_all(
       :gallery_products,
       GalleryProduct,
       fn %{
@@ -463,6 +463,25 @@ defmodule Picsello.Galleries do
         )
       end
     )
+    |> Multi.merge(fn %{gallery: gallery} ->
+      check_watermark(gallery)
+    end)
+  end
+
+  defp check_watermark(gallery) do
+    case Gallery.global_gallery_watermark(gallery) do
+      nil ->
+        Multi.new()
+
+      changeset ->
+        Multi.new()
+        |> Multi.insert(:watermark, fn _ ->
+          Ecto.Changeset.change(
+            %Watermark{},
+            changeset
+          )
+        end)
+    end
   end
 
   @doc """
@@ -802,7 +821,7 @@ defmodule Picsello.Galleries do
     |> Map.get(:photos)
     |> Enum.reduce({[], []}, fn
       %{album: %{is_proofing: true}} = photo, acc ->
-        ProcessingManager.start(photo, Watermark.build(name))
+        ProcessingManager.start(photo, Watermark.build(name, gallery))
         acc
 
       photo, {photo_ids, oban_jobs} ->
@@ -1004,6 +1023,17 @@ defmodule Picsello.Galleries do
   def min_price(category) do
     category
     |> Picsello.WHCC.min_price_details()
+    |> evaluate_price()
+  end
+
+  def max_price(category) do
+    category
+    |> Picsello.WHCC.max_price_details()
+    |> evaluate_price()
+  end
+
+  defp evaluate_price(details) do
+    details
     |> Picsello.Cart.Product.new()
     |> Picsello.Cart.Product.example_price()
   end

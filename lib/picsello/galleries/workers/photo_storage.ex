@@ -31,4 +31,5 @@ defmodule Picsello.Galleries.Workers.PhotoStorage do
     do: impl().continue_resumable(location, chunk, opts)
 
   def params_for_upload(opts), do: impl().params_for_upload(opts)
+  def insert(path, object), do: impl().insert(path, object)
 end

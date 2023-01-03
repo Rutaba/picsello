@@ -2,8 +2,10 @@ defmodule Picsello.Galleries.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
   alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album, SessionToken}
-  alias Picsello.{Job, Cart.Order}
+  alias Picsello.{Job, Cart.Order, Repo}
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
   @status_options [
     values: ~w(draft active expired disabled),
@@ -25,6 +27,7 @@ defmodule Picsello.Galleries.Gallery do
     field :total_count, :integer, default: 0
     field :active, :boolean, default: true
     field :disabled, :boolean, default: false
+    field :use_global, :boolean
 
     belongs_to(:job, Job)
     has_many(:photos, Photo)
@@ -32,7 +35,7 @@ defmodule Picsello.Galleries.Gallery do
     has_many(:albums, Album)
     has_many(:orders, Order)
     has_many(:session_tokens, SessionToken, @session_opts)
-    has_one(:watermark, Watermark)
+    has_one(:watermark, Watermark, on_replace: :update)
     embeds_one(:cover_photo, CoverPhoto, on_replace: :update)
     has_one(:organization, through: [:job, :client, :organization])
     has_one(:package, through: [:job, :package])
@@ -53,7 +56,8 @@ defmodule Picsello.Galleries.Gallery do
     :expired_at,
     :client_link_hash,
     :total_count,
-    :active
+    :active,
+    :use_global
   ]
   @update_attrs [
     :name,
@@ -68,7 +72,8 @@ defmodule Picsello.Galleries.Gallery do
   @required_attrs [:name, :job_id, :status, :password]
 
   def create_changeset(gallery, attrs \\ %{}) do
-    attrs = Map.put(attrs, :expired_at, next_year_expiration_datetime())
+    attrs = Map.put(attrs, :expired_at, global_expiration_datetime(attrs))
+    attrs = Map.put(attrs, :use_global, true)
 
     gallery
     |> cast(attrs, @create_attrs)
@@ -133,7 +138,69 @@ defmodule Picsello.Galleries.Gallery do
   defp validate_name(changeset),
     do: validate_length(changeset, :name, max: 50)
 
-  defp next_year_expiration_datetime do
-    Date.utc_today() |> Date.add(365) |> DateTime.new!(~T[12:00:00])
+  defp global_expiration_datetime(gallery) do
+    case gallery do
+      %{} ->
+        nil
+
+      _ ->
+        organization_id =
+          from(j in Picsello.Job,
+            join: c in assoc(j, :client),
+            join: o in assoc(c, :organization),
+            where: j.id == ^gallery.job_id,
+            select: o.id
+          )
+          |> Repo.one()
+
+        shoot = get_shoots(gallery.job_id) |> List.last()
+
+        settings =
+          from(gss in GSGallery,
+            where: gss.organization_id == ^organization_id
+          )
+          |> Repo.one()
+
+        if settings && settings.expiration_days && settings.expiration_days > 0 do
+          Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
+        end
+    end
   end
+
+  def global_gallery_watermark(gallery) do
+    organization_id =
+      from(j in Picsello.Job,
+        join: c in assoc(j, :client),
+        join: o in assoc(c, :organization),
+        where: j.id == ^gallery.job_id,
+        select: o.id
+      )
+      |> Repo.one()
+
+    settings =
+      from(gss in GSGallery,
+        where: gss.organization_id == ^organization_id
+      )
+      |> Repo.one()
+
+    if settings do
+      case settings.watermark_type do
+        "image" ->
+          %{
+            gallery_id: gallery.id,
+            name: settings.watermark_name,
+            size: settings.watermark_size,
+            type: "image"
+          }
+
+        "text" ->
+          %{text: settings.watermark_text, type: "text", gallery_id: gallery.id}
+
+        _ ->
+          nil
+      end
+    end
+  end
+
+  defp get_shoots(job_id), do: Picsello.Shoot.for_job(job_id) |> Repo.all()
 end

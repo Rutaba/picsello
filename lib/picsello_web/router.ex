@@ -125,6 +125,7 @@ defmodule PicselloWeb.Router do
       live "/finance", Live.FinanceSettings, :index, as: :finance_settings
       live "/marketing", Live.Marketing, :index, as: :marketing
       live "/users/settings", Live.User.Settings, :edit
+      live "/galleries/settings", GalleryLive.GlobalSettings.Index, :edit
       live "/package_templates/:id/edit", Live.PackageTemplates, :edit
       live "/package_templates/new", Live.PackageTemplates, :new
       live "/package_templates", Live.PackageTemplates, :index
@@ -138,6 +139,7 @@ defmodule PicselloWeb.Router do
       live "/booking-events", Live.Calendar.BookingEvents, :index
       live "/booking-events/new", Live.Calendar.BookingEvents, :new
       live "/booking-events/:id/edit", Live.Calendar.BookingEvents, :edit
+      live "/questionnaires", Live.Questionnaires.Index, :index
       get "/calendar-feed", CalendarFeedController, :index
 
       scope "/galleries/:id", GalleryLive do

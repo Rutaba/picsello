@@ -7,7 +7,11 @@
         </h1>
       </div>
       <%= if Enum.any?(@galleries)do %>
-          <div class="fixed bottom-0 left-0 right-0 z-20 md:bg-none bg-white flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto cursor-pointer">
+          <div class="gap-2 fixed bottom-0 left-0 right-0 z-20 md:bg-none bg-white flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto cursor-pointer">
+            <a id="gallery-settings" class="w-full md:w-auto btn-secondary text-center lg:flex items-center p-3" data-phx-link="redirect" data-phx-link-state="push" href="/galleries/settings" title="Settings">
+              <.icon name="gear" class="inline-block w-6 h-6 mr-2 text-base-300"/>
+              Settings
+            </a>
             <a {testid("create-a-gallery")} title="Create a gallery" class="w-full md:w-auto btn-primary text-center" phx-click="create_gallery">
               Create a gallery
             </a>
