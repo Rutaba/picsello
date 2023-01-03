@@ -26,7 +26,7 @@ defmodule PicselloWeb.Live.ClientLive.SideNavComponent do
       <%= live_redirect to: @route do %>
         <div class="flex items-center py-3 pl-3 pr-4 overflow-hidden text-sm rounded lg:h-11 lg:pl-2 lg:py-4 transition duration-300 ease-in-out text-ellipsis whitespace-nowrap hover:text-blue-planning-300">
           <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
-              <.icon name={@icon} class="w-5 h-5 text-white"></.icon>
+              <.icon name={@icon} class="w-4 h-4 text-white"></.icon>
           </div>
           <div class="ml-3">
             <span class={@arrow_show && "text-blue-planning-300"}><%= @title %></span>
