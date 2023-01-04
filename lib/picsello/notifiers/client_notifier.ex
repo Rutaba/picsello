@@ -1,7 +1,7 @@
 defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
-  alias Picsello.{BookingProposal, Repo, Cart, Galleries.Gallery}
+  alias Picsello.{BookingProposal, Job, Repo, Cart, Galleries.Gallery}
   alias Cart.Order
 
   @doc """
@@ -17,6 +17,14 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
   def deliver_email(message, to_email, params \\ %{}) do
     client = message |> Repo.preload(:client) |> Map.get(:client)
+
+    client =
+      if client do
+        client
+      else
+        job = message |> Repo.preload(job: [:client]) |> Map.get(:job)
+        job.client
+      end
 
     message
     |> message_params()
@@ -300,6 +308,11 @@ defmodule Picsello.Notifiers.ClientNotifier do
         into: "",
         do: "<p>#{line}</p>"
       )
+
+  defp deliver_transactional_email(params, to_email, %Job{} = job) do
+    client = job |> Repo.preload(:client) |> Map.get(:client)
+    deliver_transactional_email(params, to_email, client)
+  end
 
   defp deliver_transactional_email(params, to_email, client) do
     client = client |> Repo.preload(organization: [:user])

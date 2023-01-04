@@ -85,7 +85,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
   end
 
   @impl true
-  def handle_event("validate-client", %{"client" => params}, socket) do
+  def handle_event("validate-client", %{"contact" => params}, socket) do
     socket
     |> assign(changeset: params |> Profiles.contact_changeset() |> Map.put(:action, :validate))
     |> noreply()
@@ -94,7 +94,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
   @impl true
   def handle_event(
         "save-client",
-        %{"client" => params},
+        %{"contact" => params},
         %{assigns: %{organization: organization}} = socket
       ) do
     case Profiles.handle_contact(organization, params, PicselloWeb.Helpers) do

@@ -313,7 +313,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
       if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
 
     ~H"""
-    <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={@id} }>
+    <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1">
       <.icon name={icon} class={"w-4 h-4 fill-current #{icon_text_class} inline mr-1"} />
       <%= @title %>
     </a>

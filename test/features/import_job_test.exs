@@ -143,6 +143,11 @@ defmodule Picsello.ImportJobTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> click(button("Finish"))
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(link("Edit"))
+    end)
     |> assert_text("Wedding Deluxe")
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_has(testid("shoot-card", count: 2, at: 0, text: "Missing information"))
@@ -239,6 +244,11 @@ defmodule Picsello.ImportJobTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> click(button("Finish"))
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(link("Edit"))
+    end)
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
     |> assert_text("During your job import, you marked this as an external document")
@@ -289,6 +299,11 @@ defmodule Picsello.ImportJobTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> click(button("Finish"))
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(link("Edit"))
+    end)
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
     |> assert_text("During your job import, you marked this as an external document")

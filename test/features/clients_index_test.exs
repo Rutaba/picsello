@@ -74,8 +74,8 @@ defmodule Picsello.ClientsIndexTest do
     |> fill_in(text_field("Phone"), with: @phone)
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
+    |> click(link("All Clients"))
     |> assert_text("Manage your 1 client")
-    |> assert_flash(:success, text: "Client saved")
     |> assert_text(@name)
     |> assert_text(@email)
     |> click(button("Manage"))
@@ -90,7 +90,6 @@ defmodule Picsello.ClientsIndexTest do
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> assert_text("Client: Josh")
-    |> assert_flash(:success, text: "Client updated successfully")
   end
 
   feature "adds client without name and update its email", %{session: session} do
@@ -102,8 +101,8 @@ defmodule Picsello.ClientsIndexTest do
     |> fill_in(text_field("Email"), with: "john@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
+    |> click(link("All Clients"))
     |> assert_text("Manage your 1 client")
-    |> assert_flash(:success, text: "Client saved successfully")
     |> assert_text("john@example.com")
     |> click(button("Manage"))
     |> click(button("Details"))
@@ -112,7 +111,6 @@ defmodule Picsello.ClientsIndexTest do
     |> fill_in(text_field("Email"), with: "john2@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_flash(:success, text: "Client updated successfully")
     |> assert_text("john2@example.com")
   end
 
@@ -133,7 +131,6 @@ defmodule Picsello.ClientsIndexTest do
     |> fill_in(text_field("Phone"), with: "")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_flash(:success, text: "Client updated successfully")
     |> assert_text("Client: John")
   end
 
@@ -295,7 +292,11 @@ defmodule Picsello.ClientsIndexTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> within_modal(&click(&1, button("Next")))
     |> within_modal(&click(&1, button("Finish")))
-    |> assert_url_contains("jobs")
+    |> assert_has(link("Contact Details"))
+    |> assert_has(link("Job Details"))
+    |> assert_has(link("Order History"))
+    |> assert_text("Job Details")
+    |> assert_text("Actions")
 
     job = Repo.one(Job) |> Repo.preload([:client])
 

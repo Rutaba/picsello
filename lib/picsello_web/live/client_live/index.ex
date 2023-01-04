@@ -357,6 +357,9 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     |> noreply()
   end
 
+  # @impl true
+  # def handle_event("open-compose", %{}, socket), do: open_compose(socket)
+
   @impl true
   def handle_event(
         "create-lead",
@@ -535,19 +538,6 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   end
 
   def actions(assigns) do
-    assigns =
-      assigns
-      |> Enum.into(%{
-        actions: [
-          %{title: "Details", action: "edit-client", icon: "pencil"},
-          %{title: "Send email", action: "open-compose", icon: "envelope"},
-          %{title: "Create a lead", action: "create-lead", icon: "three-people"},
-          %{title: "Create gallery", action: "create-gallery", icon: "gallery"},
-          %{title: "Import job", action: "import-job", icon: "camera-check"},
-          %{title: "Archive", action: "confirm-archive", icon: "trash"}
-        ]
-      })
-
     ~H"""
     <div class="flex items-center left-3 sm:left-8" data-offset-x="-21" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@client.id}"}>
       <button title="Manage" type="button" class="flex flex-shrink-0 p-1 text-2xl font-bold bg-white border rounded border-blue-planning-300 text-blue-planning-300">
@@ -557,7 +547,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       </button>
 
       <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
-        <%= for %{title: title, action: action, icon: icon} <- @actions do %>
+        <%= for %{title: title, action: action, icon: icon} <- actions() do %>
           <button title={title} type="button" phx-click={action} phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
             <.icon name={icon} class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
             <%= title %>
@@ -730,6 +720,17 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       %{title: "# of jobs", id: "no_of_jobs", column: "id", direction: "desc"},
       %{title: "Oldest", id: "oldest", column: "inserted_at", direction: "asc"},
       %{title: "Newest", id: "newest", column: "inserted_at", direction: "desc"}
+    ]
+  end
+
+  defp actions do
+    [
+      %{title: "Details", action: "edit-client", icon: "pencil"},
+      %{title: "Send email", action: "open-compose", icon: "envelope"},
+      %{title: "Create a lead", action: "create-lead", icon: "three-people"},
+      %{title: "Create gallery", action: "create-gallery", icon: "gallery"},
+      %{title: "Import job", action: "import-job", icon: "camera-check"},
+      %{title: "Archive", action: "confirm-archive", icon: "trash"}
     ]
   end
 end

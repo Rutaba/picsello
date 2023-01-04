@@ -70,23 +70,23 @@ defmodule Picsello.CreateClientTest do
     |> assert_text("All Clients")
     |> assert_text("#{client.name}")
     |> assert_text("Client: #{client.name}")
-    |> assert_has(link("Import job"))
     |> assert_has(link("Contact Details"))
     |> assert_has(link("Job Details"))
     |> assert_has(link("Order History"))
-    |> assert_text("Details")
-    |> assert_text("Private notes")
+    |> assert_text("Job Details")
+    |> assert_text("Actions")
 
     job = Repo.one(Job)
     client = Repo.one(Client)
     assert Repo.all(Gallery) |> Enum.count() == 0
 
     session
+    |> click(link("Contact Details"))
+    |> assert_text("Details")
+    |> assert_text("Private notes")
     |> click(link("Job Details"))
     |> assert_text("Job Details")
     |> assert_has(testid("client-job-#{job.id}"))
-
-    session
     |> click(css("a", text: "Go to Gallery"))
     |> assert_url_contains("/galleries")
 
