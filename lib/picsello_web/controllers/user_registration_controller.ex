@@ -33,8 +33,8 @@ defmodule PicselloWeb.UserRegistrationController do
 
   defp add_user_to_external_tools(user) do
     %{
-      list_ids: SendgridClient.get_all_contact_list_env(),
-      contacts: [
+      list_ids: SendgridClient.get_all_client_list_env(),
+      clients: [
         %{
           email: user.email,
           first_name: Accounts.User.first_name(user),
@@ -47,7 +47,7 @@ defmodule PicselloWeb.UserRegistrationController do
         }
       ]
     }
-    |> SendgridClient.add_contacts()
+    |> SendgridClient.add_clients()
 
     user_created_webhook(%{
       email: user.email,

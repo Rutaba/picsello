@@ -1,8 +1,8 @@
 defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, PaymentSchedules}
-  alias Picsello.Galleries
+
+  alias Picsello.{Galleries, Job, Repo, PaymentSchedules}
 
   import PicselloWeb.JobLive.Shared,
     only: [
@@ -14,21 +14,40 @@ defmodule PicselloWeb.JobLive.Show do
       package_details_card: 1,
       private_notes_card: 1,
       section: 1,
+      presign_entry: 2,
       shoot_details_section: 1,
       validate_payment_schedule: 1,
-      title_header: 1
+      title_header: 1,
+      process_cancel_upload: 2,
+      renew_uploads: 3
     ]
 
+  @upload_options [
+    accept: ~w(.pdf .docx .txt),
+    auto_upload: true,
+    external: &presign_entry/2,
+    progress: &__MODULE__.handle_progress/3,
+    max_entries: 2,
+    max_file_size: String.to_integer(Application.compile_env(:picsello, :document_max_size))
+  ]
+
   @impl true
-  def mount(%{"id" => job_id}, _session, socket) do
+  def mount(%{"id" => job_id} = assigns, _session, socket) do
     socket
     |> assign_job(job_id)
+    |> assign(
+      :request_from,
+      if(assigns["request_from"], do: assigns["request_from"], else: "job_index")
+    )
     |> assign(:collapsed_sections, [])
     |> then(fn %{assigns: %{job: job}} = socket ->
       payment_schedules = job |> Repo.preload(:payment_schedules) |> Map.get(:payment_schedules)
 
       socket
       |> assign(payment_schedules: payment_schedules)
+      |> assign(:invalid_entries, [])
+      |> assign(:invalid_entries_errors, %{})
+      |> allow_upload(:documents, @upload_options)
       |> validate_payment_schedule()
     end)
     |> ok()
@@ -100,6 +119,7 @@ defmodule PicselloWeb.JobLive.Show do
     end
   end
 
+  @impl true
   def handle_event("confirm_job_complete", %{}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
@@ -119,6 +139,7 @@ defmodule PicselloWeb.JobLive.Show do
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
+
   def handle_event("open-stripe", _, %{assigns: %{job: job, current_user: current_user}} = socket) do
     client = job |> Repo.preload(:client) |> Map.get(:client)
 
@@ -130,21 +151,18 @@ defmodule PicselloWeb.JobLive.Show do
     |> noreply()
   end
 
-  @impl true
   def handle_event("view-gallery", _, %{assigns: %{job: job}} = socket),
     do:
       socket
       |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, job.gallery.id))
       |> noreply()
 
-  @impl true
   def handle_event("view-orders", _, %{assigns: %{job: job}} = socket),
     do:
       socket
       |> push_redirect(to: Routes.transaction_path(socket, :transactions, job.id))
       |> noreply()
 
-  @impl true
   def handle_event("create-gallery", _, %{assigns: %{job: job}} = socket) do
     {:ok, gallery} =
       Picsello.Galleries.create_gallery(%{
@@ -154,6 +172,16 @@ defmodule PicselloWeb.JobLive.Show do
 
     socket
     |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery.id))
+    |> noreply()
+  end
+
+  def handle_event(
+        "cancel-upload",
+        %{"ref" => ref},
+        socket
+      ) do
+    socket
+    |> process_cancel_upload(ref)
     |> noreply()
   end
 
@@ -191,6 +219,38 @@ defmodule PicselloWeb.JobLive.Show do
         |> close_modal()
         |> put_flash(:error, "Failed to complete job. Please try again.")
         |> noreply()
+    end
+  end
+
+  def handle_progress(
+        :documents,
+        entry,
+        %{
+          assigns: %{
+            job: %{documents: documents} = job,
+            uploads: %{documents: %{entries: entries}}
+          }
+        } = socket
+      ) do
+    if entry.done? do
+      key = Job.document_path(entry.client_name, entry.uuid)
+
+      job =
+        Picsello.Job.document_changeset(job, %{
+          documents: [
+            %{name: entry.client_name, url: key}
+            | Enum.map(documents, &%{name: &1.name, url: &1.url})
+          ]
+        })
+        |> Repo.update!()
+
+      entries
+      |> Enum.reject(&(&1.uuid == entry.uuid))
+      |> renew_uploads(entry, socket)
+      |> assign(:job, job)
+      |> noreply()
+    else
+      socket |> noreply()
     end
   end
 

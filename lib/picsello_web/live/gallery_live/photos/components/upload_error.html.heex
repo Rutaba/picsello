@@ -34,16 +34,16 @@
 
         <div class="uploadingList__wrapper bg-base-200/30">
             <%= Enum.with_index(@invalid_photos, fn entry, index -> %>
-                <.errors target={@myself} delete_from="invalid_photos" entry={entry} index={index}>
+                <.files_to_upload target={@myself} delete_from="invalid_photos" entry={entry} index={index} string_length={@string_length} for={:photos}>
                     <p class="error btn items-center">Failed</p>
                     <p class="border border-solid border-base-250 text-base-250 font-bold btn too-large"><%= entry.error %></p>
-                </.errors>
+                </.files_to_upload>
             <% end) %>
             <%= Enum.with_index(@pending_photos, fn entry, index -> %>
-                <.errors target={@myself} delete_from="pending_photos" entry={entry} index={index}>
+                <.files_to_upload target={@myself} delete_from="pending_photos" entry={entry} index={index} string_length={@string_length} for={:photos}>
                     <p class="error btn items-center cursor-default">Failed</p>
                     <p class="retry btn" phx-value-index={index} phx-target={@myself} phx-click="upload_pending_photos">Retry?</p>
-                </.errors>
+                </.files_to_upload>
             <% end) %>            
         </div>
     </div>

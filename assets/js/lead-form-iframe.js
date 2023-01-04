@@ -2,7 +2,7 @@ import IMask from 'imask';
 
 const phone = document?.querySelector('#phone');
 
-const jobTypes = document?.querySelectorAll('input[name="contact[job_type]"]');
+const jobTypes = document?.querySelectorAll('input[name="client[job_type]"]');
 
 phone && IMask(phone, { mask: '(000) 000-0000' });
 

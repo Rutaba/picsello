@@ -1010,8 +1010,15 @@ defmodule Picsello.Galleries do
     gallery |> Repo.preload(:package) |> Map.get(:package)
   end
 
-  def do_not_charge_for_download?(%Gallery{} = gallery),
-    do: gallery |> get_package() |> Map.get(:download_each_price) |> Money.zero?()
+  def do_not_charge_for_download?(%Gallery{} = gallery) do
+    package = gallery |> get_package()
+
+    if package do
+      package |> Map.get(:download_each_price) |> Money.zero?()
+    else
+      false
+    end
+  end
 
   def min_price(category) do
     category

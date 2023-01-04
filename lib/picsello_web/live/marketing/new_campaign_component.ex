@@ -26,7 +26,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
 
         Marketing.new_campaign_changeset(
           %{
-            "subject" => "Write a subject line that puts photography on your contacts’ minds.",
+            "subject" => "Write a subject line that puts photography on your clients’ minds.",
             "body_text" => body,
             "body_html" => body,
             "segment_type" => "new"
@@ -56,10 +56,10 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
         <fieldset class={classes(%{"hidden" => @review})}>
           <%= labeled_input f, :subject, label: "Subject", placeholder: "Type subject…", wrapper_class: "mt-4", phx_debounce: "500" %>
 
-          <%= label_for f, :segment_type, label: "Contact List", class: "block mt-4 pb-2" %>
+          <%= label_for f, :segment_type, label: "Client List", class: "block mt-4 pb-2" %>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <.segment_type_option name={input_name(f, :segment_type)} icon="three-people" value="new" checked={input_value(f, :segment_type) == "new"} title={"Unassigned contacts (#{@segments_count["new"]})"} subtitle="Contacts who aren't assigned to a lead or a job" />
-            <.segment_type_option name={input_name(f, :segment_type)} icon="notebook" value="all" checked={input_value(f, :segment_type) == "all"} title={"All contacts (#{@segments_count["all"]})"} subtitle="All contacts in your list" />
+            <.segment_type_option name={input_name(f, :segment_type)} icon="three-people" value="new" checked={input_value(f, :segment_type) == "new"} title={"Unassigned clients (#{@segments_count["new"]})"} subtitle="Clients who aren't assigned to a lead or a job" />
+            <.segment_type_option name={input_name(f, :segment_type)} icon="notebook" value="all" checked={input_value(f, :segment_type) == "all"} title={"All clients (#{@segments_count["all"]})"} subtitle="All clients in your list" />
           </div>
 
           <label class="block mt-4 input-label" for="editor">Message</label>
@@ -75,7 +75,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
             </dl>
             <dl>
               <dt class="inline text-blue-planning-300">Recipient list:</dt>
-              <dd class="inline"><%= ngettext "1 contact", "%{count} contacts", @current_segment_count %></dd>
+              <dd class="inline"><%= ngettext "1 client", "%{count} clients", @current_segment_count %></dd>
             </dl>
           </div>
           <%= case @template_preview do %>

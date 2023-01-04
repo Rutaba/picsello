@@ -87,6 +87,8 @@ config :picsello,
   photo_storage_bucket: System.get_env("PHOTO_STORAGE_BUCKET"),
   photos_max_entries: System.get_env("PHOTOS_MAX_ENTRIES") || "1500",
   photo_max_file_size: System.get_env("PHOTO_MAX_FILE_SIZE") || "104857600",
+  documents_max_entries: System.get_env("DOCUMENTS_MAX_ENTRIES") || "5",
+  document_max_size: System.get_env("DOCUMENT_MAX_SIZE") || "104822",
   logo_max_size: System.get_env("LOGO_MAX_SIZE") || "10485760"
 
 config :picsello, :whcc,
@@ -131,8 +133,8 @@ config :picsello, Picsello.Mailer,
   marketing_template: System.get_env("SENDGRID_MARKETING_TEMPLATE"),
   marketing_unsubscribe_id:
     System.get_env("SENDGRID_MARKETING_UNSUBSCRIBE_ID") |> Integer.parse(),
-  contact_list_transactional: System.get_env("SENDGRID_CONTACT_LIST_TRANSACTIONAL"),
-  contact_list_trial_welcome: System.get_env("SENDGRID_CONTACT_LIST_TRIAL_WELCOME"),
+  client_list_transactional: System.get_env("SENDGRID_CLIENT_LIST_TRANSACTIONAL"),
+  client_list_trial_welcome: System.get_env("SENDGRID_CLIENT_LIST_TRIAL_WELCOME"),
   proofing_selection_confirmation_template:
     System.get_env("SENDGRID_PROOFING_SELECTION_CONFIMATION_TEMPLATE"),
   photographer_proofing_selection_confirmation_template:

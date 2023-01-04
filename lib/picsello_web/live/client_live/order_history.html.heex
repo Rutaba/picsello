@@ -1,0 +1,70 @@
+<.header socket={@socket} client={@client} />
+<div class={classes("lg:flex lg:mt-10 center-container", %{"hidden" => is_nil(@is_mobile)})}>
+    <div class={classes("h-48 lg:block", %{"hidden" => !@is_mobile})}>
+        <%= live_component PicselloWeb.Live.ClientLive.SideNavComponent, id: @client.id, client: @client, arrow_show: "order-history", is_mobile: @is_mobile %>
+    </div>
+    <%= if Enum.any?(@orders) do %>
+        <div class={classes("w-full p-5 lg:p-0 lg:block", %{"ml-10 hidden" => @is_mobile})}>
+            <div class="flex items-center lg:mt-0 mb-2">
+                <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
+                   <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+                </div>
+                <div class="ml-3 lg:hidden">
+                   <span class="font-sans lg:text-2xl font-bold text-3xl">Order History</span>
+                </div>
+             </div>
+            <div class="px-6 justify-between font-bold my-5 md:grid md:grid-cols-5 hidden">
+            <div class="flex grid-cols">Type</div>
+            <div class="flex grid-cols">Amount</div>
+            <div class="flex grid-cols">Date</div>
+            <div class="flex grid-cols">Status</div>
+            <div class="flex grid-cols">Actions</div>
+            </div>
+
+            <hr class="md:block border-blue-planning-300 border-2 mb-1 hidden"/>
+            <%= for order <- @orders do %>
+            <div {testid("orders")} class="px-6 md:py-0 py-6 md:mt-0 mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">
+                <div class="flex flex-col md:grid md:grid-cols-5 md:items-center">
+                <%= if order_status(order) not in ["Failed Payment", "Pending"] do %>
+                    <div phx-click="order-detail"
+                        phx-value-order_number={order.number}
+                        class="flex flex-col text-blue-planning-300 cursor-pointer mb-4 md:mb-0 underline">
+                            Order <%= order.number %>
+                    </div>
+                <% else %>
+                    <div class="flex flex-col text-red-sales-300 cursor-not-allowed mb-4 md:mb-0 underline">Order <%= order.number %></div>
+                <% end %>
+                <div class="flex md:justify-start"><%= Order.total_cost(order) %></div>
+                <div class="flex"><%= order_date(@current_user.time_zone, order) || "-" %></div>
+                <div class="md:flex flex-col"><%= order_status(order) %></div>
+                <%= if order_status(order) not in ["Completed", "Pending"] do %> 
+                    <hr class="border-base-200 mt-2 col-span-5 block mb-2 md:hidden"/>
+                <% end %>
+                <%= if !order.intent and order.digitals == [] do%>
+                    <div class="md:flex flex-row cursor-pointer">
+                        <.icon_button phx_click="open-stripe" class="py-1 px-3 bg-orange-inbox-400 shadow-lg" title="fix payment" color="red-sales-300" icon="warning-orange">
+                            Fix payment
+                        </.icon_button>
+                    </div>
+                <% end %>
+                <hr class="border-base-200 mt-2 col-span-5 md:block hidden"/>
+                </div>
+            </div>
+            <% end %>
+        </div>
+    <% else %>
+    <div class={classes("w-full p-5 lg:p-0 lg:block", %{"ml-10 hidden" => @is_mobile})}>
+        <div class="flex items-center lg:mt-0 mb-2">
+            <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
+               <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+            </div>
+            <div class="ml-3 lg:hidden">
+               <span class="font-sans lg:text-2xl font-bold text-3xl">Order History</span>
+            </div>
+         </div>
+        <div class="flex flex-col w-full md:ml-10 pt-10 mb-12 text-2xl font-bold items-center text-center text-base-250">
+          Oops, you have no orders for this client!
+        </div>
+    </div>
+    <% end %>
+</div>

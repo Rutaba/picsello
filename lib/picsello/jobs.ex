@@ -7,6 +7,25 @@ defmodule Picsello.Jobs do
     Job
   }
 
+  import Ecto.Query
+
+  def get_job_by_id(job_id) do
+    Repo.get!(Job, job_id)
+  end
+
+  def get_client_jobs_query(client_id) do
+    from(j in Job,
+      where: j.client_id == ^client_id,
+      preload: [:package, :shoots, :job_status, :gallery]
+    )
+  end
+
+  def get_job_shooting_minutes(job) do
+    job.shoots
+    |> Enum.into([], fn shoot -> shoot.duration_minutes end)
+    |> Enum.sum()
+  end
+
   def archive_lead(%Job{} = job) do
     job |> Job.archive_changeset() |> Repo.update()
   end
@@ -19,22 +38,6 @@ defmodule Picsello.Jobs do
       )
 
     maybe_upsert_client(multi, old_client, new_client, current_user.organization_id)
-  end
-
-  defp maybe_upsert_client(
-         multi,
-         %Client{id: id, name: name, phone: phone} = old_client,
-         new_client,
-         _organization_id
-       )
-       when id != nil and (name == nil or phone == nil) do
-    attrs =
-      old_client
-      |> Map.take([:name, :phone])
-      |> Enum.filter(fn {_, v} -> v != nil end)
-      |> Enum.into(%{name: new_client.name, phone: new_client.phone})
-
-    Ecto.Multi.update(multi, :client, Client.edit_contact_changeset(old_client, attrs))
   end
 
   defp maybe_upsert_client(multi, %Client{id: id} = old_client, _new_client, _organization_id)
