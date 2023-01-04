@@ -41,8 +41,8 @@
                   <%= if @gallery.cover_photo do %>
                      <div class="flex flex-col mt-0">
                         <h3>Cover photo <em class="text-sm text-base-250 font-normal">(Landscape recommended)</em></h3>
-                        <div class="h-48">
-                           <div {display_cover_photo(@gallery)} class="h-full bg-top bg-cover"></div>
+                        <div class="h-48 relative overflow-hidden pb-[50%]">
+                           <div class="bg-no-repeat bg-cover bg-center w-full h-full absolute top-0 left-0" {display_cover_photo(@gallery)}></div>
                         </div>
                         <div class="flex justify-between mt-4">
                            <form id="cover-photo-dragDrop-form" phx-submit="save" phx-change="start" class="h-full" >
