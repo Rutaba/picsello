@@ -58,8 +58,17 @@ defmodule PicselloWeb.JobLive.Show do
     |> ok()
   end
 
-  def gallery_attrs(%Gallery{type: type} = gallery) do
+  def gallery_attrs(%Gallery{type: type} = gallery, parent_has_orders? \\ false) do
     case Picsello.Galleries.gallery_current_status(gallery) do
+      :none_created when type == :finals ->
+        %{
+          button_text: "Create Finals",
+          button_click: "create-gallery",
+          button_disabled: !parent_has_orders?,
+          text: text(:finals, :none_created, parent_has_orders?),
+          status: :none_created
+        }
+
       :none_created ->
         %{
           button_text: "Start Setup",
@@ -109,6 +118,9 @@ defmodule PicselloWeb.JobLive.Show do
     end
   end
 
+  defp text(:finals, :none_created, true), do: "Selects are ready"
+  defp text(:finals, :none_created, false), do: "Need selects from client first"
+
   defp button_text(:proofing), do: "View selects"
   defp button_text(:finals), do: "View finals"
   defp button_text(_), do: "View gallery"
@@ -138,7 +150,7 @@ defmodule PicselloWeb.JobLive.Show do
     end
 
     ~H"""
-    <%= for %{name: name, type: type, child: child} = gallery <- galleries do %>
+    <%= for %{name: name, type: type, child: child, orders: orders} = gallery <- galleries do %>
       <%= case type do %>
         <% :proofing -> %>
           <div class="flex overflow-hidden border border-base-200 rounded-lg">
@@ -147,7 +159,7 @@ defmodule PicselloWeb.JobLive.Show do
               <div class="flex justify-between w-full">
                 <.card_content gallery={gallery} icon_name="proofing" title="Client Proofing" padding="pr-3" {assigns} />
                 <div class="h-full w-px bg-base-200"/>
-                <.card_content gallery={child || %Gallery{type: :finals}} icon_name="finals" title="Client Finals" padding="pl-3" {assigns} />
+                <.card_content gallery={child || %Gallery{type: :finals, orders: []}} parent_id={gallery.id} parent_has_orders?={orders != []} icon_name="finals" title="Client Finals" padding="pl-3" {assigns} />
               </div>
             </div>
           </div>
@@ -182,22 +194,24 @@ defmodule PicselloWeb.JobLive.Show do
           p_class: "text-base h-12",
           btn_section_class: "mt-2",
           btn_class: "px-3",
-          count: Enum.count(orders)
+          count: Enum.count(orders),
+          parent_has_orders?: true,
+          parent_id: nil
         }
       )
 
     ~H"""
-    <%= case gallery_attrs(@gallery) do %>
+    <%= case gallery_attrs(@gallery, @parent_has_orders?) do %>
       <% %{button_text: button_text, button_click: button_click, button_disabled: button_disabled, text: text, status: status} -> %>
         <p class={"text-base-250 font-normal #{@p_class}"}>
           <%= text %>
-          <%= unless status == :no_photo do %>
+          <%= unless status in [:no_photo, :none_created] do %>
             - <%= if @count == 0, do: "No", else: @count %> orders to view yet
           <% end %>
         </p>
         <div class={"flex self-end items-center gap-4 #{@btn_section_class}"} >
-          <%= link "View Orders", to: Routes.transaction_path(@socket, :transactions, @gallery.id), class: "font-normal text-sm text-blue-planning-300 underline #{@count == 0 && 'opacity-30 pointer-events-none'}" %>
-          <button class={"btn-primary intro-gallery py-2 font-normal rounded-lg #{@btn_class}"} phx-click={button_click} phx-value-gallery_id={@gallery.id} disabled={button_disabled}><%= button_text %></button>
+          <%= link "View Orders", to: (if @gallery.id, do: Routes.transaction_path(@socket, :transactions, @gallery.id), else: "#"), class: "font-normal text-sm text-blue-planning-300 underline #{@count == 0 && 'opacity-30 pointer-events-none'}" %>
+          <button class={"btn-primary intro-gallery py-2 font-normal rounded-lg #{@btn_class}"} phx-click={button_click} phx-value-gallery_id={@gallery.id} phx-value-parent_id={@parent_id} disabled={button_disabled}><%= button_text %></button>
         </div>
     <% end %>
     """
@@ -248,6 +262,13 @@ defmodule PicselloWeb.JobLive.Show do
       |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id))
       |> noreply()
 
+  def handle_event("create-gallery", %{"parent_id" => parent_id}, socket) do
+    send(self(), {:gallery_type, {"finals", parent_id}})
+
+    noreply(socket)
+  end
+
+  @impl true
   def handle_event("create-gallery", _, %{assigns: %{job: job}} = socket) do
     socket
     |> open_modal(GalleryTypeComponent, %{job: job, from_job?: true})
@@ -302,13 +323,16 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
-  def handle_info({:gallery_type, type}, %{assigns: %{job: job, current_user: %{organization_id: organization_id}}} = socket) do
+  def handle_info({:gallery_type, opts}, %{assigns: %{job: job, current_user: %{organization_id: organization_id}}} = socket) do
+    {type, parent_id} = split(opts)
+
     {:ok, gallery} =
       Galleries.create_gallery(%{
         job_id: job.id,
         type: type,
-        name: Job.name(job),
         expired_at: expired_at(organization_id),
+        parent_id: parent_id,
+        name: Job.name(job) <> " #{Enum.count(job.galleries) + 1}",
         albums: Galleries.album_params_for_new(type)
       })
 
@@ -359,4 +383,7 @@ defmodule PicselloWeb.JobLive.Show do
       socket |> noreply()
     end
   end
+
+  defp split({type, parent_id}), do: {type, parent_id}
+  defp split(type), do: {type, nil}
 end

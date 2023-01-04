@@ -19,10 +19,10 @@ defmodule Picsello.Repo.Migrations.AddTypeInGallery do
     albums = Album.list()
 
     albums
-    |> Enum.with_index()
+    |> Enum.with_index(1)
     |> Enum.reduce(Multi.new(), fn {album, i}, multi ->
       %{
-        gallery: %{gallery_products: gallery_products, job: job} = gallery,
+        gallery: %{gallery_products: gallery_products, job: job, name: name} = gallery,
         photos: photos,
         id: id
       } = album
@@ -34,13 +34,17 @@ defmodule Picsello.Repo.Migrations.AddTypeInGallery do
         key,
         gallery
         |> Map.take([:status, :active, :disabled, :job_id, :expired_at, :password])
-        |> Map.put(:name, Job.name(job, i))
-        |> Map.put(:type, Gallery.type(album))
-        |> Map.put(:total_count, Enum.count(photos))
+        |> Map.merge(%{
+          name: Job.name(job, i),
+          type: Gallery.type(album),
+          client_link_hash: UUID.uuid4(),
+          total_count: Enum.count(photos)
+        })
         |> Gallery.changeset()
       )
+      |> Multi.update(~s(update-parent-#{id}), Gallery.changeset(gallery, %{name: "#{name} 1"}))
       |> Multi.insert_all(
-        ~s(gallery-products-#{album.id}),
+        ~s(gallery-products-#{id}),
         GalleryProduct,
         fn %{^key => %{id: gallery_id}} ->
           Enum.map(gallery_products, fn product ->
@@ -144,6 +148,7 @@ defmodule Gallery do
     field :type, Ecto.Enum, values: [:proofing, :finals, :standard]
     field :disabled, :boolean
     field :password, :string
+    field :client_link_hash, :string
 
     belongs_to(:job, Job)
     belongs_to(:parent, Gallery)
@@ -164,7 +169,8 @@ defmodule Gallery do
       :disabled,
       :job_id,
       :parent_id,
-      :password
+      :password,
+      :client_link_hash
     ])
   end
 

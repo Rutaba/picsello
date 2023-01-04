@@ -12,7 +12,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
     album = Map.get(assigns, :album, nil)
     is_mobile = Map.get(assigns, :is_mobile)
     selected_photos = Map.get(assigns, :selected_photos, [])
-    is_finals = Map.get(assigns, :is_finals, false)
     is_redirect = Map.get(assigns, :is_redirect)
     has_order? = Map.get(assigns, :has_order?, false)
 
@@ -21,7 +20,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       album: album,
       selected_photos: selected_photos,
       gallery_id: gallery_id,
-      is_finals: is_finals,
       is_mobile: is_mobile,
       is_redirect: is_redirect,
       has_order?: has_order?
@@ -37,8 +35,8 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
         |> assign(:action, "Save")
       else
         socket
-        |> assign(:title, if(is_finals, do: "Add finals album", else: "Add Album"))
-        |> assign(:action, if(is_finals, do: "Create finals album", else: "Create new album"))
+        |> assign(:title, "Add Album")
+        |> assign(:action, "Create new album")
         |> assign(
           set_password: false,
           album_password: nil
@@ -56,7 +54,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
           assigns: %{
             album: album,
             gallery_id: gallery_id,
-            is_finals: is_finals,
             is_mobile: is_mobile,
             is_redirect: is_redirect
           }
@@ -67,7 +64,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       %{
         params: params,
         gallery_id: gallery_id,
-        is_finals: is_finals,
         is_mobile: is_mobile,
         is_redirect: is_redirect
       },
@@ -166,20 +162,11 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
         <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
       </div>
-      <%= if @is_finals do%>
-        <.finals_banner/>
-      <% end %>
       <.form for={@changeset} let={f} phx-submit="submit" phx-change="validate" phx-target={@myself}>
         <%= labeled_input f, :name, label: "Album Name", placeholder: @album && @album.name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500"%>
         <%= hidden_input f, :gallery_id%>
 
         <div class="flex flex-col mt-3">
-          <%= if is_nil(@album) && !@is_finals do %>
-            <label class="flex items-center mb-4">
-              <%= checkbox f, :is_proofing, class: "w-5 h-5 mr-2.5 checkbox cursor-pointer" %>
-              Proofing album
-            </label>
-          <% end %>
           <h3 class="font-bold input-label">Password protection</h3>
           <label id="setPassword" class="flex text-1xl font-bold">
             <%= checkbox f, :set_password, class: "hidden peer", phx_debounce: 200 %>
@@ -246,20 +233,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
         </div>
       </.form>
     </div>
-    """
-  end
-
-  defp finals_banner(assigns) do
-    ~H"""
-      <div class="bg-orange-inbox-400 rounded-lg py-2">
-        <div class="flex justify-center items-center mx-4">
-          <.icon name="warning-orange", class="w-10 h-10 stroke-[4px]" />
-          <div class="pl-4">
-            <b>Note: </b>None of the photos in your finals album will be watermarked, and <b>all photos will be free to download.</b>
-            Please ensure you only add photos to this album that you’ve already been financially compensated for.
-          </div>
-        </div>
-      </div>
     """
   end
 end

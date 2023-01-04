@@ -63,9 +63,6 @@
                 <.icon_button {testid("send-proofs-popup")} disabled={@gallery.disabled || (@total_progress > 0 && @total_progress < 100) } class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
                   Send <%=if @album.is_proofing, do: "proofs", else: "album" %> to client
                 </.icon_button>
-                <.icon_button {testid("add-finals-album-popup")} disabled={@gallery.disabled} class={classes("text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2", %{"hidden" => Enum.empty?(@orders)})} title="Add finals album" phx-click="add_finals_album_popup" color="blue-planning-300" icon="plus">
-                  Add finals album
-                </.icon_button>
               <% end %>
               <%= unless @album do %>
                 <.add_album_button disabled={@gallery.disabled} class="lg:ml-2.5 lg:py-2 py-1.5"/>
@@ -75,6 +72,16 @@
         </div>
 
         <div class="center-container">
+          <div class={"flex items-center bg-orange-inbox-400 rounded-lg shadow-lg mt-4 #{!@first_visit? && 'hidden'}"}>
+            <div class="flex justify-center pl-5">
+              <.icon name="warning-orange", class="w-10 h-10 stroke-[4px]" />
+            </div>
+            <p class="p-4">
+              <b>Note:</b> None of the photos in your finals album will be watermarked, and 
+              <b>all photos will be free to download.</b> Please ensure you only add photos to 
+              this album that you’ve already been financially compensated for.
+            </p>
+          </div>
           <div class={classes("flex items-center lg:mt-4 lg:mb-0 mb-4 lg:mx-0 mx-10 rounded-lg shadow-lg bg-orange-inbox-400", %{"hidden" => @photos_error_count == 0 || (@total_progress > 0 && @total_progress < 100)})}>
             <div class="flex justify-center pl-5">
               <.icon name="warning-orange" class="w-4 h-4 stroke-2" />

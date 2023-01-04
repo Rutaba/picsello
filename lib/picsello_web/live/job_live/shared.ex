@@ -14,7 +14,6 @@ defmodule PicselloWeb.JobLive.Shared do
     Notifiers.ClientNotifier,
     Package,
     PaymentSchedules,
-    Orders,
     Galleries.Workers.PhotoStorage
   }
 
@@ -671,8 +670,12 @@ defmodule PicselloWeb.JobLive.Shared do
   def card_title(%{gallery_card?: true} = assigns) do
     ~H"""
     <div class="flex justify-between">
-      <.card_title color={@color} title={@title} />
-      <h4 class="border rounded-md bg-base-200 px-2 mb-1.5 text-base-250 font-bold text-base"><%= @gallery_type %></h4>
+      <.card_title color={@color} title={@title}  />
+      <h4 class="border rounded-md bg-base-200 px-2 mb-1.5 text-base-250 font-bold text-base"><%= Picsello.Utils.capitalize_all_words(@gallery_type) %>
+      <%= if @gallery_type == :unlinked_finals do %>
+        <.intro_hint class="ml-2" content="<b>Note:</b> You had more than one finals album, within your proofing gallery. To keep your data safe, we have created a gallery to hold those and you can reorganize/reupload photos to the new/improved proofing gallery"/>
+      <% end %>
+      </h4>
     </div>
     """
   end

@@ -118,7 +118,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       end)
       |> Multi.merge(fn %{job: %{id: job_id}} ->
         Galleries.create_gallery_multi(%{
-          name: client.name <> " " <> type,
+          name: client.name <> " " <> type <> " 1",
           job_id: job_id,
           status: "active",
           password: Gallery.generate_password(),

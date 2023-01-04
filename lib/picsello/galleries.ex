@@ -121,7 +121,7 @@ defmodule Picsello.Galleries do
   def get_gallery_by_job_id(job_id), do: Repo.get_by(active_galleries(), job_id: job_id)
 
   def get_galleries_by_job_id(job_id),
-    do: where(active_galleries(), job_id: ^job_id) |> Repo.all()
+    do: where(active_galleries(), job_id: ^job_id) |> order_by([:inserted_at]) |> Repo.all()
 
   @doc """
   Gets a single gallery by hash parameter.
@@ -499,11 +499,12 @@ defmodule Picsello.Galleries do
 
   def album_params_for_new("standard"), do: []
 
-  def album_params_for_new("proofing"),
+  def album_params_for_new(type),
     do: [
       %{
-        name: "proofing",
-        is_proofing: true,
+        name: type,
+        is_proofing: type == "proofing",
+        is_finals: type == "finals",
         set_password: false
       }
     ]

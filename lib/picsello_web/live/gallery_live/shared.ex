@@ -997,7 +997,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
         %{
           params: params,
           gallery_id: gallery_id,
-          is_finals: is_finals,
           is_mobile: is_mobile,
           is_redirect: is_redirect
         },
@@ -1012,7 +1011,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
       send(self(), {:album_settings, %{message: message, album: album}})
       socket |> noreply()
     else
-      params = if is_finals, do: Map.put(params, "is_finals", true), else: params
       is_mobile = if(is_mobile, do: [], else: [is_mobile: false])
 
       {album, message} =
@@ -1101,7 +1099,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Routes.gallery_photos_index_path(socket, :index, gallery.id)
   end
 
-  def new_gallery_path(socket, %{type: :proofing, albums: [%{id: album_id}]} = gallery) do
+  def new_gallery_path(socket, %{albums: [%{id: album_id}]} = gallery) do
     Routes.gallery_photos_index_path(socket, :index, gallery.id, album_id)
   end
 

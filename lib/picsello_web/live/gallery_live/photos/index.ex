@@ -54,7 +54,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       selections: [],
       selection_filter: false,
       orders: [],
-      selected_photo_id: nil
+      selected_photo_id: nil,
+      first_visit?: false
     )
     |> ok()
   end
@@ -548,25 +549,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply
   end
 
-  def handle_event(
-        "add_finals_album_popup",
-        _,
-        %{
-          assigns: %{
-            gallery: gallery,
-            selected_photos: selected_photos
-          }
-        } = socket
-      ) do
-    socket
-    |> open_modal(AlbumSettings, %{
-      gallery_id: gallery.id,
-      selected_photos: selected_photos,
-      is_finals: true
-    })
-    |> noreply()
-  end
-
   @impl true
   def handle_event(
         "toggle_selected_photos",
@@ -652,6 +634,11 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         |> put_flash(:error, "Please add photos to the album before sharing")
         |> noreply()
     end
+  end
+
+  @impl true
+  def handle_event("gallery-created", %{"galleryType" => "finals"}, socket) do
+    socket |> assign(:first_visit?, true) |> noreply()
   end
 
   @impl true
