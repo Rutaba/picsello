@@ -4,7 +4,27 @@ defmodule Picsello.Shoot do
   import Ecto.{Changeset, Query}
 
   @locations ~w[studio on_location home]a
-  @durations [5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300, 360]
+  @durations [
+    5,
+    10,
+    15,
+    20,
+    30,
+    45,
+    60,
+    90,
+    120,
+    180,
+    240,
+    300,
+    360,
+    420,
+    480,
+    540,
+    600,
+    660,
+    720
+  ]
 
   def locations(), do: @locations
   def durations(), do: @durations
