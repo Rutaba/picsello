@@ -46,6 +46,24 @@ msgstr "5 hrs"
 msgid "duration-360"
 msgstr "6 hrs"
 
+msgid "duration-420"
+msgstr "7 hrs"
+
+msgid "duration-480"
+msgstr "8 hrs"
+
+msgid "duration-540"
+msgstr "9 hrs"
+
+msgid "duration-600"
+msgstr "10 hrs"
+
+msgid "duration-660"
+msgstr "11 hrs"
+
+msgid "duration-720"
+msgstr "12 hrs"
+
 msgid "wedding"
 msgstr "Wedding"
 

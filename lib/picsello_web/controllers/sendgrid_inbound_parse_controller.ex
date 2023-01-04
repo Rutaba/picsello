@@ -3,11 +3,11 @@ defmodule PicselloWeb.SendgridInboundParseController do
   alias Picsello.{Repo, Job, Client, ClientMessage, Messages}
 
   def parse(conn, params) do
-    %{"text" => text, "html" => body_html, "envelope" => envelope, "subject" => subject} = params
+    %{"html" => body_html, "envelope" => envelope, "subject" => subject} = params
     to_email = envelope |> Jason.decode!() |> Map.get("to") |> hd
     [token | _] = to_email |> String.split("@")
 
-    body_text = ElixirEmailReplyParser.parse_reply(text)
+    body_text = Map.get(params, "text", "") |> ElixirEmailReplyParser.parse_reply()
 
     initail_obj =
       case Job.find_by_token(token) do
