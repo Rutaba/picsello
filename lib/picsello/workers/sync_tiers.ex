@@ -1,5 +1,5 @@
 defmodule Picsello.Workers.SyncTiers do
-  @moduledoc "fetches pricing calculator data from google sheet"
+  @moduledoc "fetches smart profit calculator data from google sheet"
   use Oban.Worker, queue: :default
 
   alias GoogleApi.Sheets.V4, as: Sheets
