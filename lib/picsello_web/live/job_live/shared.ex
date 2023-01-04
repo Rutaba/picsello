@@ -108,6 +108,8 @@ defmodule PicselloWeb.JobLive.Shared do
       ),
       do: open_email_compose(socket, client_id)
 
+  def handle_event("open-compose", %{"id" => id}, socket), do: open_email_compose(socket, id)
+
   def handle_event(
         "open-mark-as-paid",
         %{},

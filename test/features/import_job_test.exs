@@ -86,7 +86,8 @@ defmodule Picsello.ImportJobTest do
     |> find(testid("payment-1"), &fill_in(&1, text_field("Due"), with: "01/01/2030"))
     |> assert_text("Remaining to collect: $500.00")
     |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "$500"))
-    |> find(testid("payment-2"), &fill_in(&1, text_field("Due"), with: "01/02/2030"))
+    # please don't make it "01/02/2030"
+    |> find(testid("payment-2"), &fill_in(&1, text_field("Due"), with: "02/01/2030"))
     |> assert_text("Remaining to collect: $0.00")
   end
 

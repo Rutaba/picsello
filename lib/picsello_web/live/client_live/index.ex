@@ -357,9 +357,6 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     |> noreply()
   end
 
-  # @impl true
-  # def handle_event("open-compose", %{}, socket), do: open_compose(socket)
-
   @impl true
   def handle_event(
         "create-lead",

@@ -102,35 +102,54 @@ defmodule Picsello.CreateClientTest do
 
     session
     |> visit("/clients/#{client.id}/job-history")
-    |> click(css("#menu-button"))
-    |> click(css("#edit_link"))
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(link("Edit"))
+    end)
     |> assert_url_contains("/jobs/#{job.id}")
     |> visit("/clients/#{client.id}/job-history")
     |> click(link("Job Details"))
-    |> click(css("#menu-button"))
-    |> click(css("#send_email"))
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(css(".envelope"))
+    end)
     |> assert_text("Send an email")
-    |> click(button("Cancel"))
-    |> click(css("#send_email"))
     |> fill_in(css("#client_message_subject"), with: "Test subject")
     |> fill_in(css(".ql-editor"), with: "Test message")
     |> wait_for_enabled_submit_button()
     |> click(button("Send"))
     |> assert_text("Thank you! Your message has been sent. We’ll be in touch with you soon.")
     |> click(button("Close"))
+    |> visit("/clients/#{client.id}/job-history")
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(css(".envelope"))
+    end)
+    |> click(button("Cancel"))
 
     assert Repo.all(ClientMessage) |> Enum.count() == 1
 
     session
     |> visit("/clients/#{client.id}/job-history")
-    |> click(css("#menu-button"))
-    |> click(css("#complete_job"))
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(css(".trash"))
+    end)
     |> assert_text("Are you sure you want to complete this job?")
     |> assert_text(
       "After you complete the job this becomes read-only. This action cannot be undone."
     )
     |> click(button("Close"))
-    |> click(css("#complete_job"))
+    |> visit("/clients/#{client.id}/job-history")
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(css(".trash"))
+    end)
     |> click(css("button", text: "Yes, complete"))
   end
 
