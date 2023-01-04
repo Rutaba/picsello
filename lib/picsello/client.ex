@@ -17,7 +17,7 @@ defmodule Picsello.Client do
     has_many(:tags, ClientTag)
     has_many(:client_messages, ClientMessage)
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   def create_changeset(client \\ %__MODULE__{}, attrs) do
@@ -79,6 +79,23 @@ defmodule Picsello.Client do
       changeset |> validate_required([:name])
     else
       changeset
+    end
+  end
+
+  def token(%__MODULE__{id: id, inserted_at: inserted_at}),
+    do:
+      PicselloWeb.Endpoint
+      |> Phoenix.Token.sign("CLIENT_ID", id, signed_at: DateTime.to_unix(inserted_at))
+
+  def email_address(%__MODULE__{} = client) do
+    domain = Application.get_env(:picsello, Picsello.Mailer) |> Keyword.get(:reply_to_domain)
+    [token(client), domain] |> Enum.join("@")
+  end
+
+  def find_by_token("" <> token) do
+    case Phoenix.Token.verify(PicselloWeb.Endpoint, "CLIENT_ID", token, max_age: :infinity) do
+      {:ok, client_id} -> Repo.get(__MODULE__, client_id)
+      _ -> nil
     end
   end
 

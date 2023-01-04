@@ -109,7 +109,6 @@ defmodule Picsello.CreateClientTest do
     end)
     |> assert_url_contains("/jobs/#{job.id}")
     |> visit("/clients/#{client.id}/job-history")
-    |> click(link("Job Details"))
     |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
       row
       |> click(css(".action"))
