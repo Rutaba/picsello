@@ -40,7 +40,7 @@ defmodule PicselloWeb.Live.Marketing.CampaignDetailsComponent do
       <div class="mt-3 p-3 rounded-lg border w-full">
         <dl>
           <dt class="inline text-blue-planning-300">Recipient list:</dt>
-          <dd class="inline"><%= ngettext "1 contact", "%{count} contacts", @campaign.clients_count %></dd>
+          <dd class="inline"><%= ngettext "1 client", "%{count} clients", @campaign.clients_count %></dd>
         </dl>
         <dl>
           <dt class="inline text-blue-planning-300">Date:</dt>

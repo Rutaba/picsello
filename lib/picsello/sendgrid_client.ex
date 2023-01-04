@@ -20,8 +20,8 @@ defmodule SendgridClient do
     get("/templates/" <> template_id)
   end
 
-  def add_contacts(body) do
-    put("/marketing/contacts", body)
+  def add_clients(body) do
+    put("/marketing/clients", body)
   end
 
   defp config, do: Application.get_env(:picsello, Picsello.Mailer)
@@ -33,11 +33,11 @@ defmodule SendgridClient do
     id
   end
 
-  def get_all_contact_list_env(),
+  def get_all_client_list_env(),
     do: [
-      get_contact_list_env(:contact_list_transactional),
-      get_contact_list_env(:contact_list_trial_welcome)
+      get_client_list_env(:client_list_transactional),
+      get_client_list_env(:client_list_trial_welcome)
     ]
 
-  def get_contact_list_env(contact_list_key), do: config()[contact_list_key]
+  def get_client_list_env(client_list_key), do: config()[client_list_key]
 end

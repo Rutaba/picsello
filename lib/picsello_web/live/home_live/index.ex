@@ -64,18 +64,21 @@ defmodule PicselloWeb.HomeLive.Index do
   def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
-  def handle_event("create-lead", %{}, socket),
+  def handle_event("create-lead", %{}, %{assigns: %{current_user: current_user}} = socket),
     do:
       socket
-      |> open_modal(PicselloWeb.JobLive.NewComponent, Map.take(socket.assigns, [:current_user]))
+      |> open_modal(
+        PicselloWeb.JobLive.NewComponent,
+        %{current_user: current_user}
+      )
       |> noreply()
 
   @impl true
-  def handle_event("create-gallery", %{}, socket) do
+  def handle_event("create-gallery", %{}, %{assigns: %{current_user: current_user}} = socket) do
     socket
     |> open_modal(
       PicselloWeb.GalleryLive.CreateComponent,
-      Map.take(socket.assigns, [:current_user])
+      %{current_user: current_user}
     )
     |> noreply()
   end

@@ -51,7 +51,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> then(fn socket ->
       %{assigns: %{is_mobile: is_mobile}} = socket
       assign(socket, expiration_date?: !is_mobile)
-      end)
+    end)
     |> assign_title()
     |> assign_controls()
     |> assign_options()
