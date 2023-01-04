@@ -44,8 +44,8 @@ config :bamboo, :refute_timeout, 10
 
 config :picsello, Picsello.Mailer,
   adapter: Picsello.MockBambooAdapter,
-  contact_list_transactional: "contact-list-transactional-id",
-  contact_list_trial_welcome: "contact-list-trial-welcome-id",
+  client_list_transactional: "client-list-transactional-id",
+  client_list_trial_welcome: "client-list-trial-welcome-id",
   client_transactional_template: "client-transactional-id",
   generic_transactional_template: "generic-transactional-id",
   marketing_template: "marketing-xyz",
@@ -82,4 +82,5 @@ config :sentry, environment_name: :test, included_environments: [:prod]
 
 config :picsello, :zapier,
   new_user_webhook_url: "/zapier/1234",
-  trial_user_webhook_url: "/zapier/5678"
+  trial_user_webhook_url: "/zapier/5678",
+  subscription_ending_user_webhook_url: "/zapier/91011"

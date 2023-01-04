@@ -10,7 +10,7 @@ defmodule Picsello.Notifiers.ClientNotifierTest do
       |> onboard!()
 
     job = insert(:lead, user: user)
-    message = insert(:client_message, job: job) |> Repo.reload()
+    message = insert(:client_message, job: job, client_id: job.client_id) |> Repo.reload()
 
     assert {:ok, %{headers: %{"reply-to" => reply_to}}} =
              ClientNotifier.deliver_email(message, "test@example.com")

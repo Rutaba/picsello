@@ -24,11 +24,11 @@ defmodule Picsello.Galleries.Workers.PhotoStorage do
 
   def get(path), do: impl().get(path)
   def get(path, bucket), do: impl().get(path, bucket)
+  def insert(path, object), do: impl().insert(path, object)
   def initiate_resumable(path, metadata), do: impl().initiate_resumable(path, metadata)
 
   def continue_resumable(location, chunk, opts),
     do: impl().continue_resumable(location, chunk, opts)
 
   def params_for_upload(opts), do: impl().params_for_upload(opts)
-  def insert(path, object), do: impl().insert(path, object)
 end

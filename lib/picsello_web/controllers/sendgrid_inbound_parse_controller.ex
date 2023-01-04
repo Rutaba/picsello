@@ -1,17 +1,26 @@
 defmodule PicselloWeb.SendgridInboundParseController do
   use PicselloWeb, :controller
-  alias Picsello.{Repo, Job, ClientMessage, Messages}
+  alias Picsello.{Repo, Job, Client, ClientMessage, Messages}
 
   def parse(conn, params) do
     %{"html" => body_html, "envelope" => envelope, "subject" => subject} = params
     to_email = envelope |> Jason.decode!() |> Map.get("to") |> hd
     [token | _] = to_email |> String.split("@")
 
-    job = Job.find_by_token(token) |> Repo.preload(:client)
     body_text = Map.get(params, "text", "") |> ElixirEmailReplyParser.parse_reply()
 
+    initail_obj =
+      case Job.find_by_token(token) do
+        nil ->
+          client = Client.find_by_token(token)
+          %{client_id: client.id}
+
+        job ->
+          %{job_id: job.id}
+      end
+
     message =
-      %{body_text: body_text, body_html: body_html, subject: subject, job_id: job.id}
+      Map.merge(%{body_text: body_text, body_html: body_html, subject: subject}, initail_obj)
       |> ClientMessage.create_inbound_changeset()
       |> Repo.insert!()
 

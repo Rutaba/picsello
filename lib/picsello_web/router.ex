@@ -121,7 +121,6 @@ defmodule PicselloWeb.Router do
       put "/users/settings", UserSettingsController, :update
       get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
-      live "/contacts", Live.Contacts, :index, as: :contacts
       live "/brand", Live.BrandSettings, :index, as: :brand_settings
       live "/finance", Live.FinanceSettings, :index, as: :finance_settings
       live "/marketing", Live.Marketing, :index, as: :marketing
@@ -169,6 +168,13 @@ defmodule PicselloWeb.Router do
       live "/jobs", JobLive.Index, :jobs, as: :job
       live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :jobs, as: :shoot
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot
+
+      scope "/clients", Live.ClientLive do
+        live "/", Index, :index, as: :clients
+        live "/:id", Show, :show, as: :client
+        live "/:id/job-history", JobHistory, :job_history, as: :client
+        live "/:id/order-history", OrderHistory, :order_history, as: :client
+      end
 
       live "/inbox", InboxLive.Index, :index, as: :inbox
       live "/inbox/:id", InboxLive.Index, :show, as: :inbox

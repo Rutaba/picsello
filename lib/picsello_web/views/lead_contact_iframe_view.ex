@@ -8,7 +8,7 @@ defmodule PicselloWeb.LeadContactIframeView do
     <.container>
       <h1 class="text-3xl font-bold max-w-md">Get in touch</h1>
 
-      <.form for={@changeset} let={f} id="contact-form">
+      <.form for={@changeset} let={f} id="client-form">
         <div class="flex flex-col mt-3">
           <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-bold" %>
 

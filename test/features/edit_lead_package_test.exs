@@ -128,7 +128,7 @@ defmodule Picsello.EditLeadPackageTest do
     |> find(testid("card-Package details"), &click(&1, button("Edit")))
     |> assert_text("Edit Package: Provide Details")
     |> click(button("Next"))
-    |> scroll_into_view(css("#package_pricing_is_enabled"))
+    |> scroll_into_view(testid("print"))
     |> click(radio_button("Gallery does not include Print Credits"))
     |> scroll_into_view(css("#download_is_buy_all"))
     |> click(radio_button("Package includes unlimited digital downloads"))
