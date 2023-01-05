@@ -35,6 +35,13 @@ function startIntroJsTour(component, introSteps, introId) {
 }
 
 export default {
+  tour(introSteps, introId) {
+    document
+      .querySelector('#start-tour')
+      .addEventListener('click', () =>
+        startIntroJsTour(this, introSteps, introId)
+      );
+  },
   mounted() {
     // When using phx-hook, it requires a unique ID on the element
     // instead of using a data attribute to look up the tour we need,
@@ -55,16 +62,10 @@ export default {
       })
       .addHints();
 
+    const introSteps = intros[introId](el);
     if (shouldSeeIntro && !isMobile()) {
-      const introSteps = intros[introId](el);
-
       if (introId === 'intro_dashboard') {
-        document
-          .querySelector('#start-tour')
-          .addEventListener('click', () =>
-            startIntroJsTour(this, introSteps, introId)
-          );
-
+        this.tour(introSteps, introId)
         return;
       }
 
@@ -72,6 +73,7 @@ export default {
 
       startIntroJsTour(this, introSteps, introId);
     }
+    this.tour(introSteps, introId)
   },
   updated() {
     // remove existing intro elements of previous page

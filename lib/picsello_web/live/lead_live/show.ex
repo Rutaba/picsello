@@ -32,11 +32,12 @@ defmodule PicselloWeb.LeadLive.Show do
     ]
 
   @impl true
-  def mount(%{"id" => job_id}, _session, socket) do
+  def mount(%{"id" => job_id} = assigns, _session, socket) do
     socket
     |> assign_stripe_status()
     |> assign(include_questionnaire: true)
     |> assign_job(job_id)
+    |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
     |> then(fn %{assigns: assigns} = socket ->
       job = Map.get(assigns, :job)
@@ -114,13 +115,19 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_event("edit-package", %{}, %{assigns: %{proposal: proposal} = assigns} = socket) do
-    if is_nil(proposal) || is_nil(proposal.accepted_at) do
+    if is_nil(proposal) || is_nil(proposal.signed_at) do
       socket
-      |> open_modal(
-        PicselloWeb.PackageLive.WizardComponent,
-        assigns |> Map.take([:current_user, :job, :package])
-      )
-      |> assign_disabled_copy_link()
+      |> PicselloWeb.ConfirmationComponent.open(%{
+        confirm_event: "edit_package",
+        confirm_label: "Yes, Edit Package details",
+        subtitle:
+          "Your proposal has already been sent to the client-if you edit the package details, the proposal will update to reflect the changes you make.
+          \nPRO TIP: Remember to communicate with your client on the changes!
+          ",
+        title: "Edit Package details?",
+        icon: "warning-orange",
+        payload: %{assigns: assigns}
+      })
     else
       socket
       |> put_flash(:error, "Package can't be changed")
@@ -328,6 +335,16 @@ defmodule PicselloWeb.LeadLive.Show do
         |> put_flash(:error, "Failed to archive lead. Please try again.")
         |> noreply()
     end
+  end
+
+  def handle_info({:confirm_event, "edit_package"}, %{assigns: assigns} = socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.PackageLive.WizardComponent,
+      assigns |> Map.take([:current_user, :job, :package])
+    )
+    |> assign_disabled_copy_link()
+    |> noreply()
   end
 
   @impl true

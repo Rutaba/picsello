@@ -1539,7 +1539,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp package_pricing_params(nil), do: %{}
-  
+
   defp package_pricing_params(package) do
     case package |> Map.get(:print_credits) do
       nil -> %{is_enabled: false}

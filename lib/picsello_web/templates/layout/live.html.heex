@@ -60,7 +60,8 @@
       </nav>
 
       <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
-
+      <.live_component module={PicselloWeb.Live.RestartTourComponent} id="current_user", current_user={@current_user} />
+      
       <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
         <%= if @current_user do %>
         <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">

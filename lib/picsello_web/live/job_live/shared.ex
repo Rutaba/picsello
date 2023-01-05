@@ -485,6 +485,7 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_shoots()
     |> assign_payment_schedules()
     |> assign_disabled_copy_link()
+    |> put_flash(:success, "Package details saved sucessfully.")
     |> noreply()
   end
 
@@ -734,10 +735,15 @@ defmodule PicselloWeb.JobLive.Shared do
         <%= unless @package |> Package.print_credits() |> Money.zero?() do %>
           <p><%= "#{Money.to_string(@package.print_credits, fractional_unit: false)} print credit" %></p>
         <% end %>
-        <%= if (Job.lead?(@job) && (!@proposal || (@proposal && (!@proposal.sent_to_client || is_nil(@proposal.accepted_at))))) && !@job.is_gallery_only do %>
-          <.icon_button color="blue-planning-300" icon="pencil" phx-click="edit-package" class="mt-auto self-end">
-            Edit
-          </.icon_button>
+        <%= if ((!@proposal || (@proposal && (!@proposal.sent_to_client || is_nil(@proposal.signed_at))))) && !@job.is_gallery_only do %>
+            <div class="self-start relative py-1 hover:bg-blue-planning-100 hover:rounded-md tooltip">
+              <.icon_button color="blue-planning-300" phx-click="edit-package" icon="pencil" class="mt-auto" disabled={!Job.lead?(@job) || !is_nil(@proposal.signed_at)}>
+                Edit
+              </.icon_button>
+              <%= if (@proposal.signed_at) do %>
+                <div class="cursor-default tooltiptext">Your client has already signed their proposal so package details are no longer editable.</div>
+              <% end %>
+            </div>
         <% end %>
       <% else %>
         <p class="text-base-250">Click edit to add a package. You can come back to this later if your client isn’t ready for pricing quite yet.</p>
