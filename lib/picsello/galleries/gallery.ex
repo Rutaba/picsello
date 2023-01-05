@@ -152,6 +152,7 @@ defmodule Picsello.Galleries.Gallery do
         |> Repo.one()
 
       shoot = get_shoots(gallery.job_id) |> List.last()
+
       if shoot do
         settings =
           from(gss in GSGallery,

@@ -101,9 +101,13 @@ defmodule PicselloWeb.JobLive.Shoot do
     |> noreply()
   end
 
-  def handle_info({:update, %{shoot: shoot}}, %{assigns: %{live_action: live_action, job: job}} = socket) do
-    shoots = Shoot.for_job(shoot.job_id)
-    |> Repo.all()
+  def handle_info(
+        {:update, %{shoot: shoot}},
+        %{assigns: %{live_action: live_action, job: job}} = socket
+      ) do
+    shoots =
+      Shoot.for_job(shoot.job_id)
+      |> Repo.all()
 
     update_gallery(job, List.last(shoots))
 

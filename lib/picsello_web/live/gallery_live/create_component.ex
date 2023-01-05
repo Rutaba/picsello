@@ -250,38 +250,33 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         params \\ %{},
         action \\ nil
       ) do
-    ggs =
+    global_settings =
       Repo.get_by(Picsello.GlobalSettings.Gallery, organization_id: current_user.organization_id)
 
-    new_param =
-      case ggs do
+    {new_params, package} =
+      case global_settings do
         nil ->
-          params["download"] || %{}
+          {params["download"] || %{}, package}
 
-        ggs ->
-          params["download"] ||
+        global_settings ->
+          updated_params =
+            params["download"] ||
             %{}
-            |> Map.put(:download_each_price, ggs.download_each_price)
-            |> Map.put(:buy_all, ggs.buy_all_price)
+            |> Map.put(:download_each_price, global_settings.download_each_price)
+            |> Map.put(:buy_all, global_settings.buy_all_price)
             |> Map.put(:is_custom_price, true)
-      end
-
-    package =
-      case ggs do
-        nil ->
-          package
-
-        ggs ->
-          package
-          |> Map.put(:download_each_price, ggs.download_each_price)
-          |> Map.put(:buy_all, ggs.buy_all_price)
-          |> Map.put(:is_custom_price, true)
+          updated_package =
+            package
+            |> Map.put(:download_each_price, global_settings.download_each_price)
+            |> Map.put(:buy_all, global_settings.buy_all_price)
+            |> Map.put(:is_custom_price, true)
+          {updated_params, updated_package}
       end
 
     download_changeset =
       package
       |> Download.from_package()
-      |> Download.changeset(new_param)
+      |> Download.changeset(new_params)
       |> Map.put(:action, action)
 
     download = current(download_changeset)

@@ -1271,6 +1271,7 @@ defmodule PicselloWeb.JobLive.Shared do
         if settings && settings.expiration_days && settings.expiration_days > 0 do
           Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
         end
+
       Picsello.Galleries.update_gallery(gallery, %{expired_at: expiration_date})
     else
       nil

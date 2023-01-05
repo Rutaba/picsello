@@ -55,15 +55,16 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
                     <div class="font-bold hidden md:block"><%= split(type, "_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ") %> </div>
                     <div class="hidden md:block">$<%= sub(final_cost, base_cost) %></div>
                     <div class="hidden md:block"><%= base_cost %></div>
-                    <.form let={f} for={:size} phx-target={@myself} phx-change="final_cost" id={size <> type <> "form"} class="flex items-center">
+                    <% size_type = size <> type %>
+                    <.form let={f} for={:size} phx-target={@myself} phx-change="final_cost" id={size_type <> "form"} class="flex items-center">
                       <%= for {name, value} <- [{:type, type}, {:product_id, product.id}, {:size, size}, {:base_cost, to_decimal(base_cost)}] do %>
                         <%= hidden_input f, name, value: value %>
                       <% end %>
                       <b class="md:hidden mr-3">Final Price</b>
-                      <span class="w-24 md:w-44 border rounded-md border-blue-planning-300 py-3 pl-2 relative">$
-                        <%= input f, :final_cost, type: :number_input, step: "0.01", value: final_cost |> Decimal.round(2), phx_hook: "PriceMask", onkeydown: "return event.key != 'Enter';", id: "final_cost", phx_hook: "FinalCostInput", phx_target: @myself, data_span_id: size <> type, data_base_cost: to_decimal(base_cost), data_final_cost: final_cost, class: "absolute border-none bg-transparent top-0 left-1.5 w-full" %>
+                      <span class="w-24 md:w-44 border rounded-md border-blue-planning-300 pl-2" id="final_cost" data-input-id={"final_cost_#{size_type}"} data-span-id={size_type}, data-base-cost={to_decimal(base_cost)}, data-final-cost={final_cost} phx-hook="FinalCostInput">
+                        <%= input f, :final_cost, step: "0.01", value: final_cost |> Decimal.round(2), phx_target: @myself, onkeydown: "return event.key != 'Enter';", id: "final_cost_#{size_type}", phx_hook: "PriceMask", class: "border-none bg-transparent top-0 left-1.5 w-full" %>
                       </span>
-                      <span id={size <> type} style="color: white;" class="text-[0.65rem] ml-1 md:w-auto w-20">must be greater than base cost</span>
+                      <span id={size_type} style="color: white;" class="text-[0.65rem] ml-1 md:w-auto w-20">must be greater than base cost</span>
                     </.form>
                   </div>
               <% end %>
@@ -186,6 +187,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
         %{assigns: %{print_products: print_products}} = socket
       ) do
     print_product = find(print_products, product_id, :product_id)
+    final_cost = String.replace(final_cost, "$", "") |> String.replace(",", "")
 
     unless Decimal.lt?(new(final_cost), new(base_cost)) do
       print_product

@@ -308,16 +308,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         } = socket
       ) do
     buy_all_price =
-      if global_settings_gallery do
-        case global_settings_gallery.buy_all_price do
-          nil ->
-            %Money{amount: 75_000, currency: :USD}
-
-          buy_all_price ->
-            buy_all_price
-        end
-      else
+      if is_nil(global_settings_gallery) || is_nil(global_settings_gallery.buy_all_price) do
         %Money{amount: 75_000, currency: :USD}
+      else
+        global_settings_gallery.buy_all_price
       end
 
     case Money.parse(each_price, :USD) do
@@ -362,16 +356,11 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         } = socket
       ) do
     download_each_price =
-      if global_settings_gallery do
-        case global_settings_gallery.download_each_price do
-          nil ->
-            %Money{amount: 5000, currency: :USD}
-
-          download_each_price ->
-            download_each_price
-        end
+      if is_nil(global_settings_gallery) ||
+      is_nil(global_settings_gallery.download_each_price) do
+        %Money{amount: 5_000, currency: :USD}
       else
-        %Money{amount: 5000, currency: :USD}
+        global_settings_gallery.download_each_price
       end
 
     case Money.parse(buy_all, :USD) do
