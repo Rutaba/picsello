@@ -339,6 +339,27 @@ defmodule PicselloWeb.Live.Shared do
     """
   end
 
+  def client_name_box(assigns) do
+    assigns = assigns |> Enum.into(%{changeset: nil})
+
+    ~H"""
+      <div class="flex items-center hover:cursor-auto mt-2">
+        <div class="ml-3 mr-3 text-base-200 hidden md:block">|</div>
+        <.icon name="client-icon" class="w-7 h-7 mr-1 text-blue-planning-300"></.icon>
+        <p class="font-bold">
+          Client: <span class="font-normal"><%=
+            cond do
+              @changeset -> Changeset.get_field(@changeset, :name)
+              @searched_client -> @searched_client.name
+              @selected_client -> @selected_client.name
+              true -> Changeset.get_field(assigns.job_changeset.changes.client, :name)
+            end
+          %></span>
+        </p>
+      </div>
+    """
+  end
+
   def go_back_event(
         "back",
         %{},

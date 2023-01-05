@@ -75,17 +75,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         </a>
 
         <%= if step_number(@step, @steps) > 2 do%>
-          <div class="flex items-center hover:cursor-auto mt-2">
-            <div class="ml-3 mr-3 text-base-200 hidden md:block">|</div>
-            <.icon name="client-icon" class="w-7 h-7 mr-1"></.icon>
-            <p class="font-bold">Client: <span class="font-normal"><%=
-            cond do
-              searched_client -> searched_client.name
-              selected_client -> selected_client.name
-              true -> Changeset.get_field(assigns.job_changeset.changes.client, :name)
-            end
-          %></span></p>
-          </div>
+          <.client_name_box searched_client={searched_client} selected_client={selected_client} assigns={assigns} />
         <% end %>
       </div>
 

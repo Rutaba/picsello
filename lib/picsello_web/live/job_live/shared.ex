@@ -854,8 +854,8 @@ defmodule PicselloWeb.JobLive.Shared do
 
                 <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
                   <button title="Deletes" type="button" phx-click="delete_document" phx-value-name={documents.name} phx-value-document_id={documents.id} class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                    <.icon name="trash" class="inline-block w-4 h-4 mr-2 fill-current text-red-sales-300" />
                     Delete
-                    <.icon name="trash" class="inline-block w-4 h-4 mx-3 fill-current text-red-sales-300" />
                   </button>
                 </div>
               </div>
@@ -1102,7 +1102,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <% end %>
           </div>
           <div class="flex px-5 py-5 ml-auto">
-            <button class="btn-secondary button rounded-lg border border-blue-300 ml-auto" title="cancel" type="button" phx-click="cancel-new-client" phx-target={@myself}>
+            <button class="btn-secondary button rounded-lg border border-blue-planning-300 ml-auto" title="cancel" type="button" phx-click="cancel-new-client" phx-target={@myself}>
               Cancel
             </button>
           </div>
@@ -1337,9 +1337,9 @@ defmodule PicselloWeb.JobLive.Shared do
                   </button>
 
                   <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
-                    <span phx-click="cancel-upload" phx-target={@myself} phx-value-ref={@entry.ref} aria-label="remove" class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 cursor-pointer">
-                      <span class="pr-2">delete</span>
-                      <.icon name="remove-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300"/>
+                    <span phx-click="cancel-upload" phx-target={@myself} phx-value-ref={@entry.ref} aria-label="remove" class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+                      <.icon name="remove-icon" class="inline-block w-4 h-4 mr-2 fill-current text-red-sales-300"/>
+                      <span class="pr-2">Delete</span>
                     </span>
                   </div>
               </div>
