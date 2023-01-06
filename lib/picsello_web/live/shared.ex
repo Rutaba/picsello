@@ -539,7 +539,7 @@ defmodule PicselloWeb.Live.Shared do
     job_changeset = job_changeset |> Changeset.delete_change(:client)
 
     socket
-    |> save_multi(client, job_changeset)
+    |> save_multi(client, job_changeset, "import_wizard")
   end
 
   def import_job_for_form_component(
@@ -551,7 +551,7 @@ defmodule PicselloWeb.Live.Shared do
     }
 
     socket
-    |> save_multi(client, job_changeset)
+    |> save_multi(client, job_changeset, "form_component")
   end
 
   defp save_multi(
@@ -564,7 +564,8 @@ defmodule PicselloWeb.Live.Shared do
            }
          } = socket,
          client,
-         job_changeset
+         job_changeset,
+         type
        ) do
     Multi.new()
     |> Jobs.maybe_upsert_client(client, current_user)
@@ -598,7 +599,7 @@ defmodule PicselloWeb.Live.Shared do
             socket
             |> assign(:another_import, false)
             |> assign(:ex_documents, [])
-            |> assign(%{step: :job_details})
+            |> assign(if(type == "import_wizard", do: %{step: :job_details}, else: %{step: :package_payment}))
             |> assign_package_changeset(%{})
             |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]}),
           else:

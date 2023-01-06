@@ -21,7 +21,6 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
     use Ecto.Schema
 
-
     @types %{
       first_index: :integer,
       last_index: :integer,
