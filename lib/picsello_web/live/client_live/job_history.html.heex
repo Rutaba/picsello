@@ -47,7 +47,7 @@
                         </button>
                         <div class={classes("absolute right-9 md:right-24 md:top-24 top-8 z-10 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none cursor-pointer", %{"hidden" => @index != job_index})} role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                             <div class="py-1" role="none">
-                                <.dropdown_item {assigns} icon="pencil" title="Edit" link={[href: Routes.job_path(@socket, :jobs, job.id)]} />
+                                <.dropdown_item {assigns} icon="pencil" title="Edit" link={[href: Routes.job_path(@socket, if(job.job_status.is_lead, do: :leads, else: :jobs), job.id)]} />
                                 <.dropdown_item {assigns} icon="envelope" title="Send email" link={[phx_click: "open_compose"]} />
                                 <%= if is_nil(job.completed_at) do %>
                                     <.dropdown_item {assigns} icon="trash" title="Complete/Archive" link={[phx_click: "confirm_job_complete"]} />

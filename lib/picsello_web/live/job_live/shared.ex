@@ -838,29 +838,31 @@ defmodule PicselloWeb.JobLive.Shared do
           <%= if(@job.documents == nil || @job.documents == []) do %>
           <div class="p-12 text-gray-400 italic">No additional files have been uploaded</div>
           <% end %>
-            <%= @job.documents |> Enum.map(fn documents  -> %>
-            <div id={documents.id} class="flex flex-row justify-between items-center">
-              <dl class="flex items-center">
-                <dd>
-                <.icon name="files-icon" class="w-4 h-4" />
-                </dd>
-                <dd class="block link pl-1"><%= truncate_name(%{client_name: documents.name}, @string_length) %></dd>
-              </dl>
-              <div id={"options-#{documents.id}"} phx-update="ignore" data-offset="0" phx-hook="Select" >
+            <%= for document <- @job.documents do %>
+            <div id={document.id} class="flex flex-row justify-between items-center">
+              <a href={path_to_url(document.url)} target="_blank" rel="document">
+                <dl class="flex items-center">
+                  <dd>
+                  <.icon name="files-icon" class="w-4 h-4" />
+                  </dd>
+                  <dd class="block link pl-1"><%= truncate_name(%{client_name: document.name}, @string_length) %></dd>
+                </dl>
+              </a>
+              <div id={"options-#{document.id}"} phx-update="ignore" data-offset="0" phx-hook="Select" >
                 <button title="Options" type="button" class="flex flex-shrink-0 ml-2 px-2.5 py-1.5 mt-1 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
                   <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
                   <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
                 </button>
 
                 <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
-                  <button title="Deletes" type="button" phx-click="delete_document" phx-value-name={documents.name} phx-value-document_id={documents.id} class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                  <button title="Deletes" type="button" phx-click="delete_document" phx-value-name={document.name} phx-value-document_id={document.id} class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
                     <.icon name="trash" class="inline-block w-4 h-4 mr-2 fill-current text-red-sales-300" />
                     Delete
                   </button>
                 </div>
               </div>
             </div>
-            <% end ) %>
+            <% end %>
           </div>
           <div>
           </div>
@@ -1435,4 +1437,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> then(&Map.put(uploads, :documents, &1))
     |> then(&assign(socket, :uploads, &1))
   end
+
+  defdelegate path_to_url(path), to: PhotoStorage
 end

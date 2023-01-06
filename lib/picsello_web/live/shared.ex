@@ -599,7 +599,12 @@ defmodule PicselloWeb.Live.Shared do
             socket
             |> assign(:another_import, false)
             |> assign(:ex_documents, [])
-            |> assign(if(type == "import_wizard", do: %{step: :job_details}, else: %{step: :package_payment}))
+            |> assign(
+              if(type == "import_wizard",
+                do: %{step: :job_details},
+                else: %{step: :package_payment}
+              )
+            )
             |> assign_package_changeset(%{})
             |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]}),
           else:
