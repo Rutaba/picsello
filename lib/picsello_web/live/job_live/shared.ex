@@ -1053,7 +1053,7 @@ defmodule PicselloWeb.JobLive.Shared do
                 <.icon name="search" class="w-4 ml-1 fill-current" />
               <% end %>
             </a>
-            <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients by email or first and last names..." />
+            <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={if !is_nil(@selected_client), do: @selected_client.name, else: "#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients by email or first and last names..." />
             <%= if Enum.any?(@search_results) do %>
               <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
                 <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
