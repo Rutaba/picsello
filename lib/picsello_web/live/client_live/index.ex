@@ -310,7 +310,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event(
         "sort_direction",
         _,
-        %{assigns: %{desc: desc, pagination: pagination}} = socket
+        %{assigns: %{desc: desc}} = socket
       ) do
     socket
     |> assign(:desc, !desc)
@@ -535,7 +535,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
         <%= for %{title: title, action: action, icon: icon} <- actions() do %>
           <button title={title} type="button" phx-click={action} phx-value-id={@client.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-            <.icon name={icon} class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+            <.icon name={icon} class={"inline-block w-4 h-4 mr-3 fill-current #{if icon == "trash", do: 'text-red-sales-300', else: 'text-blue-planning-300'}"} />
             <%= title %>
           </button>
         <% end %>

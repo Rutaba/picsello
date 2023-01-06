@@ -846,7 +846,7 @@ defmodule PicselloWeb.JobLive.Shared do
                 </dd>
                 <dd class="block link pl-1"><%= truncate_name(%{client_name: documents.name}, @string_length) %></dd>
               </dl>
-              <div id="options" phx-update="ignore" data-offset="0" phx-hook="Select" >
+              <div id={"options-#{documents.id}"} phx-update="ignore" data-offset="0" phx-hook="Select" >
                 <button title="Options" type="button" class="flex flex-shrink-0 ml-2 px-2.5 py-1.5 mt-1 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
                   <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
                   <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
@@ -1330,7 +1330,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <% :photos -> %>
               <.removal_button phx-target={@target} phx-click="delete_photo" phx-value-index={@index} phx-value-delete_from={@delete_from} />
             <% _ -> %>
-              <div id="file_options" data-offset-x="-60" phx-hook="Select" class="justify-self-end grid-cols-1 cursor-pointer ml-5 lg:ml-auto">
+              <div id={"file_options-#{@entry.uuid}"} data-offset-x="-60" phx-hook="Select" class="justify-self-end grid-cols-1 cursor-pointer ml-5 lg:ml-auto">
                   <button type="button" class="flex flex-shrink-0 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
                     <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
                     <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />

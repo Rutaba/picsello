@@ -59,7 +59,7 @@
       </div>
       <%= for client <- @clients do %>
         <div class="grid sm:grid-cols-7 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
-          <div class="flex flex-col">
+          <div phx-click="edit-client" phx-value-id={client.id} class="flex flex-col text-blue-planning-300 underline hover:cursor-pointer">
             <p><%= client.name || "-" %></p>
           </div>
           <hr class="sm:hidden border-gray-100 my-2" />
