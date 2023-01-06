@@ -261,18 +261,14 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
     socket
     |> assign(search_phrase: search_phrase)
-    |> then(fn socket -> assign(socket, :pagination, reset_pagination(pagination, client_count(socket))) end)
-    |> fetch_clients()
-    |> noreply()
+    |> assign_pagination()
   end
 
   @impl true
   def handle_event("clear-search", _, %{assigns: %{pagination: pagination}} = socket) do
     socket
     |> assign(:search_phrase, nil)
-    |> then(fn socket -> assign(socket, :pagination, reset_pagination(pagination, client_count(socket))) end)
-    |> fetch_clients()
-    |> noreply()
+    |> assign_pagination()
   end
 
   @impl true
@@ -283,9 +279,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       ) do
     socket
     |> assign(:job_status, status)
-    |> then(fn socket -> assign(socket, :pagination, reset_pagination(pagination, client_count(socket))) end)
-    |> fetch_clients()
-    |> noreply()
+    |> assign_pagination()
   end
 
   @impl true
@@ -296,9 +290,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       ) do
     socket
     |> assign(:job_type, type)
-    |> then(fn socket -> assign(socket, :pagination, reset_pagination(pagination, client_count(socket))) end)
-    |> fetch_clients()
-    |> noreply()
+    |> assign_pagination()
   end
 
   @impl true
@@ -311,9 +303,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     |> assign(:sort_by, sort_by)
     |> assign(:sort_col, Enum.find(sort_options(), fn op -> op.id == sort_by end).column)
     |> assign(:sort_direction, Enum.find(sort_options(), fn op -> op.id == sort_by end).direction)
-    |> then(fn socket -> assign(socket, :pagination, reset_pagination(pagination, client_count(socket))) end)
-    |> fetch_clients()
-    |> noreply()
+    |> assign_pagination()
   end
 
   @impl true
@@ -324,9 +314,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       ) do
     socket
     |> assign(:desc, !desc)
-    |> then(fn socket -> assign(socket, :pagination, reset_pagination(pagination, client_count(socket))) end)
-    |> fetch_clients()
-    |> noreply()
+    |> assign_pagination()
   end
 
   @impl true
@@ -693,6 +681,13 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     )
     |> Repo.all()
     |> Enum.count()
+  end
+
+  defp assign_pagination(socket) do
+    socket
+    |> assign(:pagination, reset_pagination(pagination, client_count(socket)))
+    |> fetch_clients()
+    |> noreply()
   end
 
   defp job_status_options do
