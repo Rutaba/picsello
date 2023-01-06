@@ -8,9 +8,15 @@ defmodule Picsello.Messages do
   alias Ecto.Changeset
   alias Picsello.{Job, Repo, ClientMessage, Notifiers.UserNotifier}
 
-  def add_message_to_job(%Changeset{} = changeset, %Job{} = job) do
+  def add_message_to_job(%Changeset{} = changeset, %Job{id: id, client_id: client_id}) do
     changeset
-    |> Changeset.put_change(:job_id, job.id)
+    |> Changeset.put_change(:job_id, id)
+    |> Changeset.put_change(:client_id, client_id)
+    |> Repo.insert()
+  end
+
+  def add_message_to_client(%Changeset{} = changeset) do
+    changeset
     |> Repo.insert()
   end
 
@@ -24,6 +30,7 @@ defmodule Picsello.Messages do
     params
     |> ClientMessage.create_outbound_changeset()
     |> Ecto.Changeset.put_change(:job_id, job.id)
+    |> Ecto.Changeset.put_change(:client_id, job.client_id)
     |> Ecto.Changeset.put_change(:scheduled, true)
   end
 

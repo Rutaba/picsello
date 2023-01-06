@@ -74,7 +74,7 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
                  user.organization.slug
                ),
                %{
-                 "contact" => %{
+                 "client" => %{
                    "email" => "hey@you.com",
                    "message" => "test",
                    "name" => "Hey You",
@@ -96,7 +96,7 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
                  user.organization.slug
                ),
                %{
-                 "contact" => %{
+                 "client" => %{
                    "email" => "hey@you.com",
                    "message" => "test",
                    "name" => "Hey You",
@@ -119,7 +119,7 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
             "test"
           ),
           %{
-            "contact" => %{
+            "client" => %{
               "email" => "hey@you.com",
               "message" => "test",
               "name" => "Hey You",

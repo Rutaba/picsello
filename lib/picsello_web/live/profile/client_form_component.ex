@@ -1,4 +1,4 @@
-defmodule PicselloWeb.Live.Profile.ContactFormComponent do
+defmodule PicselloWeb.Live.Profile.ClientFormComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Profiles}
@@ -20,7 +20,7 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
       <h2 class="text-3xl font-bold max-w-md">Get in touch<%= @header_suffix %></h2>
 
       <%= if @changeset do %>
-        <.form for={@changeset} let={f} phx-change="validate-contact" phx-submit="save-contact" id="contact-form" phx_target={@myself}>
+        <.form for={@changeset} let={f} phx-change="validate-client" phx-submit="save-client" id="contact-form" phx_target={@myself}>
           <div class="flex flex-col mt-3">
             <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-bold" %>
 
@@ -85,7 +85,7 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
   end
 
   @impl true
-  def handle_event("validate-contact", %{"contact" => params}, socket) do
+  def handle_event("validate-client", %{"contact" => params}, socket) do
     socket
     |> assign(changeset: params |> Profiles.contact_changeset() |> Map.put(:action, :validate))
     |> noreply()
@@ -93,18 +93,18 @@ defmodule PicselloWeb.Live.Profile.ContactFormComponent do
 
   @impl true
   def handle_event(
-        "save-contact",
+        "save-client",
         %{"contact" => params},
         %{assigns: %{organization: organization}} = socket
       ) do
     case Profiles.handle_contact(organization, params, PicselloWeb.Helpers) do
-      {:ok, _contact} ->
+      {:ok, _client} ->
         socket
         |> assign(changeset: nil)
-        |> noreply()
 
       {:error, changeset} ->
-        socket |> assign(changeset: changeset) |> noreply()
+        socket |> assign(changeset: changeset)
     end
+    |> noreply()
   end
 end

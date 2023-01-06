@@ -29,7 +29,12 @@ defmodule PicselloWeb.JobLive.Transaction.Index do
         %{assigns: %{job: job}} = socket
       ) do
     socket
-    |> push_redirect(to: Routes.order_detail_path(socket, :transactions, job.id, order_number))
+    |> push_redirect(
+      to:
+        Routes.order_detail_path(socket, :transactions, job.id, order_number, %{
+          "request_from" => "transactions"
+        })
+    )
     |> noreply()
   end
 

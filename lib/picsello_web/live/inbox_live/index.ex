@@ -185,7 +185,8 @@ defmodule PicselloWeb.InboxLive.Index do
       subject: Job.name(job),
       current_user: current_user,
       enable_size: true,
-      enable_image: true
+      enable_image: true,
+      client: Job.client(job)
     })
     |> noreply()
   end

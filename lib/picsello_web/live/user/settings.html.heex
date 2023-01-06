@@ -12,16 +12,6 @@
       <.card title="Your subscription" title_badge={subscription_badge(subscription)}>
         <p class="sm:mr-32">You can update your payment method, modify your plan, or download your invoices using our Billing Portal through Stripe. If you’re currently on a monthly trial and modify your plan to yearly, you will lose the time left. Contact us if you have issues.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 mt-4 gap-6">
-          <div class="border border-blue-planning-300 bg-blue-planning-100 rounded-lg p-4 lg:p-6 lg:flex justify-between lg:items-center gap-6">
-            <div>
-              <div class="flex items-center">
-                <.icon name="confetti-welcome" class="w-8 h-8 rotate-90" />
-                <h4 class="font-bold text-xl ml-2">Don’t miss our holiday sale!</h4>
-              </div>
-              <p class="lg:mb-0 mb-4">Make sure you have a payment method added, renew your plan, and switch to yearly. Then you'll get a free 12-month membership to <a href="https://www.picsello.com/day-after-thanksgiving-sale" target="_blank" rel="noreferrer" class="text-blue-planning-300"><span class="underline">Picsello’s Business Mastermind</span> <.icon name="external-link" class="w-4 h-4 inline-block" /></a></p>
-            </div>
-            <p phx-click="open-billing" class="btn-primary text-center inline-block shrink-0 cursor-pointer">Add Payment & Renew</p>
-          </div>
           <div class="border flex rounded-lg p-4 sm:p-6 justify-between sm:items-center">
             <div class="flex flex-col items-start">
               <.badge color={:blue}>

@@ -140,6 +140,19 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
+  def icon_button_simple(assigns) do
+    assigns =
+      assigns
+      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled]))
+      |> Enum.into(%{class: "", disabled: false, inner_block: nil})
+
+    ~H"""
+    <button type="button" class={classes("flex items-center px-2 py-1 font-sans border hover:opacity-75 border-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
+      <.icon name={@icon} class="w-2 h-3 fill-current text-#{@color}" />
+    </button>
+    """
+  end
+
   def ok(socket), do: {:ok, socket}
   def ok(socket, opts), do: {:ok, socket, opts}
   def noreply(socket), do: {:noreply, socket}

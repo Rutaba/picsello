@@ -61,7 +61,9 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_has(css("a[href='/jobs']", text: "Jobs"))
     |> assert_has(css("a[href='/jobs/#{job.id}']", text: Job.name(job)))
     |> assert_has(css("span", text: Job.name(job), count: 2))
-    |> click(button("Go to Stripe"))
+    |> click(css("*[phx-click='order-detail']", text: "View details"))
+    |> scroll_into_view(css("*[phx-click='open-stripe']"))
+    |> click(testid("go-to-stripe"))
     |> assert_url_contains("payments")
   end
 
@@ -87,7 +89,7 @@ defmodule Picsello.OrderTransactionsTest do
     session: session
   } do
     session
-    |> visit("/jobs/#{job.id}/transactions/#{order_number}")
+    |> visit("/jobs/#{job.id}/transactions/#{order_number}?request_from=transactions")
     |> assert_has(css("a[href='/jobs/#{job.id}/transactions']", count: 1))
     |> assert_text("order has been shipped to")
     |> assert_text("661 w lake st")
@@ -102,7 +104,7 @@ defmodule Picsello.OrderTransactionsTest do
     session: session
   } do
     session
-    |> visit("/jobs/#{job.id}/transactions/#{order_number}")
+    |> visit("/jobs/#{job.id}/transactions/#{order_number}?request_from=transactions")
     |> assert_text("Transaction Summary")
     |> assert_text("Use your Stripe dashboard")
     |> assert_text("Products (1)")
@@ -125,7 +127,7 @@ defmodule Picsello.OrderTransactionsTest do
     session: session
   } do
     session
-    |> visit("/jobs/#{job.id}/transactions/#{order_number}")
+    |> visit("/jobs/#{job.id}/transactions/#{order_number}?request_from=transactions")
     |> assert_text("Order details")
     |> assert_text("Order number: #{order_number}")
     |> assert_text("20×30 polo")

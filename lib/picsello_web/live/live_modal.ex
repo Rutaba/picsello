@@ -86,7 +86,12 @@ defmodule PicselloWeb.LiveModal do
   end
 
   def footer(assigns) do
-    assigns = Enum.into(assigns, %{disabled: false, inner_block: nil, class: "pt-40"})
+    assigns =
+      Enum.into(assigns, %{
+        disabled: false,
+        inner_block: nil,
+        class: "pt-40"
+      })
 
     ~H"""
       <div class={@class}></div>

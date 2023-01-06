@@ -94,7 +94,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     |> open_modal(AlbumSettings, %{
       gallery_id: gallery_id,
       album: album,
-      has_order?: !Enum.empty?(album.orders)
+      has_order?: Enum.any?(album.orders)
     })
     |> noreply()
   end

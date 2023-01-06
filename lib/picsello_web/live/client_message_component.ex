@@ -27,9 +27,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> Map.take([:subject, :body_text, :body_html])
       |> Picsello.ClientMessage.create_outbound_changeset()
     end)
-    |> then(fn %{assigns: %{job: job}} = socket ->
-      assign_new(socket, :presets, fn -> Picsello.EmailPresets.for(job) end)
-    end)
+    |> then(fn socket -> assign_presets(socket) end)
     |> then(fn
       %{assigns: %{presets: [_ | _] = presets}} = socket ->
         assign(socket, preset_options: [{"none", ""} | Enum.map(presets, &{&1.name, &1.id})])
@@ -51,7 +49,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           Client's email
         </div>
         <div class="relative text-input text-base-250">
-          <%= client_email @job %>
+          <%= if @client, do: @client.email, else: client_email(@job) %>
         </div>
       <% end %>
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
@@ -104,12 +102,17 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   @impl true
   def handle_event("validate", %{"client_message" => params}, socket) do
-    socket |> assign_changeset(:validate, params) |> noreply()
+    socket
+    |> assign_changeset(:validate, params |> Map.put("client_id", socket.assigns.client.id))
+    |> noreply()
   end
 
   @impl true
   def handle_event("save", %{"client_message" => params}, socket) do
-    socket = socket |> assign_changeset(:validate, params)
+    socket =
+      socket
+      |> assign_changeset(:validate, params |> Map.put("client_id", socket.assigns.client.id))
+
     %{assigns: %{changeset: changeset, composed_event: composed_event}} = socket
 
     if changeset.valid? do
@@ -131,6 +134,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:subject) => String.t(),
           optional(:presets) => [%Picsello.EmailPresets.EmailPreset{}],
           optional(:current_user) => %Picsello.Accounts.User{},
+          optional(:client) => %Picsello.Client{},
           optional(:enable_size) => boolean,
           optional(:enable_image) => boolean
         }) :: %Phoenix.LiveView.Socket{}
@@ -156,4 +160,9 @@ defmodule PicselloWeb.ClientMessageComponent do
 
     assign(socket, changeset: changeset)
   end
+
+  defp assign_presets(%{assigns: %{job: job}} = socket),
+    do: assign_new(socket, :presets, fn -> Picsello.EmailPresets.for(job) end)
+
+  defp assign_presets(socket), do: socket
 end

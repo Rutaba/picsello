@@ -10,6 +10,7 @@ defmodule Picsello.InboxTest do
 
     insert(:client_message,
       job: lead,
+      client_id: lead.client_id,
       body_text: "lead message 1",
       inserted_at: ~N[2021-10-10 08:00:00]
     )
@@ -18,6 +19,7 @@ defmodule Picsello.InboxTest do
 
     insert(:client_message,
       job: job,
+      client_id: job.client_id,
       body_text: "job message 1",
       outbound: false,
       inserted_at: ~N[2021-10-10 08:00:00]
@@ -25,6 +27,7 @@ defmodule Picsello.InboxTest do
 
     insert(:client_message,
       job: job,
+      client_id: job.client_id,
       outbound: true,
       body_text: "job message 2",
       inserted_at: ~N[2021-10-11 08:00:00]
@@ -110,6 +113,7 @@ defmodule Picsello.InboxTest do
     session
     |> click(testid("inbox-card"))
     |> click(testid("thread-card", count: 2, at: 0))
+    |> scroll_to_bottom()
     |> click(button("Reply"))
     |> assert_has(css("div.ql-editor[data-placeholder='Compose message...']"))
     |> fill_in_quill("This is my response")

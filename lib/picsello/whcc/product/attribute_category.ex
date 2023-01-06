@@ -14,6 +14,7 @@ defmodule Picsello.WHCC.Product.AttributeCategory do
     |> selections(valid_selections)
     |> Enum.max_by(&Map.get(&1, :price), fn -> %{selections: %{}, price: ~M[0]USD} end)
   end
+
   def price(
         %{"attributes" => attributes, "_id" => category_id} = category,
         selections

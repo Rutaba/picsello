@@ -51,6 +51,23 @@ defmodule Picsello.Accounts do
   end
 
   @doc """
+  Gets a user by stripe customer id.
+
+  ## Examples
+
+      iex> get_user_by_stripe_customer_id("cus_1234")
+      %User{}
+
+      iex> get_user_by_stripe_customer_id("cus_invalid")
+      nil
+
+  """
+  def get_user_by_stripe_customer_id(stripe_customer_id)
+      when is_binary(stripe_customer_id) do
+    Repo.get_by(User, stripe_customer_id: stripe_customer_id)
+  end
+
+  @doc """
   Gets a single user.
 
   Raises `Ecto.NoResultsError` if the User does not exist.
@@ -396,8 +413,8 @@ defmodule Picsello.Accounts do
     case changeset do
       {:ok, user} ->
         %{
-          list_ids: SendgridClient.get_all_contact_list_env(),
-          contacts: [
+          list_ids: SendgridClient.get_all_client_list_env(),
+          clients: [
             %{
               email: user.email,
               first_name: User.first_name(user),
@@ -409,7 +426,7 @@ defmodule Picsello.Accounts do
             }
           ]
         }
-        |> SendgridClient.add_contacts()
+        |> SendgridClient.add_clients()
 
         user_created_webhook(%{
           email: user.email,

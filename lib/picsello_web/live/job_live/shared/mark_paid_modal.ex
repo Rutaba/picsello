@@ -32,7 +32,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
           <dl class="flex flex-col">
             <dd class="pr-32 pl-3">
               <b> Balance to collect </b>
-              <button id="send-email-link" class="link block text-xs" phx-click="open-compose" phx-target={@myself}>Send reminder email</button>
+              <button id="send-email-link" class="link block text-xs" phx-click="open-compose" phx-value-client_id={@job.client_id} phx-target={@myself}>Send reminder email</button>
             </dd>
           </dl>
           <h1 id="amount" class="rounded-lg bg-base-200 px-5 py-2"><%= PaymentSchedules.owed_offline_price(assigns.job) %></h1>
@@ -200,12 +200,13 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     |> noreply()
   end
 
-  def handle_event("open-compose", %{}, socket), do: open_email_compose(socket)
-
   def handle_event("download-pdf", %{}, socket) do
     send(self(), :download_pdf)
     socket |> noreply()
   end
+
+  @impl true
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
   def build_changeset(%{}, params \\ %{}) do
     PaymentSchedule.add_payment_changeset(params)
@@ -250,15 +251,5 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       |> Map.put(:action, :validate)
 
     assign(socket, changeset: changeset)
-  end
-
-  defp open_email_compose(%{assigns: %{current_user: current_user}} = socket) do
-    socket
-    |> PicselloWeb.ClientMessageComponent.open(%{
-      current_user: current_user,
-      enable_size: true,
-      enable_image: true
-    })
-    |> noreply()
   end
 end

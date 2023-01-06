@@ -1,7 +1,7 @@
 defmodule PicselloWeb.JobLive.Shared.NotesModal do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Job, Repo}
+  alias Picsello.{Job, Client, Repo}
 
   @impl true
   def update(assigns, socket) do
@@ -67,11 +67,34 @@ defmodule PicselloWeb.JobLive.Shared.NotesModal do
     end
   end
 
-  def build_changeset(%{assigns: %{job: job}}, params \\ %{}) do
+  @impl true
+  def handle_event("save", %{"client" => params}, socket) do
+    case socket |> build_changeset(params) |> Repo.update() do
+      {:ok, client} ->
+        send(socket.parent_pid, {:update, %{client: client}})
+
+        socket |> close_modal() |> noreply()
+
+      _ ->
+        socket |> put_flash(:error, "could not save notes.") |> noreply()
+    end
+  end
+
+  def build_changeset(assigns, params \\ %{})
+
+  def build_changeset(%{assigns: %{job: job}}, params) do
     Job.notes_changeset(job, params)
+  end
+
+  def build_changeset(%{assigns: %{client: client}}, params) do
+    Client.notes_changeset(client, params)
   end
 
   def open(%{assigns: %{job: job}} = socket) do
     socket |> open_modal(__MODULE__, %{job: job})
+  end
+
+  def open(%{assigns: %{client: client}} = socket) do
+    socket |> open_modal(__MODULE__, %{client: client})
   end
 end

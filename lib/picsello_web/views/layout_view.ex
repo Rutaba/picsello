@@ -142,6 +142,7 @@ defmodule PicselloWeb.LayoutView do
     [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
+      %{title: "Clients", icon: "phone", path: Routes.clients_path(socket, :index)},
       %{
         title: "Galleries",
         icon: "proof_notifier",
@@ -156,7 +157,6 @@ defmodule PicselloWeb.LayoutView do
         icon: "package",
         path: Routes.questionnaires_index_path(socket, :index)
       },
-      %{title: "Contacts", icon: "phone", path: Routes.contacts_path(socket, :index)},
       %{
         title: "Finances",
         icon: "money-bags",

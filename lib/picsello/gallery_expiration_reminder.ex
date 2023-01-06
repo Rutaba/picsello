@@ -46,7 +46,7 @@ defmodule Picsello.GalleryExpirationReminder do
     """
 
     unless has_gallery_expiration_messages? != [] do
-      {client_name, client_email, organization_name} =
+      {client_id, client_name, client_email, organization_name} =
         Repo.one(
           from(job in Job,
             join: client in Client,
@@ -54,7 +54,7 @@ defmodule Picsello.GalleryExpirationReminder do
             join: organization in Organization,
             on: organization.id == client.organization_id,
             where: job.id == ^job_id and is_nil(job.archived_at),
-            select: {client.name, client.email, organization.name}
+            select: {client.id, client.name, client.email, organization.name}
           )
         )
 
@@ -70,6 +70,7 @@ defmodule Picsello.GalleryExpirationReminder do
       %{subject: "Gallery Expiration Reminder", body_text: body, body_html: body_html(body)}
       |> ClientMessage.create_outbound_changeset()
       |> Ecto.Changeset.put_change(:job_id, job_id)
+      |> Ecto.Changeset.put_change(:client_id, client_id)
       |> Ecto.Changeset.put_change(:scheduled, true)
       |> Repo.insert!()
       |> ClientNotifier.deliver_email(client_email)
