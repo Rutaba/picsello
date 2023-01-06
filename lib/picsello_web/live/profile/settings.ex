@@ -9,7 +9,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
     %{organization: organization} = Repo.preload(user, :organization)
     url = Profiles.public_url(organization)
     embed_code = Profiles.embed_code(organization)
-    socket |> assign(profile_url: url, organization: organization, embed_code: embed_code) |> ok()
+    socket  |> assign(:page_title, "Settings") |> assign(profile_url: url, organization: organization, embed_code: embed_code) |> ok()
   end
 
   @impl true
