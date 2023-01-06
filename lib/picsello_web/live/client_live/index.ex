@@ -252,7 +252,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event(
         "search",
         %{"search_phrase" => search_phrase},
-        %{assigns: %{pagination: pagination}} = socket
+        socket
       ) do
     search_phrase = String.trim(search_phrase)
 
@@ -261,49 +261,49 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
     socket
     |> assign(search_phrase: search_phrase)
-    |> assign_pagination()
+    |> reassign_pagination_and_clients()
   end
 
   @impl true
-  def handle_event("clear-search", _, %{assigns: %{pagination: pagination}} = socket) do
+  def handle_event("clear-search", _, socket) do
     socket
     |> assign(:search_phrase, nil)
-    |> assign_pagination()
+    |> reassign_pagination_and_clients()
   end
 
   @impl true
   def handle_event(
         "apply-filter-status",
         %{"option" => status},
-        %{assigns: %{pagination: pagination}} = socket
+        socket
       ) do
     socket
     |> assign(:job_status, status)
-    |> assign_pagination()
+    |> reassign_pagination_and_clients()
   end
 
   @impl true
   def handle_event(
         "apply-filter-type",
         %{"option" => type},
-        %{assigns: %{pagination: pagination}} = socket
+        socket
       ) do
     socket
     |> assign(:job_type, type)
-    |> assign_pagination()
+    |> reassign_pagination_and_clients()
   end
 
   @impl true
   def handle_event(
         "apply-filter-sort_by",
         %{"option" => sort_by},
-        %{assigns: %{pagination: pagination}} = socket
+        socket
       ) do
     socket
     |> assign(:sort_by, sort_by)
     |> assign(:sort_col, Enum.find(sort_options(), fn op -> op.id == sort_by end).column)
     |> assign(:sort_direction, Enum.find(sort_options(), fn op -> op.id == sort_by end).direction)
-    |> assign_pagination()
+    |> reassign_pagination_and_clients()
   end
 
   @impl true
@@ -314,7 +314,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       ) do
     socket
     |> assign(:desc, !desc)
-    |> assign_pagination()
+    |> reassign_pagination_and_clients()
   end
 
   @impl true
@@ -683,7 +683,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     |> Enum.count()
   end
 
-  defp assign_pagination(socket) do
+  defp reassign_pagination_and_clients(%{assigns: %{pagination: pagination}} = socket) do
     socket
     |> assign(:pagination, reset_pagination(pagination, client_count(socket)))
     |> fetch_clients()
