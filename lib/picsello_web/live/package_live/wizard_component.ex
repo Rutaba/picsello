@@ -1512,10 +1512,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               "download_each_price" => global_settings.download_each_price,
               "buy_all" => global_settings.buy_all_price
             })
+
           updated_package =
             assigns.package
             |> Map.put(:download_each_price, global_settings.download_each_price)
             |> Map.put(:buy_all, global_settings.buy_all_price)
+
           {updated_params, updated_package}
       end
 

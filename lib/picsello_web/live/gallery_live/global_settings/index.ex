@@ -61,6 +61,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> assign(:case, :image)
     |> assign(:ready_to_save, false)
     |> assign(show_preview: false)
+    |> assign(:show_image_preview, false)
     |> assign(:watermarked_preview_path, nil)
     |> allow_upload(:image, @upload_options)
     |> ok()
@@ -72,10 +73,16 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         %{"global_expiration_days" => %{"month" => month, "day" => day, "year" => year}},
         socket
       ) do
-    day = to_int(day)
-    month = to_int(month)
-    year = to_int(year)
-    total_days = day + month * 30 + year * 365
+    day_count = to_int(day)
+    month_count = to_int(month)
+    year_count = to_int(year)
+    day_text = if day_count > 0, do: ngettext("1 day ", "%{count} days ", day_count), else: ""
+
+    month_text =
+      if month_count > 0, do: ngettext("1 month ", "%{count} months ", month_count), else: ""
+
+    year_text =
+      if year_count > 0, do: ngettext("1 year ", "%{count} years ", year_count), else: ""
 
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
@@ -84,9 +91,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       confirm_label: "Yes, set expiration date",
       icon: "warning-orange",
       subtitle:
-        "All new galleries will expire #{if day > 0, do: "#{day} Day "}#{if month > 0, do: " #{month} Month "}#{if year > 0, do: " #{year} Year "}after their shoot date. When a gallery expires, a client will not be able to access it again unless you re-enable the individual gallery. ",
+        "All new galleries will expire #{day_text}#{month_text}#{year_text}after their shoot date. When a gallery expires, a client will not be able to access it again unless you re-enable the individual gallery.",
       title: "Set Galleries to Never Expire?",
-      payload: %{total_days: total_days}
+      payload: %{total_days: day_count + month_count * 30 + year_count * 365}
     })
     |> noreply()
   end
@@ -161,28 +168,13 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           assigns: %{
             changeset: %{changes: changes},
             galleries: galleries,
-            current_user: %{organization_id: organization_id} = current_user,
+            current_user: %{organization_id: organization_id},
             case: watermark_case,
-            global_settings_gallery: global_settings_gallery
+            global_settings_gallery: global_settings_gallery,
+            uploads: uploads
           }
         } = socket
       ) do
-    if watermark_case == :image do
-      file = File.read!(@global_watermark_photo)
-      path = Application.fetch_env!(:picsello, :global_watermarked_path)
-      {:ok, _object} = PhotoStorage.insert(path, file)
-
-      ProcessingManager.update_watermark(
-        %GSGallery.Photo{
-          id: UUID.uuid4(),
-          user_id: current_user.id,
-          original_url: path,
-          text: "nil"
-        },
-        organization_id
-      )
-    end
-
     global_settings_gallery
     |> change(Map.put(changes, :organization_id, organization_id))
     |> Repo.insert_or_update()
@@ -194,7 +186,18 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           {:ok, _gallery} = Galleries.save_gallery_watermark(gallery, attrs(global_settings))
         end)
 
-        socket
+        if watermark_case == :image do
+          uploads =
+            Map.update(uploads, :image, [], fn image ->
+              Map.put(image, :entries, [])
+            end)
+
+          socket
+          |> assign(uploads: uploads)
+        else
+          socket
+          |> assign(:show_image_preview, false)
+        end
         |> assign(global_settings_gallery: global_settings)
         |> put_flash(:success, "Watermark Updated!")
 
@@ -357,7 +360,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       ) do
     download_each_price =
       if is_nil(global_settings_gallery) ||
-      is_nil(global_settings_gallery.download_each_price) do
+           is_nil(global_settings_gallery.download_each_price) do
         %Money{amount: 5_000, currency: :USD}
       else
         global_settings_gallery.download_each_price
@@ -580,6 +583,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           |> assign(global_settings_gallery: global_settings)
           |> assign(:case, :image)
           |> assign_default_changeset()
+          |> assign(:show_image_preview, false)
           |> close_modal()
           |> put_flash(:success, "Settings updated")
 
@@ -701,7 +705,21 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   def handle_image_progress(:image, %{done?: false}, socket), do: socket |> noreply()
 
-  def handle_image_progress(:image, image, socket) do
+  def handle_image_progress(:image, image, %{assigns: %{current_user: current_user}} = socket) do
+    file = File.read!(@global_watermark_photo)
+    path = Application.fetch_env!(:picsello, :global_watermarked_path)
+    {:ok, _object} = PhotoStorage.insert(path, file)
+
+    ProcessingManager.update_watermark(
+      %GSGallery.Photo{
+        id: UUID.uuid4(),
+        user_id: current_user.id,
+        original_url: path,
+        text: "nil"
+      },
+      current_user.organization_id
+    )
+
     socket
     |> assign_image_watermark_change(image)
     |> noreply()
@@ -733,6 +751,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
     socket
     |> assign(:changeset, changeset)
+    |> assign(:show_image_preview, true)
     |> assign(:ready_to_save, changeset.valid?)
   end
 
@@ -747,8 +766,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> assign(show_preview: false)
   end
 
-  defp handle_image_validation(socket) do
-    case socket.assigns.uploads.image.entries do
+  defp handle_image_validation(%{assigns: %{uploads: uploads}} = socket) do
+    case uploads.image.entries do
       %{valid?: false, ref: ref} -> cancel_upload(socket, :photo, ref)
       _ -> socket
     end
@@ -864,27 +883,14 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     ~H"""
     <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @watermark_option})}>Watermark</h1>
     <.card color="blue-planning-300" icon="three-people" title="Custom Watermark" badge={0} class="cursor-pointer mt-8" >
-      <%= if @case == :image and watermark_type(@global_settings_gallery) == :image do  %>
+      <%= if @case == :image and @show_image_preview do  %>
 
         <img src={"#{@global_settings_gallery.global_watermark_path && PhotoStorage.path_to_url(@global_settings_gallery.global_watermark_path)}"} />
-        <div class="flex justify-between mb-8 mt-11 font-sans">
-            <p><%= @global_settings_gallery.watermark_name %></p>
-
-            <div class="flex">
-              <p><%= filesize(@global_settings_gallery.watermark_size) %></p>
-              <.remove_button />
-            </div>
-        </div>
-      <% end %>
-
-      <%= if watermark_type(@global_settings_gallery) == :text do  %>
-        <div class="flex justify-between mb-8 mt-11 font-sans">
-            <p><%= @global_settings_gallery.watermark_text %></p>
-            <div class="flex items-center">
-              <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
-              <.remove_button />
-            </div>
-        </div>
+        <%= if watermark_type(@global_settings_gallery) == :image do %>
+          <.watermark_name_delete name={@global_settings_gallery.watermark_name}>
+            <p><%= filesize(@global_settings_gallery.watermark_size) %></p>
+          </.watermark_name_delete>
+        <% end %>
       <% end %>
 
       <%= if @case == :image and watermark_type(@global_settings_gallery) == :text do  %>
@@ -943,10 +949,15 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
               <progress class="grid-cols-1 font-sans" value={entry.progress} max="100"><%= entry.progress %>%</progress>
           </div>
         <% end %>
-      <% else %>
 
+      <% else %>
         <div>
           <img src={"#{@watermarked_preview_path && PhotoStorage.path_to_url(@watermarked_preview_path)}"} class={classes("", %{"hidden" => !@show_preview})} />
+          <%= if watermark_type(@global_settings_gallery) == :text do  %>
+            <.watermark_name_delete name={@global_settings_gallery.watermark_text}>
+              <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
+            </.watermark_name_delete>
+          <% end %>
           <.form let={f} for={@changeset} phx-change="validate_text_input"  class="mt-5 font-sans" id="textWatermarkForm">
             <div class="gallerySettingsInput flex flex-row p-1">
               <%= text_input f, :watermark_text , placeholder: "Enter your watermark text here", class: "bg-base-200 rounded-lg p-2 w-full focus:outline-inherit mr-1" %>
@@ -980,6 +991,18 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   defp section(assigns) do
     ~H"""
       <div></div>
+    """
+  end
+
+  defp watermark_name_delete(assigns) do
+    ~H"""
+      <div class="flex justify-between mb-8 mt-11 font-sans">
+        <p><%= @name %></p>
+        <div class="flex items-center">
+          <%= render_block @inner_block %>
+          <.remove_button />
+        </div>
+      </div>
     """
   end
 

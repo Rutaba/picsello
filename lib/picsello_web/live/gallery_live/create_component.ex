@@ -261,15 +261,17 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         global_settings ->
           updated_params =
             params["download"] ||
-            %{}
-            |> Map.put(:download_each_price, global_settings.download_each_price)
-            |> Map.put(:buy_all, global_settings.buy_all_price)
-            |> Map.put(:is_custom_price, true)
+              %{}
+              |> Map.put(:download_each_price, global_settings.download_each_price)
+              |> Map.put(:buy_all, global_settings.buy_all_price)
+              |> Map.put(:is_custom_price, true)
+
           updated_package =
             package
             |> Map.put(:download_each_price, global_settings.download_each_price)
             |> Map.put(:buy_all, global_settings.buy_all_price)
             |> Map.put(:is_custom_price, true)
+
           {updated_params, updated_package}
       end
 
