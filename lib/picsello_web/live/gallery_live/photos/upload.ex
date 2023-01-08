@@ -12,7 +12,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Phoenix.PubSub
 
-  import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1, disabled?: 1]
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),

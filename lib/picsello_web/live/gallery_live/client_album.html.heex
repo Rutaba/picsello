@@ -17,7 +17,7 @@
       <h3 class="text-lg font-bold lg:text-3xl"><%= @album.name %></h3>
     </div>
 
-    <%= unless Enum.empty?(@products) || @gallery.disabled do %>
+    <%= unless Enum.empty?(@products) || disabled?(@gallery) do %>
       <div class="my-0 py-0 mx-auto center-container gallery__container h-full px-7 sm:px-16">
         <ul class="pt-2 pb-5 mx-auto grid gap-6 sm:gap-8 grid-cols-2 xl:grid-cols-4 lg:pb-4 lg:pt-6 productPreview__client">
           <%= for product <- @products do %>
@@ -28,12 +28,12 @@
         </ul>
       </div>
     <% end %>
-    <div class={classes("center-container gallery__container", %{"hidden" => @gallery.disabled})}>
+    <div class={classes("center-container gallery__container", %{"hidden" => disabled?(@gallery)})}>
       <hr class="mt-8 border-base-225" />
     </div>
   <% end %>
   <div class={"my-0 py-0 mx-auto center-container gallery__container h-full px-7 sm:px-16 #{@is_proofing && 'mb-56'}"}>
-    <div class={classes("pt-0", %{"pt-5 lg:pt-16" => !@gallery.disabled})} id="gallery">
+    <div class={classes("pt-0", %{"pt-5 lg:pt-16" => !disabled?(@gallery)})} id="gallery">
       <.top_section {assigns} />
       
       <%= if Enum.empty?(@photos) && @favorites_filter do %>

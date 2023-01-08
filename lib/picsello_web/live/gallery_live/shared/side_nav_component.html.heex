@@ -22,7 +22,7 @@
         <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameFormSideNav">
           <div class={if(!@edit_name, do: "hidden")}>
             <p class="w-[370px] text-3xl font-bold text-base-300"><%= @gallery.name %> </p>
-            <.icon_button disabled={@gallery.disabled} phx_click="click" phx-target={@myself} class="bg-white pt-2 pb-2 mt-4 shadow-lg" title="Edit gallery name" color="blue-planning-300" icon="pencil">
+            <.icon_button disabled={disabled?(@gallery)} phx_click="click" phx-target={@myself} class="bg-white pt-2 pb-2 mt-4 shadow-lg" title="Edit gallery name" color="blue-planning-300" icon="pencil">
               Edit gallery name
             </.icon_button>
           </div>

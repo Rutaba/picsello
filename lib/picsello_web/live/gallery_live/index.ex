@@ -198,7 +198,7 @@ defmodule PicselloWeb.GalleryLive.Index do
         socket
       ) do
     Galleries.get_gallery!(String.to_integer(gallery_id))
-    |> Galleries.update_gallery(%{disabled: true})
+    |> Galleries.update_gallery(%{status: "disabled"})
     |> process_gallery(socket, :disabled)
   end
 
@@ -208,7 +208,7 @@ defmodule PicselloWeb.GalleryLive.Index do
         socket
       ) do
     Galleries.get_gallery!(String.to_integer(gallery_id))
-    |> Galleries.update_gallery(%{disabled: false})
+    |> Galleries.update_gallery(%{status: "active"})
     |> process_gallery(socket, :enabled)
   end
 

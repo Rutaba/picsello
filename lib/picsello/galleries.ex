@@ -576,7 +576,7 @@ defmodule Picsello.Galleries do
 
   """
   def delete_gallery(%Gallery{} = gallery) do
-    update_gallery(gallery, %{active: false})
+    update_gallery(gallery, %{status: "inactive"})
   end
 
   def delete_gallery_by_id(id), do: get_gallery!(id) |> delete_gallery()
@@ -1137,7 +1137,7 @@ defmodule Picsello.Galleries do
 
   defp topic(gallery), do: "gallery:#{gallery.id}"
 
-  defp active_galleries, do: from(g in Gallery, where: g.active == true)
+  defp active_galleries, do: from(g in Gallery, where: g.status == "active")
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
   defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue

@@ -7,8 +7,8 @@ defmodule Picsello.Galleries.Gallery do
   alias Picsello.{Job, Cart.Order, Repo, GlobalSettings}
 
   @status_options [
-    values: ~w(draft active expired disabled),
-    default: "draft"
+    values: ~w(active inactive disabled expired),
+    default: "active"
   ]
 
   @session_opts [
@@ -26,10 +26,8 @@ defmodule Picsello.Galleries.Gallery do
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
     field :total_count, :integer, default: 0
-    field :active, :boolean, default: true
+    field :use_global, :boolean
     field :type, Ecto.Enum, @type_opts
-    field :disabled, :boolean, default: false
-    field :use_global, :boolean, default: true
 
     belongs_to(:job, Job)
     belongs_to(:parent, __MODULE__)
@@ -71,9 +69,7 @@ defmodule Picsello.Galleries.Gallery do
     :expired_at,
     :password,
     :client_link_hash,
-    :total_count,
-    :active,
-    :disabled
+    :total_count
   ]
   @required_attrs [:name, :job_id, :status, :password]
 

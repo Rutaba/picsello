@@ -358,7 +358,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     gallery
-    |> Galleries.update_gallery(%{disabled: true})
+    |> Galleries.update_gallery(%{status: "disabled"})
     |> process_gallery(socket, :disabled)
   end
 
@@ -367,7 +367,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     gallery
-    |> Galleries.update_gallery(%{disabled: false})
+    |> Galleries.update_gallery(%{status: "active"})
     |> process_gallery(socket, :enabled)
   end
 
@@ -447,9 +447,9 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     """
   end
 
-  defp delete_gallery_section(assigns) do
-    if assigns.has_order? do
-      case assigns.gallery.disabled do
+  defp delete_gallery_section(%{has_order?: has_order?, gallery: gallery} = assigns) do
+    if has_order? do
+      case disabled?(gallery) do
         true ->
           ~H"""
             <h3 class="font-sans">Enable Gallery</h3>

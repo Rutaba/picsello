@@ -1104,4 +1104,5 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def standard?(%{type: type}), do: type == :standard
+  def disabled?(%{status: status}), do: status == "disabled"
 end
