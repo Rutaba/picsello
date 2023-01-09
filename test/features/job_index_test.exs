@@ -42,11 +42,11 @@ defmodule Picsello.JobIndexTest do
   feature "user with jobs looks at them", %{session: session, job: job, lead: lead} do
     session
     |> click(@leads_card)
-    |> assert_has(css("main > ul > li", count: 1))
+    |> assert_has(css("main > div > ul > li", count: 1))
     |> assert_has(link(Job.name(lead)))
     |> click(link("Picsello"))
     |> click(@jobs_card)
-    |> assert_has(css("main > ul > li", count: 1))
+    |> assert_has(css("main > div > ul > li", count: 1))
     |> assert_has(link(Job.name(job)))
     |> click(link(Job.name(job)))
     |> assert_has(link("Jobs"))
@@ -103,7 +103,7 @@ defmodule Picsello.JobIndexTest do
 
     session
     |> visit("/leads")
-    |> assert_has(css("main > ul > li", count: 1))
+    |> assert_has(css("main > div > ul > li", count: 1))
   end
 
   feature "leads show status", %{session: session, lead: created_lead, user: user} do
@@ -147,11 +147,11 @@ defmodule Picsello.JobIndexTest do
     session
     |> visit("/leads")
     |> assert_text("Results: 1 – 12 of 13")
-    |> assert_has(css("main > ul > li", count: 12))
+    |> assert_has(css("main > div > ul > li", count: 12))
     |> assert_has(css("button:disabled[title='Previous page']"))
     |> click(button("Next page"))
     |> assert_text("Results: 13 – 13 of 13")
-    |> assert_has(css("main > ul > li", count: 1))
+    |> assert_has(css("main > div > ul > li", count: 1))
     |> assert_has(css("button:disabled[title='Next page']"))
     |> click(button("Previous page"))
     |> assert_text("Results: 1 – 12 of 13")
