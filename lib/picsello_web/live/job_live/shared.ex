@@ -424,6 +424,16 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_info({:confirm_event, "edit_package", %{assigns: assigns}}, socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.PackageLive.WizardComponent,
+      assigns |> Map.take([:current_user, :job, :package])
+    )
+    |> assign_disabled_copy_link()
+    |> noreply()
+  end
+
   def handle_info(
         {:message_composed, message_changeset},
         %{assigns: %{job: %{client: client} = job}} = socket
@@ -737,10 +747,10 @@ defmodule PicselloWeb.JobLive.Shared do
         <% end %>
         <%= if ((!@proposal || (@proposal && (!@proposal.sent_to_client || is_nil(@proposal.signed_at))))) && !@job.is_gallery_only do %>
             <div class="self-start relative py-1 hover:bg-blue-planning-100 hover:rounded-md tooltip">
-              <.icon_button color="blue-planning-300" phx-click="edit-package" icon="pencil" class="mt-auto" disabled={!Job.lead?(@job) || !is_nil(@proposal.signed_at)}>
+              <.icon_button color="blue-planning-300" phx-click="edit-package" icon="pencil" class="mt-auto" disabled={!Job.lead?(@job) || (@proposal && @proposal.signed_at)}>
                 Edit
               </.icon_button>
-              <%= if (@proposal.signed_at) do %>
+              <%= if @proposal && @proposal.signed_at do %>
                 <div class="cursor-default tooltiptext">Your client has already signed their proposal so package details are no longer editable.</div>
               <% end %>
             </div>

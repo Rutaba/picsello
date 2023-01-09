@@ -15,7 +15,7 @@ export default {
     const { timeZone, feedPath } = el.dataset;
 
     const calendar = new Calendar(el, {
-      contentHeight: 'auto',
+      height: 'auto',
       plugins: [dayGridPlugin, listPlugin, timeGridPlugin],
       timeZone,
       initialView: getView(),
