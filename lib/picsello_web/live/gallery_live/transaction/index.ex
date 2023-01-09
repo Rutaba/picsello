@@ -1,10 +1,12 @@
-defmodule PicselloWeb.JobLive.Transaction.Index do
+defmodule PicselloWeb.GalleryLive.Transaction.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
   alias Picsello.{Cart, Job, Repo, Galleries}
   require Ecto.Query
+
   import PicselloWeb.JobLive.Shared, only: [assign_job: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [order_status: 1]
 
   @impl true
   def mount(%{"id" => gallery_id}, _session, %{assigns: %{live_action: action}} = socket) do
@@ -55,11 +57,6 @@ defmodule PicselloWeb.JobLive.Transaction.Index do
       _ -> nil
     end
   end
-
-  defp order_status(%{intent: %{status: status}}) when is_binary(status),
-    do: String.capitalize(status)
-
-  defp order_status(_), do: "Processed"
 
   defdelegate total_cost(order), to: Cart
 end

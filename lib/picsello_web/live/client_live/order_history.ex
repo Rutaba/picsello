@@ -34,13 +34,12 @@ defmodule PicselloWeb.Live.ClientLive.OrderHistory do
         %{"order_number" => order_number},
         socket
       ) do
-    order = Orders.get_order_from_order_number(order_number)
-    job = Map.get(order.gallery, :job)
+    %{gallery: gallery} = Orders.get_order_from_order_number(order_number)
 
     socket
     |> push_redirect(
       to:
-        Routes.order_detail_path(socket, :transactions, job.id, order_number, %{
+        Routes.order_detail_path(socket, :transactions, gallery.id, order_number, %{
           "request_from" => "order_history"
         })
     )
