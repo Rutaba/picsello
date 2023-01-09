@@ -58,7 +58,7 @@ defmodule PicselloWeb.LayoutView do
     <div>
       <%= for {key, icon, text_color} <- flash_styles(), message <- [live_flash(@flash, key)], message do %>
         <%= if(key in [:error, :info, :success])  do %>
-        <div phx-hook="Flash" id={"flash-#{DateTime.to_unix(DateTime.utc_now)}"} phx-click="lv:clear-flash" phx-value-key={key} title={key} class="fixed right-10-md right-0 top-1.5 z-40 max-w-lg px-1.5 px-0-md" role="alert">
+        <div phx-hook="Flash" id={"flash-#{DateTime.to_unix(DateTime.utc_now)}"} phx-click="lv:clear-flash" phx-value-key={key} title={key} class="fixed right-10-md right-0 top-1.5 z-40 max-w-lg px-1.5 px-0-md flash" role="alert">
           <div class="flex bg-white rounded-lg shadow-lg cursor-pointer">
             <div class={classes(["flex items-center justify-center p-3", text_color])}>
               <.icon name={icon} class="w-6 h-6 stroke-current" />
