@@ -161,7 +161,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_text("Times can't be overlapping")
     |> click(button("Add another date"))
     |> assert_has(testid("event-date", count: 2))
-    |> scroll_into_view(testid("add-date"))
+    |> scroll_into_view(css("input[name='booking_event[dates][1][date]']"))
     |> fill_in(text_field("booking_event[dates][1][date]"), with: "10/10/2050")
     |> assert_text("Dates can't be the same")
   end
@@ -188,7 +188,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_value(text_field("booking_event[dates][0][time_blocks][0][end_time]"), "13:00")
     |> click(button("Add another date"))
     |> assert_has(testid("event-date", count: 2))
-    |> scroll_into_view(testid("add-date"))
+    |> scroll_into_view(css("input[name='booking_event[dates][1][date]']"))
     |> fill_in(text_field("booking_event[dates][1][date]"), with: "12/10/2050")
     |> click(button("remove date"))
     |> assert_has(testid("event-date", count: 1))
