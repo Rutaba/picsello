@@ -241,6 +241,132 @@ defmodule PicselloWeb.LayoutView do
     end
   end
 
+  def main_header(assigns) do
+    ~H"""
+    <header class="border-b fixed left-0 right-0 top-0 z-40 bg-white">
+      <div class="flex items-center px-6 center-container">
+        <div id="hamburger-menu" class="relative cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
+          <%= if @current_user do %>
+          <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default -top-2 toggle-content">
+            <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
+              <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
+            </div>
+
+            <nav class="flex flex-col bg-white rounded-lg shadow-md">
+              <%= for %{title: title, icon: icon, path: path} <- side_nav(@socket, @current_user), @current_user do %>
+                <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-4 flex items-center py-3 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
+                  <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300 shrink-0" />
+                  <%= title %>
+                </.nav_link>
+              <% end %>
+            </nav>
+          </div>
+
+          <.icon name="hamburger" class="h-4 text-base-300 w-9" />
+          <% end %>
+        </div>
+
+        <nav class="flex items-center justify-center flex-1 mx-8 lg:justify-start">
+          <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Picsello" do %>
+            <.icon name="logo" class="my-4 w-28 h-9 mr-6" />
+          <% end %>
+
+          <div class="hidden lg:flex">
+            <div id="sub-menu" class="relative cursor-pointer" phx-update="ignore" phx-hook="ToggleContent" data-icon="toggle-icon">
+              <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default top-10 toggle-content">
+                <nav class="flex flex-col bg-white rounded-lg shadow-md">
+                  <%= for %{title: title, icon: icon, path: path} <- sub_nav(@socket, @current_user), @current_user do %>
+                    <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-4 flex items-center py-3 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
+                      <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300 shrink-0" />
+                      <%= title %>
+                    </.nav_link>
+                  <% end %>
+                </nav>
+              </div>
+
+              <div class="group hidden lg:flex items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70">
+              Your work <.icon name="down" class="w-3 h-3 stroke-current stroke-3 ml-2 toggle-icon transition-transform group-hover:rotate-180" />
+              </div>
+            </div>
+            <.nav_link title="Calendar" to="/calendar" socket={@socket} live_action={@live_action} class="hidden lg:block items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70" active_class="">
+              Calendar
+            </.nav_link>
+            <.nav_link title="Help" to="https://support.picsello.com/" socket={@socket} live_action={@live_action} class="hidden lg:block items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70" active_class="">
+              Help
+            </.nav_link>
+            <.nav_link title="Settings" to="/users/settings" socket={@socket} live_action={@live_action} class="hidden lg:block items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70" active_class="">
+              Settings
+            </.nav_link>
+          </div>
+        </nav>
+
+        <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
+
+        <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
+          <%= if @current_user do %>
+          <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
+            <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
+              <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
+            </div>
+
+            <div class="bg-gray-100 rounded-lg shadow-md z-30">
+              <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Account", class: "flex items-center px-6 py-4 bg-white" do %>
+                <.initials_circle user={@current_user} />
+                <div class="ml-2 font-semibold">Account</div>
+              <% end %>
+
+              <.form for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
+                <%= submit "Logout", class: "px-6 text-left py-2 w-full" %>
+              </.form>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center justify-center text-sm text-base-300 bg-gray-100 rounded-full w-9 h-9 pb-0.5" title={@current_user.name}>
+            <%= User.initials @current_user %>
+          </div>
+          <% end %>
+        </div>
+      </div>
+    </header>
+    """
+  end
+
+  def main_footer(assigns) do
+    ~H"""
+    <div class="mt-12"></div>
+    <footer class="mt-auto hidden sm:block bg-base-300 text-white">
+      <div class="px-6 center-container py-10">
+        <div class="flex justify-between gap-8">
+          <nav class="flex text-lg font-bold mt-4 w-full items-center">
+            <ul class="flex">
+              <li><a href="https://support.picsello.com/" target="_blank" rel="noopener noreferrer">Help center</a></li>
+              <%= if @current_user && Application.get_env(:picsello, :help_scout_id) do %>
+              <li><a href="#" class="ml-10" {help_scout_output(@current_user, :help_scout_id)}>Contact us</a></li>
+              <% end %>
+              <li><a class="ml-10" href="https://www.picsello.com/blog" target="_blank" rel="noopener noreferrer">Blog</a></li>
+            </ul>
+            <.subscription_ending_soon type="footer" socket={@socket} current_user={@current_user} class="flex ml-auto bg-white text-black rounded px-4 py-2 items-center text-sm"/>
+          </nav>
+          <div>
+            <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Footer" do %>
+              <.icon name="logo-shoot-higher" class="h-12 sm:h-16 w-32 sm:w-36" />
+            <% end %>
+          </div>
+        </div>
+        <hr class="my-8 opacity-30" />
+        <div class="flex">
+          <div class="text-base-250 text-xs">Copyright © <%= DateTime.utc_now.year %> Picsello</div>
+          <ul class="flex ml-auto">
+            <li class="text-base-250 text-xs"><a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer">Terms</a></li>
+            <li class="text-base-250 text-xs"><a href="https://www.picsello.com/privacy-policy" class="ml-10" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
+            <li class="text-base-250 text-xs"><a href="https://www.picsello.com/privacy-policy#ccpa" class="ml-10" target="_blank" rel="noopener noreferrer">California Privacy</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+    """
+  end
+
   defp footer_nav(assigns) do
     organization = load_organization(assigns.gallery)
 

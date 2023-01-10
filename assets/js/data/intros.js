@@ -242,7 +242,7 @@ export default {
       {
         title: 'Need help with pricing?',
         intro:
-          'We’ve created a handy pricing calculator to help you charge more and factor in business costs you may not think you have.',
+          'We’ve created a handy Smart Profit Calculator to help you charge more and factor in business costs you may not think you have.',
         position: 'bottom-middle-aligned',
         element: el.querySelector('#intro_settings_packages .intro-calculator'),
       },
