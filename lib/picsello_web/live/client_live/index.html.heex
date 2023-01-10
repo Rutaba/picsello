@@ -42,11 +42,9 @@
   <% end %>
 
   <%= if Enum.empty?(@clients) do %>
-    <div class="flex flex-col justify-between flex-auto mt-4 p-6 center-container lg:flex-none">
-      <div class="flex flex-col">
-        <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
-        <p class="block text-lg lg:text-2xl lg:w-1/2">You don’t have any clients at the moment.</p>
-      </div>
+    <div class="flex flex-col items-center mt-4 p-6 lg:flex-none">
+      <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
+      <p class="text-lg lg:text-2xl">You don’t have any clients <%= if @search_phrase || @job_status !== "all" || @job_type !== "all", do: "that match your search or filters.", else: "at the moment."%></p>
     </div>
   <% else %>
     <div class="p-6 center-container">
