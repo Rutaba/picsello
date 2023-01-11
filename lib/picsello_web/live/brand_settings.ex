@@ -6,7 +6,7 @@ defmodule PicselloWeb.Live.BrandSettings do
 
   @impl true
   def mount(_params, _session, socket) do
-    socket |> assign_organization() |> ok()
+    socket |> assign(:page_title, "Settings") |> assign_organization() |> ok()
   end
 
   @impl true

@@ -5,7 +5,7 @@ defmodule PicselloWeb.Live.Pricing do
 
   @impl true
   def mount(_params, _session, socket) do
-    socket |> assign_categories() |> ok()
+    socket |> assign(:page_title, "Settings") |> assign_categories() |> ok()
   end
 
   @impl true
