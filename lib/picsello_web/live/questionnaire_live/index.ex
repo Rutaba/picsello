@@ -7,6 +7,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   @impl true
   def mount(_params, _session, socket) do
     socket
+    |> assign(:page_title, "Questionnaires")
     |> assign_questionnaires()
     |> ok()
   end

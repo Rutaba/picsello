@@ -44,8 +44,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
 
         <.form for={@changeset} let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <.job_form_fields form={f} job_types={@job_types} new_client={@new_client} myself={@myself} />
-
-          <PicselloWeb.LiveModal.footer disabled={!@changeset.valid? || (!is_nil(@selected_client) && !is_nil(@searched_client) && !@new_client)} />
+          <PicselloWeb.LiveModal.footer disabled={!@changeset.valid? || (is_nil(@selected_client) && is_nil(@searched_client) && !@new_client)} />
         </.form>
       </div>
     """
@@ -106,7 +105,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
          |> Jobs.maybe_upsert_client(client, current_user)
          |> Ecto.Multi.insert(
            :lead,
-           &Job.create_changeset(%{type: job.type, notes: job.notes, client_id: &1.client.id})
+           &Job.create_job_changeset(%{type: job.type, notes: job.notes, client_id: &1.client.id})
          )
          |> Repo.transaction() do
       {:ok, %{lead: %Job{id: job_id}}} ->
@@ -126,8 +125,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
        ) do
     params
     |> put_in(["client", "organization_id"], current_user.organization_id)
-    |> Job.create_changeset()
-    |> validate_client_email()
+    |> Job.create_job_changeset()
   end
 
   defp assign_changeset(socket, params) do
@@ -142,27 +140,10 @@ defmodule PicselloWeb.JobLive.NewComponent do
   defp assign_job_changeset(socket, params) do
     changeset =
       params
-      |> Job.create_changeset()
+      |> Job.create_job_changeset()
       |> Map.put(:action, :validate)
 
     assign(socket, :changeset, changeset)
-  end
-
-  defp validate_client_email(changeset) do
-    email =
-      changeset
-      |> Changeset.get_field(:client)
-      |> Map.get(:email)
-
-    case Clients.already_exists?(email) do
-      true ->
-        Changeset.update_change(changeset, :client, fn client_changeset ->
-          Changeset.add_error(client_changeset, :email, "already exists")
-        end)
-
-      _ ->
-        changeset
-    end
   end
 
   defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do

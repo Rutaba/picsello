@@ -18,10 +18,13 @@
       <% end %>
 
       <div class="flex flex-col justify-between md:flex-row">
-        <.title_header job={@job} back_path={case @request_from do
-            "calendar" -> Routes.calendar_index_path(@socket, :index)
+        <.title_header job={@job} back_path={
+          case @request_from do
+            "job_history" -> Routes.client_path(@socket, :job_history, @job.client_id)
+            "gallery_index" -> Routes.gallery_path(@socket, :galleries)
             _ -> Routes.job_path(@socket, @live_action)
-          end} />
+          end
+        } />
         <%= unless @proposal do %>
           <.send_proposal_button is_schedule_valid={@is_schedule_valid} package={@package} shoots={@shoots} stripe_status={@stripe_status} class="hidden md:flex" />
         <% end %>

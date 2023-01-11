@@ -7,7 +7,10 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   @impl true
   def mount(_params, _session, socket) do
-    socket |> assign_templates() |> ok()
+    socket
+    |> assign(:page_title, "Settings")
+    |> assign_templates()
+    |> ok()
   end
 
   @impl true

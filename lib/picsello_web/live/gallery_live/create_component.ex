@@ -234,7 +234,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       end
 
     params
-    |> Job.create_changeset()
+    |> Job.create_job_changeset()
     |> Map.put(:action, action)
     |> then(&assign(socket, :changeset, &1))
   end

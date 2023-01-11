@@ -1,6 +1,5 @@
 defmodule Picsello.InboxTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.Job
 
   setup :onboarded
   setup :authenticated
@@ -78,7 +77,7 @@ defmodule Picsello.InboxTest do
     |> click(testid("thread-card", count: 2, at: 0))
     |> assert_has(testid("thread-message", count: 2))
 
-    token = Job.token(job)
+    token = Picsello.Messages.token(job)
 
     session
     |> post(

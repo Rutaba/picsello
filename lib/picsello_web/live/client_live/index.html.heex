@@ -1,10 +1,10 @@
 <div class="center-container p-6">
   <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
     <div>
-    <h1 class="text-4xl font-bold center-container">Clients</h1>
+    <h1 class="text-4xl font-bold center-container">Clients <span {testid("client-count")} class="text-sm">(<%= ngettext "1", "%{count}", @pagination.total_count %>)</span></h1>
 
       <p class="max-w-2xl my-2">
-        Manage your <%= ngettext "1 client", "%{count} clients", @pagination.total_count %>
+        Welcome to your client overview! Here you can see all your clients in one view, search, sort and add new ones. You can also easily take “action” by sending an email, creating a gallery and more! Be sure to take advantage of tags - little notes that will help you sort and remember client details.
       </p>
     </div>
 
@@ -42,11 +42,9 @@
   <% end %>
 
   <%= if Enum.empty?(@clients) do %>
-    <div class="flex flex-col justify-between flex-auto mt-4 p-6 center-container lg:flex-none">
-      <div class="flex flex-col">
-        <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
-        <p class="block text-lg lg:text-2xl lg:w-1/2">You don’t have any clients at the moment.</p>
-      </div>
+    <div class="flex flex-col items-center mt-4 p-6 lg:flex-none">
+      <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
+      <p class="text-lg lg:text-2xl">You don’t have any clients <%= if @search_phrase || @job_status !== "all" || @job_type !== "all", do: "that match your search or filters.", else: "at the moment."%></p>
     </div>
   <% else %>
     <div class="p-6 center-container">
@@ -59,7 +57,7 @@
       </div>
       <%= for client <- @clients do %>
         <div class="grid sm:grid-cols-7 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
-          <div class="flex flex-col">
+          <div phx-click="edit-client" phx-value-id={client.id} class="flex flex-col text-blue-planning-300 underline hover:cursor-pointer">
             <p><%= client.name || "-" %></p>
           </div>
           <hr class="sm:hidden border-gray-100 my-2" />

@@ -29,7 +29,7 @@ defmodule PicselloWeb.Live.ClientLive.SideNavComponent do
               <.icon name={@icon} class="w-4 h-4 text-white"></.icon>
           </div>
           <div class="ml-3">
-            <span class={@arrow_show && "text-blue-planning-300"}><%= @title %></span>
+            <span class={classes(%{"text-blue-planning-300" => @arrow_show})}><%= @title %></span>
           </div>
         </div>
       <% end %>
