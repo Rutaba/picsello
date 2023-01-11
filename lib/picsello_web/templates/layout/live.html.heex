@@ -60,32 +60,30 @@
       </nav>
 
       <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
-      
       <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
         <%= if @current_user do %>
-        <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
-          <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
-            <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
-          </div>
-
-          <div class="bg-gray-100 rounded-lg shadow-md z-30">
-            <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Account", class: "flex items-center px-6 py-4 bg-white" do %>
-              <.initials_circle user={@current_user} />
-              <div class="ml-2 font-semibold">Account</div>
-            <% end %>
+          <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
+            <div class="p-4 -mb-2 bg-white shadow-md cursor-pointer text-base-300">
+              <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2" />
+            </div>
+            <div class="bg-gray-100 rounded-lg shadow-md w-max z-30">
+              <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Account", class: "flex items-center px-2 py-2 bg-white" do %>
+                <.initials_circle user={@current_user} />
+                <div class="ml-2 font-semibold">Account</div>
+              <% end %>
             
-            <%= if Enum.any?(@current_user.onboarding.intro_states) do %>
-              <.live_component module={PicselloWeb.Live.RestartTourComponent} id="current_user", current_user={@current_user} />
-            <% end %>
-            <.form for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
-              <%= submit "Logout", class: "px-6 text-left py-2 w-full" %>
-            </.form>
+              <%= if Enum.any?(@current_user.onboarding.intro_states) do %>
+                <.live_component module={PicselloWeb.Live.RestartTourComponent} id="current_user", current_user={@current_user} />
+              <% end %>
+              <.form for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
+                <%= submit "Logout", class: "text-center py-2 w-full" %>
+              </.form>
+            </div>
           </div>
-        </div>
 
-        <div class="flex flex-col items-center justify-center text-sm text-base-300 bg-gray-100 rounded-full w-9 h-9 pb-0.5" title={@current_user.name}>
-          <%= User.initials @current_user %>
-        </div>
+          <div class="flex flex-col items-center justify-center text-sm text-base-300 bg-gray-100 rounded-full w-9 h-9 pb-0.5" title={@current_user.name}>
+            <%= User.initials @current_user %>
+          </div>
         <% end %>
       </div>
     </div>

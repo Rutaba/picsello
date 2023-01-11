@@ -745,13 +745,13 @@ defmodule PicselloWeb.JobLive.Shared do
         <%= unless @package |> Package.print_credits() |> Money.zero?() do %>
           <p><%= "#{Money.to_string(@package.print_credits, fractional_unit: false)} print credit" %></p>
         <% end %>
-        <%= if ((!@proposal || (@proposal && (!@proposal.sent_to_client || is_nil(@proposal.signed_at))))) && !@job.is_gallery_only do %>
+        <%= if !@job.is_gallery_only do %>
             <div class="self-start relative py-1 hover:bg-blue-planning-100 hover:rounded-md tooltip">
               <.icon_button color="blue-planning-300" phx-click="edit-package" icon="pencil" class="mt-auto" disabled={!Job.lead?(@job) || (@proposal && @proposal.signed_at)}>
                 Edit
               </.icon_button>
               <%= if @proposal && @proposal.signed_at do %>
-                <div class="cursor-default tooltiptext">Your client has already signed their proposal so package details are no longer editable.</div>
+                <div class="cursor-default tooltiptext w-72">Your client has already signed their proposal so package details are no longer editable.</div>
               <% end %>
             </div>
         <% end %>
