@@ -8,7 +8,7 @@ defmodule Picsello.GlobalSettings do
   alias Picsello.Category
   import Ecto.Query
 
-  @whcc_print_categroy Category.print_category()
+  @whcc_print_category Category.print_category()
 
   def update_gallery_product(%GSGalleryProduct{} = gs_gallery_product, opts)
       when is_list(opts) do
@@ -42,10 +42,10 @@ defmodule Picsello.GlobalSettings do
 
   def list_gallery_products(organization_id) do
     GSGalleryProduct
-    |> join(:inner, [gs_gallery_product], category in assoc(gs_gallery_product, :category))
-    |> where([gallery_product], gallery_product.organization_id == ^organization_id)
+    |> join(:inner, [gs_gp], category in assoc(gs_gp, :category))
+    |> where([gs_gp], gs_gp.organization_id == ^organization_id)
     |> order_by([_, category], category.position)
-    |> preload(category: [:products])
+    |> preload([gs_gp, category], category: {category, [:products, gs_gallery_products: gs_gp]})
     |> Repo.all()
   end
 
@@ -53,8 +53,8 @@ defmodule Picsello.GlobalSettings do
     categories = from(c in Category, preload: :products, where: not c.hidden) |> Repo.all()
 
     categories
-    |> Enum.find(&(&1.whcc_id == @whcc_print_categroy))
-    |> Map.get(:products)
+    |> Enum.find(%{}, &(&1.whcc_id == @whcc_print_category))
+    |> Map.get(:products, [])
     |> Enum.map(fn product ->
       product = Picsello.Repo.preload(product, :category)
       {categories, selections} = Picsello.Product.selections_with_prices(product)
@@ -118,7 +118,7 @@ defmodule Picsello.GlobalSettings do
     |> then(&%{product_id: product_id, sizes: &1})
   end
 
-  defp print_products(@whcc_print_categroy, print_category), do: print_category
+  defp print_products(@whcc_print_category, print_category), do: print_category
   defp print_products(_whcc_print_categroy, _print_category), do: []
 
   def list_print_products(gs_gallery_product_id) do

@@ -10,8 +10,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       credits: 1,
       assign_cart_count: 2,
       get_unconfirmed_order: 2,
-      assign_checkout_routes: 1,
-      min_price: 3
+      assign_checkout_routes: 1
     ]
 
   @defaults %{
@@ -239,4 +238,5 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   defp get_proofing_album_id(_album, _photo), do: nil
 
   defdelegate option(assigns), to: PicselloWeb.GalleryLive.Shared, as: :product_option
+  defdelegate min_price(category, org_id, opts), to: Picsello.Galleries
 end

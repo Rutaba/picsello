@@ -2,8 +2,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  alias Picsello.{GlobalSettings, Category}
-  import PicselloWeb.GalleryLive.Shared, only: [toggle_preview: 1, min_price: 3, max_price: 3]
+  alias Picsello.{GlobalSettings, Category, Galleries}
+  import PicselloWeb.GalleryLive.Shared, only: [toggle_preview: 1]
 
   @impl true
   def update(%{organization_id: _} = assigns, socket) do
@@ -22,8 +22,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
   end
 
   defp product_preview(%{product: %{category: category} = product} = assigns) do
-    category = Map.put(category, :default_markup, product.markup)
-
     ~H"""
       <div class="flex flex-col justify-between">
         <div class="items-center mt-8">
@@ -130,4 +128,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
 
   defp markup("%"), do: markup("0%")
   defp markup(markup), do: String.trim(markup, "%") |> Decimal.new() |> Decimal.div(100)
+
+  defdelegate min_price(category, org_id, opts), to: Galleries
+  defdelegate max_price(category, org_id, opts), to: Galleries
 end

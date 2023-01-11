@@ -16,7 +16,7 @@ defmodule Picsello.WHCC do
     {384, 265},
     {600, 335}
   ]
-  @area_markup_category Application.compile_env(:picsello, :print_category)
+  @area_markup_category Picsello.Category.print_category()
 
   require Logger
   import Ecto.Query, only: [from: 2]
@@ -91,7 +91,7 @@ defmodule Picsello.WHCC do
     |> price_details(details, item_attrs, %{use_global: use_global})
   end
 
-  def price_details(product, details, other, opts \\ [])
+  def price_details(product, details, other, opts \\ %{})
 
   def price_details(
         %{
