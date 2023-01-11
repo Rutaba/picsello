@@ -56,12 +56,12 @@ defmodule Picsello.GalleryProducts do
   @doc """
   Get all the gallery products that are ready for review
   """
-  def get_gallery_products(gallery_id, opts) do
-    if maybe_query_products_with_active_payment_method(gallery_id) do
-      gallery_id
+  def get_gallery_products(%{id: id, use_global: use_global}, opts) do
+    if maybe_query_products_with_active_payment_method(id) do
+      id
       |> gallery_products_query(opts)
       |> Repo.all()
-      |> Enum.map(&Picsello.WHCC.update_markup/1)
+      |> Enum.map(&Picsello.WHCC.update_markup(&1, use_global: use_global))
     else
       []
     end
@@ -89,7 +89,10 @@ defmodule Picsello.GalleryProducts do
       where:
         product.gallery_id == ^gallery_id and not category.hidden and is_nil(category.deleted_at),
       where: photographer.onboarding ~>> "state" != ^Picsello.Onboardings.non_us_state(),
-      preload: [category: {category, [:products, gs_gallery_products: gs_gallery_product]}],
+      preload: [
+        :gallery,
+        category: {category, [:products, gs_gallery_products: gs_gallery_product]}
+      ],
       select_merge: %{preview_photo: preview_photo},
       order_by: category.position
     )

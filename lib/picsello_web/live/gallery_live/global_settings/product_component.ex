@@ -2,8 +2,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  alias Picsello.{GlobalSettings, Category, Galleries}
-  import PicselloWeb.GalleryLive.Shared, only: [toggle_preview: 1]
+  alias Picsello.{GlobalSettings, Category}
+  import PicselloWeb.GalleryLive.Shared, only: [toggle_preview: 1, min_price: 3, max_price: 3]
 
   @impl true
   def update(%{organization_id: _} = assigns, socket) do
@@ -17,16 +17,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
     assign(
       socket,
       :products,
-      organization_id
-      |> GlobalSettings.list_gallery_products()
-      |> then(fn
-        [] ->
-          GlobalSettings.insert_gallery_products(organization_id)
-          GlobalSettings.list_gallery_products(organization_id)
-
-        gallery_products ->
-          gallery_products
-      end)
+      GlobalSettings.list_gallery_products(organization_id)
     )
   end
 
@@ -53,7 +44,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
             <div class="py-2 px-4 flex justify-between">
               <div>
                 <h4 class="font-bold text-xl">Pricing:</h4>
-                <i class="font-normal text-sm text-base-250">From <%= min_price(category) %> - <%= max_price(category) %></i>
+                <i class="font-normal text-sm text-base-250">From
+                  <%= min_price(category, @organization_id, %{use_global: true}) %> -
+                  <%= max_price(category, @organization_id, %{use_global: true}) %>
+                </i>
               </div>
               <%= if category.whcc_id == Category.print_category() do %>
                   <div phx-target={@myself} phx-click="edit_pricing" phx-value-product_id={product.id} class="mt-2 h-12 text-base font-normal border rounded-md border-blue-planning-300 p-3 text-center flex justify-between cursor-pointer">
@@ -93,8 +87,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
   end
 
   defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
-  defdelegate min_price(category), to: Galleries
-  defdelegate max_price(category), to: Galleries
 
   @impl true
   def handle_event("product_enabled", %{"product_id" => product_id, "value" => "on"}, socket) do

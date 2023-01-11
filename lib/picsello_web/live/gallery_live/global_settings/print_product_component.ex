@@ -206,7 +206,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
     |> assign(
       :print_products_map,
       Map.new(
-        GlobalSettings.list_print_products(product.id),
+        print_products,
         fn x ->
           {
             x.product_id,

@@ -10,7 +10,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       credits: 1,
       assign_cart_count: 2,
       get_unconfirmed_order: 2,
-      assign_checkout_routes: 1
+      assign_checkout_routes: 1,
+      min_price: 3
     ]
 
   @defaults %{
@@ -33,7 +34,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
 
       socket ->
         socket
-        |> assign(:products, GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false))
+        |> assign(:products, GalleryProducts.get_gallery_products(gallery, :coming_soon_false))
     end)
     |> then(fn %{assigns: %{gallery: gallery}} = socket ->
       socket
@@ -238,5 +239,4 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   defp get_proofing_album_id(_album, _photo), do: nil
 
   defdelegate option(assigns), to: PicselloWeb.GalleryLive.Shared, as: :product_option
-  defdelegate min_price(category), to: Galleries
 end

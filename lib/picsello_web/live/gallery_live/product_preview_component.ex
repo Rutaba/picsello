@@ -1,6 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
   @moduledoc false
   use PicselloWeb, :live_component
+  import PicselloWeb.GalleryLive.Shared, only: [min_price: 3]
 
   @default_assigns %{
     click_params: nil
@@ -11,5 +12,4 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
   end
 
   defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
-  defdelegate min_price(category), to: Picsello.Galleries
 end

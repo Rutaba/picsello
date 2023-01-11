@@ -11,7 +11,8 @@ defmodule Picsello.Accounts do
     Accounts.User,
     Accounts.UserToken,
     OrganizationCard,
-    Notifiers.UserNotifier
+    Notifiers.UserNotifier,
+    GlobalSettings
   }
 
   ## Database getters
@@ -393,7 +394,8 @@ defmodule Picsello.Accounts do
           password: generate_password(),
           time_zone: time_zone,
           organization: %{
-            organization_cards: OrganizationCard.for_new_changeset()
+            organization_cards: OrganizationCard.for_new_changeset(),
+            gs_gallery_products: GlobalSettings.gallery_products_params()
           }
         })
         |> Ecto.Changeset.put_change(:sign_up_auth_provider, provider)

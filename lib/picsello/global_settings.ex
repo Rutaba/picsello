@@ -49,35 +49,27 @@ defmodule Picsello.GlobalSettings do
     |> Repo.all()
   end
 
-  def insert_gallery_products(organization_id) when is_integer(organization_id) do
+  def gallery_products_params() do
     categories = from(c in Category, preload: :products, where: not c.hidden) |> Repo.all()
 
-    print_category =
-      categories
-      |> Enum.find(&(&1.whcc_id == @whcc_print_categroy))
-      |> Map.get(:products)
-      |> Enum.map(fn product ->
-        product = Picsello.Repo.preload(product, :category)
-        {categories, selections} = Picsello.Product.selections_with_prices(product)
-        build_selections(selections, categories, product.id)
-      end)
-
-    Multi.new()
-    |> Multi.run(:insert_gs_gallery_product, fn repo, _ ->
-      Enum.each(categories, fn category ->
-        %GSGalleryProduct{}
-        |> GSGalleryProduct.changeset(%{
-          category_id: category.id,
-          organization_id: organization_id,
-          markup: category.default_markup,
-          global_settings_print_products: print_products(category.whcc_id, print_category)
-        })
-        |> repo.insert!()
-      end)
-
-      {:ok, :inserted}
+    categories
+    |> Enum.find(&(&1.whcc_id == @whcc_print_categroy))
+    |> Map.get(:products)
+    |> Enum.map(fn product ->
+      product = Picsello.Repo.preload(product, :category)
+      {categories, selections} = Picsello.Product.selections_with_prices(product)
+      build_selections(selections, categories, product.id)
     end)
-    |> Repo.transaction()
+    |> then(fn print_category ->
+      Enum.map(
+        categories,
+        &%{
+          category_id: &1.id,
+          markup: &1.default_markup,
+          global_settings_print_products: print_products(&1.whcc_id, print_category)
+        }
+      )
+    end)
   end
 
   def size([total_cost, shipping_cost, print_cost, _, rounding, size, type], ["size", _]),

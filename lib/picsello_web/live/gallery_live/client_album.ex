@@ -167,8 +167,9 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   defp assigns(%{assigns: %{album: album, gallery: gallery}} = socket) do
     album = album |> Repo.preload(:photos)
-    gallery = gallery |> Repo.preload(:watermark)
-    gallery = Galleries.populate_organization_user(gallery)
+
+    %{job: %{client: %{organization: organization}}} =
+      gallery = gallery |> Repo.preload(:watermark) |> Galleries.populate_organization_user()
 
     if album.is_proofing && is_nil(gallery.watermark) do
       %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
@@ -188,9 +189,10 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       page: 0,
       page_title: "Show Album",
       download_all_visible: Orders.can_download_all?(gallery),
-      products: GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false),
+      products: GalleryProducts.get_gallery_products(gallery, :coming_soon_false),
       update_mode: "append",
-      credits: Cart.credit_remaining(gallery) |> credits()
+      credits: Cart.credit_remaining(gallery) |> credits(),
+      organization: organization
     )
     |> assign_cart_count(gallery)
     |> assign_photos(@per_page)

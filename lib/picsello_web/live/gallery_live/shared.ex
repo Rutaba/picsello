@@ -25,6 +25,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @card_blank "/images/card_gray.png"
+  @print_category Application.compile_env(:picsello, :print_category)
 
   def toggle_favorites(
         %{
@@ -1084,5 +1085,21 @@ defmodule PicselloWeb.GalleryLive.Shared do
       <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300"><%= @text %></span>
     </label>
     """
+  end
+
+  def min_price(%{whcc_id: @print_category} = category, organization_id, %{use_global: true}) do
+    Galleries.min_price(category, organization_id)
+  end
+
+  def min_price(category, _organization_id, _) do
+    Galleries.min_price(category)
+  end
+
+  def max_price(%{whcc_id: @print_category} = category, organization_id, %{use_global: true}) do
+    Galleries.max_price(category, organization_id)
+  end
+
+  def max_price(category, _organization_id, _) do
+    Galleries.max_price(category)
   end
 end

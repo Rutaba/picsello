@@ -19,13 +19,16 @@ defmodule Picsello.Galleries do
     Orders,
     Cart.Digital,
     Job,
-    Client
+    Client,
+    WHCC
   }
 
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, Album}
   import Repo.CustomMacros
+
+  @area_markup_category Application.compile_env(:picsello, :print_category)
 
   @doc """
   Returns the list of galleries.
@@ -993,8 +996,8 @@ defmodule Picsello.Galleries do
     gallery |> get_package() |> Map.get(:download_each_price)
   end
 
-  def products(%{id: gallery_id}),
-    do: Picsello.GalleryProducts.get_gallery_products(gallery_id, :with_or_without_previews)
+  def products(%{} = gallery),
+    do: Picsello.GalleryProducts.get_gallery_products(gallery, :with_or_without_previews)
 
   def expired?(%Gallery{expired_at: nil}), do: false
 
@@ -1030,6 +1033,31 @@ defmodule Picsello.Galleries do
     category
     |> Picsello.WHCC.max_price_details()
     |> evaluate_price()
+  end
+
+  def max_price(%{whcc_id: @area_markup_category} = category, org_id) do
+    category.id
+    |> print_product_sizes(org_id)
+    |> Enum.max_by(& &1.final_cost, fn -> %{} end)
+    |> WHCC.final_cost()
+  end
+
+  defp print_product_sizes(category_id, organization_id) do
+    from(print_product in Picsello.GlobalSettings.PrintProduct,
+      join: gs_gallery_product in assoc(print_product, :global_settings_gallery_product),
+      where: gs_gallery_product.organization_id == ^organization_id,
+      where: gs_gallery_product.category_id == ^category_id,
+      select: print_product.sizes
+    )
+    |> Repo.all()
+    |> Enum.concat()
+  end
+
+  def min_price(%{whcc_id: @area_markup_category} = category, org_id) do
+    category.id
+    |> print_product_sizes(org_id)
+    |> Enum.min_by(& &1.final_cost, fn -> %{} end)
+    |> WHCC.final_cost()
   end
 
   defp evaluate_price(details) do
