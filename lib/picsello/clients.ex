@@ -40,17 +40,6 @@ defmodule Picsello.Clients do
     )
   end
 
-  def already_exists?(email) do
-    case email do
-      nil ->
-        false
-
-      email ->
-        query = from c in Client, where: c.email == ^email
-        Repo.exists?(query)
-    end
-  end
-
   def new_client_changeset(attrs, organization_id) do
     attrs
     |> Map.put("organization_id", organization_id)

@@ -62,7 +62,7 @@ defmodule Picsello.CreateLeadTest do
     |> click(button("Create a lead"))
     |> click(button("Add a new client"))
     |> fill_in(text_field("Client Email"), with: "taylor@example.com")
-    |> assert_has(css("label", text: "Client Email already exists"))
+    |> assert_has(css("label", text: "Client Email has already been taken"))
     |> assert_has(css("button:disabled[type='submit']"))
   end
 

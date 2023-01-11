@@ -1,6 +1,6 @@
 defmodule PicselloWeb.SendgridInboundParseControllerTest do
   use PicselloWeb.ConnCase, async: true
-  alias Picsello.{Repo, ClientMessage, Job}
+  alias Picsello.{Repo, ClientMessage, Messages}
 
   setup do
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
@@ -10,7 +10,7 @@ defmodule PicselloWeb.SendgridInboundParseControllerTest do
   test "parses the response", %{conn: conn} do
     user = insert(:user)
     job = insert(:lead, user: user)
-    token = Job.token(job)
+    token = Messages.token(job)
 
     params = %{
       "SPF" => "pass",
