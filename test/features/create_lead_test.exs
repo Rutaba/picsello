@@ -11,10 +11,10 @@ defmodule Picsello.CreateLeadTest do
   setup %{session: session, user: user} do
     client =
       insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "taylor@example.com",
-      email: "(210) 111-1234"
+        user: user,
+        name: "Elizabeth Taylor",
+        phone: "taylor@example.com",
+        email: "(210) 111-1234"
       )
 
     [client: client, session: session, user: user]

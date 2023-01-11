@@ -45,34 +45,20 @@ defmodule Picsello.Messages do
     )
   end
 
-  def token(%{id: id, inserted_at: inserted_at}),
+  def token(%{id: id, inserted_at: inserted_at}, key \\ "JOB_ID"),
     do:
       PicselloWeb.Endpoint
-      |> Phoenix.Token.sign("ID", id, signed_at: DateTime.to_unix(inserted_at))
+      |> Phoenix.Token.sign(key, id, signed_at: DateTime.to_unix(inserted_at))
 
   def email_address(record) do
     domain = Application.get_env(:picsello, Picsello.Mailer) |> Keyword.get(:reply_to_domain)
     [token(record), domain] |> Enum.join("@")
   end
 
-  def find_by_client_token("" <> token) do
-    case Phoenix.Token.verify(PicselloWeb.Endpoint, "CLIENT_ID", token, max_age: :infinity) do
-      {:ok, client_id} -> Repo.get(Client, client_id)
+  def find_by_token("" <> token, key \\ "JOB_ID") do
+    case Phoenix.Token.verify(PicselloWeb.Endpoint, key, token, max_age: :infinity) do
+      {:ok, id} -> if key == "JOB_ID", do: Repo.get(Job, id), else: Repo.get(Client, id)
       _ -> nil
-    end
-  end
-
-  def find_by_token("" <> token) do
-    case Phoenix.Token.verify(PicselloWeb.Endpoint, "ID", token, max_age: :infinity) do
-      {:ok, id} -> get_client_or_job(id)
-      _ -> nil
-    end
-  end
-
-  defp get_client_or_job(id) do
-    case Repo.get(Job, id) do
-      nil -> Repo.get(Client, id)
-      %Job{} = job -> job
     end
   end
 end

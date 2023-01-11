@@ -10,10 +10,10 @@ defmodule Picsello.ClientsIndexTest do
   setup %{session: session, user: user} do
     client =
       insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "taylor@example.com",
-      email: "(210) 111-1234"
+        user: user,
+        name: "Elizabeth Taylor",
+        phone: "taylor@example.com",
+        email: "(210) 111-1234"
       )
 
     lead = insert(:lead, client: client, user: user)
@@ -127,7 +127,11 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("john2@example.com")
   end
 
-  feature "edits client from actions that already has a job", %{session: session, client: client, lead: lead} do
+  feature "edits client from actions that already has a job", %{
+    session: session,
+    client: client,
+    lead: lead
+  } do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
@@ -253,7 +257,6 @@ defmodule Picsello.ClientsIndexTest do
     session: session,
     client: client
   } do
-
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
