@@ -350,7 +350,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
        ) do
     changeset =
       params
-      |> Job.create_changeset()
+      |> Job.create_job_changeset()
       |> Map.put(:action, action)
 
     assign(socket, job_changeset: changeset)

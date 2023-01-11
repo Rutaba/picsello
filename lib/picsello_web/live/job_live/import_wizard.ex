@@ -306,7 +306,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         %{"client" => _client_params} ->
           params
           |> put_in(["client", "organization_id"], current_user.organization_id)
-          |> Job.create_changeset()
+          |> Job.create_job_changeset()
           |> Map.put(:action, action)
       end
 

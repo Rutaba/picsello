@@ -163,7 +163,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_event("cancel-new-client", _, socket) do
     socket
-    |> assign(:changeset, Picsello.Job.create_changeset(%{}))
+    |> assign(:changeset, Picsello.Job.create_job_changeset(%{}))
     |> assign(:new_client, false)
     |> noreply()
   end

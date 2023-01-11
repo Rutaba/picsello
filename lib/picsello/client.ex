@@ -27,7 +27,18 @@ defmodule Picsello.Client do
     |> downcase_email()
     |> User.validate_email_format()
     |> validate_change(:phone, &valid_phone/2)
+    |> unique_constraint([:email, :organization_id])
+  end
+
+  def create_client_with_name_changeset(client \\ %__MODULE__{}, attrs) do
+    client
+    |> cast(attrs, [:name, :email, :phone, :address, :notes, :organization_id])
+    |> validate_required([:email, :name, :organization_id])
+    |> downcase_email()
+    |> User.validate_email_format()
+    |> validate_change(:phone, &valid_phone/2)
     |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
+    |> unique_constraint([:email, :organization_id])
   end
 
   def create_client_changeset(client \\ %__MODULE__{}, attrs) do

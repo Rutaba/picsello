@@ -59,6 +59,15 @@ defmodule Picsello.Job do
     |> assoc_constraint(:client)
   end
 
+  def create_job_changeset(attrs \\ %{}) do
+    %__MODULE__{}
+    |> cast(attrs, [:type, :client_id, :notes, :is_gallery_only])
+    |> cast_assoc(:client, with: &Client.create_client_with_name_changeset/2)
+    |> validate_required([:type])
+    |> foreign_key_constraint(:type)
+    |> assoc_constraint(:client)
+  end
+
   def document_changeset(job, attrs) do
     job
     |> change(attrs)
