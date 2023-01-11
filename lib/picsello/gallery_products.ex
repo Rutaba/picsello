@@ -61,7 +61,7 @@ defmodule Picsello.GalleryProducts do
       id
       |> gallery_products_query(opts)
       |> Repo.all()
-      |> Enum.map(&Picsello.WHCC.update_markup(&1, use_global: use_global))
+      |> Enum.map(&Picsello.WHCC.update_markup(&1, %{use_global: use_global}))
     else
       []
     end

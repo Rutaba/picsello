@@ -1,20 +1,22 @@
-defmodule Picsello.Repo.Migrations.InsertGlobalSettingsGalleryProducts do
-  use Ecto.Migration
+defmodule Mix.Tasks.InsertGlobalSettings do
+  @moduledoc false
 
+  use Mix.Task
   import Ecto.Query
   alias Ecto.Multi
-  alias Picsello.GlobalSettings
-  alias Picsello.GlobalSettings.GalleryProduct
+  alias Picsello.{Organization, GlobalSettings.GalleryProduct, GlobalSettings, Repo}
 
-  def change do
+  def run(_) do
+    Mix.Task.run("app.start")
+
     gallery_products_params = GlobalSettings.gallery_products_params()
 
-    from(org in Picsello.Organization,
+    from(org in Organization,
       left_join: gallery_product in assoc(org, :gs_gallery_products),
       where: is_nil(gallery_product.id),
       select: org.id
     )
-    |> Picsello.Repo.all()
+    |> Repo.all()
     |> Enum.reduce(Multi.new(), fn org_id, multi ->
       gallery_products_params
       |> Enum.reduce(multi, fn %{category_id: category_id} = params, ecto_multi ->
@@ -27,6 +29,6 @@ defmodule Picsello.Repo.Migrations.InsertGlobalSettingsGalleryProducts do
         )
       end)
     end)
-    |> Picsello.Repo.transaction()
+    |> Repo.transaction()
   end
 end
