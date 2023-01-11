@@ -22,7 +22,7 @@ defmodule Picsello.PricingCalculatorBusinessCostsTest do
     }
 
   describe "create and modify changeset" do
-    test "insert pricing calculator business cost" do
+    test "insert smart profit calculator business cost" do
       assert %{active: true, category: "Equipment", line_items: [%{title: "Camera"}]} =
                PricingCalculatorBusinessCosts.changeset(
                  %PricingCalculatorBusinessCosts{},
@@ -31,7 +31,7 @@ defmodule Picsello.PricingCalculatorBusinessCostsTest do
                |> Repo.insert!()
     end
 
-    test "update pricing calculator business cost" do
+    test "update smart profit calculator business cost" do
       base_business_cost =
         PricingCalculatorBusinessCosts.changeset(
           %PricingCalculatorBusinessCosts{},
@@ -65,7 +65,7 @@ defmodule Picsello.PricingCalculatorBusinessCostsTest do
                |> Repo.update!()
     end
 
-    test "add pricing calculator line_item" do
+    test "add smart profit calculator line_item" do
       base_business_cost =
         PricingCalculatorBusinessCosts.changeset(
           %PricingCalculatorBusinessCosts{},

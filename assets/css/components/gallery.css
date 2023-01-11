@@ -1,6 +1,6 @@
 @layer components {
   .photographer-gallery {
-    @apply before:content-[""] before:fixed before:left-96 before:top-0 before:right-0 before:bottom-0 before:bg-base-100;
+    @apply md:before:content-[""] md:before:fixed md:before:left-96 md:before:top-0 md:before:right-0 md:before:bottom-0 md:before:bg-base-100;
   }
 
   .gallery__coverImg {

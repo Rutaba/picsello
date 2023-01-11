@@ -152,8 +152,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_disabled(@invoice_button)
       |> assert_text("Let’s get your shoot booked")
       |> click(link("Message Photography LLC"))
-      |> fill_in(css(".editor > div"), with: "actual message")
-      |> wait_for_enabled_submit_button()
+      |> within_modal(fn modal ->
+        modal
+        |> fill_in(css(".editor > div"), with: "actual message")
+        |> wait_for_enabled_submit_button()
+      end)
       |> click(button("Send"))
       |> assert_text("Your message has been sent")
       |> click(button("Close"))
@@ -300,7 +303,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
 
       photographer_session
+      |> scroll_to_top()
       |> click(button("Go to inbox"))
+      |> scroll_to_top()
       |> assert_text("actual message")
     end
 
