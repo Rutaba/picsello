@@ -131,13 +131,6 @@ defmodule PicselloWeb.Live.Shared do
     end
   end
 
-  def find_by_job_token("" <> token) do
-    case Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity) do
-      {:ok, job_id} -> Repo.get(__MODULE__, job_id)
-      _ -> nil
-    end
-  end
-
   defp make_payment_schedule(multi_changes, changes) do
     multi_changes
     |> Enum.map(fn {payment_schedule, i} ->
@@ -346,7 +339,7 @@ defmodule PicselloWeb.Live.Shared do
     """
   end
 
-  def client_name_box(assigns) do
+  def client_name_box(%{assigns: %{job_changeset: job_changeset}} = assigns) do
     assigns = assigns |> Enum.into(%{changeset: nil})
 
     ~H"""
@@ -359,7 +352,7 @@ defmodule PicselloWeb.Live.Shared do
               @changeset -> Changeset.get_field(@changeset, :name)
               @searched_client -> @searched_client.name
               @selected_client -> @selected_client.name
-              true -> Changeset.get_field(assigns.job_changeset.changes.client, :name)
+              true -> Changeset.get_field(job_changeset.changes.client, :name)
             end
           %></span>
         </p>

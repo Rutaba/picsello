@@ -271,7 +271,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
       %{valid?: true} ->
         socket |> assign(step: :package_payment)
 
-      socket ->
+      _ ->
         socket
     end
     |> noreply()
@@ -310,7 +310,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
           |> Map.put(:action, action)
       end
 
-    assign(socket, job_changeset: changeset)
+    assign(socket, :job_changeset, changeset)
   end
 
   def show_link?(payment_changeset) do

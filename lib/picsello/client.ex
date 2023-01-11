@@ -23,11 +23,11 @@ defmodule Picsello.Client do
   def create_changeset(client \\ %__MODULE__{}, attrs) do
     client
     |> cast(attrs, [:name, :email, :organization_id, :phone, :address, :notes])
+    |> validate_required([:name, :email, :organization_id])
     |> downcase_email()
     |> User.validate_email_format()
-    |> validate_required([:name, :email, :organization_id])
     |> validate_change(:phone, &valid_phone/2)
-    |> unique_constraint([:email, :organization_id])
+    |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
   end
 
   def create_client_changeset(client \\ %__MODULE__{}, attrs) do

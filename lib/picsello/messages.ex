@@ -66,4 +66,11 @@ defmodule Picsello.Messages do
       _ -> nil
     end
   end
+
+  def find_by_job_token("" <> token) do
+    case Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity) do
+      {:ok, job_id} -> Repo.get(__MODULE__, job_id)
+      _ -> nil
+    end
+  end
 end
