@@ -55,6 +55,7 @@ defmodule Picsello.Category do
     field :shipping_upcharge, :decimal
     has_many(:products, Picsello.Product)
     has_many(:gallery_products, Picsello.Galleries.GalleryProduct)
+    has_many(:gs_gallery_products, Picsello.GlobalSettings.GalleryProduct)
 
     timestamps(type: :utc_datetime)
   end

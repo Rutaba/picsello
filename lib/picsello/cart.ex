@@ -18,8 +18,8 @@ defmodule Picsello.Cart do
 
   alias Picsello.Cart.Product, as: CartProduct
 
-  def new_product(editor_id, account_id) do
-    account_id |> WHCC.price_details(editor_id) |> CartProduct.new()
+  def new_product(editor_id, gallery_id) do
+    gallery_id |> WHCC.price_details(editor_id) |> CartProduct.new()
   end
 
   @doc """

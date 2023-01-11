@@ -21,7 +21,7 @@ defmodule Picsello.WHCC do
   require Logger
   import Ecto.Query, only: [from: 2]
 
-  alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor}
+  alias Picsello.{Repo, WHCC.Adapter, WHCC.Editor, Galleries}
 
   def categories, do: Repo.all(categories_query())
 
@@ -76,22 +76,34 @@ defmodule Picsello.WHCC do
     end
   end
 
-  def price_details(account_id, editor_id) do
+  def price_details(gallery_id, editor_id) do
+    %{photographer: %{organization_id: organization_id}, use_global: use_global} =
+      Galleries.get_gallery!(gallery_id) |> Repo.preload(:photographer)
+
+    account_id = Galleries.account_id(gallery_id)
     details = editor_details(account_id, editor_id)
     %{items: [item]} = editors_export(account_id, [Editor.Export.Editor.new(editor_id)])
 
     details
-    |> get_product
+    |> get_product(organization_id)
+    |> then(fn
+      product when use_global -> update_markup(product)
+      product -> product
+    end)
     |> price_details(
       details,
       item |> Map.from_struct() |> Map.take([:unit_base_price, :quantity])
     )
   end
 
-  def price_details(%{category: category, id: whcc_product_id} = product, details, %{
-        unit_base_price: unit_price,
-        quantity: quantity
-      }) do
+  def price_details(
+        %{id: whcc_product_id, category: category} = product,
+        details,
+        %{
+          unit_base_price: unit_price,
+          quantity: quantity
+        }
+      ) do
     %{
       unit_markup: mark_up_price(product, details, unit_price),
       unit_price: unit_price,
@@ -132,11 +144,13 @@ defmodule Picsello.WHCC do
   defdelegate highest_selections(product), to: __MODULE__.Product
   defdelegate sync, to: __MODULE__.Sync
 
-  defp get_product(%Editor.Details{product_id: product_id}) do
+  defp get_product(%Editor.Details{product_id: product_id}, organization_id) do
     from(product in Picsello.Product,
       join: category in assoc(product, :category),
+      left_join: gs_gallery_product in assoc(category, :gs_gallery_products),
+      on: gs_gallery_product.organization_id == ^organization_id,
       where: product.whcc_id == ^product_id,
-      preload: [category: category]
+      preload: [category: {category, gs_gallery_products: gs_gallery_product}]
     )
     |> Repo.one!()
   end
@@ -227,4 +241,11 @@ defmodule Picsello.WHCC do
       Picsello.Category.active()
       |> Picsello.Category.shown()
       |> Picsello.Category.order_by_position()
+
+      def update_markup(%{category: %{whcc_id: whcc_id, gs_gallery_products: [%{}]}} = product)
+      when whcc_id != @area_markup_category do
+    %{category: %{gs_gallery_products: [%{markup: markup}]} = category} = product
+    %{product | category: %{category | default_markup: markup}}
+  end
+  def update_markup(product), do: product
 end
