@@ -9,6 +9,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   @impl true
   def mount(_params, _session, socket) do
     socket
+    |> assign(:page_title, "Booking Events")
     |> assign_booking_events()
     |> ok()
   end

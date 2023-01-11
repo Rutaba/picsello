@@ -43,6 +43,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     socket
+    |> assign(:page_title, "Clients")
     |> assign_new(:pagination, fn -> Pagination.changeset() |> Changeset.apply_changes() end)
     |> assign_new(:pagination_changeset, fn -> Pagination.changeset() end)
     |> assign_clients()

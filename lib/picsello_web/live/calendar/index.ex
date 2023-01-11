@@ -6,6 +6,7 @@ defmodule PicselloWeb.Live.Calendar.Index do
   @impl true
   def mount(_params, _session, socket) do
     socket
+    |> assign(:page_title, "Calendar")
     |> ok()
   end
 
