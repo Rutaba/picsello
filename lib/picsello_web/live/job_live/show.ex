@@ -35,10 +35,7 @@ defmodule PicselloWeb.JobLive.Show do
   def mount(%{"id" => job_id} = assigns, _session, socket) do
     socket
     |> assign_job(job_id)
-    |> assign(
-      :request_from,
-      if(assigns["request_from"], do: assigns["request_from"], else: "job_index")
-    )
+    |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
     |> then(fn %{assigns: %{job: job}} = socket ->
       payment_schedules = job |> Repo.preload(:payment_schedules) |> Map.get(:payment_schedules)

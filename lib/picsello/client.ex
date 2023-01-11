@@ -23,10 +23,21 @@ defmodule Picsello.Client do
   def create_changeset(client \\ %__MODULE__{}, attrs) do
     client
     |> cast(attrs, [:name, :email, :organization_id, :phone, :address, :notes])
+    |> validate_required([:name, :email, :organization_id])
     |> downcase_email()
     |> User.validate_email_format()
-    |> validate_required([:name, :email, :organization_id])
     |> validate_change(:phone, &valid_phone/2)
+    |> unique_constraint([:email, :organization_id])
+  end
+
+  def create_client_with_name_changeset(client \\ %__MODULE__{}, attrs) do
+    client
+    |> cast(attrs, [:name, :email, :phone, :address, :notes, :organization_id])
+    |> validate_required([:email, :name, :organization_id])
+    |> downcase_email()
+    |> User.validate_email_format()
+    |> validate_change(:phone, &valid_phone/2)
+    |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
     |> unique_constraint([:email, :organization_id])
   end
 
@@ -79,23 +90,6 @@ defmodule Picsello.Client do
       changeset |> validate_required([:name])
     else
       changeset
-    end
-  end
-
-  def token(%__MODULE__{id: id, inserted_at: inserted_at}),
-    do:
-      PicselloWeb.Endpoint
-      |> Phoenix.Token.sign("CLIENT_ID", id, signed_at: DateTime.to_unix(inserted_at))
-
-  def email_address(%__MODULE__{} = client) do
-    domain = Application.get_env(:picsello, Picsello.Mailer) |> Keyword.get(:reply_to_domain)
-    [token(client), domain] |> Enum.join("@")
-  end
-
-  def find_by_token("" <> token) do
-    case Phoenix.Token.verify(PicselloWeb.Endpoint, "CLIENT_ID", token, max_age: :infinity) do
-      {:ok, client_id} -> Repo.get(__MODULE__, client_id)
-      _ -> nil
     end
   end
 

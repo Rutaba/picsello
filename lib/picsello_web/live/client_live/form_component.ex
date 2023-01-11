@@ -73,11 +73,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
             </a>
 
             <%= if step_number(@step, @steps) > 1 do%>
-              <div class="flex items-center hover:cursor-auto">
-                <div class="ml-3 mr-3 text-base-200">|</div>
-                <.icon name="client-icon" class="w-7 h-7 mr-1"></.icon>
-                <p class="font-bold">Client: <span class="font-normal"><%= Changeset.get_field(changeset, :name) %></span></p>
-              </div>
+              <.client_name_box changeset={changeset} assigns={assigns} />
             <% end %>
           </div>
         <% end %>
@@ -101,7 +97,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
         <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
           <%= labeled_input f, :name, placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
           <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500" %>
-          <%= labeled_input f, :phone, type: :telephone_input, placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500" %>
+          <%= labeled_input f, :phone, type: :telephone_input, placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500", optional: true %>
           <%= labeled_input f, :address, placeholder: "Street Address", phx_debounce: "500", optional: true %>
         </div>
         <%= if !@client do %>
@@ -354,7 +350,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
        ) do
     changeset =
       params
-      |> Job.create_changeset()
+      |> Job.create_job_changeset()
       |> Map.put(:action, action)
 
     assign(socket, job_changeset: changeset)

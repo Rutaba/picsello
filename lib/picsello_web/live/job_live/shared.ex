@@ -163,7 +163,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_event("cancel-new-client", _, socket) do
     socket
-    |> assign(:changeset, Picsello.Job.create_changeset(%{}))
+    |> assign(:changeset, Picsello.Job.create_job_changeset(%{}))
     |> assign(:new_client, false)
     |> noreply()
   end
@@ -838,29 +838,31 @@ defmodule PicselloWeb.JobLive.Shared do
           <%= if(@job.documents == nil || @job.documents == []) do %>
           <div class="p-12 text-gray-400 italic">No additional files have been uploaded</div>
           <% end %>
-            <%= @job.documents |> Enum.map(fn documents  -> %>
-            <div id={documents.id} class="flex flex-row justify-between items-center">
-              <dl class="flex items-center">
-                <dd>
-                <.icon name="files-icon" class="w-4 h-4" />
-                </dd>
-                <dd class="block link pl-1"><%= truncate_name(%{client_name: documents.name}, @string_length) %></dd>
-              </dl>
-              <div id="options" phx-update="ignore" data-offset="0" phx-hook="Select" >
+            <%= for document <- @job.documents do %>
+            <div id={document.id} class="flex flex-row justify-between items-center">
+              <a href={path_to_url(document.url)} target="_blank" rel="document">
+                <dl class="flex items-center">
+                  <dd>
+                  <.icon name="files-icon" class="w-4 h-4" />
+                  </dd>
+                  <dd class="block link pl-1"><%= truncate_name(%{client_name: document.name}, @string_length) %></dd>
+                </dl>
+              </a>
+              <div id={"options-#{document.id}"} phx-update="ignore" data-offset="0" phx-hook="Select" >
                 <button title="Options" type="button" class="flex flex-shrink-0 ml-2 px-2.5 py-1.5 mt-1 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
                   <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
                   <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
                 </button>
 
                 <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
-                  <button title="Deletes" type="button" phx-click="delete_document" phx-value-name={documents.name} phx-value-document_id={documents.id} class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                  <button title="Deletes" type="button" phx-click="delete_document" phx-value-name={document.name} phx-value-document_id={document.id} class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                    <.icon name="trash" class="inline-block w-4 h-4 mr-2 fill-current text-red-sales-300" />
                     Delete
-                    <.icon name="trash" class="inline-block w-4 h-4 mx-3 fill-current text-red-sales-300" />
                   </button>
                 </div>
               </div>
             </div>
-            <% end ) %>
+            <% end %>
           </div>
           <div>
           </div>
@@ -1053,7 +1055,7 @@ defmodule PicselloWeb.JobLive.Shared do
                 <.icon name="search" class="w-4 ml-1 fill-current" />
               <% end %>
             </a>
-            <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients by email or first and last names..." />
+            <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={if !is_nil(@selected_client), do: @selected_client.name, else: "#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients by email or first and last names..." />
             <%= if Enum.any?(@search_results) do %>
               <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
                 <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
@@ -1102,7 +1104,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <% end %>
           </div>
           <div class="flex px-5 py-5 ml-auto">
-            <button class="btn-secondary button rounded-lg border border-blue-300 ml-auto" title="cancel" type="button" phx-click="cancel-new-client" phx-target={@myself}>
+            <button class="btn-secondary button rounded-lg border border-blue-planning-300 ml-auto" title="cancel" type="button" phx-click="cancel-new-client" phx-target={@myself}>
               Cancel
             </button>
           </div>
@@ -1330,16 +1332,16 @@ defmodule PicselloWeb.JobLive.Shared do
             <% :photos -> %>
               <.removal_button phx-target={@target} phx-click="delete_photo" phx-value-index={@index} phx-value-delete_from={@delete_from} />
             <% _ -> %>
-              <div id="file_options" data-offset-x="-60" phx-hook="Select" class="justify-self-end grid-cols-1 cursor-pointer ml-5 lg:ml-auto">
+              <div id={"file_options-#{@entry.uuid}"} data-offset-x="-60" phx-hook="Select" class="justify-self-end grid-cols-1 cursor-pointer ml-5 lg:ml-auto">
                   <button type="button" class="flex flex-shrink-0 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
                     <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
                     <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
                   </button>
 
                   <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
-                    <span phx-click="cancel-upload" phx-target={@myself} phx-value-ref={@entry.ref} aria-label="remove" class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 cursor-pointer">
-                      <span class="pr-2">delete</span>
-                      <.icon name="remove-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300"/>
+                    <span phx-click="cancel-upload" phx-target={@myself} phx-value-ref={@entry.ref} aria-label="remove" class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+                      <.icon name="remove-icon" class="inline-block w-4 h-4 mr-2 fill-current text-red-sales-300"/>
+                      <span class="pr-2">Delete</span>
                     </span>
                   </div>
               </div>
@@ -1435,4 +1437,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> then(&Map.put(uploads, :documents, &1))
     |> then(&assign(socket, :uploads, &1))
   end
+
+  defdelegate path_to_url(path), to: PhotoStorage
 end

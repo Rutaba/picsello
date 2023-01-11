@@ -32,10 +32,11 @@ defmodule PicselloWeb.LeadLive.Show do
     ]
 
   @impl true
-  def mount(%{"id" => job_id}, _session, socket) do
+  def mount(%{"id" => job_id} = assigns, _session, socket) do
     socket
     |> assign_stripe_status()
     |> assign(include_questionnaire: true)
+    |> assign(:request_from, assigns["request_from"])
     |> assign_job(job_id)
     |> assign(:collapsed_sections, [])
     |> then(fn %{assigns: assigns} = socket ->

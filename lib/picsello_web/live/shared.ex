@@ -339,6 +339,27 @@ defmodule PicselloWeb.Live.Shared do
     """
   end
 
+  def client_name_box(%{assigns: %{job_changeset: job_changeset}} = assigns) do
+    assigns = assigns |> Enum.into(%{changeset: nil})
+
+    ~H"""
+      <div class="flex items-center hover:cursor-auto mt-2">
+        <div class="ml-3 mr-3 text-base-200 hidden md:block">|</div>
+        <.icon name="client-icon" class="w-7 h-7 mr-1 text-blue-planning-300"></.icon>
+        <p class="font-bold">
+          Client: <span class="font-normal"><%=
+            cond do
+              @changeset -> Changeset.get_field(@changeset, :name)
+              @searched_client -> @searched_client.name
+              @selected_client -> @selected_client.name
+              true -> Changeset.get_field(job_changeset.changes.client, :name)
+            end
+          %></span>
+        </p>
+      </div>
+    """
+  end
+
   def go_back_event(
         "back",
         %{},
@@ -518,7 +539,7 @@ defmodule PicselloWeb.Live.Shared do
     job_changeset = job_changeset |> Changeset.delete_change(:client)
 
     socket
-    |> save_multi(client, job_changeset)
+    |> save_multi(client, job_changeset, "import_wizard")
   end
 
   def import_job_for_form_component(
@@ -530,7 +551,7 @@ defmodule PicselloWeb.Live.Shared do
     }
 
     socket
-    |> save_multi(client, job_changeset)
+    |> save_multi(client, job_changeset, "form_component")
   end
 
   defp save_multi(
@@ -543,7 +564,8 @@ defmodule PicselloWeb.Live.Shared do
            }
          } = socket,
          client,
-         job_changeset
+         job_changeset,
+         type
        ) do
     Multi.new()
     |> Jobs.maybe_upsert_client(client, current_user)
@@ -577,7 +599,12 @@ defmodule PicselloWeb.Live.Shared do
             socket
             |> assign(:another_import, false)
             |> assign(:ex_documents, [])
-            |> assign(%{step: :job_details})
+            |> assign(
+              if(type == "import_wizard",
+                do: %{step: :job_details},
+                else: %{step: :package_payment}
+              )
+            )
             |> assign_package_changeset(%{})
             |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]}),
           else:
