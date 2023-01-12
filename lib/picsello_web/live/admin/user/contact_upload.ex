@@ -1,8 +1,8 @@
 defmodule PicselloWeb.Live.Admin.User.ContactUpload do
-  @moduledoc "Manage Uploading contacts for user"
+  @moduledoc "Manage Uploading clients for user"
   use PicselloWeb, live_view: [layout: false]
 
-  alias Picsello.{Repo, Accounts, Client, Contacts}
+  alias Picsello.{Repo, Accounts, Client, Clients}
 
   import PicselloWeb.LayoutView,
     only: [
@@ -20,7 +20,7 @@ defmodule PicselloWeb.Live.Admin.User.ContactUpload do
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     user = Accounts.get_user!(id)
-    clients = Contacts.find_all_by(user: user)
+    clients = Clients.find_all_by(user: user)
 
     socket
     |> assign(:user, user)
@@ -33,7 +33,7 @@ defmodule PicselloWeb.Live.Admin.User.ContactUpload do
     ~H"""
     <%= flash(@flash) %>
     <header class="p-8 bg-gray-100">
-      <h1 class="text-4xl font-bold">Upload contacts</h1>
+      <h1 class="text-4xl font-bold">Upload clients</h1>
     </header>
     <div class="p-8">
       <div class="grid grid-cols-2 gap-12">
@@ -98,17 +98,17 @@ defmodule PicselloWeb.Live.Admin.User.ContactUpload do
         |> put_flash(:error, "No file selected")
 
       [:done] ->
-        clients = Contacts.find_all_by(user: user)
+        clients = Clients.find_all_by(user: user)
 
         socket
-        |> put_flash(:info, "Contacts uploaded successfully")
+        |> put_flash(:info, "Clients uploaded successfully")
         |> assign(:clients, clients)
 
       [error: email] ->
         socket
         |> put_flash(
           :error,
-          "There was an error uploading the contacts, duplicate address likely: #{email}"
+          "There was an error uploading the clients, duplicate address likely: #{email}"
         )
     end
     |> noreply()
@@ -141,7 +141,7 @@ defmodule PicselloWeb.Live.Admin.User.ContactUpload do
         client
         |> downcase_keys()
         |> Map.put("organization_id", organization_id)
-        |> Client.create_contact_changeset()
+        |> Client.create_client_changeset()
 
       Ecto.Multi.insert(multi, index, client_changeset)
     end)
