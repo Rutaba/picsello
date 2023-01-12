@@ -63,8 +63,8 @@ export default {
       })
       .addHints();
 
-    const introSteps = intros[introId](el);
     if (shouldSeeIntro && !isMobile()) {
+      const introSteps = intros[introId](el);
       if (introId === 'intro_dashboard') {
         intro_tour(this, introSteps, introId)
         return;
@@ -73,7 +73,10 @@ export default {
       if (!introSteps) return;
       startIntroJsTour(this, introSteps, introId);
     }
-    intro_tour(this, introSteps, introId)    
+    if (intros[introId]) {
+      const introSteps = intros[introId](el);
+      intro_tour(this, introSteps, introId)
+    }
   },
   updated() {
     // remove existing intro elements of previous page
