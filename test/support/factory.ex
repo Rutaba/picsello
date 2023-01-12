@@ -28,8 +28,12 @@ defmodule Picsello.Factory do
     Galleries.Photo,
     Profiles.Profile,
     BrandLink,
+    Questionnaire,
     PackagePaymentSchedule
   }
+
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
+  alias Picsello.GlobalSettings.PrintProduct
 
   def valid_user_password(), do: "hello world!"
 
@@ -90,7 +94,7 @@ defmodule Picsello.Factory do
       state: "OK",
       intro_states:
         Enum.map(
-          ~w[intro_dashboard intro_dashboard_modal intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings_profile intro_settings_packages intro_settings_pricing intro_settings_public_profile intro_settings_contacts intro_jobs_stripe intro_jobs_empty intro_jobs intro_settings_brand intro_settings_finances],
+          ~w[intro_dashboard intro_dashboard_modal intro_inbox intro_marketing intro_tour intro_leads_empty intro_leads_new intro_settings_profile intro_settings_packages intro_settings_pricing intro_settings_public_profile intro_settings_clients intro_jobs_stripe intro_jobs_empty intro_jobs intro_settings_brand intro_settings_finances],
           &%{id: &1, state: :completed, changed_at: DateTime.utc_now()}
         )
     }
@@ -458,8 +462,17 @@ defmodule Picsello.Factory do
       password: valid_gallery_password(),
       client_link_hash: UUID.uuid4(),
       active: true,
-      disabled: false
+      disabled: false,
+      use_global: false
     }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
+  def global_gallery_settings_factory(attrs) do
+    %GSGallery{}
+    |> GSGallery.expiration_changeset(%{})
+    |> Ecto.Changeset.apply_changes()
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
@@ -684,7 +697,26 @@ defmodule Picsello.Factory do
       }
       |> merge_attributes(attrs)
 
+  def global_gallery_product_factory, do: %Picsello.GlobalSettings.GalleryProduct{}
   def gallery_product_factory, do: %Picsello.Galleries.GalleryProduct{}
+
+  def global_gallery_print_product_factory,
+    do:
+      %PrintProduct{
+        sizes: [
+          %{
+            size: "4x4",
+            type: "smooth_matte",
+            final_cost: 50_000
+          },
+          %{
+            size: "5x8",
+            type: "lusture",
+            final_cost: 80_000
+          }
+        ]
+      }
+      |> evaluate_lazy_attributes()
 
   def subscription_plan_factory,
     do: %Picsello.SubscriptionPlan{
@@ -769,7 +801,7 @@ defmodule Picsello.Factory do
 
   def tax_schedule_factory do
     %{
-      year: 2022,
+      year: 2023,
       self_employment_percentage: 15.3,
       active: true,
       income_brackets: [

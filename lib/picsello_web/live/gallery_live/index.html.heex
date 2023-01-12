@@ -7,7 +7,11 @@
         </h1>
       </div>
       <%= if Enum.any?(@galleries)do %>
-          <div class="fixed bottom-0 left-0 right-0 z-20 md:bg-none bg-white flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto cursor-pointer">
+          <div class="gap-2 fixed bottom-0 left-0 right-0 z-20 md:bg-none bg-white flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto cursor-pointer">
+            <a id="gallery-settings" class="w-full md:w-auto btn-secondary text-center lg:flex items-center p-3" data-phx-link="redirect" data-phx-link-state="push" href="/galleries/settings" title="Settings">
+              <.icon name="gear" class="inline-block w-6 h-6 mr-2 text-base-300"/>
+              Settings
+            </a>
             <a {testid("create-a-gallery")} title="Create a gallery" class="w-full md:w-auto btn-primary text-center" phx-click="create_gallery">
               Create a gallery
             </a>
@@ -35,10 +39,10 @@
       <div class="lg:col-span-3 md:col-span-3 hidden md:block pl-2">Gallery Details</div>
       <div class="hidden md:block">Actions</div>
     </div>
-  
+
     <hr class="md:block border-blue-planning-300 border-2 mt-4 mb-1 hidden"/>
     <%= for {gallery, gallery_index} <- @galleries |> Enum.with_index() do %>
-      <div {testid("galleries-#{gallery.id}")} class="md:py-0 md:mt-0 md:mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">      
+      <div {testid("galleries-#{gallery.id}")} class="md:py-0 md:mt-0 md:mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">
         <div class="relative md:grid md:grid-cols-5 lg:grid-cols-4 flex flex-wrap my-4 md:mx-0 mx-4">
           <div class="flex flex-row w-full col-span-3 align-top">
             <.image_item socket={@socket} gallery={gallery} index={@index} gallery_index={gallery_index}/>
@@ -77,16 +81,16 @@
             <div id="dropdown-items" class={classes("absolute right-9 md:top-20 top-8 z-10 w-36 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none cursor-pointer", %{"hidden" => @index != gallery_index})} role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
               <div class="py-1" role="none">
                 <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes("", %{"hidden" => gallery.disabled})} />
-                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} />
+                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id, %{"request_from" => "gallery_index"})]} />
                 <.dropdown_item {assigns} id="send_email_link" icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
-                <%= if !Enum.empty?(gallery.orders) do %>
+                <%= if Enum.any?(gallery.orders) do %>
                   <%= case gallery.disabled do %>
-                    <% true -> %>  
+                    <% true -> %>
                       <.dropdown_item {assigns} class="enable-link" icon="eye" title="Enable" link={[phx_click: "enable_gallery_popup", phx_value_gallery_id: gallery.id]})} />
                     <% _ -> %>
                       <.dropdown_item {assigns} class="disable-link" icon="closed-eye" title="Disable" link={[phx_click: "disable_gallery_popup", phx_value_gallery_id: gallery.id]})} />
                   <% end %>
-                <% else %>   
+                <% else %>
                   <.dropdown_item {assigns} class="delete-link" icon="trash" title="Delete" link={[phx_click: "delete_gallery_popup", phx_value_gallery_id: gallery.id]}/>
                 <% end %>
               </div>
@@ -94,7 +98,7 @@
           </div>
         </div>
         <hr class="border-base-200 mt-5 col-span-5 md:block hidden"/>
-      </div> 
+      </div>
     <% end %>
   </div>
 
@@ -102,11 +106,11 @@
     <.form let={f} for={:pagination} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
       <%= select f, :limit, [4, 8, 12, 16], class: "cursor-pointer"%>
     </.form>
-  
+
     <div class="flex ml-2 text-xs font-bold text-gray-500">
         Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
     </div>
-  
+
     <div class="flex items-center ml-auto">
       <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={is_nil(@pagination.before)} phx-value-cursor={@pagination.before}>
         <.icon name="back" class="w-3 h-3 mr-1 stroke-current stroke-2" />
@@ -118,6 +122,5 @@
       </button>
     </div>
   </div>
-  
+
   <% end %>
-  

@@ -31,7 +31,8 @@ defmodule Picsello.ClientOrdersTest do
           insert(:lead,
             client: insert(:client, organization: organization),
             package: package
-          )
+          ),
+        use_global: true
       )
 
     insert(:watermark, gallery: gallery)
@@ -54,6 +55,22 @@ defmodule Picsello.ClientOrdersTest do
         preview_photo: preview_photo,
         gallery: gallery
       )
+
+      global_gallery_product =
+        insert(:global_gallery_product,
+          category: category,
+          organization: organization,
+          markup: 100
+        )
+
+      if category.whcc_id == "h3GrtaTf5ipFicdrJ" do
+        product = insert(:product, category: category)
+
+        insert(:global_gallery_print_product,
+          product: product,
+          global_settings_gallery_product: global_gallery_product
+        )
+      end
     end
 
     Picsello.PhotoStorageMock
@@ -267,13 +284,13 @@ defmodule Picsello.ClientOrdersTest do
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: :any), fn options ->
       assert [
-               {"Wall Displays", "$25.00"},
-               {"Albums", "$55.00"},
-               {"Books", "$45.00"},
-               {"Ornaments", "$40.00"},
-               {"Loose Prints", "$25.00"},
-               {"Press Printed Cards", "$5.00"},
-               {"Display Products", "$80.00"},
+               {"Wall Displays", "$1,212.00"},
+               {"Albums", "$2,626.00"},
+               {"Books", "$2,222.00"},
+               {"Ornaments", "$2,020.00"},
+               {"Loose Prints", "$50,000.00"},
+               {"Press Printed Cards", "$101.00"},
+               {"Display Products", "$3,939.00"},
                {"Digital Download", "$25.00"}
              ] =
                options
@@ -310,7 +327,7 @@ defmodule Picsello.ClientOrdersTest do
            %{
              price_data: %{
                product_data: %{images: [_product_image], tax_code: "txcd_99999999"},
-               unit_amount: 1000,
+               unit_amount: 30_300,
                tax_behavior: "exclusive"
              }
            }
@@ -320,7 +337,7 @@ defmodule Picsello.ClientOrdersTest do
 
     session
     |> click(link("My orders"))
-    |> find(definition("Order total:"), &assert(Element.text(&1) == "$10.00"))
+    |> find(definition("Order total:"), &assert(Element.text(&1) == "$303.00"))
   end
 
   feature "client doesn't see products for non-US photographer", %{
@@ -394,6 +411,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_text("Select an option")
       |> click(button("Add to cart"))
+      |> click(css("p", text: "Added!"))
       |> assert_has(link("cart", text: "1"))
       |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_has(testid("product_option_digital_download", text: "In cart"))

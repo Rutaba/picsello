@@ -27,7 +27,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> Organization.assign_stripe_account_changeset("stripe_id")
     |> Repo.update!()
 
-    insert(:questionnaire)
+    questionnaire = insert(:questionnaire)
 
     lead =
       insert(:lead, %{
@@ -37,7 +37,8 @@ defmodule Picsello.CreateBookingProposalTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 1,
-          base_price: 100
+          base_price: 100,
+          questionnaire_template_id: questionnaire.id
         }
       })
 
@@ -52,6 +53,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> assert_has(css("button:disabled", text: "Send proposal", count: 2))
     |> assert_disabled(button("Copy client link"))
     |> find(testid("card-Package details"), &click(&1, button("Edit", count: 1)))
+    |> click(button("Yes, edit package details"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> wait_for_enabled_submit_button()
@@ -127,7 +129,10 @@ defmodule Picsello.CreateBookingProposalTest do
     |> visit(current_path(session))
     |> assert_text("Questionnaire answered")
     |> assert_text("Pending payment")
-    |> find(testid("card-Package details"), &assert_has(&1, button("Edit", count: 0)))
+    |> find(
+      testid("card-Package details"),
+      &assert_has(&1, css("button:disabled[type='button']"))
+    )
     |> click(button("Copy client link"))
     |> assert_text("Copied!")
 

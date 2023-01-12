@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import Money.Sigils
 
   alias Picsello.{
+    Job,
     Repo,
     Galleries,
     GalleryProducts,
@@ -19,7 +20,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
-  alias Picsello.Galleries
+  alias Picsello.{Galleries, Client}
   alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
 
@@ -326,7 +327,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
           modal_title: "Share gallery",
           presets: [],
           enable_image: true,
-          enable_size: true
+          enable_size: true,
+          client: Job.client(gallery.job)
         })
         |> noreply()
 
@@ -401,8 +403,23 @@ defmodule PicselloWeb.GalleryLive.Shared do
     with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
          {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
       socket
-      |> close_modal()
       |> put_flash(:success, "#{String.capitalize(shared_item)} shared!")
+    else
+      _error ->
+        socket
+        |> put_flash(:error, "Something went wrong")
+    end
+    |> close_modal()
+    |> noreply()
+  end
+
+  def add_message_and_notify(socket, message_changeset) do
+    with {:ok, message} <- Messages.add_message_to_client(message_changeset),
+         %Client{name: name, email: email} <- Repo.get(Client, message.client_id),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, email) do
+      socket
+      |> close_modal()
+      |> put_flash(:success, "Email sent to " <> if(name, do: name, else: email) <> "!")
       |> noreply()
     else
       _error ->
@@ -677,7 +694,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     ~H"""
       <div class={classes("relative", %{"hidden" => @for == :proofing_album_order})}>
           <div class={classes("bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 pointer-events-none", %{"fixed shadow-top" => @is_fixed and @for != :proofing_album, "absolute border-t border-base-225" => !@is_fixed or @for == :proofing_album })}>
-            <div class="container flex items-center justify-between h-full mx-auto px-7 sm:px-16">
+          <div class="center-container gallery__container flex items-center justify-between h-full mx-auto px-7 sm:px-16">
               <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
                 <%= for {label, value} <- build_credits(@for, @credits, @total_count) do %>
                   <div>
@@ -720,7 +737,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def mobile_gallery_header(assigns) do
     ~H"""
-      <div class="absolute top-0 left-0 z-30 w-screen h-20 px-10 py-6 lg:hidden shrink-0 bg-base-200">
+      <div class="absolute top-0 left-0 z-30 w-screen h-20 px-10 py-6 lg:hidden shrink-0 bg-base-200 z-[32]">
         <p class="font-sans text-2xl font-bold"><%= @gallery_name %></p>
       </div>
     """
@@ -1037,10 +1054,35 @@ defmodule PicselloWeb.GalleryLive.Shared do
     album = Map.get(assigns, :album)
     album_id = if album, do: Map.get(album, :id), else: nil
 
-    gallery_account_id = Galleries.account_id(gallery)
-    cart_product = Cart.new_product(whcc_editor_id, gallery_account_id)
+    cart_product = Cart.new_product(whcc_editor_id, gallery.id)
     Cart.place_product(cart_product, gallery.id, album_id)
 
     socket
+  end
+
+  def truncate_name(%{client_name: client_name}, max_length) do
+    name_length = String.length(client_name)
+
+    if name_length > max_length do
+      String.slice(client_name, 0..max_length) <>
+        "..." <>
+        String.slice(client_name, (name_length - 10)..name_length)
+    else
+      client_name
+    end
+  end
+
+  def toggle_preview(assigns) do
+    assigns = Enum.into(assigns, %{disabled: nil, product_id: nil})
+
+    ~H"""
+    <label class="inline-flex relative items-center cursor-pointer">
+      <div class="relative">
+        <input type="checkbox" disabled={@disabled} class="sr-only peer disabled:opacity-75 disabled:cursor-default" phx-click={@click} phx-value-product_id={@product_id} checked={@checked} phx-target={@myself} >
+        <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-focus:ring-toggle-100 dark:peer-focus:ring-toggle-300 dark:bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-toggle-100"></div>
+      </div>
+      <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300"><%= @text %></span>
+    </label>
+    """
   end
 end

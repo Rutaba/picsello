@@ -11,7 +11,8 @@ defmodule Picsello.Accounts do
     Accounts.User,
     Accounts.UserToken,
     OrganizationCard,
-    Notifiers.UserNotifier
+    Notifiers.UserNotifier,
+    GlobalSettings
   }
 
   ## Database getters
@@ -48,6 +49,23 @@ defmodule Picsello.Accounts do
       when is_binary(email) and is_binary(password) do
     user = Repo.get_by(User, email: email)
     if User.valid_password?(user, password), do: user
+  end
+
+  @doc """
+  Gets a user by stripe customer id.
+
+  ## Examples
+
+      iex> get_user_by_stripe_customer_id("cus_1234")
+      %User{}
+
+      iex> get_user_by_stripe_customer_id("cus_invalid")
+      nil
+
+  """
+  def get_user_by_stripe_customer_id(stripe_customer_id)
+      when is_binary(stripe_customer_id) do
+    Repo.get_by(User, stripe_customer_id: stripe_customer_id)
   end
 
   @doc """
@@ -376,7 +394,8 @@ defmodule Picsello.Accounts do
           password: generate_password(),
           time_zone: time_zone,
           organization: %{
-            organization_cards: OrganizationCard.for_new_changeset()
+            organization_cards: OrganizationCard.for_new_changeset(),
+            gs_gallery_products: GlobalSettings.gallery_products_params()
           }
         })
         |> Ecto.Changeset.put_change(:sign_up_auth_provider, provider)
@@ -396,8 +415,8 @@ defmodule Picsello.Accounts do
     case changeset do
       {:ok, user} ->
         %{
-          list_ids: SendgridClient.get_all_contact_list_env(),
-          contacts: [
+          list_ids: SendgridClient.get_all_client_list_env(),
+          clients: [
             %{
               email: user.email,
               first_name: User.first_name(user),
@@ -409,7 +428,7 @@ defmodule Picsello.Accounts do
             }
           ]
         }
-        |> SendgridClient.add_contacts()
+        |> SendgridClient.add_clients()
 
         user_created_webhook(%{
           email: user.email,

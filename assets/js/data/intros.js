@@ -169,7 +169,7 @@ export default {
       {
         title: 'Promotional emails',
         intro:
-          'Picsello makes it easy to reach out to your customers at any time. You can create custom messages and send them to either all of your contacts, or only those that are not currently leads.',
+          'Picsello makes it easy to reach out to your customers at any time. You can create custom messages and send them to either all of your clients, or only those that are not currently leads.',
         position: 'bottom-middle-aligned',
         element: el.querySelector('.intro-promotional'),
       },
@@ -242,7 +242,7 @@ export default {
       {
         title: 'Need help with pricing?',
         intro:
-          'We’ve created a handy pricing calculator to help you charge more and factor in business costs you may not think you have.',
+          'We’ve created a handy Smart Profit Calculator to help you charge more and factor in business costs you may not think you have.',
         position: 'bottom-middle-aligned',
         element: el.querySelector('#intro_settings_packages .intro-calculator'),
       },
@@ -281,15 +281,15 @@ export default {
       },
     ].filter((obj) => obj?.element),
   }),
-  intro_settings_contacts: (el) => ({
+  intro_settings_clients: (el) => ({
     showBullets: false,
     steps: [
       {
-        title: 'Contacts',
+        title: 'Clients',
         intro:
-          'If someone isn’t a lead yet, but you want to keep track of their contact information, you can add them as a contact here. You can also convert them into a lead later.',
+          'If someone isn’t a lead yet, but you want to keep track of their contact information, you can add them as a client here. You can also convert them into a lead later.',
         position: 'bottom-middle-aligned',
-        element: el.querySelector('#intro_settings_contacts h1'),
+        element: el.querySelector('#intro_settings_clients h1'),
       },
     ].filter((obj) => obj?.element),
   }),

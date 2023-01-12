@@ -18,8 +18,8 @@ defmodule Picsello.Cart do
 
   alias Picsello.Cart.Product, as: CartProduct
 
-  def new_product(editor_id, account_id) do
-    account_id |> WHCC.price_details(editor_id) |> CartProduct.new()
+  def new_product(editor_id, gallery_id) do
+    gallery_id |> WHCC.price_details(editor_id) |> CartProduct.new()
   end
 
   @doc """
@@ -33,22 +33,22 @@ defmodule Picsello.Cart do
           Order.t()
   def place_product(product, gallery, album_id \\ nil)
 
-  def place_product(product, %Gallery{id: gallery_id} = gallery, album_id) do
-    opts = [credits: credit_remaining(gallery)]
+  def place_product(product, %Gallery{id: id, use_global: use_global} = gallery, album_id) do
+    opts = [credits: credit_remaining(gallery), use_global: use_global]
 
     order_opts = [preload: [:products, :digitals]]
 
-    case get_unconfirmed_order(gallery_id, Keyword.put(order_opts, :album_id, album_id)) do
+    case get_unconfirmed_order(id, Keyword.put(order_opts, :album_id, album_id)) do
       {:ok, order} ->
         place_product_in_order(order, product, opts)
 
       {:error, _} ->
-        create_order_with_product(product, %{gallery_id: gallery_id, album_id: album_id}, opts)
+        create_order_with_product(product, %{gallery_id: id, album_id: album_id}, opts)
     end
   end
 
   def place_product(product, gallery_id, album_id) when is_integer(gallery_id),
-    do: place_product(product, %Gallery{id: gallery_id}, album_id)
+    do: place_product(product, Galleries.get_gallery!(gallery_id), album_id)
 
   def bundle_status(gallery, album_id \\ nil) do
     cond do
@@ -70,23 +70,46 @@ defmodule Picsello.Cart do
   end
 
   def credit_remaining(%Gallery{id: gallery_id}) do
+    digital_credit = digital_credit_remaining(gallery_id)
+    print_credit = print_credit_remaining(gallery_id)
+
+    if digital_credit && print_credit do
+      Map.merge(digital_credit, print_credit)
+    else
+      nil
+    end
+  end
+
+  defp digital_credit_remaining(gallery_id) do
     from(gallery in Gallery,
       join: package in assoc(gallery, :package),
       left_join: orders in assoc(gallery, :orders),
       left_join: digitals in assoc(orders, :digitals),
-      left_join: products in assoc(orders, :products),
       where: gallery.id == ^gallery_id,
       select: %{
         digital:
           package.download_count -
-            fragment("count(?) filter (where ?)", digitals.id, digitals.is_credit),
+            fragment("count(?) filter (where ?)", digitals.id, digitals.is_credit)
+      },
+      group_by: package.download_count
+    )
+    |> Repo.one()
+  end
+
+  defp print_credit_remaining(gallery_id) do
+    from(gallery in Gallery,
+      join: package in assoc(gallery, :package),
+      left_join: orders in assoc(gallery, :orders),
+      left_join: products in assoc(orders, :products),
+      where: gallery.id == ^gallery_id,
+      select: %{
         print:
           type(
             coalesce(package.print_credits, 0) - coalesce(sum(products.print_credit_discount), 0),
             Money.Ecto.Amount.Type
           )
       },
-      group_by: [package.download_count, package.print_credits]
+      group_by: package.print_credits
     )
     |> Repo.one()
   end
@@ -132,8 +155,10 @@ defmodule Picsello.Cart do
   Deletes the product from order. Deletes order if order has only the one product.
   """
   def delete_product(%Order{} = order, opts) do
-    %{gallery: gallery} =
+    %{gallery: %{use_global: use_global} = gallery} =
       order = Repo.preload(order, [:gallery, :digitals, products: :whcc_product])
+
+    opts = Keyword.merge(opts, credits: credit_remaining(gallery), use_global: use_global)
 
     order
     |> expire_previous_session()
@@ -144,7 +169,7 @@ defmodule Picsello.Cart do
 
       _ ->
         order
-        |> Order.delete_product_changeset(Keyword.put(opts, :credits, credit_remaining(gallery)))
+        |> Order.delete_product_changeset(opts)
         |> Repo.update()
     end
     |> case do

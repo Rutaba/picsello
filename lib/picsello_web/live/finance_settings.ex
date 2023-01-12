@@ -7,6 +7,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
     socket
+    |> assign(:page_title, "Settings")
     |> assign_stripe_status()
     |> assign(current_user: current_user)
     |> ok()

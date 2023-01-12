@@ -9,11 +9,12 @@ defmodule PicselloWeb.JobLive.Transaction.OrderDetail do
 
   @impl true
   def mount(
-        %{"id" => job_id, "order_number" => order_number},
+        %{"id" => job_id, "order_number" => order_number} = assigns,
         _session,
         %{assigns: %{live_action: action}} = socket
       ) do
     socket
+    |> assign(:request_from, assigns["request_from"])
     |> assign(:page_title, action |> Phoenix.Naming.humanize())
     |> assign_job(job_id)
     |> then(fn socket ->

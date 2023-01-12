@@ -101,10 +101,18 @@ defmodule PicselloWeb.JobLive.Shoot do
     |> noreply()
   end
 
-  def handle_info({:update, %{shoot: shoot}}, %{assigns: %{live_action: live_action}} = socket) do
-    shoot_index =
+  def handle_info(
+        {:update, %{shoot: shoot}},
+        %{assigns: %{live_action: live_action, job: job}} = socket
+      ) do
+    shoots =
       Shoot.for_job(shoot.job_id)
       |> Repo.all()
+
+    update_gallery(job, List.last(shoots))
+
+    shoot_index =
+      shoots
       |> Enum.find_index(&(&1.id == shoot.id))
 
     socket
@@ -116,6 +124,7 @@ defmodule PicselloWeb.JobLive.Shoot do
   end
 
   defdelegate assign_job(socket, job_id), to: PicselloWeb.JobLive.Shared
+  defdelegate update_gallery(job, shoot), to: PicselloWeb.JobLive.Shared
 
   defp assign_shoot(%{assigns: %{job: job}} = socket, shoot_number) do
     queryable = Shoot.for_job(job.id)

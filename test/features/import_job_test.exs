@@ -18,13 +18,24 @@ defmodule Picsello.ImportJobTest do
     :ok
   end
 
-  def fill_in_client_form(session, opts \\ []) do
+  def fill_in_new_client_form(session, opts \\ []) do
     phone = Keyword.get(opts, :phone, "(210) 111-1234")
 
     session
+    |> click(button("Add a new client"))
     |> fill_in(text_field("Client Name"), with: @client_name)
     |> fill_in(text_field("Client Email"), with: @client_email)
     |> fill_in(text_field("Client Phone"), with: phone)
+    |> scroll_into_view(css("label", text: "Wedding"))
+    |> click(css("label", text: "Wedding"))
+  end
+
+  def fill_in_existing_client_form(session, _opts \\ []) do
+    session
+    |> fill_in(text_field("search_phrase"), with: "tayl")
+    |> assert_has(css("#search_results"))
+    |> send_keys([:down_arrow])
+    |> send_keys([:enter])
     |> click(css("label", text: "Wedding"))
   end
 
@@ -75,6 +86,7 @@ defmodule Picsello.ImportJobTest do
     |> find(testid("payment-1"), &fill_in(&1, text_field("Due"), with: "01/01/2030"))
     |> assert_text("Remaining to collect: $500.00")
     |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "$500"))
+    # please don't make it "01/02/2030"
     |> find(testid("payment-2"), &fill_in(&1, text_field("Due"), with: "02/01/2030"))
     |> assert_text("Remaining to collect: $0.00")
   end
@@ -91,7 +103,8 @@ defmodule Picsello.ImportJobTest do
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
-    |> fill_in_client_form()
+    |> click(button("Add a new client"))
+    |> fill_in_new_client_form()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
@@ -100,8 +113,9 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Custom Invoice")
     |> fill_in_payments_form()
-    |> wait_for_enabled_submit_button(text: "Save")
-    |> click(button("Save"))
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> click(button("Finish"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
     |> click(css("div[title='Mary Jane']"))
@@ -115,7 +129,8 @@ defmodule Picsello.ImportJobTest do
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
-    |> fill_in_client_form()
+    |> click(button("Add a new client"))
+    |> fill_in_new_client_form()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
@@ -126,8 +141,14 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Import Existing Job: Custom Invoice")
     |> assert_text("Client: #{@client_name}")
     |> fill_in_payments_form()
-    |> wait_for_enabled_submit_button(text: "Save")
-    |> click(button("Save"))
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> click(button("Finish"))
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(link("Edit"))
+    end)
     |> assert_text("Wedding Deluxe")
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_has(testid("shoot-card", count: 2, at: 0, text: "Missing information"))
@@ -141,6 +162,7 @@ defmodule Picsello.ImportJobTest do
       &assert_text(&1, "During your job import, you marked this as an external document")
     )
     |> click(button("View invoice"))
+    |> scroll_to_bottom()
     |> assert_has(definition("Previously collected", text: "$200.00"))
     |> assert_has(definition("Payment 1 due on Jan 01, 2030", text: "$300.00"))
     |> assert_has(definition("Payment 2 due on Feb 01, 2030", text: "$500.00"))
@@ -199,7 +221,7 @@ defmodule Picsello.ImportJobTest do
   feature "user imports job with existing client", %{session: session, user: user} do
     insert(:client,
       user: user,
-      name: nil,
+      name: "Elizabeth Taylor",
       phone: nil,
       email: @client_email
     )
@@ -209,7 +231,7 @@ defmodule Picsello.ImportJobTest do
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
-    |> fill_in_client_form()
+    |> fill_in_existing_client_form()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
@@ -220,8 +242,14 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Import Existing Job: Custom Invoice")
     |> assert_text("Client: #{@client_name}")
     |> fill_in_payments_form()
-    |> wait_for_enabled_submit_button(text: "Save")
-    |> click(button("Save"))
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> click(button("Finish"))
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(link("Edit"))
+    end)
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
     |> assert_text("During your job import, you marked this as an external document")
@@ -235,7 +263,7 @@ defmodule Picsello.ImportJobTest do
     assert %Client{
              name: "Elizabeth Taylor",
              email: "taylor@example.com",
-             phone: "(210) 111-1234"
+             phone: nil
            } = job.client
   end
 
@@ -246,7 +274,7 @@ defmodule Picsello.ImportJobTest do
     client =
       insert(:client,
         user: user,
-        name: nil,
+        name: "Elizabeth Taylor",
         phone: nil,
         email: @client_email
       )
@@ -258,7 +286,7 @@ defmodule Picsello.ImportJobTest do
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
-    |> fill_in_client_form(phone: "")
+    |> fill_in_existing_client_form()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
@@ -269,8 +297,14 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Import Existing Job: Custom Invoice")
     |> assert_text("Client: #{@client_name}")
     |> fill_in_payments_form()
-    |> wait_for_enabled_submit_button(text: "Save")
-    |> click(button("Save"))
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> click(button("Finish"))
+    |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
+      row
+      |> click(css(".action"))
+      |> click(link("Edit"))
+    end)
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
     |> assert_text("During your job import, you marked this as an external document")
@@ -294,7 +328,8 @@ defmodule Picsello.ImportJobTest do
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
-    |> fill_in_client_form()
+    |> click(button("Add a new client"))
+    |> fill_in_new_client_form()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
@@ -310,8 +345,9 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Remaining to collect: $500.00")
     |> find(testid("payment-1"), &fill_in(&1, text_field("Payment amount"), with: "$800"))
     |> assert_text("Remaining to collect: $0.00")
-    |> wait_for_enabled_submit_button(text: "Save")
-    |> click(button("Save"))
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> click(button("Finish"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
 
@@ -334,7 +370,8 @@ defmodule Picsello.ImportJobTest do
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
-    |> fill_in_client_form()
+    |> click(button("Add a new client"))
+    |> fill_in_new_client_form()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
@@ -351,7 +388,8 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Client: #{@client_name}")
     |> assert_text("Since your remaining balance is $0.00")
     |> assert_text("Remaining to collect: $0.00")
-    |> click(button("Save"))
+    |> click(button("Next"))
+    |> click(button("Finish"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
 
@@ -373,7 +411,8 @@ defmodule Picsello.ImportJobTest do
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
-    |> fill_in_client_form()
+    |> click(button("Add a new client"))
+    |> fill_in_new_client_form()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
@@ -391,7 +430,8 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Client: #{@client_name}")
     |> assert_text("Since your remaining balance is $0.00")
     |> assert_text("Remaining to collect: $0.00")
-    |> click(button("Save"))
+    |> click(button("Next"))
+    |> click(button("Finish"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
   end
@@ -402,9 +442,10 @@ defmodule Picsello.ImportJobTest do
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
+    |> click(button("Add a new client"))
     |> fill_in(text_field("Client Name"), with: " ")
     |> assert_has(css("label", text: "Client Name can't be blank"))
-    |> fill_in_client_form()
+    |> fill_in_new_client_form()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
@@ -427,7 +468,8 @@ defmodule Picsello.ImportJobTest do
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
-    |> fill_in_client_form()
+    |> click(button("Add a new client"))
+    |> fill_in_new_client_form()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
@@ -438,7 +480,7 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Import Existing Job: Custom Invoice")
     |> assert_text("Client: #{@client_name}")
     |> fill_in_payments_form()
-    |> wait_for_enabled_submit_button(text: "Save")
+    |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Go back"))
     |> assert_text("Import Existing Job: Package & Payment")
     |> assert_text("Client: #{@client_name}")
@@ -450,7 +492,8 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Custom Invoice")
     |> assert_text("Client: #{@client_name}")
-    |> click(button("Save"))
+    |> click(button("Next"))
+    |> click(button("Finish"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
   end

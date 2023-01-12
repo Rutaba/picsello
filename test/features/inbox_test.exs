@@ -1,6 +1,5 @@
 defmodule Picsello.InboxTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.Job
 
   setup :onboarded
   setup :authenticated
@@ -10,6 +9,7 @@ defmodule Picsello.InboxTest do
 
     insert(:client_message,
       job: lead,
+      client_id: lead.client_id,
       body_text: "lead message 1",
       inserted_at: ~N[2021-10-10 08:00:00]
     )
@@ -18,6 +18,7 @@ defmodule Picsello.InboxTest do
 
     insert(:client_message,
       job: job,
+      client_id: job.client_id,
       body_text: "job message 1",
       outbound: false,
       inserted_at: ~N[2021-10-10 08:00:00]
@@ -25,6 +26,7 @@ defmodule Picsello.InboxTest do
 
     insert(:client_message,
       job: job,
+      client_id: job.client_id,
       outbound: true,
       body_text: "job message 2",
       inserted_at: ~N[2021-10-11 08:00:00]
@@ -75,7 +77,7 @@ defmodule Picsello.InboxTest do
     |> click(testid("thread-card", count: 2, at: 0))
     |> assert_has(testid("thread-message", count: 2))
 
-    token = Job.token(job)
+    token = Picsello.Messages.token(job)
 
     session
     |> post(
@@ -110,6 +112,7 @@ defmodule Picsello.InboxTest do
     session
     |> click(testid("inbox-card"))
     |> click(testid("thread-card", count: 2, at: 0))
+    |> scroll_to_bottom()
     |> click(button("Reply"))
     |> assert_has(css("div.ql-editor[data-placeholder='Compose message...']"))
     |> fill_in_quill("This is my response")
@@ -164,6 +167,7 @@ defmodule Picsello.InboxTest do
     |> click(button("Send Email"))
     |> assert_has(testid("thread-message", count: 3))
     |> assert_text("This is my response")
+    |> scroll_into_view(testid("inbox-title"))
     |> click(button("Delete"))
     |> click(button("Yes, delete"))
     |> visit("/jobs/#{job.id}")

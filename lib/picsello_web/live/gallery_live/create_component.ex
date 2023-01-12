@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   alias Picsello.{
     Job,
     Jobs,
+    Client,
     Package,
     Packages,
     Packages.Download,
@@ -34,6 +35,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> assign(:job_id, nil)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
+    |> assign_new(:selected_client, fn -> nil end)
     |> assign(templates: [], step: :details, steps: @steps)
     |> assign_package_changesets()
     |> assign_job_changeset(%{"client" => %{}, "shoots" => [%{"starts_at" => nil}]})
@@ -74,11 +76,19 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> noreply()
   end
 
-  def handle_event("submit", params, %{assigns: %{current_user: current_user}} = socket) do
+  def handle_event(
+        "submit",
+        params,
+        %{assigns: %{current_user: current_user, selected_client: selected_client}} = socket
+      ) do
     socket
     |> assign_package_changesets(params)
     |> then(fn %{assigns: %{changeset: changeset, package_changeset: package_changeset}} ->
-      client = changeset |> Changeset.apply_changes() |> Map.get(:client)
+      client =
+        if selected_client,
+          do: selected_client,
+          else: changeset |> Changeset.apply_changes() |> Map.get(:client)
+
       type = changeset |> Changeset.get_field(:type)
       changeset = Changeset.delete_change(changeset, :client)
 
@@ -151,9 +161,11 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
     ~H"""
       <div class="px-1.5 grid grid-cols-2 gap-5">
-        <%= inputs_for @f, :client, fn client_form -> %>
-        <%= labeled_input client_form, :name, label: "Client Name", placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
-        <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "email@example.com", phx_debounce: "500" %>
+        <%= if is_nil(@selected_client) do %>
+          <%= inputs_for @f, :client, fn client_form -> %>
+          <%= labeled_input client_form, :name, label: "Client Name", placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
+          <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "email@example.com", phx_debounce: "500" %>
+        <% end %>
       <% end %>
 
       <%= labeled_select form_for(@package_changeset, "#"), :shoot_count, Enum.to_list(1..10), label: "# of Shoots", phx_debounce: "500"%>
@@ -206,13 +218,23 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   defp button_title(:pricing), do: "Save"
 
   defp assign_job_changeset(
-         %{assigns: %{current_user: %{organization_id: organization_id}}} = socket,
+         %{
+           assigns: %{
+             current_user: %{organization_id: organization_id},
+             selected_client: selected_client
+           }
+         } = socket,
          params,
          action \\ nil
        ) do
+    params =
+      case selected_client do
+        nil -> put_in(params, ["client", "organization_id"], organization_id)
+        %Client{id: client_id} -> put_in(params, ["client_id"], client_id)
+      end
+
     params
-    |> put_in(["client", "organization_id"], organization_id)
-    |> Job.create_changeset()
+    |> Job.create_job_changeset()
     |> Map.put(:action, action)
     |> then(&assign(socket, :changeset, &1))
   end
@@ -228,10 +250,35 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         params \\ %{},
         action \\ nil
       ) do
+    global_settings =
+      Repo.get_by(Picsello.GlobalSettings.Gallery, organization_id: current_user.organization_id)
+
+    {new_params, package} =
+      case global_settings do
+        nil ->
+          {params["download"] || %{}, package}
+
+        global_settings ->
+          updated_params =
+            params["download"] ||
+              %{}
+              |> Map.put(:download_each_price, global_settings.download_each_price)
+              |> Map.put(:buy_all, global_settings.buy_all_price)
+              |> Map.put(:is_custom_price, true)
+
+          updated_package =
+            package
+            |> Map.put(:download_each_price, global_settings.download_each_price)
+            |> Map.put(:buy_all, global_settings.buy_all_price)
+            |> Map.put(:is_custom_price, true)
+
+          {updated_params, updated_package}
+      end
+
     download_changeset =
       package
       |> Download.from_package()
-      |> Download.changeset(params["download"] || %{})
+      |> Download.changeset(new_params)
       |> Map.put(:action, action)
 
     download = current(download_changeset)

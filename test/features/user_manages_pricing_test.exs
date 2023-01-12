@@ -46,6 +46,7 @@ defmodule Picsello.UserManagesPricingTest do
         |> find(testid("profit"), &assert_text(&1, "$1.56"))
       end)
     end)
+    |> scroll_to_top()
     |> click(link("Gallery Store Pricing"))
     |> click(link("Loose Prints"))
     |> click(button("Expand All", at: 0, count: 3))

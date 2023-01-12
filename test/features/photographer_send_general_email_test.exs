@@ -102,6 +102,7 @@ defmodule Picsello.PhotographerSendGeneralEmailTest do
       path: "assets/static/favicon-128.png"
     )
     |> click(@send_email_button)
+    |> scroll_to_top()
     |> assert_text("Email sent")
 
     assert_receive {:delivered_email, email}

@@ -3,13 +3,14 @@ defmodule PicselloWeb.UserRegistrationController do
 
   use PicselloWeb, :controller
 
-  alias Picsello.{Accounts, OrganizationCard}
+  alias Picsello.{Accounts, OrganizationCard, GlobalSettings}
   alias PicselloWeb.UserAuth
 
   def create(%{req_cookies: cookies} = conn, %{"user" => user_params}) do
     user_params
     |> Map.put("organization", %{
-      organization_cards: OrganizationCard.for_new_changeset()
+      organization_cards: OrganizationCard.for_new_changeset(),
+      gs_gallery_products: GlobalSettings.gallery_products_params()
     })
     |> Enum.into(Map.take(cookies, ["time_zone"]))
     |> Accounts.register_user()
@@ -33,8 +34,8 @@ defmodule PicselloWeb.UserRegistrationController do
 
   defp add_user_to_external_tools(user) do
     %{
-      list_ids: SendgridClient.get_all_contact_list_env(),
-      contacts: [
+      list_ids: SendgridClient.get_all_client_list_env(),
+      clients: [
         %{
           email: user.email,
           first_name: Accounts.User.first_name(user),
@@ -47,7 +48,7 @@ defmodule PicselloWeb.UserRegistrationController do
         }
       ]
     }
-    |> SendgridClient.add_contacts()
+    |> SendgridClient.add_clients()
 
     user_created_webhook(%{
       email: user.email,

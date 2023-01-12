@@ -123,11 +123,11 @@ defmodule PicselloWeb.Router do
       put "/users/settings", UserSettingsController, :update
       get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
-      live "/contacts", Live.Contacts, :index, as: :contacts
       live "/brand", Live.BrandSettings, :index, as: :brand_settings
       live "/finance", Live.FinanceSettings, :index, as: :finance_settings
       live "/marketing", Live.Marketing, :index, as: :marketing
       live "/users/settings", Live.User.Settings, :edit
+      live "/galleries/settings", GalleryLive.GlobalSettings.Index, :edit
       live "/package_templates/:id/edit", Live.PackageTemplates, :edit
       live "/package_templates/new", Live.PackageTemplates, :new
       live "/package_templates", Live.PackageTemplates, :index
@@ -141,6 +141,7 @@ defmodule PicselloWeb.Router do
       live "/booking-events", Live.Calendar.BookingEvents, :index
       live "/booking-events/new", Live.Calendar.BookingEvents, :new
       live "/booking-events/:id/edit", Live.Calendar.BookingEvents, :edit
+      live "/questionnaires", Live.Questionnaires.Index, :index
       get "/calendar-feed", CalendarFeedController, :index
 
       scope "/galleries/:id", GalleryLive do
@@ -169,6 +170,13 @@ defmodule PicselloWeb.Router do
       live "/jobs", JobLive.Index, :jobs, as: :job
       live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :jobs, as: :shoot
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot
+
+      scope "/clients", Live.ClientLive do
+        live "/", Index, :index, as: :clients
+        live "/:id", Show, :show, as: :client
+        live "/:id/job-history", JobHistory, :job_history, as: :client
+        live "/:id/order-history", OrderHistory, :order_history, as: :client
+      end
 
       live "/inbox", InboxLive.Index, :index, as: :inbox
       live "/inbox/:id", InboxLive.Index, :show, as: :inbox

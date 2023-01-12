@@ -32,11 +32,13 @@ defmodule PicselloWeb.LeadLive.Show do
     ]
 
   @impl true
-  def mount(%{"id" => job_id}, _session, socket) do
+  def mount(%{"id" => job_id} = assigns, _session, socket) do
     socket
     |> assign_stripe_status()
     |> assign(include_questionnaire: true)
+    |> assign(:request_from, assigns["request_from"])
     |> assign_job(job_id)
+    |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
     |> then(fn %{assigns: assigns} = socket ->
       job = Map.get(assigns, :job)
@@ -82,7 +84,11 @@ defmodule PicselloWeb.LeadLive.Show do
       |> Repo.transaction()
       |> case do
         {:ok, %{proposal: proposal}} ->
-          job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
+          job =
+            job
+            |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
+              force: true
+            )
 
           socket
           |> assign(proposal: proposal)
@@ -110,13 +116,19 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_event("edit-package", %{}, %{assigns: %{proposal: proposal} = assigns} = socket) do
-    if is_nil(proposal) || is_nil(proposal.accepted_at) do
+    if is_nil(proposal) || is_nil(proposal.signed_at) do
       socket
-      |> open_modal(
-        PicselloWeb.PackageLive.WizardComponent,
-        assigns |> Map.take([:current_user, :job, :package])
-      )
-      |> assign_disabled_copy_link()
+      |> PicselloWeb.ConfirmationComponent.open(%{
+        confirm_event: "edit_package",
+        confirm_label: "Yes, edit package details",
+        subtitle:
+          "Your proposal has already been sent to the client-if you edit the package details, the proposal will update to reflect the changes you make.
+          \nPRO TIP: Remember to communicate with your client on the changes!
+          ",
+        title: "Edit Package details?",
+        icon: "warning-orange",
+        payload: %{assigns: assigns}
+      })
     else
       socket
       |> put_flash(:error, "Package can't be changed")
@@ -153,7 +165,8 @@ defmodule PicselloWeb.LeadLive.Show do
       enable_image: true,
       presets: [],
       body_html: body_html,
-      subject: subject
+      subject: subject,
+      client: Job.client(job)
     })
     |> noreply()
   end
@@ -210,6 +223,31 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
+  def handle_event(
+        "edit-questionnaire",
+        %{},
+        %{assigns: %{current_user: current_user, package: package, job: job}} = socket
+      ) do
+    if is_nil(package.questionnaire_template) do
+      template = Questionnaire.for_job(job) |> Repo.one()
+
+      case maybe_insert_questionnaire(template, current_user, package) do
+        {:ok, %{questionnaire_insert: questionnaire_insert}} ->
+          socket
+          |> open_questionnaire_modal(current_user, questionnaire_insert)
+
+        {:error, _} ->
+          socket
+          |> put_flash(:error, "Failed to fetch questionnaire. Please try again.")
+      end
+    else
+      socket
+      |> open_questionnaire_modal(current_user, package.questionnaire_template)
+    end
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("edit-contract", %{}, socket) do
     socket
     |> PicselloWeb.ContractFormComponent.open(
@@ -224,7 +262,7 @@ defmodule PicselloWeb.LeadLive.Show do
   def handle_info({:update, %{job: job}}, socket) do
     socket
     |> assign(:job, job)
-    |> put_flash(:success, "Name updated successfully")
+    |> put_flash(:success, "Job updated successfully")
     |> noreply()
   end
 
@@ -258,7 +296,11 @@ defmodule PicselloWeb.LeadLive.Show do
     case result do
       {:ok, %{message: message}} ->
         %{client: client} =
-          job = job |> Repo.preload([:client, :job_status, package: :contract], force: true)
+          job =
+          job
+          |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
+            force: true
+          )
 
         ClientNotifier.deliver_booking_proposal(message, client.email)
 
@@ -294,6 +336,16 @@ defmodule PicselloWeb.LeadLive.Show do
         |> put_flash(:error, "Failed to archive lead. Please try again.")
         |> noreply()
     end
+  end
+
+  def handle_info({:confirm_event, "edit_package"}, %{assigns: assigns} = socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.PackageLive.WizardComponent,
+      assigns |> Map.take([:current_user, :job, :package])
+    )
+    |> assign_disabled_copy_link()
+    |> noreply()
   end
 
   @impl true
@@ -358,5 +410,34 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
+  end
+
+  defp open_questionnaire_modal(socket, current_user, questionnaire) do
+    socket
+    |> PicselloWeb.QuestionnaireFormComponent.open(%{
+      state: :edit_lead,
+      current_user: current_user,
+      questionnaire: questionnaire
+    })
+  end
+
+  defp maybe_insert_questionnaire(template, current_user, %{id: package_id} = package) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:questionnaire_insert, fn _ ->
+      Questionnaire.clean_questionnaire_for_changeset(
+        template,
+        current_user.organization_id,
+        package_id
+      )
+      |> Questionnaire.changeset()
+    end)
+    |> Ecto.Multi.update(:package_update, fn %{questionnaire_insert: questionnaire} ->
+      package
+      |> Picsello.Package.changeset(
+        %{questionnaire_template_id: questionnaire.id},
+        step: :details
+      )
+    end)
+    |> Repo.transaction()
   end
 end

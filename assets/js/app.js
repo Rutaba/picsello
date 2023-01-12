@@ -135,6 +135,25 @@ const CardStatus = {
   }
 };
 
+const FinalCostInput = {
+  mounted() {
+    let dataset = this.el.dataset
+    let inputElm = document.getElementById(dataset.inputId)
+    
+    inputElm.addEventListener('input', () => {
+      if (inputElm.value.replace('$', '') < parseFloat(dataset.baseCost)) {
+        let span = document.getElementById(dataset.spanId)
+        span.style.color = "red";
+        
+        setTimeout(function () {
+          span.style.color = "white";
+          inputElm.value = `$${parseFloat(dataset.finalCost).toFixed(2)}`;
+        }, 3000);
+      }
+    });
+  }
+};
+
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -174,7 +193,8 @@ const Hooks = {
   ResumeUpload,
   GallerySelector,
   ClientGalleryCookie,
-  CardStatus
+  CardStatus,
+  FinalCostInput
 };
 
 let Uploaders = {};

@@ -157,7 +157,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
   defp send_email_opens_email_modal(session) do
     session
     |> click(css("#send_email_link"))
-    |> assert_text("Send an email")
+    |> assert_text("Send Email")
     |> click(button("Cancel"))
     |> click(css("#send_email_link"))
     |> fill_in(css("#client_message_subject"), with: "Test subject")

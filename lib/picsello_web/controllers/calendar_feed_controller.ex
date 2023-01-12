@@ -14,12 +14,7 @@ defmodule PicselloWeb.CalendarFeedController do
   defp map(feeds, conn, user) do
     feeds
     |> Enum.map(fn {shoot, job, client, status} ->
-      {color, url} =
-        if status.is_lead do
-          {"#86C3CC", Routes.job_path(conn, :leads, job.id)}
-        else
-          {"#4daac6", Routes.job_path(conn, :jobs, job.id)}
-        end
+      {color, type} = if(status.is_lead, do: {"#86C3CC", :leads}, else: {"#4daac6", :jobs})
 
       start_date =
         shoot.starts_at
@@ -35,7 +30,7 @@ defmodule PicselloWeb.CalendarFeedController do
       %{
         title: "#{Job.name(Map.put(job, :client, client))} - #{shoot.name}",
         color: color,
-        url: url,
+        url: Routes.job_path(conn, type, job.id, %{"request_from" => "calendar"}),
         start: start_date,
         end: end_date
       }

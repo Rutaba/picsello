@@ -3,11 +3,16 @@ defmodule Picsello.WHCC.Product.AttributeCategory do
 
   import Money.Sigils
 
-  @spec cheapest_selections(%{}, %{}) :: Picsello.WHCC.Product.SelectionSummary.t()
-  def cheapest_selections(attribute_category, valid_selections) do
+  def require_selections(attribute_category, valid_selections, :min) do
     attribute_category
     |> selections(valid_selections)
     |> Enum.min_by(&Map.get(&1, :price), fn -> %{selections: %{}, price: ~M[0]USD} end)
+  end
+
+  def require_selections(attribute_category, valid_selections, :max) do
+    attribute_category
+    |> selections(valid_selections)
+    |> Enum.max_by(&Map.get(&1, :price), fn -> %{selections: %{}, price: ~M[0]USD} end)
   end
 
   def price(

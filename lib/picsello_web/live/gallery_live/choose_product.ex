@@ -33,7 +33,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
 
       socket ->
         socket
-        |> assign(:products, GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false))
+        |> assign(:products, GalleryProducts.get_gallery_products(gallery, :coming_soon_false))
     end)
     |> then(fn %{assigns: %{gallery: gallery}} = socket ->
       socket
@@ -151,13 +151,14 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> assign_details(photo_ids |> CLL.value())
   end
 
-  defp assign_details(%{assigns: %{gallery: gallery}} = socket, photo_id) do
+  defp assign_details(%{assigns: %{gallery: gallery, album: album}} = socket, photo_id) do
     %{digital: digital_credit} = credits = Cart.credit_remaining(gallery)
     photo = Galleries.get_photo(photo_id)
+    proofing_album_id = get_proofing_album_id(album, photo)
 
     socket
     |> assign(
-      digital_status: Cart.digital_status(gallery, photo, photo.album_id),
+      digital_status: Cart.digital_status(gallery, photo, proofing_album_id),
       digital_credit: digital_credit,
       photo: photo,
       credits: credits(credits)
@@ -233,6 +234,9 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     """
   end
 
+  defp get_proofing_album_id(%{is_proofing: true}, photo), do: photo.album_id
+  defp get_proofing_album_id(_album, _photo), do: nil
+
   defdelegate option(assigns), to: PicselloWeb.GalleryLive.Shared, as: :product_option
-  defdelegate min_price(category), to: Galleries
+  defdelegate min_price(category, org_id, opts), to: Picsello.Galleries
 end

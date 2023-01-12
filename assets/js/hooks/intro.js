@@ -34,6 +34,14 @@ function startIntroJsTour(component, introSteps, introId) {
     });
 }
 
+function intro_tour(component, introSteps, introId) {
+  document
+    .querySelector('#start-tour')
+    .addEventListener('click', () =>
+      startIntroJsTour(component, introSteps, introId)
+    );
+}
+
 export default {
   mounted() {
     // When using phx-hook, it requires a unique ID on the element
@@ -57,20 +65,17 @@ export default {
 
     if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
-
       if (introId === 'intro_dashboard') {
-        document
-          .querySelector('#start-tour')
-          .addEventListener('click', () =>
-            startIntroJsTour(this, introSteps, introId)
-          );
-
+        intro_tour(this, introSteps, introId)
         return;
       }
 
       if (!introSteps) return;
-
       startIntroJsTour(this, introSteps, introId);
+    }
+    if (intros[introId]) {
+      const introSteps = intros[introId](el);
+      intro_tour(this, introSteps, introId)
     }
   },
   updated() {

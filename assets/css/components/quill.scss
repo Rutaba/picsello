@@ -43,7 +43,7 @@
   }
 
   &.ql-toolbar {
-    @apply border-gray-200 rounded-t-lg bg-blue-planning-100 text-blue-planning-300;
+    @apply border-gray-200 rounded-t-lg bg-gray-100 text-blue-planning-300;
 
     .ql-picker.ql-size {
       @apply w-24 sm:w-20;
@@ -157,6 +157,8 @@
   p,
   ol,
   ul {
+    @apply text-sm font-sans text-base-300 leading-6;
+    
     &:not(:last-child) {
       @apply mb-4;
     }

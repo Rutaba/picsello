@@ -204,7 +204,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     ~H"""
       <div class="flex items-stretch w-screen min-h-screen flex-wrap">
         <div class="lg:w-1/3 w-full flex flex-col justify-center px-8 lg:px-16 py-8">
-          <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48 sm:mb-4" />
+          <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
           <%= render_block(@inner_block) %>
         </div>
         <div class="lg:w-2/3 w-full flex flex-col items-evenly pl-8 lg:pl-16 bg-blue-planning-300">
@@ -227,7 +227,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     <div class={classes(["flex flex-col items-center justify-center w-screen min-h-screen p-5", @color_class])}>
       <div class="container px-6 pt-8 pb-6 bg-white rounded-lg shadow-md max-w-screen-sm sm:p-14">
         <div class="flex items-end justify-between sm:items-center">
-          <.icon name="logo" class="w-32 h-7 sm:h-11 sm:w-48" />
+          <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
 
           <a title="previous" href="#" phx-click="previous" class="cursor-pointer sm:py-2">
             <ul class="flex items-center">
@@ -256,7 +256,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       :ok ->
         socket
         |> assign(current_user: Onboardings.complete!(socket.assigns.current_user))
-        |> update_user_contact_trial(socket.assigns.current_user)
+        |> update_user_client_trial(socket.assigns.current_user)
         |> noreply()
 
       _ ->
@@ -266,10 +266,10 @@ defmodule PicselloWeb.OnboardingLive.Index do
     end
   end
 
-  defp update_user_contact_trial(socket, current_user) do
+  defp update_user_client_trial(socket, current_user) do
     %{
-      list_ids: SendgridClient.get_all_contact_list_env(),
-      contacts: [
+      list_ids: SendgridClient.get_all_client_list_env(),
+      clients: [
         %{
           email: current_user.email,
           state_province_region: current_user.onboarding.state,
@@ -280,7 +280,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         }
       ]
     }
-    |> SendgridClient.add_contacts()
+    |> SendgridClient.add_clients()
 
     user_trial_created_webhook(%{email: current_user.email})
 
@@ -328,7 +328,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       {:ok, %{user: user}} ->
         socket
         |> assign(current_user: user)
-        |> update_user_contact_trial(user)
+        |> update_user_client_trial(user)
         |> push_redirect(to: Routes.home_path(socket, :index, new_user: true), replace: true)
 
       {:error, reason} ->

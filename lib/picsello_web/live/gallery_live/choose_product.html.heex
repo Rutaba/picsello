@@ -24,7 +24,7 @@
                 <.icon name="star" class="h-6 text-white z-1 w-7"/>
               </div>
             <% end %>
-            <div class="flex relative lg:h-[450px] items-center">
+            <div class="relative lg:h-[450px] items-center">
               <img src={preview_url(@photo, proofing_client_view?: @is_proofing)} class="lg:h-full lg:max-h-max max-h-96">
             </div> 
           </div>
@@ -40,7 +40,7 @@
               <.option
                 testid={gallery_product_id}
                 title={category.name}
-                min_price={min_price(category)}
+                min_price={min_price(category, @organization.id, @gallery)}
               }>
                 <:button
                   phx-click="product_preview_photo_popup"

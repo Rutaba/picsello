@@ -1,7 +1,7 @@
 defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
-  alias Picsello.{BookingProposal, Repo, Job, Cart, Galleries.Gallery}
+  alias Picsello.{BookingProposal, Job, Client, Repo, Cart, Messages, Galleries.Gallery}
   alias Cart.Order
 
   @doc """
@@ -16,12 +16,15 @@ defmodule Picsello.Notifiers.ClientNotifier do
   end
 
   def deliver_email(message, to_email, params \\ %{}) do
-    job = message |> Repo.preload(:job) |> Map.get(:job)
+    message = message |> Repo.preload([:job, :client])
 
     message
     |> message_params()
     |> Map.merge(params)
-    |> deliver_transactional_email(to_email, job)
+    |> deliver_transactional_email(
+      to_email,
+      if(message.job, do: message.job, else: message.client)
+    )
   end
 
   def deliver_payment_made(proposal) do
@@ -301,9 +304,20 @@ defmodule Picsello.Notifiers.ClientNotifier do
         do: "<p>#{line}</p>"
       )
 
-  defp deliver_transactional_email(params, to_email, job) do
-    job = job |> Repo.preload(client: [organization: :user])
-    %{organization: organization} = job.client
+  defp deliver_transactional_email(params, to_email, %Job{} = job) do
+    client = job |> Repo.preload(:client) |> Map.get(:client)
+    reply_to = Messages.email_address(job)
+    deliver_transactional_email(params, to_email, reply_to, client)
+  end
+
+  defp deliver_transactional_email(params, to_email, %Client{} = client) do
+    reply_to = Messages.email_address(client)
+    deliver_transactional_email(params, to_email, reply_to, client)
+  end
+
+  defp deliver_transactional_email(params, to_email, reply_to, client) do
+    client = client |> Repo.preload(organization: [:user])
+    %{organization: organization} = client
 
     params =
       Map.merge(
@@ -315,7 +329,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
         params
       )
 
-    reply_to = Job.email_address(job)
     from_display = organization.name
 
     :client_transactional_template

@@ -65,7 +65,8 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
           }
         } = socket
       ) do
-    gallery = Galleries.populate_organization_user(gallery)
+    %{job: %{client: %{organization: organization}}} =
+      gallery = gallery |> Galleries.populate_organization_user()
 
     socket
     |> assign(
@@ -78,8 +79,9 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       page: 0,
       page_title: gallery.name,
       download_all_visible: Orders.can_download_all?(gallery),
-      products: GalleryProducts.get_gallery_products(gallery.id, :coming_soon_false),
-      update_mode: "append"
+      products: GalleryProducts.get_gallery_products(gallery, :coming_soon_false),
+      update_mode: "append",
+      organization: organization
     )
     |> assign_cart_count(gallery)
     |> assign_photo_count()

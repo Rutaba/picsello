@@ -2,10 +2,11 @@ defmodule Picsello.ClientMessage do
   @moduledoc false
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.Job
+  alias Picsello.{Job, Client}
 
   schema "client_messages" do
     belongs_to(:job, Job)
+    belongs_to(:client, Client)
     field(:subject, :string)
     field(:cc_email, :string)
     field(:body_text, :string)
@@ -20,7 +21,7 @@ defmodule Picsello.ClientMessage do
 
   def create_outbound_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:subject, :body_text, :body_html, :cc_email])
+    |> cast(attrs, [:subject, :body_text, :body_html, :cc_email, :client_id])
     |> validate_required([:subject, :body_text])
     |> validate_email_format(:cc_email)
     |> put_change(:outbound, true)
@@ -29,7 +30,7 @@ defmodule Picsello.ClientMessage do
 
   def create_inbound_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:body_text, :body_html, :job_id, :subject])
+    |> cast(attrs, [:body_text, :body_html, :job_id, :client_id, :subject])
     |> validate_required([:subject, :body_text, :body_text, :job_id])
     |> put_change(:outbound, false)
   end

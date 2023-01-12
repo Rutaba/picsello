@@ -36,6 +36,7 @@ defmodule Picsello.EditLeadPackageTest do
     session
     |> visit("/leads/#{lead.id}")
     |> find(testid("card-Package details"), &click(&1, button("Edit")))
+    |> click(button("Yes, edit package details"))
     |> assert_has(button("Cancel"))
     |> assert_text("Edit Package: Provide Details")
     |> assert_value(text_field("Title"), "My Greatest Package")
@@ -126,9 +127,9 @@ defmodule Picsello.EditLeadPackageTest do
     session
     |> visit("/leads/#{lead.id}")
     |> find(testid("card-Package details"), &click(&1, button("Edit")))
-    |> assert_text("Edit Package: Provide Details")
+    |> click(button("Yes, edit package details"))
     |> click(button("Next"))
-    |> scroll_into_view(css("#package_pricing_is_enabled"))
+    |> scroll_into_view(testid("print"))
     |> click(radio_button("Gallery does not include Print Credits"))
     |> scroll_into_view(css("#download_is_buy_all"))
     |> click(radio_button("Package includes unlimited digital downloads"))

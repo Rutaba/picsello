@@ -10,7 +10,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoPreview do
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id}, socket) do
     photo = Galleries.get_photo(photo_id)
-    products = GalleryProducts.get_gallery_products(gallery.id, :with_or_without_previews)
+    products = GalleryProducts.get_gallery_products(gallery, :with_or_without_previews)
 
     socket
     |> assign(

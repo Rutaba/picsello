@@ -6,7 +6,7 @@
           <%= time_of_day_greeting @current_user %>
         </h1>
         <%= if show_intro?(@current_user, "intro_dashboard") === "true" do %>
-        <button type="button" class="underline text-base-250 font-sm mt-4 hidden lg:block" id="start-tour">Start product tour</button>
+          <button type="button" class="underline text-base-250 font-sm mt-4 hidden lg:block" id="start-tour">Start product tour</button>
         <% end %>
       </div>
 
@@ -117,7 +117,7 @@
 
       <.card color="blue-planning-300" icon="package" title="Packages" phx-click="redirect" phx-value-to={Routes.package_templates_path(@socket, :index)} class="cursor-pointer">
         <p class="my-2 text-base-250">
-          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "calculate your pricing", class: "underline text-blue-planning-300" do %>calculate your pricing<% end %>.
+          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "calculate your pricing", class: "underline text-blue-planning-300" do %>calculate your pricing<% end %> with our Smart Profit Calculator.
         </p>
       </.card>
 
@@ -133,7 +133,13 @@
 
       <.card color="purple-marketing-300" icon="bullhorn" title="Marketing" phx-click="redirect" phx-value-to={Routes.marketing_path(@socket, :index)} class="cursor-pointer intro-marketing">
         <p class="my-2 text-base-250">
-          Send marketing emails to your contacts to encourage new business.
+          Send marketing emails to your clients to encourage new business.
+        </p>
+      </.card>
+
+      <.card color="blue-planning-300" icon="package" title="Questionnaires" phx-click="redirect" phx-value-to={Routes.questionnaires_index_path(@socket, :index)} class="cursor-pointer">
+        <p class="my-2 text-base-250">
+          Choose to use pre-written templates, modify them or create your own questionnaire to use in packages/leads.
         </p>
       </.card>
     </ul>

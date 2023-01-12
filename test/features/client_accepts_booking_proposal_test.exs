@@ -35,6 +35,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 1,
+          questionnaire_template_id: nil,
           base_multiplier: 0.8,
           base_price: 100
         },
@@ -67,7 +68,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     setup %{sessions: [photographer_session, _], lead: lead} do
       photographer_session
       |> visit("/leads/#{lead.id}")
-      |> click(checkbox("Questionnaire included", selected: true))
+      |> click(checkbox("Include questionnaire in proposal?", selected: true))
       |> click(@send_proposal_button)
       |> assert_has(@send_email_button)
       |> refute_has(select("Select email preset"))
@@ -151,8 +152,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_disabled(@invoice_button)
       |> assert_text("Let’s get your shoot booked")
       |> click(link("Message Photography LLC"))
-      |> fill_in(css(".editor > div"), with: "actual message")
-      |> wait_for_enabled_submit_button()
+      |> within_modal(fn modal ->
+        modal
+        |> fill_in(css(".editor > div"), with: "actual message")
+        |> wait_for_enabled_submit_button()
+      end)
       |> click(button("Send"))
       |> assert_text("Your message has been sent")
       |> click(button("Close"))
@@ -299,7 +303,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
 
       photographer_session
+      |> scroll_to_top()
       |> click(button("Go to inbox"))
+      |> scroll_to_top()
       |> assert_text("actual message")
     end
 
@@ -395,11 +401,15 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
   end
 
   @sessions 2
-  feature "client fills out booking proposal questionnaire", %{
+  feature "client fills out default booking proposal questionnaire", %{
     sessions: [photographer_session, client_session],
     lead: lead
   } do
-    insert(:questionnaire)
+    insert(:questionnaire, %{
+      name: "Questionnaire name",
+      is_picsello_default: true,
+      job_type: "other"
+    })
 
     photographer_session
     |> visit("/leads/#{lead.id}")
@@ -456,8 +466,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{lead.id}")
-    |> click(checkbox("Questionnaire included", selected: true))
-    |> click(button("Edit or Select New"))
+    |> click(checkbox("Include questionnaire in proposal?", selected: true))
+    |> click(button("Edit or Select New", at: 0, count: 2))
     |> find(select("Select a Contract Template"), &click(&1, option("Contract 1")))
     |> fill_in(text_field("Contract Name"), with: "Contract 2")
     |> within_modal(&wait_for_enabled_submit_button/1)
@@ -480,7 +490,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     sessions: [photographer_session, client_session],
     lead: lead
   } do
-    insert(:questionnaire)
+    insert(:questionnaire, %{
+      name: "Questionnaire name",
+      is_picsello_default: true,
+      job_type: "other"
+    })
 
     photographer_session
     |> visit("/leads/#{lead.id}")
@@ -508,7 +522,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     photographer_session
     |> visit("/leads/#{lead.id}")
-    |> click(checkbox("Questionnaire included", selected: true))
+    |> click(checkbox("Include questionnaire in proposal?", selected: true))
     |> assert_text("$0.00 to To Book")
     |> click(@send_proposal_button)
     |> wait_for_enabled_submit_button()

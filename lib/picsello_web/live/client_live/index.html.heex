@@ -1,0 +1,99 @@
+<div class="center-container p-6">
+  <div class="flex flex-col justify-between flex-1 mt-5 flex-grow-0 sm:flex-row">
+    <div>
+    <h1 class="text-4xl font-bold center-container">Clients <span {testid("client-count")} class="text-sm">(<%= ngettext "1", "%{count}", @pagination.total_count %>)</span></h1>
+
+      <p class="max-w-2xl my-2">
+        Welcome to your client overview! Here you can see all your clients in one view, search, sort and add new ones. You can also easily take “action” by sending an email, creating a gallery and more! Be sure to take advantage of tags - little notes that will help you sort and remember client details.
+      </p>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto" {intro_hints_only("intro_hints_only")}>
+      <button type="button" class="w-full px-8 text-center btn-secondary mr-4 whitespace-nowrap relative z-20" {help_scout_output(@current_user, :help_scout_id)} data-article="620013032130e516946846d9" data-subject="Need help with bulk uploading clients" data-text="Hello! I need help uploading all of my clients to Picsello. I have attached a spreadsheet per this article: https://support.picsello.com/article/79-uploading-clients">
+        Bulk upload
+        <.intro_hint content="For now you'll have to send us a help request to bulk upload clients. You'll need a CSV or Excel file. Click this button to get more info and submit a ticket." class="ml-1" />
+      </button>
+      <button type="button" phx-click="add-client" class="w-full px-8 text-center btn-primary whitespace-nowrap">Add client</button>
+    </div>
+  </div>
+
+  <hr class="my-4 sm:my-10" />
+
+  <%= form_tag("#", [phx_change: :search, phx_submit: :submit]) do %>
+  <div class="flex flex-col justify-between items-center px-1.5 md:flex-row mb-10">
+    <div class="relative flex md:w-2/3 w-full">
+      <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+        <%= if @search_phrase do %>
+          <span phx-click="clear-search" class="cursor-pointer">
+            <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
+          </span>
+        <% else %>
+          <.icon name="search" class="w-4 ml-1 fill-current" />
+        <% end %>
+      </a>
+      <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="500" spellcheck="false" placeholder="Search clients by email or first and last names..." />
+    </div>
+    <.select_dropdown title="Job Status" id="status" selected_option={@job_status} options_list={job_status_options()}/>
+
+    <.select_dropdown title="Job Type" id="type" selected_option={@job_type} options_list={job_type_options(@job_types)}/>
+
+    <.select_dropdown title="Sort By" id="sort_by" selected_option={@sort_by} options_list={sort_options()}/>
+  </div>
+  <% end %>
+
+  <%= if Enum.empty?(@clients) do %>
+    <div class="flex flex-col items-center mt-4 p-6 lg:flex-none">
+      <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
+      <p class="text-lg lg:text-2xl">You don’t have any clients <%= if @search_phrase || @job_status !== "all" || @job_type !== "all", do: "that match your search or filters.", else: "at the moment."%></p>
+    </div>
+  <% else %>
+    <div class="p-6 center-container">
+      <div class="hidden items-center sm:grid sm:grid-cols-7 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
+        <div>Name</div>
+        <div class="sm:col-span-2">Email</div>
+        <div>Phone</div>
+        <div class="sm:col-span-2">Tags</div>
+        <div>Actions</div>
+      </div>
+      <%= for client <- @clients do %>
+        <div class="grid sm:grid-cols-7 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
+          <div phx-click="edit-client" phx-value-id={client.id} class="flex flex-col text-blue-planning-300 underline hover:cursor-pointer">
+            <p><%= client.name || "-" %></p>
+          </div>
+          <hr class="sm:hidden border-gray-100 my-2" />
+          <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
+            <p><%= client.email || "-" %></p>
+          </div>
+          <hr class="sm:hidden border-gray-100 my-2" />
+          <div class="flex flex-col">
+            <p><%= client.phone || "-" %></p>
+          </div>
+          <hr class="sm:hidden border-gray-100 my-2  grid sm:flex gap-2 sm:gap-0" />
+          <.tags client={client} tags_changeset={@tags_changeset} job_types={@job_types} />
+          <hr class="sm:hidden border-gray-100 my-2" />
+          <.actions client={client}/>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+  <div class="flex items-center px-6 pb-6 center-container">
+    <.form let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
+      <%= select f, :limit, [12, 24, 36, 48], class: "cursor-pointer"%>
+    </.form>
+
+    <div class="flex ml-2 text-xs font-bold text-gray-500">
+      Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
+    </div>
+
+    <div class="flex items-center ml-auto">
+      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={@pagination.first_index == 1}>
+        <.icon name="back" class="w-3 h-3 mr-1 stroke-current stroke-2" />
+        Prev
+      </button>
+      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={@pagination.last_index == @pagination.total_count}>
+        Next
+        <.icon name="forth" class="w-3 h-3 ml-1 stroke-current stroke-2" />
+      </button>
+    </div>
+  </div>
+</div>

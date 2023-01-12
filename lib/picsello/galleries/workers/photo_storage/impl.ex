@@ -54,6 +54,17 @@ defmodule Picsello.Galleries.Workers.PhotoStorage.Impl do
     )
   end
 
+  def insert(path, object) do
+    Objects.storage_objects_insert_iodata(
+      connection(),
+      @bucket,
+      "multipart",
+      %Object{},
+      object,
+      name: path
+    )
+  end
+
   @impl PhotoStorage
   defdelegate continue_resumable(url, body, opts), to: Connection, as: :put
 

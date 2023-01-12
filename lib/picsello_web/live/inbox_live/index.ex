@@ -29,7 +29,7 @@ defmodule PicselloWeb.InboxLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class={classes(%{"hidden sm:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-10 text-4xl font-bold center-container">Inbox</h1></div>
+    <div class={classes(%{"hidden sm:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-10 text-4xl font-bold center-container" {testid("inbox-title")}>Inbox</h1></div>
     <div class={classes("center-container py-6", %{"pt-0" => @current_thread})}>
       <h2 class={classes("font-semibold text-2xl mb-6 px-6", %{"hidden sm:block sm:mt-6" => @current_thread})}>Messages</h2>
 
@@ -185,7 +185,8 @@ defmodule PicselloWeb.InboxLive.Index do
       subject: Job.name(job),
       current_user: current_user,
       enable_size: true,
-      enable_image: true
+      enable_image: true,
+      client: Job.client(job)
     })
     |> noreply()
   end

@@ -23,9 +23,9 @@ defmodule Picsello.PricingCalculatorTaxSchedulesTest do
     }
 
   describe "create and modify changeset" do
-    test "add pricing calculator tax_schedule with default income bracket" do
+    test "add smart profit calculator tax_schedule with default income bracket" do
       assert %{
-               year: 2022,
+               year: 2023,
                active: false,
                income_brackets: [%{income_min: ~M[000]}]
              } =
@@ -36,7 +36,7 @@ defmodule Picsello.PricingCalculatorTaxSchedulesTest do
                |> Repo.insert!()
     end
 
-    test "update pricing calculator tax_schedule" do
+    test "update pricsmart profiting calculator tax_schedule" do
       base_tax_schedule =
         PricingCalculatorTaxSchedules.changeset(
           %PricingCalculatorTaxSchedules{},
@@ -64,7 +64,7 @@ defmodule Picsello.PricingCalculatorTaxSchedulesTest do
       |> Repo.update!()
     end
 
-    test "add pricing calculator income_bracket" do
+    test "add smart profit calculator income_bracket" do
       base_tax_schedule =
         PricingCalculatorTaxSchedules.changeset(
           %PricingCalculatorTaxSchedules{},
@@ -73,7 +73,7 @@ defmodule Picsello.PricingCalculatorTaxSchedulesTest do
         |> Repo.insert!()
 
       assert %{
-               year: 2022,
+               year: 2023,
                active: false,
                income_brackets: [
                  %{

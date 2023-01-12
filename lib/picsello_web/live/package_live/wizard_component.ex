@@ -16,7 +16,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Contract,
     PackagePaymentSchedule,
     PackagePayments,
-    Shoot
+    Shoot,
+    Questionnaire
   }
 
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
@@ -122,7 +123,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           add_error(
             changeset,
             :schedule_date,
-            "Payment #{field_index + 1} and Payment #{index + 1} cann't be same"
+            "Payment #{field_index + 1} and Payment #{index + 1} can't be same"
           )
 
         _ ->
@@ -237,9 +238,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign_new(:contract_changeset, fn -> nil end)
+    |> assign_new(:collapsed_documents, fn -> [0, 1] end)
     |> assign(is_template: assigns |> Map.get(:job) |> is_nil(), job_types: Packages.job_types())
     |> choose_initial_step()
     |> assign_changeset(%{})
+    |> assign_questionnaires()
     |> assign(default: %{})
     |> assign(custom: false)
     |> assign(job_type: nil)
@@ -266,7 +269,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp choose_initial_step(%{assigns: %{is_template: true}} = socket) do
     socket
-    |> assign(templates: [], step: :details, steps: [:details, :contract, :pricing, :payment])
+    |> assign(templates: [], step: :details, steps: [:details, :documents, :pricing, :payment])
   end
 
   defp choose_initial_step(%{assigns: %{current_user: user, job: job, package: package}} = socket) do
@@ -315,7 +318,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp step_valid?(%{step: :payment, payments_changeset: payments_changeset}),
     do: payments_changeset.valid?
 
-  defp step_valid?(%{step: :contract, contract_changeset: contract}), do: contract.valid?
+  defp step_valid?(%{step: :documents, contract_changeset: contract}), do: contract.valid?
 
   defp step_valid?(assigns),
     do:
@@ -357,7 +360,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Map.get(
       %{
         details: "Provide Details",
-        contract: "Choose a Contract",
+        documents: "Select Documents",
         pricing: "Set Pricing"
       },
       step
@@ -393,7 +396,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step_buttons(%{name: step} = assigns) when step in [:details, :contract, :pricing] do
+  def step_buttons(%{name: step} = assigns) when step in [:details, :documents, :pricing] do
     ~H"""
     <button class="btn-primary" title="Next" type="submit" disabled={!@is_valid} phx-disable-with="Next">
       Next
@@ -458,25 +461,76 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step(%{name: :contract} = assigns) do
+  def step(%{name: :documents} = assigns) do
     ~H"""
-      <% c = form_for(@contract_changeset, "#") %>
-      <div class="grid grid-flow-col auto-cols-fr gap-4 mt-4">
-        <%= labeled_select c, :contract_template_id, @contract_options, label: "Select a Contract Template" %>
-        <%= labeled_input c, :name, label: "Contract Name", placeholder: "Enter new contract name", phx_debounce: "500" %>
-      </div>
+      <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
+        <div class="flex bg-base-200 px-4 py-2 items-center cursor-pointer" phx-click="toggle-collapsed-documents" phx-value-index={0} phx-target={@myself}>
+          <h2 class="text-lg font-bold py-1">Add a contract</h2>
+          <div class="ml-auto">
+            <%= if Enum.member?(@collapsed_documents, 0) do %>
+              <.icon name="down" class="w-3 h-3 stroke-current stroke-3" />
+            <% else %>
+              <.icon name="up" class="w-3 h-3 stroke-current stroke-3" />
+            <% end %>
+          </div>
+        </div>
+        <div class={classes("p-4", %{"hidden" => Enum.member?(@collapsed_documents, 0)})}>
+          <p>Here you can copy and paste your own contract or use the legally approved contract we have developed. You're also able to version your contract for different needs if you want!</p>
+          <% c = form_for(@contract_changeset, "#") %>
+          <div class="grid grid-flow-col auto-cols-fr gap-4 mt-4">
+            <%= labeled_select c, :contract_template_id, @contract_options, label: "Select a Contract Template" %>
+            <%= labeled_input c, :name, label: "Contract Name", placeholder: "Enter new contract name", phx_debounce: "500" %>
+          </div>
 
-      <div class="flex justify-between items-end pb-2">
-        <label class="block mt-4 input-label" for={input_id(c, :content)}>Contract Language</label>
-        <%= cond do %>
-          <% !input_value(c, :contract_template_id) -> %>
-          <% input_value(c, :edited) -> %>
-            <.badge color={:blue}>Edited—new template will be saved</.badge>
-          <% !input_value(c, :edited) -> %>
-            <.badge color={:gray}>No edits made</.badge>
-        <% end %>
-      </div>
-      <.quill_input f={c} id="quill_contract_input" html_field={:content} enable_size={true} track_quill_source={true} placeholder="Paste contract text here" />
+          <div class="flex justify-between items-end pb-2">
+            <label class="block mt-4 input-label" for={input_id(c, :content)}>Contract Language</label>
+            <%= cond do %>
+              <% !input_value(c, :contract_template_id) -> %>
+              <% input_value(c, :edited) -> %>
+                <.badge color={:blue}>Edited—new template will be saved</.badge>
+              <% !input_value(c, :edited) -> %>
+                <.badge color={:gray}>No edits made</.badge>
+            <% end %>
+          </div>
+          <.quill_input f={c} id="quill_contract_input" html_field={:content} enable_size={true} track_quill_source={true} placeholder="Paste contract text here" />
+        </div>
+      </section>
+      <section {testid("document-questionnaires")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
+        <div class="flex bg-base-200 px-4 py-2 items-center cursor-pointer" phx-click="toggle-collapsed-documents" phx-value-index={1} phx-target={@myself}>
+          <h2 class="text-lg font-bold py-1">Add a questionnaire</h2>
+
+          <div class="ml-auto">
+            <%= if Enum.member?(@collapsed_documents, 1) do %>
+              <.icon name="down" class="w-3 h-3 stroke-current stroke-3" />
+            <% else %>
+              <.icon name="up" class="w-3 h-3 stroke-current stroke-3" />
+            <% end %>
+          </div>
+        </div>
+        <div class={classes("p-4", %{"hidden" => Enum.member?(@collapsed_documents, 1)})}>
+          <p>As with most things in Picsello, we have created a default questionnaire for you to use. If you don't select one here, we'll provide a default that you can turn off if you want when creating a lead. If you'd like to create your own template to apply to packages templates for future use, you can do so <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link> (modal will close and you can come back).</p>
+          <%= if Enum.empty?(@questionnaires) do %>
+            <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
+          <% else %>
+            <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-6 mt-4">
+              <div class="w-1/3">Questionnaire name</div>
+              <div class="w-1/3 text-center"># of questions</div>
+              <div class="w-1/3 text-center">Select questionnaire</div>
+            </div>
+            <%= for questionnaire <- @questionnaires do %>
+              <div class="border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
+              <label class="flex items-center justify-between cursor-pointer">
+                <h3 class="font-xl font-bold w-1/3"><%= questionnaire.name %></h3>
+                <p class="w-1/3 text-center"><%= questionnaire.questions |> length()  %></p>
+                <div class="w-1/3 text-center">
+                  <%= radio_button(@f, :questionnaire_template_id, questionnaire.id, class: "w-5 h-5 mr-2.5 radio") %>
+                </div>
+              </label>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </section>
     """
   end
 
@@ -673,6 +727,26 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   @impl true
   def handle_event(
+        "toggle-collapsed-documents",
+        %{"index" => index},
+        %{assigns: %{collapsed_documents: collapsed_documents}} = socket
+      ) do
+    index = String.to_integer(index)
+
+    collapsed_documents =
+      if Enum.member?(collapsed_documents, index) do
+        Enum.filter(collapsed_documents, &(&1 != index))
+      else
+        collapsed_documents ++ [index]
+      end
+
+    socket
+    |> assign(:collapsed_documents, collapsed_documents)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "back",
         %{},
         %{assigns: %{step: step, steps: steps}} = socket
@@ -833,6 +907,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         },
         %{assigns: %{job: job}} = socket
       ) do
+    questionnaire =
+      find_template(socket, package_template_id)
+      |> Questionnaire.for_package()
+
     package_payment_schedules =
       socket
       |> find_template(package_template_id)
@@ -847,7 +925,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         schedule |> Map.from_struct() |> Map.drop([:package_payment_preset_id])
       end)
 
-    opts = %{payment_schedules: payment_schedules, action: :insert}
+    opts = %{
+      payment_schedules: payment_schedules,
+      action: :insert,
+      questionnaire: questionnaire
+    }
+
     insert_package_and_update_job(socket, changeset, job, opts)
   end
 
@@ -858,6 +941,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         socket
         |> assign(step: next_step(socket.assigns))
         |> assign_changeset(params)
+        |> assign_questionnaires(params)
         |> assign_contract_changeset(params)
         |> assign_contract_options()
 
@@ -868,7 +952,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "contract"} = params, socket) do
+  def handle_event("submit", %{"step" => "documents"} = params, socket) do
     case socket |> assign_changeset(params, :validate) |> assign_contract_changeset(params) do
       %{assigns: %{contract_changeset: %{valid?: true}}} ->
         socket |> assign(step: :pricing) |> assign_changeset(params)
@@ -937,6 +1021,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           }
         } = socket
       ) do
+    questionnaire =
+      socket.assigns.package
+      |> Questionnaire.for_package()
+
     socket
     |> maybe_assign_custom(payment_params)
     |> then(fn %{assigns: %{changeset: changeset, payments_changeset: payments_changeset}} =
@@ -951,7 +1039,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         end)
 
       total_price = Changeset.get_field(payments_changeset, :total_price)
-      opts = %{total_price: total_price, payment_schedules: payment_schedules, action: :insert}
+
+      opts = %{
+        total_price: total_price,
+        payment_schedules: payment_schedules,
+        action: :insert,
+        questionnaire: questionnaire
+      }
 
       insert_package_and_update_job(
         socket,
@@ -1370,6 +1464,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp insert_package_and_update_job(socket, changeset, job, opts) do
     case Packages.insert_package_and_update_job(changeset, job, opts) |> Repo.transaction() do
+      {:ok, %{package_update: package}} ->
+        successfull_save(socket, package)
+
       {:ok, %{package: package}} ->
         successfull_save(socket, package)
 
@@ -1383,25 +1480,51 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     end
   end
 
-  defp build_changeset(socket, params),
-    do: Packages.build_package_changeset(socket.assigns, params)
+  defp build_changeset(%{assigns: assigns}, params),
+    do: Packages.build_package_changeset(assigns, params)
 
-  defp assign_changeset(socket, params, action \\ nil) do
+  defp assign_changeset(%{assigns: assigns} = socket, params, action \\ nil) do
     package_pricing_changeset =
-      socket.assigns.package_pricing
+      assigns.package_pricing
       |> PackagePricing.changeset(
-        Map.get(params, "package_pricing", package_pricing_params(socket.assigns.package))
+        Map.get(params, "package_pricing", package_pricing_params(assigns.package))
       )
 
     multiplier_changeset =
-      socket.assigns.package.base_multiplier
+      assigns.package.base_multiplier
       |> Multiplier.from_decimal()
       |> Multiplier.changeset(Map.get(params, "multiplier", %{}))
 
+    global_settings =
+      Repo.get_by(Picsello.GlobalSettings.Gallery,
+        organization_id: assigns.current_user.organization_id
+      )
+
+    {new_params, package} =
+      case global_settings do
+        nil ->
+          {Map.get(params, "download", %{}), assigns.package}
+
+        global_settings ->
+          updated_params =
+            Map.get(params, "download", %{})
+            |> Map.merge(%{
+              "download_each_price" => global_settings.download_each_price,
+              "buy_all" => global_settings.buy_all_price
+            })
+
+          updated_package =
+            assigns.package
+            |> Map.put(:download_each_price, global_settings.download_each_price)
+            |> Map.put(:buy_all, global_settings.buy_all_price)
+
+          {updated_params, updated_package}
+      end
+
     download_changeset =
-      socket.assigns.package
+      package
       |> Download.from_package()
-      |> Download.changeset(Map.get(params, "download", %{}))
+      |> Download.changeset(new_params)
       |> Map.put(:action, action)
 
     download = current(download_changeset)
@@ -1441,6 +1564,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
   end
 
+  defp package_pricing_params(nil), do: %{}
+
   defp package_pricing_params(package) do
     case package |> Map.get(:print_credits) do
       nil -> %{is_enabled: false}
@@ -1449,7 +1574,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     end
   end
 
-  defp assign_contract_changeset(%{assigns: %{step: :contract}} = socket, params) do
+  defp assign_contract_changeset(%{assigns: %{step: :documents}} = socket, params) do
     contract_params = Map.get(params, "contract", %{})
 
     contract_changeset =
@@ -1468,7 +1593,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp assign_contract_changeset(socket, _params), do: socket
 
-  defp assign_contract_options(%{assigns: %{step: :contract}} = socket) do
+  defp assign_contract_options(%{assigns: %{step: :documents}} = socket) do
     options =
       [
         {"New Contract", ""}
@@ -1484,6 +1609,53 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp assign_contract_options(socket), do: socket
+
+  defp assign_questionnaires(
+         %{
+           assigns: %{
+             package: %{job_type: nil},
+             job: %{type: job_type}
+           }
+         } = socket,
+         %{"package" => _package}
+       ) do
+    assign_questionnaires(socket, job_type)
+  end
+
+  defp assign_questionnaires(
+         socket,
+         %{"package" => %{"job_type" => job_type}}
+       ) do
+    assign_questionnaires(socket, job_type)
+  end
+
+  defp assign_questionnaires(
+         %{
+           assigns: %{
+             current_user: %{organization_id: organization_id}
+           }
+         } = socket,
+         job_type
+       ),
+       do:
+         socket
+         |> assign(
+           :questionnaires,
+           Questionnaire.for_organization_by_job_type(
+             organization_id,
+             job_type
+           )
+         )
+
+  defp assign_questionnaires(
+         %{
+           assigns: %{
+             package: %{job_type: job_type}
+           }
+         } = socket
+       ) do
+    assign_questionnaires(socket, job_type)
+  end
 
   defp package_contract(package) do
     if package.contract do

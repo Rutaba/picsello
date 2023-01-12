@@ -13,7 +13,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   import PicselloWeb.GalleryLive.Photos.ProofingGrid, only: [proofing_grid: 1]
 
   alias Phoenix.PubSub
-  alias Picsello.{Repo, Galleries, Albums, Orders, Galleries.Watermark, Notifiers.UserNotifier}
+
+  alias Picsello.{
+    Job,
+    Repo,
+    Galleries,
+    Albums,
+    Orders,
+    Galleries.Watermark,
+    Notifiers.UserNotifier
+  }
+
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
@@ -209,7 +219,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       gallery_id: gallery.id,
       album: album,
       target: self(),
-      has_order?: !Enum.empty?(orders)
+      has_order?: Enum.any?(orders)
     })
     |> noreply()
   end
@@ -632,7 +642,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
           presets: [],
           enable_image: true,
           enable_size: true,
-          composed_event: :message_composed_for_album
+          composed_event: :message_composed_for_album,
+          client: Job.client(gallery.job)
         })
         |> noreply()
 
@@ -743,7 +754,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
       gallery
       |> Galleries.get_photos_by_ids(selected_photos)
-      |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name)))
+      |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name, gallery)))
     end
 
     socket

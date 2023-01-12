@@ -1,0 +1,25 @@
+<div>
+  <div class="flex flex-row pt-2 md:items-center" {intro_hints_only("intro_hints_only")}>
+    <span class="font-sans lg:text-2xl text-xl font-black" >
+      Product Settings & Prices
+    </span>
+    <.intro_hint class="ml-2 hidden lg:block" content="Product Settings & Prices"/>
+  </div>
+  <div>
+    <div class="py-2 font-normal text-base-250">
+      Choose to enable product offerings and display them in your client gallery preview for subtle up-selling. 
+      With the flexibility to disable as well, the choice is up to you!
+    </div>
+    <div class="py-4 font-normal text-base-250">
+      Set your own product pricing mark-ups to suit your specific business and client needs. Don't forget, the product 
+      ships directly to your client and the profit goes straight to you! For additional guidance on pricing, see here!
+    </div>
+  </div>
+  <div class="center-container">
+    <div class="lg:grid-cols-2 grid-cols-1 gap-7 grid">
+      <%= for product <- @products do %>
+        <.product_preview id={product.id} myself={@myself} product={product} disabled={false} organization_id={@organization_id} />
+      <% end %>
+    </div>
+  </div>
+</div>
