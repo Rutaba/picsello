@@ -44,7 +44,7 @@ defmodule Picsello.Onboardings do
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
       field(:completed_at, :utc_datetime)
       field(:state, :string)
-      embeds_many(:intro_states, IntroState)
+      embeds_many(:intro_states, IntroState, on_replace: :delete)
     end
 
     def changeset(%__MODULE__{} = onboarding, attrs) do
@@ -127,10 +127,9 @@ defmodule Picsello.Onboardings do
       id: intro_id
     }
 
-    current_user
-    |> cast(%{onboarding: %{}}, [])
-    |> cast_embed(:onboarding,
-      with: fn %{intro_states: intro_states} = onboarding, _ ->
+    update_intro_state(
+      current_user,
+      fn %{intro_states: intro_states} = onboarding, _ ->
         onboarding
         |> change()
         |> put_embed(:intro_states, [
@@ -138,7 +137,22 @@ defmodule Picsello.Onboardings do
         ])
       end
     )
-    |> Repo.update!()
+  end
+
+  def restart_intro_state(current_user) do
+    update_intro_state(
+      current_user,
+      fn %{intro_states: intro_states} = onboarding, _ ->
+        onboarding
+        |> change()
+        |> put_embed(
+          :intro_states,
+          Enum.map(intro_states, fn state ->
+            Ecto.Changeset.change(state, %{state: :restarted})
+          end)
+        )
+      end
+    )
   end
 
   def user_onboarding_phone_changeset(current_user, attr) do
@@ -155,6 +169,13 @@ defmodule Picsello.Onboardings do
     ) do
       _ -> false
     end
+  end
+
+  defp update_intro_state(current_user, embed) do
+    current_user
+    |> cast(%{onboarding: %{}}, [])
+    |> cast_embed(:onboarding, with: embed)
+    |> Repo.update!()
   end
 
   defp organization_onboarding_changeset(organization, attrs, step) do

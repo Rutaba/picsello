@@ -437,37 +437,37 @@
     height: 16px;
   }
 
-  #actions .tooltiptext{
+  .tooltiptext{
     @apply hidden rounded-lg bg-white absolute p-2 w-52 shadow-lg top-0 left-[97%] text-gray-700;
   }
 
-  #actions .tooltiptext::after {
+  .tooltiptext::after {
     @apply content-[''] absolute top-5 right-full -mt-1.5 border-[5px] border-solid border-transparent border-r-white;
   }
 
-  #actions .tooltip:hover .tooltiptext {
+  .tooltip:hover .tooltiptext {
     @apply block;
   }
 
-    .btn-settings-secondary {
-      @apply px-6 py-3 font-sans font-medium border rounded-lg text-base-300 bg-base-100 border-base-300 hover:text-blue-planning-300 hover:border-blue-planning-300 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
-    }
+  .btn-settings-secondary {
+    @apply px-6 py-3 font-sans font-medium border rounded-lg text-base-300 bg-base-100 border-base-300 hover:text-blue-planning-300 hover:border-blue-planning-300 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 
-    .btn-settings {
-      @apply px-6 py-3 font-sans font-medium text-white border rounded-lg bg-base-300 border-base-300 hover:bg-base-300/90 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
-    }
+  .btn-settings {
+    @apply px-6 py-3 font-sans font-medium text-white border rounded-lg bg-base-300 border-base-300 hover:bg-base-300/90 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 
-    .watermark-btn-settings {
-      @apply px-6 py-3 font-sans font-medium text-white border rounded-lg bg-base-250 border-base-250 hover:bg-base-300/90 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
-    }
+  .watermark-btn-settings {
+    @apply px-6 py-3 font-sans font-medium text-white border rounded-lg bg-base-250 border-base-250 hover:bg-base-300/90 focus:outline-none focus:ring-2 focus:ring-base-300/70 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 
-    .checkbox-exp {
-      @apply w-6 h-6 rounded form-checkbox text-blue-planning-300 focus:ring-1 focus:ring-blue-planning-300;
-    }  
+  .checkbox-exp {
+    @apply w-6 h-6 rounded form-checkbox text-blue-planning-300 focus:ring-1 focus:ring-blue-planning-300;
+  }  
 
-    .btn-save-side-nav {
-      @apply flex px-4 py-2 mt-4 border rounded-lg shadow-lg hover:opacity-75 border-blue-planning-300;
-    }
+  .btn-save-side-nav {
+    @apply flex px-4 py-2 mt-4 border rounded-lg shadow-lg hover:opacity-75 border-blue-planning-300;
+  }
 
   .deliveryOptions__wrapper input[name='ship_option'] {
     margin-top: 4px;
