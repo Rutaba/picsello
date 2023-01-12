@@ -31,7 +31,8 @@ defmodule Picsello.ClientOrdersTest do
           insert(:lead,
             client: insert(:client, organization: organization),
             package: package
-          )
+          ),
+        use_global: true
       )
 
     insert(:watermark, gallery: gallery)
@@ -54,6 +55,21 @@ defmodule Picsello.ClientOrdersTest do
         preview_photo: preview_photo,
         gallery: gallery
       )
+
+      global_gallery_product =
+        insert(:global_gallery_product,
+          category: category,
+          organization: organization,
+          markup: 100
+        )
+
+      if category.whcc_id == "h3GrtaTf5ipFicdrJ" do
+        product = insert(:product, category: category)
+        insert(:global_gallery_print_product,
+              product: product,
+              global_settings_gallery_product: global_gallery_product
+        )
+      end
     end
 
     Picsello.PhotoStorageMock

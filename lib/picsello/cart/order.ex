@@ -212,7 +212,7 @@ defmodule Picsello.Cart.Order do
     end
   end
 
-  defp update_prices([product | products], opts) do
+  defp update_prices([product | products] = products_list, opts) do
     case Keyword.get(opts, :use_global) do
       true ->
         [Product.update_price(product) | products]
@@ -220,13 +220,13 @@ defmodule Picsello.Cart.Order do
       _ ->
         available_credit =
           Enum.reduce(
-            products,
+            products_list,
             get_in(opts, [:credits, :print]) || Money.new(0),
             &Money.add(&1.print_credit_discount, &2)
           )
 
         {_credits, products} =
-          for {_, line_items} <- sort_products(products),
+          for {_, line_items} <- sort_products(products_list),
               reduce: {available_credit, []} do
             acc ->
               for {product, index} <-
