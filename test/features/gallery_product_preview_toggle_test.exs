@@ -1,42 +1,92 @@
 defmodule Picsello.GalleryProductPreviewToggleTest do
   use Picsello.FeatureCase, async: true
-  alias Picsello.{Repo, Accounts.User}
+  import Money.Sigils
 
   setup :onboarded
   setup :authenticated
   setup :authenticated_gallery
 
-  setup %{user: user} do
-    user = user |> User.assign_stripe_customer_changeset("cus_123") |> Repo.update!()
-
-    Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "cus_123", _ ->
-      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
-    end)
-
-    [user: user]
-  end
-
   setup do
+    Mox.verify_on_exit!()
     Picsello.Test.WHCCCatalog.sync_catalog()
   end
 
-  setup %{gallery: gallery} do
-    Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
+  setup do
+    organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
 
-    photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
+    insert(:user,
+      organization: organization,
+      stripe_customer_id: "photographer-stripe-customer-id"
+    )
+    |> onboard!()
 
-    for category <- Picsello.Repo.all(Picsello.Category) do
-      preview_photo = insert(:photo, gallery: gallery, preview_url: "fake.jpg")
+    package =
+      insert(:package,
+        organization: organization,
+        download_each_price: ~M[2500]USD,
+        buy_all: ~M[5000]USD
+      )
+
+    gallery =
+      insert(:gallery,
+        job:
+          insert(:lead,
+            client: insert(:client, organization: organization),
+            package: package
+          ),
+        use_global: true
+      )
+
+    insert(:watermark, gallery: gallery)
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
+
+    for {%{id: category_id} = category, index} <-
+          Enum.with_index(Picsello.Repo.all(Picsello.Category)) do
+      preview_photo =
+        insert(:photo,
+          gallery: gallery,
+          preview_url: "/#{category_id}/preview.jpg",
+          original_url: "/#{category_id}/original.jpg",
+          watermarked_preview_url: "/#{category_id}/watermarked_preview.jpg",
+          watermarked_url: "/#{category_id}/watermarked.jpg",
+          position: index + 1
+        )
 
       insert(:gallery_product,
         category: category,
         preview_photo: preview_photo,
         gallery: gallery
       )
+
+      global_gallery_product =
+        insert(:global_gallery_product,
+          category: category,
+          organization: organization,
+          markup: 100
+        )
+
+      if category.whcc_id == "h3GrtaTf5ipFicdrJ" do
+        product = insert(:product, category: category)
+
+        insert(:global_gallery_print_product,
+          product: product,
+          global_settings_gallery_product: global_gallery_product
+        )
+      end
     end
 
-    [gallery: gallery, photo_ids: photo_ids]
+    Picsello.PhotoStorageMock
+    |> Mox.stub(:path_to_url, & &1)
+    |> Mox.stub(:get, &{:ok, %{name: &1}})
+
+    Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "photographer-stripe-customer-id", _ ->
+      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
+    end)
+
+    [gallery: gallery, organization: organization, package: package, photo_ids: photo_ids]
   end
+
+  setup :authenticated_gallery_client
 
   test "Toggle disable product and view in client preview", %{
     session: session,
@@ -107,11 +157,11 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     |> assert_text("Select an option")
     |> find(css("*[data-testid^='product_option']", count: 6), fn options ->
       assert [
-               {"Books", "$44.00"},
-               {"Ornaments", "$40.00"},
-               {"Loose Prints", "$2.00"},
-               {"Press Printed Cards", "$2.00"},
-               {"Display Products", "$78.00"},
+               {"Books", "$2,222.00"},
+               {"Ornaments", "$2,020.00"},
+               {"Loose Prints", "$50,000.00"},
+               {"Press Printed Cards", "$101.00"},
+               {"Display Products", "$3,939.00"},
                {"Digital Download", "$25.00"}
              ] =
                options

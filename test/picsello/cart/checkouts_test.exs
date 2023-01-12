@@ -283,7 +283,7 @@ defmodule Picsello.Cart.CheckoutsTest do
               ],
             reduce: nil do
           _ ->
-            Picsello.Cart.place_product(product, gallery.id)
+            Picsello.Cart.place_product(product, gallery)
         end
 
       check_out(order)

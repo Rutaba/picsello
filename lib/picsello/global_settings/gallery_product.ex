@@ -20,7 +20,7 @@ defmodule Picsello.GlobalSettings.GalleryProduct do
     timestamps()
   end
 
-  def changeset(gs_gallery_product, attrs) do
+  def changeset(gs_gallery_product \\ %__MODULE__{}, attrs) do
     gs_gallery_product
     |> cast(attrs, [
       :sell_product_enabled,
@@ -30,6 +30,6 @@ defmodule Picsello.GlobalSettings.GalleryProduct do
       :category_id
     ])
     |> cast_assoc(:global_settings_print_products, with: &PrintProduct.changeset/2)
-    |> validate_required([:organization_id, :category_id])
+    |> validate_required([:category_id])
   end
 end

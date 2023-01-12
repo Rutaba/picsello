@@ -18,8 +18,8 @@ defmodule Picsello.Cart do
 
   alias Picsello.Cart.Product, as: CartProduct
 
-  def new_product(editor_id, account_id) do
-    account_id |> WHCC.price_details(editor_id) |> CartProduct.new()
+  def new_product(editor_id, gallery_id) do
+    gallery_id |> WHCC.price_details(editor_id) |> CartProduct.new()
   end
 
   @doc """
@@ -33,22 +33,22 @@ defmodule Picsello.Cart do
           Order.t()
   def place_product(product, gallery, album_id \\ nil)
 
-  def place_product(product, %Gallery{id: gallery_id} = gallery, album_id) do
-    opts = [credits: credit_remaining(gallery)]
+  def place_product(product, %Gallery{id: id, use_global: use_global} = gallery, album_id) do
+    opts = [credits: credit_remaining(gallery), use_global: use_global]
 
     order_opts = [preload: [:products, :digitals]]
 
-    case get_unconfirmed_order(gallery_id, Keyword.put(order_opts, :album_id, album_id)) do
+    case get_unconfirmed_order(id, Keyword.put(order_opts, :album_id, album_id)) do
       {:ok, order} ->
         place_product_in_order(order, product, opts)
 
       {:error, _} ->
-        create_order_with_product(product, %{gallery_id: gallery_id, album_id: album_id}, opts)
+        create_order_with_product(product, %{gallery_id: id, album_id: album_id}, opts)
     end
   end
 
   def place_product(product, gallery_id, album_id) when is_integer(gallery_id),
-    do: place_product(product, %Gallery{id: gallery_id}, album_id)
+    do: place_product(product, Galleries.get_gallery!(gallery_id), album_id)
 
   def bundle_status(gallery, album_id \\ nil) do
     cond do
@@ -155,8 +155,10 @@ defmodule Picsello.Cart do
   Deletes the product from order. Deletes order if order has only the one product.
   """
   def delete_product(%Order{} = order, opts) do
-    %{gallery: gallery} =
+    %{gallery: %{use_global: use_global} = gallery} =
       order = Repo.preload(order, [:gallery, :digitals, products: :whcc_product])
+
+    opts = Keyword.merge(opts, credits: credit_remaining(gallery), use_global: use_global)
 
     order
     |> expire_previous_session()
@@ -167,7 +169,7 @@ defmodule Picsello.Cart do
 
       _ ->
         order
-        |> Order.delete_product_changeset(Keyword.put(opts, :credits, credit_remaining(gallery)))
+        |> Order.delete_product_changeset(opts)
         |> Repo.update()
     end
     |> case do

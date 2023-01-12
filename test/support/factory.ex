@@ -33,6 +33,7 @@ defmodule Picsello.Factory do
   }
 
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
+  alias Picsello.GlobalSettings.PrintProduct
 
   def valid_user_password(), do: "hello world!"
 
@@ -461,7 +462,8 @@ defmodule Picsello.Factory do
       password: valid_gallery_password(),
       client_link_hash: UUID.uuid4(),
       active: true,
-      disabled: false
+      disabled: false,
+      use_global: false
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
@@ -695,7 +697,26 @@ defmodule Picsello.Factory do
       }
       |> merge_attributes(attrs)
 
+  def global_gallery_product_factory, do: %Picsello.GlobalSettings.GalleryProduct{}
   def gallery_product_factory, do: %Picsello.Galleries.GalleryProduct{}
+
+  def global_gallery_print_product_factory,
+    do:
+      %PrintProduct{
+        sizes: [
+          %{
+            size: "4x4",
+            type: "smooth_matte",
+            final_cost: 50_000
+          },
+          %{
+            size: "5x8",
+            type: "lusture",
+            final_cost: 80_000
+          }
+        ]
+      }
+      |> evaluate_lazy_attributes()
 
   def subscription_plan_factory,
     do: %Picsello.SubscriptionPlan{

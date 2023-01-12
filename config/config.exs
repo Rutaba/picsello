@@ -51,6 +51,7 @@ config :picsello, :help_scout_id, System.get_env("HELP_SCOUT_ID")
 config :picsello, :help_scout_id_business, System.get_env("HELP_SCOUT_ID_BUSINESS")
 config :picsello, :booking_reservation_seconds, 60 * 10
 config :picsello, :card_category_id, System.get_env("CARD_CATEGORY_ID")
+config :picsello, :print_category, "h3GrtaTf5ipFicdrJ"
 
 config :picsello, :global_watermarked_path, System.get_env("GLOBAL_WATERMARKED_PATH")
 

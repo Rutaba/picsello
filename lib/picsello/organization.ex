@@ -12,7 +12,8 @@ defmodule Picsello.Organization do
     Client,
     Accounts.User,
     Repo,
-    Profiles.Profile
+    Profiles.Profile,
+    GlobalSettings.GalleryProduct
   }
 
   defmodule EmailSignature do
@@ -44,6 +45,7 @@ defmodule Picsello.Organization do
     has_many(:brand_links, Picsello.BrandLink)
     has_many(:clients, Client)
     has_many(:organization_cards, OrganizationCard)
+    has_many(:gs_gallery_products, GalleryProduct)
     has_one(:user, User)
 
     timestamps()
@@ -71,6 +73,7 @@ defmodule Picsello.Organization do
     organization
     |> cast(attrs, [:name, :slug])
     |> cast_assoc(:organization_cards, with: &OrganizationCard.changeset/2)
+    |> cast_assoc(:gs_gallery_products, with: &GalleryProduct.changeset/2)
     |> validate_required([:name])
     |> prepare_changes(fn changeset ->
       case get_change(changeset, :slug) do

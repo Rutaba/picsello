@@ -222,7 +222,6 @@ defmodule PicselloWeb.PackageLive.Shared do
       <div class="ml-7 mt-3">
         <h3 class="font-bold">Upsell options</h3>
         <p class="mb-3">For additional Digital Images beyond what’s included in the <%= package_or_gallery_content(key) |> String.downcase() %></p>
-        <p class="mb-3">Digital Images are automatically set at $50/each</p>
         <.include_download_price d={d} />
         <.is_buy_all d={d} />
       </div>

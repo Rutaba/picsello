@@ -1480,25 +1480,51 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     end
   end
 
-  defp build_changeset(socket, params),
-    do: Packages.build_package_changeset(socket.assigns, params)
+  defp build_changeset(%{assigns: assigns}, params),
+    do: Packages.build_package_changeset(assigns, params)
 
-  defp assign_changeset(socket, params, action \\ nil) do
+  defp assign_changeset(%{assigns: assigns} = socket, params, action \\ nil) do
     package_pricing_changeset =
-      socket.assigns.package_pricing
+      assigns.package_pricing
       |> PackagePricing.changeset(
-        Map.get(params, "package_pricing", package_pricing_params(socket.assigns.package))
+        Map.get(params, "package_pricing", package_pricing_params(assigns.package))
       )
 
     multiplier_changeset =
-      socket.assigns.package.base_multiplier
+      assigns.package.base_multiplier
       |> Multiplier.from_decimal()
       |> Multiplier.changeset(Map.get(params, "multiplier", %{}))
 
+    global_settings =
+      Repo.get_by(Picsello.GlobalSettings.Gallery,
+        organization_id: assigns.current_user.organization_id
+      )
+
+    {new_params, package} =
+      case global_settings do
+        nil ->
+          {Map.get(params, "download", %{}), assigns.package}
+
+        global_settings ->
+          updated_params =
+            Map.get(params, "download", %{})
+            |> Map.merge(%{
+              "download_each_price" => global_settings.download_each_price,
+              "buy_all" => global_settings.buy_all_price
+            })
+
+          updated_package =
+            assigns.package
+            |> Map.put(:download_each_price, global_settings.download_each_price)
+            |> Map.put(:buy_all, global_settings.buy_all_price)
+
+          {updated_params, updated_package}
+      end
+
     download_changeset =
-      socket.assigns.package
+      package
       |> Download.from_package()
-      |> Download.changeset(Map.get(params, "download", %{}))
+      |> Download.changeset(new_params)
       |> Map.put(:action, action)
 
     download = current(download_changeset)

@@ -40,7 +40,7 @@
               <.option
                 testid={gallery_product_id}
                 title={category.name}
-                min_price={min_price(category)}
+                min_price={min_price(category, @organization.id, @gallery)}
               }>
                 <:button
                   phx-click="product_preview_photo_popup"

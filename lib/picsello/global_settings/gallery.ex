@@ -2,6 +2,7 @@ defmodule Picsello.GlobalSettings.Gallery do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  import Money.Sigils
   alias Picsello.Organization
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
@@ -13,6 +14,8 @@ defmodule Picsello.GlobalSettings.Gallery do
               text: nil
   end
 
+  @default_each_price ~M[5000]USD
+  @default_buy_all_price ~M[75000]USD
   @types ~w(image text)
   schema "global_settings_galleries" do
     field(:expiration_days, :integer)
@@ -21,6 +24,8 @@ defmodule Picsello.GlobalSettings.Gallery do
     field(:watermark_size, :integer)
     field(:watermark_text, :string)
     field(:global_watermark_path, :string)
+    field(:buy_all_price, Money.Ecto.Amount.Type, default: @default_buy_all_price)
+    field(:download_each_price, Money.Ecto.Amount.Type, default: @default_each_price)
 
     belongs_to(:organization, Organization)
     timestamps()

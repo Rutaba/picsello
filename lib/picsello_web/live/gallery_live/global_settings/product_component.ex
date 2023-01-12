@@ -17,22 +17,11 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
     assign(
       socket,
       :products,
-      organization_id
-      |> GlobalSettings.list_gallery_products()
-      |> then(fn
-        [] ->
-          GlobalSettings.insert_gallery_products(organization_id)
-          GlobalSettings.list_gallery_products(organization_id)
-
-        gallery_products ->
-          gallery_products
-      end)
+      GlobalSettings.list_gallery_products(organization_id)
     )
   end
 
   defp product_preview(%{product: %{category: category} = product} = assigns) do
-    category = Map.put(category, :default_markup, product.markup)
-
     ~H"""
       <div class="flex flex-col justify-between">
         <div class="items-center mt-8">
@@ -53,7 +42,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
             <div class="py-2 px-4 flex justify-between">
               <div>
                 <h4 class="font-bold text-xl">Pricing:</h4>
-                <i class="font-normal text-sm text-base-250">From <%= min_price(category) %> - <%= max_price(category) %></i>
+                <i class="font-normal text-sm text-base-250">From
+                  <%= min_price(category, @organization_id, %{use_global: true}) %> -
+                  <%= max_price(category, @organization_id, %{use_global: true}) %>
+                </i>
               </div>
               <%= if category.whcc_id == Category.print_category() do %>
                   <div phx-target={@myself} phx-click="edit_pricing" phx-value-product_id={product.id} class="mt-2 h-12 text-base font-normal border rounded-md border-blue-planning-300 p-3 text-center flex justify-between cursor-pointer">
@@ -64,7 +56,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
                 <div>
                   <.form let={f} for={:product} phx-change="markup" phx-target={@myself} >
                     <span class="font-bold text-sm mr-2">Markup by</span>
-                    <%= text_input f, :markup, onkeydown: "return event.key != 'Enter';", class: "w-24 mt-2 h-12 border rounded-md border-blue-planning-300 p-4 text-center", phx_hook: "PercentMask", value: "#{Decimal.mult(product.markup, 100)}%" %>
+                    <%= text_input f, :markup, onkeydown: "return event.key != 'Enter';", class: "text-input w-24 mt-2 h-12 border rounded-md border-blue-planning-300 p-4 text-center", phx_hook: "PercentMask", value: "#{Decimal.mult(product.markup, 100)}%" %>
                     <%= hidden_input f, :product_id, value: product.id %>
                   </.form>
                 </div>
@@ -93,8 +85,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
   end
 
   defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
-  defdelegate min_price(category), to: Galleries
-  defdelegate max_price(category), to: Galleries
 
   @impl true
   def handle_event("product_enabled", %{"product_id" => product_id, "value" => "on"}, socket) do
@@ -138,4 +128,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
 
   defp markup("%"), do: markup("0%")
   defp markup(markup), do: String.trim(markup, "%") |> Decimal.new() |> Decimal.div(100)
+
+  defdelegate min_price(category, org_id, opts), to: Galleries
+  defdelegate max_price(category, org_id, opts), to: Galleries
 end

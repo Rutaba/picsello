@@ -1054,8 +1054,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     album = Map.get(assigns, :album)
     album_id = if album, do: Map.get(album, :id), else: nil
 
-    gallery_account_id = Galleries.account_id(gallery)
-    cart_product = Cart.new_product(whcc_editor_id, gallery_account_id)
+    cart_product = Cart.new_product(whcc_editor_id, gallery.id)
     Cart.place_product(cart_product, gallery.id, album_id)
 
     socket

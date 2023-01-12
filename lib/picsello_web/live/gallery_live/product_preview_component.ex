@@ -11,5 +11,5 @@ defmodule PicselloWeb.GalleryLive.ProductPreviewComponent do
   end
 
   defdelegate framed_preview(assigns), to: PicselloWeb.GalleryLive.FramedPreviewComponent
-  defdelegate min_price(category), to: Picsello.Galleries
+  defdelegate min_price(category, org_id, opts), to: Picsello.Galleries
 end

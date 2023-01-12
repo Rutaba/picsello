@@ -18,7 +18,7 @@
   <div class="center-container">
     <div class="lg:grid-cols-2 grid-cols-1 gap-7 grid">
       <%= for product <- @products do %>
-        <.product_preview id={product.id} myself={@myself} product={product} disabled={false} />
+        <.product_preview id={product.id} myself={@myself} product={product} disabled={false} organization_id={@organization_id} />
       <% end %>
     </div>
   </div>

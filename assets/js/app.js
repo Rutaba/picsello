@@ -137,17 +137,17 @@ const CardStatus = {
 
 const FinalCostInput = {
   mounted() {
-    let el = this.el
-    let dataset = el.dataset
-
-    el.addEventListener('input', () => {
-      if (el.value < parseFloat(dataset.baseCost)) {
+    let dataset = this.el.dataset
+    let inputElm = document.getElementById(dataset.inputId)
+    
+    inputElm.addEventListener('input', () => {
+      if (inputElm.value.replace('$', '') < parseFloat(dataset.baseCost)) {
         let span = document.getElementById(dataset.spanId)
         span.style.color = "red";
-
+        
         setTimeout(function () {
           span.style.color = "white";
-          el.value = dataset.finalCost;
+          inputElm.value = `$${parseFloat(dataset.finalCost).toFixed(2)}`;
         }, 3000);
       }
     });
