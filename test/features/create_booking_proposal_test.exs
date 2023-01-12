@@ -54,6 +54,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> assert_disabled(button("Copy client link"))
     |> find(testid("card-Package details"), &click(&1, button("Edit", count: 1)))
     |> wait_for_enabled_submit_button()
+    |> click(button("Yes, edit package details"))
     |> click(button("Next"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
@@ -128,7 +129,10 @@ defmodule Picsello.CreateBookingProposalTest do
     |> visit(current_path(session))
     |> assert_text("Questionnaire answered")
     |> assert_text("Pending payment")
-    |> find(testid("card-Package details"), &assert_has(&1, button("Edit", count: 0)))
+    |> find(
+      testid("card-Package details"),
+      &assert_has(&1, css("button:disabled[type='button']"))
+    )
     |> click(button("Copy client link"))
     |> assert_text("Copied!")
 

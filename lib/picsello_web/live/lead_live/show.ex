@@ -120,7 +120,7 @@ defmodule PicselloWeb.LeadLive.Show do
       socket
       |> PicselloWeb.ConfirmationComponent.open(%{
         confirm_event: "edit_package",
-        confirm_label: "Yes, Edit Package details",
+        confirm_label: "Yes, edit package details",
         subtitle:
           "Your proposal has already been sent to the client-if you edit the package details, the proposal will update to reflect the changes you make.
           \nPRO TIP: Remember to communicate with your client on the changes!
