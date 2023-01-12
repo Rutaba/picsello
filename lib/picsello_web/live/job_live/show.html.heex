@@ -13,6 +13,7 @@
           case @request_from do
             "job_history" -> Routes.client_path(@socket, :job_history, @job.client_id)
             "gallery_index" -> Routes.gallery_path(@socket, :galleries)
+            "calendar" -> Routes.calendar_index_path(@socket, :index)
             _ -> Routes.job_path(@socket, @live_action)
           end
         } />

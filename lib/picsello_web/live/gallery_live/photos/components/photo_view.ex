@@ -83,7 +83,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
               <.icon name="forth" class="w-8 h-8 cursor-pointer text-base-100" />
             </div>
             <div class="flex flex-col md:items-center justify-center">
-              <div class="flex lg:h-[450px] sm:h-screen justify-center">
+              <div class="lg:h-[450px] sm:h-screen justify-center">
                 <img src={ @url } class="max-h-full sm:object-contain">
               </div>
               <div class="flex mt-2 justify-between gap-1">

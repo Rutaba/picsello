@@ -37,7 +37,7 @@
     <div class={classes("pt-0", %{"pt-5 lg:pt-16" => !@gallery.disabled})} id="gallery">
       <.top_section {assigns} />
       
-      <%= if Enum.empty?(@photos) do %>
+      <%= if Enum.empty?(@photos) && @favorites_filter do %>
         <.toggle_empty_state {assigns} />
       <% else %>
         <!-- images -->
