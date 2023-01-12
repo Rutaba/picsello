@@ -705,14 +705,14 @@ defmodule Picsello.Factory do
       %PrintProduct{
         sizes: [
           %{
-          size: "4x4",
-          type: "smooth_matte",
-          final_cost: 50_000
+            size: "4x4",
+            type: "smooth_matte",
+            final_cost: 50_000
           },
           %{
-          size: "5x8",
-          type: "lusture",
-          final_cost: 80_000
+            size: "5x8",
+            type: "lusture",
+            final_cost: 80_000
           }
         ]
       }

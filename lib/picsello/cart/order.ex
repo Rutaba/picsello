@@ -212,9 +212,10 @@ defmodule Picsello.Cart.Order do
     end
   end
 
-  defp update_prices([product | products] = products_list, opts) do
+  defp update_prices(products_list, opts) do
     case Keyword.get(opts, :use_global) do
       true ->
+        [product | products] = products_list
         [Product.update_price(product) | products]
 
       _ ->

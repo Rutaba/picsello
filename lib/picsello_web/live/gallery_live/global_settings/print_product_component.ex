@@ -62,7 +62,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
                       <% end %>
                       <b class="md:hidden mr-3">Final Price</b>
                       <span class="w-24 md:w-44 border rounded-md border-blue-planning-300 pl-2" id="final_cost" data-input-id={"final_cost_#{size_type}"} data-span-id={size_type}, data-base-cost={to_decimal(base_cost)}, data-final-cost={final_cost} phx-hook="FinalCostInput">
-                        <%= input f, :final_cost, step: "0.01", value: final_cost |> Decimal.round(2), phx_target: @myself, onkeydown: "return event.key != 'Enter';", id: "final_cost_#{size_type}", phx_hook: "PriceMask", class: "border-none bg-transparent top-0 left-1.5 w-full" %>
+                        <%= input f, :final_cost, step: "0.01", value: final_cost |> Decimal.round(2), phx_target: @myself, onkeydown: "return event.key != 'Enter';", id: "final_cost_#{size_type}", phx_hook: "PriceMask", phx_update: "ignore", class: "border-none bg-transparent top-0 left-1.5 w-full" %>
                       </span>
                       <span id={size_type} style="color: white;" class="text-[0.65rem] ml-1 md:w-auto w-20">must be greater than base cost</span>
                     </.form>
