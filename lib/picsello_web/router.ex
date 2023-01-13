@@ -87,6 +87,8 @@ defmodule PicselloWeb.Router do
     live "/subscription_pricing", Live.Admin.SubscriptionPricing, :index
     live "/product_pricing", Live.Admin.ProductPricing, :index
     live "/product_pricing/:id", Live.Admin.ProductPricing, :show
+    live "/user", Live.Admin.User.Index, :index
+    live "/user/:id/contact_upload", Live.Admin.User.ContactUpload, :show
     live "/workers", Live.Admin.Workers, :index
     live "/", Live.Admin.Index, :index
   end
