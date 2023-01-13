@@ -20,6 +20,8 @@ defmodule PicselloWeb.Live.Admin.Index do
 
         <li><%= live_redirect "Next Up Cards Admin", to: Routes.admin_next_up_cards_path(@socket, :index), class: "border flex items-center justify-center rounded-lg p-8" %></li>
 
+        <li><%= live_redirect "Manage Users", to: Routes.admin_user_index_path(@socket, :index), class: "border flex items-center justify-center rounded-lg p-8" %></li>
+
         <li><%= live_redirect "Subscription Pricing", to: Routes.admin_subscription_pricing_path(@socket, :index), class: "border flex items-center justify-center rounded-lg p-8" %></li>
 
         <li><%= live_redirect "Product Pricing Report", to: Routes.admin_product_pricing_path(@socket, :index), class: "border flex items-center justify-center rounded-lg p-8" %></li>
