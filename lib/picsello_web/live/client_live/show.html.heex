@@ -14,7 +14,7 @@
    </div>
     <.card color="blue-planning-300" title="Details" class={classes("md:col-span-2", %{"ml-20" => @is_mobile})}>
     <div {testid("client-details")} class="flex flex-col lg:flex-row">
-      <div class="flex-1 text-base-250">
+      <div class="flex flex-col flex-1 text-base-250">
         <%= if @client.phone do %>
           <a href={"tel:#{@client.phone}"} class="flex items-center">
             <.icon name="phone" class="text-blue-planning-300 mr-2 w-4 h-4" />
@@ -37,7 +37,7 @@
         <div class="mt-10">
           <.tags client={@client} tags_changeset={@tags_changeset} job_types={@job_types} />
         </div>
-        <div class="mt-10 flex gap-2 text-black">
+        <div class="mt-10 flex gap-3 text-black ml-auto">
           <.icon_button color="blue-planning-300" icon="pencil" phx-click="edit-client" phx-value-id={@client.id}>
             Edit Contact
           </.icon_button>
@@ -54,7 +54,7 @@
     <% else %>
       <p class={"text-base-250 line-clamp-4"}>Click edit to add a note about your client and any details you want to remember.</p>
     <% end %>
-    <.icon_button color="blue-planning-300" icon="pencil" phx-click="open-notes" class="self-start mt-5">
+    <.icon_button color="blue-planning-300" icon="pencil" phx-click="open-notes" class="mt-5 ml-auto">
       Edit
     </.icon_button>
   </.card>
