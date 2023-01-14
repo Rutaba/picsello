@@ -78,7 +78,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     <div class="pt-6 px-6 py-2 center-container">
       <div class="flex text-4xl items-center">
         <.back_button to={Routes.calendar_index_path(@socket, :index)} class="lg:hidden"/>
-        <.crumbs class="text-base text-base-250">
+        <.crumbs class="text-sm text-base-250">
           <:crumb to={Routes.calendar_index_path(@socket, :index)}>Calendar</:crumb>
           <:crumb>Booking events</:crumb>
         </.crumbs>
@@ -120,7 +120,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         <div class="hidden sm:grid sm:grid-cols-4 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
           <div class="sm:col-span-2">Event Details</div>
           <div>Bookings so far</div>
-          <div>Actions</div>
         </div>
         <%= for event <- @booking_events do %>
           <div class="grid sm:grid-cols-4 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
@@ -165,7 +164,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex flex-wrap gap-3 items-center justify-start md:w-auto w-full">
-      <.icon_button icon="eye" disabled={!!@booking_event.disabled_at} color="white" class="justify-center bg-blue-planning-300 grow flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+      <.icon_button icon="eye" disabled={!!@booking_event.disabled_at} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
         Preview
       </.icon_button>
       <.icon_button icon="anchor" disabled={!!@booking_event.disabled_at} color="blue-planning-300" class="justify-center text-blue-planning-300 grow flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
