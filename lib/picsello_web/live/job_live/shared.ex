@@ -720,7 +720,7 @@ defmodule PicselloWeb.JobLive.Shared do
         <% end %>
         <%= if !@job.is_gallery_only do %>
           <div class="mt-auto self-end relative py-1">
-            <.icon_button color="blue-planning-300" phx-click="edit-package" icon="pencil" class="mt-auto" disabled={!Job.lead?(@job) || (@proposal && @proposal.signed_at)} title="Your client has already signed their proposal so package details are no longer editable.">
+            <.icon_button color="blue-planning-300" phx-click="edit-package" icon="pencil" class="mt-auto" disabled={!Job.lead?(@job) || (@proposal && @proposal.signed_at)} title={if !Job.lead?(@job) || (@proposal && @proposal.signed_at), do: "Your client has already signed their proposal so package details are no longer editable.", else: "Edit package"}>
               Edit
             </.icon_button>
           </div>

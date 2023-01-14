@@ -24,7 +24,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
         <div>
           <h1 class="text-2xl font-bold">Public Profile</h1>
 
-          <p class="max-w-2xl my-2">
+          <p class="max-w-2xl my-2 text-base-250">
             Allow potential clients to contact you directly through a website that we host for you. Customize the type of photography you offer, color, cover photo, etc.
           </p>
         </div>
@@ -52,14 +52,14 @@ defmodule PicselloWeb.Live.Profile.Settings do
         </.card>
 
         <.card title="Embed your lead form" class="intro-lead-form">
-          <p class="mt-4">Have your own website? No worries, we have a form for you to embed on your site. </p>
+          <p class="mt-4 text-base-250">Have your own website? No worries, we have a form for you to embed on your site. </p>
             <button button type="button" class="self-auto w-auto py-3 mt-4 text-lg font-semibold border disabled:border-base-200 rounded-lg sm:self-end border-base-300 sm:w-36" phx-click="open-embed">
               Preview form
             </button>
         </.card>
 
         <.card title="Enable/disable your public profile">
-          <p class="mt-4">Hide your public profile or make it visible.</p>
+          <p class="mt-4 text-base-250">Hide your public profile or make it visible.</p>
 
           <.form for={:toggle} phx-change="toggle">
             <label class="mt-4 text-2xl flex">
