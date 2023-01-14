@@ -115,8 +115,8 @@ defmodule PicselloWeb.LiveHelpers do
       |> Enum.into(%{class: "", target: nil, disabled: false, inner_block: nil})
 
     ~H"""
-    <a href={if @disabled, do: "javascript:void(0)", else: href} target={unless @disabled, do: @target} class={classes("btn-tertiary flex items-center px-2 py-1 font-sans rounded-lg hover:opacity-75 text-#{@color} #{@class}", %{"opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @disabled})} {@rest}>
-      <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-3" => @inner_block})} />
+    <a href={if @disabled, do: "javascript:void(0)", else: href} target={unless @disabled, do: @target} class={classes("btn-tertiary flex items-center px-2 py-1 font-sans rounded-lg hover:opacity-75 transition-colors text-#{@color} #{@class}", %{"opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @disabled})} {@rest}>
+      <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-2" => @inner_block})} />
       <%= if @inner_block do %>
         <%= render_block(@inner_block) %>
       <% end %>
@@ -131,8 +131,8 @@ defmodule PicselloWeb.LiveHelpers do
       |> Enum.into(%{class: "", disabled: false, inner_block: nil})
 
     ~H"""
-    <button type="button" class={classes("btn-tertiary flex items-center px-2 py-1 font-sans rounded-lg hover:opacity-75 text-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
-      <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-3" => @inner_block})} />
+    <button type="button" class={classes("btn-tertiary flex items-center px-2 py-1 font-sans rounded-lg hover:opacity-75 transition-colors text-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
+      <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-2" => @inner_block})} />
       <%= if @inner_block do %>
         <%= render_block(@inner_block) %>
       <% end %>
