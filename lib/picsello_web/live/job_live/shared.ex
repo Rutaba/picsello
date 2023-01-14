@@ -601,50 +601,17 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def title_header(assigns) do
     ~H"""
-    <h1 class="flex items-center justify-between mt-4 text-4xl font-bold md:justify-start">
+    <h1 class="flex items-center mt-4 text-4xl font-bold md:justify-start">
       <div class="flex items-center">
         <.live_link to={@back_path} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
           <.icon name="back" class="w-4 h-4 stroke-2"/>
         </.live_link>
-
         <%= Job.name @job %>
       </div>
       <div class="px-5">
-        <div id="meatball-manage" phx-hook="Select" class="mt-2 ml-auto items-center flex">
-          <button class="sticky" id="Manage">
-            <.icon name="meatballs" class="w-4 h-4 stroke-current stroke-2 opacity-100 open-icon border rounded w-9 border-blue-planning-300 text-blue-planning-300" />
-            <.icon name="close-x" class="hidden w-3 h-4 stroke-current stroke-2 close-icon opacity-100 border rounded w-9 border-blue-planning-300 text-blue-planning-300"/>
-          </button>
-          <ul class="absolute hidden bg-white rounded-md popover-content meatballsdropdown w-40 overflow-visible cursor-pointer">
-          <li phx-click="open-compose" phx-value-client_id={@job.client_id} class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-            <.icon name="envelope" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
-            <a class="hover-drop-down">Send an email</a>
-          </li>
-          <%= if @job.job_status.is_lead  do %>
-            <li phx-click="open_name_change"  class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-              <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
-              <a class="hover-drop-down" phx-click="open_name_change"> Edit lead name</a>
-            </li>
-          <% else %>
-            <li phx-click="open_name_change" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-              <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
-              <a class="hover-drop-down"> Edit job name</a>
-            </li>
-          <% end %>
-          <%= if !@job.archived_at and @job.job_status.is_lead  do  %>
-            <li phx-click="confirm_archive_lead" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-              <.icon name="trash" class="inline-block w-4 h-4 mx-2 fill-current text-red-sales-300" />
-              <a class="hover-drop-down" >Archive lead</a>
-            </li>
-          <% end %>
-          <%= if !@job.job_status.is_lead and !@job.completed_at do  %>
-            <li phx-click="confirm_job_complete" class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-              <.icon name="trash" class="inline-block w-4 h-4 mx-2 fill-current text-red-sales-300" />
-              <a class="hover-drop-down">Complete job</a>
-            </li>
-          <% end %>
-          </ul>
-        </div>
+        <button type="button" phx-click="open_name_change" class="bg-base-200 p-2 rounded-lg btn-tertiary">
+          <.icon name="pencil" class="w-4 h-4 fill-current text-blue-planning-300" />
+        </button>
       </div>
     </h1>
     """
@@ -752,14 +719,11 @@ defmodule PicselloWeb.JobLive.Shared do
           <p><%= "#{Money.to_string(@package.print_credits, fractional_unit: false)} print credit" %></p>
         <% end %>
         <%= if !@job.is_gallery_only do %>
-            <div class="self-start relative py-1 hover:bg-blue-planning-100 hover:rounded-md tooltip">
-              <.icon_button color="blue-planning-300" phx-click="edit-package" icon="pencil" class="mt-auto" disabled={!Job.lead?(@job) || (@proposal && @proposal.signed_at)}>
-                Edit
-              </.icon_button>
-              <%= if @proposal && @proposal.signed_at do %>
-                <div class="cursor-default tooltiptext w-72">Your client has already signed their proposal so package details are no longer editable.</div>
-              <% end %>
-            </div>
+          <div class="mt-auto self-end relative py-1">
+            <.icon_button color="blue-planning-300" phx-click="edit-package" icon="pencil" class="mt-auto" disabled={!Job.lead?(@job) || (@proposal && @proposal.signed_at)} title="Your client has already signed their proposal so package details are no longer editable.">
+              Edit
+            </.icon_button>
+          </div>
         <% end %>
       <% else %>
         <p class="text-base-250">Click edit to add a package. You can come back to this later if your client isn’t ready for pricing quite yet.</p>
@@ -1017,7 +981,7 @@ defmodule PicselloWeb.JobLive.Shared do
         </div>
         <%= unless @job.is_gallery_only do %>
         <div class="flex justify-end items-center mt-8">
-          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 mx-4 transition-colors" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-client-link" phx-hook="Clipboard" disabled={@disabled_copy_link}>
+          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 mx-4 transition-colors px-6 py-3" id="copy-client-link" data-clipboard-text={if @proposal, do: BookingProposal.url(@proposal.id)} phx-click="copy-client-link" phx-hook="Clipboard" disabled={@disabled_copy_link}>
             <span>Copy client link</span>
             <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
               Copied!
