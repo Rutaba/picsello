@@ -206,7 +206,7 @@ defmodule PicselloWeb.JobLive.Show do
         <p class={"text-base-250 font-normal #{@p_class}"}>
           <%= text %>
           <%= unless status in [:no_photo, :none_created] do %>
-            - <%= if @count == 0, do: "No", else: @count %> orders to view yet
+            - <%= if @count == 0, do: "No", else: @count %> orders
           <% end %>
         </p>
         <div class={"flex self-end items-center gap-4 #{@btn_section_class}"} >
