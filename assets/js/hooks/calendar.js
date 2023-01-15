@@ -11,7 +11,6 @@ const getView = () => {
 
 export default {
   mounted() {
-    
     const { el } = this;
     const { timeZone, feedPath } = el.dataset;
 
