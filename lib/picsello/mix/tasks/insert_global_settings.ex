@@ -7,8 +7,8 @@ defmodule Mix.Tasks.InsertGlobalSettings do
   alias Picsello.{Organization, GlobalSettings.GalleryProduct, GlobalSettings, Repo}
 
   def run(_) do
-    Mix.Task.run("app.start")
-
+    load_app()
+    
     gallery_products_params = GlobalSettings.gallery_products_params()
 
     from(org in Organization,
@@ -30,5 +30,11 @@ defmodule Mix.Tasks.InsertGlobalSettings do
       end)
     end)
     |> Repo.transaction()
+  end
+
+  defp load_app do
+    if System.get_env("MIX_ENV") != "prod" do
+      Mix.Task.run("app.start")
+    end
   end
 end
