@@ -6,9 +6,10 @@ defmodule Mix.Tasks.InsertGlobalSettings do
   alias Ecto.Multi
   alias Picsello.{Organization, GlobalSettings.GalleryProduct, GlobalSettings, Repo}
 
+  @shortdoc "Insert global settings"
   def run(_) do
     load_app()
-    
+
     gallery_products_params = GlobalSettings.gallery_products_params()
 
     from(org in Organization,
