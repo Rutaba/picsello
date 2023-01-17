@@ -5,9 +5,13 @@ defmodule Picsello.Cart.Product do
 
   import Ecto.Changeset
   import Money.Sigils
+  import Ecto.Query
 
   use Ecto.Schema
-  alias Picsello.{Product, Repo}
+
+  alias Picsello.{WHCC, WHCC.Editor, Cart.Order}
+  alias Picsello.Repo
+
   @card_category_id Application.compile_env(:picsello, :card_category_id)
 
   schema "product_line_items" do
@@ -86,8 +90,7 @@ defmodule Picsello.Cart.Product do
 
   @doc "merges values for price, volume_discount, and print_credit_discount"
   def update_price(%__MODULE__{} = product, opts \\ []) do
-    whcc_product = %Product{} = Repo.preload(product.whcc_product, :category)
-    product = Map.put(product, :whcc_product, whcc_product)
+    %{whcc_product: whcc_product} = product = preload_category(product)
 
     {credit, opts} = Keyword.pop(opts, :credits, ~M[0]USD)
     real_price = real_price(product, opts)
@@ -112,6 +115,26 @@ defmodule Picsello.Cart.Product do
             _ -> real_price
           end
     }
+  end
+
+  defp preload_category(%{whcc_product: %{category: %Picsello.Category{}}} = product), do: product
+
+  defp preload_category(%{order_id: order_id, whcc_product: whcc_product} = product)
+       when not is_nil(order_id) do
+    %{category: category} =
+      Order
+      |> join(:inner, [order], gallery in assoc(order, :gallery))
+      |> join(:inner, [_order, gallery], pg in assoc(gallery, :photographer))
+      |> where([order], order.id == ^order_id)
+      |> select([_order, gallery, pg], %{gallery: gallery, photographer: pg})
+      |> Repo.one!()
+      |> then(fn %{gallery: gallery, photographer: pg} ->
+        %Editor.Details{product_id: whcc_product.whcc_id}
+        |> WHCC.get_product!(pg.organization_id)
+        |> WHCC.update_markup(gallery)
+      end)
+
+    %{product | whcc_product: %{category: category}}
   end
 
   defp real_price(
