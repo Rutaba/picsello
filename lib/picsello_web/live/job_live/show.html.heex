@@ -87,10 +87,12 @@
                   <.icon name="money-bags" class="inline-block w-4 h-4 mr-2 fill-current text-blue-planning-300" />
                     Go to Stripe
                   </button>
+                  <%= if @proposal do %>
                   <button title="Mark as paid" type="button" phx-click="open-mark-as-paid" phx-value-user={@current_user.email} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
                     <.icon name="checkcircle" class="inline-block w-4 h-4 mr-2 fill-current text-blue-planning-300" />
                     Mark as paid
                   </button>
+                  <% end %>
                 </div>
                 </div>
               </div>

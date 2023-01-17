@@ -57,7 +57,7 @@
               <.icon name="add-photos" class={classes("w-4 h-4 fill-current text-white inline mr-2", %{"opacity-50" => gallery.disabled})} />
               Upload photos
             </a>
-            <button {testid("copy-link")} id="copy-link" class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg hover:bg-blue-planning-300/75 btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => gallery.disabled})} data-clipboard-text={clip_board(@socket, gallery)} phx-hook="Clipboard">
+            <button {testid("copy-link")} id="copy-link" class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => gallery.disabled})} data-clipboard-text={clip_board(@socket, gallery)} phx-hook="Clipboard">
               <.icon name="anchor" class={classes("w-4 h-4 fill-current text-blue-planning-300 inline mr-2", %{"text-gray-200" => gallery.disabled})} />
               Copy link
               <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
