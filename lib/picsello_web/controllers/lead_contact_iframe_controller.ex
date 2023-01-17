@@ -11,7 +11,7 @@ defmodule PicselloWeb.LeadContactIframeController do
   end
 
   def create(conn, %{"organization_slug" => organization_slug, "contact" => contact} = params) do
-    organization = Profiles.find_organization_by(slug: organization_slug)
+    organization = Profiles.find_organization_by_slug(slug: organization_slug)
 
     case Profiles.handle_contact(organization, contact, PicselloWeb.Helpers) do
       {:ok, _client} ->
@@ -36,7 +36,7 @@ defmodule PicselloWeb.LeadContactIframeController do
   end
 
   defp assign_organization_by_slug(conn, %{"organization_slug" => slug}) do
-    organization = Profiles.find_organization_by(slug: slug)
+    organization = Profiles.find_organization_by_slug(slug: slug)
 
     conn
     |> assign(:job_types, organization.profile.job_types)
