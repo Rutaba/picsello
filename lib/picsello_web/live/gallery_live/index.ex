@@ -34,13 +34,12 @@ defmodule PicselloWeb.GalleryLive.Index do
   def handle_event(
         "show_dropdown",
         %{"show_index" => show_index},
-        %{assigns: %{index: index}} = socket
+        socket
       ) do
     show_index = String.to_integer(show_index)
-    show? = if show_index == index, do: false, else: show_index
 
     socket
-    |> assign(index: show?)
+    |> assign(index: show_index)
     |> noreply()
   end
 

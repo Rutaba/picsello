@@ -25,9 +25,34 @@
             _ -> Routes.job_path(@socket, @live_action)
           end
         } />
-        <%= unless @proposal do %>
-          <.send_proposal_button is_schedule_valid={@is_schedule_valid} package={@package} shoots={@shoots} stripe_status={@stripe_status} class="hidden md:flex" />
-        <% end %>
+        <div class="flex h-full md:mt-0 mt-6">
+          <div id="manage" phx-hook="Select" class="md:w-auto w-full">
+            <button class="btn-tertiary flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id="Manage">
+              Actions
+              <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+              <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+            </button>
+            <ul class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
+              <li phx-click="open-compose" phx-value-client_id={@job.client_id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+                <.icon name="envelope" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+                <a>Send an email</a>
+              </li>
+              <li phx-click="open_name_change" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+                <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+                <a> Edit name</a>
+              </li>
+              <%= if !@job.archived_at and @job.job_status.is_lead  do  %>
+                <li phx-click="confirm_archive_lead" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+                  <.icon name="trash" class="inline-block w-4 h-4 mx-2 fill-current text-red-sales-300" />
+                  <a >Archive lead</a>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+          <%= unless @proposal do %>
+            <.send_proposal_button is_schedule_valid={@is_schedule_valid} package={@package} shoots={@shoots} stripe_status={@stripe_status} class="hidden md:flex" />
+          <% end %>
+        </div>
       </div>
 
       <%= unless [:charges_enabled, :loading] |> Enum.member?(@stripe_status) do %>
