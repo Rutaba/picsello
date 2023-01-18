@@ -1532,6 +1532,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     package_params =
       params
       |> Map.get("package", %{})
+      |> maybe_trim_package_base_price()
       |> PackagePricing.handle_package_params(params)
       |> Map.merge(%{
         "base_multiplier" => multiplier_changeset |> current() |> Multiplier.to_decimal(),
@@ -1549,6 +1550,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       download: download_changeset
     )
   end
+
+  defp maybe_trim_package_base_price(%{"base_price" => base_price} = package) do
+    Map.put(package, "base_price", String.split(base_price, ".") |> List.first())
+  end
+
+  defp maybe_trim_package_base_price(package), do: package
 
   defp base_adjustment(package_form) do
     adjustment = package_form |> current() |> Package.base_adjustment()
