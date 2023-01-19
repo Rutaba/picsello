@@ -29,9 +29,11 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
             <b class="text-lg">
               <%="#{@title}s"%>
             </b>
-            <.icon_button color="blue-planning-300" icon="down" class="flex ml-auto px-2" disabled={!open?} phx-click="expand_product_all" phx-value-product-id={product.id} phx-target={@myself}>
+            <%= if open? do %>
+            <.icon_button color="blue-planning-300" icon="down" class="flex ml-auto px-2" phx-click="expand_product_all" phx-value-product-id={product.id} phx-target={@myself}>
               Expand All
             </.icon_button>
+            <% end %>
           </div>
           <div class={classes("grid md:grid-cols-4 grid-cols-2 p-2 pl-14 text-base-250", %{"text-base-300" => open?})}>
             <%= for item <- ["Variation", "Your Profit", "Base Cost", "Final Price"] do %>
