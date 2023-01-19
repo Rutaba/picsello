@@ -149,12 +149,7 @@ defmodule Picsello.Cart.Order do
         order
         |> cast(
           %{
-            products:
-              if Keyword.get(opts, :use_global) do
-                products
-              else
-                update_prices(products, opts)
-              end
+            products: update_prices(products, opts)
           },
           []
         )
@@ -212,42 +207,35 @@ defmodule Picsello.Cart.Order do
     end
   end
 
-  defp update_prices(products_list, opts) do
-    case Keyword.get(opts, :use_global) do
-      true ->
-        [product | products] = products_list
-        [Product.update_price(product) | products]
+  defp update_prices(products, opts) do
+    available_credit =
+      Enum.reduce(
+        products,
+        get_in(opts, [:credits, :print]) || Money.new(0),
+        &Money.add(&1.print_credit_discount, &2)
+      )
 
-      _ ->
-        available_credit =
-          Enum.reduce(
-            products_list,
-            get_in(opts, [:credits, :print]) || Money.new(0),
-            &Money.add(&1.print_credit_discount, &2)
-          )
+    {_credits, products} =
+      for {_, line_items} <- sort_products(products),
+          reduce: {available_credit, []} do
+        acc ->
+          for {product, index} <-
+                Enum.with_index(line_items),
+              reduce: acc do
+            {credit_remaining, products} ->
+              %{print_credit_discount: credit_used} =
+                product =
+                Product.update_price(product,
+                  shipping_base_charge: index == 0,
+                  credits: credit_remaining
+                )
 
-        {_credits, products} =
-          for {_, line_items} <- sort_products(products_list),
-              reduce: {available_credit, []} do
-            acc ->
-              for {product, index} <-
-                    Enum.with_index(line_items),
-                  reduce: acc do
-                {credit_remaining, products} ->
-                  %{print_credit_discount: credit_used} =
-                    product =
-                    Product.update_price(product,
-                      shipping_base_charge: index == 0,
-                      credits: credit_remaining
-                    )
-
-                  {Money.subtract(credit_remaining, credit_used), [product | products]}
-              end
-          end
-
-        Enum.reverse(products)
-    end
+              {Money.subtract(credit_remaining, credit_used), [product | products]}
+            end
+      end
+    Enum.reverse(products)
   end
+
 
   defp sort_products(products) do
     products

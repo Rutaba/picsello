@@ -6,8 +6,9 @@ defmodule Mix.Tasks.InsertGlobalSettings do
   alias Ecto.Multi
   alias Picsello.{Organization, GlobalSettings.GalleryProduct, GlobalSettings, Repo}
 
+  @shortdoc "Insert global settings"
   def run(_) do
-    Mix.Task.run("app.start")
+    load_app()
 
     gallery_products_params = GlobalSettings.gallery_products_params()
 
@@ -30,5 +31,11 @@ defmodule Mix.Tasks.InsertGlobalSettings do
       end)
     end)
     |> Repo.transaction()
+  end
+
+  defp load_app do
+    if System.get_env("MIX_ENV") != "prod" do
+      Mix.Task.run("app.start")
+    end
   end
 end

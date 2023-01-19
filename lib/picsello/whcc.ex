@@ -86,7 +86,7 @@ defmodule Picsello.WHCC do
     item_attrs = item |> Map.from_struct() |> Map.take([:unit_base_price, :quantity])
 
     details
-    |> get_product(organization_id)
+    |> get_product!(organization_id)
     |> update_markup(%{use_global: use_global})
     |> price_details(details, item_attrs, %{use_global: use_global})
   end
@@ -96,13 +96,12 @@ defmodule Picsello.WHCC do
   def price_details(
         %{
           id: whcc_product_id,
-          category:
-            %{
-              whcc_id: whcc_id,
-              gs_gallery_products: [
-                %{global_settings_print_products: print_products}
-              ]
-            } = category
+          category: %{
+            whcc_id: whcc_id,
+            gs_gallery_products: [
+              %{global_settings_print_products: print_products}
+            ]
+          }
         } = product,
         %{selections: %{"size" => size} = selections} = details,
         %{quantity: quantity},
@@ -114,21 +113,15 @@ defmodule Picsello.WHCC do
     %{sizes: sizes} = Enum.find(print_products, &(&1.product_id == whcc_product_id))
     final_cost = Enum.find(sizes, &(&1.type == type && &1.size == size)) |> final_cost()
 
-    details
-    |> Map.take([:preview_url, :editor_id, :selections])
-    |> Map.merge(%{
-      whcc_product: %{product | category: %{category | default_markup: Decimal.new(0)}},
-      whcc_product_id: whcc_product_id,
+    %{
       unit_price: final_cost,
-      unit_markup: Money.new(0),
-      quantity: quantity,
-      shipping_upcharge: Decimal.new(0),
-      shipping_base_charge: Money.new(0)
-    })
+      unit_markup: Money.new(0)
+    }
+    |> merge_details(details, quantity, product)
   end
 
   def price_details(
-        %{id: whcc_product_id, category: category} = product,
+        product,
         details,
         %{
           unit_base_price: unit_price,
@@ -138,9 +131,16 @@ defmodule Picsello.WHCC do
       ) do
     %{
       unit_markup: mark_up_price(product, details, unit_price),
-      unit_price: unit_price,
-      quantity: quantity
+      unit_price: unit_price
     }
+    |> merge_details(details, quantity, product)
+  end
+
+  def merge_details(product_details, details, quantity, product) do
+    %{category: category, id: whcc_product_id} = product
+
+    product_details
+    |> Map.put(:quantity, quantity)
     |> Map.merge(
       details
       |> Map.take([:preview_url, :editor_id, :selections])
@@ -176,7 +176,7 @@ defmodule Picsello.WHCC do
   defdelegate highest_selections(product), to: __MODULE__.Product
   defdelegate sync, to: __MODULE__.Sync
 
-  defp get_product(%Editor.Details{product_id: product_id}, organization_id) do
+  def get_product!(%Editor.Details{product_id: product_id}, organization_id) do
     from(product in Picsello.Product,
       join: category in assoc(product, :category),
       left_join: gs_gallery_product in assoc(category, :gs_gallery_products),
@@ -189,6 +189,18 @@ defmodule Picsello.WHCC do
     )
     |> Repo.one!()
   end
+
+  def final_cost(%{final_cost: final_cost}),
+    do: Money.multiply(Money.new(1), Decimal.mult(final_cost, 100))
+
+  def update_markup(%{category: %{whcc_id: whcc_id}} = product, %{use_global: true}) do
+    %{category: %{gs_gallery_products: [%{markup: markup}]} = category} = product
+    markup = if @area_markup_category == whcc_id, do: Decimal.new(0), else: markup
+
+    %{product | category: %{category | default_markup: markup}}
+  end
+
+  def update_markup(product, _), do: product
 
   defp mark_up_price(
          product,
@@ -276,15 +288,4 @@ defmodule Picsello.WHCC do
       Picsello.Category.active()
       |> Picsello.Category.shown()
       |> Picsello.Category.order_by_position()
-
-  def final_cost(%{final_cost: final_cost}),
-    do: Money.multiply(Money.new(1), Decimal.mult(final_cost, 100))
-
-  def update_markup(%{category: %{whcc_id: whcc_id}} = product, %{use_global: true})
-      when whcc_id != @area_markup_category do
-    %{category: %{gs_gallery_products: [%{markup: markup}]} = category} = product
-    %{product | category: %{category | default_markup: markup}}
-  end
-
-  def update_markup(product, _), do: product
 end

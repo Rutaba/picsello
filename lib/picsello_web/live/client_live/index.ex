@@ -468,7 +468,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   def select_dropdown(assigns) do
     ~H"""
-    <div id="select" class={"relative w-full mt-3 md:mt-0 w-full"} data-offset-y="10" phx-hook="Select">
+    <div id={@id} class={"relative w-full mt-3 md:mt-0 w-full"} data-offset-y="10" phx-hook="Select">
       <h4 class="font-extrabold text-sm mb-1"><%= @title %></h4>
       <div class="flex flex-row items-center border rounded-lg p-3">
           <span class="flex-shrink-0"><%= String.capitalize(String.replace(@selected_option, "_", " ")) %></span>

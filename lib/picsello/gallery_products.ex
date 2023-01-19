@@ -82,7 +82,6 @@ defmodule Picsello.GalleryProducts do
       as: :category,
       left_join: gs_gallery_product in assoc(category, :gs_gallery_products),
       on: gs_gallery_product.organization_id == photographer.organization_id,
-      on: gallery.use_global == true,
       left_join: preview_photo in subquery(Picsello.Photos.watermarked_query()),
       on: preview_photo.id == product.preview_photo_id,
       as: :preview_photo,
