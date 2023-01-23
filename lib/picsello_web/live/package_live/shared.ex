@@ -168,10 +168,12 @@ defmodule PicselloWeb.PackageLive.Shared do
 
         <div class="col-span-2">
           <div class="flex items-center">
-              <.icon_button id={"edit-package-#{@package.id}"} class="ml-5" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
-                Edit Package
-              </.icon_button>
-              <div class="ml-2" id={"menu-btn-#{@package.id}"} phx-update={@update_mode} data-offset="0" phx-hook="Select">
+              <div class="hidden md:block">
+                <.icon_button id={"edit-package-#{@package.id}"} class="ml-5" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
+                  Edit Package
+                </.icon_button>
+              </div>
+              <div class="ml-4 md:ml-2" id={"menu-btn-#{@package.id}"} phx-update={@update_mode} data-offset="0" phx-hook="Select">
                   <button title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
                     <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
 
@@ -196,7 +198,7 @@ defmodule PicselloWeb.PackageLive.Shared do
                       </button>
                     <% end %>
 
-                    <button id={"archive-unarchive-btn-#{@package.id}"} title="Archive" type="button" phx-click="toggle-archive" phx-value-package-id={@package.id} phx-value-type={if @package.archived_at, do: "unarchive", else: "archive"} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-sales-100">
+                    <button id={"archive-unarchive-btn-#{@package.id}"} title="Archive" type="button" phx-click="toggle-archive" phx-value-package-id={@package.id} phx-value-type={if @package.archived_at, do: "unarchive", else: "archive"} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
                       <.icon name={if @package.archived_at, do: "plus", else: "trash"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => @package.archived_at, "text-red-sales-300" => !@package.archived_at})} />
                       <%= if @package.archived_at, do: "Unarchive", else: "Archive" %>
                     </button>
@@ -205,6 +207,12 @@ defmodule PicselloWeb.PackageLive.Shared do
             </div>
         </div>
       </div>
+    </div>
+    <hr class="my-4 block md:hidden" />
+    <div class="flex items-center block md:hidden">
+      <.icon_button id={"edit-package-#{@package.id}"} class="ml-5" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
+        Edit Package
+      </.icon_button>
     </div>
     <hr class="my-4" />
     """
