@@ -1,6 +1,7 @@
 defmodule Picsello.UserManagesPackageTemplatesTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, Package, JobType}
+  import Ecto.Query
 
   setup :onboarded
   setup :authenticated
@@ -371,11 +372,9 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_flash(:success, text: "The package has been archived")
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
     |> click(css(".archived-anchor-click"))
     |> click(css("#menu-btn-#{package.id}"))
-    |> click(button("Unarchive"))
+    |> click(button("archive-unarchive-btn-#{package.id}"))
 
     session
     |> click(button("Yes, unarchive"))
@@ -386,7 +385,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     package = Repo.all(Package) |> hd()
 
     session
-    |> click(link("Settings"))
     |> click(link("Package Templates"))
     |> click(css("#menu-btn-#{package.id}"))
     |> click(button("Show on public profile"))
@@ -399,7 +397,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     assert package.show_on_public_profile == true
 
     session
-    |> click(link("Settings"))
     |> click(link("Package Templates"))
     |> click(css("#menu-btn-#{package.id}"))
     |> click(button("Hide on public profile"))
@@ -412,7 +409,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     assert package.show_on_public_profile == false
 
     session
-    |> click(link("Settings"))
     |> click(link("Package Templates"))
     |> click(css("#menu-btn-#{package.id}"))
     |> click(button("Duplicate"))
@@ -423,10 +419,36 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(css(".wedding-anchor-click"))
+    |> click(css(".newborn-anchor-click"))
     |> assert_text("Missing packages")
     |> assert_text(
       "You don’t have any packages! Click add a package to get started. If you need help, check out this guide!"
     )
+  end
+
+  feature "Pagination appears only when records are more than 4",
+          %{session: session, user: user} do
+    type = JobType.all() |> hd
+
+    for name <- ~w(deluxe lame premium highfive yadix) do
+      insert(:package_template,
+        user: user,
+        job_type: type,
+        name: name
+      )
+    end
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Package Templates"))
+    |> assert_has(button("Next"))
+
+    from(pt in Package, where: pt.name in ["deluxe", "lame", "highfive"])
+    |> Repo.delete_all()
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Package Templates"))
+    |> refute_has(button("Next"))
   end
 end

@@ -196,7 +196,7 @@ defmodule PicselloWeb.PackageLive.Shared do
                       </button>
                     <% end %>
 
-                    <button title="Archive" type="button" phx-click="toggle-archive" phx-value-package-id={@package.id} phx-value-type={if @package.archived_at, do: "unarchive", else: "archive"} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-sales-100">
+                    <button id={"archive-unarchive-btn-#{@package.id}"} title="Archive" type="button" phx-click="toggle-archive" phx-value-package-id={@package.id} phx-value-type={if @package.archived_at, do: "unarchive", else: "archive"} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-sales-100">
                       <.icon name={if @package.archived_at, do: "plus", else: "trash"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => @package.archived_at, "text-red-sales-300" => !@package.archived_at})} />
                       <%= if @package.archived_at, do: "Unarchive", else: "Archive" %>
                     </button>
