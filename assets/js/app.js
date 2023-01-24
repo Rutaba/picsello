@@ -139,12 +139,12 @@ const FinalCostInput = {
   mounted() {
     let dataset = this.el.dataset
     let inputElm = document.getElementById(dataset.inputId)
-    
+
     inputElm.addEventListener('input', () => {
       if (inputElm.value.replace('$', '') < parseFloat(dataset.baseCost)) {
         let span = document.getElementById(dataset.spanId)
         span.style.color = "red";
-        
+
         setTimeout(function () {
           span.style.color = "white";
           inputElm.value = `$${parseFloat(dataset.finalCost).toFixed(2)}`;
@@ -169,6 +169,14 @@ const GetGalleryCookie = {
       this.pushEvent("gallery-created", { galleryType: galleryType })
     }
   },
+};
+
+const showWelcomeModal = {
+  mounted() {
+    const show = getCookie('show_welcome_modal')
+    document.cookie = "show_welcome_modal=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    if (show == 'true') { this.pushEvent("open-welcome-modal", {}) }
+  }
 };
 
 function getCookie(cname) {
@@ -229,7 +237,8 @@ const Hooks = {
   CardStatus,
   FinalCostInput,
   SetGalleryCookie,
-  GetGalleryCookie
+  GetGalleryCookie,
+  showWelcomeModal
 };
 
 let Uploaders = {};

@@ -33,6 +33,7 @@ defmodule PicselloWeb.UserAuth do
     conn
     |> renew_session()
     |> put_session(:user_token, token)
+    |> put_resp_cookie("show_welcome_modal", show_welcome_modal?(user), http_only: false)
     |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
     |> maybe_write_remember_me_cookie(token, params)
     |> redirect(to: redirect_to)
@@ -45,6 +46,9 @@ defmodule PicselloWeb.UserAuth do
   defp maybe_write_remember_me_cookie(conn, _token, _params) do
     conn
   end
+
+  defp show_welcome_modal?(%{onboarding: %{welcome_count: count}}), do: to_string(count < 3)
+  defp show_welcome_modal?(_user), do: to_string(true)
 
   # This function renews the session ID and erases the whole
   # session to avoid fixation attacks. If there is any data
