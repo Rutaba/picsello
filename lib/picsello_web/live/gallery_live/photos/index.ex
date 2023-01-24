@@ -15,7 +15,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias Phoenix.PubSub
 
   alias Picsello.{
-    Job,
     Repo,
     Galleries,
     Albums,
@@ -589,53 +588,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  def handle_event("client-link", _, socket) do
-    share_gallery(socket)
-  end
-
-  @impl true
-  def handle_event("send_proofs_popup", _, %{assigns: assigns} = socket) do
-    %{gallery: gallery, album: album} = assigns
-
-    gallery.id
-    |> Galleries.get_album_photo_count(album.id)
-    |> then(&(&1 > 0))
-    |> case do
-      true ->
-        gallery = Repo.preload(gallery, job: :client)
-        album = Albums.set_album_hash(album)
-        preset_state = if album.is_finals, do: :album_send_link, else: :proofs_send_link
-
-        %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
-            Picsello.EmailPresets.resolve_variables(
-              preset,
-              {gallery, album},
-              PicselloWeb.Helpers
-            )
-          end
-
-        socket
-        |> assign(:job, gallery.job)
-        |> PicselloWeb.ClientMessageComponent.open(%{
-          modal_title: "Share #{if album.is_finals, do: "Finals", else: "Proofing"} Album",
-          subject: subject,
-          body_html: body_html,
-          presets: [],
-          enable_image: true,
-          enable_size: true,
-          composed_event: :message_composed_for_album,
-          client: Job.client(gallery.job)
-        })
-        |> noreply()
-
-      false ->
-        socket
-        |> put_flash(:error, "Please add photos to the album before sharing")
-        |> noreply()
-    end
-  end
-
   @impl true
   def handle_event("gallery-created", %{"galleryType" => "finals"}, socket) do
     socket |> assign(:first_visit?, true) |> noreply()
@@ -655,6 +607,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     })
     |> noreply()
   end
+
+  @impl true
+  defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.Shared
 
   @impl true
   def handle_info({:album_settings, %{message: message, album: album}}, socket) do

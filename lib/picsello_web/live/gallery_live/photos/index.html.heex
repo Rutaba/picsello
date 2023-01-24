@@ -59,11 +59,6 @@
               <div class="lg:flex hidden">
                 <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
               </div>
-              <%= if @album && (@album.is_proofing || @album.is_finals) do %>
-                <.icon_button {testid("send-proofs-popup")} disabled={disabled?(@gallery) || (@total_progress > 0 && @total_progress < 100) } class="text-sm lg:ml-2.5 pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2" phx-click="send_proofs_popup" color="blue-planning-300" icon="envelope">
-                  Send <%=if @album.is_proofing, do: "proofs", else: "album" %> to client
-                </.icon_button>
-              <% end %>
               <%= unless @album do %>
                 <.add_album_button disabled={disabled?(@gallery)} class="lg:ml-2.5 lg:py-2 py-1.5"/>
               <% end %>

@@ -75,7 +75,7 @@ defmodule Picsello.Galleries.Gallery do
   def create_changeset(gallery, attrs \\ %{}) do
     gallery
     |> cast(attrs, @create_attrs)
-    |> cast_assoc(:albums, with: &Album.changeset_with_gallery/2)
+    |> cast_assoc(:albums, with: &Album.gallery_changeset/2)
     |> cast_password()
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])

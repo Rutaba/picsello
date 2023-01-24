@@ -134,9 +134,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   @impl true
-  def handle_event("client-link", _, socket) do
-    share_gallery(socket)
-  end
+  defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.SharedI
 
   @impl true
   def handle_event("watermark_popup", _, socket) do

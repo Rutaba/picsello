@@ -19,12 +19,12 @@
           <p class="mt-4 font-sans hidden lg:flex text-gray-400"><%= length(@albums) %> <%= ngettext("album", "albums", length(@albums)) %></p>
         </div>
       </div>
-      <div class={"lg:hidden bg-base-200 px-10 py-4 #{!standard?(@gallery) && 'hidden'}"}>
+      <div class={classes("lg:hidden bg-base-200 px-10 py-4", %{"hidden" => !standard?(@gallery)})}>
         <.add_album_button disabled={disabled?(@gallery)} class="py-1.5"/>
       </div>
       <div id="albums" class="relative flex flex-col w-full mb-20 lg:mb-10">
         <div class="px-10 grid 2xl:grid-cols-3 xl:grid-cols-2 grid-cols-1 sm:gap-2 md:gap-2 center-container">
-            <div class={"flex flex-col mb-2 mr-2 album #{!standard?(@gallery) && 'hidden'}"}>
+            <div class={classes("flex flex-col mb-2 mr-2 album", %{"hidden" => !standard?(@gallery)})}>
               <.thumbnail event="go_to_unsorted_photos" album={album_params(@albums)}/>
             <div class="cursor-pointer actionBlock">
               <.actions

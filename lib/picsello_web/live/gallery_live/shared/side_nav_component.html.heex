@@ -110,7 +110,7 @@
                 <% end %>
                 <%= for album <- @albums do %>
                   <ul>
-                    <.li title={album.name} album={album} is_finals={album.is_finals} is_proofing={album.is_proofing} class="block" name={icon_name(album)} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                    <.li title={album.name} is_finals={album.is_finals} is_proofing={album.is_proofing} class="block" name={icon_name(album)} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
                   </ul>
                 <% end %>
               <% end %>

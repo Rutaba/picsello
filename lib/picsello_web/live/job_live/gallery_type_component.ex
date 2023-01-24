@@ -13,19 +13,14 @@ defmodule PicselloWeb.JobLive.GalleryTypeComponent do
 
   @impl true
   def render(assigns) do
-    assigns =
-      assigns
-      |> assign_new(:main_class, fn -> "p-8" end)
-      |> assign_new(:button_title, fn -> "Get Started" end)
-      |> assign_new(:hide_close_button, fn -> false end)
-
+    assigns = Enum.into(assigns, %{main_class: "p-8", button_title: "Get Started", hide_close_button: false})
     ~H"""
     <div class={"#{@main_class} items-center mx-auto bg-white relative"}>
       <%= unless @hide_close_button do %>
         <.close_x />
       <% end %>
 
-      <h1 class={"#{!@from_job? && 'hidden'} font-bold text-3xl mb-8"}>Set Up Your Gallery</h1>
+      <h1 class={classes("font-bold text-3xl mb-8", %{"hidden" => !@from_job?})}>Set Up Your Gallery</h1>
       <.card color="base-200" icon="photos-2" title="Standard" button_class="btn-secondary" type="standard" {assigns}>
         <p>Use this option if you already have your photos retouched, </p>
         <p> and your photos are ready to hand off to your client.</p>

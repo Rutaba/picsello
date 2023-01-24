@@ -28,6 +28,92 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   @card_blank "/images/card_gray.png"
 
+  def handle_event(
+        "client-link",
+        _,
+        %{assigns: %{gallery: %{type: :standard} = gallery}} = socket
+      ) do
+    case prepare_gallery(gallery) do
+      {:ok, _} ->
+        gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload(job: :client)
+
+        %{body_template: body_html, subject_template: subject} =
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_send_link) do
+            Picsello.EmailPresets.resolve_variables(
+              preset,
+              {gallery},
+              PicselloWeb.Helpers
+            )
+          end
+
+        socket
+        |> assign(:job, gallery.job)
+        |> assign(:gallery, gallery)
+        |> PicselloWeb.ClientMessageComponent.open(%{
+          body_html: body_html,
+          subject: subject,
+          modal_title: "Share gallery",
+          presets: [],
+          enable_image: true,
+          enable_size: true,
+          client: Job.client(gallery.job)
+        })
+        |> noreply()
+
+      _ ->
+        socket
+        |> put_flash(:error, "Please add photos to the gallery before sharing")
+        |> noreply()
+    end
+  end
+
+  def handle_event(
+        "client-link",
+        _,
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    %{albums: [album]} = gallery = Repo.preload(gallery, :albums)
+
+    gallery.id
+    |> Galleries.get_album_photo_count(album.id)
+    |> then(&(&1 > 0))
+    |> case do
+      true ->
+        gallery = Repo.preload(gallery, job: :client)
+        album = Albums.set_album_hash(album)
+
+        preset_state = if album.is_finals, do: :album_send_link, else: :proofs_send_link
+
+        %{body_template: body_html, subject_template: subject} =
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
+            Picsello.EmailPresets.resolve_variables(
+              preset,
+              {gallery, album},
+              PicselloWeb.Helpers
+            )
+          end
+
+        socket
+        |> assign(:job, gallery.job)
+        |> PicselloWeb.ClientMessageComponent.open(%{
+          modal_title: "Share #{if album.is_finals, do: "Finals", else: "Proofing"} Album",
+          subject: subject,
+          body_html: body_html,
+          presets: [],
+          enable_image: true,
+          enable_size: true,
+          composed_event: :message_composed_for_album,
+          client: Job.client(gallery.job)
+        })
+        |> noreply()
+
+      false ->
+        socket
+        |> put_flash(:error, "Please add photos to the album before sharing")
+        |> noreply()
+    end
+  end
+
   def toggle_favorites(
         %{
           assigns: %{
@@ -303,47 +389,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
       payload: Keyword.get(opts, :payload, %{})
     })
     |> noreply()
-  end
-
-  def share_gallery(
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    case prepare_gallery(gallery) do
-      {:ok, _} ->
-        gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload(job: :client)
-
-        %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_send_link) do
-            Picsello.EmailPresets.resolve_variables(
-              preset,
-              {gallery},
-              PicselloWeb.Helpers
-            )
-          end
-
-        socket
-        |> assign(:job, gallery.job)
-        |> assign(:gallery, gallery)
-        |> PicselloWeb.ClientMessageComponent.open(%{
-          body_html: body_html,
-          subject: subject,
-          modal_title: "Share gallery",
-          presets: [],
-          enable_image: true,
-          enable_size: true,
-          client: Job.client(gallery.job)
-        })
-        |> noreply()
-
-      _ ->
-        socket
-        |> put_flash(:error, "Please add photos to the gallery before sharing")
-        |> noreply()
-    end
   end
 
   def prepare_gallery(%{id: gallery_id} = gallery) do

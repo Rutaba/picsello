@@ -156,7 +156,6 @@ const FinalCostInput = {
 
 const SetGalleryCookie = {
   mounted() {
-    console.log(this.el.dataset)
     let galleryType = this.el.dataset.galleryType
     document.cookie = `GalleryType=${galleryType}; path=/`;
   },

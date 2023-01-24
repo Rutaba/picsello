@@ -10,14 +10,14 @@ defmodule PicselloWeb.GalleryLive.Transaction.OrderDetail do
 
   @impl true
   def mount(
-        %{"id" => gallery_id, "order_number" => order_number, "request_from" => request_from},
+      %{"id" => gallery_id, "order_number" => order_number} = params,
         _session,
         %{assigns: %{live_action: action}} = socket
       ) do
         gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:job)
 
     socket
-    |> assign(:request_from, request_from)
+    |> assign(:request_from, params["request_from"])
     |> assign(:page_title, action |> Phoenix.Naming.humanize())
     |> assign_job(gallery.job_id)
     |> then(fn socket ->

@@ -118,7 +118,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       end)
       |> Multi.merge(fn %{job: %{id: job_id}} ->
         Galleries.create_gallery_multi(%{
-          name: client.name <> " " <> type <> " 1",
+          name: client.name <> " " <> type,
           job_id: job_id,
           status: "active",
           password: Gallery.generate_password(),
@@ -145,10 +145,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   @impl true
   def render(%{step: step} = assigns) do
-    class = if step == :choose_type, do: "relative bg-white p-6", else: "modal"
-
     ~H"""
-    <div class={class}>
+    <div class={classes("relative bg-white p-6", %{"modal" => step != :choose_type})}>
       <.close_x />
 
       <.steps step={step} steps={@steps} target={@myself} />

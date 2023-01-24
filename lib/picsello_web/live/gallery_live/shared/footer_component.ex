@@ -4,35 +4,28 @@ defmodule PicselloWeb.GalleryLive.Shared.FooterComponent do
 
   alias Picsello.Galleries
   alias Picsello.Albums
+  alias Picsello.Repo
 
   import PicselloWeb.GalleryLive.Shared, only: [disabled?: 1]
 
   @impl true
   def update(%{gallery: gallery, total_progress: total_progress}, socket) do
-    hash =
-      gallery
-      |> Galleries.set_gallery_hash()
-      |> Map.get(:client_link_hash)
-
-    albums = Albums.get_albums_by_gallery_id(gallery.id)
-
-    proofing_album =
-      for album <- albums do
-        if album.is_proofing, do: true, else: false
-      end
-
-    uploading =
-      if total_progress == 100 || total_progress == 0 do
-        false
-      else
-        true
-      end
+    gallery = gallery |> Galleries.set_gallery_hash()
 
     socket
-    |> assign(:proofing_exists?, Enum.any?(proofing_album))
-    |> assign(url: Routes.gallery_client_index_path(socket, :index, hash))
-    |> assign(disabled: disabled?(gallery))
-    |> assign(uploading: uploading)
+    |> assign(url: url(socket, gallery))
+    |> assign(gallery: gallery)
+    |> assign(uploading?: total_progress not in [100, 0])
     |> ok()
+  end
+
+  defp url(socket, %{type: :standard, client_link_hash: hash}) do
+    Routes.gallery_client_index_path(socket, :index, hash)
+  end
+
+  defp url(socket, gallery) do
+    %{albums: [album]} = gallery |> Repo.preload(:albums)
+    %{client_link_hash: hash} = Albums.set_album_hash(album)
+    Routes.gallery_client_album_path(socket, :proofing_album, hash)
   end
 end

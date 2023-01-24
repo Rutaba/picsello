@@ -55,11 +55,6 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   end
 
   @impl true
-  def handle_event("client-link", _, socket) do
-    share_gallery(socket)
-  end
-
-  @impl true
   def handle_event("open-billing-portal", _, %{assigns: %{gallery: gallery}} = socket) do
     {:ok, url} =
       Picsello.Subscriptions.billing_portal_link(
@@ -70,6 +65,9 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
     socket |> redirect(external: url) |> noreply()
   end
 
+  @impl true
+  defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.Shared
+  
   @impl true
   def handle_info({:message_composed, message_changeset}, socket) do
     add_message_and_notify(socket, message_changeset, "gallery")
