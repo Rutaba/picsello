@@ -39,7 +39,7 @@
               </li>
               <li phx-click="open_name_change" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
                 <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
-                <a> Edit name</a>
+                <a>Edit lead name</a>
               </li>
               <%= if !@job.archived_at and @job.job_status.is_lead  do  %>
                 <li phx-click="confirm_archive_lead" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">

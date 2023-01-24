@@ -31,7 +31,7 @@
               </li>
               <li phx-click="open_name_change" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
                 <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
-                <a> Edit name</a>
+                <a>Edit job name</a>
               </li>
               <%= if !@job.job_status.is_lead and !@job.completed_at do  %>
                 <li phx-click="confirm_job_complete" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
