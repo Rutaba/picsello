@@ -2,9 +2,15 @@
   <div class="px-6 pt-6 pb-2 center-container">
     <div class="flex justify-between">
       <div>
-        <.crumbs class="font-normal text-base text-base-250 ml-14">
+        <.crumbs class="md:text-xs font-normal text-base text-base-250">
+          <:crumb to={Routes.job_path(@socket, :jobs)}>
+            <%= action_name(:jobs, :plural) %>
+          </:crumb>
+          <:crumb to={Routes.job_path(@socket, :jobs, @gallery.job_id)}>
+            <%= Job.name @gallery.job %>
+          </:crumb>
           <:crumb to={Routes.gallery_photographer_index_path(@socket, :index, @gallery.id)}>
-            <%= Picsello.Utils.capitalize_all_words(@gallery.name) %>
+            gallery
           </:crumb>
           <:crumb to={Routes.transaction_path(@socket, :transactions, @gallery.id)}> Orders </:crumb>
           <:crumb> <%= @order.number %> </:crumb>
@@ -22,6 +28,7 @@
             <p class="font-normal md:pl-4 pl-2"><%= @gallery.name %></p>
           </div>
         </h1>
+        <.tag_for_gallery_type type={@gallery.type} />
       </div>
       <button phx-click="open-stripe" class="text-lg py-3 h-13 my-auto font-semibold px-8 btn-primary">Go to Stripe</button>
     </div>

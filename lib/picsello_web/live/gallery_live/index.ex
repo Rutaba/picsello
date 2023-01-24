@@ -233,47 +233,14 @@ defmodule PicselloWeb.GalleryLive.Index do
     |> noreply()
   end
 
-  def preview_icons(assigns) do
-    standard_albums_count =
-      assigns.albums
-      |> Enum.filter(&(&1.is_proofing == false and &1.is_finals == false))
-      |> Enum.count()
-
-    proofing_albums_count =
-      assigns.albums
-      |> Enum.filter(&(&1.is_proofing == true and &1.is_finals == false))
-      |> Enum.count()
-
-    final_albums_count =
-      assigns.albums
-      |> Enum.filter(&(&1.is_finals == true))
-      |> Enum.count()
-
-    ~H"""
-    <ul class="flex">
-      <%= if Enum.any?(assigns.albums, fn album -> album.is_proofing == false and album.is_finals == false end) do %>
-        <li class="cursor-pointer mr-1 custom-tooltip text-center">
-          <span class="text-base-300"><%= standard_albums_count %> Standard <%= ngettext("album", "albums", standard_albums_count)%></span>
-          <.icon name="standard_album" class="inline-block w-4 h-4"/>
-        </li>
-      <% end %>
-      <%= if Enum.any?(assigns.albums, & &1.is_proofing) do %>
-        <li class="cursor-pointer mr-1 custom-tooltip">
-          <span class="text-base-300"><%= proofing_albums_count %> Proofing <%= ngettext("album", "albums", proofing_albums_count)%></span>
-          <.icon name="proofing" class="inline-block w-4 h-4"/>
-        </li>
-      <% end %>
-      <%= if Enum.any?(assigns.albums, & &1.is_finals) do %>
-        <li class="cursor-pointer custom-tooltip">
-          <span class="text-base-300"><%= final_albums_count %> Finals <%= ngettext("album", "albums", final_albums_count)%></span>
-          <.icon name="finals" class="inline-block w-4 h-4"/>
-        </li>
-      <% end %>
-    </ul>
-    """
-  end
-
-  def image_item(assigns) do
+  def image_item(%{gallery: gallery} = assigns) do
+    albums =
+      case gallery.type do
+        :standard ->
+          ngettext("%{count} album", "%{count} albums", Enum.count(gallery.albums))
+        :proofing -> "Proofing"
+        _ -> "Finals"
+      end
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col md:flex-row grow">
@@ -291,6 +258,7 @@ defmodule PicselloWeb.GalleryLive.Index do
             </div>
           <% end %>
         </div>
+
         <div class="py-0 md:py-2 mt-4 md:mt-0">
           <div class="font-bold">
             <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %>
@@ -307,7 +275,7 @@ defmodule PicselloWeb.GalleryLive.Index do
             <% end %>
           </div>
           <div class="text-base-250 font-normal ">
-            <%= @gallery.albums |> Enum.count() %> albums
+            <%= albums %>
           </div>
           <%= if Enum.any?(@gallery.albums) do %>
             <div class="text-base-250 font-normal">

@@ -12,7 +12,7 @@
           <%= Job.name @job %>
         </:crumb>
         <:crumb to={Routes.gallery_photographer_index_path(@socket, :index, @gallery.id)}>
-          <%= @gallery.name %>
+          gallery
         </:crumb>
         <:crumb> <%= String.capitalize(action_name(@live_action, :plural)) %> </:crumb>
       </.crumbs>
@@ -29,6 +29,7 @@
       </h1>
       <button phx-click="open-stripe" class="hidden md:block px-8 btn-primary">Go to Stripe</button>
     </div>
+    <.tag_for_gallery_type type={@gallery.type} />
   </div>
 </header>
 
@@ -47,7 +48,7 @@
       <div class="mb-2">
         <span class="md:hidden grid-row mt-5 px-2 text-blue-planning-300 bg-blue-planning-100 rounded-lg"><%= order_status(order) %></span>
       </div>
-      <div class="flex grid md:grid-cols-5 grid-cols-2">
+      <div class="grid md:grid-cols-5 grid-cols-2">
         <div phx-click="order-detail" phx-value-order_number={order.number} class="flex flex-col text-blue-planning-300 cursor-pointer mb-4 md:mb-0 underline">Product order</div>
         <div class="flex md:justify-start justify-end"><%= total_cost(order) %></div>
         <div class="flex"><%= order_date(@current_user.time_zone, order) %></div>

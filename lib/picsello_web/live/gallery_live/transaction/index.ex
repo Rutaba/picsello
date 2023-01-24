@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.Transaction.Index do
   require Ecto.Query
 
   import PicselloWeb.JobLive.Shared, only: [assign_job: 2]
-  import PicselloWeb.GalleryLive.Shared, only: [order_status: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [order_status: 1, tag_for_gallery_type: 1]
 
   @impl true
   def mount(%{"id" => gallery_id}, _session, %{assigns: %{live_action: action}} = socket) do

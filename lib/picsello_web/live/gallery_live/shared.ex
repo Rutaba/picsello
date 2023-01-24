@@ -15,7 +15,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Galleries.Album,
     Albums,
     Notifiers.ClientNotifier,
-    GlobalSettings
+    GlobalSettings,
+    Utils
   }
 
   alias Cart.{Order, Digital}
@@ -1110,4 +1111,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
     do: String.capitalize(status)
 
   def order_status(_), do: "Processed"
+
+  def tag_for_gallery_type(assigns) do
+    ~H"""
+      <span class="lg:ml-[54px] sm:ml-0 inline-block mt-2 border rounded-md bg-base-200 px-2 pb-0.5 text-base-250 font-bold text-base"><%= Utils.capitalize_all_words(@type) %></span>
+    """
+  end
 end
