@@ -54,13 +54,13 @@ defmodule PicselloWeb.Live.Marketing do
       <div class="px-6 center-container">
         <div class="my-12">
           <.card title="Brand links" class="relative intro-brand-links">
-            <div class="flex items-center flex-wrap justify-between">
+            <div class="flex items-center flex-wrap justify-between text-base-250">
               <%= if active?(@brand_links) do %>
-                <p class="lg:flex hidden text-base-250">Add links to your web platforms so you can quickly open them to login or use them in your marketing emails.</p>
-                <p class="lg:hidden mb-5 text-base-250">Add links to your web platforms so you can quickly open them from your Marketing Hub.</p>
+                <p class="lg:flex hidden">Add links to your web platforms so you can quickly open them to login or use them in your marketing emails.</p>
+                <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your Marketing Hub.</p>
               <% else %>
-                <p class="lg:flex hidden text-base-250">Looks like you don’t have any links. Go head and add one!</p>
-                <p class="lg:hidden mb-5 text-base-250">Add links to your web platforms so you can quickly open them from your Marketing Hub.</p>
+                <p class="lg:flex hidden">Looks like you don’t have any links. Go head and add one!</p>
+                <p class="lg:hidden mb-5">Add links to your web platforms so you can quickly open them from your Marketing Hub.</p>
               <% end %>
               <button type="button" phx-click="edit-link" phx-value-link-id="website" class="w-full sm:w-auto text-center btn-primary">Manage links</button>
             </div>
