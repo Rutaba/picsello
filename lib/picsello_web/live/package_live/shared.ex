@@ -114,107 +114,109 @@ defmodule PicselloWeb.PackageLive.Shared do
       })
 
     ~H"""
-    <div {testid("package-template-card")}>
-      <div class="flex items-center">
-        <h1 class="text-xl font-bold line-clamp-2 text-blue-planning-300 link hover:cursor-pointer" phx-click="edit-package" phx-value-package-id={@package.id}><%= @package.name %></h1>
-        <div class="flex items-center custom-tooltip" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id}>
-          <.icon name={if @package.show_on_public_profile, do: "eye", else: "closed-eye"} class={classes("w-5 h-5 mx-2 hover:cursor-pointer", %{"text-gray-400" => !@package.show_on_public_profile, "text-blue-planning-300" => @package.show_on_public_profile})}/>
-          <span class="shadow-lg rounded-lg py-1 px-2 text-xs">
-            <%= if @package.show_on_public_profile, do: 'Shown on your Public Profile', else: 'Hidden on your Public Profile' %>
-          </span>
-        </div>
-      </div>
-      <div class="grid grid-cols-6">
-        <div class={"flex flex-col col-span-2 group #{@class}"}>
-
-
-          <div class="mb-4 relative" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="mouseover">
-            <div class="line-clamp-2 raw_html raw_html_inline text-base-250">
-              <%= raw @package.description %>
-            </div>
-            <div class="flex items-center">
-              <span class="line-clamp-2 w-5 h-5 mr-2 flex justify-center text-xs font-bold rounded-full bg-gray-200 text-center">
-              <%= @package.download_count %>
-              </span>
-              <span class="text-base-250">Downloadable photos</span>
-            </div>
-            <span class="justify-start border rounded px-2 bg-blue-planning-100 text-blue-planning-300 font-bold text-xs"><%= @package.job_type %></span>
-            <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-[15]" data-offset="0" role="tooltip">
-              <div class="line-clamp-6 raw_html"></div>
-              <button class="inline-block text-blue-planning-300">View all</button>
-            </div>
-            <%= if package_description_length_long?(@package.description) do %>
-              <button class="inline-block text-blue-planning-300 view_more">View more</button>
-            <% end %>
+    <div class="border border-solid p-4 mb-3 ml-0 md:p-0 md:mb-0 md:ml-2 md:border-0">
+      <div {testid("package-template-card")}>
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold line-clamp-2 text-blue-planning-300 link hover:cursor-pointer" phx-click="edit-package" phx-value-package-id={@package.id}><%= @package.name %></h1>
+          <div class="flex items-center custom-tooltip" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id}>
+            <.icon name={if @package.show_on_public_profile, do: "eye", else: "closed-eye"} class={classes("w-5 h-5 mx-2 hover:cursor-pointer", %{"text-gray-400" => !@package.show_on_public_profile, "text-blue-planning-300" => @package.show_on_public_profile})}/>
+            <span class="shadow-lg rounded-lg py-1 px-2 text-xs">
+              <%= if @package.show_on_public_profile, do: 'Shown on your Public Profile', else: 'Hidden on your Public Profile' %>
+            </span>
           </div>
         </div>
+        <div class="grid grid-cols-6">
+          <div class={"flex flex-col col-span-2 group #{@class}"}>
 
-        <div class="col-span-2">
-          <div class="flex items-center text-base-250">
-            <span class="">Package price:&nbsp;</span>
 
-            <div class="">
-              <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
-            </div>
-          </div>
-          <div class="flex items-center text-base-250">
-            <div class="">Digital image price:&nbsp;</div>
-
-            <div class="">
-              <%= if Money.zero?(@package.download_each_price) do %>--<% else %><%= @package.download_each_price %>/each<% end %>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-span-2">
-          <div class="flex items-center">
-              <div class="hidden md:block">
-                <.icon_button id={"edit-package-#{@package.id}"} class="ml-5" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
-                  Edit Package
-                </.icon_button>
+            <div class="mb-4 relative" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="mouseover">
+              <div class="line-clamp-2 raw_html raw_html_inline text-base-250">
+                <%= raw @package.description %>
               </div>
-              <div class="ml-4 md:ml-2" id={"menu-btn-#{@package.id}"} phx-update={@update_mode} data-offset="0" phx-hook="Select">
-                  <button title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
-                    <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
-
-                    <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
-                  </button>
-
-                  <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
-                    <%= if !@package.archived_at do %>
-                      <button title="Edit" type="button" phx-click="edit-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
-                        <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                        Edit
-                      </button>
-
-                      <button title="Edit" type="button" phx-click="duplicate-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
-                        <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                        Duplicate
-                      </button>
-
-                      <button title="Edit" type="button" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
-                        <.icon name={if @package.show_on_public_profile, do: "closed-eye", else: "eye"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => !@package.show_on_public_profile, "text-red-sales-300" => @package.show_on_public_profile})} />
-                        <%= if @package.show_on_public_profile, do: "Hide on public profile", else: "Show on public profile" %>
-                      </button>
-                    <% end %>
-
-                    <button id={"archive-unarchive-btn-#{@package.id}"} title="Archive" type="button" phx-click="toggle-archive" phx-value-package-id={@package.id} phx-value-type={if @package.archived_at, do: "unarchive", else: "archive"} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
-                      <.icon name={if @package.archived_at, do: "plus", else: "trash"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => @package.archived_at, "text-red-sales-300" => !@package.archived_at})} />
-                      <%= if @package.archived_at, do: "Unarchive", else: "Archive" %>
-                    </button>
-                  </div>
-                </div>
+              <div class="flex items-center">
+                <span class="line-clamp-2 w-5 h-5 mr-2 flex justify-center text-xs font-bold rounded-full bg-gray-200 text-center">
+                <%= @package.download_count %>
+                </span>
+                <span class="text-base-250">Downloadable photos</span>
+              </div>
+              <span class="justify-start border rounded px-2 bg-blue-planning-100 text-blue-planning-300 font-bold text-xs"><%= @package.job_type %></span>
+              <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-[15]" data-offset="0" role="tooltip">
+                <div class="line-clamp-6 raw_html"></div>
+                <button class="inline-block text-blue-planning-300">View all</button>
+              </div>
+              <%= if package_description_length_long?(@package.description) do %>
+                <button class="inline-block text-blue-planning-300 view_more">View more</button>
+              <% end %>
             </div>
+          </div>
+
+          <div class="col-span-2">
+            <div class="flex items-center text-base-250">
+              <span class="">Package price:&nbsp;</span>
+
+              <div class="">
+                <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
+              </div>
+            </div>
+            <div class="flex items-center text-base-250">
+              <div class="">Digital image price:&nbsp;</div>
+
+              <div class="">
+                <%= if Money.zero?(@package.download_each_price) do %>--<% else %><%= @package.download_each_price %>/each<% end %>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-span-2">
+            <div class="flex items-center">
+                <div class="hidden md:block">
+                  <.icon_button {testid("edit-package-#{@package.id}")} class="ml-5" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
+                    Edit Package
+                  </.icon_button>
+                </div>
+                <div class="ml-16 md:ml-2" id={"menu-btn-#{@package.id}"} phx-update={@update_mode} data-offset="0" phx-hook="Select">
+                    <button title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+                      <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+
+                      <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+                    </button>
+
+                    <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
+                      <%= if !@package.archived_at do %>
+                        <button title="Edit" type="button" phx-click="edit-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                          <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                          Edit
+                        </button>
+
+                        <button title="Edit" type="button" phx-click="duplicate-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                          <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                          Duplicate
+                        </button>
+
+                        <button title="Edit" type="button" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                          <.icon name={if @package.show_on_public_profile, do: "closed-eye", else: "eye"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => !@package.show_on_public_profile, "text-red-sales-300" => @package.show_on_public_profile})} />
+                          <%= if @package.show_on_public_profile, do: "Hide on public profile", else: "Show on public profile" %>
+                        </button>
+                      <% end %>
+
+                      <button id={"archive-unarchive-btn-#{@package.id}"} title="Archive" type="button" phx-click="toggle-archive" phx-value-package-id={@package.id} phx-value-type={if @package.archived_at, do: "unarchive", else: "archive"} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                        <.icon name={if @package.archived_at, do: "plus", else: "trash"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => @package.archived_at, "text-red-sales-300" => !@package.archived_at})} />
+                        <%= if @package.archived_at, do: "Unarchive", else: "Archive" %>
+                      </button>
+                    </div>
+                  </div>
+              </div>
+          </div>
         </div>
       </div>
+      <hr class="my-4 block md:hidden" />
+      <div class="flex items-center block md:hidden">
+        <.icon_button {testid("edit-package-#{@package.id}")} title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
+          Edit Package
+        </.icon_button>
+      </div>
+      <hr class="my-4 hidden md:block" />
     </div>
-    <hr class="my-4 block md:hidden" />
-    <div class="flex items-center block md:hidden">
-      <.icon_button id={"edit-package-#{@package.id}"} class="ml-5" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
-        Edit Package
-      </.icon_button>
-    </div>
-    <hr class="my-4" />
     """
   end
 

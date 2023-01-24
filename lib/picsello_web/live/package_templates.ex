@@ -150,7 +150,97 @@ defmodule PicselloWeb.Live.PackageTemplates do
                               <span class="">Archived <span class="font-normal">(<%= @archived_templates_count %>)</span></span>
                             </div>
                           </div>
-                        </a>
+                          <div class="justify-start ml-3">
+                            <span class="">All <span class="font-normal">(<%= @all_templates_count %>)</span></span>
+                          </div>
+                        </div>
+                      </a>
+                  </div>
+                  <%= if @package_name == "All" do %>
+                    <span class="arrow show lg:block hidden">
+                      <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+                    </span>
+                  <% end %>
+                </div>
+
+                <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == "Archived"})} phx-click="assign_archieved_templated">
+                  <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
+                      <a class="flex w-full archived-anchor-click">
+                        <div class="flex items-center justify-start">
+                          <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
+                            <.icon name="archieved" class="w-3 h-3 m-1 fill-current text-white" />
+                          </div>
+                          <div class="justify-start ml-3">
+                            <span class="">Archived <span class="font-normal">(<%= @archived_templates_count %>)</span></span>
+                          </div>
+                        </div>
+                      </a>
+                  </div>
+                  <%= if @package_name == "Archived" do %>
+                    <span class="arrow show lg:block hidden">
+                      <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+                    </span>
+                  <% end %>
+                </div>
+
+                <div class="font-bold rounded-lg cursor-pointer grid-item" phx-click="edit-job-types">
+                  <div class="flex items-center lg:h-11 pr-4 lg:pl-2 border border-blue-planning-300 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
+                      <a class="flex w-full">
+                        <div class="flex items-center justify-start">
+                          <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
+                            <.icon name="pencil" class="w-3 h-3 m-1 fill-current text-white" />
+                          </div>
+
+                          <div class="justify-start ml-3">
+                            <span class="">Edit photography types</span>
+                          </div>
+                        </div>
+                      </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class={classes("w-full lg:p-0 lg:block", %{"hidden" => @is_mobile})}>
+            <div class="flex items-center lg:mt-0 mb-2">
+              <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
+                <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+              </div>
+              <div class="ml-3 lg:hidden">
+                <span class="font-sans lg:text-2xl font-bold text-3xl capitalize"><%= @package_name %> Packages</span>
+              </div>
+            </div>
+            <div class="flex-1 md:ml-8">
+              <div class="md:flex items-center mt-6 hidden md:block">
+                <div class="font-bold text-xl capitalize"><%= @package_name %> Packages</div>
+                <%= if @package_name not in ["All", "Archived"] do%>
+                  <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={get_id_by_job_name(@package_name, org_id)}>
+                    <.icon name={if @show_on_public_profile, do: "eye", else: "closed-eye"} class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
+                    <span class="shadow-lg rounded-lg pb-2 px-2 text-xs capitalize"><%= @package_name %> Photography is <%= if @show_on_public_profile, do: "showing", else: "hidden" %> as an <br />offering on your public profile & contact form</span>
+                  </div>
+                <% end %>
+              </div>
+              <%= unless Enum.empty? @templates do %>
+                <div class="font-bold md:grid grid-cols-6 mt-2 hidden md:inline-block">
+                  <div class="col-span-2 pl-2">Package Details</div>
+                  <div class="col-span-2 pl-2">Pricing</div>
+                  <div class="col-span-2 pl-2">Actions</div>
+                </div>
+
+                <hr class="my-8 border-blue-planning-300 border-2 mt-4 mb-1 hidden md:block" />
+
+                <div class="my-4 flex flex-col">
+                  <%= for template <- @templates do %>
+                    <.package_card update_mode="replace" package={template} class="h-full"/>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="flex flex-col md:flex-row mt-2">
+                  <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{Routes.static_path(@socket,"/images/empty-state.png")}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
+                  <div class="py-0 md:py-2">
+                    <div class="font-bold">
+                      Missing packages
                     </div>
                     <%= if @package_name == "Archived" do %>
                       <span class="arrow show lg:block hidden">

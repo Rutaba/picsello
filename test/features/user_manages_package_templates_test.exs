@@ -117,7 +117,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in_quill("My greatest wedding package")
     |> scroll_into_view(testid("modal-buttons"))
-    |> click(css("label", text: "Portrait"))
+    |> click(css("label", text: "Event"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Select Documents")
@@ -161,7 +161,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
              base_price: %Money{amount: 10_000},
              download_count: 2,
              download_each_price: %Money{amount: 200},
-             job_type: "portrait",
+             job_type: "event",
              package_template_id: nil
            } = package
 
@@ -179,7 +179,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in_quill("My greatest wedding package")
     |> scroll_into_view(testid("modal-buttons"))
-    |> click(css("label", text: "Portrait"))
+    |> click(css("label", text: "Event"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Select Documents")
@@ -204,7 +204,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
     assert %Package{
              name: "Wedding Deluxe",
-             job_type: "portrait"
+             job_type: "event"
            } = package
 
     assert %Picsello.Contract{
@@ -219,7 +219,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(css("#edit-package-#{template.id}"))
+    |> click(testid("edit-package-#{template.id}"))
 
     session
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
@@ -279,7 +279,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(css("#edit-package-#{template.id}"))
+    |> click(testid("edit-package-#{template.id}"))
 
     session
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
@@ -417,7 +417,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     assert Repo.all(Package) |> Enum.count() == 3
 
     session
-    |> click(link("Settings"))
     |> click(link("Package Templates"))
     |> click(css(".newborn-anchor-click"))
     |> assert_text("Missing packages")
