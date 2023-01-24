@@ -175,18 +175,6 @@ export default {
       },
     ].filter((obj) => obj?.element),
   }),
-  intro_leads_empty: (el) => ({
-    showBullets: false,
-    steps: [
-      {
-        title: 'Your leads',
-        intro:
-          'Before you can create jobs, you need to create leads. You’ll add your client’s name and email address, and information about the shoot they’re interested in doing. Don’t worry, you won’t have to add this information a second time - we’ll help you convert the lead into a job once you and your client have agreed to work together.',
-        position: 'bottom-middle-aligned',
-        element: el.querySelector('.intro-leads'),
-      },
-    ].filter((obj) => obj?.element),
-  }),
   intro_leads_new: (el) => ({
     steps: [
       {
