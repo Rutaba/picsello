@@ -134,9 +134,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   @impl true
-  defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.SharedI
-
-  @impl true
   def handle_event("watermark_popup", _, socket) do
     send(self(), :open_modal)
     socket |> noreply()
@@ -484,4 +481,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       """
     end
   end
+
+  @impl true
+  defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.Shared
 end
