@@ -391,6 +391,7 @@ defmodule PicselloWeb.LiveHelpers do
       </button>
       <% end %>
       <div>
+        <%# These next 2 lines with inline styles come from a third-party tool; we highly discourage usage of inline styles as a normal practice %>
         <div style="position: relative; padding-bottom: calc(59.916666666666664% + 41px); height: 0;" class="shadow-xl rounded">
           <iframe src={@tour_embed} frameborder="0" loading="lazy" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
         </div>
