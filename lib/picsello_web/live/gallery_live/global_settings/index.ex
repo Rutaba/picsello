@@ -815,14 +815,14 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   defp section(%{digital_pricing?: true} = assigns) do
     ~H"""
       <h1 class="text-2xl font-bold mt-6 md:block">Digital Pricing</h1>
-      <span class="text-base-250">Set your default image pricing your gallery! This includes defaults for each image download and you buy all price. You can always override this when setting up your package or on your lead/job.</span>
+      <span class="text-base-250">Adjust on a per digital image and a "buy them all" option below. Defaults provided are our base recommendations but you know your clients and business best. And again, you can also adjust on an individual lead, package, or job level.</span>
       <div class="grid gap-8 lg:grid-cols-2 grid-cols-1 mt-10">
         <div>
           <span class="text-xl font-bold">Single Image</span>
           <div class="flex items-center border p-3 rounded-md border-base-250 mt-4">
-            <div class="flex flex-col">
+            <div class="flex flex-col md:pr-4">
               <h1 class="text-xl font-bold">Pricing per image:</h1>
-              <span class="text-sm text-base-250 italic">Remember to be fair to yourself.<br /> This your business!</span>
+              <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
             </div>
             <.form for={:digital_pricing} let={f} phx_change={:validate_each_price} class="ml-auto">
               <%= input(f, :each_price, class: "w-full w-24 text-lg text-center border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: if((@global_settings_gallery && @global_settings_gallery.download_each_price), do: Money.to_string(@global_settings_gallery.download_each_price), else: "$50.00")) %>
@@ -832,9 +832,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         <div>
           <span class="text-xl font-bold	">Buy them all</span>
           <div class="flex items-center border p-3 rounded-md border-base-250 mt-4">
-            <div class="flex flex-col">
+            <div class="flex flex-col md:pr-4">
               <h1 class="text-xl font-bold">Pricing for all images:</h1>
-              <span class="text-sm text-base-250 italic">Remember to be fair to yourself.<br /> This your business!</span>
+              <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
             </div>
             <.form for={:digital_pricing} let={f} phx_change={:validate_buy_all_price} class="ml-auto">
               <%= input(f, :buy_all, class: "w-full w-24 text-lg text-center ml-auto border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: if((@global_settings_gallery && @global_settings_gallery.buy_all_price), do: Money.to_string(@global_settings_gallery.buy_all_price), else: "$750.00")) %>
@@ -849,7 +849,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     ~H"""
       <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @expiration_date?})}>Global Expiration Date</h1>
       <.card color="blue-planning-300" icon="three-people" title="Expiration Date" badge={0} class="cursor-pointer mt-8" >
-          <p class="my-2">
+          <p class="my-2 text-base-250">
             Add a global expiration date that will be the default setting across all your new galleries.
             This will not affect your pre-existing galleries. If your job doesn’t have a shoot date, the gallery
             for that job will default to <i>“Never Expires”</i>. New galleries will expire:

@@ -34,13 +34,12 @@ defmodule PicselloWeb.GalleryLive.Index do
   def handle_event(
         "show_dropdown",
         %{"show_index" => show_index},
-        %{assigns: %{index: index}} = socket
+        socket
       ) do
     show_index = String.to_integer(show_index)
-    show? = if show_index == index, do: false, else: show_index
 
     socket
-    |> assign(index: show?)
+    |> assign(index: show_index)
     |> noreply()
   end
 
@@ -284,44 +283,46 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   def image_item(assigns) do
     ~H"""
-      <div class="flex flex-col md:flex-row">
-        <%= if Galleries.preview_image(@gallery) do %>
-          <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{cover_photo_url(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}>
-          </div>
-        <% else %>
-          <div class="rounded-lg h-full p-4 items-center flex flex-col w-[200px] h-[130px] mr-4 md:mr-7 bg-base-200">
-            <div class="flex justify-center h-full items-center">
-              <.icon name="photos-2" class="inline-block w-9 h-9 text-base-250"/>
+      <div class="flex flex-wrap w-full md:w-auto">
+        <div class="flex flex-col md:flex-row grow">
+          <%= if Galleries.preview_image(@gallery) do %>
+            <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{cover_photo_url(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}>
             </div>
-            <div class="mt-1 text-base-250 text-center h-full">
-              <span>Edit your gallery to upload a cover photo</span>
+          <% else %>
+            <div class="rounded-lg h-full p-4 items-center flex flex-col w-[200px] h-[130px] mr-4 md:mr-7 bg-base-200">
+              <div class="flex justify-center h-full items-center">
+                <.icon name="photos-2" class="inline-block w-9 h-9 text-base-250"/>
+              </div>
+              <div class="mt-1 text-base-250 text-center h-full">
+                <span>Edit your gallery to upload a cover photo</span>
+              </div>
             </div>
-          </div>
-        <% end %>
-      </div>
-      <div class="py-0 md:py-2">
-        <div class="font-bold">
-          <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %>
-        </div>
-        <div class={"font-bold w-full"}>
-          <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id) do %>
-            <span class="w-full text-blue-planning-300 underline">
-              <%= if String.length(@gallery.name) < 30 do
-                @gallery.name
-              else
-                "#{@gallery.name |> String.slice(0..29)} ..."
-              end %>
-            </span>
           <% end %>
         </div>
-        <div class="text-base-250 font-normal ">
-          <%= @gallery.albums |> Enum.count() %> albums
-        </div>
-        <%= if Enum.any?(@gallery.albums) do %>
-          <div class="text-base-250 font-normal">
-            <.preview_icons albums={@gallery.albums} />
+        <div class="py-0 md:py-2 mt-4 md:mt-0">
+          <div class="font-bold">
+            <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %>
           </div>
-        <% end %>
+          <div class={"font-bold w-full"}>
+            <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id) do %>
+              <span class="w-full text-blue-planning-300 underline">
+                <%= if String.length(@gallery.name) < 30 do
+                  @gallery.name
+                else
+                  "#{@gallery.name |> String.slice(0..29)} ..."
+                end %>
+              </span>
+            <% end %>
+          </div>
+          <div class="text-base-250 font-normal ">
+            <%= @gallery.albums |> Enum.count() %> albums
+          </div>
+          <%= if Enum.any?(@gallery.albums) do %>
+            <div class="text-base-250 font-normal">
+              <.preview_icons albums={@gallery.albums} />
+            </div>
+          <% end %>
+        </div>
       </div>
     """
   end

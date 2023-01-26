@@ -14,7 +14,7 @@ defmodule Picsello.CompleteJobTest do
   feature "user completes job", %{session: session, job: job} do
     session
     |> visit("/jobs/#{job.id}")
-    |> click(button("Manage"))
+    |> click(css("#manage"))
     |> click(css("li", text: "Complete job"))
     |> click(button("Yes, complete"))
     |> assert_path("/jobs")
@@ -22,7 +22,7 @@ defmodule Picsello.CompleteJobTest do
     |> assert_has(css("*[role='status']", text: "Completed"))
     |> click(link(Job.name(job)))
     |> assert_has(css("*[role='status']", text: "Completed"))
-    |> click(button("Manage"))
+    |> click(css("#manage"))
     |> assert_has(css("li", text: "Complete job", count: 0))
   end
 end

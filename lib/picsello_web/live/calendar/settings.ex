@@ -24,7 +24,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
     <div class="pt-6 px-6 py-2 center-container">
       <div class="flex text-4xl items-center">
         <.back_button to={Routes.calendar_index_path(@socket, :index)} class="lg:hidden"/>
-        <.crumbs class="text-base text-base-250">
+        <.crumbs class="text-sm text-base-250">
           <:crumb to={Routes.calendar_index_path(@socket, :index)}>Calendar</:crumb>
           <:crumb>Settings</:crumb>
         </.crumbs>
@@ -45,8 +45,8 @@ defmodule PicselloWeb.Live.Calendar.Settings do
     <div class="px-6 center-container">
       <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20">
         <div class="grid-col items-center flex-col py-4 lg:mt-0 mt-6 text-xl lg:order-first order-last">
-          <b>Subscribe to your Picsello calendar using an external provider:</b><br>
-          Copy this link if you need to subscribe to your the Picsello calendar from another provider. They need to use the ICAL protocol.
+          <p><strong>Subscribe to your Picsello calendar using an external provider:</strong></p>
+          <p class="text-base-250">Copy this link if you need to subscribe to your the Picsello calendar from another provider. They need to use the ICAL protocol.</p>
 
           <div class="flex flex-col my-7">
             <div {testid("url")} class="text-input text-clip overflow-hidden"><%= url %></div>

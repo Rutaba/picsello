@@ -468,20 +468,20 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   def select_dropdown(assigns) do
     ~H"""
-    <div id={@id} class={"relative w-full mt-3 md:mt-0 md:ml-5 md:w-28"} data-offset-y="10" phx-hook="Select">
-      <h1 class="font-extrabold text-sm"><%= @title %></h1>
-      <div class="flex flex-row items-center">
-          <%= String.capitalize(String.replace(@selected_option, "_", " ")) %>
-          <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
-          <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
+    <div id={@id} class={"relative w-full mt-3 md:mt-0 w-full"} data-offset-y="10" phx-hook="Select">
+      <h4 class="font-extrabold text-sm mb-1"><%= @title %></h4>
+      <div class="flex flex-row items-center border rounded-lg p-3">
+          <span class="flex-shrink-0"><%= String.capitalize(String.replace(@selected_option, "_", " ")) %></span>
+          <.icon name="down" class="flex-shrink-0 w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
+          <.icon name="up" class="flex-shrink-0 hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
       </div>
-      <ul class="absolute z-30 hidden md:w-32 w-full mt-2 bg-white toggle rounded-md popover-content border border-base-200">
+      <ul class="absolute z-30 hidden md:w-32 w-full mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
         <%= for option <- @options_list do %>
           <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
           class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
             <button id={option.id} class="album-select" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
             <%= if option.id == @selected_option do %>
-              <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-green" />
+              <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-blue-planning-300" />
             <% end %>
           </li>
         <% end %>
@@ -525,11 +525,11 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   def actions(assigns) do
     ~H"""
-    <div class="flex items-center left-3 sm:left-8" data-offset-x="-21" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@client.id}"}>
-      <button title="Manage" type="button" class="flex flex-shrink-0 p-1 text-2xl font-bold bg-white border rounded border-blue-planning-300 text-blue-planning-300">
-        <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
-
-        <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+    <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-offset-x="-21" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@client.id}"}>
+      <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
+        Actions
+        <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+        <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
       </button>
 
       <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">

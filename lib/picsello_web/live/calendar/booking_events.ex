@@ -78,7 +78,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     <div class="pt-6 px-6 py-2 center-container">
       <div class="flex text-4xl items-center">
         <.back_button to={Routes.calendar_index_path(@socket, :index)} class="lg:hidden"/>
-        <.crumbs class="text-base text-base-250">
+        <.crumbs class="text-sm text-base-250">
           <:crumb to={Routes.calendar_index_path(@socket, :index)}>Calendar</:crumb>
           <:crumb>Booking events</:crumb>
         </.crumbs>
@@ -120,7 +120,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         <div class="hidden sm:grid sm:grid-cols-4 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
           <div class="sm:col-span-2">Event Details</div>
           <div>Bookings so far</div>
-          <div>Actions</div>
         </div>
         <%= for event <- @booking_events do %>
           <div class="grid sm:grid-cols-4 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
@@ -164,20 +163,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   defp actions_cell(assigns) do
     ~H"""
-    <div class="flex items-center justify-start">
-      <.icon_button icon="eye" disabled={!!@booking_event.disabled_at} color="blue-planning-300" class="flex-1 sm:flex-none justify-center transition-colors text-blue-planning-300" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+    <div class="flex flex-wrap gap-3 items-center justify-start md:w-auto w-full">
+      <.icon_button icon="eye" disabled={!!@booking_event.disabled_at} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
         Preview
       </.icon_button>
-      <.icon_button icon="anchor" disabled={!!@booking_event.disabled_at} color="blue-planning-300" class="ml-2 flex-1 sm:flex-none justify-center transition-colors text-blue-planning-300" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+      <.icon_button icon="anchor" disabled={!!@booking_event.disabled_at} color="blue-planning-300" class="justify-center text-blue-planning-300 grow flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
         <span>Copy link</span>
         <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
           Copied!
         </div>
       </.icon_button>
-      <div phx-update="ignore" data-offset="0" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{!!@booking_event.disabled_at}"}>
-        <button title="Manage" type="button" class="flex flex-shrink-0 ml-2 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
-          <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
-          <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+      <div phx-update="ignore" data-offset="0" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{!!@booking_event.disabled_at}"} class="grow xl:w-auto sm:w-full">
+        <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
+          Actions
+          <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+          <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
         </button>
 
         <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">

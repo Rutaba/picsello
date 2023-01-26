@@ -51,7 +51,7 @@ defmodule Picsello.EditQuestionnaireTest do
     |> find(testid("questionnaire-row", count: 5, at: 3), fn row ->
       row
       |> click(css("[phx-hook='Select']"))
-      |> click(button("Duplicate"))
+      |> click(testid("duplicate"))
     end)
     |> within_modal(fn modal ->
       modal

@@ -24,11 +24,11 @@ defmodule PicselloWeb.Live.Profile.CopyContactFormComponent do
             <hr />
             <dl class="mb-4">
               <dt class="font-bold mt-4">How do I embed this on my website platform?</dt>
-              <dd>If you are using Wordpress, SquareSpace, Wix or any other page builder system, you will need to put this code in a “code block” or “custom HTML embed”.</dd>
+              <dd class="text-base-250">If you are using Wordpress, SquareSpace, Wix or any other page builder system, you will need to put this code in a “code block” or “custom HTML embed”.</dd>
               <dt class="font-bold mt-4">Where should I put this form layout wise?</dt>
-              <dd>You should put this on your contact page, at the bottom of most pages and anywhere that may be a place where you think your clients will traffic most often. For example: your most popular blog posts or portfolio pages.</dd>
+              <dd class="text-base-250">You should put this on your contact page, at the bottom of most pages and anywhere that may be a place where you think your clients will traffic most often. For example: your most popular blog posts or portfolio pages.</dd>
               <dt class="font-bold mt-4">Help! It looks funny on my site.</dt>
-              <dd>You may need to change the width and height of the form to fit within where you embedded. We’ve done our best to make this form as responsive as possible. If you continue to have trouble, please contact us.</dd>
+              <dd class="text-base-250">You may need to change the width and height of the form to fit within where you embedded. We’ve done our best to make this form as responsive as possible. If you continue to have trouble, please contact us.</dd>
             </dl>
             <hr />
             <div class="mt-4">

@@ -25,7 +25,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
       <hr class="my-4 sm:my-10" />
       <div class="grid gap-6 sm:grid-cols-2">
         <.card title="Tax info" class="intro-taxes">
-          <p class="mt-2">Stripe can easily manage your tax settings to simplify filing.</p>
+          <p class="mt-2 text-base-250">Stripe can easily manage your tax settings to simplify filing.</p>
           <a class="link" target="_blank" href="https://support.picsello.com/article/113-stripe-taxes">Do I need this?</a>
           <div class="flex mt-6 justify-end">
             <%= if @stripe_status == :charges_enabled do %>
@@ -41,7 +41,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
           </div>
         </.card>
         <.card title="Stripe account" class="intro-stripe">
-          <p class="mt-2">Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
+          <p class="mt-2 text-base-250">Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
           <div class="flex mt-6 justify-end">
             <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
             error_class: "text-right",
@@ -53,12 +53,12 @@ defmodule PicselloWeb.Live.FinanceSettings do
           </div>
         </.card>
         <.card title="Accepted payment types" class="intro-payments">
-          <p class="mt-2">Here you can enable if you’d like to accept offline payments. Be careful, you are opening yourself up to more manual work!</p>
+          <p class="mt-2 text-base-250">Here you can enable if you’d like to accept offline payments. Be careful, you are opening yourself up to more manual work!</p>
           <p class="font-bold mt-4">I would like to accept:</p>
           <div class="flex items-center mt-2 justify-between">
             <div class="flex flex-col">
               <p class="font-semibold">Cash/check payments</p>
-              <p class="font-normal flex">Accept offline payments</p>
+              <p class="font-normal flex text-base-250">Accept offline payments</p>
             </div>
             <div class="flex justify-end items-center">
               <.form for={:toggle} phx-change="toggle">
