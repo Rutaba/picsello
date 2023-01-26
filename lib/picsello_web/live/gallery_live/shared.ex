@@ -14,7 +14,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Cart,
     Galleries.Album,
     Albums,
-    Notifiers.ClientNotifier
+    Notifiers.ClientNotifier,
+    GlobalSettings
   }
 
   alias Cart.{Order, Digital}
@@ -226,6 +227,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp get_expiry_date() do
     {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
     date
+  end
+
+  def expired_at(organization_id) do
+    gs = GlobalSettings.get(organization_id)
+    gs && Timex.shift(DateTime.utc_now(), days: gs.expiration_days)
   end
 
   def make_opts(

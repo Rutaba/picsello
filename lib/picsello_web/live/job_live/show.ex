@@ -4,6 +4,8 @@ defmodule PicselloWeb.JobLive.Show do
 
   alias Picsello.{Galleries, Job, Repo, PaymentSchedules}
 
+  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1]
+
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
@@ -160,11 +162,16 @@ defmodule PicselloWeb.JobLive.Show do
       |> push_redirect(to: Routes.transaction_path(socket, :transactions, job.id))
       |> noreply()
 
-  def handle_event("create-gallery", _, %{assigns: %{job: job}} = socket) do
+  def handle_event(
+        "create-gallery",
+        _,
+        %{assigns: %{job: job, current_user: %{organization_id: organization_id}}} = socket
+      ) do
     {:ok, gallery} =
       Picsello.Galleries.create_gallery(%{
         job_id: job.id,
-        name: Job.name(job)
+        name: Job.name(job),
+        expired_at: expired_at(organization_id)
       })
 
     socket
