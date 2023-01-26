@@ -17,7 +17,7 @@ defmodule PicselloWeb.Live.BrandSettings do
         <div>
           <h1 class="text-2xl font-bold">Brand</h1>
 
-          <p class="max-w-2xl my-2">
+          <p class="max-w-2xl my-2 text-base-250">
             Edit the look and feel of your business. Any change here will apply across your Picsello experience including, your Public Profile, Marketing emails, and Gallery.
           </p>
         </div>
@@ -28,7 +28,7 @@ defmodule PicselloWeb.Live.BrandSettings do
       <.card title="Change your email signature">
         <div class={"grid sm:grid-cols-2 gap-6 sm:gap-12 sm:pr-10 sm:pb-10"}>
           <div class="mt-4">
-            <div>
+            <div class="text-base-250">
               Here’s the email signature that we’ve generated for you that will be included on all <.live_link class="link" to={Routes.inbox_path(@socket, :index)}>Inbox</.live_link> emails. To change your info, you’ll have to upload a logo <.live_link class="link" to={Routes.profile_settings_path(@socket, :edit)}>here</.live_link>, update your <.live_link class="link" to={Routes.user_settings_path(@socket, :edit)}>business name</.live_link> and modify your phone number.
             </div>
             <button phx-click="edit-signature" class="hidden mt-6 sm:block btn-primary intro-signature">Change signature</button>

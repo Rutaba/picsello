@@ -10,7 +10,7 @@
     <% nil -> %>
     <% subscription -> %>
       <.card title="Your subscription" title_badge={subscription_badge(subscription)}>
-        <p class="sm:mr-32">You can update your payment method, modify your plan, or download your invoices using our Billing Portal through Stripe. If you’re currently on a monthly trial and modify your plan to yearly, you will lose the time left. Contact us if you have issues.</p>
+        <p class="text-base-250 sm:mr-32">You can update your payment method, modify your plan, or download your invoices using our Billing Portal through Stripe. If you’re currently on a monthly trial and modify your plan to yearly, you will lose the time left. Contact us if you have issues.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 mt-4 gap-6">
           <div class="border flex rounded-lg p-4 sm:p-6 justify-between sm:items-center">
             <div class="flex flex-col items-start">
@@ -19,13 +19,13 @@
               </.badge>
               <p class="font-bold text-3xl"><%= subscription.price |> Money.to_string(fractional_unit: false) %>/<%= subscription.recurring_interval %></p>
               <%= if Subscriptions.next_payment?(subscription) do %>
-                <p>Next payment is on <%= strftime(@current_user.time_zone, subscription.current_period_end, "%-m/%-d/%y") %></p>
+                <p class="text-base-250">Next payment is on <%= strftime(@current_user.time_zone, subscription.current_period_end, "%-m/%-d/%y") %></p>
               <% end %>
             </div>
             <div>
               <button class="btn-primary sm:px-8" phx-click="open-billing">Open Billing Portal</button>
               <%= if Subscriptions.monthly?(subscription) do %>
-                <p phx-click="open-billing" class="underline text-sm mt-2 text-center cursor-pointer">Update to yearly</p>
+                <p phx-click="open-billing" class="underline text-sm mt-2 text-center cursor-pointer text-blue-planning-300">Update to yearly</p>
               <% end %>
             </div>
           </div>

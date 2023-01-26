@@ -19,11 +19,11 @@ defmodule PicselloWeb.Live.Calendar.Index do
           <.back_button to={Routes.home_path(@socket, :index)} class="mt-2"/>
           Calendar
         </div>
-        <.live_link to={Routes.calendar_settings_path(@socket, :settings)} class="flex text-md items-center px-2 py-1 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 ml-5 shadow-lg">
-          <.icon name="settings" class="w-4 h-4 mr-1 fill-current text-blue-planning-300" />
+        <.live_link to={Routes.calendar_settings_path(@socket, :settings)} class="btn-tertiary flex items-center md:ml-auto md:mr-3 text-blue-planning-300">
+          <.icon name="settings" class="inline-block w-6 h-6 mr-2 text-blue-planning-300" />
           Settings
         </.live_link>
-        <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto sm:ml-auto">
+        <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
           <.live_link to={Routes.calendar_booking_events_path(@socket, :index)} class="w-full md:w-auto btn-primary text-center">
             Manage booking events
           </.live_link>

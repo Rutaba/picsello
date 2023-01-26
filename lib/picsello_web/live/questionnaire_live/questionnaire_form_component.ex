@@ -443,8 +443,8 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
   defp field_options do
     [
-      {"Text (simple text box)", :text},
-      {"Textarea (multiline text box)", :textarea},
+      {"Short Text", :text},
+      {"Long Text", :textarea},
       {"Select (radio buttons, client picks one)", :select},
       {"Date (date picker)", :date},
       {"Multiselect (checkboxes, client picks multiple)", :multiselect},

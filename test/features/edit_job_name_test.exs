@@ -14,7 +14,7 @@ defmodule Picsello.EditJobNameTest do
     session
     |> visit("/jobs/#{job.id}")
     |> assert_text("Mary Jane Wedding")
-    |> click(css("#meatball-manage"))
+    |> click(css("#manage"))
     |> click(css("li", text: "Edit job name"))
     |> assert_has(button("Save"))
     |> take_screenshot()

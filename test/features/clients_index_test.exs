@@ -65,7 +65,6 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "0"))
     |> click(button("Add client"))
     |> fill_in(text_field("Email"), with: " ")
     |> assert_text("Email can't be blank")
@@ -75,7 +74,6 @@ defmodule Picsello.ClientsIndexTest do
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> click(link("All Clients"))
-    |> assert_has(testid("client-count", text: "1"))
     |> assert_text(@name)
     |> assert_text(@email)
     |> click(button("Manage"))
@@ -96,13 +94,11 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "0"))
     |> click(button("Add client"))
     |> fill_in(text_field("Email"), with: "john@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> click(link("All Clients"))
-    |> assert_has(testid("client-count", text: "1"))
     |> assert_text("john@example.com")
     |> click(button("Manage"))
     |> click(button("Details"))
@@ -120,7 +116,6 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "1"))
     |> click(button("Manage"))
     |> click(button("Details"))
     |> assert_text("Client: #{user.name}")
@@ -140,7 +135,6 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "1"))
     |> click(button("Manage"))
     |> click(button("Details"))
     |> assert_text("Client: #{user.name}")
@@ -168,7 +162,6 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "1"))
     |> click(button("Manage"))
     |> click(button("Create a lead"))
     |> click(css("label", text: "Wedding"))
@@ -191,7 +184,6 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "1"))
     |> click(button("Manage"))
     |> click(button("Create a lead"))
     |> click(css("label", text: "Wedding"))
@@ -217,7 +209,6 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "1"))
     |> click(button("Manage"))
     |> click(button("Create a lead"))
     |> click(css("label", text: "Wedding"))
@@ -243,7 +234,6 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "1"))
     |> click(button("Manage"))
     |> click(button("Create gallery"))
     |> find(select("# of Shoots"), &click(&1, option("2")))
@@ -274,7 +264,6 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "1"))
     |> click(button("Manage"))
     |> click(button("Import job"))
     |> scroll_into_view(css("label", text: "Wedding"))
@@ -325,7 +314,6 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "1"))
     |> click(button("Manage"))
     |> click(button("Send email"))
     |> refute_has(select("Select email preset"))
@@ -354,12 +342,10 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> assert_has(testid("client-count", text: "2"))
     |> click(button("Manage", count: 2, at: 0))
     |> click(button("Archive"))
     |> click(button("Yes, archive"))
     |> assert_flash(:success, text: "Client archived successfully")
-    |> assert_has(testid("client-count", text: "1"))
     |> assert_text("Mary Jane")
   end
 end

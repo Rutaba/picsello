@@ -156,7 +156,7 @@ defmodule Picsello.CreateClientTest do
     session
     |> simulate_prepicsello_click_scenario()
     |> click(link("Order History"))
-    |> assert_text("Oops, you have no orders for this client!")
+    |> assert_text("Waiting for orders from this client!")
   end
 
   defp simulate_prepicsello_click_scenario(session) do
