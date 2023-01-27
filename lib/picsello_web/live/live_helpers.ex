@@ -378,6 +378,7 @@ defmodule PicselloWeb.LiveHelpers do
         cta_class: "",
         headline: "",
         body: "",
+        third_party_padding: nil,
         inner_block: nil,
         external_video_link: nil,
         close_event: nil
@@ -392,7 +393,7 @@ defmodule PicselloWeb.LiveHelpers do
       <% end %>
       <div>
         <%# These next 2 lines with inline styles come from a third-party tool; we highly discourage usage of inline styles as a normal practice %>
-        <div style="position: relative; padding-bottom: calc(59.916666666666664% + 41px); height: 0;" class="shadow-xl rounded">
+        <div style={"position: relative; padding-bottom: #{@third_party_padding}; height: 0;"} class="shadow-xl rounded">
           <iframe src={@tour_embed} frameborder="0" loading="lazy" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
         </div>
         <h6 class="uppercase text-base-250 text-center mt-4 text-xs tracking-widest">Leads Product Tour</h6>
