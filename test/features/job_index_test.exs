@@ -89,7 +89,7 @@ defmodule Picsello.JobIndexTest do
 
     session
     |> visit("/leads")
-    |> assert_text("You don't have any leads at the moment")
+    |> assert_text("Meet Leads")
     |> click(link("Create a lead"))
     |> assert_has(css("h1", text: "Create a lead"))
   end
