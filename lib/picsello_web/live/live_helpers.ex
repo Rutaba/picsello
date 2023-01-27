@@ -370,6 +370,51 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
+  def empty_state_base(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        wrapper_class: "",
+        cta_class: "",
+        headline: "",
+        body: "",
+        inner_block: nil,
+        external_video_link: nil,
+        close_event: nil
+      })
+
+    ~H"""
+    <div class={"grid grid-cols-1 md:grid-cols-2 md:gap-20 gap-8 items-center md:pb-0 pb-8 relative #{@wrapper_class}"}>
+      <%= if @close_event do %>
+      <button class="w-10 h-10 absolute right-3 top-3 bg-gray-100 p-3 border-transparent hover:border-blue-planning-300/60 focus:ring-blue-planning-300/70 focus:ring-opacity-75 rounded-lg cursor-pointer transition-colors" phx-click={@close_event}>
+        <.icon name="close-x" class="h-full w-full stroke-current stroke-3" />
+      </button>
+      <% end %>
+      <div>
+        <%# These next 2 lines with inline styles come from a third-party tool; we highly discourage usage of inline styles as a normal practice %>
+        <div style="position: relative; padding-bottom: calc(59.916666666666664% + 41px); height: 0;" class="shadow-xl rounded">
+          <iframe src={@tour_embed} frameborder="0" loading="lazy" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+        </div>
+        <h6 class="uppercase text-base-250 text-center mt-4 text-xs tracking-widest">Leads Product Tour</h6>
+      </div>
+      <div class="md:max-w-md">
+        <h1 class="text-5xl font-bold mb-4"><%= @headline %></h1>
+        <p class="text-base-250 text-xl"><%= @body %></p>
+        <div class={"flex flex-wrap md:flex-nowrap items-center md:justify-start justify-center gap-6 mt-4 #{@cta_class}"}>
+          <%= if @inner_block do %>
+            <%= render_block(@inner_block) %>
+            <%= if @external_video_link do %>
+              <a class="underline text-blue-planning-300 flex gap-3 items-center flex-shrink-0" href={@external_video_link} target="_blank" rel="noopener">
+                Video tour <.icon name="external-link" class="h-4 w-4 stroke-current stroke-1" />
+              </a>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   def handle_event(
         "intro_js",
         %{"action" => action, "intro_id" => intro_id},
