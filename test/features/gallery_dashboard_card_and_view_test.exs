@@ -179,8 +179,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
   defp assertions_for_no_galleries_page(session) do
     session
     |> assert_text("Your Galleries")
-    |> assert_text("Oh hey!")
-    |> assert_text("You don't have any galleries at the moment.")
+    |> assert_text("Meet Galleries")
     |> assert_has(link("Create a gallery"))
   end
 end
