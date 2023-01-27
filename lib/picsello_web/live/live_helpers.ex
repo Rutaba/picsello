@@ -378,6 +378,7 @@ defmodule PicselloWeb.LiveHelpers do
         cta_class: "",
         headline: "",
         body: "",
+        eyebrow_text: "",
         third_party_padding: nil,
         inner_block: nil,
         external_video_link: nil,
@@ -396,7 +397,7 @@ defmodule PicselloWeb.LiveHelpers do
         <div style={"position: relative; padding-bottom: #{@third_party_padding}; height: 0;"} class="shadow-xl rounded">
           <iframe src={@tour_embed} frameborder="0" loading="lazy" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
         </div>
-        <h6 class="uppercase text-base-250 text-center mt-4 text-xs tracking-widest">Leads Product Tour</h6>
+        <h6 class="uppercase text-base-250 text-center mt-4 text-xs tracking-widest"><%= @eyebrow_text %></h6>
       </div>
       <div class="md:max-w-md">
         <h1 class="text-5xl font-bold mb-4"><%= @headline %></h1>
