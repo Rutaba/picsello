@@ -29,7 +29,7 @@
     <div></div> <%# flex in thirds %>
     <%= case {@live_action, @stripe_status} do %>
       <% {:leads, _stripe_status} -> %>
-        <.empty_state_base tour_embed="https://demo.arcade.software/2rNmJeh5ZDMmrhth7v0P?embed" headline="Meet Leads" body="Leads are the beginning to a great relationship between you and your client! Creating one takes less than a minute." third_party_padding="calc(59.916666666666664% + 41px)">
+        <.empty_state_base tour_embed="https://demo.arcade.software/2rNmJeh5ZDMmrhth7v0P?embed" headline="Meet Leads" eyebrow_text="Leads Product Tour" body="Leads are the beginning to a great relationship between you and your client! Creating one takes less than a minute." third_party_padding="calc(59.916666666666664% + 41px)">
           <a title="create lead" href="#" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="create-lead">
             Create a lead
           </a>
