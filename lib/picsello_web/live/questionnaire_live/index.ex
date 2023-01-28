@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   use PicselloWeb, :live_view
   alias Picsello.{Questionnaire}
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+  import Picsello.Onboardings, only: [save_intro_state: 3]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -103,6 +104,17 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
         |> assign_questionnaires()
         |> noreply()
     end
+  end
+
+  @impl true
+  def handle_event(
+        "intro-close-questionnaires",
+        _,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    socket
+    |> assign(current_user: save_intro_state(current_user, "intro_questionnaires", :dismissed))
+    |> noreply()
   end
 
   @impl true

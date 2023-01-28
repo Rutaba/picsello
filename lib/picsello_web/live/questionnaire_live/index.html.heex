@@ -22,53 +22,43 @@
         </div>  
       </div>
     </div>
-    <%= unless Enum.empty?(@questionnaires) do %>
-      <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
-        <button type="button" title="create questionnaire" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-questionnaire">Create Questionnaire</button>
-      </div>
-    <% end %>
+    <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
+      <button type="button" title="create questionnaire" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-questionnaire">Create questionnaire</button>
+    </div>
   </div>
-
   <hr class="mt-4 sm:mt-10" />
 </div>
 
-<%= if Enum.empty?(@questionnaires) do %>
-  <div class="flex flex-col justify-between flex-auto mt-4 p-6 center-container lg:flex-none">
-    <div class="flex flex-col">
-      <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
-      <p class="block text-lg lg:text-2xl lg:w-1/2">You don’t have any questionnaires at the moment. We do have defaults you can start from!</p>
-    </div>
-    <div class="lg:inline-flex">
-      <button type="button" title="create questionnaire" href="#" class="w-full md:w-auto btn-primary text-center mt-5" phx-click="create-questionnaire">Create Questionnaire</button>
-    </div>
+<div class="p-6 center-container">
+  <%= if show_intro?(@current_user, "intro_questionnaires") === "true" do %>
+    <.empty_state_base wrapper_class="border rounded-lg p-4 mb-8" tour_embed="https://demo.arcade.software/J7LVwwRlcenKLiB7vKf3?embed" headline="Meet Questionnaires" eyebrow_text="Questionnaires Product Tour" body="Explore our defaults in the table below or create your own and add to your packages to get the info you need and save time." third_party_padding="calc(66.66666666666666% + 41px)" close_event="intro-close-questionnaires">
+      <button type="button" title="create questionnaire" href="#" class="w-full md:w-auto btn-tertiary flex-shrink-0 text-center" phx-click="create-questionnaire">Create qestionnaire</button>
+    </.empty_state_base>
+  <% end %>
+  <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
+    <div class="sm:col-span-5">Name</div>
+    <div class="sm:col-span-2">Job Type</div>
+    <div class="sm:col-span-2 flex sm:justify-center"># of questions</div>
   </div>
-<% else %>
-  <div class="p-6 center-container">
-    <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
-      <div class="sm:col-span-5">Name</div>
-      <div class="sm:col-span-2">Job Type</div>
-      <div class="sm:col-span-2 flex sm:justify-center"># of questions</div>
-    </div>
-    <%= for questionnaire <- @questionnaires do %>
-      <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("questionnaire-row")}>
-        <div class="sm:col-span-5 flex flex-wrap items-center gap-x-4 col-y-3">
-          <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}} class="block text-xl text-left font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
-          <%= if questionnaire.is_picsello_default do %>
-            <div><.badge color={:gray}>View Only</.badge></div>
-          <% else %>
-            <p class="w-full text-sm text-base-250">Created <%= questionnaire.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
-          <% end %>
-        </div>
-        <div class="sm:col-span-2">
-          <span class="sm:hidden font-bold">Job type: </span> <%= questionnaire.job_type |> String.capitalize()  %>
-        </div>
-        <div class="sm:col-span-2 sm:flex sm:justify-center">
-          <span class="sm:hidden font-bold"># of questions: </span> <%= questionnaire.questions |> length()  %>
-        </div>
-        <div class="sm:col-span-3 flex justify-end">
-          <.actions_cell questionnaire={questionnaire} />
-        </div>
+  <%= for questionnaire <- @questionnaires do %>
+    <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("questionnaire-row")}>
+      <div class="sm:col-span-5 flex flex-wrap items-center gap-x-4 col-y-3">
+        <button {if !questionnaire.is_picsello_default, do: %{phx_click: "edit-questionnaire", phx_value_questionnaire_id: questionnaire.id}, else: %{phx_click: "view-questionnaire", phx_value_questionnaire_id: questionnaire.id}} class="block text-xl text-left font-bold underline text-blue-planning-300 mt-2"><%= questionnaire.name %></button>
+        <%= if questionnaire.is_picsello_default do %>
+          <div><.badge color={:gray}>View Only</.badge></div>
+        <% else %>
+          <p class="w-full text-sm text-base-250">Created <%= questionnaire.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
+        <% end %>
       </div>
-    <% end %>
-  </div>
-<% end %>
+      <div class="sm:col-span-2">
+        <span class="sm:hidden font-bold">Job type: </span> <%= questionnaire.job_type |> String.capitalize()  %>
+      </div>
+      <div class="sm:col-span-2 sm:flex sm:justify-center">
+        <span class="sm:hidden font-bold"># of questions: </span> <%= questionnaire.questions |> length()  %>
+      </div>
+      <div class="sm:col-span-3 flex justify-end">
+        <.actions_cell questionnaire={questionnaire} />
+      </div>
+    </div>
+  <% end %>
+</div>
