@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
   import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
+  import Picsello.Onboardings, only: [save_intro_state: 3]
   alias Picsello.{Package, Repo}
 
   @impl true
@@ -42,19 +43,13 @@ defmodule PicselloWeb.Live.PackageTemplates do
   @impl true
   def render(assigns) do
     ~H"""
-    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28" intro_id="intro_settings_packages">
+    <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
       <div class={classes("flex flex-col justify-between flex-1 mt-5 sm:flex-row", %{"flex-grow-0" => Enum.any?(@templates) })}>
         <div>
           <h1 class="text-2xl font-bold">Package Templates</h1>
 
           <p class="max-w-2xl my-2 text-base-250">
-            <%= if Enum.empty? @templates do %>
-              You don’t have any packages at the moment.
-              (A package is a reusable template to use when creating a potential photoshoot.)
-              Go ahead and create your first one! If you need help with calculating your pricing, we have a handy calculator for you to <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "use here", class: "underline text-blue-planning-300" do %>use here<% end %>!
-            <% else %>
-              Create reusable pricing and shoot templates to make it easier to manage leads. Looking to learn more about your pricing? <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "Check out our helpful calculator!", class: "underline text-blue-planning-300 intro-calculator" do %>Check out our helpful calculator!<% end %>
-            <% end %>
+            Create reusable pricing and shoot templates to make it easier to manage leads. Looking to learn more about your pricing? <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "Check out our helpful calculator!", class: "underline text-blue-planning-300 intro-calculator" do %>Check out our helpful calculator!<% end %>
           </p>
         </div>
 
@@ -62,6 +57,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
           <button type="button" phx-click="add-package" class="w-full px-8 text-center btn-primary">Add a package</button>
         </div>
       </div>
+
+      <%= if show_intro?(@current_user, "intro_packages") === "true" do %>
+        <.empty_state_base wrapper_class="border rounded-lg p-4 my-8" tour_embed="https://demo.arcade.software/41FJNpeq64KVC0pibQgu?embed" headline="Meet Packages" eyebrow_text="Packages Product Tour" body="Based on the info you gave us during onboarding, we’ve created default packages for you! Feel free to edit/archive or create your own." third_party_padding="calc(66.66666666666666% + 41px)" close_event="intro-close-packages">
+          <button type="button" phx-click="add-package" class="w-full md:w-auto btn-tertiary flex-shrink-0 text-center">Add a package</button>
+        </.empty_state_base>
+      <% end %>
 
       <%= unless Enum.empty? @templates do %>
         <hr class="my-4" />
@@ -133,8 +134,15 @@ defmodule PicselloWeb.Live.PackageTemplates do
       |> noreply()
 
   @impl true
-  def handle_event("intro_js" = event, params, socket),
-    do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
+  def handle_event(
+        "intro-close-packages",
+        _,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    socket
+    |> assign(current_user: save_intro_state(current_user, "intro_packages", :dismissed))
+    |> noreply()
+  end
 
   @impl true
   def handle_info(
