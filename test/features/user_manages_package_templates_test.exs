@@ -69,7 +69,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> assert_text("You don’t have any packages")
+    |> assert_text("Meet Packages")
   end
 
   feature "view list with unlimited", %{session: session, user: user} do
@@ -107,7 +107,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(button("Add a package"))
+    |> click(button("Add a package", count: 2, at: 0))
     |> assert_text("Add a Package: Provide Details")
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
@@ -167,7 +167,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(button("Add a package"))
+    |> click(button("Add a package", count: 2, at: 0))
     |> assert_text("Add a Package: Provide Details")
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
