@@ -81,7 +81,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
           </dl>
           <dl>
             <dd>
-            <%= labeled_input f, :paid_at, label: "Payment Date", type: :date_input, min: Date.utc_today(), class: "w-full h-12" %>
+            <%= labeled_input f, :paid_at, label: "Payment Date", type: :date_input, class: "w-full h-12" %>
             </dd>
           </dl>
           </div>
