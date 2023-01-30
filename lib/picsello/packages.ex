@@ -230,7 +230,7 @@ defmodule Picsello.Packages do
   end
 
   def templates_with_single_shoot(%User{organization_id: organization_id}) do
-    query = Package.templates_for_organization_id(organization_id)
+    query = Package.templates_for_organization(organization_id)
 
     from(package in query, where: package.shoot_count == 1)
     |> Repo.all()
@@ -240,7 +240,7 @@ defmodule Picsello.Packages do
     do: user |> Package.templates_for_user(job_type) |> Repo.all()
 
   def templates_for_organization(%Organization{id: id}),
-    do: id |> Package.templates_for_organization_id() |> Repo.all()
+    do: id |> Package.templates_for_organization() |> Repo.all()
 
   def insert_package_and_update_job(changeset, job, opts \\ %{}) do
     Ecto.Multi.new()
@@ -500,9 +500,16 @@ defmodule Picsello.Packages do
   end
 
   def unarchive_package(package_id) do
-    package = Repo.get!(Package, package_id)
+    package = Repo.get(Package, package_id)
 
     Ecto.Changeset.change(package, archived_at: nil)
     |> Repo.update()
+  end
+
+  def find_templates_by_pagination_via_query(query, %{limit: limit, offset: offset}) do
+    from(templates in query,
+      limit: ^limit,
+      offset: ^offset
+    )
   end
 end

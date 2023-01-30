@@ -5,9 +5,9 @@ defmodule PicselloWeb.PackageLive.EditJobTypeComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="modal !max-w-md ">
-      <h1 class="text-3xl font-bold">Edit Photography Types</h1>
-      <h1 class="text-lg text-gray-400 font-medium">Manage your photography offerings</h1>
+      <div class="modal !max-w-md">
+        <h1 class="text-3xl font-bold">Edit Photography Types</h1>
+        <h1 class="text-lg text-gray-400 font-medium">Manage your photography offerings</h1>
         <div class="mt-4 grid grid-cols-1 gap-3 sm:gap-4">
           <h1 class="font-semibold text-lg text-blue-planning-300"> Enabled </h1>
           <%= for jt <- @organization.organization_job_types do %>
@@ -23,7 +23,7 @@ defmodule PicselloWeb.PackageLive.EditJobTypeComponent do
         <div class="mt-4 grid grid-cols-1 gap-3 sm:gap-4">
           <h1 class="font-semibold text-lg"> Disabled </h1>
           <%= for jt <- @organization.organization_job_types do %>
-          <% checked = jt.show_on_business? %>
+            <% checked = jt.show_on_business? %>
             <%= if !checked do %>
               <div phx-click="edit-job-type" phx-value-job-type-id={jt.id} phx-target={@myself}>
                 <.job_type_option type="checkbox" name={:job_type} job_type={jt.job_type} checked={false} />
@@ -35,7 +35,7 @@ defmodule PicselloWeb.PackageLive.EditJobTypeComponent do
         <button id="close" class="btn-secondary w-full mt-8"  title="close" type="button" phx-click="modal" phx-value-action="close">
           Close
         </button>
-    </div>
+      </div>
     """
   end
 

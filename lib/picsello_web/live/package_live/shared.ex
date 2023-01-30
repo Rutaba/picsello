@@ -67,7 +67,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       ) do
     org_job_type =
       organization.organization_job_types
-      |> Enum.find(fn job_type -> job_type.id == String.to_integer(id) end)
+      |> Enum.find(fn job_type -> job_type.id == to_integer(id) end)
 
     changeset = OrganizationJobType.update_changeset(org_job_type, %{})
 
@@ -170,8 +170,8 @@ defmodule PicselloWeb.PackageLive.Shared do
           <div class="col-span-2">
             <div class="flex items-center">
                 <div class="hidden md:block">
-                  <.icon_button {testid("edit-package-#{@package.id}")} class="ml-5" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
-                    Edit Package
+                  <.icon_button {testid("edit-package-#{@package.id}")} class="ml-5 border border-blue-planning-300 bg-white text-black font-normal" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
+                    Edit package
                   </.icon_button>
                 </div>
                 <div class="ml-16 md:ml-2" id={"menu-btn-#{@package.id}"} phx-update={@update_mode} data-offset="0" phx-hook="Select">
@@ -211,8 +211,8 @@ defmodule PicselloWeb.PackageLive.Shared do
       </div>
       <hr class="my-4 block md:hidden" />
       <div class="flex items-center block md:hidden">
-        <.icon_button {testid("edit-package-#{@package.id}")} title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
-          Edit Package
+        <.icon_button {testid("edit-package-#{@package.id}")} class="border border-blue-planning-300 bg-white text-black font-normal" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
+          Edit package
         </.icon_button>
       </div>
       <hr class="my-4 hidden md:block" />

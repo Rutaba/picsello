@@ -184,19 +184,12 @@ defmodule Picsello.Package do
 
   def price(%__MODULE__{} = package), do: adjusted_base_price(package)
 
-  def find_templates_by_pagination_via_query(query, %{limit: limit, offset: offset}) do
-    from(templates in query,
-      limit: ^limit,
-      offset: ^offset
-    )
-  end
-
-  def templates_for_organization_id(organization_id) do
-    templates_for_organization_id_query(organization_id)
+  def templates_for_organization(organization_id) do
+    templates_for_organization_query(organization_id)
     |> where([package], package.show_on_public_profile)
   end
 
-  def templates_for_organization_id_query(organization_id) do
+  def templates_for_organization_query(organization_id) do
     from(package in __MODULE__,
       where:
         not is_nil(package.job_type) and package.organization_id == ^organization_id and
@@ -205,7 +198,7 @@ defmodule Picsello.Package do
     )
   end
 
-  def all_templates_for_organization_id(organization_id) do
+  def all_templates_for_organization(organization_id) do
     from(package in __MODULE__,
       where:
         not is_nil(package.job_type) and package.organization_id == ^organization_id and
@@ -214,7 +207,7 @@ defmodule Picsello.Package do
     )
   end
 
-  def archived_templates_for_organization_id(organization_id) do
+  def archived_templates_for_organization(organization_id) do
     from(package in __MODULE__,
       where:
         not is_nil(package.job_type) and package.organization_id == ^organization_id and
@@ -223,32 +216,9 @@ defmodule Picsello.Package do
     )
   end
 
-  def templates_for_user(%User{organization_id: organization_id}),
-    do: templates_for_organization_id(organization_id)
-
-  def all_templates_for_user(%User{organization_id: organization_id}),
-    do: all_templates_for_organization_id(organization_id)
-
-  def archived_templates_for_user(%User{organization_id: organization_id}),
-    do: archived_templates_for_organization_id(organization_id)
-
-  def templates_for_user(user, type) when type != nil do
-    from(template in templates_for_user(user),
+  def templates_for_user(%User{organization_id: organization_id}, type) when type != nil do
+    from(template in templates_for_organization_query(organization_id),
       where: template.job_type == ^type,
-      order_by: [desc: template.base_price]
-    )
-  end
-
-  def templates_for_user(%User{organization_id: organization_id}, type, "all") when type != nil do
-    from(template in templates_for_organization_id_query(organization_id),
-      where: template.job_type == ^type,
-      order_by: [desc: template.base_price]
-    )
-  end
-
-  def wedding_templates_for_user(user) do
-    from(template in all_templates_for_user(user),
-      where: template.job_type == "wedding",
       order_by: [desc: template.base_price]
     )
   end

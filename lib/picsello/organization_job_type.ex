@@ -1,8 +1,8 @@
 defmodule Picsello.OrganizationJobType do
   @moduledoc false
   use Ecto.Schema
-  import Ecto.{Changeset, Query}
-  alias Picsello.{Organization, JobType, Repo}
+  import Ecto.Changeset
+  alias Picsello.{Organization, JobType}
 
   schema "organization_job_types" do
     field :show_on_profile?, :boolean, default: false
@@ -26,13 +26,5 @@ defmodule Picsello.OrganizationJobType do
   def update_changeset(package \\ %__MODULE__{}, attrs) do
     package
     |> cast(attrs, @fields)
-  end
-
-  def get_job_type_by(name, org_id) do
-    from(ojt in __MODULE__,
-      select: %{id: ojt.id, show_on_profile: ojt.show_on_profile?},
-      where: ojt.job_type == ^name and ojt.organization_id == ^org_id
-    )
-    |> Repo.one()
   end
 end

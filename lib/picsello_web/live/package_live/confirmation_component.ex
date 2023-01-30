@@ -32,72 +32,72 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
     assigns = Enum.into(assigns, %{class: "dialog"})
 
     ~H"""
-    <div class={@class}>
-      <%= if @icon do %>
-      <div class="flex items-center">
-        <div class={"flex items-center justify-center w-6 h-6 mr-3 mb-1 rounded-full flex-shrink-0 text-white bg-blue-planning-300"}>
-          <.icon name={@icon} class="fill-current" width="14" height="14" />
-        </div>
-        <span class="flex capitalize font-semibold"><%= @icon %></span>
+      <div class={@class}>
+        <%= if @icon do %>
+          <div class="flex items-center">
+            <div class="flex items-center justify-center w-6 h-6 mr-3 mb-1 rounded-full flex-shrink-0 text-white bg-blue-planning-300">
+              <.icon name={@icon} class="fill-current" width="14" height="14" />
+            </div>
+            <span class="flex capitalize font-semibold"><%= @icon %></span>
+          </div>
+        <% end %>
+
+        <h1 class="text-3xl font-semibold">
+          <%= @title %>
+        </h1>
+
+        <.section {assigns} />
       </div>
-      <% end %>
-
-      <h1 class="text-3xl font-semibold">
-        <%= @title %>
-      </h1>
-
-      <.section {assigns} />
-    </div>
     """
   end
 
   defp section(assigns) do
     ~H"""
-    <.form let={f} for={:check} phx-submit={@confirm_event} phx-target={@myself}>
-    <%= if @subtitle && @heading1 do %>
-        <div class="flex flex-col pt-4 items-start">
-          <div class="flex flex-row items-center">
+      <.form let={f} for={:check} phx-submit={@confirm_event} phx-target={@myself}>
+        <%= if @subtitle && @heading1 do %>
+          <div class="flex flex-col pt-4 items-start">
+            <div class="flex flex-row items-center">
               <%= checkbox(f, :check_enabled, class: "w-5 h-5 mr-2 checkbox", checked: @checked, phx_click: @checkbox_event1, phx_target: @myself) %>
-            <h1 class="font-bold ml-1">
-              <%= @heading1 %>
-            </h1>
+              <h1 class="font-bold ml-1">
+                <%= @heading1 %>
+              </h1>
+            </div>
+            <p class="whitespace-pre-wrap"><%= @subtitle %></p>
           </div>
-          <p class="whitespace-pre-wrap"><%= @subtitle %></p>
-        </div>
-        <hr class="my-4" />
-      <% else %>
-        <p class="pt-4 whitespace-pre-wrap"><%= @subtitle %></p>
-      <% end %>
+          <hr class="my-4" />
+        <% else %>
+          <p class="pt-4 whitespace-pre-wrap"><%= @subtitle %></p>
+        <% end %>
 
-      <%= if @subtitle2 && @heading2 do %>
-        <div class={classes("flex flex-col pt-4 items-start", %{"text-gray-300" => !@checked})}>
-          <div class="flex flex-row items-center">
-            <%= checkbox(f, :check_profile, class: "w-5 h-5 mr-2 checkbox", checked: @checked2, disabled: !@checked) %>
-            <h1 class="font-bold ml-1">
-              <%= @heading2 %>
-            </h1>
+        <%= if @subtitle2 && @heading2 do %>
+          <div class={classes("flex flex-col pt-4 items-start", %{"text-gray-300" => !@checked})}>
+            <div class="flex flex-row items-center">
+              <%= checkbox(f, :check_profile, class: "w-5 h-5 mr-2 checkbox", checked: @checked2, disabled: !@checked) %>
+              <h1 class="font-bold ml-1">
+                <%= @heading2 %>
+              </h1>
+            </div>
+            <p class="whitespace-pre-wrap"><%= @subtitle2 %></p>
           </div>
-          <p class="whitespace-pre-wrap"><%= @subtitle2 %></p>
-        </div>
-      <% else %>
-        <p class="pt-4 whitespace-pre-wrap"><%= @subtitle2 %></p>
-      <% end %>
+        <% else %>
+          <p class="pt-4 whitespace-pre-wrap"><%= @subtitle2 %></p>
+        <% end %>
 
-      <%= if @confirm_event do %>
-        <button class={"w-full mt-6 " <> @confirm_class} title={@confirm_label} type="submit" phx-disable-with="Saving&hellip;">
-          <%= @confirm_label %>
-        </button>
-      <% end %>
+        <%= if @confirm_event do %>
+          <button class={"w-full mt-6 " <> @confirm_class} title={@confirm_label} type="submit" phx-disable-with="Saving&hellip;">
+            <%= @confirm_label %>
+          </button>
+        <% end %>
 
-      <%= if @close_event do %>
-        <button class={"w-full mt-6 " <> @close_class} title={@close_label} type="button" phx-click={"close_event"} phx-target={@myself}>
-          <%= @close_label %>
-        </button>
+        <%= if @close_event do %>
+          <button class={"w-full mt-6 " <> @close_class} title={@close_label} type="button" phx-click={"close_event"} phx-target={@myself}>
+            <%= @close_label %>
+          </button>
         <% else %>
           <button class={"w-full mt-6 " <> @close_class} type="button" phx-click="modal" phx-value-action="close">
             <%= @close_label %>
           </button>
-      <% end %>
+        <% end %>
       </.form>
     """
   end

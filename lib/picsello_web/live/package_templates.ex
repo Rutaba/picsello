@@ -17,7 +17,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     Profiles,
     PackagePaymentSchedule,
     Contract,
-    OrganizationJobType
+    Jobs
   }
 
   @impl true
@@ -51,7 +51,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         _,
         %{assigns: %{live_action: :edit, templates: templates}} = socket
       ) do
-    package_id = String.to_integer(package_id)
+    package_id = to_integer(package_id)
     package = Enum.find(templates, &(&1.id == package_id))
 
     socket
@@ -129,6 +129,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
                             <div class="justify-start ml-3">
                               <span class="">All <span class="font-normal">(<%= @all_templates_count %>)</span></span>
                             </div>
+                          </div>
+                          <div class="flex items-center px-2 ml-auto" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(job_type, org_id).id}>
+                              <span class="text-blue-planning-300 link font-normal">Edit</span>
                           </div>
                         </a>
                     </div>
@@ -215,7 +218,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
               <div class="md:flex items-center mt-6 hidden md:block">
                 <div class="font-bold text-xl capitalize"><%= @package_name %> Packages</div>
                 <%= if @package_name not in ["All", "Archived"] do%>
-                  <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={get_id_by_job_name(@package_name, org_id)}>
+                  <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(@package_name, org_id).id}>
                     <.icon name={if @show_on_public_profile, do: "eye", else: "closed-eye"} class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
                     <span class="shadow-lg rounded-lg pb-2 px-2 text-xs capitalize"><%= @package_name %> Photography is <%= if @show_on_public_profile, do: "showing", else: "hidden" %> as an <br />offering on your public profile & contact form</span>
                   </div>
@@ -433,17 +436,13 @@ defmodule PicselloWeb.Live.PackageTemplates do
         confirm_label: if(type == "archive", do: "Yes, archive", else: "Yes, unarchive"),
         icon: "warning-orange",
         subtitle:
-          if(type == "archive",
-            do:
-              "Archiving a package template doesn’t affect active leads or jobs—this will remove the option to create anything with this package template.",
-            else:
-              "Un-archiving a package template doesn’t affect active leads or jobs—this will just add back the option to create anything with this package template."
-          ),
+          if(type == "archive", do: "Archiving", else: "Un-archiving") <>
+            " a package template doesn’t affect active leads or jobs—this will just " <>
+            if(type == "archive", do: "remove", else: "add back") <>
+            " the option to create anything with this package template.",
         title:
-          if(type == "archive",
-            do: "Are you sure you want to archive this package template?",
-            else: "Are you sure you want to un-archive this package template?"
-          )
+          "Are you sure you want to " <>
+            if(type == "archive", do: "archive", else: "Un-archive") <> " this package template?"
       })
       |> noreply()
 
@@ -502,26 +501,21 @@ defmodule PicselloWeb.Live.PackageTemplates do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
       close_label: "Cancel",
-      confirm_event: "hide_or_show",
+      confirm_event: "toggle_package_visibility",
       confirm_class: if(package.show_on_public_profile, do: "btn-warning", else: "btn-primary"),
       confirm_label:
-        if(package.show_on_public_profile,
-          do: "Hide on my Public Profile",
-          else: "Great! Show on my Public Profile"
-        ),
+        if(package.show_on_public_profile, do: "Hide", else: "Great! Show") <>
+          " on my Public Profile",
       icon: "warning-orange",
       subtitle:
         if(package.show_on_public_profile,
           do:
-            "Don’t worry! You aren’t deleting or archiving your package. You’re just hiding it form potential clients on your Public Profile.",
+            "Don’t worry! You aren’t deleting or archiving your package. You’re just hiding it from potential clients on your Public Profile.",
           else:
             "You also have access to a Public Profile where you can book clients, share your contact form, and showcase some of your packages and pricing to get you booked!"
         ),
       title:
-        if(package.show_on_public_profile,
-          do: "Hide on your Public Profile?",
-          else: "Show on your Public Profile?"
-        ),
+        if(package.show_on_public_profile, do: "Hide", else: "Show") <> " on your Public Profile?",
       payload: %{
         package_id: package_id,
         is_hide: if(package.show_on_public_profile, do: true, else: false)
@@ -557,7 +551,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       |> assign(
         :show_on_public_profile,
         if(socket.assigns.package_name not in ["All", "Archived"],
-          do: show_on_profile?(socket.assigns.package_name, org_id)
+          do: Jobs.get_job_type(socket.assigns.package_name, org_id).show_on_profile
         )
       )
     end)
@@ -626,7 +620,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
             "The type has been hidden from your public profile"
         end
 
-      case unarchive_packages_for_job_type(org_job_type.job_type, organization_id) do
+      case Packages.unarchive_packages_for_job_type(org_job_type.job_type, organization_id) do
         {_row_count, nil} ->
           socket
           |> assign_template_counts()
@@ -644,7 +638,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> assign(
       :show_on_public_profile,
       if(package_name not in ["All", "Archived"],
-        do: show_on_profile?(package_name, organization_id)
+        do: Jobs.get_job_type(package_name, organization_id).show_on_profile
       )
     )
     |> noreply()
@@ -691,7 +685,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       ) do
     org_job_type =
       org_job_types
-      |> Enum.find(fn job_type -> job_type.id == String.to_integer(job_type_id) end)
+      |> Enum.find(fn job_type -> job_type.id == to_integer(job_type_id) end)
 
     if org_job_type.show_on_business? do
       socket
@@ -709,7 +703,10 @@ defmodule PicselloWeb.Live.PackageTemplates do
       })
     else
       socket
-      |> assign(:show_on_public_profile, show_on_profile?(org_job_type, org_id))
+      |> assign(
+        :show_on_public_profile,
+        Jobs.get_job_type(org_job_type, org_id).show_on_profile
+      )
     end
     |> noreply()
   end
@@ -726,7 +723,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
     {:ok, org_job_type} = Repo.update(changeset)
 
-    case archive_packages_for_job_type(org_job_type.job_type, organization_id) do
+    case Packages.archive_packages_for_job_type(org_job_type.job_type, organization_id) do
       {_row_count, nil} ->
         socket
         |> assign_template_counts()
@@ -743,16 +740,14 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   @impl true
   def handle_info(
-        {:confirm_event, "hide_or_show", %{package_id: package_id, is_hide: is_hide}},
+        {:confirm_event, "toggle_package_visibility",
+         %{package_id: package_id, is_hide: is_hide}},
         %{assigns: %{package_name: package_name}} = socket
       ) do
     with %Package{} = package <- Repo.get(Package, package_id),
          {:ok, _package} <- package |> Package.edit_visibility_changeset() |> Repo.update() do
       socket
-      |> put_flash(
-        :success,
-        if(is_hide, do: "The package has been hidden", else: "The package has been shown")
-      )
+      |> put_flash(:success, "The package has been " <> if(is_hide, do: "hidden", else: "shown"))
       |> close_modal()
     else
       _ ->
@@ -779,10 +774,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       |> assign_job_type_packages()
       |> put_flash(
         :success,
-        if(package.archived_at,
-          do: "The package has been un-archived",
-          else: "The package has been archived"
-        )
+        "The package has been " <> if(package.archived_at, do: "un-archived", else: "archived")
       )
       |> close_modal()
     else
@@ -824,7 +816,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
            socket
        ),
        do:
-         Package.templates_for_organization_id_query(organization_id)
+         Package.templates_for_organization_query(organization_id)
          |> assign_templates_and_pagination(socket)
 
   defp assign_templates(
@@ -833,16 +825,16 @@ defmodule PicselloWeb.Live.PackageTemplates do
          } = socket
        ),
        do:
-         Package.archived_templates_for_organization_id(organization_id)
+         Package.archived_templates_for_organization(organization_id)
          |> assign_templates_and_pagination(socket)
 
   defp assign_templates(%{assigns: %{current_user: user, package_name: package_name}} = socket),
     do:
-      Package.templates_for_user(user, package_name, "all")
+      Package.templates_for_user(user, package_name)
       |> assign_templates_and_pagination(socket)
 
   defp assign_templates_and_pagination(query, %{assigns: %{pagination: pagination}} = socket) do
-    templates = Package.find_templates_by_pagination_via_query(query, pagination) |> Repo.all()
+    templates = Packages.find_templates_by_pagination_via_query(query, pagination) |> Repo.all()
     updated_pagination = update_pagination(query, templates, socket)
 
     socket
@@ -876,7 +868,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
          } = socket
        ) do
     {packages, _} =
-      Package.templates_for_organization_id_query(organization_id)
+      Package.templates_for_organization_query(organization_id)
       |> Repo.all()
       |> Enum.group_by(& &1.job_type)
       |> Map.split(job_types)
@@ -898,9 +890,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
     socket
     |> assign(
       archived_templates_count:
-        Package.archived_templates_for_organization_id(org_id) |> Repo.all() |> Enum.count(),
+        Package.archived_templates_for_organization(org_id) |> Repo.all() |> Enum.count(),
       all_templates_count:
-        Package.all_templates_for_organization_id(org_id) |> Repo.all() |> Enum.count()
+        Package.all_templates_for_organization(org_id) |> Repo.all() |> Enum.count()
     )
   end
 
@@ -909,21 +901,15 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> assign(:job_types, Profiles.enabled_job_types(organization.organization_job_types))
   end
 
-  defp archive_packages_for_job_type(job_type, organization_id) do
-    Packages.archive_packages_for_job_type(job_type, organization_id)
-  end
-
-  defp unarchive_packages_for_job_type(job_type, organization_id) do
-    Packages.unarchive_packages_for_job_type(job_type, organization_id)
-  end
-
   defp create_duplicate_package(package) do
+    current_date = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
     package_payment_schedules =
       if Enum.any?(package.package_payment_schedules),
         do:
           Enum.map(package.package_payment_schedules, fn payment_schedule ->
             payment_schedule
-            |> create_attrs_from_struct()
+            |> create_attrs_from_struct(current_date)
             |> then(fn params ->
               PackagePaymentSchedule.changeset_for_duplication(%PackagePaymentSchedule{}, params)
             end)
@@ -934,37 +920,30 @@ defmodule PicselloWeb.Live.PackageTemplates do
     contract =
       if is_map(package.contract) do
         package.contract
-        |> create_attrs_from_struct()
+        |> create_attrs_from_struct(current_date)
         |> Contract.changeset()
         |> Ecto.Changeset.apply_changes()
       end
 
     package
-    |> Map.put(:id, nil)
-    |> Map.put(:name, "#{package.name} - Duplicate")
-    |> Map.put(:contract, contract)
-    |> Map.put(:package_payment_schedules, package_payment_schedules)
-    |> Map.put(:inserted_at, NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second))
-    |> Map.put(:updated_at, NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second))
+    |> Map.merge(%{
+      id: nil,
+      name: "#{package.name} - Duplicate",
+      contract: contract,
+      package_payment_schedules: package_payment_schedules,
+      inserted_at: current_date,
+      updated_at: current_date
+    })
     |> Repo.preload([:questionnaire_template])
   end
 
-  defp create_attrs_from_struct(struct) do
+  defp create_attrs_from_struct(struct, date) do
     struct
     |> Map.from_struct()
     |> Map.delete(:__struct__)
     |> Map.delete(:__meta__)
     |> Map.delete(:id)
-    |> Map.put(:inserted_at, NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second))
-    |> Map.put(:updated_at, NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second))
-  end
-
-  defp get_id_by_job_name(name, organization_id) do
-    OrganizationJobType.get_job_type_by(name, organization_id).id
-  end
-
-  defp show_on_profile?(name, organization_id) do
-    OrganizationJobType.get_job_type_by(name, organization_id).show_on_profile
+    |> Map.merge(%{inserted_at: date, updated_at: date})
   end
 
   defdelegate job_types(), to: Picsello.Profiles
