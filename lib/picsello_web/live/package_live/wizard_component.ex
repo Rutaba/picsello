@@ -431,6 +431,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :details} = assigns) do
     ~H"""
+      <%= if !@is_template do %>
+      <div class="rounded bg-gray-100 p-4">
+        <h6 class="rounded uppercase bg-blue-planning-300 text-white px-2 py-0.5 text-sm font-semibold mb-1 inline-block">Note</h6>
+        <p class="text-base-250">If you don't see any of your packages to select from, you likely selected the wrong photography type when creating the lead. Your package needs to match the lead photography type.</p>
+      </div>
+      <% end %>
+
       <.package_basic_fields form={@f} job_type={if !@is_template do @job.type else "wedding" end} />
 
       <div class="flex flex-col mt-4">
@@ -444,9 +451,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your#{if !@is_template do " " <> @job.type end} offering and pricing "} />
       </div>
 
-      <hr class="mt-6" />
-
       <%= if @is_template do %>
+        <hr class="mt-6" />
+
         <div class="flex flex-col mt-6">
           <.input_label form={@f} class="mb-1 text-sm font-semibold" field={:job_type}>
             Type of Photography
