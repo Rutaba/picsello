@@ -103,9 +103,62 @@ defmodule PicselloWeb.PackageLive.Shared do
   end
 
   @spec package_card(%{
+    package: %Package{}
+  }) :: %Phoenix.LiveView.Rendered{}
+  def package_card(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: ""
+      })
+
+    ~H"""
+    <div class={"flex flex-col p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group #{@class}"}>
+      <h1 class="text-2xl font-bold line-clamp-2"><%= @package.name %></h1>
+
+      <div class="mb-4 relative" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="mouseover">
+        <div class="line-clamp-2 raw_html raw_html_inline">
+          <%= raw @package.description %>
+        </div>
+        <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-[15]" data-offset="0" role="tooltip">
+          <div class="line-clamp-6 raw_html"></div>
+          <button class="inline-block text-blue-planning-300">View all</button>
+        </div>
+        <%= if package_description_length_long?(@package.description) do %>
+          <button class="inline-block text-blue-planning-300 view_more">View more</button>
+        <% end %>
+      </div>
+
+      <dl class="flex flex-row-reverse items-center justify-end mt-auto">
+        <.digital_detail id="package_detail" download_each_price={@package.download_each_price} download_count={@package.download_count}/>
+      </dl>
+
+      <hr class="my-4" />
+
+      <div class="flex items-center justify-between">
+        <div class="text-gray-500"><%= dyn_gettext @package.job_type %></div>
+
+        <div class="text-lg font-bold">
+          <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="text-gray-500">Download Price</div>
+
+        <div class="text-lg font-bold">
+          <%= if Money.zero?(@package.download_each_price) do %>--<% else %><%= @package.download_each_price %>/each<% end %>
+        </div>
+      </div>
+
+    </div>
+    """
+  end
+
+  @spec package_row(%{
           package: %Package{}
         }) :: %Phoenix.LiveView.Rendered{}
-  def package_card(assigns) do
+  def package_row(assigns) do
     assigns =
       assigns
       |> Enum.into(%{
@@ -382,6 +435,22 @@ defmodule PicselloWeb.PackageLive.Shared do
         <.is_buy_all d={d} />
       </div>
     <% end %>
+    """
+  end
+
+  defp digital_detail(assigns) do
+    ~H"""
+      <%= cond do %>
+        <%= Money.zero?(@download_each_price) -> %>
+        <dt class="text-gray-500">All digital images included</dt>
+        <% @download_count == 0 -> %>
+        <dt class="text-gray-500">No digital images included</dt>
+        <% true -> %>
+        <dt class="text-gray-500">Digital images included</dt>
+        <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
+        <%= @download_count %>
+        </dd>
+      <% end %>
     """
   end
 

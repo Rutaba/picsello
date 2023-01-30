@@ -3,9 +3,8 @@ defmodule PicselloWeb.Live.PackageTemplates do
   use PicselloWeb, :live_view
 
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
-  import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
+  import PicselloWeb.PackageLive.Shared, only: [package_row: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
-  alias Picsello.{Package, Repo}
 
   alias PicselloWeb.PaginationLive
   alias Ecto.Changeset
@@ -235,7 +234,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
                 <div class="my-4 flex flex-col">
                   <%= for template <- @templates do %>
-                    <.package_card update_mode="replace" package={template} class="h-full"/>
+                    <.package_row update_mode="replace" package={template} class="h-full"/>
                   <% end %>
                 </div>
               <% else %>
