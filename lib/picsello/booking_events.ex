@@ -28,6 +28,7 @@ defmodule Picsello.BookingEvents do
   end
 
   def upsert_booking_event(changeset) do
+    IO.inspect changeset
     changeset |> Repo.insert_or_update()
   end
 
@@ -161,6 +162,8 @@ defmodule Picsello.BookingEvents do
     %{package_template: %{organization: %{user: photographer}} = package_template} =
       booking_event
       |> Repo.preload(package_template: [organization: :user])
+    
+    starts_at = shoot_start_at(date, time, photographer.time_zone)
 
     Ecto.Multi.new()
     |> Picsello.Jobs.maybe_upsert_client(
@@ -175,16 +178,39 @@ defmodule Picsello.BookingEvents do
       |> Ecto.Changeset.put_change(:booking_event_id, booking_event.id)
     end)
     |> Ecto.Multi.merge(fn %{job: job} ->
+      package_payment_schedules = package_template 
+      |> Repo.preload(:package_payment_schedules, force: true)
+      |> Map.get(:package_payment_schedules)
+
+      {payment_schedules, total_price} =
+      package_payment_schedules
+      |> Enum.reduce({[], Money.new(0)}, fn schedule, {schedules, total_price} ->
+        {
+          schedule 
+          |> Map.from_struct() 
+          |> Map.drop([:package_payment_preset_id])
+          |> Map.put(:shoot_date, starts_at)
+          |> List.wrap()
+          |> Enum.concat(schedules),
+          Money.add(total_price, schedule.price)
+        }
+      end)
+
+      opts = %{
+        payment_schedules: payment_schedules,
+        action: :insert,
+        total_price: total_price 
+      }
+      IO.inspect opts, label: "opts"
+
       package_template
       |> Picsello.Packages.changeset_from_template()
-      |> Picsello.Packages.insert_package_and_update_job(job)
+      |> Picsello.Packages.insert_package_and_update_job(job, opts)
     end)
     |> Ecto.Multi.merge(fn %{package: package} ->
       Picsello.Contracts.maybe_add_default_contract_to_package_multi(package)
     end)
     |> Ecto.Multi.insert(:shoot, fn changes ->
-      starts_at = DateTime.new!(date, time, photographer.time_zone)
-
       Picsello.Shoot.create_changeset(
         booking_event
         |> Map.take([:name, :duration_minutes, :location, :address])
@@ -244,4 +270,6 @@ defmodule Picsello.BookingEvents do
       {:error, error} -> {:error, error}
     end
   end
+
+  defp shoot_start_at(date, time, time_zone), do: DateTime.new!(date, time, time_zone)
 end

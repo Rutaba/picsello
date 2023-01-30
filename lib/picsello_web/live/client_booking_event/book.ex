@@ -14,6 +14,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
 
   @impl true
   def mount(%{"organization_slug" => slug, "id" => event_id}, session, socket) do
+    IO.inspect "ag--------------"
     socket
     |> assign_defaults(session)
     |> assign_organization_by_slug_on_profile_disabled(slug)
