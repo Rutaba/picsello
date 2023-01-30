@@ -922,6 +922,10 @@ defmodule PicselloWeb.Live.PackageTemplates do
         |> create_attrs_from_struct(current_date)
         |> Contract.changeset()
         |> Ecto.Changeset.apply_changes()
+      else
+        %{}
+        |> Contract.changeset()
+        |> Ecto.Changeset.apply_changes()
       end
 
     package

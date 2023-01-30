@@ -161,8 +161,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <%= for jt <- inputs_for(o, :organization_job_types) do %>
                 <% input_name = input_name(jt, :job_type) %>
                 <%= hidden_inputs_for(jt) %>
-                <% checked = if Map.has_key?(jt.source.changes, :show_on_business?), do: jt.source.changes.show_on_business?, else: jt.data.show_on_business? %>
-                <.job_type_option type="checkbox" name={input_name} form={jt} job_type={jt.data.job_type} checked={checked} />
+                <% checked = jt |> current() |> Map.get(:show_on_business?) %>
+                <.job_type_option type="checkbox" name={input_name} form={jt} job_type={jt |> current() |> Map.get(:job_type)} checked={checked} />
               <% end %>
             </div>
           </div>
