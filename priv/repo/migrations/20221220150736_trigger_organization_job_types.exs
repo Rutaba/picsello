@@ -3,6 +3,7 @@ defmodule Picsello.Repo.Migrations.TriggerOrganizationJobTypes do
 
   def up do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
     execute("""
       CREATE OR REPLACE FUNCTION ins_function() RETURNS TRIGGER AS $$
       --

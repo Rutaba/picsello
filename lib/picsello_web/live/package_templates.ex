@@ -572,8 +572,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "edit-job-types",
         %{},
-        %{assigns: %{organization: organization, package_name: package_name}} =
-          socket
+        %{assigns: %{organization: organization, package_name: package_name}} = socket
       ) do
     socket
     |> assign(:package_name, package_name)
@@ -603,19 +602,22 @@ defmodule PicselloWeb.Live.PackageTemplates do
         )
 
       with {:ok, org_job_type} <- Repo.update(changeset),
-      {_row_count, nil} <- Packages.unarchive_packages_for_job_type(org_job_type.job_type, organization_id) do
-        message = "The type " <>
-          cond do
-            Map.has_key?(changeset.changes, :show_on_business?) ->
-              "has been enabled alongwith its associated packages on "
+           {_row_count, nil} <-
+             Packages.unarchive_packages_for_job_type(org_job_type.job_type, organization_id) do
+        message =
+          "The type " <>
+            cond do
+              Map.has_key?(changeset.changes, :show_on_business?) ->
+                "has been enabled alongwith its associated packages on "
 
-            org_job_type.show_on_profile? ->
-              "will now be displayed on "
+              org_job_type.show_on_profile? ->
+                "will now be displayed on "
 
-            true ->
-              "has been hidden from "
-          end
-          <> "your public profile"
+              true ->
+                "has been hidden from "
+            end <>
+            "your public profile"
+
         socket
         |> default_assigns()
         |> close_modal()
@@ -892,6 +894,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
     organization = organization |> Repo.preload(:organization_job_types, force: true)
+
     socket
     |> assign(:organization, organization)
     |> assign(:job_types, Profiles.enabled_job_types(organization.organization_job_types))
