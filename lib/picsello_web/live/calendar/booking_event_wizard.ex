@@ -2,13 +2,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @moduledoc false
 
   use PicselloWeb, :live_component
-  alias Picsello.{BookingEvent, BookingEvents, Packages}
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.PackageLive.Shared, only: [package_card: 1]
+  import PicselloWeb.PackageLive.Shared, only: [package_card: 1, current: 1]
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
+
+  alias Picsello.{BookingEvent, BookingEvents, Packages}
 
   @impl true
   def update(assigns, socket) do
@@ -442,9 +443,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       do: {dyn_gettext("duration-#{duration}"), duration}
     )
   end
-
-  def current(%{source: changeset}), do: current(changeset)
-  def current(changeset), do: Ecto.Changeset.apply_changes(changeset)
 
   defp calculate_slots_count(event_form, date) do
     event = current(event_form)

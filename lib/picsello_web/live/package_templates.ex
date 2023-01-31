@@ -30,10 +30,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> is_mobile(params)
     |> assign_new(:pagination, fn -> PaginationLive.changeset() |> Changeset.apply_changes() end)
     |> assign_new(:pagination_changeset, fn -> PaginationLive.changeset() end)
-    |> assign_job_types()
-    |> assign_job_type_packages()
-    |> assign_templates()
-    |> assign_template_counts()
+    |> default_assigns()
     |> ok()
   end
 
@@ -575,7 +572,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "edit-job-types",
         %{},
-        %{assigns: %{current_user: %{organization: organization}, package_name: package_name}} =
+        %{assigns: %{organization: organization, package_name: package_name}} =
           socket
       ) do
     socket
@@ -605,32 +602,27 @@ defmodule PicselloWeb.Live.PackageTemplates do
           String.to_atom(Map.get(params, "check_profile", "false"))
         )
 
-      {:ok, org_job_type} = Repo.update(changeset)
+      with {:ok, org_job_type} <- Repo.update(changeset),
+      {_row_count, nil} <- Packages.unarchive_packages_for_job_type(org_job_type.job_type, organization_id) do
+        message = "The type " <>
+          cond do
+            Map.has_key?(changeset.changes, :show_on_business?) ->
+              "has been enabled alongwith its associated packages on "
 
-      message =
-        cond do
-          Map.has_key?(changeset.changes, :show_on_business?) ->
-            "The type has been enabled, alongwith its associated packages"
+            org_job_type.show_on_profile? ->
+              "will now be displayed on "
 
-          org_job_type.show_on_profile? ->
-            "The type will now be displayed on your public profile"
-
-          true ->
-            "The type has been hidden from your public profile"
-        end
-
-      case Packages.unarchive_packages_for_job_type(org_job_type.job_type, organization_id) do
-        {_row_count, nil} ->
-          socket
-          |> assign_template_counts()
-          |> assign_job_types()
-          |> assign_job_type_packages()
-          |> close_modal()
-
-        _ ->
-          socket
+            true ->
+              "has been hidden from "
+          end
+          <> "your public profile"
+        socket
+        |> default_assigns()
+        |> close_modal()
+        |> put_flash(:success, message)
+      else
+        _ -> socket
       end
-      |> put_flash(:success, message)
     else
       socket
     end
@@ -655,22 +647,19 @@ defmodule PicselloWeb.Live.PackageTemplates do
       changeset
       |> Changeset.put_change(:show_on_profile?, String.to_atom(check_profile))
 
-    {:ok, org_job_type} = Repo.update(changeset)
+    case Repo.update(changeset) do
+      {:ok, org_job_type} ->
+        socket
+        |> default_assigns()
+        |> close_modal()
+        |> put_flash(
+          :success,
+          "The type #{if org_job_type.show_on_profile?, do: "will now be displayed on", else: "has been hidden from"} your public profile"
+        )
 
-    message =
-      if org_job_type.show_on_profile?,
-        do: "The type will now be displayed on your public profile",
-        else: "The type has been hidden from your public profile"
-
-    socket
-    |> assign_template_counts()
-    |> assign_job_types()
-    |> assign_job_type_packages()
-    |> close_modal()
-    |> put_flash(
-      :success,
-      message
-    )
+      {:error, _} ->
+        socket
+    end
     |> noreply()
   end
 
@@ -725,9 +714,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     case Packages.archive_packages_for_job_type(org_job_type.job_type, organization_id) do
       {_row_count, nil} ->
         socket
-        |> assign_template_counts()
-        |> assign_job_types()
-        |> assign_job_type_packages()
+        |> default_assigns()
         |> close_modal()
 
       _ ->
@@ -802,6 +789,14 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
     |> push_patch(to: Routes.package_templates_path(socket, :index))
     |> noreply()
+  end
+
+  defp default_assigns(socket) do
+    socket
+    |> assign_job_types()
+    |> assign_job_type_packages()
+    |> assign_templates()
+    |> assign_template_counts()
   end
 
   defp archive_unarchive_package(package) do
@@ -896,7 +891,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
   end
 
   defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
+    organization = organization |> Repo.preload(:organization_job_types, force: true)
     socket
+    |> assign(:organization, organization)
     |> assign(:job_types, Profiles.enabled_job_types(organization.organization_job_types))
   end
 
@@ -943,9 +940,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   defp create_attrs_from_struct(struct, date) do
     struct
     |> Map.from_struct()
-    |> Map.delete(:__struct__)
-    |> Map.delete(:__meta__)
-    |> Map.delete(:id)
+    |> Map.delete([:__struct__, :__meta__, :id])
     |> Map.merge(%{inserted_at: date, updated_at: date})
   end
 

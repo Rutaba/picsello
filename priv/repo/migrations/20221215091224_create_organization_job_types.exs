@@ -9,7 +9,7 @@ defmodule Picsello.Repo.Migrations.CreateOrganizationJobTypes do
     create table(@table) do
       add(:show_on_profile?, :boolean, null: false, default: false)
       add(:show_on_business?, :boolean, null: false, default: false)
-      add(:job_type, references(:job_types, column: :name, type: :string, on_delete: :nothing))
+      add(:job_type, references(:job_types, column: :name, type: :string, on_delete: :nothing), null: false)
       add(:organization_id, references(:organizations, on_delete: :nothing), null: false)
 
       timestamps()
