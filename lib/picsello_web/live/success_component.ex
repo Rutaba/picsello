@@ -105,36 +105,42 @@ defmodule PicselloWeb.SuccessComponent do
 
   defp inner_section(%{for: "proofing"} = assigns) do
     ~H"""
-    <div class="col-span-2 row-span-2">
-      <img src={Routes.static_path(@socket, "/images/proofing_gallery_left.png")}/>
-    </div>
-
-    <div class="col-span-2 row-span-2">
-      <img src={Routes.static_path(@socket, "/images/proofing_gallery_right.png")} />
-    </div>
+    <%= for path <- ["proofing_gallery_left.png", "proofing_gallery_right.png"] do %>
+      <.image socket={@socket} path={"/images/#{path}"} />
+    <% end %>
     """
   end
 
   defp inner_section(assigns) do
     ~H"""
-    <div class="flex justify-center items-center">
-      <.icon name="rupees" class="w-8 h-8"/>
-    </div>
+      <div class="flex justify-center items-center">
+        <.icon name="rupees" class="w-8 h-8"/>
+      </div>
 
+      <div class="col-span-2 row-span-2">
+        <.image socket={@socket} path="/images/gallery_created.png" />
+      </div>
+
+      <%= for {name, class} <- [{"phone", ""}, {"cart", "pb-6"}, {"envelope", "pb-6"}] do %>
+        <.inner_section_icon name={name} class={class} />
+      <% end %>
+    """
+  end
+
+  defp inner_section_icon(assigns) do
+    assigns = Enum.into(assigns, %{class: ""})
+
+    ~H"""
+    <div class={"flex justify-center items-center #{@class}"}>
+      <.icon name={@name} style="color: rgba(137, 137, 137, 0.2)" class="w-8 h-8"/>
+    </div>
+    """
+  end
+
+  defp image(assigns) do
+    ~H"""
     <div class="col-span-2 row-span-2">
-      <img src={Routes.static_path(@socket, "/images/gallery_created.png")} />
-    </div>
-
-    <div class="flex justify-center items-center">
-      <.icon name="phone" style="color: rgba(137, 137, 137, 0.2)" class="w-8 h-8"/>
-    </div>
-
-    <div class="flex justify-center items-center pb-6">
-      <.icon name="cart" style="color: rgba(137, 137, 137, 0.2)" class="w-8 h-8"/>
-    </div>
-
-    <div class="flex justify-center items-center pb-6">
-      <.icon name="envelope" style="color: rgba(137, 137, 137, 0.2)" class="w-8 h-8"/>
+      <img src={Routes.static_path(@socket, @path)} />
     </div>
     """
   end

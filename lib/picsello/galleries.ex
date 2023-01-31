@@ -259,7 +259,8 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
-  defp move_photos_from_album_transaction(photo_ids) do
+  @types ~w(proofing finals)a
+  defp move_photos_from_album_transaction(photo_ids, gallery \\ nil) do
     Multi.new()
     |> Multi.update_all(
       :thumbnail,
@@ -271,15 +272,31 @@ defmodule Picsello.Galleries do
       fn _ ->
         from(p in Photo,
           where: p.id in ^photo_ids,
-          update: [set: [album_id: nil]]
+          update: [set: ^photo_opts(gallery)]
         )
       end,
       []
     )
+    |> then(fn
+      multi when not is_nil(gallery) and gallery.type in @types ->
+        multi
+        |> Multi.run(:gallery, fn _, %{photos: {count, _}} ->
+          update_gallery(gallery, %{total_count: gallery.total_count - count})
+        end)
+
+      multi ->
+        multi
+    end)
   end
 
-  def remove_photos_from_album(photo_ids) do
-    move_photos_from_album_transaction(photo_ids)
+  defp photo_opts(%{type: type}) when type in @types, do: [active: false]
+  defp photo_opts(_gallery), do: [album_id: nil]
+
+  def remove_photos_from_album(photo_ids, gallery_id) do
+    gallery = get_gallery!(gallery_id)
+
+    photo_ids
+    |> move_photos_from_album_transaction(gallery)
     |> Repo.transaction()
     |> then(fn
       {:ok, _} ->

@@ -238,9 +238,14 @@ defmodule PicselloWeb.GalleryLive.Index do
       case gallery.type do
         :standard ->
           ngettext("%{count} album", "%{count} albums", Enum.count(gallery.albums))
-        :proofing -> "Proofing"
-        _ -> "Finals"
+
+        :proofing ->
+          "Proofing"
+
+        _ ->
+          "Finals"
       end
+
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col md:flex-row grow">

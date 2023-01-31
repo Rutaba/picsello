@@ -332,6 +332,7 @@ defmodule PicselloWeb.JobLive.Show do
         type: type,
         expired_at: expired_at(organization_id),
         parent_id: parent_id,
+        client_link_hash: UUID.uuid4(),
         name: Job.name(job) <> " #{Enum.count(job.galleries) + 1}",
         albums: Galleries.album_params_for_new(type)
       })

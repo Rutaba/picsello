@@ -175,7 +175,7 @@
           <% end %>
         </div>
       </div>
-      <div class= "lg:pt-16 pt-60 pb-10 pl-10 pr-8">
+      <div class={classes("lg:pt-16 pb-10 pl-10 pr-8", %{"pt-80" => @gallery.type == :finals, "pt-60" => @gallery.type != :finals})}>
         <div class={classes(%{"hidden" => @photos != [] || @inprogress_photos != [] || @selection_filter || @favorites_filter})}>
           <div class="relative justify-between mt-36 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
               <span class={classes("hidden lg:block", %{"text-gray-400" => disabled?(@gallery)})}>Oops, there's nothing here - upload photos now to get started!</span>

@@ -121,6 +121,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
           name: client.name <> " " <> type,
           job_id: job_id,
           status: "active",
+          client_link_hash: UUID.uuid4(),
           password: Gallery.generate_password(),
           expired_at: expired_at(current_user.organization_id),
           type: gallery_type,

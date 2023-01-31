@@ -4,17 +4,19 @@ defmodule PicselloWeb.GalleryLive.Transaction.OrderDetail do
 
   alias Picsello.{Repo, Cart, Galleries, Orders, Job}
   require Ecto.Query
+
   import PicselloWeb.GalleryLive.Shared,
     only: [order_details: 1, order_status: 1, tag_for_gallery_type: 1]
+
   import PicselloWeb.JobLive.Shared, only: [assign_job: 2]
 
   @impl true
   def mount(
-      %{"id" => gallery_id, "order_number" => order_number} = params,
+        %{"id" => gallery_id, "order_number" => order_number} = params,
         _session,
         %{assigns: %{live_action: action}} = socket
       ) do
-        gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:job)
+    gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:job)
 
     socket
     |> assign(:request_from, params["request_from"])

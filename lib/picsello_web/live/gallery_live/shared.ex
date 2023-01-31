@@ -1146,7 +1146,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def new_gallery_path(socket, %{albums: [%{id: album_id}]} = gallery) do
-    Routes.gallery_photos_index_path(socket, :index, gallery.id, album_id)
+    Routes.gallery_photos_index_path(socket, :index, gallery.id, album_id, is_mobile: false)
   end
 
   def standard?(%{type: type}), do: type == :standard
