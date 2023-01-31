@@ -54,6 +54,7 @@ import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import ToggleSiblings from './hooks/toggle-siblings';
+import Cookies from 'js-cookie';
 
 const Modal = {
   mounted() {
@@ -171,14 +172,6 @@ const GetGalleryCookie = {
   },
 };
 
-const showWelcomeModal = {
-  mounted() {
-    const show = getCookie('show_welcome_modal')
-    document.cookie = "show_welcome_modal=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    if (show == 'true') { this.pushEvent("open-welcome-modal", {}) }
-  }
-};
-
 function getCookie(cname) {
   let name = cname + "=";
   let decodedCookie = decodeURIComponent(document.cookie);
@@ -194,6 +187,19 @@ function getCookie(cname) {
   }
   return "";
 }
+
+const showWelcomeModal = {
+  mounted() {
+    const show = Cookies.get('show_welcome_modal')
+
+    if (show == 'true') {
+      const dateTime = new Date("1970-12-17T00:00:00");
+      Cookies.set("show_welcome_modal", false, { expires: dateTime, path: '/' })
+
+      this.pushEvent("open-welcome-modal", {})
+    }
+  },
+};
 
 const Hooks = {
   AutoHeight,
