@@ -103,8 +103,8 @@ defmodule PicselloWeb.PackageLive.Shared do
   end
 
   @spec package_card(%{
-    package: %Package{}
-  }) :: %Phoenix.LiveView.Rendered{}
+          package: %Package{}
+        }) :: %Phoenix.LiveView.Rendered{}
   def package_card(assigns) do
     assigns =
       assigns
