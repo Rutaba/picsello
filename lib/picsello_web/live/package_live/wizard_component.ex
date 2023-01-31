@@ -416,14 +416,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     ~H"""
     <h1 class="mt-6 text-xl font-bold">Select Package <%= if template_selected?(@f), do: "(1 selected)", else: "" %></h1>
     <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
-      <div class="w-1/3">Package name</div>
-      <div class="w-1/3">Package Pricing</div>
-      <div class="w-1/3 text-center">Select package</div>
+      <%= for title <- ["Package name", "Package Pricing", "Select package"] do %>
+        <div class="w-1/3 last:text-center"><%= title %></div>
+      <% end %>
     </div>
     <%= for template <- @templates do %>
       <% checked = input_value(@f, :package_template_id) == template.id %>
       <.package_row package={template} checked={checked}>
-        <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: "", else: template.id} />
+        <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: nil, else: template.id} />
       </.package_row>
     <% end %>
     """
