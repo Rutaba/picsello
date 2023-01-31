@@ -16,7 +16,7 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
     icon: "confetti",
     subtitle: nil,
     subtitle2: nil,
-    heading1: nil,
+    heading: nil,
     heading2: nil
   }
 
@@ -54,12 +54,12 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
   defp section(assigns) do
     ~H"""
       <.form let={f} for={:check} phx-submit={@confirm_event} phx-target={@myself}>
-        <%= if @subtitle && @heading1 do %>
+        <%= if @subtitle && @heading do %>
           <div class="flex flex-col pt-4 items-start">
             <div class="flex flex-row items-center">
               <%= checkbox(f, :check_enabled, class: "w-5 h-5 mr-2 checkbox", checked: @checked, phx_click: @checkbox_event1, phx_target: @myself) %>
               <h1 class="font-bold ml-1">
-                <%= @heading1 %>
+                <%= @heading %>
               </h1>
             </div>
             <p class="whitespace-pre-wrap"><%= @subtitle %></p>
@@ -116,24 +116,13 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
   @impl true
   def handle_event(
         "visibility_for_business",
-        %{"value" => "true"},
-        socket
-      ) do
-    socket
-    |> assign(:checked, true)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "visibility_for_business",
-        params,
+        %{"value" => value} = params,
         %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket
       ) do
-    send(parent_pid, {:confirm_event, "visibility_for_business", payload, params})
+    if !value, do: send(parent_pid, {:confirm_event, "visibility_for_business", payload, params})
 
     socket
-    |> assign(:checked, false)
+    |> assign(:checked, value)
     |> noreply()
   end
 
@@ -177,7 +166,7 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
           optional(:icon) => binary | nil,
           optional(:subtitle) => binary,
           optional(:subtitle2) => binary,
-          optional(:heading1) => binary,
+          optional(:heading) => binary,
           optional(:heading2) => binary,
           optional(:payload) => map,
           title: binary

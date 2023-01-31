@@ -135,7 +135,6 @@ defmodule PicselloWeb.Live.Profile do
         <hr class="mt-12" />
 
         <h3 class="mt-20 uppercase font-bold">PRICING & SERVICES:</h3>
-
         <%= for {job_type, packages} <- @job_type_packages do %>
           <h2 class="mt-10 text-2xl text-center" id={to_string(job_type)}><%= dyn_gettext job_type %></h2>
           <%= for package <- packages do %>

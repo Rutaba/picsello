@@ -379,12 +379,10 @@ defmodule PicselloWeb.OnboardingLive.Index do
           end)
 
         socket
-        |> assign(
-          should_select_job_types?: if(Enum.empty?(enabled_job_types), do: true, else: false)
-        )
+        |> assign(should_select_job_types?: Enum.empty?(enabled_job_types))
 
       %{} ->
-        socket |> assign(should_select_job_types?: if(step == 3, do: true, else: false))
+        socket |> assign(should_select_job_types?: step == 3)
     end
   end
 

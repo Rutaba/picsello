@@ -911,17 +911,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket |> assign_changeset(params, :validate) |> noreply()
   end
 
-  # @impl true
-  # def handle_event(
-  #       "toggle-public-profile-option",
-  #       _,
-  #       %{assigns: %{show_on_public_profile: show_on_public_profile}} = socket
-  #     ) do
-  #   socket
-  #   |> assign(:show_on_public_profile, !show_on_public_profile)
-  #   |> noreply()
-  # end
-
   @impl true
   def handle_event(
         "submit",

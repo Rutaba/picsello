@@ -9,11 +9,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
       insert(:user,
         organization: %{
           name: "Mary Jane Photography",
-          slug: "mary-jane-photos",
-          profile: %{
-            color: Picsello.Profiles.Profile.colors() |> hd,
-            job_types: ~w(portrait event)
-          }
+          slug: "mary-jane-photos"
         }
       )
       |> onboard!
@@ -32,7 +28,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
       description: "gold desc",
       download_count: 2,
       user: user,
-      job_type: "portrait",
+      job_type: "wedding",
       base_price: ~M[3000]USD
     )
 
@@ -55,7 +51,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
       )
 
     [
-      photographer: user,
+      photographer: user |> Repo.preload(organization: :organization_job_types),
       profile_url: Routes.profile_path(PicselloWeb.Endpoint, :index, user.organization.slug),
       booking_package_id: template.id
     ]
@@ -75,9 +71,9 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> visit(profile_url)
     |> assert_text("Mary Jane Photography")
     |> assert_text("SPECIALIZING IN:")
-    |> assert_has(testid("job-type", text: "Portrait"))
+    |> assert_has(testid("job-type", text: "Wedding"))
     |> assert_has(testid("job-type", text: "Event"))
-    |> assert_has(radio_button("Portrait", visible: false))
+    |> assert_has(radio_button("Wedding", visible: false))
     |> assert_has(radio_button("Event", visible: false))
     |> assert_has(link("See our full portfolio"))
   end
@@ -142,7 +138,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> fill_in(text_field("Your name"), with: "Chad Smith")
     |> fill_in(text_field("Your email"), with: "chad@example.com")
     |> fill_in(text_field("Your phone number"), with: "987 123 4567")
-    |> click(css("label", text: "Portrait"))
+    |> click(css("label", text: "Wedding"))
     |> fill_in(text_field("Your message"), with: "May you take some pictures of our family?")
     |> wait_for_enabled_submit_button()
     |> click(button("Submit"))
@@ -150,7 +146,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> assert_text("We'll contact you soon!")
 
     assert %{
-             type: "portrait",
+             type: "wedding",
              client: %{
                name: "Chad Smith",
                email: "chad@example.com",
@@ -163,7 +159,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
                      name: Chad Smith
                     email: chad@example.com
                     phone: (987) 123-4567
-                 job type: Portrait
+                 job type: Wedding
                   message: May you take some pictures of our family?
                  """
                }
@@ -211,6 +207,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
   feature "checks pricing", %{session: session, profile_url: profile_url} do
     session
     |> visit(profile_url)
+    |> scroll_into_view(testid("package-detail"))
     |> assert_inner_text(testid("package-detail", count: 2, at: 0), "Silver$20 silver desc")
     |> assert_inner_text(testid("package-detail", count: 2, at: 1), "Gold$30gold desc")
   end

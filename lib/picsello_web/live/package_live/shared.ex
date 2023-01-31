@@ -90,7 +90,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       if org_job_type.job_type != "other",
         do:
           params
-          |> Map.put(:heading1, "Enable this for my business")
+          |> Map.put(:heading, "Enable this for my business")
           |> Map.put(
             :subtitle,
             "I would like to be able to select this when creating leads, jobs, and galleries"

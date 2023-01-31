@@ -222,9 +222,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
               </div>
               <%= unless Enum.empty? @templates do %>
                 <div class="font-bold md:grid grid-cols-6 mt-2 hidden md:inline-block">
-                  <div class="col-span-2 pl-2">Package Details</div>
-                  <div class="col-span-2 pl-2">Pricing</div>
-                  <div class="col-span-2 pl-2">Actions</div>
+                  <%= for title <- ["Package Details", "Pricing", "Actions"] do %>
+                    <div class="col-span-2 pl-2"><%= title %></div>
+                  <% end %>
                 </div>
 
                 <hr class="my-8 border-blue-planning-300 border-2 mt-4 mb-1 hidden md:block" />
@@ -514,7 +514,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         if(package.show_on_public_profile, do: "Hide", else: "Show") <> " on your Public Profile?",
       payload: %{
         package_id: package_id,
-        is_hide: if(package.show_on_public_profile, do: true, else: false)
+        is_hidden: if(package.show_on_public_profile, do: true, else: false)
       }
     })
     |> noreply()
@@ -537,7 +537,8 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "assign_templates_by_job_type",
         %{"job-type" => job_type},
-        %{assigns: %{current_user: %{organization: %{id: org_id}}}} = socket
+        %{assigns: %{package_name: package_name, current_user: %{organization: %{id: org_id}}}} =
+          socket
       ) do
     socket
     |> assign(package_name: job_type)
@@ -546,8 +547,8 @@ defmodule PicselloWeb.Live.PackageTemplates do
       socket
       |> assign(
         :show_on_public_profile,
-        if(socket.assigns.package_name not in ["All", "Archived"],
-          do: Jobs.get_job_type(socket.assigns.package_name, org_id).show_on_profile
+        if(package_name not in ["All", "Archived"],
+          do: Jobs.get_job_type(package_name, org_id).show_on_profile
         )
       )
     end)
@@ -729,13 +730,16 @@ defmodule PicselloWeb.Live.PackageTemplates do
   @impl true
   def handle_info(
         {:confirm_event, "toggle_package_visibility",
-         %{package_id: package_id, is_hide: is_hide}},
+         %{package_id: package_id, is_hidden: is_hidden}},
         %{assigns: %{package_name: package_name}} = socket
       ) do
     with %Package{} = package <- Repo.get(Package, package_id),
          {:ok, _package} <- package |> Package.edit_visibility_changeset() |> Repo.update() do
       socket
-      |> put_flash(:success, "The package has been " <> if(is_hide, do: "hidden", else: "shown"))
+      |> put_flash(
+        :success,
+        "The package has been " <> if(is_hidden, do: "hidden", else: "shown")
+      )
       |> close_modal()
     else
       _ ->
