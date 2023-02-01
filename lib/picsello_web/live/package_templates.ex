@@ -345,7 +345,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   @impl true
   def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
-    socket |> assign(:is_mobile, !is_mobile) |> noreply
+    socket
+    |> assign(:is_mobile, !is_mobile)
+    |> assign_new(:pagination, fn -> PaginationLive.changeset() |> Changeset.apply_changes() end)
+    |> assign_new(:pagination_changeset, fn -> PaginationLive.changeset() end)
+    |> default_assigns()
+    |> noreply
   end
 
   @impl true
