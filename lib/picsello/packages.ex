@@ -393,53 +393,12 @@ defmodule Picsello.Packages do
         } = user
       )
       when is_integer(years_experience) and is_atom(schedule) and is_binary(state) do
-    full_time = schedule == :full_time
-
-    %{organization: %{id: organization_id, organization_job_types: job_types}} =
-      Repo.preload(user, organization: :organization_job_types)
-
+    %{organization: %{organization_job_types: job_types}} = user = Repo.preload(user, organization: :organization_job_types)
     enabled_job_types = Profiles.enabled_job_types(job_types)
-    default_each_price = Download.default_each_price()
-
-    min_years_query =
-      from(base in BasePrice,
-        select: max(base.min_years_experience),
-        where: base.min_years_experience <= ^years_experience
-      )
-
-    nearest = 500
-    zero_price = Money.new(0)
 
     templates_query =
-      from(base in BasePrice,
-        where:
-          base.full_time == ^full_time and base.job_type in ^enabled_job_types and
-            base.min_years_experience in subquery(min_years_query),
-        inner_lateral_join:
-          name in ([base.tier, base.job_type] |> array_to_string(" ") |> initcap()),
-        on: true,
-        join: adjustment in CostOfLivingAdjustment,
-        on: adjustment.state == ^state,
-        select: %{
-          base_price:
-            type(
-              nearest(adjustment.multiplier * base.base_price, ^nearest),
-              base.base_price
-            ),
-          description: coalesce(base.description, name.initcap),
-          download_count: base.download_count,
-          download_each_price: type(^default_each_price, base.base_price),
-          inserted_at: now(),
-          job_type: base.job_type,
-          buy_all: base.buy_all,
-          print_credits: type(^zero_price, base.print_credits),
-          name: name.initcap,
-          organization_id: type(^organization_id, base.id),
-          shoot_count: base.shoot_count,
-          turnaround_weeks: base.turnaround_weeks,
-          updated_at: now()
-        }
-      )
+      from q in templates_query(user),
+        where: q.job_type in ^enabled_job_types
 
     {_count, templates} = Repo.insert_all(Package, templates_query, returning: true)
 
@@ -447,6 +406,69 @@ defmodule Picsello.Packages do
   end
 
   def create_initial(_user), do: []
+
+  def create_initial(
+        %User{
+          onboarding: %{photographer_years: years_experience, schedule: schedule, state: state}
+        } = user,
+        job_type
+      )
+      when is_integer(years_experience) and is_atom(schedule) and is_binary(state) do
+    templates_query =
+      from q in templates_query(user),
+        where: q.job_type == ^job_type
+
+    {_count, templates} = Repo.insert_all(Package, templates_query, returning: true)
+
+    templates
+  end
+
+  defp minimum_years_query(years_experience),
+    do:
+      from(base in BasePrice,
+        select: max(base.min_years_experience),
+        where: base.min_years_experience <= ^years_experience
+      )
+
+  defp templates_query(%User{
+         onboarding: %{photographer_years: years_experience, schedule: schedule, state: state},
+         organization_id: organization_id
+       }) do
+    full_time = schedule == :full_time
+    nearest = 500
+    zero_price = Money.new(0)
+    default_each_price = Download.default_each_price()
+
+    from(base in BasePrice,
+      where:
+        base.full_time == ^full_time and
+          base.min_years_experience in subquery(minimum_years_query(years_experience)),
+      inner_lateral_join:
+        name in ([base.tier, base.job_type] |> array_to_string(" ") |> initcap()),
+      on: true,
+      join: adjustment in CostOfLivingAdjustment,
+      on: adjustment.state == ^state,
+      select: %{
+        base_price:
+          type(
+            nearest(adjustment.multiplier * base.base_price, ^nearest),
+            base.base_price
+          ),
+        description: coalesce(base.description, name.initcap),
+        download_count: base.download_count,
+        download_each_price: type(^default_each_price, base.base_price),
+        inserted_at: now(),
+        job_type: base.job_type,
+        buy_all: base.buy_all,
+        print_credits: type(^zero_price, base.print_credits),
+        name: name.initcap,
+        organization_id: type(^organization_id, base.id),
+        shoot_count: base.shoot_count,
+        turnaround_weeks: base.turnaround_weeks,
+        updated_at: now()
+      }
+    )
+  end
 
   defp maybe_update_questionnaire_package_id_multi(
          multi,
@@ -496,7 +518,14 @@ defmodule Picsello.Packages do
     from(p in Package,
       where: p.organization_id == ^organization_id and p.job_type == ^job_type
     )
-    |> Repo.update_all(set: [archived_at: nil])
+    |> Repo.update_all(set: [archived_at: nil, show_on_public_profile: false])
+  end
+
+  def packages_exist?(job_type, organization_id) do
+    from(p in Package,
+      where: p.organization_id == ^organization_id and p.job_type == ^job_type
+    )
+    |> Repo.exists?()
   end
 
   def unarchive_package(package_id) do

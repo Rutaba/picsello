@@ -63,7 +63,7 @@ defmodule PicselloWeb.PackageLive.Shared do
   def handle_event(
         "edit-job-type",
         %{"job-type-id" => id},
-        %{assigns: %{current_user: %{organization: organization}}} = socket
+        %{assigns: %{organization: organization}} = socket
       ) do
     org_job_type =
       organization.organization_job_types
@@ -72,11 +72,11 @@ defmodule PicselloWeb.PackageLive.Shared do
     changeset = OrganizationJobType.update_changeset(org_job_type, %{})
 
     params = %{
-      checkbox_event1: "visibility_for_business",
+      checkbox_event: "visibility_for_business",
       checkbox_event2: "visibility_for_profile",
       checked: org_job_type.show_on_business?,
       checked2: org_job_type.show_on_profile?,
-      confirm_event: "save",
+      confirm_event: "next",
       confirm_label: "Save",
       confirm_class: "btn-primary",
       icon: org_job_type.job_type,

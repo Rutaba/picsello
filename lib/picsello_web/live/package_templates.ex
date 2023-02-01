@@ -3,8 +3,8 @@ defmodule PicselloWeb.Live.PackageTemplates do
   use PicselloWeb, :live_view
 
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
-  import PicselloWeb.PackageLive.Shared, only: [package_row: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
+  import PicselloWeb.PackageLive.Shared, only: [package_row: 1, current: 1]
 
   alias PicselloWeb.PaginationLive
   alias Ecto.Changeset
@@ -583,8 +583,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> noreply()
   end
 
+  @impl true
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.PackageLive.Shared
+
+  @impl true
   def handle_info(
-        {:confirm_event, "save", %{changeset: changeset},
+        {:confirm_event, "next", %{changeset: changeset},
          %{"check" => %{"check_enabled" => check_enabled} = params}},
         %{
           assigns: %{
@@ -601,31 +605,30 @@ defmodule PicselloWeb.Live.PackageTemplates do
           :show_on_profile?,
           String.to_atom(Map.get(params, "check_profile", "false"))
         )
+      job_type = changeset |> current() |> Map.get(:job_type)
+      packages_exist? = Packages.packages_exist?(job_type, organization_id)
 
-      with {:ok, org_job_type} <- Repo.update(changeset),
-           {_row_count, nil} <-
-             Packages.unarchive_packages_for_job_type(org_job_type.job_type, organization_id) do
-        message =
-          "The type " <>
-            cond do
-              Map.has_key?(changeset.changes, :show_on_business?) ->
-                "has been enabled alongwith its associated packages on "
+      params = %{
+        confirm_event: "save",
+        close_event: "no-packages",
+        confirm_label:
+          "Yes, #{if packages_exist?, do: "unarchive old", else: "create default"} packages",
+        close_label: "No, I will make #{if packages_exist?, do: "new packages", else: "my own"}",
+        confirm_class: "btn-primary",
+        icon: job_type,
+        heading: if(packages_exist?, do: "DO YOU REMEMBER?", else: "DID YOU KNOW?"),
+        subtitle:
+          if(packages_exist?,
+            do:
+              "You created some packages earlier when this type was enabled, You could unarchive those packages now and use them as a starting point or just take a look. You can always archive them again at any time and don't worry, they won't be displayed on your public profile unless you set them to be displayed!",
+            else:
+              "We have default packages that are built using our pricing calculator which references your location, time in the industry, and whether your are part-time or full-time. You can always archive them or use as a starting point!"),
+        title: "#{if packages_exist?, do: "Unarchive existing", else: "Create default"} packages?",
+        payload: %{changeset: changeset}
+      }
 
-              org_job_type.show_on_profile? ->
-                "will now be displayed on "
-
-              true ->
-                "has been hidden from "
-            end <>
-            "your public profile"
-
-        socket
-        |> default_assigns()
-        |> close_modal()
-        |> put_flash(:success, message)
-      else
-        _ -> socket
-      end
+      socket
+      |> PicselloWeb.PackageLive.ConfirmationComponent.open(params)
     else
       socket
     end
@@ -635,11 +638,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
         do: Jobs.get_job_type(package_name, organization_id).show_on_profile
       )
     )
+
     |> noreply()
   end
-
-  @impl true
-  defdelegate handle_event(name, params, socket), to: PicselloWeb.PackageLive.Shared
 
   def handle_info(
         {:confirm_event, "save", %{changeset: changeset},
@@ -654,7 +655,6 @@ defmodule PicselloWeb.Live.PackageTemplates do
       {:ok, org_job_type} ->
         socket
         |> default_assigns()
-        |> close_modal()
         |> put_flash(
           :success,
           "The type #{if org_job_type.show_on_profile?, do: "will now be displayed on", else: "has been hidden from"} your public profile"
@@ -662,10 +662,49 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
       {:error, _} ->
         socket
+        |> put_flash(:error, "The type could not be made public, please try again.")
     end
+    |> close_modal()
     |> noreply()
   end
 
+  @impl true
+  def handle_info(
+        {:confirm_event, "save", %{changeset: changeset}, _},
+        socket
+      ) do
+    case Repo.update(changeset) do
+      {:ok, org_job_type} ->
+        create_or_unarchive_packages(org_job_type, socket)
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "The type has been enabled alongwith its associated packages")
+    end
+    |> close_modal()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:close_event, "no-packages", %{changeset: changeset}, _},
+        socket
+      ) do
+    case Repo.update(changeset) do
+      {:ok, _org_job_type} ->
+        socket
+        |> default_assigns()
+        |> put_flash(:success, "The type has been enabled without any packages")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "The type could not be enabled, please try again.")
+      end
+    |> close_modal()
+    |> noreply()
+  end
+
+  @impl true
   def handle_info(
         {:confirm_event, "visibility_for_business", %{job_type_id: job_type_id} = params, _},
         %{
@@ -949,6 +988,34 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> Map.from_struct()
     |> Map.delete([:__struct__, :__meta__, :id])
     |> Map.merge(%{inserted_at: date, updated_at: date})
+  end
+
+  defp create_or_unarchive_packages(
+         %{job_type: job_type},
+         %{
+           assigns: %{
+             current_user: %{organization_id: organization_id} = user
+           }
+         } = socket
+       ) do
+    if Packages.packages_exist?(job_type, organization_id) do
+      case Packages.unarchive_packages_for_job_type(job_type, organization_id) |> IO.inspect() do
+        {_row_count, nil} ->
+          socket
+          |> default_assigns()
+          |> put_flash(:success, "The type has been enabled alongwith its associated packages")
+
+        _ ->
+          socket
+          |> put_flash(:error, "Failed to enable the job type")
+      end
+    else
+      Packages.create_initial(user, job_type)
+
+      socket
+      |> default_assigns()
+      |> put_flash(:success, "The type has been enabled alongwith its default packages")
+    end
   end
 
   defdelegate job_types(), to: Picsello.Profiles

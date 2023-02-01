@@ -7,7 +7,7 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
     close_label: "Close",
     close_class: "btn-secondary",
     confirm_event: nil,
-    checkbox_event1: nil,
+    checkbox_event: nil,
     checked: nil,
     checked2: nil,
     close_event: nil,
@@ -55,16 +55,23 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
     ~H"""
       <.form let={f} for={:check} phx-submit={@confirm_event} phx-target={@myself}>
         <%= if @subtitle && @heading do %>
-          <div class="flex flex-col pt-4 items-start">
-            <div class="flex flex-row items-center">
-              <%= checkbox(f, :check_enabled, class: "w-5 h-5 mr-2 checkbox", checked: @checked, phx_click: @checkbox_event1, phx_target: @myself) %>
-              <h1 class="font-bold ml-1">
-                <%= @heading %>
-              </h1>
+          <%= if @checkbox_event do %>
+            <div class="flex flex-col pt-4 items-start">
+              <div class="flex flex-row items-center">
+                <%= checkbox(f, :check_enabled, class: "w-5 h-5 mr-2 checkbox", checked: @checked, phx_click: @checkbox_event, phx_target: @myself) %>
+                <h1 class="font-bold ml-1"><%= @heading %></h1>
+              </div>
+              <p class="whitespace-pre-wrap"><%= @subtitle %></p>
             </div>
-            <p class="whitespace-pre-wrap"><%= @subtitle %></p>
-          </div>
-          <hr class="my-4" />
+            <hr class="my-4" />
+          <% else %>
+            <div class="flex flex-col pt-4 items-start bg-gray-100 p-1 mt-2 rounded">
+              <div class="flex flex-row items-center">
+                <p class="rounded-full bg-blue-planning-300 text-white p-2"><%= @heading %></p>
+              </div>
+              <p class="text-gray-500 whitespace-pre-wrap mt-1"><%= @subtitle %></p>
+            </div>
+          <% end %>
         <% else %>
           <p class="pt-4 whitespace-pre-wrap"><%= @subtitle %></p>
         <% end %>
@@ -105,10 +112,10 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
   @impl true
   def handle_event(
         "close_event",
-        %{},
-        %{assigns: %{parent_pid: parent_pid, close_event: close_event}} = socket
+        params,
+        %{assigns: %{parent_pid: parent_pid, close_event: close_event, payload: payload}} = socket
       ) do
-    send(parent_pid, {:close_event, close_event})
+    send(parent_pid, {:close_event, close_event, payload, params})
 
     socket |> noreply()
   end
@@ -156,7 +163,7 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
           optional(:close_class) => binary,
           optional(:confirm_event) => any,
           optional(:close_event) => any,
-          optional(:checkbox_event1) => binary,
+          optional(:checkbox_event) => binary,
           optional(:checkbox_event2) => binary,
           optional(:checked) => boolean,
           optional(:checked2) => boolean,
