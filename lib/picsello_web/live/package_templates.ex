@@ -466,11 +466,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
         :job,
         :contract,
         :package_template,
-        :package_payment_schedules
+        :package_payment_schedules,
+        :questionnaire_template
       ])
 
     case create_duplicate_package(package) |> Repo.insert() do
-      {:ok, _package} ->
+      {:ok, _duplicated_package} ->
         socket
         |> put_flash(:success, "The package: #{package.name} has been duplicated")
         |> close_modal()
@@ -944,14 +945,14 @@ defmodule PicselloWeb.Live.PackageTemplates do
   end
 
   defp create_duplicate_package(package) do
-    current_date = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    timestamp = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
     package_payment_schedules =
       if Enum.any?(package.package_payment_schedules),
         do:
           Enum.map(package.package_payment_schedules, fn payment_schedule ->
             payment_schedule
-            |> create_attrs_from_struct(current_date)
+            |> create_attrs_from_struct(timestamp)
             |> then(fn params ->
               PackagePaymentSchedule.changeset_for_duplication(%PackagePaymentSchedule{}, params)
             end)
@@ -959,28 +960,25 @@ defmodule PicselloWeb.Live.PackageTemplates do
           end),
         else: []
 
-    contract =
       if is_map(package.contract) do
-        package.contract
-        |> create_attrs_from_struct(current_date)
-        |> Contract.changeset()
-        |> Ecto.Changeset.apply_changes()
+        contract =
+          package.contract
+          |> create_attrs_from_struct(timestamp)
+          |> Contract.changeset()
+          |> Ecto.Changeset.apply_changes()
+
+        package
+        |> Map.merge(%{
+          id: nil,
+          name: "#{package.name} - Duplicate",
+          contract: contract,
+          package_payment_schedules: package_payment_schedules,
+          inserted_at: timestamp,
+          updated_at: timestamp
+        })
       else
         %{}
-        |> Contract.changeset()
-        |> Ecto.Changeset.apply_changes()
       end
-
-    package
-    |> Map.merge(%{
-      id: nil,
-      name: "#{package.name} - Duplicate",
-      contract: contract,
-      package_payment_schedules: package_payment_schedules,
-      inserted_at: current_date,
-      updated_at: current_date
-    })
-    |> Repo.preload([:questionnaire_template])
   end
 
   defp create_attrs_from_struct(struct, date) do

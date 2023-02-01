@@ -345,6 +345,14 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
                job_type: "wedding"
              }
            } = package.contract
+
+    session
+    |> click(link("Package Templates"))
+    |> click(css("#menu-btn-#{package.id}"))
+    |> click(button("Duplicate"))
+    |> assert_flash(:success, text: "The package: #{package.name} has been duplicated")
+
+    assert Repo.all(Package) |> Enum.count() == 2
   end
 
   feature "Menu-btn archives/unarchives, duplicates, hide/shows the package and When no template exists, then show 'Missing package state'",
@@ -407,14 +415,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     package = Repo.get!(Package, package.id)
 
     assert package.show_on_public_profile == false
-
-    session
-    |> click(link("Package Templates"))
-    |> click(css("#menu-btn-#{package.id}"))
-    |> click(button("Duplicate"))
-    |> assert_flash(:success, text: "The package: #{package.name} has been duplicated")
-
-    assert Repo.all(Package) |> Enum.count() == 3
 
     session
     |> click(link("Package Templates"))
