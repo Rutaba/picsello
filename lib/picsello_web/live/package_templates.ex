@@ -684,7 +684,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         close_label: "Cancel",
         confirm_event: "disable_job_type_for_business",
         confirm_label: "Yes, disable",
-        icon: "warning-orange",
+        icon: org_job_type.job_type,
         subtitle:
           "You are disabling this photography type for your business. You will not be able to select it when creating a job, gallery, or lead. We will also hide it on your Public Profile.",
         subtitle2:
