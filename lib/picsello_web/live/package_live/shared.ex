@@ -223,9 +223,11 @@ defmodule PicselloWeb.PackageLive.Shared do
           <div class="col-span-2">
             <div class="flex items-center">
                 <div class="hidden md:block">
-                  <.icon_button {testid("edit-package-#{@package.id}")} class="ml-5 border border-blue-planning-300 bg-white text-black font-normal" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
-                    Edit package
-                  </.icon_button>
+                  <%= if !@package.archived_at do %>
+                    <.icon_button {testid("edit-package-#{@package.id}")} class="ml-5 border border-blue-planning-300 bg-white text-black font-normal" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
+                      Edit package
+                    </.icon_button>
+                  <% end %>
                 </div>
                 <div class="ml-16 md:ml-2" id={"menu-btn-#{@package.id}"} phx-update={@update_mode} data-offset="0" phx-hook="Select">
                     <button title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
@@ -264,9 +266,11 @@ defmodule PicselloWeb.PackageLive.Shared do
       </div>
       <hr class="my-4 block md:hidden" />
       <div class="flex items-center block md:hidden">
-        <.icon_button {testid("edit-package-#{@package.id}")} class="border border-blue-planning-300 bg-white text-black font-normal" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
-          Edit package
-        </.icon_button>
+        <%= if !@package.archived_at do %>
+          <.icon_button {testid("edit-package-#{@package.id}")} class="border border-blue-planning-300 bg-white text-black font-normal" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
+            Edit package
+          </.icon_button>
+        <% end %>
       </div>
       <hr class="my-4 hidden md:block" />
     </div>
