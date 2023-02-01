@@ -83,7 +83,9 @@ defmodule PicselloWeb.Live.Profile do
         <.main_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :main_image)} edit={@edit} uploads={@uploads} image={@organization.profile.main_image} />
         <h1 class="mt-12 text-2xl text-center lg:text-3xl md:text-left">About <%= @organization.name %>.</h1>
 
-        <.job_types_details edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
+        <%= if Enum.any?(@job_types) do %>
+          <.job_types_details edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
+        <% end %>
 
         <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
@@ -127,25 +129,28 @@ defmodule PicselloWeb.Live.Profile do
               <% end %>
             </div>
           </section>
+          <hr class="mt-20" />
         <% end %>
 
-        <h3 class="mt-20 uppercase font-bold">MORE ABOUT MY OFFERINGS:</h3>
-        <.rich_text_content edit={@edit} field_name="job_types_description" field_value={@job_types_description} />
+        <%= if @job_types_description do %>
+          <h3 class="mt-20 uppercase font-bold">MORE ABOUT MY OFFERINGS:</h3>
+          <.rich_text_content edit={@edit} field_name="job_types_description" field_value={@job_types_description} />
+          <hr class="mt-20" />
+        <% end %>
 
-        <hr class="mt-12" />
-
-        <h3 class="mt-20 uppercase font-bold">PRICING & SERVICES:</h3>
-        <%= for {job_type, packages} <- @job_type_packages do %>
-          <h2 class="mt-10 text-2xl text-center" id={to_string(job_type)}><%= dyn_gettext job_type %></h2>
-          <%= for package <- packages do %>
-            <.package_detail name={package.name} price={Packages.price(package)} description={package.description} download_count={package.download_count} />
+        <%= if Enum.any?(@job_type_packages) do %>
+          <h3 class="mt-20 uppercase font-bold">PRICING & SERVICES:</h3>
+          <%= for {job_type, packages} <- @job_type_packages do %>
+            <h2 class="mt-10 text-2xl text-center" id={to_string(job_type)}><%= dyn_gettext job_type %></h2>
+            <%= for package <- packages do %>
+              <.package_detail name={package.name} price={Packages.price(package)} description={package.description} download_count={package.download_count} />
+            <% end %>
+            <div class="flex justify-center my-4">
+              <.book_now_button job_type={job_type} />
+            </div>
           <% end %>
-          <div class="flex justify-center my-4">
-            <.book_now_button job_type={job_type} />
-          </div>
+          <hr class="mt-20" />
         <% end %>
-
-        <hr class="my-20" />
 
         <%= live_component PicselloWeb.Live.Profile.ClientFormComponent, id: "client-component", organization: @organization, color: @color, job_types: @job_types, job_type: @job_type %>
       </div>

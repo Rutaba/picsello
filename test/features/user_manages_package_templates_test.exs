@@ -374,7 +374,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> scroll_to_bottom()
     |> click(css("#menu-btn-#{package.id}"))
     |> click(button("archive-unarchive-btn-#{package.id}"))
-    |> assert_text("Are you sure you want to un-archive this package template?")
+    |> assert_text("Are you sure you want to Un-archive this package template?")
     |> click(button("Yes, unarchive"))
     |> assert_flash(:success, text: "The package has been un-archived")
 
