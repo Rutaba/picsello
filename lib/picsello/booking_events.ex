@@ -28,7 +28,6 @@ defmodule Picsello.BookingEvents do
   end
 
   def upsert_booking_event(changeset) do
-    IO.inspect changeset
     changeset |> Repo.insert_or_update()
   end
 
@@ -162,7 +161,7 @@ defmodule Picsello.BookingEvents do
     %{package_template: %{organization: %{user: photographer}} = package_template} =
       booking_event
       |> Repo.preload(package_template: [organization: :user])
-    
+
     starts_at = shoot_start_at(date, time, photographer.time_zone)
 
     Ecto.Multi.new()
@@ -178,30 +177,33 @@ defmodule Picsello.BookingEvents do
       |> Ecto.Changeset.put_change(:booking_event_id, booking_event.id)
     end)
     |> Ecto.Multi.merge(fn %{job: job} ->
-      package_payment_schedules = package_template 
-      |> Repo.preload(:package_payment_schedules, force: true)
-      |> Map.get(:package_payment_schedules)
+      package_payment_schedules =
+        package_template
+        |> Repo.preload(:package_payment_schedules, force: true)
+        |> Map.get(:package_payment_schedules)
+
+      shoot_date = starts_at |> DateTime.shift_zone!("Etc/UTC")
 
       {payment_schedules, total_price} =
-      package_payment_schedules
-      |> Enum.reduce({[], Money.new(0)}, fn schedule, {schedules, total_price} ->
-        {
-          schedule 
-          |> Map.from_struct() 
-          |> Map.drop([:package_payment_preset_id])
-          |> Map.put(:shoot_date, starts_at)
-          |> List.wrap()
-          |> Enum.concat(schedules),
-          Money.add(total_price, schedule.price)
-        }
-      end)
+        package_payment_schedules
+        |> Enum.reduce({[], Money.new(0)}, fn schedule, {schedules, total_price} ->
+          {
+            schedule
+            |> Map.from_struct()
+            |> Map.drop([:package_payment_preset_id])
+            |> Map.put(:shoot_date, shoot_date)
+            |> Map.put(:schedule_date, get_schedule_date(schedule, shoot_date))
+            |> List.wrap()
+            |> Enum.concat(schedules),
+            Money.add(total_price, schedule.price)
+          }
+        end)
 
       opts = %{
         payment_schedules: payment_schedules,
         action: :insert,
-        total_price: total_price 
+        total_price: total_price
       }
-      IO.inspect opts, label: "opts"
 
       package_template
       |> Picsello.Packages.changeset_from_template()
@@ -221,20 +223,55 @@ defmodule Picsello.BookingEvents do
     |> Ecto.Multi.insert(:proposal, fn changes ->
       Picsello.BookingProposal.create_changeset(%{job_id: changes.job.id})
     end)
-    |> Ecto.Multi.insert(:payment_schedule, fn changes ->
-      Picsello.PaymentSchedule.create_changeset(%{
-        job_id: changes.job.id,
-        price: Picsello.Package.price(changes.package),
-        due_at: DateTime.utc_now(),
-        description: "100% retainer"
-      })
-    end)
     |> Oban.insert(:oban_job, fn changes ->
       # multiply booking reservation by 2 to account for time spent on Stripe checkout
       expiration = Application.get_env(:picsello, :booking_reservation_seconds) * 2
       Picsello.Workers.ExpireBooking.new(%{id: changes.job.id}, schedule_in: expiration)
     end)
     |> Repo.transaction()
+  end
+
+  defp get_schedule_date(schedule, shoot_date) do
+    case schedule.interval do
+      true ->
+        transform_text_to_date(schedule.due_interval, shoot_date)
+
+      _ ->
+        transform_text_to_date(schedule, shoot_date)
+    end
+  end
+
+  defp transform_text_to_date(%{} = schedule, shoot_date) do
+    due_at = schedule.due_at
+
+    if due_at || schedule.shoot_date do
+      if due_at, do: due_at |> Timex.to_datetime(), else: shoot_date
+    else
+      last_shoot_date = shoot_date
+      count_interval = schedule.count_interval
+      count_interval = if count_interval, do: count_interval |> String.to_integer(), else: 1
+      time_interval = schedule.time_interval
+
+      time_interval =
+        if(time_interval, do: time_interval <> "s", else: "Days")
+        |> String.downcase()
+        |> String.to_atom()
+
+      if(schedule.shoot_interval == "Before 1st Shoot",
+        do: Timex.shift(shoot_date, [{time_interval, -count_interval}]),
+        else: Timex.shift(last_shoot_date, [{time_interval, -count_interval}])
+      )
+    end
+  end
+
+  defp transform_text_to_date("" <> due_interval, shoot_date) do
+    cond do
+      String.contains?(due_interval, "6 Months Before") -> Timex.shift(shoot_date, months: -6)
+      String.contains?(due_interval, "1 Month Before") -> Timex.shift(shoot_date, months: -1)
+      String.contains?(due_interval, "Week Before") -> Timex.shift(shoot_date, days: -7)
+      String.contains?(due_interval, "Day Before") -> Timex.shift(shoot_date, days: -1)
+      true -> shoot_date
+    end
   end
 
   def disable_booking_event(event_id, organization_id) do

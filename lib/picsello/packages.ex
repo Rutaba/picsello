@@ -242,7 +242,6 @@ defmodule Picsello.Packages do
     do: id |> Package.templates_for_organization_id() |> Repo.all()
 
   def insert_package_and_update_job(changeset, job, opts \\ %{}) do
-    IO.inspect "reached insert_package_and_update_job"
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:package, changeset)
     |> maybe_update_questionnaire_package_id_multi(changeset, opts)
@@ -265,7 +264,6 @@ defmodule Picsello.Packages do
           else: false
 
       if Map.get(opts, :action) == :insert && shoot_date do
-        IO.inspect "executed insert_job_payment_schedules--------"
         PackagePayments.insert_job_payment_schedules(Map.put(opts, :job_id, job.id))
       else
         Ecto.Multi.new()
