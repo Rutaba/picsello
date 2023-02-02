@@ -348,7 +348,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
     session
     |> click(link("Package Templates"))
-    |> click(css("#menu-btn-#{package.id}"))
+    |> click(testid("menu-btn-#{package.id}"))
     |> click(button("Duplicate"))
     |> assert_flash(:success, text: "The package: #{package.name} has been duplicated")
 
@@ -372,7 +372,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(css("#menu-btn-#{package.id}"))
+    |> click(testid("menu-btn-#{package.id}"))
     |> click(button("Archive"))
     |> assert_text("Are you sure you want to archive this package template?")
     |> click(button("Yes, archive"))
@@ -380,7 +380,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(css(".archived-anchor-click"))
     |> assert_text("Archived Packages")
     |> scroll_to_bottom()
-    |> click(css("#menu-btn-#{package.id}"))
+    |> click(testid("menu-btn-#{package.id}"))
     |> click(button("archive-unarchive-btn-#{package.id}"))
     |> assert_text("Are you sure you want to Un-archive this package template?")
     |> click(button("Yes, unarchive"))
@@ -393,8 +393,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> scroll_to_top()
     |> click(link("Package Templates"))
-    |> scroll_into_view(css("#menu-btn-#{package.id}"))
-    |> click(css("#menu-btn-#{package.id}"))
+    |> scroll_into_view(testid("menu-btn-#{package.id}"))
+    |> click(testid("menu-btn-#{package.id}"))
     |> click(button("Show on public profile"))
     |> assert_text("Show on your Public Profile?")
     |> click(button("Great! Show on my Public Profile"))
@@ -406,7 +406,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
     session
     |> click(link("Package Templates"))
-    |> click(css("#menu-btn-#{package.id}"))
+    |> click(testid("menu-btn-#{package.id}"))
     |> click(button("Hide on public profile"))
     |> assert_text("Hide on your Public Profile?")
     |> click(button("Hide on my Public Profile"))
