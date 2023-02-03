@@ -388,7 +388,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   @impl true
   def handle_event(
         "page",
-        %{"pagination" => %{"limit" => limit}},
+        %{"pagination_live" => %{"limit" => limit}},
         %{assigns: %{pagination: pagination, package_name: package_name}} = socket
       ) do
     limit = to_integer(limit)
