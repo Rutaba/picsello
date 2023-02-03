@@ -1,4 +1,5 @@
 defmodule PicselloWeb.JobLive.GalleryTypeComponent do
+  @moduledoc false
   use PicselloWeb, :live_component
 
   import PicselloWeb.LiveModal, only: [close_x: 1]

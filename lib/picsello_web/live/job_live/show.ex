@@ -6,8 +6,6 @@ defmodule PicselloWeb.JobLive.Show do
   alias Picsello.{Galleries, Galleries.Gallery}
   alias PicselloWeb.JobLive.GalleryTypeComponent
 
-  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1]
-
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
@@ -323,17 +321,20 @@ defmodule PicselloWeb.JobLive.Show do
   end
 
   @impl true
-  def handle_info({:gallery_type, opts}, %{assigns: %{job: job, current_user: %{organization_id: organization_id}}} = socket) do
+  def handle_info(
+        {:gallery_type, opts},
+        %{assigns: %{job: job, current_user: %{organization_id: organization_id}}} = socket
+      ) do
     {type, parent_id} = split(opts)
 
     {:ok, gallery} =
       Galleries.create_gallery(%{
         job_id: job.id,
         type: type,
-        expired_at: expired_at(organization_id),
         parent_id: parent_id,
         client_link_hash: UUID.uuid4(),
         name: Job.name(job) <> " #{Enum.count(job.galleries) + 1}",
+        expired_at: PicselloWeb.GalleryLive.Shared.expired_at(organization_id),
         albums: Galleries.album_params_for_new(type)
       })
 
