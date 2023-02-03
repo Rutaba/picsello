@@ -12,6 +12,16 @@ defmodule Picsello.Onboardings do
 
     use Ecto.Schema
 
+    @online_source_options [
+      "Facebook Group",
+      "Facebook Ad",
+      "Instagram",
+      "Search Engine (Google, Bing, etc)",
+      "YouTube",
+      "Quora/Reddit/Pinterest",
+      "Referral"
+    ]
+
     defmodule IntroState do
       @moduledoc "Container for user specific introjs state. Embedded in onboarding embed."
       use Ecto.Schema
@@ -44,6 +54,9 @@ defmodule Picsello.Onboardings do
       field(:schedule, Ecto.Enum, values: [:full_time, :part_time])
       field(:completed_at, :utc_datetime)
       field(:state, :string)
+      field(:social_handle, :string)
+      field(:online_source, :string, values: @online_source_options)
+
       embeds_many(:intro_states, IntroState, on_replace: :delete)
     end
 
@@ -54,7 +67,9 @@ defmodule Picsello.Onboardings do
         :schedule,
         :photographer_years,
         :switching_from_softwares,
-        :state
+        :state,
+        :social_handle,
+        :online_source
       ])
       |> validate_required([:state, :photographer_years, :schedule])
       |> validate_change(:phone, &valid_phone/2)
@@ -72,6 +87,8 @@ defmodule Picsello.Onboardings do
     defdelegate valid_phone(field, value), to: Picsello.Client
 
     def software_options(), do: @software_options
+
+    def online_source_options(), do: @online_source_options
   end
 
   defdelegate software_options(), to: Onboarding

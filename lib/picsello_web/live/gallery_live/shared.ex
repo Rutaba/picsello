@@ -917,11 +917,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def assign_is_proofing(socket), do: assign(socket, is_proofing: false)
 
   def steps(assigns) do
+    assigns = Enum.into(assigns, %{target: nil, for: nil})
+
     ~H"""
     <a {if step_number(@step, @steps) > 1, do: %{href: "#", phx_click: "back", phx_target: @target, title: "back"}, else: %{}} class="flex">
-      <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
-        Step <%= step_number(@step, @steps) %>
-      </span>
+      <%= unless @for == :sign_up do %>
+        <span {testid("step-number")} class="px-2 py-0.5 mr-2 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300">
+          Step <%= step_number(@step, @steps) %>
+        </span>
+      <% end %>
 
       <ul class="flex items-center inline-block">
         <%= for step <- @steps do %>
