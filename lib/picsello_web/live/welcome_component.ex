@@ -19,7 +19,7 @@ defmodule PicselloWeb.WelcomeComponent do
       <.close_x close_event={@close_event} myself={@myself} />
       <div class="flex items-center mb-1 justify-center">
         <.icon name="confetti-welcome" class="w-12 h-12" />
-        <h1 class="text-center text-4xl ml-4 font-bold">Welcome to the Picsello Family!</h1>
+        <h1 class="welcome-text text-center text-4xl ml-4 font-bold">Welcome to the Picsello Family!</h1>
       </div>
       <h2 class="text-center text-base-250 mb-8 text-lg">What would you like to do today?</h2>
       <div class="grid lg:grid-cols-3 gap-6">
