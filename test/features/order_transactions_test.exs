@@ -49,15 +49,15 @@ defmodule Picsello.OrderTransactionsTest do
   feature "Transactions view order test", %{order: %{gallery: %{job: job}}, session: session} do
     session
     |> visit("/jobs/#{job.id}")
-    |> click(button("View orders"))
+    |> click(link("View Orders"))
     |> assert_has(css("a[href='/jobs/#{job.id}']", count: 2))
     |> click(css("a[href='/jobs/#{job.id}'] svg"))
     |> assert_url_contains("/jobs/#{job.id}")
   end
 
-  feature "Transactions header test", %{order: %{gallery: %{job: job}}, session: session} do
+  feature "Transactions header test", %{order: %{gallery: %{job: job} = gallery}, session: session} do
     session
-    |> visit("/jobs/#{job.id}/transactions")
+    |> visit("/galleries/#{gallery.id}/transactions")
     |> assert_has(css("a[href='/jobs']", text: "Jobs"))
     |> assert_has(css("a[href='/jobs/#{job.id}']", text: Job.name(job)))
     |> assert_has(css("span", text: Job.name(job), count: 2))
@@ -68,29 +68,29 @@ defmodule Picsello.OrderTransactionsTest do
   end
 
   feature "Transactions table test", %{
-    order: %{gallery: %{job: job}} = order,
+    order: %{gallery: gallery} = order,
     order_number: order_number,
     session: session
   } do
     session
-    |> visit("/jobs/#{job.id}/transactions")
+    |> visit("/galleries/#{gallery.id}/transactions")
     |> assert_has(testid("orders", count: 1))
     |> assert_has(css("*[phx-click='order-detail']", text: "Product order"))
     |> assert_has(css("*[phx-click='order-detail']", text: "View details"))
     |> assert_text("$557")
     |> assert_text(Calendar.strftime(order.placed_at, "%m/%d/%Y"))
     |> click(css("*[phx-click='order-detail']", text: "View details"))
-    |> assert_url_contains("/jobs/#{job.id}/transactions/#{order_number}")
+    |> assert_url_contains("/galleries/#{gallery.id}/transactions/#{order_number}?request_from=transactions")
   end
 
   feature "order detail page shipping address test", %{
-    order: %{gallery: %{id: id, job: job}},
+    order: %{gallery: %{id: id}},
     order_number: order_number,
     session: session
   } do
     session
-    |> visit("/jobs/#{job.id}/transactions/#{order_number}?request_from=transactions")
-    |> assert_has(css("a[href='/jobs/#{job.id}/transactions']", count: 1))
+    |> visit("/galleries/#{id}/transactions/#{order_number}?request_from=transactions")
+    |> assert_has(css("a[href='/galleries/#{id}/transactions']", count: 2))
     |> assert_text("order has been shipped to")
     |> assert_text("661 w lake st")
     |> assert_text("Chicago, IL 60661")
@@ -99,12 +99,12 @@ defmodule Picsello.OrderTransactionsTest do
   end
 
   feature "order detail page summary test", %{
-    order: %{gallery: %{job: job}},
+    order: %{gallery: gallery},
     order_number: order_number,
     session: session
   } do
     session
-    |> visit("/jobs/#{job.id}/transactions/#{order_number}?request_from=transactions")
+    |> visit("/galleries/#{gallery.id}/transactions/#{order_number}?request_from=transactions")
     |> assert_text("Transaction Summary")
     |> assert_text("Use your Stripe dashboard")
     |> assert_text("Products (1)")
@@ -117,17 +117,17 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_text("$557.00")
     |> assert_text("Total")
     |> assert_text("$557.00")
-    |> click(button("Go to Stripe"))
+    |> click(button("Go to Stripe", count: 2, at: 0))
     |> assert_url_contains("payments")
   end
 
   feature "order detail test", %{
-    order: %{gallery: %{job: job}},
+    order: %{gallery: gallery},
     order_number: order_number,
     session: session
   } do
     session
-    |> visit("/jobs/#{job.id}/transactions/#{order_number}?request_from=transactions")
+    |> visit("/galleries/#{gallery.id}/transactions/#{order_number}?request_from=transactions")
     |> assert_text("Order details")
     |> assert_text("Order number: #{order_number}")
     |> assert_text("20×30 polo")

@@ -8,7 +8,7 @@ defmodule Picsello.GalleriesTest do
 
   @valid_attrs %{name: "MainGallery", status: "active"}
   @update_attrs %{status: "expired"}
-  @invalid_attrs %{status: "inactive"}
+  @invalid_attrs %{status: "draft"}
 
   def gallery_fixture(attrs \\ %{}) do
     insert(:gallery, attrs)

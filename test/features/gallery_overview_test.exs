@@ -34,7 +34,7 @@ defmodule Picsello.GalleryOverviewTest do
   } do
     session
     |> visit("/galleries/#{gallery.id}/")
-    |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview Gallery"))
+    |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview gallery"))
   end
 
   feature "Validate and update gallery name", %{
@@ -169,7 +169,7 @@ defmodule Picsello.GalleryOverviewTest do
 
   feature "Unable to update gallery settings when disabled", %{session: session, gallery: gallery} do
     _order = insert_order(gallery)
-    {:ok, gallery} = Galleries.update_gallery(gallery, %{disabled: true})
+    {:ok, gallery} = Galleries.update_gallery(gallery, %{status: "disabled"})
 
     session
     |> visit("/galleries/#{gallery.id}/")
@@ -183,7 +183,7 @@ defmodule Picsello.GalleryOverviewTest do
 
   feature "Enable Gallery", %{session: session, gallery: gallery} do
     _order = insert_order(gallery)
-    {:ok, gallery} = Galleries.update_gallery(gallery, %{disabled: true})
+    {:ok, gallery} = Galleries.update_gallery(gallery, %{status: "disabled"})
 
     session
     |> visit("/galleries/#{gallery.id}/")
