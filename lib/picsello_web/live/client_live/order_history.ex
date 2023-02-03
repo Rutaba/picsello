@@ -101,10 +101,8 @@ defmodule PicselloWeb.Live.ClientLive.OrderHistory do
   end
 
   defp filter_client_orders(jobs) do
-    jobs
-    |> Enum.filter(fn %{gallery: gallery} -> not is_nil(gallery) and Enum.any?(gallery.orders) end)
-    |> Enum.reduce([], fn job, acc ->
-      acc ++ job.gallery.orders
+    Enum.reduce(jobs, [], fn %{galleries: galleries}, acc ->
+      acc ++ Enum.reduce(galleries, [], &(&2 ++ &1.orders))
     end)
   end
 

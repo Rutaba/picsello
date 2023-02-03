@@ -282,11 +282,6 @@ defmodule PicselloWeb.GalleryLive.Index do
           <div class="text-base-250 font-normal ">
             <%= albums %>
           </div>
-          <%= if Enum.any?(@gallery.albums) do %>
-            <div class="text-base-250 font-normal">
-              <.preview_icons albums={@gallery.albums} />
-            </div>
-          <% end %>
         </div>
       </div>
     """

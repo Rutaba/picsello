@@ -104,22 +104,17 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
-  Gets a single gallery by job id parameter.
-
-  Returns nil if the Gallery does not exist.
+  List galleries against job_id
 
   ## Examples
 
-      iex> get_gallery_by_job_id(job_id)
-      %Gallery{}
+      iex> get_galleries_by_job_id(job_id)
+      [%Gallery{}, ...]
 
-      iex> get_gallery_by_job_id(job_id)
-      nil
+      iex> get_galleries_by_job_id(job_id)
+      []
 
   """
-  @spec get_gallery_by_job_id(job_id :: integer) :: %Gallery{} | nil
-  def get_gallery_by_job_id(job_id), do: Repo.get_by(active_galleries(), job_id: job_id)
-
   def get_galleries_by_job_id(job_id),
     do: where(active_galleries(), job_id: ^job_id) |> order_by([:inserted_at]) |> Repo.all()
 
