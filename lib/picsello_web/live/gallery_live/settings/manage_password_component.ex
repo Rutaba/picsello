@@ -3,6 +3,8 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
   use PicselloWeb, :live_component
   alias Picsello.Galleries
 
+  import PicselloWeb.GalleryLive.Shared, only: [disabled?: 1]
+
   @impl true
   def update(%{id: id, gallery: gallery}, socket) do
     {:ok,
@@ -49,11 +51,11 @@ defmodule PicselloWeb.GalleryLive.Settings.ManagePasswordComponent do
         </a>
       </div>
       <div {testid("password_component")} class="flex items-center justify-between w-full mt-3 lg:items-start">
-        <button phx-click="regenerate" disabled={@gallery.disabled} phx-target={@myself} class={classes("p-4 font-bold font-sans cursor-pointer text-blue-planning-300 lg:pt-0", %{"text-gray-200" => @gallery.disabled})} id="regeneratePasswordButton">
+        <button phx-click="regenerate" disabled={disabled?(@gallery)} phx-target={@myself} class={classes("p-4 font-bold font-sans cursor-pointer text-blue-planning-300 lg:pt-0", %{"text-gray-200" => disabled?(@gallery)})} id="regeneratePasswordButton">
             Re-generate
         </button>
-        <button disabled={@gallery.disabled} id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@gallery.password}
-        class={classes("py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36 mt-2", %{"border-gray-200 text-gray-200" => @gallery.disabled})}>
+        <button disabled={disabled?(@gallery)} id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@gallery.password}
+        class={classes("py-2 border rounded-lg border-blue-planning-300 text-blue-planning-300 w-36 mt-2", %{"border-gray-200 text-gray-200" => disabled?(@gallery)})}>
         <div class="hidden p-1 text-sm rounded font-sans shadow bg-white" role="tooltip">
             Copied!
         </div>

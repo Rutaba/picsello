@@ -3,7 +3,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   use PicselloWeb, :live_view
 
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
-  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 2, new_gallery_path: 2]
 
   alias Ecto.Changeset
   alias Picsello.{Repo, Clients, ClientTag}
@@ -424,6 +424,13 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     socket
     |> assign_clients()
     |> put_flash(:success, "Client saved successfully")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:redirect_to_gallery, gallery}, socket) do
+    socket
+    |> push_redirect(to: new_gallery_path(socket, gallery))
     |> noreply()
   end
 

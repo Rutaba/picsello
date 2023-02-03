@@ -106,7 +106,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       checkbox("Show product preview in gallery", count: 6, at: 0),
       fn checkbox -> refute Element.selected?(checkbox) end
     )
-    |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview Gallery"))
+    |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview gallery"))
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> click(link("View Gallery"))
     |> assert_text("Test Client Wedding Gallery")

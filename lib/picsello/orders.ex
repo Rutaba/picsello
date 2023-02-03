@@ -63,13 +63,11 @@ defmodule Picsello.Orders do
 
   def orders(), do: from(orders in Order, where: not is_nil(orders.placed_at))
 
-  def placed_orders_count(nil), do: 0
-
-  def placed_orders_count(gallery),
+  def placed_orders_count(%Gallery{id: id}),
     do:
       from(o in Order,
         select: count(o.id),
-        where: o.gallery_id == ^gallery.id and not is_nil(o.placed_at)
+        where: o.gallery_id == ^id and not is_nil(o.placed_at)
       )
       |> Repo.one()
 

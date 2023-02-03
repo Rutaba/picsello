@@ -231,11 +231,11 @@ defmodule Picsello.Cart.Order do
                 )
 
               {Money.subtract(credit_remaining, credit_used), [product | products]}
-            end
+          end
       end
+
     Enum.reverse(products)
   end
-
 
   defp sort_products(products) do
     products

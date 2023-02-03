@@ -35,7 +35,7 @@ defmodule Picsello.Galleries.GalleryTest do
     end
 
     test "error with wrong status" do
-      changeset = Gallery.create_changeset(%Gallery{}, %{status: "inactive", job_id: 123})
+      changeset = Gallery.create_changeset(%Gallery{}, %{status: "draft", job_id: 123})
 
       assert %{status: ["is invalid"]} = errors_on(changeset)
     end

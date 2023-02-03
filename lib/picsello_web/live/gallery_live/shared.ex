@@ -15,7 +15,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Galleries.Album,
     Albums,
     Notifiers.ClientNotifier,
-    GlobalSettings
+    GlobalSettings,
+    Utils
   }
 
   alias Cart.{Order, Digital}
@@ -26,6 +27,92 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @card_blank "/images/card_gray.png"
+
+  def handle_event(
+        "client-link",
+        _,
+        %{assigns: %{gallery: %{type: :standard} = gallery}} = socket
+      ) do
+    case prepare_gallery(gallery) do
+      {:ok, _} ->
+        gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload(job: :client)
+
+        %{body_template: body_html, subject_template: subject} =
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_send_link) do
+            Picsello.EmailPresets.resolve_variables(
+              preset,
+              {gallery},
+              PicselloWeb.Helpers
+            )
+          end
+
+        socket
+        |> assign(:job, gallery.job)
+        |> assign(:gallery, gallery)
+        |> PicselloWeb.ClientMessageComponent.open(%{
+          body_html: body_html,
+          subject: subject,
+          modal_title: "Share gallery",
+          presets: [],
+          enable_image: true,
+          enable_size: true,
+          client: Job.client(gallery.job)
+        })
+        |> noreply()
+
+      _ ->
+        socket
+        |> put_flash(:error, "Please add photos to the gallery before sharing")
+        |> noreply()
+    end
+  end
+
+  def handle_event(
+        "client-link",
+        _,
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    %{albums: [album]} = gallery = Repo.preload(gallery, :albums)
+
+    gallery.id
+    |> Galleries.get_album_photo_count(album.id)
+    |> then(&(&1 > 0))
+    |> case do
+      true ->
+        gallery = Repo.preload(gallery, job: :client)
+        album = Albums.set_album_hash(album)
+
+        preset_state = if album.is_finals, do: :album_send_link, else: :proofs_send_link
+
+        %{body_template: body_html, subject_template: subject} =
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
+            Picsello.EmailPresets.resolve_variables(
+              preset,
+              {gallery, album},
+              PicselloWeb.Helpers
+            )
+          end
+
+        socket
+        |> assign(:job, gallery.job)
+        |> PicselloWeb.ClientMessageComponent.open(%{
+          modal_title: "Share #{if album.is_finals, do: "Finals", else: "Proofing"} Album",
+          subject: subject,
+          body_html: body_html,
+          presets: [],
+          enable_image: true,
+          enable_size: true,
+          composed_event: :message_composed_for_album,
+          client: Job.client(gallery.job)
+        })
+        |> noreply()
+
+      false ->
+        socket
+        |> put_flash(:error, "Please add photos to the album before sharing")
+        |> noreply()
+    end
+  end
 
   def toggle_favorites(
         %{
@@ -302,47 +389,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
       payload: Keyword.get(opts, :payload, %{})
     })
     |> noreply()
-  end
-
-  def share_gallery(
-        %{
-          assigns: %{
-            gallery: gallery
-          }
-        } = socket
-      ) do
-    case prepare_gallery(gallery) do
-      {:ok, _} ->
-        gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload(job: :client)
-
-        %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_send_link) do
-            Picsello.EmailPresets.resolve_variables(
-              preset,
-              {gallery},
-              PicselloWeb.Helpers
-            )
-          end
-
-        socket
-        |> assign(:job, gallery.job)
-        |> assign(:gallery, gallery)
-        |> PicselloWeb.ClientMessageComponent.open(%{
-          body_html: body_html,
-          subject: subject,
-          modal_title: "Share gallery",
-          presets: [],
-          enable_image: true,
-          enable_size: true,
-          client: Job.client(gallery.job)
-        })
-        |> noreply()
-
-      _ ->
-        socket
-        |> put_flash(:error, "Please add photos to the gallery before sharing")
-        |> noreply()
-    end
   end
 
   def prepare_gallery(%{id: gallery_id} = gallery) do
@@ -996,7 +1042,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
         %{
           params: params,
           gallery_id: gallery_id,
-          is_finals: is_finals,
           is_mobile: is_mobile,
           is_redirect: is_redirect
         },
@@ -1011,7 +1056,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
       send(self(), {:album_settings, %{message: message, album: album}})
       socket |> noreply()
     else
-      params = if is_finals, do: Map.put(params, "is_finals", true), else: params
       is_mobile = if(is_mobile, do: [], else: [is_mobile: false])
 
       {album, message} =
@@ -1093,6 +1137,28 @@ defmodule PicselloWeb.GalleryLive.Shared do
       </div>
       <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300"><%= @text %></span>
     </label>
+    """
+  end
+
+  def new_gallery_path(socket, %{type: :standard} = gallery) do
+    Routes.gallery_photos_index_path(socket, :index, gallery.id)
+  end
+
+  def new_gallery_path(socket, %{albums: [%{id: album_id}]} = gallery) do
+    Routes.gallery_photos_index_path(socket, :index, gallery.id, album_id, is_mobile: false)
+  end
+
+  def standard?(%{type: type}), do: type == :standard
+  def disabled?(%{status: status}), do: status == "disabled"
+
+  def order_status(%{intent: %{status: status}}) when is_binary(status),
+    do: String.capitalize(status)
+
+  def order_status(_), do: "Processed"
+
+  def tag_for_gallery_type(assigns) do
+    ~H"""
+      <span class="lg:ml-[54px] sm:ml-0 inline-block mt-2 border rounded-md bg-base-200 px-2 pb-0.5 text-base-250 font-bold text-base"><%= Utils.capitalize_all_words(@type) %></span>
     """
   end
 end
