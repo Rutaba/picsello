@@ -18,7 +18,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
   def render(assigns) do
     ~H"""
     <header class="p-8 bg-gray-100">
-      <h1 class="text-4xl font-bold">Manage the Smart Profit Calculator</h1>
+      <h1 class="text-4xl font-bold">Manage the Smart Profit Calculator™</h1>
     </header>
     <div class="p-8">
       <div class="flex items-center justify-between mb-8">
