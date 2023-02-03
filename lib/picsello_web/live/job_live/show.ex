@@ -132,7 +132,7 @@ defmodule PicselloWeb.JobLive.Show do
     } = gallery_attrs(%Gallery{})
 
     ~H"""
-    <div>
+    <div {testid("card-Gallery")}>
       <p><%= text %></p>
       <button class="btn-primary mt-4 intro-gallery" phx-click={button_click} disabled={button_disabled}>
         <%= button_text %>
@@ -151,7 +151,7 @@ defmodule PicselloWeb.JobLive.Show do
     <%= for %{name: name, type: type, child: child, orders: orders} = gallery <- galleries do %>
       <%= case type do %>
         <% :proofing -> %>
-          <div class="flex overflow-hidden border border-base-200 rounded-lg">
+          <div {testid("card-proofing")} class="flex overflow-hidden border border-base-200 rounded-lg">
             <div class="flex flex-col w-full p-4">
               <.card_title title={name} gallery_type={type} color="black" gallery_card?={true} />
               <div class="flex justify-between w-full">
@@ -207,7 +207,7 @@ defmodule PicselloWeb.JobLive.Show do
             - <%= if @count == 0, do: "No", else: @count %> orders
           <% end %>
         </p>
-        <div class={"flex self-end items-center gap-4 #{@btn_section_class}"} >
+        <div {testid("card-buttons")} class={"flex self-end items-center gap-4 #{@btn_section_class}"} >
           <%= link "View Orders", to: (if @gallery.id, do: Routes.transaction_path(@socket, :transactions, @gallery.id), else: "#"), class: "font-normal text-sm text-blue-planning-300 underline #{@count == 0 && 'opacity-30 pointer-events-none'}" %>
           <button class={"btn-primary intro-gallery py-2 font-normal rounded-lg #{@btn_class}"} phx-click={button_click} phx-value-gallery_id={@gallery.id} phx-value-parent_id={@parent_id} disabled={button_disabled}><%= button_text %></button>
         </div>

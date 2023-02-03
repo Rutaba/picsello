@@ -667,7 +667,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   end
 
   def handle_info(
-        {:confirm_event, "remove_from_album", %{photo_ids: ids}},
+        {:confirm_event, "remove_from_album", %{photo_id: ids}},
         %{
           assigns: %{
             album: album,

@@ -67,6 +67,7 @@ defmodule Picsello.Galleries.Gallery do
     :status,
     :expired_at,
     :password,
+    :type,
     :client_link_hash,
     :total_count
   ]
