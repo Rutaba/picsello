@@ -65,7 +65,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Add client"))
+    |> click(button("Add client", count: 2, at: 1))
     |> fill_in(text_field("Email"), with: " ")
     |> assert_text("Email can't be blank")
     |> fill_in(text_field("Name"), with: @name)
@@ -94,7 +94,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Add client"))
+    |> click(button("Add client", count: 2, at: 1))
     |> fill_in(text_field("Email"), with: "john@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
