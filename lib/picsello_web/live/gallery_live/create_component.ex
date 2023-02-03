@@ -19,7 +19,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   alias Ecto.Multi
   alias Ecto.Changeset
 
-  import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [steps: 1, expired_at: 1]
 
   import PicselloWeb.PackageLive.Shared,
     only: [digital_download_fields: 1, print_credit_fields: 1, current: 1]
@@ -105,7 +105,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
           name: client.name <> " " <> type,
           job_id: job_id,
           status: "active",
-          password: Gallery.generate_password()
+          password: Gallery.generate_password(),
+          expired_at: expired_at(current_user.organization_id)
         })
       end)
       |> Repo.transaction()

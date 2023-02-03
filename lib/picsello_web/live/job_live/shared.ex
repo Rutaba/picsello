@@ -19,14 +19,12 @@ defmodule PicselloWeb.JobLive.Shared do
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
-  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   require Ecto.Query
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import PicselloWeb.FormHelpers
   import Phoenix.HTML.Form
-  import Ecto.Query
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
 
@@ -459,8 +457,6 @@ defmodule PicselloWeb.JobLive.Shared do
         %{assigns: %{shoots: shoots, job: job}} = socket
       ) do
     shoots = shoots |> Enum.into(%{}) |> Map.put(shoot_number, new_shoot) |> Map.to_list()
-    {_, shoot} = List.last(shoots)
-    update_gallery(job, shoot)
 
     socket
     |> assign(
@@ -1221,25 +1217,6 @@ defmodule PicselloWeb.JobLive.Shared do
       </div>
     </div>
     """
-  end
-
-  def update_gallery(%{gallery: gallery} = job, shoot) do
-    if gallery && gallery.use_global do
-      settings =
-        from(gss in GSGallery,
-          where: gss.organization_id == ^job.client.organization_id
-        )
-        |> Repo.one()
-
-      expiration_date =
-        if settings && settings.expiration_days && settings.expiration_days > 0 do
-          Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
-        end
-
-      Picsello.Galleries.update_gallery(gallery, %{expired_at: expiration_date})
-    else
-      nil
-    end
   end
 
   defp do_assign_job(socket, job) do

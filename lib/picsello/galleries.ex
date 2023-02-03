@@ -766,6 +766,11 @@ defmodule Picsello.Galleries do
     )
   end
 
+  def update_all(gallery_ids, opts) when is_list(gallery_ids) and is_list(opts) do
+    from(gallery in Gallery, where: gallery.id in ^gallery_ids, update: [set: ^opts])
+    |> Repo.update_all([])
+  end
+
   def gallery_current_status(nil), do: :none_created
   def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
 

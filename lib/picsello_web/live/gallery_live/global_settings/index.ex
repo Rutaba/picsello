@@ -2,17 +2,13 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.{
-    Repo,
-    Galleries,
-    Shoot
-  }
+  alias Picsello.{Repo, Galleries}
 
   alias Galleries.{PhotoProcessing.ProcessingManager, Workers.PhotoStorage}
   alias PicselloWeb.GalleryLive.GlobalSettings.{ProductComponent, PrintProductComponent}
-  alias Phoenix.PubSub
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Ecto.Changeset
+  alias Phoenix.PubSub
   require Logger
 
   @upload_options [
@@ -474,8 +470,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   defp assign_title(socket), do: socket |> assign(:title, "Gallery Settings")
 
-  defp get_shoots(job_id), do: Shoot.for_job(job_id) |> Repo.all()
-
   defp to_int(""), do: 0
   defp to_int(value), do: String.to_integer(value)
 
@@ -547,9 +541,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     })
     |> Repo.insert_or_update()
 
-    galleries
-    |> Enum.reject(&(&1.use_global == false))
-    |> Enum.each(&(&1 |> Ecto.Changeset.change(%{expired_at: nil}) |> Repo.update!()))
+    update_expired_at(galleries)
 
     socket
     |> close_modal()
@@ -615,43 +607,18 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           }
         } = socket
       ) do
-    socket =
+    {:ok, global_settings} =
       change(global_settings_gallery, %{
         expiration_days: total_days,
         organization_id: current_user.organization.id
       })
       |> Repo.insert_or_update()
-      |> case do
-        {:ok, global_settings} ->
-          socket
-          |> assign(global_settings_gallery: global_settings)
-          |> assign(is_never_expires: false)
 
-        {:error, _} ->
-          socket
-          |> put_flash(:error, "Failed to Delete Watermark")
-      end
-
-    _galleries =
-      galleries
-      |> Enum.reject(&(&1.use_global == false))
-      |> Enum.map(fn x ->
-        get_shoots(x.job_id)
-        |> List.last()
-        |> case do
-          nil ->
-            Changeset.change(x, %{expired_at: nil})
-            |> Repo.update!()
-
-          shoot ->
-            Changeset.change(x, %{
-              expired_at: Timex.shift(shoot.starts_at, days: total_days) |> Timex.to_datetime()
-            })
-            |> Repo.update!()
-        end
-      end)
+    update_expired_at(galleries, Timex.shift(DateTime.utc_now(), days: total_days))
 
     socket
+    |> assign(global_settings_gallery: global_settings)
+    |> assign(is_never_expires: false)
     |> close_modal()
     |> put_flash(:success, "Setting Updated")
     |> noreply()
@@ -671,6 +638,11 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> assign(product_section?: true)
     |> assign_title()
     |> noreply()
+  end
+
+  defp update_expired_at(galleries, expired_at \\ nil) do
+    for(%{use_global: true, id: id} <- galleries, do: id)
+    |> Galleries.update_all(expired_at: expired_at)
   end
 
   def presign_image(

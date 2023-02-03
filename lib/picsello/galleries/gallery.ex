@@ -4,8 +4,7 @@ defmodule Picsello.Galleries.Gallery do
   import Ecto.Changeset
   import Ecto.Query
   alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album, SessionToken}
-  alias Picsello.{Job, Cart.Order, Repo}
-  alias Picsello.GlobalSettings.Gallery, as: GSGallery
+  alias Picsello.{Job, Cart.Order, Repo, GlobalSettings}
 
   @status_options [
     values: ~w(draft active expired disabled),
@@ -27,7 +26,7 @@ defmodule Picsello.Galleries.Gallery do
     field :total_count, :integer, default: 0
     field :active, :boolean, default: true
     field :disabled, :boolean, default: false
-    field :use_global, :boolean
+    field :use_global, :boolean, default: true
 
     belongs_to(:job, Job)
     has_many(:photos, Photo)
@@ -72,9 +71,6 @@ defmodule Picsello.Galleries.Gallery do
   @required_attrs [:name, :job_id, :status, :password]
 
   def create_changeset(gallery, attrs \\ %{}) do
-    attrs = Map.put(attrs, :expired_at, global_expiration_datetime(attrs))
-    attrs = Map.put(attrs, :use_global, true)
-
     gallery
     |> cast(attrs, @create_attrs)
     |> cast_password()
@@ -138,71 +134,29 @@ defmodule Picsello.Galleries.Gallery do
   defp validate_name(changeset),
     do: validate_length(changeset, :name, max: 50)
 
-  defp global_expiration_datetime(gallery) do
-    if gallery == %{} do
-      nil
-    else
-      organization_id =
-        from(j in Picsello.Job,
-          join: c in assoc(j, :client),
-          join: o in assoc(c, :organization),
-          where: j.id == ^gallery.job_id,
-          select: o.id
-        )
-        |> Repo.one()
-
-      shoot = get_shoots(gallery.job_id) |> List.last()
-
-      if shoot do
-        settings =
-          from(gss in GSGallery,
-            where: gss.organization_id == ^organization_id
-          )
-          |> Repo.one()
-
-        if settings && settings.expiration_days && settings.expiration_days > 0 do
-          Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
-        end
-      else
-        nil
-      end
-    end
-  end
-
   def global_gallery_watermark(gallery) do
-    organization_id =
-      from(j in Picsello.Job,
-        join: c in assoc(j, :client),
-        join: o in assoc(c, :organization),
-        where: j.id == ^gallery.job_id,
-        select: o.id
-      )
-      |> Repo.one()
+    from(j in Picsello.Job,
+      join: c in assoc(j, :client),
+      join: o in assoc(c, :organization),
+      where: j.id == ^gallery.job_id,
+      select: o.id
+    )
+    |> Repo.one()
+    |> then(&GlobalSettings.get(&1))
+    |> case do
+      %{watermark_type: "image", watermark_name: watermark_name, watermark_size: watermark_size} ->
+        %{
+          gallery_id: gallery.id,
+          name: watermark_name,
+          size: watermark_size,
+          type: "image"
+        }
 
-    settings =
-      from(gss in GSGallery,
-        where: gss.organization_id == ^organization_id
-      )
-      |> Repo.one()
+      %{watermark_type: "text", watermark_text: watermark_text} ->
+        %{text: watermark_text, type: "text", gallery_id: gallery.id}
 
-    if settings do
-      case settings.watermark_type do
-        "image" ->
-          %{
-            gallery_id: gallery.id,
-            name: settings.watermark_name,
-            size: settings.watermark_size,
-            type: "image"
-          }
-
-        "text" ->
-          %{text: settings.watermark_text, type: "text", gallery_id: gallery.id}
-
-        _ ->
-          nil
-      end
+      _ ->
+        nil
     end
   end
-
-  defp get_shoots(job_id), do: Picsello.Shoot.for_job(job_id) |> Repo.all()
 end
