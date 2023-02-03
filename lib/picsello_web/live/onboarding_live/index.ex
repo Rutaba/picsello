@@ -7,7 +7,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   require Logger
 
   alias Ecto.Multi
-  alias Picsello.{Repo, JobType, Onboardings, Onboardings.Onboarding, Subscriptions}
+  alias Picsello.{Repo, Onboardings, Onboardings.Onboarding, Subscriptions}
 
   @impl true
   def mount(_params, _session, socket) do
