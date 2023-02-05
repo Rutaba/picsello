@@ -174,10 +174,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     |> make_popup(opts)
   end
 
-  @impl true
-  def handle_event("client-link", _, socket) do
-    share_gallery(socket)
-  end
+  defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.Shared
 
   @impl true
   def handle_info(

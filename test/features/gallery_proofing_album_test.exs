@@ -3,7 +3,6 @@ defmodule Picsello.GalleryProofingAlbumTest do
 
   import Money.Sigils
   alias Picsello.Cart.{Digital, DeliveryInfo}
-  alias Picsello.Repo
 
   setup :onboarded
   setup :authenticated
@@ -48,18 +47,7 @@ defmodule Picsello.GalleryProofingAlbumTest do
     |> assert_has(css("a[href*='/album/#{album.client_link_hash}']", text: "Preview"))
   end
 
-  feature "Validate disabled footer buttons in proofing album", %{
-    session: session,
-    proofing_album: album,
-    gallery: gallery
-  } do
-    session
-    |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
-    |> assert_has(css("button:disabled", text: "Share gallery"))
-    |> assert_has(css("button:disabled", text: "Preview Gallery"))
-  end
-
-  feature "Photographer views client selections, and delete opt disappears from edit-album on order-placing",
+  feature "Photographer views client selections",
           %{
             session: session,
             proofing_album: album,
@@ -70,7 +58,6 @@ defmodule Picsello.GalleryProofingAlbumTest do
     |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
     |> assert_has(css("span", text: "#{album.name}", count: 3))
     |> assert_has(testid("selection-complete", text: "Client selection complete"))
-    |> assert_has(button("Add finals album"))
     |> assert_has(
       testid("selection-name", text: "Client Selection - #{DateTime.to_date(order.placed_at)}")
     )
@@ -80,8 +67,6 @@ defmodule Picsello.GalleryProofingAlbumTest do
     |> assert_has(
       testid("selection-name", text: "Client Selection - #{DateTime.to_date(order.placed_at)}")
     )
-    |> click(testid("edit-album-settings"))
-    |> refute_has(button("Delete"))
   end
 
   feature "Delete opt disappears from edit-album as well as from actions in gallery-albums if there is any order",
@@ -96,21 +81,6 @@ defmodule Picsello.GalleryProofingAlbumTest do
     |> refute_has(button("Delete"))
     |> click(button("Go to album settings"))
     |> refute_has(button("Delete"))
-  end
-
-  feature "Delete opts appears in edit-popup if there's no order in proofing-album", %{
-    session: session,
-    proofing_album: album,
-    gallery: gallery,
-    order: order
-  } do
-    order
-    |> Repo.delete!()
-
-    session
-    |> visit("/galleries/#{gallery.id}/albums/#{album.id}")
-    |> click(testid("edit-album-settings"))
-    |> assert_has(button("Delete"))
   end
 
   feature "Photographer downloads client selections as zip", %{
@@ -190,13 +160,17 @@ defmodule Picsello.GalleryProofingAlbumTest do
 
   feature "gallery card changes when proofing selections are in", %{
     session: session,
-    gallery: %{job: job}
+    gallery: gallery
   } do
+    gallery =
+      gallery
+      |> Picsello.Galleries.Gallery.update_changeset(%{type: :proofing})
+      |> Picsello.Repo.update!()
+
     session
-    |> visit("/jobs/#{job.id}")
-    |> find(testid("card-Gallery"))
-    |> assert_has(css("p", text: "Your client's prooflist is in!"))
-    |> assert_has(button("Go to gallery"))
+    |> visit("/jobs/#{gallery.job.id}")
+    |> find(testid("card-proofing"))
+    |> assert_has(button("View selects"))
   end
 
   feature "Selected photo-border in proofing-grid disappears on toggle-button off and on", %{

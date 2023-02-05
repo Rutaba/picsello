@@ -1,11 +1,13 @@
 defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
   import Picsello.Zapier.User, only: [user_trial_created_webhook: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
+
   use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
 
   alias Ecto.Multi
-  alias Picsello.{Repo, JobType, Onboardings, Subscriptions}
+  alias Picsello.{Repo, JobType, Onboardings, Onboardings.Onboarding, Subscriptions}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -101,41 +103,44 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defp step(%{step: 2} = assigns) do
+    input_class = "p-4"
+
     ~H"""
       <%= for org <- inputs_for(@f, :organization) do %>
         <%= hidden_inputs_for org %>
 
-        <label class="flex flex-col">
-          <p class="py-2 font-extrabold">What’s the name of your photography business?</p>
-
-          <%= input org, :name, phx_debounce: "500", placeholder: "Business name", class: "p-4" %>
-          <%= error_tag org, :name, prefix: "Photography business name", class: "text-red-sales-300 text-sm" %>
-        </label>
+        <.form_field label="Are you a full-time or part-time photographer?" error={:name} prefix="Photography business name" f={org} mt={0} >
+          <%= input org, :name, phx_debounce: "500", placeholder: "Business name", class: input_class %>
+        </.form_field>
       <% end %>
 
       <%= for onboarding <- inputs_for(@f, :onboarding) do %>
 
         <div class="grid sm:grid-cols-2 gap-4">
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">Are you a full-time or part-time photographer?</p>
+          <.form_field label="Are you a full-time or part-time photographer?" error={:schedule} f={onboarding} >
+            <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select #{input_class}" %>
+          </.form_field>
 
-            <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select p-4" %>
-          </label>
-
-          <label class="flex flex-col mt-4">
-            <p class="py-2 font-extrabold">How many years have you been a photographer?</p>
-
-            <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: "p-4" %>
-            <%= error_tag onboarding, :photographer_years, class: "text-red-sales-300 text-sm" %>
-          </label>
+          <.form_field label="How many years have you been a photographer?" error={:photographer_years} f={onboarding} >
+            <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: input_class %>
+          </.form_field>
         </div>
 
-        <label class="flex flex-col mt-4">
-          <p class="py-2 font-extrabold">Where’s your business based?</p>
+        <.form_field label="Where’s your business based?" error={:state} f={onboarding} >
+          <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select #{input_class}" %>
+        </.form_field>
 
-          <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select p-4" %>
-          <%= error_tag onboarding, :state, class: "text-red-sales-300 text-sm" %>
-        </label>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <.form_field label="Share your Instagram handle" class="py-1.5" >
+            <em class="pb-3 text-base-250 text-xs">(optional)</em>
+            <%= input onboarding, :social_handle, phx_debounce: 500, min: 0, placeholder: "Let’s meet on the Gram", class: input_class %>
+          </.form_field>
+
+          <.form_field label="How did you first hear about us?" class="py-1.5" >
+            <em class="pb-3 text-base-250 text-xs">(optional)</em>
+            <%= select onboarding, :online_source, [{"select one", nil} | Onboarding.online_source_options()], class: "select #{input_class}" %>
+          </.form_field>
+        </div>
       <% end %>
     """
   end
@@ -163,6 +168,21 @@ defmodule PicselloWeb.OnboardingLive.Index do
           </div>
         <% end %>
       <% end %>
+    """
+  end
+
+  defp form_field(assigns) do
+    assigns = Enum.into(assigns, %{error: nil, prefix: nil, class: "py-2", mt: 4})
+
+    ~H"""
+    <label class={"flex flex-col mt-#{@mt}"}>
+      <p class={"#{@class} font-extrabold"}><%= @label %></p>
+      <%= render_slot(@inner_block) %>
+
+      <%= if @error do %>
+        <%= error_tag @f, @error, prefix: @prefix, class: "text-red-sales-300 text-sm" %>
+      <% end %>
+    </label>
     """
   end
 
@@ -204,7 +224,12 @@ defmodule PicselloWeb.OnboardingLive.Index do
     ~H"""
       <div class="flex items-stretch w-screen min-h-screen flex-wrap">
         <div class="lg:w-1/3 w-full flex flex-col justify-center px-8 lg:px-16 py-8">
-          <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
+          <div class="flex justify-between items-center">
+            <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
+            <div class="mb-5">
+              <.steps step={@step} steps={@steps} for={:sign_up} />
+            </div>
+          </div>
           <%= render_block(@inner_block) %>
         </div>
         <div class="lg:w-2/3 w-full flex flex-col items-evenly pl-8 lg:pl-16 bg-blue-planning-300">

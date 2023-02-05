@@ -3,14 +3,13 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
   use PicselloWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import Ecto.Query, only: [from: 2]
 
   setup %{conn: conn} do
     Mox.verify_on_exit!()
 
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
-    gallery = insert(:gallery)
+    gallery = insert(:gallery, job: insert(:lead, package: insert(:package, download_count: 1)))
 
     {:ok, session_token} =
       Picsello.Galleries.build_gallery_session_token(gallery, gallery.password)
@@ -26,14 +25,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
     test "does not go to stripe", %{
       conn: conn,
       cart_path: cart_path,
-      gallery: %{id: gallery_id} = gallery
+      gallery: gallery
     } do
-      from(package in Picsello.Package,
-        join: jobs in assoc(package, :job),
-        join: g in assoc(jobs, :gallery),
-        where: g.id == ^gallery_id
-      )
-      |> Picsello.Repo.update_all(set: [download_count: 1])
 
       order = Picsello.Cart.place_product(build(:digital), gallery)
 

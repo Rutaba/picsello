@@ -65,7 +65,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Add client"))
+    |> click(button("Add client", count: 2, at: 1))
     |> fill_in(text_field("Email"), with: " ")
     |> assert_text("Email can't be blank")
     |> fill_in(text_field("Name"), with: @name)
@@ -94,7 +94,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Add client"))
+    |> click(button("Add client", count: 2, at: 1))
     |> fill_in(text_field("Email"), with: "john@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
@@ -236,6 +236,7 @@ defmodule Picsello.ClientsIndexTest do
     |> click(link("Clients"))
     |> click(button("Manage"))
     |> click(button("Create gallery"))
+    |> click(button("Next", count: 3, at: 0))
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> find(select("Type of Photography"), &click(&1, option("event")))
     |> wait_for_enabled_submit_button(text: "Next")
@@ -245,7 +246,7 @@ defmodule Picsello.ClientsIndexTest do
     |> scroll_into_view(css("#download_is_buy_all"))
     |> click(radio_button("Gallery includes unlimited digital downloads"))
     |> within_modal(&click(&1, button("Save")))
-    |> click(button("View gallery"))
+    |> click(button("Great!"))
     |> assert_url_contains("galleries")
   end
 

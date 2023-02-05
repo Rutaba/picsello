@@ -8,10 +8,13 @@ defmodule PicselloWeb.UserRegisterLive do
   import Picsello.Subscriptions,
     only: [get_subscription_plan_metadata: 0, get_subscription_plan_metadata: 1]
 
+  @steps [1, 2, 3]
+
   @impl true
   def mount(_params, session, socket) do
     socket
     |> assign_defaults(session)
+    |> assign(step: 1, steps: @steps)
     |> assign(
       :subscription_plan_metadata,
       get_subscription_plan_metadata()

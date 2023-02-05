@@ -2,10 +2,10 @@ defmodule Picsello.GlobalSettings do
   @moduledoc false
   alias Picsello.GlobalSettings.GalleryProduct, as: GSGalleryProduct
   alias Picsello.GlobalSettings.PrintProduct, as: GSPrintProduct
-  alias Picsello.Repo
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
+  alias Picsello.{Repo, Category}
   alias Ecto.Multi
   alias Picsello.Galleries.GalleryProduct
-  alias Picsello.Category
   import Ecto.Query
 
   @whcc_print_category Category.print_category()
@@ -133,4 +133,6 @@ defmodule Picsello.GlobalSettings do
     |> GSPrintProduct.changeset(attrs)
     |> Repo.update!()
   end
+
+  def get(organization_id), do: Repo.get_by(GSGallery, organization_id: organization_id)
 end

@@ -10,7 +10,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       credits: 1,
       assign_cart_count: 2,
       get_unconfirmed_order: 2,
-      assign_checkout_routes: 1
+      assign_checkout_routes: 1,
+      disabled?: 1
     ]
 
   @defaults %{
