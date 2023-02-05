@@ -236,6 +236,7 @@ defmodule Picsello.ClientsIndexTest do
     |> click(link("Clients"))
     |> click(button("Manage"))
     |> click(button("Create gallery"))
+    |> click(button("Next", count: 3, at: 0))
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> find(select("Type of Photography"), &click(&1, option("event")))
     |> wait_for_enabled_submit_button(text: "Next")
@@ -245,7 +246,7 @@ defmodule Picsello.ClientsIndexTest do
     |> scroll_into_view(css("#download_is_buy_all"))
     |> click(radio_button("Gallery includes unlimited digital downloads"))
     |> within_modal(&click(&1, button("Save")))
-    |> click(button("View gallery"))
+    |> click(button("Great!"))
     |> assert_url_contains("galleries")
   end
 

@@ -20,7 +20,8 @@ defmodule PicselloWeb.HomeLive.Shared do
     OrganizationCard,
     Utils,
     ClientMessage,
-    Clients
+    Clients,
+    Subscriptions
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -28,7 +29,7 @@ defmodule PicselloWeb.HomeLive.Shared do
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import Ecto.Query
-  import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
   import PicselloWeb.Gettext, only: [ngettext: 3]
 
   @card_concise_name_list [
@@ -167,133 +168,6 @@ defmodule PicselloWeb.HomeLive.Shared do
 
   def maybe_show_success_subscription(socket, %{}), do: socket
 
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event", link: "gallery"}},
-        socket
-      ) do
-    socket
-    |> welcome_modal_state()
-    |> push_redirect(to: Routes.gallery_path(socket, :galleries))
-    |> noreply()
-  end
-
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event", link: "client_booking"}},
-        socket
-      ) do
-    socket
-    |> welcome_modal_state()
-    |> push_redirect(to: Routes.calendar_booking_events_path(socket, :index))
-    |> noreply()
-  end
-
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event", link: "demo"}},
-        socket
-      ) do
-    socket
-    |> noreply()
-  end
-
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event"}},
-        socket
-      ) do
-    socket
-    |> welcome_modal_state()
-    |> push_patch(to: Routes.home_path(socket, :index), replace: true)
-    |> noreply()
-  end
-
-  def handle_info({:gallery_created, %{gallery_id: gallery_id}}, socket) do
-    socket
-    |> PicselloWeb.SuccessComponent.open(%{
-      title: "Gallery Created!",
-      subtitle: "Hooray! Your gallery has been created. You're now ready to upload photos.",
-      success_label: "View gallery",
-      success_event: "view-gallery",
-      close_label: "Close",
-      payload: %{gallery_id: gallery_id}
-    })
-    |> update_gallery_listing()
-    |> noreply()
-  end
-
-  def handle_info({:success_event, "view-gallery", %{gallery_id: gallery_id}}, socket) do
-    socket
-    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id))
-    |> noreply()
-  end
-
-  def handle_info({:stripe_status, status}, socket) do
-    socket |> assign(stripe_status: status) |> assign_attention_items() |> noreply()
-  end
-
-  def handle_info({:inbound_messages, _message}, %{assigns: %{inbox_count: count}} = socket) do
-    socket
-    |> assign(:inbox_count, count + 1)
-    |> noreply()
-  end
-
-  def handle_info(:card_status, socket) do
-    socket
-    |> assign_attention_items()
-    |> noreply()
-  end
-
-  def handle_info({:stripe_session_id, stripe_session_id}, socket) do
-    case Subscriptions.handle_subscription_by_session_id(stripe_session_id) do
-      :ok ->
-        socket
-        |> assign(:stripe_subscription_status, :success)
-        |> PicselloWeb.ConfirmationComponent.open(%{
-          title: "You have subscribed to Picsello",
-          subtitle:
-            "We’re excited to have join Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.",
-          close_label: "Close",
-          close_class: "btn-primary"
-        })
-        # clear the session_id param
-        |> push_patch(to: Routes.home_path(socket, :index), replace: true)
-        |> noreply()
-
-      _ ->
-        socket
-        |> put_flash(:error, "Couldn't fetch your Stripe session. Please try again")
-        |> noreply()
-    end
-  end
-
-  def subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
-    Phoenix.PubSub.subscribe(
-      Picsello.PubSub,
-      "inbound_messages:#{current_user.organization_id}"
-    )
-
-    socket
-  end
-
-  defp welcome_modal_state(%{assigns: %{current_user: current_user}} = socket) do
-    socket
-    |> close_modal
-    |> assign(
-      current_user:
-        Picsello.Onboardings.save_intro_state(current_user, "intro_dashboard_modal", "completed")
-    )
-  end
-
-  def time_of_day_greeting(%User{time_zone: time_zone} = user) do
-    greeting =
-      case DateTime.now(time_zone) do
-        {:ok, %{hour: hour}} when hour in 5..11 -> "Good Morning"
-        {:ok, %{hour: hour}} when hour in 12..17 -> "Good Afternoon"
-        {:ok, %{hour: hour}} when hour in 18..23 -> "Good Evening"
-        _ -> "Hello"
-      end
-
-    "#{greeting}, #{User.first_name(user)}!"
-  end
-
   def assign_counts(%{assigns: %{current_user: current_user}} = socket) do
     organization_id = Map.get(current_user, :organization).id
     job_count_by_status = current_user |> job_count_by_status() |> Repo.all()
@@ -352,46 +226,16 @@ defmodule PicselloWeb.HomeLive.Shared do
     )
   end
 
-  defp client_count(user) do
-    Clients.find_count_by(user: user)
-  end
+  def time_of_day_greeting(%User{time_zone: time_zone} = user) do
+    greeting =
+      case DateTime.now(time_zone) do
+        {:ok, %{hour: hour}} when hour in 5..11 -> "Good Morning"
+        {:ok, %{hour: hour}} when hour in 12..17 -> "Good Afternoon"
+        {:ok, %{hour: hour}} when hour in 18..23 -> "Good Evening"
+        _ -> "Hello"
+      end
 
-  defp inbox_count(user) do
-    Job.for_user(user)
-    |> ClientMessage.unread_messages()
-    |> Repo.aggregate(:count)
-  end
-
-  defp job_count_by_status(user) do
-    now = DateTime.utc_now()
-    a_week_from_now = DateTime.add(now, 7 * 24 * 60 * 60)
-
-    from(job in Job.for_user(user),
-      join: status in assoc(job, :job_status),
-      left_join:
-        shoots in subquery(
-          from(shoots in Shoot,
-            group_by: shoots.job_id,
-            select: %{
-              shoot_within_week?:
-                min(shoots.starts_at) >= ^now and min(shoots.starts_at) < ^a_week_from_now,
-              job_id: shoots.job_id
-            }
-          )
-        ),
-      on: shoots.job_id == job.id,
-      group_by: [status.current_status, status.is_lead, shoots.shoot_within_week?],
-      select: %{
-        lead?: status.is_lead,
-        status: status.current_status,
-        count: count(job.id),
-        shoot_within_week?: coalesce(shoots.shoot_within_week?, false)
-      }
-    )
-  end
-
-  def assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
-    socket |> assign(stripe_status: Payments.status(current_user))
+    "#{greeting}, #{User.first_name(user)}!"
   end
 
   def assign_attention_items(
@@ -449,32 +293,6 @@ defmodule PicselloWeb.HomeLive.Shared do
           should_attention_items_overflow: Enum.count(&1) > 4
         ))
     )
-  end
-
-  def subscription_modal(assigns) do
-    ~H"""
-    <div class="fixed inset-0 z-20 flex items-center justify-center bg-black/60">
-      <div class="rounded-lg modal sm:max-w-4xl">
-        <h1 class="text-3xl font-semibold">Your plan has expired</h1>
-        <p class="pt-4">To recover access to <span class="italic">integrated email marketing, easy invoicing, all of your client galleries</span> and much more, please select a plan. Contact us if you have issues.</p>
-
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <%= for {subscription_plan, i} <- Subscriptions.subscription_plans() |> Enum.with_index() do %>
-            <div class="flex items-center justify-between p-4 border rounded-lg">
-              <p class="text-3xl font-semibold"> <%= subscription_plan.price |> Money.to_string(fractional_unit: false) %>/<%= subscription_plan.recurring_interval %></p>
-              <button class={if i == 0, do: "btn-primary", else: "btn-secondary"} type="button" phx-click="subscription-checkout" phx-value-interval={subscription_plan.recurring_interval}>
-                Select this plan
-              </button>
-            </div>
-          <% end %>
-        </div>
-
-        <div class="flex mt-6">
-          <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline ml-auto") %>
-        </div>
-      </div>
-    </div>
-    """
   end
 
   defp map_card_to_action_logic(
@@ -635,6 +453,175 @@ defmodule PicselloWeb.HomeLive.Shared do
       </div>
     </li>
     """
+  end
+
+  def subscription_modal(assigns) do
+    ~H"""
+    <div class="fixed inset-0 z-20 flex items-center justify-center bg-black/60">
+      <div class="rounded-lg modal sm:max-w-4xl">
+        <h1 class="text-3xl font-semibold">Your plan has expired</h1>
+        <p class="pt-4">To recover access to <span class="italic">integrated email marketing, easy invoicing, all of your client galleries</span> and much more, please select a plan. Contact us if you have issues.</p>
+
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <%= for {subscription_plan, i} <- Subscriptions.subscription_plans() |> Enum.with_index() do %>
+            <div class="flex items-center justify-between p-4 border rounded-lg">
+              <p class="text-3xl font-semibold"> <%= subscription_plan.price |> Money.to_string(fractional_unit: false) %>/<%= subscription_plan.recurring_interval %></p>
+              <button class={if i == 0, do: "btn-primary", else: "btn-secondary"} type="button" phx-click="subscription-checkout" phx-value-interval={subscription_plan.recurring_interval}>
+                Select this plan
+              </button>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="flex mt-6">
+          <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline ml-auto") %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp job_count_by_status(user) do
+    now = DateTime.utc_now()
+    a_week_from_now = DateTime.add(now, 7 * 24 * 60 * 60)
+
+    from(job in Job.for_user(user),
+      join: status in assoc(job, :job_status),
+      left_join:
+        shoots in subquery(
+          from(shoots in Shoot,
+            group_by: shoots.job_id,
+            select: %{
+              shoot_within_week?:
+                min(shoots.starts_at) >= ^now and min(shoots.starts_at) < ^a_week_from_now,
+              job_id: shoots.job_id
+            }
+          )
+        ),
+      on: shoots.job_id == job.id,
+      group_by: [status.current_status, status.is_lead, shoots.shoot_within_week?],
+      select: %{
+        lead?: status.is_lead,
+        status: status.current_status,
+        count: count(job.id),
+        shoot_within_week?: coalesce(shoots.shoot_within_week?, false)
+      }
+    )
+  end
+
+  defp client_count(user) do
+    Clients.find_count_by(user: user)
+  end
+
+  defp inbox_count(user) do
+    Job.for_user(user)
+    |> ClientMessage.unread_messages()
+    |> Repo.aggregate(:count)
+  end
+
+  def handle_info(
+        {:close_event, %{event_name: "toggle_welcome_event", link: "gallery"}},
+        socket
+      ) do
+    socket
+    |> welcome_modal_state()
+    |> push_redirect(to: Routes.gallery_path(socket, :galleries))
+    |> noreply()
+  end
+
+  def handle_info(
+        {:close_event, %{event_name: "toggle_welcome_event", link: "client_booking"}},
+        socket
+      ) do
+    socket
+    |> welcome_modal_state()
+    |> push_redirect(to: Routes.calendar_booking_events_path(socket, :index))
+    |> noreply()
+  end
+
+  def handle_info(
+        {:close_event, %{event_name: "toggle_welcome_event", link: "demo"}},
+        socket
+      ) do
+    socket
+    |> noreply()
+  end
+
+  def handle_info(
+        {:close_event, %{event_name: "toggle_welcome_event"}},
+        socket
+      ) do
+    socket
+    |> welcome_modal_state()
+    |> push_patch(to: Routes.home_path(socket, :index), replace: true)
+    |> noreply()
+  end
+
+  def handle_info({:redirect_to_gallery, gallery}, socket) do
+    socket
+    |> push_redirect(to: new_gallery_path(socket, gallery))
+    |> noreply()
+  end
+
+  def handle_info({:stripe_status, status}, socket) do
+    socket |> assign(stripe_status: status) |> assign_attention_items() |> noreply()
+  end
+
+  def handle_info({:inbound_messages, _message}, %{assigns: %{inbox_count: count}} = socket) do
+    socket
+    |> assign(:inbox_count, count + 1)
+    |> noreply()
+  end
+
+  def handle_info(:card_status, socket) do
+    socket
+    |> assign_attention_items()
+    |> noreply()
+  end
+
+  def handle_info({:stripe_session_id, stripe_session_id}, socket) do
+    case Subscriptions.handle_subscription_by_session_id(stripe_session_id) do
+      :ok ->
+        socket
+        |> assign(:stripe_subscription_status, :success)
+        |> PicselloWeb.ConfirmationComponent.open(%{
+          title: "You have subscribed to Picsello",
+          subtitle:
+            "We’re excited to have join Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.",
+          close_label: "Close",
+          close_class: "btn-primary"
+        })
+        # clear the session_id param
+        |> push_patch(to: Routes.home_path(socket, :index), replace: true)
+        |> noreply()
+
+      _ ->
+        socket
+        |> put_flash(:error, "Couldn't fetch your Stripe session. Please try again")
+        |> noreply()
+    end
+  end
+
+  def assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
+    socket |> assign(stripe_status: Payments.status(current_user))
+  end
+
+  def subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
+    Phoenix.PubSub.subscribe(
+      Picsello.PubSub,
+      "inbound_messages:#{current_user.organization_id}"
+    )
+
+    socket
+  end
+
+  defp welcome_modal_state(%{assigns: %{current_user: current_user}} = socket) do
+    socket
+    |> close_modal
+    |> assign(
+      current_user:
+        Picsello.Onboardings.save_intro_state(current_user, "intro_dashboard_modal", "completed")
+    )
   end
 
   defdelegate get_all_proofing_album_orders(organization_id), to: Orders

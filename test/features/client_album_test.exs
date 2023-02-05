@@ -57,7 +57,7 @@ defmodule Picsello.ClientAlbumTest do
     gallery: gallery,
     photo_ids: photo_ids
   } do
-    {:ok, _gallery} = Galleries.update_gallery(gallery, %{disabled: true})
+    {:ok, _gallery} = Galleries.update_gallery(gallery, %{status: "disabled"})
 
     session
     |> click(css("a", text: "View Gallery"))

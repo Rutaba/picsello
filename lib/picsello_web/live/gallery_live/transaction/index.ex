@@ -1,22 +1,25 @@
-defmodule PicselloWeb.JobLive.Transaction.Index do
+defmodule PicselloWeb.GalleryLive.Transaction.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
   alias Picsello.{Cart, Job, Repo, Galleries}
   require Ecto.Query
+
   import PicselloWeb.JobLive.Shared, only: [assign_job: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [order_status: 1, tag_for_gallery_type: 1]
 
   @impl true
-  def mount(%{"id" => job_id}, _session, %{assigns: %{live_action: action}} = socket) do
+  def mount(%{"id" => gallery_id}, _session, %{assigns: %{live_action: action}} = socket) do
     socket
     |> assign(:page_title, action |> Phoenix.Naming.humanize())
-    |> assign_job(job_id)
     |> then(fn socket ->
       gallery =
-        Galleries.get_gallery_by_job_id(job_id)
+        gallery_id
+        |> Galleries.get_gallery!()
         |> Repo.preload(orders: [:intent, :products, :digitals])
 
       socket
+      |> assign_job(gallery.job_id)
       |> assign(:gallery, gallery)
     end)
     |> ok()
@@ -26,12 +29,12 @@ defmodule PicselloWeb.JobLive.Transaction.Index do
   def handle_event(
         "order-detail",
         %{"order_number" => order_number},
-        %{assigns: %{job: job}} = socket
+        %{assigns: %{gallery: gallery}} = socket
       ) do
     socket
     |> push_redirect(
       to:
-        Routes.order_detail_path(socket, :transactions, job.id, order_number, %{
+        Routes.order_detail_path(socket, :transactions, gallery.id, order_number, %{
           "request_from" => "transactions"
         })
     )
@@ -54,11 +57,6 @@ defmodule PicselloWeb.JobLive.Transaction.Index do
       _ -> nil
     end
   end
-
-  defp order_status(%{intent: %{status: status}}) when is_binary(status),
-    do: String.capitalize(status)
-
-  defp order_status(_), do: "Processed"
 
   defdelegate total_cost(order), to: Cart
 end

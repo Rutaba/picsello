@@ -149,6 +149,13 @@ defmodule PicselloWeb.Router do
         live "/photos", Photos.Index, :index
         live "/product-previews", ProductPreview.Index, :index
         live "/orders", PhotographerOrders, :orders
+
+        live "/transactions", Transaction.Index, :transactions, as: :transaction
+
+        live "/transactions/:order_number",
+             Transaction.OrderDetail,
+             :transactions,
+             as: :order_detail
       end
 
       scope "/galleries/:id/albums", GalleryLive do
@@ -169,10 +176,6 @@ defmodule PicselloWeb.Router do
       live "/leads/:id", LeadLive.Show, :leads, as: :job
       live "/leads", JobLive.Index, :leads, as: :job
       live "/jobs/:id", JobLive.Show, :jobs, as: :job
-      live "/jobs/:id/transactions", JobLive.Transaction.Index, :transactions, as: :transaction
-
-      live "/jobs/:id/transactions/:order_number", JobLive.Transaction.OrderDetail, :transactions,
-        as: :order_detail
 
       live "/jobs", JobLive.Index, :jobs, as: :job
       live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :jobs, as: :shoot

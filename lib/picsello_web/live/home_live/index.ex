@@ -3,6 +3,10 @@ defmodule PicselloWeb.HomeLive.Index do
   use PicselloWeb, :live_view
   require Logger
 
+  alias Picsello.{
+    Subscriptions
+  }
+
   import PicselloWeb.HomeLive.Shared
 
   @impl true

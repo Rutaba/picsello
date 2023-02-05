@@ -28,7 +28,7 @@ defmodule Picsello.Job do
     belongs_to(:package, Package)
     belongs_to(:booking_event, Picsello.BookingEvent)
     has_one(:job_status, JobStatus)
-    has_one(:gallery, Gallery)
+    has_many(:galleries, Gallery)
     has_many(:payment_schedules, PaymentSchedule, preload_order: [asc: :due_at])
     has_many(:shoots, Shoot)
     has_many(:booking_proposals, BookingProposal, preload_order: [desc: :inserted_at])

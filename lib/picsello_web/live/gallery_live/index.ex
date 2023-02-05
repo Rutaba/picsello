@@ -198,7 +198,7 @@ defmodule PicselloWeb.GalleryLive.Index do
         socket
       ) do
     Galleries.get_gallery!(String.to_integer(gallery_id))
-    |> Galleries.update_gallery(%{disabled: true})
+    |> Galleries.update_gallery(%{status: "disabled"})
     |> process_gallery(socket, :disabled)
   end
 
@@ -208,7 +208,7 @@ defmodule PicselloWeb.GalleryLive.Index do
         socket
       ) do
     Galleries.get_gallery!(String.to_integer(gallery_id))
-    |> Galleries.update_gallery(%{disabled: false})
+    |> Galleries.update_gallery(%{status: "active"})
     |> process_gallery(socket, :enabled)
   end
 
@@ -227,61 +227,25 @@ defmodule PicselloWeb.GalleryLive.Index do
   end
 
   @impl true
-  def handle_info({:gallery_created, %{gallery_id: gallery_id}}, socket) do
+  def handle_info({:redirect_to_gallery, gallery}, socket) do
     socket
-    |> PicselloWeb.SuccessComponent.open(%{
-      title: "Gallery Created!",
-      subtitle: "Hooray! Your gallery has been created. You're now ready to upload photos.",
-      success_label: "View gallery",
-      success_event: "view-gallery",
-      close_label: "Close",
-      payload: %{gallery_id: gallery_id}
-    })
-    |> update_gallery_listing()
+    |> push_redirect(to: new_gallery_path(socket, gallery))
     |> noreply()
   end
 
-  def preview_icons(assigns) do
-    standard_albums_count =
-      assigns.albums
-      |> Enum.filter(&(&1.is_proofing == false and &1.is_finals == false))
-      |> Enum.count()
+  def image_item(%{gallery: gallery} = assigns) do
+    albums =
+      case gallery.type do
+        :standard ->
+          ngettext("%{count} album", "%{count} albums", Enum.count(gallery.albums))
 
-    proofing_albums_count =
-      assigns.albums
-      |> Enum.filter(&(&1.is_proofing == true and &1.is_finals == false))
-      |> Enum.count()
+        :proofing ->
+          "Proofing"
 
-    final_albums_count =
-      assigns.albums
-      |> Enum.filter(&(&1.is_finals == true))
-      |> Enum.count()
+        _ ->
+          "Finals"
+      end
 
-    ~H"""
-    <ul class="flex">
-      <%= if Enum.any?(assigns.albums, fn album -> album.is_proofing == false and album.is_finals == false end) do %>
-        <li class="cursor-pointer mr-1 custom-tooltip text-center">
-          <span class="text-base-300"><%= standard_albums_count %> Standard <%= ngettext("album", "albums", standard_albums_count)%></span>
-          <.icon name="standard_album" class="inline-block w-4 h-4"/>
-        </li>
-      <% end %>
-      <%= if Enum.any?(assigns.albums, & &1.is_proofing) do %>
-        <li class="cursor-pointer mr-1 custom-tooltip">
-          <span class="text-base-300"><%= proofing_albums_count %> Proofing <%= ngettext("album", "albums", proofing_albums_count)%></span>
-          <.icon name="proofing" class="inline-block w-4 h-4"/>
-        </li>
-      <% end %>
-      <%= if Enum.any?(assigns.albums, & &1.is_finals) do %>
-        <li class="cursor-pointer custom-tooltip">
-          <span class="text-base-300"><%= final_albums_count %> Finals <%= ngettext("album", "albums", final_albums_count)%></span>
-          <.icon name="finals" class="inline-block w-4 h-4"/>
-        </li>
-      <% end %>
-    </ul>
-    """
-  end
-
-  def image_item(assigns) do
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col md:flex-row grow">
@@ -299,6 +263,7 @@ defmodule PicselloWeb.GalleryLive.Index do
             </div>
           <% end %>
         </div>
+
         <div class="py-0 md:py-2 mt-4 md:mt-0">
           <div class="font-bold">
             <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %>
@@ -315,13 +280,8 @@ defmodule PicselloWeb.GalleryLive.Index do
             <% end %>
           </div>
           <div class="text-base-250 font-normal ">
-            <%= @gallery.albums |> Enum.count() %> albums
+            <%= albums %>
           </div>
-          <%= if Enum.any?(@gallery.albums) do %>
-            <div class="text-base-250 font-normal">
-              <.preview_icons albums={@gallery.albums} />
-            </div>
-          <% end %>
         </div>
       </div>
     """

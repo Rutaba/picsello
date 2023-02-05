@@ -1,25 +1,28 @@
-defmodule PicselloWeb.JobLive.Transaction.OrderDetail do
+defmodule PicselloWeb.GalleryLive.Transaction.OrderDetail do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.{Repo, Cart, Job, Galleries, Orders}
+  alias Picsello.{Repo, Cart, Galleries, Orders, Job}
   require Ecto.Query
-  import PicselloWeb.GalleryLive.Shared, only: [order_details: 1]
+
+  import PicselloWeb.GalleryLive.Shared,
+    only: [order_details: 1, order_status: 1, tag_for_gallery_type: 1]
+
   import PicselloWeb.JobLive.Shared, only: [assign_job: 2]
 
   @impl true
   def mount(
-        %{"id" => job_id, "order_number" => order_number} = assigns,
+        %{"id" => gallery_id, "order_number" => order_number} = params,
         _session,
         %{assigns: %{live_action: action}} = socket
       ) do
-    socket
-    |> assign(:request_from, assigns["request_from"])
-    |> assign(:page_title, action |> Phoenix.Naming.humanize())
-    |> assign_job(job_id)
-    |> then(fn socket ->
-      gallery = Galleries.get_gallery_by_job_id(job_id)
+    gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:job)
 
+    socket
+    |> assign(:request_from, params["request_from"])
+    |> assign(:page_title, action |> Phoenix.Naming.humanize())
+    |> assign_job(gallery.job_id)
+    |> then(fn socket ->
       socket
       |> assign(:order, Orders.get!(gallery, order_number) |> Repo.preload(:intent))
       |> assign(:gallery, gallery)
@@ -55,13 +58,6 @@ defmodule PicselloWeb.JobLive.Transaction.OrderDetail do
             "https://dashboard.stripe.com/#{current_user.organization.stripe_account_id}/payments/#{intent.stripe_payment_intent_id}"
         )
         |> noreply()
-
-  @impl true
-  def handle_event("view_gallery", _, %{assigns: %{gallery: gallery}} = socket),
-    do:
-      socket
-      |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery.id))
-      |> noreply()
 
   defp assign_details(%{assigns: %{current_user: current_user, order: order}} = socket) do
     socket

@@ -17,15 +17,15 @@ defmodule Picsello.PhotographerViewOrdersTest do
     session
     |> visit("/jobs/#{job.id}/")
     |> find(
-      testid("card-Orders",
-        text: "You need to set your gallery up before clients can order"
+      testid("card-Gallery",
+        text: "You don't have galleries for this job setup. Create one now!"
       ),
-      &click(&1, button("Setup gallery"))
+      &click(&1, button("Start Setup"))
     )
-    |> assert_has(css("span", text: "Drop image"))
+    |> assert_has(css("h1", text: "Set Up Your Gallery"))
+    |> click(button("Get Started", count: 2, at: 0))
     |> visit("/jobs/#{job.id}/")
-    |> assert_disabled(button("View orders"))
-    |> find(testid("card-Orders", text: "No orders to view"))
+    |> find(testid("card-buttons"), &assert_has(&1, css(".pointer-events-none")))
   end
 
   setup :authenticated_gallery
@@ -61,8 +61,6 @@ defmodule Picsello.PhotographerViewOrdersTest do
 
     session
     |> visit("/jobs/#{job.id}/")
-    |> assert_has(testid("section-badge", text: "1"))
-    |> assert_has(testid("order-badge", text: "1"))
-    |> find(testid("card-Orders", text: "1 order to view from your client"))
+    |> assert_has(link("View Orders"))
   end
 end

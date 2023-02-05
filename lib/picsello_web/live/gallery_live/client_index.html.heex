@@ -34,7 +34,7 @@
 
   <hr />
 
-  <%= unless Enum.empty?(@products) || @gallery.disabled do %>
+  <%= unless Enum.empty?(@products) || disabled?(@gallery) do %>
     <div class="h-full py-0 mx-auto center-container gallery__container my-0 px-7 sm:px-16">
       <div class="pt-8 lg:pt-14">
         <div class="text-base font-bold lg:text-3xl">
@@ -52,8 +52,7 @@
     </div>
   <% end %>
 
-
-  <%= if @package.buy_all && !@download_all_visible && !@gallery.disabled do %>
+  <%= if @package.buy_all && !@download_all_visible && !disabled?(@gallery) do %>
     <div class="py-8 sm:py-6 bg-blue-planning-100 center-container gallery__container">
       <div class="flex flex-col justify-center px-7 sm:mx-16 sm:flex-row">
         <div class="sm:mr-28">
@@ -68,7 +67,7 @@
   <% end %>
 
   <!-- Content -->
-  <div class={classes("center-container gallery__container", %{"hidden" => @gallery.disabled})}>
+  <div class={classes("center-container gallery__container", %{"hidden" => disabled?(@gallery)})}>
     <hr class="mt-8 opacity-30 border-base-300" />
   </div>
 

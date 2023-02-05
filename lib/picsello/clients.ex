@@ -98,7 +98,7 @@ defmodule Picsello.Clients do
 
   def get_client_orders_query(client_id) do
     from(c in Client,
-      preload: [jobs: [gallery: [orders: [:intent, :digitals, :products]]]],
+      preload: [jobs: [galleries: [orders: [:intent, :digitals, :products]]]],
       where: c.id == ^client_id
     )
   end
