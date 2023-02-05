@@ -89,4 +89,4 @@ config :picsello, :render_test_ids, true
 
 config :picsello,
        :feature_flags,
-       ~w[sync_whcc_design_details show_pricing_tab automated_proposal_emails balance_due_emails]a
+       ~w[sync_whcc_design_details show_pricing_tab automated_proposal_emails balance_due_emails show_new_home]a
