@@ -195,8 +195,8 @@ defmodule PicselloWeb.PackageLive.Shared do
                 <%= raw @package.description %>
               </div>
               <div class="hidden md:block md:flex items-center">
-                <span class="line-clamp-2 w-5 h-5 mr-2 flex justify-center text-xs font-bold rounded-full bg-gray-200 text-center">
-                <%= @package.download_count %>
+                <span class="line-clamp-2 w-5 h-5 mr-2 flex items-center justify-center text-xs font-bold rounded-full bg-gray-200 text-center">
+                  <%= @package.download_count %>
                 </span>
                 <span class="text-base-250">Downloadable photos</span>
               </div>
@@ -229,8 +229,8 @@ defmodule PicselloWeb.PackageLive.Shared do
           </div>
 
           <div class="block md:hidden flex items-center">
-            <span class="line-clamp-2 w-5 h-5 mr-2 flex justify-center text-xs font-bold rounded-full bg-gray-200 text-center">
-            <%= @package.download_count %>
+            <span class="line-clamp-2 w-5 h-5 mr-2 flex items-center justify-center text-xs font-bold rounded-full bg-gray-200 text-center">
+              <%= @package.download_count %>
             </span>
             <span class="text-base-250">Downloadable photos</span>
           </div>
