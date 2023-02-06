@@ -378,7 +378,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       </div>
       <.icon name="logo" class="w-32 mb-10 h-7 sm:h-11 sm:w-48" />
       <div class="container px-6 pt-8 pb-6 bg-white rounded-lg shadow-md max-w-screen-sm sm:p-14">
-        <h1 class="mb-10 text-4xl font-bold md:text-6xl text-center">Smart Profit <span class="border-b-4 md:border-b-8 border-blue-planning-300">Calculator</span></h1>
+        <h1 class="mb-10 text-4xl font-bold md:text-6xl text-center">Smart Profit <span class="border-b-4 md:border-b-8 border-blue-planning-300">Calculator</span>™</h1>
         <p class="mb-4 text-xl text-base-250">Easy-to-use and backed by 3 years of industry research, our calculator helps you set your prices so your business can be profitable. We have 4 quick sections for you to fill out so let’s go!</p>
         <ul class="flex flex-wrap columns-2">
           <li class="flex items-center w-full mb-2 md:w-1/2 text-base-250 font-bold"><span class="flex items-center justify-center block w-8 h-8 mr-2 font-bold text-white rounded-full bg-blue-planning-300"><span class="-mt-1">1</span></span>Business information</li>
@@ -701,7 +701,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <div class="fixed flex flex-col w-full px-8 py-8 bg-white lg:w-1/4 lg:px-12 lg:py-12 lg:h-screen">
           <div class="flex justify-between lg:block">
             <.icon name="logo" class="w-32 ml-16 lg:ml-0 h-7 lg:h-11 lg:w-48 lg:mb-4" />
-            <h3 class="text-xl font-bold lg:text-4xl lg:mb-4">Smart Profit Calculator </h3>
+            <h3 class="text-xl font-bold lg:text-4xl lg:mb-4">Smart Profit Calculator™</h3>
           </div>
           <p class="hidden text-xl text-base-250 lg:block">Let’s figure out your prices so your business can be a profitable one!</p>
           <.sidebar_nav step={@step} />
