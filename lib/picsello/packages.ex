@@ -511,7 +511,7 @@ defmodule Picsello.Packages do
     from(p in Package,
       where: p.organization_id == ^organization_id and p.job_type == ^job_type
     )
-    |> Repo.update_all(set: [archived_at: DateTime.truncate(DateTime.utc_now(), :second)])
+    |> Repo.update_all(set: [archived_at: DateTime.truncate(DateTime.utc_now(), :second), show_on_public_profile: false])
   end
 
   def unarchive_packages_for_job_type(job_type, organization_id) do
