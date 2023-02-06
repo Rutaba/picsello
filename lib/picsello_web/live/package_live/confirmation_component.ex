@@ -63,7 +63,7 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
               </div>
               <p class="whitespace-pre-wrap"><%= @subtitle %></p>
             </div>
-            <hr class="my-4" />
+            <hr class="mt-4" />
           <% else %>
             <div class="flex flex-col pt-4 items-start bg-gray-100 p-1 mt-2 rounded">
               <div class="flex flex-row items-center">
@@ -126,7 +126,22 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
         %{"value" => value} = params,
         %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket
       ) do
+        IO.inspect "xyz"
     if !value, do: send(parent_pid, {:confirm_event, "visibility_for_business", payload, params})
+
+    socket
+    |> assign(:checked, value)
+    |> noreply()
+  end
+  
+  @impl true
+  def handle_event(
+        "visibility_for_profile",
+        %{"value" => value} = params,
+        %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket
+      ) do
+        IO.inspect "xyz--------"
+    if !value, do: send(parent_pid, {:confirm_event, "visibility_for_profile", payload, params})
 
     socket
     |> assign(:checked, value)
@@ -139,6 +154,7 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
         params,
         %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket
       ) do
+        IO.inspect "abc"
     send(parent_pid, {:confirm_event, event, payload, params})
 
     socket |> noreply()

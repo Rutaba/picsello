@@ -70,7 +70,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       |> Enum.find(fn job_type -> job_type.id == to_integer(id) end)
 
     changeset = OrganizationJobType.update_changeset(org_job_type, %{})
-
+    
     params = %{
       checkbox_event: "visibility_for_business",
       checkbox_event2: "visibility_for_profile",

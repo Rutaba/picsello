@@ -467,7 +467,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <h1 class="text-xl ml-2 mr-1 font-bold">Show package on my Public Profile</h1>
               <.intro_hint content="Default Packages are hidden. All currently created packages are public. All new packages are off by default." />
             </label>
-            <p class="ml-7 text-gray-500"> Keep this package hidden from potential clients until you're ready to showcase it</p>
+            <p class="ml-8 text-gray-500"> Keep this package hidden from potential clients until you're ready to showcase it</p>
           </div>
         </div>
       <% end %>

@@ -73,7 +73,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         </div>
 
         <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
-          <button type="button" phx-click="add-package" class="w-full px-8 text-center btn-primary">Add a package</button>
+          <button type="button" phx-click="add-package" class="w-full px-8 text-center btn-primary">Add package</button>
         </div>
       </div>
 
@@ -236,31 +236,13 @@ defmodule PicselloWeb.Live.PackageTemplates do
                 </div>
               <% else %>
                 <div class="flex flex-col md:flex-row mt-2">
-                  <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{Routes.static_path(@socket,"/images/empty-state.png")}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
-                  <div class="py-0 md:py-2">
+                  <img src="/images/empty-state.png" />
+                  <div class="ml-10 flex flex-col justify-center">
                     <div class="font-bold">
                       Missing packages
                     </div>
-                    <%= if @package_name == "Archived" do %>
-                      <span class="arrow show lg:block hidden">
-                        <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
-                      </span>
-                    <% end %>
-                  </div>
-
-                  <div class="font-bold rounded-lg cursor-pointer grid-item" phx-click="edit-job-types">
-                    <div class="flex items-center lg:h-11 pr-4 lg:pl-2 border border-blue-planning-300 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
-                        <a class="flex w-full">
-                          <div class="flex items-center justify-start">
-                            <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
-                              <.icon name="pencil" class="w-3 h-3 m-1 fill-current text-white" />
-                            </div>
-
-                            <div class="justify-start ml-3">
-                              <span class="">Edit photography types</span>
-                            </div>
-                          </div>
-                        </a>
+                    <div class="font-normal w-72 text-base-250">
+                      You don’t have any packages! Click add a package to get started. If you need help, check out <a target="_blank" class="underline text-blue-planning-300" href="https://support.picsello.com/article/34-create-a-package-template">this guide</a>!
                     </div>
                   </div>
                 </div>
@@ -595,7 +577,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   @impl true
   def handle_info(
         {:confirm_event, "next", %{changeset: changeset},
-         %{"check" => %{"check_enabled" => check_enabled} = params}},
+         %{"check" => params}},
         %{
           assigns: %{
             current_user: %{organization_id: organization_id},
@@ -603,10 +585,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
           }
         } = socket
       ) do
-    if check_enabled == "true" do
+    check_enabled = Map.get(params, "check_enabled", "false") |> String.to_atom()
+    IO.inspect check_enabled, label: "check_enabled"
+    if check_enabled do
       changeset =
         changeset
-        |> Changeset.put_change(:show_on_business?, String.to_atom(check_enabled))
+        |> Changeset.put_change(:show_on_business?, check_enabled)
         |> Changeset.put_change(
           :show_on_profile?,
           String.to_atom(Map.get(params, "check_profile", "false"))
@@ -644,7 +628,6 @@ defmodule PicselloWeb.Live.PackageTemplates do
         do: Jobs.get_job_type(package_name, organization_id).show_on_profile
       )
     )
-
     |> noreply()
   end
 
@@ -712,13 +695,14 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   @impl true
   def handle_info(
-        {:confirm_event, "visibility_for_business", %{job_type_id: job_type_id} = params, _},
+        {:confirm_event, "visibility_for_business", %{job_type_id: job_type_id} = params, abc},
         %{
           assigns: %{
             current_user: %{organization: %{organization_job_types: org_job_types, id: org_id}}
           }
         } = socket
       ) do
+        IO.inspect abc, label: "aa---------"
     org_job_type =
       org_job_types
       |> Enum.find(fn job_type -> job_type.id == to_integer(job_type_id) end)
