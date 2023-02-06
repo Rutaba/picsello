@@ -98,6 +98,27 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
+  def handle_event("questionnaires", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.questionnaires_index_path(socket, :index))
+      |> noreply()
+
+  @impl true
+  def handle_event("clients", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.clients_path(socket, :index))
+      |> noreply()
+
+  @impl true
+  def handle_event("global-gallery-settings", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.gallery_global_settings_index_path(socket, :edit))
+      |> noreply()
+
+  @impl true
   def handle_event(
         "send-confirmation-email",
         %{},
