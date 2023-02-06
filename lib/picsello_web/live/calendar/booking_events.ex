@@ -91,29 +91,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
           <.back_button to={Routes.calendar_index_path(@socket, :index)} class="hidden lg:flex mt-2"/>
           Booking events
         </div>
-        <%= unless Enum.empty?(@booking_events) do %>
-          <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
-            <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="w-full md:w-auto btn-primary text-center">
-              Add booking event
-            </.live_link>
-          </div>
-        <% end %>
+        <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
+          <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="w-full md:w-auto btn-primary text-center">
+            Add booking event
+          </.live_link>
+        </div>
       </div>
 
       <hr class="mt-4 sm:mt-10" />
     </div>
 
     <%= if Enum.empty?(@booking_events) do %>
-      <div class="flex flex-col justify-between flex-auto mt-4 p-6 center-container lg:flex-none">
-        <div class="flex flex-col">
-          <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
-          <p class="block text-lg lg:text-2xl lg:w-1/2">You don’t have any booking events created at the moment. Booking events allow you to create events and pages to send to your clients so they can sign up for mini-sessions shoots.</p>
-        </div>
-        <div class="lg:inline-flex">
-          <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="flex justify-center mt-5 text-lg px-7 btn-primary">
+      <div class="p-6 center-container">
+        <.empty_state_base tour_embed="https://demo.arcade.software/eOBqmup7RcW8EVmGpqrY?embed" headline="Meet Client Booking" eyebrow_text="Booking Events Product Tour" body="Accelerate your business growth with mini-sessions, portraits & more! Create a booking link that you can share and take tedious work out of booking" third_party_padding="calc(66.66666666666666% + 41px)">
+          <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="w-full md:w-auto btn-tertiary text-center flex-shrink-0">
             Add booking event
           </.live_link>
-        </div>
+        </.empty_state_base>
       </div>
     <% else %>
       <div class="p-6 center-container">

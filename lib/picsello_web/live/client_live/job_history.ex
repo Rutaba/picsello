@@ -51,17 +51,18 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
     job_id = to_integer(job_id)
 
     gallery =
-      case Galleries.get_gallery_by_job_id(job_id) do
-        nil ->
+      case Galleries.get_galleries_by_job_id(job_id) do
+        [] ->
           {:ok, gallery} =
             Galleries.create_gallery(%{
               job_id: job_id,
-              name: Job.name(Jobs.get_job_by_id(job_id))
+              name: job_id |> Jobs.get_job_by_id() |> Job.name(),
+              type: :standard
             })
 
           gallery
 
-        gallery ->
+        [gallery | _] ->
           gallery
       end
 

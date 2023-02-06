@@ -2,7 +2,9 @@ defmodule PicselloWeb.JobLive.Show do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.{Galleries, Job, Repo, PaymentSchedules}
+  alias Picsello.{Job, Repo, PaymentSchedules}
+  alias Picsello.{Galleries, Galleries.Gallery}
+  alias PicselloWeb.JobLive.GalleryTypeComponent
 
   import PicselloWeb.JobLive.Shared,
     only: [
@@ -18,6 +20,7 @@ defmodule PicselloWeb.JobLive.Show do
       shoot_details_section: 1,
       validate_payment_schedule: 1,
       title_header: 1,
+      card_title: 1,
       process_cancel_upload: 2,
       renew_uploads: 3
     ]
@@ -31,12 +34,15 @@ defmodule PicselloWeb.JobLive.Show do
     max_file_size: String.to_integer(Application.compile_env(:picsello, :document_max_size))
   ]
 
+  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
+
   @impl true
   def mount(%{"id" => job_id} = assigns, _session, socket) do
     socket
     |> assign_job(job_id)
     |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
+    |> assign(:new_gallery, nil)
     |> then(fn %{assigns: %{job: job}} = socket ->
       payment_schedules = job |> Repo.preload(:payment_schedules) |> Map.get(:payment_schedules)
 
@@ -50,42 +56,42 @@ defmodule PicselloWeb.JobLive.Show do
     |> ok()
   end
 
-  defp orders_attrs(%Job{gallery: gallery}, orders_count) do
-    cond do
-      is_nil(gallery) ->
-        %{
-          button_text: "Setup gallery",
-          button_click: "create-gallery",
-          button_disabled: false,
-          text: "You need to set your gallery up before clients can order"
-        }
-
-      orders_count == 0 ->
-        %{
-          button_text: "View orders",
-          button_click: "#",
-          button_disabled: true,
-          text: "No orders to view"
-        }
-
-      true ->
-        %{
-          button_text: "View orders",
-          button_click: "view-orders",
-          button_disabled: false,
-          text: "#{ngettext("1 order", "%{count} orders", orders_count)} to view from your client"
-        }
-    end
-  end
-
-  def gallery_attrs(%Job{gallery: gallery}) do
+  def gallery_attrs(%Gallery{type: type} = gallery, parent_has_orders? \\ false) do
     case Picsello.Galleries.gallery_current_status(gallery) do
+      :none_created when type == :finals ->
+        %{
+          button_text: "Create Finals",
+          button_click: "create-gallery",
+          button_disabled: !parent_has_orders?,
+          text: text(:finals, :none_created, parent_has_orders?),
+          status: :none_created
+        }
+
       :none_created ->
         %{
-          button_text: "Upload photos",
+          button_text: "Start Setup",
           button_click: "create-gallery",
           button_disabled: false,
-          text: "Looks like you need to upload photos."
+          text: "You don't have galleries for this job setup. Create one now!",
+          status: :none_created
+        }
+
+      :no_photo when type == :finals ->
+        %{
+          button_text: "Upload Finals",
+          button_click: "view-gallery",
+          button_disabled: false,
+          text: "Selects are ready",
+          status: :no_photo
+        }
+
+      :no_photo ->
+        %{
+          button_text: "Upload Photos",
+          button_click: "view-gallery",
+          button_disabled: false,
+          text: "Upload photos",
+          status: :no_photo
         }
 
       :deactivated ->
@@ -93,27 +99,120 @@ defmodule PicselloWeb.JobLive.Show do
           button_text: "View gallery",
           button_click: "view-gallery",
           button_disabled: true,
-          text: "Gallery is disabled"
+          text: "Gallery is disabled",
+          status: :deactivated
         }
 
-      :selections_available ->
-        %{
-          button_text: "Go to gallery",
-          button_click: "view-gallery",
-          button_disabled: false,
-          text: "Your client's prooflist is in!"
-        }
-
-      _ ->
+      status ->
         photos_count = Galleries.get_gallery_photos_count(gallery.id)
 
         %{
-          button_text: "View gallery",
+          button_text: button_text(type),
           button_click: "view-gallery",
           button_disabled: false,
-          text: "#{photos_count} #{ngettext("photo", "photos", photos_count)}"
+          text: "#{photos_count} #{ngettext("photo", "photos", photos_count)}",
+          status: status
         }
     end
+  end
+
+  defp text(:finals, :none_created, true), do: "Selects are ready"
+  defp text(:finals, :none_created, false), do: "Need selects from client first"
+
+  defp button_text(:proofing), do: "View selects"
+  defp button_text(:finals), do: "View finals"
+  defp button_text(_), do: "View gallery"
+
+  defp galleries(%{galleries: []} = assigns) do
+    %{
+      button_text: button_text,
+      button_click: button_click,
+      button_disabled: button_disabled,
+      text: text
+    } = gallery_attrs(%Gallery{})
+
+    ~H"""
+    <div {testid("card-Gallery")}>
+      <p><%= text %></p>
+      <button class="btn-primary mt-4 intro-gallery" phx-click={button_click} disabled={button_disabled}>
+        <%= button_text %>
+      </button>
+    </div>
+    """
+  end
+
+  defp galleries(%{galleries: galleries} = assigns) do
+    build_type = fn
+      :finals -> :unlinked_finals
+      type -> type
+    end
+
+    ~H"""
+    <%= for %{name: name, type: type, child: child, orders: orders} = gallery <- galleries do %>
+      <%= case type do %>
+        <% :proofing -> %>
+          <div {testid("card-proofing")} class="flex overflow-hidden border border-base-200 rounded-lg">
+            <div class="flex flex-col w-full p-4">
+              <.card_title title={name} gallery_type={type} color="black" gallery_card?={true} />
+              <div class="flex justify-between w-full">
+                <.card_content gallery={gallery} icon_name="proofing" title="Client Proofing" padding="pr-3" {assigns} />
+                <div class="h-full w-px bg-base-200"/>
+                <.card_content gallery={child || %Gallery{type: :finals, orders: []}} parent_id={gallery.id} parent_has_orders?={orders != []} icon_name="finals" title="Client Finals" padding="pl-3" {assigns} />
+              </div>
+            </div>
+          </div>
+        <% _ -> %>
+          <.card title={name} gallery_card?={true} color="black" gallery_type={build_type.(type)}>
+            <.inner_section {assigns} gallery={gallery} p_class="text-lg" btn_section_class="mt-[3.7rem]" link_class="font-semibold text-base" />
+          </.card>
+      <% end %>
+    <% end %>
+    """
+  end
+
+  defp card_content(assigns) do
+    ~H"""
+    <div class={"flex flex-col w-2/4 #{@padding}"}>
+      <div class="flex">
+        <div class="border p-1.5 rounded-full bg-base-200">
+          <.icon name={@icon_name} class="w-4 h-4 stroke-2 fill-current text-blue-planning-300"/>
+        </div>
+        <span class="mt-0.5 ml-3 text-base font-bold"><%= @title %></span>
+      </div>
+      <.inner_section {assigns} btn_class="px-4" socket={@socket} />
+    </div>
+    """
+  end
+
+  defp inner_section(%{gallery: %{orders: orders}} = assigns) do
+    assigns =
+      Enum.into(
+        assigns,
+        %{
+          p_class: "text-base h-12",
+          btn_section_class: "mt-2",
+          btn_class: "px-3",
+          count: Enum.count(orders),
+          parent_has_orders?: true,
+          parent_id: nil
+        }
+      )
+
+    ~H"""
+    <%= case gallery_attrs(@gallery, @parent_has_orders?) do %>
+      <% %{button_text: button_text, button_click: button_click, button_disabled: button_disabled, text: text, status: status} -> %>
+        <p class={"text-base-250 font-normal #{@p_class}"}>
+          <%= text %>
+          <%= unless status in [:no_photo, :none_created] do %>
+            - <%= if @count == 0, do: "No", else: @count %> orders
+          <% end %>
+        </p>
+        <div {testid("card-buttons")} class={"flex self-end items-center gap-4 #{@btn_section_class}"} >
+          <%= link "View Orders", to: (if @gallery.id, do: Routes.transaction_path(@socket, :transactions, @gallery.id), else: "#"), class: "font-normal text-sm text-blue-planning-300 underline #{@count == 0 && 'opacity-30 pointer-events-none'}" %>
+          <button class={"btn-primary intro-gallery py-2 font-normal rounded-lg #{@btn_class}"} phx-click={button_click} phx-value-gallery_id={@gallery.id} phx-value-parent_id={@parent_id} disabled={button_disabled}><%= button_text %></button>
+        </div>
+    <% end %>
+    """
   end
 
   @impl true
@@ -148,27 +247,29 @@ defmodule PicselloWeb.JobLive.Show do
     |> noreply()
   end
 
-  def handle_event("view-gallery", _, %{assigns: %{job: job}} = socket),
-    do:
-      socket
-      |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, job.gallery.id))
-      |> noreply()
-
   def handle_event("view-orders", _, %{assigns: %{job: job}} = socket),
     do:
       socket
       |> push_redirect(to: Routes.transaction_path(socket, :transactions, job.id))
       |> noreply()
 
-  def handle_event("create-gallery", _, %{assigns: %{job: job}} = socket) do
-    {:ok, gallery} =
-      Picsello.Galleries.create_gallery(%{
-        job_id: job.id,
-        name: Job.name(job)
-      })
+  @impl true
+  def handle_event("view-gallery", %{"gallery_id" => gallery_id}, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id))
+      |> noreply()
 
+  def handle_event("create-gallery", %{"parent_id" => parent_id}, socket) do
+    send(self(), {:gallery_type, {"finals", parent_id}})
+
+    noreply(socket)
+  end
+
+  @impl true
+  def handle_event("create-gallery", _, %{assigns: %{job: job}} = socket) do
     socket
-    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery.id))
+    |> open_modal(GalleryTypeComponent, %{job: job, from_job?: true})
     |> noreply()
   end
 
@@ -219,6 +320,40 @@ defmodule PicselloWeb.JobLive.Show do
     end
   end
 
+  @impl true
+  def handle_info(
+        {:gallery_type, opts},
+        %{assigns: %{job: job, current_user: %{organization_id: organization_id}}} = socket
+      ) do
+    {type, parent_id} = split(opts)
+
+    {:ok, gallery} =
+      Galleries.create_gallery(%{
+        job_id: job.id,
+        type: type,
+        parent_id: parent_id,
+        client_link_hash: UUID.uuid4(),
+        name: Job.name(job) <> " #{Enum.count(job.galleries) + 1}",
+        expired_at: PicselloWeb.GalleryLive.Shared.expired_at(organization_id),
+        albums: Galleries.album_params_for_new(type)
+      })
+
+    send(self(), {:redirect_to_gallery, gallery})
+
+    socket
+    |> assign(:new_gallery, gallery)
+    |> noreply()
+  end
+
+  def handle_info({:redirect_to_gallery, gallery}, socket) do
+    socket
+    |> push_redirect(to: new_gallery_path(socket, gallery))
+    |> noreply()
+  end
+
+  @impl true
+  defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
+
   def handle_progress(
         :documents,
         entry,
@@ -251,6 +386,6 @@ defmodule PicselloWeb.JobLive.Show do
     end
   end
 
-  @impl true
-  defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
+  defp split({type, parent_id}), do: {type, parent_id}
+  defp split(type), do: {type, nil}
 end

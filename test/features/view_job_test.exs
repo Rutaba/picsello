@@ -111,18 +111,6 @@ defmodule Picsello.ViewJobTest do
     |> assert_text("Active")
   end
 
-  feature "user checks gallery", %{session: session, job: job} do
-    session
-    |> find(testid("card-Gallery"))
-    |> assert_has(button("Upload photo"))
-    |> click(button("Upload photo"))
-
-    session
-    |> visit("/jobs/#{job.id}")
-    |> find(testid("card-Gallery"))
-    |> assert_has(button("View gallery"))
-  end
-
   feature "collapse and expand sections", %{session: session} do
     session
     |> assert_has(testid("card-Communications", count: 1))

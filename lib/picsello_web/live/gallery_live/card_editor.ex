@@ -66,10 +66,11 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="relative">
-      <div class="fixed md:pl-16 w-full md:px-6 px-2 mx-auto z-40 bg-white">
+    <div class="relative mx-auto max-w-screen-xl">
+      <div class="fixed md:px-6 px-2 max-w-screen-xl w-full z-40 bg-white">
         <%= live_component PicselloWeb.GalleryLive.ClientMenuComponent, cart_count: @cart_count, live_action: @live_action, gallery: @gallery, album: @album, is_finals: @album && @album.is_finals %>
       </div>
+
 
       <hr>
       <.step {assigns} />
@@ -81,7 +82,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   defp step(%{occasion: nil} = assigns) do
     ~H"""
     <div class="px-6 pt-5 mx-auto lg:pt-10 max-w-screen-xl">
-      <div class="fixed z-10 mt-14 lg:mt-8 bg-white w-full">
+      <div class="fixed z-10 mt-14 lg:mt-8 bg-white max-w-screen-xl w-full">
       <nav class="pb-7 mt-8 lg:mt-16 text-base-250">
         <ol class="flex items-center list-reset">
           <li>
@@ -150,8 +151,8 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
   defp step(assigns) do
     ~H"""
-    <div class="px-6 pt-5 mx-auto lg:pt-10 w-screen">
-      <div class="fixed pr-8 sm:mt-16 lg:mt-8 pt-4 lg:pt-8 w-full z-10 bg-white">
+    <div class="px-6 pt-5 mx-auto lg:pt-10 max-w-screen-xl">
+      <div class="fixed pr-12 sm:mt-16 lg:mt-8 pt-4 lg:pt-8 z-10 bg-white max-w-screen-xl w-full">
         <nav class="mb-9 text-base-250">
           <ol class="flex items-center list-reset">
             <li>
@@ -204,7 +205,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
         </.form>
       </div>
 
-        <ul class={"relative pt-9 grid grid-cols-2 lg:grid-cols-4 gap-6 #{top(@filter_applied?)}"} id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
+        <ul class={"relative pt-6 grid grid-cols-2 lg:grid-cols-4 gap-6 #{top(@filter_applied?)}"} id="design-grid" phx-update={@update} phx-hook="InfiniteScroll" data-page={@page} data-threshold="75">
           <%= for {design, design_index} <- @designs |> Enum.with_index() do %>
             <li id={"design-#{design.id}"}>
                 <.img_box
@@ -496,16 +497,16 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
       <div class="aspect-h-1 aspect-w-1">
         <div class="relative bg-gradient-to-bl from-[#f5f6f7] to-[#ededed] flex flex-col justify-center group">
           <%= if !hide_prev do %>
-          <div phx-click="prev" phx-value-value={value} phx-value-img_index={img_index} class="z-40 left-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
-            <.icon name="back" class="w-8 h-8 cursor-pointer text-base-250" />
+          <div phx-click="prev" phx-value-value={value} phx-value-img_index={img_index} class="z-30 left-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
+            <.icon name="back" class="w-6 h-6 cursor-pointer text-base-250" />
           </div>
           <% end %>
           <%= if !hide_next do %>
-          <div phx-click="next" phx-value-value={value} phx-value-img_index={img_index} class="z-40 right-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
-            <.icon name="forth" class="w-8 h-8 cursor-pointer text-base-250" />
+          <div phx-click="next" phx-value-value={value} phx-value-img_index={img_index} class="z-30 right-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
+            <.icon name="forth" class="w-6 h-6 cursor-pointer text-base-250" />
           </div>
           <% end %>
-          <img class="object-scale-down min-h-0 p-12 drop-shadow-md" src={@src}/>
+          <img class="object-scale-down min-h-0 p-6 drop-shadow-md" src={@src}/>
           <div class="absolute right-0 left-0 mx-auto bottom-2 w-[90%] btn-primary hidden group-hover:block text-center hover:cursor-pointer" phx-click="open-editor" phx-value-value={value}>
             Continue with this design
           </div>

@@ -63,19 +63,8 @@ defmodule Picsello.JobIndexTest do
 
     session
     |> visit("/jobs")
-    |> assert_text("You don't have any jobs at the moment")
-    |> assert_has(link("Create a lead"))
-  end
-
-  feature "empty jobs with stripe not enabled", %{session: session} do
-    Repo.update_all(Organization, set: [stripe_account_id: nil])
-    delete_job()
-
-    session
-    |> click(css("#hamburger-menu"))
-    |> click(link("Jobs"))
-    |> assert_text("A Stripe account is required for job import")
-    |> assert_has(button("Set up Stripe"))
+    |> assert_text("Meet Jobs")
+    |> assert_has(link("Import a job"))
   end
 
   feature "empty leads", %{session: session, lead: lead} do
@@ -90,7 +79,7 @@ defmodule Picsello.JobIndexTest do
     session
     |> visit("/leads")
     |> assert_text("Meet Leads")
-    |> click(link("Create a lead"))
+    |> click(link("Create a lead", count: 2, at: 1))
     |> assert_has(css("h1", text: "Create a lead"))
   end
 

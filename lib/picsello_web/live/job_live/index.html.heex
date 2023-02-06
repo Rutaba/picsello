@@ -6,20 +6,18 @@
           Your <%= action_name(@live_action, :plural) %>
         </h1>
       </div>
-      <%= unless Enum.empty?(@jobs)do %>
-          <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
-            <%= case @live_action do %>
-              <% :leads -> %>
-                <a title="create lead" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
-                  Create a lead
-                </a>
-              <% :jobs -> %>
-                <a title="import job" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="import-job">
-                  Import existing job
-                </a>
-            <% end %>
-          </div>
-      <% end %>
+      <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
+        <%= case @live_action do %>
+          <% :leads -> %>
+            <a title="create lead" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
+              Create a lead
+            </a>
+          <% :jobs -> %>
+            <a title="import job" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="import-job">
+              Import existing job
+            </a>
+        <% end %>
+      </div>
     </div>
     <hr class="mt-4 sm:mt-10" />
   </div>
@@ -34,36 +32,13 @@
             Create a lead
           </a>
         </.empty_state_base>
-      <% {:jobs, :charges_enabled} -> %>
-        <div class="flex flex-col">
-          <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Welcome!</h1>
-          <p class="block text-lg lg:text-2xl lg:w-1/2">
-            <strong>You don't have any jobs at the moment.</strong> You can either import a job you have in-progress from another platform or create a lead for something that isn’t quite ready to book yet.
-          </p>
-        </div>
-        <div class="lg:inline-flex" {intro(@current_user, "intro_jobs_empty")}>
-          <a title="create lead" href="#" class="flex justify-center mt-5 text-lg px-7 btn-primary" phx-click="import-job">
-            Import existing job
-          </a>
-          <a title="create lead" href="#" class="flex justify-center mt-5 text-lg px-7 btn-secondary lg:ml-4" phx-click="create-lead">
-            Create a lead
-          </a>
-        </div>
       <% {:jobs, :loading} -> %>
       <% {:jobs, _stripe_status} -> %>
-        <div class="flex flex-col">
-          <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">First thing’s first</h1>
-          <p class="block text-lg lg:text-2xl lg:w-1/2">
-            <strong>A Stripe account is required for job import.</strong> This allows your clients to pay you securely. After your Stripe account has been created, we’ll send you back to this page.
-          </p>
-        </div>
-        <div class="lg:inline-flex" {intro(@current_user, "intro_jobs_stripe")}>
-          <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
-                current_user: @current_user,
-                class: "w-full mt-6 btn-primary",
-                return_url: Routes.job_url(@socket, :jobs),
-                stripe_status: @stripe_status %>
-        </div>
+        <.empty_state_base tour_embed="https://demo.arcade.software/UyCDDjBKFuMgVF6LOSG7?embed" headline="Meet Jobs" eyebrow_text="Jobs Product Tour" body="Jobs are the core to your business. They mean you have been booked and contain the history of your shoots and galleries. You can import a job if you are migrating or have something in progress." third_party_padding="calc(66.66666666666666% + 41px)">
+          <a title="import a job" href="#" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="import-job">
+            Import a job
+          </a>
+        </.empty_state_base>
     <% end %>
   </div>
 <% else %>

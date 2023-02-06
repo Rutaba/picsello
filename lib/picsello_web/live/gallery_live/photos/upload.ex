@@ -4,15 +4,19 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   alias Phoenix.LiveView.UploadConfig
 
-  alias Picsello.{Galleries, Albums}
-  alias Picsello.Galleries.Photo
-  alias Picsello.Galleries.Watermark
-  alias Picsello.Galleries.PhotoProcessing.GalleryUploadProgress
-  alias Picsello.Galleries.PhotoProcessing.ProcessingManager
-  alias Picsello.Galleries.Workers.PhotoStorage
+  alias Picsello.Galleries
+
+  alias Galleries.{
+    Photo,
+    Watermark,
+    PhotoProcessing.GalleryUploadProgress,
+    PhotoProcessing.ProcessingManager,
+    Workers.PhotoStorage
+  }
+
   alias Phoenix.PubSub
 
-  import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1, disabled?: 1]
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -362,14 +366,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
            assigns: %{
              pending_photos: pending_photos,
              invalid_photos: invalid_photos,
-             gallery: gallery,
-             persisted_album_id: persisted_album_id
+             gallery: gallery
            }
          } = socket
        ) do
     if Enum.empty?(pending_photos) do
       entries = get_entries(socket)
-      {valid, invalid} = max_size_limit(entries, persisted_album_id, gallery.id)
+      {valid, invalid} = max_size_limit(entries, gallery.id)
       {valid_entries, pending_entries} = max_entries_limit(valid)
       pending_entries = List.flatten(pending_entries)
       invalid = invalid ++ invalid_photos
@@ -392,13 +395,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
          %{
            assigns: %{
              photos_error_count: photos_error_count,
-             uploads: uploads,
-             persisted_album_id: persisted_album_id
+             uploads: uploads
            }
          } = socket,
          entries
        ) do
-    {pending_photos, invalid} = max_size_limit(entries, persisted_album_id)
+    {pending_photos, invalid} = max_size_limit(entries)
 
     socket
     |> assign(:invalid_photos, invalid)
@@ -411,55 +413,36 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   defp max_entries_limit(entries) do
-    Enum.chunk_every(entries, Keyword.get(@upload_options, :max_entries))
+    entries
+    |> Enum.chunk_every(Keyword.get(@upload_options, :max_entries))
     |> List.pop_at(0)
   end
 
-  defp max_size_limit(entries, persisted_album_id, gallery_id \\ nil) do
-    is_finals =
-      if persisted_album_id do
-        Albums.get_album!(persisted_album_id) |> Map.get(:is_finals)
-      else
-        false
-      end
-
+  defp max_size_limit(entries, gallery_id \\ nil) do
     Enum.reduce(entries, {[], []}, fn entry, {valid, invalid} = acc ->
       if entry.client_size < Keyword.get(@upload_options, :max_file_size) do
-        filter_wrong_extensions(entry, acc, is_finals, gallery_id)
+        filter_wrong_extensions(entry, acc, gallery_id)
       else
         {valid, [Map.put(entry, :error, "File too large") | invalid]}
       end
     end)
   end
 
-  defp filter_wrong_extensions(entry, {valid, invalid} = acc, is_finals, gallery_id) do
+  defp filter_wrong_extensions(entry, {valid, invalid} = acc, gallery_id) do
     if entry.client_type in Keyword.get(@upload_options, :accept, []) do
-      duplicate_entries(entry, acc, gallery_id, is_finals)
+      duplicate_entries(entry, acc, gallery_id)
     else
       {valid, [Map.put(entry, :error, "Invalid file type") | invalid]}
     end
   end
 
-  defp duplicate_entries(entry, {valid, invalid} = acc, gallery_id, is_finals) do
-    if gallery_id do
-      photos =
-        Enum.filter(Galleries.get_gallery_photos(gallery_id), fn photo ->
-          photo.name == entry.client_name
-        end)
+  defp duplicate_entries(entry, {valid, invalid}, nil), do: {[entry | valid], invalid}
 
-      filter_duplicate(entry, acc, photos, is_finals)
-    else
-      {[entry | valid], invalid}
-    end
-  end
-
-  defp filter_duplicate(entry, {valid, invalid}, photos, is_finals) do
-    case Enum.any?(photos) do
-      true when is_finals ->
-        [name, type] = entry.client_name |> String.split(".", parts: 2)
-        entry = Map.put(entry, :client_name, name <> "_final." <> type)
-        {[entry | valid], invalid}
-
+  defp duplicate_entries(%{client_name: client_name} = entry, {valid, invalid}, gallery_id) do
+    gallery_id
+    |> Galleries.get_gallery_photos()
+    |> Enum.any?(&(&1.name == client_name))
+    |> case do
       true ->
         {valid, [Map.put(entry, :error, "Duplicate") | invalid]}
 

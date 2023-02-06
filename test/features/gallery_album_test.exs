@@ -206,21 +206,6 @@ defmodule Picsello.GalleryAlbumTest do
     |> assert_has(css(".item", count: photos_count))
   end
 
-  test "Albums, create proofing album", %{
-    session: session,
-    gallery: %{id: gallery_id}
-  } do
-    session
-    |> visit("/galleries/#{gallery_id}/albums")
-    |> click(testid("add-album-popup"))
-    |> click(css("span", text: "Off"))
-    |> click(css("label", text: "Proofing album"))
-    |> fill_in(css("#album_name"), with: "Test Proofing album")
-    |> click(css("#toggle-visibility"))
-    |> click(button("Create new album"))
-    |> assert_has(css("p", text: "Album successfully created"))
-  end
-
   test "Albums, render proofing album", %{
     session: session,
     proofing_album: proofing_album,
@@ -229,21 +214,6 @@ defmodule Picsello.GalleryAlbumTest do
     session
     |> visit("/galleries/#{gallery_id}/albums/#{proofing_album.id}")
     |> assert_has(testid("edit-album-settings"))
-    |> assert_has(testid("send-proofs-popup"))
     |> assert_has(css("#addPhoto-form-#{gallery_id}"))
-  end
-
-  test "Albums, send proofs to client", %{
-    session: session,
-    proofing_album: proofing_album,
-    gallery: %{id: gallery_id}
-  } do
-    session
-    |> visit("/galleries/#{gallery_id}/albums/#{proofing_album.id}")
-    |> assert_has(css("button", count: 1, text: "Send proofs to client"))
-    |> click(css("button", text: "Send proofs to client"))
-    |> assert_has(css("button", text: "Send Email"))
-    |> click(css("button", text: "Send Email"))
-    |> assert_has(css("p", text: "Album shared!"))
   end
 end

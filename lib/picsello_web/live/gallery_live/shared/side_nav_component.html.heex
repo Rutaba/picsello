@@ -22,7 +22,7 @@
         <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameFormSideNav">
           <div class={if(!@edit_name, do: "hidden")}>
             <p class="w-[370px] text-3xl font-bold text-base-300"><%= @gallery.name %> </p>
-            <.icon_button disabled={@gallery.disabled} phx_click="click" phx-target={@myself} class="bg-white pt-2 pb-2 mt-4 shadow-lg" title="Edit gallery name" color="blue-planning-300" icon="pencil">
+            <.icon_button disabled={disabled?(@gallery)} phx_click="click" phx-target={@myself} class="bg-white pt-2 pb-2 mt-4 shadow-lg" title="Edit gallery name" color="blue-planning-300" icon="pencil">
               Edit gallery name
             </.icon_button>
           </div>
@@ -102,13 +102,15 @@
             <div class="bg-base-200 border-2 border-gray-200 rounded-b-lg">
               <%= if @album_dropdown_show do %>
                 <%= if length(@albums) > 0 do %>
-                  <ul>
-                    <.li title={if List.last(@albums).is_client_liked && length(@albums) == 1, do: "All photos", else: "Unsorted photos"} name="unsorted" class="block" button_class={if @arrow_show == "photos" && @selected_album == nil , do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}/>
-                  </ul>
+                  <%= if standard?(@gallery) do %>
+                    <ul>
+                      <.li title={if List.last(@albums).is_client_liked && length(@albums) == 1, do: "All photos", else: "Unsorted photos"} name="unsorted" class="block" button_class={if @arrow_show == "photos" && @selected_album == nil , do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                    </ul>
+                  <% end %>
                 <% end %>
                 <%= for album <- @albums do %>
                   <ul>
-                    <.li title={album.name} class="block" name={icon_name(album)} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
+                    <.li title={album.name} is_finals={album.is_finals} is_proofing={album.is_proofing} class="block" name={icon_name(album)} button_class={if is_selected_album(album, @selected_album), do: " text-blue-planning-300", else: "text-gray-700"} route={Routes.gallery_photos_index_path(@socket, :index, @gallery.id, album.id, if(@is_mobile, do: [is_mobile: false], else: []))}/>
                   </ul>
                 <% end %>
               <% end %>

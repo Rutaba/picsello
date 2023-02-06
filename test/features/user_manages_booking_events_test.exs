@@ -9,7 +9,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
-    |> assert_text("You don’t have any booking events created at the moment")
+    |> assert_text("Meet Client Booking")
   end
 
   feature "sees list of events", %{session: session, user: user} do
@@ -67,7 +67,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
-    |> click(link("Add booking event"))
+    |> click(link("Add booking event", count: 2, at: 1))
     |> assert_text("Add booking event: Details")
     |> fill_in(text_field("Title"), with: "My event")
     |> find(select("Shoot Location"), &click(&1, option("On Location")))
@@ -145,7 +145,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
-    |> click(link("Add booking event"))
+    |> click(link("Add booking event", count: 2, at: 1))
     |> assert_text("Add booking event: Details")
     |> fill_in(text_field("Title"), with: " ")
     |> assert_text("Title can't be blank")
@@ -170,7 +170,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
-    |> click(link("Add booking event"))
+    |> click(link("Add booking event", count: 2, at: 1))
     |> assert_text("Add booking event: Details")
     |> assert_has(testid("event-date", count: 1))
     |> fill_in(text_field("booking_event[dates][0][date]"), with: "10/10/2050")
