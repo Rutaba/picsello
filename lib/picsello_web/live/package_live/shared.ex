@@ -30,7 +30,7 @@ defmodule PicselloWeb.PackageLive.Shared do
         %{assigns: assigns |> Map.drop([:flash])}
       )
 
-  defp assign_brand_links(%{assigns: %{organization: organization}} = socket) do
+  defp assign_brand_links(%{assigns: %{current_user: %{organization: organization}}} = socket) do
     organization =
       case organization do
         %{brand_links: []} = organization ->
@@ -63,14 +63,14 @@ defmodule PicselloWeb.PackageLive.Shared do
   def handle_event(
         "edit-job-type",
         %{"job-type-id" => id},
-        %{assigns: %{organization: organization}} = socket
+        %{assigns: %{current_user: %{organization: organization}}} = socket
       ) do
     org_job_type =
       organization.organization_job_types
       |> Enum.find(fn job_type -> job_type.id == to_integer(id) end)
 
     changeset = OrganizationJobType.update_changeset(org_job_type, %{})
-    
+
     params = %{
       checkbox_event: "visibility_for_business",
       checkbox_event2: "visibility_for_profile",

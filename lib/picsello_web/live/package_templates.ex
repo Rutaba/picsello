@@ -394,6 +394,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event("add-package", %{}, socket),
     do:
       socket
+      |> assign_job_types()
       |> push_patch(to: Routes.package_templates_path(socket, :new))
       |> noreply()
 
@@ -405,6 +406,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       ),
       do:
         socket
+        |> assign_job_types()
         |> push_patch(to: Routes.package_templates_path(socket, :edit, package_id))
         |> noreply()
 
@@ -561,12 +563,11 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "edit-job-types",
         %{},
-        %{assigns: %{organization: organization, package_name: package_name}} = socket
+        %{assigns: %{package_name: package_name}} = socket
       ) do
     socket
     |> assign(:package_name, package_name)
     |> assign_job_types()
-    |> assign(organization: organization)
     |> PicselloWeb.PackageLive.EditJobTypeComponent.open()
     |> noreply()
   end
@@ -915,12 +916,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
     )
   end
 
-  defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
-    organization = organization |> Repo.preload(:organization_job_types, force: true)
+  defp assign_job_types(%{assigns: %{current_user: current_user}} = socket) do
+    current_user = current_user |> Repo.preload([organization: :organization_job_types], force: true)
 
     socket
-    |> assign(:organization, organization)
-    |> assign(:job_types, Profiles.enabled_job_types(organization.organization_job_types))
+    |> assign(:current_user, current_user)
+    |> assign(:job_types, Profiles.enabled_job_types(current_user.organization.organization_job_types))
   end
 
   defp create_duplicate_package(package) do
