@@ -83,7 +83,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       heading2: "Show photography type on your public profile and contact form?",
       subtitle2: "Will only show if your Public Profile is enabled",
       title: "Edit Photography Type",
-      payload: %{changeset: changeset, job_type_id: id}
+      payload: %{changeset: changeset, organization_job_type: org_job_type}
     }
 
     params =

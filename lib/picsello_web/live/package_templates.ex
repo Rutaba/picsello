@@ -531,8 +531,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "assign_templates_by_job_type",
         %{"job-type" => job_type},
-        %{assigns: %{current_user: %{organization: %{id: organization_id}}}} =
-          socket
+        %{assigns: %{current_user: %{organization: %{id: organization_id}}}} = socket
       ) do
     socket
     |> assign(
@@ -575,7 +574,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   @impl true
   def handle_info(
-        {:confirm_event, "next", %{changeset: changeset},
+        {:confirm_event, "next", %{changeset: changeset} = payload,
          %{"check" => %{"check_enabled" => check_enabled} = params}},
         %{
           assigns: %{
@@ -616,7 +615,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
           ),
         title:
           "#{if packages_exist?, do: "Unarchive existing", else: "Create default"} packages?",
-        payload: %{changeset: changeset}
+        payload: payload |> Map.replace(:changeset, changeset)
       }
 
       socket
@@ -689,8 +688,8 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   @impl true
   def handle_info(
-        {:confirm_event, "visibility_for_business", %{job_type_id: job_type_id} = payload,
-         _params},
+        {:confirm_event, "visibility_for_business",
+         %{organization_job_type: %{id: job_type_id}} = payload, _params},
         %{
           assigns: %{
             current_user: %{organization: %{organization_job_types: org_job_types, id: org_id}}

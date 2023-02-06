@@ -79,7 +79,7 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
         <%= if @subtitle2 && @heading2 do %>
           <div class={classes("flex flex-col pt-4 items-start", %{"text-gray-300" => !@checked})}>
             <div class="flex flex-row items-center">
-              <%= checkbox(f, :check_profile, class: "w-5 h-5 mr-2 checkbox", checked: @checked2, disabled: !@checked) %>
+              <%= checkbox(f, :check_profile, class: "w-5 h-5 mr-2 checkbox", checked: @checked2, phx_click: @checkbox_event2, disabled: !@checked, phx_target: @myself) %>
               <h1 class="font-bold ml-1">
                 <%= @heading2 %>
               </h1>
@@ -91,7 +91,7 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
         <% end %>
 
         <%= if @confirm_event do %>
-          <button class={"w-full mt-6 " <> @confirm_class} title={@confirm_label} type="submit" phx-disable-with="Saving&hellip;">
+          <button class={"w-full mt-6 " <> @confirm_class} title={@confirm_label} disabled={@checked == @payload.organization_job_type.show_on_business? && @checked2 == @payload.organization_job_type.show_on_profile?} type="submit" phx-disable-with="Saving&hellip;">
             <%= @confirm_label %>
           </button>
         <% end %>
@@ -130,6 +130,17 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
 
     socket
     |> assign(:checked, value)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "visibility_for_profile",
+        _,
+        %{assigns: %{checked2: checked2}} = socket
+      ) do
+    socket
+    |> assign(:checked2, !checked2)
     |> noreply()
   end
 
