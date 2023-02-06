@@ -194,7 +194,7 @@ defmodule Picsello.Package do
       where:
         not is_nil(package.job_type) and package.organization_id == ^organization_id and
           is_nil(package.archived_at),
-      order_by: [asc: package.base_price]
+      order_by: [desc: package.base_price]
     )
   end
 

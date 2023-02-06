@@ -341,30 +341,30 @@ defmodule PicselloWeb.Live.PackageTemplates do
         %{"direction" => direction},
         %{assigns: %{pagination: pagination, package_name: package_name}} = socket
       ) do
-    updated_pagination =
-      case direction do
-        "back" ->
-          pagination
-          |> PaginationLive.changeset(%{
-            first_index: pagination.first_index - pagination.limit,
-            offset: pagination.offset - pagination.limit
-          })
-          |> Changeset.apply_changes()
+        updated_pagination =
+          case direction do
+            "back" ->
+              pagination
+              |> PaginationLive.changeset(%{
+                first_index: pagination.first_index - pagination.limit,
+                offset: pagination.offset - pagination.limit
+              })
+              |> Changeset.apply_changes()
 
-        "forth" ->
-          pagination
-          |> PaginationLive.changeset(%{
-            first_index: pagination.first_index + pagination.limit,
-            offset: pagination.offset + pagination.limit
-          })
-          |> Changeset.apply_changes()
-      end
+            "forth" ->
+              pagination
+              |> PaginationLive.changeset(%{
+                first_index: pagination.first_index + pagination.limit,
+                offset: pagination.offset + pagination.limit
+              })
+              |> Changeset.apply_changes()
+          end
 
-    socket
-    |> assign(:package_name, package_name)
-    |> assign(:pagination, updated_pagination)
-    |> assign_templates()
-    |> noreply()
+        socket
+        |> assign(:package_name, package_name)
+        |> assign(:pagination, updated_pagination)
+        |> assign_templates()
+        |> noreply()
   end
 
   @impl true
@@ -577,7 +577,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   @impl true
   def handle_info(
         {:confirm_event, "next", %{changeset: changeset},
-         %{"check" => params}},
+        %{"check" => %{"check_enabled" => check_enabled} = params}},
         %{
           assigns: %{
             current_user: %{organization_id: organization_id},
@@ -585,16 +585,15 @@ defmodule PicselloWeb.Live.PackageTemplates do
           }
         } = socket
       ) do
-    check_enabled = Map.get(params, "check_enabled", "false") |> String.to_atom()
-    IO.inspect check_enabled, label: "check_enabled"
-    if check_enabled do
-      changeset =
-        changeset
-        |> Changeset.put_change(:show_on_business?, check_enabled)
-        |> Changeset.put_change(
-          :show_on_profile?,
-          String.to_atom(Map.get(params, "check_profile", "false"))
-        )
+    check_enabled = check_enabled |> String.to_atom()
+    changeset =
+      changeset
+      |> Changeset.put_change(:show_on_business?, check_enabled)
+      |> Changeset.put_change(
+        :show_on_profile?,
+        String.to_atom(Map.get(params, "check_profile", "false"))
+      )
+    if changeset |> Changeset.get_change(:show_on_business?) do
       job_type = changeset |> current() |> Map.get(:job_type)
       packages_exist? = Packages.packages_exist?(job_type, organization_id)
 
@@ -621,6 +620,8 @@ defmodule PicselloWeb.Live.PackageTemplates do
       |> PicselloWeb.PackageLive.ConfirmationComponent.open(params)
     else
       socket
+      |> toggle_job_type_for_profile(changeset)
+      |> close_modal()
     end
     |> assign(
       :show_on_public_profile,
@@ -631,28 +632,18 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> noreply()
   end
 
+  @impl true
   def handle_info(
-        {:confirm_event, "save", %{changeset: changeset},
-         %{"check" => %{"check_profile" => check_profile}}},
-        socket
-      ) do
+    {:confirm_event, "next", %{changeset: changeset},
+     %{"check" => %{"check_profile" => check_profile}}},
+    socket
+  ) do
     changeset =
       changeset
       |> Changeset.put_change(:show_on_profile?, String.to_atom(check_profile))
 
-    case Repo.update(changeset) do
-      {:ok, org_job_type} ->
-        socket
-        |> default_assigns()
-        |> put_flash(
-          :success,
-          "The type #{if org_job_type.show_on_profile?, do: "will now be displayed on", else: "has been hidden from"} your public profile"
-        )
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "The type could not be made public, please try again.")
-    end
+    socket
+    |> toggle_job_type_for_profile(changeset)
     |> close_modal()
     |> noreply()
   end
@@ -695,14 +686,13 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   @impl true
   def handle_info(
-        {:confirm_event, "visibility_for_business", %{job_type_id: job_type_id} = params, abc},
+        {:confirm_event, "visibility_for_business", %{job_type_id: job_type_id} = payload, _params},
         %{
           assigns: %{
             current_user: %{organization: %{organization_job_types: org_job_types, id: org_id}}
           }
         } = socket
       ) do
-        IO.inspect abc, label: "aa---------"
     org_job_type =
       org_job_types
       |> Enum.find(fn job_type -> job_type.id == to_integer(job_type_id) end)
@@ -719,7 +709,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         subtitle2:
           "Your packages will remain intact in case you enable this photography type again in the future.",
         title: "Are you sure?",
-        payload: params
+        payload: payload
       })
     else
       socket
@@ -970,6 +960,22 @@ defmodule PicselloWeb.Live.PackageTemplates do
       end
   end
 
+  defp toggle_job_type_for_profile(socket, changeset) do
+    case Repo.update(changeset) do
+      {:ok, org_job_type} ->
+        socket
+        |> default_assigns()
+        |> put_flash(
+          :success,
+          "The type #{if org_job_type.show_on_profile?, do: "will now be displayed on", else: "has been hidden from"} your public profile"
+        )
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "The action could not be completed successfully, please try again.")
+    end
+  end
+
   defp create_attrs_from_struct(struct, date) do
     struct
     |> Map.from_struct()
@@ -986,7 +992,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
          } = socket
        ) do
     if Packages.packages_exist?(job_type, organization_id) do
-      case Packages.unarchive_packages_for_job_type(job_type, organization_id) |> IO.inspect() do
+      case Packages.unarchive_packages_for_job_type(job_type, organization_id) do
         {_row_count, nil} ->
           socket
           |> default_assigns()

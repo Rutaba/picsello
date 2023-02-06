@@ -126,22 +126,7 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
         %{"value" => value} = params,
         %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket
       ) do
-        IO.inspect "xyz"
     if !value, do: send(parent_pid, {:confirm_event, "visibility_for_business", payload, params})
-
-    socket
-    |> assign(:checked, value)
-    |> noreply()
-  end
-  
-  @impl true
-  def handle_event(
-        "visibility_for_profile",
-        %{"value" => value} = params,
-        %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket
-      ) do
-        IO.inspect "xyz--------"
-    if !value, do: send(parent_pid, {:confirm_event, "visibility_for_profile", payload, params})
 
     socket
     |> assign(:checked, value)
@@ -154,7 +139,6 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
         params,
         %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket
       ) do
-        IO.inspect "abc"
     send(parent_pid, {:confirm_event, event, payload, params})
 
     socket |> noreply()
