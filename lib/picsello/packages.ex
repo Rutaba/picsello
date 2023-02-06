@@ -393,7 +393,9 @@ defmodule Picsello.Packages do
         } = user
       )
       when is_integer(years_experience) and is_atom(schedule) and is_binary(state) do
-    %{organization: %{organization_job_types: job_types}} = user = Repo.preload(user, organization: :organization_job_types)
+    %{organization: %{organization_job_types: job_types}} =
+      user = Repo.preload(user, organization: :organization_job_types)
+
     enabled_job_types = Profiles.enabled_job_types(job_types)
 
     templates_query =

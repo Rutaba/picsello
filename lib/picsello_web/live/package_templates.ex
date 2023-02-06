@@ -215,7 +215,11 @@ defmodule PicselloWeb.Live.PackageTemplates do
                 <div class="font-bold text-xl capitalize"><%= @package_name %> Packages</div>
                 <%= if @package_name not in ["All", "Archived"] do%>
                   <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(@package_name, org_id).id}>
-                    <.icon name={if @show_on_public_profile, do: "eye", else: "closed-eye"} class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
+                    <%= if @show_on_public_profile do %>
+                      <.icon name="eye" class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
+                    <% else %>
+                      <.icon name="closed-eye" class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
+                    <% end %>
                     <span class="shadow-lg rounded-lg pb-2 px-2 text-xs capitalize"><%= @package_name %> Photography is <%= if @show_on_public_profile, do: "showing", else: "hidden" %> as an <br />offering on your public profile & contact form</span>
                   </div>
                 <% end %>
@@ -341,30 +345,30 @@ defmodule PicselloWeb.Live.PackageTemplates do
         %{"direction" => direction},
         %{assigns: %{pagination: pagination, package_name: package_name}} = socket
       ) do
-        updated_pagination =
-          case direction do
-            "back" ->
-              pagination
-              |> PaginationLive.changeset(%{
-                first_index: pagination.first_index - pagination.limit,
-                offset: pagination.offset - pagination.limit
-              })
-              |> Changeset.apply_changes()
+    updated_pagination =
+      case direction do
+        "back" ->
+          pagination
+          |> PaginationLive.changeset(%{
+            first_index: pagination.first_index - pagination.limit,
+            offset: pagination.offset - pagination.limit
+          })
+          |> Changeset.apply_changes()
 
-            "forth" ->
-              pagination
-              |> PaginationLive.changeset(%{
-                first_index: pagination.first_index + pagination.limit,
-                offset: pagination.offset + pagination.limit
-              })
-              |> Changeset.apply_changes()
-          end
+        "forth" ->
+          pagination
+          |> PaginationLive.changeset(%{
+            first_index: pagination.first_index + pagination.limit,
+            offset: pagination.offset + pagination.limit
+          })
+          |> Changeset.apply_changes()
+      end
 
-        socket
-        |> assign(:package_name, package_name)
-        |> assign(:pagination, updated_pagination)
-        |> assign_templates()
-        |> noreply()
+    socket
+    |> assign(:package_name, package_name)
+    |> assign(:pagination, updated_pagination)
+    |> assign_templates()
+    |> noreply()
   end
 
   @impl true
@@ -527,21 +531,15 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "assign_templates_by_job_type",
         %{"job-type" => job_type},
-        %{assigns: %{package_name: package_name, current_user: %{organization: %{id: org_id}}}} =
+        %{assigns: %{current_user: %{organization: %{id: organization_id}}}} =
           socket
       ) do
     socket
-    |> assign(package_name: job_type)
-    |> assign(is_mobile: false)
-    |> then(fn socket ->
-      socket
-      |> assign(
-        :show_on_public_profile,
-        if(package_name not in ["All", "Archived"],
-          do: Jobs.get_job_type(package_name, org_id).show_on_profile
-        )
-      )
-    end)
+    |> assign(
+      package_name: job_type,
+      is_mobile: false,
+      show_on_public_profile: refresh_visbility(job_type, organization_id)
+    )
     |> assign_templates()
     |> noreply()
   end
@@ -578,7 +576,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   @impl true
   def handle_info(
         {:confirm_event, "next", %{changeset: changeset},
-        %{"check" => %{"check_enabled" => check_enabled} = params}},
+         %{"check" => %{"check_enabled" => check_enabled} = params}},
         %{
           assigns: %{
             current_user: %{organization_id: organization_id},
@@ -587,6 +585,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         } = socket
       ) do
     check_enabled = check_enabled |> String.to_atom()
+
     changeset =
       changeset
       |> Changeset.put_change(:show_on_business?, check_enabled)
@@ -594,6 +593,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         :show_on_profile?,
         String.to_atom(Map.get(params, "check_profile", "false"))
       )
+
     if changeset |> Changeset.get_change(:show_on_business?) do
       job_type = changeset |> current() |> Map.get(:job_type)
       packages_exist? = Packages.packages_exist?(job_type, organization_id)
@@ -612,8 +612,10 @@ defmodule PicselloWeb.Live.PackageTemplates do
             do:
               "You created some packages earlier when this type was enabled, You could unarchive those packages now and use them as a starting point or just take a look. You can always archive them again at any time and don't worry, they won't be displayed on your public profile unless you set them to be displayed!",
             else:
-              "We have default packages that are built using our pricing calculator which references your location, time in the industry, and whether your are part-time or full-time. You can always archive them or use as a starting point!"),
-        title: "#{if packages_exist?, do: "Unarchive existing", else: "Create default"} packages?",
+              "We have default packages that are built using our pricing calculator which references your location, time in the industry, and whether your are part-time or full-time. You can always archive them or use as a starting point!"
+          ),
+        title:
+          "#{if packages_exist?, do: "Unarchive existing", else: "Create default"} packages?",
         payload: %{changeset: changeset}
       }
 
@@ -635,10 +637,10 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   @impl true
   def handle_info(
-    {:confirm_event, "next", %{changeset: changeset},
-     %{"check" => %{"check_profile" => check_profile}}},
-    socket
-  ) do
+        {:confirm_event, "next", %{changeset: changeset},
+         %{"check" => %{"check_profile" => check_profile}}},
+        socket
+      ) do
     changeset =
       changeset
       |> Changeset.put_change(:show_on_profile?, String.to_atom(check_profile))
@@ -680,14 +682,15 @@ defmodule PicselloWeb.Live.PackageTemplates do
       {:error, _} ->
         socket
         |> put_flash(:error, "The type could not be enabled, please try again.")
-      end
+    end
     |> close_modal()
     |> noreply()
   end
 
   @impl true
   def handle_info(
-        {:confirm_event, "visibility_for_business", %{job_type_id: job_type_id} = payload, _params},
+        {:confirm_event, "visibility_for_business", %{job_type_id: job_type_id} = payload,
+         _params},
         %{
           assigns: %{
             current_user: %{organization: %{organization_job_types: org_job_types, id: org_id}}
@@ -917,11 +920,15 @@ defmodule PicselloWeb.Live.PackageTemplates do
   end
 
   defp assign_job_types(%{assigns: %{current_user: current_user}} = socket) do
-    current_user = current_user |> Repo.preload([organization: :organization_job_types], force: true)
+    current_user =
+      current_user |> Repo.preload([organization: :organization_job_types], force: true)
 
     socket
     |> assign(:current_user, current_user)
-    |> assign(:job_types, Profiles.enabled_job_types(current_user.organization.organization_job_types))
+    |> assign(
+      :job_types,
+      Profiles.enabled_job_types(current_user.organization.organization_job_types)
+    )
   end
 
   defp create_duplicate_package(package) do
@@ -940,25 +947,34 @@ defmodule PicselloWeb.Live.PackageTemplates do
           end),
         else: []
 
-      if is_map(package.contract) do
-        contract =
-          package.contract
-          |> create_attrs_from_struct(timestamp)
-          |> Contract.changeset()
-          |> Ecto.Changeset.apply_changes()
+    if is_map(package.contract) do
+      contract =
+        package.contract
+        |> create_attrs_from_struct(timestamp)
+        |> Contract.changeset()
+        |> Ecto.Changeset.apply_changes()
 
-        package
-        |> Map.merge(%{
-          id: nil,
-          name: "#{package.name} - Duplicate",
-          contract: contract,
-          package_payment_schedules: package_payment_schedules,
-          inserted_at: timestamp,
-          updated_at: timestamp
-        })
-      else
-        %{}
-      end
+      package
+      |> Map.merge(%{
+        id: nil,
+        name: "#{package.name} - Duplicate",
+        contract: contract,
+        package_payment_schedules: package_payment_schedules,
+        inserted_at: timestamp,
+        updated_at: timestamp
+      })
+    else
+      %{}
+    end
+  end
+
+  defp refresh_visbility(job_type, organization_id) do
+    Jobs.get_all_job_types(organization_id)
+    |> Enum.filter(fn type ->
+      type.job_type == job_type
+    end)
+    |> List.first()
+    |> Map.get(:show_on_profile?)
   end
 
   defp toggle_job_type_for_profile(socket, changeset) do
