@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
 
   alias Picsello.{Repo, Card, OrganizationCard}
 
-  import Ecto.Query, only: [order_by: 2]
+  import Ecto.Query, only: [order_by: 2, from: 2]
 
   import PicselloWeb.LayoutView,
     only: [
@@ -99,7 +99,10 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
     Ecto.Multi.new()
     |> Ecto.Multi.insert(
       :card,
-      Card.changeset(%Card{concise_name: "simple-card", title: "New card…"}, %{})
+      Card.changeset(
+        %Card{concise_name: "simple-card", title: "New card…", icon: "confetti-welcome"},
+        %{}
+      )
     )
     |> Ecto.Multi.insert(
       :organization_card,
@@ -130,13 +133,13 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
     id = String.to_integer(id)
 
     Ecto.Multi.new()
-    |> Ecto.Multi.delete(
-      :delete_org_card,
-      OrganizationCard |> Repo.get_by!(card_id: id)
+    |> Ecto.Multi.delete_all(
+      :delete_all_org_card,
+      from(oc in OrganizationCard, where: oc.card_id == ^id)
     )
-    |> Ecto.Multi.delete(
-      :delete_card,
-      Card |> Repo.get!(id)
+    |> Ecto.Multi.delete_all(
+      :delete_all_card,
+      from(c in Card, where: c.id == ^id)
     )
     |> Repo.transaction()
     |> case do

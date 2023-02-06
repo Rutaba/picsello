@@ -17,7 +17,7 @@
           <ul class={classes("flex px-6 pb-4 overflow-auto lg:pb-0 intro-next-up", %{"xl:overflow-none" => !@should_attention_items_overflow })}>
             <%= for {true, %{card: %{title: title, body: body, icon: icon, buttons: buttons, concise_name: concise_name, color: color, class: class}} = org_card} <- items do %>
             <li {testid("attention-item")} class={classes("attention-item flex-shrink-0 flex flex-col justify-between relative max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"xl:flex-1" => !@should_attention_items_overflow})}>
-              <%= if org_card.status == :viewed and concise_name != "black-friday" do %>
+              <%= if org_card.status == :viewed do %>
                 <div class="flex justify-between absolute w-full">
                   <span></span>
                   <span class="sm:pr-[30px] pr-[25px]" phx-click="card_status" phx-value-org_card_id={org_card.id} phx-value-status="inactive">
