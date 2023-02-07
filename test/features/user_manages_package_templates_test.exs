@@ -98,7 +98,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> assert_text("Super Deluxe Template")
+    |> click(testid("intro-state-close-button"))
+    |> find(testid("package-template-card"), &assert_text(&1, "Super Deluxe Templat..."))
     |> assert_text("$0.20/each")
   end
 
@@ -108,7 +109,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(button("Add a package", count: 2, at: 0))
+    |> click(testid("intro-state-close-button"))
+    |> click(button("Add package"))
     |> assert_text("Add a Package: Provide Details")
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
@@ -172,7 +174,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(button("Add a package", count: 2, at: 0))
+    |> click(testid("intro-state-close-button"))
+    |> click(button("Add package"))
     |> assert_text("Add a Package: Provide Details")
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
@@ -280,8 +283,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(link("Settings"))
     |> click(link("Package Templates"))
     |> click(testid("edit-package-#{template.id}"))
-
-    session
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
     |> within_modal(
       &(&1
@@ -347,7 +348,9 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
            } = package.contract
 
     session
-    |> click(link("Package Templates"))
+    |> visit("/package_templates")
+    |> click(testid("intro-state-close-button"))
+    |> find(testid("package-template-card"), &assert_text(&1, "Wedding Super Deluxe"))
     |> click(testid("menu-btn-#{package.id}"))
     |> click(button("Duplicate"))
     |> assert_flash(:success, text: "The package: #{package.name} has been duplicated")
@@ -372,7 +375,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(testid("menu-btn-#{package.id}"))
+    |> click(testid("intro-state-close-button"))
+    |> click(button("Manage", count: 2, at: 0))
     |> click(button("Archive"))
     |> assert_text("Are you sure you want to archive this package template?")
     |> click(button("Yes, archive"))
@@ -380,7 +384,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(css(".archived-anchor-click"))
     |> assert_text("Archived Packages")
     |> scroll_to_bottom()
-    |> click(testid("menu-btn-#{package.id}"))
+    |> click(button("Manage", count: 2, at: 0))
     |> click(button("archive-unarchive-btn-#{package.id}"))
     |> assert_text("Are you sure you want to Un-archive this package template?")
     |> click(button("Yes, unarchive"))
@@ -393,8 +397,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> scroll_to_top()
     |> click(link("Package Templates"))
-    |> scroll_into_view(testid("menu-btn-#{package.id}"))
-    |> click(testid("menu-btn-#{package.id}"))
+    |> click(button("Manage"))
     |> click(button("Show on public profile"))
     |> assert_text("Show on your Public Profile?")
     |> click(button("Great! Show on my Public Profile"))
