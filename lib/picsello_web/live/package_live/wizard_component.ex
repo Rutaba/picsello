@@ -442,7 +442,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:description}>
           <span>Description <%= error_tag(@f, :description) %></span>
           <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(@f,:description)}>
-            Clear
+            <p class="text-black">Clear</p>
           </.icon_button>
         </.input_label>
         <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your#{if !@is_template do " " <> @job.type end} offering and pricing "} />
@@ -453,7 +453,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <%= if @is_template do %>
         <div class="flex flex-col mt-6">
           <.input_label form={@f} class="mb-1 text-sm font-semibold" field={:job_type}>
-            Type of Photography
+            Select a Photography Type
           </.input_label>
 
           <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
