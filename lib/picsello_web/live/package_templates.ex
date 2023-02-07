@@ -83,37 +83,36 @@ defmodule PicselloWeb.Live.PackageTemplates do
         </.empty_state_base>
       <% end %>
 
-      <%= unless Enum.empty? @templates do %>
-        <hr class="my-4" />
-        <div class={classes("lg:mt-10", %{"hidden" => is_nil(@is_mobile)})}>
-          <div class="flex flex-col lg:flex-row lg:mt-8">
-            <div class={classes("lg:block", %{"hidden" => !@is_mobile})}>
-              <div class="h-auto">
-                <div phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
-                  <%= for(job_type <- @job_types) do %>
-                    <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == job_type})} phx-click="assign_templates_by_job_type" phx-value-job-type={job_type}>
-                      <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
-                          <a class={"flex w-full #{job_type}-anchor-click"}>
-                            <div class="flex items-center justify-start">
-                              <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
-                                <.icon name={job_type} class="w-3 h-3 m-1 fill-current text-white" />
-                              </div>
-                              <div class="justify-start ml-3">
-                                <span class="capitalize"><%= job_type %> <span class="font-normal">(<%= @job_type_packages |> Map.get(job_type, [])|> Enum.count() %>)</span></span>
-                              </div>
+      <hr class="my-4" />
+      <div class={classes("lg:mt-10", %{"hidden" => is_nil(@is_mobile)})}>
+        <div class="flex flex-col lg:flex-row lg:mt-8">
+          <div class={classes("lg:block", %{"hidden" => !@is_mobile})}>
+            <div class="h-auto">
+              <div phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
+                <%= for(job_type <- @job_types) do %>
+                  <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == job_type})} phx-click="assign_templates_by_job_type" phx-value-job-type={job_type}>
+                    <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
+                        <a class={"flex w-full #{job_type}-anchor-click"}>
+                          <div class="flex items-center justify-start">
+                            <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
+                              <.icon name={job_type} class="w-3 h-3 m-1 fill-current text-white" />
                             </div>
-                            <div class="flex items-center px-2 ml-auto" phx-click="edit-job-type" phx-value-job-type-id={get_id_by_job_name(job_type, org_id)}>
-                                <span class="text-blue-planning-300 link font-normal">Edit</span>
+                            <div class="justify-start ml-3">
+                              <span class="capitalize"><%= job_type %> <span class="font-normal">(<%= @job_type_packages |> Map.get(job_type, [])|> Enum.count() %>)</span></span>
                             </div>
-                          </a>
-                      </div>
-                      <%= if @package_name == job_type do %>
-                        <span class="arrow show lg:block hidden">
-                          <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
-                        </span>
-                      <% end %>
+                          </div>
+                          <div class="flex items-center px-2 ml-auto" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(job_type, org_id).id}>
+                              <span class="text-blue-planning-300 link font-normal">Edit</span>
+                          </div>
+                        </a>
                     </div>
-                  <% end %>
+                    <%= if @package_name == job_type do %>
+                      <span class="arrow show lg:block hidden">
+                        <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+                      </span>
+                    <% end %>
+                  </div>
+                <% end %>
 
                   <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == "All"})} phx-click="assign_all_templates">
                     <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
@@ -125,9 +124,6 @@ defmodule PicselloWeb.Live.PackageTemplates do
                             <div class="justify-start ml-3">
                               <span class="">All <span class="font-normal">(<%= @all_templates_count %>)</span></span>
                             </div>
-                          </div>
-                          <div class="flex items-center px-2 ml-auto" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(job_type, org_id).id}>
-                              <span class="text-blue-planning-300 link font-normal">Edit</span>
                           </div>
                         </a>
                     </div>
@@ -149,38 +145,14 @@ defmodule PicselloWeb.Live.PackageTemplates do
                               <span class="">Archived <span class="font-normal">(<%= @archived_templates_count %>)</span></span>
                             </div>
                           </div>
-                          <div class="justify-start ml-3">
-                            <span class="">All <span class="font-normal">(<%= @all_templates_count %>)</span></span>
-                          </div>
-                        </div>
-                      </a>
+                        </a>
+                    </div>
+                    <%= if @package_name == "Archived" do %>
+                      <span class="arrow show lg:block hidden">
+                        <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+                      </span>
+                    <% end %>
                   </div>
-                  <%= if @package_name == "All" do %>
-                    <span class="arrow show lg:block hidden">
-                      <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
-                    </span>
-                  <% end %>
-                </div>
-
-                <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == "Archived"})} phx-click="assign_archieved_templated">
-                  <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
-                      <a class="flex w-full archived-anchor-click">
-                        <div class="flex items-center justify-start">
-                          <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
-                            <.icon name="archieved" class="w-3 h-3 m-1 fill-current text-white" />
-                          </div>
-                          <div class="justify-start ml-3">
-                            <span class="">Archived <span class="font-normal">(<%= @archived_templates_count %>)</span></span>
-                          </div>
-                        </div>
-                      </a>
-                  </div>
-                  <%= if @package_name == "Archived" do %>
-                    <span class="arrow show lg:block hidden">
-                      <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
-                    </span>
-                  <% end %>
-                </div>
 
                 <div class="font-bold rounded-lg cursor-pointer grid-item" phx-click="edit-job-types">
                   <div class="flex items-center lg:h-11 pr-4 lg:pl-2 border border-blue-planning-300 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
@@ -201,127 +173,79 @@ defmodule PicselloWeb.Live.PackageTemplates do
             </div>
           </div>
 
-          <div class={classes("w-full lg:p-0 lg:block", %{"hidden" => @is_mobile})}>
-            <div class="flex items-center lg:mt-0 mb-2">
-              <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
-                <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
-              </div>
-              <div class="ml-3 lg:hidden">
-                <span class="font-sans lg:text-2xl font-bold text-3xl capitalize"><%= @package_name %> Packages</span>
-              </div>
+        <div class={classes("w-full lg:p-0 lg:block", %{"hidden" => @is_mobile})}>
+          <div class="flex items-center lg:mt-0 mb-2">
+            <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
+              <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
             </div>
-            <div class="flex-1 md:ml-8">
-              <div class="md:flex items-center mt-6 hidden md:block">
-                <div class="font-bold text-xl capitalize"><%= @package_name %> Packages</div>
-                <%= if @package_name not in ["All", "Archived"] do%>
-                  <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(@package_name, org_id).id}>
-                    <%= if @show_on_public_profile do %>
-                      <.icon name="eye" class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
-                    <% else %>
-                      <.icon name="closed-eye" class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
-                    <% end %>
-                    <span class="shadow-lg rounded-lg pb-2 px-2 text-xs capitalize"><%= @package_name %> Photography is <%= if @show_on_public_profile, do: "showing", else: "hidden" %> as an <br />offering on your public profile & contact form</span>
-                  </div>
-                <% end %>
-              </div>
-              <%= unless Enum.empty? @templates do %>
-                <div class="font-bold md:grid grid-cols-6 mt-2 hidden md:inline-block">
-                  <%= for title <- ["Package Details", "Pricing", "Actions"] do %>
-                    <div class="col-span-2 pl-2"><%= title %></div>
-                  <% end %>
-                </div>
-
-                <hr class="my-8 border-blue-planning-300 border-2 mt-4 mb-1 hidden md:block" />
-
-                <div class="my-4 flex flex-col">
-                  <%= for template <- @templates do %>
-                    <.package_row update_mode="replace" package={template} class="h-full"/>
-                  <% end %>
-                </div>
-              <% else %>
-                <div class="flex flex-col md:flex-row mt-2">
-                  <img src="/images/empty-state.png" />
-                  <div class="ml-10 flex flex-col justify-center">
-                    <div class="font-bold">
-                      Missing packages
-                    </div>
-                    <div class="font-normal w-72 text-base-250">
-                      You don’t have any packages! Click add a package to get started. If you need help, check out <a target="_blank" class="underline text-blue-planning-300" href="https://support.picsello.com/article/34-create-a-package-template">this guide</a>!
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div class="ml-3 lg:hidden">
+              <span class="font-sans lg:text-2xl font-bold text-3xl capitalize"><%= @package_name %> Packages</span>
             </div>
-
-            <div class={classes("w-full lg:p-0 lg:block", %{"hidden" => @is_mobile})}>
-              <div class="flex items-center lg:mt-0 mb-2">
-                <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
-                  <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
-                </div>
-                <div class="ml-3 lg:hidden">
-                  <span class="font-sans lg:text-2xl font-bold text-3xl capitalize"><%= @package_name %> Packages</span>
-                </div>
-              </div>
-              <div class="flex-1 ml-8">
-                <div class="flex items-center mt-6">
-                  <div class="font-bold text-xl capitalize"><%= @package_name %> Packages</div>
-                  <%= if @package_name not in ["All", "Archived"] do%>
-                    <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={get_id_by_job_name(@package_name, org_id)}>
-                      <.icon name={if @show_on_public_profile, do: "eye", else: "closed-eye"} class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
-                      <span class="shadow-lg rounded-lg pb-2 px-2 text-xs capitalize"><%= @package_name %> Photography is <%= if @show_on_public_profile, do: "showing", else: "hidden" %> as an <br />offering on your public profile & contact form</span>
-                    </div>
+          </div>
+          <div class="flex-1 md:ml-8">
+            <div class="md:flex items-center mt-6 hidden md:block">
+              <div class="font-bold text-xl capitalize"><%= @package_name %> Packages</div>
+              <%= if @package_name not in ["All", "Archived"] do%>
+                <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(@package_name, org_id).id}>
+                  <%= if @show_on_public_profile do %>
+                    <.icon name="eye" class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
+                  <% else %>
+                    <.icon name="closed-eye" class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
                   <% end %>
+                  <span class="shadow-lg rounded-lg pb-2 px-2 text-xs capitalize"><%= @package_name %> Photography is <%= if @show_on_public_profile, do: "showing", else: "hidden" %> as an <br />offering on your public profile & contact form</span>
                 </div>
-                <%= unless Enum.empty? @templates do %>
-                  <div class="font-bold grid grid-cols-6 mt-2">
-                    <div class="col-span-2 pl-2">Package Details</div>
-                    <div class="col-span-2 pl-2">Pricing</div>
-                    <div class="col-span-2 pl-2">Actions</div>
-                  </div>
-
-                  <hr class="my-8 border-blue-planning-300 border-2 mt-4 mb-1" />
-
-                  <div class="my-4 flex flex-col">
-                    <%= for template <- @templates do %>
-                      <.package_card update_mode="replace" package={template} class="h-full"/>
-                    <% end %>
-                  </div>
-                <% else %>
-                  <div class="flex flex-col md:flex-row mt-2">
-                    <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{Routes.static_path(@socket,"/images/empty-state.png")}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
-                    <div class="py-0 md:py-2">
-                      <div class="font-bold">
-                        Missing packages
-                      </div>
-                      <div class={"font-normal w-72"}>
-                        You don’t have any packages! Click add a package to get started. If you need help, check out this guide!
-                      </div>
-                    </div>
-                  </div>
-                <% end %>
-                <%= if @pagination.total_count > 4 do %>
-                  <div class="flex items-center px-6 pb-6 center-container">
-                    <.form let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
-                      <%= select f, :limit, [4, 8, 12, 16], class: "cursor-pointer"%>
-                    </.form>
-
-                    <div class="flex ml-2 text-xs font-bold text-gray-500">
-                      Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
-                    </div>
-
-                    <div class="flex items-center ml-auto">
-                      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={@pagination.first_index == 1}>
-                        <.icon name="back" class="w-3 h-3 mr-1 stroke-current stroke-2" />
-                        Prev
-                      </button>
-                      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={@pagination.last_index == @pagination.total_count}>
-                        Next
-                        <.icon name="forth" class="w-3 h-3 ml-1 stroke-current stroke-2" />
-                      </button>
-                    </div>
-                  </div>
+              <% end %>
+            </div>
+            <%= if Enum.any? @templates do %>
+              <div class="font-bold md:grid grid-cols-6 mt-2 hidden md:inline-block">
+                <%= for title <- ["Package Details", "Pricing", "Actions"] do %>
+                  <div class="col-span-2 pl-2"><%= title %></div>
                 <% end %>
               </div>
+
+              <hr class="my-8 border-blue-planning-300 border-2 mt-4 mb-1 hidden md:block" />
+
+              <div class="my-4 flex flex-col">
+                <%= for template <- @templates do %>
+                  <.package_row update_mode="replace" package={template} class="h-full"/>
+                <% end %>
+              </div>
+              <%= if @pagination.total_count > 4 do %>
+                <div class="flex items-center px-6 pb-6 center-container">
+                  <.form let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
+                    <%= select f, :limit, [4, 8, 12, 16], class: "cursor-pointer"%>
+                  </.form>
+
+                  <div class="flex ml-2 text-xs font-bold text-gray-500">
+                    Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
+                  </div>
+
+                  <div class="flex items-center ml-auto">
+                    <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={@pagination.first_index == 1}>
+                      <.icon name="back" class="w-3 h-3 mr-1 stroke-current stroke-2" />
+                      Prev
+                    </button>
+                    <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={@pagination.last_index == @pagination.total_count}>
+                      Next
+                      <.icon name="forth" class="w-3 h-3 ml-1 stroke-current stroke-2" />
+                    </button>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="flex flex-col md:flex-row mt-2">
+                <img src="/images/empty-state.png" />
+                <div class="ml-10 flex flex-col justify-center">
+                  <div class="font-bold">
+                    Missing packages
+                  </div>
+                  <div class="font-normal w-72 text-base-250">
+                    You don’t have any packages! Click add a package to get started. If you need help, check out <a target="_blank" class="underline text-blue-planning-300" href="https://support.picsello.com/article/34-create-a-package-template">this guide</a>!
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            </div>
             </div>
           </div>
         </div>
