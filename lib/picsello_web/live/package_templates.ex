@@ -408,8 +408,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "edit-visibility-confirmation",
         %{"package-id" => package_id},
-        socket
+        %{assigns: %{current_user: %{organization: organization}}} = socket
       ) do
+    url = Profiles.public_url(organization)
     package = Repo.get!(Package, package_id)
 
     socket
@@ -420,7 +421,14 @@ defmodule PicselloWeb.Live.PackageTemplates do
       confirm_label:
         if(package.show_on_public_profile, do: "Hide", else: "Great! Show") <>
           " on my Public Profile",
-      icon: "warning-orange",
+      opened_for: if(package.show_on_public_profile, do: "hidden-modal", else: "show-modal"),
+      icon: "no-icon",
+      external_link:
+        if(package.show_on_public_profile,
+          do: "What’s my Public Profile?",
+          else: "Open client-facing Public Profile in new tab"
+        ),
+      url: url,
       subtitle:
         if(package.show_on_public_profile,
           do:

@@ -11,7 +11,9 @@ defmodule PicselloWeb.ConfirmationComponent do
     confirm_label: "Yes",
     confirm_class: "btn-warning",
     icon: "confetti",
-    subtitle: nil
+    subtitle: nil,
+    opened_for: nil,
+    external_link: nil
   }
 
   @impl true
@@ -27,7 +29,7 @@ defmodule PicselloWeb.ConfirmationComponent do
 
     ~H"""
     <div class={@class}>
-      <%= if @icon do %>
+      <%= if @icon != "no-icon" do %>
         <.icon name={@icon} class="w-11 h-11" />
       <% end %>
 
@@ -35,8 +37,21 @@ defmodule PicselloWeb.ConfirmationComponent do
         <%= @title %>
       </h1>
 
-      <%= if @subtitle do %>
-        <p class="pt-4 whitespace-pre-wrap"><%= @subtitle %></p>
+      <%= if @opened_for == "show-modal" do %>
+        <div class="flex flex-col p-3 items-start bg-gray-100 mt-3 rounded">
+          <div class="flex flex-row items-center">
+            <p class="rounded-lg bg-blue-planning-300 text-white p-1">DID YOU KNOW?</p>
+          </div>
+          <p class="text-gray-500 whitespace-pre-wrap mt-1"><%= @subtitle %></p>
+        </div>
+      <% else %>
+        <%= if @subtitle do %>
+          <p class="pt-4 whitespace-pre-wrap text-base-250"><%= @subtitle %></p>
+        <% end %>
+      <% end %>
+
+      <%= if @external_link do %>
+        <a class="flex items-center pt-4 text-blue-planning-300 underline font-medium hover:cursor-pointer" href={@url} target="_blank"><%= @external_link %><.icon name="external-link" class="ml-2 w-4 h-4" /></a>
       <% end %>
 
       <%= if @confirm_event do %>
@@ -105,6 +120,9 @@ defmodule PicselloWeb.ConfirmationComponent do
           optional(:icon) => binary | nil,
           optional(:subtitle) => binary,
           optional(:payload) => map,
+          optional(:external_link) => binary,
+          optional(:url) => binary,
+          optional(:opened_for) => binary,
           title: binary
         }) :: %Phoenix.LiveView.Socket{}
   def open(socket, assigns) do
