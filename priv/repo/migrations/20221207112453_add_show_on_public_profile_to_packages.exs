@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.AddShowOnPublicProfileToPackages do
 
   def change do
     alter table(:packages) do
-      add(:show_on_public_profile, :boolean, default: true)
+      add(:show_on_public_profile, :boolean, default: false)
     end
   end
 end
