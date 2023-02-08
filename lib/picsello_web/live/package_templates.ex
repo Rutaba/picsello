@@ -134,7 +134,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
                     <% end %>
                   </div>
 
-                  <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == "Archived"})} phx-click="assign_archieved_templated">
+                  <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == "Archived"})} phx-click="assign_archieved_templates">
                     <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
                         <a class="flex w-full archived-anchor-click">
                           <div class="flex items-center justify-start">
@@ -217,7 +217,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
                   </.form>
 
                   <div class="flex ml-2 text-xs font-bold text-gray-500">
-                    Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
+                    Results: <%= @pagination.first_index %> – <%= if @pagination.last_index > @pagination.total_count, do: @pagination.total_count, else: @pagination.last_index %> of <%= @pagination.total_count %>
                   </div>
 
                   <div class="flex items-center ml-auto">
@@ -225,7 +225,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
                       <.icon name="back" class="w-3 h-3 mr-1 stroke-current stroke-2" />
                       Prev
                     </button>
-                    <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={@pagination.last_index == @pagination.total_count}>
+                    <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={@pagination.last_index >= @pagination.total_count}>
                       Next
                       <.icon name="forth" class="w-3 h-3 ml-1 stroke-current stroke-2" />
                     </button>
@@ -387,7 +387,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
         :questionnaire_template
       ])
 
-    case create_duplicate_package(package) |> Repo.insert() do
+    duplicate_package_attrs = create_duplicate_package(package)
+
+    case Repo.insert(duplicate_package_attrs) do
       {:ok, _duplicated_package} ->
         socket
         |> put_flash(:success, "The package: #{package.name} has been duplicated")
@@ -455,7 +457,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     socket
     |> assign(package_name: "All")
     |> assign(is_mobile: false)
-    |> re_assign_templates()
+    |> reassign_templates()
     |> noreply()
   end
 
@@ -471,20 +473,20 @@ defmodule PicselloWeb.Live.PackageTemplates do
       is_mobile: false,
       show_on_public_profile: refresh_visbility(job_type, organization_id)
     )
-    |> re_assign_templates()
+    |> reassign_templates()
     |> noreply()
   end
 
   @impl true
   def handle_event(
-        "assign_archieved_templated",
+        "assign_archieved_templates",
         _,
         socket
       ) do
     socket
     |> assign(package_name: "Archived")
     |> assign(is_mobile: false)
-    |> re_assign_templates()
+    |> reassign_templates()
     |> noreply()
   end
 
@@ -787,33 +789,31 @@ defmodule PicselloWeb.Live.PackageTemplates do
       Package.templates_for_user(user, package_name)
       |> assign_templates_and_pagination(socket)
 
-  defp re_assign_templates(
+  defp reassign_templates(
          %{assigns: %{current_user: %{organization_id: organization_id}, package_name: "All"}} =
            socket
        ),
        do:
          Package.templates_for_organization_query(organization_id)
-         |> re_assign_templates_and_pagination(socket)
+         |> reassign_templates_and_pagination(socket)
 
-  defp re_assign_templates(
+  defp reassign_templates(
          %{
            assigns: %{current_user: %{organization_id: organization_id}, package_name: "Archived"}
          } = socket
        ),
        do:
          Package.archived_templates_for_organization(organization_id)
-         |> re_assign_templates_and_pagination(socket)
+         |> reassign_templates_and_pagination(socket)
 
-  defp re_assign_templates(
-         %{assigns: %{current_user: user, package_name: package_name}} = socket
-       ),
-       do:
-         Package.templates_for_user(user, package_name)
-         |> re_assign_templates_and_pagination(socket)
+  defp reassign_templates(%{assigns: %{current_user: user, package_name: package_name}} = socket),
+    do:
+      Package.templates_for_user(user, package_name)
+      |> reassign_templates_and_pagination(socket)
 
-  defp assign_templates_and_pagination(query, %{assigns: %{pagination: pagination}} = socket) do
-    templates = Packages.paginate_query(query, pagination) |> Repo.all()
-    updated_pagination = update_pagination(query, templates, socket)
+  defp assign_templates_and_pagination(query, socket) do
+    updated_pagination = update_pagination(query, socket)
+    templates = Packages.paginate_query(query, updated_pagination) |> Repo.all()
 
     socket
     |> assign(
@@ -822,7 +822,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     )
   end
 
-  defp re_assign_templates_and_pagination(query, socket) do
+  defp reassign_templates_and_pagination(query, socket) do
     reset_pagination = reset_pagination(query, socket)
     templates = Packages.paginate_query(query, reset_pagination) |> Repo.all()
 
@@ -833,17 +833,36 @@ defmodule PicselloWeb.Live.PackageTemplates do
     )
   end
 
-  defp update_pagination(query, templates, %{assigns: %{pagination: pagination}}) do
-    pagination
-    |> PaginationLive.changeset(%{
-      total_count: template_count_by_query(query),
-      last_index: pagination.first_index + Enum.count(templates) - 1
-    })
-    |> Changeset.apply_changes()
+  defp update_pagination(query, %{
+         assigns: %{
+           pagination: %{first_index: first_index, last_index: last_index, offset: offset, limit: limit} = pagination
+         }
+       }) do
+    updated_total_count = template_count_by_query(query)
+    updated_last_index = offset + 1 * limit
+
+    if offset == updated_total_count do
+      pagination
+      |> PaginationLive.changeset(%{
+        total_count: updated_total_count,
+        first_index: updated_total_count - limit,
+        last_index: updated_total_count,
+        offset: offset - limit
+      })
+      |> Changeset.apply_changes()
+    else
+      pagination
+      |> PaginationLive.changeset(%{
+        total_count: updated_total_count,
+        last_index: updated_last_index
+      })
+      |> Changeset.apply_changes()
+    end
   end
 
   defp reset_pagination(query, %{assigns: %{pagination: pagination}}) do
-    PaginationLive.changeset(%{
+    pagination
+    |> PaginationLive.changeset(%{
       limit: pagination.limit,
       offset: 0,
       first_index: 1,
@@ -924,25 +943,32 @@ defmodule PicselloWeb.Live.PackageTemplates do
           end),
         else: []
 
-    if is_map(package.contract) do
-      contract =
+    contract =
+      if is_map(package.contract) do
         package.contract
         |> create_attrs_from_struct(timestamp)
         |> Contract.changeset()
         |> Ecto.Changeset.apply_changes()
+      else
+        %{}
+      end
 
-      package
-      |> Map.merge(%{
-        id: nil,
-        name: "#{package.name} - Duplicate",
-        contract: contract,
-        package_payment_schedules: package_payment_schedules,
-        inserted_at: timestamp,
-        updated_at: timestamp
-      })
-    else
-      %{}
+    case contract do
+      %Contract{} ->
+        package
+        |> Map.replace(:contract, contract)
+
+      _ ->
+        package
     end
+    |> Map.merge(%{
+      id: nil,
+      name: "#{package.name} - Duplicate",
+      package_payment_schedules: package_payment_schedules,
+      inserted_at: timestamp,
+      updated_at: timestamp
+    })
+    |> Repo.preload([:questionnaire_template])
   end
 
   defp refresh_visbility(job_type, organization_id) do

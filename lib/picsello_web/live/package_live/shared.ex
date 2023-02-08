@@ -277,7 +277,7 @@ defmodule PicselloWeb.PackageLive.Shared do
                     </.icon_button>
                   <% end %>
                 </div>
-                <div class="hidden md:block ml-16 md:ml-2" phx-update={@update_mode} id={"menu-btn-#{@package.id}"} data-offset="0" phx-hook="Select">
+                <div class="hidden md:block ml-16 md:ml-2" phx-update={@update_mode} id={"menu-#{@package.id}"} data-offset="0" phx-hook="Select">
                     <button {testid("menu-btn-#{@package.id}")} title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
                       <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
 
