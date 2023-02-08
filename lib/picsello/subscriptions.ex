@@ -121,7 +121,14 @@ defmodule Picsello.Subscriptions do
           price: subscription_plan.stripe_price_id
         }
       ],
-      cancel_at_period_end: true,
+      payment_settings: %{
+        save_default_payment_method: "on_subscription"
+      },
+      trial_settings: %{
+        end_behavior: %{
+          missing_payment_method: "cancel"
+        }
+      },
       trial_period_days: trial_days
     }
 
