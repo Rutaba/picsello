@@ -91,29 +91,31 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   def print_credit_fields(assigns) do
     ~H"""
-    <% p = form_for(@package_pricing, "#") %>
-    <.print_fields_heading />
+    <div class="border border-solid mt-6 p-6 rounded-lg">
+      <% p = form_for(@package_pricing, "#") %>
+      <.print_fields_heading />
 
-    <div class="mt-4 font-normal text-base leading-6">
-      <div class="mt-2">
-        <label class="flex items-center">
-          <%= radio_button(p, :is_enabled, true, class: "w-5 h-5 mr-2.5 radio") %>
-          Gallery includes Print Credits
-        </label>
-        <div class="flex items-center gap-4 ml-7">
-          <%= if p |> current() |> Map.get(:is_enabled) do %>
-            <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-            <div class="flex items-center">
-              <%= label_for @f, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
-            </div>
-          <% end %>
+      <div class="mt-4 font-normal text-base leading-6">
+        <div class="mt-2">
+          <label class="flex items-center font-bold">
+            <%= radio_button(p, :is_enabled, true, class: "w-5 h-5 mr-2.5 radio") %>
+            Gallery includes Print Credits
+          </label>
+          <div class="flex items-center gap-4 ml-7">
+            <%= if p |> current() |> Map.get(:is_enabled) do %>
+              <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
+              <div class="flex items-center text-base-250">
+                <%= label_for @f, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
+              </div>
+            <% end %>
+          </div>
         </div>
-      </div>
 
-      <label class="flex items-center mt-3">
-        <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio") %>
-        Gallery does not include Print Credits
-      </label>
+        <label class="flex items-center mt-3 font-bold">
+          <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio") %>
+          Gallery does not include Print Credits
+        </label>
+      </div>
     </div>
     """
   end
@@ -123,84 +125,106 @@ defmodule PicselloWeb.PackageLive.Shared do
     assigns = Map.put_new(assigns, :for, nil)
 
     ~H"""
-    <% d = form_for(@download, "#") %>
-    <.download_fields_heading
-      title="Digital Collection"
-      d={d}
-      for={@for}
-    >
-      <p>High-Resolution Digital Images available via download.</p>
-    </.download_fields_heading>
+      <div class="border border-solid mt-6 p-6 rounded-lg">
+        <% d = form_for(@download, "#") %>
+        <.download_fields_heading title="Digital Collection" d={d} for={@for}>
+          <p class="text-base-250">High-Resolution Digital Images available via download.</p>
+        </.download_fields_heading>
 
-    <.build_download_fields d={d} {assigns} />
+        <.build_download_fields download_changeset={d} {assigns} />
+      </div>
     """
   end
 
   defp download_fields_heading(%{d: d} = assigns) do
     ~H"""
-    <div class="mt-6 sm:mt-9"  {testid("download")}>
+    <div class="mt-9 md:mt-1" {testid("download")}>
       <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap"><%= @title %></h2>
-      <%= if @for == :create_gallery || check?(d, :is_enabled) do %>
+      <%= if @for == :create_gallery || (get_field(d, :status) == :limited) do %>
         <%= render_slot(@inner_block) %>
       <% end %>
     </div>
     """
   end
 
-  defp build_download_fields(%{for: key, d: d} = assigns) do
+  defp build_download_fields(%{for: key, download_changeset: download_changeset} = assigns) do
     ~H"""
-    <div class="flex flex-col w-full mt-3">
-      <label class="flex items-center">
-        <%= radio_button(d, :is_enabled, true, class: "w-5 h-5 mr-2 radio") %>
-        <%= package_or_gallery_content(@for) %> includes a specified number of Digital Images
-      </label>
+    <div class="flex flex-col md:flex-row w-full mt-3">
+      <div class="flex flex-col ">
+        <label class="flex items-center font-bold">
+          <%= radio_button(download_changeset, :status, :limited, class: "w-5 h-5 mr-2 radio") %>
+          <p><%= package_or_gallery_content(@for) %> includes a specified number of Digital Images <span class="font-normal italic text-base-250">(Charge for Digital Images)</span></p>
+        </label>
 
-      <%= if check?(d, :is_enabled) do %>
-        <div class="flex flex-col ml-7">
-          <.set_download_price d={d} for={key} />
+        <%= if get_field(download_changeset, :status) == :limited do %>
+            <div class="flex flex-col mt-1">
+              <div class="flex flex-row items-center">
+                <%= input(
+                  download_changeset, :count, type: :number_input, phx_debounce: 200, step: 1,
+                  min: 0, value: 0, class: "mt-3 w-full sm:w-32 text-lg text-center md:ml-7"
+                ) %>
+                <span class="ml-2 text-base-250">included</span>
+              </div>
+            </div>
+        <% end %>
+
+        <label class="flex items-center mt-3 font-bold">
+            <%= radio_button(download_changeset, :status, :none, class: "w-5 h-5 mr-2 radio") %>
+            <p><%= package_or_gallery_content(@for) %> does not include any Digital Images </p>
+        </label>
+
+        <label class="flex items-center mt-3 font-bold">
+          <%= radio_button(download_changeset, :status, :unlimited, class: "w-5 h-5 mr-2 radio") %>
+          <p><%= package_or_gallery_content(@for) %> includes Unlimited Digital Images <span class="font-normal italic text-base-250">(Do not charge for any Digital Image)</span></p>
+        </label>
+
+        <%= if @for == :create_gallery do %>
+          <span class="italic ml-7">(Do not charge for any Digital Image)</span>
+        <% end %>
+      </div>
+      <div class="my-8 border-t lg:my-0 lg:mx-8 lg:border-t-0 lg:border-l border-base-200"></div>
+      <%= if get_field(download_changeset, :status) == :limited do %>
+        <div class="ml-7 mt-3">
+          <h3 class="font-bold">Upsell options</h3>
+          <p class="mb-3 text-base-250">For additional Digital Images beyond what’s included in the <%= package_or_gallery_content(key) |> String.downcase() %> Digital Images are automatically set at <%= input_value(download_changeset, :each_price)%>/each.</p>
+          <.include_download_price download_changeset={download_changeset} />
+          <.is_buy_all download_changeset={download_changeset} />
         </div>
-      <% end %>
-
-      <label class="flex items-center mt-3">
-        <%= radio_button(d, :is_enabled, false, class: "w-5 h-5 mr-2 radio") %>
-        <%= package_or_gallery_content(@for) %> includes unlimited digital downloads
-      </label>
-
-      <%= if @for == :create_gallery do %>
-        <span class="italic ml-7">(Do not charge for any Digital Image)</span>
       <% end %>
     </div>
     """
   end
 
-  defp is_buy_all(%{d: d} = assigns) do
+  defp is_buy_all(%{download_changeset: download_changeset} = assigns) do
     ~H"""
-    <label class="flex items-center mt-3">
-      <%= checkbox(d, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
+    <label class="flex items-center mt-3 font-bold">
+      <%= checkbox(download_changeset, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
       <span>Set a <em>Buy Them All</em> price</span>
     </label>
 
-    <%= if check?(d, :is_buy_all) do %>
-      <div class="flex items-center mt-3 md:ml-7">
-        <%= input(d, :buy_all, placeholder: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-        <%= error_tag d, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
+    <%= if check?(download_changeset, :is_buy_all) do %>
+      <div class="flex flex-row items-center mt-3 md:ml-7">
+          <%= input(download_changeset, :buy_all, value: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+          <%= error_tag download_changeset, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
+          <span class="ml-3 text-base-250"> for all images </span>
       </div>
     <% end %>
     """
   end
 
-  defp include_download_price(%{d: d} = assigns) do
+  defp include_download_price(%{download_changeset: download_changeset} = assigns) do
     ~H"""
     <div class="flex flex-col justify-between mt-3 sm:flex-row ">
       <div class="w-full sm:w-auto">
-        <label class="flex items-center">
-          <%= checkbox(d, :is_custom_price, class: "w-5 h-5 mr-2.5 checkbox") %>
+        <label class="flex font-bold items-center">
+          <%= checkbox(download_changeset, :is_custom_price, class: "w-5 h-5 mr-2.5 checkbox") %>
           <span>Set my own <em>per Digital Image</em> price</span>
         </label>
-        <%= if check?(d, :is_custom_price) do %>
-          <div class="flex items-center mt-3 ml-7 mt-3">
-            <%= input(d, :each_price, class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-            <%= error_tag d, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
+        <%= if check?(download_changeset, :is_custom_price) do %>
+          <div class="flex flex-row items-center mt-3 ml-7 mt-3">
+            <%= input(download_changeset, :each_price, class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+            <%= error_tag download_changeset, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
+            <span class="ml-3 text-base-250"> per image </span>
           </div>
         <% end %>
       </div>
@@ -208,37 +232,17 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  defp set_download_price(%{for: key, d: d} = assigns) do
-    ~H"""
-    <label class="flex items-center mt-3">
-      <%= checkbox(d, :includes_credits, class: "w-5 h-5 mr-2.5 checkbox") %>
-      Digital Images are included in the <%= package_or_gallery_content(key) |> String.downcase() %>
-    </label>
-    <%= if check?(d, :includes_credits) do %>
-      <%= input(
-        d, :count, type: :number_input, phx_debounce: 200, step: 1,
-        min: 1, placeholder: 1, class: "mt-3 w-full sm:w-32 text-lg text-center md:ml-7"
-      ) %>
-      <div class="ml-7 mt-3">
-        <h3 class="font-bold">Upsell options</h3>
-        <p class="mb-3">For additional Digital Images beyond what’s included in the <%= package_or_gallery_content(key) |> String.downcase() %></p>
-        <.include_download_price d={d} />
-        <.is_buy_all d={d} />
-      </div>
-    <% end %>
-    """
-  end
-
   defp print_fields_heading(assigns) do
     ~H"""
-    <div class="mt-6 sm:mt-9" {testid("print")}>
+    <div class="mt-9 md:mt-1" {testid("print")}>
       <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
-      <p>Print Credits allow your clients to order professional prints and products from your gallery.</p>
+      <p class="text-base-250">Print Credits allow your clients to order professional prints and products from your gallery.</p>
     </div>
     """
   end
 
   defp check?(d, field), do: d |> current() |> Map.get(field)
+  defp get_field(d, field), do: d |> current() |> Map.get(field)
 
   def current(%{source: changeset}), do: current(changeset)
   def current(changeset), do: Ecto.Changeset.apply_changes(changeset)
@@ -248,7 +252,7 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   defp digital_detail(assigns) do
     ~H"""
-      <%= cond do %>
+        <%= cond do %>
         <%= Money.zero?(@download_each_price) -> %>
         <dt class="text-gray-500">All digital images included</dt>
         <% @download_count == 0 -> %>

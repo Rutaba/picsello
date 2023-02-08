@@ -101,7 +101,7 @@ defmodule Picsello.Packages do
 
     @primary_key false
     embedded_schema do
-      field(:is_enabled, :boolean, default: true)
+      field(:status, Ecto.Enum, values: [:limited, :unlimited, :none])
       field(:is_custom_price, :boolean, default: false)
       field(:includes_credits, :boolean, default: false)
       field(:each_price, Money.Ecto.Amount.Type, default: @default_each_price)
@@ -113,7 +113,7 @@ defmodule Picsello.Packages do
     def changeset(download \\ %__MODULE__{}, attrs) do
       download
       |> cast(attrs, [
-        :is_enabled,
+        :status,
         :is_custom_price,
         :includes_credits,
         :each_price,
@@ -122,7 +122,7 @@ defmodule Picsello.Packages do
         :buy_all
       ])
       |> then(
-        &if get_field(&1, :is_enabled),
+        &if get_field(&1, :status) != :unlimited,
           do: &1,
           else:
             Enum.reduce(
@@ -148,12 +148,12 @@ defmodule Picsello.Packages do
         )
       )
       |> then(
-        &if(get_field(&1, :includes_credits),
+        &if(get_field(&1, :status) == :limited,
           do:
             &1
             |> force_change(:count, get_field(&1, :count))
             |> validate_required([:count])
-            |> validate_number(:count, greater_than: 0),
+            |> validate_number(:count, greater_than: -1),
           else: force_change(&1, :count, nil)
         )
       )
@@ -187,12 +187,16 @@ defmodule Picsello.Packages do
 
     def from_package(%{download_each_price: each_price, download_count: count} = package)
         when each_price in [@default_each_price, nil],
-        do: set_count_fields(%__MODULE__{}, count) |> set_buy_all_fields(package)
+        do: set_count_fields(%__MODULE__{status: :limited}, count) |> set_buy_all_fields(package)
+
+    def from_package(%{download_each_price: each_price, download_count: count} = package)
+        when each_price == @default_each_price and count in [0, nil],
+        do: %__MODULE__{status: :none} |> set_buy_all_fields(package)
 
     def from_package(%{download_each_price: @zero_price, download_count: count} = package),
       do:
         set_count_fields(
-          %__MODULE__{is_enabled: false, includes_credits: false, each_price: @zero_price},
+          %__MODULE__{status: :unlimited, includes_credits: false, each_price: @zero_price},
           count
         )
         |> set_buy_all_fields(package)
@@ -205,7 +209,7 @@ defmodule Picsello.Packages do
     def count(%__MODULE__{count: nil}), do: 0
     def count(%__MODULE__{count: count}), do: count
 
-    def each_price(%__MODULE__{is_enabled: false}), do: @zero_price
+    def each_price(%__MODULE__{status: :unlimited}), do: @zero_price
     def each_price(%__MODULE__{each_price: each_price}), do: each_price
 
     def buy_all(%__MODULE__{is_buy_all: false}), do: nil
@@ -214,7 +218,7 @@ defmodule Picsello.Packages do
     def default_each_price(), do: @default_each_price
 
     defp set_count_fields(download, count) when count in [nil, 0],
-      do: %{download | count: nil, includes_credits: false}
+      do: %{download | count: count, includes_credits: false}
 
     defp set_count_fields(download, count),
       do: %{download | count: count, includes_credits: true}

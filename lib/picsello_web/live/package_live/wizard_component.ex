@@ -538,18 +538,21 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     ~H"""
       <div>
         <div class="bg-gray-100 mt-6 p-6 rounded-lg">
-          <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
-            <label for={input_id(@f, :base_price)}>
+          <div class="flex flex-col items-center md:items-start w-auto md:w-full">
+            <label class="mb-3" for={input_id(@f, :base_price)}>
               <h2 class="mb-1 text-xl font-bold">Package Price</h2>
-              Includes your Creative Session Fee, any Professional Print Credits, and/or High-Resolution Digital Images you decide to include.
+              <span class="text-base-250">Includes your Creative Session Fee, any Professional Print Credits, and/or High-Resolution <br/> Digital Images you decide to include.</span>
             </label>
 
-            <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center", phx_hook: "PriceMask" %>
+            <div class="flex flex-row items-center w-auto mt-6">
+              <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg sm:mt-0 font-normal text-center", phx_hook: "PriceMask" %>
+              <span class="ml-3 text-base-250"> Package Total </span>
+            </div>
           </div>
 
           <% m = form_for(@multiplier, "#") %>
 
-          <label class="flex items-center mt-6 sm:mt-8 justify-self-start">
+          <label class="flex items-center mt-6 sm:mt-8 justify-self-start font-bold">
             <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
 
             Apply a discount or surcharge
@@ -557,12 +560,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
           <%= if m |> current() |> Map.get(:is_enabled) do %>
             <div class="flex flex-col items-center pl-0 my-6 sm:flex-row sm:pl-16">
-              <h2 class="self-start mt-3 text-xl font-bold sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
+              <h2 class="self-start mt-3 text-base-250 sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
 
               <div class="flex w-full mt-3 sm:mt-0">
                 <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
 
-                <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-14 py-4") %>
+                <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-4 py-4 pr-10") %>
               </div>
 
               <div class="self-end mt-3 sm:self-auto justify-self-end sm:mt-0">

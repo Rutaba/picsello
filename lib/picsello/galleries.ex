@@ -136,7 +136,8 @@ defmodule Picsello.Galleries do
   def get_gallery_by_hash(hash), do: Repo.get_by(active_galleries(), client_link_hash: hash)
 
   @spec get_gallery_by_hash!(hash :: binary) :: %Gallery{}
-  def get_gallery_by_hash!(hash), do: Repo.get_by!(active_disabled_galleries(), client_link_hash: hash)
+  def get_gallery_by_hash!(hash),
+    do: Repo.get_by!(active_disabled_galleries(), client_link_hash: hash)
 
   @doc """
   Gets single gallery by hash, with relations populated (cover_photo)
@@ -1151,7 +1152,8 @@ defmodule Picsello.Galleries do
 
   defp active_galleries, do: from(g in Gallery, where: g.status == "active")
 
-  defp active_disabled_galleries, do: from(g in Gallery, where: g.status == "active" or g.status == "disabled")
+  defp active_disabled_galleries,
+    do: from(g in Gallery, where: g.status == "active" or g.status == "disabled")
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
   defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue
