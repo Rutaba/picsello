@@ -542,10 +542,9 @@ defmodule Picsello.Packages do
     |> Repo.update()
   end
 
-  def find_templates_by_pagination_via_query(query, %{limit: limit, offset: offset}) do
-    from(templates in query,
+  def paginate_query(query, %{limit: limit, offset: offset}) do
+    from query,
       limit: ^limit,
       offset: ^offset
-    )
   end
 end

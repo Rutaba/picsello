@@ -455,7 +455,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     socket
     |> assign(package_name: "All")
     |> assign(is_mobile: false)
-    |> assign_templates()
+    |> re_assign_templates()
     |> noreply()
   end
 
@@ -471,7 +471,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       is_mobile: false,
       show_on_public_profile: refresh_visbility(job_type, organization_id)
     )
-    |> assign_templates()
+    |> re_assign_templates()
     |> noreply()
   end
 
@@ -484,7 +484,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     socket
     |> assign(package_name: "Archived")
     |> assign(is_mobile: false)
-    |> assign_templates()
+    |> re_assign_templates()
     |> noreply()
   end
 
@@ -787,8 +787,32 @@ defmodule PicselloWeb.Live.PackageTemplates do
       Package.templates_for_user(user, package_name)
       |> assign_templates_and_pagination(socket)
 
+  defp re_assign_templates(
+         %{assigns: %{current_user: %{organization_id: organization_id}, package_name: "All"}} =
+           socket
+       ),
+       do:
+         Package.templates_for_organization_query(organization_id)
+         |> re_assign_templates_and_pagination(socket)
+
+  defp re_assign_templates(
+         %{
+           assigns: %{current_user: %{organization_id: organization_id}, package_name: "Archived"}
+         } = socket
+       ),
+       do:
+         Package.archived_templates_for_organization(organization_id)
+         |> re_assign_templates_and_pagination(socket)
+
+  defp re_assign_templates(
+         %{assigns: %{current_user: user, package_name: package_name}} = socket
+       ),
+       do:
+         Package.templates_for_user(user, package_name)
+         |> re_assign_templates_and_pagination(socket)
+
   defp assign_templates_and_pagination(query, %{assigns: %{pagination: pagination}} = socket) do
-    templates = Packages.find_templates_by_pagination_via_query(query, pagination) |> Repo.all()
+    templates = Packages.paginate_query(query, pagination) |> Repo.all()
     updated_pagination = update_pagination(query, templates, socket)
 
     socket
@@ -798,11 +822,33 @@ defmodule PicselloWeb.Live.PackageTemplates do
     )
   end
 
+  defp re_assign_templates_and_pagination(query, socket) do
+    reset_pagination = reset_pagination(query, socket)
+    templates = Packages.paginate_query(query, reset_pagination) |> Repo.all()
+
+    socket
+    |> assign(
+      templates: templates,
+      pagination: reset_pagination
+    )
+  end
+
   defp update_pagination(query, templates, %{assigns: %{pagination: pagination}}) do
     pagination
     |> PaginationLive.changeset(%{
       total_count: template_count_by_query(query),
       last_index: pagination.first_index + Enum.count(templates) - 1
+    })
+    |> Changeset.apply_changes()
+  end
+
+  defp reset_pagination(query, %{assigns: %{pagination: pagination}}) do
+    PaginationLive.changeset(%{
+      limit: pagination.limit,
+      offset: 0,
+      first_index: 1,
+      last_index: pagination.limit,
+      total_count: template_count_by_query(query)
     })
     |> Changeset.apply_changes()
   end

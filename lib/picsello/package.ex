@@ -203,7 +203,7 @@ defmodule Picsello.Package do
       where:
         not is_nil(package.job_type) and package.organization_id == ^organization_id and
           is_nil(package.archived_at),
-      order_by: [asc: package.base_price]
+      order_by: [desc: package.base_price]
     )
   end
 
@@ -212,14 +212,13 @@ defmodule Picsello.Package do
       where:
         not is_nil(package.job_type) and package.organization_id == ^organization_id and
           not is_nil(package.archived_at),
-      order_by: [asc: package.base_price]
+      order_by: [desc: package.base_price]
     )
   end
 
   def templates_for_user(%User{organization_id: organization_id}, type) when type != nil do
     from(template in templates_for_organization_query(organization_id),
-      where: template.job_type == ^type,
-      order_by: [asc: template.base_price]
+      where: template.job_type == ^type
     )
   end
 
