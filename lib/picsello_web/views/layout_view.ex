@@ -367,6 +367,12 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
+  # This is needed for the password reset form
+  def stripe_setup_banner(assigns) do
+    ~H"""
+    """
+  end
+
   def main_footer(assigns) do
     ~H"""
     <div class="mt-12"></div>
