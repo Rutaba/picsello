@@ -336,14 +336,14 @@ defmodule PicselloWeb.LayoutView do
   def stripe_setup_banner(
         %{
           socket: socket,
-          current_user: %{allow_cash_payment: allow_cash_payment} = current_user
+          current_user: current_user
         } = assigns
       ) do
     stripe_status = Payments.status(current_user)
 
     ~H"""
     <%= if !Enum.member?([:charges_enabled, :loading], stripe_status) do %>
-      <div class={classes("bg-gray-100 py-3 border-b border-b-white", %{"hidden" => allow_cash_payment})}>
+      <div class="bg-gray-100 py-3 border-b border-b-white">
         <div class="center-container px-6">
           <div class="flex justify-between items-center gap-2">
             <details class="cursor-pointer text-base-250 group">
@@ -364,12 +364,6 @@ defmodule PicselloWeb.LayoutView do
         </div>
       </div>
     <% end %>
-    """
-  end
-
-  # This is needed for the password reset form
-  def stripe_setup_banner(assigns) do
-    ~H"""
     """
   end
 
