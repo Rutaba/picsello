@@ -341,7 +341,7 @@ defmodule PicselloWeb.LayoutView do
 
     ~H"""
     <%= case stripe_status do %>
-      <% :charges_enabled -> %>
+      <% {_, :charges_enabled} -> %>
       <% _ -> %>
         <div class={classes("bg-gray-100 py-3 border-b border-b-white", %{"hidden" => allow_cash_payment})}>
           <div class="center-container px-6">
