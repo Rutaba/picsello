@@ -5,7 +5,7 @@
   <%= flash(@flash) %>
 
   <div class="pt-16">
-    <%= if !@current_user.allow_cash_payment do %>
+    <%= if @current_user && !@current_user.allow_cash_payment do %>
       <.stripe_setup_banner socket={@socket} current_user={@current_user} />
     <% end %>
     <.gallery_top_banner class="text-white bg-blue-planning-300 border-b" socket={@socket} current_user={@current_user} accumulated_progress={@accumulated_progress} galleries_count={@galleries_count}/>
