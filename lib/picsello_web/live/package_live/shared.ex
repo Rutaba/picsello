@@ -236,7 +236,7 @@ defmodule PicselloWeb.PackageLive.Shared do
           </div>
           <span class="inline-block md:hidden justify-start border rounded px-2 bg-blue-planning-100 text-blue-planning-300 font-bold text-xs"><%= @package.job_type %></span>
 
-          <div class="absolute top-0 right-0 block md:hidden ml-16 md:ml-2" phx-update={@update_mode} data-offset="0" phx-hook="Select">
+          <div class="absolute top-0 right-0 block md:hidden ml-16 md:ml-2" phx-update={@update_mode} data-offset="0" id={"menu-btn-#{@package.id}"} phx-hook="Select">
             <button {testid("menu-btn-#{@package.id}")} title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
               <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
 
@@ -277,7 +277,7 @@ defmodule PicselloWeb.PackageLive.Shared do
                     </.icon_button>
                   <% end %>
                 </div>
-                <div class="hidden md:block ml-16 md:ml-2" phx-update={@update_mode} data-offset="0" phx-hook="Select">
+                <div class="hidden md:block ml-16 md:ml-2" phx-update={@update_mode} id={"menu-btn-#{@package.id}"} data-offset="0" phx-hook="Select">
                     <button {testid("menu-btn-#{@package.id}")} title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
                       <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
 
@@ -291,12 +291,12 @@ defmodule PicselloWeb.PackageLive.Shared do
                           Edit
                         </button>
 
-                        <button title="Edit" type="button" phx-click="duplicate-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                        <button title="Duplicate" type="button" phx-click="duplicate-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
                           <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                           Duplicate
                         </button>
 
-                        <button title="Edit" type="button" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                        <button title="Visibility" type="button" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
                           <.icon name={if @package.show_on_public_profile, do: "closed-eye", else: "eye"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => !@package.show_on_public_profile, "text-red-sales-300" => @package.show_on_public_profile})} />
                           <%= if @package.show_on_public_profile, do: "Hide on public profile", else: "Show on public profile" %>
                         </button>
