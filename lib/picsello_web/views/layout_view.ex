@@ -340,27 +340,29 @@ defmodule PicselloWeb.LayoutView do
     stripe_status = Payments.status(current_user)
 
     ~H"""
-    <%= if stripe_status !== :charges_enabled do %>
-      <div class={classes("bg-gray-100 py-3 border-b border-b-white", %{"hidden" => allow_cash_payment})}>
-        <div class="center-container px-6">
-          <div class="flex justify-between items-center gap-2">
-            <details class="cursor-pointer text-base-250 group">
-              <summary class="flex items-center font-bold text-black">
-                <.icon name="confetti" class="w-5 h-5 mr-2 text-blue-planning-300"/>
-                Get paid within Picsello!
-                <.icon name="down" class="w-4 h-4 stroke-current stroke-2 text-blue-planning-300 ml-2 group-open:rotate-180" />
-              </summary>
-              To accept money from bookings & galleries, connect your Stripe account and add a payment method. <em>We also offer offline payments for bookings only. <a href="https://support.picsello.com/article/32-set-up-stripe" class="underline" target="_blank" rel="noreferrer">Learn more</a></em>
-            </details>
-            <div class="flex gap-2">
-              <a href={Routes.finance_settings_path(socket, :index)} class="flex text-xs items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75">
-                <.icon name="settings" class="inline-block w-4 h-4 fill-current text-white mr-1" />
-                Finance Settings
-              </a>
+    <%= case stripe_status do %>
+      <% :charges_enabled -> %>
+      <% _ -> %>
+        <div class={classes("bg-gray-100 py-3 border-b border-b-white", %{"hidden" => allow_cash_payment})}>
+          <div class="center-container px-6">
+            <div class="flex justify-between items-center gap-2">
+              <details class="cursor-pointer text-base-250 group">
+                <summary class="flex items-center font-bold text-black">
+                  <.icon name="confetti" class="w-5 h-5 mr-2 text-blue-planning-300"/>
+                  Get paid within Picsello!
+                  <.icon name="down" class="w-4 h-4 stroke-current stroke-2 text-blue-planning-300 ml-2 group-open:rotate-180" />
+                </summary>
+                To accept money from bookings & galleries, connect your Stripe account and add a payment method. <em>We also offer offline payments for bookings only. <a href="https://support.picsello.com/article/32-set-up-stripe" class="underline" target="_blank" rel="noreferrer">Learn more</a></em>
+              </details>
+              <div class="flex gap-2">
+                <a href={Routes.finance_settings_path(socket, :index)} class="flex text-xs items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75">
+                  <.icon name="settings" class="inline-block w-4 h-4 fill-current text-white mr-1" />
+                  Finance Settings
+                </a>
+              </div>
             </div>
           </div>
         </div>
-      </div>
     <% end %>
     """
   end
