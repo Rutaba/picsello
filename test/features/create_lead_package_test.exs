@@ -111,7 +111,7 @@ defmodule Picsello.CreateLeadPackageTest do
     insert(:package_payment_schedule, %{package: template2})
     insert(:package_template, user: user, job_type: "other")
 
-    selected_card = css("[data-testid='template-card'] > .border-blue-planning-300")
+    selected_card = css("[data-testid='template-card'].bg-gray-100")
 
     session
     |> visit("/leads/#{lead.id}")
