@@ -9,11 +9,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
       insert(:user,
         organization: %{
           name: "Mary Jane Photography",
-          slug: "mary-jane-photos",
-          profile: %{
-            color: color,
-            job_types: ~w(portrait event)
-          }
+          slug: "mary-jane-photos"
         }
       )
       |> onboard!
@@ -38,9 +34,9 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_text("Mary Jane Photography")
     |> assert_text("SPECIALIZING IN:")
-    |> assert_text("Portrait")
+    |> assert_text("Wedding")
     |> assert_text("Event")
-    |> assert_has(radio_button("Portrait", visible: false))
+    |> assert_has(radio_button("Wedding", visible: false))
     |> assert_has(radio_button("Event", visible: false))
     |> assert_has(link("See our full portfolio"))
     |> assert_has(css("a[href*='/photographer/mary-jane-photos']", text: "View"))
@@ -84,11 +80,11 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(link("Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_text("SPECIALIZING IN:")
-    |> scroll_into_view(testid("edit-job_types_description-button"))
-    |> click(testid("edit-job_types_description-button"))
+    |> scroll_into_view(testid("edit-description-button"))
+    |> click(testid("edit-description-button"))
     |> assert_has(css("div.ql-editor[data-placeholder='Start typing…']"))
     |> fill_in_quill("my description")
     |> click(button("Save"))
-    |> assert_has(testid("job_types_description", text: "my description"))
+    |> assert_has(testid("description", text: "my description"))
   end
 end

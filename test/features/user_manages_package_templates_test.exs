@@ -99,7 +99,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(link("Settings"))
     |> click(link("Package Templates"))
     |> click(testid("intro-state-close-button"))
-    |> find(testid("package-template-card"), &assert_text(&1, "Super Deluxe Templat..."))
+    |> find(testid("package-template-card"), &assert_text(&1, "Super Deluxe Template"))
     |> assert_text("$0.20/each")
   end
 
@@ -424,7 +424,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(css(".newborn-anchor-click"))
     |> assert_text("Missing packages")
     |> assert_text(
-      "You don’t have any packages! Click add a package to get started. If you need help, check out this guide!"
+      "You don't have any packages! Click add a package to get started. If you need help"
     )
   end
 

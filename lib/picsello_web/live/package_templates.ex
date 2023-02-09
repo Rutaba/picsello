@@ -763,15 +763,22 @@ defmodule PicselloWeb.Live.PackageTemplates do
       else: Packages.unarchive_package(package.id)
   end
 
-  defp assign_templates(%{assigns: %{current_user: %{organization_id: organization_id}, package_name: "All"}} = socket),
-    do:
-      Package.templates_for_organization_query(organization_id)
-      |> assign_templates_and_pagination(socket)
+  defp assign_templates(
+         %{assigns: %{current_user: %{organization_id: organization_id}, package_name: "All"}} =
+           socket
+       ),
+       do:
+         Package.templates_for_organization_query(organization_id)
+         |> assign_templates_and_pagination(socket)
 
-  defp assign_templates(%{assigns: %{current_user: %{organization_id: organization_id}, package_name: "Archived"}} = socket),
-    do:
-      Package.archived_templates_for_organization(organization_id)
-      |> assign_templates_and_pagination(socket)
+  defp assign_templates(
+         %{
+           assigns: %{current_user: %{organization_id: organization_id}, package_name: "Archived"}
+         } = socket
+       ),
+       do:
+         Package.archived_templates_for_organization(organization_id)
+         |> assign_templates_and_pagination(socket)
 
   defp assign_templates(%{assigns: %{current_user: user, package_name: package_name}} = socket),
     do:

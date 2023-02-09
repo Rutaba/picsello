@@ -437,7 +437,8 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
   defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
     socket
     |> assign_new(:job_types, fn ->
-      (Map.get(organization.profile, :job_types, []) ++ [Picsello.JobType.other_type()]) |> Enum.uniq()
+      (Map.get(organization.profile, :job_types, []) ++ [Picsello.JobType.other_type()])
+      |> Enum.uniq()
     end)
   end
 

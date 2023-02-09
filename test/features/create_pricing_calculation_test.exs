@@ -88,14 +88,9 @@ defmodule Picsello.CreatePricingCalculationTest do
                                 max_session_per_year: 30
                               },
                               %{
-                                base_price: "$507.04",
-                                job_type: "Event",
-                                max_session_per_year: 71
-                              },
-                              %{
-                                base_price: "$346.15",
-                                job_type: "Portrait",
-                                max_session_per_year: 104
+                                base_price: "$190.48",
+                                job_type: "Other",
+                                max_session_per_year: 189
                               }
                             ],
                             "projected_costs" => "$7,500.00",

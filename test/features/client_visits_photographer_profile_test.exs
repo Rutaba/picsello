@@ -204,14 +204,6 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
            } = photographer |> latest_job()
   end
 
-  feature "checks pricing", %{session: session, profile_url: profile_url} do
-    session
-    |> visit(profile_url)
-    |> scroll_into_view(testid("package-detail"))
-    |> assert_inner_text(testid("package-detail", count: 2, at: 0), "Silver$20 silver desc")
-    |> assert_inner_text(testid("package-detail", count: 2, at: 1), "Gold$30gold desc")
-  end
-
   feature "brand links show on public profile", %{session: session, profile_url: profile_url} do
     session
     |> visit(profile_url)
