@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   use PicselloWeb, :live_component
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.PackageLive.Shared, only: [package_card: 1, current: 1]
+  import PicselloWeb.PackageLive.Shared, only: [package_card: 1, current: 1, package_row: 1]
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
@@ -164,16 +164,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   def step(%{name: :package} = assigns) do
     ~H"""
-    <div class="grid grid-cols-1 my-4 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-      <%= for package <- @package_templates do %>
-        <% checked = is_checked(input_value(@f, :package_template_id), package) %>
-
-        <label {testid("template-card")}>
-          <input class="hidden" type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: "", else: package.id} />
-          <.package_card package={package} class={classes(%{"bg-blue-planning-100 border-blue-planning-300" => checked})}/>
-        </label>
+    <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
+      <%= for title <- ["Package name", "Package Pricing", "Select package"] do %>
+        <div class="w-1/3 last:text-center"><%= title %></div>
       <% end %>
     </div>
+    <%= for package <- @package_templates do %>
+      <% checked = is_checked(input_value(@f, :package_template_id), package) %>
+
+      <.package_row package={package} checked={checked}>
+        <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: nil, else: package.id} />
+      </.package_row>
+    <% end %>
     """
   end
 

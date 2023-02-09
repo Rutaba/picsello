@@ -172,7 +172,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     booking_event
     |> Map.get(:dates)
     |> Enum.map(& &1.date)
-    |> Enum.sort()
+    |> Enum.sort_by(& &1, Date)
     |> Enum.filter(fn date ->
       Date.compare(date, Date.utc_today()) != :lt
     end)

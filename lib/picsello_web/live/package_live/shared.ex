@@ -327,6 +327,41 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
+  @spec package_row(%{
+          package: %Package{}
+        }) :: %Phoenix.LiveView.Rendered{}
+  def package_row(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: "",
+        checked: false,
+        inner_block: nil
+      })
+
+    ~H"""
+    <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => @checked})} {testid("template-card")}>
+      <label class="flex items-center justify-between cursor-pointer">
+        <div class="w-1/3">
+          <h3 class="font-xl font-bold mb-1"><%= @package.name %>—<%= dyn_gettext @package.job_type %></h3>
+          <div class="flex flex-row-reverse items-center justify-end mt-auto">
+            <.digital_detail id="package_detail" download_each_price={@package.download_each_price} download_count={@package.download_count}/>
+          </div>
+        </div>
+        <div class="w-1/3 text-base-250">
+          <p>Package price: <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %></p>
+          <p>Digitial image price: <%= if Money.zero?(@package.download_each_price) do %>--<% else %><%= @package.download_each_price %>/each<% end %></p>
+        </div>
+        <div class="w-1/3 text-center">
+          <%= if @inner_block do %>
+            <%= render_block(@inner_block) %>
+          <% end %>
+        </div>
+      </label>
+    </div>
+    """
+  end
+
   def package_basic_fields(assigns) do
     ~H"""
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-7">
