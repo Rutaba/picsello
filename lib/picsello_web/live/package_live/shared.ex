@@ -111,8 +111,8 @@ defmodule PicselloWeb.PackageLive.Shared do
           </div>
         </div>
 
-        <label class="flex items-center mt-3 font-bold">
-          <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio") %>
+        <label class="flex mt-3 font-bold">
+          <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio mt-0.5") %>
           Gallery does not include Print Credits
         </label>
       </div>
@@ -150,9 +150,9 @@ defmodule PicselloWeb.PackageLive.Shared do
   defp build_download_fields(%{for: key, download_changeset: download_changeset} = assigns) do
     ~H"""
     <div class="flex flex-col md:flex-row w-full mt-3">
-      <div class="flex flex-col ">
-        <label class="flex items-center font-bold">
-          <%= radio_button(download_changeset, :status, :limited, class: "w-5 h-5 mr-2 radio") %>
+      <div class="flex flex-col">
+        <label class="flex font-bold">
+          <%= radio_button(download_changeset, :status, :limited, class: "w-5 h-5 mr-2 radio mt-0.5") %>
           <p><%= package_or_gallery_content(@for) %> includes a specified number of Digital Images <span class="font-normal italic text-base-250">(Charge for Digital Images)</span></p>
         </label>
 
@@ -168,13 +168,13 @@ defmodule PicselloWeb.PackageLive.Shared do
             </div>
         <% end %>
 
-        <label class="flex items-center mt-3 font-bold">
-            <%= radio_button(download_changeset, :status, :none, class: "w-5 h-5 mr-2 radio") %>
+        <label class="flex mt-3 font-bold">
+            <%= radio_button(download_changeset, :status, :none, class: "w-5 h-5 mr-2 radio mt-0.5") %>
             <p><%= package_or_gallery_content(@for) %> does not include any Digital Images </p>
         </label>
 
-        <label class="flex items-center mt-3 font-bold">
-          <%= radio_button(download_changeset, :status, :unlimited, class: "w-5 h-5 mr-2 radio") %>
+        <label class="flex mt-3 font-bold">
+          <%= radio_button(download_changeset, :status, :unlimited, class: "w-5 h-5 mr-2 radio mt-0.5") %>
           <p><%= package_or_gallery_content(@for) %> includes Unlimited Digital Images <span class="font-normal italic text-base-250">(Do not charge for any Digital Image)</span></p>
         </label>
 
@@ -203,7 +203,7 @@ defmodule PicselloWeb.PackageLive.Shared do
     </label>
 
     <%= if check?(download_changeset, :is_buy_all) do %>
-      <div class="flex flex-row items-center mt-3 md:ml-7">
+      <div class="flex flex-row items-center mt-3 lg:ml-7">
           <%= input(download_changeset, :buy_all, value: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
           <%= error_tag download_changeset, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
           <span class="ml-3 text-base-250"> for all images </span>
@@ -221,7 +221,7 @@ defmodule PicselloWeb.PackageLive.Shared do
           <span>Set my own <em>per Digital Image</em> price</span>
         </label>
         <%= if check?(download_changeset, :is_custom_price) do %>
-          <div class="flex flex-row items-center mt-3 ml-7 mt-3">
+          <div class="flex flex-row items-center mt-3 lg:ml-7">
             <%= input(download_changeset, :each_price, class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
             <%= error_tag download_changeset, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
             <span class="ml-3 text-base-250"> per image </span>
