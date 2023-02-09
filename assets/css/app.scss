@@ -278,6 +278,12 @@ canvas {
   white-space: nowrap;
 }
 
+@media (max-width: 640px) {
+  *.custom-tooltip:hover span {
+    display: none;
+  }
+}
+
 // Calendar CSS overrides for mobile
 .fc .fc-header-toolbar .fc-toolbar-title {
   @apply text-2xl md:text-3xl;

@@ -174,17 +174,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
           </div>
 
         <div class={classes("w-full lg:p-0 lg:block", %{"hidden" => @is_mobile})}>
-          <div class="flex items-center lg:mt-0 mb-2">
-            <div class="flex lg:hidden w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
+        <div class="flex-1 md:ml-8">
+          <div class="flex items-center lg:mt-6">
+            <div class="flex lg:hidden mr-1 w-8 h-8 items-center justify-center rounded-full bg-blue-planning-300" phx-click="back_to_navbar">
               <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
             </div>
-            <div class="ml-3 lg:hidden">
-              <span class="font-sans lg:text-2xl font-bold text-3xl capitalize"><%= @package_name %> Packages</span>
-            </div>
-          </div>
-          <div class="flex-1 md:ml-8">
-            <div class="md:flex items-center mt-6 hidden md:block">
-              <div class="font-bold text-xl capitalize"><%= @package_name %> Packages</div>
+            <div class="pl-2 font-bold text-xl capitalize"><%= @package_name %> Packages</div>
               <%= if @package_name not in ["All", "Archived"] do%>
                 <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(@package_name, org_id).id}>
                   <%= if @show_on_public_profile do %>
@@ -233,14 +228,14 @@ defmodule PicselloWeb.Live.PackageTemplates do
                 </div>
               <% end %>
             <% else %>
-              <div class="flex flex-col md:flex-row mt-2">
+              <div class="flex flex-col md:flex-row lg:mt-2 mt-6">
                 <img src="/images/empty-state.png" />
-                <div class="ml-10 flex flex-col justify-center">
+                <div class="lg:ml-10 flex flex-col justify-center mt-6 lg:mt-0 ml-0">
                   <div class="font-bold">
                     Missing packages
                   </div>
-                  <div class="font-normal w-72 text-base-250">
-                    You don’t have any packages! Click add a package to get started. If you need help, check out <a target="_blank" class="underline text-blue-planning-300" href="https://support.picsello.com/article/34-create-a-package-template">this guide</a>!
+                  <div class="font-normal lg:w-72 text-base-250">
+                    You don't have any packages! Click add a package to get started. If you need help, check out <a target="_blank" class="underline text-blue-planning-300" href="https://support.picsello.com/article/34-create-a-package-template">this guide</a>!
                   </div>
                 </div>
               </div>
@@ -673,6 +668,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     case Packages.archive_packages_for_job_type(org_job_type.job_type, organization_id) do
       {_row_count, nil} ->
         socket
+        |> assign(:package_name, "All")
         |> default_assigns()
         |> close_modal()
 
@@ -767,22 +763,15 @@ defmodule PicselloWeb.Live.PackageTemplates do
       else: Packages.unarchive_package(package.id)
   end
 
-  defp assign_templates(
-         %{assigns: %{current_user: %{organization_id: organization_id}, package_name: "All"}} =
-           socket
-       ),
-       do:
-         Package.templates_for_organization_query(organization_id)
-         |> assign_templates_and_pagination(socket)
+  defp assign_templates(%{assigns: %{current_user: %{organization_id: organization_id}, package_name: "All"}} = socket),
+    do:
+      Package.templates_for_organization_query(organization_id)
+      |> assign_templates_and_pagination(socket)
 
-  defp assign_templates(
-         %{
-           assigns: %{current_user: %{organization_id: organization_id}, package_name: "Archived"}
-         } = socket
-       ),
-       do:
-         Package.archived_templates_for_organization(organization_id)
-         |> assign_templates_and_pagination(socket)
+  defp assign_templates(%{assigns: %{current_user: %{organization_id: organization_id}, package_name: "Archived"}} = socket),
+    do:
+      Package.archived_templates_for_organization(organization_id)
+      |> assign_templates_and_pagination(socket)
 
   defp assign_templates(%{assigns: %{current_user: user, package_name: package_name}} = socket),
     do:
@@ -835,13 +824,13 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   defp update_pagination(query, %{
          assigns: %{
-           pagination: %{first_index: first_index, last_index: last_index, offset: offset, limit: limit} = pagination
+           pagination: %{offset: offset, limit: limit} = pagination
          }
        }) do
     updated_total_count = template_count_by_query(query)
     updated_last_index = offset + 1 * limit
 
-    if offset == updated_total_count do
+    if offset == updated_total_count && updated_total_count > 0 do
       pagination
       |> PaginationLive.changeset(%{
         total_count: updated_total_count,
