@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   use PicselloWeb, :live_component
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.PackageLive.Shared, only: [package_card: 1, current: 1, package_row: 1]
+  import PicselloWeb.PackageLive.Shared, only: [current: 1, package_row: 1]
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]

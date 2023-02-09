@@ -155,10 +155,8 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  @spec package_row(%{
-          package: %Package{}
-        }) :: %Phoenix.LiveView.Rendered{}
-  def package_row(assigns) do
+  @spec package_template_row(%{package: %Package{}}) :: %Phoenix.LiveView.Rendered{}
+  def package_template_row(assigns) do
     assigns =
       assigns
       |> Enum.into(%{
@@ -172,8 +170,8 @@ defmodule PicselloWeb.PackageLive.Shared do
         <div class="flex items-center">
           <h1 title={@package.name} class="text-xl font-bold line-clamp-2 text-blue-planning-300 link hover:cursor-pointer" phx-click="edit-package" phx-value-package-id={@package.id}>
             <%=
-              if String.length(@package.name) > 20 do
-                String.slice(@package.name, 0..19) <> "..."
+              if String.length(@package.name) > 25 do
+                String.slice(@package.name, 0..25) <> "..."
               else
                 @package.name
               end
@@ -327,9 +325,7 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  @spec package_row(%{
-          package: %Package{}
-        }) :: %Phoenix.LiveView.Rendered{}
+  @spec package_row(%{package: %Package{}}) :: %Phoenix.LiveView.Rendered{}
   def package_row(assigns) do
     assigns =
       assigns

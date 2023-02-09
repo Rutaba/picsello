@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
-  import PicselloWeb.PackageLive.Shared, only: [package_row: 1, current: 1]
+  import PicselloWeb.PackageLive.Shared, only: [package_template_row: 1, current: 1]
 
   alias PicselloWeb.PaginationLive
   alias Ecto.Changeset
@@ -202,7 +202,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
               <div class="my-4 flex flex-col">
                 <%= for template <- @templates do %>
-                  <.package_row update_mode="replace" package={template} class="h-full"/>
+                  <.package_template_row update_mode="replace" package={template} class="h-full"/>
                 <% end %>
               </div>
               <%= if @pagination.total_count > 4 do %>
@@ -952,7 +952,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     end
     |> Map.merge(%{
       id: nil,
-      name: "#{package.name} - Duplicate",
+      name: "Duplicate - #{package.name}",
       package_payment_schedules: package_payment_schedules,
       inserted_at: timestamp,
       updated_at: timestamp
