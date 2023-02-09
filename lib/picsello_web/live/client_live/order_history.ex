@@ -34,13 +34,12 @@ defmodule PicselloWeb.Live.ClientLive.OrderHistory do
         %{"order_number" => order_number},
         socket
       ) do
-    order = Orders.get_order_from_order_number(order_number)
-    job = Map.get(order.gallery, :job)
+    %{gallery: gallery} = Orders.get_order_from_order_number(order_number)
 
     socket
     |> push_redirect(
       to:
-        Routes.order_detail_path(socket, :transactions, job.id, order_number, %{
+        Routes.order_detail_path(socket, :transactions, gallery.id, order_number, %{
           "request_from" => "order_history"
         })
     )
@@ -102,10 +101,8 @@ defmodule PicselloWeb.Live.ClientLive.OrderHistory do
   end
 
   defp filter_client_orders(jobs) do
-    jobs
-    |> Enum.filter(fn %{gallery: gallery} -> not is_nil(gallery) and Enum.any?(gallery.orders) end)
-    |> Enum.reduce([], fn job, acc ->
-      acc ++ job.gallery.orders
+    Enum.reduce(jobs, [], fn %{galleries: galleries}, acc ->
+      acc ++ Enum.reduce(galleries, [], &(&2 ++ &1.orders))
     end)
   end
 

@@ -154,6 +154,39 @@ const FinalCostInput = {
   }
 };
 
+const SetGalleryCookie = {
+  mounted() {
+    let galleryType = this.el.dataset.galleryType
+    document.cookie = `GalleryType=${galleryType}; path=/`;
+  },
+};
+
+const GetGalleryCookie = {
+  mounted() {
+    const galleryType = getCookie('GalleryType')
+    document.cookie = "GalleryType=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    if (galleryType != "") {
+      this.pushEvent("gallery-created", { galleryType: galleryType })
+    }
+  },
+};
+
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -194,7 +227,9 @@ const Hooks = {
   GallerySelector,
   ClientGalleryCookie,
   CardStatus,
-  FinalCostInput
+  FinalCostInput,
+  SetGalleryCookie,
+  GetGalleryCookie
 };
 
 let Uploaders = {};

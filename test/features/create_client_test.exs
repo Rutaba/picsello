@@ -188,7 +188,7 @@ defmodule Picsello.CreateClientTest do
     |> visit("/home")
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Add client"))
+    |> click(button("Add client", count: 2, at: 1))
   end
 
   defp assert_general_fields(session) do

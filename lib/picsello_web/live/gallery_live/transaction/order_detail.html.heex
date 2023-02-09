@@ -1,0 +1,78 @@
+<header>
+  <div class="px-6 pt-6 pb-2 center-container">
+    <div class="flex justify-between">
+      <div>
+        <.crumbs class="md:text-xs font-normal text-base text-base-250">
+          <:crumb to={Routes.job_path(@socket, :jobs)}>
+            <%= action_name(:jobs, :plural) %>
+          </:crumb>
+          <:crumb to={Routes.job_path(@socket, :jobs, @gallery.job_id)}>
+            <%= Job.name @gallery.job %>
+          </:crumb>
+          <:crumb to={Routes.gallery_photographer_index_path(@socket, :index, @gallery.id)}>
+            gallery
+          </:crumb>
+          <:crumb to={Routes.transaction_path(@socket, :transactions, @gallery.id)}> Orders </:crumb>
+          <:crumb> <%= @order.number %> </:crumb>
+        </.crumbs>
+        <h1 class="flex items-center justify-between mt-4 text-4xl font-bold md:justify-start">
+          <div class="flex items-center font-bold">
+            <.live_link to={if @request_from != "order_history", do: Routes.transaction_path(@socket, :transactions, @gallery.id), else: Routes.client_path(@socket, :order_history, @job.client_id)} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
+              <.icon name="back" class="w-4 h-4 stroke-2"/>
+            </.live_link>
+            <%= if @request_from == "order_history" do %>
+              Client Order:
+            <% else %>
+              Gallery Order:
+            <% end %>
+            <p class="font-normal md:pl-4 pl-2"><%= @gallery.name %></p>
+          </div>
+        </h1>
+        <.tag_for_gallery_type type={@gallery.type} />
+      </div>
+      <button phx-click="open-stripe" class="text-lg py-3 h-13 my-auto font-semibold px-8 btn-primary">Go to Stripe</button>
+    </div>
+  </div>
+</header>
+
+<div class="px-6 py-2 center-container">
+  <div class={classes("justify-between border border-base-200 rounded-lg my-5 p-6", %{"grid md:grid-cols-2" => !is_nil(@shipping_address)})}>
+    <div class="grid-cols">
+      <div class="pb-4 border-b border-base-200">
+        <h1 id="title" class="font-bold text-2xl">Order Status</h1>
+        <p class="text-xl mt-2"><%= order_status(@order) %></p>
+      </div>
+      <div class="mt-4">
+        <h1 id="title" class="font-bold text-2xl">Transaction Summary</h1>
+
+        <p id="description" class="text-xl my-4">
+          Use your Stripe dashboard to handle most finanical needs (taxes, refunds, payouts, etc.) You can always <a href="#" class="text-blue-planning-300 underline" {help_scout_output(@current_user, :help_scout_id)}>contact us</a> if you need help!
+        </p>
+
+        <.summary caller={:order} order={@order} />
+        <button {testid("go-to-stripe")} phx-click="open-stripe" class="md:block mt-4 md:mt-0 px-8 btn-primary">Go to Stripe</button>
+      </div>
+    </div>
+    
+    <div class={classes("flex flex-row-reverse", %{"hidden" => is_nil(@shipping_address)})}>
+      <div class="flex flex-col gap-4">
+        <h1 id="title" class="font-bold text-2xl">Your client's order has been shipped to:</h1>
+
+        <div id="description" class="text-xl">
+          <%= @shipping_name %> <br>
+
+          <%= if @shipping_address do %> 
+            <%= @shipping_address.addr1 %><br> 
+            <%= @shipping_address.addr2 %>
+
+            <%= "#{@shipping_address.city}, #{@shipping_address.state} #{@shipping_address.zip}" %>
+          <% end %>
+        </div>
+        
+        <%= link "View gallery", to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id), id: "view_gallery", class: "text-blue-planning-300 underline text-lg" %>
+      </div>
+    </div>
+  </div>
+
+  <.order_details order={@order} gallery={@gallery} class="p-6 mt-10 border border-base-200 rounded-lg" />
+</div>

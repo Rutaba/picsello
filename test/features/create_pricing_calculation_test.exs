@@ -143,7 +143,7 @@ defmodule Picsello.CreatePricingCalculationTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(link("use here"))
+    |> click(link("Check out our"))
     |> assert_path("/pricing/calculator")
   end
 end

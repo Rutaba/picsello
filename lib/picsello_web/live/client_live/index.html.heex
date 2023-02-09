@@ -4,7 +4,7 @@
     <h1 class="text-4xl font-bold center-container">Clients</h1>
 
       <p class="max-w-2xl my-2 text-base-250">
-        Welcome to your client overview! Here you can see all your clients in one view, search, sort and add new ones. You can also easily take “action” by sending an email, creating a gallery and more! Be sure to take advantage of tags - little notes that will help you sort and remember client details.
+        Welcome to your client overview! <.intro_hint content="<a href='https://support.picsello.com/article/146-client-overview-and-tagging' target='_blank' rel='noreferrer'>Check out this support article to learn more</a>" class="ml-1" /> Here you can see all your clients in one view, search, sort and add new ones. You can also easily take “action” by sending an email, creating a gallery and more! Be sure to take advantage of tags - little notes that will help you sort and remember client details. <a href="https://support.picsello.com/article/147-client-tagging" target="_blank" rel="noreferrer" class="underline text-blue-planning-300">Learn more about tagging here</a>.
       </p>
     </div>
 
@@ -46,7 +46,13 @@
   
   <%= if Enum.empty?(@clients) do %>
     <div class="flex flex-col items-center mt-4 p-6 lg:flex-none">
-      <p class="text-lg lg:text-2xl text-base-250"><%= if @search_phrase || @job_status !== "all" || @job_type !== "all", do: "No clients match your search or filters.", else: "Get started adding some clients above!"%></p>
+      <%= if @search_phrase || @job_status !== "all" || @job_type !== "all" do %>
+        <p class="text-lg lg:text-2xl text-base-250">No clients match your search or filters.</p>
+      <% else %>
+        <.empty_state_base wrapper_class="w-full" tour_embed="https://demo.arcade.software/y2cGEpUW0B2FoO2BAa1b?embed" headline="Meet Clients" eyebrow_text="Clients Product Tour" body="Managing your clients with Picsello is easy. We help create the entire history with actions that happen in over time. Transferring from another system? Contact us to help upload your contacts. You can also import documents to keep a clear history." third_party_padding="calc(59.916666666666664% + 41px)">
+          <button type="button" phx-click="add-client" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0 whitespace-nowrap">Add client</button>
+        </.empty_state_base>
+      <% end %>
     </div>
   <% else %>
     <div class="md:p-6 center-container">

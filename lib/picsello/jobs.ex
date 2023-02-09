@@ -16,13 +16,14 @@ defmodule Picsello.Jobs do
   def get_client_jobs_query(client_id) do
     from(j in Job,
       where: j.client_id == ^client_id,
-      preload: [:package, :shoots, :job_status, :gallery]
+      preload: [:package, :shoots, :job_status, :galleries]
     )
   end
 
   def get_job_shooting_minutes(job) do
     job.shoots
     |> Enum.into([], fn shoot -> shoot.duration_minutes end)
+    |> Enum.filter(& &1)
     |> Enum.sum()
   end
 

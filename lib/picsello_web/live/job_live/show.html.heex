@@ -100,26 +100,14 @@
 
     <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} collapsed_sections={@collapsed_sections} />
 
-    <.section id="gallery" badge={@orders_count} icon="camera-check" title="Gallery & Orders" collapsed_sections={@collapsed_sections}>
+    <.section id="gallery" icon="camera-check" title="Gallery" collapsed_sections={@collapsed_sections}>
       <div class="grid md:grid-cols-2 gap-5">
-        <.card title="Gallery">
-          <%= case gallery_attrs(@job) do %>
-            <% %{button_text: button_text, button_click: button_click, button_disabled: button_disabled, text: text} -> %>
-              <p><%= text %></p>
-              <button class="btn-primary mt-4 self-end intro-gallery" phx-click={button_click} disabled={button_disabled}><%= button_text %></button>
-          <% end %>
-        </.card>
-        <.card {testid("orders-card")} title="Orders" class="overflow-visible relative">
-          <div {testid("order-badge")} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @orders_count > 0, "bg-gray-300" => @orders_count == 0})}>
-            <%= if @orders_count > 0, do: @orders_count %>
-          </div>
-          <%= case orders_attrs(@job, @orders_count) do %>
-            <% %{button_text: button_text, button_click: button_click, button_disabled: button_disabled, text: text} -> %>
-              <p><%= text %></p>
-              <button class="btn-primary mt-4 self-end intro-gallery" phx-click={button_click} disabled={button_disabled}><%= button_text %></button>
-          <% end %>
-        </.card>
-    </div>
+        <.galleries galleries={@job.galleries} socket={@socket} />
+      </div>
+      <button class={"#{Enum.empty?(@job.galleries) && 'hidden'} h-fit py-1 px-1 mt-4 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300"} phx-click="create-gallery">
+      <.icon name="plus" class="w-4 h-4 fill-current text-blue-planning-300 inline mr-1" />
+        Add another gallery
+      </button>
     </.section>
 
   <%= unless @job.is_gallery_only do %>
@@ -137,4 +125,8 @@
       socket={@socket}
     />
   <% end %>
+  <%= if @new_gallery do %>
+    <div phx-hook="SetGalleryCookie" data-gallery-type={@new_gallery.type} id="set-gallery-cookie"></div>
+  <% end %>
 </div>
+

@@ -14,19 +14,17 @@ defmodule PicselloWeb.JobLive.Shared do
     Notifiers.ClientNotifier,
     Package,
     PaymentSchedules,
-    Orders,
-    Galleries.Workers.PhotoStorage
+    Galleries.Workers.PhotoStorage,
+    Utils
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
-  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   require Ecto.Query
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import PicselloWeb.FormHelpers
   import Phoenix.HTML.Form
-  import Ecto.Query
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
 
@@ -459,8 +457,6 @@ defmodule PicselloWeb.JobLive.Shared do
         %{assigns: %{shoots: shoots, job: job}} = socket
       ) do
     shoots = shoots |> Enum.into(%{}) |> Map.put(shoot_number, new_shoot) |> Map.to_list()
-    {_, shoot} = List.last(shoots)
-    update_gallery(job, shoot)
 
     socket
     |> assign(
@@ -649,19 +645,44 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def card(assigns) do
     assigns =
-      assigns
-      |> assign_new(:class, fn -> "" end)
-      |> assign_new(:color, fn -> "blue-planning-300" end)
+      Enum.into(assigns, %{
+        class: "",
+        color: "blue-planning-300",
+        gallery_card?: false,
+        gallery_type: nil
+      })
 
     ~H"""
     <div {testid("card-#{@title}")} class={"flex overflow-hidden border border-base-200 rounded-lg #{@class}"}>
-      <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-#{@color}"} />
+      <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-#{@color} #{@gallery_card? && 'hidden'}"} />
       <div class="flex flex-col w-full p-4">
-        <h3 class={"mb-4 mr-4 text-xl font-bold text-#{@color}"}><%= @title %></h3>
+        <.card_title
+        color={@color}
+        title={@title}
+        gallery_card?={@gallery_card?}
+        gallery_type={@gallery_type}
+        />
         <%= render_slot(@inner_block) %>
       </div>
     </div>
     """
+  end
+
+  def card_title(%{gallery_card?: true} = assigns) do
+    ~H"""
+    <div class="flex justify-between">
+      <.card_title color={@color} title={@title}  />
+      <h4 class="border rounded-md bg-base-200 px-2 mb-1.5 text-base-250 font-bold text-base"><%= Utils.capitalize_all_words(@gallery_type) %>
+      <%= if @gallery_type == :unlinked_finals do %>
+        <.intro_hint class="ml-2" content="<b>Note:</b> You had more than one finals album, within your proofing gallery. To keep your data safe, we have created a gallery to hold those and you can reorganize/reupload photos to the new/improved proofing gallery"/>
+      <% end %>
+      </h4>
+    </div>
+    """
+  end
+
+  def card_title(assigns) do
+    ~H[<h3 class={"mb-2 mr-4 text-xl font-bold text-#{@color}"}><%= @title %></h3>]
   end
 
   def communications_card(assigns) do
@@ -1223,32 +1244,17 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  def update_gallery(%{gallery: gallery} = job, shoot) do
-    if gallery && gallery.use_global do
-      settings =
-        from(gss in GSGallery,
-          where: gss.organization_id == ^job.client.organization_id
-        )
-        |> Repo.one()
-
-      expiration_date =
-        if settings && settings.expiration_days && settings.expiration_days > 0 do
-          Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
-        end
-
-      Picsello.Galleries.update_gallery(gallery, %{expired_at: expiration_date})
-    else
-      nil
-    end
-  end
-
   defp do_assign_job(socket, job) do
-    gallery = Galleries.get_gallery_by_job_id(job.id)
-    job = Map.put(job, :gallery, gallery)
+    galleries =
+      job.id
+      |> Galleries.get_galleries_by_job_id()
+      |> Picsello.Repo.preload([:orders, child: [:orders]])
+
+    child_ids = for %{child: %{id: id}} when not is_nil(id) <- galleries, do: id
+    job = Map.put(job, :galleries, Enum.reject(galleries, &(&1.id in child_ids)))
 
     socket
     |> assign(
-      orders_count: Orders.placed_orders_count(gallery),
       job: job,
       page_title: Job.name(job),
       package: job.package

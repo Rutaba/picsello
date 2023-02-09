@@ -27,12 +27,11 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     end
 
     album = Map.get(params, :selected_album, nil)
-    album_id = if !is_nil(album), do: album.id
 
     Phoenix.PubSub.broadcast(
       Picsello.PubSub,
       "upload_update:#{gallery.id}",
-      {:upload_update, %{album_id: album_id}}
+      {:upload_update, %{album_id: album && album.id}}
     )
 
     socket
@@ -113,13 +112,16 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   end
 
   defp li(assigns) do
+    assigns = Enum.into(assigns, %{is_proofing: false, is_finals: false})
+
     ~H"""
     <div class={"#{@class}"}>
       <%= live_redirect to: @route do %>
         <li class="group">
           <button class={"#{@button_class} flex items-center h-6 py-4 pl-12 w-full pr-6 overflow-hidden text-xs transition duration-300 ease-in-out rounded-lg text-ellipsis whitespace-nowrap group-hover:!text-blue-planning-300"}>
               <.icon name={@name} class={"w-4 h-4 stroke-2 fill-current #{@button_class} mr-2 group-hover:!text-blue-planning-300"}/>
-              <%= @title%>
+              <%= if @is_finals, do: "Proofing " %>
+              <%= if @is_proofing || @is_finals, do: String.capitalize(@title), else: @title %>
           </button>
         </li>
       <% end %>

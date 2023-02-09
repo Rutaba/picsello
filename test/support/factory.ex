@@ -94,7 +94,7 @@ defmodule Picsello.Factory do
       state: "OK",
       intro_states:
         Enum.map(
-          ~w[intro_dashboard intro_dashboard_modal intro_inbox intro_marketing intro_tour intro_leads_new intro_settings_profile intro_settings_packages intro_settings_pricing intro_settings_public_profile intro_settings_clients intro_jobs_stripe intro_jobs_empty intro_jobs intro_settings_brand intro_settings_finances],
+          ~w[intro_dashboard intro_dashboard_modal intro_inbox intro_marketing intro_tour intro_leads_new intro_settings_profile intro_settings_public_profile intro_settings_clients intro_jobs intro_settings_brand intro_settings_finances],
           &%{id: &1, state: :completed, changed_at: DateTime.utc_now()}
         )
     }
@@ -460,10 +460,7 @@ defmodule Picsello.Factory do
       name: "Test Client Wedding",
       job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
-      client_link_hash: UUID.uuid4(),
-      active: true,
-      disabled: false,
-      use_global: false
+      client_link_hash: UUID.uuid4()
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

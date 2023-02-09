@@ -1,4 +1,4 @@
-<.optimized_container step={1} color_class="bg-blue-planning-200">
+<.optimized_container step={@step} steps={@steps} color_class="bg-blue-planning-200">
   <div id="tz-cookie" phx-hook="TZCookie"></div>
   <div phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="save"></div>
   <h1 class="text-3xl font-bold sm:leading-tight mt-2"><%= @subscription_plan_metadata.signup_title %></h1>

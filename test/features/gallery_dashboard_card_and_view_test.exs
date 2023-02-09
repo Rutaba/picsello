@@ -70,11 +70,10 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
   feature "renders create-gallery modal from dashboard-card", %{session: session} do
     visit_homepage(session)
     |> click(button("Create a gallery"))
-    |> assert_text("Create a Gallery: General Details")
-    |> assert_text("Client Name")
-    |> assert_text("Client Email")
-    |> assert_text("# of Shoots")
-    |> assert_text("Type of Photography")
+    |> assert_text("Create a Gallery: Get Started")
+    |> assert_text("Standard Gallery")
+    |> assert_text("Proofing Gallery")
+    |> assert_has(button("Next", count: 2))
   end
 
   defp visit_homepage(session) do
@@ -147,7 +146,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     session
     |> click(link("Go to Job"))
     |> assert_text("Details & communications")
-    |> assert_text("Gallery & Orders")
+    |> assert_text("Gallery")
     |> assert_text("Shoot details")
     |> assert_text("Booking details")
     |> visit("/galleries")
@@ -179,8 +178,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
   defp assertions_for_no_galleries_page(session) do
     session
     |> assert_text("Your Galleries")
-    |> assert_text("Oh hey!")
-    |> assert_text("You don't have any galleries at the moment.")
+    |> assert_text("Meet Galleries")
     |> assert_has(link("Create a gallery"))
   end
 end

@@ -58,7 +58,7 @@ defmodule Picsello.Galleries do
   end
 
   def list_all_galleries_by_organization_query(organization_id) do
-    from(g in active_galleries(),
+    from(g in active_disabled_galleries(),
       join: j in Job,
       on: j.id == g.job_id,
       join: c in Client,
@@ -97,28 +97,26 @@ defmodule Picsello.Galleries do
 
   """
   def get_gallery!(id) do
-    from(gallery in active_galleries(),
+    from(gallery in active_disabled_galleries(),
       where: gallery.id == ^id
     )
     |> Repo.one!()
   end
 
   @doc """
-  Gets a single gallery by job id parameter.
-
-  Returns nil if the Gallery does not exist.
+  List galleries against job_id
 
   ## Examples
 
-      iex> get_gallery_by_job_id(job_id)
-      %Gallery{}
+      iex> get_galleries_by_job_id(job_id)
+      [%Gallery{}, ...]
 
-      iex> get_gallery_by_job_id(job_id)
-      nil
+      iex> get_galleries_by_job_id(job_id)
+      []
 
   """
-  @spec get_gallery_by_job_id(job_id :: integer) :: %Gallery{} | nil
-  def get_gallery_by_job_id(job_id), do: Repo.get_by(active_galleries(), job_id: job_id)
+  def get_galleries_by_job_id(job_id),
+    do: where(active_galleries(), job_id: ^job_id) |> order_by([:inserted_at]) |> Repo.all()
 
   @doc """
   Gets a single gallery by hash parameter.
@@ -138,7 +136,7 @@ defmodule Picsello.Galleries do
   def get_gallery_by_hash(hash), do: Repo.get_by(active_galleries(), client_link_hash: hash)
 
   @spec get_gallery_by_hash!(hash :: binary) :: %Gallery{}
-  def get_gallery_by_hash!(hash), do: Repo.get_by!(active_galleries(), client_link_hash: hash)
+  def get_gallery_by_hash!(hash), do: Repo.get_by!(active_disabled_galleries(), client_link_hash: hash)
 
   @doc """
   Gets single gallery by hash, with relations populated (cover_photo)
@@ -256,7 +254,8 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
-  defp move_photos_from_album_transaction(photo_ids) do
+  @types ~w(proofing finals)a
+  defp move_photos_from_album_transaction(photo_ids, gallery \\ nil) do
     Multi.new()
     |> Multi.update_all(
       :thumbnail,
@@ -268,15 +267,31 @@ defmodule Picsello.Galleries do
       fn _ ->
         from(p in Photo,
           where: p.id in ^photo_ids,
-          update: [set: [album_id: nil]]
+          update: [set: ^photo_opts(gallery)]
         )
       end,
       []
     )
+    |> then(fn
+      multi when not is_nil(gallery) and gallery.type in @types ->
+        multi
+        |> Multi.run(:gallery, fn _, %{photos: {count, _}} ->
+          update_gallery(gallery, %{total_count: gallery.total_count - count})
+        end)
+
+      multi ->
+        multi
+    end)
   end
 
-  def remove_photos_from_album(photo_ids) do
-    move_photos_from_album_transaction(photo_ids)
+  defp photo_opts(%{type: type}) when type in @types, do: [active: false]
+  defp photo_opts(_gallery), do: [album_id: nil]
+
+  def remove_photos_from_album(photo_ids, gallery_id) do
+    gallery = get_gallery!(gallery_id)
+
+    photo_ids
+    |> move_photos_from_album_transaction(gallery)
     |> Repo.transaction()
     |> then(fn
       {:ok, _} ->
@@ -453,17 +468,24 @@ defmodule Picsello.Galleries do
       GalleryProduct,
       fn %{
            gallery: %{
-             id: gallery_id
+             id: gallery_id,
+             type: type
            }
          } ->
-        from(category in (Category.active() |> Category.shown()),
-          select: %{
-            inserted_at: now(),
-            updated_at: now(),
-            gallery_id: ^gallery_id,
-            category_id: category.id
-          }
-        )
+        case type do
+          :proofing ->
+            []
+
+          _ ->
+            from(category in (Category.active() |> Category.shown()),
+              select: %{
+                inserted_at: now(),
+                updated_at: now(),
+                gallery_id: ^gallery_id,
+                category_id: category.id
+              }
+            )
+        end
       end
     )
     |> Multi.merge(fn %{gallery: gallery} ->
@@ -486,6 +508,18 @@ defmodule Picsello.Galleries do
         end)
     end
   end
+
+  def album_params_for_new("standard"), do: []
+
+  def album_params_for_new(type),
+    do: [
+      %{
+        name: type,
+        is_proofing: type == "proofing",
+        is_finals: type == "finals",
+        set_password: false
+      }
+    ]
 
   @doc """
   Updates a gallery.
@@ -554,7 +588,7 @@ defmodule Picsello.Galleries do
 
   """
   def delete_gallery(%Gallery{} = gallery) do
-    update_gallery(gallery, %{active: false})
+    update_gallery(gallery, %{status: "inactive"})
   end
 
   def delete_gallery_by_id(id), do: get_gallery!(id) |> delete_gallery()
@@ -766,7 +800,13 @@ defmodule Picsello.Galleries do
     )
   end
 
-  def gallery_current_status(nil), do: :none_created
+  def update_all(gallery_ids, opts) when is_list(gallery_ids) and is_list(opts) do
+    from(gallery in Gallery, where: gallery.id in ^gallery_ids, update: [set: ^opts])
+    |> Repo.update_all([])
+  end
+
+  def gallery_current_status(%Gallery{id: nil}), do: :none_created
+
   def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
 
   def gallery_current_status(%Gallery{} = gallery) do
@@ -1090,6 +1130,8 @@ defmodule Picsello.Galleries do
     join(query, :inner, [photo], digital in Digital, on: photo.id == digital.photo_id)
   end
 
+  defp uploading_status(%{photos: []}), do: :no_photo
+
   defp uploading_status(gallery) do
     gallery
     |> Map.get(:photos, [])
@@ -1107,7 +1149,9 @@ defmodule Picsello.Galleries do
 
   defp topic(gallery), do: "gallery:#{gallery.id}"
 
-  defp active_galleries, do: from(g in Gallery, where: g.active == true)
+  defp active_galleries, do: from(g in Gallery, where: g.status == "active")
+
+  defp active_disabled_galleries, do: from(g in Gallery, where: g.status == "active" or g.status == "disabled")
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
   defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue
