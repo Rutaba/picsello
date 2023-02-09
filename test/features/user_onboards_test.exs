@@ -147,7 +147,7 @@ defmodule Picsello.UserOnboardsTest do
              }
            } = user
 
-    assert ["event", "portrait"] =
+    assert ["other", "event", "portrait"] =
              Profiles.enabled_job_types(user.organization.organization_job_types)
 
     assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
@@ -203,7 +203,7 @@ defmodule Picsello.UserOnboardsTest do
              onboarding: %{schedule: :full_time}
            } = user
 
-    assert [] = Profiles.enabled_job_types(user.organization.organization_job_types)
+    assert ["other"] = Profiles.enabled_job_types(user.organization.organization_job_types)
   end
 
   feature "user selects Non-US state", %{session: session, user: user} do

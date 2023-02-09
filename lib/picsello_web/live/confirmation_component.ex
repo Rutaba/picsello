@@ -29,7 +29,7 @@ defmodule PicselloWeb.ConfirmationComponent do
 
     ~H"""
     <div class={@class}>
-      <%= if @icon != "no-icon" do %>
+      <%= if @icon && @icon != "no-icon" do %>
         <.icon name={@icon} class="w-11 h-11" />
       <% end %>
 

@@ -37,7 +37,7 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> click(button("Get started"))
     |> assert_path("/pricing/calculator")
     |> click(css("label", text: "Wedding"))
-    |> assert_has(css("label.border-blue-planning-300", count: 3))
+    |> assert_has(css("label.border-blue-planning-300", count: 2))
     |> assert_has(css("#calculator-step-2_average_time_per_week", value: "26"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
@@ -112,7 +112,7 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> click(button("Get started"))
     |> assert_path("/pricing/calculator")
     |> click(css("label", text: "Wedding"))
-    |> assert_has(css("label.border-blue-planning-300", count: 3))
+    |> assert_has(css("label.border-blue-planning-300", count: 2))
     |> fill_in(css("#calculator-step-2_average_time_per_week"), with: "0")
     |> assert_disabled(css("button", text: "Next"))
   end
