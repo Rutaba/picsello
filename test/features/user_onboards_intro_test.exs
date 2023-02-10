@@ -47,8 +47,10 @@ defmodule Picsello.UserOnboardsIntroTest do
   feature "users starts product tour and uses it", %{session: session} do
     session
     |> visit("/home")
-    |> sleep(1000)
-    |> click(button("cancel"))
+    |> within_modal(fn modal ->
+      modal
+      |> click(button("cancel"))
+    end)
     |> click(css("#start-tour"))
     |> click(css(".introjs-nextbutton"))
     |> click(css(".introjs-nextbutton"))
@@ -56,7 +58,6 @@ defmodule Picsello.UserOnboardsIntroTest do
     |> click(css(".introjs-nextbutton"))
     |> click(css(".introjs-nextbutton"))
     |> click(css(".introjs-nextbutton"))
-    |> sleep(1000)
     |> click(css(".introjs-donebutton"))
     |> visit("/home")
     |> refute_has(css("#start-tour"))
@@ -65,8 +66,10 @@ defmodule Picsello.UserOnboardsIntroTest do
   feature "user interacts with intro js tour and dismisses it", %{session: session} do
     session
     |> visit("/home")
-    |> sleep(1000)
-    |> click(button("cancel"))
+    |> within_modal(fn modal ->
+      modal
+      |> click(button("cancel"))
+    end)
     |> click(css("#start-tour"))
     |> click(css(".introjs-skipbutton"))
     |> visit("/")
