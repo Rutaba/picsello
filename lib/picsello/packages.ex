@@ -425,6 +425,8 @@ defmodule Picsello.Packages do
     templates
   end
 
+  def create_initial(_user, _type), do: []
+
   defp minimum_years_query(years_experience),
     do:
       from(base in BasePrice,
