@@ -55,7 +55,10 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_url_contains("/jobs/#{job.id}")
   end
 
-  feature "Transactions header test", %{order: %{gallery: %{job: job} = gallery}, session: session} do
+  feature "Transactions header test", %{
+    order: %{gallery: %{job: job} = gallery},
+    session: session
+  } do
     session
     |> visit("/galleries/#{gallery.id}/transactions")
     |> assert_has(css("a[href='/jobs']", text: "Jobs"))
@@ -80,7 +83,9 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_text("$557")
     |> assert_text(Calendar.strftime(order.placed_at, "%m/%d/%Y"))
     |> click(css("*[phx-click='order-detail']", text: "View details"))
-    |> assert_url_contains("/galleries/#{gallery.id}/transactions/#{order_number}?request_from=transactions")
+    |> assert_url_contains(
+      "/galleries/#{gallery.id}/transactions/#{order_number}?request_from=transactions"
+    )
   end
 
   feature "order detail page shipping address test", %{

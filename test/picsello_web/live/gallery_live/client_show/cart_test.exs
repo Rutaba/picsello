@@ -27,7 +27,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
       cart_path: cart_path,
       gallery: gallery
     } do
-
       order = Picsello.Cart.place_product(build(:digital), gallery)
 
       {:ok, view, _html} = live(conn, cart_path)

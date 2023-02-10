@@ -8,6 +8,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     Jobs,
     Client,
     Package,
+    Profiles,
     Packages,
     Packages.Download,
     Packages.PackagePricing,
@@ -30,7 +31,11 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   @steps [:choose_type, :details, :pricing]
 
   @impl true
-  def update(%{current_user: %{organization: %{profile: profile}}} = assigns, socket) do
+  def update(
+        %{current_user: %{organization: %{organization_job_types: organization_job_types}}} =
+          assigns,
+        socket
+      ) do
     socket
     |> assign(assigns)
     |> assign(:new_gallery, nil)
@@ -40,10 +45,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> assign(templates: [], step: :choose_type, steps: @steps)
     |> assign_package_changesets()
     |> assign_job_changeset(%{"client" => %{}, "shoots" => [%{"starts_at" => nil}]})
-    |> assign(
-      :job_types,
-      ((profile.job_types || []) ++ [Picsello.JobType.other_type()]) |> Enum.uniq()
-    )
+    |> assign(:job_types, Profiles.enabled_job_types(organization_job_types))
     |> ok()
   end
 

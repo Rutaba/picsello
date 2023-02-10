@@ -3,7 +3,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   use PicselloWeb, live_view: [layout: "calculator"]
   use Picsello.Notifiers
 
-  alias Picsello.{Repo, JobType, PricingCalculations}
+  alias Picsello.{Repo, JobType, Profiles, PricingCalculations}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,7 +13,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       assign(socket,
         pricing_calculations: %PricingCalculations{
           organization_id: user.organization_id,
-          job_types: user.organization.profile.job_types,
+          job_types: Profiles.enabled_job_types(user.organization.organization_job_types),
           average_time_per_week: 40,
           take_home: Money.new(0),
           self_employment_tax_percentage: tax_schedule().self_employment_percentage,

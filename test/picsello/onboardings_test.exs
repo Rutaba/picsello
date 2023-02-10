@@ -44,12 +44,9 @@ defmodule Picsello.OnboardingsTest do
                },
                organization: %{
                  name: [:required],
-                 profile:
-                   %{
-                     job_types: [:required]
-                   } = profile_errors
+                 organization_job_types: [:required]
                }
-             } =
+             } ==
                changeset_errors(
                  user,
                  %{
@@ -58,8 +55,6 @@ defmodule Picsello.OnboardingsTest do
                  },
                  step: 3
                )
-
-      assert [:job_types] = Map.keys(profile_errors)
     end
   end
 

@@ -2,23 +2,22 @@ defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
   import Picsello.Zapier.User, only: [user_trial_created_webhook: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
-
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
   use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
 
   alias Ecto.Multi
-  alias Picsello.{Repo, JobType, Onboardings, Onboardings.Onboarding, Subscriptions}
+  alias Picsello.{Repo, Onboardings, Onboardings.Onboarding, Subscriptions}
 
   @impl true
   def mount(_params, _session, socket) do
     socket
-    |> assign_step(2)
+    |> assign_step()
     |> assign(:loading_stripe, false)
     |> assign(
       :subscription_plan_metadata,
       Subscriptions.get_subscription_plan_metadata()
     )
-    |> assign_new(:job_types, &job_types/0)
     |> assign_changeset()
     |> ok()
   end
@@ -93,7 +92,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
             <% else %>
               <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "flex-grow sm:flex-grow-0 underline mr-auto text-left") %>
             <% end %>
-            <button type="submit" phx-disable-with="Saving" disabled={!@changeset.valid? || @loading_stripe} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
+            <button type="submit" phx-disable-with="Saving" disabled={!@changeset.valid? || @loading_stripe || @should_select_job_types?} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
               <%= if @step == 3, do: "Start Trial", else: "Next" %>
             </button>
           </div>
@@ -150,8 +149,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
       <%= for o <- inputs_for(@f, :organization) do %>
         <%= hidden_inputs_for o %>
 
-        <%= for p <- inputs_for(o, :profile) do %>
-          <% input_name = input_name(p, :job_types) <> "[]" %>
           <div class="flex flex-col pb-1">
             <p class="py-2 font-extrabold">
               What’s your speciality?
@@ -161,12 +158,14 @@ defmodule PicselloWeb.OnboardingLive.Index do
             <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
 
             <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
-              <%= for(job_type <- job_types(), checked <- [Enum.member?(input_value(p, :job_types) || [], job_type)]) do %>
-                <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={checked} />
+              <%= for jt <- inputs_for(o, :organization_job_types) do %>
+                <% input_name = input_name(jt, :job_type) %>
+                <%= hidden_inputs_for(jt) %>
+                <% checked = jt |> current() |> Map.get(:show_on_business?) %>
+                <.job_type_option type="checkbox" name={input_name} form={jt} job_type={jt |> current() |> Map.get(:job_type)} checked={checked} />
               <% end %>
             </div>
           </div>
-        <% end %>
       <% end %>
     """
   end
@@ -184,6 +183,13 @@ defmodule PicselloWeb.OnboardingLive.Index do
       <% end %>
     </label>
     """
+  end
+
+  defp assign_step(%{assigns: %{current_user: %{onboarding: onboarding}}} = socket) do
+    if is_nil(onboarding.state) && is_nil(onboarding.photographer_years) &&
+         is_nil(onboarding.schedule),
+       do: assign_step(socket, 2),
+       else: assign_step(socket, 3)
   end
 
   defp assign_step(socket, 2) do
@@ -218,6 +224,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   defp assign_changeset(socket, params \\ %{}) do
     socket
     |> assign(changeset: build_changeset(socket, params, :validate))
+    |> job_types_selected?()
   end
 
   def optimized_container(assigns) do
@@ -362,6 +369,22 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> noreply()
   end
 
-  defdelegate job_types(), to: JobType, as: :all
+  defp job_types_selected?(%{assigns: %{changeset: changeset, step: step}} = socket) do
+    case changeset.changes do
+      %{organization: %{changes: %{organization_job_types: job_types_changeset_list}}} ->
+        enabled_job_types =
+          job_types_changeset_list
+          |> Enum.filter(fn changeset ->
+            Map.has_key?(changeset.changes, :show_on_business?)
+          end)
+
+        socket
+        |> assign(should_select_job_types?: Enum.empty?(enabled_job_types))
+
+      %{} ->
+        socket |> assign(should_select_job_types?: step == 3)
+    end
+  end
+
   defdelegate states(), to: Onboardings, as: :state_options
 end

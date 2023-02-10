@@ -37,7 +37,7 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> click(button("Get started"))
     |> assert_path("/pricing/calculator")
     |> click(css("label", text: "Wedding"))
-    |> assert_has(css("label.border-blue-planning-300", count: 3))
+    |> assert_has(css("label.border-blue-planning-300", count: 2))
     |> assert_has(css("#calculator-step-2_average_time_per_week", value: "26"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
@@ -88,14 +88,9 @@ defmodule Picsello.CreatePricingCalculationTest do
                                 max_session_per_year: 30
                               },
                               %{
-                                base_price: "$507.04",
-                                job_type: "Event",
-                                max_session_per_year: 71
-                              },
-                              %{
-                                base_price: "$346.15",
-                                job_type: "Portrait",
-                                max_session_per_year: 104
+                                base_price: "$190.48",
+                                job_type: "Other",
+                                max_session_per_year: 189
                               }
                             ],
                             "projected_costs" => "$7,500.00",
@@ -112,7 +107,7 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> click(button("Get started"))
     |> assert_path("/pricing/calculator")
     |> click(css("label", text: "Wedding"))
-    |> assert_has(css("label.border-blue-planning-300", count: 3))
+    |> assert_has(css("label.border-blue-planning-300", count: 2))
     |> fill_in(css("#calculator-step-2_average_time_per_week"), with: "0")
     |> assert_disabled(css("button", text: "Next"))
   end

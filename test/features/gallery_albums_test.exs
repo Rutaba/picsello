@@ -48,6 +48,7 @@ defmodule Picsello.GalleryAlbumsTest do
   } do
     session
     |> visit("/galleries/#{gallery_id}/albums")
+    |> scroll_into_view(css("#unsorted_actions"))
     |> click(css("#unsorted_actions"))
     |> click(css("button", text: "Go to unsorted photos"))
     |> find(css("#page-scroll span span", text: "Unsorted photos"))
@@ -63,6 +64,7 @@ defmodule Picsello.GalleryAlbumsTest do
     |> visit("/galleries/#{gallery_id}/photos")
     |> assert_has(css(".item", count: length(photo_ids)))
     |> visit("/galleries/#{gallery_id}/albums")
+    |> scroll_into_view(css("#unsorted_actions"))
     |> click(css("#unsorted_actions"))
     |> click(css("button", text: "Delete all unsorted photos"))
     |> within_modal(&click(&1, button("Yes, delete")))

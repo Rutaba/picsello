@@ -388,7 +388,7 @@ defmodule PicselloWeb.LiveHelpers do
     ~H"""
     <div class={"grid grid-cols-1 md:grid-cols-2 md:gap-20 gap-8 items-center md:pb-0 pb-8 relative #{@wrapper_class}"}>
       <%= if @close_event do %>
-      <button class="w-8 h-8 xs:w-10 xs:h-10 z-10 absolute right-5 top-5 xs:right-3 xs:top-3 bg-gray-200 xs:bg-gray-100 p-2 xs:p-3 border-transparent hover:border-blue-planning-300/60 focus:ring-blue-planning-300/70 focus:ring-opacity-75 rounded-lg cursor-pointer transition-colors" phx-click={@close_event} title="dismiss intro">
+      <button {testid("intro-state-close-button")} class="w-8 h-8 xs:w-10 xs:h-10 z-10 absolute right-5 top-5 xs:right-3 xs:top-3 bg-gray-200 xs:bg-gray-100 p-2 xs:p-3 border-transparent hover:border-blue-planning-300/60 focus:ring-blue-planning-300/70 focus:ring-opacity-75 rounded-lg cursor-pointer transition-colors" phx-click={@close_event} title="dismiss intro">
         <.icon name="close-x" class="h-full w-full stroke-current stroke-3" />
       </button>
       <% end %>
