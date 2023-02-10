@@ -66,10 +66,6 @@ defmodule Picsello.UserOnboardsIntroTest do
   feature "user interacts with intro js tour and dismisses it", %{session: session} do
     session
     |> visit("/home")
-    |> within_modal(fn modal ->
-      modal
-      |> click(button("cancel"))
-    end)
     |> click(css("#start-tour"))
     |> click(css(".introjs-skipbutton"))
     |> visit("/")
