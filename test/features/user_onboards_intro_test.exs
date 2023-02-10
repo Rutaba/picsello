@@ -48,6 +48,7 @@ defmodule Picsello.UserOnboardsIntroTest do
     session
     |> visit("/home")
     |> sleep(1000)
+    |> click(button("cancel"))
     |> click(css("#start-tour"))
     |> click(css(".introjs-nextbutton"))
     |> click(css(".introjs-nextbutton"))
@@ -65,6 +66,7 @@ defmodule Picsello.UserOnboardsIntroTest do
     session
     |> visit("/home")
     |> sleep(1000)
+    |> click(button("cancel"))
     |> click(css("#start-tour"))
     |> click(css(".introjs-skipbutton"))
     |> visit("/")
