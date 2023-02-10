@@ -180,6 +180,7 @@ defmodule Picsello.CreateClientTest do
 
   defp open_add_client_popup(session) do
     session
+    |> set_cookie("show_welcome_modal", "")
     |> visit("/home")
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
