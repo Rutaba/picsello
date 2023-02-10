@@ -108,7 +108,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       <%= for org <- inputs_for(@f, :organization) do %>
         <%= hidden_inputs_for org %>
 
-        <.form_field label="Are you a full-time or part-time photographer?" error={:name} prefix="Photography business name" f={org} mt={0} >
+        <.form_field label="Photography business name" error={:name} prefix="Photography business name" f={org} mt={0} >
           <%= input org, :name, phx_debounce: "500", placeholder: "Business name", class: input_class %>
         </.form_field>
       <% end %>
