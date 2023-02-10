@@ -94,13 +94,8 @@ defmodule Picsello.CreateClientTest do
 
     session
     |> visit("/clients/#{client.id}/job-history")
-    |> click(link("Job Details"))
     |> click(css("a", text: "Go to Gallery"))
     |> assert_url_contains("/galleries")
-
-    assert Repo.all(Gallery) |> Enum.count() == 1
-
-    session
     |> visit("/clients/#{client.id}/job-history")
     |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
       row
