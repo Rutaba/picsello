@@ -39,7 +39,7 @@ defmodule PicselloWeb.LeadContactIframeController do
     organization = Profiles.find_organization_by_slug(slug: slug)
 
     conn
-    |> assign(:job_types, organization.profile.job_types)
+    |> assign(:job_types, Profiles.public_job_types(organization.organization_job_types))
     |> assign(:organization, organization)
   end
 

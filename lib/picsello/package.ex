@@ -22,6 +22,7 @@ defmodule Picsello.Package do
     field :turnaround_weeks, :integer, default: 1
     field :schedule_type, :string
     field :fixed, :boolean, default: true
+    field :show_on_public_profile, :boolean, default: false
 
     belongs_to :questionnaire_template, Picsello.Questionnaire
     belongs_to(:organization, Picsello.Organization)
@@ -93,6 +94,9 @@ defmodule Picsello.Package do
   def archive_changeset(package),
     do: change(package, %{archived_at: DateTime.truncate(DateTime.utc_now(), :second)})
 
+  def edit_visibility_changeset(package),
+    do: change(package, %{show_on_public_profile: !package.show_on_public_profile})
+
   defp choose_template(package, attrs, _opts \\ []) do
     package |> cast(attrs, [:package_template_id])
   end
@@ -101,7 +105,7 @@ defmodule Picsello.Package do
     package
     |> cast(
       attrs,
-      ~w[schedule_type fixed description questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks]a
+      ~w[schedule_type fixed description questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks show_on_public_profile]a
     )
     |> validate_required(~w[name organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
@@ -180,20 +184,42 @@ defmodule Picsello.Package do
 
   def price(%__MODULE__{} = package), do: adjusted_base_price(package)
 
-  def templates_for_organization_id(organization_id) do
+  def templates_for_organization(organization_id) do
+    templates_for_organization_query(organization_id)
+    |> where([package], package.show_on_public_profile)
+  end
+
+  def templates_for_organization_query(organization_id) do
     from(package in __MODULE__,
       where:
         not is_nil(package.job_type) and package.organization_id == ^organization_id and
           is_nil(package.archived_at),
-      order_by: [desc: package.inserted_at]
+      order_by: [desc: package.base_price]
     )
   end
 
-  def templates_for_user(%User{organization_id: organization_id}),
-    do: templates_for_organization_id(organization_id)
+  def all_templates_for_organization(organization_id) do
+    from(package in __MODULE__,
+      where:
+        not is_nil(package.job_type) and package.organization_id == ^organization_id and
+          is_nil(package.archived_at),
+      order_by: [desc: package.base_price]
+    )
+  end
 
-  def templates_for_user(user, type) when type != nil do
-    from(template in templates_for_user(user), where: template.job_type == ^type)
+  def archived_templates_for_organization(organization_id) do
+    from(package in __MODULE__,
+      where:
+        not is_nil(package.job_type) and package.organization_id == ^organization_id and
+          not is_nil(package.archived_at),
+      order_by: [desc: package.base_price]
+    )
+  end
+
+  def templates_for_user(%User{organization_id: organization_id}, type) when type != nil do
+    from(template in templates_for_organization_query(organization_id),
+      where: template.job_type == ^type
+    )
   end
 
   def validate_money(changeset, fields, validate_number_opts \\ [greater_than_or_equal_to: 0])

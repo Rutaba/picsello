@@ -1,11 +1,24 @@
 defmodule Picsello.ClientsIndexTest do
   use Picsello.FeatureCase, async: true
-  require Ecto.Query
+  import Ecto.Query
 
   alias Picsello.{Repo, Job, Client}
 
   setup :onboarded
   setup :authenticated
+
+  setup %{session: session, user: user} do
+    client =
+      insert(:client,
+        user: user,
+        name: "Elizabeth Taylor",
+        email: "taylor@example.com",
+        phone: "(210) 111-1234"
+      )
+
+    lead = insert(:lead, client: client, user: user)
+    [client: client, session: session, user: user, lead: lead]
+  end
 
   def fill_in_package_form(session) do
     session
@@ -65,7 +78,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Add client", count: 2, at: 1))
+    |> click(button("Add client"))
     |> fill_in(text_field("Email"), with: " ")
     |> assert_text("Email can't be blank")
     |> fill_in(text_field("Name"), with: @name)
@@ -76,7 +89,7 @@ defmodule Picsello.ClientsIndexTest do
     |> click(link("All Clients"))
     |> assert_text(@name)
     |> assert_text(@email)
-    |> click(button("Manage"))
+    |> click(button("Manage", count: 2, at: 1))
     |> click(button("Details"))
     |> assert_text("Client: #{@name}")
     |> click(button("Edit Contact"))
@@ -94,13 +107,13 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Add client", count: 2, at: 1))
+    |> click(button("Add client"))
     |> fill_in(text_field("Email"), with: "john@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> click(link("All Clients"))
     |> assert_text("john@example.com")
-    |> click(button("Manage"))
+    |> click(button("Manage", count: 2, at: 1))
     |> click(button("Details"))
     |> assert_text("Client: john@example.com")
     |> click(button("Edit Contact"))
@@ -110,15 +123,17 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("john2@example.com")
   end
 
-  feature "edits client from actions that already has a job", %{session: session, user: user} do
-    insert(:lead, user: user)
-
+  feature "edits client from actions that already has a job", %{
+    session: session,
+    client: client,
+    lead: _lead
+  } do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
     |> click(button("Manage"))
     |> click(button("Details"))
-    |> assert_text("Client: #{user.name}")
+    |> assert_text("Client: #{client.name}")
     |> click(button("Edit Contact"))
     |> fill_in(text_field("Name"), with: " ")
     |> assert_text("Name can't be blank")
@@ -129,15 +144,13 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("Client: John")
   end
 
-  feature "edits client and add private notes", %{session: session, user: user} do
-    insert(:client, user: user)
-
+  feature "edits client and add private notes", %{session: session, client: client} do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
     |> click(button("Manage"))
     |> click(button("Details"))
-    |> assert_text("Client: #{user.name}")
+    |> assert_text("Client: #{client.name}")
     |> find(testid("card-Private notes"), &click(&1, button("Edit")))
     |> fill_in(text_field("Private Notes"), with: "here are my private notes")
     |> click(button("Save"))
@@ -151,86 +164,10 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_has(testid("card-Private notes", text: "here are my 2nd private notes"))
   end
 
-  feature "creates lead from client without name and phone", %{session: session, user: user} do
-    insert(:client,
-      user: user,
-      name: nil,
-      phone: nil,
-      email: "elizabeth@example.com"
-    )
-
-    session
-    |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
-    |> click(button("Manage"))
-    |> click(button("Create a lead"))
-    |> click(css("label", text: "Wedding"))
-    |> find(css(".modal"), &wait_for_enabled_submit_button/1)
-    |> click(button("Save"))
-    |> assert_has(css("h1", text: "Wedding"))
-    |> assert_has(testid("card-Communications", text: ""))
-    |> assert_has(testid("card-Communications", text: "elizabeth@example.com"))
-    |> assert_has(testid("card-Communications", text: ""))
-  end
-
-  feature "creates lead from client without phone", %{session: session, user: user} do
-    insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: nil,
-      email: "elizabeth@example.com"
-    )
-
-    session
-    |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
-    |> click(button("Manage"))
-    |> click(button("Create a lead"))
-    |> click(css("label", text: "Wedding"))
-    |> find(css(".modal"), &wait_for_enabled_submit_button/1)
-    |> click(button("Save"))
-    |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
-    |> assert_has(testid("card-Communications", text: "Elizabeth Taylor"))
-    |> assert_has(testid("card-Communications", text: "elizabeth@example.com"))
-    |> assert_has(testid("card-Communications", text: ""))
-  end
-
-  feature "creates lead from client with existing name and phone", %{
-    session: session,
-    user: user
-  } do
-    insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "(555) 123-4567",
-      email: "elizabeth@example.com"
-    )
-
-    session
-    |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
-    |> click(button("Manage"))
-    |> click(button("Create a lead"))
-    |> click(css("label", text: "Wedding"))
-    |> find(css(".modal"), &wait_for_enabled_submit_button/1)
-    |> click(button("Save"))
-    |> assert_has(css("h1", text: "Elizabeth Taylor Wedding"))
-    |> assert_has(testid("card-Communications", text: "Elizabeth Taylor"))
-    |> assert_has(testid("card-Communications", text: "elizabeth@example.com"))
-    |> assert_has(testid("card-Communications", text: "(555) 123-4567"))
-  end
-
   feature "creates gallery from client", %{
     session: session,
-    user: user
+    client: _client
   } do
-    insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "(555) 123-4567",
-      email: "elizabeth@example.com"
-    )
-
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
@@ -253,15 +190,8 @@ defmodule Picsello.ClientsIndexTest do
   @client_name "Elizabeth Taylor"
   feature "imports job from client", %{
     session: session,
-    user: user
+    client: _client
   } do
-    insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "(555) 123-4567",
-      email: "taylor@example.com"
-    )
-
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
@@ -288,30 +218,23 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("Job Details")
     |> assert_text("Actions")
 
-    job = Repo.one(Job) |> Repo.preload([:client])
+    job = Job |> order_by(:id) |> limit(1) |> Repo.one() |> Repo.preload([:client])
 
     assert %Job{
              type: "wedding"
            } = job
 
     assert %Client{
-             name: "Elizabeth Taylor",
              email: "taylor@example.com",
-             phone: "(555) 123-4567"
+             name: "Elizabeth Taylor",
+             phone: "(210) 111-1234"
            } = job.client
   end
 
   feature "send email from client", %{
     session: session,
-    user: user
+    client: client
   } do
-    insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "(555) 123-4567",
-      email: "elizabeth@example.com"
-    )
-
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
@@ -323,18 +246,14 @@ defmodule Picsello.ClientsIndexTest do
     |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
     |> send_keys(["This is 1st line", :enter, "2nd line"])
     |> click(button("Send"))
-    |> assert_flash(:success, text: "Email sent to #{@client_name}!")
+    |> assert_flash(:success, text: "Email sent to #{client.name}!")
   end
 
   feature "user archives client", %{
     session: session,
+    client: _client,
     user: user
   } do
-    insert(:client,
-      user: user,
-      name: "Elizabeth Taylor"
-    )
-
     insert(:client,
       user: user,
       name: "Mary Jane"
@@ -348,5 +267,24 @@ defmodule Picsello.ClientsIndexTest do
     |> click(button("Yes, archive"))
     |> assert_flash(:success, text: "Client archived successfully")
     |> assert_text("Mary Jane")
+  end
+
+  feature "pagination", %{session: session, user: user} do
+    insert_list(12, :client, user: user)
+
+    session
+    |> visit("/clients")
+    |> assert_text("Results: 1 – 12 of 13")
+    |> assert_has(testid("client-row", count: 12))
+    |> assert_has(css("button:disabled[title='Previous page']"))
+    |> click(button("Next page"))
+    |> assert_text("Results: 13 – 13 of 13")
+    |> assert_has(testid("client-row", count: 1))
+    |> assert_has(css("button:disabled[title='Next page']"))
+    |> click(button("Previous page"))
+    |> assert_text("Results: 1 – 12 of 13")
+    |> click(css("select", text: "12"))
+    |> click(css("option", text: "24"))
+    |> assert_text("Results: 1 – 13 of 13")
   end
 end

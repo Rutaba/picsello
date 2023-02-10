@@ -4,14 +4,19 @@ defmodule Picsello.CreateLeadTest do
   setup :onboarded
   setup :authenticated
 
-  feature "user creates lead with existing client", %{session: session, user: user} do
-    insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "(210) 111-1234",
-      email: "taylor@example.com"
-    )
+  setup %{user: user} do
+    client =
+      insert(:client,
+        user: user,
+        name: "Elizabeth Taylor",
+        phone: "taylor@example.com",
+        email: "(210) 111-1234"
+      )
 
+    [client: client]
+  end
+
+  feature "user creates lead with existing client", %{session: session} do
     session
     |> click(button("Create a lead"))
     |> fill_in(text_field("search_phrase"), with: "Eliza")

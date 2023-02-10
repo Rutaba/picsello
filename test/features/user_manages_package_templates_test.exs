@@ -1,6 +1,7 @@
 defmodule Picsello.UserManagesPackageTemplatesTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, Package, JobType}
+  import Ecto.Query
 
   setup :onboarded
   setup :authenticated
@@ -83,7 +84,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(link("Settings"))
     |> click(link("Package Templates"))
     |> assert_text("Deluxe Template")
-    |> assert_text("All digital images included")
   end
 
   feature "view list with download price", %{session: session, user: user} do
@@ -98,16 +98,19 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> assert_text("Super Deluxe Template")
-    |> assert_has(definition("Digital images included", text: "5"))
+    |> click(testid("intro-state-close-button"))
+    |> find(testid("package-template-card"), &assert_text(&1, "Super Deluxe Template"))
     |> assert_text("$0.20/each")
   end
 
-  feature "add", %{session: session, user: user} do
+  feature "A newly added package's show-on-public-profile check is set to false as default", %{
+    session: session
+  } do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(button("Add a package", count: 2, at: 0))
+    |> click(testid("intro-state-close-button"))
+    |> click(button("Add package"))
     |> assert_text("Add a Package: Provide Details")
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
@@ -116,7 +119,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in_quill("My greatest wedding package")
     |> scroll_into_view(testid("modal-buttons"))
-    |> click(css("label", text: "Portrait"))
+    |> click(css("label", text: "Event"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Select Documents")
@@ -151,6 +154,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_flash(:success, text: "The package has been successfully saved")
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :index))
 
+    package = Repo.all(Package) |> hd()
+
     assert %Package{
              name: "Wedding Deluxe",
              shoot_count: 2,
@@ -158,23 +163,26 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
              base_price: %Money{amount: 10_000},
              download_count: 2,
              download_each_price: %Money{amount: 200},
-             job_type: "portrait",
+             job_type: "event",
              package_template_id: nil
-           } = user |> Package.templates_for_user() |> Repo.one!()
+           } = package
+
+    assert package.show_on_public_profile == false
   end
 
-  feature "add with new contract", %{session: session, user: user} do
+  feature "Add a package with new contract", %{session: session} do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> click(button("Add a package", count: 2, at: 0))
+    |> click(testid("intro-state-close-button"))
+    |> click(button("Add package"))
     |> assert_text("Add a Package: Provide Details")
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :new))
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> fill_in_quill("My greatest wedding package")
     |> scroll_into_view(testid("modal-buttons"))
-    |> click(css("label", text: "Portrait"))
+    |> click(css("label", text: "Event"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Select Documents")
@@ -195,11 +203,11 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_flash(:success, text: "The package has been successfully saved")
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :index))
 
-    package = user |> Package.templates_for_user() |> Repo.one!() |> Repo.preload(:contract)
+    package = Repo.all(Package) |> hd() |> Repo.preload(:contract)
 
     assert %Package{
              name: "Wedding Deluxe",
-             job_type: "portrait"
+             job_type: "event"
            } = package
 
     assert %Picsello.Contract{
@@ -208,15 +216,13 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
            } = package.contract
   end
 
-  feature "edit", %{session: session, user: user} do
+  feature "Edit the package with contract", %{session: session, user: user} do
     template = insert(:package_template, user: user, print_credits: 20)
 
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> find(testid("package-template-card"))
-    |> click(button("Manage"))
-    |> click(button("Edit"))
+    |> click(testid("edit-package-#{template.id}"))
 
     session
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
@@ -256,7 +262,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       }
       |> Map.take([:id | form_fields])
 
-    package = user |> Package.templates_for_user() |> Repo.one!() |> Repo.preload(:contract)
+    package = Repo.all(Package) |> hd() |> Repo.preload(:contract)
 
     assert ^updated = package |> Map.take([:id | form_fields])
 
@@ -276,11 +282,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> find(testid("package-template-card"))
-    |> click(button("Manage"))
-    |> click(button("Edit"))
-
-    session
+    |> click(testid("edit-package-#{template.id}"))
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
     |> within_modal(
       &(&1
@@ -329,9 +331,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       |> Map.take([:id | form_fields])
 
     package =
-      user
-      |> Package.templates_for_user()
-      |> Repo.one!()
+      Repo.all(Package)
+      |> hd()
       |> Repo.preload(contract: :contract_template)
 
     assert ^updated = package |> Map.take([:id | form_fields])
@@ -345,9 +346,20 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
                job_type: "wedding"
              }
            } = package.contract
+
+    session
+    |> visit("/package_templates")
+    |> click(testid("intro-state-close-button"))
+    |> find(testid("package-template-card"), &assert_text(&1, "Wedding Super Deluxe"))
+    |> click(testid("menu-btn-#{package.id}"))
+    |> click(button("Duplicate"))
+    |> assert_flash(:success, text: "The package: #{package.name} has been duplicated")
+
+    assert Repo.all(Package) |> Enum.count() == 2
   end
 
-  feature "archive", %{session: session, user: user} do
+  feature "Menu-btn archives/unarchives, duplicates, hide/shows the package and When no template exists, then show 'Missing package state'",
+          %{session: session, user: user} do
     type = JobType.all() |> hd
 
     for name <- ~w(deluxe lame) do
@@ -358,22 +370,87 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       )
     end
 
-    lead = insert(:lead, user: user, type: type)
+    package = Repo.all(Package) |> hd()
 
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
-    |> find(testid("package-template-card", text: "lame"))
+    |> click(testid("intro-state-close-button"))
+    |> click(testid("menu-btn-#{package.id}"))
+    |> click(button("Archive"))
+    |> assert_text("Are you sure you want to archive this package template?")
+    |> click(button("Yes, archive"))
+    |> assert_flash(:success, text: "The package has been archived")
+    |> click(css(".archived-anchor-click"))
+    |> assert_text("Archived Packages")
+    |> scroll_to_bottom()
     |> click(button("Manage"))
     |> click(button("Archive"))
+    |> assert_text("Are you sure you want to Un-archive this package template?")
+    |> click(button("Yes, unarchive"))
+    |> assert_flash(:success, text: "The package has been un-archived")
+
+    assert package.show_on_public_profile == false
+
+    package = Repo.all(Package) |> hd()
 
     session
-    |> click(button("Yes, archive"))
-    |> find(testid("package-template-card", count: 1), &assert_text(&1, "deluxe"))
-    |> assert_flash(:success, text: "The package has been archived")
-    |> assert_has(css("#modal-wrapper.hidden", visible: false))
-    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> click(button("Add a package", at: 0, count: 3))
-    |> find(testid("template-card", count: 1), &assert_text(&1, "deluxe"))
+    |> scroll_to_top()
+    |> click(link("Package Templates"))
+    |> click(testid("menu-btn-#{package.id}"))
+    |> click(button("Show on public profile"))
+    |> assert_text("Show on your Public Profile?")
+    |> click(button("Great! Show on my Public Profile"))
+    |> assert_flash(:success, text: "The package has been shown")
+
+    package = Repo.get!(Package, package.id)
+
+    assert package.show_on_public_profile == true
+
+    session
+    |> click(link("Package Templates"))
+    |> click(testid("menu-btn-#{package.id}"))
+    |> click(button("Hide on public profile"))
+    |> assert_text("Hide on your Public Profile?")
+    |> click(button("Hide on my Public Profile"))
+    |> assert_flash(:success, text: "The package has been hidden")
+
+    package = Repo.get!(Package, package.id)
+
+    assert package.show_on_public_profile == false
+
+    session
+    |> click(link("Package Templates"))
+    |> click(css(".newborn-anchor-click"))
+    |> assert_text("Missing packages")
+    |> assert_text(
+      "You don't have any packages! Click add a package to get started. If you need help"
+    )
+  end
+
+  feature "Pagination appears only when records are more than 4",
+          %{session: session, user: user} do
+    type = JobType.all() |> hd
+
+    for name <- ~w(deluxe lame premium highfive yadix) do
+      insert(:package_template,
+        user: user,
+        job_type: type,
+        name: name
+      )
+    end
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Package Templates"))
+    |> assert_has(button("Next"))
+
+    from(pt in Package, where: pt.name in ["deluxe", "lame", "highfive"])
+    |> Repo.delete_all()
+
+    session
+    |> click(link("Settings"))
+    |> click(link("Package Templates"))
+    |> refute_has(button("Next"))
   end
 end

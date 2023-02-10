@@ -1,7 +1,7 @@
 defmodule Picsello.UserOnboardsTest do
   use Picsello.FeatureCase, async: false
 
-  alias Picsello.{Accounts.User, Repo}
+  alias Picsello.{Accounts.User, Profiles, Repo}
 
   setup :authenticated
 
@@ -75,6 +75,9 @@ defmodule Picsello.UserOnboardsTest do
     |> Mox.stub(:create_customer, fn %{}, _opts ->
       {:ok, %Stripe.Customer{id: "cus_123"}}
     end)
+    |> Mox.stub(:retrieve_customer, fn "cus_123", _ ->
+      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
+    end)
     |> Mox.stub(:create_subscription, fn %{}, _opts ->
       {:ok,
        %Stripe.Subscription{
@@ -120,7 +123,7 @@ defmodule Picsello.UserOnboardsTest do
     user =
       user
       |> Repo.reload()
-      |> Repo.preload(organization: :package_templates)
+      |> Repo.preload(organization: [:package_templates, :organization_job_types])
 
     first_color = Picsello.Profiles.colors() |> hd
 
@@ -139,11 +142,13 @@ defmodule Picsello.UserOnboardsTest do
                  %{base_price: %Money{amount: 500}, shoot_count: 2, download_count: 10}
                ],
                profile: %{
-                 color: ^first_color,
-                 job_types: ~w(event portrait)
+                 color: ^first_color
                }
              }
            } = user
+
+    assert ["other", "event", "portrait"] =
+             Profiles.enabled_job_types(user.organization.organization_job_types)
 
     assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
 
@@ -192,10 +197,13 @@ defmodule Picsello.UserOnboardsTest do
     |> click(button("Back"))
     |> assert_has(@photographer_years_field)
 
+    user = user |> Repo.reload() |> Repo.preload(organization: :organization_job_types)
+
     assert %User{
-             onboarding: %{schedule: :full_time},
-             organization: %{profile: %{job_types: nil}}
-           } = user |> Repo.reload() |> Repo.preload(:organization)
+             onboarding: %{schedule: :full_time}
+           } = user
+
+    assert ["other"] = Profiles.enabled_job_types(user.organization.organization_job_types)
   end
 
   feature "user selects Non-US state", %{session: session, user: user} do
