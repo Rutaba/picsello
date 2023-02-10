@@ -47,10 +47,7 @@ defmodule Picsello.UserOnboardsIntroTest do
   feature "users starts product tour and uses it", %{session: session} do
     session
     |> visit("/home")
-    |> within_modal(fn modal ->
-      modal
-      |> click(button("cancel"))
-    end)
+    |> set_cookie("show_welcome_modal", "")
     |> click(css("#start-tour"))
     |> click(css(".introjs-nextbutton"))
     |> click(css(".introjs-nextbutton"))
