@@ -108,7 +108,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
       <%= for org <- inputs_for(@f, :organization) do %>
         <%= hidden_inputs_for org %>
 
-        <.form_field label="Are you a full-time or part-time photographer?" error={:name} prefix="Photography business name" f={org} mt={0} >
+        <.form_field label="Photography business name" error={:name} prefix="Photography business name" f={org} mt={0} >
           <%= input org, :name, phx_debounce: "500", placeholder: "Business name", class: input_class %>
         </.form_field>
       <% end %>
@@ -125,6 +125,8 @@ defmodule PicselloWeb.OnboardingLive.Index do
           </.form_field>
         </div>
 
+        <%= hidden_input onboarding, :welcome_count, value: 0 %>
+        
         <.form_field label="Where’s your business based?" error={:state} f={onboarding} >
           <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select #{input_class}" %>
         </.form_field>
@@ -361,7 +363,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         socket
         |> assign(current_user: user)
         |> update_user_client_trial(user)
-        |> push_redirect(to: Routes.home_path(socket, :index, new_user: true), replace: true)
+        |> push_redirect(to: Routes.home_path(socket, :index), replace: true)
 
       {:error, reason} ->
         socket |> assign(changeset: reason)

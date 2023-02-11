@@ -55,6 +55,7 @@ import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import ToggleSiblings from './hooks/toggle-siblings';
 import DatePicker from './hooks/date-picker';
+import Cookies from 'js-cookie';
 
 const Modal = {
   mounted() {
@@ -192,6 +193,22 @@ function getCookie(cname) {
   return '';
 }
 
+const showWelcomeModal = {
+  mounted() {
+    const show = Cookies.get('show_welcome_modal');
+
+    if (show == 'true') {
+      const dateTime = new Date('1970-12-17T00:00:00');
+      Cookies.set('show_welcome_modal', false, {
+        expires: dateTime,
+        path: '/',
+      });
+
+      this.pushEvent('open-welcome-modal', {});
+    }
+  },
+};
+
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -236,6 +253,7 @@ const Hooks = {
   FinalCostInput,
   SetGalleryCookie,
   GetGalleryCookie,
+  showWelcomeModal,
 };
 
 let Uploaders = {};

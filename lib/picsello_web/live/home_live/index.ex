@@ -15,7 +15,8 @@ defmodule PicselloWeb.HomeLive.Index do
     Orders,
     Galleries,
     OrganizationCard,
-    Utils
+    Utils,
+    Onboardings
   }
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
@@ -47,21 +48,14 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
-  def handle_params(
-        %{"new_user" => _new_user},
-        _uri,
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    if show_intro?(current_user, "intro_dashboard_modal") === "true" do
-      socket |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
-    else
-      socket
-    end
+  def handle_params(_params, _uri, socket), do: socket |> noreply()
+
+  def handle_event("open-welcome-modal", %{}, %{assigns: %{current_user: current_user}} = socket) do
+    socket
+    |> assign(:current_user, Onboardings.increase_welcome_count!(current_user))
+    |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
     |> noreply()
   end
-
-  @impl true
-  def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
   def handle_event("create-lead", %{}, %{assigns: %{current_user: current_user}} = socket),
