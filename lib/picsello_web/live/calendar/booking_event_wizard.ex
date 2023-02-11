@@ -235,7 +235,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       </div>
       <div class={classes("p-4 grid gap-5 sm:grid-cols-2", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})}>
         <div class="flex flex-col">
-          <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today() %>
+          <.date_picker_field id={"date-#{@f.index}"} data_selected_date={input_value(@f, :date)} data_min_date={Date.utc_today()} form={@f} field={:date} input_label="Select Date" />
           <%= case calculate_slots_count(@event_form, input_value(@f, :date)) do %>
             <% count -> %>
               <p {testid("open-slots-count-#{@f.index}")} class="mt-2 font-semibold">You’ll have <span class="text-blue-planning-300"><%= count %></span><%= ngettext " open slot", " open slots", count %> on this day</p>
@@ -246,9 +246,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <%= error_tag(@f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
           <%= inputs_for @f, :time_blocks, fn t -> %>
             <div class="flex items-center mb-2">
-              <%= input t, :start_time, type: :time_input %>
+              <.date_picker_field class="max-w-[120px]" id={"start-#{@f.index}-#{t.index}"} data_selected_date={input_value(t, :start_time)} data_time_only="true" form={t} field={:start_time} input_placeholder="start time…" />
               <p class="mx-2">-</p>
-              <%= input t, :end_time, type: :time_input %>
+              <.date_picker_field class="max-w-[120px]" id={"end-#{@f.index}-#{t.index}"} data_selected_date={input_value(t, :end_time)} data_time_only="true" form={t} field={:end_time} input_placeholder="end time…" />
               <%= if t.index > 0 do %>
                 <.icon_button class="ml-4" title="remove time" phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
               <% end %>
@@ -448,7 +448,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   defp calculate_slots_count(event_form, date) do
     event = current(event_form)
-    event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
+
+    event
+    |> BookingEvents.available_times(date, skip_overlapping_shoots: true)
+    |> Enum.count()
   end
 
   defp is_checked(id, package) do

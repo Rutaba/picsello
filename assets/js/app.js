@@ -54,6 +54,7 @@ import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import ToggleSiblings from './hooks/toggle-siblings';
+import DatePicker from './hooks/date-picker';
 
 const Modal = {
   mounted() {
@@ -130,49 +131,53 @@ const TZCookie = {
 const CardStatus = {
   mounted() {
     this.el.addEventListener('click', () => {
-      this.pushEvent('card_status', { status: this.el.dataset.status, org_card_id: this.el.id });
+      this.pushEvent('card_status', {
+        status: this.el.dataset.status,
+        org_card_id: this.el.id,
+      });
     });
-  }
+  },
 };
 
 const FinalCostInput = {
   mounted() {
-    let dataset = this.el.dataset
-    let inputElm = document.getElementById(dataset.inputId)
-    
+    let dataset = this.el.dataset;
+    let inputElm = document.getElementById(dataset.inputId);
+
     inputElm.addEventListener('input', () => {
       if (inputElm.value.replace('$', '') < parseFloat(dataset.baseCost)) {
-        let span = document.getElementById(dataset.spanId)
-        span.style.color = "red";
-        
+        let span = document.getElementById(dataset.spanId);
+        span.style.color = 'red';
+
         setTimeout(function () {
-          span.style.color = "white";
+          span.style.color = 'white';
           inputElm.value = `$${parseFloat(dataset.finalCost).toFixed(2)}`;
         }, 3000);
       }
     });
-  }
+  },
 };
 
 const SetGalleryCookie = {
   mounted() {
-    let galleryType = this.el.dataset.galleryType
+    let galleryType = this.el.dataset.galleryType;
     document.cookie = `GalleryType=${galleryType}; path=/`;
   },
 };
 
 const GetGalleryCookie = {
   mounted() {
-    const galleryType = getCookie('GalleryType')
-    document.cookie = "GalleryType=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    if (galleryType != "") {
-      this.pushEvent("gallery-created", { galleryType: galleryType })
+    const galleryType = getCookie('GalleryType');
+    document.cookie =
+      'GalleryType=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    if (galleryType != '') {
+      this.pushEvent('gallery-created', { galleryType: galleryType });
     }
   },
 };
 
 function getCookie(cname) {
-  let name = cname + "=";
+  let name = cname + '=';
   let decodedCookie = decodeURIComponent(document.cookie);
   let ca = decodedCookie.split(';');
   for (let i = 0; i < ca.length; i++) {
@@ -184,7 +189,7 @@ function getCookie(cname) {
       return c.substring(name.length, c.length);
     }
   }
-  return "";
+  return '';
 }
 
 const Hooks = {
@@ -194,6 +199,7 @@ const Hooks = {
   ClearQuillInput,
   ClientGalleryCookie,
   Clipboard,
+  DatePicker,
   DefaultCostTooltip,
   DragDrop,
   Flash,
@@ -229,7 +235,7 @@ const Hooks = {
   CardStatus,
   FinalCostInput,
   SetGalleryCookie,
-  GetGalleryCookie
+  GetGalleryCookie,
 };
 
 let Uploaders = {};
