@@ -230,7 +230,7 @@ defmodule Picsello.Packages do
   end
 
   def templates_with_single_shoot(%User{organization_id: organization_id}) do
-    query = Package.templates_for_organization(organization_id)
+    query = Package.templates_for_organization_query(organization_id)
 
     from(package in query, where: package.shoot_count == 1)
     |> Repo.all()
