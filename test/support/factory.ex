@@ -62,7 +62,8 @@ defmodule Picsello.Factory do
 
   def onboard_show_intro!(%User{} = user) do
     user
-    |> User.complete_onboarding_changeset()
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_embed(:onboarding, %{completed_at: DateTime.utc_now(), welcome_count: 0})
     |> Repo.update!()
   end
 

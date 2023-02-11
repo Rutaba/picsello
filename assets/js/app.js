@@ -54,6 +54,7 @@ import ScrollIntoView from './hooks/scroll-into-view';
 import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import ToggleSiblings from './hooks/toggle-siblings';
+import Cookies from 'js-cookie';
 
 const Modal = {
   mounted() {
@@ -139,12 +140,12 @@ const FinalCostInput = {
   mounted() {
     let dataset = this.el.dataset
     let inputElm = document.getElementById(dataset.inputId)
-    
+
     inputElm.addEventListener('input', () => {
       if (inputElm.value.replace('$', '') < parseFloat(dataset.baseCost)) {
         let span = document.getElementById(dataset.spanId)
         span.style.color = "red";
-        
+
         setTimeout(function () {
           span.style.color = "white";
           inputElm.value = `$${parseFloat(dataset.finalCost).toFixed(2)}`;
@@ -186,6 +187,19 @@ function getCookie(cname) {
   }
   return "";
 }
+
+const showWelcomeModal = {
+  mounted() {
+    const show = Cookies.get('show_welcome_modal')
+
+    if (show == 'true') {
+      const dateTime = new Date("1970-12-17T00:00:00");
+      Cookies.set("show_welcome_modal", false, { expires: dateTime, path: '/' })
+
+      this.pushEvent("open-welcome-modal", {})
+    }
+  },
+};
 
 const Hooks = {
   AutoHeight,
@@ -229,7 +243,8 @@ const Hooks = {
   CardStatus,
   FinalCostInput,
   SetGalleryCookie,
-  GetGalleryCookie
+  GetGalleryCookie,
+  showWelcomeModal
 };
 
 let Uploaders = {};
