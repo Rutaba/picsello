@@ -101,7 +101,7 @@
         <button title="Invoice" type="button" {if invoice_disabled?(@proposal, @stripe_status), do: %{}, else: %{phx_click: "open-invoice"}} class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal, @stripe_status)})} disabled={invoice_disabled?(@proposal, @stripe_status)}>
           <div class="flex flex-col items-start w-full font-medium">
             <%= cond do %>
-              <%= PaymentSchedules.is_with_cash?(@job) && !PaymentSchedules.all_paid?(@job) -> %>
+              <% PaymentSchedules.is_with_cash?(@job) && !PaymentSchedules.all_paid?(@job) -> %>
                 <.badge class="mb-1" color={:red} mode={:outlined}>Pending offline payment</.badge>            
               <% PaymentSchedules.all_paid?(@job) -> %>
                 <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>

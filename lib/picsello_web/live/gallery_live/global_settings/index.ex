@@ -57,7 +57,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> assign(:case, :image)
     |> assign(:ready_to_save, false)
     |> assign(show_preview: false)
-    |> assign(:show_image_preview, false)
+    |> assign(:show_image_preview, true)
     |> assign(:watermarked_preview_path, nil)
     |> allow_upload(:image, @upload_options)
     |> ok()

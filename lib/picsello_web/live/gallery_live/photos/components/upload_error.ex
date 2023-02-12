@@ -120,7 +120,7 @@ defmodule PicselloWeb.GalleryLive.Photos.UploadError do
     ~H"""
     <div class="pl-4">
       <%= cond do %>
-      <%= @invalid_count > 0 && @pending_count == 0 -> %>
+      <% @invalid_count > 0 && @pending_count == 0 -> %>
         It looks like some of your photos failed because they’re duplicate photos, invalid file type or over our photo size limit. We accept photos up to
         <span class="font-bold">100MB </span>
         in size. Please reduce the file size or change the file name of these photos and reupload.
