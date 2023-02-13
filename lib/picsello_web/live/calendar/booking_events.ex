@@ -257,18 +257,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
           Copied!
         </div>
       </.icon_button>
-      <div phx-update="ignore" data-offset="0" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{@booking_event.status}"} class="grow xl:w-auto sm:w-full">
+      <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-offset-x="-21" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{@booking_event.status}"}>
         <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
           <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
         </button>
-        <div class="z-10 flex flex-col w-44 bg-white border rounded-lg shadow-lg popover-content">
+        <div class="z-10 flex hidden flex-col w-44 bg-white border rounded-lg shadow-lg popover-content">
           <%= case @booking_event.status do %>
           <% "archive" -> %>
             <.button title="Unarchive" icon="plus"  click_event="unarchive-event" id={@booking_event.id} color="blue-planning" />
           <% status -> %>
             <.button title="Edit" hidden={if @booking_event.status == "disable", do: 'hidden'} icon="pencil"  click_event="edit-event" id={@booking_event.id} color="blue-planning" />
+            <.button title="Send update" icon="envelope"  click_event="send-email" id={@booking_event.id} color="blue-planning" />
             <.button title="Duplicate" icon="duplicate"  click_event="duplicate-event" id={@booking_event.id} color="blue-planning" />
             <%= case status do %>
             <% "active" -> %>
@@ -318,6 +319,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     |> assign_booking_events()
     |> noreply()
   end
+
+  def handle_event("send-email", %{"event-id" => _id}, socket), do: socket |> noreply()
 
   # prevent search from submit
   def handle_event("submit", _, socket), do: socket |> noreply()
