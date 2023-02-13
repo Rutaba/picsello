@@ -315,6 +315,7 @@ defmodule Picsello.PaymentSchedules do
       client_reference_id: "proposal_#{proposal.id}",
       cancel_url: Keyword.get(opts, :cancel_url),
       success_url: Keyword.get(opts, :success_url),
+      billing_address_collection: "auto",
       customer: customer_id(client),
       customer_update: %{
         address: "auto"
