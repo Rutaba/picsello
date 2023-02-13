@@ -31,11 +31,11 @@ defmodule Picsello.BookingEventsTest do
         )
 
       assert [
-               ~T[09:00:00.000000],
-               ~T[10:00:00.000000],
-               ~T[11:00:00.000000],
-               ~T[12:00:00.000000],
-               ~T[14:00:00.000000]
+               {~T[09:00:00.000000], true},
+               {~T[10:00:00.000000], true},
+               {~T[11:00:00.000000], true},
+               {~T[12:00:00.000000], true},
+               {~T[14:00:00.000000], true}
              ] = BookingEvents.available_times(event, ~D[2050-12-10])
     end
 
@@ -67,17 +67,17 @@ defmodule Picsello.BookingEventsTest do
         )
 
       assert [
-               ~T[09:00:00.000000],
-               ~T[09:30:00.000000],
-               ~T[10:00:00.000000],
-               ~T[10:30:00.000000],
-               ~T[11:00:00.000000],
-               ~T[11:30:00.000000],
-               ~T[12:00:00.000000],
-               ~T[12:30:00.000000],
-               ~T[14:00:00.000000],
-               ~T[14:30:00.000000],
-               ~T[16:00:00.000000]
+               {~T[09:00:00.000000], true},
+               {~T[09:30:00.000000], true},
+               {~T[10:00:00.000000], true},
+               {~T[10:30:00.000000], true},
+               {~T[11:00:00.000000], true},
+               {~T[11:30:00.000000], true},
+               {~T[12:00:00.000000], true},
+               {~T[12:30:00.000000], true},
+               {~T[14:00:00.000000], true},
+               {~T[14:30:00.000000], true},
+               {~T[16:00:00.000000], true}
              ] = BookingEvents.available_times(event, ~D[2050-12-10])
     end
 
@@ -126,8 +126,9 @@ defmodule Picsello.BookingEventsTest do
       insert(:shoot, job: job, starts_at: ~U[2050-12-10 10:00:00.000000Z])
 
       assert [
-               ~T[09:00:00.000000],
-               ~T[11:00:00.000000]
+               {~T[09:00:00.000000], true},
+               {~T[10:00:00.000000], false},
+               {~T[11:00:00.000000], true}
              ] = BookingEvents.available_times(event, ~D[2050-12-10])
 
       assert [
@@ -161,8 +162,10 @@ defmodule Picsello.BookingEventsTest do
       insert(:shoot, job: job, starts_at: ~U[2050-12-11 01:00:00.000000Z], duration_minutes: 60)
 
       assert [
-               ~T[19:00:00.000000],
-               ~T[22:00:00.000000]
+               {~T[19:00:00.000000], true},
+               {~T[20:00:00.000000], false},
+               {~T[21:00:00.000000], false},
+               {~T[22:00:00.000000], true}
              ] = BookingEvents.available_times(event, ~D[2050-12-10])
     end
 

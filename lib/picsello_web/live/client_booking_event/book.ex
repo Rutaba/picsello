@@ -91,12 +91,12 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
         <%= if Enum.empty?(@available_times) do %>
           <p class="mt-2">No available times</p>
         <% end %>
-        <%= for time <- @available_times do %>
-          <label class={classes("flex items-center justify-center border border-black py-3 my-4 cursor-pointer", %{"bg-black text-white" => Time.compare(time, @selected_time || Time.utc_now) == :eq})}>
+        <%= Enum.map(@available_times, fn {time, is_available} ->  %>
+          <label class={classes("flex items-center justify-center border #{if is_available, do: 'border-black'} py-3 my-4 cursor-pointer", %{"bg-black text-white" => Time.compare(time, @selected_time || Time.utc_now) == :eq, "bg-white !text-grey !border-grey" => is_available})}>
             <%= time |> Calendar.strftime("%-I:%M%P") %>
-            <input type="radio" name={@name} value={time} class="hidden" />
+            <input type="radio" name={@name} value={time} class="hidden" disabled={!is_available}/>
           </label>
-        <% end %>
+        <% end )%>
       </div>
     </div>
     """
@@ -166,9 +166,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     assign(socket, changeset: changeset)
   end
 
-  defp available_dates(%BookingEvent{disabled_at: %DateTime{}}), do: []
-
-  defp available_dates(booking_event) do
+  defp available_dates(%BookingEvent{} = booking_event) do
     booking_event
     |> Map.get(:dates)
     |> Enum.map(& &1.date)
@@ -179,7 +177,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
   end
 
   defp time_available?(booking, available_times) do
-    Enum.any?(available_times, &(Time.compare(&1, booking.time) == :eq))
+    Enum.any?(available_times, &(Time.compare(elem(&1, 0), booking.time) == :eq))
   end
 
   defp assign_available_times(

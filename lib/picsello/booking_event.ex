@@ -10,11 +10,14 @@ defmodule Picsello.BookingEvent do
     embedded_schema do
       field(:start_time, :time)
       field(:end_time, :time)
+      field(:hidden, :boolean, default: false)
+      field(:is_break, :boolean, default: false)
+      field(:is_booked, :boolean, default: false)
     end
 
     def changeset(time_block \\ %__MODULE__{}, attrs) do
       time_block
-      |> cast(attrs, [:start_time, :end_time])
+      |> cast(attrs, [:start_time, :end_time, :hidden, :is_break, :is_booked])
       |> validate_required([:start_time, :end_time])
       |> validate_end_time()
     end
@@ -53,10 +56,15 @@ defmodule Picsello.BookingEvent do
     defp validate_time_blocks(changeset) do
       blocks = changeset |> get_field(:time_blocks)
 
+      filter_blocks = Enum.filter(blocks, fn block -> !block.is_break and !block.hidden end)
+
       overlap_times =
         for(
-          [%{end_time: %Time{} = previous_time}, %{start_time: %Time{} = start_time}] <-
-            Enum.chunk_every(blocks, 2, 1),
+          [
+            %{end_time: %Time{} = previous_time},
+            %{start_time: %Time{} = start_time}
+          ] <-
+            Enum.chunk_every(filter_blocks, 2, 1),
           do: Time.compare(previous_time, start_time) == :gt
         )
         |> Enum.any?()
@@ -77,7 +85,7 @@ defmodule Picsello.BookingEvent do
     field :location, :string
     field :address, :string
     field :thumbnail_url, :string
-    field :disabled_at, :utc_datetime
+    field :status, :string
     belongs_to :package_template, Picsello.Package
     embeds_many :dates, EventDate, on_replace: :delete
     has_many :jobs, Picsello.Job
@@ -100,12 +108,16 @@ defmodule Picsello.BookingEvent do
     end)
   end
 
+  def archive_changeset(%__MODULE__{} = booking_event) do
+    booking_event |> change(status: "archive")
+  end
+
   def disable_changeset(%__MODULE__{} = booking_event) do
-    booking_event |> change(disabled_at: DateTime.utc_now() |> DateTime.truncate(:second))
+    booking_event |> change(status: "disable")
   end
 
   def enable_changeset(%__MODULE__{} = booking_event) do
-    booking_event |> change(disabled_at: nil)
+    booking_event |> change(status: "active")
   end
 
   defp update_details(booking_event, attrs) do
