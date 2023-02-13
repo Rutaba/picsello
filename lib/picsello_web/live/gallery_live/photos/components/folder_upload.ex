@@ -25,14 +25,15 @@ defmodule PicselloWeb.GalleryLive.Photos.FolderUpload do
       <.form for={:folder_upload} let={f} phx-submit="submit" phx-change="change" phx-target={@myself} class="mt-8">
         <div class="py-4 pl-2 bg-base-200">
           <div class="flex">
-            <.icon name="folder-fill" class="w-5 h-5 mt-1"/>
+            <.icon name="folder" class="w-6 h-6 mt-1 fill-blue-planning-300"/>
             <h2 class="ml-4 text-lg"><%= @folder %></h2>
           </div>
 
-          <div class={classes("mt-2 ml-6", %{"hidden" => !@include_subfolders})}>
+          <div class={classes("mt-2 ml-2", %{"hidden" => !@include_subfolders})}>
             <%= for folder <- @sub_folders do %>
               <div class="flex">
-                <.icon name="folder" class="w-5 h-5 mt-1"/>
+                <div class="relative w-6"><.icon name="dotted-l" class="absolute -top-3 w-6 h-6"/></div>
+                <.icon name="folder" class="w-6 h-6 fill-base-200"/>
                 <h3 class="ml-4"><%= Albums.folder_name(folder) %></h3>
               </div>
             <% end %>
