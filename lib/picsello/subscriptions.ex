@@ -153,6 +153,7 @@ defmodule Picsello.Subscriptions do
         cancel_url: cancel_url,
         success_url: success_url,
         customer: user_customer_id(user),
+        billing_address_collection: "auto",
         mode: "subscription",
         line_items: [
           %{
