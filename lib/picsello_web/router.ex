@@ -30,6 +30,10 @@ defmodule PicselloWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :calendar do
+    plug :accepts, ["text/calendar"]
+  end
+
   pipeline :admins_only do
     plug :admin_basic_auth
   end
@@ -198,8 +202,6 @@ defmodule PicselloWeb.Router do
   scope "/", PicselloWeb do
     pipe_through [:browser]
 
-    get "/calendar/:token", ICalendarController, :index
-
     delete "/users/log_out", UserSessionController, :delete
     get "/users/confirm", UserConfirmationController, :new
     post "/users/confirm", UserConfirmationController, :create
@@ -277,6 +279,12 @@ defmodule PicselloWeb.Router do
       on_mount: {PicselloWeb.LiveAuth, :proofing_album_client_login} do
       live "/login", GalleryLive.ClientShow.Login, :album_login
     end
+  end
+
+  scope "/calendar/:token", PicselloWeb do
+    pipe_through [:calendar]
+
+    get "/", ICalendarController, :index
   end
 
   scope "/gallery/:hash", PicselloWeb do
