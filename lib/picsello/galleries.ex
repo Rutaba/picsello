@@ -919,6 +919,15 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Removes multiple watermarks.
+  """
+  def delete_multiple_watermarks(watermark_ids) do
+    Watermark
+    |> where([w], w.id in ^watermark_ids)
+    |> Repo.delete_all()
+  end
+
+  @doc """
   Clears watermarks of photos and triggers watermarked versions removal
   """
   def clear_watermarks(gallery_id) do
