@@ -41,12 +41,22 @@ defmodule Picsello.GlobalSettings do
   end
 
   def list_gallery_products(organization_id) do
-    GSGalleryProduct
-    |> join(:inner, [gs_gp], category in assoc(gs_gp, :category))
+    gallery_product_query()
     |> where([gs_gp], gs_gp.organization_id == ^organization_id)
     |> order_by([_, category], category.position)
-    |> preload([gs_gp, category], category: {category, [:products, gs_gallery_products: gs_gp]})
     |> Repo.all()
+  end
+
+  def gallery_product(id) do
+    gallery_product_query()
+    |> where([gs_gp], gs_gp.id == ^id)
+    |> Repo.one()
+  end
+
+  defp gallery_product_query() do
+    GSGalleryProduct
+    |> join(:inner, [gs_gp], category in assoc(gs_gp, :category))
+    |> preload([gs_gp, category], category: {category, [:products, gs_gallery_products: gs_gp]})
   end
 
   def gallery_products_params() do
