@@ -490,21 +490,25 @@ defmodule Picsello.Galleries do
       end
     )
     |> Multi.merge(fn %{gallery: gallery} ->
-      check_watermark(gallery)
+      gallery
+      |> Repo.preload(:package)
+      |> check_watermark()
     end)
   end
+
+  defp check_watermark(%{package: %{download_each_price: %Money{amount: 0}}}), do: Multi.new()
 
   defp check_watermark(gallery) do
     case Gallery.global_gallery_watermark(gallery) do
       nil ->
         Multi.new()
 
-      changeset ->
+      watermark ->
         Multi.new()
         |> Multi.insert(:watermark, fn _ ->
           Ecto.Changeset.change(
             %Watermark{},
-            changeset
+            watermark
           )
         end)
     end
