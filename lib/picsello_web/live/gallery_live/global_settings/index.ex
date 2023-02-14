@@ -37,18 +37,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> is_mobile(params)
     |> assign(galleries: [])
     |> assign(global_settings_gallery: global_settings_gallery)
-    |> assign(print_price_section?: false)
-    |> assign(product_section?: false)
-    |> assign(digital_pricing?: false)
-    |> assign(watermark_option: false)
-    |> then(fn socket ->
-      %{assigns: %{is_mobile: is_mobile}} = socket
-      assign(socket, expiration_date?: !is_mobile)
-    end)
-    |> assign_title()
     |> assign_controls()
     |> assign_options()
-    |> assign_title()
     |> assign(total_days: 0)
     |> assign(:upload_bucket, @bucket)
     |> assign(:case, :image)
@@ -59,6 +49,25 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> allow_upload(:image, @upload_options)
     |> ok()
   end
+
+  @impl true
+  def handle_params(%{"section" => "products"}, _uri, socket),
+    do: new_section(socket, product_section?: true)
+
+  def handle_params(%{"section" => "print_product", "product_id" => product_id}, _uri, socket),
+    do:
+      socket
+      |> assign(:product, Picsello.GlobalSettings.gallery_product(product_id))
+      |> new_section(product_section?: true, print_price_section?: true)
+
+  def handle_params(%{"section" => "watermark"}, _uri, socket),
+    do: new_section(socket, watermark_option: true)
+
+  def handle_params(%{"section" => "digital_pricing"}, _uri, socket),
+    do: new_section(socket, digital_pricing?: true)
+
+  def handle_params(_params, _uri, %{assigns: %{is_mobile: is_mobile}} = socket),
+    do: new_section(socket, expiration_date?: !is_mobile)
 
   @impl true
   def handle_event(
@@ -210,15 +219,13 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> noreply()
   end
 
-  def handle_event("select_expiration", _, socket),
-    do: new_section(socket, expiration_date?: true)
-
-  def handle_event("select_digital_pricing", _, socket),
-    do: new_section(socket, digital_pricing?: true)
-
   def handle_event("back_to_menu", _, socket), do: new_section(socket)
-  def handle_event("select_watermark", _, socket), do: new_section(socket, watermark_option: true)
-  def handle_event("select_product", _, socket), do: new_section(socket, product_section?: true)
+
+  def handle_event("select_component", %{"section" => ""}, socket),
+    do: patch(socket)
+
+  def handle_event("select_component", %{"section" => section}, socket),
+    do: patch(socket, section: section)
 
   @impl true
   def handle_event("image_case", _params, socket) do
@@ -276,15 +283,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   @impl true
-  def handle_event(
-        "back_to_products",
-        _,
-        socket
-      ) do
-    send(self(), {:back_to_products})
-
-    socket |> noreply()
-  end
+  def handle_event("back_to_products", _, socket), do: new_section(socket, product_section?: true)
 
   def handle_event(
         "validate_each_price",
@@ -863,11 +862,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     """
   end
 
-  defp section(assigns) do
-    ~H"""
-      <div></div>
-    """
-  end
+  defp section(assigns), do: ~H[<div></div>]
 
   defp watermark_name_delete(assigns) do
     ~H"""
@@ -886,7 +881,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
     ~H"""
     <div class={"bg-base-250/10 font-bold rounded-lg cursor-pointer grid-item"}>
-      <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" phx-click={@event_name}>
+      <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" phx-value-section={@value} phx-click="select_component">
         <.nav_title title={@item_title} open?={@open? && !@print_price_section?} />
       </div>
       <%= if @print_price_section? do %>
@@ -944,5 +939,11 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   def settings_multi(%{assigns: %{global_settings_gallery: global_settings}}, attrs, multi) do
     Multi.update(multi, :global_settings, changeset(global_settings, attrs))
+  end
+
+  defp patch(socket, opts \\ []) do
+    socket
+    |> push_patch(to: Routes.gallery_global_settings_index_path(socket, :edit, opts))
+    |> noreply()
   end
 end
