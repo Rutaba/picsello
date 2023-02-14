@@ -58,6 +58,20 @@ defmodule Picsello.BookingEvent do
 
       filter_blocks = Enum.filter(blocks, fn block -> !block.is_break and !block.hidden end)
 
+      break_blocks =
+        Enum.filter(blocks, fn block -> block.is_break end) |> Enum.map(& &1.start_time)
+
+      overlap_booked_blocks =
+        Enum.filter(filter_blocks, fn block ->
+          if block.is_booked do
+            Enum.any?(break_blocks, fn break_block_time ->
+              Time.compare(break_block_time, block.start_time) in [:gt, :eq] &&
+                Time.compare(break_block_time, block.end_time) in [:lt, :eq]
+            end)
+          end
+        end)
+        |> Enum.count()
+
       overlap_times =
         for(
           [
@@ -69,7 +83,7 @@ defmodule Picsello.BookingEvent do
         )
         |> Enum.any?()
 
-      if overlap_times do
+      if overlap_times || overlap_booked_blocks > 0 do
         changeset |> add_error(:time_blocks, "can't be overlapping")
       else
         changeset

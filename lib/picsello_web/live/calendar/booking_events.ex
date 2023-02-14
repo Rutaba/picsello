@@ -73,7 +73,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
       socket
       |> open_wizard(%{
         booking_event: BookingEvents.get_booking_event!(current_user.organization_id, event_id),
-        can_edit?: Map.get(booking_event, :can_edit?)
+        can_edit?: Map.get(booking_event, :can_edit?),
+        booking_count: Map.get(booking_event, :booking_count)
       })
       |> noreply()
     else
@@ -144,13 +145,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     </div>
 
     <%= if Enum.empty?(@booking_events) do %>
-      <div class="p-6 center-container">
-        <.empty_state_base tour_embed="https://demo.arcade.software/eOBqmup7RcW8EVmGpqrY?embed" headline="Meet Client Booking" eyebrow_text="Booking Events Product Tour" body="Accelerate your business growth with mini-sessions, portraits & more! Create a booking link that you can share and take tedious work out of booking" third_party_padding="calc(66.66666666666666% + 41px)">
-          <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="w-full md:w-auto btn-tertiary text-center flex-shrink-0">
-            Add booking event
-          </.live_link>
-        </.empty_state_base>
-      </div>
+      <div class="flex flex-col items-center mt-4 p-6 lg:flex-none">
+        <%= if @search_phrase || @event_status !== "all" do %>
+          <p class="text-lg lg:text-2xl text-base-250">No events match your search or filters.</p>
+        <% else %>
+          <div class="p-6 center-container">
+            <.empty_state_base tour_embed="https://demo.arcade.software/eOBqmup7RcW8EVmGpqrY?embed" headline="Meet Client Booking" eyebrow_text="Booking Events Product Tour" body="Accelerate your business growth with mini-sessions, portraits & more! Create a booking link that you can share and take tedious work out of booking" third_party_padding="calc(66.66666666666666% + 41px)">
+              <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="w-full md:w-auto btn-tertiary text-center flex-shrink-0">
+                Add booking event
+              </.live_link>
+            </.empty_state_base>
+          </div>
+        <% end %>
+    </div>
     <% else %>
       <div class="p-6 center-container">
         <div class="hidden sm:grid sm:grid-cols-5 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
@@ -187,7 +194,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
               <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
               class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
 
-                <button id={option.id} class="album-select" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
+                <button id={option.id} class="album-select w-40" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
                 <%= if option.id == @selected_option do %>
                   <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-green" />
                 <% end %>
@@ -257,8 +264,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
           Copied!
         </div>
       </.icon_button>
-      <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-offset-x="-21" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{@booking_event.status}"}>
-        <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
+      <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-offset-x="-21" data-placement="bottom-end" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{@booking_event.status}"}>
+        <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 w-full" id="Manage">
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
           <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
@@ -531,7 +538,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
       |> Enum.map(fn booking_event ->
         booking_event
         |> assign_sort_date(sort_direction, sort_by)
-        |> Map.drop([:dates])
         |> Map.put(
           :url,
           Routes.client_booking_event_url(
@@ -572,7 +578,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
     booking_events
     |> Enum.filter(fn booking_event ->
-      Date.compare(booking_event.date, datetime) == :gt
+      date =
+        booking_event
+        |> Map.get(:dates)
+        |> Enum.map(& &1.date)
+        |> Enum.sort_by(& &1, {:desc, Date})
+        |> hd
+
+      Date.compare(date, datetime) == :gt
     end)
   end
 
@@ -581,7 +594,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
     booking_events
     |> Enum.filter(fn booking_event ->
-      Date.compare(booking_event.date, datetime) == :lt
+      date =
+        booking_event
+        |> Map.get(:dates)
+        |> Enum.map(& &1.date)
+        |> Enum.sort_by(& &1, {:asc, Date})
+        |> hd
+
+      Date.compare(date, datetime) == :lt
     end)
   end
 
