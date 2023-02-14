@@ -329,7 +329,11 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
         converted_date
       else
-        parse_in_zone(starts_at, time_zone)
+        case parse_in_zone(starts_at, time_zone) do
+          {:ok, datetime} -> datetime
+          {:error, _} -> nil
+          _ -> nil
+        end
       end
 
     socket
@@ -364,7 +368,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   defp parse_in_zone("" <> str, zone) do
     with {:ok, naive_datetime} <- NaiveDateTime.from_iso8601(str <> ":00"),
          {:ok, datetime} <- DateTime.from_naive(naive_datetime, zone) do
-      datetime
+      {:ok, datetime}
     end
   end
 

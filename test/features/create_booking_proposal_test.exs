@@ -64,7 +64,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> assert_text("Add all shoots")
     |> click(button("Add shoot details"))
     |> fill_in(text_field("Shoot Title"), with: "chute")
-    |> fill_in(text_field("Shoot Date"), with: "04052040\t1200P")
+    |> fill_in(css("#shoot_starts_at", visible: false), with: "04052040\t1200P")
     |> find(select("Shoot Duration"), &click(&1, option("1.5 hrs")))
     |> find(select("Shoot Location"), &click(&1, option("On Location")))
     |> wait_for_enabled_submit_button()

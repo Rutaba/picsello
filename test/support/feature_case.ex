@@ -37,6 +37,7 @@ defmodule Picsello.FeatureCase do
 
     def fill_in_date(session, field, opts \\ []) do
       date = Keyword.get(opts, :with)
+
       input = find(session, field)
 
       date =
