@@ -64,10 +64,7 @@ defmodule Picsello.BookingEvent do
       overlap_booked_blocks =
         Enum.filter(filter_blocks, fn block ->
           if block.is_booked do
-            Enum.any?(break_blocks, fn break_block_time ->
-              Time.compare(break_block_time, block.start_time) in [:gt, :eq] &&
-                Time.compare(break_block_time, block.end_time) in [:lt, :eq]
-            end)
+            fetch_any_break_block_booked(block, break_blocks)
           end
         end)
         |> Enum.count()
@@ -88,6 +85,13 @@ defmodule Picsello.BookingEvent do
       else
         changeset
       end
+    end
+
+    defp fetch_any_break_block_booked(block, break_blocks) do
+      Enum.any?(break_blocks, fn break_block_time ->
+        Time.compare(break_block_time, block.start_time) in [:gt, :eq] &&
+          Time.compare(break_block_time, block.end_time) in [:lt, :eq]
+      end)
     end
   end
 

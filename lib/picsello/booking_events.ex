@@ -187,32 +187,35 @@ defmodule Picsello.BookingEvents do
   def assign_booked_block_dates(dates, %BookingEvent{} = booking_event) do
     dates
     |> Enum.map(fn %{date: date, time_blocks: time_blocks} = block ->
-      all_slots = available_times(booking_event, date)
-
       blocks =
-        Enum.map(time_blocks, fn block ->
-          if is_blocked_booked(block, all_slots) do
-            Map.put(block, :is_booked, true)
-          else
-            block
-          end
-        end)
+        available_times(booking_event, date)
+        |> fetch_blocks(time_blocks)
 
       block |> Map.put(:time_blocks, blocks)
     end)
   end
 
-  def is_blocked_booked(
-        %{start_time: start_time, end_time: end_time},
-        _slots
-      )
-      when start_time == nil or end_time == nil,
-      do: false
+  defp fetch_blocks(all_slots, time_blocks) do
+    Enum.map(time_blocks, fn block ->
+      if is_blocked_booked(block, all_slots) do
+        Map.put(block, :is_booked, true)
+      else
+        block
+      end
+    end)
+  end
 
-  def is_blocked_booked(
-        %{start_time: %Time{} = start_time, end_time: %Time{} = end_time},
-        slots
-      ) do
+  defp is_blocked_booked(
+         %{start_time: start_time, end_time: end_time},
+         _slots
+       )
+       when start_time == nil or end_time == nil,
+       do: false
+
+  defp is_blocked_booked(
+         %{start_time: %Time{} = start_time, end_time: %Time{} = end_time},
+         slots
+       ) do
     Enum.filter(slots, fn {slot_time, is_available} ->
       !is_available && Time.compare(slot_time, start_time) in [:gt, :eq] &&
         Time.compare(slot_time, end_time) in [:lt, :eq]
@@ -220,32 +223,34 @@ defmodule Picsello.BookingEvents do
     |> Enum.count() > 0
   end
 
-  def filter_is_break_slots(slot_times, booking_event, date) do
+  defp filter_is_break_slots(slot_times, booking_event, date) do
     slot_times
     |> Enum.filter(fn {slot_time, _is_available} ->
-      blocker_slots =
-        case booking_event.dates |> Enum.find(&(&1.date == date)) do
-          %{time_blocks: time_blocks} ->
-            for(
-              %{
-                start_time: %Time{} = start_time,
-                end_time: %Time{} = end_time,
-                is_break: is_break,
-                hidden: is_hidden
-              } <- time_blocks
-            ) do
-              if is_break or is_hidden do
-                Time.compare(slot_time, start_time) in [:gt, :eq] &&
-                  Time.compare(slot_time, end_time) in [:lt, :eq]
-              end
-            end
-
-          _ ->
-            false
-        end
-
+      blocker_slots = filter_is_break_time_slots(booking_event, slot_time, date)
       !Enum.any?(blocker_slots)
     end)
+  end
+
+  defp filter_is_break_time_slots(booking_event, slot_time, date) do
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
+      %{time_blocks: time_blocks} ->
+        for(
+          %{
+            start_time: %Time{} = start_time,
+            end_time: %Time{} = end_time,
+            is_break: is_break,
+            hidden: is_hidden
+          } <- time_blocks
+        ) do
+          if is_break or is_hidden do
+            Time.compare(slot_time, start_time) in [:gt, :eq] &&
+              Time.compare(slot_time, end_time) in [:lt, :eq]
+          end
+        end
+
+      _ ->
+        false
+    end
   end
 
   defp filter_overlapping_shoots(slot_times, _booking_event, _date, true) do
