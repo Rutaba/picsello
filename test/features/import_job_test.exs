@@ -99,7 +99,7 @@ defmodule Picsello.ImportJobTest do
 
   def import_job(session) do
     session
-    |> click(testid("jobs-card"))
+    |> click(button("Jobs"))
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
@@ -125,7 +125,7 @@ defmodule Picsello.ImportJobTest do
 
   feature "user imports job", %{session: session} do
     session
-    |> click(testid("jobs-card"))
+    |> click(button("Jobs"))
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
@@ -227,7 +227,7 @@ defmodule Picsello.ImportJobTest do
     )
 
     session
-    |> click(testid("jobs-card"))
+    |> click(button("Jobs"))
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
@@ -282,7 +282,7 @@ defmodule Picsello.ImportJobTest do
     insert(:lead, client: client)
 
     session
-    |> click(testid("jobs-card"))
+    |> click(button("Jobs"))
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
@@ -324,7 +324,7 @@ defmodule Picsello.ImportJobTest do
 
   feature "user imports job with only one payment", %{session: session} do
     session
-    |> click(testid("jobs-card"))
+    |> click(button("Jobs"))
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
@@ -366,7 +366,7 @@ defmodule Picsello.ImportJobTest do
 
   feature "user imports job without payments", %{session: session} do
     session
-    |> click(testid("jobs-card"))
+    |> click(button("Jobs"))
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
@@ -407,7 +407,7 @@ defmodule Picsello.ImportJobTest do
 
   feature "user imports job with zero base price", %{session: session} do
     session
-    |> click(testid("jobs-card"))
+    |> click(button("Jobs"))
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
@@ -438,7 +438,7 @@ defmodule Picsello.ImportJobTest do
 
   feature "user sees validation errors when importing job", %{session: session} do
     session
-    |> click(testid("jobs-card"))
+    |> click(button("Jobs"))
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
@@ -464,7 +464,7 @@ defmodule Picsello.ImportJobTest do
 
   feature "user navigates back and forth on steps", %{session: session} do
     session
-    |> click(testid("jobs-card"))
+    |> click(button("Jobs"))
     |> click(link("Import existing job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
