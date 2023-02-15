@@ -166,10 +166,7 @@ defmodule PicselloWeb.Router do
       live "/galleries", GalleryLive.Index, :galleries, as: :gallery
 
       live "/home",
-           if(Enum.member?(Application.get_env(:picsello, :feature_flags, []), :show_new_home),
-             do: HomeLive.IndexNew,
-             else: HomeLive.Index
-           ),
+           HomeLive.Index,
            :index,
            as: :home
 

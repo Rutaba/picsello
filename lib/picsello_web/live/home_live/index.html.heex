@@ -1,182 +1,82 @@
-<div {intro(@current_user, "intro_dashboard")} {help_scout_output(@current_user, :help_scout_id)}>
-  <header class="bg-gray-100">
-    <div class="pt-10 pb-8 center-container">
-      <div class="sm:flex justify-between px-6">
-        <h1 class="text-4xl font-bold">
-          <%= time_of_day_greeting @current_user %>
-        </h1>
-        <%= if show_intro?(@current_user, "intro_dashboard") === "true" do %>
-          <button type="button" class="underline text-base-250 font-sm mt-4 hidden lg:block" id="start-tour">Start product tour</button>
-        <% end %>
+<section class="px-6 py-10">
+  <div class="center-container">
+    <div class="rounded-lg shadow-lg bg-white p-6">
+      <div class="md:flex md:justify-between gap-6 items-center mb-4">
+        <h1 class="text-4xl font-bold mb-4 md:mb-0"><%= time_of_day_greeting @current_user %></h1>
+        <div data-offset="0" phx-hook="Select" id="actions">
+          <button title="Actions" class="btn-primary flex items-center gap-3 mr-2 text-white xl:w-auto w-full" id="Actions">
+            Actions
+            <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3  open-icon" />
+            <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3  close-icon" />
+          </button>
+          <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content z-20">
+            <.action_item button_text="Create lead" button_action="create-lead" button_icon="three-people" />
+            <.action_item button_text="Create client" button_action="add-client" button_icon="phone" />
+            <.action_item button_text="Create gallery" button_action="create-gallery" button_icon="proof_notifier" />
+            <.action_item button_text="Import job" button_action="import-job" button_icon="camera-check" />
+            <hr class="block mx-4 my-2" />
+            <.action_item button_text="Create booking event" button_action="create-booking-event" button_icon="calendar" />
+            <.action_item button_text="Create package" button_action="add-package" button_icon="files-icon" />
+            <.action_item button_text="Create questionnaire" button_action="create-questionnaire" button_icon="files-icon" />
+          </div>
+        </div>
       </div>
-
-      <%= case @attention_items do %>
-        <% [] -> %>
-        <% items -> %>
-          <h2 class="px-6 mt-8 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Next Up</h2>
-          <ul class={classes("flex px-6 pb-4 overflow-auto lg:pb-0 intro-next-up", %{"xl:overflow-none" => !@should_attention_items_overflow })}>
-            <%= for {true, %{card: %{title: title, body: body, icon: icon, buttons: buttons, concise_name: concise_name, color: color, class: class}} = org_card} <- items do %>
-            <li {testid("attention-item")} class={classes("attention-item flex-shrink-0 flex flex-col justify-between relative max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"xl:flex-1" => !@should_attention_items_overflow})}>
-              <%= if org_card.status == :viewed do %>
-                <div class="flex justify-between absolute w-full">
-                  <span></span>
-                  <span class="sm:pr-[30px] pr-[25px]" phx-click="card_status" phx-value-org_card_id={org_card.id} phx-value-status="inactive">
-                    <.icon name="close-x" class="mt-[-7px] w-3 h-3 stroke-current stroke-2 base-250" />
-                  </span> 
-                </div>
-              <% end %>
-              <div>
-                <div class="flex">
-                  <.icon name={icon} width="23" height="20" class={"block mr-2 mt-1 rounded-sm fill-current text-#{color}"} />
-                  <h1 class="text-lg font-bold"><%= title %></h1>
-                </div>
-                
-                <p class="my-2 text-sm"><%= body %></p>
-              </div>
-
-            <.card_buttons {assigns} concise_name={concise_name} org_card_id={org_card.id} buttons={buttons} />
-            </li>
-            <% end %>
-          </ul>
-      <% end %>
+      <.tabs_nav tab_active={@tab_active} tabs={@tabs} socket={@socket} />
+      <.tabs_content tab_active={@tab_active} assigns={assigns} socket={@socket} stripe_status={@stripe_status} />
     </div>
-  </header>
+  </div>
+</section>
 
-  <div class="px-6 pb-6 center-container" phx-hook="showWelcomeModal" id="show-welcome-modal">
-    <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Work</h2>
-
-    <ul class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-      <.card {testid("leads-card")} color="blue-planning-300" icon="three-people" title="Leads" badge={@lead_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :leads)} class="cursor-pointer intro-leads-card" hint_content={if @leads_empty? do "Create your first lead! We’ll help you log your potential client’s contact info and guide you through the process of sending them a proposal. Once they accept, your lead will become a job!" end}>
-        <%= if @leads_empty? do %>
-        <p class="my-2 text-base-250">
-          Create leads to start bringing in new business. Manage existing leads as they are created.
-        </p>
-
-        <button type="button" class="w-full py-2 mt-auto text-sm btn-primary" phx-click="create-lead">Create a lead</button>
-        <% else %>
-        <ul class="grid grid-flow-col gap-2 my-2 auto-cols-fr">
-        <%= for {lead_state, number} <- @lead_stats do %>
-          <li class="text-center"><span class="font-bold"><%= number %></span> <%= lead_state %> <%= ngettext "lead", "leads", number %></li>
-        <% end %>
-        </ul>
-
-        <div class="flex items-stretch mt-4">
-          <button type="button" class="flex-1 py-2 mr-4 text-sm btn-primary" phx-click="create-lead">Create a lead</button>
-
-          <button type="button" class="flex-1 py-2 text-sm btn-secondary">View leads</button>
-        </div>
-        <% end %>
-      </.card>
-
-      <.card {testid("gallery-card")} color="blue-planning-300" icon="proof_notifier" title="Galleries" badge={@gallery_count} phx-click="redirect" phx-value-to={Routes.gallery_path(@socket, :galleries)} class="cursor-pointer intro-galleries-card" hint_content={if @galleries_empty? do "You can create a new gallery by clicking this button below" end}>
-        <%= if @galleries_empty? do %>
-        <p class="my-2 text-base-250">
-          Create your first gallery! You don’t have any galleries at the moment.
-        </p>
-
-        <button type="button" class="w-full py-2 mt-auto text-sm btn-primary" phx-click="create-gallery">Create a gallery</button>
-        <% else %>
-        <ul class="grid grid-flow-col gap-2 my-2 auto-cols-fr">
-          <li class="text-left"><span class="font-bold"><%= @gallery_count %></span> galleries created so far</li>
-        </ul>
-
-        <div class="flex items-stretch mt-4">
-          <button type="button" class="flex-1 py-2 mr-4 text-sm btn-primary" phx-click="create-gallery">Create a gallery</button>
-
-          <button type="button" class="flex-1 py-2 text-sm btn-secondary px-2">View all galleries</button>
-        </div>
-        <% end %>
-      </.card>
-
-      <.card {testid("jobs-card")} color="blue-planning-300" icon="camera-check" title="Jobs" badge={@job_count} phx-click="redirect" phx-value-to={Routes.job_path(@socket, :jobs)} class="cursor-pointer" hint_content={if @jobs_empty? do "Review contracts, payments, and package settings. Once your photos are ready to share with your client, you’ll also create their gallery here." end}>
-        <%= if @jobs_empty? do %>
-        <p class="my-2 text-base-250">
-          Leads will become jobs when your client accepts your quote and pays the first 50% of your contract.
-        </p>
-        <% else %>
-          <p class="my-2"><span class="font-bold"><%= @job_count %></span> upcoming <%= ngettext "job", "jobs", @job_count %> within the next seven days</p>
-        <% end %>
-      </.card>
-    </ul>
-
-    <h2 class="mt-12 mb-4 text-sm font-bold tracking-widest text-gray-400 uppercase">Your Business</h2>
-
-    <ul class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-      <.card color="blue-planning-300" icon="calendar" title="Booking Events & Calendar" phx-click="redirect" phx-value-to={Routes.calendar_index_path(@socket, :index)} class="cursor-pointer">
-        <p class="my-2 text-base-250">
-          Create client booking events and see all of your upcoming shoots in one place.
-        </p>
-        <div class="flex items-center mt-4 flex-wrap">
-          <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="sm:flex-1 py-2 mr-4 text-sm btn-secondary text-center sm:w-auto w-full">
-            Add booking event
-          </.live_link>
-
-          <%= live_redirect to: Routes.calendar_index_path(@socket, :index), title: "View calendar", class: "underline text-blue-planning-300 text-center sm:text-left mt-4 sm:mt-0 sm:w-auto w-full" do %>View calendar<% end %>
-        </div>
-      </.card>
-
-      <.card color="blue-planning-300" icon="package" title="Packages" phx-click="redirect" phx-value-to={Routes.package_templates_path(@socket, :index)} class="cursor-pointer">
-        <p class="my-2 text-base-250">
-          Reusable job packages make managing your business easier, and save you time. Review our preset package templates, or create your own! We can also help you <%= live_redirect to: Routes.calculator_path(@socket, :index), title: "calculate your pricing", class: "underline text-blue-planning-300" do %>calculate your pricing<% end %> with our Smart Profit Calculator™.
-        </p>
-      </.card>
-
-      <.card {testid("inbox-card")} color="orange-inbox-300" icon="envelope" title="Inbox" badge={@inbox_count} phx-click="redirect" phx-value-to={Routes.inbox_path(@socket, :index)} class="cursor-pointer intro-inbox">
-        <p class={classes("my-2", %{"text-base-250" => !@inbox_count > 0})}>
-          <%= if @inbox_count > 0 do %>
-            <%= ngettext "%{count} new message", "%{count} new messages", @inbox_count %>
+<section class="px-6">
+  <div class="center-container">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6">
+      <div class="flex flex-col">
+        <.dashboard_main_card title="Inbox" link_text="View inbox" link_action="redirect" link_value="inbox" inner_block_classes="h-full flex flex-col" notification_count={@inbox_count} redirect_route={Routes.inbox_path(@socket, :index)}>
+          <%= if Enum.empty?(@inbox_threads) do %>
+            <p class="text-base-250">This is where you will see new messages from your clients.</p>
+            <img src="/images/inbox-empty.png" class="my-auto block" />
           <% else %>
-            Communicate with your clients in one spot.
+            <%= for thread <- @inbox_threads do %>
+              <.thread_card {thread} unread={true} selected={false} />
+            <% end %>
           <% end %>
-        </p>
-      </.card>
-
-      <.card color="purple-marketing-300" icon="bullhorn" title="Marketing" phx-click="redirect" phx-value-to={Routes.marketing_path(@socket, :index)} class="cursor-pointer intro-marketing">
-        <p class="my-2 text-base-250">
-          Send marketing emails to your clients to encourage new business.
-        </p>
-      </.card>
-
-      <.card color="blue-planning-300" icon="package" title="Questionnaires" phx-click="redirect" phx-value-to={Routes.questionnaires_index_path(@socket, :index)} class="cursor-pointer">
-        <p class="my-2 text-base-250">
-          Choose to use pre-written templates, modify them or create your own questionnaire to use in packages/leads.
-        </p>
-      </.card>
-    </ul>
-  </div>
-
-  <div id="float-menu" class="cursor-pointer sm:hidden" phx-update="ignore" phx-hook="ToggleContent">
-    <div class="fixed p-6 text-white rounded-full shadow-md bg-base-300 bottom-6 right-6">
-      <.icon name="close-x" class="w-6 h-6 rotate-45 stroke-current stroke-2" />
-    </div>
-    <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
-      <nav class="flex flex-col w-64 m-8 overflow-hidden bg-white rounded-lg shadow-md">
-        <a href="#" phx-click="create-lead" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300">
-          <.icon name="three-people" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
-          Add a lead
-        </a>
-        <%= if Application.get_env(:picsello, :help_scout_id) && Application.get_env(:picsello, :help_scout_id_business)  do %>
-        <a href="#" class="flex items-center px-2 py-2 mx-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id)}>
-          <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
-          Help Center
-        </a>
-        <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id_business)}>
-          <.icon name="camera-laptop" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
-          Business Coaching
-        </a>
-        <% end %>
-        <div class="p-4 pl-12 text-sm text-white uppercase bg-base-300">
-        Quick actions
-        </div>
-      </nav>
-
-      <div class="fixed p-6 text-white rounded-full shadow-md bg-base-300 bottom-6 right-6">
-        <.icon name="close-x" class="w-6 h-6 stroke-current stroke-2" />
+        </.dashboard_main_card>
+      </div>
+      <div class="flex flex-col gap-6">
+        <.dashboard_main_card title="Calendar" button_text="Create booking event" button_action="create-booking-event" link_text="View calendar" link_action="redirect" link_value="calendar" redirect_route={Routes.calendar_index_path(@socket, :index)}>
+          <%= if @job_count === 0 do %>
+            <p class="text-base-250">Get ready for your calendar to start filling up with shoots! Create a client booking event and you will be off to the races.</p>
+          <% else %>
+            <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@job_count} /> <%= ngettext "job", "jobs", @job_count %> upcoming this week</p>
+          <% end %>          
+        </.dashboard_main_card>
+        <.dashboard_main_card title="Clients" button_text="Add client" button_action="add-client" link_text="View clients" link_action="redirect" link_value="clients" redirect_route={Routes.clients_path(@socket, :index)}>
+          <%= if @client_count === 0 do %>
+            <p class="text-base-250">Let's start by adding your clients - whether they are new or if existing, feel free to contact Picsello for help with bulk uploading.</p>
+          <% else %>
+            <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@client_count} /> clients</p>
+          <% end %>
+        </.dashboard_main_card>
+      </div>
+      <div class="flex flex-col gap-6">
+        <.dashboard_main_card title="Help & Coaching" button_text="Help" button_action="view-help" link_text="View help center" link_action="view-help">
+          <p class="text-base-250">Get in touch with our Customer Success and team of photographers for questions, feedback and help.</p>
+        </.dashboard_main_card>
+        <.dashboard_main_card title="Marketing" button_text="Send" button_action="create-marketing-email" link_text="View marketing" link_action="redirect" link_value="marketing" redirect_route={Routes.marketing_path(@socket, :index)}>
+          <p class="text-base-250">Create a marketing event once you have clientele. Drive more sales with seasonal promos & more!</p>
+        </.dashboard_main_card>
       </div>
     </div>
   </div>
-</div>
+</section>
 
 <%= if Subscriptions.subscription_expired?(@current_user) && !@stripe_subscription_status do %>
   <.subscription_modal socket={@socket} />
 <% end %>
+
+<style>
+main {
+    --tw-bg-opacity: 1;
+    background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+}
+</style>
