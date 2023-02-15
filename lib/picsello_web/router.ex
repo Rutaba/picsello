@@ -31,7 +31,11 @@ defmodule PicselloWeb.Router do
   end
 
   pipeline :calendar do
-    plug :accepts, ["text/calendar"]
+    plug :accepts, ["html", "text/calendar"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, {PicselloWeb.LayoutView, :root}
+    plug :put_secure_browser_headers
   end
 
   pipeline :admins_only do
