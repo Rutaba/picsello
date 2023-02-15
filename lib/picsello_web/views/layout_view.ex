@@ -44,6 +44,10 @@ defmodule PicselloWeb.LayoutView do
     Map.merge(default_meta_tags(), attrs_list)
   end
 
+  def dynamic_background_class(%{main_class: main_class}), do: main_class
+
+  def dynamic_background_class(_), do: nil
+
   defp flash_styles,
     do: [
       {:error, "error", "text-red-sales-300"},
@@ -312,7 +316,7 @@ defmodule PicselloWeb.LayoutView do
                   <.initials_circle user={@current_user} />
                   <div class="ml-2 font-semibold">Account</div>
                 <% end %>
-              
+
                 <%= if Enum.any?(@current_user.onboarding.intro_states) do %>
                   <.live_component module={PicselloWeb.Live.RestartTourComponent} id="current_user", current_user={@current_user} />
                 <% end %>

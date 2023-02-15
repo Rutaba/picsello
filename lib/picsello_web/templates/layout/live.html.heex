@@ -1,5 +1,5 @@
 <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
-<main role="main" class="flex flex-col min-h-screen">
+<main role="main" class={"flex flex-col min-h-screen #{dynamic_background_class(assigns)}"}>
   <.main_header socket={@socket} current_user={@current_user} live_action={@live_action} />
 
   <%= flash(@flash) %>

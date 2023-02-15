@@ -50,6 +50,7 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def mount(params, _session, socket) do
     socket
+    |> assign(:main_class, "bg-gray-100")
     |> assign_stripe_status()
     |> assign(:page_title, "Work Hub")
     |> assign(:stripe_subscription_status, nil)

@@ -73,10 +73,3 @@
 <%= if Subscriptions.subscription_expired?(@current_user) && !@stripe_subscription_status do %>
   <.subscription_modal socket={@socket} />
 <% end %>
-
-<style>
-main {
-    --tw-bg-opacity: 1;
-    background-color: rgb(243 244 246 / var(--tw-bg-opacity));
-}
-</style>
