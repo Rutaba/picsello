@@ -16,14 +16,13 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Albums,
     Notifiers.ClientNotifier,
     GlobalSettings,
-    Utils
+    Utils,
+    Client
   }
 
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
-  alias Picsello.{Galleries, Client}
-  alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @card_blank "/images/card_gray.png"

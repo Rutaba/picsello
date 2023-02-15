@@ -20,7 +20,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   }
 
   @impl true
-  def update(%{current_user: current_user} = assigns, socket) do
+  def update(%{current_user: current_user, client: %{id: id, email: email}} = assigns, socket) do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
     |> assign(:clients, Clients.find_all_by(user: current_user))
@@ -30,6 +30,8 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign_new(:changeset, fn ->
       assigns
       |> Map.take([:subject, :body_text, :body_html])
+      |> Map.put(:to_email, (Map.get(assigns, :to_email, [email])))
+      |> Map.put(:client_id, id)
       |> Picsello.ClientMessage.create_outbound_changeset()
     end)
     |> then(fn socket -> assign_presets(socket) end)
@@ -49,36 +51,29 @@ defmodule PicselloWeb.ClientMessageComponent do
     <div class="modal">
       <.close_x />
       <h1 class="text-3xl"><%= @modal_title %></h1>
-      <%= if @show_client_email do %>
-        <div class="pt-5 input-label">
-          <span class="font-bold">To: </span><span class="italic font-light">(semicolon separated to add more emails)</span>
-        </div>
-        <div class="flex flex-col justify-between">
-          <div class="text-input w-auto md:w-2/3 w-full text-base-250">
-            <%= if @client, do: @client.email, else: client_email(@job) %>
+      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+          <div class="flex flex-row justify-between">
+            <%= labeled_input f, :to_email, label: "To: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "500" %>
+            <.search_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
           </div>
-          <.search_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
-        </div>
           <%= if @cc do %>
-            <.labeled_input label="cc" myself={@myself} />
+            <%= labeled_input f, :cc_email, label: "CC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "500" %>
           <% end %>
           <%= if @bcc do %>
-            <.labeled_input label="bcc" myself={@myself}/>
+            <%= labeled_input f, :bcc_email, label: "BCC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "500" %>
           <% end %>
           <div class="flex flex-row">
-          <%= if !@cc do %>
-            <.icon_button class="py-1 px-4 mt-4 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add CC" phx-click="add-cc" phx-target={@myself} color="blue-planning-300" icon="plus">
-              Add CC
-            </.icon_button>
-          <% end %>
-          <%= if !@bcc do %>
-            <.icon_button class="py-1 px-4 mt-4 ml-2 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add BCC" phx-click="add-bcc" phx-target={@myself} color="blue-planning-300" icon="plus">
-              Add BCC
-            </.icon_button>
-          <% end %>
-        </div>
-      <% end %>
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+            <%= if !@cc do %>
+              <.icon_button class="py-1 px-4 mt-4 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add CC" phx-click="add-cc" phx-target={@myself} color="blue-planning-300" icon="plus">
+                Add CC
+              </.icon_button>
+            <% end %>
+            <%= if !@bcc do %>
+              <.icon_button class="py-1 px-4 mt-4 ml-2 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add BCC" phx-click="add-bcc" phx-target={@myself} color="blue-planning-300" icon="plus">
+                Add BCC
+              </.icon_button>
+            <% end %>
+          </div>
         <div class="grid grid-flow-col gap-4 mt-4 auto-cols-fr">
           <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
           <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "h-12", phx_debounce: "500" %>
@@ -157,7 +152,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   @impl true
   def handle_event("validate", %{"client_message" => params}, socket) do
     socket
-    |> assign_changeset(:validate, params |> Map.put("client_id", socket.assigns.client.id))
+    |> assign_changeset(:validate, params)
     |> noreply()
   end
 
@@ -165,7 +160,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   def handle_event("save", %{"client_message" => params}, socket) do
     socket =
       socket
-      |> assign_changeset(:validate, params |> Map.put("client_id", socket.assigns.client.id))
+      |> assign_changeset(:validate, params)
 
     %{assigns: %{changeset: changeset, composed_event: composed_event}} = socket
 
@@ -219,17 +214,6 @@ defmodule PicselloWeb.ClientMessageComponent do
     do: assign_new(socket, :presets, fn -> Picsello.EmailPresets.for(job) end)
 
   defp assign_presets(socket), do: socket
-
-  defp labeled_input(assigns) do
-    IO.inspect(assigns)
-    ~H"""
-      <div class="flex flex-row pt-5 input-label">
-          <span class="font-bold"><%= @label %>: </span><span class="italic font-light">(semicolon separated to add more emails)</span>
-          <.icon_button class="ml-4 bg-white border-red-sales-300 right-0.5" color="red-sales-300" icon="trash" phx-click="remove-#{@label}" phx-target={@myself}/>
-      </div>
-      <input type="text" class="w-full text-input" id="input-#{@label}" name={String.upcase(@label)} />
-    """
-  end
 
   defp search_clients(assigns) do
     ~H"""
