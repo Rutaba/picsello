@@ -293,7 +293,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   defp invoice_disabled?(_proposal, _stripe_status), do: true
 
-  defp open_compose(%{assigns: %{organization: %{name: organization_name}, job: job}} = socket),
+  defp open_compose(%{assigns: %{current_user: current_user, organization: %{name: organization_name}, job: job}} = socket),
     do:
       socket
       |> PicselloWeb.ClientMessageComponent.open(%{
@@ -303,7 +303,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         subject: "#{Job.name(job)} proposal",
         presets: [],
         send_button: "Send",
-        client: Job.client(job)
+        client: Job.client(job),
+        current_user: current_user
       })
       |> noreply()
 

@@ -4,24 +4,29 @@ defmodule PicselloWeb.ClientMessageComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
 
-  alias Picsello.{Job}
+  alias Picsello.{Job, Clients}
 
   @default_assigns %{
     composed_event: :message_composed,
     modal_title: "Send an email",
     send_button: "Send Email",
     show_cc: false,
+    show_bcc: false,
     show_client_email: true,
     show_subject: true,
     current_user: nil,
     enable_size: false,
-    enable_image: false
+    enable_image: false,
   }
 
   @impl true
-  def update(assigns, socket) do
+  def update(%{current_user: current_user} = assigns, socket) do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
+    |> assign(:clients, Clients.find_all_by(user: current_user))
+    |> assign(:search_results, [])
+    |> assign(:search_phrase, nil)
+    |> assign(:current_focus, -1)
     |> assign_new(:changeset, fn ->
       assigns
       |> Map.take([:subject, :body_text, :body_html])
@@ -43,13 +48,34 @@ defmodule PicselloWeb.ClientMessageComponent do
     ~H"""
     <div class="modal">
       <.close_x />
-      <h1 class="text-3xl font-bold"><%= @modal_title %></h1>
+      <h1 class="text-3xl"><%= @modal_title %></h1>
       <%= if @show_client_email do %>
         <div class="pt-5 input-label">
-          Client's email
+          <span class="font-bold">To: </span><span class="italic font-light">(semicolon separated to add more emails)</span>
         </div>
-        <div class="relative text-input text-base-250">
-          <%= if @client, do: @client.email, else: client_email(@job) %>
+        <div class="flex flex-col justify-between">
+          <div class="text-input w-auto md:w-2/3 w-full text-base-250">
+            <%= if @client, do: @client.email, else: client_email(@job) %>
+          </div>
+          <.search_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
+        </div>
+          <%= if @cc do %>
+            <.labeled_input label="cc" myself={@myself} />
+          <% end %>
+          <%= if @bcc do %>
+            <.labeled_input label="bcc" myself={@myself}/>
+          <% end %>
+          <div class="flex flex-row">
+          <%= if !@cc do %>
+            <.icon_button class="py-1 px-4 mt-4 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add CC" phx-click="add-cc" phx-target={@myself} color="blue-planning-300" icon="plus">
+              Add CC
+            </.icon_button>
+          <% end %>
+          <%= if !@bcc do %>
+            <.icon_button class="py-1 px-4 mt-4 ml-2 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add BCC" phx-click="add-bcc" phx-target={@myself} color="blue-planning-300" icon="plus">
+              Add BCC
+            </.icon_button>
+          <% end %>
         </div>
       <% end %>
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
@@ -72,6 +98,34 @@ defmodule PicselloWeb.ClientMessageComponent do
       </.form>
     </div>
     """
+  end
+
+  @impl true
+  def handle_event("add-cc", _, socket) do
+    socket
+    |> assign(:show_cc, true)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("add-bcc", _, socket) do
+    socket
+    |> assign(:show_bcc, true)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("remove-cc", _, socket) do
+    socket
+    |> assign(:show_cc, false)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("remove-bcc", _, socket) do
+    socket
+    |> assign(:show_bcc, false)
+    |> noreply()
   end
 
   @impl true
@@ -165,4 +219,60 @@ defmodule PicselloWeb.ClientMessageComponent do
     do: assign_new(socket, :presets, fn -> Picsello.EmailPresets.for(job) end)
 
   defp assign_presets(socket), do: socket
+
+  defp labeled_input(assigns) do
+    IO.inspect(assigns)
+    ~H"""
+      <div class="flex flex-row pt-5 input-label">
+          <span class="font-bold"><%= @label %>: </span><span class="italic font-light">(semicolon separated to add more emails)</span>
+          <.icon_button class="ml-4 bg-white border-red-sales-300 right-0.5" color="red-sales-300" icon="trash" phx-click="remove-#{@label}" phx-target={@myself}/>
+      </div>
+      <input type="text" class="w-full text-input" id="input-#{@label}" name={String.upcase(@label)} />
+    """
+  end
+
+  defp search_clients(assigns) do
+    ~H"""
+      <%= form_tag("#", [phx_change: :search, phx_submit: :submit, phx_target: @myself]) do %>
+        <div class="flex flex-col justify-between items-center px-1.5 md:flex-row">
+          <div class="relative flex md:w-full">
+            <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+              <%= if Enum.any?(@search_results) do %>
+                <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
+                  <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
+                </span>
+              <% else %>
+                <.icon name="search" class="w-4 ml-1 fill-current" />
+              <% end %>
+            </a>
+            <input disabled={false} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients to add to email..." />
+            <%= if Enum.any?(@search_results) do %>
+              <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
+                <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
+                  <%= for {search_result, idx} <- Enum.with_index(@search_results) do %>
+                    <div class={"flex items-center cursor-pointer p-2"} phx-click="pick" phx-target={@myself} phx-value-client_id={"#{search_result.id}"}>
+                      <%= radio_button(:search_radio, :name, search_result.name, checked: idx == @current_focus, class: "mr-5 w-5 h-5 radio") %>
+                      <div>
+                        <p><%= search_result.name %></p>
+                        <p class="text-sm"><%= search_result.email %></p>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% else %>
+              <%= if @search_phrase && @search_phrase !== "" && Enum.empty?(@search_results) do %>
+                <div class="absolute top-14 w-full">
+                  <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 cursor-pointer shadow py-2 px-2 bg-white">
+                    <p class="font-bold">No client found with that information</p>
+                    <p>You'll need to add a new client</p>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    """
+  end
 end

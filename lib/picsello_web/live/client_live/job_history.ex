@@ -238,7 +238,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
     |> noreply()
   end
 
-  defp open_compose(%{assigns: %{job: job}} = socket),
+  defp open_compose(%{assigns: %{job: job, current_user: current_user}} = socket),
     do:
       socket
       |> ClientMessageComponent.open(%{
@@ -247,7 +247,8 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
         show_subject: true,
         presets: [],
         send_button: "Send",
-        client: Job.client(job)
+        client: Job.client(job),
+        current_user: current_user
       })
       |> noreply()
 
