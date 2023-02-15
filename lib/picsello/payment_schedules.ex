@@ -13,7 +13,7 @@ defmodule Picsello.PaymentSchedules do
     Notifiers.ClientNotifier,
     BookingProposal,
     Client,
-    Shoot,
+    Shoot
   }
 
   @zero_price ~M[0]USD
@@ -230,7 +230,7 @@ defmodule Picsello.PaymentSchedules do
     |> Map.get(:payment_schedules)
     |> set_payment_schedules_order()
   end
-  
+
   def set_payment_schedules_order(%{payment_schedules: payment_schedules} = job) do
     payment_schedules = set_payment_schedules_order(payment_schedules)
     Map.put(job, :payment_schedules, payment_schedules)
@@ -238,6 +238,7 @@ defmodule Picsello.PaymentSchedules do
 
   def set_payment_schedules_order(payment_schedules) do
     index = payment_schedules |> Enum.find_index(&String.contains?(&1.description, "To Book"))
+
     if is_nil(index) do
       payment_schedules
     else

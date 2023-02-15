@@ -4,8 +4,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   require Logger
   alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules, Messages}
   alias PicselloWeb.BookingProposalLive.ScheduleComponent
-  
+
   import Picsello.PaymentSchedules, only: [set_payment_schedules_order: 1]
+
   import PicselloWeb.Live.Profile.Shared,
     only: [
       assign_organization: 2,
@@ -385,11 +386,15 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     )
   end
 
-  defp reorder_payment_schedules(%{assigns: %{job: %{payment_schedules: payment_schedules} = job}} = socket) do
+  defp reorder_payment_schedules(
+         %{assigns: %{job: %{payment_schedules: payment_schedules} = job}} = socket
+       ) do
     payment_schedules = set_payment_schedules_order(payment_schedules)
+
     socket
     |> assign(:job, Map.put(job, :payment_schedules, payment_schedules))
   end
+
   defp reorder_payment_schedules(socket), do: socket
 
   defp pending_amount_details(job),
