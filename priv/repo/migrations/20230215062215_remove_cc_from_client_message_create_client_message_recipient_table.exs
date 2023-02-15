@@ -6,12 +6,14 @@ defmodule Picsello.Repo.Migrations.RemoveCCFromClientMessageCreateClientMessageR
 
   def up do
     create table(@table) do
-      add(:client_id, references(:clients))
-      add(:client_message_id, references(:client_messages))
-      add(:recipient_type, :string)
+      add(:client_id, references(:clients, on_delete: :nothing), null: false)
+      add(:client_message_id, references(:client_messages, on_delete: :nothing), null: false)
+      add(:recipient_type, :string, null: false)
 
       timestamps()
     end
+
+    create(index(@table, [:client_id, :client_message_id], unique: true))
 
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     client_messages = Repo.all(ClientMessage) |> Repo.preload([:client, :job])
@@ -34,7 +36,6 @@ defmodule Picsello.Repo.Migrations.RemoveCCFromClientMessageCreateClientMessageR
     alter table(:client_messages) do
       add(:cc_email, :string, null: true)
       add(:client_id, references(:clients))
-      remove(:recipient_type, :string)
     end
 
     drop table(@table)
