@@ -2,13 +2,12 @@ defmodule Picsello.ClientMessage do
   @moduledoc false
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Job, Client}
+  alias Picsello.Job
 
   schema "client_messages" do
+    belongs_to(:job, Job)
+    has_many(:clients, through: [:client_message_recipients, :client])
     field(:subject, :string)
-    field(:to_email, {:array, :string})
-    field(:cc_email, {:array, :string})
-    field(:bcc_email, {:array, :string})
     field(:body_text, :string)
     field(:body_html, :string)
     field(:scheduled, :boolean)
@@ -24,7 +23,7 @@ defmodule Picsello.ClientMessage do
 
   def create_outbound_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:subject, :body_text, :body_html, :to_email, :cc_email, :bcc_email, :client_id])
+    |> cast(attrs, [:subject, :body_text, :body_html, :to_email, :cc_email, :bcc_email])
     |> validate_required([:subject, :body_text, :to_email])
     |> validate_email_format(:to_email)
     |> validate_email_format(:cc_email)
@@ -35,24 +34,15 @@ defmodule Picsello.ClientMessage do
 
   def create_inbound_changeset(attrs, required_fields \\ []) do
     %__MODULE__{}
-    |> cast(attrs, [:body_text, :body_html, :job_id, :client_id, :subject])
-    |> then(fn changeset -> 
-      if Enum.any?(required_fields) do
-        changeset
-        |> validate_required(required_fields)  
-      else
-        changeset
-      end
-     end)
+    |> cast(attrs, [:body_text, :body_html, :job_id, :subject])
+    |> validate_required([:subject, :body_text, :body_text, :job_id])
     |> put_change(:outbound, false)
   end
 
   defp validate_email_format(changeset, field) do
-    Enum.map(field, fn email ->
-      changeset
-      |> validate_format(email, Picsello.Accounts.User.email_regex(), message: "is invalid")
-      |> validate_length(email, max: 160)
-    end)
+    changeset
+    |> validate_format(field, Picsello.Accounts.User.email_regex(), message: "is invalid")
+    |> validate_length(field, max: 160)
   end
 
   def unread_messages(jobs_query) do
