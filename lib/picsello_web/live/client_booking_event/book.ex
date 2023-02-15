@@ -3,6 +3,8 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
   use PicselloWeb, live_view: [layout: "live_client"]
   alias Picsello.{BookingEvents, BookingEvent}
 
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
+
   import PicselloWeb.Live.Profile.Shared,
     only: [
       assign_organization_by_slug_on_profile_disabled: 2,
@@ -170,7 +172,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     booking_event
     |> Map.get(:dates)
     |> Enum.map(& &1.date)
-    |> Enum.sort()
+    |> Enum.sort_by(& &1, Date)
     |> Enum.filter(fn date ->
       Date.compare(date, Date.utc_today()) != :lt
     end)
@@ -187,7 +189,4 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     times = BookingEvents.available_times(booking_event, booking.date)
     socket |> assign(available_times: times)
   end
-
-  def current(%{source: changeset}), do: current(changeset)
-  def current(changeset), do: Ecto.Changeset.apply_changes(changeset)
 end

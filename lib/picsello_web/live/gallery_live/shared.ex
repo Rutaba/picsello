@@ -318,7 +318,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def expired_at(organization_id) do
     gs = GlobalSettings.get(organization_id)
-    gs && Timex.shift(DateTime.utc_now(), days: gs.expiration_days)
+    gs && gs.expiration_days && Timex.shift(DateTime.utc_now(), days: gs.expiration_days)
   end
 
   def make_opts(

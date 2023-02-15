@@ -14,23 +14,24 @@ defmodule PicselloWeb.HomeLive.Shared do
     Accounts,
     Shoot,
     Accounts.User,
+    ClientMessage,
     Subscriptions,
     Orders,
     Galleries,
     OrganizationCard,
     Utils,
-    ClientMessage,
+    Onboardings,
     Clients,
     Subscriptions
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
 
+  import PicselloWeb.Gettext, only: [ngettext: 3]
+  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
+  import Ecto.Query
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  import Ecto.Query
-  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
-  import PicselloWeb.Gettext, only: [ngettext: 3]
 
   @card_concise_name_list [
     "send-confirmation-email",
@@ -57,6 +58,13 @@ defmodule PicselloWeb.HomeLive.Shared do
   end
 
   def handle_params(_params, _uri, socket), do: socket |> noreply()
+
+  def handle_event("open-welcome-modal", %{}, %{assigns: %{current_user: current_user}} = socket) do
+    socket
+    |> assign(:current_user, Onboardings.increase_welcome_count!(current_user))
+    |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
+    |> noreply()
+  end
 
   def handle_event("create-lead", %{}, %{assigns: %{current_user: current_user}} = socket),
     do:
@@ -86,6 +94,24 @@ defmodule PicselloWeb.HomeLive.Shared do
     do:
       socket
       |> push_redirect(to: Routes.user_settings_path(socket, :edit))
+      |> noreply()
+
+  def handle_event("questionnaires", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.questionnaires_index_path(socket, :index))
+      |> noreply()
+
+  def handle_event("clients", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.clients_path(socket, :index))
+      |> noreply()
+
+  def handle_event("global-gallery-settings", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.gallery_global_settings_index_path(socket, :edit))
       |> noreply()
 
   def handle_event(
@@ -439,15 +465,12 @@ defmodule PicselloWeb.HomeLive.Shared do
           <%= if @badge > 0, do: @badge %>
         </div>
       <% end %>
-
       <div class={"border hover:border-#{@color} h-full rounded-lg bg-#{@color} overflow-hidden"}>
         <div class="h-full p-5 ml-3 bg-white">
             <h1 class="text-lg font-bold">
             <.icon name={@icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current text-#{@color}"} />
-
             <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
           </h1>
-
           <%= render_block(@inner_block) %>
         </div>
       </div>
@@ -461,7 +484,6 @@ defmodule PicselloWeb.HomeLive.Shared do
       <div class="rounded-lg modal sm:max-w-4xl">
         <h1 class="text-3xl font-semibold">Your plan has expired</h1>
         <p class="pt-4">To recover access to <span class="italic">integrated email marketing, easy invoicing, all of your client galleries</span> and much more, please select a plan. Contact us if you have issues.</p>
-
         <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           <%= for {subscription_plan, i} <- Subscriptions.subscription_plans() |> Enum.with_index() do %>
             <div class="flex items-center justify-between p-4 border rounded-lg">
@@ -472,7 +494,6 @@ defmodule PicselloWeb.HomeLive.Shared do
             </div>
           <% end %>
         </div>
-
         <div class="flex mt-6">
           <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline ml-auto") %>
         </div>

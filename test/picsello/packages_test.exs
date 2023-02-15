@@ -1,7 +1,7 @@
 defmodule Picsello.PackagesTest do
   use Picsello.DataCase, async: true
 
-  alias Picsello.{Repo, Packages, Packages.Download}
+  alias Picsello.{Repo, Packages, Packages.Download, OrganizationJobType}
   import Money.Sigils
 
   @default_each_price Download.default_each_price()
@@ -66,7 +66,25 @@ defmodule Picsello.PackagesTest do
 
   describe "create_initial" do
     test "finds price matching experience, time, and type" do
-      organization = insert(:organization, profile: %{job_types: ["wedding", "event"]})
+      organization = insert(:organization)
+
+      organization
+      |> Repo.preload(:organization_job_types)
+      |> Ecto.Changeset.change(
+        organization_job_types: [
+          %OrganizationJobType{
+            job_type: "event",
+            show_on_business?: true,
+            show_on_profile?: true
+          },
+          %OrganizationJobType{
+            job_type: "wedding",
+            show_on_business?: true,
+            show_on_profile?: true
+          }
+        ]
+      )
+      |> Repo.update!()
 
       user =
         insert(:user,

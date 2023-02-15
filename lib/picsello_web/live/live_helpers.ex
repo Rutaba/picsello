@@ -388,7 +388,7 @@ defmodule PicselloWeb.LiveHelpers do
     ~H"""
     <div class={"grid grid-cols-1 md:grid-cols-2 md:gap-20 gap-8 items-center md:pb-0 pb-8 relative #{@wrapper_class}"}>
       <%= if @close_event do %>
-      <button class="w-10 h-10 absolute right-3 top-3 bg-gray-100 p-3 border-transparent hover:border-blue-planning-300/60 focus:ring-blue-planning-300/70 focus:ring-opacity-75 rounded-lg cursor-pointer transition-colors" phx-click={@close_event}>
+      <button {testid("intro-state-close-button")} class="w-8 h-8 xs:w-10 xs:h-10 z-10 absolute right-5 top-5 xs:right-3 xs:top-3 bg-gray-200 xs:bg-gray-100 p-2 xs:p-3 border-transparent hover:border-blue-planning-300/60 focus:ring-blue-planning-300/70 focus:ring-opacity-75 rounded-lg cursor-pointer transition-colors" phx-click={@close_event} title="dismiss intro">
         <.icon name="close-x" class="h-full w-full stroke-current stroke-3" />
       </button>
       <% end %>
@@ -397,7 +397,7 @@ defmodule PicselloWeb.LiveHelpers do
         <div style={"position: relative; padding-bottom: #{@third_party_padding}; height: 0;"} class="shadow-xl rounded">
           <iframe src={@tour_embed} frameborder="0" loading="lazy" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
         </div>
-        <h6 class="uppercase text-base-250 text-center mt-4 text-xs tracking-widest"><%= @eyebrow_text %></h6>
+        <h6 class="uppercase text-base-250 text-center my-4 text-xs tracking-widest"><%= @eyebrow_text %></h6>
       </div>
       <div class="md:max-w-md">
         <h1 class="text-5xl font-bold mb-4"><%= @headline %></h1>

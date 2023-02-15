@@ -4,7 +4,7 @@
     <h1 class="text-4xl font-bold center-container">Clients</h1>
 
       <p class="max-w-2xl my-2 text-base-250">
-        Welcome to your client overview! Here you can see all your clients in one view, search, sort and add new ones. You can also easily take “action” by sending an email, creating a gallery and more! Be sure to take advantage of tags - little notes that will help you sort and remember client details.
+        Welcome to your client overview! <.intro_hint content="<a href='https://support.picsello.com/article/146-client-overview-and-tagging' target='_blank' rel='noreferrer'>Check out this support article to learn more</a>" class="ml-1" /> Here you can see all your clients in one view, search, sort and add new ones. You can also easily take “action” by sending an email, creating a gallery and more! Be sure to take advantage of tags - little notes that will help you sort and remember client details. <a href="https://support.picsello.com/article/147-client-tagging" target="_blank" rel="noreferrer" class="underline text-blue-planning-300">Learn more about tagging here</a>.
       </p>
     </div>
 
@@ -63,7 +63,7 @@
         <div class="sm:col-span-2">Tags</div>
       </div>
       <%= for client <- @clients do %>
-        <div class="grid sm:grid-cols-7 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
+        <div {testid("client-row")} class="grid sm:grid-cols-7 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
           <div phx-click="edit-client" phx-value-id={client.id} class="flex flex-col text-blue-planning-300 underline hover:cursor-pointer">
             <p><%= client.name || "-" %></p>
           </div>

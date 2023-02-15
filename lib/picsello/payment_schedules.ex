@@ -13,7 +13,7 @@ defmodule Picsello.PaymentSchedules do
     Notifiers.ClientNotifier,
     BookingProposal,
     Client,
-    Shoot
+    Shoot,
   }
 
   @zero_price ~M[0]USD
@@ -228,6 +228,22 @@ defmodule Picsello.PaymentSchedules do
   def payment_schedules(job) do
     Repo.preload(job, [:payment_schedules])
     |> Map.get(:payment_schedules)
+    |> set_payment_schedules_order()
+  end
+  
+  def set_payment_schedules_order(%{payment_schedules: payment_schedules} = job) do
+    payment_schedules = set_payment_schedules_order(payment_schedules)
+    Map.put(job, :payment_schedules, payment_schedules)
+  end
+
+  def set_payment_schedules_order(payment_schedules) do
+    index = payment_schedules |> Enum.find_index(&String.contains?(&1.description, "To Book"))
+    if is_nil(index) do
+      payment_schedules
+    else
+      {first, remaining} = payment_schedules |> List.pop_at(index)
+      [first] ++ remaining
+    end
   end
 
   def get_offline_payment_schedules(job_id) do
@@ -299,6 +315,7 @@ defmodule Picsello.PaymentSchedules do
       client_reference_id: "proposal_#{proposal.id}",
       cancel_url: Keyword.get(opts, :cancel_url),
       success_url: Keyword.get(opts, :success_url),
+      billing_address_collection: "auto",
       customer: customer_id(client),
       customer_update: %{
         address: "auto"

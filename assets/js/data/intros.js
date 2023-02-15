@@ -187,36 +187,6 @@ export default {
       },
     ].filter((obj) => obj?.element),
   }),
-  intro_settings_packages: (el) => ({
-    showBullets: true,
-    steps: [
-      {
-        title: 'Package Templates',
-        intro: 'View preset packages or create your own.',
-        position: 'bottom-middle-aligned',
-        element: el.querySelector('#intro_settings_packages h1'),
-      },
-      {
-        title: 'Need help with pricing?',
-        intro:
-          'We’ve created a handy Smart Profit Calculator to help you charge more and factor in business costs you may not think you have.',
-        position: 'bottom-middle-aligned',
-        element: el.querySelector('#intro_settings_packages .intro-calculator'),
-      },
-    ].filter((obj) => obj?.element),
-  }),
-  intro_settings_pricing: (el) => ({
-    showBullets: false,
-    steps: [
-      {
-        title: 'Gallery Store Pricing',
-        intro:
-          'Bulk-edit your gallery offerings, or review your gallery pricing at-a-glance, with access to all your gallery pricing in one place.',
-        position: 'bottom-middle-aligned',
-        element: el.querySelector('#intro_settings_pricing h1'),
-      },
-    ].filter((obj) => obj?.element),
-  }),
   intro_settings_public_profile: (el) => ({
     showBullets: true,
     steps: [

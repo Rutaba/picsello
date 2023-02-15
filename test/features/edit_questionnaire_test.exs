@@ -97,7 +97,8 @@ defmodule Picsello.EditQuestionnaireTest do
   feature "user creates new questionnaire", %{session: session} do
     session
     |> visit("/questionnaires")
-    |> click(button("Create Questionnaire"))
+    |> click(button("dismiss intro"))
+    |> click(button("Create questionnaire"))
     |> assert_text("Add questionnaire")
     |> within_modal(fn modal ->
       modal
@@ -107,7 +108,7 @@ defmodule Picsello.EditQuestionnaireTest do
           |> Element.clear()
           |> Element.fill_in(with: "My Favorite Questionnaire"))
       )
-      |> click(css("label", text: "Event"))
+      |> click(css("label", text: "Other", count: 2, at: 1))
       |> scroll_into_view(testid("add-question"))
       |> click(button("Add question"))
       |> scroll_into_view(testid("question-0"))
@@ -197,6 +198,7 @@ defmodule Picsello.EditQuestionnaireTest do
     } do
       session
       |> visit("/questionnaires")
+      |> click(button("dismiss intro"))
       |> click(button("Custom Other Questionnaire"))
       |> assert_text("Edit questionnaire")
       |> within_modal(fn modal ->
@@ -207,7 +209,7 @@ defmodule Picsello.EditQuestionnaireTest do
             |> Element.clear()
             |> Element.fill_in(with: "My Favorite Questionnaire"))
         )
-        |> click(css("label", text: "Event"))
+        |> click(css("label", text: "Other", count: 2, at: 1))
         |> scroll_into_view(testid("add-question"))
         |> click(button("Add question"))
         |> assert_text("Question 2")

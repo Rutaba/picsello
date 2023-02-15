@@ -9,11 +9,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
       insert(:user,
         organization: %{
           name: "Mary Jane Photography",
-          slug: "mary-jane-photos",
-          profile: %{
-            color: color,
-            job_types: ~w(portrait event)
-          }
+          slug: "mary-jane-photos"
         }
       )
       |> onboard!
@@ -38,36 +34,14 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_text("Mary Jane Photography")
     |> assert_text("SPECIALIZING IN:")
-    |> assert_text("Portrait")
+    |> assert_text("Wedding")
     |> assert_text("Event")
-    |> assert_has(radio_button("Portrait", visible: false))
+    |> assert_has(radio_button("Wedding", visible: false))
     |> assert_has(radio_button("Event", visible: false))
     |> assert_has(link("See our full portfolio"))
     |> assert_has(css("a[href*='/photographer/mary-jane-photos']", text: "View"))
     |> click(button("Close"))
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :index))
-  end
-
-  feature "user edits job types", %{session: session} do
-    session
-    |> assert_has(link("Settings"))
-    |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
-    |> assert_text("SPECIALIZING IN:")
-    |> assert_has(testid("job-type", count: 2))
-    |> assert_has(testid("job-type", text: "Portrait"))
-    |> assert_has(testid("job-type", text: "Event"))
-    |> assert_has(css("#portrait", text: "Portrait"))
-    |> refute_has(css("#family", text: "Family"))
-    |> scroll_into_view(testid("edit-photography-types-button"))
-    |> click(button("Edit Photography Types"))
-    |> within_modal(&click(&1, css("label", text: "Event")))
-    |> within_modal(&click(&1, css("label", text: "Family")))
-    |> click(button("Save"))
-    |> assert_has(testid("job-type", count: 2))
-    |> assert_has(testid("job-type", text: "Portrait"))
-    |> assert_has(testid("job-type", text: "Family"))
-    |> scroll_into_view(css("#portrait"))
-    |> assert_has(css("#portrait", text: "Portrait"))
   end
 
   feature "user edits website", %{session: session} do
@@ -106,11 +80,11 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(link("Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_text("SPECIALIZING IN:")
-    |> scroll_into_view(testid("edit-job_types_description-button"))
-    |> click(testid("edit-job_types_description-button"))
+    |> scroll_into_view(testid("edit-description-button"))
+    |> click(testid("edit-description-button"))
     |> assert_has(css("div.ql-editor[data-placeholder='Start typing…']"))
     |> fill_in_quill("my description")
     |> click(button("Save"))
-    |> assert_has(testid("job_types_description", text: "my description"))
+    |> assert_has(testid("description", text: "my description"))
   end
 end

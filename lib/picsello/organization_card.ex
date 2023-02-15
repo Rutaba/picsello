@@ -4,7 +4,7 @@ defmodule Picsello.OrganizationCard do
   alias Picsello.{Card, Organization, OrganizationCard, Cart.Order, Repo}
 
   import Ecto.Changeset
-  import Ecto.Query, only: [from: 2]
+  import Ecto.Query, only: [from: 2, where: 3]
 
   schema "organization_cards" do
     field :status, Ecto.Enum, values: [:active, :viewed, :inactive]
@@ -33,8 +33,7 @@ defmodule Picsello.OrganizationCard do
 
   def for_new_changeset() do
     for %{concise_name: concise_name, id: id} <- Repo.all(Card),
-        concise_name != "proofing-album-order",
-        concise_name != "black-friday" do
+        concise_name != "proofing-album-order" do
       %{
         card_id: id,
         status: "active"
@@ -71,11 +70,32 @@ defmodule Picsello.OrganizationCard do
   end
 
   def list(organization_id) when is_integer(organization_id) do
-    from(org_card in OrganizationCard,
-      where:
-        (org_card.organization_id == ^organization_id and org_card.status != :inactive) or
-          is_nil(org_card.organization_id),
-      preload: [:card]
+    admin_panel_cards =
+      from(org_card in OrganizationCard,
+        where: is_nil(org_card.organization_id),
+        preload: [:card]
+      )
+      |> Repo.all()
+
+    # Check if is_nil(organization_id) cards from admin panel
+    # are in the organization_cards table if not
+    # add them so the user can dismiss the cards
+    Enum.each(admin_panel_cards, fn %{card_id: card_id} ->
+      if org_has_card?(organization_id, card_id) |> is_nil() do
+        Repo.insert(
+          changeset(%__MODULE__{}, %{
+            status: "active",
+            card_id: card_id,
+            organization_id: organization_id
+          })
+        )
+      end
+    end)
+
+    all_active_org_cards(organization_id)
+    |> where(
+      [org_card],
+      org_card.status != :inactive
     )
     |> Repo.all()
   end
@@ -91,5 +111,22 @@ defmodule Picsello.OrganizationCard do
     |> Repo.get(organization_card_id)
     |> changeset(%{status: status})
     |> Repo.update!()
+  end
+
+  defp org_has_card?(organization_id, card_id) do
+    all_active_org_cards(organization_id)
+    |> where(
+      [org_card],
+      org_card.card_id ==
+        ^card_id
+    )
+    |> Repo.one()
+  end
+
+  defp all_active_org_cards(organization_id) do
+    from(org_card in OrganizationCard,
+      where: org_card.organization_id == ^organization_id,
+      preload: [:card]
+    )
   end
 end

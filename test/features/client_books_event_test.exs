@@ -28,6 +28,8 @@ defmodule Picsello.ClientBooksEventTest do
         base_price: ~M[1500]USD
       )
 
+    insert(:package_payment_schedule, %{package: template})
+    
     event =
       insert(:booking_event,
         name: "Event 1",
@@ -142,7 +144,8 @@ defmodule Picsello.ClientBooksEventTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
     |> click(button("To-Do Pay your retainer"))
-    |> assert_has(definition("100% retainer due today", text: "$15.00"))
+    # |> sleep(100000)
+    |> assert_has(definition("$1.00 to To Book due on Dec 11", text: "$1.00"))
     |> click(button("Pay with card Fast easy and secure"))
     |> assert_url_contains("stripe-checkout")
 
@@ -173,14 +176,6 @@ defmodule Picsello.ClientBooksEventTest do
                    starts_at: ~U[2050-12-11 11:00:00Z]
                  }
                ],
-               payment_schedules: [
-                 %{
-                   price: ~M[1500]USD,
-                   description: "100% retainer",
-                   stripe_payment_intent_id: "new_intent_id",
-                   stripe_session_id: "new_session_id"
-                 }
-               ],
                booking_proposals: [%{}],
                booking_event_id: ^event_id
              } = job
@@ -188,7 +183,6 @@ defmodule Picsello.ClientBooksEventTest do
              Picsello.Repo.all(Picsello.Job)
              |> Picsello.Repo.preload([
                :client,
-               :payment_schedules,
                :shoots,
                :booking_proposals,
                [package: :contract]

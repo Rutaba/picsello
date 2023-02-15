@@ -47,8 +47,7 @@ defmodule Picsello.Profiles do
     @primary_key false
     embedded_schema do
       field(:is_enabled, :boolean, default: true)
-      field(:color, :string, default: @default_color)
-      field(:job_types, {:array, :string})
+      field(:color, :string)
       field(:description, :string)
       field(:job_types_description, :string)
 
@@ -62,11 +61,10 @@ defmodule Picsello.Profiles do
       profile
       |> cast(
         attrs,
-        ~w[color job_types description job_types_description]a
+        ~w[color description job_types_description]a
       )
       |> cast_embed(:logo)
       |> cast_embed(:main_image)
-      |> prepare_changes(&clean_job_types/1)
     end
 
     def url_validation_errors(url) do
@@ -86,12 +84,6 @@ defmodule Picsello.Profiles do
         %{scheme: _scheme} ->
           ["is invalid"]
       end
-    end
-
-    defp clean_job_types(changeset) do
-      update_change(changeset, :job_types, fn
-        list -> list |> Enum.filter(&(&1 != "")) |> Enum.uniq() |> Enum.sort()
-      end)
     end
   end
 
@@ -228,7 +220,7 @@ defmodule Picsello.Profiles do
           ^slug
         ),
       limit: 1,
-      preload: [:user]
+      preload: [:user, :organization_job_types]
     )
     |> Repo.one!()
     |> Repo.preload(brand_links: from(bl in BrandLink, where: bl.link_id == "website"))
@@ -254,7 +246,7 @@ defmodule Picsello.Profiles do
           ^slug
         ),
       limit: 1,
-      preload: [:user]
+      preload: [:user, :organization_job_types]
     )
     |> Repo.one!()
     |> Repo.preload(brand_links: from(bl in BrandLink, where: bl.link_id == "website"))
@@ -264,7 +256,10 @@ defmodule Picsello.Profiles do
     user
     |> Repo.preload(organization: :user)
     |> Map.get(:organization)
-    |> Repo.preload(brand_links: from(bl in BrandLink, where: bl.link_id == "website"))
+    |> Repo.preload([
+      :organization_job_types,
+      brand_links: from(bl in BrandLink, where: bl.link_id == "website")
+    ])
   end
 
   def get_brand_links_by_organization(organization),
@@ -415,6 +410,20 @@ defmodule Picsello.Profiles do
       %{profile: %{logo: %{url: "" <> url}}} -> url
       _ -> nil
     end
+  end
+
+  def enabled_job_types(organization_job_types) do
+    organization_job_types
+    |> Enum.filter(fn job_type -> job_type.show_on_business? end)
+    |> Enum.map(& &1.job_type)
+  end
+
+  def public_job_types(organization_job_types) do
+    organization_job_types
+    |> Enum.filter(fn job_type ->
+      job_type.show_on_business? and job_type.show_on_profile?
+    end)
+    |> Enum.map(& &1.job_type)
   end
 
   defp to_filename(organization, %{client_type: content_type} = image, name),

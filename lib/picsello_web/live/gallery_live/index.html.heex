@@ -6,40 +6,35 @@
           Your <%= action_name(@live_action, :plural) %>
         </h1>
       </div>
-      <%= if Enum.any?(@galleries)do %>
-          <div class="gap-2 fixed bottom-0 left-0 right-0 z-20 md:bg-none bg-white flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto cursor-pointer">
-            <a id="gallery-settings" class="w-full md:w-auto btn-tertiary text-center lg:flex items-center p-3 text-blue-planning-300" data-phx-link="redirect" data-phx-link-state="push" href="/galleries/settings" title="Settings">
-              <.icon name="gear" class="inline-block w-6 h-6 mr-2 text-blue-planning-300"/>
-              Settings
-            </a>
-            <a {testid("create-a-gallery")} title="Create a gallery" class="w-full md:w-auto btn-primary text-center" phx-click="create_gallery">
-              Create a gallery
-            </a>
-          </div>
-      <% end %>
-    </div>
-  </div>
-</header>
-  <%= if Enum.empty? @galleries do %>
-    <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none">
-      <div class="flex flex-col">
-        <h1 class="mt-3 mb-3 text-4xl font-bold lg:text-5xl">Oh hey!</h1>
-        <p class="block text-lg lg:text-2xl lg:w-1/2">You don't have any galleries at the moment.</p>
-      </div>
-      <div class="lg:inline-flex">
-        <a {testid("create-a-gallery")} title="Create a gallery" href="#" class="flex justify-center mt-5 text-lg px-7 btn-primary intro-galleries" phx-click="create_gallery">
+      <div class="gap-2 fixed bottom-0 left-0 right-0 z-20 md:bg-none bg-white flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto cursor-pointer">
+        <a id="gallery-settings" class="w-full md:w-auto btn-tertiary text-center lg:flex items-center p-3 text-blue-planning-300" href={Routes.gallery_global_settings_index_path(@socket, :edit)} title="Settings">
+          <.icon name="gear" class="inline-block w-6 h-6 mr-2 text-blue-planning-300"/>
+          Settings
+        </a>
+        <a {testid("create-a-gallery")} title="Create a gallery" class="w-full md:w-auto btn-primary text-center" phx-click="create_gallery">
           Create a gallery
         </a>
       </div>
     </div>
-  <% else %>
-  <div class="px-6 py-2 center-container">
     <hr class="border-base-200 my-6"/>
+  </div>
+</header>
+<%= if Enum.empty? @galleries do %>
+  <div class="px-6 py-2 center-container">
+    <.empty_state_base tour_embed="https://demo.arcade.software/FVJxmDikFo0OyhhV8raN?embed" headline="Meet Galleries" eyebrow_text="Galleries Product Tour" body="If you simply want to upload a gallery and get started selling products and digitals, this is the place for you!" third_party_padding="calc(66.66666666666666% + 41px)">
+      <a {testid("create-a-gallery")} title="Create a gallery" href="#" class="flex justify-center mt-5 text-lg px-7 btn-tertiary intro-galleries" phx-click="create_gallery">
+        Create a gallery
+      </a>
+    </.empty_state_base>
+  </div>
+<% else %>
+  <div class="px-6 py-2 center-container">
     <div class="font-bold grid md:grid-cols-2">
       <div class="lg:col-span-3 md:col-span-3 hidden md:block pl-2">Gallery Details</div>
     </div>
+    
+    <hr class="md:block border-blue-planning-300 border-2 mt-4 mb-1 hidden" />
 
-    <hr class="md:block border-blue-planning-300 border-2 mt-4 mb-1 hidden"/>
     <%= for {gallery, gallery_index} <- @galleries |> Enum.with_index() do %>
       <div {testid("galleries-#{gallery.id}")} class="md:py-0 md:mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">
         <div class="relative md:grid md:grid-cols-2 flex flex-wrap my-4 md:mx-0 mx-4">
@@ -121,5 +116,4 @@
       </button>
     </div>
   </div>
-
-  <% end %>
+<% end %>

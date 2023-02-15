@@ -31,8 +31,7 @@ defmodule PicselloWeb.Live.Calendar.Index do
       </div>
 
       <hr class="my-4 sm:my-10" />
-
-      <div phx-hook="Calendar" class="w-full" id="calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :index)}></div>
+      <div phx-hook="Calendar" phx-update="replace" class="w-full" id="calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :index)}></div>
     </div>
     """
   end

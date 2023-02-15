@@ -4,7 +4,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   require Logger
   alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules, Messages}
   alias PicselloWeb.BookingProposalLive.ScheduleComponent
-
+  
+  import Picsello.PaymentSchedules, only: [set_payment_schedules_order: 1]
   import PicselloWeb.Live.Profile.Shared,
     only: [
       assign_organization: 2,
@@ -27,6 +28,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> assign_stripe_status()
     |> maybe_confetti(params)
     |> maybe_set_booking_countdown()
+    |> reorder_payment_schedules()
     |> ok()
   end
 
@@ -81,6 +83,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       socket
       |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
       |> show_confetti_banner()
+      |> reorder_payment_schedules()
       |> noreply()
 
   @impl true
@@ -88,6 +91,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     do:
       socket
       |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
+      |> reorder_payment_schedules()
       |> PicselloWeb.ConfirmationComponent.open(%{
         title: "Session Booked",
         subtitle: "Your session is booked with an in-person cash or check payment. Thank you!",
@@ -121,6 +125,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
     socket
     |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
+    |> reorder_payment_schedules()
     |> show_confetti_banner()
     # clear the session_id param
     |> push_patch(to: stripe_redirect(socket, :path), replace: true)
@@ -219,7 +224,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
                :payment_schedules,
                :booking_event,
                :shoots,
-               package: [organization: [:user, :brand_links]]
+               package: [organization: [:user, :brand_links, :organization_job_types]]
              ]
            ]) do
       %{
@@ -379,6 +384,13 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         )
     )
   end
+
+  defp reorder_payment_schedules(%{assigns: %{job: %{payment_schedules: payment_schedules} = job}} = socket) do
+    payment_schedules = set_payment_schedules_order(payment_schedules)
+    socket
+    |> assign(:job, Map.put(job, :payment_schedules, payment_schedules))
+  end
+  defp reorder_payment_schedules(socket), do: socket
 
   defp pending_amount_details(job),
     do:

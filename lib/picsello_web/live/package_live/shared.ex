@@ -2,18 +2,105 @@ defmodule PicselloWeb.PackageLive.Shared do
   @moduledoc """
   handlers used by both package and package templates
   """
-  alias Picsello.{
-    Package
-  }
+  use Phoenix.HTML
+  use Phoenix.Component
 
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
-  use Phoenix.HTML
   import Phoenix.LiveView
   import PicselloWeb.FormHelpers
-  import PicselloWeb.LiveHelpers, only: [testid: 1]
+  import PicselloWeb.LiveHelpers
   import Phoenix.HTML.Form
   import PicselloWeb.Gettext
-  use Phoenix.Component
+
+  alias Picsello.{Package, BrandLink, OrganizationJobType}
+
+  def update(%{current_user: %{organization: organization}} = assigns, socket) do
+    socket
+    |> assign(assigns)
+    |> assign_brand_links()
+    |> assign_changeset(%{organization_id: organization.id})
+    |> ok()
+  end
+
+  def open(%{assigns: assigns} = socket, module),
+    do:
+      open_modal(
+        socket,
+        module,
+        %{assigns: assigns |> Map.drop([:flash])}
+      )
+
+  defp assign_brand_links(%{assigns: %{current_user: %{organization: organization}}} = socket) do
+    organization =
+      case organization do
+        %{brand_links: []} = organization ->
+          Map.put(organization, :brand_links, [
+            %BrandLink{
+              title: "Website",
+              link_id: "website",
+              organization_id: organization.id
+            }
+          ])
+
+        organization ->
+          organization
+      end
+
+    socket
+    |> assign(:organization, organization)
+  end
+
+  def assign_changeset(
+        socket,
+        params \\ %{},
+        action \\ :validate
+      ),
+      do:
+        assign(socket,
+          changeset: OrganizationJobType.update_changeset(params) |> Map.put(:action, action)
+        )
+
+  def handle_event(
+        "edit-job-type",
+        %{"job-type-id" => id},
+        %{assigns: %{current_user: %{organization: organization}}} = socket
+      ) do
+    org_job_type =
+      organization.organization_job_types
+      |> Enum.find(fn job_type -> job_type.id == to_integer(id) end)
+
+    changeset = OrganizationJobType.update_changeset(org_job_type, %{})
+
+    params = %{
+      checkbox_event: "visibility_for_business",
+      checkbox_event2: "visibility_for_profile",
+      checked: org_job_type.show_on_business?,
+      checked2: org_job_type.show_on_profile?,
+      confirm_event: "next",
+      confirm_label: "Save",
+      confirm_class: "btn-primary",
+      icon: org_job_type.job_type,
+      heading2: "Show photography type on your public profile and contact form?",
+      subtitle2: "Will only show if your Public Profile is enabled",
+      title: "Edit Photography Type",
+      payload: %{changeset: changeset, organization_job_type: org_job_type}
+    }
+
+    params =
+      if org_job_type.job_type != "other",
+        do:
+          params
+          |> Map.put(:heading, "Enable this for my business")
+          |> Map.put(
+            :subtitle,
+            "I would like to be able to select this when creating leads, jobs, and galleries"
+          ),
+        else: params
+
+    socket
+    |> PicselloWeb.PackageLive.ConfirmationComponent.open(params)
+    |> noreply()
+  end
 
   @spec package_card(%{
           package: %Package{}
@@ -26,45 +113,248 @@ defmodule PicselloWeb.PackageLive.Shared do
       })
 
     ~H"""
-      <div class={"flex flex-col p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group #{@class}"}>
-        <h1 class="text-2xl font-bold line-clamp-2"><%= @package.name %></h1>
+    <div class={"flex flex-col p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group #{@class}"}>
+      <h1 class="text-2xl font-bold line-clamp-2"><%= @package.name %></h1>
 
-        <div class="mb-4 relative" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="mouseover">
-          <div class="line-clamp-2 raw_html raw_html_inline">
-            <%= raw @package.description %>
+      <div class="mb-4 relative" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="mouseover">
+        <div class="line-clamp-2 raw_html raw_html_inline">
+          <%= raw @package.description %>
+        </div>
+        <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-[15]" data-offset="0" role="tooltip">
+          <div class="line-clamp-6 raw_html"></div>
+          <button class="inline-block text-blue-planning-300">View all</button>
+        </div>
+        <%= if package_description_length_long?(@package.description) do %>
+          <button class="inline-block text-blue-planning-300 view_more">View more</button>
+        <% end %>
+      </div>
+
+      <dl class="flex flex-row-reverse items-center justify-end mt-auto">
+        <.digital_detail id="package_detail" download_each_price={@package.download_each_price} download_count={@package.download_count}/>
+      </dl>
+
+      <hr class="my-4" />
+
+      <div class="flex items-center justify-between">
+        <div class="text-gray-500"><%= dyn_gettext @package.job_type %></div>
+
+        <div class="text-lg font-bold">
+          <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="text-gray-500">Download Price</div>
+
+        <div class="text-lg font-bold">
+          <%= if Money.zero?(@package.download_each_price) do %>--<% else %><%= @package.download_each_price %>/each<% end %>
+        </div>
+      </div>
+
+    </div>
+    """
+  end
+
+  @spec package_template_row(%{package: %Package{}}) :: %Phoenix.LiveView.Rendered{}
+  def package_template_row(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: nil,
+        update_mode: "ignore"
+      })
+
+    ~H"""
+    <div class="border border-solid p-4 mb-3 ml-0 md:p-0 md:mb-0 md:ml-2 md:border-0">
+      <div class="relative" {testid("package-template-card")}>
+        <div class="flex items-center">
+          <h1 title={@package.name} class="text-xl font-bold line-clamp-2 text-blue-planning-300 link hover:cursor-pointer" phx-click="edit-package" phx-value-package-id={@package.id}>
+            <%=
+              if String.length(@package.name) > 25 do
+                String.slice(@package.name, 0..25) <> "..."
+              else
+                @package.name
+              end
+            %>
+          </h1>
+          <div class="flex items-center custom-tooltip" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id}>
+            <.icon name={if @package.show_on_public_profile, do: "eye", else: "closed-eye"} class={classes("w-5 h-5 mx-2 hover:cursor-pointer", %{"text-gray-400" => !@package.show_on_public_profile, "text-blue-planning-300" => @package.show_on_public_profile})}/>
+            <span class="shadow-lg rounded-lg py-1 px-2 text-xs">
+              <%= if @package.show_on_public_profile, do: 'Shown on your Public Profile', else: 'Hidden on your Public Profile' %>
+            </span>
           </div>
-          <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-[15]" data-offset="0" role="tooltip">
-            <div class="line-clamp-6 raw_html"></div>
-            <button class="inline-block text-blue-planning-300">View all</button>
+        </div>
+        <div class="sm:flex sm:flex-row md:grid md:grid-cols-6">
+          <div class={"flex flex-col col-span-2 group #{@class}"}>
+
+
+            <div class="md:mb-4 relative" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="mouseover">
+              <div class="line-clamp-2 raw_html raw_html_inline text-base-250">
+                <%= raw @package.description %>
+              </div>
+              <div class="hidden md:block md:flex items-center">
+                <span class="line-clamp-2 w-5 h-5 mr-2 flex items-center justify-center text-xs font-bold rounded-full bg-gray-200 text-center">
+                  <%= @package.download_count %>
+                </span>
+                <span class="text-base-250">Downloadable photos</span>
+              </div>
+              <span class="hidden md:inline-block justify-start border rounded px-2 bg-blue-planning-100 text-blue-planning-300 font-bold text-xs"><%= @package.job_type %></span>
+              <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-[15]" data-offset="0" role="tooltip">
+                <div class="line-clamp-6 raw_html"></div>
+                <button class="inline-block text-blue-planning-300">View all</button>
+              </div>
+              <%= if package_description_length_long?(@package.description) do %>
+                <button class="inline-block text-blue-planning-300 view_more">View more</button>
+              <% end %>
+            </div>
           </div>
-          <%= if package_description_length_long?(@package.description) do %>
-            <button class="inline-block text-blue-planning-300 view_more">View more</button>
+
+          <div class="col-span-2">
+            <div class="flex items-center text-base-250">
+              <span class="">Package price:&nbsp;</span>
+
+              <div class="">
+                <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
+              </div>
+            </div>
+            <div class="flex items-center text-base-250">
+              <div class="">Digital image price:&nbsp;</div>
+
+              <div class="">
+                <%= if Money.zero?(@package.download_each_price) do %>--<% else %><%= @package.download_each_price %>/each<% end %>
+              </div>
+            </div>
+          </div>
+
+          <div class="block md:hidden flex items-center">
+            <span class="line-clamp-2 w-5 h-5 mr-2 flex items-center justify-center text-xs font-bold rounded-full bg-gray-200 text-center">
+              <%= @package.download_count %>
+            </span>
+            <span class="text-base-250">Downloadable photos</span>
+          </div>
+          <span class="inline-block md:hidden justify-start border rounded px-2 bg-blue-planning-100 text-blue-planning-300 font-bold text-xs"><%= @package.job_type %></span>
+
+          <div class="absolute top-0 right-0 block md:hidden ml-16 md:ml-2" phx-update={@update_mode} data-offset="0" id={"menu-btn-#{@package.id}"} phx-hook="Select">
+            <button {testid("menu-btn-#{@package.id}")} title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+              <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+
+              <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+            </button>
+
+            <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content w-64">
+              <%= if !@package.archived_at do %>
+                <button title="Edit" type="button" phx-click="edit-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                  <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                  Edit
+                </button>
+
+                <button title="Duplicate" type="button" phx-click="duplicate-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                  <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                  Duplicate
+                </button>
+
+                <button title="Visibility" type="button" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                  <.icon name={if @package.show_on_public_profile, do: "closed-eye", else: "eye"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => !@package.show_on_public_profile, "text-red-sales-300" => @package.show_on_public_profile})} />
+                  <%= if @package.show_on_public_profile, do: "Hide on public profile", else: "Show on public profile" %>
+                </button>
+              <% end %>
+
+              <button {testid("archive-unarchive-btn-#{@package.id}")} title="Archive" type="button" phx-click="toggle-archive" phx-value-package-id={@package.id} phx-value-type={if @package.archived_at, do: "unarchive", else: "archive"} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                <.icon name={if @package.archived_at, do: "plus", else: "trash"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => @package.archived_at, "text-red-sales-300" => !@package.archived_at})} />
+                <%= if @package.archived_at, do: "Unarchive", else: "Archive" %>
+              </button>
+            </div>
+          </div>
+
+          <div class="col-span-2">
+            <div class="flex items-center">
+                <div class="hidden md:block">
+                  <%= if !@package.archived_at do %>
+                    <.icon_button {testid("edit-package-#{@package.id}")} class="ml-5 border border-blue-planning-300 bg-white text-black font-normal" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
+                      Edit package
+                    </.icon_button>
+                  <% end %>
+                </div>
+                <div class="hidden md:block ml-16 md:ml-2" phx-update={@update_mode} id={"menu-#{@package.id}"} data-offset="0" phx-hook="Select">
+                    <button {testid("menu-btn-#{@package.id}")} title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+                      <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+
+                      <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+                    </button>
+
+                    <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content z-10">
+                      <%= if !@package.archived_at do %>
+                        <button title="Edit" type="button" phx-click="edit-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                          <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                          Edit
+                        </button>
+
+                        <button title="Duplicate" type="button" phx-click="duplicate-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                          <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                          Duplicate
+                        </button>
+
+                        <button title="Visibility" type="button" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                          <.icon name={if @package.show_on_public_profile, do: "closed-eye", else: "eye"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => !@package.show_on_public_profile, "text-red-sales-300" => @package.show_on_public_profile})} />
+                          <%= if @package.show_on_public_profile, do: "Hide on public profile", else: "Show on public profile" %>
+                        </button>
+                      <% end %>
+
+                      <button {testid("archive-unarchive-btn-#{@package.id}")} title="Archive" type="button" phx-click="toggle-archive" phx-value-package-id={@package.id} phx-value-type={if @package.archived_at, do: "unarchive", else: "archive"} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                        <.icon name={if @package.archived_at, do: "plus", else: "trash"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => @package.archived_at, "text-red-sales-300" => !@package.archived_at})} />
+                        <%= if @package.archived_at, do: "Unarchive", else: "Archive" %>
+                      </button>
+                    </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+      <%= if !@package.archived_at do %>
+        <hr class="my-4 block md:hidden" />
+      <% end %>
+      <div class="flex items-center block md:hidden">
+        <%= if !@package.archived_at do %>
+          <.icon_button {testid("edit-package-#{@package.id}")} class="border border-blue-planning-300 bg-white text-black font-normal" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
+            Edit package
+          </.icon_button>
+        <% end %>
+      </div>
+      <hr class="my-4 hidden md:block" />
+    </div>
+    """
+  end
+
+  @spec package_row(%{package: %Package{}}) :: %Phoenix.LiveView.Rendered{}
+  def package_row(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: "",
+        checked: false,
+        inner_block: nil
+      })
+
+    ~H"""
+    <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => @checked})} {testid("template-card")}>
+      <label class="flex items-center justify-between cursor-pointer">
+        <div class="w-1/3">
+          <h3 class="font-xl font-bold mb-1"><%= @package.name %>—<%= dyn_gettext @package.job_type %></h3>
+          <div class="flex flex-row-reverse items-center justify-end mt-auto">
+            <.digital_detail id="package_detail" download_each_price={@package.download_each_price} download_count={@package.download_count}/>
+          </div>
+        </div>
+        <div class="w-1/3 text-base-250">
+          <p>Package price: <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %></p>
+          <p>Digitial image price: <%= if Money.zero?(@package.download_each_price) do %>--<% else %><%= @package.download_each_price %>/each<% end %></p>
+        </div>
+        <div class="w-1/3 text-center">
+          <%= if @inner_block do %>
+            <%= render_block(@inner_block) %>
           <% end %>
         </div>
-
-        <dl class="flex flex-row-reverse items-center justify-end mt-auto">
-          <.digital_detail id="package_detail" download_each_price={@package.download_each_price} download_count={@package.download_count}/>
-        </dl>
-
-        <hr class="my-4" />
-
-        <div class="flex items-center justify-between">
-          <div class="text-gray-500"><%= dyn_gettext @package.job_type %></div>
-
-          <div class="text-lg font-bold">
-            <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <div class="text-gray-500">Download Price</div>
-
-          <div class="text-lg font-bold">
-            <%= if Money.zero?(@package.download_each_price) do %>--<% else %><%= @package.download_each_price %>/each<% end %>
-          </div>
-        </div>
-
-      </div>
+      </label>
+    </div>
     """
   end
 
@@ -76,8 +366,12 @@ defmodule PicselloWeb.PackageLive.Shared do
         <%= labeled_select @form, :shoot_count, Enum.to_list(1..10), label: "# of Shoots", wrapper_class: "mt-4", class: "py-3", phx_update: "ignore" %>
 
         <div class="mt-4 flex flex-col">
-          <%= label_for @form, :turnaround_weeks, label: "Image Turnaround Time" %>
-
+          <div class="flex flex-row">
+            <%= label_for @form, :turnaround_weeks, label: "Image Turnaround Time" %>
+            <.intro_hint content="A general rule of thumb is you need to create your deadline not based on how soon you can deliver under ideal circumstances,
+            but how long it could take you if you are extremely busy or had a major disruption to your workflow.
+            You can deliver sooner than the turnaround time to surprise and delight your client." class="ml-1" />
+          </div>
           <div>
             <%= input @form, :turnaround_weeks, type: :number_input, phx_debounce: "500", class: "w-1/3 text-center pl-6 mr-4", min: 1, max: 52 %>
 
@@ -229,6 +523,22 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
+  defp digital_detail(assigns) do
+    ~H"""
+      <%= cond do %>
+        <%= Money.zero?(@download_each_price) -> %>
+        <dt class="text-gray-500">All digital images included</dt>
+        <% @download_count == 0 -> %>
+        <dt class="text-gray-500">No digital images included</dt>
+        <% true -> %>
+        <dt class="text-gray-500">Digital images included</dt>
+        <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
+        <%= @download_count %>
+        </dd>
+      <% end %>
+    """
+  end
+
   defp print_fields_heading(assigns) do
     ~H"""
     <div class="mt-6 sm:mt-9" {testid("print")}>
@@ -245,22 +555,6 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   def package_description_length_long?(nil), do: false
   def package_description_length_long?(description), do: byte_size(description) > 100
-
-  defp digital_detail(assigns) do
-    ~H"""
-      <%= cond do %>
-        <%= Money.zero?(@download_each_price) -> %>
-        <dt class="text-gray-500">All digital images included</dt>
-        <% @download_count == 0 -> %>
-        <dt class="text-gray-500">No digital images included</dt>
-        <% true -> %>
-        <dt class="text-gray-500">Digital images included</dt>
-        <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
-        <%= @download_count %>
-        </dd>
-      <% end %>
-    """
-  end
 
   defp package_or_gallery_content(key) do
     if key == :create_gallery do
