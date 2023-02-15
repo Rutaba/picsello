@@ -787,20 +787,21 @@ defmodule PicselloWeb.HomeLive.Index do
            }
          }
        ) do
-    case %{
-           "send-confirmation-email" => {!User.confirmed?(current_user), org_card},
-           "open-user-settings" => {!subscription.hidden?, org_card},
-           "getting-started-picsello" =>
-             {Application.get_env(:picsello, :help_scout_id) != nil, org_card},
-           "set-up-stripe" => {stripe_status != :charges_enabled, org_card},
-           "open-billing-portal" =>
-             {Picsello.Invoices.pending_invoices?(current_user.organization_id), org_card},
-           "missing-payment-method" =>
-             {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card},
-           "create-lead" => {leads_empty?, org_card},
-           "black-friday" => {Subscriptions.monthly?(current_user.subscription), org_card}
-         }
-         |> Map.fetch(concise_name) do
+    params = %{
+      "send-confirmation-email" => {!User.confirmed?(current_user), org_card},
+      "open-user-settings" => {!subscription.hidden?, org_card},
+      "getting-started-picsello" =>
+        {Application.get_env(:picsello, :help_scout_id) != nil, org_card},
+      "set-up-stripe" => {stripe_status != :charges_enabled, org_card},
+      "open-billing-portal" =>
+        {Picsello.Invoices.pending_invoices?(current_user.organization_id), org_card},
+      "missing-payment-method" =>
+        {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card},
+      "create-lead" => {leads_empty?, org_card},
+      "black-friday" => {Subscriptions.monthly?(current_user.subscription), org_card}
+    }
+
+    case params |> Map.fetch(concise_name) do
       {:ok, action} -> action
       :error -> {true, org_card}
     end
