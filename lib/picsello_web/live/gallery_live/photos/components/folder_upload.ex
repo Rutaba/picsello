@@ -1,4 +1,5 @@
 defmodule PicselloWeb.GalleryLive.Photos.FolderUpload do
+  @moduledoc false 
   use PicselloWeb, :live_component
 
   alias Picsello.Albums
@@ -71,14 +72,14 @@ defmodule PicselloWeb.GalleryLive.Photos.FolderUpload do
     include_subfolders = String.to_atom(include_subfolders)
 
     if include_subfolders do
-      folders
-      |> Albums.create_multiple(gallery.id)
-      |> then(fn {:ok, albums} ->
-        Phoenix.PubSub.broadcast(
-          Picsello.PubSub,
-          ~s(folder_albums:#{gallery.id}),
-          {:folder_albums, albums}
-        )
+      case Albums.create_multiple(folders, gallery.id) do
+        {:ok, albums} ->
+          Phoenix.PubSub.broadcast(
+            Picsello.PubSub,
+            ~s(folder_albums:#{gallery.id}),
+            {:folder_albums, albums}
+          )
+        {:error, _} -> put_flash(:error, "Unable to upload folders as albums")
       end)
     end
 
