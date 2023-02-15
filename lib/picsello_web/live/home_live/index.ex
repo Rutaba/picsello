@@ -13,7 +13,6 @@ defmodule PicselloWeb.HomeLive.Index do
     ClientMessage,
     Subscriptions,
     Orders,
-    Galleries,
     OrganizationCard,
     Utils,
     Onboardings,
@@ -203,6 +202,7 @@ defmodule PicselloWeb.HomeLive.Index do
     case status do
       "viewed" -> OrganizationCard.viewed!(org_card_id)
       "inactive" -> OrganizationCard.inactive!(org_card_id)
+      _ -> nil
     end
 
     send(self(), :card_status)
@@ -465,12 +465,6 @@ defmodule PicselloWeb.HomeLive.Index do
     """
   end
 
-  def tabs_content(assigns) do
-    ~H"""
-    <div></div>
-    """
-  end
-
   def action_item(assigns) do
     assigns =
       Enum.into(assigns, %{
@@ -664,10 +658,9 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(:stripe_subscription_status, :loading)
   end
 
-  def maybe_show_success_subscription(socket, %{}), do: socket
+  def maybe_show_success_subscription(socket, _), do: socket
 
   def assign_counts(%{assigns: %{current_user: current_user}} = socket) do
-    organization_id = Map.get(current_user, :organization).id
     job_count_by_status = current_user |> job_count_by_status() |> Repo.all()
 
     lead_stats =
@@ -706,18 +699,8 @@ defmodule PicselloWeb.HomeLive.Index do
 
     socket
     |> assign(
-      lead_stats: lead_stats,
       lead_count: lead_stats |> Keyword.values() |> Enum.sum(),
-      gallery_count:
-        Galleries.list_all_galleries_by_organization_query(organization_id)
-        |> Repo.all()
-        |> Enum.count(),
-      galleries_empty?:
-        Galleries.list_all_galleries_by_organization_query(organization_id)
-        |> Repo.all()
-        |> Enum.empty?(),
       leads_empty?: Enum.empty?(job_count_by_status),
-      jobs_empty?: !Enum.any?(job_count_by_status, &(!&1.lead?)),
       job_count: job_count,
       inbox_count: inbox_count(current_user),
       client_count: client_count(current_user)
