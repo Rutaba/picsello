@@ -2,10 +2,11 @@ defmodule Picsello.ClientMessage do
   @moduledoc false
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.Job
+  alias Picsello.{Job, ClientMessageRecipient}
 
   schema "client_messages" do
     belongs_to(:job, Job)
+    has_many(:client_message_recipients, ClientMessageRecipient)
     has_many(:clients, through: [:client_message_recipients, :client])
     field(:subject, :string)
     field(:body_text, :string)
