@@ -6,7 +6,9 @@ defmodule Picsello.ClientMessage do
 
   schema "client_messages" do
     field(:subject, :string)
-    field(:cc_email, :string)
+    field(:to_email, {:array, :string})
+    field(:cc_email, {:array, :string})
+    field(:bcc_email, {:array, :string})
     field(:body_text, :string)
     field(:body_html, :string)
     field(:scheduled, :boolean)
@@ -22,9 +24,11 @@ defmodule Picsello.ClientMessage do
 
   def create_outbound_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:subject, :body_text, :body_html, :cc_email, :client_id])
-    |> validate_required([:subject, :body_text])
+    |> cast(attrs, [:subject, :body_text, :body_html, :to_email, :cc_email, :bcc_email, :client_id])
+    |> validate_required([:subject, :body_text, :to_email])
+    |> validate_email_format(:to_email)
     |> validate_email_format(:cc_email)
+    |> validate_email_format(:bcc_email)
     |> put_change(:outbound, true)
     |> put_change(:read_at, DateTime.utc_now() |> DateTime.truncate(:second))
   end
@@ -44,9 +48,11 @@ defmodule Picsello.ClientMessage do
   end
 
   defp validate_email_format(changeset, field) do
-    changeset
-    |> validate_format(field, Picsello.Accounts.User.email_regex(), message: "is invalid")
-    |> validate_length(field, max: 160)
+    Enum.map(field, fn email ->
+      changeset
+      |> validate_format(email, Picsello.Accounts.User.email_regex(), message: "is invalid")
+      |> validate_length(email, max: 160)
+    end)
   end
 
   def unread_messages(jobs_query) do
