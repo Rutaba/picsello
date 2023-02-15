@@ -29,7 +29,7 @@ defmodule Picsello.ClientBooksEventTest do
       )
 
     insert(:package_payment_schedule, %{package: template})
-    
+
     event =
       insert(:booking_event,
         name: "Event 1",
