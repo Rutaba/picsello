@@ -157,7 +157,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
         <%= error_tag(@f, :dates, prefix: "Dates", class: "text-red-sales-300 text-sm mt-2") %>
         <%= inputs_for @f, :dates, fn d -> %>
-          <.event_date event_form={@f} f={d} id={"event-#{d.index}"} myself={@myself} collapsed_dates={@collapsed_dates} changeset={@changeset} booking_count={booking_count}/>
+          <.event_date event_form={@f} f={d} id={"event-#{d.index}"} myself={@myself} collapsed_dates={@collapsed_dates} changeset={@changeset} booking_count={booking_count} is_edit={can_edit?}/>
         <% end %>
 
         <div class="mt-8">
@@ -287,10 +287,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <%= error_tag(@f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
           <%= inputs_for @f, :time_blocks, fn t -> %>
             <div class="flex lg:items-center flex-col lg:flex-row mb-4">
-              <div class={classes("flex items-center lg:w-auto w-full lg:justify-start justify-between", %{"text-gray-400" => t |> current |> Map.get(:is_booked)})}>
-                <%= input t, :start_time, type: :time_input, disabled: t |> current |> Map.get(:is_booked) %>
+              <div class={classes("flex items-center lg:w-auto w-full lg:justify-start justify-between", %{"text-gray-400" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})}>
+                <%= input t, :start_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))%>
                 <p class="mx-2">-</p>
-                <%= input t, :end_time, type: :time_input, disabled: t |> current |> Map.get(:is_booked) %>
+                <%= input t, :end_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break)) %>
                 <%= hidden_input t, :is_break%>
               </div>
               <div class="flex justify-between w-full mt-2 lg:mt-0">
@@ -316,16 +316,22 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                     </div>
                   </div>
                   <%= if t.index > 0 do %>
-                    <.icon_button class={classes("ml-4 py-1",%{"pointer-events-none" => t |> current |> Map.get(:is_booked)})} title="remove time" disabled={t |> current |> Map.get(:is_booked)} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
+                    <.icon_button class={classes("ml-4 py-1",%{"pointer-events-none" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})} title="remove time" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
                   <% end %>
                 </div>
               </div>
             </div>
-            <%= if t |> current |> Map.get(:is_booked) do %>
+            <%= if ((t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))) do %>
               <div class="flex justify-start mb-4 items-center">
                 <.icon name="warning-red", class="w-10 h-5 red-sales-300 stroke-[4px]" />
                 <div class="pl-2 text-gray-400">You have bookings in this slot. You won’t be able to edit but you can hide it!.</div>
               </div>
+            <% end %>
+            <%= if (is_break_block_already_booked(@is_edit, @event_form, input_value(@f, :date), t |> current |> Map.get(:start_time), t |> current |> Map.get(:end_time))) and t |> current |> Map.get(:is_break) do %>
+                <div class="flex justify-start mb-4 items-center">
+                    <.icon name="warning-red", class="w-10 h-5 red-sales-300 stroke-[4px]" />
+                    <div class="pl-2 text-gray-400">Sorry, you have time slots booked during the time you are requesting as a break. Please select a different time.</div>
+                  </div>
             <% end %>
           <% end %>
           <div class="flex flex-row">
@@ -551,6 +557,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
 
     {slot_count, calculate_break_blocks(event, date), calculate_hidden_blocks(event, date)}
+  end
+
+  defp is_break_block_already_booked(is_edit, _event_form, date, start_time, end_time)
+       when is_nil(date) or is_nil(start_time) or is_nil(end_time) or is_edit,
+       do: false
+
+  defp is_break_block_already_booked(false, event_form, date, start_time, end_time) do
+    event = current(event_form)
+
+    slots = event |> BookingEvents.available_times(date)
+
+    BookingEvents.is_blocked_booked(%{start_time: start_time, end_time: end_time}, slots)
   end
 
   defp calculate_break_blocks(booking_event, date) do
