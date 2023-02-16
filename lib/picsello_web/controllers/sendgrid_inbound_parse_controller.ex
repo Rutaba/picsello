@@ -3,11 +3,9 @@ defmodule PicselloWeb.SendgridInboundParseController do
   alias Picsello.{Repo, ClientMessage, Messages, Client, Job}
 
   def parse(conn, params) do
-    %{"html" => body_html, "envelope" => envelope, "subject" => subject} = params
+    %{"envelope" => envelope} = params
     to_email = envelope |> Jason.decode!() |> Map.get("to") |> hd
     [token | _] = to_email |> String.split("@")
-
-    body_text = Map.get(params, "text", "") |> ElixirEmailReplyParser.parse_reply()
 
     initail_obj =
       case Messages.find_by_token(token) do
@@ -19,7 +17,14 @@ defmodule PicselloWeb.SendgridInboundParseController do
       end
 
     message =
-      Map.merge(%{body_text: body_text, body_html: body_html, subject: subject}, initail_obj)
+      Map.merge(
+        %{
+          body_text: Map.get(params, "text", "") |> ElixirEmailReplyParser.parse_reply(),
+          body_html: Map.get(params, "html", ""),
+          subject: Map.get(params, "subject", nil)
+        },
+        initail_obj
+      )
       |> ClientMessage.create_inbound_changeset()
       |> Repo.insert!()
 
