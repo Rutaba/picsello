@@ -172,7 +172,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   def step(%{name: :package, can_edit?: can_edit?} = assigns) do
     ~H"""
      <%= if !can_edit? do %>
-        <div class="flex rounded-lg h-fit  mt-8 p-2 ml-3 flex flex-row border bg-base-200">
+        <div class="flex rounded-lg h-fit mt-8 p-1 ml-3 flex flex-row border bg-base-200">
               <.icon name="warning-orange" class="w-4 h-4 mt-2 mr-2" />
               <div class="warning-text">
                 <p class="font-bold">Since you have bookings already, you  won’t be able to change your package.</p>
@@ -204,7 +204,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       <% package = Enum.filter(@package_templates, fn template -> template.id == package_id end) |> List.first() %>
       <%= if package do %>
       <label {testid("template-card")} class={classes(%{"cursor-not-allowed pointer-events-none" => !can_edit?})}>
-          <.package_row package={package} />
+          <.package_row package={package} can_edit?={can_edit?}/>
       </label>
       <% else %>
       <div class="flex rounded-lg h-fit  mt-8 p-2 ml-3 flex flex-row border bg-base-200">
