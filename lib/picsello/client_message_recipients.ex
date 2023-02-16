@@ -15,8 +15,8 @@ defmodule Picsello.ClientMessageRecipient do
 
   @attrs [:client_id, :client_message_id, :recipient_type]
   @doc false
-  def changeset(campaign_client, attrs) do
-    campaign_client
+  def changeset(client_message_recipient, attrs) do
+    client_message_recipient
     |> cast(attrs, @attrs)
     |> validate_required(@attrs)
   end

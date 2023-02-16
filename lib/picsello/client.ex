@@ -15,7 +15,8 @@ defmodule Picsello.Client do
     belongs_to(:organization, Organization)
     has_many(:jobs, Job)
     has_many(:tags, ClientTag)
-    has_many(:client_messages, ClientMessage)
+    has_many(:client_message_recipients, ClientMessageRecipient)
+    has_many(:client_messages, through: [:client_message_recipients, :client_message])
 
     timestamps(type: :utc_datetime)
   end
