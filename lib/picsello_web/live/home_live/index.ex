@@ -65,20 +65,6 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
-  def handle_params(
-        %{"new_user" => _new_user},
-        _uri,
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    if show_intro?(current_user, "intro_dashboard_modal") === "true" do
-      socket |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
-    else
-      socket
-    end
-    |> noreply()
-  end
-
-  @impl true
   def handle_params(_params, _uri, socket), do: socket |> noreply()
 
   @impl true
