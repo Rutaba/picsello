@@ -24,13 +24,11 @@ defmodule Picsello.ClientMessage do
 
   def create_outbound_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:subject, :body_text, :body_html, :to_email, :cc_email, :bcc_email])
-    |> validate_required([:subject, :body_text, :to_email])
-    |> validate_email_format(:to_email)
-    |> validate_email_format(:cc_email)
-    |> validate_email_format(:bcc_email)
+    |> cast(attrs, [:subject, :body_text, :body_html])
+    |> validate_required([:subject, :body_text])
     |> put_change(:outbound, true)
     |> put_change(:read_at, DateTime.utc_now() |> DateTime.truncate(:second))
+    |> cast_assoc(:client_message_recipients, with: &ClientMessageRecipient.changeset/2)
   end
 
   def create_inbound_changeset(attrs, required_fields \\ []) do
@@ -38,12 +36,6 @@ defmodule Picsello.ClientMessage do
     |> cast(attrs, [:body_text, :body_html, :job_id, :subject])
     |> validate_required([:subject, :body_text, :body_text, :job_id])
     |> put_change(:outbound, false)
-  end
-
-  defp validate_email_format(changeset, field) do
-    changeset
-    |> validate_format(field, Picsello.Accounts.User.email_regex(), message: "is invalid")
-    |> validate_length(field, max: 160)
   end
 
   def unread_messages(jobs_query) do

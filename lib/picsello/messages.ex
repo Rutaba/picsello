@@ -6,7 +6,7 @@ defmodule Picsello.Messages do
   import Ecto.Query, warn: false
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Client, Repo, ClientMessage, Notifiers.UserNotifier}
+  alias Picsello.{Job, Client, Repo, ClientMessage, ClientMessageRecipient, Notifiers.UserNotifier}
   require Logger
 
   def add_message_to_job(%Changeset{} = changeset, %Job{id: id, client_id: client_id}) do
@@ -19,6 +19,27 @@ defmodule Picsello.Messages do
   def add_message_to_client(%Changeset{} = changeset) do
     changeset
     |> Repo.insert()
+  end
+
+  defp save_message(changeset, clients, type) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:client_message, changeset)
+    |> Ecto.Multi.insert_all(:client_message_recipients, ClientMessageRecipient, fn %{client_message: client_message} ->
+      inserted_at = DateTime.utc_now() |> DateTime.truncate(:second)
+      updated_at = DateTime.utc_now() |> DateTime.truncate(:second)
+
+      clients
+      |> Enum.map(fn client ->
+        %{
+          client_id: client.id,
+          client_message_id: client_message.id,
+          recipient_type: type,
+          inserted_at: inserted_at,
+          updated_at: updated_at
+        }
+      end)
+    end)
+    |> Repo.transaction()
   end
 
   def insert_scheduled_message!(params, %Job{} = job) do
