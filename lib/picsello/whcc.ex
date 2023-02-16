@@ -52,7 +52,9 @@ defmodule Picsello.WHCC do
     |> Adapter.editor()
   end
 
-  def create_order(account_id, %{items: items, order: %{"Orders" => suborders}} = export) do
+  def create_order(account_id, %{items: items, order: order} = export) do
+    sub_orders = order["Orders"] || []
+
     case Adapter.create_order(account_id, export) do
       {:ok, %{orders: orders} = created_order} ->
         for %{sequence_number: sequence_number} = order <- orders do
@@ -65,7 +67,7 @@ defmodule Picsello.WHCC do
           }
         end
         |> case do
-          order when length(orders) == length(suborders) ->
+          order when length(orders) == length(sub_orders) ->
             {:ok, %{created_order | orders: order}}
 
           _ ->

@@ -53,7 +53,7 @@ defmodule Picsello.PhotographerViewOrdersTest do
           orders:
             build_list(1, :whcc_order_created_order,
               sequence_number: 69,
-              editor_id: "editor_id",
+              editor_ids: ["editor_id"],
               total: ~M[500]USD
             )
         )
