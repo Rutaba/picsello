@@ -52,19 +52,23 @@ defmodule Picsello.WHCC do
     |> Adapter.editor()
   end
 
-  def create_order(account_id, %{items: items} = export) do
+  def create_order(account_id, %{items: items, order: order} = export) do
+    sub_orders = order["Orders"] || []
+
     case Adapter.create_order(account_id, export) do
       {:ok, %{orders: orders} = created_order} ->
-        for(
-          order <- orders,
-          item <- items,
-          item.order_sequence_number == order.sequence_number
-        ) do
-          %{order | editor_id: item.id}
+        for %{sequence_number: sequence_number} = order <- orders do
+          %{
+            order
+            | editor_ids:
+                items
+                |> Enum.filter(&(&1.order_sequence_number == sequence_number))
+                |> Enum.map(& &1.id)
+          }
         end
         |> case do
-          matched_orders when length(orders) == length(matched_orders) ->
-            {:ok, %{created_order | orders: matched_orders}}
+          order when length(orders) == length(sub_orders) ->
+            {:ok, %{created_order | orders: order}}
 
           _ ->
             {:error,

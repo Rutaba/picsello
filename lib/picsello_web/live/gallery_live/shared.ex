@@ -553,8 +553,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp tracking_info(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
     Enum.find_value(sub_orders, fn
-      %{editor_id: ^editor_id, whcc_tracking: tracking} ->
-        tracking
+      %{editor_ids: editor_ids, whcc_tracking: tracking} ->
+        if editor_id in editor_ids, do: tracking
 
       _ ->
         nil
