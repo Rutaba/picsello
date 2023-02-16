@@ -16,7 +16,8 @@ defmodule PicselloWeb.Live.PackageTemplates do
     Profiles,
     PackagePaymentSchedule,
     Contract,
-    Jobs
+    Jobs,
+    OrganizationJobType
   }
 
   @impl true
@@ -47,8 +48,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         _,
         %{assigns: %{live_action: :edit, templates: templates}} = socket
       ) do
-    package_id = to_integer(package_id)
-    package = Enum.find(templates, &(&1.id == package_id))
+    package = Enum.find(templates, &(&1.id == to_integer(package_id)))
 
     socket
     |> open_wizard(%{package: package |> Repo.preload([:contract, :package_payment_schedules])})
@@ -262,7 +262,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "page",
         %{"direction" => direction},
-        %{assigns: %{pagination: pagination, package_name: package_name}} = socket
+        %{assigns: %{pagination: pagination}} = socket
       ) do
     updated_pagination =
       case direction do
@@ -284,7 +284,6 @@ defmodule PicselloWeb.Live.PackageTemplates do
       end
 
     socket
-    |> assign(:package_name, package_name)
     |> assign(:pagination, updated_pagination)
     |> assign_templates()
     |> noreply()
@@ -294,7 +293,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "page",
         %{"pagination_live" => %{"limit" => limit}},
-        %{assigns: %{pagination: pagination, package_name: package_name}} = socket
+        %{assigns: %{pagination: pagination}} = socket
       ) do
     limit = to_integer(limit)
 
@@ -305,7 +304,6 @@ defmodule PicselloWeb.Live.PackageTemplates do
     socket
     |> assign(:pagination_changeset, updated_pagination_changeset)
     |> assign(:pagination, updated_pagination_changeset |> Changeset.apply_changes())
-    |> assign(:package_name, package_name)
     |> assign_templates()
     |> noreply()
   end
@@ -369,7 +367,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "duplicate-package",
         %{"package-id" => package_id},
-        %{assigns: %{package_name: package_name}} = socket
+        socket
       ) do
     package =
       Repo.get(Package, package_id)
@@ -395,7 +393,6 @@ defmodule PicselloWeb.Live.PackageTemplates do
         |> put_flash(:error, "Failed to duplicate package: #{package.name}")
     end
     |> assign_template_counts()
-    |> assign(:package_name, package_name)
     |> assign_templates()
     |> assign_job_type_packages()
     |> noreply()
@@ -489,10 +486,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event(
         "edit-job-types",
         %{},
-        %{assigns: %{package_name: package_name}} = socket
+        socket
       ) do
     socket
-    |> assign(:package_name, package_name)
     |> assign_job_types()
     |> PicselloWeb.PackageLive.EditJobTypeComponent.open()
     |> noreply()
@@ -683,7 +679,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_info(
         {:confirm_event, "toggle_package_visibility",
          %{package_id: package_id, is_hidden: is_hidden}},
-        %{assigns: %{package_name: package_name}} = socket
+        socket
       ) do
     with %Package{} = package <- Repo.get(Package, package_id),
          {:ok, _package} <- package |> Package.edit_visibility_changeset() |> Repo.update() do
@@ -699,7 +695,6 @@ defmodule PicselloWeb.Live.PackageTemplates do
         |> put_flash(:error, "Failed to show/hide package")
     end
     |> assign_job_type_packages()
-    |> assign(:package_name, package_name)
     |> assign_templates()
     |> noreply()
   end
@@ -707,15 +702,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
   @impl true
   def handle_info(
         {:confirm_event, "archive_unarchive"},
-        %{assigns: %{archive_package_id: package_id, package_name: package_name}} = socket
+        %{assigns: %{current_user: current_user, archive_package_id: package_id}} = socket
       ) do
     with %Package{} = package <- Repo.get(Package, package_id),
-         {:ok, _package} <- archive_unarchive_package(package) do
+         {:ok, _package} <- archive_unarchive_package(current_user, package) do
       socket
-      |> assign(:package_name, package_name)
-      |> assign_template_counts()
-      |> assign_templates()
-      |> assign_job_type_packages()
+      |> default_assigns()
       |> put_flash(
         :success,
         "The package has been " <> if(package.archived_at, do: "un-archived", else: "archived")
@@ -730,9 +722,8 @@ defmodule PicselloWeb.Live.PackageTemplates do
   end
 
   @impl true
-  def handle_info({:update, _package}, %{assigns: %{package_name: package_name}} = socket) do
+  def handle_info({:update, _package}, socket) do
     socket
-    |> assign(:package_name, package_name)
     |> assign_templates()
     |> assign_job_type_packages()
     |> assign_template_counts()
@@ -757,10 +748,24 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> assign_template_counts()
   end
 
-  defp archive_unarchive_package(package) do
-    if is_nil(package.archived_at),
-      do: package |> Package.archive_changeset() |> Repo.update(),
-      else: Packages.unarchive_package(package.id)
+  defp archive_unarchive_package(%{organization: organization}, package) do
+    if is_nil(package.archived_at) do
+      package |> Package.archive_changeset() |> Repo.update()
+    else
+      organization_job_type =
+        organization.organization_job_types
+        |> Enum.find(fn row ->
+          row.job_type == package.job_type && row.organization_id == organization.id
+        end)
+
+      Ecto.Multi.new()
+      |> Ecto.Multi.update(
+        :organization_job_type,
+        OrganizationJobType.update_changeset(organization_job_type, %{show_on_business?: true})
+      )
+      |> Ecto.Multi.update(:package, Ecto.Changeset.change(package, archived_at: nil))
+      |> Repo.transaction()
+    end
   end
 
   defp assign_templates(

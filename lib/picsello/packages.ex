@@ -537,13 +537,6 @@ defmodule Picsello.Packages do
     |> Repo.exists?()
   end
 
-  def unarchive_package(package_id) do
-    package = Repo.get(Package, package_id)
-
-    Ecto.Changeset.change(package, archived_at: nil)
-    |> Repo.update()
-  end
-
   def paginate_query(query, %{limit: limit, offset: offset}) do
     from query,
       limit: ^limit,
