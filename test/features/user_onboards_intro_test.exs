@@ -54,7 +54,11 @@ defmodule Picsello.UserOnboardsIntroTest do
     |> click(css(".introjs-nextbutton"))
     |> click(css(".introjs-nextbutton"))
     |> click(css(".introjs-nextbutton"))
-    |> click(css(".introjs-nextbutton"))
+    |> click(css("a", text: "Next"))
+    |> find(css(".introjs-tooltipbuttons"), fn item -> 
+      item
+      |> click(css("a", text: "Next"))
+    end)
     |> click(css(".introjs-donebutton"))
     |> visit("/home")
     |> refute_has(css("#start-tour"))
