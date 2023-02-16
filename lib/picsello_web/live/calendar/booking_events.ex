@@ -537,7 +537,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
       )
       |> Enum.map(fn booking_event ->
         booking_event
-        |> assign_sort_date(sort_direction, sort_by)
+        |> assign_sort_date(sort_direction, sort_by, event_status)
         |> Map.put(
           :url,
           Routes.client_booking_event_url(
@@ -549,28 +549,42 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         )
       end)
       |> filter_date(event_status)
+      |> sort_by_date(sort_direction, sort_by)
 
     socket
     |> assign(booking_events: booking_events)
   end
 
-  defp assign_sort_date(booking_event, sort_direction, "dates") do
+  def sort_by_date(booking_events, sort_direction, "dates") do
     sort_direction = String.to_atom(sort_direction)
 
+    booking_events
+    |> Enum.sort_by(& &1.date, {sort_direction, Date})
+  end
+
+  def sort_by_date(booking_events, _sort_direction, _sort_by), do: booking_events
+
+  defp assign_sort_date(booking_event, sort_direction, sort_by, filter_status) do
     sorted_date =
-      booking_event
-      |> Map.get(:dates)
-      |> Enum.map(& &1.date)
-      |> Enum.sort_by(& &1, {sort_direction, Date})
-      |> hd
+      if sort_by == "dates" || filter_status in ["future_events", "past_events"] do
+        sort_direction =
+          case filter_status do
+            "future_events" -> :desc
+            "past_events" -> :asc
+            _ -> String.to_atom(sort_direction)
+          end
+
+        booking_event
+        |> Map.get(:dates)
+        |> Enum.map(& &1.date)
+        |> Enum.sort_by(& &1, {sort_direction, Date})
+        |> hd
+      else
+        booking_event.dates |> hd |> Map.get(:date)
+      end
 
     booking_event
     |> Map.put(:date, sorted_date)
-  end
-
-  defp assign_sort_date(booking_event, _sort_direction, _sort_by) do
-    booking_event
-    |> Map.put(:date, booking_event.dates |> hd |> Map.get(:date))
   end
 
   defp filter_date(booking_events, "future_events") do
