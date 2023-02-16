@@ -21,13 +21,16 @@ defmodule PicselloWeb.ClientMessageComponent do
   }
 
   @impl true
-  def update(%{current_user: current_user, client: %{id: id, email: email}} = assigns, socket) do
+  def update(%{current_user: current_user, client: %{id: id}} = assigns, socket) do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
     |> assign(:clients, Clients.find_all_by(user: current_user))
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:current_focus, -1)
+    |> assign_new(:bcc_email_error, fn -> nil end)
+    |> assign_new(:cc_email_error, fn -> nil end)
+    |> assign_new(:to_email_error, fn -> nil end)
     |> assign_new(:changeset, fn ->
       assigns
       |> Map.take([:subject, :body_text, :body_html])
@@ -51,25 +54,28 @@ defmodule PicselloWeb.ClientMessageComponent do
     <div class="modal">
       <.close_x />
       <h1 class="text-3xl"><%= @modal_title %></h1>
-        <%= t = form_for :to_email, "#", phx_change: "validate_email", phx_submit: "to_email" %>
-          <%= labeled_input t, :to, label: "To: ", value: "#{@client.email}", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "500" %>
-        <.search_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
-      <%= if @cc do %>
-        <%= c = form_for :cc_email, "#", phx_submit: "cc_email" %>
-          <%= labeled_input c, :cc, label: "CC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "500" %>
-      <% end %>
-      <%= if @bcc do %>
-        <%= b = form_for :bcc_email, "#", phx_submit: "bcc_email" %>
-          <%= labeled_input b, :bcc, label: "BCC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "500" %>
+        <%= t = form_for :to_email, "#", phx_change: "validate_email", phx_submit: "to_email", phx_target: @myself %>
+          <%= labeled_input t, :to, label: "To: ", value: "#{@client.email}", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "5000" %>
+          <span class={classes("tex-red-sales-300 text-sm", %{"hidden" => !@to_email_error})}><%= @to_email_error %></span>
 
+        <.search_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
+      <%= if @show_cc do %>
+        <%= c = form_for :cc_email, "#", phx_change: "validate_email", phx_submit: "cc_email", phx_target: @myself %>
+          <%= labeled_input c, :cc, label: "CC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "5000" %>
+          <span class={classes("tex-red-sales-300 text-sm", %{"hidden" => !@cc_email_error})}><%= @cc_email_error %></span>
+      <% end %>
+      <%= if @show_bcc do %>
+        <%= b = form_for :bcc_email, "#", phx_change: "validate_email", phx_submit: "bcc_email", phx_target: @myself %>
+          <%= labeled_input b, :bcc, label: "BCC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "5000"%>
+          <span class={classes("tex-red-sales-300 text-sm", %{"hidden" => !@bcc_email_error})}><%= @bcc_email_error %></span>
       <% end %>
       <div class="flex flex-row">
-        <%= if !@cc do %>
+        <%= if !@show_cc do %>
           <.icon_button class="py-1 px-4 mt-4 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add CC" phx-click="add-cc" phx-target={@myself} color="blue-planning-300" icon="plus">
             Add CC
           </.icon_button>
         <% end %>
-        <%= if !@bcc do %>
+        <%= if !@show_bcc do %>
           <.icon_button class="py-1 px-4 mt-4 ml-2 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add BCC" phx-click="add-bcc" phx-target={@myself} color="blue-planning-300" icon="plus">
             Add BCC
           </.icon_button>
@@ -98,28 +104,61 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
-  def handle_event("validate_email", %{bcc: email}, %{assigns: %{clients: clients}} = socket) do
-    email
-    |> String.split(";", trim: true)
-    |> Enum.all?(fn email -> String.match?(email, Picsello.Accounts.User.email_regex()) end)
+  def handle_event("validate_email", %{"bcc_email" => %{"bcc" => email}}, socket) do
+    if !validate_email(email) do
+      socket
+      |> assign(:bcc_email_error, "please enter valid emails")
+    else
+      socket
+      |> assign(:bcc_email_error, nil)
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("validate_email", %{"cc_email" => %{"cc" => email}}, socket) do
+    if !validate_email(email) do
+      socket
+      |> assign(:cc_email_error, "please enter valid emails")
+    else
+      socket
+      |> assign(:cc_email_error, nil)
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("validate_email", %{"to_email" => %{"to" => email}}, socket) do
+    if !validate_email(email) do
+      socket
+      |> assign(:to_email_error, "please enter valid emails")
+    else
+      socket
+      |> assign(:to_email_error, nil)
+    end
+    |> IO.inspect(label: "===============================================")
+    |> noreply()
   end
 
   @impl true
   def handle_event("to_email", %{to: email}, %{assigns: %{clients: clients}} = socket) do
     socket
     |> assign(:to_email, get_clients(email, clients))
+    |> noreply()
   end
 
   @impl true
   def handle_event("cc_email", %{cc: email}, %{assigns: %{clients: clients}} = socket) do
     socket
     |> assign(:cc_email, get_clients(email, clients))
+    |> noreply()
   end
 
   @impl true
   def handle_event("bcc_email", %{bcc: email}, %{assigns: %{clients: clients}} = socket) do
     socket
     |> assign(:bcc_email, get_clients(email, clients))
+    |> noreply()
   end
 
   @impl true
@@ -248,6 +287,12 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> Enum.map(fn email ->
         Enum.filter(clients, &(&1.email == email))
       end)
+
+  defp validate_email(email),
+  do:
+    email
+    |> String.split(";", trim: true)
+    |> Enum.all?(fn email -> String.match?(email, Picsello.Accounts.User.email_regex()) end)
 
   defp search_clients(assigns) do
     ~H"""
