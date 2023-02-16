@@ -45,7 +45,10 @@ defmodule Picsello.Messages do
     )
   end
 
-  def token(%{id: id, inserted_at: inserted_at}, key \\ "JOB_ID"),
+  def token(%Job{} = job), do: token(job, "JOB_ID")
+  def token(%Client{} = client), do: token(client, "CLIENT_ID")
+
+  def token(%{id: id, inserted_at: inserted_at}, key),
     do:
       PicselloWeb.Endpoint
       |> Phoenix.Token.sign(key, id, signed_at: DateTime.to_unix(inserted_at))
@@ -55,9 +58,16 @@ defmodule Picsello.Messages do
     [token(record), domain] |> Enum.join("@")
   end
 
-  def find_by_token("" <> token, key \\ "JOB_ID") do
+  def find_by_token("" <> token) do    
+    case Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity) do
+      {:ok, id} -> Repo.get(Job, id)
+      _ -> find_by_token(token, "CLIENT_ID")
+    end
+  end
+
+  def find_by_token("" <> token, key) do    
     case Phoenix.Token.verify(PicselloWeb.Endpoint, key, token, max_age: :infinity) do
-      {:ok, id} -> if key == "JOB_ID", do: Repo.get(Job, id), else: Repo.get(Client, id)
+      {:ok, id} -> Repo.get(Client, id)
       _ -> nil
     end
   end
