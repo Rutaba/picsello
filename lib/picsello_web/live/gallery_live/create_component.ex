@@ -300,6 +300,11 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
           |> put_in(["client", "organization_id"], current_user.organization_id)
           |> Job.create_job_changeset()
           |> Map.put(:action, action)
+
+        _ ->
+          params
+          |> Job.create_job_changeset()
+          |> Map.put(:action, action)
       end
 
     assign(socket, :changeset, changeset)
