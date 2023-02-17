@@ -3,7 +3,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   use PicselloWeb, :live_view
 
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
-  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 2, new_gallery_path: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3, new_gallery_path: 2]
 
   alias Ecto.Changeset
   alias Picsello.{Repo, Clients, ClientTag}
@@ -466,8 +466,8 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   end
 
   @impl true
-  def handle_info({:message_composed, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset)
+  def handle_info({:message_composed, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients)
   end
 
   @impl true

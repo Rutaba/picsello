@@ -24,6 +24,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
     |> assign(:clients, Clients.find_all_by(user: current_user))
+    |> assign(:recipients, [])
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:current_focus, -1)
@@ -105,7 +106,8 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
-  def handle_event("validate_email", %{"bcc_email" => %{"bcc" => email}}, socket) do
+  def handle_event("validate_email", %{"bcc_email" => %{"bcc" => email}}, %{assigns: %{client: clients}} = socket) do
+    email_list = String.split(email, ";", trim: true)
     if !validate_email(email) do
       socket
       |> assign(:bcc_email_error, "please enter valid emails")
@@ -113,11 +115,13 @@ defmodule PicselloWeb.ClientMessageComponent do
       socket
       |> assign(:bcc_email_error, nil)
     end
+    |> assign(:recipients, get_clients(email_list, clients, "bcc"))
     |> noreply()
   end
 
   @impl true
-  def handle_event("validate_email", %{"cc_email" => %{"cc" => email}}, socket) do
+  def handle_event("validate_email", %{"cc_email" => %{"cc" => email}}, %{assigns: %{client: clients}} = socket) do
+    email_list = String.split(email, ";", trim: true)
     if !validate_email(email) do
       socket
       |> assign(:cc_email_error, "please enter valid emails")
@@ -125,39 +129,21 @@ defmodule PicselloWeb.ClientMessageComponent do
       socket
       |> assign(:cc_email_error, nil)
     end
+    |> assign(:recipients, get_clients(email_list, clients, "cc"))
     |> noreply()
   end
 
   @impl true
-  def handle_event("validate_email", %{"to_email" => %{"to" => email}}, socket) do
-    if !validate_email(email) do
+  def handle_event("validate_email", %{"to_email" => %{"to" => email}}, %{assigns: %{client: clients}} = socket) do
+    email_list = String.split(email, ";", trim: true)
+    if !validate_email(email_list) do
       socket
       |> assign(:to_email_error, "please enter valid emails")
     else
       socket
       |> assign(:to_email_error, nil)
     end
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("to_email", %{to: email}, %{assigns: %{clients: clients}} = socket) do
-    socket
-    |> assign(:to_email, get_clients(email, clients))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("cc_email", %{cc: email}, %{assigns: %{clients: clients}} = socket) do
-    socket
-    |> assign(:cc_email, get_clients(email, clients))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("bcc_email", %{bcc: email}, %{assigns: %{clients: clients}} = socket) do
-    socket
-    |> assign(:bcc_email, get_clients(email, clients))
+    |> assign(:recipients, get_clients(email_list, clients, "to"))
     |> noreply()
   end
 
@@ -230,10 +216,10 @@ defmodule PicselloWeb.ClientMessageComponent do
       socket
       |> assign_changeset(:validate, params)
 
-    %{assigns: %{changeset: changeset, composed_event: composed_event}} = socket
+    %{assigns: %{changeset: changeset, composed_event: composed_event, recipients: recipients}} = socket
 
     if changeset.valid? do
-      send(socket.parent_pid, {composed_event, changeset |> Map.put(:action, nil)})
+      send(socket.parent_pid, {composed_event, changeset |> Map.put(:action, nil), recipients})
       socket |> noreply()
     else
       socket |> noreply()
@@ -283,17 +269,18 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   defp assign_presets(socket), do: socket
 
-  defp get_clients(email, clients),
+  defp get_clients(email_list, clients, type),
   do:
-    String.split(email, ";", trim: true)
-      |> Enum.map(fn email ->
-        Enum.filter(clients, &(&1.email == email))
-      end)
+    email_list
+    |> Enum.reduce(%{}, fn acc, email ->
+      acc
+      |> Map.put(:client, Enum.filter(clients, &(&1.email == String.trim(email))))
+      |> Map.put(:recipient_type, type)
+    end)
 
-  defp validate_email(email),
+  defp validate_email(email_list),
   do:
-    email
-    |> String.split(";", trim: true)
+    email_list
     |> Enum.all?(fn email ->
       email
       |> String.trim()

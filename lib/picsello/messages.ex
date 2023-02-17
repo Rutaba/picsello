@@ -9,36 +9,36 @@ defmodule Picsello.Messages do
   alias Picsello.{Job, Client, Repo, ClientMessage, ClientMessageRecipient, Notifiers.UserNotifier}
   require Logger
 
-  def add_message_to_job(%Changeset{} = changeset, %Job{id: id, client_id: client_id}) do
+  def add_message_to_job(%Changeset{} = changeset, %Job{id: id, client_id: client_id}, recipients) do
     changeset
     |> Changeset.put_change(:job_id, id)
-    |> Changeset.put_change(:client_id, client_id)
-    |> Repo.insert()
+    |> save_message(recipients)
   end
 
-  def add_message_to_client(%Changeset{} = changeset) do
+  def add_message_to_client(%Changeset{} = changeset, recipients) do
     changeset
-    |> Repo.insert()
+    |> save_message(recipients)
   end
 
-  defp save_message(changeset, clients, type) do
+  defp save_message(changeset, recipients_list) do
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:client_message, changeset)
     |> Ecto.Multi.insert_all(:client_message_recipients, ClientMessageRecipient, fn %{client_message: client_message} ->
       inserted_at = DateTime.utc_now() |> DateTime.truncate(:second)
       updated_at = DateTime.utc_now() |> DateTime.truncate(:second)
 
-      clients
-      |> Enum.map(fn client ->
+      recipients_list
+      |> Enum.map(fn recipient ->
         %{
-          client_id: client.id,
+          client_id: recipient.client.id,
           client_message_id: client_message.id,
-          recipient_type: type,
+          recipient_type: recipient.type,
           inserted_at: inserted_at,
           updated_at: updated_at
         }
       end)
     end)
+    |> IO.inspect()
     |> Repo.transaction()
   end
 
