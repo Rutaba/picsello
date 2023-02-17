@@ -69,7 +69,8 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
 
   feature "renders create-gallery modal from dashboard-card", %{session: session} do
     visit_homepage(session)
-    |> click(button("Create a gallery"))
+    |> click(button("Actions"))
+    |> click(button("Create gallery"))
     |> assert_text("Create a Gallery: Get Started")
     |> assert_text("Standard Gallery")
     |> assert_text("Proofing Gallery")
@@ -83,15 +84,14 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
 
   defp homepage_assertions_for_gallery_card(session) do
     session
-    |> assert_has(testid("gallery-card"))
     |> assert_text("Galleries")
-    |> assert_has(button("Create a gallery"))
-    |> assert_has(button("View all galleries"))
+    |> click(button("Actions"))
+    |> assert_has(button("Create gallery"))
   end
 
   defp visit_view_all_galleries(session) do
     session
-    |> click(button("View all galleries"))
+    |> click(button("Galleries"))
     |> assert_url_contains("galleries")
   end
 
