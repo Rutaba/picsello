@@ -35,6 +35,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     assigns
     |> Map.put_new(:can_edit?, true)
     |> Map.put_new(:booking_count, 0)
+    |> Map.put_new(:break_block_booked, false)
   end
 
   @impl true
@@ -69,7 +70,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         <.step name={@step} f={f} {assigns} />
 
         <.footer>
-          <.step_buttons name={@step} form={f} is_valid={@changeset.valid?} myself={@myself} />
+          <.step_buttons name={@step} form={f} is_valid={@changeset.valid?} break_block_booked = {@break_block_booked} myself={@myself} />
 
           <%= if step_number(@step, @steps) == 1 do %>
             <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
@@ -127,7 +128,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   def step_buttons(%{name: step} = assigns) when step in [:details, :package] do
     ~H"""
-    <button class="btn-primary" title="Next" type="submit" disabled={!@is_valid} phx-disable-with="Next">
+    <button class="btn-primary" title="Next" type="submit" disabled={!@is_valid || @break_block_booked} phx-disable-with="Next">
       Next
     </button>
     """
@@ -135,7 +136,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   def step_buttons(%{name: :customize} = assigns) do
     ~H"""
-    <button class="btn-primary" title="Save" type="submit" disabled={!@is_valid} phx-disable-with="Save">
+    <button class="btn-primary" title="Save" type="submit" disabled={!@is_valid || @break_block_booked} phx-disable-with="Save">
       Save
     </button>
     """
@@ -292,6 +293,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                 <p class="mx-2">-</p>
                 <%= input t, :end_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break)) %>
                 <%= hidden_input t, :is_break%>
+                <%= hidden_input t, :is_valid, value: t |> current |> Map.get(:is_valid) %>
               </div>
               <div class="flex justify-between w-full mt-2 lg:mt-0">
                 <%= if get_is_break!(@changeset, @f.index,t.index) do %>
@@ -327,7 +329,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                 <div class="pl-2 text-gray-400">You have bookings in this slot. You won’t be able to edit but you can hide it!.</div>
               </div>
             <% end %>
-            <%= if (is_break_block_already_booked(@is_edit, @event_form, input_value(@f, :date), t |> current |> Map.get(:start_time), t |> current |> Map.get(:end_time))) and t |> current |> Map.get(:is_break) do %>
+            <%= if !(t |> current |> Map.get(:is_valid))do %>
                 <div class="flex justify-start mb-4 items-center">
                     <.icon name="warning-red", class="w-10 h-5 red-sales-300 stroke-[4px]" />
                     <div class="pl-2 text-gray-400">Sorry, you have time slots booked during the time you are requesting as a break. Please select a different time.</div>
@@ -521,15 +523,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       |> Enum.map(&Map.from_struct/1)
       |> BookingEvents.assign_booked_block_dates(booking_event)
 
+    break_block_booked = is_break_block_already_booked(dates)
+
     changeset =
-      if changeset.valid? do
+      if changeset.valid? || break_block_booked do
         changeset
         |> Ecto.Changeset.put_embed(:dates, dates)
       else
         changeset
       end
 
-    assign(socket, changeset: changeset)
+    assign(socket, changeset: changeset, break_block_booked: break_block_booked)
   end
 
   defp assign_package_templates(%{assigns: %{current_user: current_user}} = socket) do
@@ -559,16 +563,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     {slot_count, calculate_break_blocks(event, date), calculate_hidden_blocks(event, date)}
   end
 
-  defp is_break_block_already_booked(is_edit, _event_form, date, start_time, end_time)
-       when is_nil(date) or is_nil(start_time) or is_nil(end_time) or is_edit,
-       do: false
-
-  defp is_break_block_already_booked(false, event_form, date, start_time, end_time) do
-    event = current(event_form)
-
-    slots = event |> BookingEvents.available_times(date)
-
-    BookingEvents.is_blocked_booked(%{start_time: start_time, end_time: end_time}, slots)
+  defp is_break_block_already_booked(dates) do
+    dates
+    |> Enum.filter(fn %{time_blocks: time_blocks} ->
+      Enum.filter(time_blocks, fn block ->
+        !block.is_valid
+      end)
+      |> Enum.count() > 0
+    end)
+    |> Enum.count() > 0
   end
 
   defp calculate_break_blocks(booking_event, date) do

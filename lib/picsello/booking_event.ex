@@ -13,11 +13,12 @@ defmodule Picsello.BookingEvent do
       field(:hidden, :boolean, default: false)
       field(:is_break, :boolean, default: false)
       field(:is_booked, :boolean, default: false)
+      field(:is_valid, :boolean, default: true)
     end
 
     def changeset(time_block \\ %__MODULE__{}, attrs) do
       time_block
-      |> cast(attrs, [:start_time, :end_time, :hidden, :is_break, :is_booked])
+      |> cast(attrs, [:start_time, :end_time, :hidden, :is_break, :is_booked, :is_valid])
       |> validate_required([:start_time, :end_time])
       |> validate_end_time()
     end

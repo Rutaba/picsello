@@ -197,10 +197,15 @@ defmodule Picsello.BookingEvents do
 
   defp fetch_blocks(all_slots, time_blocks) do
     Enum.map(time_blocks, fn block ->
-      if is_blocked_booked(block, all_slots) do
-        Map.put(block, :is_booked, true)
+      is_booked_block = is_blocked_booked(block, all_slots)
+
+      if is_booked_block do
+        case block.is_break do
+          true -> Map.put(block, :is_valid, false)
+          _ -> block |> Map.put(:is_booked, true) |> Map.put(:is_valid, true)
+        end
       else
-        block
+        block |> Map.put(:is_valid, true)
       end
     end)
   end
