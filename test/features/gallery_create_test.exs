@@ -5,13 +5,12 @@ defmodule Picsello.GalleryCreateTest do
   setup :authenticated
 
   setup %{session: session, user: user} do
-    client =
-      insert(:client,
-        user: user,
-        name: "Elizabeth Taylor",
-        email: "taylor@example.com",
-        phone: "(210) 111-1234"
-      )
+    insert(:client,
+      user: user,
+      name: "Elizabeth Taylor",
+      email: "taylor@example.com",
+      phone: "(210) 111-1234"
+    )
 
     [session: session]
   end
