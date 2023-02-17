@@ -4,7 +4,6 @@ defmodule PicselloWeb.ClientMessageComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
 
-  alias Ecto.Changeset
   alias Picsello.{Job, Clients}
 
   @default_assigns %{
@@ -55,18 +54,18 @@ defmodule PicselloWeb.ClientMessageComponent do
       <.close_x />
       <h1 class="text-3xl"><%= @modal_title %></h1>
         <%= t = form_for :to_email, "#", phx_change: "validate_email", phx_submit: "to_email", phx_target: @myself %>
-          <%= labeled_input t, :to, label: "To: ", value: "#{@client.email}", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "5000" %>
+          <%= labeled_input t, :to, label: "To: ", value: "#{@client.email}", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", label_class: "after:content-['(semicolon_separated_to_add_more_emails)'] after:font-light after:ml-0.5 after:italic", phx_debounce: "5000" %>
           <span class={classes("tex-red-sales-300 text-sm", %{"hidden" => !@to_email_error})}><%= @to_email_error %></span>
 
         <.search_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
       <%= if @show_cc do %>
         <%= c = form_for :cc_email, "#", phx_change: "validate_email", phx_submit: "cc_email", phx_target: @myself %>
-          <%= labeled_input c, :cc, label: "CC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "5000" %>
+          <%= labeled_input c, :cc, label: "CC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", label_class: "after:content-['(semicolon_separated_to_add_more_emails)'] after:font-light after:ml-0.5 after:italic", phx_debounce: "5000" %>
           <span class={classes("tex-red-sales-300 text-sm", %{"hidden" => !@cc_email_error})}><%= @cc_email_error %></span>
       <% end %>
       <%= if @show_bcc do %>
         <%= b = form_for :bcc_email, "#", phx_change: "validate_email", phx_submit: "bcc_email", phx_target: @myself %>
-          <%= labeled_input b, :bcc, label: "BCC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", phx_debounce: "5000"%>
+          <%= labeled_input b, :bcc, label: "BCC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", label_class: "after:content-['(semicolon_separated_to_add_more_emails)'] after:font-light after:ml-0.5 after:italic", phx_debounce: "5000"%>
           <span class={classes("tex-red-sales-300 text-sm", %{"hidden" => !@bcc_email_error})}><%= @bcc_email_error %></span>
       <% end %>
       <div class="flex flex-row">
@@ -136,7 +135,6 @@ defmodule PicselloWeb.ClientMessageComponent do
       socket
       |> assign(:to_email_error, nil)
     end
-    |> IO.inspect(label: "===============================================")
     |> noreply()
   end
 
@@ -292,7 +290,11 @@ defmodule PicselloWeb.ClientMessageComponent do
   do:
     email
     |> String.split(";", trim: true)
-    |> Enum.all?(fn email -> String.match?(email, Picsello.Accounts.User.email_regex()) end)
+    |> Enum.all?(fn email ->
+      email
+      |> String.trim()
+      |> String.match?(Picsello.Accounts.User.email_regex())
+    end)
 
   defp search_clients(assigns) do
     ~H"""
