@@ -526,7 +526,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     break_block_booked = is_break_block_already_booked(dates)
 
     changeset =
-      if changeset.valid? || break_block_booked do
+      if changeset.valid? do
         changeset
         |> Ecto.Changeset.put_embed(:dates, dates)
       else

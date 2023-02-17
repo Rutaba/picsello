@@ -91,12 +91,13 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
         <%= if Enum.empty?(@available_times) do %>
           <p class="mt-2">No available times</p>
         <% end %>
-        <%= Enum.map(@available_times, fn {time, is_available, is_break} ->  %>
-
+        <%= Enum.map(@available_times, fn {time, is_available, is_break, is_hide} ->  %>
+          <%= if ((is_hide and !is_available) or !is_hide) and !is_break do  %>
           <label class={classes("flex items-center justify-center border #{if is_available and !is_break, do: 'border-black'} py-3 my-4 cursor-pointer", %{"bg-black text-white" => Time.compare(time, @selected_time || Time.utc_now) == :eq, "bg-white !text-grey !border-grey" => (is_available and !is_break)})}>
             <%= time |> Calendar.strftime("%-I:%M%P") %>
             <input type="radio" name={@name} value={time} class="hidden" disabled={!is_available || is_break}/>
           </label>
+          <% end %>
         <% end )%>
       </div>
     </div>

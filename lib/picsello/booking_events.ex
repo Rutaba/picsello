@@ -168,7 +168,7 @@ defmodule Picsello.BookingEvents do
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
         for(
-          %{start_time: %Time{} = start_time, end_time: %Time{} = end_time, hidden: false} <-
+          %{start_time: %Time{} = start_time, end_time: %Time{} = end_time} <-
             time_blocks,
           available_slots = (Time.diff(end_time, start_time) / duration) |> trunc(),
           slot <- 0..(available_slots - 1),
@@ -199,14 +199,13 @@ defmodule Picsello.BookingEvents do
     Enum.map(time_blocks, fn block ->
       is_booked_block = is_blocked_booked(block, all_slots)
 
-      if is_booked_block do
-        case block.is_break do
+      block =
+        case block.is_break and is_booked_block do
           true -> Map.put(block, :is_valid, false)
-          _ -> block |> Map.put(:is_booked, true) |> Map.put(:is_valid, true)
+          _ -> Map.put(block, :is_valid, true)
         end
-      else
-        block |> Map.put(:is_valid, true)
-      end
+
+      block |> Map.put(:is_booked, is_booked_block)
     end)
   end
 
@@ -221,7 +220,7 @@ defmodule Picsello.BookingEvents do
         %{start_time: %Time{} = start_time, end_time: %Time{} = end_time},
         slots
       ) do
-    Enum.filter(slots, fn {slot_time, is_available, _is_break} ->
+    Enum.filter(slots, fn {slot_time, is_available, _is_break, _is_hide} ->
       !is_available && Time.compare(slot_time, start_time) in [:gt, :eq] &&
         Time.compare(slot_time, end_time) in [:lt, :eq]
     end)
@@ -230,10 +229,12 @@ defmodule Picsello.BookingEvents do
 
   defp filter_is_break_slots(slot_times, booking_event, date) do
     slot_times
-    |> Enum.map(fn {slot_time, is_available, _is_break} ->
+    |> Enum.map(fn {slot_time, is_available, _is_break, _is_hide} ->
       blocker_slots = filter_is_break_time_slots(booking_event, slot_time, date)
+      hidden_slots = filter_is_hide_time_slots(booking_event, slot_time, date)
       is_break = Enum.any?(blocker_slots)
-      {slot_time, is_available, is_break}
+      is_hide = Enum.any?(hidden_slots)
+      {slot_time, is_available, is_break, is_hide}
     end)
   end
 
@@ -258,8 +259,29 @@ defmodule Picsello.BookingEvents do
     end
   end
 
+  defp filter_is_hide_time_slots(booking_event, slot_time, date) do
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
+      %{time_blocks: time_blocks} ->
+        for(
+          %{
+            start_time: %Time{} = start_time,
+            end_time: %Time{} = end_time,
+            hidden: hidden
+          } <- time_blocks
+        ) do
+          if hidden do
+            Time.compare(slot_time, start_time) in [:gt, :eq] &&
+              Time.compare(slot_time, end_time) in [:lt, :eq]
+          end
+        end
+
+      _ ->
+        false
+    end
+  end
+
   defp filter_overlapping_shoots(slot_times, _booking_event, _date, true) do
-    slot_times |> Enum.map(fn slot_time -> {slot_time, true, true} end)
+    slot_times |> Enum.map(fn slot_time -> {slot_time, true, true, true} end)
   end
 
   defp filter_overlapping_shoots(
@@ -307,7 +329,7 @@ defmodule Picsello.BookingEvents do
                DateTime.compare(slot_end, end_time) in [:lt, :eq])
         end)
 
-      {slot_time, is_available, false}
+      {slot_time, is_available, false, false}
     end)
   end
 
