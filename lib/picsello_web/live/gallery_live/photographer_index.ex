@@ -184,7 +184,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   def handle_info(
-        {:message_composed, message_changeset},
+        {:message_composed, message_changeset, recipients},
         %{
           assigns: %{
             job: job,
@@ -198,14 +198,14 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       |> Base.encode64()
 
     %{id: oban_job_id} =
-      %{message: serialized_message, email: job.client.email, job_id: job.id}
+      %{message: serialized_message, job_id: job.id, recipients: recipients}
       |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
       |> Oban.insert!()
 
     Waiter.postpone(gallery.id, fn ->
       Oban.cancel_job(oban_job_id)
 
-      {:ok, message} = Messages.add_message_to_job(message_changeset, job)
+      {:ok, message} = Messages.add_message_to_job(message_changeset, job, recipients)
       ClientNotifier.deliver_email(message, job.client.email)
     end)
 

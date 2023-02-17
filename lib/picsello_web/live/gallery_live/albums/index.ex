@@ -283,8 +283,8 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   end
 
   @impl true
-  def handle_info({:message_composed, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset, "gallery")
+  def handle_info({:message_composed, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "gallery")
   end
 
   def thumbnail(%{album: %{thumbnail_photo: nil}} = assigns) do

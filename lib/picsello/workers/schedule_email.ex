@@ -8,7 +8,7 @@ defmodule Picsello.Workers.ScheduleEmail do
   alias Picsello.Repo
 
   def perform(%Oban.Job{
-        args: %{"email" => email, "message" => message_serialized, "job_id" => job_id}
+        args: %{"message" => message_serialized, "recipients" => recipients, "job_id" => job_id}
       }) do
     message_changeset =
       message_serialized
@@ -17,8 +17,8 @@ defmodule Picsello.Workers.ScheduleEmail do
 
     job = Job.by_id(job_id) |> Repo.one!()
 
-    {:ok, message} = Messages.add_message_to_job(message_changeset, job)
-    ClientNotifier.deliver_email(message, email)
+    {:ok, message} = Messages.add_message_to_job(message_changeset, job, recipients)
+    ClientNotifier.deliver_email(message, recipients)
     :ok
   end
 end

@@ -882,13 +882,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  def handle_info({:message_composed, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset, "gallery")
+  def handle_info({:message_composed, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "gallery")
   end
 
   @impl true
-  def handle_info({:message_composed_for_album, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset, "album")
+  def handle_info({:message_composed_for_album, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "album")
   end
 
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
