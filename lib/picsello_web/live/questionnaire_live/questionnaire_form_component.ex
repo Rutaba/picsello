@@ -1,7 +1,7 @@
 defmodule PicselloWeb.QuestionnaireFormComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Questionnaire, Repo}
+  alias Picsello.{Questionnaire, Repo, Profiles}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @impl true
@@ -434,10 +434,17 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
     end
   end
 
-  defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
+  defp assign_job_types(
+         %{
+           assigns: %{
+             current_user: %{organization: %{organization_job_types: job_types}}
+           }
+         } = socket
+       ) do
     socket
     |> assign_new(:job_types, fn ->
-      (Map.get(organization.profile, :job_types, []) ++ [Picsello.JobType.other_type()])
+      (Profiles.enabled_job_types(job_types) ++
+         [Picsello.JobType.other_type()])
       |> Enum.uniq()
     end)
   end
