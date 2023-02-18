@@ -253,5 +253,122 @@ defmodule Picsello.WelcomePageTest do
       |> visit("/")
       |> assert_text("Get ready for your calendar to start filling up with shoots!")
     end
+
+    feature "calendar card is empty", %{session: session, user: user} do
+      session
+      |> sign_in(user)
+      |> visit("/")
+      |> assert_text("Get ready for your calendar to start filling up with shoots!")
+      |> click(button("Create booking event"))
+      |> assert_text("Add booking event: Details")
+      |> visit("/")
+      |> click(button("View calendar"))
+      |> assert_text("Calendar")
+    end
+
+    feature "clients card is empty", %{session: session, user: user} do
+      session
+      |> sign_in(user)
+      |> assert_text("Let's start by adding your clients - whether they are new")
+      |> click(button("Add client"))
+      |> assert_text("Add Client: General Details")
+      |> visit("/")
+      |> click(button("View clients"))
+      |> assert_text("Clients")
+    end
+
+    feature "support card is empty", %{session: session, user: user} do
+      session
+      |> sign_in(user)
+      |> assert_text("Get in touch with our Customer Success")
+      |> click(button("View help center"))
+    end
+
+    feature "marketing card is empty", %{session: session, user: user} do
+      session
+      |> sign_in(user)
+      |> assert_text("Create a marketing event")
+      |> click(button("Send"))
+      |> assert_text("Edit email")
+      |> visit("/")
+      |> click(button("View marketing"))
+      |> assert_text("Marketing")
+    end
+
+    feature "actions menu", %{session: session, user: user} do
+      session
+      |> sign_in(user)
+      |> click(button("Actions"))
+      |> click(button("Create lead"))
+      |> assert_text("Create a lead")
+      |> click(button("Cancel"))
+      |> click(button("Actions"))
+      |> click(button("Create client"))
+      |> assert_text("Add Client: General Details")
+      |> click(button("Cancel"))
+      |> click(button("Actions"))
+      |> click(button("Create gallery"))
+      |> assert_text("Create a Gallery: Get Started")
+      |> click(button("cancel"))
+      |> click(button("Actions"))
+      |> click(button("Import job"))
+      |> assert_text("Import Existing Job: Get Started")
+      |> click(button("cancel"))
+      |> click(button("Actions"))
+      |> click(button("Create booking event", count: 2, at: 1))
+      |> assert_text("Add booking event: Details")
+      |> visit("/")
+      |> click(button("Actions"))
+      |> click(button("Create package"))
+      |> assert_text("Add a Package: Provide Details")
+      |> visit("/")
+      |> click(button("Actions"))
+      |> click(button("Create questionnaire"))
+      |> assert_text("Add questionnaire")
+      |> click(button("Cancel"))
+    end
+  end
+
+  describe "inbox on dashboard" do
+    setup do
+      user = insert(:user, %{name: "Morty Smith"}) |> onboard!
+      insert(:lead, user: user, type: "wedding") |> promote_to_job()
+      job = insert(:lead, user: user, type: "family") |> promote_to_job()
+
+      [user: user, job: job]
+    end
+
+    feature "inbox card is empty", %{session: session, user: user} do
+      session
+      |> sign_in(user)
+      |> visit("/")
+      |> assert_text("This is where you will see new messages from your clients.")
+      |> click(button("View inbox"))
+      |> assert_text("You don’t have any new messages.")
+    end
+
+    feature "inbox card has messages", %{session: session, user: user, job: job} do
+      token = Picsello.Messages.token(job)
+
+      session
+      |> post(
+        "/sendgrid/inbound-parse",
+        %{
+          "text" => "client response",
+          "html" => "<p>client response</p>",
+          "subject" => "Re: subject",
+          "envelope" => Jason.encode!(%{"to" => ["#{token}@test-inbox.picsello.com"]})
+        }
+        |> URI.encode_query(),
+        [{"Content-Type", "application/x-www-form-urlencoded"}]
+      )
+
+      session
+      |> sign_in(user)
+      |> assert_has(testid("thread-card", count: 1))
+      |> assert_has(testid("badge", text: "1"))
+      |> assert_text("New")
+      |> assert_text("Mary Jane")
+    end
   end
 end
