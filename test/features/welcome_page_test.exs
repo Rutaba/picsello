@@ -163,21 +163,6 @@ defmodule Picsello.WelcomePageTest do
       [user: insert(:user, %{name: "Morty Smith"}) |> onboard!]
     end
 
-    def lead_counts(session) do
-      card =
-        session
-        |> find(testid("leads-card"))
-
-      badge = card |> find(testid("badge")) |> Element.text()
-
-      counts =
-        card
-        |> find(css("li", count: 2))
-        |> Enum.map(&Element.text/1)
-
-      {badge, counts |> hd, counts |> tl |> hd}
-    end
-
     feature "leads card shows numbers", %{session: session, user: user} do
       _archived = insert(:lead, user: user, archived_at: DateTime.utc_now())
       _pending_1 = insert(:lead, user: user)
@@ -203,25 +188,24 @@ defmodule Picsello.WelcomePageTest do
           ]
         )
 
-      counts =
-        session
-        |> sign_in(user)
-        |> lead_counts()
-
-      assert {"6", "4 pending leads", "2 active leads"} == counts
+      session
+      |> sign_in(user)
+      |> click(button("Leads"))
+      |> assert_has(css("main > div > ul > li", count: 6))
     end
 
     feature "leads card has empty state", %{session: session, user: user} do
       session
       |> sign_in(user)
-      |> find(testid("leads-card"))
-      |> assert_text("Create leads to start")
+      |> assert_has(button("Leads"))
+      |> click(button("Actions"))
+      |> assert_has(button("Create lead"))
 
       insert(:lead, user: user, archived_at: DateTime.utc_now())
 
-      counts = session |> visit("/") |> lead_counts()
-
-      assert {"", "0 pending leads", "0 active leads"} == counts
+      session
+      |> click(button("Leads"))
+      |> assert_has(css("main > div > ul > li", count: 0))
     end
 
     feature "jobs card shows numbers", %{session: session, user: user} do
@@ -245,9 +229,9 @@ defmodule Picsello.WelcomePageTest do
 
       session
       |> sign_in(user)
-      |> find(testid("jobs-card"))
+      |> assert_has(button("Jobs"))
       |> assert_has(testid("badge", text: "2"))
-      |> assert_text("2 upcoming jobs within the next seven days")
+      |> assert_text("jobs upcoming this week")
     end
 
     feature "jobs card empty state", %{session: session, user: user} do
@@ -255,8 +239,7 @@ defmodule Picsello.WelcomePageTest do
 
       session
       |> sign_in(user)
-      |> find(testid("jobs-card"))
-      |> assert_text("Leads will become jobs")
+      |> assert_text("Jobs")
 
       insert(:lead,
         user: user,
@@ -266,7 +249,9 @@ defmodule Picsello.WelcomePageTest do
       )
       |> promote_to_job()
 
-      session |> visit("/") |> find(testid("jobs-card")) |> assert_text("0 upcoming jobs")
+      session
+      |> visit("/")
+      |> assert_text("Get ready for your calendar to start filling up with shoots!")
     end
   end
 end

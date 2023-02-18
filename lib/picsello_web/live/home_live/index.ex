@@ -513,7 +513,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
     ~H"""
     <%= if @notification_count && @notification_count !== 0 do %>
-      <span class={"text-xs bg-red-sales-300 text-white w-5 h-5 leading-none rounded-full flex items-center justify-center pb-0.5 #{@classes}"}><%= @notification_count %></span>
+      <span {testid("badge")} class={"text-xs bg-red-sales-300 text-white w-5 h-5 leading-none rounded-full flex items-center justify-center pb-0.5 #{@classes}"}><%= @notification_count %></span>
     <% end %>
     """
   end
