@@ -441,7 +441,7 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  defp build_download_fields(%{for: key, download_changeset: download_changeset} = assigns) do
+  defp build_download_fields(%{download_changeset: download_changeset} = assigns) do
     ~H"""
     <div class="flex flex-col md:flex-row w-full mt-3">
       <div class="flex flex-col">
@@ -556,14 +556,6 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   def package_description_length_long?(nil), do: false
   def package_description_length_long?(description), do: byte_size(description) > 100
-
-  defp package_or_gallery_content(key) do
-    if key == :create_gallery do
-      "Gallery"
-    else
-      "Package"
-    end
-  end
 
   defp truncate_package_name(name) do
     if(String.length(name) > 25, do: String.slice(name, 0..25) <> "...", else: name)
