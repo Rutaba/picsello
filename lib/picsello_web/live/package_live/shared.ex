@@ -188,7 +188,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       <div class="flex flex-col">
         <label class="flex font-bold">
           <%= radio_button(download_changeset, :status, :limited, class: "w-5 h-5 mr-2 radio mt-0.5") %>
-          <p><%= package_or_gallery_content(@for) %> includes a specified number of Digital Images <span class="font-normal italic text-base-250">(Charge for Digital Images)</span></p>
+          <p>Set number of Digital Images included</p>
         </label>
 
         <%= if get_field(download_changeset, :status) == :limited do %>
@@ -198,30 +198,26 @@ defmodule PicselloWeb.PackageLive.Shared do
                   download_changeset, :count, type: :number_input, phx_debounce: 200, step: 1,
                   min: 0, value: 0, class: "mt-3 w-full sm:w-32 text-lg text-center md:ml-7"
                 ) %>
-                <span class="ml-2 text-base-250">included</span>
+                <span class="ml-2 text-base-250">included in the package</span>
               </div>
             </div>
         <% end %>
 
         <label class="flex mt-3 font-bold">
             <%= radio_button(download_changeset, :status, :none, class: "w-5 h-5 mr-2 radio mt-0.5") %>
-            <p><%= package_or_gallery_content(@for) %> does not include any Digital Images </p>
+            <p>Charge for each Digital Image</p>
         </label>
-
+        <span class="font-normal ml-7 text-base-250">(no images included)</span>
         <label class="flex mt-3 font-bold">
           <%= radio_button(download_changeset, :status, :unlimited, class: "w-5 h-5 mr-2 radio mt-0.5") %>
-          <p><%= package_or_gallery_content(@for) %> includes Unlimited Digital Images <span class="font-normal italic text-base-250">(Do not charge for any Digital Image)</span></p>
+          <p>All Digital Images included</p>
         </label>
-
-        <%= if @for == :create_gallery do %>
-          <span class="italic ml-7">(Do not charge for any Digital Image)</span>
-        <% end %>
       </div>
       <div class="my-8 border-t lg:my-0 lg:mx-8 lg:border-t-0 lg:border-l border-base-200"></div>
-      <%= if get_field(download_changeset, :status) == :limited do %>
+      <%= if get_field(download_changeset, :status) in [:limited, :none] do %>
         <div class="ml-7 mt-3">
-          <h3 class="font-bold">Upsell options</h3>
-          <p class="mb-3 text-base-250">For additional Digital Images beyond what’s included in the <%= package_or_gallery_content(key) |> String.downcase() %> Digital Images are automatically set at <%= input_value(download_changeset, :each_price)%>/each.</p>
+          <h3 class="font-bold">Pricing Options</h3>
+          <p class="mb-3 text-base-250">The following digital image pricing is set in your Global Gallery Settings</p>
           <.include_download_price download_changeset={download_changeset} />
           <.is_buy_all download_changeset={download_changeset} />
         </div>
@@ -234,12 +230,12 @@ defmodule PicselloWeb.PackageLive.Shared do
     ~H"""
     <label class="flex items-center mt-3 font-bold">
       <%= checkbox(download_changeset, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
-      <span>Set a <em>Buy Them All</em> price</span>
+      <span>Offer a <i>Buy Them All</i> price for this package</span>
     </label>
 
     <%= if check?(download_changeset, :is_buy_all) do %>
       <div class="flex flex-row items-center mt-3 lg:ml-7">
-          <%= input(download_changeset, :buy_all, value: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+          <%= input(download_changeset, :buy_all, value: input_value(download_changeset, :buy_all), class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
           <%= error_tag download_changeset, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
           <span class="ml-3 text-base-250"> for all images </span>
       </div>
@@ -253,11 +249,12 @@ defmodule PicselloWeb.PackageLive.Shared do
       <div class="w-full sm:w-auto">
         <label class="flex font-bold items-center">
           <%= checkbox(download_changeset, :is_custom_price, class: "w-5 h-5 mr-2.5 checkbox") %>
-          <span>Set my own <em>per Digital Image</em> price</span>
+          <span>Change my per <i>Digital Image</i> price for this package</span>
         </label>
+        <span class="font-normal ml-7 text-base-250">(<%= input_value(download_changeset, :each_price)%>/each)</span>
         <%= if check?(download_changeset, :is_custom_price) do %>
           <div class="flex flex-row items-center mt-3 lg:ml-7">
-            <%= input(download_changeset, :each_price, class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+            <%= input(download_changeset, :each_price, value: input_value(download_changeset, :each_price), class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
             <%= error_tag download_changeset, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
             <span class="ml-3 text-base-250"> per image </span>
           </div>
