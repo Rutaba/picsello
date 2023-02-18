@@ -1,6 +1,6 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
-  alias Picsello.{Repo, BookingEvent, Job}
+  alias Picsello.{Repo, BookingEvent, Job, Package}
   import Ecto.Query
 
   defmodule Booking do
@@ -184,25 +184,20 @@ defmodule Picsello.BookingEvents do
 
       shoot_date = starts_at |> DateTime.shift_zone!("Etc/UTC")
 
-      {payment_schedules, total_price} =
+      payment_schedules =
         package_payment_schedules
-        |> Enum.reduce({[], Money.new(0)}, fn schedule, {schedules, total_price} ->
-          {
-            schedule
-            |> Map.from_struct()
-            |> Map.drop([:package_payment_preset_id])
-            |> Map.put(:shoot_date, shoot_date)
-            |> Map.put(:schedule_date, get_schedule_date(schedule, shoot_date))
-            |> List.wrap()
-            |> Enum.concat(schedules),
-            Money.add(total_price, schedule.price)
-          }
+        |> Enum.map(fn schedule ->
+          schedule
+          |> Map.from_struct()
+          |> Map.drop([:package_payment_preset_id])
+          |> Map.put(:shoot_date, shoot_date)
+          |> Map.put(:schedule_date, get_schedule_date(schedule, shoot_date))
         end)
 
       opts = %{
         payment_schedules: payment_schedules,
         action: :insert,
-        total_price: total_price
+        total_price: Package.price(package_template)
       }
 
       package_template

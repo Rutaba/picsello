@@ -318,7 +318,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def expired_at(organization_id) do
     gs = GlobalSettings.get(organization_id)
-    gs && Timex.shift(DateTime.utc_now(), days: gs.expiration_days)
+    gs && gs.expiration_days && Timex.shift(DateTime.utc_now(), days: gs.expiration_days)
   end
 
   def make_opts(
@@ -553,8 +553,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp tracking_info(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
     Enum.find_value(sub_orders, fn
-      %{editor_id: ^editor_id, whcc_tracking: tracking} ->
-        tracking
+      %{editor_ids: editor_ids, whcc_tracking: tracking} ->
+        if editor_id in editor_ids, do: tracking
 
       _ ->
         nil

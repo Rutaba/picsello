@@ -168,21 +168,21 @@ defmodule PicselloWeb.PackageLive.Shared do
     <div class="border border-solid p-4 mb-3 ml-0 md:p-0 md:mb-0 md:ml-2 md:border-0">
       <div class="relative" {testid("package-template-card")}>
         <div class="flex items-center">
-          <h1 title={@package.name} class="text-xl font-bold line-clamp-2 text-blue-planning-300 link hover:cursor-pointer" phx-click="edit-package" phx-value-package-id={@package.id}>
-            <%=
-              if String.length(@package.name) > 25 do
-                String.slice(@package.name, 0..25) <> "..."
-              else
-                @package.name
-              end
-            %>
-          </h1>
-          <div class="flex items-center custom-tooltip" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id}>
-            <.icon name={if @package.show_on_public_profile, do: "eye", else: "closed-eye"} class={classes("w-5 h-5 mx-2 hover:cursor-pointer", %{"text-gray-400" => !@package.show_on_public_profile, "text-blue-planning-300" => @package.show_on_public_profile})}/>
-            <span class="shadow-lg rounded-lg py-1 px-2 text-xs">
-              <%= if @package.show_on_public_profile, do: 'Shown on your Public Profile', else: 'Hidden on your Public Profile' %>
-            </span>
-          </div>
+          <%= if @package.archived_at do %>
+            <h1 title={@package.name} class="text-xl font-bold line-clamp-2 text-blue-planning-300">
+              <%= truncate_package_name(@package.name) %>
+            </h1>
+            <% else %>
+            <h1 title={@package.name} phx-click="edit-package" phx-value-package-id={@package.id} class="text-xl font-bold line-clamp-2 text-blue-planning-300 link hover:cursor-pointer">
+              <%= truncate_package_name(@package.name) %>
+            </h1>
+            <div class="flex items-center custom-tooltip" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id}>
+              <.icon name={if @package.show_on_public_profile, do: "eye", else: "closed-eye"} class={classes("w-5 h-5 mx-2 hover:cursor-pointer", %{"text-gray-400" => !@package.show_on_public_profile, "text-blue-planning-300" => @package.show_on_public_profile})}/>
+              <span class="shadow-lg rounded-lg py-1 px-2 text-xs">
+                <%= if @package.show_on_public_profile, do: 'Shown on your Public Profile', else: 'Hidden on your Public Profile' %>
+              </span>
+            </div>
+          <% end %>
         </div>
         <div class="sm:flex sm:flex-row md:grid md:grid-cols-6">
           <div class={"flex flex-col col-span-2 group #{@class}"}>
@@ -562,5 +562,9 @@ defmodule PicselloWeb.PackageLive.Shared do
     else
       "Package"
     end
+  end
+
+  defp truncate_package_name(name) do
+    if(String.length(name) > 25, do: String.slice(name, 0..25) <> "...", else: name)
   end
 end

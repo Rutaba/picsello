@@ -5,6 +5,9 @@
   <%= flash(@flash) %>
 
   <div class="pt-16">
+    <%= if @current_user && !@current_user.allow_cash_payment do %>
+      <.stripe_setup_banner socket={@socket} current_user={@current_user} />
+    <% end %>
     <.gallery_top_banner class="text-white bg-blue-planning-300 border-b" socket={@socket} current_user={@current_user} accumulated_progress={@accumulated_progress} galleries_count={@galleries_count}/>
     <.subscription_ending_soon type="banner" socket={@socket} current_user={@current_user} class="flex px-6 py-2 items-center bg-blue-planning-300 text-white justify-center"/>
     <%= @inner_content %>
