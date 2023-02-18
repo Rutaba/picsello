@@ -18,10 +18,14 @@ defmodule Picsello.Repo.Migrations.AddStatusBookingEvents do
   def down do
     alter table(:booking_events) do
       add(:disabled_at, :utc_datetime)
-      remove(:status)
     end
 
     current_time = DateTime.utc_now() |> DateTime.truncate(:second)
     execute("UPDATE booking_events SET disabled_at= #{current_time} WHERE status='disabled';")
+
+    execute("""
+      ALTER TABLE "public"."booking_events"
+      DROP COLUMN status;
+    """)
   end
 end
