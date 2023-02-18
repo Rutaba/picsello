@@ -1,6 +1,6 @@
 defmodule Picsello.Onboardings do
   @moduledoc "context module for photographer onboarding"
-  alias Picsello.{Repo, Accounts.User, Organization, Profiles.Profile}
+  alias Picsello.{Repo, Accounts.User, Organization, OrganizationJobType, Profiles.Profile}
   import Ecto.Changeset
   import Picsello.Accounts.User, only: [put_new_attr: 3, update_attr_in: 3]
   import Ecto.Query, only: [from: 2]
@@ -56,7 +56,7 @@ defmodule Picsello.Onboardings do
       field(:state, :string)
       field(:social_handle, :string)
       field(:online_source, :string, values: @online_source_options)
-
+      field(:welcome_count, :integer)
       embeds_many(:intro_states, IntroState, on_replace: :delete)
     end
 
@@ -69,7 +69,8 @@ defmodule Picsello.Onboardings do
         :switching_from_softwares,
         :state,
         :social_handle,
-        :online_source
+        :online_source,
+        :welcome_count
       ])
       |> validate_required([:state, :photographer_years, :schedule])
       |> validate_change(:phone, &valid_phone/2)
@@ -80,6 +81,12 @@ defmodule Picsello.Onboardings do
       |> cast(attrs, [:phone])
       |> validate_required([:phone])
       |> validate_change(:phone, &valid_phone/2)
+    end
+
+    def welcome_count_changeset(%__MODULE__{} = onboarding, attrs) do
+      onboarding
+      |> cast(attrs, [:welcome_count])
+      |> validate_required([:welcome_count])
     end
 
     def completed?(%__MODULE__{completed_at: nil}), do: false
@@ -102,7 +109,9 @@ defmodule Picsello.Onboardings do
       |> put_new_attr(:onboarding, %{})
       |> update_attr_in(
         [:organization],
-        &((&1 || %{}) |> put_new_attr(:profile, %{}) |> put_new_attr(:id, user.organization_id))
+        &((&1 || %{})
+          |> put_new_attr(:profile, %{color: Profile.default_color()})
+          |> put_new_attr(:id, user.organization_id))
       ),
       []
     )
@@ -178,6 +187,13 @@ defmodule Picsello.Onboardings do
     |> cast_embed(:onboarding, with: &Onboarding.phone_changeset(&1, &2), required: true)
   end
 
+  def increase_welcome_count!(%{onboarding: %{welcome_count: count}} = current_user) do
+    current_user
+    |> cast(%{onboarding: %{welcome_count: (count || 0) + 1}}, [])
+    |> cast_embed(:onboarding, with: &Onboarding.welcome_count_changeset/2, required: true)
+    |> Repo.update!()
+  end
+
   def show_intro?(current_user, intro_id) do
     for(
       %{id: ^intro_id, state: state} when state in [:completed, :dismissed] <-
@@ -199,15 +215,26 @@ defmodule Picsello.Onboardings do
     organization
     |> Organization.registration_changeset(attrs)
     |> cast_embed(:profile, required: step > 2, with: &profile_onboarding_changeset(&1, &2, step))
+    |> cast_assoc(:organization_job_types,
+      required: step > 2,
+      with: &job_types_changeset(&1, &2, step)
+    )
   end
 
-  defp profile_onboarding_changeset(profile, attrs, 2), do: Profile.changeset(profile, attrs)
+  defp job_types_changeset(job_types, attrs, step) when step in [2, 3] do
+    attrs =
+      if attrs && Map.has_key?(attrs, "job_type"),
+        do:
+          Map.put(attrs, "show_on_business?", true)
+          |> Map.replace("id", String.to_integer(attrs["id"])),
+        else: attrs
+
+    OrganizationJobType.changeset(job_types, attrs)
+  end
 
   defp profile_onboarding_changeset(profile, attrs, 3) do
     profile
-    |> profile_onboarding_changeset(attrs, 2)
-    |> validate_required([:job_types])
-    |> validate_length(:job_types, min: 1)
+    |> Profile.changeset(attrs)
   end
 
   defp profile_onboarding_changeset(profile, attrs, step) when step in [2, 3] do

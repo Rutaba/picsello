@@ -55,7 +55,6 @@ defmodule PicselloWeb.BookingProposalLive.ScheduleComponent do
       end)
 
     if overdue_schedules != [] do
-      _schedule = hd(overdue_schedules)
       "Pay overdue invoice"
     else
       "Pay upcoming invoice"

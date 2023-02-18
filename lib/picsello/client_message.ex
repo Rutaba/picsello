@@ -31,7 +31,7 @@ defmodule Picsello.ClientMessage do
   def create_inbound_changeset(attrs) do
     %__MODULE__{}
     |> cast(attrs, [:body_text, :body_html, :job_id, :client_id, :subject])
-    |> validate_required([:subject, :body_text, :body_text, :job_id])
+    |> validate_required([:job_id])
     |> put_change(:outbound, false)
   end
 

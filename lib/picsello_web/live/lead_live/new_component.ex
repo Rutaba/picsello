@@ -3,7 +3,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
   use PicselloWeb, :live_component
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Clients, Repo}
+  alias Picsello.{Job, Jobs, Clients, Profiles, Repo}
   import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1, search_clients: 1]
 
   @impl true
@@ -149,7 +149,9 @@ defmodule PicselloWeb.JobLive.NewComponent do
   defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
     socket
     |> assign_new(:job_types, fn ->
-      (organization.profile.job_types ++ [Picsello.JobType.other_type()]) |> Enum.uniq()
+      (Profiles.enabled_job_types(organization.organization_job_types) ++
+         [Picsello.JobType.other_type()])
+      |> Enum.uniq()
     end)
   end
 end

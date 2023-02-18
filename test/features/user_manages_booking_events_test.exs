@@ -51,15 +51,33 @@ defmodule Picsello.UserManagesBookingEventsTest do
   end
 
   feature "creates new booking event", %{session: session, user: user} do
-    insert(:package_template, user: user, job_type: "wedding")
+    insert(:package_template, user: user, job_type: "wedding", show_on_public_profile: true)
 
     template_id =
-      insert(:package_template, user: user, job_type: "mini", name: "Mini 1", shoot_count: 1)
+      insert(:package_template,
+        user: user,
+        job_type: "mini",
+        name: "Mini 1",
+        shoot_count: 1,
+        show_on_public_profile: true
+      )
       |> Map.get(:id)
 
-    insert(:package_template, user: user, job_type: "mini", name: "Mini 2", shoot_count: 2)
+    insert(:package_template,
+      user: user,
+      job_type: "mini",
+      name: "Mini 2",
+      shoot_count: 2,
+      show_on_public_profile: true
+    )
 
-    insert(:package_template, user: user, job_type: "portrait", name: "Portrait 1", shoot_count: 1)
+    insert(:package_template,
+      user: user,
+      job_type: "portrait",
+      name: "Portrait 1",
+      shoot_count: 1,
+      show_on_public_profile: true
+    )
 
     bypass = Bypass.open()
     mock_image_upload(bypass)

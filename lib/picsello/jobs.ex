@@ -4,7 +4,8 @@ defmodule Picsello.Jobs do
     Accounts.User,
     Repo,
     Client,
-    Job
+    Job,
+    OrganizationJobType
   }
 
   import Ecto.Query
@@ -56,4 +57,17 @@ defmodule Picsello.Jobs do
       |> Client.create_changeset()
     )
   end
+
+  def get_job_type(name, organization_id) do
+    from(ojt in OrganizationJobType,
+      select: %{id: ojt.id, show_on_profile: ojt.show_on_profile?},
+      where: ojt.job_type == ^name and ojt.organization_id == ^organization_id
+    )
+    |> Repo.one()
+  end
+
+  def get_all_job_types(organization_id),
+    do:
+      from(ojt in OrganizationJobType, where: ojt.organization_id == ^organization_id)
+      |> Repo.all()
 end

@@ -161,6 +161,10 @@ config :picsello, :zapier,
 config :pdf_generator,
   raise_on_missing_wkhtmltopdf_binary: false
 
+config :mime, :types, %{
+  "text/calendar" => ["text/calendar"]
+}
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

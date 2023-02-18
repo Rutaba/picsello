@@ -2,14 +2,6 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  alias Picsello.{
-    Job,
-    Clients,
-    Package
-  }
-
-  alias Ecto.Changeset
-
   import PicselloWeb.Live.Shared
 
   import PicselloWeb.JobLive.Shared,
@@ -18,6 +10,15 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
       assign_uploads: 2,
       process_cancel_upload: 2
     ]
+
+  alias Picsello.{
+    Job,
+    Clients,
+    Package,
+    Profiles
+  }
+
+  alias Ecto.Changeset
 
   @upload_options [
     accept: ~w(.pdf .docx .txt),
@@ -40,6 +41,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
     )
     |> assign(:pre_picsello_client, false)
     |> assign_new(:job, fn -> nil end)
+    |> assign_new(:new_client, fn -> false end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1} end)
     |> assign_uploads(@upload_options)
     |> assign(:ex_documents, [])
@@ -339,7 +341,9 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
   defp assign_job_types(%{assigns: %{current_user: %{organization: organization}}} = socket) do
     socket
     |> assign_new(:job_types, fn ->
-      (organization.profile.job_types ++ [Picsello.JobType.other_type()]) |> Enum.uniq()
+      (Profiles.enabled_job_types(organization.organization_job_types) ++
+         [Picsello.JobType.other_type()])
+      |> Enum.uniq()
     end)
   end
 

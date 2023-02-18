@@ -84,7 +84,12 @@ defmodule PicselloWeb.Live.Profile.Shared do
   end
 
   def assign_organization(socket, organization) do
-    %{profile: profile, user: user, brand_links: brand_links} = organization
+    %{
+      profile: profile,
+      user: user,
+      brand_links: brand_links,
+      organization_job_types: organization_job_types
+    } = organization
 
     assign(socket,
       organization: organization,
@@ -93,7 +98,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
       job_types_description: profile.job_types_description,
       website: get_website_link(brand_links),
       photographer: user,
-      job_types: profile.job_types,
+      job_types: Profiles.public_job_types(organization_job_types),
       url: Profiles.public_url(organization)
     )
   end

@@ -241,7 +241,19 @@ defmodule Picsello.ClientOrdersTest do
       )
     end)
     |> Mox.stub(:editors_export, fn _account_id, [%{id: "editor-id", quantity: nil}], _opts ->
-      build(:whcc_editor_export, unit_base_price: ~M[300]USD, order_sequence_number: 1)
+      build(:whcc_editor_export,
+         unit_base_price: ~M[300]USD,
+         order_sequence_number: 1,
+         order: %{
+           "Orders" => [
+             %{
+               "DropShipFlag" => 1,
+               "FromAddressValue" => 2,
+               "OrderAttributes" => [%{"AttributeUID" => 96}, %{"AttributeUID" => 546}]
+             }
+           ]
+         }
+       )
     end)
     |> Mox.expect(:create_order, fn _account_id, _export ->
       {:ok, build(:whcc_order_created, total: ~M[69]USD, sequence_number: 1)}

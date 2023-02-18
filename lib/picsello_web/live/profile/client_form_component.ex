@@ -16,7 +16,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
     assigns = assigns |> Enum.into(%{header_suffix: ""})
 
     ~H"""
-    <div class="border p-9 border-base-200">
+    <div class="mt-20 border p-9 border-base-200">
       <h2 class="text-3xl font-bold max-w-md">Get in touch<%= @header_suffix %></h2>
 
       <%= if @changeset do %>
@@ -41,13 +41,15 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
             </div>
           </div>
 
-          <div class="mt-7 grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <%= label_for f, :job_type, label: "What photography type are you interested in?", class: "py-2 font-bold col-span-1 lg:col-span-2" %>
+          <%= if Enum.any?(@job_types) do %>
+            <div class="mt-7 grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <%= label_for f, :job_type, label: "What photography type are you interested in?", class: "py-2 font-bold col-span-1 lg:col-span-2" %>
 
-            <%= for job_type <- @job_types do %>
-              <.job_type_option name={input_name(f, :job_type)} type={:radio} job_type={job_type} checked={input_value(f, :job_type) == job_type} color="black" class="rounded-none" />
-            <% end %>
-          </div>
+              <%= for job_type <- @job_types do %>
+                <.job_type_option name={input_name(f, :job_type)} type={:radio} job_type={job_type} checked={input_value(f, :job_type) == job_type} color="black" class="rounded-none" />
+              <% end %>
+            </div>
+          <% end %>
 
           <div class="flex flex-col mt-7">
             <%= label_for f, :message, label: "Your message", class: "py-2 font-bold" %>

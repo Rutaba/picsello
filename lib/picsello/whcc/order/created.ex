@@ -9,7 +9,7 @@ defmodule Picsello.WHCC.Order.Created do
     @primary_key {:sequence_number, :integer, autogenerate: false}
     embedded_schema do
       field :total, Money.Ecto.Type
-      field :editor_id, :string
+      field :editor_ids, {:array, :string}
       field :api, :map
       embeds_one :whcc_processing, Picsello.WHCC.Webhooks.Status
       embeds_one :whcc_tracking, Picsello.WHCC.Webhooks.Event
@@ -19,7 +19,7 @@ defmodule Picsello.WHCC.Order.Created do
             api: map(),
             sequence_number: integer(),
             total: Money.t(),
-            editor_id: nil | String.t()
+            editor_ids: nil | list()
           }
 
     def new(%{"Total" => total, "SequenceNumber" => sequence_number} = order) do
@@ -48,7 +48,7 @@ defmodule Picsello.WHCC.Order.Created do
 
     def changeset(order, params) do
       order
-      |> cast(params |> Map.from_struct(), ~w[total editor_id api sequence_number]a)
+      |> cast(params |> Map.from_struct(), ~w[total editor_ids api sequence_number]a)
     end
   end
 

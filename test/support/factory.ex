@@ -12,6 +12,7 @@ defmodule Picsello.Factory do
     Repo,
     Job,
     Organization,
+    OrganizationJobType,
     Package,
     Campaign,
     CampaignClient,
@@ -61,19 +62,21 @@ defmodule Picsello.Factory do
 
   def onboard_show_intro!(%User{} = user) do
     user
-    |> User.complete_onboarding_changeset()
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_embed(:onboarding, %{completed_at: DateTime.utc_now(), welcome_count: 0})
     |> Repo.update!()
   end
 
   def onboard!(%User{onboarding: nil} = user) do
     organization =
       user
-      |> Repo.preload(:organization)
+      |> Repo.preload(organization: :organization_job_types)
       |> Map.get(:organization)
 
     if !organization.profile do
       organization
       |> Ecto.Changeset.change(profile: build(:profile))
+      |> Ecto.Changeset.change(organization_job_types: organization_job_types())
       |> Repo.update!()
     end
 
@@ -102,9 +105,15 @@ defmodule Picsello.Factory do
   def profile_factory,
     do: %{
       color: Profile.colors() |> hd,
-      is_enabled: true,
-      job_types: ["event", "wedding", "newborn"]
+      is_enabled: true
     }
+
+  def organization_job_types,
+    do: [
+      %OrganizationJobType{job_type: "event", show_on_business?: true, show_on_profile?: true},
+      %OrganizationJobType{job_type: "wedding", show_on_business?: true, show_on_profile?: true},
+      %OrganizationJobType{job_type: "newborn", show_on_business?: true, show_on_profile?: true}
+    ]
 
   def valid_user_attributes(attrs \\ %{}),
     do:

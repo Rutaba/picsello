@@ -210,6 +210,7 @@ defmodule Picsello.Cart.Checkouts do
         capture_method: :manual
       },
       success_url: success_url,
+      billing_address_collection: "auto",
       cancel_url: cancel_url
     }
 

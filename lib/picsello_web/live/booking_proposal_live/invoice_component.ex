@@ -28,17 +28,17 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
             </dl>
           <% end %>
           <%= unless PaymentSchedules.free?(@job) do %>
-          <%= for payment <- @job.payment_schedules do %>
-          <div class="bg-base-200 py-3 px-2">
-              <dl class={classes("flex justify-between font-semibold", %{"text-black" => PaymentSchedules.paid?(payment), "font-bold" => payment == PaymentSchedules.unpaid_payment(@job)})}>
-                <%= if PaymentSchedules.paid?(payment) do %>
-                  <dt><%= payment.description %> paid on <%= strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></dt>
-                <% else %>
-                  <dt><%= payment.description %> <%= if PaymentSchedules.past_due?(payment), do: "due today", else: "due on #{strftime(@photographer.time_zone, payment.due_at, "%b %d, %Y")}" %></dt>
-                <% end %>
-                <dd><%= payment.price %></dd>
-                </dl>
-          </div>
+            <%= for payment <- @job.payment_schedules do %>
+              <div class="bg-base-200 py-3 px-2">
+                  <dl class={classes("flex justify-between font-semibold", %{"text-black" => PaymentSchedules.paid?(payment), "font-bold" => payment == PaymentSchedules.unpaid_payment(@job)})}>
+                    <%= if PaymentSchedules.paid?(payment) do %>
+                      <dt><%= payment.description %> paid on <%= strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></dt>
+                    <% else %>
+                      <dt><%= payment.description %> <%= if PaymentSchedules.past_due?(payment), do: "due today", else: "due on #{strftime(@photographer.time_zone, payment.due_at, "%b %d, %Y")}" %></dt>
+                    <% end %>
+                    <dd><%= payment.price %></dd>
+                    </dl>
+              </div>
             <% end %>
           <% end %>
         </.items>
@@ -109,7 +109,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
     socket
     |> open_modal(__MODULE__, %{
       read_only: read_only || PaymentSchedules.all_paid?(job),
-      job: job,
+      job: Picsello.PaymentSchedules.set_payment_schedules_order(job),
       proposal: proposal,
       photographer: photographer,
       organization: organization,

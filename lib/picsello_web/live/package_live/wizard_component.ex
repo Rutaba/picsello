@@ -8,6 +8,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   alias Picsello.{
     Repo,
     Package,
+    Profiles,
     Packages,
     Packages.Multiplier,
     Packages.Download,
@@ -231,15 +232,19 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   @impl true
-  def update(assigns, socket) do
+  def update(%{current_user: current_user} = assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_new(:job, fn -> nil end)
+    |> assign_new(:show_on_public_profile, fn -> false end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign_new(:contract_changeset, fn -> nil end)
     |> assign_new(:collapsed_documents, fn -> [0, 1] end)
-    |> assign(is_template: assigns |> Map.get(:job) |> is_nil(), job_types: Packages.job_types())
+    |> assign(is_template: assigns |> Map.get(:job) |> is_nil())
+    |> assign(
+      job_types: Profiles.enabled_job_types(current_user.organization.organization_job_types)
+    )
     |> choose_initial_step()
     |> assign_changeset(%{})
     |> assign_questionnaires()
@@ -445,7 +450,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:description}>
           <span>Description <%= error_tag(@f, :description) %></span>
           <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(@f,:description)}>
-            Clear
+            <p class="text-black">Clear</p>
           </.icon_button>
         </.input_label>
         <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your#{if !@is_template do " " <> @job.type end} offering and pricing "} />
@@ -456,13 +461,21 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <div class="flex flex-col mt-6">
           <.input_label form={@f} class="mb-1 text-sm font-semibold" field={:job_type}>
-            Type of Photography
+            Select a Photography Type
           </.input_label>
 
           <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
             <%= for job_type <- @job_types do %>
               <.job_type_option type="radio" name={input_name(@f, :job_type)} job_type={job_type} checked={input_value(@f, :job_type) == job_type} />
             <% end %>
+          </div>
+          <div class="col-start-7">
+            <label class="flex items-center mt-8" {intro_hints_only("intro_hints_only_1")}>
+              <%= checkbox @f, :show_on_public_profile, class: "w-6 h-6 checkbox" %>
+              <h1 class="text-xl ml-2 mr-1 font-bold">Show package on my Public Profile</h1>
+              <.intro_hint content="Default Packages are hidden. All currently created packages are public. All new packages are off by default." />
+            </label>
+            <p class="ml-8 text-gray-500"> Keep this package hidden from potential clients until you're ready to showcase it</p>
           </div>
         </div>
       <% end %>
