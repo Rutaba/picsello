@@ -148,6 +148,7 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def handle_event("search", %{"search_phrase" => search_phrase}, socket) do
+    IO.inspect("I am here =====================")
     socket
     |> assign(search_results: search(search_phrase, socket))
     |> assign(search_phrase: search_phrase)

@@ -20,11 +20,11 @@ defmodule PicselloWeb.ClientMessageComponent do
   }
 
   @impl true
-  def update(%{current_user: current_user, client: %{id: id}} = assigns, socket) do
+  def update(%{current_user: current_user, client: %{id: id, email: email}} = assigns, socket) do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
     |> assign(:clients, Clients.find_all_by(user: current_user))
-    |> assign(:recipients, [])
+    |> assign(:recipients, %{to: [email]})
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:current_focus, -1)
@@ -54,11 +54,12 @@ defmodule PicselloWeb.ClientMessageComponent do
     <div class="modal">
       <.close_x />
       <h1 class="text-3xl"><%= @modal_title %></h1>
+      <.search_existing_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
+
         <%= t = form_for :to_email, "#", phx_change: "validate_email", phx_submit: "to_email", phx_target: @myself %>
-          <%= labeled_input t, :to, label: "To: ", value: "#{@client.email}", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", label_class: "after:content-['(semicolon_separated_to_add_more_emails)'] after:font-light after:ml-0.5 after:italic", phx_debounce: "1000" %>
+          <%= labeled_input t, :to, label: "To: ", value: "#{Map.get(@recipients, :to)}", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", label_class: "after:content-['(semicolon_separated_to_add_more_emails)'] after:font-light after:ml-0.5 after:italic", phx_debounce: "1000" %>
           <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@to_email_error})}><%= @to_email_error %></span>
 
-        <.search_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
       <%= if @show_cc do %>
         <%= c = form_for :cc_email, "#", phx_change: "validate_email", phx_submit: "cc_email", phx_target: @myself %>
           <%= labeled_input c, :cc, label: "CC: ", wrapper_class: classes(hidden: !@show_client_email), class: "h-12", label_class: "relative after:content-['(semicolon_separated_to_add_more_emails)'] after:font-light after:ml-0.5 after:italic", phx_debounce: "1000" %>
@@ -73,12 +74,12 @@ defmodule PicselloWeb.ClientMessageComponent do
       <% end %>
       <div class="flex flex-row">
         <%= if !@show_cc do %>
-          <.icon_button class="py-1 px-4 mt-4 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add CC" phx-click="add-cc" phx-target={@myself} color="blue-planning-300" icon="plus">
+          <.icon_button class="py-1 px-4 mt-4 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add CC" phx-click="show-cc" phx-target={@myself} color="blue-planning-300" icon="plus">
             Add CC
           </.icon_button>
         <% end %>
         <%= if !@show_bcc do %>
-          <.icon_button class="py-1 px-4 mt-4 ml-2 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add BCC" phx-click="add-bcc" phx-target={@myself} color="blue-planning-300" icon="plus">
+          <.icon_button class="py-1 px-4 mt-4 ml-2 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add BCC" phx-click="show-bcc" phx-target={@myself} color="blue-planning-300" icon="plus">
             Add BCC
           </.icon_button>
         <% end %>
@@ -106,35 +107,35 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
-  def handle_event("validate_email", %{"bcc_email" => %{"bcc" => email}}, %{assigns: %{client: clients}} = socket) do
+  def handle_event("validate_email", %{"bcc_email" => %{"bcc" => email}}, %{assigns: %{recipients: recipients}} = socket) do
     email_list = String.split(email, ";", trim: true)
-    if !validate_email(email) do
+    if !validate_email(email_list) do
       socket
       |> assign(:bcc_email_error, "please enter valid emails")
     else
       socket
       |> assign(:bcc_email_error, nil)
     end
-    |> assign(:recipients, get_clients(email_list, clients, "bcc"))
+    |> assign(:recipients, Map.put(recipients, :bcc, email_list))
     |> noreply()
   end
 
   @impl true
-  def handle_event("validate_email", %{"cc_email" => %{"cc" => email}}, %{assigns: %{client: clients}} = socket) do
+  def handle_event("validate_email", %{"cc_email" => %{"cc" => email}}, %{assigns: %{recipients: recipients}} = socket) do
     email_list = String.split(email, ";", trim: true)
-    if !validate_email(email) do
+    if !validate_email(email_list) do
       socket
       |> assign(:cc_email_error, "please enter valid emails")
     else
       socket
       |> assign(:cc_email_error, nil)
     end
-    |> assign(:recipients, get_clients(email_list, clients, "cc"))
+    |> assign(:recipients, Map.put(recipients, :cc, email_list))
     |> noreply()
   end
 
   @impl true
-  def handle_event("validate_email", %{"to_email" => %{"to" => email}}, %{assigns: %{client: clients}} = socket) do
+  def handle_event("validate_email", %{"to_email" => %{"to" => email}}, %{assigns: %{recipients: recipients}} = socket) do
     email_list = String.split(email, ";", trim: true)
     if !validate_email(email_list) do
       socket
@@ -143,19 +144,46 @@ defmodule PicselloWeb.ClientMessageComponent do
       socket
       |> assign(:to_email_error, nil)
     end
-    |> assign(:recipients, get_clients(email_list, clients, "to"))
+    |> assign(:recipients, Map.put(recipients, :to, email_list))
     |> noreply()
   end
 
   @impl true
-  def handle_event("add-cc", _, socket) do
+  def handle_event("add-to", %{"client-email" => email}, %{assigns: %{recipients: recipients}} = socket) do
+    email_list = [email | recipients |> Map.get(:to, [])]
+
+    socket
+    |> assign(:recipients, Map.put(recipients, :to, email_list))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("add-cc", %{"client-email" => email}, %{assigns: %{recipients: recipients}} = socket) do
+    email_list = [email | recipients |> Map.get(:cc, [])]
+
+    socket
+    |> assign(:recipients, Map.put(recipients, :cc, email_list))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("add-bcc", %{"client-email" => email}, %{assigns: %{recipients: recipients}} = socket) do
+    email_list = [email | recipients |> Map.get(:bcc, [])]
+
+    socket
+    |> assign(:recipients, Map.put(recipients, :bcc, email_list))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("show-cc", _, socket) do
     socket
     |> assign(:show_cc, true)
     |> noreply()
   end
 
   @impl true
-  def handle_event("add-bcc", _, socket) do
+  def handle_event("show-bcc", _, socket) do
     socket
     |> assign(:show_bcc, true)
     |> noreply()
@@ -226,6 +254,8 @@ defmodule PicselloWeb.ClientMessageComponent do
     end
   end
 
+  defdelegate handle_event(event, params, socket), to: PicselloWeb.JobLive.Shared
+
   @spec open(%Phoenix.LiveView.Socket{}, %{
           optional(:body_html) => String.t(),
           optional(:body_text) => any,
@@ -272,7 +302,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   defp get_clients(email_list, clients, type),
   do:
     email_list
-    |> Enum.reduce(%{}, fn acc, email ->
+    |> Enum.reduce(%{}, fn email, acc ->
       acc
       |> Map.put(:client, Enum.filter(clients, &(&1.email == String.trim(email))))
       |> Map.put(:recipient_type, type)
@@ -287,7 +317,8 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> String.match?(Picsello.Accounts.User.email_regex())
     end)
 
-  defp search_clients(assigns) do
+  defp search_existing_clients(assigns) do
+    # IO.inspect(assigns)
     ~H"""
       <%= form_tag("#", [phx_change: :search, phx_submit: :submit, phx_target: @myself]) do %>
         <div class="flex flex-col justify-between items-center px-1.5 md:flex-row">
@@ -301,16 +332,26 @@ defmodule PicselloWeb.ClientMessageComponent do
                 <.icon name="search" class="w-4 ml-1 fill-current" />
               <% end %>
             </a>
-            <input disabled={false} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients to add to email..." />
+            <input type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="500" spellcheck="false" phx-target={@myself} placeholder="Search clients to add to email..." />
             <%= if Enum.any?(@search_results) do %>
               <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
                 <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
                   <%= for {search_result, idx} <- Enum.with_index(@search_results) do %>
-                    <div class={"flex items-center cursor-pointer p-2"} phx-click="pick" phx-target={@myself} phx-value-client_id={"#{search_result.id}"}>
-                      <%= radio_button(:search_radio, :name, search_result.name, checked: idx == @current_focus, class: "mr-5 w-5 h-5 radio") %>
+                    <div class={"flex items-center cursor-pointer p-2"}>
                       <div>
-                        <p><%= search_result.name %></p>
+                        <p class="font-bold"><%= search_result.name %></p>
                         <p class="text-sm"><%= search_result.email %></p>
+                        <div class="flex flex-row mt-2">
+                        <.icon_button class="py-1 px-4 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add To" phx-click="add-to" phx-target={@myself} phx-value-client_email={"#{search_result.email}"} color="blue-planning-300" icon="plus">
+                          Add To
+                        </.icon_button>
+                        <.icon_button class="py-1 px-4 ml-4 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add CC" phx-click="add-cc" phx-target={@myself} phx-value-client_email={"#{search_result.email}"} color="blue-planning-300" icon="plus">
+                          Add CC
+                        </.icon_button>
+                        <.icon_button class="py-1 px-4 ml-4 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add BCC" phx-click="add-bcc" phx-target={@myself} phx-value-client_email={"#{search_result.email}"} color="blue-planning-300" icon="plus">
+                          Add BCC
+                        </.icon_button>
+                        </div>
                       </div>
                     </div>
                   <% end %>
