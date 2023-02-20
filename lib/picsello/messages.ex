@@ -38,7 +38,6 @@ defmodule Picsello.Messages do
         }
       end)
     end)
-    |> IO.inspect()
     |> Repo.transaction()
   end
 

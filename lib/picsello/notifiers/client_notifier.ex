@@ -15,14 +15,14 @@ defmodule Picsello.Notifiers.ClientNotifier do
     })
   end
 
-  def deliver_email(message, to_email, params \\ %{}) do
+  def deliver_email(message, recipients, params \\ %{}) do
     message = message |> Repo.preload([:job, :client])
 
     message
     |> message_params()
     |> Map.merge(params)
     |> deliver_transactional_email(
-      to_email,
+      recipients,
       if(message.job, do: message.job, else: message.client)
     )
   end
@@ -304,19 +304,19 @@ defmodule Picsello.Notifiers.ClientNotifier do
         do: "<p>#{line}</p>"
       )
 
-  defp deliver_transactional_email(params, to_email, %Job{} = job) do
+  defp deliver_transactional_email(params, recipients, %Job{} = job) do
     client = job |> Repo.preload(:client) |> Map.get(:client)
     reply_to = Messages.email_address(job)
-    deliver_transactional_email(params, to_email, reply_to, client)
+    deliver_transactional_email(params, recipients, reply_to, client)
   end
 
-  defp deliver_transactional_email(params, to_email, %Client{} = client) do
+  defp deliver_transactional_email(params, recipients, %Client{} = client) do
     reply_to = Messages.email_address(client)
-    deliver_transactional_email(params, to_email, reply_to, client)
+    deliver_transactional_email(params, recipients, reply_to, client)
   end
 
-  defp deliver_transactional_email(params, to_email, reply_to, client) do
-    client = client |> Repo.preload(organization: [:user])
+  defp deliver_transactional_email(params, recipients, reply_to, client) do
+    # client = client |> Repo.preload(organization: [:user])
     %{organization: organization} = client
 
     params =
@@ -331,12 +331,16 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
     from_display = organization.name
 
+    email =
     :client_transactional_template
     |> sendgrid_template(params)
     |> put_header("reply-to", "#{from_display} <#{reply_to}>")
     |> from({from_display, "noreply@picsello.com"})
-    |> to(to_email)
+    |> to(Map.get(recipients, :to))
     |> deliver_later()
+
+    if Map.has_key?(recipients, :cc), do: email |> cc(Map.get(recipients, :cc)), else: email
+    if Map.has_key?(recipients, :bcc), do: email |> bcc(Map.get(recipients, :bcc)), else: email
   end
 
   defp may_be_proofing_album_selection(nil), do: :order_confirmation_template
