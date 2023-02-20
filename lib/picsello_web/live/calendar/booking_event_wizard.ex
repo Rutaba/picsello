@@ -36,6 +36,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     |> Map.put_new(:can_edit?, true)
     |> Map.put_new(:booking_count, 0)
     |> Map.put_new(:break_block_booked, false)
+    |> Map.put_new(:params, %{})
   end
 
   @impl true
@@ -355,11 +356,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   end
 
   @impl true
-  def handle_event("back", %{}, %{assigns: %{step: step, steps: steps}} = socket) do
+  def handle_event("back", %{}, %{assigns: %{step: step, steps: steps, params: params}} = socket) do
     previous_step = Enum.at(steps, Enum.find_index(steps, &(&1 == step)) - 1)
 
     socket
     |> assign(step: previous_step)
+    |> assign_changeset(params)
     |> noreply()
   end
 
@@ -460,12 +462,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
     changeset =
       changeset
-      |> Ecto.Changeset.put_embed(:dates, dates)
+      |> Ecto.Changeset.put_change(:dates, dates)
       |> Map.put(:action, :validate)
 
-    socket
-    |> assign(changeset: changeset)
-    |> noreply()
+    params =
+      changeset.params
+      |> Map.put("dates", convert_dates(dates))
+
+    socket |> assign_changeset(params, :validate) |> noreply()
   end
 
   @impl true
@@ -480,6 +484,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       %{assigns: %{changeset: %{valid?: true}}} ->
         socket
         |> assign(step: next_step(socket.assigns))
+        |> assign(params: params)
         |> assign_changeset(params)
 
       socket ->
@@ -650,4 +655,31 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   defp convert_bool!("true"), do: true
   defp convert_bool!("false"), do: false
+
+  defp convert_dates(dates) do
+    dates
+    |> Enum.with_index()
+    |> Enum.reduce(%{}, fn {date_map, idx}, acc ->
+      date_str = date_map.date
+      time_blocks = update_time_block(date_map.time_blocks)
+      acc |> Map.put(to_string(idx), %{"date" => date_str, "time_blocks" => time_blocks})
+    end)
+  end
+
+  defp update_time_block(time_blocks) do
+    Enum.reduce(time_blocks, %{}, fn time_block, time_acc ->
+      output = Map.new(time_block, fn {k, v} -> {to_string(k), v} end)
+
+      map_time =
+        output
+        |> Map.put("end_time", time_parse(time_block.end_time))
+        |> Map.put("start_time", time_parse(time_block.start_time))
+
+      time_acc |> Map.put(to_string(Enum.count(time_acc)), map_time)
+    end)
+  end
+
+  defp time_parse(nil), do: ""
+  defp time_parse(time), do: "#{formatted_time(time.hour)}:#{formatted_time(time.minute)}"
+  defp formatted_time(time), do: time |> to_string |> String.pad_leading(2, "0")
 end
