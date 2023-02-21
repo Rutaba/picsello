@@ -57,9 +57,10 @@ defmodule Picsello.ManageJobShootTest do
     |> assert_text("Edit Shoot")
     |> assert_path(shoot_path(job, 1))
     |> assert_has(css("header h1", text: shoot1.name))
-    |> fill_in_date(css("#shoot_starts_at", visible: false),
-      with: add_days(shoot2.starts_at, 1)
-    )
+    |> click(css("#shoot-time"))
+    |> click(css("[data-action='next']"))
+    |> click(css("[data-action='next']"))
+    |> click(css("[data-date='12']"))
     |> click(button("Save"))
     |> assert_path(shoot_path(job, 2))
     |> assert_has(css("header h1", text: shoot1.name))

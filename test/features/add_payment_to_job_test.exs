@@ -57,7 +57,10 @@ defmodule Picsello.AddPaymentsToJobTest do
     |> assert_has(css("#add-payment", count: 1))
     |> click(css("#add-payment"))
     |> fill_in(text_field("add-payment-form_price"), with: "5")
-    |> fill_in(text_field("add-payment-form_paid_at"), with: "~U[01-01-003022]~T09:00PM")
+    |> click(css("#mark_as_paid_payment"))
+    |> click(css("[data-action='next']"))
+    |> click(css("[data-action='next']"))
+    |> click(css("[data-date='12']"))
     |> click(button("Save"))
   end
 
@@ -69,7 +72,10 @@ defmodule Picsello.AddPaymentsToJobTest do
     |> assert_has(css("#add-payment", count: 1))
     |> click(css("#add-payment"))
     |> fill_in(text_field("add-payment-form_price"), with: "5")
-    |> fill_in(text_field("add-payment-form_paid_at"), with: "~U[01-01-003022]")
+    |> click(css("#mark_as_paid_payment"))
+    |> click(css("[data-action='next']"))
+    |> click(css("[data-action='next']"))
+    |> click(css("[data-date='12']"))
     |> click(button("Save"))
     |> assert_has(css("#payments", count: 1, text: "Payment 1"))
     |> assert_has(css("#offline-amount", count: 1, text: "$5.00"))
