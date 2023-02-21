@@ -61,6 +61,10 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
 
         <.profile_footer color={@color} photographer={@photographer} organization={@organization} />
       </div>
+      <% else %>
+      <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col">
+        <h1 class="text-1x text-center font-bold"> No available times </h1>
+      </div>
     <% end %>
     """
   end

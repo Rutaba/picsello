@@ -264,7 +264,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
       location: "studio",
       address: "820 2nd St N",
       description: "This is the description",
-      disabled_at: DateTime.utc_now() |> DateTime.truncate(:second),
+      status: "disabled",
       dates: [
         %{
           date: ~D[2040-11-10],
