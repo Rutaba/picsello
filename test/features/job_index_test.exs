@@ -2,8 +2,8 @@ defmodule Picsello.JobIndexTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.{Job, Repo, Organization}
 
-  @leads_card css("li[title='Leads']")
-  @jobs_card css("li[title='Jobs']")
+  @leads_card button("Leads")
+  @jobs_card button("Jobs")
 
   setup do
     user = insert(:user)

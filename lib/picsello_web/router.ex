@@ -173,7 +173,11 @@ defmodule PicselloWeb.Router do
 
       live "/galleries", GalleryLive.Index, :galleries, as: :gallery
 
-      live "/home", HomeLive.Index, :index, as: :home
+      live "/home",
+           HomeLive.Index,
+           :index,
+           as: :home
+
       live "/leads/:id", LeadLive.Show, :leads, as: :job
       live "/leads", JobLive.Index, :leads, as: :job
       live "/jobs/:id", JobLive.Show, :jobs, as: :job

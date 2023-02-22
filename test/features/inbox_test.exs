@@ -37,7 +37,7 @@ defmodule Picsello.InboxTest do
 
   feature "user views inbox", %{session: session} do
     session
-    |> click(testid("inbox-card"))
+    |> click(button("View inbox"))
     |> assert_text("Select a message to your left")
     |> assert_has(testid("thread-card", count: 2))
 
@@ -56,7 +56,7 @@ defmodule Picsello.InboxTest do
 
   feature "user views thread", %{session: session} do
     session
-    |> click(testid("inbox-card"))
+    |> click(button("View inbox"))
     |> click(testid("thread-card", count: 2, at: 0))
     |> assert_has(testid("thread-message", count: 2))
 
@@ -73,7 +73,7 @@ defmodule Picsello.InboxTest do
 
   feature "user receives message", %{session: session, job: job} do
     session
-    |> click(testid("inbox-card"))
+    |> click(button("View inbox"))
     |> click(testid("thread-card", count: 2, at: 0))
     |> assert_has(testid("thread-message", count: 2))
 
@@ -110,7 +110,7 @@ defmodule Picsello.InboxTest do
 
   feature "user replies to message", %{session: session} do
     session
-    |> click(testid("inbox-card"))
+    |> click(button("View inbox"))
     |> click(testid("thread-card", count: 2, at: 0))
     |> scroll_to_bottom()
     |> click(button("Reply"))
@@ -127,7 +127,7 @@ defmodule Picsello.InboxTest do
 
   feature "user deletes thread", %{session: session} do
     session
-    |> click(testid("inbox-card"))
+    |> click(button("View inbox"))
     |> click(testid("thread-card", count: 2, at: 0))
     |> click(button("Delete"))
     |> click(button("Yes, delete"))
@@ -141,7 +141,7 @@ defmodule Picsello.InboxTest do
 
   feature "user goes to lead page from message", %{session: session, lead: lead} do
     session
-    |> click(testid("inbox-card"))
+    |> click(button("View inbox"))
     |> click(testid("thread-card", count: 2, at: 1))
     |> click(link("view lead"))
     |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
@@ -149,7 +149,7 @@ defmodule Picsello.InboxTest do
 
   feature "user goes to job page from message", %{session: session, job: job} do
     session
-    |> click(testid("inbox-card"))
+    |> click(button("View inbox"))
     |> click(testid("thread-card", count: 2, at: 0))
     |> click(link("view job"))
     |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :jobs, job.id))
@@ -157,7 +157,7 @@ defmodule Picsello.InboxTest do
 
   feature "archive chat", %{session: session, job: job} do
     session
-    |> click(testid("inbox-card"))
+    |> click(button("View inbox"))
     |> click(testid("thread-card", count: 2, at: 0))
     |> scroll_to_bottom()
     |> click(button("Reply"))
