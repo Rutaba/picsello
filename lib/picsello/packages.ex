@@ -191,23 +191,25 @@ defmodule Picsello.Packages do
       end
     end
 
-    def from_package(%{download_each_price: each_price, download_count: count} = package)
-        when each_price in [@default_each_price, nil],
-        do: set_count_fields(%__MODULE__{status: :limited}, count) |> set_buy_all_fields(package)
+    def from_package(package, global_settings \\ %{download_each_price: nil})
 
-    def from_package(%{download_each_price: each_price, download_count: count} = package)
-        when each_price == @default_each_price and count in [0, nil],
+    def from_package(%{download_each_price: each_price, download_count: count} = package, global_settings)
+        when each_price in [global_settings.download_each_price, @default_each_price] and count in [0, nil],
         do: %__MODULE__{status: :none} |> set_buy_all_fields(package)
 
-    def from_package(%{download_each_price: @zero_price, download_count: count} = package),
-      do:
+    def from_package(%{download_each_price: each_price, download_count: count} = package, global_settings)
+        when each_price in [global_settings.download_each_price, @default_each_price, nil],
+        do: set_count_fields(%__MODULE__{status: :limited}, count) |> set_buy_all_fields(package)
+
+    def from_package(%{download_each_price: each_price, download_count: count} = package, _global_settings)
+    when count in [0, nil], do:
         set_count_fields(
           %__MODULE__{status: :unlimited, includes_credits: false, each_price: @zero_price},
           count
         )
         |> set_buy_all_fields(package)
 
-    def from_package(%{download_each_price: each_price, download_count: count} = package),
+    def from_package(%{download_each_price: each_price, download_count: count} = package, _global_settings),
       do:
         set_count_fields(%__MODULE__{each_price: each_price, is_custom_price: true}, count)
         |> set_buy_all_fields(package)

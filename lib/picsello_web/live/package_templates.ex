@@ -50,8 +50,13 @@ defmodule PicselloWeb.Live.PackageTemplates do
       ) do
     package = Enum.find(templates, &(&1.id == to_integer(package_id)))
 
-    socket
-    |> open_wizard(%{package: package |> Repo.preload([:contract, :package_payment_schedules])})
+    if is_nil(package) do
+      socket
+      |> push_redirect(to: Routes.package_templates_path(socket, :index))
+    else
+      socket
+      |> open_wizard(%{package: package |> Repo.preload([:contract, :package_payment_schedules])})
+    end
     |> noreply()
   end
 

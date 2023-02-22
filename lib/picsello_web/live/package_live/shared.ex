@@ -442,6 +442,7 @@ defmodule PicselloWeb.PackageLive.Shared do
   end
 
   defp build_download_fields(%{download_changeset: download_changeset} = assigns) do
+    IO.inspect assigns, label: "assigns"
     ~H"""
     <div class="flex flex-col md:flex-row w-full mt-3">
       <div class="flex flex-col">
