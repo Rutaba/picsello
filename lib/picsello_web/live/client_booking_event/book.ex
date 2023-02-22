@@ -93,7 +93,10 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
         <% end %>
         <%= Enum.map(@available_times, fn {time, is_available, is_break, is_hide} ->  %>
           <%= if !is_break do  %>
-          <label class={classes("flex items-center justify-center border #{if is_available and !is_break and !is_hide, do: 'border-black'} py-3 my-4 cursor-pointer", %{"bg-black text-white" => Time.compare(time, @selected_time || Time.utc_now) == :eq, "bg-white !text-grey !border-grey" => (is_available and !is_break and !is_hide)})}>
+          <label class={classes("flex items-center justify-center border border-black py-3 my-4 cursor-pointer", %{
+            "bg-black text-white" => Time.compare(time, @selected_time || Time.utc_now) == :eq,
+            "bg-white !text-grey !border-grey pointer-events-none opacity-40 hover:cursor-not-allowed" => (!is_available || is_break || is_hide)}
+            )}>
             <%= time |> Calendar.strftime("%-I:%M%P") %>
             <input type="radio" name={@name} value={time} class="hidden" disabled={!is_available || is_break || is_hide}/>
           </label>

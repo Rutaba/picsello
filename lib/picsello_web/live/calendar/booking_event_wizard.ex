@@ -309,7 +309,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                       <.icon name="gear" class="w-4 h-5 m-1 fill-current open-icon text-blue-planning-300" />
                       <.icon name="close-x" class="hidden w-4 h-5 m-1 stroke-current close-icon stroke-2 text-blue-planning-300" />
                     </button>
-                    <div class=" hidden bg-white border rounded-lg shadow-lg popover-content p-2">
+                    <div class="hidden bg-white border rounded-lg shadow-lg popover-content p-2">
                       <h2 class="font-bold"> Block Options </h2>
                       <label class="flex items-center mt-4">
                         <%= input t, :hidden, type: :checkbox, checked: t |> current |> Map.get(:hidden), class: "w-6 h-6 mt-1 checkbox", id: "check-box-#{@f.index}-#{t.index}"%>
