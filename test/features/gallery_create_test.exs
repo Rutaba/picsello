@@ -19,7 +19,8 @@ defmodule Picsello.GalleryCreateTest do
     session: session
   } do
     session
-    |> click(button("Create a gallery"))
+    |> click(button("Actions"))
+    |> click(button("Create gallery"))
     |> click(button("Next", count: 2, at: 0))
     |> fill_in(text_field("search_phrase"), with: "Eliza")
     |> assert_has(css("#search_results"))
