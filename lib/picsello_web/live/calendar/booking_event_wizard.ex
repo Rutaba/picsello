@@ -195,7 +195,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     <%= if can_edit? do %>
         <%= for package <- @package_templates do %>
           <% checked = is_checked(input_value(@f, :package_template_id), package) %>
-          <label {testid("template-card")} class={classes(%{"cursor-not-allowed pointer-events-none" => !can_edit?})}>
+          <label class={classes(%{"cursor-not-allowed pointer-events-none" => !can_edit?})}>
           <.package_row package={package} checked={checked}>
             <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: nil, else: package.id} />
           </.package_row>
@@ -205,7 +205,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
      <% package_id = input_value(@f, :package_template_id) |> to_integer() %>
       <% package = Enum.filter(@package_templates, fn template -> template.id == package_id end) |> List.first() %>
       <%= if package do %>
-      <label {testid("template-card")} class={classes(%{"cursor-not-allowed pointer-events-none" => !can_edit?})}>
+      <label class={classes(%{"cursor-not-allowed pointer-events-none" => !can_edit?})}>
           <.package_row package={package} can_edit?={can_edit?}/>
       </label>
       <% else %>

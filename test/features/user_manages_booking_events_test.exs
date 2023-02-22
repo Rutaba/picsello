@@ -93,21 +93,21 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> find(select("Session Length"), &click(&1, option("45 mins")))
     |> find(select("Session Buffer"), &click(&1, option("15 mins")))
     |> scroll_into_view(testid("add-date"))
-    |> assert_has(testid("open-slots-count-0", text: "You’ll have 0 open slots on this day"))
+    |> assert_has(testid("open-slots-count-0", text: "You’ll have 0 open slots"))
     |> fill_in(text_field("booking_event[dates][0][date]"), with: "10/10/2050")
     |> fill_in(text_field("booking_event[dates][0][time_blocks][0][start_time]"), with: "09:00AM")
     |> fill_in(text_field("booking_event[dates][0][time_blocks][0][end_time]"), with: "01:00PM")
-    |> assert_has(testid("open-slots-count-0", text: "You’ll have 4 open slots on this day"))
+    |> assert_has(testid("open-slots-count-0", text: "You’ll have 4 open slots"))
     |> click(button("Add block"))
     |> fill_in(text_field("booking_event[dates][0][time_blocks][1][start_time]"), with: "03:00PM")
     |> fill_in(text_field("booking_event[dates][0][time_blocks][1][end_time]"), with: "05:00PM")
-    |> assert_has(testid("open-slots-count-0", text: "You’ll have 6 open slots on this day"))
+    |> assert_has(testid("open-slots-count-0", text: "You’ll have 6 open slots"))
     |> click(button("Add another date"))
     |> assert_has(testid("event-date", count: 2))
     |> scroll_into_view(testid("add-date"))
     |> fill_in(text_field("booking_event[dates][1][time_blocks][0][start_time]"), with: "09:00AM")
     |> fill_in(text_field("booking_event[dates][1][time_blocks][0][end_time]"), with: "10:00AM")
-    |> fill_in(text_field("booking_event[dates][1][date]"), with: "10/11/2050")
+    |> fill_in(text_field("booking_event[dates][1][date]"), with: "11/10/2050")
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add booking event: Select package")
@@ -213,7 +213,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_value(text_field("booking_event[dates][0][date]"), "2050-10-10")
   end
 
-  feature "edit is disabled when there's a lead associated to the event", %{
+  feature "edit not disabled when there's a lead associated to the event", %{
     session: session,
     user: user
   } do
@@ -225,7 +225,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> visit("/calendar")
     |> click(link("Manage booking events"))
     |> click(button("Manage"))
-    |> assert_disabled(button("Edit"))
+    |> click(button("Edit"))
+    |> assert_text("Edit booking event: Details")
   end
 
   feature "edit the event", %{session: session, user: user} do
@@ -336,7 +337,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_flash(:success, text: "Event disabled successfully")
     |> assert_text("Disabled")
 
-    assert [%{disabled_at: %DateTime{}}] = Picsello.Repo.all(Picsello.BookingEvent)
+    assert [%{status: "disable"}] = Picsello.Repo.all(Picsello.BookingEvent)
 
     session
     |> click(button("Manage"))
@@ -345,7 +346,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> click(button("Manage"))
     |> assert_text("Disable")
 
-    assert [%{disabled_at: nil}] = Picsello.Repo.all(Picsello.BookingEvent)
+    assert [%{status: "active"}] = Picsello.Repo.all(Picsello.BookingEvent)
   end
 
   defp mock_image_upload(%{port: port} = bypass) do
