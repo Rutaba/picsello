@@ -6,39 +6,18 @@ defmodule Picsello.Messages do
   import Ecto.Query, warn: false
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Client, Repo, ClientMessage, ClientMessageRecipient, Notifiers.UserNotifier}
+  alias Picsello.{Job, Client, Clients, Repo, ClientMessage, ClientMessageRecipient, Notifiers.UserNotifier}
   require Logger
 
-  def add_message_to_job(%Changeset{} = changeset, %Job{id: id, client_id: client_id}, recipients) do
+  def add_message_to_job(%Changeset{} = changeset, %Job{id: id, client_id: client_id}, recipients, user) do
     changeset
     |> Changeset.put_change(:job_id, id)
-    |> save_message(recipients)
+    |> save_message(recipients, user)
   end
 
-  def add_message_to_client(%Changeset{} = changeset, recipients) do
+  def add_message_to_client(%Changeset{} = changeset, recipients, user) do
     changeset
-    |> save_message(recipients)
-  end
-
-  defp save_message(changeset, recipients_list) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:client_message, changeset)
-    |> Ecto.Multi.insert_all(:client_message_recipients, ClientMessageRecipient, fn %{client_message: client_message} ->
-      inserted_at = DateTime.utc_now() |> DateTime.truncate(:second)
-      updated_at = DateTime.utc_now() |> DateTime.truncate(:second)
-
-      recipients_list
-      |> Enum.map(fn recipient ->
-        %{
-          client_id: recipient.client.id,
-          client_message_id: client_message.id,
-          recipient_type: recipient.type,
-          inserted_at: inserted_at,
-          updated_at: updated_at
-        }
-      end)
-    end)
-    |> Repo.transaction()
+    |> save_message(recipients, user)
   end
 
   def insert_scheduled_message!(params, %Job{} = job) do
@@ -108,4 +87,34 @@ defmodule Picsello.Messages do
       _ -> nil
     end
   end
+
+  defp save_message(changeset, recipients_list, user) do
+    recipient_attrs = get_recipient_attrs(recipients_list, user)
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:client_message, changeset)
+    |> Ecto.Multi.insert_all(:client_message_recipients, ClientMessageRecipient, fn %{client_message: client_message} ->
+      recipient_attrs
+      |> Enum.map(fn attrs ->
+        attrs
+        |> Map.put(:client_message_id, client_message.id)
+      end)
+    end)
+    |> Repo.transaction()
+  end
+
+  defp get_recipient_attrs(recipients_list, user), do:
+    recipients_list
+      |> Enum.map(fn {type, recipients} ->
+        recipients
+        |> Enum.map(fn recipient ->
+          client = Clients.get_client_by_email(recipient, user)
+          %{
+          client_id: client.id,
+          recipient_type: type,
+          inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
+          updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+          }
+        end)
+      end)
+      |> List.flatten
 end

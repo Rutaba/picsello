@@ -24,7 +24,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
     |> assign(:clients, Clients.find_all_by(user: current_user))
-    |> assign(:recipients, %{to: [email]})
+    |> assign(:recipients, %{"to" => [email]})
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:current_focus, -1)
@@ -57,29 +57,29 @@ defmodule PicselloWeb.ClientMessageComponent do
         <div class="flex flex-col">
           <label for="to_email" class="text-sm font-semibold mb-2">To: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
           <div class="flex flex-col md:flex-row">
-            <input type="text" class="w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, :to), "; ")}"} phx-keyup="validate_to_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
+            <input type="text" class="w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, "to"), "; ")}"} phx-keyup="validate_to_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
             <.search_existing_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
           </div>
           <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@to_email_error})}><%= @to_email_error %></span>
           </div>
 
         <%= if @show_cc do %>
-          <div clas="flex flex-row">
+          <div clas="flex flex-col">
             <div class="flex flex-col md:flex-row mt-4">
               <label for="cc_email" class="text-sm font-semibold mb-2">CC: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
               <.icon_button class="bg-white border-red-sales-300 mr-0" title="remove" phx-click="remove-cc" phx-target={@myself} color="red-sales-300" icon="trash"/>
             </div>
-            <input type="text" class="w-2/3 text-input" id="cc_email" value={(if Map.has_key?(@recipients, :cc), do: "#{Enum.join(Map.get(@recipients, :cc, []), "; ")}", else: "")} phx-keyup="validate_cc_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
+            <input type="text" class="w-2/3 text-input" id="cc_email" value={(if Map.has_key?(@recipients, "cc"), do: "#{Enum.join(Map.get(@recipients, "cc", []), "; ")}", else: "")} phx-keyup="validate_cc_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
             <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@cc_email_error})}><%= @cc_email_error %></span>
           </div>
         <% end %>
         <%= if @show_bcc do %>
-          <div clas="flex flex-row">
+          <div clas="flex flex-col">
             <div class="flex flex-col md:flex-row mt-4">
               <label for="bcc_email" class="text-sm font-semibold mb-2">BCC: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
               <.icon_button class="bg-white border-red-sales-300 mr-0" title="remove" phx-click="remove-bcc" phx-target={@myself} color="red-sales-300" icon="trash"/>
             </div>
-            <input type="text" class="w-2/3 text-input" id="bcc_email" value={(if Map.has_key?(@recipients, :bcc), do: "#{Enum.join(Map.get(@recipients, :bcc, []), "; ")}", else: "")} phx-keyup="validate_bcc_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
+            <input type="text" class="w-2/3 text-input" id="bcc_email" value={(if Map.has_key?(@recipients, "bcc"), do: "#{Enum.join(Map.get(@recipients, "bcc", []), "; ")}", else: "")} phx-keyup="validate_bcc_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
             <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@bcc_email_error})}><%= @bcc_email_error %></span>
           </div>
         <% end %>
@@ -121,37 +121,37 @@ defmodule PicselloWeb.ClientMessageComponent do
   @impl true
   def handle_event("validate_bcc_email", %{"value" => email}, %{assigns: %{recipients: recipients}} = socket) do
     IO.inspect("inside validate bcc")
-    validate_email(email, :bcc, socket)
+    validate_email(email, "bcc", socket)
   end
 
   @impl true
-  def handle_event("validate_cc_email", %{"cc" => email}, %{assigns: %{recipients: recipients}} = socket) do
+  def handle_event("validate_cc_email", %{"value" => email}, %{assigns: %{recipients: recipients}} = socket) do
     IO.inspect("inside validate cc")
-    validate_email(email, :cc, socket)
+    validate_email(email, "cc", socket)
   end
 
   @impl true
   def handle_event("validate_to_email", %{"value" => email}, socket) do
     IO.inspect(email, label: "inside validate to")
-    validate_email(email, :to, socket)
+    validate_email(email, "to", socket)
   end
 
   @impl true
   def handle_event("add-to", %{"client-email" => email}, %{assigns: %{recipients: recipients}} = socket) do
-    prepend_email(email, :to, socket)
+    prepend_email(email, "to", socket)
     |> noreply()
   end
 
   @impl true
-  def handle_event("add-cc", %{"client-email" => email}, %{assigns: %{recipients: recipients}} = socket) do
-    prepend_email(email, :cc, socket)
+  def handle_event("add-cc", %{"client-email" => email}, socket) do
+    prepend_email(email, "cc", socket)
     |> assign(:show_cc, true)
     |> noreply()
   end
 
   @impl true
-  def handle_event("add-bcc", %{"client-email" => email}, %{assigns: %{recipients: recipients}} = socket) do
-    prepend_email(email, :bcc, socket)
+  def handle_event("add-bcc", %{"client-email" => email}, socket) do
+    prepend_email(email, "bcc", socket)
     |> assign(:show_bcc, true)
     |> noreply()
   end
@@ -174,7 +174,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   def handle_event("remove-cc", _, %{assigns: %{recipients: recipients}} = socket) do
     socket
     |> assign(:show_cc, false)
-    |> assign(:recipients, Map.put(recipients, :cc, []))
+    |> assign(:recipients, Map.put(recipients, "cc", []))
     |> assign(:cc_email_error, nil)
     |> noreply()
   end
@@ -183,7 +183,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   def handle_event("remove-bcc", _, %{assigns: %{recipients: recipients}} = socket) do
     socket
     |> assign(:show_bcc, false)
-    |> assign(:recipients, Map.put(recipients, :bcc, []))
+    |> assign(:recipients, Map.put(recipients, "bcc", []))
     |> assign(:bcc_email_error, nil)
     |> noreply()
   end
@@ -282,20 +282,11 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   defp assign_presets(socket), do: socket
 
-  defp get_clients(email_list, clients, type),
-  do:
-    email_list
-    |> Enum.reduce(%{}, fn email, acc ->
-      acc
-      |> Map.put(:client, Enum.filter(clients, &(&1.email == String.trim(email))))
-      |> Map.put(:recipient_type, type)
-    end)
-
   defp prepend_email(email, type, %{assigns: %{recipients: recipients}} = socket) do
     email_list = recipients |> Map.get(type, []) |> List.insert_at(-1, String.downcase(email)) |> IO.inspect
 
     socket
-    |> assign(:recipients, Map.put(recipients, :to, email_list))
+    |> assign(:recipients, Map.put(recipients, type, email_list))
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
   end
@@ -305,21 +296,23 @@ defmodule PicselloWeb.ClientMessageComponent do
       email
       |> String.downcase()
       |> String.split(";", trim: true)
+      |> Enum.map(fn email ->
+        String.trim(email) end)
+      |> IO.inspect
 
     valid_emails? =
       email_list
       |> Enum.all?(fn email ->
         email
-        |> String.trim()
         |> String.match?(Picsello.Accounts.User.email_regex())
       end)
 
     if valid_emails? do
       socket
-      |> assign(:to_email_error, nil)
+      |> assign(:"#{type}_email_error", nil)
     else
       socket
-      |> assign(:to_email_error, "please enter valid emails")
+      |> assign(:"#{type}_email_error", "please enter valid emails")
     end
     |> assign(:recipients, Map.put(recipients, type, email_list) |> IO.inspect)
     |> noreply()
@@ -343,7 +336,7 @@ defmodule PicselloWeb.ClientMessageComponent do
             <%= if Enum.any?(@search_results) do %>
               <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
                 <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
-                  <%= for {search_result, idx} <- Enum.with_index(@search_results) do %>
+                  <%= for {search_result, _idx} <- Enum.with_index(@search_results) do %>
                     <div class={"flex items-center cursor-pointer p-2"}>
                       <div>
                         <p class="font-bold"><%= search_result.name %></p>

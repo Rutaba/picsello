@@ -455,9 +455,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
     _ -> :error
   end
 
-  def add_message_and_notify(%{assigns: %{job: job}} = socket, message_changeset, recipients, shared_item)
+  def add_message_and_notify(%{assigns: %{job: job, current_user: user}} = socket, message_changeset, recipients, shared_item)
       when shared_item in ~w(gallery album) do
-    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job, recipients),
+    with {:ok, %{client_message: message, client_message_recipients: _}} <- Messages.add_message_to_job(message_changeset, job, recipients, user) |> IO.inspect(label: "Response ============>"),
          {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> put_flash(:success, "#{String.capitalize(shared_item)} shared!")
@@ -470,8 +470,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply()
   end
 
-  def add_message_and_notify(socket, message_changeset, recipients) do
-    with {:ok, message} <- Messages.add_message_to_client(message_changeset, recipients),
+  def add_message_and_notify(%{current_user: user} = socket, message_changeset, recipients) do
+    with {:ok, %{client_message: message, client_message_recipients: _}} <- Messages.add_message_to_client(message_changeset, recipients) |> IO.inspect(label: "Response ============>"),
          {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> close_modal()

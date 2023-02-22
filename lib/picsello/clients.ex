@@ -90,6 +90,13 @@ defmodule Picsello.Clients do
     |> Repo.one()
   end
 
+  def get_client_by_email(email, user) do
+    from(c in Client,
+      where: c.email == ^email and c.organization_id == ^user.organization_id and is_nil(c.archived_at)
+    )
+    |> Repo.one()
+  end
+
   def client_tags(client) do
     (Enum.map(client.jobs, & &1.type)
      |> Enum.uniq()) ++
