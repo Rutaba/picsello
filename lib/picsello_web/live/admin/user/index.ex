@@ -44,7 +44,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
             <.form let={f} for={changeset} phx-change="save" id={"form-user-#{id}"} class="mb-4" phx-value-index={index}>
               <label class="flex items-center mt-3">
                 <input type="hidden" name="index" value={index} />
-                <%= checkbox(f, :is_test, class: "w-5 h-5 mr-2.5 checkbox") %>
+                <%= checkbox(f, :is_test_account, class: "w-5 h-5 mr-2.5 checkbox") %>
                 <span>Is user a test account? (exclude from analytics)</span>
               </label>
             </.form>
@@ -82,7 +82,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
     index = String.to_integer(index)
     %{user: selected_user} = Enum.at(users, index)
 
-    case User.is_test_changeset(selected_user, user) |> Repo.update() do
+    case User.is_test_account_changeset(selected_user, user) |> Repo.update() do
       {:ok, _} ->
         socket |> put_flash(:success, "User updated")
 
@@ -100,7 +100,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
           where: ilike(u.email, ^"%#{search_phrase}%"),
           order_by: [asc: u.email]
       )
-      |> Enum.map(&%{user: &1, changeset: User.is_test_changeset(&1)})
+      |> Enum.map(&%{user: &1, changeset: User.is_test_account_changeset(&1)})
 
     socket |> assign(:users, users)
   end

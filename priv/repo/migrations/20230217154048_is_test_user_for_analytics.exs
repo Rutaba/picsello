@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.IsTestUserForAnalytics do
 
   def change do
     alter table(:users) do
-      add(:is_test, :boolean, null: false, default: false)
+      add(:is_test_account, :boolean, null: false, default: false)
     end
   end
 end

@@ -15,7 +15,7 @@ defmodule Picsello.Accounts.User do
     field :hashed_password, :string
     field :name, :string
     field :allow_cash_payment, :boolean, default: false
-    field :is_test, :boolean, default: false
+    field :is_test_account, :boolean, default: false
     field :password, :string, virtual: true
     field :time_zone, :string
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
@@ -72,8 +72,8 @@ defmodule Picsello.Accounts.User do
     |> Repo.update!()
   end
 
-  def is_test_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
-    user |> cast(attrs, [:is_test])
+  def is_test_account_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
+    user |> cast(attrs, [:is_test_account])
   end
 
   def new_session_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
