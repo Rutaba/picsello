@@ -188,7 +188,8 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{
           assigns: %{
             job: job,
-            gallery: gallery
+            gallery: gallery,
+            current_user: user
           }
         } = socket
       ) do
@@ -198,21 +199,26 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       |> Base.encode64()
 
     %{id: oban_job_id} =
-      %{message: serialized_message, job_id: job.id, recipients: recipients}
+      %{message: serialized_message, job_id: job.id, recipients: recipients, user: user}
       |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
       |> Oban.insert!()
 
     Waiter.postpone(gallery.id, fn ->
       Oban.cancel_job(oban_job_id)
 
-      {:ok, message} = Messages.add_message_to_job(message_changeset, job, recipients)
-      ClientNotifier.deliver_email(message, job.client.email)
+      {:ok, message} = Messages.add_message_to_job(message_changeset, job, recipients, user)
+      ClientNotifier.deliver_email(message, recipients)
     end)
 
     socket
     |> close_modal()
     |> put_flash(:success, "Gallery shared!")
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:message_composed_for_album, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "album")
   end
 
   @impl true

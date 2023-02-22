@@ -16,15 +16,12 @@ defmodule Picsello.Notifiers.ClientNotifier do
   end
 
   def deliver_email(message, recipients, params \\ %{}) do
-    message = message |> Repo.preload([:job, :client])
+    message = message |> Repo.preload([:job, :clients])
 
     message
     |> message_params()
     |> Map.merge(params)
-    |> deliver_transactional_email(
-      recipients,
-      if(message.job, do: message.job, else: message.client)
-    )
+    |> deliver_transactional_email(recipients, message.clients)
   end
 
   def deliver_payment_made(proposal) do
@@ -77,13 +74,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
       """
     }
     |> deliver_transactional_email(client)
-  end
-
-  defp deliver_transactional_email(params, client) do
-    sendgrid_template(:generic_transactional_template, params)
-    |> to(client.email)
-    |> from("noreply@picsello.com")
-    |> deliver_later()
   end
 
   def deliver_balance_due_email(job, helpers) do
@@ -310,13 +300,13 @@ defmodule Picsello.Notifiers.ClientNotifier do
     deliver_transactional_email(params, recipients, reply_to, client)
   end
 
-  defp deliver_transactional_email(params, recipients, %Client{} = client) do
-    reply_to = Messages.email_address(client)
-    deliver_transactional_email(params, recipients, reply_to, client)
+  defp deliver_transactional_email(params, recipients, clients) do
+    reply_to = Messages.email_address(hd(clients))
+    deliver_transactional_email(params, recipients, reply_to, hd(clients))
   end
 
   defp deliver_transactional_email(params, recipients, reply_to, client) do
-    # client = client |> Repo.preload(organization: [:user])
+    client = client |> Repo.preload(organization: [:user])
     %{organization: organization} = client
 
     params =
@@ -336,11 +326,22 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> sendgrid_template(params)
     |> put_header("reply-to", "#{from_display} <#{reply_to}>")
     |> from({from_display, "noreply@picsello.com"})
-    |> to(Map.get(recipients, :to))
+    |> to(Map.get(recipients, "to"))
     |> deliver_later()
 
-    if Map.has_key?(recipients, :cc), do: email |> cc(Map.get(recipients, :cc)), else: email
-    if Map.has_key?(recipients, :bcc), do: email |> bcc(Map.get(recipients, :bcc)), else: email
+    if Map.has_key?(recipients, :cc), do: email |> cc(Map.get(recipients, "cc")), else: email
+    if Map.has_key?(recipients, :bcc), do: email |> bcc(Map.get(recipients, "bcc")), else: email
+  end
+
+  defp deliver_transactional_email(params, recipients) do
+    email =
+      sendgrid_template(:generic_transactional_template, params)
+      |> to(Map.get(recipients, "to"))
+      |> from("noreply@picsello.com")
+      |> deliver_later()
+
+    if Map.has_key?(recipients, :cc), do: email |> cc(Map.get(recipients, "cc")), else: email
+    if Map.has_key?(recipients, :bcc), do: email |> bcc(Map.get(recipients, "bcc")), else: email
   end
 
   defp may_be_proofing_album_selection(nil), do: :order_confirmation_template
