@@ -143,13 +143,36 @@ defmodule Picsello.UserManagesBookingEventsTest do
                  %{
                    date: ~D[2050-10-10],
                    time_blocks: [
-                     %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]},
-                     %{start_time: ~T[15:00:00], end_time: ~T[17:00:00]}
+                     %{
+                       start_time: ~T[09:00:00],
+                       end_time: ~T[13:00:00],
+                       hidden: false,
+                       is_break: false,
+                       is_booked: false,
+                       is_valid: true
+                     },
+                     %{
+                       start_time: ~T[15:00:00],
+                       end_time: ~T[17:00:00],
+                       hidden: false,
+                       is_break: false,
+                       is_booked: false,
+                       is_valid: true
+                     }
                    ]
                  },
                  %{
                    date: ~D[2050-10-11],
-                   time_blocks: [%{end_time: ~T[10:00:00], start_time: ~T[09:00:00]}]
+                   time_blocks: [
+                     %{
+                       end_time: ~T[10:00:00],
+                       start_time: ~T[09:00:00],
+                       hidden: false,
+                       is_break: false,
+                       is_booked: false,
+                       is_valid: true
+                     }
+                   ]
                  }
                ],
                package_template_id: ^template_id,
