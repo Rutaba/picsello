@@ -57,6 +57,7 @@ defmodule Picsello.Onboardings do
       field(:social_handle, :string)
       field(:online_source, :string, values: @online_source_options)
       field(:welcome_count, :integer)
+      field(:promotion_code, :string, default: nil)
       embeds_many(:intro_states, IntroState, on_replace: :delete)
     end
 
@@ -70,7 +71,8 @@ defmodule Picsello.Onboardings do
         :state,
         :social_handle,
         :online_source,
-        :welcome_count
+        :welcome_count,
+        :promotion_code
       ])
       |> validate_required([:state, :photographer_years, :schedule])
       |> validate_change(:phone, &valid_phone/2)

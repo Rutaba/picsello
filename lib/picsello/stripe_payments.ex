@@ -51,6 +51,9 @@ defmodule Picsello.StripePayments do
   defdelegate list_prices(params), to: Stripe.Price, as: :list
 
   @impl Payments
+  defdelegate list_promotion_codes(params), to: Stripe.PromotionCode, as: :list
+
+  @impl Payments
   defdelegate construct_event(body, stripe_signature, signing_secret), to: Stripe.Webhook
 
   @impl Payments

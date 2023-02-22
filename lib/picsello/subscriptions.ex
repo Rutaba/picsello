@@ -4,6 +4,7 @@ defmodule Picsello.Subscriptions do
     Repo,
     SubscriptionPlan,
     SubscriptionEvent,
+    SubscriptionPromotionCode,
     Payments,
     Subscription,
     Accounts.User,
@@ -51,6 +52,24 @@ defmodule Picsello.Subscriptions do
     end
   end
 
+  def sync_subscription_promotion_codes() do
+    {:ok, %{data: promotion_codes}} = Payments.list_promotion_codes(%{active: true})
+
+    for %{code: code, coupon: %{id: id, percent_off: percent_off}} <-
+          promotion_codes do
+      %{
+        stripe_promotion_code_id: id,
+        code: code,
+        percent_off: percent_off
+      }
+      |> SubscriptionPromotionCode.changeset()
+      |> Repo.insert!(
+        conflict_target: [:stripe_promotion_code_id],
+        on_conflict: {:replace, [:code, :updated_at, :percent_off]}
+      )
+    end
+  end
+
   def subscription_ending_soon_info(nil), do: %{hidden?: true, hidden_30_days?: true}
 
   def subscription_ending_soon_info(%User{subscription: %Ecto.Association.NotLoaded{}} = user),
@@ -75,6 +94,16 @@ defmodule Picsello.Subscriptions do
 
   def next_payment?(%Subscription{} = subscription),
     do: subscription.active && !subscription.cancel_at
+
+  def has_promotion_code?(%{onboarding: %{promotion_code: promotion_code}}) do
+    case Repo.get_by(SubscriptionPromotionCode, %{code: promotion_code}) do
+      %{stripe_promotion_code_id: _} = code ->
+        code
+
+      _ ->
+        nil
+    end
+  end
 
   def monthly?(%Subscription{recurring_interval: recurring_interval}),
     do: recurring_interval == "month"
@@ -105,6 +134,18 @@ defmodule Picsello.Subscriptions do
     Repo.all(from(s in SubscriptionPlan, order_by: s.price))
   end
 
+  def maybe_get_promotion_code?(%{onboarding: %{promotion_code: promotion_code}}) do
+    case Repo.get_by(SubscriptionPromotionCode, %{code: promotion_code}) do
+      %{stripe_promotion_code_id: stripe_promotion_code_id} ->
+        stripe_promotion_code_id
+
+      _ ->
+        nil
+    end
+  end
+
+  def maybe_get_promotion_code?(_), do: nil
+
   def get_subscription_plan(recurring_interval \\ "month"),
     do: Repo.get_by!(SubscriptionPlan, %{recurring_interval: recurring_interval, active: true})
 
@@ -112,6 +153,7 @@ defmodule Picsello.Subscriptions do
     subscription_plan = get_subscription_plan(recurring_interval)
 
     trial_days = opts |> Keyword.get(:trial_days)
+    promotion_code = maybe_get_promotion_code?(user)
 
     stripe_params = %{
       customer: user_customer_id(user),
@@ -121,6 +163,7 @@ defmodule Picsello.Subscriptions do
           price: subscription_plan.stripe_price_id
         }
       ],
+      coupon: promotion_code,
       payment_settings: %{
         save_default_payment_method: "on_subscription"
       },

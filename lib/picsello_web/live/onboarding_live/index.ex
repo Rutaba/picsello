@@ -126,7 +126,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         </div>
 
         <%= hidden_input onboarding, :welcome_count, value: 0 %>
-        
+
         <.form_field label="Where’s your business based?" error={:state} f={onboarding} >
           <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select #{input_class}" %>
         </.form_field>
@@ -151,9 +151,15 @@ defmodule PicselloWeb.OnboardingLive.Index do
       <%= for o <- inputs_for(@f, :organization) do %>
         <%= hidden_inputs_for o %>
 
+          <%= for onboarding <- inputs_for(@f, :onboarding) do %>
+            <.form_field label="Do you have a promo code to apply to your subscription after trial?" error={:promotion_code} f={onboarding} >
+              <%= input onboarding, :promotion_code, type: :text_input, phx_debounce: 500, min: 0, placeholder: "enter code…", class: "mb-3" %>
+            </.form_field>
+          <% end %>
+
           <div class="flex flex-col pb-1">
             <p class="py-2 font-extrabold">
-              What’s your speciality?
+              What’s your photography speciality?
               <i class="italic font-light">(Select one or more)</i>
             </p>
 

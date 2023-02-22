@@ -12,12 +12,13 @@
       <.card title="Your subscription" title_badge={subscription_badge(subscription)}>
         <p class="text-base-250 sm:mr-32">You can update your payment method, modify your plan, or download your invoices using our Billing Portal through Stripe. If you’re currently on a monthly trial and modify your plan to yearly, you will lose the time left. Contact us if you have issues.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 mt-4 gap-6">
-          <div class="border flex rounded-lg p-4 sm:p-6 justify-between sm:items-center">
+          <div class="border flex flex-wrap rounded-lg p-4 sm:p-6 justify-between sm:items-center">
             <div class="flex flex-col items-start">
               <.badge color={:blue}>
                 <%= if Subscriptions.next_payment?(subscription), do: "Current Plan", else: "Subscribe now" %>
               </.badge>
               <p class="font-bold text-3xl"><%= subscription.price |> Money.to_string(fractional_unit: false) %>/<%= subscription.recurring_interval %></p>
+              
               <%= if Subscriptions.next_payment?(subscription) do %>
                 <p class="text-base-250">Next payment is on <%= strftime(@current_user.time_zone, subscription.current_period_end, "%-m/%-d/%y") %></p>
               <% end %>
@@ -28,6 +29,11 @@
                 <p phx-click="open-billing" class="underline text-sm mt-2 text-center cursor-pointer text-blue-planning-300">Update to yearly</p>
               <% end %>
             </div>
+            <%= if @promotion_code do %>
+              <div class="w-full mt-4 border-t pt-4">
+                <p class="text-base-250">🎉 <%= @promotion_code.percent_off %>% off each <%= subscription.recurring_interval %> with code "<span class="font-bold"><%= @promotion_code.code %></span>"</p>
+              </div>
+            <% end %>
           </div>
         </div>
       </.card>

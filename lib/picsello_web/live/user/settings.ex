@@ -39,6 +39,7 @@ defmodule PicselloWeb.Live.User.Settings do
         time_zone_changeset: time_zone_changeset(user)
       )
     )
+    |> assign(:promotion_code, Subscriptions.has_promotion_code?(user))
     |> ok()
   end
 
