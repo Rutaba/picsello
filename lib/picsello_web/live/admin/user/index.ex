@@ -35,12 +35,20 @@ defmodule PicselloWeb.Live.Admin.User.Index do
         </div>
       <% end %>
       <div class="grid grid-cols-4 gap-8">
-        <%= for(%{id: id, name: name, email: email, organization_id: organization_id} <- @users) do %>
+        <%= for({%{user: %{id: id, name: name, email: email, organization_id: organization_id}, changeset: changeset}, index} <- Enum.with_index(@users)) do %>
           <div class="p-4 border rounded-lg">
             <h3 class="text-2xl font-bold"><%= name %></h3>
             <h4><%= email %></h4>
             <h4>Organization id: <%= organization_id %></h4>
             <h5 class="mt-4 upppercase font-bold">Actions</h5>
+            <.form let={f} for={changeset} phx-change="save" id={"form-user-#{id}"} class="mb-4" phx-value-index={index}>
+              <label class="flex items-center mt-3">
+                <input type="hidden" name="index" value={index} />
+                <%= checkbox(f, :is_test_account, class: "w-5 h-5 mr-2.5 checkbox") %>
+                <span>Is user a test account? (exclude from analytics)</span>
+              </label>
+            </.form>
+            <hr class="mb-4" />
             <%= live_redirect "Upload contacts", to: Routes.admin_user_contact_upload_path(@socket, :show, id), class: "underline text-blue-planning-300" %>
           </div>
         <% end %>
@@ -66,6 +74,25 @@ defmodule PicselloWeb.Live.Admin.User.Index do
     |> noreply()
   end
 
+  def handle_event(
+        "save",
+        %{"user" => user, "index" => index},
+        %{assigns: %{users: users}} = socket
+      ) do
+    index = String.to_integer(index)
+    %{user: selected_user} = Enum.at(users, index)
+
+    case User.is_test_account_changeset(selected_user, user) |> Repo.update() do
+      {:ok, _} ->
+        socket |> put_flash(:success, "User updated")
+
+      {:error, _} ->
+        socket |> put_flash(:error, "Something went wrong")
+    end
+    |> find_users()
+    |> noreply()
+  end
+
   defp find_users(%{assigns: %{search_phrase: search_phrase}} = socket) do
     users =
       Repo.all(
@@ -73,6 +100,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
           where: ilike(u.email, ^"%#{search_phrase}%"),
           order_by: [asc: u.email]
       )
+      |> Enum.map(&%{user: &1, changeset: User.is_test_account_changeset(&1)})
 
     socket |> assign(:users, users)
   end
