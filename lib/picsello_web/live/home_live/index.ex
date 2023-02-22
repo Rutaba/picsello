@@ -369,9 +369,9 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def tabs_nav(assigns) do
     ~H"""
-    <ul class="flex gap-6 mb-6">
+    <ul class="flex overflow-auto gap-6 mb-6 py-6 md:py-0">
       <%= for {true, %{name: name, action: action, concise_name: concise_name, redirect_route: redirect_route}} <- @tabs do %>
-        <li class={classes("text-blue-planning-300 font-bold text-lg border-b-4 transition-all", %{"opacity-100 border-b-blue-planning-300" => @tab_active === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @tab_active !== concise_name})}>
+        <li class={classes("text-blue-planning-300 font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @tab_active === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @tab_active !== concise_name})}>
           <button type="button" phx-click={action} phx-value-tab={concise_name} phx-value-to={redirect_route}><%= name %></button>
         </li>
       <% end %>
