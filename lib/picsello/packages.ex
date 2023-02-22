@@ -122,6 +122,10 @@ defmodule Picsello.Packages do
         :is_buy_all,
         :buy_all
       ])
+      |> then(fn changeset -> 
+        IO.inspect attrs, label: "aaaaaaaa"
+        if Map.get(attrs, "validate_download_status"), do: validate_required(changeset, [:status]), else: changeset
+      end)
       |> then(
         &if get_field(&1, :status) != :unlimited,
           do: &1,
@@ -160,6 +164,7 @@ defmodule Picsello.Packages do
       )
       |> validate_buy_all()
       |> validate_each_price()
+      |> IO.inspect
     end
 
     defp validate_buy_all(changeset) do

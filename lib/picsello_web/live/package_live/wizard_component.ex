@@ -848,6 +848,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{"step" => "payment", "custom_payments" => params},
         %{assigns: %{payments_changeset: payments_changeset}} = socket
       ) do
+    IO.inspect "1"
     custom_payments_changeset =
       %CustomPayments{} |> Changeset.cast(params, [:fixed, :schedule_type])
 
@@ -874,6 +875,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{"package" => %{"job_type" => _}, "_target" => ["package", "job_type"]} = params,
         socket
       ) do
+        IO.inspect "2"
     socket
     |> assign_changeset(params |> Map.drop(["contract"]), :validate)
     |> noreply()
@@ -888,6 +890,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         },
         %{assigns: %{changeset: changeset}} = socket
       ) do
+        IO.inspect "3"
     content =
       case template_id do
         "" ->
@@ -909,8 +912,15 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   @impl true
   def handle_event("validate", %{"contract" => contract} = params, socket) do
+    # IO.inspect params, label: "4"
     contract = contract |> Map.put_new("edited", Map.get(contract, "quill_source") == "user")
-    params = params |> Map.put("contract", contract)
+    
+    params = if Map.get(params, "step") == "pricing" do
+      Map.put(params, "validate_download_status", true)
+    else
+      params
+    end
+    |> Map.put("contract", contract)
 
     socket
     |> assign_changeset(params, :validate)
@@ -920,6 +930,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   @impl true
   def handle_event("validate", params, socket) do
+    IO.inspect "5"
     socket |> assign_changeset(params, :validate) |> noreply()
   end
 
@@ -978,9 +989,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   @impl true
   def handle_event("submit", %{"step" => "documents"} = params, socket) do
+    IO.inspect "reached ---------------"
     case socket |> assign_changeset(params, :validate) |> assign_contract_changeset(params) do
       %{assigns: %{contract_changeset: %{valid?: true}}} ->
-        socket |> assign(step: :pricing) |> assign_changeset(params)
+        socket 
+        |> assign(step: :pricing) 
+        |> assign_changeset(Map.put(params, "validate_download_status", true))
 
       socket ->
         socket
@@ -1525,6 +1539,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         organization_id: assigns.current_user.organization_id
       )
 
+    IO.inspect(assigns.package |> Download.from_package(), label: "xxx-----")
     {new_params, package} =
       case global_settings do
         nil ->
@@ -1546,10 +1561,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           {updated_params, updated_package}
       end
 
+    
+    download_params = Map.put(new_params, "validate_download_status", Map.get(params, "validate_download_status"))
     download_changeset =
       package
       |> Download.from_package()
-      |> Download.changeset(new_params)
+      |> Download.changeset(download_params)
       |> Map.put(:action, action)
 
     download = current(download_changeset)
