@@ -252,6 +252,26 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_text("Edit booking event: Details")
   end
 
+  feature "edit hidden when event is disabled", %{
+    session: session,
+    user: user
+  } do
+    template = insert(:package_template, user: user)
+    event = insert(:booking_event, package_template_id: template.id, name: "Event 1")
+
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> click(button("Manage"))
+    |> click(button("Disable"))
+    |> assert_text("Disable this event?")
+    |> click(button("Disable Event"))
+    |> assert_flash(:success, text: "Event disabled successfully")
+    |> assert_text("Disabled")
+    |> click(button("Manage"))
+    |> refute_has(button("Edit"))
+  end
+
   feature "edit the event", %{session: session, user: user} do
     %{id: template_id} = template = insert(:package_template, user: user)
     insert(:booking_event, package_template_id: template.id, name: "Event 1")
