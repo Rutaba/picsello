@@ -25,6 +25,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
   alias Picsello.Galleries.Workers.PositionNormalizer
   alias Picsello.Galleries.PhotoProcessing.ProcessingManager
+  alias PicselloWeb.GalleryLive.Photos.FolderUpload
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
   alias Ecto.Multi
@@ -607,6 +608,16 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       close_class: "bg-black text-white",
       for: type
     })
+    |> noreply()
+  end
+
+  def handle_event(
+        "folder-information",
+        %{"folder" => folder, "sub_folders" => sub_folders},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    socket
+    |> open_modal(FolderUpload, %{folder: folder, sub_folders: sub_folders, gallery: gallery})
     |> noreply()
   end
 
