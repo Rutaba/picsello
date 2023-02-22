@@ -46,6 +46,10 @@ defmodule PicselloWeb.LayoutView do
     Map.merge(default_meta_tags(), attrs_list)
   end
 
+  def dynamic_background_class(%{main_class: main_class}), do: main_class
+
+  def dynamic_background_class(_), do: nil
+
   defp flash_styles,
     do: [
       {:error, "error", "text-red-sales-300"},

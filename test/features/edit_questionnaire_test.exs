@@ -23,7 +23,8 @@ defmodule Picsello.EditQuestionnaireTest do
   feature "user sees default questionnaires and it is view only", %{session: session} do
     session
     |> visit("/home")
-    |> click(css("[title='Questionnaires']"))
+    |> click(css("#hamburger-menu"))
+    |> click(link("Questionnaires"))
     |> assert_path("/questionnaires")
     |> click(button("Picsello Other Template"))
     |> within_modal(fn modal ->

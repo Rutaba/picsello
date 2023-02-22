@@ -4,10 +4,7 @@ defmodule Picsello.Clients do
   alias Picsello.{Repo, Client, ClientTag}
 
   def find_all_by(user: user) do
-    from(c in Client,
-      where: c.organization_id == ^user.organization_id and is_nil(c.archived_at),
-      order_by: [asc: c.name, asc: c.email]
-    )
+    clients_by_user(user)
     |> Repo.all()
   end
 
@@ -38,6 +35,11 @@ defmodule Picsello.Clients do
       limit: ^limit,
       offset: ^offset
     )
+  end
+
+  def find_count_by(user: user) do
+    clients_by_user(user)
+    |> Repo.aggregate(:count)
   end
 
   def new_client_changeset(attrs, organization_id) do
@@ -187,5 +189,12 @@ defmodule Picsello.Clients do
 
   defp filter_order_by(column, order) do
     [{order, dynamic([client], field(client, ^column))}]
+  end
+
+  defp clients_by_user(user) do
+    from(c in Client,
+      where: c.organization_id == ^user.organization_id and is_nil(c.archived_at),
+      order_by: [asc: c.name, asc: c.email]
+    )
   end
 end
