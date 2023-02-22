@@ -306,43 +306,14 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event", link: "gallery"}},
+        {:close_event, %{event_name: "toggle_welcome_event", link: link}},
         socket
       ) do
-    socket
-    |> welcome_modal_state()
-    |> push_redirect(to: Routes.gallery_path(socket, :galleries))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event", link: "client_booking"}},
-        socket
-      ) do
-    socket
-    |> welcome_modal_state()
-    |> push_redirect(to: Routes.calendar_booking_events_path(socket, :index))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event", link: "demo"}},
-        socket
-      ) do
-    socket
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event"}},
-        socket
-      ) do
-    socket
-    |> welcome_modal_state()
-    |> push_patch(to: Routes.home_path(socket, :index), replace: true)
+    if link === "demo" do
+      socket
+    else
+      socket |> welcome_modal_state() |> push_redirect(to: link)
+    end
     |> noreply()
   end
 
@@ -425,26 +396,27 @@ defmodule PicselloWeb.HomeLive.Index do
         <% items -> %>
           <ul class={classes("flex overflow-auto intro-next-up", %{"xl:overflow-none" => !should_attention_items_overflow })}>
             <%= for {true, %{card: %{title: title, body: body, icon: icon, buttons: buttons, concise_name: concise_name, color: color, class: class}} = org_card} <- items do %>
-            <li {testid("attention-item")} class={classes("attention-item flex-shrink-0 flex flex-col justify-between relative max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"xl:flex-1" => !should_attention_items_overflow})}>
-              <%= if org_card.status == :viewed and concise_name != "black-friday" do %>
-                <div class="flex justify-between absolute w-full">
-                  <span></span>
-                  <span class="sm:pr-[30px] pr-[25px]" phx-click="card_status" phx-value-org_card_id={org_card.id} phx-value-status="inactive">
-                    <.icon name="close-x" class="mt-[-7px] w-3 h-3 stroke-current stroke-2 base-250" />
-                  </span>
-                </div>
-              <% end %>
-              <div>
-                <div class="flex">
-                  <.icon name={icon} width="23" height="20" class={"block mr-2 mt-1 rounded-sm fill-current text-#{color}"} />
-                  <h1 class="text-lg font-bold"><%= title %></h1>
+              <li {testid("attention-item")} class={classes("attention-item flex-shrink-0 flex flex-col justify-between relative max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"xl:flex-1" => !should_attention_items_overflow})}>
+                <%= if org_card.status == :viewed and concise_name != "black-friday" do %>
+                  <div class="flex justify-between absolute w-full">
+                    <span></span>
+                    <span class="sm:pr-[30px] pr-[25px]" phx-click="card_status" phx-value-org_card_id={org_card.id} phx-value-status="inactive">
+                      <.icon name="close-x" class="mt-[-7px] w-3 h-3 stroke-current stroke-2 base-250" />
+                    </span>
+                  </div>
+                <% end %>
+
+                <div>
+                  <div class="flex">
+                    <.icon name={icon} width="23" height="20" class={"block mr-2 mt-1 rounded-sm fill-current text-#{color}"} />
+                    <h1 class="text-lg font-bold"><%= title %></h1>
+                  </div>
+
+                  <p class="my-2 text-sm"><%= body %></p>
                 </div>
 
-                <p class="my-2 text-sm"><%= body %></p>
-              </div>
-
-              <.card_buttons {assigns} current_user={current_user} socket={@socket} concise_name={concise_name} org_card_id={org_card.id} buttons={buttons} />
-            </li>
+                <.card_buttons {assigns} current_user={current_user} socket={@socket} concise_name={concise_name} org_card_id={org_card.id} buttons={buttons} />
+              </li>
             <% end %>
           </ul>
       <% end %>
