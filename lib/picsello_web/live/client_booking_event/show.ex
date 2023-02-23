@@ -33,7 +33,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <%= if @status == "active" do %>
+    <%= if @status == :active do %>
       <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col">
         <div class="flex">
           <.photographer_logo organization={@organization} />
@@ -101,7 +101,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
     status = Map.get(booking_event, :status)
 
     case status do
-      "active" ->
+      :active ->
         socket
 
       status ->
@@ -111,8 +111,6 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
           icon: "warning-orange"
         })
     end
-
-    socket
     |> assign(status: status)
   end
 end

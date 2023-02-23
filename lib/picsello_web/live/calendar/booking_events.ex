@@ -219,15 +219,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
       <.blurred_thumbnail class="h-32 rounded-lg" url={@booking_event.thumbnail_url} />
       <div class="flex flex-col items-start justify-center sm:ml-4">
         <%= case @booking_event.status do %>
-        <% "archive" -> %>
+        <% :archive -> %>
           <.badge color={:gray}>Archived</.badge>
-        <% "disable" -> %>
+        <% :disabled -> %>
           <.badge color={:gray}>Disabled</.badge>
         <% _ -> %>
           <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
         <% end %>
         <div class="font-bold w-full">
-          <a href={if @booking_event.status in ["disable", "archive"], do: "javascript:void(0)", else: Routes.calendar_booking_events_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
+          <a href={if @booking_event.status in [:disabled, :archive], do: "javascript:void(0)", else: Routes.calendar_booking_events_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
             <span class="w-full text-blue-planning-300 underline">
               <%= if String.length(@booking_event.name) < 30 do
                 @booking_event.name
@@ -255,10 +255,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex flex-wrap gap-3 items-center justify-start md:w-auto w-full col-span-2">
-      <.icon_button icon="eye" disabled={if @booking_event.status in ["archive", "disable"], do: 'disabled'} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+      <.icon_button icon="eye" disabled={if @booking_event.status in [:archive, :disabled], do: 'disabled'} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
         Preview
       </.icon_button>
-      <.icon_button icon="anchor" disabled={if @booking_event.status in ["archive", "disable"], do: 'disabled'} color="blue-planning-300" class="justify-center text-blue-planning-300 grow flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+      <.icon_button icon="anchor" disabled={if @booking_event.status in [:archive, :disabled], do: 'disabled'} color="blue-planning-300" class="justify-center text-blue-planning-300 grow flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
         <span>Copy link</span>
         <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
           Copied!
@@ -272,16 +272,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         </button>
         <div class="z-10 flex hidden flex-col w-44 bg-white border rounded-lg shadow-lg popover-content">
           <%= case @booking_event.status do %>
-          <% "archive" -> %>
+          <% :archive -> %>
             <.button title="Unarchive" icon="plus"  click_event="unarchive-event" id={@booking_event.id} color="blue-planning" />
           <% status -> %>
-            <.button title="Edit" hidden={if @booking_event.status == "disable", do: 'hidden'} icon="pencil"  click_event="edit-event" id={@booking_event.id} color="blue-planning" />
+            <.button title="Edit" hidden={if @booking_event.status == :disabled, do: 'hidden'} icon="pencil"  click_event="edit-event" id={@booking_event.id} color="blue-planning" />
             <.button title="Send update" icon="envelope"  click_event="send-email" id={@booking_event.id} color="blue-planning" />
             <.button title="Duplicate" icon="duplicate"  click_event="duplicate-event" id={@booking_event.id} color="blue-planning" />
             <%= case status do %>
-            <% "active" -> %>
+            <% :active -> %>
               <.button title="Disable" icon="eye"  click_event="confirm-disable-event" id={@booking_event.id} color="red-sales" />
-            <% "disable" -> %>
+            <% :disabled-> %>
               <.button title="Enable" icon="plus"  click_event="enable-event" id={@booking_event.id} color="blue-planning" />
             <% end %>
             <.button title="Archive" icon="trash" click_event="confirm-archive-event" id={@booking_event.id} color="red-sales" />
@@ -456,17 +456,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     case BookingEvents.disable_booking_event(id, current_user.organization_id) do
       {:ok, _event} ->
         socket
-        |> close_modal()
         |> assign_booking_events()
         |> put_flash(:success, "Event disabled successfully")
-        |> noreply()
 
       {:error, _} ->
         socket
-        |> close_modal()
         |> put_flash(:success, "Error disabling event")
-        |> noreply()
     end
+    |> close_modal()
+    |> noreply()
   end
 
   @impl true
@@ -477,17 +475,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     case BookingEvents.archive_booking_event(id, current_user.organization_id) do
       {:ok, _event} ->
         socket
-        |> close_modal()
         |> assign_booking_events()
         |> put_flash(:success, "Event archive successfully")
-        |> noreply()
 
       {:error, _} ->
         socket
-        |> close_modal()
         |> put_flash(:success, "Error archiving event")
-        |> noreply()
     end
+    |> close_modal()
+    |> noreply()
   end
 
   @impl true
@@ -555,7 +551,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     |> assign(booking_events: booking_events)
   end
 
-  def sort_by_date(booking_events, sort_direction, "dates") do
+  def sort_by_date(booking_events, sort_direction, "date") do
     sort_direction = String.to_atom(sort_direction)
 
     booking_events
@@ -566,7 +562,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   defp assign_sort_date(booking_event, sort_direction, sort_by, filter_status) do
     sorted_date =
-      if sort_by == "dates" || filter_status in ["future_events", "past_events"] do
+      if sort_by == "date" || filter_status in ["future_events", "past_events"] do
         sort_direction =
           case filter_status do
             "future_events" -> :desc
@@ -587,43 +583,33 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     |> Map.put(:date, sorted_date)
   end
 
-  defp filter_date(booking_events, "future_events") do
-    {:ok, datetime} = DateTime.now("Etc/UTC")
+  defp filter_date(booking_events, "future_events"),
+    do: filter_booking_events(booking_events, :desc, :gt)
 
-    booking_events
-    |> Enum.filter(fn booking_event ->
-      date =
-        booking_event
-        |> Map.get(:dates)
-        |> Enum.map(& &1.date)
-        |> Enum.sort_by(& &1, {:desc, Date})
-        |> hd
-
-      Date.compare(date, datetime) == :gt
-    end)
-  end
-
-  defp filter_date(booking_events, "past_events") do
-    {:ok, datetime} = DateTime.now("Etc/UTC")
-
-    booking_events
-    |> Enum.filter(fn booking_event ->
-      date =
-        booking_event
-        |> Map.get(:dates)
-        |> Enum.map(& &1.date)
-        |> Enum.sort_by(& &1, {:asc, Date})
-        |> hd
-
-      Date.compare(date, datetime) == :lt
-    end)
-  end
+  defp filter_date(booking_events, "past_events"),
+    do: filter_booking_events(booking_events, :asc, :lt)
 
   defp filter_date(booking_events, _filter_status), do: booking_events
 
+  defp filter_booking_events(booking_events, sort_by, condition) do
+    {:ok, datetime} = DateTime.now("Etc/UTC")
+
+    booking_events
+    |> Enum.filter(fn booking_event ->
+      date =
+        booking_event
+        |> Map.get(:dates)
+        |> Enum.map(& &1.date)
+        |> Enum.sort_by(& &1, {sort_by, Date})
+        |> hd
+
+      Date.compare(date, datetime) == condition
+    end)
+  end
+
   defp sort_options do
     [
-      %{title: "Event Date", id: "event_date", column: "dates"},
+      %{title: "Event Date", id: "event_date", column: "date"},
       %{title: "Name", id: "name", column: "name"},
       %{title: "# of bookings", id: "#_of_bookings", column: "id"}
     ]

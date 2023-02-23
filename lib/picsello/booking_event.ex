@@ -10,15 +10,15 @@ defmodule Picsello.BookingEvent do
     embedded_schema do
       field(:start_time, :time)
       field(:end_time, :time)
-      field(:hidden, :boolean, default: false)
+      field(:is_hidden, :boolean, default: false)
       field(:is_break, :boolean, default: false)
-      field(:is_booked, :boolean, default: false)
-      field(:is_valid, :boolean, default: true)
+      field(:is_booked, :boolean, default: false, virtual: true)
+      field(:is_valid, :boolean, default: true, virtual: true)
     end
 
     def changeset(time_block \\ %__MODULE__{}, attrs) do
       time_block
-      |> cast(attrs, [:start_time, :end_time, :hidden, :is_break, :is_booked, :is_valid])
+      |> cast(attrs, [:start_time, :end_time, :is_hidden, :is_break, :is_booked, :is_valid])
       |> validate_required([:start_time, :end_time])
       |> validate_end_time()
     end
@@ -86,7 +86,7 @@ defmodule Picsello.BookingEvent do
     field :location, :string
     field :address, :string
     field :thumbnail_url, :string
-    field :status, :string
+    field(:status, Ecto.Enum, values: [:active, :disabled, :archive])
     belongs_to :package_template, Picsello.Package
     embeds_many :dates, EventDate, on_replace: :delete
     has_many :jobs, Picsello.Job
@@ -110,15 +110,15 @@ defmodule Picsello.BookingEvent do
   end
 
   def archive_changeset(%__MODULE__{} = booking_event) do
-    booking_event |> change(status: "archive")
+    booking_event |> change(status: :archive)
   end
 
   def disable_changeset(%__MODULE__{} = booking_event) do
-    booking_event |> change(status: "disable")
+    booking_event |> change(status: :disabled)
   end
 
   def enable_changeset(%__MODULE__{} = booking_event) do
-    booking_event |> change(status: "active")
+    booking_event |> change(status: :active)
   end
 
   defp update_details(booking_event, attrs) do

@@ -35,7 +35,7 @@ defmodule Picsello.BookingEvents do
     from(event in BookingEvent,
       join: package in assoc(event, :package_template),
       where: package.organization_id == ^organization_id,
-      where: event.status == "active",
+      where: event.status == :active,
       select: %{
         package_name: package.name,
         id: event.id,
@@ -124,21 +124,21 @@ defmodule Picsello.BookingEvents do
   defp remove_archive_events(dynamic) do
     dynamic(
       [client, jobs, job_status],
-      ^dynamic and client.status != "archive"
+      ^dynamic and client.status != :archive
     )
   end
 
   defp filter_disabled_events(dynamic) do
     dynamic(
       [client, jobs, job_status],
-      ^dynamic and client.status == "disable"
+      ^dynamic and client.status == :disabled
     )
   end
 
   defp filter_archived_events(dynamic) do
     dynamic(
       [client, jobs, job_status],
-      ^dynamic and client.status == "archive"
+      ^dynamic and client.status == :archive
     )
   end
 
@@ -146,8 +146,13 @@ defmodule Picsello.BookingEvents do
   defp filter_order_by(:id, order),
     do: [{order, dynamic([client, event], count(field(event, :id)))}]
 
-  defp filter_order_by(column, order),
-    do: [{order, dynamic([client], field(client, ^column))}]
+  defp filter_order_by(column, order) do
+    column = update_column(column)
+    [{order, dynamic([client], field(client, ^column))}]
+  end
+
+  def update_column(:date), do: :dates
+  def update_column(column), do: column
 
   def get_booking_event!(organization_id, event_id) do
     from(event in BookingEvent,
@@ -231,10 +236,10 @@ defmodule Picsello.BookingEvents do
     slot_times
     |> Enum.map(fn {slot_time, is_available, _is_break, _is_hide} ->
       blocker_slots = filter_is_break_time_slots(booking_event, slot_time, date)
-      hidden_slots = filter_is_hide_time_slots(booking_event, slot_time, date)
+      hidden_slots = filter_is_hidden_time_slots(booking_event, slot_time, date)
       is_break = Enum.any?(blocker_slots)
-      is_hide = Enum.any?(hidden_slots)
-      {slot_time, is_available, is_break, is_hide}
+      is_hidden = Enum.any?(hidden_slots)
+      {slot_time, is_available, is_break, is_hidden}
     end)
   end
 
@@ -259,17 +264,17 @@ defmodule Picsello.BookingEvents do
     end
   end
 
-  defp filter_is_hide_time_slots(booking_event, slot_time, date) do
+  defp filter_is_hidden_time_slots(booking_event, slot_time, date) do
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
         for(
           %{
             start_time: %Time{} = start_time,
             end_time: %Time{} = end_time,
-            hidden: hidden
+            is_hidden: is_hidden
           } <- time_blocks
         ) do
-          if hidden do
+          if is_hidden do
             Time.compare(slot_time, start_time) in [:gt, :eq] &&
               Time.compare(slot_time, end_time) in [:lt, :eq]
           end
