@@ -58,14 +58,14 @@ defmodule Picsello.Messages do
     [token(record), domain] |> Enum.join("@")
   end
 
-  def find_by_token("" <> token) do    
+  def find_by_token("" <> token) do
     case Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity) do
       {:ok, id} -> Repo.get(Job, id)
       _ -> find_by_token(token, "CLIENT_ID")
     end
   end
 
-  def find_by_token("" <> token, key) do    
+  def find_by_token("" <> token, key) do
     case Phoenix.Token.verify(PicselloWeb.Endpoint, key, token, max_age: :infinity) do
       {:ok, id} -> Repo.get(Client, id)
       _ -> nil

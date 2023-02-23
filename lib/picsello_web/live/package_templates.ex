@@ -320,7 +320,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event("add-package", %{}, socket),
     do:
       socket
-      |> assign_job_types()
+      # |> assign_job_types()
       |> push_patch(to: Routes.package_templates_path(socket, :new))
       |> noreply()
 
@@ -332,7 +332,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       ),
       do:
         socket
-        |> assign_job_types()
+        # |> assign_job_types()
         |> push_patch(to: Routes.package_templates_path(socket, :edit, package_id))
         |> noreply()
 

@@ -105,72 +105,80 @@ defmodule Picsello.Packages do
       field(:status, Ecto.Enum, values: [:limited, :unlimited, :none])
       field(:is_custom_price, :boolean, default: false)
       field(:includes_credits, :boolean, default: false)
-      field(:each_price, Money.Ecto.Amount.Type, default: @default_each_price)
+      field(:each_price, Money.Ecto.Amount.Type)
       field(:count, :integer)
       field(:buy_all, Money.Ecto.Amount.Type)
       field(:is_buy_all, :boolean)
     end
 
     def changeset(download \\ %__MODULE__{}, attrs) do
-      download
-      |> cast(attrs, [
-        :status,
-        :is_custom_price,
-        :includes_credits,
-        :each_price,
-        :count,
-        :is_buy_all,
-        :buy_all
-      ])
-      |> then(fn changeset -> 
-        IO.inspect attrs, label: "aaaaaaaa"
-        if Map.get(attrs, "validate_download_status"), do: validate_required(changeset, [:status]), else: changeset
-      end)
-      |> then(
-        &if get_field(&1, :status) != :unlimited,
-          do: &1,
-          else:
-            Enum.reduce(
-              [
-                each_price: @zero_price,
-                is_custom_price: false,
-                includes_credits: false,
-                is_buy_all: false,
-                buy_all: nil
-              ],
-              &1,
-              fn {k, v}, changeset -> force_change(changeset, k, v) end
-            )
-      )
-      |> then(
-        &if(get_field(&1, :is_custom_price),
-          do:
-            &1
-            |> force_change(:each_price, get_field(&1, :each_price))
-            |> validate_required([:each_price])
-            |> Picsello.Package.validate_money(:each_price, greater_than: 0),
-          else: force_change(&1, :each_price, @default_each_price)
+      changeset =
+        download
+        |> cast(attrs, [
+          :status,
+          :is_custom_price,
+          :includes_credits,
+          :each_price,
+          :count,
+          :is_buy_all,
+          :buy_all
+        ])
+
+      if Map.get(attrs, "step") in [:choose_type, :pricing] do
+        changeset
+        |> validate_required([:status])
+        |> then(
+          &if get_field(&1, :status) == :unlimited,
+            do:
+              Enum.reduce(
+                [
+                  each_price: @zero_price,
+                  is_custom_price: false,
+                  includes_credits: false,
+                  is_buy_all: false,
+                  buy_all: nil
+                ],
+                &1,
+                fn {k, v}, changeset -> force_change(changeset, k, v) end
+              ),
+            else: &1
         )
-      )
-      |> then(
-        &if(get_field(&1, :status) == :limited,
-          do:
-            &1
-            |> force_change(:count, get_field(&1, :count))
-            |> validate_required([:count])
-            |> validate_number(:count, greater_than: -1),
-          else: force_change(&1, :count, nil)
+        |> then(
+          &if(get_field(&1, :is_custom_price),
+            do:
+              &1
+              |> force_change(:each_price, get_field(&1, :each_price))
+              |> validate_required([:each_price])
+              |> Picsello.Package.validate_money(:each_price, greater_than: 0),
+            else: &1
+          )
         )
-      )
-      |> validate_buy_all()
-      |> validate_each_price()
-      |> IO.inspect
+        |> then(
+          &if(get_field(&1, :status) == :limited,
+            do:
+              &1
+              |> force_change(:count, get_field(&1, :count))
+              |> validate_required([:count])
+              |> validate_number(:count, greater_than: 0),
+            else: force_change(&1, :count, nil)
+          )
+        )
+        |> validate_buy_all()
+        |> validate_each_price()
+      else
+        changeset
+      end
     end
 
     defp validate_buy_all(changeset) do
       download_each_price = get_field(changeset, :each_price) || @zero_price
 
-      changeset
+      if get_field(changeset, :is_buy_all) do
+        changeset
+        |> validate_required([:buy_all])
+      else
+        changeset
+      end
       |> validate_money(:buy_all,
         greater_than: download_each_price.amount,
         message: "Must be greater than digital image price"
@@ -191,28 +199,81 @@ defmodule Picsello.Packages do
       end
     end
 
-    def from_package(package, global_settings \\ %{download_each_price: nil})
+    def from_package(package, global_settings \\ %{download_each_price: nil, buy_all_price: nil})
 
-    def from_package(%{download_each_price: each_price, download_count: count} = package, global_settings)
-        when each_price in [global_settings.download_each_price, @default_each_price] and count in [0, nil],
-        do: %__MODULE__{status: :none} |> set_buy_all_fields(package)
-
-    def from_package(%{download_each_price: each_price, download_count: count} = package, global_settings)
-        when each_price in [global_settings.download_each_price, @default_each_price, nil],
-        do: set_count_fields(%__MODULE__{status: :limited}, count) |> set_buy_all_fields(package)
-
-    def from_package(%{download_each_price: each_price, download_count: count} = package, _global_settings)
-    when count in [0, nil], do:
-        set_count_fields(
-          %__MODULE__{status: :unlimited, includes_credits: false, each_price: @zero_price},
-          count
+    def from_package(
+          %{download_each_price: each_price, download_count: count, id: id} = package,
+          global_settings
         )
-        |> set_buy_all_fields(package)
+        when not is_nil(id) do
+      cond do
+        count > 0 ->
+          %__MODULE__{
+            status: :limited,
+            is_custom_price: true,
+            is_buy_all: true,
+            each_price: each_price,
+            count: count
+          }
+          |> Map.merge(set_buy_all(package, global_settings))
 
-    def from_package(%{download_each_price: each_price, download_count: count} = package, _global_settings),
-      do:
-        set_count_fields(%__MODULE__{each_price: each_price, is_custom_price: true}, count)
-        |> set_buy_all_fields(package)
+        each_price && Money.positive?(each_price) ->
+          %__MODULE__{
+            status: :none,
+            is_custom_price: true,
+            is_buy_all: true,
+            each_price: each_price,
+            count: nil
+          }
+          |> Map.merge(set_buy_all(package, global_settings))
+
+        true ->
+          %__MODULE__{status: :unlimited, is_custom_price: true, is_buy_all: true, count: nil}
+          |> Map.merge(set_default_download_each_price(global_settings))
+          |> Map.merge(set_buy_all(package, global_settings))
+      end
+    end
+
+    def from_package(
+          %{download_each_price: each_price, download_count: count} = package,
+          global_settings
+        )
+        when each_price in [global_settings.download_each_price, @default_each_price] and
+               count in [0, nil] do
+      Map.merge(
+        %__MODULE__{status: :none, is_custom_price: true, is_buy_all: true},
+        set_download_fields(package, global_settings)
+      )
+    end
+
+    def from_package(
+          %{download_each_price: each_price, download_count: count} = package,
+          global_settings
+        )
+        when each_price in [global_settings.download_each_price, @default_each_price, nil] do
+      Map.merge(
+        %__MODULE__{status: :limited, is_custom_price: true, is_buy_all: true},
+        set_download_fields(package, global_settings)
+      )
+      |> set_count_fields(count)
+    end
+
+    def from_package(
+          %{download_count: count},
+          _global_settings
+        )
+        when count in [0, nil],
+        do:
+          set_count_fields(
+            %__MODULE__{
+              status: :unlimited,
+              is_custom_price: false,
+              each_price: @zero_price,
+              buy_all: nil,
+              is_buy_all: false
+            },
+            count
+          )
 
     def count(%__MODULE__{count: nil}), do: 0
     def count(%__MODULE__{count: count}), do: count
@@ -225,19 +286,35 @@ defmodule Picsello.Packages do
 
     def default_each_price(), do: @default_each_price
 
+    defp set_download_fields(package, global_settings) do
+      if is_nil(package.id) do
+        set_default_download_each_price(global_settings)
+      else
+        set_each_price(package, global_settings)
+      end
+      |> Map.merge(set_buy_all(package, global_settings))
+    end
+
+    defp set_each_price(%{each_price: each_price}, global_settings) do
+      if each_price,
+        do: %{each_price: each_price},
+        else: set_default_download_each_price(global_settings)
+    end
+
+    defp set_default_download_each_price(global_settings) do
+      each_price = global_settings.download_each_price
+      %{each_price: if(each_price, do: each_price, else: @default_each_price)}
+    end
+
+    defp set_buy_all(%{buy_all: buy_all}, global_settings) do
+      %{buy_all: if(buy_all, do: buy_all, else: global_settings.buy_all_price)}
+    end
+
     defp set_count_fields(download, count) when count in [nil, 0],
       do: %{download | count: count, includes_credits: false}
 
     defp set_count_fields(download, count),
       do: %{download | count: count, includes_credits: true}
-
-    defp set_buy_all_fields(download, %{buy_all: %Money{} = buy_all}) do
-      %{download | is_buy_all: true, buy_all: buy_all}
-    end
-
-    defp set_buy_all_fields(download, _package) do
-      %{download | is_buy_all: false, buy_all: nil}
-    end
   end
 
   def templates_with_single_shoot(%User{organization_id: organization_id}) do
