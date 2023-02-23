@@ -100,5 +100,5 @@
 </div>
 
 <%= if Subscriptions.subscription_expired?(@current_user) && !@stripe_subscription_status do %>
-  <.subscription_modal socket={@socket} />
+  <.subscription_modal socket={@socket} promotion_code_changeset={@promotion_code_changeset} />
 <% end %>

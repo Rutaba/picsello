@@ -124,6 +124,16 @@ defmodule Picsello.Subscriptions do
     Repo.all(from(s in SubscriptionPlan, order_by: s.price))
   end
 
+  def maybe_return_promotion_code_id?(code) do
+    case maybe_get_promotion_code?(code) do
+      %{stripe_promotion_code_id: stripe_promotion_code_id} ->
+        stripe_promotion_code_id
+
+      _ ->
+        nil
+    end
+  end
+
   def maybe_get_promotion_code?(%{onboarding: %{promotion_code: promotion_code}}) do
     maybe_get_promotion_code?(promotion_code)
   end
@@ -189,9 +199,23 @@ defmodule Picsello.Subscriptions do
     cancel_url = opts |> Keyword.get(:cancel_url)
     success_url = opts |> Keyword.get(:success_url)
     trial_days = opts |> Keyword.get(:trial_days)
+    promotion_code = opts |> Keyword.get(:promotion_code)
+
+    IO.inspect(promotion_code)
 
     subscription_data =
       if trial_days, do: %{subscription_data: %{trial_period_days: trial_days}}, else: %{}
+
+    discounts_data =
+      if promotion_code,
+        do: %{
+          discounts: [
+            %{
+              coupon: promotion_code
+            }
+          ]
+        },
+        else: %{}
 
     stripe_params =
       %{
@@ -208,6 +232,7 @@ defmodule Picsello.Subscriptions do
         ]
       }
       |> Map.merge(subscription_data)
+      |> Map.merge(discounts_data)
 
     case Payments.create_session(stripe_params, opts) do
       {:ok, %{url: url}} -> {:ok, url}

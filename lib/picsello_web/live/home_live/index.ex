@@ -33,6 +33,7 @@ defmodule PicselloWeb.HomeLive.Index do
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
   import Ecto.Query
+  import Ecto.Changeset, only: [get_change: 2]
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
 
@@ -58,6 +59,7 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign_attention_items()
     |> assign(:tabs, tabs_list(socket))
     |> assign(:tab_active, "todo")
+    |> assign_promotion_code_changeset()
     |> subscribe_inbound_messages()
     |> assign_inbox_threads()
     |> maybe_show_success_subscription(params)
@@ -158,24 +160,55 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
+  def handle_event(
+        "validate-promo-code",
+        %{"user" => user_params},
+        socket
+      ) do
+    socket
+    |> assign_promotion_code_changeset(user_params)
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
-  def handle_event("subscription-checkout", %{"interval" => interval}, socket) do
-    case Subscriptions.checkout_link(
-           socket.assigns.current_user,
-           interval,
-           success_url: "#{Routes.home_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
-           cancel_url: Routes.home_url(socket, :index)
-         ) do
-      {:ok, url} ->
-        socket |> redirect(external: url) |> noreply()
+  def handle_event(
+        "subscription-checkout",
+        %{"interval" => interval},
+        %{
+          assigns: %{
+            promotion_code_changeset: promotion_code_changeset,
+            current_user: %{
+              onboarding: %{
+                promotion_code: promotion_code
+              }
+            }
+          }
+        } = socket
+      ) do
+    onboarding_changeset =
+      promotion_code_changeset
+      |> get_change(:onboarding)
 
-      {:error, error} ->
-        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
-        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
-    end
+    promotion_code_id =
+      if !is_nil(promotion_code) and is_nil(onboarding_changeset) do
+        Subscriptions.maybe_return_promotion_code_id?(promotion_code)
+      else
+        case onboarding_changeset do
+          nil ->
+            nil
+
+          _ ->
+            onboarding_changeset
+            |> get_change(:promotion_code)
+            |> Subscriptions.maybe_return_promotion_code_id?()
+        end
+      end
+
+    build_subscription_link(socket, interval, promotion_code_id)
   end
 
   @impl true
@@ -895,11 +928,18 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def subscription_modal(assigns) do
     ~H"""
-    <div class="fixed inset-0 z-20 flex items-center justify-center bg-black/60">
+    <div class="fixed inset-0 z-40 flex items-center justify-center bg-black/60">
       <div class="rounded-lg modal sm:max-w-4xl">
         <h1 class="text-3xl font-semibold">Your plan has expired</h1>
-        <p class="pt-4">To recover access to <span class="italic">integrated email marketing, easy invoicing, all of your client galleries</span> and much more, please select a plan. Contact us if you have issues.</p>
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <p class="pt-4 mb-4">To recover access to <span class="italic">integrated email marketing, easy invoicing, all of your client galleries</span> and much more, please select a plan. Contact us if you have issues.</p>
+        <.form let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form">
+          <%= hidden_inputs_for f %>
+          <%= for onboarding <- inputs_for(f, :onboarding) do %>
+            <%= hidden_inputs_for onboarding %>
+            <%= labeled_input onboarding, :promotion_code, label: "Add a subscription promo code", type: :text_input, phx_debounce: 500, min: 0, placeholder: "enter code…", class: "mb-3" %>
+          <% end %>
+        </.form>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8">
           <%= for {subscription_plan, i} <- Subscriptions.subscription_plans() |> Enum.with_index() do %>
             <div class="flex items-center justify-between p-4 border rounded-lg">
               <p class="text-3xl font-semibold"> <%= subscription_plan.price |> Money.to_string(fractional_unit: false) %>/<%= subscription_plan.recurring_interval %></p>
@@ -974,6 +1014,54 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(
       current_user:
         Picsello.Onboardings.save_intro_state(current_user, "intro_dashboard_modal", "completed")
+    )
+  end
+
+  defp build_subscription_link(
+         %{
+           assigns: %{
+             current_user: current_user,
+             promotion_code_changeset: promotion_code_changeset
+           }
+         } = socket,
+         interval,
+         promotion_code_id
+       ) do
+    case Subscriptions.checkout_link(
+           current_user,
+           interval,
+           success_url: "#{Routes.home_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
+           cancel_url: Routes.home_url(socket, :index),
+           promotion_code: promotion_code_id
+         ) do
+      {:ok, url} ->
+        promotion_code_changeset
+        |> Map.put(:action, :update)
+        |> Repo.update!()
+
+        socket |> redirect(external: url) |> noreply()
+
+      {:error, error} ->
+        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
+        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
+    end
+  end
+
+  defp build_promotion_code_changeset(
+         %{assigns: %{current_user: user}},
+         params,
+         action
+       ) do
+    user
+    |> Onboardings.user_update_promotion_code_changeset(params)
+    |> Map.put(:action, action)
+  end
+
+  defp assign_promotion_code_changeset(socket, params \\ %{}) do
+    socket
+    |> assign(
+      :promotion_code_changeset,
+      build_promotion_code_changeset(socket, params, :validate)
     )
   end
 
