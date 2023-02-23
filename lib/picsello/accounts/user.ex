@@ -22,6 +22,7 @@ defmodule Picsello.Accounts.User do
     field :stripe_customer_id, :string
     embeds_one(:onboarding, Onboarding, on_replace: :update)
     has_one(:subscription, Picsello.Subscription)
+    has_one(:subscription_event, Picsello.SubscriptionEvent)
     belongs_to(:organization, Picsello.Organization)
 
     timestamps()

@@ -7,6 +7,7 @@ defmodule PicselloWeb.GalleryLive.Index do
   alias Picsello.{Galleries, Job, Repo, Messages, Orders, Albums}
 
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
   defmodule Pagination do
     @moduledoc false
