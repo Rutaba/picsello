@@ -65,7 +65,7 @@ defmodule Picsello.FactoryReset do
       |> Map.put(:organization, organization)
     end)
     |> then(fn %{onboarding: onboarding} = user_attrs ->
-      ex_user = %{email: "#{email}-#{UUID.uuid4()}"}
+      ex_user = %{email: "#{email}-#{UUID.uuid4()}", stripe_customer_id: nil}
 
       Multi.new()
       |> Multi.update(:ex_user, change(user, ex_user))
