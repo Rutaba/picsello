@@ -103,6 +103,9 @@ defmodule Picsello.Payments do
   @callback create_subscription(create_subscription(), Stripe.options()) ::
               {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
 
+  @callback update_subscription(Stripe.id() | String.t(), Stripe.options()) ::
+              {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
+
   @callback retrieve_subscription(String.t(), keyword(binary())) ::
               {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
 
@@ -197,6 +200,7 @@ defmodule Picsello.Payments do
   def retrieve_customer(id, opts \\ []), do: impl().retrieve_customer(id, opts)
   def retrieve_account(id, opts \\ []), do: impl().retrieve_account(id, opts)
   def create_subscription(params, opts \\ []), do: impl().create_subscription(params, opts)
+  def update_subscription(params, opts \\ []), do: impl().update_subscription(params, opts)
   def retrieve_subscription(id, opts), do: impl().retrieve_subscription(id, opts)
   def list_prices(params), do: impl().list_prices(params)
   def list_promotion_codes(params), do: impl().list_promotion_codes(params)

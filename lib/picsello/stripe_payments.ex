@@ -42,6 +42,9 @@ defmodule Picsello.StripePayments do
   defdelegate retrieve_customer(id, opts), to: Stripe.Customer, as: :retrieve
 
   @impl Payments
+  defdelegate update_subscription(id, opts), to: Stripe.Subscription, as: :update
+
+  @impl Payments
   defdelegate retrieve_subscription(id, opts), to: Stripe.Subscription, as: :retrieve
 
   @impl Payments
