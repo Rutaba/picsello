@@ -202,6 +202,16 @@ defmodule Picsello.Packages do
     def from_package(package, global_settings \\ %{download_each_price: nil, buy_all_price: nil})
 
     def from_package(
+          %{download_each_price: nil, buy_all: nil, download_count: nil} = package,
+          global_settings
+        ),
+        do:
+          Map.merge(
+            %__MODULE__{status: :none, is_custom_price: true, is_buy_all: true},
+            set_download_fields(package, global_settings)
+          )
+
+    def from_package(
           %{download_each_price: each_price, download_count: count, id: id} = package,
           global_settings
         )
