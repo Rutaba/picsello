@@ -2,6 +2,19 @@ defmodule PicselloWeb.JobLive.Shared do
   @moduledoc """
   handlers used by both leads and jobs
   """
+  require Ecto.Query
+
+  use Phoenix.Component
+  use Phoenix.HTML
+
+  import Ecto.Query
+  import Phoenix.LiveView
+  import PicselloWeb.LiveHelpers
+  import PicselloWeb.FormHelpers
+  import Phoenix.HTML.Form
+  import PicselloWeb.Gettext, only: [ngettext: 3]
+  import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
+
   alias Picsello.{
     Galleries,
     Job,
@@ -18,18 +31,8 @@ defmodule PicselloWeb.JobLive.Shared do
     Utils
   }
 
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias PicselloWeb.Router.Helpers, as: Routes
-  require Ecto.Query
-
-  import Phoenix.LiveView
-  import PicselloWeb.LiveHelpers
-  import PicselloWeb.FormHelpers
-  import Phoenix.HTML.Form
-  import PicselloWeb.Gettext, only: [ngettext: 3]
-  import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
-
-  use Phoenix.Component
-  use Phoenix.HTML
 
   @string_length 15
 
@@ -320,92 +323,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def assign_uploads(socket, upload_options) do
-    socket
-    |> allow_upload(:documents, upload_options)
-    |> assign(:invalid_entries, [])
-    |> assign(:invalid_entries_errors, %{})
-  end
-
-  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
-  def presign_entry(entry, %{assigns: %{uploads: uploads}} = socket) do
-    %{documents: %{max_file_size: max_file_size}} = uploads
-    key = Job.document_path(entry.client_name, entry.uuid)
-
-    sign_opts = [
-      expires_in: 144_000,
-      bucket: @bucket,
-      key: key,
-      fields: %{
-        "content-type" => entry.client_type,
-        "cache-control" => "public, max-age=@upload_options"
-      },
-      conditions: [["content-length-range", 0, max_file_size]]
-    ]
-
-    params = PhotoStorage.params_for_upload(sign_opts)
-    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
-
-    {:ok, meta, socket}
-  end
-
-  def process_cancel_upload(
-        %{
-          assigns: %{
-            invalid_entries: invalid_entries,
-            invalid_entries_errors: invalid_entries_errors,
-            uploads: %{documents: documents}
-          }
-        } = socket,
-        ref
-      ) do
-    socket
-    |> assign_documents(Enum.reject(documents.entries, &(&1.ref == ref)))
-    |> assign(:invalid_entries, Enum.reject(invalid_entries, &(&1.ref == ref)))
-    |> assign(:invalid_entries_errors, Map.delete(invalid_entries_errors, ref))
-  end
-
-  defp assign_documents(%{assigns: %{uploads: uploads}} = socket, entries) do
-    %{documents: documents} = uploads
-
-    uploads
-    |> Map.put(:documents, Map.put(documents, :entries, entries) |> Map.put(:errors, []))
-    |> then(&assign(socket, :uploads, &1))
-  end
-
-  defp ex_docs(%{job: %{documents: documents}}), do: Enum.map(documents, & &1.name)
-  defp ex_docs(%{ex_documents: ex_documents}), do: Enum.map(ex_documents, & &1.client_name)
-
-  defp search_assigns(socket) do
-    socket
-    |> assign(:search_results, [])
-    |> assign(:search_phrase, nil)
-    |> assign(:searched_client, nil)
-  end
-
-  defp search(nil, _socket), do: []
-
-  defp search("", _socket), do: []
-
-  defp search(search_phrase, %{assigns: %{clients: clients}}) do
-    clients
-    |> Enum.filter(&client_matches?(&1, search_phrase))
-  end
-
-  defp client_matches?(client, query) do
-    (client.name && do_match?(client.name, query)) ||
-      (client.name && do_match?(List.last(String.split(client.name)), query)) ||
-      do_match?(client.email, query) ||
-      (client.phone && String.contains?(client.phone, query))
-  end
-
-  defp do_match?(data, query) do
-    String.starts_with?(
-      String.downcase(data),
-      String.downcase(query)
-    )
-  end
-
   def handle_info({:action_event, "open_email_compose"}, socket),
     do: open_email_compose(socket, socket.assigns.client.id)
 
@@ -542,22 +459,49 @@ defmodule PicselloWeb.JobLive.Shared do
     socket |> assign(proposal: proposal)
   end
 
-  defp assign_inbox_count(%{assigns: %{job: job}} = socket) do
-    count =
-      Job.by_id(job.id)
-      |> ClientMessage.unread_messages()
-      |> Repo.aggregate(:count)
-
-    socket |> subscribe_inbound_messages() |> assign(:inbox_count, count)
+  def assign_uploads(socket, upload_options) do
+    socket
+    |> allow_upload(:documents, upload_options)
+    |> assign(:invalid_entries, [])
+    |> assign(:invalid_entries_errors, %{})
   end
 
-  defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
-    Phoenix.PubSub.subscribe(
-      Picsello.PubSub,
-      "inbound_messages:#{current_user.organization_id}"
-    )
+  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
+  def presign_entry(entry, %{assigns: %{uploads: uploads}} = socket) do
+    %{documents: %{max_file_size: max_file_size}} = uploads
+    key = Job.document_path(entry.client_name, entry.uuid)
 
+    sign_opts = [
+      expires_in: 144_000,
+      bucket: @bucket,
+      key: key,
+      fields: %{
+        "content-type" => entry.client_type,
+        "cache-control" => "public, max-age=@upload_options"
+      },
+      conditions: [["content-length-range", 0, max_file_size]]
+    ]
+
+    params = PhotoStorage.params_for_upload(sign_opts)
+    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
+
+    {:ok, meta, socket}
+  end
+
+  def process_cancel_upload(
+        %{
+          assigns: %{
+            invalid_entries: invalid_entries,
+            invalid_entries_errors: invalid_entries_errors,
+            uploads: %{documents: documents}
+          }
+        } = socket,
+        ref
+      ) do
     socket
+    |> assign_documents(Enum.reject(documents.entries, &(&1.ref == ref)))
+    |> assign(:invalid_entries, Enum.reject(invalid_entries, &(&1.ref == ref)))
+    |> assign(:invalid_entries_errors, Map.delete(invalid_entries_errors, ref))
   end
 
   @spec status_badge(%{job_status: %Picsello.JobStatus{}, class: binary}) ::
@@ -1130,6 +1074,78 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
+  def drag_drop(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        label_class: "py-32",
+        job_view?: nil,
+        text_color: "text-black",
+        item_name: "files",
+        supported_types: ".PDF, .docx, .txt"
+      })
+
+    ~H"""
+    <div class="dragDrop border-dashed border-2 border-blue-planning-300 rounded-lg" id="dropzone-upload" phx-hook="DragDrop" phx-drop-target={@upload_entity.ref}>
+      <label class={"flex flex-col items-center justify-center w-full h-full gap-8 cursor-pointer #{@label_class}"}>
+        <div class={"max-w-xs mx-auto #{@job_view? && 'flex gap-4'}"}>
+          <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76" class="mx-auto cursor-pointer opacity-75 cursor-defaul" alt="add photos icon"/>
+            <div class="flex flex-col items-center justify-center dragDrop__content">
+              <p class="text-center">
+                <span class={"font-bold #{@text_color}"}>Drag your <%= @item_name %> or </span>
+                <span class="font-bold cursor-pointer primary gray">browse</span>
+                  <%= live_file_input @upload_entity, class: "dragDropInput" %>
+              </p>
+              <p class="text-center gray">Supports <%= @supported_types %></p>
+            </div>
+        </div>
+      </label>
+    </div>
+    """
+  end
+
+  def files_to_upload(assigns) do
+    assigns = Enum.into(assigns, %{myself: nil, for: nil, string_length: @string_length})
+    photos? = assigns.for == :photos
+    job? = assigns.for in [:job, :job_detail]
+
+    ~H"""
+      <div class={classes("uploadEntry grid grid-cols-5 pb-4 items-center", %{"px-14" => photos?})}>
+        <p class={"#{if photos?, do: 'col-span-3', else: 'col-span-2'} max-w-md overflow-hidden"}>
+        <%= truncate_name(@entry, @string_length) %>
+        </p>
+        <div class={"#{if photos? || job?, do: 'gap-x-1 lg:gap-x-4 md:gap-x-4 grid-cols-1', else: 'col-span-2'} flex photoUploadingIsFailed items-center"}>
+          <%= render_slot(@inner_block) %>
+        </div>
+        <div class={"w-full ml-4 lg:ml-0 md:ml-0 #{!job? && 'hidden'}"}>
+          <div class={"sm:w-3/4 lg:w-full w-2/3 bg-green-finances-300 mt-4 mx-auto rounded-full h-1.5 mb-4 darkbg-green-finances-300 #{((!@entry.valid? || @entry.done?)) && 'invisible'}"}>
+            <div class="bg-green-finances-300 font-sans h-1.5 rounded-full" style={"width: #{@entry.progress}%"}></div>
+          </div>
+        </div>
+
+          <%= case @for do %>
+            <% :job_detail -> %>
+              <.removal_button phx-click="cancel-upload" phx-value-ref={@entry.ref} />
+            <% :photos -> %>
+              <.removal_button phx-target={@target} phx-click="delete_photo" phx-value-index={@index} phx-value-delete_from={@delete_from} />
+            <% _ -> %>
+              <div id={"file_options-#{@entry.uuid}"} data-offset-x="-60" phx-hook="Select" class="justify-self-end grid-cols-1 cursor-pointer ml-5 lg:ml-auto">
+                  <button type="button" class="flex flex-shrink-0 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+                    <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
+                    <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+                  </button>
+
+                  <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
+                    <span phx-click="cancel-upload" phx-target={@myself} phx-value-ref={@entry.ref} aria-label="remove" class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+                      <.icon name="remove-icon" class="inline-block w-4 h-4 mr-2 fill-current text-red-sales-300"/>
+                      <span class="pr-2">Delete</span>
+                    </span>
+                  </div>
+              </div>
+          <% end %>
+      </div>
+    """
+  end
+
   def assign_job(
         %{assigns: %{current_user: current_user, live_action: :transactions}} = socket,
         job_id
@@ -1244,131 +1260,6 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  defp do_assign_job(socket, job) do
-    galleries =
-      job.id
-      |> Galleries.get_galleries_by_job_id()
-      |> Picsello.Repo.preload([:orders, child: [:orders]])
-
-    child_ids = for %{child: %{id: id}} when not is_nil(id) <- galleries, do: id
-    job = Map.put(job, :galleries, Enum.reject(galleries, &(&1.id in child_ids)))
-
-    socket
-    |> assign(
-      job: job,
-      page_title: Job.name(job),
-      package: job.package
-    )
-    |> assign_shoots()
-    |> assign_proposal()
-    |> assign_inbox_count()
-  end
-
-  defp open_email_compose(%{assigns: %{current_user: current_user}} = socket, client_id) do
-    client = Repo.get(Client, client_id)
-
-    socket
-    |> PicselloWeb.ClientMessageComponent.open(%{
-      current_user: current_user,
-      enable_size: true,
-      enable_image: true,
-      client: client
-    })
-    |> noreply()
-  end
-
-  defp assign_payment_schedules(socket) do
-    socket
-    |> then(fn %{assigns: %{job: job}} = socket ->
-      payment_schedules =
-        job |> Repo.preload(:payment_schedules, force: true) |> Map.get(:payment_schedules)
-
-      socket
-      |> assign(payment_schedules: payment_schedules)
-      |> validate_payment_schedule()
-    end)
-  end
-
-  def drag_drop(assigns) do
-    assigns =
-      Enum.into(assigns, %{
-        label_class: "py-32",
-        job_view?: nil,
-        text_color: "text-black",
-        item_name: "files",
-        supported_types: ".PDF, .docx, .txt"
-      })
-
-    ~H"""
-    <div class="dragDrop border-dashed border-2 border-blue-planning-300 rounded-lg" id="dropzone-upload" phx-hook="DragDrop" phx-drop-target={@upload_entity.ref}>
-      <label class={"flex flex-col items-center justify-center w-full h-full gap-8 cursor-pointer #{@label_class}"}>
-        <div class={"max-w-xs mx-auto #{@job_view? && 'flex gap-4'}"}>
-          <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76" class="mx-auto cursor-pointer opacity-75 cursor-defaul" alt="add photos icon"/>
-            <div class="flex flex-col items-center justify-center dragDrop__content">
-              <p class="text-center">
-                <span class={"font-bold #{@text_color}"}>Drag your <%= @item_name %> or </span>
-                <span class="font-bold cursor-pointer primary gray">browse</span>
-                  <%= live_file_input @upload_entity, class: "dragDropInput" %>
-              </p>
-              <p class="text-center gray">Supports <%= @supported_types %></p>
-            </div>
-        </div>
-      </label>
-    </div>
-    """
-  end
-
-  def files_to_upload(assigns) do
-    assigns = Enum.into(assigns, %{myself: nil, for: nil, string_length: @string_length})
-    photos? = assigns.for == :photos
-    job? = assigns.for in [:job, :job_detail]
-
-    ~H"""
-      <div class={classes("uploadEntry grid grid-cols-5 pb-4 items-center", %{"px-14" => photos?})}>
-        <p class={"#{if photos?, do: 'col-span-3', else: 'col-span-2'} max-w-md overflow-hidden"}>
-        <%= truncate_name(@entry, @string_length) %>
-        </p>
-        <div class={"#{if photos? || job?, do: 'gap-x-1 lg:gap-x-4 md:gap-x-4 grid-cols-1', else: 'col-span-2'} flex photoUploadingIsFailed items-center"}>
-          <%= render_slot(@inner_block) %>
-        </div>
-        <div class={"w-full ml-4 lg:ml-0 md:ml-0 #{!job? && 'hidden'}"}>
-          <div class={"sm:w-3/4 lg:w-full w-2/3 bg-green-finances-300 mt-4 mx-auto rounded-full h-1.5 mb-4 darkbg-green-finances-300 #{((!@entry.valid? || @entry.done?)) && 'invisible'}"}>
-            <div class="bg-green-finances-300 font-sans h-1.5 rounded-full" style={"width: #{@entry.progress}%"}></div>
-          </div>
-        </div>
-
-          <%= case @for do %>
-            <% :job_detail -> %>
-              <.removal_button phx-click="cancel-upload" phx-value-ref={@entry.ref} />
-            <% :photos -> %>
-              <.removal_button phx-target={@target} phx-click="delete_photo" phx-value-index={@index} phx-value-delete_from={@delete_from} />
-            <% _ -> %>
-              <div id={"file_options-#{@entry.uuid}"} data-offset-x="-60" phx-hook="Select" class="justify-self-end grid-cols-1 cursor-pointer ml-5 lg:ml-auto">
-                  <button type="button" class="flex flex-shrink-0 p-2.5 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
-                    <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
-                    <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
-                  </button>
-
-                  <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content">
-                    <span phx-click="cancel-upload" phx-target={@myself} phx-value-ref={@entry.ref} aria-label="remove" class="flex justify-between items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
-                      <.icon name="remove-icon" class="inline-block w-4 h-4 mr-2 fill-current text-red-sales-300"/>
-                      <span class="pr-2">Delete</span>
-                    </span>
-                  </div>
-              </div>
-          <% end %>
-      </div>
-    """
-  end
-
-  defp removal_button(assigns) do
-    ~H"""
-    <button {assigns} aria-label="remove" class="justify-self-end grid-cols-1 cursor-pointer ml-5 lg:ml-auto">
-      <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
-    </button>
-    """
-  end
-
   def error_action(%{error: error, entry: entry} = assigns) do
     assigns = Map.put_new(assigns, :target, nil)
 
@@ -1381,8 +1272,27 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  defp retryable?(err) when err in ~w(too_large not_accepted)a, do: false
-  defp retryable?(_err), do: true
+  def update_gallery(
+        %{gallery: gallery, client: %{organization_id: organization_id}},
+        shoot
+      ) do
+    if gallery && gallery.use_global do
+      settings =
+        from(gss in GSGallery,
+          where: gss.organization_id == ^organization_id
+        )
+        |> Repo.one()
+
+      expiration_date =
+        if settings && settings.expiration_days && settings.expiration_days > 0 do
+          Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
+        end
+
+      Picsello.Galleries.update_gallery(gallery, %{expired_at: expiration_date})
+    else
+      nil
+    end
+  end
 
   def check_max_entries(
         %{assigns: %{uploads: %{documents: %{entries: entries} = documents}}} = socket
@@ -1450,4 +1360,119 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   defdelegate path_to_url(path), to: PhotoStorage
+
+  defp assign_documents(%{assigns: %{uploads: uploads}} = socket, entries) do
+    %{documents: documents} = uploads
+
+    uploads
+    |> Map.put(:documents, Map.put(documents, :entries, entries) |> Map.put(:errors, []))
+    |> then(&assign(socket, :uploads, &1))
+  end
+
+  defp ex_docs(%{job: %{documents: documents}}), do: Enum.map(documents, & &1.name)
+  defp ex_docs(%{ex_documents: ex_documents}), do: Enum.map(ex_documents, & &1.client_name)
+
+  defp search_assigns(socket) do
+    socket
+    |> assign(:search_results, [])
+    |> assign(:search_phrase, nil)
+    |> assign(:searched_client, nil)
+  end
+
+  defp search(nil, _socket), do: []
+
+  defp search("", _socket), do: []
+
+  defp search(search_phrase, %{assigns: %{clients: clients}}) do
+    clients
+    |> Enum.filter(&client_matches?(&1, search_phrase))
+  end
+
+  defp client_matches?(client, query) do
+    (client.name && do_match?(client.name, query)) ||
+      (client.name && do_match?(List.last(String.split(client.name)), query)) ||
+      do_match?(client.email, query) ||
+      (client.phone && String.contains?(client.phone, query))
+  end
+
+  defp do_match?(data, query) do
+    String.starts_with?(
+      String.downcase(data),
+      String.downcase(query)
+    )
+  end
+
+  defp assign_inbox_count(%{assigns: %{job: job}} = socket) do
+    count =
+      Job.by_id(job.id)
+      |> ClientMessage.unread_messages()
+      |> Repo.aggregate(:count)
+
+    socket |> subscribe_inbound_messages() |> assign(:inbox_count, count)
+  end
+
+  defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
+    Phoenix.PubSub.subscribe(
+      Picsello.PubSub,
+      "inbound_messages:#{current_user.organization_id}"
+    )
+
+    socket
+  end
+
+  defp do_assign_job(socket, job) do
+    galleries =
+      job.id
+      |> Galleries.get_galleries_by_job_id()
+      |> Picsello.Repo.preload([:orders, child: [:orders]])
+
+    child_ids = for %{child: %{id: id}} when not is_nil(id) <- galleries, do: id
+    job = Map.put(job, :galleries, Enum.reject(galleries, &(&1.id in child_ids)))
+
+    socket
+    |> assign(
+      job: job,
+      page_title: Job.name(job),
+      package: job.package
+    )
+    |> assign_shoots()
+    |> assign_proposal()
+    |> assign_inbox_count()
+  end
+
+  defp open_email_compose(%{assigns: %{current_user: current_user}} = socket, client_id) do
+    client = Repo.get(Client, client_id)
+
+    socket
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true,
+      client: client
+    })
+    |> noreply()
+  end
+
+  defp assign_payment_schedules(socket) do
+    socket
+    |> then(fn %{assigns: %{job: job}} = socket ->
+      payment_schedules =
+        job |> Repo.preload(:payment_schedules, force: true) |> Map.get(:payment_schedules)
+
+      socket
+      |> assign(payment_schedules: payment_schedules)
+      |> validate_payment_schedule()
+    end)
+  end
+
+  defp removal_button(assigns) do
+    ~H"""
+    <button {assigns} aria-label="remove" class="justify-self-end grid-cols-1 cursor-pointer ml-5 lg:ml-auto">
+      <.icon name="remove-icon" class="w-3.5 h-3.5 ml-1 text-base-250"/>
+    </button>
+    """
+  end
+
+  defp retryable?(err) when err in ~w(too_large not_accepted)a, do: false
+  defp retryable?(_err), do: true
 end

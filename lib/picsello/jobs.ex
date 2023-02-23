@@ -10,6 +10,32 @@ defmodule Picsello.Jobs do
 
   import Ecto.Query
 
+  def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
+    from(j in query,
+      left_join: job_status in assoc(j, :job_status),
+      left_join: shoots in assoc(j, :shoots),
+      left_join: package in assoc(j, :package),
+      where: ^filters_where(opts),
+      where: ^filters_status(opts),
+      order_by: ^filter_order_by(sort_by, sort_direction)
+    )
+    |> group_by_clause(sort_by)
+  end
+
+  def get_jobs_by_pagination(
+        query,
+        opts,
+        pagination: %{limit: limit, offset: offset}
+      ) do
+    query = get_jobs(query, opts)
+
+    from(j in query,
+      limit: ^limit,
+      offset: ^offset,
+      preload: [:client, :package, :job_status]
+    )
+  end
+
   def get_job_by_id(job_id) do
     Repo.get!(Job, job_id)
   end
@@ -70,4 +96,125 @@ defmodule Picsello.Jobs do
     do:
       from(ojt in OrganizationJobType, where: ojt.organization_id == ^organization_id)
       |> Repo.all()
+
+  defp filters_where(opts) do
+    Enum.reduce(opts, dynamic(true), fn
+      {:type, "all"}, dynamic ->
+        dynamic
+
+      {:type, value}, dynamic ->
+        dynamic(
+          [j],
+          ^dynamic and j.type == ^value
+        )
+
+      {:search_phrase, nil}, dynamic ->
+        dynamic
+
+      {:search_phrase, search_phrase}, dynamic ->
+        search_phrase = "%#{search_phrase}%"
+
+        dynamic(
+          [j, client],
+          ^dynamic and
+            (ilike(client.name, ^search_phrase) or
+               ilike(client.email, ^search_phrase) or
+               ilike(client.phone, ^search_phrase))
+        )
+
+      {_, _}, dynamic ->
+        # Not a where parameter
+        dynamic
+    end)
+  end
+
+  defp filters_status(opts) do
+    Enum.reduce(opts, dynamic(true), fn
+      {:status, value}, dynamic ->
+        case value do
+          "past" ->
+            filter_past_jobs(dynamic)
+
+          "active" ->
+            filter_active_jobs(dynamic)
+
+          "overdue" ->
+            filter_overdue_jobs(dynamic)
+
+          "archived" ->
+            filter_archived_jobs(dynamic)
+
+          _ ->
+            dynamic
+        end
+
+      _any, dynamic ->
+        # Not a where parameter
+        dynamic
+    end)
+  end
+
+  defp filter_past_jobs(dynamic) do
+    dynamic(
+      [j, client, job_status],
+      ^dynamic and
+        not job_status.is_lead and
+        job_status.current_status == :completed
+    )
+  end
+
+  defp filter_active_jobs(dynamic) do
+    dynamic(
+      [j, client, job_status],
+      ^dynamic and
+        not job_status.is_lead and
+        job_status.current_status not in [:completed, :archived]
+    )
+  end
+
+  defp filter_archived_jobs(dynamic) do
+    dynamic(
+      [j, client, job_status],
+      ^dynamic and not job_status.is_lead and
+        not is_nil(j.archived_at)
+    )
+  end
+
+  defp filter_overdue_jobs(dynamic) do
+    dynamic(
+      [j, client, job_status, shoots, package],
+      ^dynamic and ^now() > shoots.starts_at + package.turnaround_weeks * 7 + 1
+    )
+  end
+
+  def overdue_job?(job) do
+    shoot = tl(job.shoots)
+    now() > shoot.starts_at + job.package.turnaround_weeks * 7 + 1
+  end
+
+  defp now(), do: DateTime.utc_now() |> DateTime.truncate(:second)
+
+  defp group_by_clause(query, :name) do
+    group_by(query, [j, client], [j.id, client.name])
+  end
+
+  defp group_by_clause(query, :starts_at) do
+    group_by(query, [j, client, job_status, shoots], [j.id, shoots.starts_at])
+  end
+
+  defp group_by_clause(query, _) do
+    group_by(query, [j], [j.id])
+  end
+
+  defp filter_order_by(:starts_at, order) do
+    [{order, dynamic([j, client, job_status, shoots], field(shoots, :starts_at))}]
+  end
+
+  defp filter_order_by(:name, order) do
+    [{order, dynamic([j, client], field(client, :name))}]
+  end
+
+  defp filter_order_by(column, order) do
+    [{order, dynamic([j], field(j, ^column))}]
+  end
 end
