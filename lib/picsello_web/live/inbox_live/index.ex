@@ -353,9 +353,8 @@ defmodule PicselloWeb.InboxLive.Index do
         {:message_composed, message_changeset, recipients},
         %{assigns: %{job: job, current_user: user}} = socket
       ) do
-    client = job |> Repo.preload(:client) |> Map.get(:client)
-
-    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job, recipients, user),
+    with {:ok, %{client_message: message, client_message_recipients: _}} <-
+           Messages.add_message_to_job(message_changeset, job, recipients, user),
          {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> close_modal()

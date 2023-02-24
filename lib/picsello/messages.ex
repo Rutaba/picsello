@@ -2,14 +2,28 @@ defmodule Picsello.Messages do
   @moduledoc """
   The Messages context.
   """
-
+  
+  require Logger
   import Ecto.Query, warn: false
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Client, Clients, Repo, ClientMessage, ClientMessageRecipient, Notifiers.UserNotifier}
-  require Logger
 
-  def add_message_to_job(%Changeset{} = changeset, %Job{id: id, client_id: client_id}, recipients, user) do
+  alias Picsello.{
+    Job,
+    Client,
+    Clients,
+    Repo,
+    ClientMessage,
+    ClientMessageRecipient,
+    Notifiers.UserNotifier
+  }
+
+  def add_message_to_job(
+        %Changeset{} = changeset,
+        %Job{id: id},
+        recipients,
+        user
+      ) do
     changeset
     |> Changeset.put_change(:job_id, id)
     |> save_message(recipients, user)
@@ -90,9 +104,11 @@ defmodule Picsello.Messages do
 
   defp save_message(changeset, recipients_list, user) do
     recipient_attrs = get_recipient_attrs(recipients_list, user)
+
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:client_message, changeset)
-    |> Ecto.Multi.insert_all(:client_message_recipients, ClientMessageRecipient, fn %{client_message: client_message} ->
+    |> Ecto.Multi.insert_all(:client_message_recipients, ClientMessageRecipient,
+    fn %{client_message: client_message} ->
       recipient_attrs
       |> Enum.map(fn attrs ->
         attrs
@@ -102,19 +118,21 @@ defmodule Picsello.Messages do
     |> Repo.transaction()
   end
 
-  defp get_recipient_attrs(recipients_list, user), do:
-    recipients_list
+  defp get_recipient_attrs(recipients_list, user),
+    do:
+      recipients_list
       |> Enum.map(fn {type, recipients} ->
         recipients
         |> Enum.map(fn recipient ->
           client = Clients.get_client_by_email(recipient, user)
+
           %{
-          client_id: client.id,
-          recipient_type: type,
-          inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
-          updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+            client_id: client.id,
+            recipient_type: type,
+            inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
+            updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
           }
         end)
       end)
-      |> List.flatten
+      |> List.flatten()
 end

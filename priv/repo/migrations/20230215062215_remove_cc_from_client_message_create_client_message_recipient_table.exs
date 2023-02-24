@@ -38,6 +38,6 @@ defmodule Picsello.Repo.Migrations.RemoveCCFromClientMessageCreateClientMessageR
       add(:client_id, references(:clients))
     end
 
-    drop table(@table)
+    drop(table(@table))
   end
 end

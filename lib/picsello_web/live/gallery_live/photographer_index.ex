@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
+  alias Ecto.Changeset
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
   alias Ecto.{Multi, Changeset}
 
@@ -198,15 +199,26 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       |> :erlang.term_to_binary()
       |> Base.encode64()
 
-    %{id: oban_job_id} =
+    changeset =
       %{message: serialized_message, job_id: job.id, recipients: recipients, user: user}
       |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
+
+    updated_args =
+      changeset
+      |> Changeset.fetch_change!(:args)
+      |> Map.drop([:user, :recipients])
+
+    %{id: oban_job_id} =
+      changeset
+      |> Changeset.put_change(:args, updated_args)
       |> Oban.insert!()
 
     Waiter.postpone(gallery.id, fn ->
       Oban.cancel_job(oban_job_id)
 
-      {:ok, message} = Messages.add_message_to_job(message_changeset, job, recipients, user)
+      {:ok, %{client_message: message, client_message_recipients: _}} =
+        Messages.add_message_to_job(message_changeset, job, recipients, user)
+
       ClientNotifier.deliver_email(message, recipients)
     end)
 
@@ -214,11 +226,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> close_modal()
     |> put_flash(:success, "Gallery shared!")
     |> noreply()
-  end
-
-  @impl true
-  def handle_info({:message_composed_for_album, message_changeset, recipients}, socket) do
-    add_message_and_notify(socket, message_changeset, recipients, "album")
   end
 
   @impl true

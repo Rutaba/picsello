@@ -1,7 +1,7 @@
 defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
-  alias Picsello.{BookingProposal, Job, Client, Repo, Cart, Messages, Galleries.Gallery}
+  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, Galleries.Gallery}
   alias Cart.Order
 
   @doc """
@@ -321,16 +321,14 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
     from_display = organization.name
 
-    email =
     :client_transactional_template
     |> sendgrid_template(params)
     |> put_header("reply-to", "#{from_display} <#{reply_to}>")
     |> from({from_display, "noreply@picsello.com"})
     |> to(Map.get(recipients, "to"))
+    |> cc(Map.get(recipients, "cc", []))
+    |> bcc(Map.get(recipients, "bcc", []))
     |> deliver_later()
-
-    if Map.has_key?(recipients, :cc), do: email |> cc(Map.get(recipients, "cc")), else: email
-    if Map.has_key?(recipients, :bcc), do: email |> bcc(Map.get(recipients, "bcc")), else: email
   end
 
   defp deliver_transactional_email(params, recipients) do
