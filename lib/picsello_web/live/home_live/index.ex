@@ -974,7 +974,7 @@ defmodule PicselloWeb.HomeLive.Index do
               <% end %>
             <% end %>
           </div>
-          <div class="flex mt-6">
+          <div class="flex justify-end mt-6">
             <.form let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form">
               <%= hidden_inputs_for f %>
               <%= for onboarding <- inputs_for(f, :onboarding) do %>
@@ -988,12 +988,14 @@ defmodule PicselloWeb.HomeLive.Index do
                 </details>
               <% end %>
             </.form>
-            <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline ml-auto text-base-250") %>
           </div>
         </div>
         <div class="bg-gray-100 p-6 sm:p-8">
           <div class="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 sm:gap-8">
-            <img src="/images/subscription-modal.png" alt="An image of the Picsello application" loading="lazy" />
+            <div>
+              <img src="/images/subscription-modal.png" alt="An image of the Picsello application" loading="lazy" />
+              <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline text-base-250 inline-block mt-2") %>
+            </div>
             <div>
               <h5 class="font-bold mb-1">Everything included:</h5>
               <ul class="text-base-250 space-y-1 text-sm">
