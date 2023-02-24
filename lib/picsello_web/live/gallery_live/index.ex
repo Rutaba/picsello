@@ -3,10 +3,11 @@ defmodule PicselloWeb.GalleryLive.Index do
   use PicselloWeb, :live_view
 
   require Ecto.Query
-  alias Ecto.Query
-  alias Picsello.{Galleries, Job, Repo, Messages, Orders, Albums}
 
   import PicselloWeb.GalleryLive.Shared
+
+  alias Ecto.Query
+  alias Picsello.{Galleries, Job, Repo, Orders, Albums}
 
   defmodule Pagination do
     @moduledoc false
@@ -152,38 +153,8 @@ defmodule PicselloWeb.GalleryLive.Index do
   def handle_info({:confirm_event, "send_another"}, socket), do: open_compose(socket)
 
   @impl true
-  def handle_info(
-        {:message_composed, changeset},
-        %{
-          assigns: %{
-            current_user: %{organization: %{name: organization_name}},
-            job: %{id: job_id}
-          }
-        } = socket
-      ) do
-    flash =
-      changeset
-      |> Ecto.Changeset.change(job_id: job_id, outbound: false, read_at: nil)
-      |> Ecto.Changeset.apply_changes()
-      |> Repo.insert()
-      |> case do
-        {:ok, message} ->
-          Messages.notify_inbound_message(message, PicselloWeb.Helpers)
-
-          &PicselloWeb.ConfirmationComponent.open(&1, %{
-            title: "Contact #{organization_name}",
-            subtitle: "Thank you! Your message has been sent. We’ll be in touch with you soon.",
-            icon: nil,
-            confirm_label: "Send another",
-            confirm_class: "btn-primary",
-            confirm_event: "send_another"
-          })
-
-        {:error, _} ->
-          &(&1 |> close_modal() |> put_flash(:error, "Message not sent."))
-      end
-
-    socket |> flash.() |> noreply()
+  def handle_info({:message_composed, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients)
   end
 
   def handle_info({:success_event, "view-gallery", %{gallery_id: gallery_id}}, socket) do

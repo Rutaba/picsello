@@ -220,8 +220,6 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   @impl true
   def handle_event("save", %{"client_message" => params}, socket) do
-    IO.inspect("Inside save handle_event")
-
     socket =
       socket
       |> assign_changeset(:validate, params)
@@ -316,7 +314,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       socket
       |> assign(:"#{type}_email_error", "please enter valid emails")
     end
-    |> assign(:recipients, Map.put(recipients, type, email_list) |> IO.inspect())
+    |> assign(:recipients, Map.put(recipients, type, email_list))
     |> noreply()
   end
 
@@ -338,15 +336,15 @@ defmodule PicselloWeb.ClientMessageComponent do
             <%= if Enum.any?(@search_results) do %>
               <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
                 <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
-                  <%= for {search_result, _idx} <- Enum.with_index(@search_results) do %>
+                  <%= for search_result <- @search_results do %>
                     <div class={"flex items-center cursor-pointer p-2"}>
                       <div>
                         <p class="font-bold"><%= search_result.name %></p>
                         <p class="text-sm"><%= search_result.email %></p>
                         <div class="flex flex-row mt-2">
-                        <.add_icon_button title="Add to", click_event="add-to", myself={@myself}, search_result={search_result}/>
-                        <.add_icon_button title="Add CC", click_event="add-cc",  myself={@myself}, search_result={search_result}/>
-                        <.add_icon_button title="Add BCC", click_event="add-bcc", myself={@myself}, search_result={search_result}/>
+                        <.add_icon_button title="Add to" click_event="add-to" myself={@myself} search_result={search_result}/>
+                        <.add_icon_button title="Add CC" click_event="add-cc"  myself={@myself} search_result={search_result}/>
+                        <.add_icon_button title="Add BCC" click_event="add-bcc" myself={@myself} search_result={search_result}/>
 
                         </div>
                       </div>

@@ -320,92 +320,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def assign_uploads(socket, upload_options) do
-    socket
-    |> allow_upload(:documents, upload_options)
-    |> assign(:invalid_entries, [])
-    |> assign(:invalid_entries_errors, %{})
-  end
-
-  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
-  def presign_entry(entry, %{assigns: %{uploads: uploads}} = socket) do
-    %{documents: %{max_file_size: max_file_size}} = uploads
-    key = Job.document_path(entry.client_name, entry.uuid)
-
-    sign_opts = [
-      expires_in: 144_000,
-      bucket: @bucket,
-      key: key,
-      fields: %{
-        "content-type" => entry.client_type,
-        "cache-control" => "public, max-age=@upload_options"
-      },
-      conditions: [["content-length-range", 0, max_file_size]]
-    ]
-
-    params = PhotoStorage.params_for_upload(sign_opts)
-    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
-
-    {:ok, meta, socket}
-  end
-
-  def process_cancel_upload(
-        %{
-          assigns: %{
-            invalid_entries: invalid_entries,
-            invalid_entries_errors: invalid_entries_errors,
-            uploads: %{documents: documents}
-          }
-        } = socket,
-        ref
-      ) do
-    socket
-    |> assign_documents(Enum.reject(documents.entries, &(&1.ref == ref)))
-    |> assign(:invalid_entries, Enum.reject(invalid_entries, &(&1.ref == ref)))
-    |> assign(:invalid_entries_errors, Map.delete(invalid_entries_errors, ref))
-  end
-
-  defp assign_documents(%{assigns: %{uploads: uploads}} = socket, entries) do
-    %{documents: documents} = uploads
-
-    uploads
-    |> Map.put(:documents, Map.put(documents, :entries, entries) |> Map.put(:errors, []))
-    |> then(&assign(socket, :uploads, &1))
-  end
-
-  defp ex_docs(%{job: %{documents: documents}}), do: Enum.map(documents, & &1.name)
-  defp ex_docs(%{ex_documents: ex_documents}), do: Enum.map(ex_documents, & &1.client_name)
-
-  defp search_assigns(socket) do
-    socket
-    |> assign(:search_results, [])
-    |> assign(:search_phrase, nil)
-    |> assign(:searched_client, nil)
-  end
-
-  defp search(nil, _socket), do: []
-
-  defp search("", _socket), do: []
-
-  defp search(search_phrase, %{assigns: %{clients: clients}}) do
-    clients
-    |> Enum.filter(&client_matches?(&1, search_phrase))
-  end
-
-  defp client_matches?(client, query) do
-    (client.name && do_match?(client.name, query)) ||
-      (client.name && do_match?(List.last(String.split(client.name)), query)) ||
-      do_match?(client.email, query) ||
-      (client.phone && String.contains?(client.phone, query))
-  end
-
-  defp do_match?(data, query) do
-    String.starts_with?(
-      String.downcase(data),
-      String.downcase(query)
-    )
-  end
-
   def handle_info({:action_event, "open_email_compose"}, socket),
     do: open_email_compose(socket, socket.assigns.client.id)
 
@@ -521,9 +435,67 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def assign_shoots(
-        %{assigns: %{package: %{shoot_count: shoot_count}, job: %{id: job_id}}} = socket
+  def assign_proposal(%{assigns: %{job: %{id: job_id}}} = socket) do
+    proposal = BookingProposal.last_for_job(job_id) |> Repo.preload(:answer)
+    socket |> assign(proposal: proposal)
+  end
+
+  def assign_uploads(socket, upload_options) do
+    socket
+    |> allow_upload(:documents, upload_options)
+    |> assign(:invalid_entries, [])
+    |> assign(:invalid_entries_errors, %{})
+  end
+
+  @bucket Application.compile_env(:picsello, :photo_storage_bucket)
+  def presign_entry(entry, %{assigns: %{uploads: uploads}} = socket) do
+    %{documents: %{max_file_size: max_file_size}} = uploads
+    key = Job.document_path(entry.client_name, entry.uuid)
+
+    sign_opts = [
+      expires_in: 144_000,
+      bucket: @bucket,
+      key: key,
+      fields: %{
+        "content-type" => entry.client_type,
+        "cache-control" => "public, max-age=@upload_options"
+      },
+      conditions: [["content-length-range", 0, max_file_size]]
+    ]
+
+    params = PhotoStorage.params_for_upload(sign_opts)
+    meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
+
+    {:ok, meta, socket}
+  end
+
+  def process_cancel_upload(
+        %{
+          assigns: %{
+            invalid_entries: invalid_entries,
+            invalid_entries_errors: invalid_entries_errors,
+            uploads: %{documents: documents}
+          }
+        } = socket,
+        ref
       ) do
+    socket
+    |> assign_documents(Enum.reject(documents.entries, &(&1.ref == ref)))
+    |> assign(:invalid_entries, Enum.reject(invalid_entries, &(&1.ref == ref)))
+    |> assign(:invalid_entries_errors, Map.delete(invalid_entries_errors, ref))
+  end
+
+  defp assign_documents(%{assigns: %{uploads: uploads}} = socket, entries) do
+    %{documents: documents} = uploads
+
+    uploads
+    |> Map.put(:documents, Map.put(documents, :entries, entries) |> Map.put(:errors, []))
+    |> then(&assign(socket, :uploads, &1))
+  end
+
+  defp assign_shoots(
+         %{assigns: %{package: %{shoot_count: shoot_count}, job: %{id: job_id}}} = socket
+       ) do
     shoots = Shoot.for_job(job_id) |> Repo.all()
 
     socket
@@ -536,11 +508,39 @@ defmodule PicselloWeb.JobLive.Shared do
     )
   end
 
-  def assign_shoots(socket), do: socket |> assign(shoots: [])
+  defp assign_shoots(socket), do: socket |> assign(shoots: [])
 
-  def assign_proposal(%{assigns: %{job: %{id: job_id}}} = socket) do
-    proposal = BookingProposal.last_for_job(job_id) |> Repo.preload(:answer)
-    socket |> assign(proposal: proposal)
+  defp ex_docs(%{job: %{documents: documents}}), do: Enum.map(documents, & &1.name)
+  defp ex_docs(%{ex_documents: ex_documents}), do: Enum.map(ex_documents, & &1.client_name)
+
+  defp search_assigns(socket) do
+    socket
+    |> assign(:search_results, [])
+    |> assign(:search_phrase, nil)
+    |> assign(:searched_client, nil)
+  end
+
+  defp search(nil, _socket), do: []
+
+  defp search("", _socket), do: []
+
+  defp search(search_phrase, %{assigns: %{clients: clients}}) do
+    clients
+    |> Enum.filter(&client_matches?(&1, search_phrase))
+  end
+
+  defp client_matches?(client, query) do
+    (client.name && do_match?(client.name, query)) ||
+      (client.name && do_match?(List.last(String.split(client.name)), query)) ||
+      do_match?(client.email, query) ||
+      (client.phone && String.contains?(client.phone, query))
+  end
+
+  defp do_match?(data, query) do
+    String.starts_with?(
+      String.downcase(data),
+      String.downcase(query)
+    )
   end
 
   defp assign_inbox_count(%{assigns: %{job: job}} = socket) do
