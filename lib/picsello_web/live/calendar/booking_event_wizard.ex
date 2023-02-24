@@ -529,6 +529,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       |> BookingEvents.assign_booked_block_dates(booking_event)
 
     break_block_booked = is_break_block_already_booked(dates)
+    block_booked = is_any_block_booked(dates)
 
     changeset =
       if changeset.valid? do
@@ -538,7 +539,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         changeset
       end
 
-    assign(socket, changeset: changeset, break_block_booked: break_block_booked)
+    assign(socket,
+      changeset: changeset,
+      break_block_booked: break_block_booked,
+      can_edit?: !block_booked
+    )
   end
 
   defp assign_package_templates(%{assigns: %{current_user: current_user}} = socket) do
@@ -573,6 +578,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     |> Enum.filter(fn %{time_blocks: time_blocks} ->
       Enum.filter(time_blocks, fn block ->
         !block.is_valid
+      end)
+      |> Enum.count() > 0
+    end)
+    |> Enum.count() > 0
+  end
+
+  defp is_any_block_booked(dates) do
+    dates
+    |> Enum.filter(fn %{time_blocks: time_blocks} ->
+      Enum.filter(time_blocks, fn block ->
+        block.is_booked
       end)
       |> Enum.count() > 0
     end)
