@@ -56,6 +56,7 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(:page_title, "Work Hub")
     |> assign(:stripe_subscription_status, nil)
     |> assign_counts()
+    |> assign(:promotion_code_open, false)
     |> assign_attention_items()
     |> assign(:tabs, tabs_list(socket))
     |> assign(:tab_active, "todo")
@@ -74,6 +75,17 @@ defmodule PicselloWeb.HomeLive.Index do
     socket
     |> assign(:current_user, Onboardings.increase_welcome_count!(current_user))
     |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "handle-promotion-code-toggle",
+        _,
+        %{assigns: %{promotion_code_open: promotion_code_open}} = socket
+      ) do
+    socket
+    |> assign(:promotion_code_open, !promotion_code_open)
     |> noreply()
   end
 
@@ -929,30 +941,109 @@ defmodule PicselloWeb.HomeLive.Index do
   def subscription_modal(assigns) do
     ~H"""
     <div class="fixed inset-0 z-40 flex items-center justify-center bg-black/60">
-      <div class="rounded-lg modal sm:max-w-4xl">
-        <h1 class="text-3xl font-semibold">Your plan has expired</h1>
-        <p class="pt-4 mb-4">To recover access to <span class="italic">integrated email marketing, easy invoicing, all of your client galleries</span> and much more, please select a plan. Contact us if you have issues.</p>
-        <.form let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form">
-          <%= hidden_inputs_for f %>
-          <%= for onboarding <- inputs_for(f, :onboarding) do %>
-            <%= hidden_inputs_for onboarding %>
-            <%= labeled_input onboarding, :promotion_code, label: "Add a subscription promo code", type: :text_input, phx_debounce: 500, min: 0, placeholder: "enter code…", class: "mb-3" %>
-          <% end %>
-        </.form>
-        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <%= for {subscription_plan, i} <- Subscriptions.subscription_plans() |> Enum.with_index() do %>
-            <div class="flex items-center justify-between p-4 border rounded-lg">
-              <p class="text-3xl font-semibold"> <%= subscription_plan.price |> Money.to_string(fractional_unit: false) %>/<%= subscription_plan.recurring_interval %></p>
-              <button class={if i == 0, do: "btn-primary", else: "btn-secondary"} type="button" phx-click="subscription-checkout" phx-value-interval={subscription_plan.recurring_interval}>
-                Select this plan
-              </button>
-            </div>
-          <% end %>
+      <div class="rounded-lg modal no-pad sm:max-w-5xl">
+        <div class="p-6 sm:p-8">
+          <div class="sm:max-w-3xl mb-2 sm:mb-8">
+            <h1 class="text-xl sm:text-4xl font-semibold">Your subscription has expired</h1>
+            <p class="pt-2 sm:pt-4 text-base-250 sm:text-lg">We’ve missed you and are very excited to welcome you back to take advantage of all the new features we’ve been working on. Select your plan below:</p>
+          </div>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <%= for subscription_plan <- Subscriptions.subscription_plans() |> Enum.reverse() do %>
+              <%= case subscription_plan do %>
+                <% %{recurring_interval: "month"} -> %>
+                  <.subscription_modal_card
+                    button_class="btn-tertiary"
+                    subscription_plan={subscription_plan}
+                    headline="Monthly"
+                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} monthly subscription"}
+                    price_secondary={"(#{subscription_plan.price |> Money.multiply(12) |> Money.to_string(fractional_unit: false)}/year)"}
+                    interval={subscription_plan.recurring_interval}
+                    body="You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
+                  />
+                <% %{recurring_interval: "year"} -> %>
+                  <.subscription_modal_card
+                    class="bg-blue-planning-300 text-white"
+                    subscription_plan={subscription_plan}
+                    headline="Yearly"
+                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} yearly subscription"}
+                    price_secondary={"(#{subscription_plan.price |> Money.divide(12) |> Enum.at(1) |> Money.to_string(fractional_unit: false)}/month)"}
+                    interval={subscription_plan.recurring_interval}
+                    body="You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
+                  />
+                <% _ -> %>
+              <% end %>
+            <% end %>
+          </div>
+          <div class="flex mt-6">
+            <.form let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form">
+              <%= hidden_inputs_for f %>
+              <%= for onboarding <- inputs_for(f, :onboarding) do %>
+                <details class="group" open={@promotion_code_open}>
+                  <summary class={classes("cursor-pointer underline flex items-center", %{"text-blue-planning-300" => Enum.empty?(onboarding.errors), "text-red-sales-300" => onboarding.errors })} phx-click="handle-promotion-code-toggle">
+                  <%= if Enum.empty?(onboarding.errors), do: "Add a promo code", else: "Fix promo code" %>
+                    <.icon name="down" class="w-4 h-4 stroke-current stroke-2 ml-2 group-open:rotate-180" />
+                  </summary>
+                  <%= hidden_inputs_for onboarding %>
+                  <%= labeled_input onboarding, :promotion_code, label: "Applies to monthly or yearly", type: :text_input, phx_debounce: 500, min: 0, placeholder: "enter promo code…", class: "mb-3" %>
+                </details>
+              <% end %>
+            </.form>
+            <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline ml-auto text-base-250") %>
+          </div>
         </div>
-        <div class="flex mt-6">
-          <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline ml-auto") %>
+        <div class="bg-gray-100 p-6 sm:p-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 sm:gap-8">
+            <img src="/images/subscription-modal.png" alt="An image of the Picsello application" loading="lazy" />
+            <div>
+              <h5 class="font-bold mb-1">Everything included:</h5>
+              <ul class="text-base-250 space-y-1 text-sm">
+                <%= for feature <- subscription_modal_feature_list() do %>
+                  <li>
+                    <.icon name="checkcircle" class="inline-block w-4 h-4 mr-2 fill-current text-blue-planning-300" />
+                    <%= feature %>
+                  </li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+    """
+  end
+
+  defp subscription_modal_feature_list,
+    do: [
+      "Streamlined client booking",
+      "Beautiful client galleries",
+      "Easy invoicing, contracts and booking",
+      "Automated email marketing tools",
+      "Pricing assistance",
+      "Integrated inbox and client messaging",
+      "Unlimited storage",
+      "100% photographer-profit merchandise sales",
+      "Access to Picsello's Business Mastermind (Yearly only)"
+    ]
+
+  defp subscription_modal_card(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{class: nil, button_class: "btn-primary"})
+
+    ~H"""
+    <div class={"p-4 border rounded-lg #{@class}"}>
+      <div class="flex gap-4 sm:gap-0 flex-wrap items-center justify-between">
+        <div>
+          <h4 class="text-3xl font-bold mb-2"><%= @headline %></h4>
+          <p class="font-bold"><%= @price %></p>
+          <p class="opacity-60"><%= @price_secondary %></p>
+        </div>
+        <button class={@button_class} type="button" phx-click="subscription-checkout" phx-value-interval={@interval}>
+          Select plan
+        </button>
+      </div>
+      <hr class="my-4 opacity-50" />
+      <p class="text-sm opacity-60"><%= @body %></p>
     </div>
     """
   end
