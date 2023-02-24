@@ -92,7 +92,8 @@ defmodule Picsello.Clients do
 
   def get_client_by_email(email, user) do
     from(c in Client,
-      where: c.email == ^email and c.organization_id == ^user.organization_id and is_nil(c.archived_at)
+      where:
+        c.email == ^email and c.organization_id == ^user.organization_id and is_nil(c.archived_at)
     )
     |> Repo.one()
   end

@@ -16,7 +16,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     show_subject: true,
     current_user: nil,
     enable_size: false,
-    enable_image: false,
+    enable_image: false
   }
 
   @impl true
@@ -119,25 +119,22 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
-  def handle_event("validate_bcc_email", %{"value" => email}, %{assigns: %{recipients: recipients}} = socket) do
-    IO.inspect("inside validate bcc")
+  def handle_event("validate_bcc_email", %{"value" => email}, socket) do
     validate_email(email, "bcc", socket)
   end
 
   @impl true
-  def handle_event("validate_cc_email", %{"value" => email}, %{assigns: %{recipients: recipients}} = socket) do
-    IO.inspect("inside validate cc")
+  def handle_event("validate_cc_email", %{"value" => email}, socket) do
     validate_email(email, "cc", socket)
   end
 
   @impl true
   def handle_event("validate_to_email", %{"value" => email}, socket) do
-    IO.inspect(email, label: "inside validate to")
     validate_email(email, "to", socket)
   end
 
   @impl true
-  def handle_event("add-to", %{"client-email" => email}, %{assigns: %{recipients: recipients}} = socket) do
+  def handle_event("add-to", %{"client-email" => email}, socket) do
     prepend_email(email, "to", socket)
     |> noreply()
   end
@@ -224,15 +221,17 @@ defmodule PicselloWeb.ClientMessageComponent do
   @impl true
   def handle_event("save", %{"client_message" => params}, socket) do
     IO.inspect("Inside save handle_event")
+
     socket =
       socket
       |> assign_changeset(:validate, params)
 
-    %{assigns: %{changeset: changeset, composed_event: composed_event, recipients: recipients}} = socket
-    IO.inspect(socket.assigns.recipients)
+    %{assigns: %{changeset: changeset, composed_event: composed_event, recipients: recipients}} =
+      socket
 
     if changeset.valid?,
-    do: send(socket.parent_pid, {composed_event, changeset |> Map.put(:action, nil), recipients})
+      do:
+        send(socket.parent_pid, {composed_event, changeset |> Map.put(:action, nil), recipients})
 
     socket |> noreply()
   end
@@ -283,7 +282,10 @@ defmodule PicselloWeb.ClientMessageComponent do
   defp assign_presets(socket), do: socket
 
   defp prepend_email(email, type, %{assigns: %{recipients: recipients}} = socket) do
-    email_list = recipients |> Map.get(type, []) |> List.insert_at(-1, String.downcase(email)) |> IO.inspect
+    email_list =
+      recipients
+      |> Map.get(type, [])
+      |> List.insert_at(-1, String.downcase(email))
 
     socket
     |> assign(:recipients, Map.put(recipients, type, email_list))
@@ -297,8 +299,8 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> String.downcase()
       |> String.split(";", trim: true)
       |> Enum.map(fn email ->
-        String.trim(email) end)
-      |> IO.inspect
+        String.trim(email)
+      end)
 
     valid_emails? =
       email_list
@@ -314,7 +316,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       socket
       |> assign(:"#{type}_email_error", "please enter valid emails")
     end
-    |> assign(:recipients, Map.put(recipients, type, email_list) |> IO.inspect)
+    |> assign(:recipients, Map.put(recipients, type, email_list) |> IO.inspect())
     |> noreply()
   end
 
