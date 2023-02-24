@@ -332,14 +332,12 @@ defmodule Picsello.Notifiers.ClientNotifier do
   end
 
   defp deliver_transactional_email(params, recipients) do
-    email =
-      sendgrid_template(:generic_transactional_template, params)
-      |> to(Map.get(recipients, "to"))
-      |> from("noreply@picsello.com")
-      |> deliver_later()
-
-    if Map.has_key?(recipients, :cc), do: email |> cc(Map.get(recipients, "cc")), else: email
-    if Map.has_key?(recipients, :bcc), do: email |> bcc(Map.get(recipients, "bcc")), else: email
+    sendgrid_template(:generic_transactional_template, params)
+    |> to(Map.get(recipients, "to"))
+    |> cc(Map.get(recipients, "cc", []))
+    |> bcc(Map.get(recipients, "bcc", []))
+    |> from("noreply@picsello.com")
+    |> deliver_later()
   end
 
   defp may_be_proofing_album_selection(nil), do: :order_confirmation_template

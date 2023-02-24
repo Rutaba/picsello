@@ -34,6 +34,24 @@ defmodule Picsello.Messages do
     |> save_message(recipients, user)
   end
 
+  def save_message(changeset, recipients_list, user) do
+    recipient_attrs = get_recipient_attrs(recipients_list, user)
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:client_message, changeset)
+    |> Ecto.Multi.insert_all(:client_message_recipients, ClientMessageRecipient, fn %{
+                                                                                      client_message:
+                                                                                        client_message
+                                                                                    } ->
+      recipient_attrs
+      |> Enum.map(fn attrs ->
+        attrs
+        |> Map.put(:client_message_id, client_message.id)
+      end)
+    end)
+    |> Repo.transaction()
+  end
+
   def insert_scheduled_message!(params, %Job{} = job) do
     params
     |> scheduled_message_changeset(job)
@@ -100,22 +118,6 @@ defmodule Picsello.Messages do
       {:ok, id} -> Repo.get(Client, id)
       _ -> nil
     end
-  end
-
-  defp save_message(changeset, recipients_list, user) do
-    recipient_attrs = get_recipient_attrs(recipients_list, user)
-
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:client_message, changeset)
-    |> Ecto.Multi.insert_all(:client_message_recipients, ClientMessageRecipient,
-    fn %{client_message: client_message} ->
-      recipient_attrs
-      |> Enum.map(fn attrs ->
-        attrs
-        |> Map.put(:client_message_id, client_message.id)
-      end)
-    end)
-    |> Repo.transaction()
   end
 
   defp get_recipient_attrs(recipients_list, user),

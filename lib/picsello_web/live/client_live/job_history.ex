@@ -4,13 +4,14 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   use PicselloWeb, :live_view
   require Ecto.Query
 
+  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
   import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1]
   import PicselloWeb.Live.ClientLive.Shared
 
-  alias Ecto.{Query, Changeset}
-  alias PicselloWeb.{Helpers, ConfirmationComponent, ClientMessageComponent, JobLive.ImportWizard}
-  alias Picsello.{Jobs, Job, Repo, Clients, Messages, Galleries}
+  alias Ecto.Query
+  alias PicselloWeb.{ConfirmationComponent, ClientMessageComponent, JobLive.ImportWizard}
+  alias Picsello.{Jobs, Job, Repo, Clients, Galleries}
 
   defmodule Pagination do
     @moduledoc false
@@ -183,38 +184,8 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
       |> noreply()
 
   @impl true
-  def handle_info(
-        {:message_composed, changeset},
-        %{
-          assigns: %{
-            current_user: %{organization: %{name: organization_name}},
-            job: %{id: job_id}
-          }
-        } = socket
-      ) do
-    flash =
-      changeset
-      |> Changeset.change(job_id: job_id, outbound: false, read_at: nil)
-      |> Changeset.apply_changes()
-      |> Repo.insert()
-      |> case do
-        {:ok, message} ->
-          Messages.notify_inbound_message(message, Helpers)
-
-          &ConfirmationComponent.open(&1, %{
-            title: "Contact #{organization_name}",
-            subtitle: "Thank you! Your message has been sent. We’ll be in touch with you soon.",
-            icon: nil,
-            confirm_label: "Send another",
-            confirm_class: "btn-primary",
-            confirm_event: "send_another"
-          })
-
-        {:error, _} ->
-          &(&1 |> close_modal() |> put_flash(:error, "Message not sent."))
-      end
-
-    socket |> flash.() |> noreply()
+  def handle_info({:message_composed, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients)
   end
 
   @impl true
