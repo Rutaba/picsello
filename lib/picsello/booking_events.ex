@@ -327,15 +327,25 @@ defmodule Picsello.BookingEvents do
         !Enum.any?(shoots, fn shoot ->
           start_time = shoot.starts_at |> DateTime.shift_zone!(user.time_zone)
           end_time = shoot.starts_at |> DateTime.add(shoot.duration_minutes * 60)
-
-          (DateTime.compare(slot_start, start_time) in [:gt, :eq] &&
-             DateTime.compare(slot_start, end_time) in [:lt, :eq]) ||
-            (DateTime.compare(slot_end, start_time) in [:gt, :eq] &&
-               DateTime.compare(slot_end, end_time) in [:lt, :eq])
+          is_slot_booked(booking_event.buffer_minutes, slot_start, slot_end, start_time, end_time)
         end)
 
       {slot_time, is_available, false, false}
     end)
+  end
+
+  defp is_slot_booked(nil, slot_start, slot_end, start_time, end_time) do
+    (DateTime.compare(slot_start, start_time) in [:gt, :eq] &&
+       DateTime.compare(slot_start, end_time) == :lt) ||
+      (DateTime.compare(slot_end, start_time) in [:gt, :eq] &&
+         DateTime.compare(slot_end, end_time) == :lt)
+  end
+
+  defp is_slot_booked(_buffer, slot_start, slot_end, start_time, end_time) do
+    (DateTime.compare(slot_start, start_time) in [:gt, :eq] &&
+       DateTime.compare(slot_start, end_time) in [:lt, :eq]) ||
+      (DateTime.compare(slot_end, start_time) in [:gt, :eq] &&
+         DateTime.compare(slot_end, end_time) in [:lt, :eq])
   end
 
   def save_booking(booking_event, %Booking{
