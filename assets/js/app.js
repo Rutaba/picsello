@@ -55,6 +55,7 @@ import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import ToggleSiblings from './hooks/toggle-siblings';
 import Cookies from 'js-cookie';
+import FolderUpload from './hooks/folder-upload';
 
 const Modal = {
   mounted() {
@@ -244,7 +245,8 @@ const Hooks = {
   FinalCostInput,
   SetGalleryCookie,
   GetGalleryCookie,
-  showWelcomeModal
+  showWelcomeModal,
+  FolderUpload
 };
 
 let Uploaders = {};

@@ -102,4 +102,26 @@ defmodule Picsello.Albums do
   def album_password_change(attrs \\ %{}) do
     Album.password_changeset(%Album{}, attrs)
   end
+
+  def create_multiple(folders, gallery_id) do
+    folders
+    |> Enum.reduce(Multi.new(), fn folder, multi ->
+      multi
+      |> Multi.insert(
+        folder,
+        Album.create_changeset(%{
+          set_password: false,
+          gallery_id: gallery_id,
+          name: folder_name(folder)
+        })
+      )
+    end)
+    |> Repo.transaction()
+  end
+
+  @separator "-dsp-"
+  def folder_name(folder) do
+    [_ | name] = String.split(folder, @separator)
+    Enum.join(name)
+  end
 end

@@ -65,17 +65,13 @@ export default {
 
     if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
-      if (introId === 'intro_dashboard') {
-        intro_tour(this, introSteps, introId)
-        return;
-      }
 
       if (!introSteps) return;
       startIntroJsTour(this, introSteps, introId);
     }
     if (intros[introId]) {
       const introSteps = intros[introId](el);
-      intro_tour(this, introSteps, introId)
+      intro_tour(this, introSteps, introId);
     }
   },
   updated() {

@@ -33,7 +33,8 @@ defmodule Picsello.CreatePricingCalculationTest do
     user: %{name: user_name, email: user_email}
   } do
     session
-    |> click(link("calculate your pricing"))
+    |> click(button("Packages"))
+    |> click(link("helpful calculator"))
     |> click(button("Get started"))
     |> assert_path("/pricing/calculator")
     |> click(css("label", text: "Wedding"))
@@ -103,7 +104,8 @@ defmodule Picsello.CreatePricingCalculationTest do
 
   feature "user see validation error when calculating price", %{session: session} do
     session
-    |> click(link("calculate your pricing"))
+    |> click(button("Packages"))
+    |> click(link("helpful calculator"))
     |> click(button("Get started"))
     |> assert_path("/pricing/calculator")
     |> click(css("label", text: "Wedding"))
@@ -114,21 +116,24 @@ defmodule Picsello.CreatePricingCalculationTest do
 
   feature "user exits calculator from home screen", %{session: session} do
     session
-    |> click(link("calculate your pricing"))
+    |> click(button("Packages"))
+    |> click(link("helpful calculator"))
     |> click(link("Exit calculator"))
     |> assert_path("/home")
   end
 
   feature "user clicks go back from home screen", %{session: session} do
     session
-    |> click(link("calculate your pricing"))
+    |> click(button("Packages"))
+    |> click(link("helpful calculator"))
     |> click(link("Go back"))
     |> assert_path("/home")
   end
 
   feature "user exits calculator from a step screen", %{session: session} do
     session
-    |> click(link("calculate your pricing"))
+    |> click(button("Packages"))
+    |> click(link("helpful calculator"))
     |> click(button("Get started"))
     |> click(css(".circleBtn a"))
     |> assert_path("/home")

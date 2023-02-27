@@ -18,7 +18,8 @@ defmodule Picsello.CreateLeadTest do
 
   feature "user creates lead with existing client", %{session: session} do
     session
-    |> click(button("Create a lead"))
+    |> click(button("Actions"))
+    |> click(button("Create lead"))
     |> fill_in(text_field("search_phrase"), with: "Eliza")
     |> assert_has(css("#search_results"))
     |> send_keys([:down_arrow])
@@ -31,13 +32,14 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(testid("card-Communications", text: "taylor@example.com"))
     |> assert_has(testid("card-Communications", text: "(210) 111-1234"))
     |> click(link("Picsello"))
-    |> find(testid("leads-card"))
-    |> assert_text("1 pending lead")
+    |> click(button("Leads"))
+    |> assert_has(css("main > div > ul > li", count: 1))
   end
 
   feature "user creates lead with new client", %{session: session} do
     session
-    |> click(button("Create a lead"))
+    |> click(button("Actions"))
+    |> click(button("Create lead"))
     |> click(button("Add a new client"))
     |> fill_in(text_field("Client Name"), with: "Elizabeth Taylor")
     |> fill_in(text_field("Client Email"), with: "taylor@example.com")
@@ -51,8 +53,8 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(testid("card-Communications", text: "taylor@example.com"))
     |> assert_has(testid("card-Communications", text: "(210) 111-1234"))
     |> click(link("Picsello"))
-    |> find(testid("leads-card"))
-    |> assert_text("1 pending lead")
+    |> click(button("Leads"))
+    |> assert_has(css("main > div > ul > li", count: 1))
   end
 
   feature "user cannot create client with existing email", %{session: session, user: user} do
@@ -64,7 +66,8 @@ defmodule Picsello.CreateLeadTest do
     )
 
     session
-    |> click(button("Create a lead"))
+    |> click(button("Actions"))
+    |> click(button("Create lead"))
     |> click(button("Add a new client"))
     |> fill_in(text_field("Client Email"), with: "taylor@example.com")
     |> assert_has(css("label", text: "Client Email has already been taken"))
@@ -80,7 +83,8 @@ defmodule Picsello.CreateLeadTest do
     )
 
     session
-    |> click(button("Create a lead"))
+    |> click(button("Actions"))
+    |> click(button("Create lead"))
     |> fill_in(text_field("search_phrase"), with: "Eliza")
     |> assert_has(css("#search_results"))
     |> send_keys([:down_arrow])
@@ -97,7 +101,8 @@ defmodule Picsello.CreateLeadTest do
     )
 
     session
-    |> click(button("Create a lead"))
+    |> click(button("Actions"))
+    |> click(button("Create lead"))
     |> fill_in(text_field("search_phrase"), with: "Eliza")
     |> assert_has(css("#search_results"))
     |> send_keys([:down_arrow])
@@ -107,7 +112,7 @@ defmodule Picsello.CreateLeadTest do
     |> click(button("Save"))
     |> assert_has(css("h1", text: "Elizabeth Taylor Other"))
     |> click(link("Picsello"))
-    |> find(testid("leads-card"))
-    |> assert_text("1 pending lead")
+    |> click(button("Leads"))
+    |> assert_has(css("main > div > ul > li", count: 1))
   end
 end
