@@ -257,7 +257,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     user: user
   } do
     template = insert(:package_template, user: user)
-    event = insert(:booking_event, package_template_id: template.id, name: "Event 1")
+    insert(:booking_event, package_template_id: template.id, name: "Event 1")
 
     session
     |> visit("/calendar")
@@ -319,10 +319,10 @@ defmodule Picsello.UserManagesBookingEventsTest do
   end
 
   feature "duplicate the event", %{session: session, user: user} do
-    %{id: template_id} = template = insert(:package_template, user: user)
+    %{id: template_id} = insert(:package_template, user: user)
 
     %{id: old_event_id, thumbnail_url: thumbnail_url} =
-      insert(:booking_event, package_template_id: template.id, name: "Event 1")
+      insert(:booking_event, package_template_id: template_id, name: "Event 1")
 
     session
     |> visit("/calendar")
