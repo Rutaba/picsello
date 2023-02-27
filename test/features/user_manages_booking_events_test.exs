@@ -146,7 +146,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
                      %{
                        start_time: ~T[09:00:00],
                        end_time: ~T[13:00:00],
-                       hidden: false,
+                       is_hidden: false,
                        is_break: false,
                        is_booked: false,
                        is_valid: true
@@ -154,7 +154,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
                      %{
                        start_time: ~T[15:00:00],
                        end_time: ~T[17:00:00],
-                       hidden: false,
+                       is_hidden: false,
                        is_break: false,
                        is_booked: false,
                        is_valid: true
@@ -162,12 +162,12 @@ defmodule Picsello.UserManagesBookingEventsTest do
                    ]
                  },
                  %{
-                   date: ~D[2050-10-11],
+                   date: ~D[2050-11-10],
                    time_blocks: [
                      %{
                        end_time: ~T[10:00:00],
                        start_time: ~T[09:00:00],
-                       hidden: false,
+                       is_hidden: false,
                        is_break: false,
                        is_booked: false,
                        is_valid: true
@@ -380,7 +380,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_flash(:success, text: "Event disabled successfully")
     |> assert_text("Disabled")
 
-    assert [%{status: "disable"}] = Picsello.Repo.all(Picsello.BookingEvent)
+    assert [%{status: :disabled}] = Picsello.Repo.all(Picsello.BookingEvent)
 
     session
     |> click(button("Manage"))
@@ -389,7 +389,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> click(button("Manage"))
     |> assert_text("Disable")
 
-    assert [%{status: "active"}] = Picsello.Repo.all(Picsello.BookingEvent)
+    assert [%{status: :active}] = Picsello.Repo.all(Picsello.BookingEvent)
   end
 
   defp mock_image_upload(%{port: port} = bypass) do
