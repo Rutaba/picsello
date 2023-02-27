@@ -80,14 +80,10 @@
         <.icon name="three-people" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
         Add a lead
       </a>
-      <%= if Application.get_env(:picsello, :help_scout_id) && Application.get_env(:picsello, :help_scout_id_business)  do %>
-        <a href="#" class="flex items-center px-2 py-2 mx-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id)}>
+      <%= if Application.get_env(:picsello, :intercom_id)  do %>
+        <a href="#help" class="flex items-center px-2 py-2 mx-4 border border-white rounded-lg hover:border hover:border-blue-planning-300 open-help">
           <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
           Help Center
-        </a>
-        <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id_business)}>
-          <.icon name="camera-laptop" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
-          Business Coaching
         </a>
       <% end %>
       <div class="p-4 pl-12 text-sm text-white uppercase bg-base-300">Quick actions</div>

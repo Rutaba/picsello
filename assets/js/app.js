@@ -33,7 +33,6 @@ import Flash from './hooks/flash';
 import GalleryMobile from './hooks/gallery-mobile';
 import GallerySelector from './hooks/gallery-selector';
 import HandleTrialCode from './hooks/handle-trial-code';
-import HelpScout from './hooks/help-scout';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
 import ImageUploadInput from './hooks/image-upload-input';
 import InfiniteScroll from './hooks/infinite-scroll';
@@ -132,49 +131,53 @@ const TZCookie = {
 const CardStatus = {
   mounted() {
     this.el.addEventListener('click', () => {
-      this.pushEvent('card_status', { status: this.el.dataset.status, org_card_id: this.el.id });
+      this.pushEvent('card_status', {
+        status: this.el.dataset.status,
+        org_card_id: this.el.id,
+      });
     });
-  }
+  },
 };
 
 const FinalCostInput = {
   mounted() {
-    let dataset = this.el.dataset
-    let inputElm = document.getElementById(dataset.inputId)
+    let dataset = this.el.dataset;
+    let inputElm = document.getElementById(dataset.inputId);
 
     inputElm.addEventListener('input', () => {
       if (inputElm.value.replace('$', '') < parseFloat(dataset.baseCost)) {
-        let span = document.getElementById(dataset.spanId)
-        span.style.color = "red";
+        let span = document.getElementById(dataset.spanId);
+        span.style.color = 'red';
 
         setTimeout(function () {
-          span.style.color = "white";
+          span.style.color = 'white';
           inputElm.value = `$${parseFloat(dataset.finalCost).toFixed(2)}`;
         }, 3000);
       }
     });
-  }
+  },
 };
 
 const SetGalleryCookie = {
   mounted() {
-    let galleryType = this.el.dataset.galleryType
+    let galleryType = this.el.dataset.galleryType;
     document.cookie = `GalleryType=${galleryType}; path=/`;
   },
 };
 
 const GetGalleryCookie = {
   mounted() {
-    const galleryType = getCookie('GalleryType')
-    document.cookie = "GalleryType=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    if (galleryType != "") {
-      this.pushEvent("gallery-created", { galleryType: galleryType })
+    const galleryType = getCookie('GalleryType');
+    document.cookie =
+      'GalleryType=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    if (galleryType != '') {
+      this.pushEvent('gallery-created', { galleryType: galleryType });
     }
   },
 };
 
 function getCookie(cname) {
-  let name = cname + "=";
+  let name = cname + '=';
   let decodedCookie = decodeURIComponent(document.cookie);
   let ca = decodedCookie.split(';');
   for (let i = 0; i < ca.length; i++) {
@@ -186,18 +189,21 @@ function getCookie(cname) {
       return c.substring(name.length, c.length);
     }
   }
-  return "";
+  return '';
 }
 
 const showWelcomeModal = {
   mounted() {
-    const show = Cookies.get('show_welcome_modal')
+    const show = Cookies.get('show_welcome_modal');
 
     if (show == 'true') {
-      const dateTime = new Date("1970-12-17T00:00:00");
-      Cookies.set("show_welcome_modal", false, { expires: dateTime, path: '/' })
+      const dateTime = new Date('1970-12-17T00:00:00');
+      Cookies.set('show_welcome_modal', false, {
+        expires: dateTime,
+        path: '/',
+      });
 
-      this.pushEvent("open-welcome-modal", {})
+      this.pushEvent('open-welcome-modal', {});
     }
   },
 };
@@ -215,7 +221,6 @@ const Hooks = {
   GalleryMobile,
   GallerySelector,
   HandleTrialCode,
-  HelpScout,
   IFrameAutoHeight,
   ImageUploadInput,
   InfiniteScroll,
@@ -246,7 +251,7 @@ const Hooks = {
   SetGalleryCookie,
   GetGalleryCookie,
   showWelcomeModal,
-  FolderUpload
+  FolderUpload,
 };
 
 let Uploaders = {};
