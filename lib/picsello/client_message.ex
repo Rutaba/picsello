@@ -25,7 +25,10 @@ defmodule Picsello.ClientMessage do
   def create_outbound_changeset(attrs) do
     %__MODULE__{}
     |> cast(attrs, [:subject, :body_text, :body_html])
-    |> validate_required([:subject, (if Map.has_key?(attrs, :body_text), do: :body_text, else: :body_html)])
+    |> validate_required([
+      :subject,
+      if(Map.has_key?(attrs, :body_text), do: :body_text, else: :body_html)
+    ])
     |> put_change(:outbound, true)
     |> put_change(:read_at, DateTime.utc_now() |> DateTime.truncate(:second))
     |> cast_assoc(:client_message_recipients, with: &ClientMessageRecipient.changeset/2)
