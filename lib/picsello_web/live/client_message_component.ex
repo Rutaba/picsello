@@ -56,8 +56,8 @@ defmodule PicselloWeb.ClientMessageComponent do
       <h1 class="text-3xl mb-4"><%= @modal_title %></h1>
         <div class="flex flex-col">
           <label for="to_email" class="text-sm font-semibold mb-2">To: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
-          <div class="flex flex-col md:flex-row">
-            <input type="text" class="w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, "to"), "; ")}"} phx-keyup="validate_to_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
+          <div class="flex flex-col md:flex-row md:justify-between">
+            <input type="text" class="w-full md:w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, "to"), "; ")}"} phx-keyup="validate_to_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
             <.search_existing_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
           </div>
           <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@to_email_error})}><%= @to_email_error %></span>
@@ -74,7 +74,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           </div>
         <% end %>
         <%= if @show_bcc do %>
-          <div clas="flex flex-col">
+          <div class="flex flex-col">
             <div class="flex flex-col md:flex-row mt-4">
               <label for="bcc_email" class="text-sm font-semibold mb-2">BCC: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
               <.icon_button class="bg-white border-red-sales-300 mr-0" title="remove" phx-click="remove-bcc" phx-target={@myself} color="red-sales-300" icon="trash"/>
@@ -95,9 +95,10 @@ defmodule PicselloWeb.ClientMessageComponent do
           </.icon_button>
         <% end %>
       </div>
+      <hr class="my-2 sm:my-10" />
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-        <div class="grid grid-flow-col gap-4 mt-4 auto-cols-fr">
+        <div class="grid grid-flow-col gap-4 mt-2 auto-cols-fr">
           <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
           <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "h-12", phx_debounce: "500" %>
         </div>
@@ -320,9 +321,9 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   defp search_existing_clients(assigns) do
     ~H"""
-      <%= form_tag("#", [phx_change: :search, phx_target: @myself]) do %>
-        <div class="flex flex-col w-full justify-between items-center px-1.5 md:flex-row">
-          <div class="relative flex md:w-full">
+      <div class="flex w-full md:w-1/3">
+        <%= form_tag("#", [phx_change: :search, phx_target: @myself]) do %>
+          <div class="relative flex flex-col w-full md:flex-row">
             <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
               <%= if Enum.any?(@search_results) do %>
                 <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
@@ -363,8 +364,8 @@ defmodule PicselloWeb.ClientMessageComponent do
               <% end %>
             <% end %>
           </div>
-        </div>
-      <% end %>
+        <% end %>
+      </div>
     """
   end
 

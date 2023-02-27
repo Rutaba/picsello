@@ -2,7 +2,7 @@ defmodule Picsello.Client do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Accounts.User, Organization, Job, ClientTag, Repo}
+  alias Picsello.{Accounts.User, Organization, Job, ClientTag, Repo, ClientMessageRecipient}
 
   schema "clients" do
     field :email, :string
