@@ -229,6 +229,11 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   @impl true
+  def handle_info({:message_composed_for_album, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "album")
+  end
+
+  @impl true
   def handle_info(:open_modal, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> open_modal(CustomWatermarkComponent, %{gallery: gallery})

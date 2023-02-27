@@ -58,7 +58,7 @@ defmodule Picsello.ProposalReminder do
        ) do
     with %{days: days, copy: copy} <- reminder_messages() |> Enum.at(total_sent),
          true <- elapsed?(now, last_sent_at, days),
-         {client_name, client_email, organization_name, job_id} <-
+         {client_id, client_name, client_email, organization_name, job_id} <-
            from(proposal in BookingProposal,
              join: job in Job,
              on: job.id == proposal.job_id and is_nil(job.archived_at),
@@ -67,7 +67,7 @@ defmodule Picsello.ProposalReminder do
              join: organization in Organization,
              on: organization.id == client.organization_id,
              where: proposal.id == ^proposal_id,
-             select: {client.name, client.email, organization.name, job.id}
+             select: {client.id, client.name, client.email, organization.name, job.id}
            )
            |> Repo.one() do
       body = EEx.eval_string(copy, organization_name: organization_name, client_name: client_name)
@@ -76,6 +76,7 @@ defmodule Picsello.ProposalReminder do
       |> ClientMessage.create_outbound_changeset()
       |> Ecto.Changeset.put_change(:job_id, job_id)
       |> Ecto.Changeset.put_change(:scheduled, true)
+      |> Ecto.Changeset.put_assoc(:client_message_recipients, [%{client_id: client_id, recipient_type: "to"}])
       |> Repo.insert!()
       |> ClientNotifier.deliver_booking_proposal(client_email)
     end
