@@ -524,7 +524,7 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  def status_content(_, :archived), do: {"Archived", :gray}
+  def status_content(_, :archived), do: {"Archived", :red}
   def status_content(_, :completed), do: {"Completed", :green}
   def status_content(false, _), do: {"Active", :blue}
   def status_content(true, :not_sent), do: {"Created", :blue}
