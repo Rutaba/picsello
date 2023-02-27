@@ -34,7 +34,6 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign_new(:changeset, fn ->
       assigns
       |> Map.take([:subject, :body_text, :body_html])
-      |> Map.put(:client_id, id)
       |> Picsello.ClientMessage.create_outbound_changeset()
     end)
     |> then(fn socket -> assign_presets(socket) end)

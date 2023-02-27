@@ -114,8 +114,7 @@ defmodule Picsello.CreateClientTest do
     |> fill_in(css(".ql-editor"), with: "Test message")
     |> wait_for_enabled_submit_button()
     |> click(button("Send"))
-    |> assert_text("Thank you! Your message has been sent. We’ll be in touch with you soon.")
-    |> click(button("Close"))
+    |> assert_flash(:success, text: "Email sent!")
     |> visit("/clients/#{client.id}/job-history")
     |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
       row

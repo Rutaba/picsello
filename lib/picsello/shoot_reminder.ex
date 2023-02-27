@@ -73,7 +73,7 @@ defmodule Picsello.ShootReminder do
       |> Ecto.Multi.run(
         :email,
         fn _, changes ->
-          ClientNotifier.deliver_email(changes.message, job.client.email)
+          ClientNotifier.deliver_email(changes.message, %{"to" => [job.client.email]})
 
           {:ok, :email}
         end
