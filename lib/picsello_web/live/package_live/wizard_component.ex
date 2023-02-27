@@ -18,7 +18,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     PackagePaymentSchedule,
     PackagePayments,
     Shoot,
-    Questionnaire
+    Questionnaire,
+    GlobalSettings
   }
 
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
@@ -244,6 +245,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign(is_template: assigns |> Map.get(:job) |> is_nil())
     |> assign(
       job_types: Profiles.enabled_job_types(current_user.organization.organization_job_types)
+    )
+    |> assign(
+      global_settings: Repo.get_by(GlobalSettings.Gallery, organization_id: current_user.organization_id)
     )
     |> choose_initial_step()
     |> assign_changeset(%{})
@@ -1519,7 +1523,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     do: Packages.build_package_changeset(assigns, params)
 
   defp assign_changeset(
-         %{assigns: %{current_user: current_user, step: step, package: package} = assigns} =
+         %{assigns: %{global_settings: global_settings, step: step, package: package} = assigns} =
            socket,
          params,
          action \\ nil
@@ -1534,11 +1538,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       package.base_multiplier
       |> Multiplier.from_decimal()
       |> Multiplier.changeset(Map.get(params, "multiplier", %{}))
-
-    global_settings =
-      Repo.get_by(Picsello.GlobalSettings.Gallery,
-        organization_id: current_user.organization_id
-      )
 
     download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 

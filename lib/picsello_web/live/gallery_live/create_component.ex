@@ -14,7 +14,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     Packages.PackagePricing,
     Galleries.Gallery,
     Galleries,
-    Repo
+    Repo,
+    GlobalSettings
   }
 
   alias Ecto.Multi
@@ -32,12 +33,15 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   @impl true
   def update(
-        %{current_user: %{organization: %{organization_job_types: organization_job_types}}} =
+        %{current_user: %{organization: %{id: organization_id, organization_job_types: organization_job_types}}} =
           assigns,
         socket
       ) do
     socket
     |> assign(assigns)
+    |> assign(
+      global_settings: Repo.get_by(GlobalSettings.Gallery, organization_id: organization_id)
+    )
     |> assign(:new_gallery, nil)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
@@ -285,14 +289,13 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
             package: package,
             package_pricing: package_pricing,
             current_user: current_user,
-            step: step
+            step: step,
+            global_settings: global_settings
           }
         } = socket,
         params \\ %{},
         action \\ nil
       ) do
-    global_settings =
-      Repo.get_by(Picsello.GlobalSettings.Gallery, organization_id: current_user.organization_id)
 
     download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 
