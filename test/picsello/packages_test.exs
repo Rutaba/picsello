@@ -1,10 +1,7 @@
 defmodule Picsello.PackagesTest do
   use Picsello.DataCase, async: true
 
-  alias Picsello.{GlobalSettings, Repo, Packages, Packages.Download, OrganizationJobType}
-  import Money.Sigils
-
-  @default_each_price Download.default_each_price()
+  alias Picsello.{Repo, Packages, Packages.Download, OrganizationJobType}
 
   describe "Download.changeset" do
     test "if includes_credits count must be positive" do
