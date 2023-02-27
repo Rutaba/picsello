@@ -191,7 +191,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
       <% end %>
     </div>
-
+    <%= if @package_templates == [] do %>
+      <div class="flex flex-col md:flex-row mt-6">
+          <img src="/images/empty-state.png" class="my-auto block"/>
+          <div class="justify-center p-1 ml-6 flex flex-col">
+            <div class="font-bold">Missing packages</div>
+            <div>
+              <div class="font-normal pb-6 text-base-250">
+                You don’t have any packages with a single shoot! You’ll<br>need to create some packages before you can select one.<br>(Modal will close when you click “Package Settings”)
+              </div>
+              <a id="gallery-settings" class="w-48 btn-tertiary text-center flex-row items-center pt-3 text-grey-planning-300" href={Routes.package_templates_path(@socket, :index)} title="Package Settings">
+                <.icon name="gear" class="inline-block w-6 h-6 mr-2 text-blue-planning-300"/>
+                  Package Settings
+              </a>
+            </div>
+          </div>
+      </div>
+    <% end %>
     <%= if can_edit? do %>
         <%= for package <- @package_templates do %>
           <% checked = is_checked(input_value(@f, :package_template_id), package) %>
