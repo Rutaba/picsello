@@ -223,7 +223,7 @@ defmodule PicselloWeb.JobLive.Index do
 
         <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
           <%= for %{title: title, action: action, icon: icon} <- actions(), (@type == "jobs" and title != "Archive") || (@type == "leads" and title not in ["Complete", "Go to galleries"]) do %>
-            <button title={title} type="button" phx-click={action} phx-value-id={@job.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+            <button title={title} type="button" phx-click={action} phx-value-id={@job.id} class={classes("flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100", %{"hidden" => @job.job_status.current_status == :archived and title == "Archive"})}>
               <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
               <%= title %>
             </button>
