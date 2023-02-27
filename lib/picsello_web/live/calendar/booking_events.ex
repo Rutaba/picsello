@@ -40,7 +40,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         |> Map.put(:id, nil)
         |> Map.put(:inserted_at, nil)
         |> Map.put(:updated_at, nil)
-        |> Map.put(:status, "active")
+        |> Map.put(:status, :active)
         |> Map.put(:__meta__, %Picsello.BookingEvent{} |> Map.get(:__meta__))
     })
     |> noreply()
