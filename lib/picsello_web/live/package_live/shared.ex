@@ -112,6 +112,8 @@ defmodule PicselloWeb.PackageLive.Shared do
         class: ""
       })
 
+    assigns = assign_new(assigns, :is_edit, fn -> true end)
+
     ~H"""
     <div class={"flex flex-col p-4 border rounded cursor-pointer hover:bg-blue-planning-100 hover:border-blue-planning-300 group #{@class}"}>
       <h1 class="text-2xl font-bold line-clamp-2"><%= @package.name %></h1>
@@ -335,9 +337,11 @@ defmodule PicselloWeb.PackageLive.Shared do
         inner_block: nil
       })
 
+    assigns = assign_new(assigns, :can_edit?, fn -> true end)
+
     ~H"""
-    <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => @checked})} {testid("template-card")}>
-      <label class="flex items-center justify-between cursor-pointer">
+    <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => @checked, "bg-base-200" => !@can_edit?})} {testid("template-card")}>
+      <label class={classes("flex items-center justify-between cursor-pointer", %{"pointer-events-none cursor-nor-allowed" => !@can_edit?})}>
         <div class="w-1/3">
           <h3 class="font-xl font-bold mb-1"><%= @package.name %>—<%= dyn_gettext @package.job_type %></h3>
           <div class="flex flex-row-reverse items-center justify-end mt-auto">

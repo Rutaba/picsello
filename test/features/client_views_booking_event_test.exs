@@ -73,13 +73,11 @@ defmodule Picsello.ClientViewsBookingEventTest do
 
   feature "when event is disabled", %{session: session, booking_event_url: booking_event_url} do
     Picsello.Repo.update_all(Picsello.BookingEvent,
-      set: [disabled_at: DateTime.utc_now() |> DateTime.truncate(:second)]
+      set: [status: "disabled"]
     )
 
     session
     |> visit(booking_event_url)
-    |> assert_text("Mary Jane Photography")
-    |> click(link("Book now"))
     |> assert_text("No available times")
   end
 end

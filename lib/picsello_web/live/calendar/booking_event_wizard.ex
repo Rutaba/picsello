@@ -2,19 +2,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @moduledoc false
 
   use PicselloWeb, :live_component
+  alias Picsello.{BookingEvent, BookingEvents, Packages}
+
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.PackageLive.Shared, only: [current: 1, package_row: 1]
+  import PicselloWeb.PackageLive.Shared, only: [package_row: 1, current: 1]
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
-
-  alias Picsello.{BookingEvent, BookingEvents, Packages}
 
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign(assign_event_keys(assigns))
     |> assign_new(:step, fn -> :details end)
     |> assign_new(:steps, fn -> [:details, :package, :customize] end)
     |> assign_new(:collapsed_dates, fn -> [] end)
@@ -28,6 +29,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     end
     |> assign_package_templates()
     |> ok()
+  end
+
+  def assign_event_keys(assigns) do
+    assigns
+    |> Map.put_new(:can_edit?, true)
+    |> Map.put_new(:booking_count, 0)
+    |> Map.put_new(:break_block_booked, false)
+    |> Map.put_new(:params, %{})
   end
 
   @impl true
@@ -62,7 +71,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         <.step name={@step} f={f} {assigns} />
 
         <.footer>
-          <.step_buttons name={@step} form={f} is_valid={@changeset.valid?} myself={@myself} />
+          <.step_buttons name={@step} form={f} is_valid={@changeset.valid?} break_block_booked = {@break_block_booked} myself={@myself} />
 
           <%= if step_number(@step, @steps) == 1 do %>
             <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
@@ -120,7 +129,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   def step_buttons(%{name: step} = assigns) when step in [:details, :package] do
     ~H"""
-    <button class="btn-primary" title="Next" type="submit" disabled={!@is_valid} phx-disable-with="Next">
+    <button class="btn-primary" title="Next" type="submit" disabled={!@is_valid || @break_block_booked} phx-disable-with="Next">
       Next
     </button>
     """
@@ -128,29 +137,29 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   def step_buttons(%{name: :customize} = assigns) do
     ~H"""
-    <button class="btn-primary" title="Save" type="submit" disabled={!@is_valid} phx-disable-with="Save">
+    <button class="btn-primary" title="Save" type="submit" disabled={!@is_valid || @break_block_booked} phx-disable-with="Save">
       Save
     </button>
     """
   end
 
-  def step(%{name: :details} = assigns) do
+  def step(%{name: :details, can_edit?: can_edit?, booking_count: booking_count} = assigns) do
     ~H"""
       <div class="flex flex-col mt-4">
         <h2 class="text-xl font-bold">Set your details</h2>
         <p>Add in your session details and location to populate the event landing page and set your availability appropriately.</p>
         <div class="grid gap-5 sm:grid-cols-6 mt-4">
           <%= labeled_input @f, :name, label: "Title", placeholder: "Fall Mini-sessions", wrapper_class: "sm:col-span-2" %>
-          <.location f={@f} myself={@myself} allow_address_toggle={false} address_field={true} />
-          <%= labeled_select @f, :duration_minutes, duration_options(), label: "Session Length", prompt: "Select below", wrapper_class: "sm:col-span-3" %>
-          <%= labeled_select @f, :buffer_minutes, buffer_options(), label: "Session Buffer", prompt: "Select below", wrapper_class: "sm:col-span-3", optional: true %>
+          <.location f={@f} myself={@myself} allow_address_toggle={false} address_field={true} is_edit={can_edit?}/>
+          <%= labeled_select @f, :duration_minutes, duration_options(), label: "Session Length", prompt: "Select below", wrapper_class: "sm:col-span-3", disabled: !can_edit? %>
+          <%= labeled_select @f, :buffer_minutes, buffer_options(), label: "Session Buffer", prompt: "Select below", wrapper_class: "sm:col-span-3", optional: true, disabled: !can_edit? %>
         </div>
         <h2 class="text-xl font-bold mt-4">Event date(s)</h2>
         <p>You can create single- or multi-day events with specified time blocks each day. We will calculate the amount of slots you can do each day. Don’t forget to take a meal break!</p>
 
         <%= error_tag(@f, :dates, prefix: "Dates", class: "text-red-sales-300 text-sm mt-2") %>
         <%= inputs_for @f, :dates, fn d -> %>
-          <.event_date event_form={@f} f={d} id={"event-#{d.index}"} myself={@myself} collapsed_dates={@collapsed_dates} />
+          <.event_date event_form={@f} f={d} id={"event-#{d.index}"} myself={@myself} collapsed_dates={@collapsed_dates} changeset={@changeset} booking_count={booking_count} is_edit={can_edit?}/>
         <% end %>
 
         <div class="mt-8">
@@ -162,19 +171,67 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     """
   end
 
-  def step(%{name: :package} = assigns) do
+  def step(%{name: :package, can_edit?: can_edit?} = assigns) do
     ~H"""
-    <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
+     <%= if !can_edit? do %>
+        <div class="flex rounded-lg h-fit mt-8 p-1 ml-3 flex flex-row border bg-base-200">
+          <.icon name="warning-orange" class="w-4 h-4 mt-2 mr-2" />
+          <div class="warning-text">
+            <p class="font-bold">Since you have bookings already, you  won’t be able to change your package.</p>
+            <p class="font-normal">If you need to change that, archive or disable your booking event and make a new one.</p>
+          </div>
+        </div>
+    <% end %>
+
+    <div class={classes("hidden sm:flex items-center border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250", %{"justify-between" => can_edit?})}>
       <%= for title <- ["Package name", "Package Pricing", "Select package"] do %>
-        <div class="w-1/3 last:text-center"><%= title %></div>
+        <%= if (!can_edit? and title !=  "Select package") || can_edit? do %>
+            <div class={classes("w-1/3", %{"last:text-center" => can_edit?})}><%= title %></div>
+        <% end %>
+
       <% end %>
     </div>
-    <%= for package <- @package_templates do %>
-      <% checked = is_checked(input_value(@f, :package_template_id), package) %>
-
-      <.package_row package={package} checked={checked}>
-        <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: nil, else: package.id} />
-      </.package_row>
+    <%= if @package_templates == [] do %>
+      <div class="flex flex-col md:flex-row mt-6">
+          <img src="/images/empty-state.png" class="my-auto block"/>
+          <div class="justify-center p-1 ml-6 flex flex-col">
+            <div class="font-bold">Missing packages</div>
+            <div>
+              <div class="font-normal pb-6 text-base-250">
+                You don’t have any packages with a single shoot! You’ll<br>need to create some packages before you can select one.<br>(Modal will close when you click “Package Settings”)
+              </div>
+              <a id="gallery-settings" class="w-48 btn-tertiary text-center flex-row items-center pt-3 text-grey-planning-300" href={Routes.package_templates_path(@socket, :index)} title="Package Settings">
+                <.icon name="gear" class="inline-block w-6 h-6 mr-2 text-blue-planning-300"/>
+                  Package Settings
+              </a>
+            </div>
+          </div>
+      </div>
+    <% end %>
+    <%= if can_edit? do %>
+        <%= for package <- @package_templates do %>
+          <% checked = is_checked(input_value(@f, :package_template_id), package) %>
+          <label class={classes(%{"cursor-not-allowed pointer-events-none" => !can_edit?})}>
+            <.package_row package={package} checked={checked}>
+              <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: nil, else: package.id} />
+            </.package_row>
+          </label>
+        <% end %>
+    <% else %>
+      <% package_id = input_value(@f, :package_template_id) |> to_integer() %>
+      <% package = Enum.filter(@package_templates, fn template -> template.id == package_id end) |> List.first() %>
+      <%= if package do %>
+        <label class={classes(%{"cursor-not-allowed pointer-events-none" => !can_edit?})}>
+            <.package_row package={package} can_edit?={can_edit?}/>
+        </label>
+      <% else %>
+        <div class="flex rounded-lg h-fit  mt-8 p-2 ml-3 flex flex-row border bg-base-200">
+            <.icon name="warning-orange" class="w-4 h-4 mt-2 mr-2" />
+            <div class="warning-text">
+              <p class="font-bold">There is no package for this user <br/></p>
+            </div>
+        </div>
+      <% end %>
     <% end %>
     """
   end
@@ -221,7 +278,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       <div class="flex bg-base-200 px-4 py-2 items-center cursor-pointer" phx-click="toggle-collapsed-date" phx-value-index={@f.index} phx-target={@myself}>
         <h2 class="text-lg font-bold py-1">Day <%= @f.index + 1 %></h2>
         <%= if @f.index > 0 do %>
-          <.icon_button class="ml-4" title="remove date" phx-click="remove-date" phx-value-index={@f.index} phx-target={@myself} color="red-sales-300" icon="trash">
+          <.icon_button class="ml-4" title="remove date" disabled= {is_date_booked(@event_form, input_value(@f, :date))} phx-click="remove-date" phx-value-index={@f.index} phx-target={@myself} color="red-sales-300" icon="trash">
             Remove
           </.icon_button>
         <% end %>
@@ -233,30 +290,81 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <% end %>
         </div>
       </div>
-      <div class={classes("p-4 grid gap-5 sm:grid-cols-2", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})}>
+      <div class={classes("p-4 grid gap-5 lg:grid-cols-3 grid-cols-1", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})} {intro_hints_only("intro_hints_only")}>
         <div class="flex flex-col">
-          <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today() %>
-          <%= case calculate_slots_count(@event_form, input_value(@f, :date)) do %>
-            <% count -> %>
-              <p {testid("open-slots-count-#{@f.index}")} class="mt-2 font-semibold">You’ll have <span class="text-blue-planning-300"><%= count %></span><%= ngettext " open slot", " open slots", count %> on this day</p>
+          <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today(), disabled: is_date_booked(@event_form, input_value(@f, :date)) %>
+          <%= if is_date_booked(@event_form, input_value(@f, :date)) do %>
+            <div class="flex justify-start mt-4 items-center">
+              <.icon name="warning-red", class="w-10 h-10 red-sales-300 stroke-[4px]" />
+              <div class="pl-4 text-gray-400">You can’t change the date since you have bookings. You can add another date though!</div>
+            </div>
           <% end %>
         </div>
-        <div>
+        <div class="col-span-2">
           <p class="input-label">What times are you available this day?</p>
           <%= error_tag(@f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
           <%= inputs_for @f, :time_blocks, fn t -> %>
-            <div class="flex items-center mb-2">
-              <%= input t, :start_time, type: :time_input %>
-              <p class="mx-2">-</p>
-              <%= input t, :end_time, type: :time_input %>
-              <%= if t.index > 0 do %>
-                <.icon_button class="ml-4" title="remove time" phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
-              <% end %>
+            <div class="flex lg:items-center flex-col lg:flex-row mb-4">
+              <div class={classes("flex items-center lg:w-auto w-full lg:justify-start justify-between", %{"text-gray-400" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})}>
+                <%= input t, :start_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))%>
+                <p class="mx-2">-</p>
+                <%= input t, :end_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break)) %>
+                <%= hidden_input t, :is_break%>
+                <%= hidden_input t, :is_valid, value: t |> current |> Map.get(:is_valid) %>
+              </div>
+              <div class="flex justify-between w-full mt-2 lg:mt-0">
+                  <%= if get_is_break!(@changeset, @f.index,t.index) do %>
+                    <span class="italic text-base-250 ml-2"> Break Block <.intro_hint class="ml-2 hidden lg:inline-block" content="Breaks are important so you can catch your breath!"/></span>
+                  <% end %>
+                  <%= if get_is_hidden!(@changeset, @f.index,t.index) do %>
+                    <span class="italic text-base-250 ml-2"> Hidden Block <.intro_hint class="ml-2 hidden lg:inline-block" content="This is a great way to add some urgency for clients to book!"/></span>
+                  <% end %>
+                <div class="flex ml-auto">
+                  <div data-offset="0" phx-hook="Select" id={"manage-event-#{@f.index}-#{t.index}"} class={classes(%{"pointer-events-none opacity-40" => t |> current |> Map.get(:is_break)})}>
+                    <button title="Manage" type="button" class="flex flex-shrink-0 ml-2 px-2 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+                      <.icon name="gear" class="w-4 h-5 m-1 fill-current open-icon text-blue-planning-300" />
+                      <.icon name="close-x" class="hidden w-4 h-5 m-1 stroke-current close-icon stroke-2 text-blue-planning-300" />
+                    </button>
+                    <div class="hidden bg-white border rounded-lg shadow-lg popover-content p-2">
+                      <h2 class="font-bold"> Block Options </h2>
+                      <label class="flex items-center mt-4">
+                        <%= input t, :is_hidden, type: :checkbox, checked: t |> current |> Map.get(:is_hidden), class: "w-6 h-6 mt-1 checkbox", id: "check-box-#{@f.index}-#{t.index}"%>
+                        <p class="font-bold ml-3"> Show block as hidden (booked)</p>
+                      </label>
+                      <p class="text-base-250 ml-8">In case you want to save some <br/> booking slots for later</p>
+                    </div>
+                  </div>
+                  <%= if t.index > 0 do %>
+                    <.icon_button class={classes("ml-4 py-1",%{"pointer-events-none" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})} title="remove time" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
+                  <% end %>
+                </div>
+              </div>
             </div>
+            <%= if ((t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))) do %>
+              <div class="flex justify-start mb-4 items-center">
+                <.icon name="warning-red", class="w-10 h-5 red-sales-300 stroke-[4px]" />
+                <div class="pl-2 text-gray-400">You have bookings in this slot. You won’t be able to edit but you can hide it!.</div>
+              </div>
+            <% end %>
+            <%= if !(t |> current |> Map.get(:is_valid))do %>
+                <div class="flex justify-start mb-4 items-center">
+                    <.icon name="warning-red", class="w-10 h-5 red-sales-300 stroke-[4px]" />
+                    <div class="pl-2 text-gray-400">Sorry, you have time slots booked during the time you are requesting as a break. Please select a different time.</div>
+                </div>
+            <% end %>
           <% end %>
-          <.icon_button class="py-1 px-4 mt-4 w-full sm:w-auto justify-center" title="Add block" phx-click="add-time-block" phx-value-index={@f.index} phx-target={@myself} color="blue-planning-300" icon="plus">
-            Add block
-          </.icon_button>
+          <div class="flex flex-row">
+            <.icon_button class="py-1 lg:px-4 px-0 w-full sm:w-auto justify-center" title="Add block" phx-click="add-time-block" phx-value-index={@f.index}  phx-value-break={"false"} phx-target={@myself} color="blue-planning-300" icon="plus">
+              Add block
+            </.icon_button>
+            <.icon_button class="py-1 lg:px-4 px-2 lg:ml-4 ml-2 w-full sm:w-auto justify-center" title="Add Break block" phx-click="add-time-block" phx-value-index={@f.index}  phx-value-break={"true"} phx-target={@myself} color="blue-planning-300" icon="plus">
+              Add break block
+            </.icon_button>
+          </div>
+          <%= case calculate_slots_count(@event_form, input_value(@f, :date)) do %>
+            <% {slot_count, break_count, hidden_count} -> %>
+              <p {testid("open-slots-count-#{@f.index}")} class="mt-2 font-semibold">You’ll have <span class="text-blue-planning-300"><%= slot_count %></span><%= ngettext " open slot", " open slots", slot_count %>, <span class="text-blue-planning-300"><%= hidden_count %></span><%= ngettext " hidden block", " hidden block", hidden_count %> and <span class="text-blue-planning-300"><%= break_count %> </span><%= ngettext "break block", " break block", break_count %>, and <span class="text-blue-planning-300"><%= @booking_count %></span> already booked on this day</p>
+          <% end %>
         </div>
       </div>
     </section>
@@ -264,11 +372,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   end
 
   @impl true
-  def handle_event("back", %{}, %{assigns: %{step: step, steps: steps}} = socket) do
+  def handle_event("back", %{}, %{assigns: %{step: step, steps: steps, params: params}} = socket) do
     previous_step = Enum.at(steps, Enum.find_index(steps, &(&1 == step)) - 1)
 
     socket
     |> assign(step: previous_step)
+    |> assign_changeset(params)
     |> noreply()
   end
 
@@ -321,9 +430,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @impl true
   def handle_event(
         "add-time-block",
-        %{"index" => index},
+        %{"index" => index, "break" => break},
         %{assigns: %{changeset: changeset}} = socket
       ) do
+    is_break = convert_bool(break)
     {index, _} = Integer.parse(index)
 
     dates =
@@ -331,12 +441,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       |> Ecto.Changeset.get_field(:dates)
       |> Enum.map(&Map.from_struct/1)
       |> List.update_at(index, fn date ->
-        date |> Map.put(:time_blocks, (date.time_blocks || []) ++ [%{}])
+        date |> Map.put(:time_blocks, (date.time_blocks || []) ++ [%{is_break: is_break}])
       end)
 
     changeset =
       changeset
       |> Ecto.Changeset.put_embed(:dates, dates)
+      |> Map.put(:action, :validate)
 
     socket
     |> assign(changeset: changeset)
@@ -367,12 +478,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
     changeset =
       changeset
-      |> Ecto.Changeset.put_embed(:dates, dates)
+      |> Ecto.Changeset.put_change(:dates, dates)
       |> Map.put(:action, :validate)
 
-    socket
-    |> assign(changeset: changeset)
-    |> noreply()
+    params =
+      changeset.params
+      |> Map.put("dates", convert_dates(dates))
+
+    socket |> assign_changeset(params, :validate) |> noreply()
   end
 
   @impl true
@@ -387,6 +500,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       %{assigns: %{changeset: %{valid?: true}}} ->
         socket
         |> assign(step: next_step(socket.assigns))
+        |> assign(params: params)
         |> assign_changeset(params)
 
       socket ->
@@ -424,12 +538,32 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     changeset =
       booking_event |> BookingEvent.changeset(params, step: step) |> Map.put(:action, action)
 
-    assign(socket, changeset: changeset)
+    dates =
+      changeset
+      |> Ecto.Changeset.get_field(:dates)
+      |> Enum.map(&Map.from_struct/1)
+      |> BookingEvents.assign_booked_block_dates(booking_event)
+
+    break_block_booked = is_break_block_already_booked(dates)
+    block_booked = is_any_block_booked(dates)
+
+    changeset =
+      if changeset.valid? do
+        changeset
+        |> Ecto.Changeset.put_embed(:dates, dates)
+      else
+        changeset
+      end
+
+    assign(socket,
+      changeset: changeset,
+      break_block_booked: break_block_booked,
+      can_edit?: !block_booked
+    )
   end
 
   defp assign_package_templates(%{assigns: %{current_user: current_user}} = socket) do
     packages = Packages.templates_with_single_shoot(current_user)
-
     socket |> assign(package_templates: packages)
   end
 
@@ -448,7 +582,65 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   defp calculate_slots_count(event_form, date) do
     event = current(event_form)
-    event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
+
+    slot_count =
+      event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
+
+    {slot_count, calculate_break_blocks(event, date), calculate_hidden_blocks(event, date)}
+  end
+
+  defp is_break_block_already_booked(dates) do
+    dates
+    |> Enum.filter(fn %{time_blocks: time_blocks} ->
+      Enum.filter(time_blocks, fn block ->
+        !block.is_valid
+      end)
+      |> Enum.count() > 0
+    end)
+    |> Enum.count() > 0
+  end
+
+  defp is_any_block_booked(dates) do
+    dates
+    |> Enum.filter(fn %{time_blocks: time_blocks} ->
+      Enum.filter(time_blocks, fn block ->
+        block.is_booked
+      end)
+      |> Enum.count() > 0
+    end)
+    |> Enum.count() > 0
+  end
+
+  defp calculate_break_blocks(booking_event, date) do
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
+      %{time_blocks: time_blocks} ->
+        Enum.reduce(time_blocks, 0, fn block, acc ->
+          if block.is_break do
+            acc + 1
+          else
+            acc
+          end
+        end)
+
+      _ ->
+        0
+    end
+  end
+
+  defp calculate_hidden_blocks(booking_event, date) do
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
+      %{time_blocks: time_blocks} ->
+        Enum.reduce(time_blocks, 0, fn block, acc ->
+          if block.is_hidden do
+            acc + 1
+          else
+            acc
+          end
+        end)
+
+      _ ->
+        0
+    end
   end
 
   defp is_checked(id, package) do
@@ -458,4 +650,67 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       false
     end
   end
+
+  defp get_is_break!(changeset, date_index, time_block_index) do
+    dates =
+      changeset
+      |> Ecto.Changeset.get_field(:dates)
+      |> Enum.map(&Map.from_struct/1)
+
+    date = dates |> Enum.at(date_index)
+    Enum.at(date.time_blocks, time_block_index).is_break
+  end
+
+  defp get_is_hidden!(changeset, date_index, time_block_index) do
+    dates =
+      changeset
+      |> Ecto.Changeset.get_field(:dates)
+      |> Enum.map(&Map.from_struct/1)
+
+    date = dates |> Enum.at(date_index)
+    Enum.at(date.time_blocks, time_block_index).is_hidden
+  end
+
+  defp is_date_booked(event_form, date) do
+    event = current(event_form)
+
+    case event.dates |> Enum.find(&(&1.date == date)) do
+      %{time_blocks: time_blocks} ->
+        Enum.any?(time_blocks, fn %{is_booked: is_booked} ->
+          is_booked
+        end)
+
+      _ ->
+        false
+    end
+  end
+
+  defp convert_bool(value), do: String.to_atom(value)
+
+  defp convert_dates(dates) do
+    dates
+    |> Enum.with_index()
+    |> Enum.reduce(%{}, fn {date_map, idx}, acc ->
+      date_str = date_map.date
+      time_blocks = update_time_block(date_map.time_blocks)
+      acc |> Map.put(to_string(idx), %{"date" => date_str, "time_blocks" => time_blocks})
+    end)
+  end
+
+  defp update_time_block(time_blocks) do
+    Enum.reduce(time_blocks, %{}, fn time_block, time_acc ->
+      output = Map.new(time_block, fn {k, v} -> {to_string(k), v} end)
+
+      map_time =
+        output
+        |> Map.put("end_time", time_parse(time_block.end_time))
+        |> Map.put("start_time", time_parse(time_block.start_time))
+
+      time_acc |> Map.put(to_string(Enum.count(time_acc)), map_time)
+    end)
+  end
+
+  defp time_parse(nil), do: ""
+  defp time_parse(time), do: "#{formatted_time(time.hour)}:#{formatted_time(time.minute)}"
+  defp formatted_time(time), do: time |> to_string |> String.pad_leading(2, "0")
 end
