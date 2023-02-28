@@ -699,6 +699,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   defp update_time_block(time_blocks) do
     Enum.reduce(time_blocks, %{}, fn time_block, time_acc ->
+      time_block = get_map_time_block(time_block)
       output = Map.new(time_block, fn {k, v} -> {to_string(k), v} end)
 
       map_time =
@@ -709,6 +710,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       time_acc |> Map.put(to_string(Enum.count(time_acc)), map_time)
     end)
   end
+
+  defp get_map_time_block(%Picsello.BookingEvent.TimeBlock{} = time_block),
+    do: Map.from_struct(time_block)
+
+  defp get_map_time_block(time_block), do: time_block
 
   defp time_parse(nil), do: ""
   defp time_parse(time), do: "#{formatted_time(time.hour)}:#{formatted_time(time.minute)}"
