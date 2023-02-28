@@ -93,21 +93,21 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> find(select("Session Length"), &click(&1, option("45 mins")))
     |> find(select("Session Buffer"), &click(&1, option("15 mins")))
     |> scroll_into_view(testid("add-date"))
-    |> assert_has(testid("open-slots-count-0", text: "You’ll have 0 open slots on this day"))
+    |> assert_has(testid("open-slots-count-0", text: "You’ll have 0 open slots"))
     |> fill_in(text_field("booking_event[dates][0][date]"), with: "10/10/2050")
     |> fill_in(text_field("booking_event[dates][0][time_blocks][0][start_time]"), with: "09:00AM")
     |> fill_in(text_field("booking_event[dates][0][time_blocks][0][end_time]"), with: "01:00PM")
-    |> assert_has(testid("open-slots-count-0", text: "You’ll have 4 open slots on this day"))
+    |> assert_has(testid("open-slots-count-0", text: "You’ll have 4 open slots"))
     |> click(button("Add block"))
     |> fill_in(text_field("booking_event[dates][0][time_blocks][1][start_time]"), with: "03:00PM")
     |> fill_in(text_field("booking_event[dates][0][time_blocks][1][end_time]"), with: "05:00PM")
-    |> assert_has(testid("open-slots-count-0", text: "You’ll have 6 open slots on this day"))
+    |> assert_has(testid("open-slots-count-0", text: "You’ll have 6 open slots"))
     |> click(button("Add another date"))
     |> assert_has(testid("event-date", count: 2))
     |> scroll_into_view(testid("add-date"))
     |> fill_in(text_field("booking_event[dates][1][time_blocks][0][start_time]"), with: "09:00AM")
     |> fill_in(text_field("booking_event[dates][1][time_blocks][0][end_time]"), with: "10:00AM")
-    |> fill_in(text_field("booking_event[dates][1][date]"), with: "10/11/2050")
+    |> fill_in(text_field("booking_event[dates][1][date]"), with: "11/10/2050")
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add booking event: Select package")
@@ -143,13 +143,36 @@ defmodule Picsello.UserManagesBookingEventsTest do
                  %{
                    date: ~D[2050-10-10],
                    time_blocks: [
-                     %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]},
-                     %{start_time: ~T[15:00:00], end_time: ~T[17:00:00]}
+                     %{
+                       start_time: ~T[09:00:00],
+                       end_time: ~T[13:00:00],
+                       is_hidden: false,
+                       is_break: false,
+                       is_booked: false,
+                       is_valid: true
+                     },
+                     %{
+                       start_time: ~T[15:00:00],
+                       end_time: ~T[17:00:00],
+                       is_hidden: false,
+                       is_break: false,
+                       is_booked: false,
+                       is_valid: true
+                     }
                    ]
                  },
                  %{
-                   date: ~D[2050-10-11],
-                   time_blocks: [%{end_time: ~T[10:00:00], start_time: ~T[09:00:00]}]
+                   date: ~D[2050-11-10],
+                   time_blocks: [
+                     %{
+                       end_time: ~T[10:00:00],
+                       start_time: ~T[09:00:00],
+                       is_hidden: false,
+                       is_break: false,
+                       is_booked: false,
+                       is_valid: true
+                     }
+                   ]
                  }
                ],
                package_template_id: ^template_id,
@@ -213,7 +236,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_value(text_field("booking_event[dates][0][date]"), "2050-10-10")
   end
 
-  feature "edit is disabled when there's a lead associated to the event", %{
+  feature "edit not disabled when there's a lead associated to the event", %{
     session: session,
     user: user
   } do
@@ -225,7 +248,28 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> visit("/calendar")
     |> click(link("Manage booking events"))
     |> click(button("Manage"))
-    |> assert_disabled(button("Edit"))
+    |> click(button("Edit"))
+    |> assert_text("Edit booking event: Details")
+  end
+
+  feature "edit hidden when event is disabled", %{
+    session: session,
+    user: user
+  } do
+    template = insert(:package_template, user: user)
+    insert(:booking_event, package_template_id: template.id, name: "Event 1")
+
+    session
+    |> visit("/calendar")
+    |> click(link("Manage booking events"))
+    |> click(button("Manage"))
+    |> click(button("Disable"))
+    |> assert_text("Disable this event?")
+    |> click(button("Disable Event"))
+    |> assert_flash(:success, text: "Event disabled successfully")
+    |> assert_text("Disabled")
+    |> click(button("Manage"))
+    |> refute_has(button("Edit"))
   end
 
   feature "edit the event", %{session: session, user: user} do
@@ -275,10 +319,10 @@ defmodule Picsello.UserManagesBookingEventsTest do
   end
 
   feature "duplicate the event", %{session: session, user: user} do
-    %{id: template_id} = template = insert(:package_template, user: user)
+    %{id: template_id} = insert(:package_template, user: user)
 
     %{id: old_event_id, thumbnail_url: thumbnail_url} =
-      insert(:booking_event, package_template_id: template.id, name: "Event 1")
+      insert(:booking_event, package_template_id: template_id, name: "Event 1")
 
     session
     |> visit("/calendar")
@@ -336,7 +380,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_flash(:success, text: "Event disabled successfully")
     |> assert_text("Disabled")
 
-    assert [%{disabled_at: %DateTime{}}] = Picsello.Repo.all(Picsello.BookingEvent)
+    assert [%{status: :disabled}] = Picsello.Repo.all(Picsello.BookingEvent)
 
     session
     |> click(button("Manage"))
@@ -345,7 +389,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> click(button("Manage"))
     |> assert_text("Disable")
 
-    assert [%{disabled_at: nil}] = Picsello.Repo.all(Picsello.BookingEvent)
+    assert [%{status: :active}] = Picsello.Repo.all(Picsello.BookingEvent)
   end
 
   defp mock_image_upload(%{port: port} = bypass) do

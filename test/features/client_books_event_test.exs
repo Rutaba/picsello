@@ -293,8 +293,12 @@ defmodule Picsello.ClientBooksEventTest do
     )
 
     session
-    |> click(button("Next"))
-    |> assert_flash(:error, text: "This time is not available anymore")
+    |> visit(booking_event_url)
+    |> click(link("Book now"))
+    |> fill_in(text_field("Your name"), with: "Chad Smith")
+    |> fill_in(text_field("Your email"), with: "chad@example.com")
+    |> fill_in(text_field("Your phone number"), with: "987 123 4567")
+    |> has?(css("label", text: "11:00am", visible: false))
   end
 
   feature "client booking expires", %{session: session, booking_event_url: booking_event_url} do

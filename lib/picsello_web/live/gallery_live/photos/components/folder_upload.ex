@@ -79,7 +79,9 @@ defmodule PicselloWeb.GalleryLive.Photos.FolderUpload do
             ~s(folder_albums:#{gallery.id}),
             {:folder_albums, albums}
           )
-        {:error, _} -> put_flash(socket, :error, "Unable to upload folders as albums")
+
+        {:error, _} ->
+          put_flash(socket, :error, "Unable to upload folders as albums")
       end
     end
 
