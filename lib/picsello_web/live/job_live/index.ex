@@ -49,12 +49,21 @@ defmodule PicselloWeb.JobLive.Index do
   def handle_event(
         "apply-filter-sort_by",
         %{"option" => sort_by},
-        %{assigns: %{sort_direction: sort_direction}} = socket
+        socket
       ) do
     socket
     |> assign(:sort_by, sort_by)
-    |> assign(:sort_col, Enum.find(job_sort_options(), fn op -> op.id == sort_by end).column)
-    |> assign(:sort_direction, if(sort_by == "oldest_job", do: :asc, else: sort_direction))
+    |> assign(
+      :sort_col,
+      if(sort_by not in ["oldest_lead", "newest_lead"],
+        do: Enum.find(job_sort_options(), fn op -> op.id == sort_by end).column,
+        else: Enum.find(lead_sort_options(), fn op -> op.id == sort_by end).column
+      )
+    )
+    |> assign(
+      :sort_direction,
+      if(sort_by in ["oldest_job", "oldest_lead"], do: :asc, else: :desc)
+    )
     |> reassign_pagination_and_jobs()
   end
 
@@ -259,7 +268,7 @@ defmodule PicselloWeb.JobLive.Index do
       <div class="flex flex-col w-full lg:w-auto mr-2 px-5 lg:px-0">
         <h1 class="font-extrabold text-sm flex flex-col"><%= @title %></h1>
         <div class="flex">
-          <div id="select" class={classes("relative w-full lg:w-40 border-grey border rounded-l-lg p-2 cursor-pointer", %{"rounded-lg" => @title == "Filter"})} data-offset-y="5" phx-hook="Select">
+          <div id={@id} class={classes("relative w-full lg:w-40 border-grey border rounded-l-lg p-2 cursor-pointer", %{"rounded-lg" => @title == "Filter"})} data-offset-y="5" phx-hook="Select">
             <div class="flex flex-row items-center border-gray-700">
                 <%= capitalize_per_word(String.replace(@selected_option, "_", " ")) %>
                 <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
@@ -280,8 +289,12 @@ defmodule PicselloWeb.JobLive.Index do
           </div>
           <%= if @title == "Sort" do%>
             <div class="items-center flex border rounded-r-lg border-grey p-2">
-              <button phx-click="switch_sort">
-                <.icon name={if @sort_direction == "asc", do: "sort-vector", else: "sort-vector-2"} {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
+              <button phx-click="toggle-sort-direction" disabled={@selected_option != "name"}>
+                <%= if @sort_direction == :asc do %>
+                  <.icon name="sort-vector" {testid("edit-link-button")} class={classes("blue-planning-300 w-5 h-5", %{"pointer-events-none opacity-40" => @selected_option != "name"})} />
+                <% else %>
+                  <.icon name="sort-vector-2" {testid("edit-link-button")} class={classes("blue-planning-300 w-5 h-5", %{"pointer-events-none opacity-40" => @selected_option != "name"})} />
+                <% end %>
               </button>
             </div>
           <% end %>
@@ -434,7 +447,7 @@ defmodule PicselloWeb.JobLive.Index do
 
   defp job_sort_options do
     [
-      %{title: "Client Name", id: "name", column: :name, direction: :desc},
+      %{title: "Name", id: "name", column: :name, direction: :desc},
       %{title: "Oldest Job", id: "oldest_job", column: :inserted_at, direction: :asc},
       %{title: "Newest Job", id: "newest_job", column: :inserted_at, direction: :desc},
       %{title: "Shoot Date", id: "shoot_date", column: :starts_at, direction: :desc}
@@ -443,7 +456,7 @@ defmodule PicselloWeb.JobLive.Index do
 
   defp lead_sort_options do
     [
-      %{title: "Client Name", id: "name", column: :name, direction: :desc},
+      %{title: "Name", id: "name", column: :name, direction: :desc},
       %{title: "Oldest Lead", id: "oldest_lead", column: :inserted_at, direction: :asc},
       %{title: "Newest Lead", id: "newest_lead", column: :inserted_at, direction: :desc}
     ]
@@ -487,7 +500,7 @@ defmodule PicselloWeb.JobLive.Index do
 
         <.select_dropdown class="w-full" title={if @type == "job", do: 'Job Type', else: 'Lead Type'} id="type" selected_option={@job_type} options_list={job_type_options(@job_types)}/>
 
-        <.select_dropdown class="w-fit" sort_direction={@sort_direction} title="Sort" id="sort" selected_option={@job_type} options_list={if @type == "job", do: job_sort_options(), else: lead_sort_options()}/>
+        <.select_dropdown class="w-fit" sort_direction={@sort_direction} title="Sort" id="sort_by" selected_option={@sort_by} options_list={if @type == "job", do: job_sort_options(), else: lead_sort_options()}/>
 
       </div>
     """

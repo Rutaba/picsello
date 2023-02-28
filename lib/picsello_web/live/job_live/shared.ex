@@ -527,15 +527,17 @@ defmodule PicselloWeb.JobLive.Shared do
   def status_content(_, :archived), do: {"Archived", :red}
   def status_content(_, :completed), do: {"Completed", :green}
   def status_content(false, _), do: {"Active", :blue}
-  def status_content(true, :not_sent), do: {"Created", :blue}
-  def status_content(true, :sent), do: {"Awaiting Acceptance", :blue}
+  def status_content(true, :not_sent), do: {"New", :blue}
+  def status_content(true, :sent), do: {"Active", :blue}
   def status_content(true, :accepted), do: {"Awaiting Contract", :blue}
 
   def status_content(true, :signed_with_questionnaire),
     do: {"Awaiting Questionnaire", :blue}
 
   def status_content(true, status) when status in [:signed_without_questionnaire, :answered],
-    do: {"Awaiting Payment", :blue}
+    do: {"Pending Invoice", :blue}
+
+  def status_content(true, _), do: {"Active", :blue}
 
   def status_content(_, status), do: {status |> Phoenix.Naming.humanize(), :blue}
 

@@ -136,13 +136,31 @@ defmodule Picsello.Jobs do
             filter_past_jobs(dynamic)
 
           "active" ->
-            filter_active_jobs(dynamic)
+            filter_active(dynamic, "jobs")
+
+          "active_leads" ->
+            filter_active(dynamic, "leads")
 
           "overdue" ->
             filter_overdue_jobs(dynamic)
 
           "archived" ->
-            filter_archived_jobs(dynamic)
+            filter_archived(dynamic, "jobs")
+
+          "archived_leads" ->
+            filter_archived(dynamic, "leads")
+
+          "awaiting_contract" ->
+            filter_awaiting_contract_leads(dynamic)
+
+          "awaiting_questionnaire" ->
+            filter_awaiting_questionnaire_leads(dynamic)
+
+          "pending_invoice" ->
+            filter_pending_invoice_leads(dynamic)
+
+          "new" ->
+            filter_new_leads(dynamic)
 
           _ ->
             dynamic
@@ -163,7 +181,7 @@ defmodule Picsello.Jobs do
     )
   end
 
-  defp filter_active_jobs(dynamic) do
+  defp filter_active(dynamic, "jobs") do
     dynamic(
       [j, client, job_status],
       ^dynamic and
@@ -172,10 +190,63 @@ defmodule Picsello.Jobs do
     )
   end
 
-  defp filter_archived_jobs(dynamic) do
+  defp filter_active(dynamic, "leads") do
+    dynamic(
+      [j, client, job_status],
+      ^dynamic and
+        job_status.is_lead and
+        job_status.current_status not in [:completed, :archived, :not_sent]
+    )
+  end
+
+  defp filter_new_leads(dynamic) do
+    dynamic(
+      [j, client, job_status],
+      ^dynamic and
+        job_status.is_lead and
+        job_status.current_status == :not_sent
+    )
+  end
+
+  defp filter_awaiting_contract_leads(dynamic) do
+    dynamic(
+      [j, client, job_status],
+      ^dynamic and
+        job_status.is_lead and
+        job_status.current_status == :accepted
+    )
+  end
+
+  defp filter_awaiting_questionnaire_leads(dynamic) do
+    dynamic(
+      [j, client, job_status],
+      ^dynamic and
+        job_status.is_lead and
+        job_status.current_status == :signed_with_questionnaire
+    )
+  end
+
+  defp filter_pending_invoice_leads(dynamic) do
+    dynamic(
+      [j, client, job_status],
+      ^dynamic and
+        job_status.is_lead and
+        job_status.current_status in [:signed_without_questionnaire, :answered]
+    )
+  end
+
+  defp filter_archived(dynamic, "jobs") do
     dynamic(
       [j, client, job_status],
       ^dynamic and not job_status.is_lead and
+        not is_nil(j.archived_at)
+    )
+  end
+
+  defp filter_archived(dynamic, "leads") do
+    dynamic(
+      [j, client, job_status],
+      ^dynamic and job_status.is_lead and
         not is_nil(j.archived_at)
     )
   end
