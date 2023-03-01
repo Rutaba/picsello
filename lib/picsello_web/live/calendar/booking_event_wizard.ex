@@ -334,9 +334,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                       <p class="text-base-250 ml-8">In case you want to save some <br/> booking slots for later</p>
                     </div>
                   </div>
-                  <%= if t.index > 0 do %>
-                    <.icon_button class={classes("ml-4 py-1",%{"pointer-events-none" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})} title="remove time" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
-                  <% end %>
+                  <.icon_button class={classes("ml-4 py-1",%{"pointer-events-none" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})} title="remove time" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
                 </div>
               </div>
             </div>
@@ -475,6 +473,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
         date |> Map.put(:time_blocks, time_blocks)
       end)
+
+    time_blocks = dates |> Enum.at(index) |> Map.get(:time_blocks)
+
+    dates =
+      if Enum.empty?(time_blocks) do
+        dates
+        |> List.update_at(index, fn date ->
+          date |> Map.put(:time_blocks, [%{start_time: nil, end_time: nil, is_break: false}])
+        end)
+      else
+        dates
+      end
 
     changeset =
       changeset
