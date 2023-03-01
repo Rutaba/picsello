@@ -179,8 +179,8 @@ defmodule Picsello.SubscriptionChangesTest do
     session
     |> click(link("Settings"))
     |> assert_path("/home")
-    |> assert_text("Your plan has expired")
-    |> click(button("Select this plan", count: 2, at: 1))
+    |> assert_text("Your subscription has expired")
+    |> click(button("Select plan", count: 2, at: 1))
 
     assert_receive {:checkout_linked, %{success_url: stripe_success_url}}
 
