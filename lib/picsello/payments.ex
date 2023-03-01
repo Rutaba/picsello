@@ -232,6 +232,15 @@ defmodule Picsello.Payments do
     end)
   end
 
+  def simple_status(%User{} = user) do
+    %{organization: organization} = user |> Repo.preload(:organization)
+    simple_status(organization)
+  end
+
+  def simple_status(%Organization{stripe_account_id: nil}), do: :no_account
+
+  def simple_status(%Organization{stripe_account_id: _}), do: :charges_enabled
+
   def account_status(%Stripe.Account{charges_enabled: true}), do: :charges_enabled
 
   def account_status(%Stripe.Account{
