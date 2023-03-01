@@ -34,8 +34,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   @impl true
   def update(
-        %{current_user: %{organization: %{id: organization_id, organization_job_types: organization_job_types}}} =
-          assigns,
+        %{current_user: %{organization: %{id: organization_id, organization_job_types: organization_job_types}} = current_user} = assigns,
         socket
       ) do
     socket
@@ -325,6 +324,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         params \\ %{},
         action \\ nil
       ) do
+    global_settings = if global_settings, do: global_settings, else: %{download_each_price: nil, buy_all_price: nil}
 
     download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 

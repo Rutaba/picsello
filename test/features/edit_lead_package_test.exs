@@ -50,33 +50,23 @@ defmodule Picsello.EditLeadPackageTest do
     |> assert_text("Edit Package: Set Pricing")
     |> assert_value(@price_text_field, "$1.00")
     |> fill_in(@price_text_field, with: "2.00")
-    |> assert_has(
-      radio_button(
-        "Package includes Unlimited Digital Images (Do not charge for any Digital Image)",
-        checked: true
-      )
-    )
-    |> scroll_into_view(css("#download_is_enabled_true"))
-    |> click(
-      radio_button(
-        "Package includes a specified number of Digital Images (Charge for Digital Images)",
-        checked: true
-      )
-    )
-    |> click(checkbox("download[includes_credits]"))
+    |> scroll_to_bottom()
+    |> scroll_into_view(css("#download_status_limited"))
+    |> click(css("#download_status_limited"))
     |> find(
       text_field("download_count"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: 1))
+      &(&1 |> Element.clear() |> Element.fill_in(with: "1"))
     )
     |> scroll_into_view(css("#download_is_custom_price"))
-    |> click(checkbox("Set my own per Digital Image price"))
     |> find(
-      text_field("download_each_price"),
+      text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$4"))
     )
-    |> scroll_into_view(css("#download_buy_all"))
-    |> click(checkbox("Set a Buy Them All price"))
-    |> fill_in(text_field("download[buy_all]"), with: "$4")
+    |> scroll_into_view(css("#download_is_buy_all"))
+    |> find(
+      text_field("download[buy_all]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$4"))
+    )
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$5"))
@@ -122,7 +112,7 @@ defmodule Picsello.EditLeadPackageTest do
         | name: "My updated package",
           description: "<p>indescribably great.</p>",
           base_price: ~M[200]USD,
-          download_count: 0,
+          download_count: 1,
           download_each_price: ~M[400]USD,
           buy_all: ~M[500]USD,
           print_credits: ~M[200]USD,
@@ -141,11 +131,7 @@ defmodule Picsello.EditLeadPackageTest do
     |> scroll_into_view(testid("print"))
     |> click(radio_button("Gallery does not include Print Credits"))
     |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(
-      radio_button(
-        "Package includes Unlimited Digital Images (Do not charge for any Digital Image)"
-      )
-    )
+    |> click(css("#download_status_unlimited"))
     |> click(button("Next"))
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))

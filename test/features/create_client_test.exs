@@ -158,7 +158,7 @@ defmodule Picsello.CreateClientTest do
     session
     |> open_add_client_popup()
     |> fill_client_form()
-    |> click(css(".checkbox"))
+    |> click(css("#pre-picsello-check"))
     |> within_modal(fn modal ->
       modal
       |> scroll_to_bottom()
@@ -197,7 +197,6 @@ defmodule Picsello.CreateClientTest do
     |> assert_has(css("#client_notes"))
     |> assert_has(css("#clear-notes"))
     |> assert_text("Pre-Picsello Client")
-    |> assert_has(css(".checkbox"))
     |> assert_text("This is an old client and I want to add some historic information")
     |> assert_text("(Adds a few more steps - if you don't know what this is, leave unchecked)")
     |> assert_text("(Adds a few more steps - if you don't know what this is, leave unchecked)")
@@ -229,7 +228,7 @@ defmodule Picsello.CreateClientTest do
     |> assert_text("The amount you’ve already collected")
     |> assert_has(css("#form-package_payment_collected_price"))
     |> assert_text("Remaining balance to collect with Picsello")
-    |> assert_has(css(".checkbox"))
+    |> assert_has(css(".checkbox", count: 2))
     |> assert_has(button("Go back"))
     |> assert_has(button("Next"))
   end

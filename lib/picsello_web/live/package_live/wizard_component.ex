@@ -1528,6 +1528,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          params,
          action \\ nil
        ) do
+    global_settings = if global_settings, do: global_settings, else: %{download_each_price: nil, buy_all_price: nil}
+    
     package_pricing_changeset =
       assigns.package_pricing
       |> PackagePricing.changeset(
