@@ -268,7 +268,7 @@ defmodule PicselloWeb.JobLive.Index do
       <div class="flex flex-col w-full lg:w-auto mr-2 px-5 lg:px-0">
         <h1 class="font-extrabold text-sm flex flex-col"><%= @title %></h1>
         <div class="flex">
-          <div id={@id} class={classes("relative w-full lg:w-40 border-grey border rounded-l-lg p-2 cursor-pointer", %{"rounded-lg" => @title == "Filter"})} data-offset-y="5" phx-hook="Select">
+          <div id={@id} class={classes("relative w-full border-grey border rounded-l-lg p-2 cursor-pointer", %{"rounded-lg" => @title == "Filter", "lg:w-64" => @id == "status" and @type != "job", "lg:w-40" => @id != "status" or @type == "job" })} data-offset-y="5" phx-hook="Select">
             <div class="flex flex-row items-center border-gray-700">
                 <%= capitalize_per_word(String.replace(@selected_option, "_", " ")) %>
                 <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
@@ -279,7 +279,7 @@ defmodule PicselloWeb.JobLive.Index do
                 <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
                 class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
 
-                  <button id={option.id} class="album-select w-40" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
+                  <button id={option.id} class={classes("album-select", %{"w-64" => @id == "status", "w-40" => @id != "status"})} phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
                   <%= if option.id == @selected_option do %>
                     <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-green" />
                   <% end %>
@@ -496,9 +496,9 @@ defmodule PicselloWeb.JobLive.Index do
             <input disabled={!is_nil(@selected_job)} type="text" class="form-control w-full lg:w-64 text-input indent-6 bg-base-200 placeholder:text-black" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="100" spellcheck="false" placeholder={@placeholder} />
           <% end %>
         </div>
-        <.select_dropdown class="w-full" title={if @type == "job", do: 'Job Status', else: 'Lead Status'} id="status" selected_option={@job_status} options_list={if @type == "job", do: job_status_options(), else: lead_status_options()}/>
+        <.select_dropdown class="w-fit" type={@type} title={if @type == "job", do: 'Job Status', else: 'Lead Status'} id="status" selected_option={@job_status} options_list={if @type == "job", do: job_status_options(), else: lead_status_options()}/>
 
-        <.select_dropdown class="w-full" title={if @type == "job", do: 'Job Type', else: 'Lead Type'} id="type" selected_option={@job_type} options_list={job_type_options(@job_types)}/>
+        <.select_dropdown class="w-fit" title={if @type == "job", do: 'Job Type', else: 'Lead Type'} id="type" selected_option={@job_type} options_list={job_type_options(@job_types)}/>
 
         <.select_dropdown class="w-fit" sort_direction={@sort_direction} title="Sort" id="sort_by" selected_option={@sort_by} options_list={if @type == "job", do: job_sort_options(), else: lead_sort_options()}/>
 
