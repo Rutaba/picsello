@@ -114,19 +114,33 @@ defmodule PicselloWeb.LayoutView do
   end
 
   def help_chat_widget(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{current_user: nil})
+
     ~H"""
-    <%= if @current_user && Application.get_env(:picsello, :intercom_id) do %>
-      <script>
-        window.intercomSettings = {
-          api_base: "https://api-iam.intercom.io",
-          app_id: "<%= Application.get_env(:picsello, :intercom_id) %>",
-          name: "<%= @current_user.name %>",
-          email: "<%= @current_user.email %>",
-          user_id: "<%= @current_user.id %>",
-          created_at: "<%= @current_user.inserted_at %>",
-          custom_launcher_selector: '.open-help'
-        };
-      </script>
+    <%= if Application.get_env(:picsello, :intercom_id) do %>
+      <%= if @current_user do %>
+        <script>
+          window.intercomSettings = {
+            api_base: "https://api-iam.intercom.io",
+            app_id: "<%= Application.get_env(:picsello, :intercom_id) %>",
+            name: "<%= @current_user.name %>",
+            email: "<%= @current_user.email %>",
+            user_id: "<%= @current_user.id %>",
+            created_at: "<%= @current_user.inserted_at %>",
+            custom_launcher_selector: '.open-help'
+          };
+        </script>
+      <% else %>
+        <script>
+          window.intercomSettings = {
+            api_base: "https://api-iam.intercom.io",
+            app_id: "<%= Application.get_env(:picsello, :intercom_id) %>",
+            custom_launcher_selector: '.open-help'
+          };
+        </script>
+      <% end %>
 
       <script>
       (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/<%= Application.get_env(:picsello, :intercom_id) %>';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
