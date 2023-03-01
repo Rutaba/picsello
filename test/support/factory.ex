@@ -724,6 +724,15 @@ defmodule Picsello.Factory do
       }
       |> evaluate_lazy_attributes()
 
+  def subscription_promotion_codes_factory(attrs \\ %{}) do
+    %Picsello.SubscriptionPromotionCode{
+      code: "10OFF",
+      stripe_promotion_code_id: "1234asd",
+      percent_off: 10.0
+    }
+    |> merge_attributes(attrs)
+  end
+
   def subscription_plan_factory,
     do: %Picsello.SubscriptionPlan{
       stripe_price_id: "price_123",

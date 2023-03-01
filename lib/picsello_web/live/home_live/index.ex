@@ -978,7 +978,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <.form let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form">
               <%= hidden_inputs_for f %>
               <%= for onboarding <- inputs_for(f, :onboarding) do %>
-                <details class="group" open={@promotion_code_open}>
+                <details class="group" open={@promotion_code_open} {testid("promo-code")}>
                   <summary class={classes("cursor-pointer underline flex items-center", %{"text-blue-planning-300" => Enum.empty?(onboarding.errors), "text-red-sales-300" => onboarding.errors })} phx-click="handle-promotion-code-toggle">
                   <%= if Enum.empty?(onboarding.errors), do: "Add a promo code", else: "Fix promo code" %>
                     <.icon name="down" class="w-4 h-4 stroke-current stroke-2 ml-2 group-open:rotate-180" />
