@@ -360,8 +360,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
             </.icon_button>
           </div>
           <%= case calculate_slots_count(@event_form, input_value(@f, :date)) do %>
-            <% {slot_count, break_count, hidden_count} -> %>
-              <p {testid("open-slots-count-#{@f.index}")} class="mt-2 font-semibold">You’ll have <span class="text-blue-planning-300"><%= slot_count %></span><%= ngettext " open slot", " open slots", slot_count %>, <span class="text-blue-planning-300"><%= hidden_count %></span><%= ngettext " hidden block", " hidden block", hidden_count %> and <span class="text-blue-planning-300"><%= break_count %> </span><%= ngettext "break block", " break block", break_count %>, and <span class="text-blue-planning-300"><%= @booking_count %></span> already booked on this day</p>
+            <% {slot_count, break_count, hidden_count, booked_slots} -> %>
+              <p {testid("open-slots-count-#{@f.index}")} class="mt-2 font-semibold">You’ll have <span class="text-blue-planning-300"><%= slot_count %></span><%= ngettext " open slot", " open slots", slot_count %>, <span class="text-blue-planning-300"><%= hidden_count %></span><%= ngettext " hidden block", " hidden block", hidden_count %> and <span class="text-blue-planning-300"><%= break_count %> </span><%= ngettext "break block", " break block", break_count %>, and <span class="text-blue-planning-300"><%= booked_slots %></span> already booked on this day</p>
           <% end %>
         </div>
       </div>
@@ -596,7 +596,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     slot_count =
       event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
 
-    {slot_count, calculate_break_blocks(event, date), calculate_hidden_blocks(event, date)}
+    {slot_count, calculate_break_blocks(event, date), calculate_hidden_blocks(event, date),
+     calculate_booked_blocks(event, date)}
   end
 
   defp is_break_block_already_booked(dates) do
@@ -651,6 +652,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       _ ->
         0
     end
+  end
+
+  defp calculate_booked_blocks(booking_event, date) do
+    times = BookingEvents.available_times(booking_event, date)
+
+    Enum.reduce(times, 0, fn {_time, is_available, is_break, _is_hidden}, acc ->
+      if !is_break and !is_available do
+        acc + 1
+      else
+        acc
+      end
+    end)
   end
 
   defp is_checked(id, package) do
