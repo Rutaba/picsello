@@ -1,6 +1,6 @@
 <style>
   body {
-    font-family: sans-serif; 
+    font-family: sans-serif;
     font-size: 14px;
     line-height: 22px;
   }
@@ -66,7 +66,7 @@
 
   .invoice-header {
     margin: 1rem 0rem;
-    background-color: #f0f0f0; 
+    background-color: #f0f0f0;
   }
 
   .invoice-header h3 {
@@ -170,7 +170,7 @@
             <div><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></div>
             <div>Additional downloads @ <%= d.each_price %>/ea</div>
           </div>
-        <% %{is_enabled: true} = d -> %>
+        <% %{status: :limited} = d -> %>
           <div class="invoice-column">
             <div>Download photos @ <%= d.each_price %>/ea</div>
           </div>

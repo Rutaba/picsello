@@ -38,21 +38,18 @@ defmodule Picsello.ClientsIndexTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
     )
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
-    |> scroll_into_view(css("#download_is_enabled_true"))
-    |> click(radio_button("Package includes a specified number of Digital Images"))
-    |> click(checkbox("download[includes_credits]"))
+    |> scroll_into_view(css("#download_status_limited"))
+    |> click(css("#download_status_limited"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
     |> scroll_into_view(css("#download_is_custom_price"))
-    |> click(checkbox("download[is_custom_price]"))
     |> find(
       text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
     )
     |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(checkbox("download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
@@ -181,7 +178,7 @@ defmodule Picsello.ClientsIndexTest do
     |> scroll_into_view(testid("print"))
     |> click(radio_button("Gallery does not include Print Credits"))
     |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(radio_button("Gallery includes unlimited digital downloads"))
+    |> click(css("#download_status_unlimited"))
     |> within_modal(&click(&1, button("Save")))
     |> click(button("Great!"))
     |> assert_url_contains("galleries")

@@ -14,6 +14,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     Galleries.Gallery,
     Galleries,
     Repo,
+    GlobalSettings,
     Clients
   }
 
@@ -33,14 +34,14 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   @impl true
   def update(
-        %{
-          current_user:
-            %{organization: %{organization_job_types: organization_job_types}} = current_user
-        } = assigns,
+        %{current_user: %{organization: %{id: organization_id, organization_job_types: organization_job_types}} = current_user} = assigns,
         socket
       ) do
     socket
     |> assign(assigns)
+    |> assign(
+      global_settings: Repo.get_by(GlobalSettings.Gallery, organization_id: organization_id)
+    )
     |> assign(:new_gallery, nil)
     |> assign(:clients, Clients.find_all_by(user: current_user))
     |> assign(:search_results, [])
@@ -251,7 +252,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
         <.print_credit_fields f={package} package_pricing={@package_pricing} />
 
-        <.digital_download_fields for={:create_gallery} package_form={package} download={@download} package_pricing={@package_pricing} />
+        <.digital_download_fields for={:create_gallery} package_form={package} download_changeset={@download_changeset} package_pricing={@package_pricing} />
         <%= if @new_gallery do %>
           <div id="set-gallery-cookie" data-gallery-type={@new_gallery.type} phx-hook="SetGalleryCookie">
           </div>
@@ -264,7 +265,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   defp valid?(assigns) do
     Enum.all?(
-      [assigns.download, assigns.package_pricing, assigns.package_changeset],
+      [assigns.download_changeset, assigns.package_pricing, assigns.package_changeset],
       & &1.valid?
     )
   end
@@ -315,41 +316,22 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
           assigns: %{
             package: package,
             package_pricing: package_pricing,
-            current_user: current_user
+            current_user: current_user,
+            step: step,
+            global_settings: global_settings
           }
         } = socket,
         params \\ %{},
         action \\ nil
       ) do
-    global_settings =
-      Repo.get_by(Picsello.GlobalSettings.Gallery, organization_id: current_user.organization_id)
+    global_settings = if global_settings, do: global_settings, else: %{download_each_price: nil, buy_all_price: nil}
 
-    {new_params, package} =
-      case global_settings do
-        nil ->
-          {params["download"] || %{}, package}
-
-        global_settings ->
-          updated_params =
-            params["download"] ||
-              %{}
-              |> Map.put(:download_each_price, global_settings.download_each_price)
-              |> Map.put(:buy_all, global_settings.buy_all_price)
-              |> Map.put(:is_custom_price, true)
-
-          updated_package =
-            package
-            |> Map.put(:download_each_price, global_settings.download_each_price)
-            |> Map.put(:buy_all, global_settings.buy_all_price)
-            |> Map.put(:is_custom_price, true)
-
-          {updated_params, updated_package}
-      end
+    download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 
     download_changeset =
       package
-      |> Download.from_package()
-      |> Download.changeset(new_params)
+      |> Download.from_package(global_settings)
+      |> Download.changeset(download_params)
       |> Map.put(:action, action)
 
     download = current(download_changeset)
@@ -369,7 +351,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
     assign(
       socket,
-      download: download_changeset,
+      download_changeset: download_changeset,
       package_changeset: package_changeset,
       package_pricing:
         PackagePricing.changeset(

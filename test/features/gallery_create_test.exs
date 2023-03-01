@@ -33,7 +33,7 @@ defmodule Picsello.GalleryCreateTest do
     |> scroll_into_view(testid("print"))
     |> click(radio_button("Gallery does not include Print Credits"))
     |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(radio_button("Gallery includes unlimited digital downloads"))
+    |> click(css("#download_status_unlimited"))
     |> within_modal(&click(&1, button("Save")))
     |> click(button("Great!"))
     |> assert_url_contains("galleries")
