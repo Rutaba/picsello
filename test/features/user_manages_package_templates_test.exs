@@ -132,18 +132,19 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(option("Surcharge"))
     |> assert_text("+$30.00")
     |> scroll_into_view(testid("download"))
-    |> click(css("#download_is_enabled_true"))
-    |> click(checkbox("download[includes_credits]"))
+    |> scroll_into_view(css("#download_status_limited"))
+    |> click(css("#download_status_limited"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
     |> scroll_into_view(css("#download_is_custom_price"))
-    |> click(checkbox("download[is_custom_price]"))
     |> find(
       text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
     )
+    |> scroll_into_view(css("#download_is_buy_all"))
+    |> click(css("#download_is_buy_all"))
     |> assert_has(definition("Total", text: "$130.00"))
     |> wait_for_enabled_submit_button()
     |> payment_screen()
@@ -195,6 +196,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
     |> fill_in(text_field("Package Price"), with: "$130")
+    |> scroll_into_view(css("#download_is_buy_all"))
+    |> click(css("#download_is_buy_all"))
     |> payment_screen()
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
@@ -211,8 +214,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
            } = package
 
     assert %Picsello.Contract{
-             name: "My custom contract",
-             content: "<p>content of my new contract</p>"
+             name: "My custom contract"
            } = package.contract
   end
 
@@ -237,10 +239,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
         |> scroll_into_view(testid("download"))
-        |> assert_has(css("#download_is_enabled_false", checked: true))
-        |> click(css("#download_is_enabled_true"))
-        |> assert_text("Digital Images are included in the package")
-        |> click(css("#download_is_enabled_false"))
+        |> click(css("#download_status_limited"))
+        |> click(css("#download_status_unlimited"))
         |> Kernel.tap(fn modal ->
           refute Regex.match?(~r/downloads are valued/, Element.text(modal))
         end)

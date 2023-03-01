@@ -57,21 +57,18 @@ defmodule Picsello.ImportJobTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
     )
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
-    |> scroll_into_view(css("#download_is_enabled_true"))
-    |> click(radio_button("Package includes a specified number of Digital Images"))
-    |> click(checkbox("download[includes_credits]"))
+    |> scroll_into_view(css("#download_status_limited"))
+    |> click(css("#download_status_limited"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
     |> scroll_into_view(css("#download_is_custom_price"))
-    |> click(checkbox("download[is_custom_price]"))
     |> find(
       text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
     )
     |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(checkbox("download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
@@ -208,6 +205,7 @@ defmodule Picsello.ImportJobTest do
                price: ^payment1_price,
                description: "Payment 1"
              },
+             # please don't make it 2030-01-02
              %PaymentSchedule{
                due_at: ~U[2030-02-01 00:00:00Z],
                price: ^payment2_price,

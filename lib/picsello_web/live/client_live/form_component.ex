@@ -119,7 +119,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
 
           <h1 class="mt-5 text-xl font-bold">Pre-Picsello Client</h1>
           <label class="flex items-center mt-4">
-            <input type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-pre-picsello" checked={@pre_picsello_client} phx-target={@myself} />
+            <input id="pre-picsello-check" type="checkbox" class="w-6 h-6 mt-1 checkbox" phx-click="toggle-pre-picsello" checked={@pre_picsello_client} phx-target={@myself} />
             <p class="ml-3"> This is an old client and I want to add some historic information</p>
           </label>
           <p class="ml-8"><i>(Adds a few more steps - if you don't know what this is, leave unchecked)</i></p>

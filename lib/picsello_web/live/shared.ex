@@ -214,7 +214,7 @@ defmodule PicselloWeb.Live.Shared do
 
       <hr class="mt-4 border-gray-100">
 
-      <.digital_download_fields package_form={f} download={@download_changeset} package_pricing={@package_pricing_changeset} />
+      <.digital_download_fields package_form={f} download_changeset={@download_changeset} package_pricing={@package_pricing_changeset} />
 
       <.footer>
         <button class="px-8 btn-primary" title="Next" type="submit" disabled={Enum.any?([@download_changeset, @package_pricing_changeset, @package_changeset], &(!&1.valid?))} phx-disable-with="Next">

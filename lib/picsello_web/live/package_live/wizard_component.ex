@@ -18,7 +18,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     PackagePaymentSchedule,
     PackagePayments,
     Shoot,
-    Questionnaire
+    Questionnaire,
+    GlobalSettings
   }
 
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
@@ -245,6 +246,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign(
       job_types: Profiles.enabled_job_types(current_user.organization.organization_job_types)
     )
+    |> assign(
+      global_settings: Repo.get_by(GlobalSettings.Gallery, organization_id: current_user.organization_id)
+    )
     |> choose_initial_step()
     |> assign_changeset(%{})
     |> assign_questionnaires()
@@ -328,7 +332,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp step_valid?(assigns),
     do:
       Enum.all?(
-        [assigns.download, assigns.package_pricing, assigns.multiplier, assigns.changeset],
+        [
+          assigns.download_changeset,
+          assigns.package_pricing,
+          assigns.multiplier,
+          assigns.changeset
+        ],
         & &1.valid?
       )
 
@@ -560,18 +569,21 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     ~H"""
       <div>
         <div class="bg-gray-100 mt-6 p-6 rounded-lg">
-          <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
-            <label for={input_id(@f, :base_price)}>
+          <div class="flex flex-col items-center md:items-start w-auto md:w-full">
+            <label class="mb-3" for={input_id(@f, :base_price)}>
               <h2 class="mb-1 text-xl font-bold">Package Price</h2>
-              Includes your Creative Session Fee, any Professional Print Credits, and/or High-Resolution Digital Images you decide to include.
+              <span class="text-base-250">Includes your Creative Session Fee, any Professional Print Credits, and/or High-Resolution <br/> Digital Images you decide to include.</span>
             </label>
 
-            <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center", phx_hook: "PriceMask" %>
+            <div class="flex flex-row items-center w-auto mt-6">
+              <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg sm:mt-0 font-normal text-center", phx_hook: "PriceMask" %>
+              <span class="ml-3 text-base-250"> Package Total </span>
+            </div>
           </div>
 
           <% m = form_for(@multiplier, "#") %>
 
-          <label class="flex items-center mt-6 sm:mt-8 justify-self-start">
+          <label class="flex items-center mt-6 sm:mt-8 justify-self-start font-bold">
             <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
 
             Apply a discount or surcharge
@@ -579,12 +591,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
           <%= if m |> current() |> Map.get(:is_enabled) do %>
             <div class="flex flex-col items-center pl-0 my-6 sm:flex-row sm:pl-16">
-              <h2 class="self-start mt-3 text-xl font-bold sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
+              <h2 class="self-start mt-3 text-base-250 sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
 
               <div class="flex w-full mt-3 sm:mt-0">
                 <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
 
-                <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-14 py-4") %>
+                <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-4 py-4 pr-10") %>
               </div>
 
               <div class="self-end mt-3 sm:self-auto justify-self-end sm:mt-0">
@@ -598,7 +610,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <hr class="block w-full mt-6 sm:hidden"/>
 
-        <.digital_download_fields package_form={@f} download={@download} package_pricing={@package_pricing} />
+        <.digital_download_fields package_form={@f} download_changeset={@download_changeset} package_pricing={@package_pricing} />
       </div>
       <dl class="flex justify-between gap-8 mt-8 bg-gray-100 p-6 rounded-lg">
         <dt class="text-xl font-bold md:ml-auto uppercase">Total</dt>
@@ -885,10 +897,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         },
         %{assigns: %{changeset: changeset}} = socket
       ) do
+    template_id = template_id |> to_integer()
+
     content =
       case template_id do
-        "" ->
-          ""
+        nil ->
+          nil
 
         id ->
           package = changeset |> current()
@@ -907,6 +921,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   @impl true
   def handle_event("validate", %{"contract" => contract} = params, socket) do
     contract = contract |> Map.put_new("edited", Map.get(contract, "quill_source") == "user")
+
     params = params |> Map.put("contract", contract)
 
     socket
@@ -977,7 +992,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def handle_event("submit", %{"step" => "documents"} = params, socket) do
     case socket |> assign_changeset(params, :validate) |> assign_contract_changeset(params) do
       %{assigns: %{contract_changeset: %{valid?: true}}} ->
-        socket |> assign(step: :pricing) |> assign_changeset(params)
+        socket
+        |> assign(step: :pricing)
+        |> assign_changeset(params)
 
       socket ->
         socket
@@ -1505,48 +1522,31 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp build_changeset(%{assigns: assigns}, params),
     do: Packages.build_package_changeset(assigns, params)
 
-  defp assign_changeset(%{assigns: assigns} = socket, params, action \\ nil) do
+  defp assign_changeset(
+         %{assigns: %{global_settings: global_settings, step: step, package: package} = assigns} =
+           socket,
+         params,
+         action \\ nil
+       ) do
+    global_settings = if global_settings, do: global_settings, else: %{download_each_price: nil, buy_all_price: nil}
+    
     package_pricing_changeset =
       assigns.package_pricing
       |> PackagePricing.changeset(
-        Map.get(params, "package_pricing", package_pricing_params(assigns.package))
+        Map.get(params, "package_pricing", package_pricing_params(package))
       )
 
     multiplier_changeset =
-      assigns.package.base_multiplier
+      package.base_multiplier
       |> Multiplier.from_decimal()
       |> Multiplier.changeset(Map.get(params, "multiplier", %{}))
 
-    global_settings =
-      Repo.get_by(Picsello.GlobalSettings.Gallery,
-        organization_id: assigns.current_user.organization_id
-      )
-
-    {new_params, package} =
-      case global_settings do
-        nil ->
-          {Map.get(params, "download", %{}), assigns.package}
-
-        global_settings ->
-          updated_params =
-            Map.get(params, "download", %{})
-            |> Map.merge(%{
-              "download_each_price" => global_settings.download_each_price,
-              "buy_all" => global_settings.buy_all_price
-            })
-
-          updated_package =
-            assigns.package
-            |> Map.put(:download_each_price, global_settings.download_each_price)
-            |> Map.put(:buy_all, global_settings.buy_all_price)
-
-          {updated_params, updated_package}
-      end
+    download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 
     download_changeset =
       package
-      |> Download.from_package()
-      |> Download.changeset(new_params)
+      |> Download.from_package(global_settings)
+      |> Download.changeset(download_params)
       |> Map.put(:action, action)
 
     download = current(download_changeset)
@@ -1569,7 +1569,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       changeset: changeset,
       multiplier: multiplier_changeset,
       package_pricing: package_pricing_changeset,
-      download: download_changeset
+      download_changeset: download_changeset
     )
   end
 
