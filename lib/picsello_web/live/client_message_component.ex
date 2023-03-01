@@ -3,6 +3,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   use PicselloWeb, :live_component
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
   alias Picsello.{Job, Clients}
 
@@ -20,9 +21,10 @@ defmodule PicselloWeb.ClientMessageComponent do
   }
 
   @impl true
-  def update(%{current_user: current_user, client: %{id: id, email: email}} = assigns, socket) do
+  def update(%{current_user: current_user, client: %{email: email} = client} = assigns, socket) do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
+    |> assign(:client, client)
     |> assign(:clients, Clients.find_all_by(user: current_user))
     |> assign(:recipients, %{"to" => [email]})
     |> assign(:search_results, [])
@@ -136,12 +138,14 @@ defmodule PicselloWeb.ClientMessageComponent do
   @impl true
   def handle_event("add-to", %{"client-email" => email}, socket) do
     prepend_email(email, "to", socket)
+    |> add_or_remove_client_name()
     |> noreply()
   end
 
   @impl true
   def handle_event("add-cc", %{"client-email" => email}, socket) do
     prepend_email(email, "cc", socket)
+    |> add_or_remove_client_name()
     |> assign(:show_cc, true)
     |> noreply()
   end
@@ -149,6 +153,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   @impl true
   def handle_event("add-bcc", %{"client-email" => email}, socket) do
     prepend_email(email, "bcc", socket)
+    |> add_or_remove_client_name()
     |> assign(:show_bcc, true)
     |> noreply()
   end
@@ -173,6 +178,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign(:show_cc, false)
     |> assign(:recipients, Map.put(recipients, "cc", []))
     |> assign(:cc_email_error, nil)
+    |> add_or_remove_client_name()
     |> noreply()
   end
 
@@ -182,6 +188,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign(:show_bcc, false)
     |> assign(:recipients, Map.put(recipients, "bcc", []))
     |> assign(:bcc_email_error, nil)
+    |> add_or_remove_client_name()
     |> noreply()
   end
 
@@ -315,7 +322,25 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> assign(:"#{type}_email_error", "please enter valid emails")
     end
     |> assign(:recipients, Map.put(recipients, type, email_list))
+    |> add_or_remove_client_name()
     |> noreply()
+  end
+
+  defp add_or_remove_client_name(%{assigns: %{recipients: recipients, changeset: changeset, client: client}} = socket) do
+    no_of_recipients = length(Map.get(recipients, "to")) + length(Map.get(recipients, "cc", [])) + length(Map.get(recipients, "bcc", []))
+
+    changeset =
+      if no_of_recipients > 1 do
+        changeset = if changeset |> current() |> Map.has_key?(:body_text), do: Ecto.Changeset.put_change(changeset, :body_text, (String.replace((changeset |> current() |> Map.get(:body_text)), "Hi #{client.name |> String.split() |> hd()}", "Hi"))), else: changeset
+        if changeset |> current() |> Map.has_key?(:body_html), do: Ecto.Changeset.put_change(changeset, :body_html, (String.replace((changeset |> current() |> Map.get(:body_html)), "Hi #{client.name |> String.split() |> hd()}", "Hi"))), else: changeset
+      else
+        changeset = if changeset |> current() |> Map.has_key?(:body_text), do: Ecto.Changeset.put_change(changeset, :body_text, (String.replace((changeset |> current() |> Map.get(:body_text)), "Hi", "Hi #{client.name |> String.split() |> hd()}"))), else: changeset
+        if changeset |> current() |> Map.has_key?(:body_html), do: Ecto.Changeset.put_change(changeset, :body_html, (String.replace((changeset |> current() |> Map.get(:body_html)), "Hi", "Hi #{client.name |> String.split() |> hd()}"))), else: changeset
+      end
+
+    socket
+      |> assign(:changeset, changeset)
+      |> push_event("quill:update", %{"html" => changeset |> current() |> Map.get(:body_html)})
   end
 
   defp search_existing_clients(assigns) do
