@@ -201,8 +201,6 @@ defmodule Picsello.Subscriptions do
     trial_days = opts |> Keyword.get(:trial_days)
     promotion_code = opts |> Keyword.get(:promotion_code)
 
-    IO.inspect(promotion_code)
-
     subscription_data =
       if trial_days, do: %{subscription_data: %{trial_period_days: trial_days}}, else: %{}
 
