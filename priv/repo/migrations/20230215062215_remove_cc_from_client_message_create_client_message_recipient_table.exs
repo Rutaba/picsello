@@ -16,11 +16,11 @@ defmodule Picsello.Repo.Migrations.RemoveCCFromClientMessageCreateClientMessageR
     create(index(@table, [:client_id, :client_message_id], unique: true))
 
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-    client_messages = Repo.all(ClientMessage) |> Repo.preload([:client, :job])
+    client_messages = Repo.all(ClientMessage) |> Repo.preload([:job])
 
     Enum.map(client_messages, fn msg ->
       execute("""
-        INSERT INTO #{@table} ("client_id", "client_message_id", recipient_type, inserted_at, updated_at) VALUES (#{if msg.client, do: msg.client.id, else: msg.job.client_id}, #{msg.id}, 'to', '#{now}', '#{now}');
+        INSERT INTO #{@table} ("client_id", "client_message_id", recipient_type, inserted_at, updated_at) VALUES (#{if msg.client_id, do: msg.client_id, else: msg.job.client_id}, #{msg.id}, 'to', '#{now}', '#{now}');
       """)
     end)
 
