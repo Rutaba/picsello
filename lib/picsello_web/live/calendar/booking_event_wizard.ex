@@ -556,12 +556,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
     break_block_booked = is_break_block_already_booked(dates)
     block_booked = is_any_block_booked(dates)
-    valid = Map.get(changeset, :valid?)
 
     changeset =
-      changeset
-      |> Ecto.Changeset.put_embed(:dates, dates)
-      |> Map.put(:valid?, valid)
+      if changeset.valid? do
+        changeset
+        |> Ecto.Changeset.put_embed(:dates, dates)
+      else
+        changeset
+      end
 
     assign(socket,
       changeset: changeset,
