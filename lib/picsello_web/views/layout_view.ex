@@ -343,7 +343,7 @@ defmodule PicselloWeb.LayoutView do
           current_user: current_user
         } = assigns
       ) do
-    stripe_status = Payments.status(current_user)
+    stripe_status = Payments.simple_status(current_user)
 
     ~H"""
     <%= if !Enum.member?([:charges_enabled, :loading], stripe_status) do %>
