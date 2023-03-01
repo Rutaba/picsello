@@ -309,7 +309,6 @@ defmodule Picsello.BookingEvents do
       from(shoot in Picsello.Shoot,
         join: job in assoc(shoot, :job),
         join: client in assoc(job, :client),
-        where: job.booking_event_id == ^booking_event.id,
         where: client.organization_id == ^organization.id and is_nil(job.archived_at),
         where: shoot.starts_at >= ^beginning_of_day and shoot.starts_at <= ^end_of_day_with_buffer
       )
