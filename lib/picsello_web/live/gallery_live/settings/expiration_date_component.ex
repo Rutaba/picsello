@@ -88,8 +88,6 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
 
     {:ok, gallery} = Galleries.set_expire(gallery, %{expired_at: datetime})
 
-    gallery |> Ecto.Changeset.change(%{use_global: false}) |> Picsello.Repo.update!()
-
     send(self(), :expiration_saved)
 
     socket

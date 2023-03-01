@@ -7,6 +7,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
+  alias Ecto.{Multi, Changeset}
 
   alias PicselloWeb.GalleryLive.{
     Settings.CustomWatermarkComponent,
@@ -292,6 +293,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   @impl true
   def handle_info(:expiration_saved, %{assigns: %{gallery: gallery}} = socket) do
+    avoid_global_settings(gallery)
     gallery = Galleries.get_gallery!(gallery.id) |> Galleries.load_watermark_in_gallery()
 
     socket
@@ -365,6 +367,30 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> Galleries.update_gallery(%{status: "active"})
     |> process_gallery(socket, :enabled)
   end
+
+  defp avoid_global_settings(%{use_global: true} = gallery) do
+    gallery
+    |> Galleries.load_watermark_in_gallery()
+    |> case do
+      %{watermark: %{} = watermark} ->
+        Multi.new()
+        |> Multi.run(:new_watermark, fn _, _ ->
+          Galleries.save_gallery_watermark(
+            gallery,
+            watermark
+            |> Map.from_struct()
+            |> Map.take([:name, :type, :size, :text, :gallery_id])
+          )
+        end)
+
+      _ ->
+        Multi.new()
+    end
+    |> Multi.update(:gallery, Changeset.change(gallery, %{use_global: false}))
+    |> Repo.transaction()
+  end
+
+  defp avoid_global_settings(%{use_global: false}), do: :ok
 
   defp process_gallery(result, socket, type) do
     {success, failure} =

@@ -5,6 +5,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   require Ecto.Query
 
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1]
   import PicselloWeb.Live.ClientLive.Shared
 
   alias Ecto.{Query, Changeset}
@@ -47,7 +48,11 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   end
 
   @impl true
-  def handle_event("create-gallery", %{"job_id" => job_id}, socket) do
+  def handle_event(
+        "create-gallery",
+        %{"job_id" => job_id},
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+      ) do
     job_id = to_integer(job_id)
 
     gallery =
@@ -57,7 +62,9 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
             Galleries.create_gallery(%{
               job_id: job_id,
               name: job_id |> Jobs.get_job_by_id() |> Job.name(),
-              type: :standard
+              type: :standard,
+              client_link_hash: UUID.uuid4(),
+              expired_at: expired_at(organization_id)
             })
 
           gallery
