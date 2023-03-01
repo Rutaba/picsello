@@ -334,7 +334,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                       <p class="text-base-250 ml-8">In case you want to save some <br/> booking slots for later</p>
                     </div>
                   </div>
-                  <.icon_button class={classes("ml-4 py-1",%{"pointer-events-none" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})} title="remove time" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
+                  <.icon_button {testid("remove-time-#{t.index}")} class={classes("ml-4 py-1",%{"pointer-events-none" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})} title="remove time" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
                 </div>
               </div>
             </div>
@@ -728,3 +728,40 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   defp time_parse(time), do: "#{formatted_time(time.hour)}:#{formatted_time(time.minute)}"
   defp formatted_time(time), do: time |> to_string |> String.pad_leading(2, "0")
 end
+
+# %{
+# action: :validate,
+#   changes: %{
+#     dates: [
+#       #Ecto.Changeset<action: :replace, changes: %{}, errors: [],
+#        data: #Picsello.BookingEvent.EventDate<>, valid?: true>,
+#       #Ecto.Changeset<
+#         action: :insert,
+#         changes: %{
+#           date: ~D[2023-03-07],
+#           time_blocks: [
+#             #Ecto.Changeset<
+#               action: :insert,
+#               changes: %{end_time: ~T[21:00:00], start_time: ~T[12:00:00]},
+#               errors: [],
+#               data: #Picsello.BookingEvent.TimeBlock<>,
+#               valid?: true
+#             >,
+#             #Ecto.Changeset<
+#               action: :insert,
+#               changes: %{start_time: ~T[12:51:00]},
+#               errors: [end_time: {"can't be blank", [validation: :required]}],
+#               data: #Picsello.BookingEvent.TimeBlock<>,
+#               valid?: false
+#             >
+#           ]
+#         },
+#         errors: [time_blocks: {"can't be overlapping", []}],
+#         data: #Picsello.BookingEvent.EventDate<>,
+#         valid?: false
+#     ]
+#   },
+#   errors: [],
+#   data: #Picsello.BookingEvent<>,
+#   valid?: false
+# }
