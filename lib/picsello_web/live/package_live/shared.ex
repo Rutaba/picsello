@@ -498,7 +498,7 @@ defmodule PicselloWeb.PackageLive.Shared do
 
     <%= if check?(download_changeset, :is_buy_all) do %>
       <div class="flex flex-row items-center mt-3 lg:ml-7">
-          <%= input(download_changeset, :buy_all, class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+          <%= input(download_changeset, :buy_all, placeholder: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
           <%= error_tag download_changeset, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
           <span class="ml-3 text-base-250"> for all images </span>
       </div>
@@ -517,7 +517,7 @@ defmodule PicselloWeb.PackageLive.Shared do
         <span class="font-normal ml-7 text-base-250">(<%= input_value(download_changeset, :each_price)%>/each)</span>
         <%= if check?(download_changeset, :is_custom_price) do %>
           <div class="flex flex-row items-center mt-3 lg:ml-7">
-            <%= input(download_changeset, :each_price, class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+            <%= input(download_changeset, :each_price, placeholder: "$50.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
             <%= error_tag download_changeset, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
             <span class="ml-3 text-base-250"> per image </span>
           </div>
