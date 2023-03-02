@@ -24,7 +24,6 @@ defmodule Picsello.Factory do
     Questionnaire,
     Questionnaire.Answer,
     Galleries.Gallery,
-    GlobalSettings,
     Galleries.Album,
     Galleries.Watermark,
     Galleries.Photo,
@@ -134,8 +133,7 @@ defmodule Picsello.Factory do
     %Organization{
       name: "Camera User Group",
       slug: sequence(:slug, &"camera-user-group-#{&1}"),
-      organization_cards: Picsello.OrganizationCard.for_new_changeset(),
-      gs_gallery_products: GlobalSettings.gallery_products_params()
+      organization_cards: Picsello.OrganizationCard.for_new_changeset()
     }
   end
 
