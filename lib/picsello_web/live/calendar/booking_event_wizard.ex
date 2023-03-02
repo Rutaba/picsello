@@ -334,9 +334,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                       <p class="text-base-250 ml-8">In case you want to save some <br/> booking slots for later</p>
                     </div>
                   </div>
-                  <%= if t.index > 0 do %>
-                    <.icon_button class={classes("ml-4 py-1",%{"pointer-events-none" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})} title="remove time" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
-                  <% end %>
+                  <.icon_button {testid("remove-time-#{t.index}")} class={classes("ml-4 py-1",%{"pointer-events-none" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})} title="remove time" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
                 </div>
               </div>
             </div>
@@ -361,9 +359,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
               Add break block
             </.icon_button>
           </div>
-          <%= case calculate_slots_count(@event_form, input_value(@f, :date)) do %>
-            <% {slot_count, break_count, hidden_count} -> %>
-              <p {testid("open-slots-count-#{@f.index}")} class="mt-2 font-semibold">You’ll have <span class="text-blue-planning-300"><%= slot_count %></span><%= ngettext " open slot", " open slots", slot_count %>, <span class="text-blue-planning-300"><%= hidden_count %></span><%= ngettext " hidden block", " hidden block", hidden_count %> and <span class="text-blue-planning-300"><%= break_count %> </span><%= ngettext "break block", " break block", break_count %>, and <span class="text-blue-planning-300"><%= @booking_count %></span> already booked on this day</p>
+          <%= case calculate_slots_count(@event_form, input_value(@f, :date), @is_edit) do %>
+            <% {slot_count, break_count, hidden_count, booked_slots} -> %>
+              <p {testid("open-slots-count-#{@f.index}")} class="mt-2 font-semibold">You’ll have <span class="text-blue-planning-300"><%= slot_count %></span><%= ngettext " open slot", " open slots", slot_count %>, <span class="text-blue-planning-300"><%= hidden_count %></span><%= ngettext " hidden block", " hidden block", hidden_count %> and <span class="text-blue-planning-300"><%= break_count %> </span><%= ngettext "break block", " break block", break_count %>, and <span class="text-blue-planning-300"><%= booked_slots %></span> already booked on this day</p>
           <% end %>
         </div>
       </div>
@@ -441,7 +439,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       |> Ecto.Changeset.get_field(:dates)
       |> Enum.map(&Map.from_struct/1)
       |> List.update_at(index, fn date ->
-        date |> Map.put(:time_blocks, (date.time_blocks || []) ++ [%{is_break: is_break}])
+        date
+        |> Map.put(:time_blocks, (date.time_blocks || []) ++ [%{is_break: is_break}])
       end)
 
     changeset =
@@ -475,6 +474,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
         date |> Map.put(:time_blocks, time_blocks)
       end)
+
+    time_blocks = dates |> Enum.at(index) |> Map.get(:time_blocks)
+
+    dates =
+      if Enum.empty?(time_blocks) do
+        dates
+        |> List.update_at(index, fn date ->
+          date
+          |> Map.put(:date, nil)
+          |> Map.put(:time_blocks, [%{start_time: nil, end_time: nil, is_break: false}])
+        end)
+      else
+        dates
+      end
 
     changeset =
       changeset
@@ -580,13 +593,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     )
   end
 
-  defp calculate_slots_count(event_form, date) do
+  defp calculate_slots_count(event_form, date, can_edit?) do
     event = current(event_form)
 
     slot_count =
       event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
 
-    {slot_count, calculate_break_blocks(event, date), calculate_hidden_blocks(event, date)}
+    booked_slots_count =
+      case can_edit? do
+        true -> 0
+        false -> calculate_booked_slots(event, date)
+      end
+
+    {slot_count, calculate_break_blocks(event, date), calculate_hidden_blocks(event, date),
+     booked_slots_count}
   end
 
   defp is_break_block_already_booked(dates) do
@@ -641,6 +661,27 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       _ ->
         0
     end
+  end
+
+  defp calculate_booked_slots(booking_event, date) do
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
+      %{time_blocks: _time_blocks} ->
+        times = BookingEvents.available_times(booking_event, date)
+        count_booked_slots(times)
+
+      _ ->
+        0
+    end
+  end
+
+  defp count_booked_slots(times) do
+    Enum.reduce(times, 0, fn {_time, is_available, is_break, _is_hidden}, acc ->
+      if !is_break and !is_available do
+        acc + 1
+      else
+        acc
+      end
+    end)
   end
 
   defp is_checked(id, package) do
@@ -699,6 +740,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   defp update_time_block(time_blocks) do
     Enum.reduce(time_blocks, %{}, fn time_block, time_acc ->
+      time_block = get_map_time_block(time_block)
       output = Map.new(time_block, fn {k, v} -> {to_string(k), v} end)
 
       map_time =
@@ -709,6 +751,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       time_acc |> Map.put(to_string(Enum.count(time_acc)), map_time)
     end)
   end
+
+  defp get_map_time_block(%Picsello.BookingEvent.TimeBlock{} = time_block),
+    do: Map.from_struct(time_block)
+
+  defp get_map_time_block(time_block), do: time_block
 
   defp time_parse(nil), do: ""
   defp time_parse(time), do: "#{formatted_time(time.hour)}:#{formatted_time(time.minute)}"

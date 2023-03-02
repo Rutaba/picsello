@@ -12,7 +12,7 @@ defmodule Picsello.BookingEvent do
       field(:end_time, :time)
       field(:is_hidden, :boolean, default: false)
       field(:is_break, :boolean, default: false)
-      field(:is_booked, :boolean, default: false, virtual: true)
+      field(:is_booked, :boolean, default: false)
       field(:is_valid, :boolean, default: true, virtual: true)
     end
 

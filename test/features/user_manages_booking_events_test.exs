@@ -223,7 +223,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_has(css("input[type=time]", count: 4))
     |> fill_in(text_field("booking_event[dates][0][time_blocks][1][start_time]"), with: "02:00AM")
     |> fill_in(text_field("booking_event[dates][0][time_blocks][1][end_time]"), with: "05:00PM")
-    |> click(button("remove time"))
+    |> click(testid("remove-time-1"))
     |> assert_has(css("input[type=time]", count: 2))
     |> assert_value(text_field("booking_event[dates][0][time_blocks][0][start_time]"), "09:00")
     |> assert_value(text_field("booking_event[dates][0][time_blocks][0][end_time]"), "13:00")
