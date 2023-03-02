@@ -359,7 +359,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
               Add break block
             </.icon_button>
           </div>
-          <%= case calculate_slots_count(@event_form, input_value(@f, :date)) do %>
+          <%= case calculate_slots_count(@event_form, input_value(@f, :date), @is_edit) do %>
             <% {slot_count, break_count, hidden_count, booked_slots} -> %>
               <p {testid("open-slots-count-#{@f.index}")} class="mt-2 font-semibold">You’ll have <span class="text-blue-planning-300"><%= slot_count %></span><%= ngettext " open slot", " open slots", slot_count %>, <span class="text-blue-planning-300"><%= hidden_count %></span><%= ngettext " hidden block", " hidden block", hidden_count %> and <span class="text-blue-planning-300"><%= break_count %> </span><%= ngettext "break block", " break block", break_count %>, and <span class="text-blue-planning-300"><%= booked_slots %></span> already booked on this day</p>
           <% end %>
@@ -439,7 +439,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       |> Ecto.Changeset.get_field(:dates)
       |> Enum.map(&Map.from_struct/1)
       |> List.update_at(index, fn date ->
-        date |> Map.put(:time_blocks, (date.time_blocks || []) ++ [%{is_break: is_break}])
+        date
+        |> Map.put(:time_blocks, (date.time_blocks || []) ++ [%{is_break: is_break}])
       end)
 
     changeset =
@@ -480,7 +481,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       if Enum.empty?(time_blocks) do
         dates
         |> List.update_at(index, fn date ->
-          date |> Map.put(:time_blocks, [%{start_time: nil, end_time: nil, is_break: false}])
+          date
+          |> Map.put(:date, nil)
+          |> Map.put(:time_blocks, [%{start_time: nil, end_time: nil, is_break: false}])
         end)
       else
         dates
@@ -590,14 +593,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     )
   end
 
-  defp calculate_slots_count(event_form, date) do
+  defp calculate_slots_count(event_form, date, can_edit?) do
     event = current(event_form)
 
     slot_count =
       event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
 
+    booked_slots_count =
+      case can_edit? do
+        true -> 0
+        false -> calculate_booked_slots(event, date)
+      end
+
     {slot_count, calculate_break_blocks(event, date), calculate_hidden_blocks(event, date),
-     calculate_booked_blocks(event, date)}
+     booked_slots_count}
   end
 
   defp is_break_block_already_booked(dates) do
@@ -654,9 +663,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     end
   end
 
-  defp calculate_booked_blocks(booking_event, date) do
-    times = BookingEvents.available_times(booking_event, date)
+  defp calculate_booked_slots(booking_event, date) do
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
+      %{time_blocks: _time_blocks} ->
+        times = BookingEvents.available_times(booking_event, date)
+        count_booked_slots(times)
 
+      _ ->
+        0
+    end
+  end
+
+  defp count_booked_slots(times) do
     Enum.reduce(times, 0, fn {_time, is_available, is_break, _is_hidden}, acc ->
       if !is_break and !is_available do
         acc + 1
