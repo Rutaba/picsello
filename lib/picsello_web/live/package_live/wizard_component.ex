@@ -247,7 +247,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       job_types: Profiles.enabled_job_types(current_user.organization.organization_job_types)
     )
     |> assign(
-      global_settings: Repo.get_by(GlobalSettings.Gallery, organization_id: current_user.organization_id)
+      global_settings:
+        Repo.get_by(GlobalSettings.Gallery, organization_id: current_user.organization_id)
     )
     |> choose_initial_step()
     |> assign_changeset(%{})
@@ -1528,8 +1529,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          params,
          action \\ nil
        ) do
-    global_settings = if global_settings, do: global_settings, else: %{download_each_price: nil, buy_all_price: nil}
-    
+    global_settings =
+      if global_settings,
+        do: global_settings,
+        else: %{download_each_price: nil, buy_all_price: nil}
+
     package_pricing_changeset =
       assigns.package_pricing
       |> PackagePricing.changeset(
