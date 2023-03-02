@@ -24,6 +24,7 @@ defmodule Picsello.Factory do
     Questionnaire,
     Questionnaire.Answer,
     Galleries.Gallery,
+    GlobalSettings,
     Galleries.Album,
     Galleries.Watermark,
     Galleries.Photo,
@@ -133,7 +134,8 @@ defmodule Picsello.Factory do
     %Organization{
       name: "Camera User Group",
       slug: sequence(:slug, &"camera-user-group-#{&1}"),
-      organization_cards: Picsello.OrganizationCard.for_new_changeset()
+      organization_cards: Picsello.OrganizationCard.for_new_changeset(),
+      gs_gallery_products: GlobalSettings.gallery_products_params()
     }
   end
 
@@ -469,7 +471,8 @@ defmodule Picsello.Factory do
       name: "Test Client Wedding",
       job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
-      client_link_hash: UUID.uuid4()
+      client_link_hash: UUID.uuid4(),
+      use_global: false
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

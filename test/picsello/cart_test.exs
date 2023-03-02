@@ -18,7 +18,7 @@ defmodule Picsello.CartTest do
   end
 
   defp insert_gallery(%{package: package}) do
-    [gallery: insert(:gallery, job: insert(:lead, package: package))]
+    [gallery: insert(:gallery, job: insert(:lead, package: package), use_global: false)]
   end
 
   defp insert_gallery(ctx), do: ctx |> Map.put(:package, build(:package)) |> insert_gallery()
@@ -392,7 +392,7 @@ defmodule Picsello.CartTest do
   end
 
   def create_gallery(opts \\ []),
-    do: insert(:gallery, job: insert(:lead, package: insert(:package, opts)))
+    do: insert(:gallery, job: insert(:lead, package: insert(:package, opts)), use_global: false)
 
   describe "print_credit_used" do
     def create_order(opts \\ []) do
@@ -469,7 +469,7 @@ defmodule Picsello.CartTest do
 
   describe "delivery_info_change" do
     test "requires address when order includes products" do
-      gallery = insert(:gallery)
+      gallery = insert(:gallery, use_global: false)
       order = Cart.place_product(build(:cart_product), gallery)
 
       changeset = Cart.delivery_info_change(order)
@@ -480,7 +480,7 @@ defmodule Picsello.CartTest do
     end
 
     test "does not require address when order is only digitals" do
-      gallery = insert(:gallery)
+      gallery = insert(:gallery, use_global: false)
       order = Cart.place_product(build(:digital), gallery)
 
       changeset = Cart.delivery_info_change(order)

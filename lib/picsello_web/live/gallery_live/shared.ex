@@ -317,12 +317,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def expired_at(organization_id) do
-    exp_days = Map.get(GlobalSettings.get(organization_id), :expiration_days)
-
-    if exp_days && exp_days > 0 do
-      Timex.shift(DateTime.utc_now(), days: exp_days)
-    else
-      nil
+    case GlobalSettings.get(organization_id) do
+      %{expiration_days: exp_days} when exp_days > 0 ->
+        Timex.shift(DateTime.utc_now(), days: exp_days)
+      _ ->
+        nil
     end
   end
 
