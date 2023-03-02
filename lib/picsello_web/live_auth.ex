@@ -149,7 +149,9 @@ defmodule PicselloWeb.LiveAuth do
     end
   end
 
-  defp authenticate_album_client(socket, _session), do: assign(socket, authenticated: true)
+  defp authenticate_album_client(%{assigns: _} = socket, _session), do: assign(socket, authenticated: true)
+  
+  defp authenticate_album_client(socket, _session), do: socket
 
   defp allow_sandbox(socket) do
     with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox),
