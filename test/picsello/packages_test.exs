@@ -6,15 +6,28 @@ defmodule Picsello.PackagesTest do
   describe "Download.changeset" do
     test "if includes_credits count must be positive" do
       assert %{errors: [count: {_, validation: :required}]} =
-               Download.changeset(%{"includes_credits" => true, "status" => :limited, "step" => :pricing})
+               Download.changeset(%{
+                 "includes_credits" => true,
+                 "status" => :limited,
+                 "step" => :pricing
+               })
 
       assert %{errors: [count: {_, validation}]} =
-               Download.changeset(%{"includes_credits" => true, "count" => 0, "status" => :limited, "step" => :pricing})
+               Download.changeset(%{
+                 "includes_credits" => true,
+                 "count" => 0,
+                 "status" => :limited,
+                 "step" => :pricing
+               })
 
       assert :number = Keyword.get(validation, :validation)
 
       assert %{errors: [count: _]} =
-               Download.changeset(%Download{count: 0}, %{"includes_credits" => true, "status" => :limited, "step" => :pricing})
+               Download.changeset(%Download{count: 0}, %{
+                 "includes_credits" => true,
+                 "status" => :limited,
+                 "step" => :pricing
+               })
     end
   end
 

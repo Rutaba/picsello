@@ -16,6 +16,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   alias Galleries.{
     CoverPhoto,
+    Watermark,
     Workers.PhotoStorage,
     PhotoProcessing.ProcessingManager,
     PhotoProcessing.Waiter
@@ -373,9 +374,16 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> Galleries.load_watermark_in_gallery()
     |> case do
       %{watermark: %{} = watermark} ->
+        %{organization: organization} = gallery = Repo.preload(gallery, :organization)
+
+        [ex_path, new_path] = Enum.map([organization, gallery], &Watermark.watermark_path(&1.id))
+
+        {:ok, %{body: file}} = PhotoStorage.get_binary(ex_path)
+        {:ok, _} = PhotoStorage.insert(new_path, file)
+
         Multi.new()
         |> Multi.run(:new_watermark, fn _, _ ->
-          Galleries.save_gallery_watermark(
+          Galleries.save_watermark(
             gallery,
             watermark
             |> Map.from_struct()
@@ -388,6 +396,10 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     end
     |> Multi.update(:gallery, Changeset.change(gallery, %{use_global: false}))
     |> Repo.transaction()
+    |> tap(fn
+      {:ok, _} -> Galleries.apply_watermark_on_photos(gallery)
+      x -> x
+    end)
   end
 
   defp avoid_global_settings(%{use_global: false}), do: :ok
