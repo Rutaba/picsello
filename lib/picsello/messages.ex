@@ -61,20 +61,27 @@ defmodule Picsello.Messages do
 
   def find_by_token("" <> token) do
     result = Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity)
-    Logger.warn("[Token] find_by_token result {#{Tuple.to_list(result) |> List.first}, #{Tuple.to_list(result) |> List.last}}")
+
+    Logger.warn(
+      "[Token] find_by_token result {#{Tuple.to_list(result) |> List.first()}, #{Tuple.to_list(result) |> List.last()}}"
+    )
 
     case result do
-      {:ok, id} -> 
+      {:ok, id} ->
         job = Repo.get(Job, id)
         if job, do: job, else: find_by_token(token, "CLIENT_ID")
 
-      _ -> find_by_token(token, "CLIENT_ID")
+      _ ->
+        find_by_token(token, "CLIENT_ID")
     end
   end
 
   def find_by_token("" <> token, key) do
     result = Phoenix.Token.verify(PicselloWeb.Endpoint, key, token, max_age: :infinity)
-    Logger.warn("[Token] find_by_token result {#{Tuple.to_list(result) |> List.first}, #{Tuple.to_list(result) |> List.last}}")
+
+    Logger.warn(
+      "[Token] find_by_token result {#{Tuple.to_list(result) |> List.first()}, #{Tuple.to_list(result) |> List.last()}}"
+    )
 
     case result do
       {:ok, id} -> Repo.get(Client, id)
