@@ -22,7 +22,7 @@
             <span class="text-black ml-2"><%= @client.phone %></span>
           </a>
         <% end %>
-        <a phx-click="open-compose" class="flex items-center mt-2">
+        <a phx-click="open-compose" phx-value-client_id={@client.id} class="flex items-center mt-2 hover:cursor-pointer">
           <.icon name="envelope" class="text-blue-planning-300 mr-2 w-4 h-4" />
           <span class="text-black font-bold">Email: </span>
           <span class="text-black ml-2"><%= @client.email %></span>

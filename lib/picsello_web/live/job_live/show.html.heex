@@ -111,15 +111,15 @@
     </.section>
 
   <%= unless @job.is_gallery_only do %>
-    <.booking_details_section 
-      is_schedule_valid={@is_schedule_valid} 
-      proposal={@proposal} 
-      job={@job} 
-      shoots={@shoots} 
-      package={@package} 
-      current_user={@current_user} 
-      collapsed_sections={@collapsed_sections} 
-      uploads={@uploads} 
+    <.booking_details_section
+      is_schedule_valid={@is_schedule_valid}
+      proposal={@proposal}
+      job={@job}
+      shoots={@shoots}
+      package={@package}
+      current_user={@current_user}
+      collapsed_sections={@collapsed_sections}
+      uploads={@uploads}
       invalid_entries={@invalid_entries}
       invalid_entries_errors={@invalid_entries_errors}
       socket={@socket}
@@ -129,4 +129,3 @@
     <div phx-hook="SetGalleryCookie" data-gallery-type={@new_gallery.type} id="set-gallery-cookie"></div>
   <% end %>
 </div>
-
