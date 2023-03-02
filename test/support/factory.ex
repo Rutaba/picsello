@@ -469,7 +469,8 @@ defmodule Picsello.Factory do
       name: "Test Client Wedding",
       job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
-      client_link_hash: UUID.uuid4()
+      client_link_hash: UUID.uuid4(),
+      use_global: false
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

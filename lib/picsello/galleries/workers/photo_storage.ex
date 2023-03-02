@@ -25,6 +25,7 @@ defmodule Picsello.Galleries.Workers.PhotoStorage do
   def get(path), do: impl().get(path)
   def get(path, bucket), do: impl().get(path, bucket)
   def insert(path, object), do: impl().insert(path, object)
+  def get_binary(path), do: impl().get_binary(path)
   def initiate_resumable(path, metadata), do: impl().initiate_resumable(path, metadata)
 
   def continue_resumable(location, chunk, opts),
