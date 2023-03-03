@@ -7,13 +7,13 @@ defmodule PicselloWeb.SendgridInboundParseController do
     to_email = envelope |> Jason.decode!() |> Map.get("to") |> hd
     [token | _] = to_email |> String.split("@")
 
-    initail_obj =
+    {initail_obj, required_fields} =
       case Messages.find_by_token(token) do
         %Client{id: id} ->
-          %{client_id: id}
+          {%{client_id: id}, [:client_id]}
 
         %Job{id: id} ->
-          %{job_id: id}
+          {%{job_id: id}, [:job_id]}
       end
 
     message =
@@ -25,7 +25,7 @@ defmodule PicselloWeb.SendgridInboundParseController do
         },
         initail_obj
       )
-      |> ClientMessage.create_inbound_changeset()
+      |> ClientMessage.create_inbound_changeset(required_fields)
       |> Repo.insert!()
 
     Messages.notify_inbound_message(message, PicselloWeb.Helpers)
