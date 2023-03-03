@@ -42,11 +42,11 @@ defmodule Picsello.JobIndexTest do
   feature "user with jobs looks at them", %{session: session, job: job, lead: lead} do
     session
     |> click(@leads_card)
-    |> assert_has(css("main > div > ul > li", count: 1))
+    |> assert_has(testid("job-row", count: 1))
     |> assert_has(link(Job.name(lead)))
     |> click(link("Picsello"))
     |> click(@jobs_card)
-    |> assert_has(css("main > div > ul > li", count: 1))
+    |> assert_has(testid("job-row", count: 1))
     |> assert_has(link(Job.name(job)))
     |> click(link(Job.name(job)))
     |> assert_has(link("Jobs"))
@@ -92,7 +92,7 @@ defmodule Picsello.JobIndexTest do
 
     session
     |> visit("/leads")
-    |> assert_has(css("main > div > ul > li", count: 1))
+    |> assert_has(testid("job-row", count: 1))
   end
 
   feature "leads show status", %{session: session, lead: created_lead, user: user} do
@@ -107,45 +107,109 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(link(Job.name(created_lead), text: "Created"))
   end
 
-  feature "elapsed shoot dates are hidden", %{session: session, job: future_job, user: user} do
-    elapsed_job = insert(:lead, type: "wedding", user: user) |> promote_to_job()
-
-    future_job_shoot =
-      insert(:shoot, job: future_job, starts_at: DateTime.utc_now() |> DateTime.add(100))
-
-    elapsed_job_shoot =
-      insert(:shoot, job: elapsed_job, starts_at: DateTime.utc_now() |> DateTime.add(-100))
-
+  feature "edits job", %{
+    session: session,
+    job: job,
+    lead: lead
+  } do
     session
+    |> click(@leads_card)
+    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(link(lead.client.name))
+    |> assert_has(link(Job.name(lead)))
+    |> click(button("Manage"))
+    |> click(button("Edit"))
+    |> assert_url_contains("leads/#{lead.id}")
+    |> click(link("Picsello"))
     |> click(@jobs_card)
-    |> assert_has(
-      link(Job.name(future_job),
-        text: "On #{future_job_shoot.starts_at |> Calendar.strftime("%B")}"
-      )
-    )
-    |> refute_has(
-      link(Job.name(elapsed_job),
-        text: "On #{elapsed_job_shoot.starts_at |> Calendar.strftime("%B")}"
-      )
-    )
+    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(link(job.client.name))
+    |> assert_has(link(Job.name(job)))
+    |> click(button("Manage"))
+    |> click(button("Edit"))
+    |> assert_url_contains("jobs/#{job.id}")
   end
 
-  feature "pagination", %{session: session, user: user} do
-    insert_list(12, :lead, user: user)
-
+  feature "visits client details", %{
+    session: session,
+    job: job,
+    lead: lead
+  } do
     session
-    |> visit("/leads")
-    |> assert_text("Results: 1 – 12 of 13")
-    |> assert_has(css("main > div > ul > li", count: 12))
-    |> assert_has(css("button:disabled[title='Previous page']"))
-    |> click(button("Next page"))
-    |> assert_text("Results: 13 – 13 of 13")
-    |> assert_has(css("main > div > ul > li", count: 1))
-    |> assert_has(css("button:disabled[title='Next page']"))
-    |> click(button("Previous page"))
-    |> assert_text("Results: 1 – 12 of 13")
-    |> click(css("select", text: "12"))
-    |> click(css("option", text: "24"))
-    |> assert_text("Results: 1 – 13 of 13")
+    |> click(@leads_card)
+    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(link(lead.client.name))
+    |> assert_has(link(Job.name(lead)))
+    |> click(button("Manage"))
+    |> click(button("View Client"))
+    |> assert_url_contains("clients/#{lead.client_id}")
+    |> assert_has(testid("client-details"))
+    |> click(link("Picsello"))
+    |> click(@jobs_card)
+    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(link(job.client.name))
+    |> assert_has(link(Job.name(job)))
+    |> click(button("Manage"))
+    |> click(button("View Client"))
+    |> assert_url_contains("clients/#{job.client_id}")
+    |> assert_has(testid("client-details"))
+  end
+
+  feature "visits job gallery", %{
+    session: session,
+    job: job,
+    lead: lead
+  } do
+    session
+    |> click(@leads_card)
+    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(link(lead.client.name))
+    |> assert_has(link(Job.name(lead)))
+    |> click(button("Manage"))
+    |> click(button("Go to galleries"))
+    |> assert_url_contains("leads/#{lead.id}")
+    |> click(link("Picsello"))
+    |> click(@jobs_card)
+    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(link(job.client.name))
+    |> assert_has(link(Job.name(job)))
+    |> click(button("Manage"))
+    |> click(button("Go to galleries"))
+    |> assert_url_contains("jobs/#{job.id}")
+  end
+
+  feature "sends job email", %{
+    session: session,
+    job: job,
+    lead: lead
+  } do
+    session
+    |> click(@leads_card)
+    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(link(lead.client.name))
+    |> assert_has(link(Job.name(lead)))
+    |> click(button("Manage"))
+    |> click(button("Send email"))
+    |> refute_has(select("Select email preset"))
+    |> fill_in(text_field("Subject line"), with: "Here is what I propose")
+    |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
+    |> send_keys(["This is 1st line", :enter, "2nd line"])
+    |> click(button("Send"))
+    |> assert_text("Thank you! Your message has been sent. We’ll be in touch with you soon.")
+    |> click(button("Close"))
+    |> click(link("Picsello"))
+    |> click(@jobs_card)
+    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(link(job.client.name))
+    |> assert_has(link(Job.name(job)))
+    |> click(button("Manage"))
+    |> click(button("Send email"))
+    |> refute_has(select("Select email preset"))
+    |> fill_in(text_field("Subject line"), with: "Here is what I propose")
+    |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
+    |> send_keys(["This is 1st line", :enter, "2nd line"])
+    |> click(button("Send"))
+    |> assert_text("Thank you! Your message has been sent. We’ll be in touch with you soon.")
+    |> click(button("Close"))
   end
 end

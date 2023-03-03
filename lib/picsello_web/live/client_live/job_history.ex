@@ -9,7 +9,14 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   import PicselloWeb.Live.ClientLive.Shared
 
   alias Ecto.{Query, Changeset}
-  alias PicselloWeb.{Helpers, ConfirmationComponent, ClientMessageComponent, JobLive.ImportWizard}
+
+  alias PicselloWeb.{
+    Helpers,
+    ConfirmationComponent,
+    ClientMessageComponent,
+    JobLive.ImportWizard
+  }
+
   alias Picsello.{Jobs, Job, Repo, Clients, Messages, Galleries}
 
   defmodule Pagination do
@@ -157,7 +164,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
 
   @impl true
   def handle_event(
-        "open_compose",
+        "open-compose",
         %{},
         %{assigns: %{index: index, jobs: jobs}} = socket
       ),
@@ -167,10 +174,39 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
         |> open_compose()
 
   @impl true
-  def handle_event("confirm_job_complete", %{}, %{assigns: %{index: index, jobs: jobs}} = socket),
+  def handle_event(
+        "open-compose",
+        %{"id" => id},
+        %{assigns: %{jobs: jobs}} = socket
+      ),
+      do:
+        socket
+        |> assign(:job, Enum.find(jobs, fn job -> job.id == to_integer(id) end))
+        |> open_compose()
+
+  @impl true
+  def handle_event("complete-job", %{}, %{assigns: %{index: index, jobs: jobs}} = socket),
     do:
       socket
       |> assign(:job, Enum.at(jobs, index))
+      |> assign(:request_from, :clients)
+      |> ConfirmationComponent.open(%{
+        confirm_event: "complete_job",
+        confirm_label: "Yes, complete",
+        confirm_class: "btn-primary",
+        subtitle:
+          "After you complete the job this becomes read-only. This action cannot be undone.",
+        title: "Are you sure you want to complete this job?",
+        icon: "warning-blue"
+      })
+      |> noreply()
+
+  @impl true
+  def handle_event("complete-job", %{"id" => id}, %{assigns: %{jobs: jobs}} = socket),
+    do:
+      socket
+      |> assign(:job, Enum.find(jobs, fn job -> job.id == to_integer(id) end))
+      |> assign(:request_from, :jobs)
       |> ConfirmationComponent.open(%{
         confirm_event: "complete_job",
         confirm_label: "Yes, complete",
@@ -221,13 +257,22 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   def handle_info({:confirm_event, "send_another"}, socket), do: open_compose(socket)
 
   @impl true
-  def handle_info({:confirm_event, "complete_job"}, %{assigns: %{job: job}} = socket) do
+  def handle_info(
+        {:confirm_event, "complete_job"},
+        %{assigns: %{job: job, request_from: request_from}} = socket
+      ) do
     case job |> Job.complete_changeset() |> Repo.update() do
       {:ok, job} ->
         socket
         |> assign(:job, job)
         |> put_flash(:success, "Job completed")
-        |> push_redirect(to: Routes.client_path(socket, :job_history, job.client_id))
+        |> push_redirect(
+          to:
+            if(request_from == :jobs,
+              do: Routes.job_path(socket, :jobs),
+              else: Routes.client_path(socket, :job_history, job.client_id)
+            )
+        )
 
       {:error, _} ->
         socket
