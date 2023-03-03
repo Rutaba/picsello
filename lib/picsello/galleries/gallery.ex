@@ -26,7 +26,6 @@ defmodule Picsello.Galleries.Gallery do
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
     field :total_count, :integer, default: 0
-    field :use_global, :boolean, default: true
     field :type, Ecto.Enum, @type_opts
 
     belongs_to(:job, Job)
@@ -43,6 +42,12 @@ defmodule Picsello.Galleries.Gallery do
     has_one(:package, through: [:job, :package])
     has_one(:photographer, through: [:job, :client, :organization, :user])
 
+    embeds_one :use_global, UseGlobal do
+      field :expiration, :boolean, default: true
+      field :watermark, :boolean, default: true
+      field :products, :boolean, default: true
+    end
+
     timestamps(type: :utc_datetime)
   end
 
@@ -58,7 +63,6 @@ defmodule Picsello.Galleries.Gallery do
     :expired_at,
     :client_link_hash,
     :total_count,
-    :use_global,
     :type,
     :parent_id
   ]
@@ -77,6 +81,7 @@ defmodule Picsello.Galleries.Gallery do
     gallery
     |> cast(attrs, @create_attrs)
     |> cast_assoc(:albums, with: &Album.gallery_changeset/2)
+    |> cast_embed(:use_global)
     |> cast_password()
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])
@@ -87,6 +92,7 @@ defmodule Picsello.Galleries.Gallery do
   def update_changeset(gallery, attrs \\ %{}) do
     gallery
     |> cast(attrs, @update_attrs)
+    |> cast_embed(:use_global)
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])
     |> validate_name()
