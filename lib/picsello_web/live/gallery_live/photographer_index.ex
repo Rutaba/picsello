@@ -373,12 +373,12 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     gallery
     |> Galleries.load_watermark_in_gallery()
     |> case do
-      %{watermark: %{} = watermark} ->
+      %{watermark: %{type: "image"} = watermark} ->
         %{organization: organization} = gallery = Repo.preload(gallery, :organization)
 
         [ex_path, new_path] = Enum.map([organization, gallery], &Watermark.watermark_path(&1.id))
 
-        {:ok, %{body: file}} = PhotoStorage.get_binary(ex_path)
+        {:ok, %{body: file, status: 200}} = PhotoStorage.get_binary(ex_path)
         {:ok, _} = PhotoStorage.insert(new_path, file)
 
         Multi.new()
