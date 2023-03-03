@@ -5,8 +5,6 @@ defmodule Picsello.ClientMessage do
   alias Picsello.{Job, Client}
 
   schema "client_messages" do
-    belongs_to(:job, Job)
-    belongs_to(:client, Client)
     field(:subject, :string)
     field(:cc_email, :string)
     field(:body_text, :string)
@@ -15,6 +13,9 @@ defmodule Picsello.ClientMessage do
     field(:outbound, :boolean)
     field(:read_at, :utc_datetime)
     field(:deleted_at, :utc_datetime)
+
+    belongs_to(:job, Job)
+    belongs_to(:client, Client)
 
     timestamps(type: :utc_datetime)
   end
@@ -32,7 +33,7 @@ defmodule Picsello.ClientMessage do
     %__MODULE__{}
     |> cast(attrs, [:body_text, :body_html, :job_id, :client_id, :subject])
     |> then(fn changeset -> 
-      if Enum.any(required_fields) do
+      if Enum.any?(required_fields) do
         changeset
         |> validate_required(required_fields)  
       else
