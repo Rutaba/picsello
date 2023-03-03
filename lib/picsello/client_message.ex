@@ -28,10 +28,17 @@ defmodule Picsello.ClientMessage do
     |> put_change(:read_at, DateTime.utc_now() |> DateTime.truncate(:second))
   end
 
-  def create_inbound_changeset(attrs) do
+  def create_inbound_changeset(attrs, required_fields \\ []) do
     %__MODULE__{}
     |> cast(attrs, [:body_text, :body_html, :job_id, :client_id, :subject])
-    |> validate_required([:job_id])
+    |> then(fn changeset -> 
+      if Enum.any(required_fields) do
+        changeset
+        |> validate_required(required_fields)  
+      else
+        changeset
+      end
+     end)
     |> put_change(:outbound, false)
   end
 
