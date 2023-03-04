@@ -189,7 +189,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
               <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
               <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
           </div>
-          <ul class="absolute z-30 hidden w-40 mt-2 bg-white toggle rounded-md popover-content border border-base-200">
+          <ul class={classes("absolute z-30 hidden mt-2 bg-white toggle rounded-md popover-content border border-base-200",%{"w-41" => @id == "status", "w-40" => @id=="sort-by"})}>
             <%= for option <- @options_list do %>
               <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
               class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
