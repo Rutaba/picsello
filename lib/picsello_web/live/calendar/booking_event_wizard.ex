@@ -182,7 +182,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           </div>
         </div>
     <% end %>
-
+    <%= if @package_templates == [] do %>
+      <div class="flex flex-col rounded-lg h-fit mt-8 p-1 ml-3 border bg-base-200">
+        <div class="w-10 h-6 mt-2 ml-2 rounded-lg bg-blue-planning-300 text-center">
+          <span class="text-base-100"> TIP </span>
+        </div>
+        <div class="mt-2 ml-2">
+          <p class="font-normal text-gray-400">If you aren’t seeing your package here, you need to make sure the package only has 1 shoot set. We calculate the # of<br> sessions based off of that. <a href={Routes.package_templates_path(@socket, :index)} class="text-blue-planning-300 underline"> Manage your packages here </a> </p>
+        </div>
+      </div>
+    <% end %>
     <div class={classes("hidden sm:flex items-center border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250", %{"justify-between" => can_edit?})}>
       <%= for title <- ["Package name", "Package Pricing", "Select package"] do %>
         <%= if (!can_edit? and title !=  "Select package") || can_edit? do %>
