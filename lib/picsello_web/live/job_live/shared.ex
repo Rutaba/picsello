@@ -175,6 +175,7 @@ defmodule PicselloWeb.JobLive.Shared do
       :job_changeset,
       Job.new_job_changeset(Map.delete(job_changeset.changes, :client_id))
     )
+    |> assign(:current_focus, -1)
     |> noreply()
   end
 
@@ -182,6 +183,7 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> search_assigns()
     |> assign(:changeset, Job.new_job_changeset(Map.delete(changeset.changes, :client_id)))
+    |> assign(:current_focus, -1)
     |> noreply()
   end
 
@@ -190,6 +192,8 @@ defmodule PicselloWeb.JobLive.Shared do
         %{"client_id" => client_id},
         %{assigns: %{search_results: search_results, job_changeset: job_changeset}} = socket
       ) do
+    {current_focus, _} = Integer.parse(client_id)
+
     socket
     |> assign(:search_results, [])
     |> assign(:searched_client, Enum.find(search_results, &(&1.id == to_integer(client_id))))
@@ -201,6 +205,7 @@ defmodule PicselloWeb.JobLive.Shared do
       :job_changeset,
       Job.new_job_changeset(Map.merge(job_changeset.changes, %{:client_id => client_id}))
     )
+    |> assign(:current_focus, current_focus)
     |> noreply()
   end
 
@@ -209,6 +214,8 @@ defmodule PicselloWeb.JobLive.Shared do
         %{"client_id" => client_id},
         %{assigns: %{search_results: search_results, changeset: changeset}} = socket
       ) do
+    {current_focus, _} = Integer.parse(client_id)
+
     socket
     |> assign(:search_results, [])
     |> assign(:searched_client, Enum.find(search_results, &(&1.id == to_integer(client_id))))
@@ -220,6 +227,7 @@ defmodule PicselloWeb.JobLive.Shared do
       :changeset,
       Job.new_job_changeset(Map.merge(changeset.changes, %{:client_id => client_id}))
     )
+    |> assign(:current_focus, current_focus)
     |> noreply()
   end
 
@@ -1068,7 +1076,12 @@ defmodule PicselloWeb.JobLive.Shared do
                 <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
                   <%= for {search_result, idx} <- Enum.with_index(@search_results) do %>
                     <div class={"flex items-center cursor-pointer p-2"} phx-click="pick" phx-target={@myself} phx-value-client_id={"#{search_result.id}"}>
-                      <%= radio_button(:search_radio, :name, search_result.name, checked: idx == @current_focus, class: "mr-5 w-5 h-5 radio") %>
+                      <%= if search_result.id == @current_focus do %>
+                        <.icon name="radio-solid" class="mr-5 w-5 h-5" />
+                      <% else %>
+                        <.icon name="radio" class="mr-5 w-5 h-5" />
+                      <% end %>
+                      <%= radio_button(:search_radio, :name, search_result.name, checked: idx == @current_focus, class: "mr-5 w-5 h-5 radio text-blue-planning-300 hidden") %>
                       <div>
                         <p><%= search_result.name %></p>
                         <p class="text-sm"><%= search_result.email %></p>
