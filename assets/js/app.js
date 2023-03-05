@@ -9,7 +9,7 @@ const env =
 
 Sentry.init({
   dsn: 'https://5296991183f042038e40dbe1b1ddb9ef@o1295249.ingest.sentry.io/4504786824921088',
-  integrations: [new BrowserTracing()],
+  integrations: [new BrowserTracing({ tracingOrigins: ['*'] })],
   environment: env,
   // Set tracesSampleRate to 1.0 to capture 100%
   // of transactions for performance monitoring.
