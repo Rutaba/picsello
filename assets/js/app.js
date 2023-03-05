@@ -1,7 +1,10 @@
 import * as Sentry from '@sentry/browser';
 import { BrowserTracing } from '@sentry/tracing';
 
-const env = (process && process.env && process.env.NODE_ENV) || 'production';
+const env =
+  (process && process.env && process.env.NODE_ENV) ||
+  (window.location.href.includes('render') && window.location.href) ||
+  'production';
 
 Sentry.init({
   dsn: 'https://5296991183f042038e40dbe1b1ddb9ef@o1295249.ingest.sentry.io/4504786824921088',
