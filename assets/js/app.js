@@ -2,8 +2,8 @@ import * as Sentry from '@sentry/browser';
 import { BrowserTracing } from '@sentry/tracing';
 
 const env =
-  (process && process.env && process.env.NODE_ENV) ||
   (window.location.href.includes('render') && window.location.href) ||
+  (process && process.env && process.env.NODE_ENV) ||
   'production';
 
 Sentry.init({
