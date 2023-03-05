@@ -1,3 +1,18 @@
+import * as Sentry from '@sentry/browser';
+import { BrowserTracing } from '@sentry/tracing';
+
+const env = (process && process.env && process.env.NODE_ENV) || 'production';
+
+Sentry.init({
+  dsn: 'https://5296991183f042038e40dbe1b1ddb9ef@o1295249.ingest.sentry.io/4504786824921088',
+  integrations: [new BrowserTracing()],
+  environment: env,
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 0.3,
+});
+
 // We need to import the CSS so that webpack will load it.
 // The MiniCssExtractPlugin is used to separate it out into
 // its own CSS file.
@@ -132,49 +147,53 @@ const TZCookie = {
 const CardStatus = {
   mounted() {
     this.el.addEventListener('click', () => {
-      this.pushEvent('card_status', { status: this.el.dataset.status, org_card_id: this.el.id });
+      this.pushEvent('card_status', {
+        status: this.el.dataset.status,
+        org_card_id: this.el.id,
+      });
     });
-  }
+  },
 };
 
 const FinalCostInput = {
   mounted() {
-    let dataset = this.el.dataset
-    let inputElm = document.getElementById(dataset.inputId)
+    let dataset = this.el.dataset;
+    let inputElm = document.getElementById(dataset.inputId);
 
     inputElm.addEventListener('input', () => {
       if (inputElm.value.replace('$', '') < parseFloat(dataset.baseCost)) {
-        let span = document.getElementById(dataset.spanId)
-        span.style.color = "red";
+        let span = document.getElementById(dataset.spanId);
+        span.style.color = 'red';
 
         setTimeout(function () {
-          span.style.color = "white";
+          span.style.color = 'white';
           inputElm.value = `$${parseFloat(dataset.finalCost).toFixed(2)}`;
         }, 3000);
       }
     });
-  }
+  },
 };
 
 const SetGalleryCookie = {
   mounted() {
-    let galleryType = this.el.dataset.galleryType
+    let galleryType = this.el.dataset.galleryType;
     document.cookie = `GalleryType=${galleryType}; path=/`;
   },
 };
 
 const GetGalleryCookie = {
   mounted() {
-    const galleryType = getCookie('GalleryType')
-    document.cookie = "GalleryType=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    if (galleryType != "") {
-      this.pushEvent("gallery-created", { galleryType: galleryType })
+    const galleryType = getCookie('GalleryType');
+    document.cookie =
+      'GalleryType=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    if (galleryType != '') {
+      this.pushEvent('gallery-created', { galleryType: galleryType });
     }
   },
 };
 
 function getCookie(cname) {
-  let name = cname + "=";
+  let name = cname + '=';
   let decodedCookie = decodeURIComponent(document.cookie);
   let ca = decodedCookie.split(';');
   for (let i = 0; i < ca.length; i++) {
@@ -186,18 +205,21 @@ function getCookie(cname) {
       return c.substring(name.length, c.length);
     }
   }
-  return "";
+  return '';
 }
 
 const showWelcomeModal = {
   mounted() {
-    const show = Cookies.get('show_welcome_modal')
+    const show = Cookies.get('show_welcome_modal');
 
     if (show == 'true') {
-      const dateTime = new Date("1970-12-17T00:00:00");
-      Cookies.set("show_welcome_modal", false, { expires: dateTime, path: '/' })
+      const dateTime = new Date('1970-12-17T00:00:00');
+      Cookies.set('show_welcome_modal', false, {
+        expires: dateTime,
+        path: '/',
+      });
 
-      this.pushEvent("open-welcome-modal", {})
+      this.pushEvent('open-welcome-modal', {});
     }
   },
 };
@@ -246,7 +268,7 @@ const Hooks = {
   SetGalleryCookie,
   GetGalleryCookie,
   showWelcomeModal,
-  FolderUpload
+  FolderUpload,
 };
 
 let Uploaders = {};
