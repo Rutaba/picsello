@@ -188,7 +188,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <span class="text-base-100"> TIP </span>
         </div>
         <div class="mt-2 ml-2">
-          <p class="font-normal text-gray-400">If you aren’t seeing your package here, you need to make sure the package only has 1 shoot set. We calculate the # of<br> sessions based off of that. <a href={Routes.package_templates_path(@socket, :index)} class="text-blue-planning-300 underline"> Manage your packages here </a> </p>
+          <p class="font-normal text-gray-400">If you aren’t seeing your package here, you need to make sure the package only has 1 shoot set. We calculate the # of<br> sessions based off of that.
+            <a class="items-center text-blue-planning-300 underline font-normal" href={Routes.package_templates_path(@socket, :index)} target="_blank"> Manage your packages here<.icon name="external-link" class=" inline ml-2 w-4 h-4" /></a>
+          </p>
         </div>
       </div>
     <% end %>
