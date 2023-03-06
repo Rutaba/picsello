@@ -14,6 +14,7 @@ defmodule Picsello.Jobs do
     from(j in query,
       left_join: job_status in assoc(j, :job_status),
       left_join: shoots in assoc(j, :shoots),
+      left_join: package in assoc(j, :package),
       left_join: payment_schedules in assoc(j, :payment_schedules),
       where: ^filters_where(opts),
       where: ^filters_status(opts),
@@ -32,7 +33,7 @@ defmodule Picsello.Jobs do
     from(j in query,
       limit: ^limit,
       offset: ^offset,
-      preload: [:client, :job_status]
+      preload: [:client, :package, :job_status, :payment_schedules]
     )
   end
 
@@ -43,7 +44,7 @@ defmodule Picsello.Jobs do
   def get_client_jobs_query(client_id) do
     from(j in Job,
       where: j.client_id == ^client_id,
-      preload: [:shoots, :payment_schedules, :job_status, :galleries]
+      preload: [:package, :shoots, :job_status, :galleries]
     )
   end
 
@@ -176,7 +177,6 @@ defmodule Picsello.Jobs do
     dynamic(
       [j, client, job_status],
       ^dynamic and
-        not job_status.is_lead and
         job_status.current_status == :completed
     )
   end
@@ -185,7 +185,6 @@ defmodule Picsello.Jobs do
     dynamic(
       [j, client, job_status],
       ^dynamic and
-        not job_status.is_lead and
         job_status.current_status not in [:completed, :archived]
     )
   end
@@ -238,7 +237,7 @@ defmodule Picsello.Jobs do
   defp filter_archived(dynamic, "jobs") do
     dynamic(
       [j, client, job_status],
-      ^dynamic and not job_status.is_lead and
+      ^dynamic and
         not is_nil(j.archived_at)
     )
   end
@@ -252,18 +251,21 @@ defmodule Picsello.Jobs do
   end
 
   defp filter_overdue_jobs(dynamic) do
+    now = current_datetime()
     dynamic(
-      [j, client, job_status, shoots, payment_schedules],
-      ^dynamic and Enum.any?(payment_schedules, fn schedule -> DateTime.compare(schedule.due_at, DateTime.utc_now()) == :lt end)
+      [j, client, job_status, job_status_, shoots, package, payment_schedules],
+      ^dynamic and payment_schedules.due_at <= ^now
     )
   end
+
+  defp current_datetime(), do: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
   defp group_by_clause(query, :name) do
     group_by(query, [j, client], [j.id, client.name])
   end
 
   defp group_by_clause(query, :starts_at) do
-    group_by(query, [j, client, job_status, shoots], [j.id, shoots.starts_at])
+    group_by(query, [j, client, job_status, job_status_, shoots], [j.id, shoots.starts_at])
   end
 
   defp group_by_clause(query, _) do
@@ -271,7 +273,8 @@ defmodule Picsello.Jobs do
   end
 
   defp filter_order_by(:starts_at, order) do
-    [{order, dynamic([j, client, job_status, shoots], field(shoots, :starts_at))}]
+    now = current_datetime()
+    [{order, dynamic([j, client, job_status, job_status_, shoots], field(shoots, :starts_at) < ^now)}]
   end
 
   defp filter_order_by(:name, order) do

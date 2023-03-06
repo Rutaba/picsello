@@ -289,11 +289,11 @@ defmodule PicselloWeb.JobLive.Index do
           </div>
           <%= if @title == "Sort" do%>
             <div class="items-center flex border rounded-r-lg border-grey p-2">
-              <button phx-click="toggle-sort-direction" disabled={@selected_option != "name"}>
+              <button phx-click="toggle-sort-direction" disabled={@selected_option not in ["name", "shoot_date"]}>
                 <%= if @sort_direction == :asc do %>
-                  <.icon name="sort-vector" {testid("edit-link-button")} class={classes("blue-planning-300 w-5 h-5", %{"pointer-events-none opacity-40" => @selected_option != "name"})} />
+                  <.icon name="sort-vector" {testid("edit-link-button")} class={classes("blue-planning-300 w-5 h-5", %{"pointer-events-none opacity-40" => @selected_option not in ["name", "shoot_date"]})} />
                 <% else %>
-                  <.icon name="sort-vector-2" {testid("edit-link-button")} class={classes("blue-planning-300 w-5 h-5", %{"pointer-events-none opacity-40" => @selected_option != "name"})} />
+                  <.icon name="sort-vector-2" {testid("edit-link-button")} class={classes("blue-planning-300 w-5 h-5", %{"pointer-events-none opacity-40" => @selected_option not in ["name", "shoot_date"]})} />
                 <% end %>
               </button>
             </div>
