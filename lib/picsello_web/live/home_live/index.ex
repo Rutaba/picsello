@@ -183,6 +183,18 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
+  def handle_event(
+        "save-promo-code",
+        %{"user" => user_params},
+        %{assigns: %{promotion_code_open: promotion_code_open}} = socket
+      ) do
+    socket
+    |> assign_promotion_code_changeset(user_params)
+    |> assign(:promotion_code_open, !promotion_code_open)
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
@@ -975,7 +987,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <% end %>
           </div>
           <div class="flex justify-end mt-6">
-            <.form let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form">
+            <.form let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form" phx-submit="save-promo-code">
               <%= hidden_inputs_for f %>
               <%= for onboarding <- inputs_for(f, :onboarding) do %>
                 <details class="group" open={@promotion_code_open} {testid("promo-code")}>
@@ -1033,10 +1045,10 @@ defmodule PicselloWeb.HomeLive.Index do
       |> Enum.into(%{class: nil, button_class: "btn-primary"})
 
     ~H"""
-    <div class={"p-4 border rounded-lg #{@class}"}>
-      <div class="flex gap-4 sm:gap-0 flex-wrap items-center justify-between">
+    <div class={"p-2 md:p-4 border rounded-lg #{@class}"}>
+      <div class="flex gap-2 gap-4 sm:gap-0 flex-wrap items-center justify-between">
         <div>
-          <h4 class="text-3xl font-bold mb-2"><%= @headline %></h4>
+          <h4 class="text-xl md:text-3xl font-bold mb-2"><%= @headline %></h4>
           <p class="font-bold"><%= @price %></p>
           <p class="opacity-60"><%= @price_secondary %></p>
         </div>
@@ -1044,8 +1056,8 @@ defmodule PicselloWeb.HomeLive.Index do
           Select plan
         </button>
       </div>
-      <hr class="my-4 opacity-50" />
-      <p class="text-sm opacity-60"><%= @body %></p>
+      <hr class="my-2 md:my-4 opacity-50" />
+      <p class="text-xs md:text-sm opacity-75 md:opacity-60"><%= @body %></p>
     </div>
     """
   end
