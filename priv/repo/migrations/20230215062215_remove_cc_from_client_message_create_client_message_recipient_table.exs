@@ -19,12 +19,13 @@ defmodule Picsello.Repo.Migrations.RemoveCCFromClientMessageCreateClientMessageR
     client_messages = Repo.all(ClientMessage) |> Repo.preload([:job])
 
     Enum.map(client_messages, fn msg ->
+      if Map.has_key?(msg, :client_id) || msg.job, do:
       execute("""
-        INSERT INTO #{@table} ("client_id", "client_message_id", recipient_type, inserted_at, updated_at) VALUES (#{if msg.client_id, do: msg.client_id, else: msg.job.client_id}, #{msg.id}, 'to', '#{now}', '#{now}');
+        INSERT INTO #{@table} ("client_id", "client_message_id", recipient_type, inserted_at, updated_at) VALUES (#{if Map.has_key?(msg, :client_id), do: msg.client_id, else: msg.job.client_id}, #{msg.id}, 'to', '#{now}', '#{now}');
       """)
     end)
 
-    drop(index(:client_messages, [:client_id]))
+    drop_if_exists(index(:client_messages, [:client_id]))
 
     alter table(:client_messages) do
       remove(:cc_email, :string)
