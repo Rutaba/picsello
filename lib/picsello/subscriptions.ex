@@ -53,20 +53,26 @@ defmodule Picsello.Subscriptions do
   end
 
   def sync_subscription_promotion_codes() do
-    {:ok, %{data: promotion_codes}} = Payments.list_promotion_codes(%{active: true})
+    case Payments.list_promotion_codes(%{active: true}) do
+      {:ok, %{data: promotion_codes}} ->
+        for %{code: code, coupon: %{id: id, percent_off: percent_off}} <-
+              promotion_codes do
+          %{
+            stripe_promotion_code_id: id,
+            code: code,
+            percent_off: percent_off
+          }
+          |> SubscriptionPromotionCode.changeset()
+          |> Repo.insert!(
+            conflict_target: [:stripe_promotion_code_id],
+            on_conflict: {:replace, [:code, :updated_at, :percent_off]}
+          )
+        end
 
-    for %{code: code, coupon: %{id: id, percent_off: percent_off}} <-
-          promotion_codes do
-      %{
-        stripe_promotion_code_id: id,
-        code: code,
-        percent_off: percent_off
-      }
-      |> SubscriptionPromotionCode.changeset()
-      |> Repo.insert!(
-        conflict_target: [:stripe_promotion_code_id],
-        on_conflict: {:replace, [:code, :updated_at, :percent_off]}
-      )
+        {:ok, "Sync from stripe succeeded"}
+
+      {:error, _} ->
+        {:error, "Sync from stripe failed"}
     end
   end
 

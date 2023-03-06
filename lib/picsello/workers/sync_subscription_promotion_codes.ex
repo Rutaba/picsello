@@ -6,7 +6,5 @@ defmodule Picsello.Workers.SyncSubscriptionPromotionCodes do
   @impl Oban.Worker
   def perform(_) do
     Picsello.Subscriptions.sync_subscription_promotion_codes()
-
-    :ok
   end
 end
