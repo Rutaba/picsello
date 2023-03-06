@@ -61,7 +61,7 @@
         <div phx-click="view-job" phx-value-id={job.id} class="sm:col-span-2 flex flex-col">
           <%= live_redirect to: Routes.job_path(@socket, if(job.job_status.is_lead, do: :leads, else: :jobs), job.id) do %>
             <p class="text-blue-planning-300 font-bold underline hover:cursor-pointer capitalize"><%= job.client.name || "-" %></p>
-            <p class="text-gray-400 italic font-normal"><%= job |> Job.name()  || "-" %></p>
+            <p class="text-gray-400 italic font-normal"><%= (job |> Job.name()) <> "(#{job.id})" || "-" %></p>
             <p class="text-gray-400 font-normal"><%= if job.completed_at, do: "Completed on #{job.completed_at}", else: "Created on #{job.inserted_at}" %></p>
           <% end %>
         </div>
@@ -74,7 +74,7 @@
           <p>-</p>
         <% end %>
         </div>
-        <.status_badge class="w-fit" job_status={job.job_status} />
+        <.status_badge class="w-fit" job_status={job.job_status} job = {job}/>
         <hr class="sm:hidden border-gray-100 my-2" />
         <.actions type={if(job.job_status.is_lead, do: "leads", else: "jobs")} job={job}/>
       </div>

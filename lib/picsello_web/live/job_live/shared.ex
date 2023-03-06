@@ -506,8 +506,13 @@ defmodule PicselloWeb.JobLive.Shared do
 
   @spec status_badge(%{job_status: %Picsello.JobStatus{}, class: binary}) ::
           %Phoenix.LiveView.Rendered{}
-  def status_badge(%{job_status: %{current_status: status, is_lead: is_lead}} = assigns) do
-    {label, color} = status_content(is_lead, status)
+  def status_badge(%{job_status: %{current_status: status, is_lead: is_lead}, job: job} = assigns) do
+    {label, color} =
+      if Enum.any?(job.payment_schedules, fn schedule ->
+        DateTime.compare(schedule.due_at, DateTime.utc_now()) == :lt
+      end),
+      do: {"Overdue", :red},
+      else: status_content(is_lead, status)
 
     assigns =
       assigns
