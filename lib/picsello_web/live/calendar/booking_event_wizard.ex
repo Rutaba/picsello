@@ -672,6 +672,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     end
   end
 
+  defp calculate_booked_slots(_booking_event, nil), do: 0
+
   defp calculate_booked_slots(booking_event, date) do
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: _time_blocks} ->
