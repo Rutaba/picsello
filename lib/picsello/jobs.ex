@@ -14,7 +14,7 @@ defmodule Picsello.Jobs do
     from(j in query,
       left_join: job_status in assoc(j, :job_status),
       left_join: shoots in assoc(j, :shoots),
-      left_join: package in assoc(j, :package),
+      left_join: payment_schedules in assoc(j, :payment_schedules),
       where: ^filters_where(opts),
       where: ^filters_status(opts),
       order_by: ^filter_order_by(sort_by, sort_direction)
@@ -32,7 +32,7 @@ defmodule Picsello.Jobs do
     from(j in query,
       limit: ^limit,
       offset: ^offset,
-      preload: [:client, :package, :job_status]
+      preload: [:client, :job_status]
     )
   end
 
@@ -43,7 +43,7 @@ defmodule Picsello.Jobs do
   def get_client_jobs_query(client_id) do
     from(j in Job,
       where: j.client_id == ^client_id,
-      preload: [:package, :shoots, :job_status, :galleries]
+      preload: [:shoots, :payment_schedules, :job_status, :galleries]
     )
   end
 
@@ -132,8 +132,8 @@ defmodule Picsello.Jobs do
     Enum.reduce(opts, dynamic(true), fn
       {:status, value}, dynamic ->
         case value do
-          "past" ->
-            filter_past_jobs(dynamic)
+          "completed" ->
+            filter_completed_jobs(dynamic)
 
           "active" ->
             filter_active(dynamic, "jobs")
@@ -172,7 +172,7 @@ defmodule Picsello.Jobs do
     end)
   end
 
-  defp filter_past_jobs(dynamic) do
+  defp filter_completed_jobs(dynamic) do
     dynamic(
       [j, client, job_status],
       ^dynamic and
@@ -253,17 +253,10 @@ defmodule Picsello.Jobs do
 
   defp filter_overdue_jobs(dynamic) do
     dynamic(
-      [j, client, job_status, shoots, package],
-      ^dynamic and ^now() > shoots.starts_at + package.turnaround_weeks * 7 + 1
+      [j, client, job_status, shoots, payment_schedules],
+      ^dynamic and Enum.any?(payment_schedules, fn schedule -> DateTime.compare(schedule.due_at, DateTime.utc_now()) == :lt end)
     )
   end
-
-  def overdue_job?(job) do
-    shoot = tl(job.shoots)
-    now() > shoot.starts_at + job.package.turnaround_weeks * 7 + 1
-  end
-
-  defp now(), do: DateTime.utc_now() |> DateTime.truncate(:second)
 
   defp group_by_clause(query, :name) do
     group_by(query, [j, client], [j.id, client.name])

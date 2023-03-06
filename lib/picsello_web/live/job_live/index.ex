@@ -419,8 +419,8 @@ defmodule PicselloWeb.JobLive.Index do
     [
       %{title: "All", id: "all"},
       %{title: "Active", id: "active"},
-      %{title: "Past", id: "past"},
       %{title: "Overdue", id: "overdue"},
+      %{title: "Completed", id: "completed"},
       %{title: "Archived", id: "archived"}
     ]
   end
