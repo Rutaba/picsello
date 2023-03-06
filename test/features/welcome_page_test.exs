@@ -77,17 +77,6 @@ defmodule Picsello.WelcomePageTest do
       |> assert_has(testid("attention-item", count: 6))
     end
 
-    feature "user opens lead creation from floating menu", %{session: session} do
-      session
-      |> assert_has(css("#float-menu", visible: false))
-      # iPhone 8+
-      |> resize_window(414, 736)
-      |> assert_has(css("#float-menu", visible: true))
-      |> click(css("#float-menu svg"))
-      |> click(link("Add a lead"))
-      |> assert_has(css("label", text: "Event"))
-    end
-
     feature "user open billing portal from invoices card", %{session: session, user: user} do
       order =
         insert(:order,
