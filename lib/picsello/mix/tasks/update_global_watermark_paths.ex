@@ -25,7 +25,7 @@ defmodule Mix.Tasks.UpdateGlobalWatermarkPaths do
           |> PhotoStorage.get_binary()
           |> upload_with_new_path(ggs_id, organization_id)
         end,
-        timeout: 15000
+        timeout: 15_000
       )
     end)
     |> Enum.each(& &1)

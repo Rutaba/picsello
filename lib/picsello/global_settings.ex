@@ -23,7 +23,7 @@ defmodule Picsello.GlobalSettings do
           join: gallery in assoc(gallery_product, :gallery),
           join: job in assoc(gallery, :job),
           join: client in assoc(job, :client),
-          where: gallery.use_global == true,
+          where: fragment("? ->> 'products' = 'true'", gallery.use_global),
           where: client.organization_id == ^gs_gallery_product.organization_id,
           where: gallery_product.category_id == ^gs_gallery_product.category_id,
           update: [set: ^opts]

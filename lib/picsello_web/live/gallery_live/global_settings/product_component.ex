@@ -43,8 +43,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
               <div>
                 <h4 class="font-bold text-xl">Pricing:</h4>
                 <i class="font-normal text-sm text-base-250">From
-                  <%= min_price(category, @organization_id, %{use_global: true}) %> -
-                  <%= max_price(category, @organization_id, %{use_global: true}) %>
+                  <%= min_price(category, @organization_id, %{use_global: %{products: true}}) %> -
+                  <%= max_price(category, @organization_id, %{use_global: %{products: true}}) %>
                 </i>
               </div>
               <%= if category.whcc_id == Category.print_category() do %>

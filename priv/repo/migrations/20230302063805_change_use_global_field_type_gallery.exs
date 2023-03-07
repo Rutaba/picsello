@@ -1,24 +1,24 @@
 defmodule Picsello.Repo.Migrations.ChangeUseGlobalFieldTypeInGallery do
   use Ecto.Migration
 
-  alias Picsello.Repo
   alias Ecto.Multi
+  alias Picsello.Repo
 
-  import Ecto.Query
+  @default %{expiration: true, watermark: true, products: true, digital: true}
 
   def change do
-    galleries = Repo.all(from(g in "galleries", select: %{id: g.id, use_global: g.use_global}))
+    galleries = Gallery.list()
 
     alter table(:galleries) do
       remove(:use_global)
-      add(:use_global, :map, null: false, default: %{expiration: true, watermark: true})
+      add(:use_global, :map, null: false, default: @default)
     end
 
     flush()
 
-    Enum.reduce(galleries, Multi.new(), fn %{id: id} = gallery, multi ->
-      multi
-      |> Multi.update(id, Gallery.change(gallery))
+    galleries
+    |> Enum.reduce(Multi.new(), fn %{id: id} = gallery, multi ->
+      Multi.update(multi, id, Gallery.change(gallery))
     end)
     |> Repo.transaction()
   end
@@ -26,15 +26,26 @@ end
 
 defmodule Gallery do
   use Ecto.Schema
-  alias Ecto.Changeset
+
+  import Ecto.Changeset, only: [change: 2]
+  alias Picsello.Repo
+
+  import Ecto.Query, from: 2
 
   schema "galleries" do
     field :use_global, :map
   end
 
-  def change(%{use_global: use_global, id: id}) do
-    Changeset.change(%Gallery{id: id}, %{
-      use_global: %{expiration: use_global, watermark: use_global, products: use_global}
-    })
+  def change(%{use_global: value, id: id}) do
+    params = %{expiration: value, watermark: value, products: value, digital: value}
+
+    change(%Gallery{id: id}, %{use_global: params})
+  end
+
+  def list() do
+    from(g in "galleries",
+      select: %{id: g.id, use_global: g.use_global}
+    )
+    |> Repo.all()
   end
 end

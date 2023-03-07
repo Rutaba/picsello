@@ -57,6 +57,16 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
+  def list_shared_setting_galleries(organization_id) do
+    organization_id
+    |> list_all_galleries_by_organization_query()
+    |> where([g], fragment("? ->> 'expiration' = 'true'", g.use_global))
+    |> or_where([g], fragment("? ->> 'watermark' = 'true'", g.use_global))
+    |> or_where([g], fragment("? ->> 'products' = 'true'", g.use_global))
+    |> or_where([g], fragment("? ->> 'digital' = 'true'", g.use_global))
+    |> Repo.all()
+  end
+
   def list_all_galleries_by_organization_query(organization_id) do
     from(g in active_disabled_galleries(),
       join: j in Job,
@@ -544,6 +554,12 @@ defmodule Picsello.Galleries do
     |> Repo.update()
   end
 
+  alias Ecto.Changeset
+
+  def save_use_global(multi, %Gallery{} = gallery, use_global) do
+    Multi.update(multi, :update_use_global, Changeset.change(gallery, %{use_global: use_global}))
+  end
+
   @doc """
   Set the gallery name as the job type.
   """
@@ -822,6 +838,16 @@ defmodule Picsello.Galleries do
     |> if(do: :selections_available, else: uploading_status(gallery))
   end
 
+  def save_galleries_watermark(galleries, watermark_change) do
+    galleries
+    |> Enum.reduce(Multi.new(), fn %{id: id} = gallery, multi ->
+      Multi.run(multi, id, fn _, _ ->
+        save_gallery_watermark(gallery, watermark_change)
+      end)
+    end)
+    |> Repo.transaction()
+  end
+
   @doc """
   Creates or updates watermark of the gallery.
   And triggers photo watermarking
@@ -854,6 +880,11 @@ defmodule Picsello.Galleries do
   """
   def load_watermark_in_gallery(%Gallery{} = gallery) do
     Repo.preload(gallery, :watermark, force: true)
+  end
+
+  def delete_multiple_watermarks(gallery_ids) do
+    from(w in Watermark, where: w.gallery_id in ^gallery_ids)
+    |> Repo.delete_all()
   end
 
   @doc """
@@ -1074,18 +1105,20 @@ defmodule Picsello.Galleries do
     end
   end
 
+  def max_price(%{whcc_id: @area_markup_category} = category, org_id, %{
+        use_global: %{products: true}
+      }) do
+    category.id
+    |> print_product_sizes(org_id)
+    |> Enum.max_by(&Decimal.to_float(&1.final_cost), fn -> %{} end)
+    |> WHCC.final_cost()
+  end
+
   def max_price(category, _, %{use_global: use_global}) do
     category
     |> update_markup(use_global)
     |> Picsello.WHCC.max_price_details()
     |> evaluate_price()
-  end
-
-  def max_price(%{whcc_id: @area_markup_category} = category, org_id, %{use_global: true}) do
-    category.id
-    |> print_product_sizes(org_id)
-    |> Enum.max_by(& &1.final_cost, fn -> %{} end)
-    |> WHCC.final_cost()
   end
 
   defp print_product_sizes(category_id, organization_id) do
@@ -1099,10 +1132,12 @@ defmodule Picsello.Galleries do
     |> Enum.concat()
   end
 
-  def min_price(%{whcc_id: @area_markup_category} = category, org_id, %{use_global: true}) do
+  def min_price(%{whcc_id: @area_markup_category} = category, org_id, %{
+        use_global: %{products: true}
+      }) do
     category.id
     |> print_product_sizes(org_id)
-    |> Enum.min_by(& &1.final_cost, fn -> %{} end)
+    |> Enum.min_by(&Decimal.to_float(&1.final_cost), fn -> %{} end)
     |> WHCC.final_cost()
   end
 
@@ -1113,8 +1148,10 @@ defmodule Picsello.Galleries do
     |> evaluate_price()
   end
 
-  defp update_markup(%{gs_gallery_products: [%{markup: markup}]} = category, use_global) do
-    if use_global do
+  defp update_markup(%{gs_gallery_products: [%{markup: markup}]} = category, %{
+         products: products?
+       }) do
+    if products? do
       %{category | default_markup: markup}
     else
       category

@@ -3,6 +3,8 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
   use PicselloWeb, :live_component
 
   alias Picsello.Galleries
+  alias Ecto.Multi
+  alias Picsello.Repo
   import PicselloWeb.GalleryLive.Shared, only: [disabled?: 1]
 
   @impl true
@@ -74,7 +76,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
             month: month,
             day: day,
             year: year,
-            gallery: gallery
+            gallery: %{use_global: use_global} = gallery
           }
         } = socket
       ) do
@@ -86,7 +88,18 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
         DateTime.new!(date, ~T[12:00:00], "Etc/UTC")
       end
 
-    {:ok, gallery} = Galleries.set_expire(gallery, %{expired_at: datetime})
+    Multi.new()
+    |> Multi.run(:set_expire, fn _, _ ->
+      Galleries.set_expire(gallery, %{expired_at: datetime})
+    end)
+    |> then(fn
+      multi when use_global.expiration ->
+        Galleries.save_use_global(multi, gallery, %{expiration: false})
+
+      multi ->
+        multi
+    end)
+    |> Repo.transaction()
 
     send(self(), :expiration_saved)
 

@@ -7,7 +7,8 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
-  alias Ecto.{Multi, Changeset}
+  alias Ecto.Multi
+  alias Picsello.Repo
 
   alias PicselloWeb.GalleryLive.{
     Settings.CustomWatermarkComponent,
@@ -16,7 +17,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   alias Galleries.{
     CoverPhoto,
-    Watermark,
     Workers.PhotoStorage,
     PhotoProcessing.ProcessingManager,
     PhotoProcessing.Waiter
@@ -225,9 +225,19 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @impl true
   def handle_info(
         {:confirm_event, "delete_watermark", _},
-        %{assigns: %{gallery: gallery}} = socket
+        %{assigns: %{gallery: %{use_global: use_global} = gallery}} = socket
       ) do
-    Galleries.delete_gallery_watermark(gallery.watermark)
+    Multi.new()
+    |> Multi.delete(:delete_watermark, gallery.watermark)
+    |> then(fn
+      multi when use_global.watermark ->
+        Galleries.save_use_global(multi, gallery, %{watermark: false})
+
+      multi ->
+        multi
+    end)
+    |> Repo.transaction()
+
     send(self(), :clear_watermarks)
 
     socket
@@ -294,7 +304,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   @impl true
   def handle_info(:expiration_saved, %{assigns: %{gallery: gallery}} = socket) do
-    avoid_global_settings(gallery)
     gallery = Galleries.get_gallery!(gallery.id) |> Galleries.load_watermark_in_gallery()
 
     socket
@@ -368,41 +377,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> Galleries.update_gallery(%{status: "active"})
     |> process_gallery(socket, :enabled)
   end
-
-  defp avoid_global_settings(%{use_global: true} = gallery) do
-    gallery
-    |> Galleries.load_watermark_in_gallery()
-    |> case do
-      %{watermark: %{type: "image"} = watermark} ->
-        %{organization: organization} = gallery = Repo.preload(gallery, :organization)
-
-        [ex_path, new_path] = Enum.map([organization, gallery], &Watermark.watermark_path(&1.id))
-
-        {:ok, %{body: file, status: 200}} = PhotoStorage.get_binary(ex_path)
-        {:ok, _} = PhotoStorage.insert(new_path, file)
-
-        Multi.new()
-        |> Multi.run(:new_watermark, fn _, _ ->
-          Galleries.save_watermark(
-            gallery,
-            watermark
-            |> Map.from_struct()
-            |> Map.take([:name, :type, :size, :text, :gallery_id])
-          )
-        end)
-
-      _ ->
-        Multi.new()
-    end
-    |> Multi.update(:gallery, Changeset.change(gallery, %{use_global: false}))
-    |> Repo.transaction()
-    |> tap(fn
-      {:ok, _} -> Galleries.apply_watermark_on_photos(gallery)
-      x -> x
-    end)
-  end
-
-  defp avoid_global_settings(%{use_global: false}), do: :ok
 
   defp process_gallery(result, socket, type) do
     {success, failure} =

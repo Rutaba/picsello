@@ -42,10 +42,11 @@ defmodule Picsello.Galleries.Gallery do
     has_one(:package, through: [:job, :package])
     has_one(:photographer, through: [:job, :client, :organization, :user])
 
-    embeds_one :use_global, UseGlobal do
-      field :expiration, :boolean, default: true
-      field :watermark, :boolean, default: true
-      field :products, :boolean, default: true
+    embeds_one :use_global, UseGlobal, on_replace: :update do
+      field :expiration, :boolean
+      field :watermark, :boolean
+      field :products, :boolean
+      field :digital, :boolean
     end
 
     timestamps(type: :utc_datetime)
@@ -81,7 +82,6 @@ defmodule Picsello.Galleries.Gallery do
     gallery
     |> cast(attrs, @create_attrs)
     |> cast_assoc(:albums, with: &Album.gallery_changeset/2)
-    |> cast_embed(:use_global)
     |> cast_password()
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])
@@ -92,7 +92,6 @@ defmodule Picsello.Galleries.Gallery do
   def update_changeset(gallery, attrs \\ %{}) do
     gallery
     |> cast(attrs, @update_attrs)
-    |> cast_embed(:use_global)
     |> validate_required(@required_attrs)
     |> validate_status(@status_options[:values])
     |> validate_name()

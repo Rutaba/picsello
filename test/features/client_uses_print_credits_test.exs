@@ -25,7 +25,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     gallery =
       insert(:gallery,
-        use_global: true,
+        use_global: %{watermark: true, expiration: true, digital: true, products: true},
         job:
           insert(:lead,
             client: insert(:client, organization: organization),

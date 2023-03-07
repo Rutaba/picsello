@@ -70,7 +70,6 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
 
   @impl true
   def handle_event("save", _, %{assigns: %{gallery: gallery, changeset: changeset}} = socket) do
-    gallery |> Ecto.Changeset.change(%{use_global: false}) |> Picsello.Repo.update!()
     {:ok, _gallery} = Galleries.save_gallery_watermark(gallery, changeset)
 
     send(self(), :close_watermark_popup)
