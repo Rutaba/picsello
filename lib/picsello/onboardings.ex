@@ -1,6 +1,14 @@
 defmodule Picsello.Onboardings do
   @moduledoc "context module for photographer onboarding"
-  alias Picsello.{Repo, Accounts.User, Organization, OrganizationJobType, Profiles.Profile}
+  alias Picsello.{
+    Repo,
+    Accounts.User,
+    Organization,
+    OrganizationJobType,
+    Profiles.Profile,
+    Subscriptions
+  }
+
   import Ecto.Changeset
   import Picsello.Accounts.User, only: [put_new_attr: 3, update_attr_in: 3]
   import Ecto.Query, only: [from: 2]
@@ -57,6 +65,7 @@ defmodule Picsello.Onboardings do
       field(:social_handle, :string)
       field(:online_source, :string, values: @online_source_options)
       field(:welcome_count, :integer)
+      field(:promotion_code, :string, default: nil)
       embeds_many(:intro_states, IntroState, on_replace: :delete)
     end
 
@@ -70,9 +79,11 @@ defmodule Picsello.Onboardings do
         :state,
         :social_handle,
         :online_source,
-        :welcome_count
+        :welcome_count,
+        :promotion_code
       ])
       |> validate_required([:state, :photographer_years, :schedule])
+      |> validate_change(:promotion_code, &valid_promotion_codes/2)
       |> validate_change(:phone, &valid_phone/2)
     end
 
@@ -81,6 +92,12 @@ defmodule Picsello.Onboardings do
       |> cast(attrs, [:phone])
       |> validate_required([:phone])
       |> validate_change(:phone, &valid_phone/2)
+    end
+
+    def promotion_code_changeset(%__MODULE__{} = onboarding, attrs) do
+      onboarding
+      |> cast(attrs, [:promotion_code])
+      |> validate_change(:promotion_code, &valid_promotion_codes/2)
     end
 
     def welcome_count_changeset(%__MODULE__{} = onboarding, attrs) do
@@ -96,6 +113,14 @@ defmodule Picsello.Onboardings do
     def software_options(), do: @software_options
 
     def online_source_options(), do: @online_source_options
+
+    defp valid_promotion_codes(field, value) do
+      if is_nil(Subscriptions.maybe_get_promotion_code?(value)) do
+        [{field, "(code doesn't exist)"}]
+      else
+        []
+      end
+    end
   end
 
   defdelegate software_options(), to: Onboarding
@@ -185,6 +210,12 @@ defmodule Picsello.Onboardings do
     current_user
     |> cast(attr, [])
     |> cast_embed(:onboarding, with: &Onboarding.phone_changeset(&1, &2), required: true)
+  end
+
+  def user_update_promotion_code_changeset(current_user, attrs) do
+    current_user
+    |> cast(attrs, [])
+    |> cast_embed(:onboarding, with: &Onboarding.promotion_code_changeset(&1, &2))
   end
 
   def increase_welcome_count!(%{onboarding: %{welcome_count: count}} = current_user) do

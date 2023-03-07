@@ -39,6 +39,7 @@ defmodule PicselloWeb.Live.User.Settings do
         time_zone_changeset: time_zone_changeset(user)
       )
     )
+    |> assign(:promotion_code, Subscriptions.maybe_get_promotion_code?(user))
     |> ok()
   end
 
@@ -275,6 +276,13 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   @impl true
+  def handle_event("open-promo-code-modal", _params, %{assigns: assigns} = socket) do
+    socket
+    |> PicselloWeb.Live.User.Settings.PromoCodeModal.open(Map.take(assigns, [:current_user]))
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("sign_out", _params, socket) do
     socket
     |> assign(sign_out: true)
@@ -302,6 +310,17 @@ defmodule PicselloWeb.Live.User.Settings do
       {:error, changeset} ->
         socket |> close_modal() |> assign(organization_name_changeset: changeset) |> noreply()
     end
+  end
+
+  def handle_info(
+        {:close_event, %{event_name: "close_promo_code"}},
+        socket
+      ) do
+    socket
+    |> put_flash(:success, "Updated promo code")
+    |> redirect(to: Routes.user_settings_path(socket, :edit))
+    |> close_modal()
+    |> noreply()
   end
 
   def settings_nav(assigns) do
