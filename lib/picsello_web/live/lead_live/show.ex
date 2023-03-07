@@ -197,6 +197,18 @@ defmodule PicselloWeb.LeadLive.Show do
     |> noreply()
   end
 
+  def handle_event("confirm_unarchive_lead", %{}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No! Get me out of here",
+      confirm_event: "unarchive-lead",
+      confirm_label: "Yes, unarchive the lead",
+      icon: "warning-orange",
+      title: "Are you sure you want to unarchive this lead?"
+    })
+    |> noreply()
+  end
+
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
@@ -327,13 +339,32 @@ defmodule PicselloWeb.LeadLive.Show do
         socket
         |> assign_job(job.id)
         |> close_modal()
-        |> put_flash(:info, "Lead archived")
+        |> put_flash(:success, "Lead archived")
         |> noreply()
 
       {:error, _} ->
         socket
         |> close_modal()
         |> put_flash(:error, "Failed to archive lead. Please try again.")
+        |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_info({:confirm_event, "unarchive-lead"}, %{assigns: %{job: job}} = socket) do
+    case Picsello.Jobs.unarchive_lead(job) do
+      {:ok, _job} ->
+        socket
+        |> assign_job(job.id)
+        |> close_modal()
+        |> put_flash(:success, "Lead has been unarchived")
+        |> redirect(to: Routes.job_path(socket, :leads, job.id))
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:error, "Some error occurred")
         |> noreply()
     end
   end
