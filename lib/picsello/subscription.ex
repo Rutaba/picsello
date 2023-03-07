@@ -13,6 +13,7 @@ defmodule Picsello.Subscription do
     field :active, :boolean
     field :price, Money.Ecto.Amount.Type
     field :recurring_interval, :string
+    field :stripe_subscription_id, :string
     belongs_to :user, User
   end
 end

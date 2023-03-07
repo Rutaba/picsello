@@ -179,8 +179,8 @@ defmodule Picsello.SubscriptionChangesTest do
     session
     |> click(link("Settings"))
     |> assert_path("/home")
-    |> assert_text("Your plan has expired")
-    |> click(button("Select this plan", count: 2, at: 1))
+    |> assert_text("Your subscription has expired")
+    |> click(button("Select plan", count: 2, at: 1))
 
     assert_receive {:checkout_linked, %{success_url: stripe_success_url}}
 
@@ -191,6 +191,80 @@ defmodule Picsello.SubscriptionChangesTest do
     |> click(link("Settings"))
     |> assert_text("Current Plan")
     |> assert_text("$500/year")
+  end
+
+  feature "when subscription is canceled and adds a promo code", %{
+    session: session,
+    user: user,
+    plan: plan
+  } do
+    insert(:subscription_event, user: user, subscription_plan: plan, status: "canceled")
+
+    yearly_plan =
+      insert(:subscription_plan,
+        recurring_interval: "year",
+        stripe_price_id: "price_987",
+        price: 50_000,
+        active: true
+      )
+
+    insert(:subscription_promotion_codes,
+      code: "20OFF",
+      stripe_promotion_code_id: "asdf231",
+      percent_off: 20.0
+    )
+
+    test_pid = self()
+
+    Picsello.MockPayments
+    |> Mox.stub(:create_session, fn params, opts ->
+      send(
+        test_pid,
+        {:checkout_linked, opts |> Enum.into(params)}
+      )
+
+      {:ok, "https://example.com/stripe-checkout"}
+    end)
+    |> Mox.stub(:retrieve_session, fn "{CHECKOUT_SESSION_ID}", _opts ->
+      {:ok, %Stripe.Session{subscription: "sub_123"}}
+    end)
+    |> Mox.stub(:retrieve_subscription, fn "sub_123", _opts ->
+      {:ok,
+       %Stripe.Subscription{
+         id: "s1",
+         status: "active",
+         current_period_start: DateTime.utc_now() |> DateTime.to_unix(),
+         current_period_end: DateTime.utc_now() |> DateTime.add(100) |> DateTime.to_unix(),
+         plan: %{id: yearly_plan.stripe_price_id},
+         customer: "cus_123"
+       }}
+    end)
+
+    session
+    |> click(link("Settings"))
+    |> assert_path("/home")
+    |> assert_text("Your subscription has expired")
+    |> click(testid("promo-code"))
+    |> fill_in(text_field("Applies to monthly or yearly"), with: "FRIENDS20")
+    |> assert_text("Applies to monthly or yearly (code doesn't exist)")
+    |> fill_in(text_field("Applies to monthly or yearly"), with: "")
+    |> assert_text("Applies to monthly or yearly")
+    |> fill_in(text_field("Applies to monthly or yearly"), with: "20OFF")
+    |> assert_text("Applies to monthly or yearly")
+    |> click(testid("promo-code"))
+    |> assert_text("Your subscription has expired")
+    |> click(button("Select plan", count: 2, at: 1))
+
+    assert_receive {:checkout_linked, %{success_url: stripe_success_url}}
+
+    session
+    |> visit(stripe_success_url)
+    |> assert_text("You have subscribed to Picsello")
+    |> click(button("Close"))
+    |> click(link("Settings"))
+    |> assert_text("Current Plan")
+    |> assert_text("$500/year")
+    |> assert_text("20OFF")
   end
 
   feature "user goes to billing portal", %{session: session, user: user, plan: plan} do
@@ -221,5 +295,47 @@ defmodule Picsello.SubscriptionChangesTest do
     return_url = Routes.user_settings_url(PicselloWeb.Endpoint, :edit)
 
     assert_receive {:portal_session_created, %{customer: "cus_123", return_url: ^return_url}}
+  end
+
+  feature "user adds a promotion code", %{session: session, user: user, plan: plan} do
+    insert(:subscription_event, user: user, subscription_plan: plan, status: "active")
+
+    insert(:subscription_promotion_codes,
+      code: "20OFF",
+      stripe_promotion_code_id: "asdf231",
+      percent_off: 20.0
+    )
+
+    Mox.stub(Picsello.MockPayments, :update_subscription, fn _, %{coupon: coupon}, _ ->
+      {:ok,
+       %Stripe.Subscription{
+         id: "sub_123",
+         status: "active",
+         customer: "cus_123",
+         discount: %{
+           coupon: %{
+             id: coupon
+           }
+         }
+       }}
+    end)
+
+    session
+    |> click(link("Settings"))
+    |> assert_text("Add promo code")
+    |> click(testid("promo-code"))
+    |> within_modal(fn modal ->
+      modal
+      |> fill_in(text_field("Add a subscription promo code"), with: "FRIENDS20")
+      |> assert_text("(code doesn't exist)")
+      |> fill_in(text_field("Add a subscription promo code"), with: "")
+      |> fill_in(text_field("Add a subscription promo code"), with: "20OFF")
+      |> wait_for_enabled_submit_button()
+      |> click(button("Save code"))
+    end)
+    |> visit("/users/settings")
+    |> assert_text("Edit promo code")
+    |> assert_text("Current Plan")
+    |> assert_text("20OFF")
   end
 end
