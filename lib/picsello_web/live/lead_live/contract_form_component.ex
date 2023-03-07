@@ -3,6 +3,7 @@ defmodule PicselloWeb.ContractFormComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Contract, Contracts}
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
+  import PicselloWeb.PackageLive.Shared, only: [assign_turnaround_weeks: 1]
 
   @impl true
   def update(%{package: package} = assigns, socket) do
@@ -12,7 +13,8 @@ defmodule PicselloWeb.ContractFormComponent do
     |> assign_options()
     |> assign_new(:contract, fn ->
       if package.contract do
-        struct(Contract, package.contract |> Map.take([:contract_template_id, :content]))
+        package_contract = assign_turnaround_weeks(package)
+        struct(Contract, package_contract |> Map.take([:contract_template_id, :content]))
       else
         default_contract = Contracts.default_contract(package)
 

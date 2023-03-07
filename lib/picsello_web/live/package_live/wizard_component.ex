@@ -31,7 +31,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       package_basic_fields: 1,
       digital_download_fields: 1,
       print_credit_fields: 1,
-      current: 1
+      current: 1,
+      assign_turnaround_weeks: 1
     ]
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
@@ -1701,18 +1702,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         contract_template_id: default_contract.id
       }
     end
-  end
-
-  defp assign_turnaround_weeks(package) do
-    weeks =
-      case package.turnaround_weeks do
-        1 -> "1 week"
-        num_weeks -> "#{num_weeks} weeks"
-      end
-
-    text = package.contract.content
-    updated_content = Regex.replace(~r/(\d+)\s+(week\b|weeks\b)/, text, weeks)
-    Map.put(package.contract, :content, updated_content)
   end
 
   defp interval_dropdown_options(field, index) do
