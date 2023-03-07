@@ -1703,7 +1703,7 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_inbox_count()
   end
 
-  defp open_email_compose(%{assigns: %{job: job}} = socket),
+  defp open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
     do:
       socket
       |> ClientMessageComponent.open(%{
@@ -1712,7 +1712,8 @@ defmodule PicselloWeb.JobLive.Shared do
         show_subject: true,
         presets: [],
         send_button: "Send",
-        client: Job.client(job)
+        client: Job.client(job),
+        current_user: current_user
       })
       |> noreply()
 

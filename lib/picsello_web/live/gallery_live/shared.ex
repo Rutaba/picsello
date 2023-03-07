@@ -31,7 +31,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def handle_event(
         "client-link",
         _,
-        %{assigns: %{gallery: %{type: :standard} = gallery}} = socket
+        %{assigns: %{current_user: current_user, gallery: %{type: :standard} = gallery}} = socket
       ) do
     case prepare_gallery(gallery) do
       {:ok, _} ->
@@ -56,7 +56,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
           presets: [],
           enable_image: true,
           enable_size: true,
-          client: Job.client(gallery.job)
+          client: Job.client(gallery.job),
+          current_user: current_user
         })
         |> noreply()
 
@@ -70,7 +71,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def handle_event(
         "client-link",
         _,
-        %{assigns: %{gallery: gallery}} = socket
+        %{assigns: %{current_user: current_user, gallery: gallery}} = socket
       ) do
     %{albums: [album]} = gallery = Repo.preload(gallery, :albums)
 
@@ -103,7 +104,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
           enable_image: true,
           enable_size: true,
           composed_event: :message_composed_for_album,
-          client: Job.client(gallery.job)
+          client: Job.client(gallery.job),
+          current_user: current_user
         })
         |> noreply()
 
