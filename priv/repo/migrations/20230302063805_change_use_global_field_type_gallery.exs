@@ -27,10 +27,10 @@ end
 defmodule Gallery do
   use Ecto.Schema
 
+  import Ecto.Query, only: [from: 2]
   import Ecto.Changeset, only: [change: 2]
-  alias Picsello.Repo
 
-  import Ecto.Query, from: 2
+  alias Picsello.Repo
 
   schema "galleries" do
     field :use_global, :map
