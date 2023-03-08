@@ -530,14 +530,14 @@ defmodule PicselloWeb.PackageLive.Shared do
   defp digital_detail(assigns) do
     ~H"""
       <%= cond do %>
-        <%= Money.zero?(@download_each_price) -> %>
-        <dt class="text-gray-500">All digital images included</dt>
+        <% Money.zero?(@download_each_price) -> %>
+          <dt class="text-gray-500">All digital images included</dt>
         <% @download_count == 0 -> %>
-        <dt class="text-gray-500">No digital images included</dt>
+          <dt class="text-gray-500">No digital images included</dt>
         <% true -> %>
         <dt class="text-gray-500">Digital images included</dt>
-        <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
-        <%= @download_count %>
+          <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
+            <%= @download_count %>
         </dd>
       <% end %>
     """

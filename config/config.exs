@@ -5,7 +5,7 @@
 # is restricted to this project.
 
 # General application configuration
-use Mix.Config
+import Config
 
 with dotenv = "#{__DIR__}/../.env",
      {:ok, data} <- File.read(dotenv),

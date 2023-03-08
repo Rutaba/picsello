@@ -2,7 +2,7 @@ defmodule Picsello.Messages do
   @moduledoc """
   The Messages context.
   """
-  
+
   require Logger
   import Ecto.Query, warn: false
 
@@ -63,7 +63,9 @@ defmodule Picsello.Messages do
     |> ClientMessage.create_outbound_changeset()
     |> Ecto.Changeset.put_change(:job_id, job.id)
     |> Ecto.Changeset.put_change(:scheduled, true)
-    |> Ecto.Changeset.put_assoc(:client_message_recipients, [%{client_id: job.client_id, recipient_type: "to"}])
+    |> Ecto.Changeset.put_assoc(:client_message_recipients, [
+      %{client_id: job.client_id, recipient_type: "to"}
+    ])
   end
 
   def notify_inbound_message(%ClientMessage{} = message, helpers) do

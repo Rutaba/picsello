@@ -109,7 +109,9 @@ defmodule PicselloWeb.ClientMessageComponent do
   @impl true
   def handle_event("update-html", _, %{assigns: %{changeset: changeset}} = socket) do
     socket
-    |> push_event("quill:update", %{"html" => changeset |> current() |> Map.get(:body_html) |> IO.inspect()})
+    |> push_event("quill:update", %{
+      "html" => changeset |> current() |> Map.get(:body_html) |> IO.inspect()
+    })
     |> noreply()
   end
 
@@ -318,23 +320,80 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> noreply()
   end
 
-  defp add_or_remove_client_name(%{assigns: %{recipients: recipients, changeset: changeset, client: client}} = socket) do
-    no_of_recipients = length(Map.get(recipients, "to")) + length(Map.get(recipients, "cc", [])) + length(Map.get(recipients, "bcc", []))
+  defp add_or_remove_client_name(
+         %{assigns: %{recipients: recipients, changeset: changeset, client: client}} = socket
+       ) do
+    no_of_recipients =
+      length(Map.get(recipients, "to")) + length(Map.get(recipients, "cc", [])) +
+        length(Map.get(recipients, "bcc", []))
+
     body_text = changeset |> current() |> Map.get(:body_text)
     body_html = changeset |> current() |> Map.get(:body_html)
-    greeting = if !is_nil(body_text), do: body_text |> String.split() |> hd(), else: body_html |> String.split() |> hd() |> String.replace("<p>", "")
+
+    greeting =
+      if !is_nil(body_text),
+        do: body_text |> String.split() |> hd(),
+        else: body_html |> String.split() |> hd() |> String.replace("<p>", "")
 
     changeset =
       if no_of_recipients > 1 do
-        changeset = if !is_nil(body_text), do: Ecto.Changeset.put_change(changeset, :body_text, (String.replace(body_text, "#{greeting} #{client.name |> String.split() |> hd()}", "#{greeting}"))), else: changeset
-        if !is_nil(body_html), do: Ecto.Changeset.put_change(changeset, :body_html, (String.replace(body_html, "#{greeting} #{client.name |> String.split() |> hd()}", "#{greeting}"))), else: changeset
+        changeset =
+          if !is_nil(body_text),
+            do:
+              Ecto.Changeset.put_change(
+                changeset,
+                :body_text,
+                String.replace(
+                  body_text,
+                  "#{greeting} #{client.name |> String.split() |> hd()}",
+                  "#{greeting}"
+                )
+              ),
+            else: changeset
+
+        if !is_nil(body_html),
+          do:
+            Ecto.Changeset.put_change(
+              changeset,
+              :body_html,
+              String.replace(
+                body_html,
+                "#{greeting} #{client.name |> String.split() |> hd()}",
+                "#{greeting}"
+              )
+            ),
+          else: changeset
       else
-        changeset = if !is_nil(body_text), do: Ecto.Changeset.put_change(changeset, :body_text, (String.replace(body_text, "#{greeting}", "#{greeting} #{client.name |> String.split() |> hd()}"))), else: changeset
-        if !is_nil(body_html), do: Ecto.Changeset.put_change(changeset, :body_html, (String.replace(body_html, "#{greeting}", "#{greeting} #{client.name |> String.split() |> hd()}"))), else: changeset
+        changeset =
+          if !is_nil(body_text),
+            do:
+              Ecto.Changeset.put_change(
+                changeset,
+                :body_text,
+                String.replace(
+                  body_text,
+                  "#{greeting}",
+                  "#{greeting} #{client.name |> String.split() |> hd()}"
+                )
+              ),
+            else: changeset
+
+        if !is_nil(body_html),
+          do:
+            Ecto.Changeset.put_change(
+              changeset,
+              :body_html,
+              String.replace(
+                body_html,
+                "#{greeting}",
+                "#{greeting} #{client.name |> String.split() |> hd()}"
+              )
+            ),
+          else: changeset
       end
 
     socket
-      |> assign(:changeset, changeset)
+    |> assign(:changeset, changeset)
   end
 
   defp search_existing_clients(assigns) do
