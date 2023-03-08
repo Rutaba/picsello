@@ -113,7 +113,7 @@ defmodule Picsello.Packages do
 
     def changeset(download \\ %__MODULE__{}, attrs) do
       changeset =
-        download
+        update_is_buy_all(download)
         |> cast(attrs, [
           :status,
           :is_custom_price,
@@ -169,6 +169,9 @@ defmodule Picsello.Packages do
         changeset
       end
     end
+
+    defp update_is_buy_all(%{buy_all: nil} = download), do: Map.put(download, :is_buy_all, false)
+    defp update_is_buy_all(download), do: download
 
     defp validate_buy_all(changeset) do
       download_each_price = get_field(changeset, :each_price) || @zero_price
