@@ -57,42 +57,28 @@ defmodule PicselloWeb.ClientMessageComponent do
       <h1 class="text-3xl mb-4"><%= @modal_title %></h1>
         <div class="flex flex-col">
           <label for="to_email" class="text-sm font-semibold mb-2">To: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
-          <div class="flex flex-col md:flex-row md:justify-between">
-            <input type="text" class="w-full md:w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, "to"), "; ")}"} phx-keyup="validate_to_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
+          <div class="flex flex-col md:flex-row">
+            <input type="text" class="w-full md:w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, "to"), "; ")}"} phx-keyup="validate_to_email" phx-target={@myself} phx-blur="update-html" phx-debounce="1000" spellcheck="false"/>
             <.search_existing_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
           </div>
           <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@to_email_error})}><%= @to_email_error %></span>
-          </div>
+        </div>
 
         <%= if @show_cc do %>
-          <div clas="flex flex-col">
-            <div class="flex flex-col md:flex-row mt-4">
-              <label for="cc_email" class="text-sm font-semibold mb-2">CC: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
-              <.icon_button class="bg-white border-red-sales-300 mr-0" title="remove" phx-click="remove-cc" phx-target={@myself} color="red-sales-300" icon="trash"/>
-            </div>
-            <input type="text" class="w-2/3 text-input" id="cc_email" value={(if Map.has_key?(@recipients, "cc"), do: "#{Enum.join(Map.get(@recipients, "cc", []), "; ")}", else: "")} phx-keyup="validate_cc_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
-            <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@cc_email_error})}><%= @cc_email_error %></span>
-          </div>
+          <.show_optional_input email_type="cc" error={@cc_email_error} myself={@myself} recipients={@recipients} />
         <% end %>
         <%= if @show_bcc do %>
-          <div class="flex flex-col">
-            <div class="flex flex-col md:flex-row mt-4">
-              <label for="bcc_email" class="text-sm font-semibold mb-2">BCC: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
-              <.icon_button class="bg-white border-red-sales-300 mr-0" title="remove" phx-click="remove-bcc" phx-target={@myself} color="red-sales-300" icon="trash"/>
-            </div>
-            <input type="text" class="w-2/3 text-input" id="bcc_email" value={(if Map.has_key?(@recipients, "bcc"), do: "#{Enum.join(Map.get(@recipients, "bcc", []), "; ")}", else: "")} phx-keyup="validate_bcc_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
-            <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@bcc_email_error})}><%= @bcc_email_error %></span>
-          </div>
+          <.show_optional_input email_type="bcc" error={@bcc_email_error} myself={@myself} recipients={@recipients} />
         <% end %>
-        <div class="flex flex-row">
+        <div class="flex flex-row mt-4">
         <%= if !@show_cc do %>
-          <.icon_button class="py-1 px-4 mt-4 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add CC" phx-click="show-cc" phx-target={@myself} color="blue-planning-300" icon="plus">
-            Add CC
+          <.icon_button class="w-full md:w-28 justify-center bg-white border-blue-planning-300 text-black" phx-click="show-cc" phx-target={@myself} color="blue-planning-300" icon="plus">
+            Add Cc
           </.icon_button>
         <% end %>
         <%= if !@show_bcc do %>
-          <.icon_button class="py-1 px-4 mt-4 ml-2 w-full sm:w-36 justify-center bg-white border-blue-planning-300 text-black" title="Add BCC" phx-click="show-bcc" phx-target={@myself} color="blue-planning-300" icon="plus">
-            Add BCC
+          <.icon_button class="ml-2 w-full md:w-28 justify-center bg-white border-blue-planning-300 text-black" phx-click="show-bcc" phx-target={@myself} color="blue-planning-300" icon="plus">
+            Add Bcc
           </.icon_button>
         <% end %>
       </div>
@@ -118,6 +104,13 @@ defmodule PicselloWeb.ClientMessageComponent do
       </.form>
     </div>
     """
+  end
+
+  @impl true
+  def handle_event("update-html", _, %{assigns: %{changeset: changeset}} = socket) do
+    socket
+    |> push_event("quill:update", %{"html" => changeset |> current() |> Map.get(:body_html) |> IO.inspect()})
+    |> noreply()
   end
 
   @impl true
@@ -214,7 +207,6 @@ defmodule PicselloWeb.ClientMessageComponent do
 
     socket
     |> assign_changeset(:validate, %{subject: preset.subject_template, body: preset.body_template})
-    |> push_event("quill:update", %{"html" => preset.body_template})
     |> noreply()
   end
 
@@ -328,24 +320,26 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   defp add_or_remove_client_name(%{assigns: %{recipients: recipients, changeset: changeset, client: client}} = socket) do
     no_of_recipients = length(Map.get(recipients, "to")) + length(Map.get(recipients, "cc", [])) + length(Map.get(recipients, "bcc", []))
+    body_text = changeset |> current() |> Map.get(:body_text)
+    body_html = changeset |> current() |> Map.get(:body_html)
+    greeting = if !is_nil(body_text), do: body_text |> String.split() |> hd(), else: body_html |> String.split() |> hd() |> String.replace("<p>", "")
 
     changeset =
       if no_of_recipients > 1 do
-        changeset = if changeset |> current() |> Map.has_key?(:body_text), do: Ecto.Changeset.put_change(changeset, :body_text, (String.replace((changeset |> current() |> Map.get(:body_text)), "Hi #{client.name |> String.split() |> hd()}", "Hi"))), else: changeset
-        if changeset |> current() |> Map.has_key?(:body_html), do: Ecto.Changeset.put_change(changeset, :body_html, (String.replace((changeset |> current() |> Map.get(:body_html)), "Hi #{client.name |> String.split() |> hd()}", "Hi"))), else: changeset
+        changeset = if !is_nil(body_text), do: Ecto.Changeset.put_change(changeset, :body_text, (String.replace(body_text, "#{greeting} #{client.name |> String.split() |> hd()}", "#{greeting}"))), else: changeset
+        if !is_nil(body_html), do: Ecto.Changeset.put_change(changeset, :body_html, (String.replace(body_html, "#{greeting} #{client.name |> String.split() |> hd()}", "#{greeting}"))), else: changeset
       else
-        changeset = if changeset |> current() |> Map.has_key?(:body_text), do: Ecto.Changeset.put_change(changeset, :body_text, (String.replace((changeset |> current() |> Map.get(:body_text)), "Hi", "Hi #{client.name |> String.split() |> hd()}"))), else: changeset
-        if changeset |> current() |> Map.has_key?(:body_html), do: Ecto.Changeset.put_change(changeset, :body_html, (String.replace((changeset |> current() |> Map.get(:body_html)), "Hi", "Hi #{client.name |> String.split() |> hd()}"))), else: changeset
+        changeset = if !is_nil(body_text), do: Ecto.Changeset.put_change(changeset, :body_text, (String.replace(body_text, "#{greeting}", "#{greeting} #{client.name |> String.split() |> hd()}"))), else: changeset
+        if !is_nil(body_html), do: Ecto.Changeset.put_change(changeset, :body_html, (String.replace(body_html, "#{greeting}", "#{greeting} #{client.name |> String.split() |> hd()}"))), else: changeset
       end
 
     socket
       |> assign(:changeset, changeset)
-      |> push_event("quill:update", %{"html" => changeset |> current() |> Map.get(:body_html)})
   end
 
   defp search_existing_clients(assigns) do
     ~H"""
-      <div class="flex w-full md:w-1/3">
+      <div class="w-full md:w-1/3 md:ml-6">
         <%= form_tag("#", [phx_change: :search, phx_target: @myself]) do %>
           <div class="relative flex flex-col w-full md:flex-row">
             <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
@@ -359,30 +353,27 @@ defmodule PicselloWeb.ClientMessageComponent do
             </a>
             <input type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="500" spellcheck="false" phx-target={@myself} placeholder="Search clients to add to email..." />
             <%= if Enum.any?(@search_results) do %>
-              <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
-                <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
-                  <%= for search_result <- @search_results do %>
-                    <div class={"flex items-center cursor-pointer p-2"}>
-                      <div>
+                <div id="search_results" class="absolute top-14 w-full z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
+                  <%= for search_result <- Enum.take(@search_results, 5) do %>
+                    <div class={"flex items-center cursor-pointer p-3"}>
+                      <div class="w-full">
                         <p class="font-bold"><%= search_result.name %></p>
                         <p class="text-sm"><%= search_result.email %></p>
-                        <div class="flex flex-row mt-2">
+                        <div class="flex justify-between mt-2">
                         <.add_icon_button title="Add to" click_event="add-to" myself={@myself} search_result={search_result}/>
-                        <.add_icon_button title="Add CC" click_event="add-cc"  myself={@myself} search_result={search_result}/>
-                        <.add_icon_button title="Add BCC" click_event="add-bcc" myself={@myself} search_result={search_result}/>
+                        <.add_icon_button title="Add Cc" click_event="add-cc"  myself={@myself} search_result={search_result}/>
+                        <.add_icon_button title="Add Bcc" click_event="add-bcc" myself={@myself} search_result={search_result}/>
 
                         </div>
                       </div>
                     </div>
                   <% end %>
-                </div>
               </div>
             <% else %>
               <%= if @search_phrase && @search_phrase !== "" && Enum.empty?(@search_results) do %>
                 <div class="absolute top-14 w-full">
                   <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 cursor-pointer shadow py-2 px-2 bg-white">
-                    <p class="font-bold">No client found with that information</p>
-                    <p>You'll need to add a new client</p>
+                    <p class="font-bold">No clients found with that info</p>
                   </div>
                 </div>
               <% end %>
@@ -393,11 +384,42 @@ defmodule PicselloWeb.ClientMessageComponent do
     """
   end
 
+  defp show_optional_input(assigns) do
+    ~H"""
+      <div clas="flex flex-col">
+        <div class="flex flex-col md:flex-row mt-4 md:items-center mb-2">
+          <label for={"#{@email_type}_email"} class="text-sm font-semibold"><%= String.capitalize(@email_type) %>: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
+          <.icon_button class="ml-10 bg-white border-red-sales-300 mr-0" title="remove" phx-click={"remove-#{@email_type}"} phx-target={@myself} color="red-sales-300" icon="trash"/>
+        </div>
+        <div class="flex flex-col">
+          <input type="text" class="w-2/3 text-input" id={"#{@email_type}_email"} value={(if Map.has_key?(@recipients, @email_type), do: "#{Enum.join(Map.get(@recipients, @email_type, []), "; ")}", else: "")} phx-keyup={"validate_#{@email_type}_email"} phx-blur="update-html" phx-target={@myself} phx-debounce="1000" spellcheck="false" placeholder="enter email(s)…"/>
+          <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@error})}><%= @error %></span>
+        </div>
+      </div>
+    """
+  end
+
   defp add_icon_button(assigns) do
     ~H"""
-      <.icon_button class="py-1 px-4 w-auto sm:w-24 justify-center bg-white border-blue-planning-300 text-black" title={@title} phx-click={@click_event} phx-target={@myself} phx-value-client_email={"#{@search_result.email}"} color="blue-planning-300" icon="plus">
+      <.icon_button_ class="w-auto sm:w-24 justify-center bg-gray-100 text-black text-sm" title={@title} phx-click={@click_event} phx-target={@myself} phx-value-client_email={"#{@search_result.email}"} color="blue-planning-300" icon="plus">
         <%= @title %>
-      </.icon_button>
+      </.icon_button_>
+    """
+  end
+
+  defp icon_button_(assigns) do
+    assigns =
+      assigns
+      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled]))
+      |> Enum.into(%{class: "", disabled: false, inner_block: nil})
+
+    ~H"""
+    <button type="button" class={classes("btn-tertiary flex items-center p-1 font-sans rounded-lg hover:opacity-75 transition-colors text-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
+      <.icon name={@icon} class={classes("w-3 h-3 fill-current text-#{@color}", %{"mr-1" => @inner_block})} />
+      <%= if @inner_block do %>
+        <%= render_block(@inner_block) %>
+      <% end %>
+    </button>
     """
   end
 end
