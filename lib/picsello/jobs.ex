@@ -198,7 +198,7 @@ defmodule Picsello.Jobs do
       [j, client, job_status],
       ^dynamic and
         job_status.is_lead and
-        job_status.current_status not in [:completed, :archived, :not_sent]
+        job_status.current_status == :sent
     )
   end
 
