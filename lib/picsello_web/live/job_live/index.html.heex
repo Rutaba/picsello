@@ -9,7 +9,7 @@
       <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
         <%= case @live_action do %>
           <% :leads -> %>
-            <a title="create lead" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
+            <a {testid("create-a-lead")} title="create lead" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
               Create a lead
             </a>
           <% :jobs -> %>
@@ -74,7 +74,7 @@
           <p>-</p>
         <% end %>
         </div>
-        <.status_badge class="w-fit" job_status={job.job_status} job = {job}/>
+        <.status_badge class="w-fit" job_status={job.job_status} job={job}/>
         <hr class="sm:hidden border-gray-100 my-2" />
         <.actions type={if(job.job_status.is_lead, do: "leads", else: "jobs")} job={job}/>
       </div>

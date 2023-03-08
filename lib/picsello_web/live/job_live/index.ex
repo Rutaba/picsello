@@ -305,11 +305,11 @@ defmodule PicselloWeb.JobLive.Index do
       |> Enum.into(%{class: ""})
 
     ~H"""
-      <div class="flex flex-col w-full lg:w-auto mr-2 px-5 lg:px-0">
+      <div class="flex flex-col w-full lg:w-auto mr-2 px-5 lg:px-0 mb-3 lg:mb-0">
         <h1 class="font-extrabold text-sm flex flex-col"><%= @title %></h1>
         <div class="flex">
-          <div id={@id} class={classes("relative w-full border-grey border rounded-l-lg p-2 cursor-pointer", %{"rounded-lg" => @title == "Filter", "lg:w-64" => @id == "status" and @type != "job", "lg:w-40" => @id != "status" or @type == "job" })} data-offset-y="5" phx-hook="Select">
-            <div class="flex flex-row items-center border-gray-700">
+          <div id={@id} class={classes("relative w-full border-grey border p-2 cursor-pointer", %{"rounded-l-lg" => @id == "sort_by", "rounded-lg" => @title == "Filter" or @id != "sort_by", "lg:w-64" => @id == "status" and @type != "job", "lg:w-40" => @id != "status" or @type == "job" })} data-offset-y="5" phx-hook="Select">
+            <div {testid("dropdown_#{@id}")} class="flex flex-row items-center border-gray-700">
                 <%= capitalize_per_word(String.replace(@selected_option, "_", " ")) %>
                 <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
                 <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
@@ -521,9 +521,9 @@ defmodule PicselloWeb.JobLive.Index do
 
   def search_sort_bar(assigns) do
     ~H"""
-      <div class="flex flex-col px-5 center-container justify-between items-center px-1.5 lg:flex-row mb-10">
+      <div {testid("search_filter_and_sort_bar")} class="flex flex-col px-5 center-container justify-between items-center px-1.5 lg:flex-row mb-10">
         <div class="relative flex w-full lg:w-2/3 mb-2">
-          <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+          <a {testid("close_search")} href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
             <%= if @search_phrase do %>
               <span phx-click="clear-search" class="cursor-pointer">
                 <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
