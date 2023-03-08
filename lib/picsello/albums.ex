@@ -41,7 +41,7 @@ defmodule Picsello.Albums do
       left_join: thumbnail_photo in subquery(Picsello.Photos.watermarked_query()),
       on: a.thumbnail_photo_id == thumbnail_photo.id,
       where: a.gallery_id == ^gallery_id,
-      order_by: [a.is_finals, a.is_proofing],
+      order_by: [a.is_finals, a.is_proofing, a.position],
       select_merge: %{thumbnail_photo: thumbnail_photo}
     )
     |> Repo.all()
@@ -117,6 +117,32 @@ defmodule Picsello.Albums do
       )
     end)
     |> Repo.transaction()
+  end
+
+  def sort_albums_alphabetically({:ok, %{gallery_id: gallery_id} = album}) do
+    albums =
+      from(a in Album, where: a.gallery_id == ^gallery_id, order_by: a.name)
+      |> Repo.all()
+
+    Enum.with_index(albums, fn album, position ->
+      album
+      |> Album.update_changeset(%{position: position + 1})
+      |> Repo.update!()
+    end)
+
+    album
+  end
+
+  def sort_albums_alphabetically(gallery_id) do
+    albums =
+      from(a in Album, where: a.gallery_id == ^gallery_id, order_by: a.name)
+      |> Repo.all()
+
+    Enum.with_index(albums, fn album, position ->
+      album
+      |> Album.update_changeset(%{position: position + 1})
+      |> Repo.update!()
+    end)
   end
 
   @separator "-dsp-"
