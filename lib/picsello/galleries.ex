@@ -556,8 +556,23 @@ defmodule Picsello.Galleries do
 
   alias Ecto.Changeset
 
-  def save_use_global(multi, %Gallery{} = gallery, use_global) do
-    Multi.update(multi, :update_use_global, Changeset.change(gallery, %{use_global: use_global}))
+  def save_use_global(multi, %Gallery{use_global: global} = gallery, use_global) do
+    {:ok, _} =
+      use_global
+      |> Map.keys()
+      |> Enum.any?(&Map.get(global, &1))
+      |> case do
+        true ->
+          Multi.update(
+            multi,
+            :update_use_global,
+            Changeset.change(gallery, %{use_global: use_global})
+          )
+
+        false ->
+          multi
+      end
+      |> Repo.transaction()
   end
 
   @doc """

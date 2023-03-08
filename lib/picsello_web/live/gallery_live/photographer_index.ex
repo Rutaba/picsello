@@ -7,7 +7,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
-  alias Ecto.Multi
   alias Picsello.Repo
 
   alias PicselloWeb.GalleryLive.{
@@ -225,19 +224,9 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @impl true
   def handle_info(
         {:confirm_event, "delete_watermark", _},
-        %{assigns: %{gallery: %{use_global: use_global} = gallery}} = socket
+        %{assigns: %{gallery: gallery}} = socket
       ) do
-    Multi.new()
-    |> Multi.delete(:delete_watermark, gallery.watermark)
-    |> then(fn
-      multi when use_global.watermark ->
-        Galleries.save_use_global(multi, gallery, %{watermark: false})
-
-      multi ->
-        multi
-    end)
-    |> Repo.transaction()
-
+    delete_watermark(gallery)
     send(self(), :clear_watermarks)
 
     socket

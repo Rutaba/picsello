@@ -19,6 +19,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Utils
   }
 
+  alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
@@ -1166,5 +1167,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
     ~H"""
       <span class="lg:ml-[54px] sm:ml-0 inline-block mt-2 border rounded-md bg-base-200 px-2 pb-0.5 text-base-250 font-bold text-base"><%= Utils.capitalize_all_words(@type) %></span>
     """
+  end
+
+  def delete_watermark(gallery) do
+    Multi.new()
+    |> Multi.delete(:delete_watermark, gallery.watermark)
+    |> Galleries.save_use_global(gallery, %{watermark: false})
   end
 end
