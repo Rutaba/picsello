@@ -16,9 +16,6 @@ defmodule Picsello.ClientMessage do
     field(:read_at, :utc_datetime)
     field(:deleted_at, :utc_datetime)
 
-    belongs_to(:job, Job)
-    belongs_to(:client, Client)
-
     timestamps(type: :utc_datetime)
   end
 
@@ -36,8 +33,15 @@ defmodule Picsello.ClientMessage do
 
   def create_inbound_changeset(attrs, required_fields \\ []) do
     %__MODULE__{}
-    |> cast(attrs, [:body_text, :body_html, :job_id, :subject])
-    |> validate_required([:subject, :body_text, :body_text, :job_id])
+    |> cast(attrs, [:body_text, :body_html, :job_id, :client_id, :subject])
+    |> then(fn changeset ->
+      if Enum.any?(required_fields) do
+        changeset
+        |> validate_required(required_fields)
+      else
+        changeset
+      end
+     end)
     |> put_change(:outbound, false)
   end
 
