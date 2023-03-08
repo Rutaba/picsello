@@ -188,6 +188,20 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   @impl true
+  def handle_event("confirm_unarchive_lead", %{"id" => job_id}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No! Get me out of here",
+      confirm_event: "unarchive-lead",
+      confirm_label: "Yes, unarchive the lead",
+      icon: "warning-orange",
+      title: "Are you sure you want to unarchive this lead?",
+      payload: %{job_id: job_id}
+    })
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("page", %{}, socket), do: socket |> noreply()
 
   @impl true
@@ -208,8 +222,28 @@ defmodule PicselloWeb.JobLive.Index do
       {:ok, _job} ->
         socket
         |> close_modal()
-        |> put_flash(:sucess, "Lead has been archived")
-        |> reassign_pagination_and_jobs()
+        |> put_flash(:success, "Lead has been archived")
+        |> redirect(to: Routes.job_path(socket, :leads))
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:error, "Some error occurred")
+        |> noreply()
+    end
+  end
+
+  def handle_info({:confirm_event, "unarchive-lead", %{job_id: job_id}}, socket) do
+    job = Jobs.get_job_by_id(job_id)
+
+    case Jobs.unarchive_lead(job) do
+      {:ok, _job} ->
+        socket
+        |> close_modal()
+        |> put_flash(:success, "Lead has been unarchived")
+        |> redirect(to: Routes.job_path(socket, :leads))
+        |> noreply()
 
       {:error, _} ->
         socket
@@ -237,6 +271,12 @@ defmodule PicselloWeb.JobLive.Index do
               <%= title %>
             </button>
           <% end %>
+          <%= if @job.job_status.current_status == :archived do %>
+              <button title="Unarchive" type="button" phx-click="confirm_unarchive_lead" phx-value-id={@job.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+                <.icon name="plus" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
+                Unarchive
+              </button>
+            <% end %>
         </div>
       </div>
     """

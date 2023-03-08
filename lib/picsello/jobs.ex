@@ -59,6 +59,10 @@ defmodule Picsello.Jobs do
     job |> Job.archive_changeset() |> Repo.update()
   end
 
+  def unarchive_lead(%Job{} = job) do
+    job |> Job.unarchive_changeset() |> Repo.update()
+  end
+
   def maybe_upsert_client(%Ecto.Multi{} = multi, %Client{} = new_client, %User{} = current_user) do
     old_client =
       Repo.get_by(Client,
@@ -194,7 +198,7 @@ defmodule Picsello.Jobs do
       [j, client, job_status],
       ^dynamic and
         job_status.is_lead and
-        job_status.current_status not in [:completed, :archived, :not_sent]
+        job_status.current_status == :sent
     )
   end
 
@@ -252,6 +256,7 @@ defmodule Picsello.Jobs do
 
   defp filter_overdue_jobs(dynamic) do
     now = current_datetime()
+
     dynamic(
       [j, client, job_status, job_status_, shoots, package, payment_schedules],
       ^dynamic and payment_schedules.due_at <= ^now
@@ -274,7 +279,11 @@ defmodule Picsello.Jobs do
 
   defp filter_order_by(:starts_at, order) do
     now = current_datetime()
-    [{order, dynamic([j, client, job_status, job_status_, shoots], field(shoots, :starts_at) < ^now)}]
+
+    [
+      {order,
+       dynamic([j, client, job_status, job_status_, shoots], field(shoots, :starts_at) < ^now)}
+    ]
   end
 
   defp filter_order_by(:name, order) do
