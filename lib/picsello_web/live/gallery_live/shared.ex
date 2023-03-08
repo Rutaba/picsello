@@ -320,6 +320,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     case GlobalSettings.get(organization_id) do
       %{expiration_days: exp_days} when exp_days > 0 ->
         Timex.shift(DateTime.utc_now(), days: exp_days)
+
       _ ->
         nil
     end

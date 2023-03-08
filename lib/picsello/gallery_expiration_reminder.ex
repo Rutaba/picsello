@@ -70,7 +70,9 @@ defmodule Picsello.GalleryExpirationReminder do
       %{subject: "Gallery Expiration Reminder", body_text: body, body_html: body_html(body)}
       |> ClientMessage.create_outbound_changeset()
       |> Ecto.Changeset.put_change(:job_id, job_id)
-      |> Ecto.Changeset.put_change(:client_message_recipients, [%{client_id: client_id, recipient_type: "to"}])
+      |> Ecto.Changeset.put_change(:client_message_recipients, [
+        %{client_id: client_id, recipient_type: "to"}
+      ])
       |> Ecto.Changeset.put_change(:scheduled, true)
       |> Repo.insert!()
       |> ClientNotifier.deliver_email(client_email)

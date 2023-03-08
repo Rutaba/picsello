@@ -41,7 +41,7 @@ defmodule Picsello.ClientMessage do
       else
         changeset
       end
-     end)
+    end)
     |> put_change(:outbound, false)
   end
 
