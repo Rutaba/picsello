@@ -183,12 +183,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         </div>
     <% end %>
     <%= if @package_templates == [] do %>
-      <div class="flex flex-col rounded-lg h-fit mt-8 p-1 ml-3 border bg-base-200">
+      <div class="flex flex-col rounded-lg h-fit md:mb-10 sm:mb-2 mt-8 p-1 border bg-base-200">
         <div class="w-10 h-6 mt-2 ml-2 rounded-lg bg-blue-planning-300 text-center">
           <span class="text-base-100"> TIP </span>
         </div>
-        <div class="mt-2 ml-2">
-          <p class="font-normal text-gray-400">If you aren’t seeing your package here, you need to make sure the package only has 1 shoot set. We calculate the # of<br> sessions based off of that.
+        <div class="mt-2 ml-2 w-fit lg:w-11/12">
+          <p class="font-normal text-lg text-gray-400">If you aren’t seeing your package here, you need to make sure the package only has 1 shoot set. We calculate the # of sessions based off of that.
             <a class="items-center text-blue-planning-300 underline font-normal" href={Routes.package_templates_path(@socket, :index)} target="_blank"> Manage your packages here<.icon name="external-link" class=" inline ml-2 w-4 h-4" /></a>
           </p>
         </div>
@@ -203,9 +203,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       <% end %>
     </div>
     <%= if @package_templates == [] do %>
-      <div class="flex flex-col md:flex-row mt-2">
+      <div class="flex flex-col md:flex-row mt-2 lg:mt-8">
           <img src="/images/empty-state.png" class="my-auto block"/>
-          <div class="justify-center p-1 md:ml-6 flex flex-col sm:ml-1">
+          <div class="justify-center p-1 md:ml-6 flex flex-col sm:mt-4">
             <div class="font-bold">Missing packages</div>
             <div>
               <div class="font-normal pb-6 text-base-250 w-fit lg:w-96">
