@@ -147,10 +147,46 @@ defmodule PicselloWeb.JobLive.Shared do
     socket |> open_modal(PicselloWeb.Live.Profile.EditNameSharedComponent, params) |> noreply()
   end
 
-  def handle_event("search", %{"search_phrase" => search_phrase}, socket) do
-    socket
-    |> assign(search_results: search(search_phrase, socket))
-    |> assign(search_phrase: search_phrase)
+  def handle_event(
+        "search",
+        %{"search_phrase" => search_phrase},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    socket =
+      socket
+      |> assign(search_results: search(search_phrase, socket))
+      |> assign(search_phrase: search_phrase)
+
+    if search_phrase == "" || is_nil(search_phrase) do
+      socket
+      |> search_assigns()
+      |> assign(:changeset, Job.new_job_changeset(Map.delete(changeset.changes, :client_id)))
+    else
+      socket
+    end
+    |> noreply()
+  end
+
+  def handle_event(
+        "search",
+        %{"search_phrase" => search_phrase},
+        %{assigns: %{job_changeset: job_changeset}} = socket
+      ) do
+    socket =
+      socket
+      |> assign(search_results: search(search_phrase, socket))
+      |> assign(search_phrase: search_phrase)
+
+    if search_phrase == "" || is_nil(search_phrase) do
+      socket
+      |> search_assigns()
+      |> assign(
+        :job_changeset,
+        Job.new_job_changeset(Map.delete(job_changeset.changes, :client_id))
+      )
+    else
+      socket
+    end
     |> noreply()
   end
 
@@ -175,7 +211,6 @@ defmodule PicselloWeb.JobLive.Shared do
       :job_changeset,
       Job.new_job_changeset(Map.delete(job_changeset.changes, :client_id))
     )
-    |> assign(:current_focus, -1)
     |> noreply()
   end
 
@@ -183,7 +218,6 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> search_assigns()
     |> assign(:changeset, Job.new_job_changeset(Map.delete(changeset.changes, :client_id)))
-    |> assign(:current_focus, -1)
     |> noreply()
   end
 
@@ -389,6 +423,8 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:searched_client, nil)
+    |> assign(:selected_client, nil)
+    |> assign(:current_focus, -1)
   end
 
   defp search(nil, _socket), do: []
@@ -1073,7 +1109,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={if !is_nil(@selected_client), do: @selected_client.name, else: "#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients by email or first and last names..." />
             <%= if Enum.any?(@search_results) do %>
               <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
-                <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white absolute top-14 w-full overflow-auto max-h-48 h-fit">
+                <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white w-full overflow-auto max-h-48 h-fit">
                   <%= for {search_result, idx} <- Enum.with_index(@search_results) do %>
                     <div class={"flex items-center cursor-pointer p-2"} phx-click="pick" phx-target={@myself} phx-value-client_id={"#{search_result.id}"}>
                       <%= if search_result.id == @current_focus do %>
