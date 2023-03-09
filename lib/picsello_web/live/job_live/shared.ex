@@ -718,7 +718,7 @@ defmodule PicselloWeb.JobLive.Shared do
               <span class="text-base-250"><%= @job.client.phone %></span>
             </a>
           <% end %>
-          <a phx-click="open-compose" class="flex items-center text-xs mt-2">
+          <a phx-click="open-compose" phx-value-client_id={@job.client_id} class="flex items-center text-xs mt-2">
             <.icon name="envelope" class="text-blue-planning-300 mr-2 w-4 h-4" />
             <span class="text-base-250"><%= @job.client.email %></span>
           </a>
