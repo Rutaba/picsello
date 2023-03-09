@@ -288,7 +288,7 @@ defmodule Picsello.WelcomePageTest do
       session
       |> sign_in(user)
       |> assert_text("Galleries")
-      |> click(css("[title='Galleries']"))
+      |> click(button("Create a gallery"))
       |> assert_text("Create a Gallery")
       |> visit("/")
       |> click(button("View galleries"))
