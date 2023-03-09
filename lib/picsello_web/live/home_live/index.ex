@@ -25,7 +25,6 @@ defmodule PicselloWeb.HomeLive.Index do
 
   alias PicselloWeb.{
     Live.ClientLive.ClientFormComponent,
-    Live.Marketing.NewCampaignComponent,
     JobLive.ImportWizard,
     QuestionnaireFormComponent
   }
@@ -308,13 +307,6 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("create-marketing-email", _, socket),
-    do:
-      socket
-      |> NewCampaignComponent.open()
-      |> noreply()
-
-  @impl true
   def handle_event("change-tab", %{"tab" => tab}, socket) do
     socket
     |> assign(:tab_active, tab)
@@ -520,7 +512,7 @@ defmodule PicselloWeb.HomeLive.Index do
           <.notification_bubble notification_count={@notification_count} />
         </h3>
         <%= if @button_action && @button_text do %>
-          <button class="btn-tertiary py-2 px-4 mt-2 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0" type="button" phx-click={@button_action}><%= @button_text %></button>
+          <button class="btn-tertiary py-2 px-4 mt-2 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0" type="button" phx-click={@button_action} title={@title}><%= @button_text %></button>
         <% end %>
       </div>
       <div class={"mb-2 #{@inner_block_classes}"}>
