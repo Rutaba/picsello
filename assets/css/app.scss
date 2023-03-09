@@ -284,6 +284,15 @@ canvas {
   }
 }
 
+@media (min-width: 768px) {
+  .md\:w-64 {
+      width: 16rem;
+  }
+  .md\:w-60 {
+    width: 15rem;
+  }
+}
+
 // Calendar CSS overrides for mobile
 .fc .fc-header-toolbar .fc-toolbar-title {
   @apply text-2xl md:text-3xl;
