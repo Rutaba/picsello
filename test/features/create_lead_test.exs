@@ -115,4 +115,72 @@ defmodule Picsello.CreateLeadTest do
     |> click(button("Leads"))
     |> assert_has(testid("job-row", count: 1))
   end
+
+  feature "renders the search, filter and sort component", %{session: session, user: user} do
+    session
+    |> fill_in_a_lead(user)
+    |> assert_has(testid("search_filter_and_sort_bar", count: 1))
+  end
+
+  feature "searches the lead by client-name, client-contact or client-email", %{session: session, user: user} do
+    preload_some_leads(user)
+
+    session
+    |> click(button("Leads"))
+    |> assert_has(testid("job-row", count: 3))
+    |> fill_in(css("#search_phrase_input"), with: "Elizabeth Taylor")
+    |> assert_has(testid("job-row", count: 1))
+    |> click(testid("close_search"))
+    |> fill_in(css("#search_phrase_input"), with: "taylor@example.com")
+    |> assert_has(testid("job-row", count: 1))
+    |> fill_in(css("#search_phrase_input"), with: "(241) 567-2352")
+    |> assert_has(testid("job-row", count: 1))
+  end
+
+  defp fill_in_a_lead(session, user) do
+    insert(:client,
+      user: user,
+      name: "Elizabeth Taylor",
+      phone: "(210) 111-1234",
+      email: "taylor@example.com"
+    )
+
+    session
+    |> click(button("Actions"))
+    |> click(button("Create lead"))
+    |> fill_in(text_field("search_phrase"), with: "Eliza")
+    |> assert_has(css("#search_results"))
+    |> send_keys([:down_arrow])
+    |> send_keys([:enter])
+    |> click(css("label", text: "Other"))
+    |> find(css(".modal"), &wait_for_enabled_submit_button/1)
+    |> click(button("Save"))
+    |> assert_has(css("h1", text: "Elizabeth Taylor Other"))
+    |> click(link("Picsello"))
+    |> click(button("Leads"))
+    |> assert_has(testid("job-row", count: 1))
+  end
+
+  defp preload_some_leads(user) do
+    insert(:lead, client: %{
+      user: user,
+      name: "Elizabeth Taylor",
+      phone: "(210) 111-1234",
+      email: "taylor@example.com"
+    })
+
+    insert(:lead, client: %{
+      user: user,
+      name: "John Snow",
+      phone: "(241) 567-2352",
+      email: "johnsnow@example.com"
+    })
+
+    insert(:lead, client: %{
+      user: user,
+      name: "Michael Stark",
+      phone: "(442) 567-2321",
+      email: "michaelstark@example.com"
+    })
+  end
 end
