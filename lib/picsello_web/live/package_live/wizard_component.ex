@@ -1617,7 +1617,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Contract.changeset(contract_params,
         skip_package_id: true,
         validate_unique_name_on_organization:
-          if(Map.get(contract_params, "edited"), do: socket.assigns.current_user.organization_id)
+          if(should_validate_contract_name?(contract_params),
+            do: socket.assigns.current_user.organization_id
+          )
       )
       |> Map.put(:action, :validate)
 
@@ -1625,6 +1627,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp assign_contract_changeset(socket, _params), do: socket
+
+  defp should_validate_contract_name?(%{"edited" => false, "contract_template_id" => ""}),
+    do: true
+
+  defp should_validate_contract_name?(%{"edited" => true}), do: true
+
+  defp should_validate_contract_name?(_), do: false
 
   defp assign_contract_options(%{assigns: %{step: :documents}} = socket) do
     options =
