@@ -58,7 +58,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         <div class="flex flex-col">
           <label for="to_email" class="text-sm font-semibold mb-2">To: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
           <div class="flex flex-col md:flex-row">
-            <input type="text" class="w-full md:w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, "to"), "; ")}"} phx-keyup="validate_to_email" phx-target={@myself} phx-blur="update-html" phx-debounce="1000" spellcheck="false"/>
+            <input type="text" class="w-full md:w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, "to"), "; ")}"} phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
             <.search_existing_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
           </div>
           <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@to_email_error})}><%= @to_email_error %></span>
@@ -110,7 +110,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   def handle_event("update-html", _, %{assigns: %{changeset: changeset}} = socket) do
     socket
     |> push_event("quill:update", %{
-      "html" => changeset |> current() |> Map.get(:body_html) |> IO.inspect()
+      "html" => changeset |> current() |> Map.get(:body_html)
     })
     |> noreply()
   end
@@ -209,6 +209,12 @@ defmodule PicselloWeb.ClientMessageComponent do
 
     socket
     |> assign_changeset(:validate, %{subject: preset.subject_template, body: preset.body_template})
+    |> then(fn %{assigns: %{changeset: changeset}} = socket ->
+      socket
+      |> push_event("quill:update", %{
+      "html" => changeset |> current() |> Map.get(:body_html)
+      })
+    end)
     |> noreply()
   end
 
@@ -220,11 +226,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
-  def handle_event("save", %{"client_message" => params}, socket) do
-    socket =
-      socket
-      |> assign_changeset(:validate, params)
-
+  def handle_event("save", %{"client_message" => _params}, socket) do
     %{assigns: %{changeset: changeset, composed_event: composed_event, recipients: recipients}} =
       socket
 
@@ -331,15 +333,18 @@ defmodule PicselloWeb.ClientMessageComponent do
     body_html = changeset |> current() |> Map.get(:body_html)
 
     greeting =
-      if !is_nil(body_text),
-        do: body_text |> String.split() |> hd(),
-        else: body_html |> String.split() |> hd() |> String.replace("<p>", "")
+      cond do
+        body_text -> body_text |> String.split() |> hd()
+        body_html -> body_html |> String.split() |> hd() |> String.replace("<p>", "")
+        true -> nil
+      end
 
     changeset =
-      if no_of_recipients > 1 do
+      if greeting && no_of_recipients > 1 do
         changeset =
-          if !is_nil(body_text),
-            do:
+          if is_nil(body_text),
+            do: changeset,
+            else:
               Ecto.Changeset.put_change(
                 changeset,
                 :body_text,
@@ -348,11 +353,11 @@ defmodule PicselloWeb.ClientMessageComponent do
                   "#{greeting} #{client.name |> String.split() |> hd()}",
                   "#{greeting}"
                 )
-              ),
-            else: changeset
+              )
 
-        if !is_nil(body_html),
-          do:
+        if is_nil(body_html),
+          do: changeset,
+          else:
             Ecto.Changeset.put_change(
               changeset,
               :body_html,
@@ -361,35 +366,9 @@ defmodule PicselloWeb.ClientMessageComponent do
                 "#{greeting} #{client.name |> String.split() |> hd()}",
                 "#{greeting}"
               )
-            ),
-          else: changeset
+            )
       else
-        changeset =
-          if !is_nil(body_text),
-            do:
-              Ecto.Changeset.put_change(
-                changeset,
-                :body_text,
-                String.replace(
-                  body_text,
-                  "#{greeting}",
-                  "#{greeting} #{client.name |> String.split() |> hd()}"
-                )
-              ),
-            else: changeset
-
-        if !is_nil(body_html),
-          do:
-            Ecto.Changeset.put_change(
-              changeset,
-              :body_html,
-              String.replace(
-                body_html,
-                "#{greeting}",
-                "#{greeting} #{client.name |> String.split() |> hd()}"
-              )
-            ),
-          else: changeset
+        changeset
       end
 
     socket
@@ -446,12 +425,12 @@ defmodule PicselloWeb.ClientMessageComponent do
   defp show_optional_input(assigns) do
     ~H"""
       <div clas="flex flex-col">
-        <div class="flex flex-col md:flex-row mt-4 md:items-center mb-2">
+        <div class="flex flex-row mt-4 md:items-center mb-2">
           <label for={"#{@email_type}_email"} class="text-sm font-semibold"><%= String.capitalize(@email_type) %>: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
-          <.icon_button class="ml-10 bg-white border-red-sales-300 mr-0" title="remove" phx-click={"remove-#{@email_type}"} phx-target={@myself} color="red-sales-300" icon="trash"/>
+          <.icon_button class="ml-10 w-8 bg-white border-red-sales-300" title="remove" phx-click={"remove-#{@email_type}"} phx-target={@myself} color="red-sales-300" icon="trash"/>
         </div>
         <div class="flex flex-col">
-          <input type="text" class="w-2/3 text-input" id={"#{@email_type}_email"} value={(if Map.has_key?(@recipients, @email_type), do: "#{Enum.join(Map.get(@recipients, @email_type, []), "; ")}", else: "")} phx-keyup={"validate_#{@email_type}_email"} phx-blur="update-html" phx-target={@myself} phx-debounce="1000" spellcheck="false" placeholder="enter email(s)…"/>
+          <input type="text" class="w-full md:w-2/3 text-input" id={"#{@email_type}_email"} value={(if Map.has_key?(@recipients, @email_type), do: "#{Enum.join(Map.get(@recipients, @email_type, []), "; ")}", else: "")} phx-keyup={"validate_#{@email_type}_email"} phx-blur="update-html" phx-target={@myself} phx-debounce="1000" spellcheck="false" placeholder="enter email(s)…"/>
           <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@error})}><%= @error %></span>
         </div>
       </div>

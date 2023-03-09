@@ -180,7 +180,7 @@ export default {
     quill.clipboard.dangerouslyPasteHTML(htmlInput.value, 'api');
   },
 };
-
+  
 export const ClearQuillInput = {
   mounted() {
     this.el.addEventListener('click', () => {
