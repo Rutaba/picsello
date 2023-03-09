@@ -23,11 +23,7 @@
   </div>
 </header>
 
-<%= if @live_action == :jobs do %>
-  <.search_sort_bar type="job" sort_direction={@sort_direction} search_phrase={@search_phrase} selected_job={@selected_job} job_status={@job_status} job_type={@job_type} job_types={@job_types} sort_by={@sort_by} placeholder="Search jobs..." />
-<% else %>
-  <.search_sort_bar type="lead" sort_direction={@sort_direction} search_phrase={@search_phrase} selected_job={@selected_job} job_status={@job_status} job_type={@job_type} job_types={@job_types} sort_by={@sort_by} placeholder="Search leads..." />
-<% end %>
+<.search_sort_bar type={if @live_action == :jobs, do: "job", else: "lead"} sort_direction={@sort_direction} search_phrase={@search_phrase} selected_job={@selected_job} job_status={@job_status} job_type={@job_type} job_types={@job_types} sort_by={@sort_by} placeholder={if @live_action == :jobs, do: 'Search jobs...', else: 'Search leads...'} />
 
 <%= if Enum.empty? @jobs do %>
   <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none">
@@ -98,15 +94,15 @@
         </.form>
 
       <div class="flex ml-2 text-xs font-bold text-gray-500">
-        Results: <%= @pagination_changeset |> current() |> Map.get(:first_index) %> – <%= @pagination_changeset |> current() |> Map.get(:last_index) %> of <%= @pagination_changeset |> current() |> Map.get(:total_count) %>
+        Results: <%= pagination_index(@pagination_changeset, :first_index) %> – <%= pagination_index(@pagination_changeset, :last_index) %> of <%= pagination_index(@pagination_changeset, :total_count) %>
       </div>
 
       <div class="flex items-center ml-auto">
-        <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={@pagination_changeset |> current() |> Map.get(:first_index) == 1}>
+        <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={pagination_index(@pagination_changeset, :first_index) == 1}>
           <.icon name="back" class="w-3 h-3 mr-1 stroke-current stroke-2" />
           Prev
         </button>
-        <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={@pagination_changeset |> current() |> Map.get(:last_index) == @pagination_changeset |> current() |> Map.get(:total_count)}>
+        <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={pagination_index(@pagination_changeset, :last_index) == pagination_index(@pagination_changeset, :total_count)}>
           Next
           <.icon name="forth" class="w-3 h-3 ml-1 stroke-current stroke-2" />
         </button>

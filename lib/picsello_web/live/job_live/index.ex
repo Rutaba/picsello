@@ -3,6 +3,7 @@ defmodule PicselloWeb.JobLive.Index do
   use PicselloWeb, :live_view
   require Ecto.Query
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
+  import PicselloWeb.Live.Shared, only: [pagination_index: 2]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
   import PicselloWeb.Live.Shared.CustomPagination,

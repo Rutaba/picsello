@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  import PicselloWeb.PackageLive.Shared, only: [current: 1]
+  import PicselloWeb.Live.Shared, only: [pagination_index: 2]
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
   import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 2, new_gallery_path: 2]
 

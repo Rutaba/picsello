@@ -127,7 +127,7 @@ defmodule PicselloWeb.Live.Shared do
               offset: pagination.offset - pagination.limit
             })
 
-          "forth" ->
+          _ ->
             pagination
             |> changeset(%{
               first_index: pagination.first_index + pagination.limit,
@@ -734,5 +734,9 @@ defmodule PicselloWeb.Live.Shared do
     else
       socket |> noreply()
     end
+  end
+
+  def pagination_index(changeset, index) do
+    changeset |> current() |> Map.get(index)
   end
 end

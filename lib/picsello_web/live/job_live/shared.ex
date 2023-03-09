@@ -1112,18 +1112,16 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def files_to_upload(assigns) do
     assigns = Enum.into(assigns, %{myself: nil, for: nil, string_length: @string_length})
-    photos? = assigns.for == :photos
-    job? = assigns.for in [:job, :job_detail]
 
     ~H"""
-      <div class={classes("uploadEntry grid grid-cols-5 pb-4 items-center", %{"px-14" => photos?})}>
-        <p class={"#{if photos?, do: 'col-span-3', else: 'col-span-2'} max-w-md overflow-hidden"}>
+      <div class={classes("uploadEntry grid grid-cols-5 pb-4 items-center", %{"px-14" => @for == :photos})}>
+        <p class={classes("max-w-md overflow-hidden", %{"col-span-3" => @for == :photos, "col-span-2" => @for != :photos})}>
         <%= truncate_name(@entry, @string_length) %>
         </p>
-        <div class={"#{if photos? || job?, do: 'gap-x-1 lg:gap-x-4 md:gap-x-4 grid-cols-1', else: 'col-span-2'} flex photoUploadingIsFailed items-center"}>
+        <div class={classes("flex photoUploadingIsFailed items-center", %{"gap-x-1 lg:gap-x-4 md:gap-x-4 grid-cols-1" => @for == :photos || @for in [:job, :job_detail], "col-span-2" => @for != :photos || @for not in [:job, :job_detail]})}>
           <%= render_slot(@inner_block) %>
         </div>
-        <div class={"w-full ml-4 lg:ml-0 md:ml-0 #{!job? && 'hidden'}"}>
+        <div class={classes("w-full ml-4 lg:ml-0 md:ml-0", %{"hidden" => @for not in [:job, :job_detail]})}>
           <div class={"sm:w-3/4 lg:w-full w-2/3 bg-green-finances-300 mt-4 mx-auto rounded-full h-1.5 mb-4 darkbg-green-finances-300 #{((!@entry.valid? || @entry.done?)) && 'invisible'}"}>
             <div class="bg-green-finances-300 font-sans h-1.5 rounded-full" style={"width: #{@entry.progress}%"}></div>
           </div>
