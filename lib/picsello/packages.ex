@@ -113,7 +113,7 @@ defmodule Picsello.Packages do
 
     def changeset(download \\ %__MODULE__{}, attrs) do
       changeset =
-        update_is_buy_all(download)
+        download
         |> cast(attrs, [
           :status,
           :is_custom_price,
@@ -170,9 +170,6 @@ defmodule Picsello.Packages do
       end
     end
 
-    defp update_is_buy_all(%{buy_all: nil} = download), do: Map.put(download, :is_buy_all, false)
-    defp update_is_buy_all(download), do: download
-
     defp validate_buy_all(changeset) do
       download_each_price = get_field(changeset, :each_price) || @zero_price
 
@@ -224,7 +221,6 @@ defmodule Picsello.Packages do
           %__MODULE__{
             status: :limited,
             is_custom_price: true,
-            is_buy_all: true,
             each_price: each_price,
             count: count
           }
@@ -234,14 +230,13 @@ defmodule Picsello.Packages do
           %__MODULE__{
             status: :none,
             is_custom_price: true,
-            is_buy_all: true,
             each_price: each_price,
             count: nil
           }
           |> Map.merge(set_buy_all(package, global_settings))
 
         true ->
-          %__MODULE__{status: :unlimited, is_custom_price: true, is_buy_all: true, count: nil}
+          %__MODULE__{status: :unlimited, is_custom_price: true, count: nil}
           |> Map.merge(set_default_download_each_price(global_settings))
           |> Map.merge(set_buy_all(package, global_settings))
       end
@@ -320,7 +315,11 @@ defmodule Picsello.Packages do
     end
 
     defp set_buy_all(%{buy_all: buy_all}, global_settings) do
-      %{buy_all: if(buy_all, do: buy_all, else: global_settings.buy_all_price)}
+      if buy_all do
+        %{buy_all: buy_all, is_buy_all: true}
+      else
+        %{buy_all: global_settings.buy_all_price, is_buy_all: false}
+      end
     end
 
     defp set_count_fields(download, count) when count in [nil, 0],
