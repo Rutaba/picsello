@@ -23,7 +23,7 @@ defmodule Picsello.GalleryShareTest do
 
     insert(:email_preset, type: :gallery, state: :gallery_send_link)
 
-    preload_some_clients(user) |> IO.inspect(label: "Inserted Clients ============>")
+    preload_some_clients(user)
 
     [photo_ids: photo_ids]
   end
@@ -67,10 +67,6 @@ defmodule Picsello.GalleryShareTest do
     user: user,
     gallery: gallery
   } do
-    user |> IO.inspect()
-    # preload_some_clients(user)
-    # Repo.all(Picsello.Client)
-
     session
     |> visit("/galleries/#{gallery.id}")
     |> click(button("Share gallery"))
@@ -84,7 +80,10 @@ defmodule Picsello.GalleryShareTest do
       |> click(button("remove-bcc"))
       |> fill_in(text_field("search_phrase"), with: "client-1")
       |> assert_has(css("#search_results"))
-      |> click(button("Add To"))
+      |> find(testid("search-row", count: 1, at: 0), fn row ->
+        row
+        |> click(button("Add to"))
+      end)
       |> wait_for_enabled_submit_button(text: "Send Email")
       |> click(button("Send Email"))
     end)
@@ -98,18 +97,18 @@ defmodule Picsello.GalleryShareTest do
       email: "taylor@example.com"
     })
 
-    # insert(:client, %{
-    #   user: user,
-    #   name: "John Snow",
-    #   phone: "(241) 567-2352",
-    #   email: "snow@example.com"
-    # })
+    insert(:client, %{
+      organization: user.organization,
+      name: "John Snow",
+      phone: "(241) 567-2352",
+      email: "snow@example.com"
+    })
 
-    # insert(:client, %{
-    #   user: user,
-    #   name: "Michael Stark",
-    #   phone: "(442) 567-2321",
-    #   email: "stark@example.com"
-    # })
+    insert(:client, %{
+      organization: user.organization,
+      name: "Michael Stark",
+      phone: "(442) 567-2321",
+      email: "stark@example.com"
+    })
   end
 end

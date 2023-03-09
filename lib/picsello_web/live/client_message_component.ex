@@ -1,11 +1,12 @@
 defmodule PicselloWeb.ClientMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
+  import Ecto.Query
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Picsello.{Job, Clients}
+  alias Picsello.{Repo, Job, Client, Clients}
 
   @default_assigns %{
     composed_event: :message_composed,
@@ -58,7 +59,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         <div class="flex flex-col">
           <label for="to_email" class="text-sm font-semibold mb-2">To: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
           <div class="flex flex-col md:flex-row">
-            <input type="text" class="w-full md:w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, "to"), "; ")}"} phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
+            <input type="text" class="w-full md:w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, "to"), "; ")}"} phx-keyup="validate_to_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
             <.search_existing_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
           </div>
           <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@to_email_error})}><%= @to_email_error %></span>
@@ -302,12 +303,10 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> Enum.map(fn email ->
         String.trim(email)
       end)
-
     valid_emails? =
       email_list
       |> Enum.all?(fn email ->
-        email
-        |> String.match?(Picsello.Accounts.User.email_regex())
+        Repo.exists?(from c in Client, where: c.email == ^email)
       end)
 
     if valid_emails? do
@@ -315,7 +314,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> assign(:"#{type}_email_error", nil)
     else
       socket
-      |> assign(:"#{type}_email_error", "please enter valid emails")
+      |> assign(:"#{type}_email_error", "please enter valid client emails that already exist in the system")
     end
     |> assign(:recipients, Map.put(recipients, type, email_list))
     |> add_or_remove_client_name()
@@ -393,7 +392,7 @@ defmodule PicselloWeb.ClientMessageComponent do
             <%= if Enum.any?(@search_results) do %>
                 <div id="search_results" class="absolute top-14 w-full z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
                   <%= for search_result <- Enum.take(@search_results, 5) do %>
-                    <div class={"flex items-center cursor-pointer p-3"}>
+                    <div {testid("search-row")} class={"flex items-center cursor-pointer p-3"}>
                       <div class="w-full">
                         <p class="font-bold"><%= search_result.name %></p>
                         <p class="text-sm"><%= search_result.email %></p>
@@ -427,11 +426,11 @@ defmodule PicselloWeb.ClientMessageComponent do
       <div clas="flex flex-col">
         <div class="flex flex-row mt-4 md:items-center mb-2">
           <label for={"#{@email_type}_email"} class="text-sm font-semibold"><%= String.capitalize(@email_type) %>: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
-          <.icon_button class="ml-10 w-8 bg-white border-red-sales-300" title="remove" phx-click={"remove-#{@email_type}"} phx-target={@myself} color="red-sales-300" icon="trash"/>
+          <.icon_button class="ml-10 w-8 bg-white border-red-sales-300" title={"remove-#{@email_type}"} phx-click={"remove-#{@email_type}"} phx-target={@myself} color="red-sales-300" icon="trash"/>
         </div>
         <div class="flex flex-col">
           <input type="text" class="w-full md:w-2/3 text-input" id={"#{@email_type}_email"} value={(if Map.has_key?(@recipients, @email_type), do: "#{Enum.join(Map.get(@recipients, @email_type, []), "; ")}", else: "")} phx-keyup={"validate_#{@email_type}_email"} phx-blur="update-html" phx-target={@myself} phx-debounce="1000" spellcheck="false" placeholder="enter email(s)…"/>
-          <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@error})}><%= @error %></span>
+          <span {testid("#{@email_type}-error")} class={classes("text-red-sales-300 text-sm", %{"hidden" => !@error})}><%= @error %></span>
         </div>
       </div>
     """
