@@ -89,15 +89,15 @@
       </.form>
 
     <div class="flex ml-2 text-xs font-bold text-gray-500">
-      Results: <%= @pagination_changeset |> current() |> Map.get(:first_index) %> – <%= @pagination_changeset |> current() |> Map.get(:last_index) %> of <%= @pagination_changeset |> current() |> Map.get(:total_count) %>
+      Results: <%= pagination_index(@pagination_changeset, :first_index) %> – <%= pagination_index(@pagination_changeset, :last_index) %> of <%= pagination_index(@pagination_changeset, :total_count) %>
     </div>
 
     <div class="flex items-center ml-auto">
-      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={@pagination_changeset |> current() |> Map.get(:first_index) == 1}>
+      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={pagination_index(@pagination_changeset, :first_index) == 1}>
         <.icon name="back" class="w-3 h-3 mr-1 stroke-current stroke-2" />
         Prev
       </button>
-      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={@pagination_changeset |> current() |> Map.get(:last_index) == @pagination_changeset |> current() |> Map.get(:total_count)}>
+      <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={pagination_index(@pagination_changeset, :last_index) == pagination_index(@pagination_changeset, :total_count)}>
         Next
         <.icon name="forth" class="w-3 h-3 ml-1 stroke-current stroke-2" />
       </button>
