@@ -260,6 +260,7 @@ defmodule Picsello.Jobs do
     dynamic(
       [j, client, job_status, job_status_, shoots, package, payment_schedules],
       ^dynamic and payment_schedules.due_at <= ^now
+      and is_nil(payment_schedules.paid_at)
     )
   end
 

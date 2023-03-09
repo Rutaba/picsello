@@ -437,7 +437,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
           <.icon name="down" class="flex-shrink-0 w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
           <.icon name="up" class="flex-shrink-0 hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
       </div>
-      <ul class="absolute z-30 hidden md:w-32 w-full mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
+      <ul class="absolute z-30 hidden w-full md:w-32 mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
         <%= for option <- @options_list do %>
           <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
           class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
