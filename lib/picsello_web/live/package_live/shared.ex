@@ -167,7 +167,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       })
 
     ~H"""
-    <div class="border border-solid p-4 mb-3 ml-0 md:p-0 md:mb-0 md:ml-2 md:border-0">
+    <div class="border border-solid rounded p-4 mb-3 ml-0 md:p-0 md:mb-0 md:ml-2 md:border-0">
       <div class="relative" {testid("package-template-card")}>
         <div class="flex items-center">
           <%= if @package.archived_at do %>
@@ -186,42 +186,40 @@ defmodule PicselloWeb.PackageLive.Shared do
             </div>
           <% end %>
         </div>
-        <div class="sm:flex sm:flex-row md:grid md:grid-cols-6">
-          <div class={"flex flex-col col-span-2 group #{@class}"}>
-
-
+        <div class="grid grid-cols-1 grid-cols-1 md:grid-cols-6 gap-4">
+          <div class={"flex flex-col md:col-span-2 group #{@class}"}>
             <div class="md:mb-4 relative" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="mouseover">
               <div class="line-clamp-2 raw_html raw_html_inline text-base-250">
                 <%= raw @package.description %>
               </div>
-              <div class="hidden md:block md:flex items-center">
+              <%= if package_description_length_long?(@package.description) do %>
+                <button class="inline-block text-blue-planning-300 view_more">View more</button>
+              <% end %>
+              <div class="hidden md:block md:flex items-center md:my-2">
                 <span class="line-clamp-2 w-5 h-5 mr-2 flex items-center justify-center text-xs font-bold rounded-full bg-gray-200 text-center">
                   <%= @package.download_count %>
                 </span>
                 <span class="text-base-250">Downloadable photos</span>
               </div>
-              <span class="hidden md:inline-block justify-start border rounded px-2 bg-blue-planning-100 text-blue-planning-300 font-bold text-xs"><%= @package.job_type %></span>
+              <span class="hidden md:inline justify-start text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded"><%= String.capitalize(@package.job_type) %></span>
               <div class="hidden p-4 text-sm rounded bg-white font-sans shadow my-4 w-full absolute top-2 z-[15]" data-offset="0" role="tooltip">
                 <div class="line-clamp-6 raw_html"></div>
-                <button class="inline-block text-blue-planning-300">View all</button>
+                <%= if !@package.archived_at do %>
+                  <button class="inline-block text-blue-planning-300" phx-click="edit-package" phx-value-package-id={@package.id}>View all</button>
+                <% end %>
               </div>
-              <%= if package_description_length_long?(@package.description) do %>
-                <button class="inline-block text-blue-planning-300 view_more">View more</button>
-              <% end %>
             </div>
           </div>
 
-          <div class="col-span-2">
+          <div class="md:col-span-2">
             <div class="flex items-center text-base-250">
               <span class="">Package price:&nbsp;</span>
-
               <div class="">
                 <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
               </div>
             </div>
             <div class="flex items-center text-base-250">
               <div class="">Digital image price:&nbsp;</div>
-
               <div class="">
                 <%= if Money.zero?(@package.download_each_price) do %>--<% else %><%= @package.download_each_price %>/each<% end %>
               </div>
@@ -234,54 +232,26 @@ defmodule PicselloWeb.PackageLive.Shared do
             </span>
             <span class="text-base-250">Downloadable photos</span>
           </div>
-          <span class="inline-block md:hidden justify-start border rounded px-2 bg-blue-planning-100 text-blue-planning-300 font-bold text-xs"><%= @package.job_type %></span>
 
-          <div class="absolute top-0 right-0 block md:hidden ml-16 md:ml-2" phx-update={@update_mode} data-offset="0" id={"menu-btn-#{@package.id}"} phx-hook="Select">
-            <button {testid("menu-btn-#{@package.id}")} title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
-              <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
-
-              <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
-            </button>
-
-            <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content w-64">
-              <%= if !@package.archived_at do %>
-                <button title="Edit" type="button" phx-click="edit-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
-                  <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                  Edit
-                </button>
-
-                <button title="Duplicate" type="button" phx-click="duplicate-package" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
-                  <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                  Duplicate
-                </button>
-
-                <button title="Visibility" type="button" phx-click="edit-visibility-confirmation" phx-value-package-id={@package.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
-                  <.icon name={if @package.show_on_public_profile, do: "closed-eye", else: "eye"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => !@package.show_on_public_profile, "text-red-sales-300" => @package.show_on_public_profile})} />
-                  <%= if @package.show_on_public_profile, do: "Hide on public profile", else: "Show on public profile" %>
-                </button>
-              <% end %>
-
-              <button {testid("archive-unarchive-btn-#{@package.id}")} title="Archive" type="button" phx-click="toggle-archive" phx-value-package-id={@package.id} phx-value-type={if @package.archived_at, do: "unarchive", else: "archive"} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
-                <.icon name={if @package.archived_at, do: "plus", else: "trash"} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-blue-planning-300" => @package.archived_at, "text-red-sales-300" => !@package.archived_at})} />
-                <%= if @package.archived_at, do: "Unarchive", else: "Archive" %>
-              </button>
-            </div>
+          <div class="inline md:hidden justify-start">
+            <span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded"><%= String.capitalize(@package.job_type) %></span>
           </div>
 
-          <div class="col-span-2">
-            <div class="flex items-center">
-                <div class="hidden md:block">
-                  <%= if !@package.archived_at do %>
-                    <.icon_button {testid("edit-package-#{@package.id}")} class="ml-5 border border-blue-planning-300 bg-white text-black font-normal" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
-                      Edit package
-                    </.icon_button>
-                  <% end %>
-                </div>
-                <div class="hidden md:block ml-16 md:ml-2" phx-update={@update_mode} id={"menu-#{@package.id}"} data-offset="0" phx-hook="Select">
-                    <button {testid("menu-btn-#{@package.id}")} title="Manage" type="button" class="flex flex-shrink-0 p-2 text-2xl font-bold bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
-                      <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
-
-                      <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+          <div class="md:col-span-2">
+            <%= if !@package.archived_at do %>
+              <hr class="my-4 block md:hidden" />
+            <% end %>
+            <div class="flex items-center flex-wrap gap-4">
+                <%= if !@package.archived_at do %>
+                  <.icon_button {testid("edit-package-#{@package.id}")} class="btn-tertiary text-white bg-blue-planning-300 hover:bg-blue-planning-300/75 hover:opacity-75 transition-colors text-white flex-shrink-0 grow md:grow-0 text-center justify-center" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="white" icon="pencil">
+                    Edit package
+                  </.icon_button>
+                <% end %>
+                <div class="grow md:grow-0 md:ml-2" phx-update={@update_mode} id={"menu-#{@package.id}"} data-offset="0" phx-hook="Select">
+                    <button {testid("menu-btn-#{@package.id}")} title="Manage" type="button" class="btn-tertiary px-2 py-1 flex items-center flex-shrink-0 gap-1 mr-2 text-blue-planning-300 w-full">
+                      Actions
+                      <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+                      <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
                     </button>
 
                     <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content z-10">
@@ -311,16 +281,6 @@ defmodule PicselloWeb.PackageLive.Shared do
               </div>
           </div>
         </div>
-      </div>
-      <%= if !@package.archived_at do %>
-        <hr class="my-4 block md:hidden" />
-      <% end %>
-      <div class="flex items-center block md:hidden">
-        <%= if !@package.archived_at do %>
-          <.icon_button {testid("edit-package-#{@package.id}")} class="border border-blue-planning-300 bg-white text-black font-normal" title="edit link" phx-click="edit-package" phx-value-package-id={@package.id} color="blue-planning-300" icon="pencil">
-            Edit package
-          </.icon_button>
-        <% end %>
       </div>
       <hr class="my-4 hidden md:block" />
     </div>
