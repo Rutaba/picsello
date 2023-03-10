@@ -68,19 +68,19 @@
           <%= live_redirect to: Routes.job_path(@socket, if(job.job_status.is_lead, do: :leads, else: :jobs), job.id) do %>
             <p class="text-blue-planning-300 font-bold underline hover:cursor-pointer capitalize"><%= job.client.name || "-" %></p>
             <p class="text-gray-400 italic font-normal"><%= (job |> Job.name()) <> "(#{job.id})" || "-" %></p>
-            <p class="text-gray-400 font-normal"><%= if job.completed_at, do: "Completed on #{job.completed_at}", else: "Created on #{job.inserted_at}" %></p>
+            <p class="text-gray-400 font-normal"><%= status_label(job, @current_user.time_zone) %></p>
           <% end %>
         </div>
         <div class="sm:col-span-2 flex flex-col sm:flex gap-2 sm:gap-0 hidden md:block">
-        <%= if job.package do %>
-          <p class="capitalize font-bold"><%= job.package.name || "-" %><span class="font-normal capitalize"><%= "-#{job.type}" %></span></p>
-          <p class="text-gray-400"><%= job.package.base_price || "-" %></p>
-        <% else %>
-          <p class="font-bold text-red-sales-300">No package selected</p>
-          <p>-</p>
-        <% end %>
+          <%= if job.package do %>
+            <p class="capitalize font-bold"><%= job.package.name || "-" %><span class="font-normal capitalize"><%= "-#{job.type}" %></span></p>
+            <p class="text-gray-400"><%= job.package.base_price || "-" %></p>
+          <% else %>
+            <p class="font-bold text-red-sales-300">No package selected</p>
+            <p>-</p>
+          <% end %>
         </div>
-        <.status_badge class="w-fit" job_status={job.job_status} job={job}/>
+        <.status_badge class="w-fit" job={job}/>
         <hr class="sm:hidden border-gray-100 my-2" />
         <.actions type={if(job.job_status.is_lead, do: "leads", else: "jobs")} job={job}/>
       </div>

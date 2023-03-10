@@ -185,38 +185,39 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
         |> open_compose()
 
   @impl true
-  def handle_event("complete-job", %{}, %{assigns: %{index: index, jobs: jobs}} = socket),
-    do:
-      socket
-      |> assign(:job, Enum.at(jobs, index))
-      |> assign(:request_from, :clients)
-      |> ConfirmationComponent.open(%{
-        confirm_event: "complete_job",
-        confirm_label: "Yes, complete",
-        confirm_class: "btn-primary",
-        subtitle:
-          "After you complete the job this becomes read-only. This action cannot be undone.",
-        title: "Are you sure you want to complete this job?",
-        icon: "warning-blue"
-      })
-      |> noreply()
+  def handle_event("complete-job", %{}, %{assigns: %{index: index, jobs: jobs}} = socket) do
+    socket
+    |> assign(:job, Enum.at(jobs, index))
+    |> assign(:request_from, :clients)
+    |> ConfirmationComponent.open(%{
+      confirm_event: "complete_job",
+      confirm_label: "Yes, complete",
+      confirm_class: "btn-primary",
+      subtitle:
+        "After you complete the job this becomes read-only. This action cannot be undone.",
+      title: "Are you sure you want to complete this job?",
+      icon: "warning-blue"
+    })
+    |> noreply()
+  end
 
   @impl true
-  def handle_event("complete-job", %{"id" => id}, %{assigns: %{jobs: jobs}} = socket),
-    do:
-      socket
-      |> assign(:job, Enum.find(jobs, fn job -> job.id == to_integer(id) end))
-      |> assign(:request_from, :jobs)
-      |> ConfirmationComponent.open(%{
-        confirm_event: "complete_job",
-        confirm_label: "Yes, complete",
-        confirm_class: "btn-primary",
-        subtitle:
-          "After you complete the job this becomes read-only. This action cannot be undone.",
-        title: "Are you sure you want to complete this job?",
-        icon: "warning-blue"
-      })
-      |> noreply()
+  def handle_event("complete-job", %{"id" => id}, %{assigns: %{jobs: jobs}} = socket) do
+    IO.inspecct
+    socket
+    |> assign(:job, Enum.find(jobs, fn job -> job.id == to_integer(id) end))
+    |> assign(:request_from, :jobs)
+    |> ConfirmationComponent.open(%{
+      confirm_event: "complete_job",
+      confirm_label: "Yes, complete",
+      confirm_class: "btn-primary",
+      subtitle:
+        "After you complete the job this becomes read-only. This action cannot be undone.",
+      title: "Are you sure you want to complete this job?",
+      icon: "warning-blue"
+    })
+    |> noreply()
+  end
 
   @impl true
   def handle_info(
@@ -354,7 +355,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
         <div class="text-base-250 font-normal mb-2">
           <%= Jobs.get_job_shooting_minutes(@job) %> minutes
         </div>
-        <.status_badge job_status={@job.job_status} />
+        <.status_badge job={@job}/>
       </div>
     """
   end

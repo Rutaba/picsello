@@ -439,14 +439,25 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   defp assign_defaults(socket) do
+    IO.inspect socket.assigns.live_action
     socket
     |> assign_search()
     |> assign_pagination(@default_pagination_limit)
     |> assign(:job_status, "all")
     |> assign(:job_type, "all")
-    |> assign(:sort_by, "name")
-    |> assign(:sort_col, :name)
-    |> assign(:sort_direction, :desc)
+    |> then(fn %{assigns: %{live_action: live_action}} = socket ->
+      if live_action == :leads do
+        socket
+        |> assign(:sort_by, "newest_lead")
+        |> assign(:sort_col, :inserted_at)
+        |> assign(:sort_direction, :desc)
+      else
+        socket
+        |> assign(:sort_by, "shoot_date")
+        |> assign(:sort_col, :starts_at)
+        |> assign(:sort_direction, :desc)    
+      end
+    end)
     |> assign(current_focus: -1)
     |> assign(:job_types, Picsello.JobType.all())
     |> assign_new(:selected_job, fn -> nil end)
@@ -517,6 +528,18 @@ defmodule PicselloWeb.JobLive.Index do
       %{title: "Archive", action: "confirm_archive_lead", icon: "trash"}
     ]
   end
+
+  defp status_label(%{job_status: %{current_status: status}} = job, time_zone) do
+    IO.inspect status, label: "job"
+    case status do
+      :archived -> "Archived on #{job.updated_at |> format_date(time_zone)}"        
+      :completed -> "Completed on #{job.completed_at |> format_date(time_zone)}"        
+      :accepted -> "Awaiting on #{job.updated_at |> format_date(time_zone)}"        
+      _ -> "Created on #{job.inserted_at |> format_date(time_zone)}"
+    end
+  end
+
+  defp format_date(date, time_zone), do:  strftime(time_zone, date, "%B %d, %Y")
 
   def capitalize_per_word(string) do
     String.split(string)
