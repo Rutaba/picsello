@@ -237,7 +237,7 @@ defmodule PicselloWeb.PackageLive.Shared do
             <span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded"><%= String.capitalize(@package.job_type) %></span>
           </div>
 
-          <div class="md:col-span-2">
+          <div class="md:col-span-2 md:ml-auto">
             <%= if !@package.archived_at do %>
               <hr class="my-4 block md:hidden" />
             <% end %>

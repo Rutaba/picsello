@@ -197,7 +197,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
             </div>
             <%= if Enum.any? @templates do %>
               <div class="font-bold md:grid grid-cols-6 mt-2 hidden md:inline-block">
-                <%= for title <- ["Package Details", "Pricing", "Actions"] do %>
+                <%= for title <- ["Package Details", "Pricing"] do %>
                   <div class="col-span-2 pl-2"><%= title %></div>
                 <% end %>
               </div>
