@@ -6,7 +6,6 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   alias Picsello.{
     Job,
     Jobs,
-    Client,
     Package,
     Profiles,
     Packages,
@@ -14,13 +13,16 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     Packages.PackagePricing,
     Galleries.Gallery,
     Galleries,
-    Repo
+    Repo,
+    GlobalSettings,
+    Clients
   }
 
   alias Ecto.Multi
   alias Ecto.Changeset
   alias PicselloWeb.JobLive.GalleryTypeComponent
 
+  import PicselloWeb.JobLive.Shared, only: [search_clients: 1, job_form_fields: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1, expired_at: 1]
 
   import PicselloWeb.PackageLive.Shared,
@@ -32,19 +34,38 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   @impl true
   def update(
-        %{current_user: %{organization: %{organization_job_types: organization_job_types}}} =
-          assigns,
+        %{
+          current_user:
+            %{
+              organization: %{id: organization_id, organization_job_types: organization_job_types}
+            } = current_user
+        } = assigns,
         socket
       ) do
     socket
     |> assign(assigns)
+    |> assign(
+      global_settings: Repo.get_by(GlobalSettings.Gallery, organization_id: organization_id)
+    )
     |> assign(:new_gallery, nil)
+    |> assign(:clients, Clients.find_all_by(user: current_user))
+    |> assign(:search_results, [])
+    |> assign(:search_phrase, nil)
+    |> assign(:searched_client, nil)
+    |> assign(:new_client, false)
+    |> assign(current_focus: -1)
+    |> assign_new(:selected_client, fn -> nil end)
+    |> then(fn socket ->
+      if socket.assigns[:changeset] do
+        socket
+      else
+        assign_job_changeset(socket, %{"client" => %{}, "shoots" => [%{"starts_at" => nil}]})
+      end
+    end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
-    |> assign_new(:selected_client, fn -> nil end)
     |> assign(templates: [], step: :choose_type, steps: @steps)
     |> assign_package_changesets()
-    |> assign_job_changeset(%{"client" => %{}, "shoots" => [%{"starts_at" => nil}]})
     |> assign(:job_types, Profiles.enabled_job_types(organization_job_types))
     |> ok()
   end
@@ -68,9 +89,32 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"job" => job_params}, socket) do
+  def handle_event("validate", %{"job" => %{"client" => _client_params} = params}, socket) do
+    socket |> assign_job_changeset(params, :validate) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{"job" => %{"type" => _job_type} = params},
+        %{assigns: %{searched_client: searched_client, selected_client: selected_client}} = socket
+      ) do
+    client_id =
+      cond do
+        searched_client -> searched_client.id
+        selected_client -> selected_client.id
+        true -> nil
+      end
+
     socket
-    |> assign_job_changeset(job_params, :validate)
+    |> assign_job_changeset(
+      Map.put(
+        params,
+        "client_id",
+        client_id
+      ),
+      :validate
+    )
     |> noreply()
   end
 
@@ -81,13 +125,25 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> noreply()
   end
 
-  def handle_event("submit", %{"job" => job_params}, socket) do
-    socket
-    |> assign_job_changeset(job_params)
-    |> assign(:step, :pricing)
+  @impl true
+  def handle_event(
+        "submit",
+        %{"job" => _job_params},
+        %{assigns: %{step: :details, changeset: job_changeset}} = socket
+      ) do
+    case job_changeset do
+      %{valid?: true} ->
+        socket
+        |> assign(changeset: Map.put(job_changeset, :action, :insert))
+        |> assign(step: :pricing)
+
+      _ ->
+        socket
+    end
     |> noreply()
   end
 
+  @impl true
   def handle_event(
         "submit",
         params,
@@ -95,6 +151,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
           assigns: %{
             current_user: current_user,
             selected_client: selected_client,
+            searched_client: searched_client,
             gallery_type: gallery_type
           }
         } = socket
@@ -102,10 +159,19 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     socket
     |> assign_package_changesets(params)
     |> then(fn %{assigns: %{changeset: changeset, package_changeset: package_changeset}} ->
+      job = changeset |> Changeset.apply_changes()
+
       client =
-        if selected_client,
-          do: selected_client,
-          else: changeset |> Changeset.apply_changes() |> Map.get(:client)
+        cond do
+          selected_client ->
+            selected_client
+
+          searched_client ->
+            searched_client
+
+          true ->
+            job.client
+        end
 
       type = changeset |> Changeset.get_field(:type)
       changeset = Changeset.delete_change(changeset, :client)
@@ -146,6 +212,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> noreply()
   end
 
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
+
   @impl true
   def render(%{step: step} = assigns) do
     ~H"""
@@ -163,22 +231,26 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         <% end %>
       </h1>
 
+      <%= if is_nil(@selected_client) && step == :details do %>
+        <.search_clients new_client={@new_client} search_results={@search_results} search_phrase={@search_phrase} selected_client={@selected_client} searched_client={@searched_client} current_focus={@current_focus} clients={@clients} myself={@myself}/>
+      <% end %>
+
       <.form
         for={@changeset}
         let={f} phx_change={:validate}
         phx_submit={:submit}
         phx_target={@myself}
         id={"form-#{step}"}
-        >
+      >
         <input type="hidden" name="step" value={@step} />
         <.step name={step} f={f} {assigns} />
 
-      <%= unless step == :choose_type do %>
-        <.footer>
-          <.step_button name={step} form={f} is_valid={valid?(assigns)} myself={@myself} />
-          <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">Cancel</button>
-        </.footer>
-      <% end %>
+        <%= unless step == :choose_type do %>
+          <.footer>
+            <.step_button name={step} form={f} is_valid={valid?(assigns)} myself={@myself} searched_client={@searched_client} selected_client={@selected_client} new_client={@new_client} />
+            <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">Cancel</button>
+          </.footer>
+        <% end %>
 
       </.form>
     </div>
@@ -200,18 +272,11 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     assigns = assigns |> Enum.into(%{email: nil, name: nil, phone: nil})
 
     ~H"""
-      <div class="px-1.5 grid grid-cols-2 gap-5">
-        <%= if is_nil(@selected_client) do %>
-          <%= inputs_for @f, :client, fn client_form -> %>
-          <%= labeled_input client_form, :name, label: "Client Name", placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
-          <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "email@example.com", phx_debounce: "500" %>
-        <% end %>
-      <% end %>
-
-      <%= labeled_select form_for(@package_changeset, "#"), :shoot_count, Enum.to_list(1..10), label: "# of Shoots", phx_debounce: "500"%>
-
-      <%= hidden_input @f, :is_gallery_only, value: true %>
-      <%= labeled_select @f, :type, @job_types, type: :telephone_input, label: "Type of Photography", prompt: "Select below", phx_debounce: "500" %>
+      <.job_form_fields myself={@myself} form={@f} new_client={@new_client} job_types={@job_types} />
+      <hr class="mt-10 mb-3" />
+      <div class="grid md:grid-cols-2">
+        <%= labeled_select form_for(@package_changeset, "#"), :shoot_count, Enum.to_list(1..10), label: "# of Shoots", phx_debounce: "500" %>
+        <%= hidden_input @f, :is_gallery_only, value: true %>
       </div>
     """
   end
@@ -225,7 +290,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
         <.print_credit_fields f={package} package_pricing={@package_pricing} />
 
-        <.digital_download_fields for={:create_gallery} package_form={package} download={@download} package_pricing={@package_pricing} />
+        <.digital_download_fields for={:create_gallery} package_form={package} download_changeset={@download_changeset} package_pricing={@package_pricing} />
         <%= if @new_gallery do %>
           <div id="set-gallery-cookie" data-gallery-type={@new_gallery.type} phx-hook="SetGalleryCookie">
           </div>
@@ -238,17 +303,30 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   defp valid?(assigns) do
     Enum.all?(
-      [assigns.download, assigns.package_pricing, assigns.package_changeset],
+      [assigns.download_changeset, assigns.package_pricing, assigns.package_changeset],
       & &1.valid?
     )
   end
 
-  def step_button(%{name: name, is_valid: is_valid} = assigns) do
+  def step_button(
+        %{
+          name: name,
+          is_valid: is_valid,
+          selected_client: selected_client,
+          searched_client: searched_client,
+          new_client: new_client
+        } = assigns
+      ) do
     assigns = Map.put_new(assigns, :class, "")
     title = button_title(name)
 
+    disabled? =
+      if name == :details,
+        do: is_nil(searched_client) && is_nil(selected_client) && !new_client,
+        else: false
+
     ~H"""
-    <button class="btn-primary" title={title} type="submit" disabled={!is_valid} phx-disable-with={title}>
+    <button class="btn-primary" title={title} type="submit" disabled={!is_valid || disabled?} phx-disable-with={title}>
       <%= title %>
     </button>
     """
@@ -258,25 +336,25 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   defp button_title(:pricing), do: "Save"
 
   defp assign_job_changeset(
-         %{
-           assigns: %{
-             current_user: %{organization_id: organization_id},
-             selected_client: selected_client
-           }
-         } = socket,
+         %{assigns: %{current_user: current_user}} = socket,
          params,
          action \\ nil
        ) do
-    params =
-      case selected_client do
-        nil -> put_in(params, ["client", "organization_id"], organization_id)
-        %Client{id: client_id} -> put_in(params, ["client_id"], client_id)
+    changeset =
+      case params do
+        %{"client" => _client_params} ->
+          params
+          |> put_in(["client", "organization_id"], current_user.organization_id)
+          |> Job.create_job_changeset()
+          |> Map.put(:action, action)
+
+        _ ->
+          params
+          |> Job.new_job_changeset()
+          |> Map.put(:action, action)
       end
 
-    params
-    |> Job.create_job_changeset()
-    |> Map.put(:action, action)
-    |> then(&assign(socket, :changeset, &1))
+    assign(socket, :changeset, changeset)
   end
 
   def assign_package_changesets(
@@ -284,41 +362,25 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
           assigns: %{
             package: package,
             package_pricing: package_pricing,
-            current_user: current_user
+            current_user: current_user,
+            step: step,
+            global_settings: global_settings
           }
         } = socket,
         params \\ %{},
         action \\ nil
       ) do
     global_settings =
-      Repo.get_by(Picsello.GlobalSettings.Gallery, organization_id: current_user.organization_id)
+      if global_settings,
+        do: global_settings,
+        else: %{download_each_price: nil, buy_all_price: nil}
 
-    {new_params, package} =
-      case global_settings do
-        nil ->
-          {params["download"] || %{}, package}
-
-        global_settings ->
-          updated_params =
-            params["download"] ||
-              %{}
-              |> Map.put(:download_each_price, global_settings.download_each_price)
-              |> Map.put(:buy_all, global_settings.buy_all_price)
-              |> Map.put(:is_custom_price, true)
-
-          updated_package =
-            package
-            |> Map.put(:download_each_price, global_settings.download_each_price)
-            |> Map.put(:buy_all, global_settings.buy_all_price)
-            |> Map.put(:is_custom_price, true)
-
-          {updated_params, updated_package}
-      end
+    download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 
     download_changeset =
       package
-      |> Download.from_package()
-      |> Download.changeset(new_params)
+      |> Download.from_package(global_settings)
+      |> Download.changeset(download_params)
       |> Map.put(:action, action)
 
     download = current(download_changeset)
@@ -338,7 +400,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
     assign(
       socket,
-      download: download_changeset,
+      download_changeset: download_changeset,
       package_changeset: package_changeset,
       package_pricing:
         PackagePricing.changeset(

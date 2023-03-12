@@ -1,3 +1,22 @@
+import * as Sentry from '@sentry/browser';
+import { BrowserTracing } from '@sentry/tracing';
+
+const env =
+  (window.location.host.includes('render') &&
+    window.location.host.split('.')[0]) ||
+  (process && process.env && process.env.NODE_ENV) ||
+  'production';
+
+Sentry.init({
+  dsn: 'https://5296991183f042038e40dbe1b1ddb9ef@o1295249.ingest.sentry.io/4504786824921088',
+  integrations: [new BrowserTracing({ tracingOrigins: ['*'] })],
+  environment: env,
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 0.3,
+});
+
 // We need to import the CSS so that webpack will load it.
 // The MiniCssExtractPlugin is used to separate it out into
 // its own CSS file.
@@ -56,6 +75,7 @@ import ToggleContent from './hooks/toggle-content';
 import ToggleSiblings from './hooks/toggle-siblings';
 import DatePicker from './hooks/date-picker';
 import Cookies from 'js-cookie';
+import FolderUpload from './hooks/folder-upload';
 
 const Modal = {
   mounted() {
@@ -254,6 +274,7 @@ const Hooks = {
   SetGalleryCookie,
   GetGalleryCookie,
   showWelcomeModal,
+  FolderUpload,
 };
 
 let Uploaders = {};

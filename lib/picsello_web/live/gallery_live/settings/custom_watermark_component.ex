@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
 
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
+  alias Picsello.Galleries.Watermark
 
   @upload_options [
     accept: ~w(.png image/png),
@@ -92,7 +93,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
   end
 
   def presign_image(image, %{assigns: %{gallery: gallery}} = socket) do
-    key = "galleries/#{gallery.id}/watermark.png"
+    key = Watermark.watermark_path(gallery.id)
 
     sign_opts = [
       expires_in: 600,

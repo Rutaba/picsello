@@ -4,6 +4,7 @@ defmodule Picsello.Subscriptions do
     Repo,
     SubscriptionPlan,
     SubscriptionEvent,
+    SubscriptionPromotionCode,
     Payments,
     Subscription,
     Accounts.User,
@@ -48,6 +49,30 @@ defmodule Picsello.Subscriptions do
 
         {:ok, _} = handle_stripe_subscription(subscription)
       end
+    end
+  end
+
+  def sync_subscription_promotion_codes() do
+    case Payments.list_promotion_codes(%{active: true}) do
+      {:ok, %{data: promotion_codes}} ->
+        for %{code: code, coupon: %{id: id, percent_off: percent_off}} <-
+              promotion_codes do
+          %{
+            stripe_promotion_code_id: id,
+            code: code,
+            percent_off: percent_off
+          }
+          |> SubscriptionPromotionCode.changeset()
+          |> Repo.insert!(
+            conflict_target: [:stripe_promotion_code_id],
+            on_conflict: {:replace, [:code, :updated_at, :percent_off]}
+          )
+        end
+
+        {:ok, "Sync from stripe succeeded"}
+
+      {:error, _} ->
+        {:error, "Sync from stripe failed"}
     end
   end
 
@@ -105,6 +130,32 @@ defmodule Picsello.Subscriptions do
     Repo.all(from(s in SubscriptionPlan, order_by: s.price))
   end
 
+  def maybe_return_promotion_code_id?(code) do
+    case maybe_get_promotion_code?(code) do
+      %{stripe_promotion_code_id: stripe_promotion_code_id} ->
+        stripe_promotion_code_id
+
+      _ ->
+        nil
+    end
+  end
+
+  def maybe_get_promotion_code?(%{onboarding: %{promotion_code: promotion_code}}) do
+    maybe_get_promotion_code?(promotion_code)
+  end
+
+  def maybe_get_promotion_code?(nil), do: nil
+
+  def maybe_get_promotion_code?(code) do
+    case Repo.get_by(SubscriptionPromotionCode, %{code: code}) do
+      %{stripe_promotion_code_id: _} = code ->
+        code
+
+      _ ->
+        nil
+    end
+  end
+
   def get_subscription_plan(recurring_interval \\ "month"),
     do: Repo.get_by!(SubscriptionPlan, %{recurring_interval: recurring_interval, active: true})
 
@@ -112,6 +163,15 @@ defmodule Picsello.Subscriptions do
     subscription_plan = get_subscription_plan(recurring_interval)
 
     trial_days = opts |> Keyword.get(:trial_days)
+
+    promotion_code =
+      case maybe_get_promotion_code?(user) do
+        %{stripe_promotion_code_id: stripe_promotion_code_id} ->
+          stripe_promotion_code_id
+
+        _ ->
+          nil
+      end
 
     stripe_params = %{
       customer: user_customer_id(user),
@@ -121,6 +181,7 @@ defmodule Picsello.Subscriptions do
           price: subscription_plan.stripe_price_id
         }
       ],
+      coupon: promotion_code,
       payment_settings: %{
         save_default_payment_method: "on_subscription"
       },
@@ -144,9 +205,21 @@ defmodule Picsello.Subscriptions do
     cancel_url = opts |> Keyword.get(:cancel_url)
     success_url = opts |> Keyword.get(:success_url)
     trial_days = opts |> Keyword.get(:trial_days)
+    promotion_code = opts |> Keyword.get(:promotion_code)
 
     subscription_data =
       if trial_days, do: %{subscription_data: %{trial_period_days: trial_days}}, else: %{}
+
+    discounts_data =
+      if promotion_code,
+        do: %{
+          discounts: [
+            %{
+              coupon: promotion_code
+            }
+          ]
+        },
+        else: %{}
 
     stripe_params =
       %{
@@ -163,6 +236,7 @@ defmodule Picsello.Subscriptions do
         ]
       }
       |> Map.merge(subscription_data)
+      |> Map.merge(discounts_data)
 
     case Payments.create_session(stripe_params, opts) do
       {:ok, %{url: url}} -> {:ok, url}

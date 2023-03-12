@@ -7,7 +7,8 @@ defmodule PicselloWeb.Live.Admin.Workers do
     Picsello.Workers.SyncEmailPresets,
     Picsello.Workers.SyncTiers,
     Picsello.Workers.SyncWHCCCatalog,
-    Picsello.Workers.SyncSubscriptionPricing
+    Picsello.Workers.SyncSubscriptionPricing,
+    Picsello.Workers.SyncSubscriptionPromotionCodes
   ]
 
   @queue "user_initiated"

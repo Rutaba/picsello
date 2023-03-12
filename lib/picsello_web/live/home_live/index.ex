@@ -13,15 +13,29 @@ defmodule PicselloWeb.HomeLive.Index do
     ClientMessage,
     Subscriptions,
     Orders,
-    Galleries,
     OrganizationCard,
     Utils,
-    Onboardings
+    Onboardings,
+    Clients,
+    Subscriptions,
+    Marketing
+  }
+
+  alias PicselloWeb.Router.Helpers, as: Routes
+
+  alias PicselloWeb.{
+    Live.ClientLive.ClientFormComponent,
+    Live.Marketing.NewCampaignComponent,
+    JobLive.ImportWizard,
+    QuestionnaireFormComponent
   }
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
   import Ecto.Query
+  import Ecto.Changeset, only: [get_change: 2]
+  import Phoenix.LiveView
+  import PicselloWeb.LiveHelpers
 
   @card_concise_name_list [
     "send-confirmation-email",
@@ -37,12 +51,18 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def mount(params, _session, socket) do
     socket
+    |> assign(:main_class, "bg-gray-100")
     |> assign_stripe_status()
     |> assign(:page_title, "Work Hub")
     |> assign(:stripe_subscription_status, nil)
     |> assign_counts()
+    |> assign(:promotion_code_open, false)
     |> assign_attention_items()
+    |> assign(:tabs, tabs_list(socket))
+    |> assign(:tab_active, "todo")
+    |> assign_promotion_code_changeset()
     |> subscribe_inbound_messages()
+    |> assign_inbox_threads()
     |> maybe_show_success_subscription(params)
     |> ok()
   end
@@ -50,10 +70,22 @@ defmodule PicselloWeb.HomeLive.Index do
   @impl true
   def handle_params(_params, _uri, socket), do: socket |> noreply()
 
+  @impl true
   def handle_event("open-welcome-modal", %{}, %{assigns: %{current_user: current_user}} = socket) do
     socket
     |> assign(:current_user, Onboardings.increase_welcome_count!(current_user))
     |> PicselloWeb.WelcomeComponent.open(%{close_event: "toggle_welcome_event"})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "handle-promotion-code-toggle",
+        _,
+        %{assigns: %{promotion_code_open: promotion_code_open}} = socket
+      ) do
+    socket
+    |> assign(:promotion_code_open, !promotion_code_open)
     |> noreply()
   end
 
@@ -76,13 +108,6 @@ defmodule PicselloWeb.HomeLive.Index do
     )
     |> noreply()
   end
-
-  @impl true
-  def handle_event("redirect", %{"to" => path}, socket),
-    do:
-      socket
-      |> push_redirect(to: path)
-      |> noreply()
 
   @impl true
   def handle_event("open-user-settings", _, socket),
@@ -147,24 +172,67 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
+  def handle_event(
+        "validate-promo-code",
+        %{"user" => user_params},
+        socket
+      ) do
+    socket
+    |> assign_promotion_code_changeset(user_params)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "save-promo-code",
+        %{"user" => user_params},
+        %{assigns: %{promotion_code_open: promotion_code_open}} = socket
+      ) do
+    socket
+    |> assign_promotion_code_changeset(user_params)
+    |> assign(:promotion_code_open, !promotion_code_open)
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
-  def handle_event("subscription-checkout", %{"interval" => interval}, socket) do
-    case Subscriptions.checkout_link(
-           socket.assigns.current_user,
-           interval,
-           success_url: "#{Routes.home_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
-           cancel_url: Routes.home_url(socket, :index)
-         ) do
-      {:ok, url} ->
-        socket |> redirect(external: url) |> noreply()
+  def handle_event(
+        "subscription-checkout",
+        %{"interval" => interval},
+        %{
+          assigns: %{
+            promotion_code_changeset: promotion_code_changeset,
+            current_user: %{
+              onboarding: %{
+                promotion_code: promotion_code
+              }
+            }
+          }
+        } = socket
+      ) do
+    onboarding_changeset =
+      promotion_code_changeset
+      |> get_change(:onboarding)
 
-      {:error, error} ->
-        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
-        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
-    end
+    promotion_code_id =
+      if !is_nil(promotion_code) and is_nil(onboarding_changeset) do
+        Subscriptions.maybe_return_promotion_code_id?(promotion_code)
+      else
+        case onboarding_changeset do
+          nil ->
+            nil
+
+          _ ->
+            onboarding_changeset
+            |> get_change(:promotion_code)
+            |> Subscriptions.maybe_return_promotion_code_id?()
+        end
+      end
+
+    build_subscription_link(socket, interval, promotion_code_id)
   end
 
   @impl true
@@ -178,6 +246,7 @@ defmodule PicselloWeb.HomeLive.Index do
     case status do
       "viewed" -> OrganizationCard.viewed!(org_card_id)
       "inactive" -> OrganizationCard.inactive!(org_card_id)
+      _ -> nil
     end
 
     send(self(), :card_status)
@@ -185,9 +254,419 @@ defmodule PicselloWeb.HomeLive.Index do
     socket |> noreply()
   end
 
-  defp maybe_show_success_subscription(socket, %{
-         "session_id" => "" <> session_id
-       }) do
+  @impl true
+  def handle_event("create-booking-event", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.calendar_booking_events_path(socket, :new))
+      |> noreply()
+
+  @impl true
+  def handle_event("add-client", _, socket),
+    do:
+      socket
+      |> ClientFormComponent.open()
+      |> noreply()
+
+  @impl true
+  def handle_event("add-package", %{}, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.package_templates_path(socket, :new))
+      |> noreply()
+
+  @impl true
+  def handle_event(
+        "create-questionnaire",
+        %{},
+        %{assigns: %{current_user: %{organization_id: organization_id}} = assigns} = socket
+      ) do
+    assigns =
+      Map.merge(assigns, %{
+        questionnaire: %Picsello.Questionnaire{organization_id: organization_id}
+      })
+
+    socket
+    |> QuestionnaireFormComponent.open(
+      Map.merge(Map.take(assigns, [:questionnaire, :current_user]), %{state: :create})
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("import-job", %{}, socket),
+    do:
+      socket
+      |> open_modal(ImportWizard, Map.take(socket.assigns, [:current_user]))
+      |> noreply()
+
+  @impl true
+  def handle_event("view-help", _, socket),
+    do:
+      socket
+      |> redirect(external: "https://support.picsello.com")
+      |> noreply()
+
+  @impl true
+  def handle_event("create-marketing-email", _, socket),
+    do:
+      socket
+      |> NewCampaignComponent.open()
+      |> noreply()
+
+  @impl true
+  def handle_event("change-tab", %{"tab" => tab}, socket) do
+    socket
+    |> assign(:tab_active, tab)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("open-thread", %{"id" => id}, socket) do
+    socket
+    |> push_redirect(to: Routes.inbox_path(socket, :show, id))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("redirect", %{"to" => to}, socket) do
+    socket
+    |> push_redirect(to: to)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:load_template_preview, component, body_html},
+        %{assigns: %{current_user: current_user, modal_pid: modal_pid}} = socket
+      ) do
+    template_preview = Marketing.template_preview(current_user, body_html)
+
+    send_update(
+      modal_pid,
+      component,
+      id: component,
+      template_preview: template_preview
+    )
+
+    socket
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:update, %{questionnaire: _questionnaire}}, socket) do
+    socket
+    |> put_flash(:success, "Questionnaire saved")
+    |> push_redirect(to: Routes.questionnaires_index_path(socket, :index))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:close_event, %{event_name: "toggle_welcome_event", link: link}},
+        socket
+      ) do
+    if link === "demo" do
+      socket
+    else
+      socket |> welcome_modal_state() |> push_redirect(to: link)
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:redirect_to_gallery, gallery}, socket) do
+    socket
+    |> push_redirect(to: new_gallery_path(socket, gallery))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:stripe_status, status}, socket) do
+    socket |> assign(stripe_status: status) |> assign_attention_items() |> noreply()
+  end
+
+  @impl true
+  def handle_info({:inbound_messages, _message}, %{assigns: %{inbox_count: count}} = socket) do
+    socket
+    |> assign(:inbox_count, count + 1)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(:card_status, socket) do
+    socket
+    |> assign_attention_items()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:stripe_session_id, stripe_session_id}, socket) do
+    case Subscriptions.handle_subscription_by_session_id(stripe_session_id) do
+      :ok ->
+        socket
+        |> assign(:stripe_subscription_status, :success)
+        |> PicselloWeb.ConfirmationComponent.open(%{
+          title: "You have subscribed to Picsello",
+          subtitle:
+            "We’re excited to have join Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.",
+          close_label: "Close",
+          close_class: "btn-primary"
+        })
+        # clear the session_id param
+        |> push_patch(to: Routes.home_path(socket, :index), replace: true)
+        |> noreply()
+
+      _ ->
+        socket
+        |> put_flash(:error, "Couldn't fetch your Stripe session. Please try again")
+        |> noreply()
+    end
+  end
+
+  def tabs_nav(assigns) do
+    ~H"""
+    <ul class="flex overflow-auto gap-6 mb-6 py-6 md:py-0">
+      <%= for {true, %{name: name, action: action, concise_name: concise_name, redirect_route: redirect_route}} <- @tabs do %>
+        <li class={classes("text-blue-planning-300 font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @tab_active === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @tab_active !== concise_name})}>
+          <button type="button" phx-click={action} phx-value-tab={concise_name} phx-value-to={redirect_route}><%= name %></button>
+        </li>
+      <% end %>
+    </ul>
+    """
+  end
+
+  def tabs_content(
+        %{
+          assigns: %{
+            attention_items: attention_items,
+            should_attention_items_overflow: should_attention_items_overflow,
+            current_user: current_user
+          }
+        } = assigns
+      ) do
+    ~H"""
+    <div>
+      <%= case attention_items do %>
+        <% [] -> %>
+          <h6 class="flex items-center font-bold text-blue-planning-300"><.icon name="confetti-welcome" class="inline-block w-8 h-8 text-blue-planning-300" /> You're all caught up!</h6>
+        <% items -> %>
+          <ul class={classes("flex overflow-auto intro-next-up", %{"xl:overflow-none" => !should_attention_items_overflow })}>
+            <%= for {true, %{card: %{title: title, body: body, icon: icon, buttons: buttons, concise_name: concise_name, color: color, class: class}} = org_card} <- items do %>
+              <li {testid("attention-item")} class={classes("attention-item flex-shrink-0 flex flex-col justify-between relative max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"xl:flex-1" => !should_attention_items_overflow})}>
+                <%= if org_card.status == :viewed and concise_name != "black-friday" do %>
+                  <div class="flex justify-between absolute w-full">
+                    <span></span>
+                    <span class="sm:pr-[30px] pr-[25px]" phx-click="card_status" phx-value-org_card_id={org_card.id} phx-value-status="inactive">
+                      <.icon name="close-x" class="mt-[-7px] w-3 h-3 stroke-current stroke-2 base-250" />
+                    </span>
+                  </div>
+                <% end %>
+
+                <div>
+                  <div class="flex">
+                    <.icon name={icon} width="23" height="20" class={"block mr-2 mt-1 rounded-sm fill-current text-#{color}"} />
+                    <h1 class="text-lg font-bold"><%= title %></h1>
+                  </div>
+
+                  <p class="my-2 text-sm"><%= body %></p>
+                </div>
+
+                <.card_buttons {assigns} current_user={current_user} socket={@socket} concise_name={concise_name} org_card_id={org_card.id} buttons={buttons} />
+              </li>
+            <% end %>
+          </ul>
+      <% end %>
+    </div>
+    """
+  end
+
+  def action_item(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        button_text: nil,
+        button_action: nil,
+        button_icon: nil
+      })
+
+    ~H"""
+    <button title={@button_text} type="button" phx-click={@button_action} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+      <.icon name={@button_icon} class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
+      <%= @button_text %>
+    </button>
+    """
+  end
+
+  def dashboard_main_card(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        title: nil,
+        inner_block: nil,
+        inner_block_classes: nil,
+        button_text: nil,
+        button_action: nil,
+        link_text: nil,
+        link_action: nil,
+        link_value: nil,
+        notification_count: nil,
+        redirect_route: nil
+      })
+
+    ~H"""
+    <div class="rounded-lg bg-white p-6 grow flex flex-col items-start">
+      <div class="flex justify-between items-center mb-2 w-full gap-6">
+        <h3 class="text-2xl font-bold flex items-center gap-2">
+          <%= @title %>
+          <.notification_bubble notification_count={@notification_count} />
+        </h3>
+        <%= if @button_action && @button_text do %>
+          <button class="btn-tertiary py-2 px-4 mt-2 md:mt-0 flex-wrap whitespace-nowrap flex-shrink-0" type="button" phx-click={@button_action}><%= @button_text %></button>
+        <% end %>
+      </div>
+      <div class={"mb-2 #{@inner_block_classes}"}>
+        <%= render_block(@inner_block) %>
+      </div>
+      <%= if @link_action && @link_text do %>
+        <button class="underline text-blue-planning-300 mt-auto inline-block" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
+      <% end %>
+    </div>
+    """
+  end
+
+  def notification_bubble(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        notification_count: nil,
+        classes: nil
+      })
+
+    ~H"""
+    <%= if @notification_count && @notification_count !== 0 do %>
+      <span {testid("badge")} class={"text-xs bg-red-sales-300 text-white w-5 h-5 leading-none rounded-full flex items-center justify-center pb-0.5 #{@classes}"}><%= @notification_count %></span>
+    <% end %>
+    """
+  end
+
+  def thread_card(assigns) do
+    ~H"""
+    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} class="flex justify-between border-b cursor-pointer first:pt-0 py-3">
+      <div class="">
+        <div class="flex items-center">
+          <div class="text-xl line-clamp-1 font-bold"><%= @title %></div>
+          <%= if @unread do %>
+            <span {testid("new-badge")} class="mx-4 px-2 py-0.5 text-xs rounded bg-blue-planning-300 text-white">New</span>
+          <% end %>
+        </div>
+        <div class="line-clamp-1 font-semibold py-0.5 text-base-250"><%= @subtitle %></div>
+        <div class="line-clamp-1 text-base-250"><%= @message %></div>
+      </div>
+      <div class="relative flex flex-shrink-0">
+        <%= @date %>
+        <.icon name="forth" class="sm:hidden absolute top-1.5 -right-6 w-4 h-4 stroke-current text-base-300 stroke-2" />
+      </div>
+    </div>
+    """
+  end
+
+  defp assign_inbox_threads(%{assigns: %{current_user: current_user}} = socket) do
+    job_query = Job.for_user(current_user) |> ClientMessage.unread_messages()
+
+    message_query =
+      from(message in job_query,
+        distinct: message.job_id,
+        order_by: [desc: message.inserted_at]
+      )
+
+    inbox_threads =
+      from(message in subquery(message_query), order_by: [desc: message.inserted_at], limit: 3)
+      |> Repo.all()
+      |> Repo.preload(job: :client)
+      |> Enum.map(fn message ->
+        %{
+          id: message.job_id,
+          title: message.job.client.name,
+          subtitle: Job.name(message.job),
+          message: message.body_text,
+          date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y")
+        }
+      end)
+
+    socket
+    |> assign(:inbox_threads, inbox_threads)
+  end
+
+  defp tabs_list(socket) do
+    [
+      {true,
+       %{
+         name: "To do",
+         concise_name: "todo",
+         action: "change-tab",
+         redirect_route: nil,
+         notification_count: nil
+       }},
+      {false,
+       %{
+         name: "Finish Setup",
+         concise_name: "finish-setup",
+         action: "change-tab",
+         redirect_route: nil,
+         notification_count: nil
+       }},
+      {true,
+       %{
+         name: "Clients",
+         concise_name: "clients",
+         action: "redirect",
+         redirect_route: Routes.clients_path(socket, :index),
+         notification_count: nil
+       }},
+      {true,
+       %{
+         name: "Leads",
+         concise_name: "leads",
+         action: "redirect",
+         redirect_route: Routes.job_path(socket, :leads),
+         notification_count: nil
+       }},
+      {true,
+       %{
+         name: "Jobs",
+         concise_name: "jobs",
+         action: "redirect",
+         redirect_route: Routes.job_path(socket, :jobs),
+         notification_count: nil
+       }},
+      {true,
+       %{
+         name: "Galleries",
+         concise_name: "galleries",
+         action: "redirect",
+         redirect_route: Routes.gallery_path(socket, :galleries),
+         notification_count: nil
+       }},
+      {true,
+       %{
+         name: "Booking Events",
+         concise_name: "booking-events",
+         action: "redirect",
+         redirect_route: Routes.calendar_booking_events_path(socket, :index),
+         notification_count: nil
+       }},
+      {true,
+       %{
+         name: "Packages",
+         concise_name: "packages",
+         action: "redirect",
+         redirect_route: Routes.package_templates_path(socket, :index),
+         notification_count: nil
+       }}
+    ]
+  end
+
+  def maybe_show_success_subscription(socket, %{
+        "session_id" => "" <> session_id
+      }) do
     if connected?(socket),
       do: send(self(), {:stripe_session_id, session_id})
 
@@ -195,10 +674,9 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(:stripe_subscription_status, :loading)
   end
 
-  defp maybe_show_success_subscription(socket, %{}), do: socket
+  def maybe_show_success_subscription(socket, _), do: socket
 
-  defp assign_counts(%{assigns: %{current_user: current_user}} = socket) do
-    organization_id = Map.get(current_user, :organization).id
+  def assign_counts(%{assigns: %{current_user: current_user}} = socket) do
     job_count_by_status = current_user |> job_count_by_status() |> Repo.all()
 
     lead_stats =
@@ -237,20 +715,11 @@ defmodule PicselloWeb.HomeLive.Index do
 
     socket
     |> assign(
-      lead_stats: lead_stats,
       lead_count: lead_stats |> Keyword.values() |> Enum.sum(),
-      gallery_count:
-        Galleries.list_all_galleries_by_organization_query(organization_id)
-        |> Repo.all()
-        |> Enum.count(),
-      galleries_empty?:
-        Galleries.list_all_galleries_by_organization_query(organization_id)
-        |> Repo.all()
-        |> Enum.empty?(),
       leads_empty?: Enum.empty?(job_count_by_status),
-      jobs_empty?: !Enum.any?(job_count_by_status, &(!&1.lead?)),
       job_count: job_count,
-      inbox_count: inbox_count(current_user)
+      inbox_count: inbox_count(current_user),
+      client_count: client_count(current_user)
     )
   end
 
@@ -334,20 +803,21 @@ defmodule PicselloWeb.HomeLive.Index do
            }
          }
        ) do
-    case %{
-           "send-confirmation-email" => {!User.confirmed?(current_user), org_card},
-           "open-user-settings" => {!subscription.hidden?, org_card},
-           "getting-started-picsello" =>
-             {Application.get_env(:picsello, :help_scout_id) != nil, org_card},
-           "set-up-stripe" => {stripe_status != :charges_enabled, org_card},
-           "open-billing-portal" =>
-             {Picsello.Invoices.pending_invoices?(current_user.organization_id), org_card},
-           "missing-payment-method" =>
-             {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card},
-           "create-lead" => {leads_empty?, org_card},
-           "black-friday" => {Subscriptions.monthly?(current_user.subscription), org_card}
-         }
-         |> Map.fetch(concise_name) do
+    params = %{
+      "send-confirmation-email" => {!User.confirmed?(current_user), org_card},
+      "open-user-settings" => {!subscription.hidden?, org_card},
+      "getting-started-picsello" =>
+        {Application.get_env(:picsello, :help_scout_id) != nil, org_card},
+      "set-up-stripe" => {stripe_status != :charges_enabled, org_card},
+      "open-billing-portal" =>
+        {Picsello.Invoices.pending_invoices?(current_user.organization_id), org_card},
+      "missing-payment-method" =>
+        {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card},
+      "create-lead" => {leads_empty?, org_card},
+      "black-friday" => {Subscriptions.monthly?(current_user.subscription), org_card}
+    }
+
+    case params |> Map.fetch(concise_name) do
       {:ok, action} -> action
       :error -> {true, org_card}
     end
@@ -467,15 +937,12 @@ defmodule PicselloWeb.HomeLive.Index do
           <%= if @badge > 0, do: @badge %>
         </div>
       <% end %>
-
       <div class={"border hover:border-#{@color} h-full rounded-lg bg-#{@color} overflow-hidden"}>
         <div class="h-full p-5 ml-3 bg-white">
             <h1 class="text-lg font-bold">
             <.icon name={@icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current text-#{@color}"} />
-
             <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
           </h1>
-
           <%= render_block(@inner_block) %>
         </div>
       </div>
@@ -485,26 +952,112 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def subscription_modal(assigns) do
     ~H"""
-    <div class="fixed inset-0 z-20 flex items-center justify-center bg-black/60">
-      <div class="rounded-lg modal sm:max-w-4xl">
-        <h1 class="text-3xl font-semibold">Your plan has expired</h1>
-        <p class="pt-4">To recover access to <span class="italic">integrated email marketing, easy invoicing, all of your client galleries</span> and much more, please select a plan. Contact us if you have issues.</p>
-
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <%= for {subscription_plan, i} <- Subscriptions.subscription_plans() |> Enum.with_index() do %>
-            <div class="flex items-center justify-between p-4 border rounded-lg">
-              <p class="text-3xl font-semibold"> <%= subscription_plan.price |> Money.to_string(fractional_unit: false) %>/<%= subscription_plan.recurring_interval %></p>
-              <button class={if i == 0, do: "btn-primary", else: "btn-secondary"} type="button" phx-click="subscription-checkout" phx-value-interval={subscription_plan.recurring_interval}>
-                Select this plan
-              </button>
-            </div>
-          <% end %>
+    <div class="fixed inset-0 z-40 flex items-center justify-center bg-black/60">
+      <div class="rounded-lg modal no-pad sm:max-w-5xl">
+        <div class="p-6 sm:p-8">
+          <div class="sm:max-w-3xl mb-2 sm:mb-8">
+            <h1 class="text-xl sm:text-4xl font-semibold">Your subscription has expired</h1>
+            <p class="pt-2 sm:pt-4 text-base-250 sm:text-lg">We’ve missed you and are very excited to welcome you back to take advantage of all the new features we’ve been working on. Select your plan below:</p>
+          </div>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <%= for subscription_plan <- Subscriptions.subscription_plans() |> Enum.reverse() do %>
+              <%= case subscription_plan do %>
+                <% %{recurring_interval: "month"} -> %>
+                  <.subscription_modal_card
+                    button_class="btn-tertiary"
+                    subscription_plan={subscription_plan}
+                    headline="Monthly"
+                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} monthly subscription"}
+                    price_secondary={"(#{subscription_plan.price |> Money.multiply(12) |> Money.to_string(fractional_unit: false)}/year)"}
+                    interval={subscription_plan.recurring_interval}
+                    body="You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
+                  />
+                <% %{recurring_interval: "year"} -> %>
+                  <.subscription_modal_card
+                    class="bg-blue-planning-300 text-white"
+                    subscription_plan={subscription_plan}
+                    headline="Yearly"
+                    price={"#{subscription_plan.price |> Money.to_string(fractional_unit: false)} yearly subscription"}
+                    price_secondary={"(#{subscription_plan.price |> Money.divide(12) |> Enum.at(1) |> Money.to_string(fractional_unit: false)}/month)"}
+                    interval={subscription_plan.recurring_interval}
+                    body="You get everything in the monthly plan PLUS exclusive access to Picsello’s Business Mastermind with classes and so much more"
+                  />
+                <% _ -> %>
+              <% end %>
+            <% end %>
+          </div>
+          <div class="flex justify-end mt-6">
+            <.form let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form" phx-submit="save-promo-code">
+              <%= hidden_inputs_for f %>
+              <%= for onboarding <- inputs_for(f, :onboarding) do %>
+                <details class="group" open={@promotion_code_open} {testid("promo-code")}>
+                  <summary class={classes("cursor-pointer underline flex items-center", %{"text-blue-planning-300" => Enum.empty?(onboarding.errors), "text-red-sales-300" => onboarding.errors })} phx-click="handle-promotion-code-toggle">
+                  <%= if Enum.empty?(onboarding.errors), do: "Add a promo code", else: "Fix promo code" %>
+                    <.icon name="down" class="w-4 h-4 stroke-current stroke-2 ml-2 group-open:rotate-180" />
+                  </summary>
+                  <%= hidden_inputs_for onboarding %>
+                  <%= labeled_input onboarding, :promotion_code, label: "Applies to monthly or yearly", type: :text_input, phx_debounce: 500, min: 0, placeholder: "enter promo code…", class: "mb-3" %>
+                </details>
+              <% end %>
+            </.form>
+          </div>
         </div>
-
-        <div class="flex mt-6">
-          <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline ml-auto") %>
+        <div class="bg-gray-100 p-6 sm:p-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 sm:gap-8">
+            <div>
+              <img src="/images/subscription-modal.png" alt="An image of the Picsello application" loading="lazy" />
+              <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "underline text-base-250 inline-block mt-2") %>
+            </div>
+            <div>
+              <h5 class="font-bold mb-1">Everything included:</h5>
+              <ul class="text-base-250 space-y-1 text-sm">
+                <%= for feature <- subscription_modal_feature_list() do %>
+                  <li>
+                    <.icon name="checkcircle" class="inline-block w-4 h-4 mr-2 fill-current text-blue-planning-300" />
+                    <%= feature %>
+                  </li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+    """
+  end
+
+  defp subscription_modal_feature_list,
+    do: [
+      "Streamlined client booking",
+      "Beautiful client galleries",
+      "Easy invoicing, contracts and booking",
+      "Automated email marketing tools",
+      "Pricing assistance",
+      "Integrated inbox and client messaging",
+      "Unlimited storage",
+      "100% photographer-profit merchandise sales",
+      "Access to Picsello's Business Mastermind (Yearly only)"
+    ]
+
+  defp subscription_modal_card(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{class: nil, button_class: "btn-primary"})
+
+    ~H"""
+    <div class={"p-2 md:p-4 border rounded-lg #{@class}"}>
+      <div class="flex gap-2 gap-4 sm:gap-0 flex-wrap items-center justify-between">
+        <div>
+          <h4 class="text-xl md:text-3xl font-bold mb-2"><%= @headline %></h4>
+          <p class="font-bold"><%= @price %></p>
+          <p class="opacity-60"><%= @price_secondary %></p>
+        </div>
+        <button class={@button_class} type="button" phx-click="subscription-checkout" phx-value-interval={@interval}>
+          Select plan
+        </button>
+      </div>
+      <hr class="my-2 md:my-4 opacity-50" />
+      <p class="text-xs md:text-sm opacity-75 md:opacity-60"><%= @body %></p>
     </div>
     """
   end
@@ -537,106 +1090,21 @@ defmodule PicselloWeb.HomeLive.Index do
     )
   end
 
+  defp client_count(user) do
+    Clients.find_count_by(user: user)
+  end
+
   defp inbox_count(user) do
     Job.for_user(user)
     |> ClientMessage.unread_messages()
     |> Repo.aggregate(:count)
   end
 
-  @impl true
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event", link: "gallery"}},
-        socket
-      ) do
-    socket
-    |> welcome_modal_state()
-    |> push_redirect(to: Routes.gallery_path(socket, :galleries))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event", link: "client_booking"}},
-        socket
-      ) do
-    socket
-    |> welcome_modal_state()
-    |> push_redirect(to: Routes.calendar_booking_events_path(socket, :index))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event", link: "demo"}},
-        socket
-      ) do
-    socket
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event"}},
-        socket
-      ) do
-    socket
-    |> welcome_modal_state()
-    |> push_patch(to: Routes.home_path(socket, :index), replace: true)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info({:redirect_to_gallery, gallery}, socket) do
-    socket
-    |> push_redirect(to: new_gallery_path(socket, gallery))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info({:stripe_status, status}, socket) do
-    socket |> assign(stripe_status: status) |> assign_attention_items() |> noreply()
-  end
-
-  def handle_info({:inbound_messages, _message}, %{assigns: %{inbox_count: count}} = socket) do
-    socket
-    |> assign(:inbox_count, count + 1)
-    |> noreply()
-  end
-
-  def handle_info(:card_status, socket) do
-    socket
-    |> assign_attention_items()
-    |> noreply()
-  end
-
-  def handle_info({:stripe_session_id, stripe_session_id}, socket) do
-    case Subscriptions.handle_subscription_by_session_id(stripe_session_id) do
-      :ok ->
-        socket
-        |> assign(:stripe_subscription_status, :success)
-        |> PicselloWeb.ConfirmationComponent.open(%{
-          title: "You have subscribed to Picsello",
-          subtitle:
-            "We’re excited to have join Picsello. You can always manage your subscription in account settings. If you have any trouble, contact support.",
-          close_label: "Close",
-          close_class: "btn-primary"
-        })
-        # clear the session_id param
-        |> push_patch(to: Routes.home_path(socket, :index), replace: true)
-        |> noreply()
-
-      _ ->
-        socket
-        |> put_flash(:error, "Couldn't fetch your Stripe session. Please try again")
-        |> noreply()
-    end
-  end
-
-  defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
+  def assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
     socket |> assign(stripe_status: Payments.status(current_user))
   end
 
-  defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
+  def subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do
     Phoenix.PubSub.subscribe(
       Picsello.PubSub,
       "inbound_messages:#{current_user.organization_id}"
@@ -651,6 +1119,54 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(
       current_user:
         Picsello.Onboardings.save_intro_state(current_user, "intro_dashboard_modal", "completed")
+    )
+  end
+
+  defp build_subscription_link(
+         %{
+           assigns: %{
+             current_user: current_user,
+             promotion_code_changeset: promotion_code_changeset
+           }
+         } = socket,
+         interval,
+         promotion_code_id
+       ) do
+    case Subscriptions.checkout_link(
+           current_user,
+           interval,
+           success_url: "#{Routes.home_url(socket, :index)}?session_id={CHECKOUT_SESSION_ID}",
+           cancel_url: Routes.home_url(socket, :index),
+           promotion_code: promotion_code_id
+         ) do
+      {:ok, url} ->
+        promotion_code_changeset
+        |> Map.put(:action, :update)
+        |> Repo.update!()
+
+        socket |> redirect(external: url) |> noreply()
+
+      {:error, error} ->
+        Logger.warning("Error redirecting to Stripe: #{inspect(error)}")
+        socket |> put_flash(:error, "Couldn't redirect to Stripe. Please try again") |> noreply()
+    end
+  end
+
+  defp build_promotion_code_changeset(
+         %{assigns: %{current_user: user}},
+         params,
+         action
+       ) do
+    user
+    |> Onboardings.user_update_promotion_code_changeset(params)
+    |> Map.put(:action, action)
+  end
+
+  defp assign_promotion_code_changeset(socket, params \\ %{}) do
+    socket
+    |> assign(
+      :promotion_code_changeset,
+      build_promotion_code_changeset(socket, params, :validate)
     )
   end
 

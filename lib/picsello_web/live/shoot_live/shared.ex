@@ -14,6 +14,7 @@ defmodule PicselloWeb.ShootLive.Shared do
 
   def location(assigns) do
     assigns = assign_new(assigns, :allow_address_toggle, fn -> true end)
+    assigns = assign_new(assigns, :is_edit, fn -> true end)
 
     ~H"""
     <div class={classes("flex flex-col", %{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field} |> Map.merge(select_invalid_classes(@f, :location)))}>
@@ -25,7 +26,7 @@ defmodule PicselloWeb.ShootLive.Shared do
         <% end %>
       </div>
 
-      <%= select_field @f, :location, for(location <- Shoot.locations(), do: {location |> Atom.to_string() |> dyn_gettext(), location }), prompt: "Select below" %>
+      <%= select_field @f, :location, for(location <- Shoot.locations(), do: {location |> Atom.to_string() |> dyn_gettext(), location }), prompt: "Select below",  disabled: !@is_edit  %>
     </div>
 
     <%= if @address_field do %>
@@ -38,7 +39,7 @@ defmodule PicselloWeb.ShootLive.Shared do
           <% end %>
         </div>
 
-        <%= input @f, :address, phx_hook: "PlacesAutocomplete", autocomplete: "off", placeholder: "Enter a location" %>
+        <%= input @f, :address, phx_hook: "PlacesAutocomplete", autocomplete: "off", placeholder: "Enter a location",  disabled: !@is_edit %>
         <div class="relative autocomplete-wrapper" phx-update="ignore"></div>
       </div>
     <% end %>

@@ -23,10 +23,10 @@ defmodule Picsello.Galleries.Gallery do
     field :name, :string
     field :status, :string, @status_options
     field :password, :string
-    field :client_link_hash, :string, default: UUID.uuid1()
+    field :client_link_hash, :string
     field :expired_at, :utc_datetime
     field :total_count, :integer, default: 0
-    field :use_global, :boolean
+    field :use_global, :boolean, default: true
     field :type, Ecto.Enum, @type_opts
 
     belongs_to(:job, Job)

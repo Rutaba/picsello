@@ -11,6 +11,7 @@ defmodule Picsello.Package do
     field :base_multiplier, :decimal, default: 1
     field :base_price, Money.Ecto.Amount.Type
     field :description, :string
+    # field :download_status, Ecto.Enum, values: [:limited, :unlimited, :none]
     field :download_count, :integer
     field :download_each_price, Money.Ecto.Amount.Type
     field :job_type, :string

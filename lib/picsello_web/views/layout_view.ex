@@ -46,6 +46,10 @@ defmodule PicselloWeb.LayoutView do
     Map.merge(default_meta_tags(), attrs_list)
   end
 
+  def dynamic_background_class(%{main_class: main_class}), do: main_class
+
+  def dynamic_background_class(_), do: nil
+
   defp flash_styles,
     do: [
       {:error, "error", "text-red-sales-300"},
@@ -339,7 +343,7 @@ defmodule PicselloWeb.LayoutView do
           current_user: current_user
         } = assigns
       ) do
-    stripe_status = Payments.status(current_user)
+    stripe_status = Payments.simple_status(current_user)
 
     ~H"""
     <%= if !Enum.member?([:charges_enabled, :loading], stripe_status) do %>

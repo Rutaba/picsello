@@ -648,10 +648,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   def presign_image(
         image,
         %{
-          assigns: %{current_user: current_user}
+          assigns: %{current_user: %{organization_id: organization_id}}
         } = socket
       ) do
-    key = "galleries/#{current_user.organization_id}/watermark.png"
+    key = GSGallery.watermark_path(organization_id)
 
     sign_opts = [
       expires_in: 600,
@@ -857,7 +857,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     <.card color="blue-planning-300" icon="three-people" title="Custom Watermark" badge={0} class="cursor-pointer mt-8" >
       <%= if @case == :image and @show_image_preview do  %>
 
-        <img src={"#{@global_settings_gallery.global_watermark_path && PhotoStorage.path_to_url(@global_settings_gallery.global_watermark_path)}"} />
+        <img src={"#{@global_settings_gallery && @global_settings_gallery.global_watermark_path && PhotoStorage.path_to_url(@global_settings_gallery.global_watermark_path)}"} />
         <%= if watermark_type(@global_settings_gallery) == :image do %>
           <.watermark_name_delete name={@global_settings_gallery.watermark_name}>
             <p><%= filesize(@global_settings_gallery.watermark_size) %></p>

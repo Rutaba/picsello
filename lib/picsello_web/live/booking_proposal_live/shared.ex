@@ -117,10 +117,10 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
 
       <div class="flex flex-col col-span-2 sm:col-span-1">
         <%= case Packages.Download.from_package(@package) do %>
-          <% %{includes_credits: true} = d -> %>
+          <% %{status: :limited} = d -> %>
             <p><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></p>
             <p> Additional downloads @ <%= d.each_price %>/ea </p>
-          <% %{is_enabled: true} = d -> %>
+          <% %{status: :none} = d -> %>
             <p> Download photos @ <%= d.each_price %>/ea </p>
           <% _ -> %>
             <p> All photos downloadable </p>

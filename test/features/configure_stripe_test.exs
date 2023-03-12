@@ -31,7 +31,7 @@ defmodule Picsello.ConfigureStripeTest do
     lead = insert(:lead, %{package: %{}, user: user})
 
     session
-    |> click(css("li[title=Leads]"))
+    |> click(button("Leads"))
     |> click(link(Picsello.Job.name(lead)))
     |> click(button("Set up Stripe"))
     |> assert_url_contains("stripe.me")

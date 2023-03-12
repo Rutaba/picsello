@@ -295,7 +295,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
     case DateTime.compare(DateTime.utc_now() |> DateTime.truncate(:second), expired_at) do
       :lt -> false
-      :gt -> true
+      _ -> true
     end
     |> never_expire(expired_at)
   end
@@ -317,8 +317,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def expired_at(organization_id) do
-    gs = GlobalSettings.get(organization_id)
-    gs && gs.expiration_days && Timex.shift(DateTime.utc_now(), days: gs.expiration_days)
+    case GlobalSettings.get(organization_id) do
+      %{expiration_days: exp_days} when exp_days > 0 ->
+        Timex.shift(DateTime.utc_now(), days: exp_days)
+      _ ->
+        nil
+    end
   end
 
   def make_opts(

@@ -39,6 +39,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       PubSub.subscribe(Picsello.PubSub, "upload_pending_photos:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "inprogress_upload_update:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "delete_photos:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "folder_albums:#{gallery_id}")
     end
 
     {:ok,
@@ -52,6 +53,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
      |> assign(:uploaded_files, 0)
      |> assign(:progress, %GalleryUploadProgress{})
      |> assign(:estimate, "n/a")
+     |> assign(:folder_albums, %{})
      |> assign(:update_mode, "append")
      |> allow_upload(:photo, @upload_options), layout: false}
   end
@@ -179,6 +181,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     |> noreply()
   end
 
+  def handle_info({:folder_albums, albums}, socket) do
+    socket
+    |> assign(:folder_albums, albums)
+    |> noreply()
+  end
+
   def handle_progress(
         :photo,
         entry,
@@ -187,13 +195,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
             gallery: gallery,
             persisted_album_id: persisted_album_id,
             uploaded_files: uploaded_files,
-            progress: progress
+            progress: progress,
+            folder_albums: folder_albums
           }
         } = socket
       ) do
     if entry.done? do
-      {:ok, photo} = create_photo(gallery, entry, persisted_album_id)
-
+      {:ok, photo} = create_photo(gallery, entry, persisted_album_id, folder_albums)
       {:ok, gallery} = Galleries.update_gallery(gallery, %{total_count: gallery.total_count + 1})
 
       photo
@@ -335,14 +343,27 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     )
   end
 
-  defp create_photo(gallery, entry, album_id) do
+  defp create_photo(gallery, entry, album_id, folder_albums) do
+    {album_id, name} = fetch_photo_params(entry, album_id, folder_albums)
+
     Galleries.create_photo(%{
       gallery_id: gallery.id,
       album_id: album_id,
-      name: entry.client_name,
-      original_url: Photo.original_path(entry.client_name, gallery.id, entry.uuid),
+      name: name,
+      original_url: Photo.original_path(name, gallery.id, entry.uuid),
       position: (gallery.total_count || 0) + 100
     })
+  end
+
+  @separator "-fsp-"
+  defp fetch_photo_params(%{client_name: name}, album_id, folder_albums) do
+    case String.split(name, @separator) do
+      [folder_name | name] when is_map_key(folder_albums, folder_name) ->
+        {folder_albums |> Map.fetch!(folder_name) |> Map.fetch!(:id), Enum.join(name)}
+
+      _ ->
+        {album_id, name}
+    end
   end
 
   defp upload_success_message(%{

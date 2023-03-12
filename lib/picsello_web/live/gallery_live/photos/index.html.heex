@@ -57,10 +57,15 @@
             </div>
             <div class={"flex lg:ml-0 ml-10 mt-2 shrink-0 #{@client_liked_album && 'hidden'}"}>                        
               <div class="lg:flex hidden">
-                <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
+               <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
               </div>
               <%= unless @album do %>
+
                 <.add_album_button disabled={disabled?(@gallery)} class="lg:ml-2.5 lg:py-2 py-1.5"/>
+
+                <.icon_button phx-hook="FolderUpload" id="folder-upload" data-upload-el-id={"upload-button-#{@gallery.id}"} disabled={disabled?(@gallery)} class="text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2" color="blue-planning-300" icon="plus">
+                  Upload folders
+                </.icon_button>
               <% end %>
             </div>
           </div>
