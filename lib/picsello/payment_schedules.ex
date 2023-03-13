@@ -168,6 +168,10 @@ defmodule Picsello.PaymentSchedules do
     job |> payment_schedules() |> Enum.any?()
   end
 
+  def paid_any?(%Job{} = job) do
+    job |> payment_schedules() |> Enum.any?(&PaymentSchedule.paid?/1)
+  end
+
   def all_paid?(%Job{} = job) do
     job |> payment_schedules() |> Enum.all?(&PaymentSchedule.paid?/1)
   end
