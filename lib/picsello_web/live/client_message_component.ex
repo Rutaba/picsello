@@ -26,7 +26,10 @@ defmodule PicselloWeb.ClientMessageComponent do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
     |> assign(:client, client)
-    |> assign(:clients, Clients.find_all_by(user: current_user))
+    |> assign_new(:clients, fn ->
+      Clients.find_all_by(user: current_user)
+      |> Enum.filter(fn c -> c.email != email end)
+    end)
     |> assign(:recipients, %{"to" => [email]})
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
@@ -105,15 +108,6 @@ defmodule PicselloWeb.ClientMessageComponent do
       </.form>
     </div>
     """
-  end
-
-  @impl true
-  def handle_event("update-html", _, %{assigns: %{changeset: changeset}} = socket) do
-    socket
-    |> push_event("quill:update", %{
-      "html" => changeset |> current() |> Map.get(:body_html)
-    })
-    |> noreply()
   end
 
   @impl true
@@ -210,10 +204,11 @@ defmodule PicselloWeb.ClientMessageComponent do
 
     socket
     |> assign_changeset(:validate, %{subject: preset.subject_template, body: preset.body_template})
+    |> add_or_remove_client_name()
     |> then(fn %{assigns: %{changeset: changeset}} = socket ->
       socket
       |> push_event("quill:update", %{
-      "html" => changeset |> current() |> Map.get(:body_html)
+        "html" => changeset |> current() |> Map.get(:body_html)
       })
     end)
     |> noreply()
@@ -223,6 +218,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   def handle_event("validate", %{"client_message" => params}, socket) do
     socket
     |> assign_changeset(:validate, params)
+    |> add_or_remove_client_name()
     |> noreply()
   end
 
@@ -303,6 +299,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> Enum.map(fn email ->
         String.trim(email)
       end)
+
     valid_emails? =
       email_list
       |> Enum.all?(fn email ->
@@ -314,7 +311,10 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> assign(:"#{type}_email_error", nil)
     else
       socket
-      |> assign(:"#{type}_email_error", "please enter valid client emails that already exist in the system")
+      |> assign(
+        :"#{type}_email_error",
+        "please enter valid client emails that already exist in the system"
+      )
     end
     |> assign(:recipients, Map.put(recipients, type, email_list))
     |> add_or_remove_client_name()
@@ -429,7 +429,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           <.icon_button class="ml-10 w-8 bg-white border-red-sales-300" title={"remove-#{@email_type}"} phx-click={"remove-#{@email_type}"} phx-target={@myself} color="red-sales-300" icon="trash"/>
         </div>
         <div class="flex flex-col">
-          <input type="text" class="w-full md:w-2/3 text-input" id={"#{@email_type}_email"} value={(if Map.has_key?(@recipients, @email_type), do: "#{Enum.join(Map.get(@recipients, @email_type, []), "; ")}", else: "")} phx-keyup={"validate_#{@email_type}_email"} phx-blur="update-html" phx-target={@myself} phx-debounce="1000" spellcheck="false" placeholder="enter email(s)…"/>
+          <input type="text" class="w-full md:w-2/3 text-input" id={"#{@email_type}_email"} value={(if Map.has_key?(@recipients, @email_type), do: "#{Enum.join(Map.get(@recipients, @email_type, []), "; ")}", else: "")} phx-keyup={"validate_#{@email_type}_email"} phx-target={@myself} phx-debounce="1000" spellcheck="false" placeholder="enter email(s)…"/>
           <span {testid("#{@email_type}-error")} class={classes("text-red-sales-300 text-sm", %{"hidden" => !@error})}><%= @error %></span>
         </div>
       </div>
