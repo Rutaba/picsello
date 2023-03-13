@@ -219,6 +219,26 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   end
 
   @impl true
+  def handle_event(
+        "open-confirmation-modal",
+        %{"id" => job_id, "type" => type, "is-lead" => is_lead},
+        socket
+      ) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No! Get me out of here",
+      confirm_event: if(type == "archive", do: "archive-entity", else: "unarchive-entity"),
+      confirm_label:
+        "Yes, #{if(type == "archive", do: "archive", else: "unarchive")} the #{if(is_lead == "true", do: "lead", else: "job")}",
+      icon: "warning-orange",
+      title:
+        "Are you sure you want to #{if(type == "archive", do: "archive", else: "unarchive")} this #{if(is_lead == "true", do: "lead", else: "job")}?",
+      payload: %{job_id: job_id, is_lead: is_lead}
+    })
+    |> noreply()
+  end
+
+  @impl true
   def handle_info(
         {:message_composed, changeset},
         %{
@@ -281,6 +301,53 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
     end
     |> close_modal()
     |> noreply()
+  end
+
+  def handle_info({:confirm_event, "archive-entity", %{job_id: job_id, is_lead: is_lead}}, socket) do
+    job = Jobs.get_job_by_id(job_id)
+
+    case Jobs.archive_lead(job) do
+      {:ok, _job} ->
+        socket
+        |> close_modal()
+        |> put_flash(
+          :success,
+          "#{if is_lead == "true", do: "Lead", else: "Job"} has been archived"
+        )
+        |> redirect(to: Routes.client_path(socket, :job_history, job.client_id))
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:error, "Some error occurred")
+        |> noreply()
+    end
+  end
+
+  def handle_info(
+        {:confirm_event, "unarchive-entity", %{job_id: job_id, is_lead: is_lead}},
+        socket
+      ) do
+    job = Jobs.get_job_by_id(job_id)
+
+    case Jobs.unarchive_lead(job) do
+      {:ok, _job} ->
+        socket
+        |> close_modal()
+        |> put_flash(
+          :success,
+          "#{if is_lead == "true", do: "Lead", else: "Job"} has been unarchived"
+        )
+        |> redirect(to: Routes.client_path(socket, :job_history, job.client_id))
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:error, "Some error occurred")
+        |> noreply()
+    end
   end
 
   defp open_compose(%{assigns: %{job: job}} = socket),
