@@ -510,7 +510,6 @@ defmodule PicselloWeb.JobLive.Shared do
         %{job: %{job_status: %{current_status: status, is_lead: is_lead}} = job} = assigns
       ) do
     job = job |> Repo.preload(:payment_schedules)
-    # if status == :not_sent, do: IO.inspect(job, label: "job"), else: ""
     {label, color} =
       if not is_lead and
            Enum.any?(job.payment_schedules, fn schedule ->

@@ -60,15 +60,14 @@
       <div class="sm:col-span-2"><%= if @live_action == :jobs, do: "Job ", else: "Lead "%>Information</div>
       <div class="sm:col-span-2">Package</div>
       <div>Status</div>
-      <div>Actions</div>
     </div>
     <%= for job <- @jobs do %>
       <div {testid("job-row")} class="grid sm:grid-cols-6 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
         <div phx-click="view-job" phx-value-id={job.id} class="sm:col-span-2 flex flex-col">
           <%= live_redirect to: Routes.job_path(@socket, if(job.job_status.is_lead, do: :leads, else: :jobs), job.id) do %>
             <p class="text-blue-planning-300 font-bold underline hover:cursor-pointer capitalize"><%= job.client.name || "-" %></p>
-            <p class="text-gray-400 italic font-normal"><%= (job |> Job.name()) || "-" %></p>
-            <p class="text-gray-400 font-normal"><%= status_label(job, @current_user.time_zone) %></p>
+            <p class="text-gray-400 italic font-normal text-sm"><%= (job |> Job.name()) || "-" %></p>
+            <p class="text-gray-400 font-normal text-sm"><%= status_label(job, @current_user.time_zone) %></p>
           <% end %>
         </div>
         <div class="sm:col-span-2 flex flex-col sm:flex gap-2 sm:gap-0 hidden md:block">

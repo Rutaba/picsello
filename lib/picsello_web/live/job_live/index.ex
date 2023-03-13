@@ -258,32 +258,28 @@ defmodule PicselloWeb.JobLive.Index do
 
   def actions(assigns) do
     ~H"""
-      <div class="flex items-center left-3 sm:left-8">
-        <div class="" data-offset-x="0" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-job-#{@job.id}"}>
+    <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-offset-x="-21" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-job-#{@job.id}"}>
+      <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
+        Actions
+        <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+        <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+      </button>
 
-          <button title="Manage" type="button" class="flex flex-shrink-0 p-1 text-2xl font-bold bg-white border rounded border-blue-planning-300 text-blue-planning-300">
-            <.icon name="hellip" class="w-4 h-1 m-1 fill-current open-icon text-blue-planning-300" />
-
-            <.icon name="close-x" class="hidden w-3 h-3 mx-1.5 stroke-current close-icon stroke-2 text-blue-planning-300" />
+      <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
+        <%= for %{title: title, action: action, icon: icon} <- actions(), (@type == "jobs" and title != "Archive") || (@type == "leads" and title not in ["Complete", "Go to galleries"]) do %>
+          <button title={title} type="button" phx-click={action} phx-value-id={@job.id} class={classes("flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100", %{"hidden" => @job.job_status.current_status == :archived and title == "Archive"})}>
+            <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
+            <%= title %>
           </button>
-
-          <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
-            <%= for %{title: title, action: action, icon: icon} <- actions(), (@type == "jobs" and title != "Archive") || (@type == "leads" and title not in ["Complete", "Go to galleries"]) do %>
-              <button title={title} type="button" phx-click={action} phx-value-id={@job.id} class={classes("flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100", %{"hidden" => @job.job_status.current_status == :archived and title == "Archive"})}>
-                <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
-                <%= title %>
-              </button>
-            <% end %>
-            <%= if @job.job_status.current_status == :archived do %>
-                <button title="Unarchive" type="button" phx-click="confirm_unarchive_lead" phx-value-id={@job.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
-                  <.icon name="plus" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
-                  Unarchive
-                </button>
-              <% end %>
-          </div>
-
-        </div>
+        <% end %>
+        <%= if @job.job_status.current_status == :archived do %>
+            <button title="Unarchive" type="button" phx-click="confirm_unarchive_lead" phx-value-id={@job.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+              <.icon name="plus" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
+              Unarchive
+            </button>
+        <% end %>
       </div>
+    </div>
     """
   end
 
@@ -336,14 +332,41 @@ defmodule PicselloWeb.JobLive.Index do
             <div class="items-center flex border rounded-r-lg border-grey p-2">
               <button phx-click="toggle-sort-direction" disabled={@selected_option not in ["name", "shoot_date"]}>
                 <%= if @sort_direction == :asc do %>
-                  <.icon name="sort-vector" {testid("edit-link-button")} class={classes("blue-planning-300 w-5 h-5", %{"pointer-events-none opacity-40" => @selected_option not in ["name", "shoot_date"]})} />
-                <% else %>
                   <.icon name="sort-vector-2" {testid("edit-link-button")} class={classes("blue-planning-300 w-5 h-5", %{"pointer-events-none opacity-40" => @selected_option not in ["name", "shoot_date"]})} />
+                <% else %>
+                  <.icon name="sort-vector" {testid("edit-link-button")} class={classes("blue-planning-300 w-5 h-5", %{"pointer-events-none opacity-40" => @selected_option not in ["name", "shoot_date"]})} />
                 <% end %>
               </button>
             </div>
           <% end %>
         </div>
+      </div>
+    """
+  end
+
+  def search_sort_bar(assigns) do
+    ~H"""
+      <div {testid("search_filter_and_sort_bar")} class="flex flex-col px-5 center-container justify-between items-end px-1.5 lg:flex-row mb-0 md:mb-10">
+        <div class="relative flex w-full lg:w-2/3 mr-2 mb-3 md:mb-0">
+          <a {testid("close_search")} href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+            <%= if @search_phrase do %>
+              <span phx-click="clear-search" class="cursor-pointer">
+                <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
+              </span>
+            <% else %>
+              <.icon name="search" class="w-4 ml-1 fill-current" />
+            <% end %>
+          </a>
+          <%= form_tag("#", [phx_change: :search, phx_submit: :submit, class: "w-full"]) do %>
+            <input disabled={!is_nil(@selected_job)} type="text" class="form-control w-full lg:w-64 text-input indent-6 bg-base-200 placeholder:text-black" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="100" spellcheck="false" placeholder={@placeholder} />
+          <% end %>
+        </div>
+        <.select_dropdown class="w-full md:w-60" type={@type} title={if @type == "job", do: 'Job Status', else: 'Lead Status'} id="status" selected_option={@job_status} options_list={if @type == "job", do: job_status_options(), else: lead_status_options()}/>
+
+        <.select_dropdown class="w-full" title={if @type == "job", do: 'Job Type', else: 'Lead Type'} id="type" selected_option={@job_type} options_list={job_type_options(@job_types)}/>
+
+        <.select_dropdown class="w-full" sort_direction={@sort_direction} title="Sort" id="sort_by" selected_option={@sort_by} options_list={if @type == "job", do: job_sort_options(), else: lead_sort_options()}/>
+
       </div>
     """
   end
@@ -544,36 +567,9 @@ defmodule PicselloWeb.JobLive.Index do
 
   defp format_date(date, time_zone), do: strftime(time_zone, date, "%B %d, %Y")
 
-  def capitalize_per_word(string) do
+  defp capitalize_per_word(string) do
     String.split(string)
     |> Enum.map(&String.capitalize/1)
     |> Enum.join(" ")
-  end
-
-  def search_sort_bar(assigns) do
-    ~H"""
-      <div {testid("search_filter_and_sort_bar")} class="flex flex-col px-5 center-container justify-between items-end px-1.5 lg:flex-row mb-0 md:mb-10">
-        <div class="relative flex w-full lg:w-2/3 mr-2 mb-3 md:mb-0">
-          <a {testid("close_search")} href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
-            <%= if @search_phrase do %>
-              <span phx-click="clear-search" class="cursor-pointer">
-                <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
-              </span>
-            <% else %>
-              <.icon name="search" class="w-4 ml-1 fill-current" />
-            <% end %>
-          </a>
-          <%= form_tag("#", [phx_change: :search, phx_submit: :submit, class: "w-full"]) do %>
-            <input disabled={!is_nil(@selected_job)} type="text" class="form-control w-full lg:w-64 text-input indent-6 bg-base-200 placeholder:text-black" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="100" spellcheck="false" placeholder={@placeholder} />
-          <% end %>
-        </div>
-        <.select_dropdown class={classes("w-full", %{"w-64" => @type == "lead"})} type={@type} title={if @type == "job", do: 'Job Status', else: 'Lead Status'} id="status" selected_option={@job_status} options_list={if @type == "job", do: job_status_options(), else: lead_status_options()}/>
-
-        <.select_dropdown class="w-full w-64 lg:w-auto" title={if @type == "job", do: 'Job Type', else: 'Lead Type'} id="type" selected_option={@job_type} options_list={job_type_options(@job_types)}/>
-
-        <.select_dropdown class="w-full w-64 lg:w-auto" sort_direction={@sort_direction} title="Sort" id="sort_by" selected_option={@sort_by} options_list={if @type == "job", do: job_sort_options(), else: lead_sort_options()}/>
-
-      </div>
-    """
   end
 end
