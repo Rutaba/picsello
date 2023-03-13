@@ -2,12 +2,11 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  import PicselloWeb.Live.Shared, only: [pagination_index: 2]
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
   import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 2, new_gallery_path: 2]
 
   import PicselloWeb.Live.Shared.CustomPagination,
-    only: [assign_pagination: 2, update_pagination: 2, reset_pagination: 2]
+    only: [assign_pagination: 2, update_pagination: 2, reset_pagination: 2, pagination_index: 2]
 
   alias Ecto.Changeset
   alias Picsello.{Repo, Clients, ClientTag}

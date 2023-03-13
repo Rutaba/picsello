@@ -3,11 +3,10 @@ defmodule PicselloWeb.JobLive.Index do
   use PicselloWeb, :live_view
   require Ecto.Query
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
-  import PicselloWeb.Live.Shared, only: [pagination_index: 2]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
   import PicselloWeb.Live.Shared.CustomPagination,
-    only: [assign_pagination: 2, update_pagination: 2, reset_pagination: 2]
+    only: [assign_pagination: 2, update_pagination: 2, reset_pagination: 2, pagination_index: 2]
 
   alias Ecto.Changeset
   alias Picsello.{Job, Jobs, Repo, Payments}

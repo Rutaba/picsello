@@ -167,6 +167,10 @@ defmodule PicselloWeb.Live.Shared do
             :pagination_changeset,
             changeset(pagination_changeset |> Changeset.apply_changes(), params)
           )
+
+    def pagination_index(changeset, index),
+    do:
+      changeset |> current() |> Map.get(index)
   end
 
   def step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
@@ -734,9 +738,5 @@ defmodule PicselloWeb.Live.Shared do
     else
       socket |> noreply()
     end
-  end
-
-  def pagination_index(changeset, index) do
-    changeset |> current() |> Map.get(index)
   end
 end
