@@ -313,7 +313,7 @@ defmodule PicselloWeb.JobLive.Index do
       <div class="flex flex-col w-full lg:w-auto mr-2 mb-3 lg:mb-0">
         <h1 class="font-extrabold text-sm flex flex-col whitespace-nowrap"><%= @title %></h1>
         <div class="flex">
-          <div id={@id} class={classes("relative w-full lg:w-48 border-grey border p-2 cursor-pointer", %{"rounded-l-lg" => @id == "sort_by", "rounded-lg" => @title == "Filter" or @id != "sort_by"})} data-offset-y="5" phx-hook="Select">
+          <div id={@id} class={classes("relative w-full lg:w-48 border-grey border p-2 cursor-pointer", %{"lg:w-64" => @id == "status" and @type == "lead", "rounded-l-lg" => @id == "sort_by", "rounded-lg" => @title == "Filter" or @id != "sort_by"})} data-offset-y="5" phx-hook="Select">
             <div {testid("dropdown_#{@id}")} class="flex flex-row items-center border-gray-700">
                 <%= capitalize_per_word(String.replace(@selected_option, "_", " ")) %>
                 <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
@@ -439,7 +439,6 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   defp assign_defaults(socket) do
-    IO.inspect socket.assigns.live_action
     socket
     |> assign_search()
     |> assign_pagination(@default_pagination_limit)
@@ -455,7 +454,7 @@ defmodule PicselloWeb.JobLive.Index do
         socket
         |> assign(:sort_by, "shoot_date")
         |> assign(:sort_col, :starts_at)
-        |> assign(:sort_direction, :desc)    
+        |> assign(:sort_direction, :desc)
       end
     end)
     |> assign(current_focus: -1)
@@ -530,16 +529,20 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   defp status_label(%{job_status: %{current_status: status}} = job, time_zone) do
-    IO.inspect status, label: "job"
     case status do
-      :archived -> "Archived on #{job.updated_at |> format_date(time_zone)}"        
-      :completed -> "Completed on #{job.completed_at |> format_date(time_zone)}"        
-      :accepted -> "Awaiting on #{job.updated_at |> format_date(time_zone)}"        
-      _ -> "Created on #{job.inserted_at |> format_date(time_zone)}"
+      :archived -> "Archived on #{get_date(job.updated_at, time_zone)}"
+      :completed -> "Completed on #{get_date(job.completed_at, time_zone)}"
+      :accepted -> "Awaiting on #{get_date(job.updated_at, time_zone)}"
+      :signed_with_questionnaire -> "Awaiting on #{get_date(job.updated_at, time_zone)}"
+      :signed_without_questionnaire -> "Pending on #{get_date(job.updated_at, time_zone)}"
+      :answered -> "Pending on #{get_date(job.updated_at, time_zone)}"
+      _ -> "Created on #{get_date(job.inserted_at, time_zone)}"
     end
   end
 
-  defp format_date(date, time_zone), do:  strftime(time_zone, date, "%B %d, %Y")
+  defp get_date(date, time_zone), do: date |> format_date(time_zone)
+
+  defp format_date(date, time_zone), do: strftime(time_zone, date, "%B %d, %Y")
 
   def capitalize_per_word(string) do
     String.split(string)
@@ -564,11 +567,11 @@ defmodule PicselloWeb.JobLive.Index do
             <input disabled={!is_nil(@selected_job)} type="text" class="form-control w-full lg:w-64 text-input indent-6 bg-base-200 placeholder:text-black" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase}"} phx-debounce="100" spellcheck="false" placeholder={@placeholder} />
           <% end %>
         </div>
-        <.select_dropdown class="w-full md:w-60" type={@type} title={if @type == "job", do: 'Job Status', else: 'Lead Status'} id="status" selected_option={@job_status} options_list={if @type == "job", do: job_status_options(), else: lead_status_options()}/>
+        <.select_dropdown class={classes("w-full", %{"w-64" => @type == "lead"})} type={@type} title={if @type == "job", do: 'Job Status', else: 'Lead Status'} id="status" selected_option={@job_status} options_list={if @type == "job", do: job_status_options(), else: lead_status_options()}/>
 
-        <.select_dropdown class="w-full" title={if @type == "job", do: 'Job Type', else: 'Lead Type'} id="type" selected_option={@job_type} options_list={job_type_options(@job_types)}/>
+        <.select_dropdown class="w-full w-64 lg:w-auto" title={if @type == "job", do: 'Job Type', else: 'Lead Type'} id="type" selected_option={@job_type} options_list={job_type_options(@job_types)}/>
 
-        <.select_dropdown class="w-full" sort_direction={@sort_direction} title="Sort" id="sort_by" selected_option={@sort_by} options_list={if @type == "job", do: job_sort_options(), else: lead_sort_options()}/>
+        <.select_dropdown class="w-full w-64 lg:w-auto" sort_direction={@sort_direction} title="Sort" id="sort_by" selected_option={@sort_by} options_list={if @type == "job", do: job_sort_options(), else: lead_sort_options()}/>
 
       </div>
     """

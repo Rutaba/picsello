@@ -203,7 +203,6 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
 
   @impl true
   def handle_event("complete-job", %{"id" => id}, %{assigns: %{jobs: jobs}} = socket) do
-    IO.inspecct
     socket
     |> assign(:job, Enum.find(jobs, fn job -> job.id == to_integer(id) end))
     |> assign(:request_from, :jobs)

@@ -122,7 +122,10 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(testid("search_filter_and_sort_bar", count: 1))
   end
 
-  feature "searches the lead by client-name, client-contact or client-email", %{session: session, user: user} do
+  feature "searches the lead by client-name, client-contact or client-email", %{
+    session: session,
+    user: user
+  } do
     preload_some_leads(user)
 
     session
@@ -133,8 +136,13 @@ defmodule Picsello.CreateLeadTest do
     |> click(testid("close_search"))
     |> fill_in(css("#search_phrase_input"), with: "taylor@example.com")
     |> assert_has(testid("job-row", count: 1))
+    |> click(testid("close_search"))
     |> fill_in(css("#search_phrase_input"), with: "(241) 567-2352")
     |> assert_has(testid("job-row", count: 1))
+    |> click(testid("close_search"))
+    |> fill_in(css("#search_phrase_input"), with: "test@example.com")
+    |> assert_has(testid("job-row", count: 0))
+    |> assert_text("No leads match your search or filters.")
   end
 
   defp fill_in_a_lead(session, user) do
@@ -162,25 +170,31 @@ defmodule Picsello.CreateLeadTest do
   end
 
   defp preload_some_leads(user) do
-    insert(:lead, client: %{
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "(210) 111-1234",
-      email: "taylor@example.com"
-    })
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "Elizabeth Taylor",
+        phone: "(210) 111-1234",
+        email: "taylor@example.com"
+      }
+    )
 
-    insert(:lead, client: %{
-      user: user,
-      name: "John Snow",
-      phone: "(241) 567-2352",
-      email: "johnsnow@example.com"
-    })
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "John Snow",
+        phone: "(241) 567-2352",
+        email: "johnsnow@example.com"
+      }
+    )
 
-    insert(:lead, client: %{
-      user: user,
-      name: "Michael Stark",
-      phone: "(442) 567-2321",
-      email: "michaelstark@example.com"
-    })
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "Michael Stark",
+        phone: "(442) 567-2321",
+        email: "michaelstark@example.com"
+      }
+    )
   end
 end

@@ -504,16 +504,19 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign(:invalid_entries_errors, Map.delete(invalid_entries_errors, ref))
   end
 
-  @spec status_badge(%{job_status: %Picsello.JobStatus{}, class: binary}) ::
-          %Phoenix.LiveView.Rendered{}
-  def status_badge(%{job: %{job_status: %{current_status: status, is_lead: is_lead}} = job} = assigns) do
+  @spec status_badge(%{:job => %{:job_status => map, optional(atom) => any}, optional(any) => any}) ::
+          Phoenix.LiveView.Rendered.t()
+  def status_badge(
+        %{job: %{job_status: %{current_status: status, is_lead: is_lead}} = job} = assigns
+      ) do
     job = job |> Repo.preload(:payment_schedules)
-    IO.inspect is_lead, label: status
     # if status == :not_sent, do: IO.inspect(job, label: "job"), else: ""
     {label, color} =
-      if not is_lead and Enum.any?(job.payment_schedules, fn schedule ->
-           DateTime.compare(schedule.due_at, DateTime.utc_now()) == :lt and is_nil(schedule.paid_at)
-         end),
+      if not is_lead and
+           Enum.any?(job.payment_schedules, fn schedule ->
+             DateTime.compare(schedule.due_at, DateTime.utc_now()) == :lt and
+               is_nil(schedule.paid_at)
+           end),
          do: {"Overdue", :red},
          else: status_content(is_lead, status)
 
