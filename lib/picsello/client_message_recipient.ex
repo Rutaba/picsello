@@ -8,8 +8,7 @@ defmodule Picsello.ClientMessageRecipient do
   schema "client_message_recipients" do
     belongs_to(:client, Client)
     belongs_to(:client_message, ClientMessage)
-    # ["cc", "bcc", "to"]
-    field(:recipient_type, :string)
+    field(:recipient_type, Ecto.Enum, values: [:to, :cc, :bcc])
 
     timestamps(type: :utc_datetime)
   end

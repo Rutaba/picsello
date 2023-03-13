@@ -132,7 +132,7 @@ defmodule Picsello.Messages do
 
           %{
             client_id: client.id,
-            recipient_type: type,
+            recipient_type: String.to_atom(type),
             inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
             updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
           }
