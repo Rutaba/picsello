@@ -95,7 +95,9 @@ defmodule PicselloWeb.ClientMessageComponent do
         </div>
 
         <label class="block mt-4 input-label" for="editor">Message</label>
-        <.quill_input f={f} html_field={:body_html} text_field={:body_text} enable_size={@enable_size} enable_image={@enable_image} current_user={@current_user} />
+        <span phx-click="update-html" phx-target={@myself}>
+          <.quill_input f={f} html_field={:body_html} text_field={:body_text} enable_size={@enable_size} enable_image={@enable_image} current_user={@current_user} />
+        </span>
         <.footer>
           <button class="btn-primary px-11" title="save" type="submit" disabled={!@changeset.valid? || @to_email_error || @cc_email_error || @bcc_email_error} phx-disable-with="Sending...">
             <%= @send_button %>
@@ -108,6 +110,15 @@ defmodule PicselloWeb.ClientMessageComponent do
       </.form>
     </div>
     """
+  end
+
+  @impl true
+  def handle_event("update-html", _, %{assigns: %{changeset: changeset}} = socket) do
+    socket
+    |> push_event("quill:update", %{
+      "html" => changeset |> current() |> Map.get(:body_html)
+    })
+    |> noreply()
   end
 
   @impl true
