@@ -1617,7 +1617,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Contract.changeset(contract_params,
         skip_package_id: true,
         validate_unique_name_on_organization:
-          if(should_validate_contract_name?(contract_params),
+          if(validate_contract_name?(contract_params),
             do: socket.assigns.current_user.organization_id
           )
       )
@@ -1628,12 +1628,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp assign_contract_changeset(socket, _params), do: socket
 
-  defp should_validate_contract_name?(%{"edited" => false, "contract_template_id" => ""}),
+  defp validate_contract_name?(%{"edited" => false, "contract_template_id" => ""}),
     do: true
 
-  defp should_validate_contract_name?(%{"edited" => true}), do: true
+  defp validate_contract_name?(%{"edited" => true}), do: true
 
-  defp should_validate_contract_name?(_), do: false
+  defp validate_contract_name?(_), do: false
 
   defp assign_contract_options(%{assigns: %{step: :documents}} = socket) do
     options =
