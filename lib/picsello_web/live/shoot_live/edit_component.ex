@@ -57,7 +57,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
             <%= labeled_select f, :duration_minutes, duration_options(),
                   label: "Shoot Duration",
                   prompt: "Select below",
-                  wrapper_class: classes("",%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
+                  wrapper_class: classes(%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
             %>
 
             <.location f={f} address_field={@address_field} myself={@myself} />

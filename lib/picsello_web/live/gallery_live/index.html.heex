@@ -67,8 +67,8 @@
                 <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
               </button>
               <div class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
-                <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes("", %{"hidden" => disabled?(gallery)})} />
-                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} class={classes("", %{"hidden" => disabled?(gallery)})} />
+                <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes(%{"hidden" => disabled?(gallery)})} />
+                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} class={classes(%{"hidden" => disabled?(gallery)})} />
                 <.dropdown_item {assigns} id="send_email_link" class={classes("hover:cursor-pointer", %{"hidden" => disabled?(gallery)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
                 <%= if Enum.any?(gallery.orders) do %>
                   <%= case disabled?(gallery) do %>

@@ -436,20 +436,18 @@ defmodule PicselloWeb.JobLive.Shared do
     case Jobs.archive_lead(job) do
       {:ok, _job} ->
         socket
-        |> close_modal()
         |> put_flash(
           :success,
           "#{if job.job_status.is_lead == true, do: "Lead", else: "Job"} has been archived"
         )
         |> redirect(to: (if Map.has_key?(assigns, :type), do: Routes.job_path(socket, String.to_atom(assigns.type.plural)), else: Routes.client_path(socket, :job_history, job.client_id)))
-        |> noreply()
 
       {:error, _} ->
         socket
-        |> close_modal()
         |> put_flash(:error, "Failed to archive, please try again")
-        |> noreply()
     end
+    |> close_modal()
+    |> noreply()
   end
 
   def handle_info(
@@ -461,20 +459,18 @@ defmodule PicselloWeb.JobLive.Shared do
     case Jobs.unarchive_lead(job) do
       {:ok, _job} ->
         socket
-        |> close_modal()
         |> put_flash(
           :success,
           "#{if job.job_status.is_lead == true, do: "Lead", else: "Job"} has been unarchived"
         )
         |> redirect(to: (if Map.has_key?(assigns, :type), do: Routes.job_path(socket, String.to_atom(assigns.type.plural)), else: Routes.client_path(socket, :job_history, job.client_id)))
-        |> noreply()
 
       {:error, _} ->
         socket
-        |> close_modal()
         |> put_flash(:error, "Failed to unarchive, please try again")
-        |> noreply()
     end
+    |> close_modal()
+    |> noreply()
   end
 
   def handle_info({:confirm_event, "edit_package", %{assigns: assigns}}, socket) do

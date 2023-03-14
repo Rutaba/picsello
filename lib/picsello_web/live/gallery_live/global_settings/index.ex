@@ -924,7 +924,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
       <% else %>
         <div>
-          <img src={"#{@watermarked_preview_path && PhotoStorage.path_to_url(@watermarked_preview_path)}"} class={classes("", %{"hidden" => !@show_preview})} />
+          <img src={"#{@watermarked_preview_path && PhotoStorage.path_to_url(@watermarked_preview_path)}"} class={classes(%{"hidden" => !@show_preview})} />
           <%= if watermark_type(@global_settings_gallery) == :text do  %>
             <.watermark_name_delete name={@global_settings_gallery.watermark_text}>
               <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
