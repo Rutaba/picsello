@@ -69,6 +69,7 @@ defmodule Picsello.ImportJobTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
     )
     |> scroll_into_view(css("#download_is_buy_all"))
+    |> click(css("#download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
