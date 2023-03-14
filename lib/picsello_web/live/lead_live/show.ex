@@ -13,6 +13,8 @@ defmodule PicselloWeb.LeadLive.Show do
     Contracts
   }
 
+  alias PicselloWeb.JobLive
+
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
@@ -329,8 +331,6 @@ defmodule PicselloWeb.LeadLive.Show do
     |> noreply()
   end
 
-  defdelegate handle_info(message, socket), to: JobLive.Shared
-
   @impl true
   def handle_info({:stripe_status, status}, socket) do
     socket
@@ -350,7 +350,7 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
+  defdelegate handle_info(message, socket), to: JobLive.Shared
 
   def next_reminder_on(nil), do: nil
 

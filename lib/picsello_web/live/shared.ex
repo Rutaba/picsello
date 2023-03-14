@@ -169,8 +169,7 @@ defmodule PicselloWeb.Live.Shared do
           )
 
     def pagination_index(changeset, index),
-    do:
-      changeset |> current() |> Map.get(index)
+      do: changeset |> current() |> Map.get(index)
   end
 
   def step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1

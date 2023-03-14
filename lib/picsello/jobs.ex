@@ -150,10 +150,7 @@ defmodule Picsello.Jobs do
             filter_overdue_jobs(dynamic)
 
           "archived" ->
-            filter_archived(dynamic, "jobs")
-
-          "archived_leads" ->
-            filter_archived(dynamic, "leads")
+            filter_archived(dynamic)
 
           "awaiting_contract" ->
             filter_awaiting_contract_leads(dynamic)
@@ -197,7 +194,6 @@ defmodule Picsello.Jobs do
     dynamic(
       [j, client, job_status],
       ^dynamic and
-        job_status.is_lead and
         job_status.current_status == :sent
     )
   end
@@ -206,7 +202,6 @@ defmodule Picsello.Jobs do
     dynamic(
       [j, client, job_status],
       ^dynamic and
-        job_status.is_lead and
         job_status.current_status == :not_sent
     )
   end
@@ -215,7 +210,6 @@ defmodule Picsello.Jobs do
     dynamic(
       [j, client, job_status],
       ^dynamic and
-        job_status.is_lead and
         job_status.current_status == :accepted
     )
   end
@@ -224,7 +218,6 @@ defmodule Picsello.Jobs do
     dynamic(
       [j, client, job_status],
       ^dynamic and
-        job_status.is_lead and
         job_status.current_status == :signed_with_questionnaire
     )
   end
@@ -233,23 +226,14 @@ defmodule Picsello.Jobs do
     dynamic(
       [j, client, job_status],
       ^dynamic and
-        job_status.is_lead and
         job_status.current_status in [:signed_without_questionnaire, :answered]
     )
   end
 
-  defp filter_archived(dynamic, "jobs") do
+  defp filter_archived(dynamic) do
     dynamic(
       [j, client, job_status],
       ^dynamic and
-        not is_nil(j.archived_at)
-    )
-  end
-
-  defp filter_archived(dynamic, "leads") do
-    dynamic(
-      [j, client, job_status],
-      ^dynamic and job_status.is_lead and
         not is_nil(j.archived_at)
     )
   end

@@ -31,7 +31,8 @@ defmodule PicselloWeb.JobLive.Shared do
     Galleries.Workers.PhotoStorage,
     Utils
   }
-  alias PicselloWeb.ConfirmationComponent
+
+  alias PicselloWeb.{ConfirmationComponent, ClientMessageComponent}
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias PicselloWeb.Router.Helpers, as: Routes
 
@@ -366,19 +367,19 @@ defmodule PicselloWeb.JobLive.Shared do
         %{assigns: %{jobs: jobs}} = socket
       ) do
     job = Enum.find(jobs, fn job -> job.id == to_integer(job_id) end)
-    IO.inspect(job.job_status)
-    action_string = if job.job_status.current_status == :archived, do: "unarchive", else: "archive"
+
+    action_string =
+      if job.job_status.current_status == :archived, do: "unarchive", else: "archive"
+
     type = if(job.job_status.is_lead, do: "lead", else: "job")
 
     socket
     |> ConfirmationComponent.open(%{
       close_label: "No! Get me out of here",
       confirm_event: "#{action_string}-entity",
-      confirm_label:
-        "Yes, #{action_string} the #{type}",
+      confirm_label: "Yes, #{action_string} the #{type}",
       icon: "warning-orange",
-      title:
-        "Are you sure you want to #{action_string} this #{type}?",
+      title: "Are you sure you want to #{action_string} this #{type}?",
       payload: %{job_id: job_id}
     })
     |> noreply()
@@ -430,7 +431,10 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_info({:confirm_event, "archive-entity", %{job_id: job_id}}, %{assigns: %{jobs: jobs} = assigns} = socket) do
+  def handle_info(
+        {:confirm_event, "archive-entity", %{job_id: job_id}},
+        %{assigns: %{jobs: jobs} = assigns} = socket
+      ) do
     job = Enum.find(jobs, fn job -> job.id == to_integer(job_id) end)
 
     case Jobs.archive_lead(job) do
@@ -440,7 +444,13 @@ defmodule PicselloWeb.JobLive.Shared do
           :success,
           "#{if job.job_status.is_lead == true, do: "Lead", else: "Job"} has been archived"
         )
-        |> redirect(to: (if Map.has_key?(assigns, :type), do: Routes.job_path(socket, String.to_atom(assigns.type.plural)), else: Routes.client_path(socket, :job_history, job.client_id)))
+        |> redirect(
+          to:
+            if(Map.has_key?(assigns, :type),
+              do: Routes.job_path(socket, String.to_atom(assigns.type.plural)),
+              else: Routes.client_path(socket, :job_history, job.client_id)
+            )
+        )
 
       {:error, _} ->
         socket
@@ -463,7 +473,13 @@ defmodule PicselloWeb.JobLive.Shared do
           :success,
           "#{if job.job_status.is_lead == true, do: "Lead", else: "Job"} has been unarchived"
         )
-        |> redirect(to: (if Map.has_key?(assigns, :type), do: Routes.job_path(socket, String.to_atom(assigns.type.plural)), else: Routes.client_path(socket, :job_history, job.client_id)))
+        |> redirect(
+          to:
+            if(Map.has_key?(assigns, :type),
+              do: Routes.job_path(socket, String.to_atom(assigns.type.plural)),
+              else: Routes.client_path(socket, :job_history, job.client_id)
+            )
+        )
 
       {:error, _} ->
         socket
@@ -642,6 +658,7 @@ defmodule PicselloWeb.JobLive.Shared do
         %{job: %{job_status: %{current_status: status, is_lead: is_lead}} = job} = assigns
       ) do
     job = job |> Repo.preload(:payment_schedules)
+
     {label, color} =
       if not is_lead and
            Enum.any?(job.payment_schedules, fn schedule ->
@@ -1563,9 +1580,9 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   defp complete_job_component(socket),
-  do:
-    socket
-    |> ConfirmationComponent.open(%{
+    do:
+      socket
+      |> ConfirmationComponent.open(%{
         confirm_event: "complete_job",
         confirm_label: "Yes, complete",
         confirm_class: "btn-primary",
@@ -1612,7 +1629,7 @@ defmodule PicselloWeb.JobLive.Shared do
     client = Repo.get(Client, client_id)
 
     socket
-    |> PicselloWeb.ClientMessageComponent.open(%{
+    |> ClientMessageComponent.open(%{
       current_user: current_user,
       enable_size: true,
       enable_image: true,

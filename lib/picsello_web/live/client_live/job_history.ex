@@ -8,17 +8,14 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1]
   import PicselloWeb.Live.ClientLive.Shared
 
-  alias Ecto.{Query, Changeset}
+  alias Ecto.Query
 
   alias PicselloWeb.{
-    Helpers,
-    ConfirmationComponent,
-    ClientMessageComponent,
     JobLive.ImportWizard,
     JobLive
   }
 
-  alias Picsello.{Jobs, Job, Repo, Clients, Messages, Galleries}
+  alias Picsello.{Jobs, Job, Repo, Clients, Galleries}
 
   defmodule Pagination do
     @moduledoc false
@@ -166,7 +163,6 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   defdelegate handle_event(event, params, socket), to: JobLive.Shared
 
   defdelegate handle_info(message, socket), to: JobLive.Shared
-
 
   defp get_client(%{assigns: %{current_user: user}} = socket, id) do
     case Clients.get_client(id, user) do

@@ -294,8 +294,9 @@ defmodule Picsello.JobIndexTest do
         email: "green@example.com"
       },
       type: "family",
-      package: %{shoot_count: 1})
-      |> promote_to_job()
+      package: %{shoot_count: 1}
+    )
+    |> promote_to_job()
 
     insert(:lead,
       client: %{
@@ -305,8 +306,9 @@ defmodule Picsello.JobIndexTest do
         email: "ross@example.com"
       },
       type: "wedding",
-      package: %{shoot_count: 3})
-      |> promote_to_job()
+      package: %{shoot_count: 3}
+    )
+    |> promote_to_job()
 
     insert(:lead,
       client: %{
@@ -316,7 +318,8 @@ defmodule Picsello.JobIndexTest do
         email: "joey@example.com"
       },
       type: "event",
-      package: %{shoot_count: 1})
-      |> promote_to_job()
+      package: %{shoot_count: 1}
+    )
+    |> promote_to_job()
   end
 end

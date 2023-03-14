@@ -10,7 +10,7 @@ defmodule PicselloWeb.JobLive.Index do
 
   alias Ecto.Changeset
   alias Picsello.{Job, Jobs, Repo, Payments}
-  alias PicselloWeb.{Live.ClientLive.JobHistory, JobLive}
+  alias PicselloWeb.{JobLive}
 
   @default_pagination_limit 6
 
@@ -54,9 +54,9 @@ defmodule PicselloWeb.JobLive.Index do
     |> assign(:sort_by, sort_by)
     |> assign(
       :sort_col,
-      if(sort_by not in ["oldest_lead", "newest_lead"],
-        do: Enum.find(job_sort_options(), fn op -> op.id == sort_by end).column,
-        else: Enum.find(lead_sort_options(), fn op -> op.id == sort_by end).column
+      if(sort_by in ["oldest_lead", "newest_lead"],
+        do: Enum.find(lead_sort_options(), fn op -> op.id == sort_by end).column,
+        else: Enum.find(job_sort_options(), fn op -> op.id == sort_by end).column
       )
     )
     |> assign(
@@ -103,9 +103,7 @@ defmodule PicselloWeb.JobLive.Index do
   @impl true
   def handle_event("view-job", %{"id" => id}, %{assigns: %{type: type}} = socket) do
     socket
-    |> push_redirect(
-      to: Routes.job_path(socket, String.to_atom(type.plural), id)
-    )
+    |> push_redirect(to: Routes.job_path(socket, String.to_atom(type.plural), id))
     |> noreply()
   end
 
@@ -121,9 +119,7 @@ defmodule PicselloWeb.JobLive.Index do
   @impl true
   def handle_event("view-galleries", %{"id" => id}, %{assigns: %{type: type}} = socket) do
     socket
-    |> push_redirect(
-      to: Routes.job_path(socket, String.to_atom(type.plural), id)
-    )
+    |> push_redirect(to: Routes.job_path(socket, String.to_atom(type.plural), id))
     |> noreply()
   end
 
@@ -405,18 +401,18 @@ defmodule PicselloWeb.JobLive.Index do
 
   defp assign_type_strings(%{assigns: %{live_action: live_action}} = socket) do
     if live_action == :jobs,
-    do:
-      socket
-      |> assign(:type, %{singular: "job", plural: "jobs"})
-      |> assign(:sort_by, "shoot_date")
-      |> assign(:sort_col, :starts_at)
-      |> assign(:sort_direction, :desc),
-    else:
-      socket
-      |> assign(:type, %{singular: "lead", plural: "leads"})
-      |> assign(:sort_by, "newest_lead")
-      |> assign(:sort_col, :inserted_at)
-      |> assign(:sort_direction, :desc)
+      do:
+        socket
+        |> assign(:type, %{singular: "job", plural: "jobs"})
+        |> assign(:sort_by, "shoot_date")
+        |> assign(:sort_col, :starts_at)
+        |> assign(:sort_direction, :desc),
+      else:
+        socket
+        |> assign(:type, %{singular: "lead", plural: "leads"})
+        |> assign(:sort_by, "newest_lead")
+        |> assign(:sort_col, :inserted_at)
+        |> assign(:sort_direction, :desc)
   end
 
   defp assign_search(socket) do
@@ -440,7 +436,7 @@ defmodule PicselloWeb.JobLive.Index do
     [
       %{title: "All", id: "all"},
       %{title: "Active Leads", id: "active_leads"},
-      %{title: "Archived Leads", id: "archived_leads"},
+      %{title: "Archived Leads", id: "archived"},
       %{title: "Pending Invoice", id: "pending_invoice"},
       %{title: "Awaiting Questionnaire", id: "awaiting_questionnaire"},
       %{title: "Awaiting Contract", id: "awaiting_contract"},
@@ -484,24 +480,42 @@ defmodule PicselloWeb.JobLive.Index do
     ]
   end
 
-  defp status_label(%{job_status: %{current_status: status}, booking_proposals: booking_proposals} = job, time_zone) do
+  defp status_label(
+         %{job_status: %{current_status: status}, booking_proposals: booking_proposals} = job,
+         time_zone
+       ) do
     booking_proposal = booking_proposals |> List.first()
 
     cond do
-      status == :archived -> "Archived on #{format_date(job.archived_at, time_zone)}"
-      status == :completed -> "Completed on #{format_date(job.completed_at, time_zone)}"
-      status == :accepted -> "Awaiting on #{if(booking_proposal, do: booking_proposal.accepted_at, else: job.updated_at) |> format_date(time_zone)}"
-      status == :answered -> "Pending on #{format_date(job.updated_at, time_zone)}"
-      !job.package -> "Pending on #{format_date(job.updated_at, time_zone)}"
-      status == :sent -> "Created on #{format_date(job.updated_at, time_zone)}"
-      booking_proposal && !is_nil(booking_proposal.questionnaire_id) -> 
+      status == :archived ->
+        "Archived on #{format_date(job.archived_at, time_zone)}"
+
+      status == :completed ->
+        "Completed on #{format_date(job.completed_at, time_zone)}"
+
+      status == :accepted ->
+        "Awaiting on #{if(booking_proposal, do: booking_proposal.accepted_at, else: job.updated_at) |> format_date(time_zone)}"
+
+      status == :answered ->
+        "Pending on #{format_date(job.updated_at, time_zone)}"
+
+      !job.package ->
+        "Pending on #{format_date(job.updated_at, time_zone)}"
+
+      status == :sent ->
+        "Created on #{format_date(job.updated_at, time_zone)}"
+
+      booking_proposal && !is_nil(booking_proposal.questionnaire_id) ->
         "Awaiting on #{signed_at(booking_proposal, job.updated_at) |> format_date(time_zone)}"
-      booking_proposal && is_nil(booking_proposal.questionnaire_id) -> 
+
+      booking_proposal && is_nil(booking_proposal.questionnaire_id) ->
         "Pending on #{signed_at(booking_proposal, job.updated_at) |> format_date(time_zone)}"
-      true -> "Created on #{format_date(job.inserted_at, time_zone)}"
+
+      true ->
+        "Created on #{format_date(job.inserted_at, time_zone)}"
     end
   end
-  
+
   defp signed_at(booking_proposal, date) do
     if(booking_proposal && booking_proposal.signed_at, do: booking_proposal.signed_at, else: date)
   end
