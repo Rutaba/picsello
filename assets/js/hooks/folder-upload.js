@@ -31,34 +31,91 @@ export default {
             })
         }
 
-        let files
-        let subFolders
+        function handleFallbackDirectoryPicker() {
+            return new Promise((resolve) => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.webkitdirectory = true;
+
+                input.addEventListener('change', (event) => resolve(event));
+
+                if ('showPicker' in HTMLInputElement.prototype) {
+                    input.showPicker();
+                } else {
+                    input.click();
+                }
+            });
+        }
+
+        let files = [];
+        let subFolders = []
+        let folderName = '';
 
         document.querySelector("#folder-upload").addEventListener('click', async () => {
-            const types = [{ description: 'Directories', accept: { 'directory': 'application/x-directory' } }]
-            const directoryPicker = await window.showDirectoryPicker({ types: types })
-            files = []
-            subFolders = []
+            // Check if showDirectoryPicker is supported
+            // This methodology can be removed in the future when the showDirectoryPicker
+            // is supported by all browsers
+            const supportsFileSystemAccess =
+                "showDirectoryPicker" in window &&
+                (() => {
+                    try {
+                        return window.self === window.top;
+                    } catch {
+                        return false;
+                    }
+                })();
 
-            for await (const [key, value] of directoryPicker.entries()) {
-                if (value.kind == 'directory') {
-                    let directoryName = `${uuidv4()}-dsp-${value.name}`
-                    subFolders.push(directoryName)
+            // if showDirectoryPicker is supported by browser
+            if (supportsFileSystemAccess) {
+                const types = [{ description: 'Directories', accept: { 'directory': 'application/x-directory' } }];
+                const directoryPicker = await window.showDirectoryPicker({ types: types });
+                folderName = directoryPicker.name;
 
-                    for await (const [key2, value2] of value.entries()) {
-                        if (value2.kind == 'file') {
-                            const fileData = await value2.getFile()
-                            const file = renameFile(fileData, `${directoryName}-fsp-${fileData.name}`)
-                            files.push(file)
+                for await (const [key, value] of directoryPicker.entries()) {
+                    if (value.kind == 'directory') {
+                        let directoryName = `${uuidv4()}-dsp-${value.name}`;
+                        subFolders.push(directoryName);
+
+                        for await (const [key2, value2] of value.entries()) {
+                            if (value2.kind == 'file') {
+                                const fileData = await value2.getFile();
+                                const file = renameFile(fileData, `${directoryName}-fsp-${fileData.name}`);
+                                files.push(file);
+                            }
                         }
                     }
+                    else {
+                        const fileData = await value.getFile();
+                        files.push(fileData);
+                    }
                 }
-                else {
-                    const fileData = await value.getFile()
-                    files.push(fileData)
+            } else {
+                // Going on conventional way of inputting directories
+                const directoryPicker = await handleFallbackDirectoryPicker();
+
+                for (const file of directoryPicker.target.files) {
+                    const fileNew = null;
+                    const filename = file.webkitRelativePath.split('/');
+
+                    folderName = folderName === '' ? filename[0] : folderName;
+
+                    // incase file exists in a subfolder
+                    if (filename.length == 3) {
+                        let directoryName = `${uuidv4()}-dsp-${filename[1]}`
+                        const exists = subFolders.find(x => x.match(filename[1]))
+
+                        if (!exists) subFolders.push(directoryName);
+
+                        fileNew = renameFile(file, `${exists || directoryName}-fsp-${filename[2]}`);
+                    }
+                    // incase file exists in the main folder
+                    if (filename.length == 2) {
+                        fileNew = renameFile(file, `${filename[1]}`);
+                    }
+                    files.push(fileNew);
                 }
             }
-            this.pushEvent("folder-information", { 'folder': directoryPicker.name, 'sub_folders': subFolders })
+            this.pushEvent("folder-information", { 'folder': folderName, 'sub_folders': subFolders })
         });
 
         this.handleEvent('upload-photos', ({ include_subfolders: includeSubFolders }) => {
