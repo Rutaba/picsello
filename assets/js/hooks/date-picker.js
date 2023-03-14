@@ -8,8 +8,8 @@ export default {
       timePicker,
       minDate,
       maxDate,
-      customFormat,
-      customTimeFormat,
+      customDisplayFormat,
+      customDateFormat,
     } = el.dataset;
 
     this.pickr = flatpickr(this.el, {
@@ -17,12 +17,10 @@ export default {
       enableTime: timePicker ? true : false,
       minDate: minDate ? minDate : null,
       maxDate: maxDate ? maxDate : null,
-      enableTime: timeOnly ? true : false,
       noCalendar: timeOnly ? true : false,
-      dateFormat: customTimeFormat || 'H:i',
-      altInput: customFormat ? true : false,
-      altFormat: customFormat || 'd M Y',
-      dateFormat: this.el.dataset.pickrDateFormat || 'Y-m-d',
+      altInput: true,
+      altFormat: customDisplayFormat || timePicker ? 'm/d/Y h:i K' : 'm/d/Y',
+      dateFormat: customDateFormat || 'Y-m-d',
     });
   },
 

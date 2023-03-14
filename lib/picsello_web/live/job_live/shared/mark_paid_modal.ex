@@ -151,7 +151,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         %{
           "payment_schedule" =>
             %{
-              "paid_at" => _,
+              "paid_at" => paid_at,
               "price" => _,
               "type" => _
             } = params
@@ -159,14 +159,17 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         %{
           assigns: %{
             add_payment_show: add_payment_show,
-            job: %{payment_schedules: payment_schedules} = job
+            job: %{payment_schedules: payment_schedules} = job,
+            current_user: current_user
           }
         } = socket
       ) do
     due_at = Enum.sort_by(payment_schedules, & &1.due_at, :asc) |> hd() |> Map.get(:due_at)
+    paid_at = date_to_datetime(paid_at, current_user.time_zone)
 
     params =
       Map.put(params, "due_at", due_at)
+      |> Map.put("paid_at", paid_at)
       |> Map.put("job_id", job.id)
       |> Map.put("description", "Offline Payment")
 

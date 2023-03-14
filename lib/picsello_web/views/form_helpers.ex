@@ -213,19 +213,21 @@ defmodule PicselloWeb.FormHelpers do
         input_class: "text-input w-full",
         data_min_date: nil,
         data_time_only: nil,
-        data_custom_format: nil,
-        data_custom_time_format: nil,
+        data_custom_display_format: nil,
+        data_custom_date_format: nil,
         data_time_picker: nil
       })
 
     ~H"""
-    <div class={@class <> " flatpickr"} phx-update="ignore" phx-hook="DatePicker" id={@id} data-min-date={@data_min_date} data-time-only={@data_time_only} data-time-picker={@data_time_picker} data-custom-format={@data_custom_format} data-custom-time-format={@data_custom_time_format}>
+    <div class={@class}>
       <%= if @input_label do %>
       <.input_label form={@form} class="input-label" field={@field}>
         <%= @input_label %> <%= error_tag(@form, @field) %>
       </.input_label>
       <% end %>
-      <%= text_input @form, @field, class: @input_class, placeholder: @input_placeholder, data_input: true %>
+      <div class="flatpickr" phx-update="ignore" phx-hook="DatePicker" id={@id} data-min-date={@data_min_date} data-time-only={@data_time_only} data-time-picker={@data_time_picker} data-custom-display-format={@data_custom_display_format} data-custom-date-format={@data_custom_date_format}>
+        <%= text_input @form, @field, class: @input_class, placeholder: @input_placeholder, data_input: true %>
+      </div>
     </div>
     """
   end
