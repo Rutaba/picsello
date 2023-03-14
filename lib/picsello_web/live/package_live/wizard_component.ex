@@ -1157,10 +1157,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{assigns: %{changeset: changeset}} = socket
       ) do
     package = current(changeset)
-
+    
     template =
       find_template(socket, package.package_template_id)
-      |> Repo.preload(:package_payment_schedules, force: true)
+      |> Repo.preload([:package_payment_schedules, :contract], force: true)
 
     changeset = changeset_from_template(template)
 
@@ -1178,7 +1178,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             :print_credits,
             :package_payment_schedules,
             :fixed,
-            :schedule_type
+            :schedule_type,
+            :contract
           ])
         ),
       changeset: changeset
@@ -1531,9 +1532,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          action \\ nil
        ) do
     global_settings =
-      if global_settings,
-        do: global_settings,
-        else: %{download_each_price: nil, buy_all_price: nil}
+    if global_settings,
+      do: global_settings,
+      else: %{download_each_price: nil, buy_all_price: nil}
 
     package_pricing_changeset =
       assigns.package_pricing
@@ -1547,7 +1548,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Multiplier.changeset(Map.get(params, "multiplier", %{}))
 
     download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
-
+    
     download_changeset =
       package
       |> Download.from_package(global_settings)
@@ -1555,7 +1556,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Map.put(:action, action)
 
     download = current(download_changeset)
-
+    
     package_params =
       params
       |> Map.get("package", %{})
