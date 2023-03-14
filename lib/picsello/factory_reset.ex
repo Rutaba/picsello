@@ -4,6 +4,7 @@ defmodule Picsello.FactoryReset do
   alias Picsello.{
     Repo,
     Accounts.User,
+    Accounts.UserToken,
     Packages,
     SubscriptionEvent,
     OrganizationCard,
@@ -68,6 +69,7 @@ defmodule Picsello.FactoryReset do
       ex_user = %{email: "#{email}-#{UUID.uuid4()}", stripe_customer_id: nil}
 
       Multi.new()
+      |> Ecto.Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, :all))
       |> Multi.update(:ex_user, change(user, ex_user))
       |> Multi.insert(
         :user,
