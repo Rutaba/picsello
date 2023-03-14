@@ -43,7 +43,7 @@ defmodule PicselloWeb.Live.ClientLive.Show do
   defdelegate handle_info(message, socket), to: ClientLive.Index
 
   defp get_client(%{assigns: %{current_user: user}} = socket, id) do
-    case Clients.get_client(user, [id: id]) do
+    case Clients.get_client(user, id: id) do
       %Client{} = client ->
         socket |> assign(:client, client)
 

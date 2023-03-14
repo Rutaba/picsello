@@ -12,7 +12,7 @@ defmodule Picsello.Repo.Migrations.RemoveCCFromClientMessageCreateClientMessageR
       add(:client_message_id, references(:client_messages, on_delete: :nothing), null: false)
       add(:recipient_type, :string, null: false, default: "to")
 
-      timestamps()
+      timestamps(type: :utc_datetime)
     end
 
     create(index(@table, [:client_id, :client_message_id], unique: true))

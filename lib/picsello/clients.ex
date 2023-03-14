@@ -89,23 +89,6 @@ defmodule Picsello.Clients do
     |> Repo.one()
   end
 
-  defp conditions(user, opts) do
-    id_filter = Keyword.get(opts, :id, false)
-    email_filter = Keyword.get(opts, :email, false)
-
-    conditions = dynamic([c], c.organization_id == ^user.organization_id and is_nil(c.archived_at))
-
-    conditions =
-      if id_filter,
-      do: dynamic([c], c.id == ^id_filter and ^conditions),
-      else: conditions
-
-    conditions =
-      if email_filter,
-      do: dynamic([c], c.email == ^email_filter and ^conditions),
-      else: conditions
-  end
-
   def client_tags(client) do
     (Enum.map(client.jobs, & &1.type)
      |> Enum.uniq()) ++
@@ -117,6 +100,23 @@ defmodule Picsello.Clients do
       preload: [jobs: [galleries: [orders: [:intent, :digitals, :products]]]],
       where: c.id == ^client_id
     )
+  end
+
+  defp conditions(user, opts) do
+    id_filter = Keyword.get(opts, :id, false)
+    email_filter = Keyword.get(opts, :email, false)
+
+    conditions =
+      dynamic([c], c.organization_id == ^user.organization_id and is_nil(c.archived_at))
+
+    conditions =
+      if id_filter,
+        do: dynamic([c], c.id == ^id_filter and ^conditions),
+        else: conditions
+
+    if email_filter,
+      do: dynamic([c], c.email == ^email_filter and ^conditions),
+      else: conditions
   end
 
   defp filters_where(opts) do

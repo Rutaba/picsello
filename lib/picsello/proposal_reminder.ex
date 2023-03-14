@@ -77,7 +77,7 @@ defmodule Picsello.ProposalReminder do
       |> Ecto.Changeset.put_change(:job_id, job_id)
       |> Ecto.Changeset.put_change(:scheduled, true)
       |> Ecto.Changeset.put_assoc(:client_message_recipients, [
-        %{client_id: client_id, recipient_type: "to"}
+        %{client_id: client_id, recipient_type: String.to_atom("to")}
       ])
       |> Repo.insert!()
       |> ClientNotifier.deliver_booking_proposal(client_email)

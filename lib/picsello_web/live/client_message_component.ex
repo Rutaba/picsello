@@ -339,44 +339,25 @@ defmodule PicselloWeb.ClientMessageComponent do
       length(Map.get(recipients, "to")) + length(Map.get(recipients, "cc", [])) +
         length(Map.get(recipients, "bcc", []))
 
-    body_text = changeset |> current() |> Map.get(:body_text)
-    body_html = changeset |> current() |> Map.get(:body_html)
+    message = changeset |> current()
 
     greeting =
       cond do
-        body_text -> body_text |> String.split() |> hd()
-        body_html -> body_html |> String.split() |> hd() |> String.replace("<p>", "")
-        true -> nil
+        Map.get(message, :body_text) ->
+          message.body_text |> String.split() |> hd()
+
+        Map.get(message, :body_html) ->
+          message.body_html |> String.split() |> hd() |> String.replace("<p>", "")
+
+        true ->
+          nil
       end
 
     changeset =
       if greeting && no_of_recipients > 1 do
-        changeset =
-          if is_nil(body_text),
-            do: changeset,
-            else:
-              Ecto.Changeset.put_change(
-                changeset,
-                :body_text,
-                String.replace(
-                  body_text,
-                  "#{greeting} #{client.name |> String.split() |> hd()}",
-                  "#{greeting}"
-                )
-              )
-
-        if is_nil(body_html),
-          do: changeset,
-          else:
-            Ecto.Changeset.put_change(
-              changeset,
-              :body_html,
-              String.replace(
-                body_html,
-                "#{greeting} #{client.name |> String.split() |> hd()}",
-                "#{greeting}"
-              )
-            )
+        changeset
+        |> update_email_body(greeting, client.name, {:body_text, message.body_text})
+        |> update_email_body(greeting, client.name, {:body_html, message.body_html})
       else
         changeset
       end
@@ -385,13 +366,37 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign(:changeset, changeset)
   end
 
+  defp update_email_body(changeset, greeting, client_name, {key, value}),
+    do:
+      if(is_nil(value),
+        do: changeset,
+        else:
+          Ecto.Changeset.put_change(
+            changeset,
+            key,
+            String.replace(
+              value,
+              "#{greeting} #{client_name |> String.split() |> hd()}",
+              "#{greeting}"
+            )
+          )
+      )
+
+  defp email_buttons() do
+    [
+      %{title: "Add to", action_event: "add-to"},
+      %{title: "Add Cc", action_event: "add-cc"},
+      %{title: "Add Bcc", action_event: "add-bcc"}
+    ]
+  end
+
   defp search_existing_clients(assigns) do
     ~H"""
       <div class="w-full md:w-1/3 md:ml-6">
         <%= form_tag("#", [phx_change: :search, phx_target: @myself]) do %>
           <div class="relative flex flex-col w-full md:flex-row">
             <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
-              <%= if Enum.any?(@search_results) do %>
+              <%= if Enum.any?(@search_results) || @search_phrase do %>
                 <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
                   <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
                 </span>
@@ -408,17 +413,16 @@ defmodule PicselloWeb.ClientMessageComponent do
                         <p class="font-bold"><%= search_result.name %></p>
                         <p class="text-sm"><%= search_result.email %></p>
                         <div class="flex justify-between mt-2">
-                        <.add_icon_button title="Add to" click_event="add-to" myself={@myself} search_result={search_result}/>
-                        <.add_icon_button title="Add Cc" click_event="add-cc"  myself={@myself} search_result={search_result}/>
-                        <.add_icon_button title="Add Bcc" click_event="add-bcc" myself={@myself} search_result={search_result}/>
-
+                        <%= for %{title: title, action_event: event} <- email_buttons() do %>
+                          <.add_icon_button title={title} click_event={event} myself={@myself} search_result={search_result}/>
+                        <% end %>
                         </div>
                       </div>
                     </div>
                   <% end %>
               </div>
             <% else %>
-              <%= if @search_phrase && @search_phrase !== "" && Enum.empty?(@search_results) do %>
+              <%= if @search_phrase && @search_phrase && Enum.empty?(@search_results) do %>
                 <div class="absolute top-14 w-full">
                   <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 cursor-pointer shadow py-2 px-2 bg-white">
                     <p class="font-bold">No clients found with that info</p>

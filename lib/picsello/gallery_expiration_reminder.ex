@@ -71,7 +71,7 @@ defmodule Picsello.GalleryExpirationReminder do
       |> ClientMessage.create_outbound_changeset()
       |> Ecto.Changeset.put_change(:job_id, job_id)
       |> Ecto.Changeset.put_change(:client_message_recipients, [
-        %{client_id: client_id, recipient_type: "to"}
+        %{client_id: client_id, recipient_type: String.to_atom("to")}
       ])
       |> Ecto.Changeset.put_change(:scheduled, true)
       |> Repo.insert!()
