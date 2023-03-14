@@ -109,7 +109,7 @@ defmodule Picsello.FactoryReset do
   end
 
   defp organization_cards(ex_cards) do
-    for %{card: card, data: data} = org_card <- ex_cards, card.concise_name in @cards do
+    for %{card: card, data: data} = org_card <- ex_cards, card.concise_name in @cards and not is_nil(data) do
       org_card
       |> Map.from_struct()
       |> Map.put(:data, Map.from_struct(data))
