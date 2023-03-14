@@ -15,10 +15,9 @@ defmodule PicselloWeb.JobLive.Index do
   @default_pagination_limit 6
 
   @impl true
-  def mount(_params, _session, %{assigns: %{live_action: action}} = socket) do
+  def mount(_params, _session, socket) do
     socket
     |> assign_defaults()
-    |> assign(:page_title, action |> Phoenix.Naming.humanize())
     |> assign_stripe_status()
     |> ok()
   end
@@ -102,12 +101,10 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   @impl true
-  def handle_event("view-job", %{"id" => id}, %{assigns: %{jobs: jobs}} = socket) do
-    job = jobs |> Enum.find(&(&1.id == to_integer(id)))
-
+  def handle_event("view-job", %{"id" => id}, %{assigns: %{jobs: jobs, type: type}} = socket) do
     socket
     |> push_redirect(
-      to: Routes.job_path(socket, if(job.job_status.is_lead, do: :leads, else: :jobs), id)
+      to: Routes.job_path(socket, String.to_atom(type.plural), id)
     )
     |> noreply()
   end
@@ -122,12 +119,10 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   @impl true
-  def handle_event("view-galleries", %{"id" => id}, %{assigns: %{jobs: jobs}} = socket) do
-    job = jobs |> Enum.find(&(&1.id == to_integer(id)))
-
+  def handle_event("view-galleries", %{"id" => id}, %{assigns: %{jobs: jobs, type: type}} = socket) do
     socket
     |> push_redirect(
-      to: Routes.job_path(socket, if(job.job_status.is_lead, do: :leads, else: :jobs), id)
+      to: Routes.job_path(socket, String.to_atom(type.plural), id)
     )
     |> noreply()
   end
@@ -174,7 +169,7 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   @impl true
-  def handle_event("confirm_archive_lead", %{"id" => job_id}, socket) do
+  def handle_event("confirm-archive-lead", %{"id" => job_id}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
       close_label: "No! Get me out of here",
@@ -265,8 +260,8 @@ defmodule PicselloWeb.JobLive.Index do
       </button>
 
       <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
-        <%= for %{title: title, action: action, icon: icon} <- actions(), (@type == "jobs" and title != "Archive") || (@type == "leads" and title not in ["Complete", "Go to galleries"]) do %>
-          <button title={title} type="button" phx-click={action} phx-value-id={@job.id} class={classes("flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100", %{"hidden" => @job.job_status.current_status == :archived and title == "Archive"})}>
+        <%= for %{title: title, action: action, icon: icon} <- actions(), (@type.plural == "jobs" and action != "confirm-archive-lead") || (@type.plural == "leads" and action not in ["complete-job", "view-galleries"]) do %>
+          <button title={title} type="button" phx-click={action} phx-value-id={@job.id} class={classes("flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100", %{"hidden" => @job.job_status.current_status == :archived and action == "confirm-archive-lead"})}>
             <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
             <%= title %>
           </button>
@@ -385,9 +380,9 @@ defmodule PicselloWeb.JobLive.Index do
          %{
            assigns: %{
              current_user: current_user,
-             live_action: action,
+             type: type,
              job_status: status,
-             job_type: type,
+             job_type: job_type,
              sort_col: sort_by,
              sort_direction: sort_direction,
              search_phrase: search_phrase,
@@ -401,15 +396,15 @@ defmodule PicselloWeb.JobLive.Index do
       current_user
       |> Job.for_user()
       |> then(fn query ->
-        case action do
-          :leads -> query |> Job.leads() |> Job.not_booking()
-          :jobs -> query |> Job.not_leads()
+        case type.plural do
+          "leads" -> query |> Job.leads() |> Job.not_booking()
+          "jobs" -> query |> Job.not_leads()
         end
       end)
       |> Jobs.get_jobs_by_pagination(
         %{
           status: status,
-          type: type,
+          type: job_type,
           sort_by: sort_by,
           sort_direction: sort_direction,
           search_phrase: search_phrase
@@ -432,10 +427,10 @@ defmodule PicselloWeb.JobLive.Index do
 
   defp job_count(%{
          assigns: %{
-           live_action: action,
+           type: type,
            current_user: user,
            job_status: status,
-           job_type: type,
+           job_type: job_type,
            sort_col: sort_by,
            sort_direction: sort_direction,
            search_phrase: search_phrase
@@ -444,14 +439,14 @@ defmodule PicselloWeb.JobLive.Index do
     user
     |> Job.for_user()
     |> then(fn query ->
-      case action do
-        :leads -> query |> Job.leads() |> Job.not_booking()
-        :jobs -> query |> Job.not_leads()
+      case type.plural do
+        "leads" -> query |> Job.leads() |> Job.not_booking()
+        "jobs" -> query |> Job.not_leads()
       end
     end)
     |> Jobs.get_jobs(%{
       status: status,
-      type: type,
+      type: job_type,
       sort_by: sort_by,
       sort_direction: sort_direction,
       search_phrase: search_phrase
@@ -466,23 +461,27 @@ defmodule PicselloWeb.JobLive.Index do
     |> assign_pagination(@default_pagination_limit)
     |> assign(:job_status, "all")
     |> assign(:job_type, "all")
-    |> then(fn %{assigns: %{live_action: live_action}} = socket ->
-      if live_action == :leads do
-        socket
-        |> assign(:sort_by, "newest_lead")
-        |> assign(:sort_col, :inserted_at)
-        |> assign(:sort_direction, :desc)
-      else
-        socket
-        |> assign(:sort_by, "shoot_date")
-        |> assign(:sort_col, :starts_at)
-        |> assign(:sort_direction, :desc)
-      end
-    end)
     |> assign(current_focus: -1)
     |> assign(:job_types, Picsello.JobType.all())
     |> assign_new(:selected_job, fn -> nil end)
-    |> assign_jobs()
+    |> assign_type_strings()
+    |> then(fn socket -> assign_jobs(socket) end)
+  end
+
+  defp assign_type_strings(%{assigns: %{live_action: live_action}} = socket) do
+    if live_action == :jobs,
+    do:
+      socket
+      |> assign(:type, %{singular: "job", plural: "jobs"})
+      |> assign(:sort_by, "shoot_date")
+      |> assign(:sort_col, :starts_at)
+      |> assign(:sort_direction, :desc),
+    else:
+      socket
+      |> assign(:type, %{singular: "lead", plural: "leads"})
+      |> assign(:sort_by, "newest_lead")
+      |> assign(:sort_col, :inserted_at)
+      |> assign(:sort_direction, :desc)
   end
 
   defp assign_search(socket) do
@@ -546,7 +545,7 @@ defmodule PicselloWeb.JobLive.Index do
       %{title: "Go to galleries", action: "view-galleries", icon: "photos-2"},
       %{title: "Send email", action: "open-compose", icon: "envelope"},
       %{title: "Complete", action: "complete-job", icon: "checkcircle"},
-      %{title: "Archive", action: "confirm_archive_lead", icon: "trash"}
+      %{title: "Archive", action: "confirm-archive-lead", icon: "trash"}
     ]
   end
 

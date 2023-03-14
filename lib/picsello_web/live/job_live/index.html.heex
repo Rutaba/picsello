@@ -3,16 +3,16 @@
     <div class="flex content-center justify-between md:flex-row">
       <div class="flex-col">
         <h1 class="text-4xl font-bold center-container">
-          Your <%= action_name(@live_action, :plural) %>
+          Your <%= String.capitalize(@type.plural) %>
         </h1>
       </div>
       <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
-        <%= case @live_action do %>
-          <% :leads -> %>
+        <%= case @type.singular do %>
+          <% "lead" -> %>
             <a {testid("create-a-lead")} title="create lead" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
               Create a lead
             </a>
-          <% :jobs -> %>
+          <% "job" -> %>
             <a title="import job" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="import-job">
               Import existing job
             </a>
@@ -23,13 +23,13 @@
   </div>
 </header>
 
-<.search_sort_bar type={if @live_action == :jobs, do: "job", else: "lead"} sort_direction={@sort_direction} search_phrase={@search_phrase} selected_job={@selected_job} job_status={@job_status} job_type={@job_type} job_types={@job_types} sort_by={@sort_by} placeholder={if @live_action == :jobs, do: 'Search jobs...', else: 'Search leads...'} />
+<.search_sort_bar type={@type.singular} sort_direction={@sort_direction} search_phrase={@search_phrase} selected_job={@selected_job} job_status={@job_status} job_type={@job_type} job_types={@job_types} sort_by={@sort_by} placeholder={"Search #{@type.plural}..."} />
 
 <%= if Enum.empty? @jobs do %>
   <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none">
     <div></div> <%# flex in thirds %>
-    <%= case {@live_action, @stripe_status} do %>
-      <% {:leads, _stripe_status} -> %>
+    <%= case {@type.singular, @stripe_status} do %>
+      <% {"lead", _stripe_status} -> %>
         <%= if @search_phrase || @job_status !== "all" || @job_type !== "all" do %>
           <p class="text-center text-lg lg:text-2xl text-base-250">No leads match your search or filters.</p>
         <% else %>
@@ -39,8 +39,8 @@
             </a>
           </.empty_state_base>
           <% end %>
-      <% {:jobs, :loading} -> %>
-      <% {:jobs, _stripe_status} -> %>
+      <% {"job", :loading} -> %>
+      <% {"job", _stripe_status} -> %>
         <%= if @search_phrase || @job_status !== "all" || @job_type !== "all" do %>
           <p class="text-center text-lg lg:text-2xl text-base-250">No jobs match your search or filters.</p>
         <% else %>
@@ -55,14 +55,14 @@
 <% else %>
   <div class="p-6 center-container">
     <div class="hidden items-center sm:grid sm:grid-cols-6 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
-      <div class="sm:col-span-2"><%= if @live_action == :jobs, do: "Job ", else: "Lead "%>Information</div>
+      <div class="sm:col-span-2"><%= String.capitalize(@type.singular)%> Information</div>
       <div class="sm:col-span-2">Package</div>
       <div>Status</div>
     </div>
     <%= for job <- @jobs do %>
       <div {testid("job-row")} class="grid sm:grid-cols-6 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
         <div phx-click="view-job" phx-value-id={job.id} class="sm:col-span-2 flex flex-col">
-          <%= live_redirect to: Routes.job_path(@socket, if(job.job_status.is_lead, do: :leads, else: :jobs), job.id) do %>
+          <%= live_redirect to: Routes.job_path(@socket, String.to_atom(@type.plural), job.id) do %>
             <p class="text-blue-planning-300 font-bold underline hover:cursor-pointer capitalize"><%= job.client.name || "-" %></p>
             <p class="text-gray-400 italic font-normal text-sm"><%= (job |> Job.name()) || "-" %></p>
             <p class="text-gray-400 font-normal text-sm"><%= status_label(job, @current_user.time_zone) %></p>
@@ -79,7 +79,7 @@
         </div>
         <.status_badge class="w-fit" job={job}/>
         <hr class="sm:hidden border-gray-100 my-2" />
-        <.actions type={if(job.job_status.is_lead, do: "leads", else: "jobs")} job={job}/>
+        <.actions type={@type} job={job}/>
       </div>
     <% end %>
   </div>
