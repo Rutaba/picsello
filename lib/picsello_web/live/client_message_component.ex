@@ -86,7 +86,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           </.icon_button>
         <% end %>
       </div>
-      <hr class="my-2 sm:my-10" />
+      <hr class="my-4"/>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <div class="grid grid-flow-col gap-4 mt-2 auto-cols-fr">
