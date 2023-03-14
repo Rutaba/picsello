@@ -1,7 +1,7 @@
 defmodule PicselloWeb.JobLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  require Ecto.Query
+  import Ecto.Query
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
@@ -101,7 +101,7 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   @impl true
-  def handle_event("view-job", %{"id" => id}, %{assigns: %{jobs: jobs, type: type}} = socket) do
+  def handle_event("view-job", %{"id" => id}, %{assigns: %{type: type}} = socket) do
     socket
     |> push_redirect(
       to: Routes.job_path(socket, String.to_atom(type.plural), id)
@@ -119,7 +119,7 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   @impl true
-  def handle_event("view-galleries", %{"id" => id}, %{assigns: %{jobs: jobs, type: type}} = socket) do
+  def handle_event("view-galleries", %{"id" => id}, %{assigns: %{type: type}} = socket) do
     socket
     |> push_redirect(
       to: Routes.job_path(socket, String.to_atom(type.plural), id)
@@ -411,6 +411,7 @@ defmodule PicselloWeb.JobLive.Index do
         },
         pagination: pagination
       )
+      |> preload(:booking_proposals)
       |> Repo.all()
 
     socket
@@ -549,19 +550,27 @@ defmodule PicselloWeb.JobLive.Index do
     ]
   end
 
-  defp status_label(%{job_status: %{current_status: status}} = job, time_zone) do
-    case status do
-      :archived -> "Archived on #{get_date(job.updated_at, time_zone)}"
-      :completed -> "Completed on #{get_date(job.completed_at, time_zone)}"
-      :accepted -> "Awaiting on #{get_date(job.updated_at, time_zone)}"
-      :signed_with_questionnaire -> "Awaiting on #{get_date(job.updated_at, time_zone)}"
-      :signed_without_questionnaire -> "Pending on #{get_date(job.updated_at, time_zone)}"
-      :answered -> "Pending on #{get_date(job.updated_at, time_zone)}"
-      _ -> "Created on #{get_date(job.inserted_at, time_zone)}"
+  defp status_label(%{job_status: %{current_status: status}, booking_proposals: booking_proposals} = job, time_zone) do
+    booking_proposal = booking_proposals |> List.first()
+
+    cond do
+      status == :archived -> "Archived on #{format_date(job.archived_at, time_zone)}"
+      status == :completed -> "Completed on #{format_date(job.completed_at, time_zone)}"
+      status == :accepted -> "Awaiting on #{if(booking_proposal, do: booking_proposal.accepted_at, else: job.updated_at) |> format_date(time_zone)}"
+      status == :answered -> "Pending on #{format_date(job.updated_at, time_zone)}"
+      !job.package -> "Pending on #{format_date(job.updated_at, time_zone)}"
+      status == :sent -> "Created on #{format_date(job.updated_at, time_zone)}"
+      booking_proposal && !is_nil(booking_proposal.questionnaire_id) -> 
+        "Awaiting on #{signed_at(booking_proposal, job.updated_at) |> format_date(time_zone)}"
+      booking_proposal && is_nil(booking_proposal.questionnaire_id) -> 
+        "Pending on #{signed_at(booking_proposal, job.updated_at) |> format_date(time_zone)}"
+      true -> "Created on #{format_date(job.inserted_at, time_zone)}"
     end
   end
-
-  defp get_date(date, time_zone), do: date |> format_date(time_zone)
+  
+  defp signed_at(booking_proposal, date) do
+    if(booking_proposal && booking_proposal.signed_at, do: booking_proposal.signed_at, else: date)
+  end
 
   defp format_date(date, time_zone), do: strftime(time_zone, date, "%B %d, %Y")
 
