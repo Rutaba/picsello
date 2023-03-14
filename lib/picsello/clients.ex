@@ -82,10 +82,14 @@ defmodule Picsello.Clients do
       |> Repo.delete()
   end
 
+  def get_client_query(user, opts),
+    do:
+      Client
+      |> preload([:tags, :jobs])
+      |> where(^conditions(user, opts))
+
   def get_client(user, opts) do
-    Client
-    |> preload([:tags, :jobs])
-    |> where(^conditions(user, opts))
+    get_client_query(user, opts)
     |> Repo.one()
   end
 

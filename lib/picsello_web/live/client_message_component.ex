@@ -1,12 +1,12 @@
 defmodule PicselloWeb.ClientMessageComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  import Ecto.Query
+
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Picsello.{Repo, Job, Client, Clients}
+  alias Picsello.{Repo, Job, Clients}
 
   @default_assigns %{
     composed_event: :message_composed,
@@ -302,7 +302,11 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign(:search_phrase, nil)
   end
 
-  defp validate_email(email, type, %{assigns: %{recipients: recipients}} = socket) do
+  defp validate_email(
+         email,
+         type,
+         %{assigns: %{recipients: recipients, current_user: user}} = socket
+       ) do
     email_list =
       email
       |> String.downcase()
@@ -314,7 +318,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     valid_emails? =
       email_list
       |> Enum.all?(fn email ->
-        Repo.exists?(from c in Client, where: c.email == ^email)
+        Repo.exists?(Clients.get_client_query(user, email: email))
       end)
 
     if valid_emails? do

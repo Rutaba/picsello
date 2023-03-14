@@ -107,7 +107,7 @@ defmodule PicselloWeb.Live.ClientLive.OrderHistory do
   end
 
   defp get_client(%{assigns: %{current_user: user}} = socket, id) do
-    case Clients.get_client(user, [id: id]) do
+    case Clients.get_client(user, id: id) do
       nil ->
         socket |> redirect(to: "/clients")
 

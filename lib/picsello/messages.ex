@@ -129,7 +129,7 @@ defmodule Picsello.Messages do
       |> Enum.map(fn {type, recipients} ->
         recipients
         |> Enum.map(fn recipient ->
-          client = Clients.get_client(user, [email: recipient])
+          client = Clients.get_client(user, email: recipient)
 
           %{
             client_id: client.id,
