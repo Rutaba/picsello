@@ -212,4 +212,111 @@ defmodule Picsello.JobIndexTest do
     |> assert_text("Thank you! Your message has been sent. We’ll be in touch with you soon.")
     |> click(button("Close"))
   end
+
+  feature "searches the leads/jobs by client-name, client-contact or client-email", %{
+    session: session,
+    user: user
+  } do
+    preload_some_leads(user)
+
+    session
+    |> click(@leads_card)
+    |> assert_has(testid("search_filter_and_sort_bar", count: 1))
+    |> assert_has(testid("job-row", count: 4))
+    |> fill_in(css("#search_phrase_input"), with: "Elizabeth Taylor")
+    |> assert_has(testid("job-row", count: 1))
+    |> click(testid("close_search"))
+    |> fill_in(css("#search_phrase_input"), with: "taylor@example.com")
+    |> assert_has(testid("job-row", count: 1))
+    |> click(testid("close_search"))
+    |> fill_in(css("#search_phrase_input"), with: "(241) 567-2352")
+    |> assert_has(testid("job-row", count: 1))
+    |> click(testid("close_search"))
+    |> fill_in(css("#search_phrase_input"), with: "test@example.com")
+    |> assert_has(testid("job-row", count: 0))
+    |> assert_text("No leads match your search or filters.")
+
+    preload_some_jobs(user)
+
+    session
+    |> click(@jobs_card)
+    |> assert_has(testid("search_filter_and_sort_bar", count: 1))
+    |> assert_has(testid("job-row", count: 4))
+    |> fill_in(css("#search_phrase_input"), with: "Rachel Green")
+    |> assert_has(testid("job-row", count: 1))
+    |> click(testid("close_search"))
+    |> fill_in(css("#search_phrase_input"), with: "green@example.com")
+    |> assert_has(testid("job-row", count: 1))
+    |> click(testid("close_search"))
+    |> fill_in(css("#search_phrase_input"), with: "(241) 567-7352")
+    |> assert_has(testid("job-row", count: 1))
+    |> click(testid("close_search"))
+    |> fill_in(css("#search_phrase_input"), with: "test@example.com")
+    |> assert_has(testid("job-row", count: 0))
+    |> assert_text("No jobs match your search or filters.")
+  end
+
+  defp preload_some_leads(user) do
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "Elizabeth Taylor",
+        phone: "(210) 111-1234",
+        email: "taylor@example.com"
+      }
+    )
+
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "John Snow",
+        phone: "(241) 567-2352",
+        email: "johnsnow@example.com"
+      }
+    )
+
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "Michael Stark",
+        phone: "(442) 567-2321",
+        email: "michaelstark@example.com"
+      }
+    )
+  end
+
+  defp preload_some_jobs(user) do
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "Rachel Green",
+        phone: "(210) 111-1214",
+        email: "green@example.com"
+      },
+      type: "family",
+      package: %{shoot_count: 1})
+      |> promote_to_job()
+
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "Ross Geller",
+        phone: "(241) 567-7352",
+        email: "ross@example.com"
+      },
+      type: "wedding",
+      package: %{shoot_count: 3})
+      |> promote_to_job()
+
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "Joeshph Tribbiani",
+        phone: "(442) 567-2329",
+        email: "joey@example.com"
+      },
+      type: "event",
+      package: %{shoot_count: 1})
+      |> promote_to_job()
+  end
 end
