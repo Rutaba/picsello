@@ -215,7 +215,8 @@ defmodule PicselloWeb.FormHelpers do
         data_time_only: nil,
         data_custom_display_format: nil,
         data_custom_date_format: nil,
-        data_time_picker: nil
+        data_time_picker: nil,
+        disabled: nil
       })
 
     ~H"""
@@ -226,7 +227,7 @@ defmodule PicselloWeb.FormHelpers do
       </.input_label>
       <% end %>
       <div class="flatpickr" phx-update="ignore" phx-hook="DatePicker" id={@id} data-min-date={@data_min_date} data-time-only={@data_time_only} data-time-picker={@data_time_picker} data-custom-display-format={@data_custom_display_format} data-custom-date-format={@data_custom_date_format}>
-        <%= text_input @form, @field, class: @input_class, placeholder: @input_placeholder, data_input: true %>
+        <%= text_input @form, @field, class: @input_class, placeholder: @input_placeholder, data_input: true, disabled: @disabled %>
       </div>
     </div>
     """
