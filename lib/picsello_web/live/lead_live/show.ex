@@ -279,19 +279,6 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  def handle_info({:action_event, "confirm_archive_lead"}, socket) do
-    socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Get me out of here",
-      confirm_event: "archive",
-      confirm_label: "Yes, archive the lead",
-      icon: "warning-orange",
-      title: "Are you sure you want to archive this lead?"
-    })
-    |> noreply()
-  end
-
-  @impl true
   def handle_info(
         {:proposal_message_composed, message_changeset},
         %{assigns: %{job: job}} = socket
@@ -332,43 +319,6 @@ defmodule PicselloWeb.LeadLive.Show do
     end
   end
 
-  @impl true
-  def handle_info({:confirm_event, "archive"}, %{assigns: %{job: job}} = socket) do
-    case Picsello.Jobs.archive_lead(job) do
-      {:ok, job} ->
-        socket
-        |> assign_job(job.id)
-        |> close_modal()
-        |> put_flash(:success, "Lead archived")
-        |> noreply()
-
-      {:error, _} ->
-        socket
-        |> close_modal()
-        |> put_flash(:error, "Failed to archive lead. Please try again.")
-        |> noreply()
-    end
-  end
-
-  @impl true
-  def handle_info({:confirm_event, "unarchive-lead"}, %{assigns: %{job: job}} = socket) do
-    case Picsello.Jobs.unarchive_lead(job) do
-      {:ok, _job} ->
-        socket
-        |> assign_job(job.id)
-        |> close_modal()
-        |> put_flash(:success, "Lead has been unarchived")
-        |> redirect(to: Routes.job_path(socket, :leads, job.id))
-        |> noreply()
-
-      {:error, _} ->
-        socket
-        |> close_modal()
-        |> put_flash(:error, "Some error occurred")
-        |> noreply()
-    end
-  end
-
   def handle_info({:confirm_event, "edit_package"}, %{assigns: assigns} = socket) do
     socket
     |> open_modal(
@@ -378,6 +328,8 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign_disabled_copy_link()
     |> noreply()
   end
+
+  defdelegate handle_info(message, socket), to: JobLive.Shared
 
   @impl true
   def handle_info({:stripe_status, status}, socket) do

@@ -169,83 +169,17 @@ defmodule PicselloWeb.JobLive.Index do
   end
 
   @impl true
-  def handle_event("confirm-archive-lead", %{"id" => job_id}, socket) do
-    socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Get me out of here",
-      confirm_event: "archive-lead",
-      confirm_label: "Yes, archive the lead",
-      icon: "warning-orange",
-      title: "Are you sure you want to archive this lead?",
-      payload: %{job_id: job_id}
-    })
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("confirm_unarchive_lead", %{"id" => job_id}, socket) do
-    socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Get me out of here",
-      confirm_event: "unarchive-lead",
-      confirm_label: "Yes, unarchive the lead",
-      icon: "warning-orange",
-      title: "Are you sure you want to unarchive this lead?",
-      payload: %{job_id: job_id}
-    })
-    |> noreply()
-  end
-
-  @impl true
   def handle_event("page", %{}, socket), do: socket |> noreply()
 
   @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
-  defdelegate handle_event(event, params, socket), to: JobHistory
+  defdelegate handle_event(event, params, socket), to: JobLive.Shared
 
   @impl true
   def handle_info({:stripe_status, status}, socket) do
     socket |> assign(stripe_status: status) |> noreply()
-  end
-
-  def handle_info({:confirm_event, "archive-lead", %{job_id: job_id}}, socket) do
-    job = Jobs.get_job_by_id(job_id)
-
-    case Jobs.archive_lead(job) do
-      {:ok, _job} ->
-        socket
-        |> close_modal()
-        |> put_flash(:success, "Lead has been archived")
-        |> redirect(to: Routes.job_path(socket, :leads))
-        |> noreply()
-
-      {:error, _} ->
-        socket
-        |> close_modal()
-        |> put_flash(:error, "Some error occurred")
-        |> noreply()
-    end
-  end
-
-  def handle_info({:confirm_event, "unarchive-lead", %{job_id: job_id}}, socket) do
-    job = Jobs.get_job_by_id(job_id)
-
-    case Jobs.unarchive_lead(job) do
-      {:ok, _job} ->
-        socket
-        |> close_modal()
-        |> put_flash(:success, "Lead has been unarchived")
-        |> redirect(to: Routes.job_path(socket, :leads))
-        |> noreply()
-
-      {:error, _} ->
-        socket
-        |> close_modal()
-        |> put_flash(:error, "Some error occurred")
-        |> noreply()
-    end
   end
 
   defdelegate handle_info(message, socket), to: JobLive.Shared
@@ -260,14 +194,14 @@ defmodule PicselloWeb.JobLive.Index do
       </button>
 
       <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
-        <%= for %{title: title, action: action, icon: icon} <- actions(), (@type.plural == "jobs" and action != "confirm-archive-lead") || (@type.plural == "leads" and action not in ["complete-job", "view-galleries"]) do %>
-          <button title={title} type="button" phx-click={action} phx-value-id={@job.id} class={classes("flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100", %{"hidden" => @job.job_status.current_status == :archived and action == "confirm-archive-lead"})}>
+        <%= for %{title: title, action: action, icon: icon} <- actions(), (@type.plural == "jobs") || (@type.plural == "leads" and action not in ["complete-job", "view-galleries"]) do %>
+          <button title={title} type="button" phx-click={action} phx-value-id={@job.id} class={classes("flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100", %{"hidden" => @job.job_status.current_status == :archived and icon == "trash"})}>
             <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
             <%= title %>
           </button>
         <% end %>
         <%= if @job.job_status.current_status == :archived do %>
-            <button title="Unarchive" type="button" phx-click="confirm_unarchive_lead" phx-value-id={@job.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
+            <button title="Unarchive" type="button" phx-click="confirm-archive-unarchive" phx-value-id={@job.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100">
               <.icon name="plus" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
               Unarchive
             </button>
@@ -546,7 +480,7 @@ defmodule PicselloWeb.JobLive.Index do
       %{title: "Go to galleries", action: "view-galleries", icon: "photos-2"},
       %{title: "Send email", action: "open-compose", icon: "envelope"},
       %{title: "Complete", action: "complete-job", icon: "checkcircle"},
-      %{title: "Archive", action: "confirm-archive-lead", icon: "trash"}
+      %{title: "Archive", action: "confirm-archive-unarchive", icon: "trash"}
     ]
   end
 

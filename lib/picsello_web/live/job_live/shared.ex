@@ -18,6 +18,7 @@ defmodule PicselloWeb.JobLive.Shared do
   alias Picsello.{
     Galleries,
     Job,
+    Jobs,
     Client,
     Shoot,
     ClientMessage,
@@ -30,7 +31,7 @@ defmodule PicselloWeb.JobLive.Shared do
     Galleries.Workers.PhotoStorage,
     Utils
   }
-
+  alias PicselloWeb.ConfirmationComponent
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias PicselloWeb.Router.Helpers, as: Routes
 
@@ -111,6 +112,26 @@ defmodule PicselloWeb.JobLive.Shared do
       ),
       do: open_email_compose(socket, client_id)
 
+  def handle_event(
+        "open-compose",
+        %{},
+        %{assigns: %{index: index, jobs: jobs}} = socket
+      ),
+      do:
+        socket
+        |> assign(:job, Enum.at(jobs, index))
+        |> open_email_compose()
+
+  def handle_event(
+        "open-compose",
+        %{"id" => id},
+        %{assigns: %{jobs: jobs}} = socket
+      ),
+      do:
+        socket
+        |> assign(:job, Enum.find(jobs, fn job -> job.id == to_integer(id) end))
+        |> open_email_compose()
+
   def handle_event("open-compose", %{"id" => id}, socket), do: open_email_compose(socket, id)
 
   def handle_event(
@@ -131,7 +152,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_event("delete_document", %{"name" => name, "document_id" => id} = _params, socket) do
     socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
+    |> ConfirmationComponent.open(%{
       close_label: "No, go back",
       confirm_event: "delete_docs",
       confirm_label: "Yes, delete",
@@ -323,6 +344,48 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_event("complete-job", %{}, %{assigns: %{index: index, jobs: jobs}} = socket) do
+    socket
+    |> assign(:job, Enum.at(jobs, index))
+    |> assign(:request_from, :clients)
+    |> complete_job_component()
+    |> noreply()
+  end
+
+  def handle_event("complete-job", %{"id" => id}, %{assigns: %{jobs: jobs}} = socket) do
+    socket
+    |> assign(:job, Enum.find(jobs, fn job -> job.id == to_integer(id) end))
+    |> assign(:request_from, :jobs)
+    |> complete_job_component()
+    |> noreply()
+  end
+
+  def handle_event(
+        "confirm-archive-unarchive",
+        %{"id" => job_id},
+        %{assigns: %{jobs: jobs}} = socket
+      ) do
+    job = Enum.find(jobs, fn job -> job.id == to_integer(job_id) end)
+    IO.inspect(job.job_status)
+    action_string = if job.job_status.current_status == :archived, do: "unarchive", else: "archive"
+    type = if(job.job_status.is_lead, do: "lead", else: "job")
+
+    socket
+    |> ConfirmationComponent.open(%{
+      close_label: "No! Get me out of here",
+      confirm_event: "#{action_string}-entity",
+      confirm_label:
+        "Yes, #{action_string} the #{type}",
+      icon: "warning-orange",
+      title:
+        "Are you sure you want to #{action_string} this #{type}?",
+      payload: %{job_id: job_id}
+    })
+    |> noreply()
+  end
+
+  def handle_info({:confirm_event, "send_another"}, socket), do: open_email_compose(socket)
+
   def handle_info({:action_event, "open_email_compose"}, socket),
     do: open_email_compose(socket, socket.assigns.client.id)
 
@@ -339,6 +402,79 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign(:job, job)
     |> put_flash(:success, "Document deleted successfully!")
     |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "complete_job"},
+        %{assigns: %{job: job, request_from: request_from}} = socket
+      ) do
+    case job |> Job.complete_changeset() |> Repo.update() do
+      {:ok, job} ->
+        socket
+        |> assign(:job, job)
+        |> put_flash(:success, "Job completed")
+        |> push_redirect(
+          to:
+            if(request_from == :jobs,
+              do: Routes.job_path(socket, :jobs),
+              else: Routes.client_path(socket, :job_history, job.client_id)
+            )
+        )
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:error, "Failed to complete job. Please try again.")
+    end
+    |> close_modal()
+    |> noreply()
+  end
+
+  def handle_info({:confirm_event, "archive-entity", %{job_id: job_id}}, %{assigns: %{jobs: jobs} = assigns} = socket) do
+    job = Enum.find(jobs, fn job -> job.id == to_integer(job_id) end)
+
+    case Jobs.archive_lead(job) do
+      {:ok, _job} ->
+        socket
+        |> close_modal()
+        |> put_flash(
+          :success,
+          "#{if job.job_status.is_lead == true, do: "Lead", else: "Job"} has been archived"
+        )
+        |> redirect(to: (if Map.has_key?(assigns, :type), do: Routes.job_path(socket, String.to_atom(assigns.type.plural)), else: Routes.client_path(socket, :job_history, job.client_id)))
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:error, "Failed to archive, please try again")
+        |> noreply()
+    end
+  end
+
+  def handle_info(
+        {:confirm_event, "unarchive-entity", %{job_id: job_id}},
+        %{assigns: %{jobs: jobs} = assigns} = socket
+      ) do
+    job = Enum.find(jobs, fn job -> job.id == to_integer(job_id) end)
+
+    case Jobs.unarchive_lead(job) do
+      {:ok, _job} ->
+        socket
+        |> close_modal()
+        |> put_flash(
+          :success,
+          "#{if job.job_status.is_lead == true, do: "Lead", else: "Job"} has been unarchived"
+        )
+        |> redirect(to: (if Map.has_key?(assigns, :type), do: Routes.job_path(socket, String.to_atom(assigns.type.plural)), else: Routes.client_path(socket, :job_history, job.client_id)))
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> close_modal()
+        |> put_flash(:error, "Failed to unarchive, please try again")
+        |> noreply()
+    end
   end
 
   def handle_info({:confirm_event, "edit_package", %{assigns: assigns}}, socket) do
@@ -358,7 +494,7 @@ defmodule PicselloWeb.JobLive.Shared do
     with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
          {:ok, _email} <- ClientNotifier.deliver_email(message, client.email) do
       socket
-      |> PicselloWeb.ConfirmationComponent.open(%{
+      |> ConfirmationComponent.open(%{
         title: "Email sent",
         subtitle: "Yay! Your email has been successfully sent"
       })
@@ -1430,6 +1566,19 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
   end
 
+  defp complete_job_component(socket),
+  do:
+    socket
+    |> ConfirmationComponent.open(%{
+        confirm_event: "complete_job",
+        confirm_label: "Yes, complete",
+        confirm_class: "btn-primary",
+        subtitle:
+          "After you complete the job this becomes read-only. This action cannot be undone.",
+        title: "Are you sure you want to complete this job?",
+        icon: "warning-blue"
+      })
+
   defp do_assign_job(socket, job) do
     galleries =
       job.id
@@ -1449,6 +1598,19 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_proposal()
     |> assign_inbox_count()
   end
+
+  defp open_email_compose(%{assigns: %{job: job}} = socket),
+    do:
+      socket
+      |> ClientMessageComponent.open(%{
+        modal_title: "Send an email",
+        show_client_email: true,
+        show_subject: true,
+        presets: [],
+        send_button: "Send",
+        client: Job.client(job)
+      })
+      |> noreply()
 
   defp open_email_compose(%{assigns: %{current_user: current_user}} = socket, client_id) do
     client = Repo.get(Client, client_id)
