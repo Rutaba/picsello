@@ -707,7 +707,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <%= unless input_value(p, :interval) do %>
               <%= if input_value(p, :due_at) || ((input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(default_payment_changeset, :interval, p.index)) do %>
                 <div class="flex flex-col my-2 ml-8 cursor-pointer">
-                  <.date_picker_field class="w-full px-4 text-lg cursor-pointer" id={"payment-interval-#{p.index}"} form={p} field={:due_at} input_placeholder="mm/dd/yyyy" input_label="Payment Date" data_min_data={Date.utc_today()} data_selected_date={input_value(p, :due_at)} />
+                  <.date_picker_field class="w-full px-4 text-lg cursor-pointer" id={"payment-interval-#{p.index}"} form={p} field={:due_at} input_placeholder="mm/dd/yyyy" input_label="Payment Date" data_min_data={Date.utc_today()} />
                   <%= if message = p.errors[:schedule_date] do %>
                     <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
                   <% end %>
