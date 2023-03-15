@@ -65,7 +65,7 @@ defmodule Picsello.Subscriptions do
           |> SubscriptionPromotionCode.changeset()
           |> Repo.insert!(
             conflict_target: [:stripe_promotion_code_id],
-            on_conflict: {:replace, [:code, :updated_at, :percent_off]}
+            on_conflict: {:replace, [:code, :updated_at]}
           )
         end
 
