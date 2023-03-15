@@ -67,6 +67,10 @@ export default {
 
             // if showDirectoryPicker is supported by browser
             if (supportsFileSystemAccess) {
+                files = [];
+                subFolders = []
+                folderName = '';
+
                 const types = [{ description: 'Directories', accept: { 'directory': 'application/x-directory' } }];
                 const directoryPicker = await window.showDirectoryPicker({ types: types });
                 folderName = directoryPicker.name;
@@ -91,6 +95,10 @@ export default {
                 }
             } else {
                 // Going on conventional way of inputting directories
+                files = [];
+                subFolders = []
+                folderName = '';
+
                 const directoryPicker = await handleFallbackDirectoryPicker();
 
                 for (const file of directoryPicker.target.files) {
@@ -102,7 +110,7 @@ export default {
                     // incase file exists in a subfolder
                     if (filename.length == 3) {
                         let directoryName = `${uuidv4()}-dsp-${filename[1]}`
-                        const exists = subFolders.find(x => x.match(filename[1]))
+                        const exists = subFolders.find(x => x.includes(`-dsp-${filename[1]}`))
 
                         if (!exists) subFolders.push(directoryName);
 
