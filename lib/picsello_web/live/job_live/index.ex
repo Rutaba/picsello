@@ -3,10 +3,8 @@ defmodule PicselloWeb.JobLive.Index do
   use PicselloWeb, :live_view
   import Ecto.Query
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
-  import PicselloWeb.PackageLive.Shared, only: [current: 1]
+  import PicselloWeb.Shared.CustomPagination, only: [pagination_component: 1, assign_pagination: 2, update_pagination: 2, reset_pagination: 2]
 
-  import PicselloWeb.Live.Shared.CustomPagination,
-    only: [assign_pagination: 2, update_pagination: 2, reset_pagination: 2, pagination_index: 2]
 
   alias Ecto.Changeset
   alias Picsello.{Job, Jobs, Repo, Payments}
@@ -244,7 +242,7 @@ defmodule PicselloWeb.JobLive.Index do
                 <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
                 class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
 
-                  <button id={option.id} class={classes("album-select", %{"w-64" => @id == "status", "w-40" => @id != "status"})} phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
+                  <button id={"btn-#{option.id}"} class={classes("album-select", %{"w-64" => @id == "status", "w-40" => @id != "status"})} phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
                   <%= if option.id == @selected_option do %>
                     <.icon name="tick" class="w-6 h-5 ml-auto mr-1 toggle-it text-green" />
                   <% end %>
@@ -301,7 +299,7 @@ defmodule PicselloWeb.JobLive.Index do
 
   defp reassign_pagination_and_jobs(socket) do
     socket
-    |> reset_pagination(%{limit: @default_pagination_limit, total_count: job_count(socket)})
+    |> reset_pagination(%{limit: @default_pagination_limit, last_index: @default_pagination_limit, total_count: job_count(socket)})
     |> assign_jobs()
     |> noreply()
   end
@@ -346,7 +344,7 @@ defmodule PicselloWeb.JobLive.Index do
 
     socket
     |> assign(jobs: jobs)
-    |> reset_pagination(%{
+    |> update_pagination(%{
       total_count:
         if(pagination.total_count == 0,
           do: job_count(socket),
