@@ -37,10 +37,9 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign_new(:bcc_email_error, fn -> nil end)
     |> assign_new(:cc_email_error, fn -> nil end)
     |> assign_new(:to_email_error, fn -> nil end)
-    |> assign_new(:changeset, fn ->
-      assigns
-      |> Map.take([:subject, :body_text, :body_html])
-      |> Picsello.ClientMessage.create_outbound_changeset()
+    |> then(fn %{assigns: assigns} = socket ->
+      socket
+      |> assign_changeset(:validate, Map.take(assigns, [:subject, :body_text, :body_html]))
     end)
     |> then(fn socket -> assign_presets(socket) end)
     |> then(fn
@@ -89,15 +88,13 @@ defmodule PicselloWeb.ClientMessageComponent do
       <hr class="my-4"/>
 
       <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-        <div class="grid grid-flow-col gap-4 mt-2 auto-cols-fr">
+        <div class="grid grid-flow-row md:grid-flow-col md:auto-cols-fr md:gap-4 mt-2">
           <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
           <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "h-12", phx_debounce: "500" %>
         </div>
 
         <label class="block mt-4 input-label" for="editor">Message</label>
-        <span phx-click="update-html" phx-target={@myself}>
-          <.quill_input f={f} html_field={:body_html} text_field={:body_text} enable_size={@enable_size} enable_image={@enable_image} current_user={@current_user} />
-        </span>
+        <.quill_input f={f} html_field={:body_html} text_field={:body_text} enable_size={@enable_size} enable_image={@enable_image} current_user={@current_user} />
         <.footer>
           <button class="btn-primary px-11" title="save" type="submit" disabled={!@changeset.valid? || @to_email_error || @cc_email_error || @bcc_email_error} phx-disable-with="Sending...">
             <%= @send_button %>
@@ -110,15 +107,6 @@ defmodule PicselloWeb.ClientMessageComponent do
       </.form>
     </div>
     """
-  end
-
-  @impl true
-  def handle_event("update-html", _, %{assigns: %{changeset: changeset}} = socket) do
-    socket
-    |> push_event("quill:update", %{
-      "html" => changeset |> current() |> Map.get(:body_html)
-    })
-    |> noreply()
   end
 
   @impl true
@@ -139,14 +127,12 @@ defmodule PicselloWeb.ClientMessageComponent do
   @impl true
   def handle_event("add-to", %{"client-email" => email}, socket) do
     prepend_email(email, "to", socket)
-    |> add_or_remove_client_name()
     |> noreply()
   end
 
   @impl true
   def handle_event("add-cc", %{"client-email" => email}, socket) do
     prepend_email(email, "cc", socket)
-    |> add_or_remove_client_name()
     |> assign(:show_cc, true)
     |> noreply()
   end
@@ -154,7 +140,6 @@ defmodule PicselloWeb.ClientMessageComponent do
   @impl true
   def handle_event("add-bcc", %{"client-email" => email}, socket) do
     prepend_email(email, "bcc", socket)
-    |> add_or_remove_client_name()
     |> assign(:show_bcc, true)
     |> noreply()
   end
@@ -179,7 +164,6 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign(:show_cc, false)
     |> assign(:recipients, Map.put(recipients, "cc", []))
     |> assign(:cc_email_error, nil)
-    |> add_or_remove_client_name()
     |> noreply()
   end
 
@@ -189,7 +173,6 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign(:show_bcc, false)
     |> assign(:recipients, Map.put(recipients, "bcc", []))
     |> assign(:bcc_email_error, nil)
-    |> add_or_remove_client_name()
     |> noreply()
   end
 
@@ -214,8 +197,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       end
 
     socket
-    |> assign_changeset(:validate, %{subject: preset.subject_template, body: preset.body_template})
-    |> add_or_remove_client_name()
+    |> assign_changeset(:validate, %{subject: preset.subject_template, body_html: preset.body_template})
     |> then(fn %{assigns: %{changeset: changeset}} = socket ->
       socket
       |> push_event("quill:update", %{
@@ -229,7 +211,6 @@ defmodule PicselloWeb.ClientMessageComponent do
   def handle_event("validate", %{"client_message" => params}, socket) do
     socket
     |> assign_changeset(:validate, params)
-    |> add_or_remove_client_name()
     |> noreply()
   end
 
@@ -279,8 +260,10 @@ defmodule PicselloWeb.ClientMessageComponent do
          action,
          params
        ) do
+    params = params |> Map.replace(:body_html, remove_client_name(socket, Map.get(params, :body_html)))
     changeset =
-      params |> Picsello.ClientMessage.create_outbound_changeset() |> Map.put(:action, action)
+      params
+      |> Picsello.ClientMessage.create_outbound_changeset() |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
   end
@@ -332,59 +315,27 @@ defmodule PicselloWeb.ClientMessageComponent do
       )
     end
     |> assign(:recipients, Map.put(recipients, type, email_list))
-    |> add_or_remove_client_name()
     |> noreply()
   end
 
-  defp add_or_remove_client_name(
-         %{assigns: %{recipients: recipients, changeset: changeset, client: client}} = socket
+  defp remove_client_name(
+         %{assigns: %{client: client}} = _socket,
+         body_html
        ) do
-    no_of_recipients =
-      length(Map.get(recipients, "to")) + length(Map.get(recipients, "cc", [])) +
-        length(Map.get(recipients, "bcc", []))
+    if body_html do
+      greeting = body_html |> String.split() |> hd() |> String.replace("<p>", "")
 
-    message = changeset |> current()
-
-    greeting =
-      cond do
-        Map.get(message, :body_text) ->
-          message.body_text |> String.split() |> hd()
-
-        Map.get(message, :body_html) ->
-          message.body_html |> String.split() |> hd() |> String.replace("<p>", "")
-
-        true ->
-          nil
-      end
-
-    changeset =
-      if greeting && no_of_recipients > 1 do
-        changeset
-        |> update_email_body(greeting, client.name, {:body_text, message.body_text})
-        |> update_email_body(greeting, client.name, {:body_html, message.body_html})
-      else
-        changeset
-      end
-
-    socket
-    |> assign(:changeset, changeset)
+      if greeting,
+      do:
+        String.replace(
+        body_html,
+        "#{greeting} #{client.name |> String.split() |> hd()}",
+        "#{greeting}"
+        ),
+      else:
+        body_html
+    end
   end
-
-  defp update_email_body(changeset, greeting, client_name, {key, value}),
-    do:
-      if(is_nil(value),
-        do: changeset,
-        else:
-          Ecto.Changeset.put_change(
-            changeset,
-            key,
-            String.replace(
-              value,
-              "#{greeting} #{client_name |> String.split() |> hd()}",
-              "#{greeting}"
-            )
-          )
-      )
 
   defp email_buttons() do
     [
