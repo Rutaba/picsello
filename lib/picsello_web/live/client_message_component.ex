@@ -186,7 +186,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         %{assigns: %{presets: presets, job: job}} = socket
       ) do
     preset =
-      case Integer.parse(preset_id) |> IO.inspect do
+      case Integer.parse(preset_id) do
         :error ->
           %{subject_template: "", body_template: ""}
 
@@ -197,7 +197,10 @@ defmodule PicselloWeb.ClientMessageComponent do
       end
 
     socket
-    |> assign_changeset(:validate, %{subject: preset.subject_template, body_html: preset.body_template})
+    |> assign_changeset(:validate, %{
+      subject: preset.subject_template,
+      body_html: preset.body_template
+    })
     |> push_event("quill:update", %{"html" => preset.body_template})
     |> noreply()
   end
@@ -255,10 +258,11 @@ defmodule PicselloWeb.ClientMessageComponent do
          action,
          params
        ) do
-    params = params |> Map.replace(:body_html, remove_client_name(socket, Map.get(params, :body_html)))
+    params =
+      params |> Map.replace(:body_html, remove_client_name(socket, Map.get(params, :body_html)))
+
     changeset =
-      params
-      |> Picsello.ClientMessage.create_outbound_changeset() |> Map.put(:action, action)
+      params |> Picsello.ClientMessage.create_outbound_changeset() |> Map.put(:action, action)
 
     assign(socket, changeset: changeset)
   end
@@ -269,7 +273,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   defp assign_presets(socket), do: socket
 
   defp re_assign_clients(%{assigns: %{recipients: recipients, clients: clients}} = socket) do
-    email_list = recipients |> Map.values() |> List.flatten() |> IO.inspect()
+    email_list = recipients |> Map.values() |> List.flatten()
 
     socket
     |> assign(:clients, Enum.filter(clients, fn c -> c.email not in email_list end))
@@ -326,20 +330,16 @@ defmodule PicselloWeb.ClientMessageComponent do
          %{assigns: %{client: client}} = _socket,
          body_html
        ) do
-    if !blank?(body_html) do
+    if blank?(body_html) do
+      body_html
+    else
       greeting = body_html |> String.split() |> hd() |> String.replace("<p>", "")
 
-      if greeting,
-      do:
-        String.replace(
+      String.replace(
         body_html,
         "#{greeting} #{client.name |> String.split() |> hd()}",
         "#{greeting}"
-        ),
-      else:
-        body_html
-    else
-      body_html
+      )
     end
   end
 

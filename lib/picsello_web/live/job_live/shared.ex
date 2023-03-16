@@ -148,8 +148,7 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def handle_event("search", %{"search_phrase" => search_phrase}, socket) do
-    if blank?(search_phrase)
-    do
+    if blank?(search_phrase) do
       socket
       |> assign(:search_phrase, nil)
     else
