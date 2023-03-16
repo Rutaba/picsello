@@ -1,3 +1,4 @@
+<%= if @show_page == "false" do %>
   <header>
     <div class="px-6 pt-6 pb-2 center-container">
       <.crumbs>
@@ -129,3 +130,4 @@
     <div phx-hook="SetGalleryCookie" data-gallery-type={@new_gallery.type} id="set-gallery-cookie"></div>
   <% end %>
 </div>
+<% end %>

@@ -33,7 +33,7 @@
                             <% end %>
                         </button>
                     </div>
-                    <hr class="block md:hidden base-250 w-full my-4"/>
+                    <hr class={classes("block md:hidden base-250 w-full my-4", %{"hidden" => job.job_status.is_lead})}/>
                     <div class="flex flex-cols md:col-span-2 lg:col-span-1 align-top md:w-auto w-full items-center md:text-sm lg:text-base">
                         <a phx-click="create-gallery" phx-value-job_id={job.id} class={classes("items-center text-center h-fit mr-2 py-1 px-4 font-sans border rounded-lg hover:cursor-pointer hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"hidden" => job.job_status.is_lead})}>
                             Go to Gallery

@@ -212,9 +212,9 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
           <%= Calendar.strftime(@job.inserted_at, "%m/%d/%y") %>
         </div>
         <div class={"font-bold w-full"}>
-          <%= live_redirect to: Routes.job_path(@socket, if(@job.job_status.is_lead, do: :leads, else: :jobs), @job.id, %{"request_from" => "job_history"}) do %>
-          <span class={classes("w-full text-blue-planning-300 underline", %{"truncate" => String.length(Job.name(@job)) > 29})}><%= Job.name(@job) %></span>
-          <% end %>
+          <a href={Routes.job_path(@socket, if(@job.job_status.is_lead, do: :leads, else: :jobs), @job.id, %{"request_from" => "job_history", "expired" => not is_nil(@job.archived_at)})} target="_blank">
+            <span class={classes("w-full text-blue-planning-300 underline", %{"truncate" => String.length(Job.name(@job)) > 29})}><%= Job.name(@job) %></span>
+          </a>
         </div>
         <%= if @job.package do %>
           <div class="text-base-250 font-normal"><%= @job.package.name %></div>

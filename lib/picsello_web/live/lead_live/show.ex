@@ -39,6 +39,15 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign_stripe_status()
     |> assign(include_questionnaire: true)
     |> assign(:request_from, assigns["request_from"])
+    |> assign(:show_page, assigns["expired"])
+    |> then(fn %{assigns: %{show_page: show_page}} = socket ->
+      if show_page == "true" do
+        socket
+        |> put_flash(:error, "This lead is not available anymore")
+      else
+        socket
+      end
+    end)
     |> assign_job(job_id)
     |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
