@@ -35,7 +35,7 @@
                     </div>
                     <hr class="block md:hidden base-250 w-full my-4"/>
                     <div class="flex flex-cols md:col-span-2 lg:col-span-1 align-top md:w-auto w-full items-center md:text-sm lg:text-base">
-                        <a phx-click="create-gallery" phx-value-job_id={job.id} class="items-center text-center h-fit mr-2 py-1 px-4 font-sans border rounded-lg hover:cursor-pointer hover:opacity-75 border-blue-planning-300 text-blue-planning-300"}>
+                        <a phx-click="create-gallery" phx-value-job_id={job.id} class={classes("items-center text-center h-fit mr-2 py-1 px-4 font-sans border rounded-lg hover:cursor-pointer hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"hidden" => job.job_status.is_lead})}>
                             Go to Gallery
                         </a>
                         <button type="button" class={classes("action h-fit md:flex hidden justify-center py-2 px-1 ml-2 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pr-2" => @index == job_index})} aria-expanded="true"  aria-hidden="true" aria-haspopup="true" phx-click="show_dropdown" phx-value-show_index={job_index}>
