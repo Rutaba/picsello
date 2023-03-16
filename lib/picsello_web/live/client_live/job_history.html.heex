@@ -53,12 +53,13 @@
                                     <% !job.job_status.is_lead and is_nil(job.completed_at) and is_nil(job.archived_at) -> %>
                                         <.dropdown_item {assigns} icon="checkcircle" title="Complete Job" link={[phx_click: "complete-job"]} />
                                         <.dropdown_item {assigns} icon="trash" title="Archive Job" link={[phx_click: "confirm-archive-unarchive", phx_value_id: job.id]} />
-                                    <% !job.job_status.is_lead and is_nil(job.completed_at) and job.archived_at -> %>
+                                    <% !job.job_status.is_lead and job.archived_at -> %>
                                         <.dropdown_item {assigns} class="text-blue-planning-300" icon="plus" title="Unarchive Job" link={[phx_click: "confirm-archive-unarchive", phx_value_id: job.id]} />
                                     <% job.job_status.is_lead and is_nil(job.archived_at) -> %>
                                         <.dropdown_item {assigns} icon="trash" title="Archive Lead" link={[phx_click: "confirm-archive-unarchive", phx_value_id: job.id]} />
-                                    <% true -> %>
+                                    <% job.job_status.is_lead and job.job_status.current_status == :archived -> %>
                                         <.dropdown_item {assigns} class="text-blue-planning-300" icon="plus" title="Unarchive Lead" link={[phx_click: "confirm-archive-unarchive", phx_value_id: job.id]} />
+                                    <% true -> %>
                                 <% end %>
                             </div>
                         </div>

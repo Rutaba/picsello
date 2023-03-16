@@ -189,7 +189,7 @@ defmodule PicselloWeb.JobLive.Index do
 
       <div class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
         <%= for %{title: title, action: action, icon: icon} <- actions(), (@type.plural == "jobs") || (@type.plural == "leads" and action not in ["complete-job", "view-galleries"]) do %>
-          <button title={title} type="button" phx-click={action} phx-value-id={@job.id} class={classes("flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100", %{"hidden" => @job.job_status.current_status == :archived and icon == "trash"})}>
+          <button title={title} type="button" phx-click={action} phx-value-id={@job.id} class={classes("flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100", %{"hidden" => hide_action?(@job, icon)})}>
             <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
             <%= title %>
           </button>
@@ -477,6 +477,10 @@ defmodule PicselloWeb.JobLive.Index do
       %{title: "Archive", action: "confirm-archive-unarchive", icon: "trash"}
     ]
   end
+
+  defp hide_action?(job, icon),
+  do:
+    (job.job_status.current_status == :archived || job.job_status.current_status == :completed) and (icon == "trash" || icon == "checkcircle")
 
   defp status_label(
          %{job_status: %{current_status: status}, booking_proposals: booking_proposals} = job,
