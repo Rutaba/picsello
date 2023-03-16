@@ -53,7 +53,7 @@ defmodule Picsello.Subscriptions do
   end
 
   def sync_subscription_promotion_codes() do
-    case Payments.list_promotion_codes(%{active: true}) do
+    case Payments.list_promotion_codes(%{active: true, limit: 100}) do
       {:ok, %{data: promotion_codes}} ->
         for %{code: code, coupon: %{id: id, percent_off: percent_off}} <-
               promotion_codes do
