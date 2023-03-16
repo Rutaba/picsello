@@ -4,7 +4,6 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
-  import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
   alias Picsello.{Repo, Job, Clients}
 
@@ -26,10 +25,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
     |> assign(:client, client)
-    |> assign_new(:clients, fn ->
-      Clients.find_all_by(user: current_user)
-      |> Enum.filter(fn c -> c.email != email end)
-    end)
+    |> assign(:clients, Clients.find_all_by(user: current_user))
     |> assign(:recipients, %{"to" => [email]})
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
@@ -41,7 +37,11 @@ defmodule PicselloWeb.ClientMessageComponent do
       socket
       |> assign_changeset(:validate, Map.take(assigns, [:subject, :body_text, :body_html]))
     end)
-    |> then(fn socket -> assign_presets(socket) end)
+    |> then(fn socket ->
+      socket
+      |> assign_presets()
+      |> re_assign_clients()
+    end)
     |> then(fn
       %{assigns: %{presets: [_ | _] = presets}} = socket ->
         assign(socket, preset_options: [{"none", ""} | Enum.map(presets, &{&1.name, &1.id})])
@@ -96,7 +96,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         <label class="block mt-4 input-label" for="editor">Message</label>
         <.quill_input f={f} html_field={:body_html} text_field={:body_text} enable_size={@enable_size} enable_image={@enable_image} current_user={@current_user} />
         <.footer>
-          <button class="btn-primary px-11" title="save" type="submit" disabled={!@changeset.valid? || @to_email_error || @cc_email_error || @bcc_email_error} phx-disable-with="Sending...">
+          <button class="btn-primary px-11" title={@send_button} type="submit" disabled={!@changeset.valid? || @to_email_error || @cc_email_error || @bcc_email_error} phx-disable-with="Sending...">
             <%= @send_button %>
           </button>
 
@@ -186,7 +186,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         %{assigns: %{presets: presets, job: job}} = socket
       ) do
     preset =
-      case Integer.parse(preset_id) do
+      case Integer.parse(preset_id) |> IO.inspect do
         :error ->
           %{subject_template: "", body_template: ""}
 
@@ -198,12 +198,7 @@ defmodule PicselloWeb.ClientMessageComponent do
 
     socket
     |> assign_changeset(:validate, %{subject: preset.subject_template, body_html: preset.body_template})
-    |> then(fn %{assigns: %{changeset: changeset}} = socket ->
-      socket
-      |> push_event("quill:update", %{
-        "html" => changeset |> current() |> Map.get(:body_html)
-      })
-    end)
+    |> push_event("quill:update", %{"html" => preset.body_template})
     |> noreply()
   end
 
@@ -273,6 +268,13 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   defp assign_presets(socket), do: socket
 
+  defp re_assign_clients(%{assigns: %{recipients: recipients, clients: clients}} = socket) do
+    email_list = recipients |> Map.values() |> List.flatten() |> IO.inspect()
+
+    socket
+    |> assign(:clients, Enum.filter(clients, fn c -> c.email not in email_list end))
+  end
+
   defp prepend_email(email, type, %{assigns: %{recipients: recipients}} = socket) do
     email_list =
       recipients
@@ -281,6 +283,7 @@ defmodule PicselloWeb.ClientMessageComponent do
 
     socket
     |> assign(:recipients, Map.put(recipients, type, email_list))
+    |> then(fn socket -> socket |> re_assign_clients() end)
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
   end
@@ -315,6 +318,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       )
     end
     |> assign(:recipients, Map.put(recipients, type, email_list))
+    |> then(fn socket -> re_assign_clients(socket) end)
     |> noreply()
   end
 
@@ -322,7 +326,7 @@ defmodule PicselloWeb.ClientMessageComponent do
          %{assigns: %{client: client}} = _socket,
          body_html
        ) do
-    if body_html do
+    if !blank?(body_html) do
       greeting = body_html |> String.split() |> hd() |> String.replace("<p>", "")
 
       if greeting,
@@ -334,6 +338,8 @@ defmodule PicselloWeb.ClientMessageComponent do
         ),
       else:
         body_html
+    else
+      body_html
     end
   end
 
@@ -351,7 +357,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         <%= form_tag("#", [phx_change: :search, phx_target: @myself]) do %>
           <div class="relative flex flex-col w-full md:flex-row">
             <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
-              <%= if Enum.any?(@search_results) && @search_phrase do %>
+              <%= if Enum.any?(@search_results) || @search_phrase do %>
                 <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
                   <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
                 </span>

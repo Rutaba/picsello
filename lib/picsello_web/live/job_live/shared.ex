@@ -148,7 +148,7 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def handle_event("search", %{"search_phrase" => search_phrase}, socket) do
-    if String.trim(search_phrase)
+    if blank?(search_phrase)
     do
       socket
       |> assign(:search_phrase, nil)
@@ -1061,7 +1061,7 @@ defmodule PicselloWeb.JobLive.Shared do
         <div class="flex flex-col justify-between items-center px-1.5 md:flex-row">
           <div class="relative flex md:w-2/3 w-full">
             <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
-              <%= if (Enum.any?(@search_results) || @searched_client) && @search_phrase do %>
+              <%= if Enum.any?(@search_results) || @searched_client || @search_phrase do %>
                 <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
                   <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
                 </span>
