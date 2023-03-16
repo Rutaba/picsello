@@ -395,7 +395,7 @@ defmodule PicselloWeb.LiveHelpers do
       <div>
         <%# These next 2 lines with inline styles come from a third-party tool; we highly discourage usage of inline styles as a normal practice %>
         <div style={"position: relative; padding-bottom: #{@third_party_padding}; height: 0;"} class="shadow-xl rounded">
-          <%= if System.get_env("MIX_ENV") != "test" do %>
+          <%= unless Mix.env() in [:test] do %>
             <iframe src={@tour_embed} frameborder="0" loading="lazy" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
           <% end %>
         </div>
