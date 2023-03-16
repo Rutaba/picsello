@@ -10,7 +10,9 @@ defmodule Picsello.FactoryReset do
     OrganizationCard,
     Organization,
     GlobalSettings,
-    GlobalSettings.GalleryProduct
+    GlobalSettings.GalleryProduct,
+    OrganizationJobType,
+    Profiles.Profile
   }
 
   alias Ecto.{Multi}
@@ -66,7 +68,7 @@ defmodule Picsello.FactoryReset do
       |> Map.put(:organization, organization)
     end)
     |> then(fn %{onboarding: onboarding} = user_attrs ->
-      ex_user = %{email: "#{email}-#{UUID.uuid4()}", stripe_customer_id: nil}
+      ex_user = %{email: "#{email}-#{UUID.uuid4()}", stripe_customer_id: nil, deleted_at: now()}
 
       Multi.new()
       |> Ecto.Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, :all))
@@ -77,6 +79,15 @@ defmodule Picsello.FactoryReset do
         |> cast(user_attrs, @user_fields)
         |> put_embed(:onboarding, onboarding)
         |> cast_assoc(:organization, with: &registration_changeset/2)
+      )
+      |> Multi.update_all(
+        :organization_job_types,
+        fn %{user: %{organization: %{id: id, profile: %{job_types: job_types}}}} ->
+          OrganizationJobType
+          |> where(organization_id: ^id)
+          |> where([o], o.job_type in ^(job_types || []))
+        end,
+        set: [show_on_profile?: true, show_on_business?: true]
       )
       |> Multi.run(:packages, fn _repo, %{user: user} ->
         Packages.create_initial(user)
@@ -103,16 +114,16 @@ defmodule Picsello.FactoryReset do
   def registration_changeset(changeset, attrs) do
     changeset
     |> cast(attrs, @org_fields)
-    |> cast_embed(:profile)
+    |> cast_embed(:profile, with: &Profile.changeset_for_factory_reset/2)
     |> cast_assoc(:organization_cards, with: &OrganizationCard.changeset/2)
     |> cast_assoc(:gs_gallery_products, with: &GalleryProduct.changeset/2)
   end
 
   defp organization_cards(ex_cards) do
-    for %{card: card, data: data} = org_card <- ex_cards, card.concise_name in @cards and not is_nil(data) do
+    for %{card: card} = org_card <- ex_cards, card.concise_name in @cards do
       org_card
       |> Map.from_struct()
-      |> Map.put(:data, Map.from_struct(data))
+      |> Map.put(:data, %{})
     end
     |> then(fn stripe_cards ->
       ids = Enum.map(stripe_cards, & &1.card_id)
@@ -122,4 +133,6 @@ defmodule Picsello.FactoryReset do
       |> Enum.concat(stripe_cards)
     end)
   end
+
+  defp now(), do: DateTime.utc_now() |> DateTime.to_naive() |> NaiveDateTime.truncate(:second)
 end
