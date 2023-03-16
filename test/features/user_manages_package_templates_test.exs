@@ -421,6 +421,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
     session
     |> click(link("Package Templates"))
+    |> sleep(500)
     |> click(css(".newborn-anchor-click"))
     |> assert_text("Missing packages")
     |> assert_text(
@@ -450,6 +451,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
     session
     |> click(link("Settings"))
+    |> sleep(500)
     |> click(link("Package Templates"))
     |> refute_has(button("Next"))
   end
