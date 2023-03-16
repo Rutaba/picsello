@@ -645,15 +645,7 @@ defmodule Picsello.Packages do
       offset: ^offset
   end
 
-  def update_buy_all(package_ids, buy_all) do
-    Repo.update_all(packages_query(package_ids), set: [buy_all: buy_all])
-  end
-
-  def update_download_each_price(package_ids, price) do
-    Repo.update_all(packages_query(package_ids), set: [download_each_price: price])
-  end
-
-  def packages_query(package_ids) do
-    from(p in Package, where: p.id in ^package_ids)
+  def update_all_query(package_ids, opts) do
+    from(p in Package, where: p.id in ^package_ids, update: [set: ^opts])
   end
 end

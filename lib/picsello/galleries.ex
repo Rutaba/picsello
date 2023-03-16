@@ -898,8 +898,17 @@ defmodule Picsello.Galleries do
   end
 
   def delete_multiple_watermarks(gallery_ids) do
-    from(w in Watermark, where: w.gallery_id in ^gallery_ids)
-    |> Repo.delete_all()
+    clear_watermarks = fn multi, gallery_id ->
+      Multi.run(multi, gallery_id, fn _, _ -> clear_watermarks(gallery_id) end)
+    end
+
+    Multi.new()
+    |> Multi.delete_all(
+      :delete_watermarks,
+      from(w in Watermark, where: w.gallery_id in ^gallery_ids)
+    )
+    |> then(fn m -> Enum.reduce(gallery_ids, m, &clear_watermarks.(&2, &1)) end)
+    |> Repo.transaction()
   end
 
   @doc """
@@ -934,7 +943,7 @@ defmodule Picsello.Galleries do
     end)
     |> then(fn
       {[], []} ->
-        :ok
+        {:ok, %{}}
 
       {photo_ids, oban_jobs} ->
         Multi.new()
