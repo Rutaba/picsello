@@ -77,6 +77,7 @@ config :tesla, adapter: Tesla.Mock
 
 config :picsello, :photo_output_subscription, {Broadway.DummyProducer, []}
 config :picsello, :photo_storage_service, Picsello.PhotoStorageMock
+config :picsello, show_arcade_tours: false
 
 config :sentry, environment_name: :test, included_environments: [:prod]
 
