@@ -340,9 +340,9 @@ defmodule PicselloWeb.JobLive.Index do
         pagination: pagination
       )
       |> Repo.all()
-    
-    my_list = Enum.map(jobs, fn args -> args.id end)
-    (my_list -- (my_list |> Enum.uniq())) |> Enum.uniq() |> IO.inspect(label: "duplicate")
+    # IO.inspect jobs
+    # my_list = Enum.map(jobs, fn args -> args.id end)
+    # (my_list -- (my_list |> Enum.uniq())) |> Enum.uniq() |> IO.inspect(label: "duplicate")
 
     socket
     |> assign(jobs: jobs)
