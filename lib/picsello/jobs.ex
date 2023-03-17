@@ -33,7 +33,7 @@ defmodule Picsello.Jobs do
     from(j in query,
       limit: ^limit,
       offset: ^offset,
-      preload: [:client, :package, :job_status, :payment_schedules]
+      preload: [:client, :package, :job_status, :payment_schedules, :booking_proposals]
     )
   end
 

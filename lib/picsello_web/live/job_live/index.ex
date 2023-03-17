@@ -339,8 +339,10 @@ defmodule PicselloWeb.JobLive.Index do
         },
         pagination: pagination
       )
-      |> preload(:booking_proposals)
       |> Repo.all()
+    
+    Enum.map(jobs, fn args -> args.booking_proposals end) |> IO.inspect(Label: "bk----")
+    Enum.map(jobs, fn args -> args.id end) |> IO.inspect(Label: "job_ids")
 
     socket
     |> assign(jobs: jobs)
