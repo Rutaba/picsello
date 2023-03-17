@@ -136,7 +136,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
     users =
       Repo.all(
         from u in User,
-          where: ilike(u.email, ^"%#{search_phrase}%"),
+          where: ilike(u.email, ^"%#{search_phrase}%") and is_nil(u.deleted_at),
           order_by: [asc: u.email]
       )
       |> Enum.map(&%{user: &1, changeset: User.is_test_account_changeset(&1)})

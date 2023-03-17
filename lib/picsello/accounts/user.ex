@@ -11,6 +11,7 @@ defmodule Picsello.Accounts.User do
 
   schema "users" do
     field :confirmed_at, :naive_datetime
+    field :deleted_at, :naive_datetime
     field :email, :string
     field :hashed_password, :string
     field :name, :string
