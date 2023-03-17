@@ -209,7 +209,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       subject: preset.subject_template,
       body_html: preset.body_template
     })
-    |> push_event("quill:update", %{"html" => preset.body_template})
+    |> push_event("quill:update", %{"html" => remove_client_name(socket, preset.body_template)})
     |> noreply()
   end
 
