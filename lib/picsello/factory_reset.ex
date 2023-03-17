@@ -40,6 +40,7 @@ defmodule Picsello.FactoryReset do
       organization:
         %{
           organization_cards: ex_cards,
+          organization_job_types: org_job_types,
           profile: profile,
           name: name
         } = organization,
@@ -50,7 +51,10 @@ defmodule Picsello.FactoryReset do
       user =
       User
       |> where(id: ^user_id)
-      |> preload([:subscription_event, organization: [organization_cards: [:card]]])
+      |> preload([
+        :subscription_event,
+        organization: [:organization_job_types, organization_cards: [:card]]
+      ])
       |> Repo.one()
 
     organization
@@ -80,15 +84,8 @@ defmodule Picsello.FactoryReset do
         |> put_embed(:onboarding, onboarding)
         |> cast_assoc(:organization, with: &registration_changeset/2)
       )
-      |> Multi.update_all(
-        :organization_job_types,
-        fn %{user: %{organization: %{id: id, profile: %{job_types: job_types}}}} ->
-          OrganizationJobType
-          |> where(organization_id: ^id)
-          |> where([o], o.job_type in ^(job_types || []))
-        end,
-        set: [show_on_profile?: true, show_on_business?: true]
-      )
+      |> organization_job_type_multi(:show_on_profile?, org_job_types)
+      |> organization_job_type_multi(:show_on_business?, org_job_types)
       |> Multi.run(:packages, fn _repo, %{user: user} ->
         Packages.create_initial(user)
         {:ok, ""}
@@ -134,5 +131,20 @@ defmodule Picsello.FactoryReset do
     end)
   end
 
+  defp organization_job_type_multi(multi, key, job_types) do
+    job_types = job_types |> Enum.filter(&Map.get(&1, key)) |> Enum.map(& &1.job_type)
+
+    multi
+    |> Multi.update_all(
+      key,
+      fn %{user: %{organization: %{id: new_org_id}}} ->
+        OrganizationJobType
+        |> where(organization_id: ^new_org_id)
+        |> where([o], o.job_type in ^job_types)
+      end,
+      set: Keyword.put([], key, true)
+    )
+  end
+  
   defp now(), do: DateTime.utc_now() |> DateTime.to_naive() |> NaiveDateTime.truncate(:second)
 end
