@@ -157,6 +157,11 @@ defmodule PicselloWeb.LayoutView do
   def side_nav(socket, _current_user) do
     [
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
+      %{
+        title: "Contracts",
+        icon: "package",
+        path: Routes.contracts_index_path(socket, :index)
+      },
       %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
       %{title: "Clients", icon: "phone", path: Routes.clients_path(socket, :index)},
       %{

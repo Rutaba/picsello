@@ -118,6 +118,16 @@ defmodule Picsello.Contracts do
     :bbmustache.render(contract.content, variables, key_type: :atom)
   end
 
+  def default_contract_content(contract, organization, helpers) do
+    variables = %{
+      state: helpers.dyn_gettext(organization.onboarding.state),
+      organization_name: organization.name,
+      turnaround_weeks: helpers.ngettext("1 week", "%{count} weeks", 3)
+    }
+
+    :bbmustache.render(contract.content, variables, key_type: :atom)
+  end
+
   defp for_package_query(%Package{} = package) do
     job_type = job_type(package)
 
@@ -127,6 +137,33 @@ defmodule Picsello.Contracts do
            ^job_type == contract.job_type) or
           (is_nil(contract.organization_id) and is_nil(contract.package_id)),
       order_by: contract.name
+    )
+  end
+
+  def get_default_template() do
+    from(contract in Contract,
+      where: is_nil(contract.organization_id) and is_nil(contract.package_id),
+      order_by: contract.name
+    )
+    |> Repo.one!()
+  end
+
+  def for_organization(organization_id) do
+    get_organization_contracts(organization_id)
+    |> Repo.all()
+  end
+
+  def get_contract_by_id(contract_id),
+    do: get_contract(contract_id) |> Repo.one()
+
+  defp get_contract(contract_id),
+    do: from(c in Contract, where: c.id == ^contract_id)
+
+  defp get_organization_contracts(organization_id) do
+    from(c in Contract,
+      where: c.organization_id == ^organization_id or is_nil(c.contract_template_id),
+      where: is_nil(c.package_id),
+      order_by: [asc: c.organization_id, desc: c.inserted_at]
     )
   end
 
