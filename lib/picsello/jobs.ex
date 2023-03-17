@@ -5,15 +5,22 @@ defmodule Picsello.Jobs do
     Repo,
     Client,
     Job,
-    OrganizationJobType
+    OrganizationJobType,
+    Shoot
   }
 
   import Ecto.Query
 
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
+    shoots = from(s in Shoot,
+      where: s.starts_at < ^current_datetime,
+      select: %{starts_at: s.starts_at, job_id: s.job_id},
+      limit: 1
+    )
+
     from(j in query,
       left_join: job_status in assoc(j, :job_status),
-      left_join: shoots in assoc(j, :shoots),
+      left_join: shoots in subquery(shoots),
       left_join: package in assoc(j, :package),
       left_join: payment_schedules in assoc(j, :payment_schedules),
       where: ^filters_where(opts),
@@ -239,11 +246,9 @@ defmodule Picsello.Jobs do
   end
 
   defp filter_overdue_jobs(dynamic) do
-    now = current_datetime()
-
     dynamic(
       [j, client, job_status, job_status_, shoots, package, payment_schedules],
-      ^dynamic and payment_schedules.due_at <= ^now and
+      ^dynamic and payment_schedules.due_at <= ^current_datetime and
         is_nil(payment_schedules.paid_at)
     )
   end
@@ -263,11 +268,9 @@ defmodule Picsello.Jobs do
   end
 
   defp filter_order_by(:starts_at, order) do
-    now = current_datetime()
-
     [
       {order,
-       dynamic([j, client, job_status, job_status_, shoots], field(shoots, :starts_at) < ^now)}
+       dynamic([j, client, job_status, job_status_, shoots], field(shoots, :starts_at))}
     ]
   end
 

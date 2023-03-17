@@ -664,7 +664,7 @@ defmodule PicselloWeb.JobLive.Shared do
            Enum.any?(job.payment_schedules, fn schedule ->
              DateTime.compare(schedule.due_at, DateTime.utc_now()) == :lt and
                is_nil(schedule.paid_at)
-           end),
+           end) and status not in [:archived, :completed],
          do: {"Overdue", :red},
          else: status_content(is_lead, status)
 

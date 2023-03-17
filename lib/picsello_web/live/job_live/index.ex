@@ -181,7 +181,7 @@ defmodule PicselloWeb.JobLive.Index do
   def actions(assigns) do
     ~H"""
     <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-offset-x="-21" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-job-#{@job.id}"}>
-      <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
+      <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full">
         Actions
         <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
         <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
@@ -340,10 +340,7 @@ defmodule PicselloWeb.JobLive.Index do
         pagination: pagination
       )
       |> Repo.all()
-    # IO.inspect jobs
-    # my_list = Enum.map(jobs, fn args -> args.id end)
-    # (my_list -- (my_list |> Enum.uniq())) |> Enum.uniq() |> IO.inspect(label: "duplicate")
-
+  
     socket
     |> assign(jobs: jobs)
     |> update_pagination(%{
