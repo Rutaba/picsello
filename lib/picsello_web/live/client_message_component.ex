@@ -110,6 +110,14 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
+  def handle_event("clear-search", _, socket) do
+    socket
+    |> assign(:search_results, [])
+    |> assign(:search_phrase, nil)
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("validate_bcc_email", %{"value" => email}, socket) do
     validate_email(email, "bcc", socket)
   end
@@ -357,7 +365,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         <%= form_tag("#", [phx_change: :search, phx_target: @myself]) do %>
           <div class="relative flex flex-col w-full md:flex-row">
             <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
-              <%= if Enum.any?(@search_results) || @search_phrase do %>
+              <%= if (Enum.any?(@search_results) && @search_phrase) do %>
                 <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
                   <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
                 </span>
