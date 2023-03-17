@@ -341,8 +341,8 @@ defmodule PicselloWeb.JobLive.Index do
       )
       |> Repo.all()
     
-    Enum.map(jobs, fn args -> args.booking_proposals end) |> IO.inspect(Label: "bk----")
-    Enum.map(jobs, fn args -> args.id end) |> IO.inspect(Label: "job_ids")
+    my_list = Enum.map(jobs, fn args -> args.id end)
+    (my_list -- (my_list |> Enum.uniq())) |> Enum.uniq() |> IO.inspect(label: "duplicate")
 
     socket
     |> assign(jobs: jobs)
