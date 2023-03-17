@@ -74,7 +74,7 @@ defmodule PicselloWeb.GalleryLive.Photos.FolderUpload do
     if include_subfolders do
       case Albums.create_multiple(folders, gallery.id) do
         {:ok, albums} ->
-          Albums.sort_albums_alphabetically(gallery.id)
+          Albums.sort_albums_alphabetically_by_gallery_id(gallery.id)
 
           Phoenix.PubSub.broadcast(
             Picsello.PubSub,

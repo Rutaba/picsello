@@ -1056,7 +1056,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
       {album, message} =
         album
         |> Albums.update_album(params)
-        |> Albums.sort_albums_alphabetically()
         |> upsert_album("Album settings successfully updated")
 
       send(self(), {:album_settings, %{message: message, album: album}})
@@ -1067,7 +1066,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
       {album, message} =
         socket.assigns
         |> insert_album(params)
-        |> Albums.sort_albums_alphabetically()
         |> upsert_album("Album successfully created")
 
       redirect_path =
@@ -1089,7 +1087,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp upsert_album(result, message) do
     case result do
-      {:ok, album} -> {album, message}
+      {:ok, %Album{} = album} -> {album, message}
+      {:ok, result} -> {result.album, message}
       _ -> {nil, "something went wrong"}
     end
   end
