@@ -5,8 +5,9 @@ defmodule Picsello.Jobs do
     Repo,
     Client,
     Job,
-    OrganizationJobType,
-    Shoot
+    Shoot,
+    PaymentSchedule,
+    OrganizationJobType
   }
 
   import Ecto.Query
@@ -63,7 +64,20 @@ defmodule Picsello.Jobs do
   end
 
   def archive_lead(%Job{} = job) do
-    job |> Job.archive_changeset() |> Repo.update()
+    now = current_datetime()
+    if job.job_status.is_lead do
+      job |> Job.archive_changeset() |> Repo.update()
+    else
+      Ecto.Multi.new()
+      |> Ecto.Multi.update(:job, Job.archive_changeset(job))
+      |> Ecto.Multi.run(:write, fn _repo, %{job: job} ->
+        with from(ps in PaymentSchedule, where: ps.job_id == ^job.id, update: [set: [reminded_at: ^now]]) |> Repo.update_all([]),
+        from(s in Shoot, where: s.job_id == ^job.id, update: [set: [reminded_at: ^now]]) |> Repo.update_all([]) do
+          {:ok, nil}
+        end
+      end)
+      |> Repo.transaction()
+    end
   end
 
   def unarchive_lead(%Job{} = job) do

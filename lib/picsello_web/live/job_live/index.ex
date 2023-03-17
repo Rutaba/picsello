@@ -340,7 +340,7 @@ defmodule PicselloWeb.JobLive.Index do
         pagination: pagination
       )
       |> Repo.all()
-  
+      
     socket
     |> assign(jobs: jobs)
     |> update_pagination(%{
