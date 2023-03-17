@@ -28,7 +28,6 @@ defmodule PicselloWeb.Shared.CustomPagination do
   def render(assigns) do
     ~H"""
       <div id={"#{@id}-wrapper"} class="flex items-center px-6 pb-6 center-container">
-      <% IO.inspect(@pagination_changeset |> Changeset.apply_changes()) %>
         <%= if pagination_index(@pagination_changeset, :total_count) > pagination_index(@pagination_changeset, :limit) do %>
           <.form let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
               <%= select f, :limit, @limit_options, class: "cursor-pointer"%>

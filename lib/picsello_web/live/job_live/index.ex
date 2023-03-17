@@ -3,7 +3,7 @@ defmodule PicselloWeb.JobLive.Index do
   use PicselloWeb, :live_view
   import Ecto.Query
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
-  import PicselloWeb.Shared.CustomPagination, only: [pagination_component: 1, assign_pagination: 2, update_pagination: 2, reset_pagination: 2]
+  import PicselloWeb.Shared.CustomPagination, only: [pagination_component: 1, assign_pagination: 2, update_pagination: 2, reset_pagination: 2, pagination_index: 2]
 
 
   alias Ecto.Changeset
@@ -297,9 +297,10 @@ defmodule PicselloWeb.JobLive.Index do
     socket |> assign(stripe_status: Payments.status(current_user))
   end
 
-  defp reassign_pagination_and_jobs(socket) do
+  defp reassign_pagination_and_jobs(%{assigns: %{pagination_changeset: changeset}} = socket) do
+    limit = pagination_index(changeset, :limit)
     socket
-    |> reset_pagination(%{limit: @default_pagination_limit, last_index: @default_pagination_limit, total_count: job_count(socket)})
+    |> reset_pagination(%{limit: limit, last_index: limit, total_count: job_count(socket)})
     |> assign_jobs()
     |> noreply()
   end
@@ -340,7 +341,7 @@ defmodule PicselloWeb.JobLive.Index do
         pagination: pagination
       )
       |> Repo.all()
-      
+
     socket
     |> assign(jobs: jobs)
     |> update_pagination(%{
