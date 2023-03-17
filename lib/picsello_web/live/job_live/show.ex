@@ -41,15 +41,6 @@ defmodule PicselloWeb.JobLive.Show do
     socket
     |> assign_job(job_id)
     |> assign(:request_from, assigns["request_from"])
-    |> assign(:show_page, assigns["expired"])
-    |> then(fn %{assigns: %{show_page: show_page}} = socket ->
-      if show_page == "true" do
-        socket
-        |> put_flash(:error, "This job is not available anymore")
-      else
-        socket
-      end
-    end)
     |> assign(:collapsed_sections, [])
     |> assign(:new_gallery, nil)
     |> then(fn %{assigns: %{job: job}} = socket ->
