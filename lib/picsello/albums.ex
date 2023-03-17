@@ -130,7 +130,7 @@ defmodule Picsello.Albums do
       |> Repo.update!()
     end)
 
-    album
+    {:ok, album}
   end
 
   def sort_albums_alphabetically(gallery_id) do
