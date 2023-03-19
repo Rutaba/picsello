@@ -1087,7 +1087,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp upsert_album(result, message) do
     case result do
-      {:ok, album} -> {album, message}
+      {:ok, %Album{} = album} -> {album, message}
+      {:ok, result} -> {result.album, message}
       _ -> {nil, "something went wrong"}
     end
   end

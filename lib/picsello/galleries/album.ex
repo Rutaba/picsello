@@ -14,6 +14,7 @@ defmodule Picsello.Galleries.Album do
 
   schema "albums" do
     field :name, :string
+    field :position, :float
     field :password, :string
     field :set_password, :boolean
     field :client_link_hash, :string
@@ -32,6 +33,7 @@ defmodule Picsello.Galleries.Album do
 
   @attrs [
     :name,
+    :position,
     :set_password,
     :gallery_id,
     :password,
