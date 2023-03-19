@@ -31,7 +31,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       package_basic_fields: 1,
       digital_download_fields: 1,
       print_credit_fields: 1,
-      current: 1
+      current: 1,
+      assign_turnaround_weeks: 1
     ]
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
@@ -1156,10 +1157,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{assigns: %{changeset: changeset}} = socket
       ) do
     package = current(changeset)
-
+    
     template =
       find_template(socket, package.package_template_id)
-      |> Repo.preload(:package_payment_schedules, force: true)
+      |> Repo.preload([:package_payment_schedules, :contract], force: true)
 
     changeset = changeset_from_template(template)
 
@@ -1177,7 +1178,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             :print_credits,
             :package_payment_schedules,
             :fixed,
-            :schedule_type
+            :schedule_type,
+            :contract
           ])
         ),
       changeset: changeset
@@ -1530,9 +1532,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          action \\ nil
        ) do
     global_settings =
-      if global_settings,
-        do: global_settings,
-        else: %{download_each_price: nil, buy_all_price: nil}
+    if global_settings,
+      do: global_settings,
+      else: %{download_each_price: nil, buy_all_price: nil}
 
     package_pricing_changeset =
       assigns.package_pricing
@@ -1546,7 +1548,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Multiplier.changeset(Map.get(params, "multiplier", %{}))
 
     download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
-
+    
     download_changeset =
       package
       |> Download.from_package(global_settings)
@@ -1554,7 +1556,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Map.put(:action, action)
 
     download = current(download_changeset)
-
+    
     package_params =
       params
       |> Map.get("package", %{})
@@ -1692,7 +1694,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp package_contract(package) do
     if package.contract do
-      package.contract
+      assign_turnaround_weeks(package)
     else
       default_contract = Contracts.default_contract(package)
 
