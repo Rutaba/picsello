@@ -143,8 +143,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
     )
-    |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(css("#download_is_buy_all"))
     |> assert_has(definition("Total", text: "$130.00"))
     |> wait_for_enabled_submit_button()
     |> payment_screen()
@@ -196,8 +194,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
     |> fill_in(text_field("Package Price"), with: "$130")
-    |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(css("#download_is_buy_all"))
     |> payment_screen()
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
