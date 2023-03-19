@@ -686,7 +686,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   defp is_checked(id, package) do
     if id do
-      id == if(is_binary(id), do: package.id |> Integer.to_string, else: package.id)
+      id == if(is_binary(id), do: package.id |> Integer.to_string(), else: package.id)
     else
       false
     end

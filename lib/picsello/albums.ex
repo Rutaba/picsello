@@ -139,13 +139,14 @@ defmodule Picsello.Albums do
           from(a in Album, where: a.gallery_id == ^album.gallery_id, order_by: a.name)
           |> Repo.all()
 
-        with Enum.with_index(albums, fn album, position ->
-               album
-               |> Ecto.Changeset.change(%{position: position + 1.0, updated_at: now()})
-               |> Repo.update!()
-             end) do
-          {:ok, album}
-        end
+        albums =
+          Enum.with_index(albums, fn album, position ->
+            album
+            |> Ecto.Changeset.change(%{position: position + 1.0, updated_at: now()})
+            |> Repo.update!()
+          end)
+
+        {:ok, albums}
       end
     )
   end
