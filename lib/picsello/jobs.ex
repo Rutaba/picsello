@@ -72,8 +72,14 @@ defmodule Picsello.Jobs do
     else
       Ecto.Multi.new()
       |> Ecto.Multi.update(:job, Job.archive_changeset(job))
-      |> Ecto.Multi.update_all(:update_payment_schedules, from(ps in PaymentSchedule, where: ps.job_id == ^job.id), set: [reminded_at: now])
-      |> Ecto.Multi.update_all(:update_shoots, from(s in Shoot, where: s.job_id == ^job.id), set: [reminded_at: now])
+      |> Ecto.Multi.update_all(
+        :update_payment_schedules,
+        from(ps in PaymentSchedule, where: ps.job_id == ^job.id),
+        set: [reminded_at: now]
+      )
+      |> Ecto.Multi.update_all(:update_shoots, from(s in Shoot, where: s.job_id == ^job.id),
+        set: [reminded_at: now]
+      )
       |> Repo.transaction()
     end
   end

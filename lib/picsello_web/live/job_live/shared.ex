@@ -466,8 +466,10 @@ defmodule PicselloWeb.JobLive.Shared do
             cond do
               request_from == :jobs ->
                 Routes.job_path(socket, :jobs)
+
               request_from == :clients ->
                 Routes.client_path(socket, :job_history, job.client_id)
+
               true ->
                 Routes.job_path(socket, Map.get(assigns, :live_action), job.id)
             end
@@ -505,8 +507,10 @@ defmodule PicselloWeb.JobLive.Shared do
             cond do
               Map.has_key?(assigns, :type) ->
                 Routes.job_path(socket, String.to_atom(assigns.type.plural))
+
               Map.get(assigns, :live_action) in [:leads, :jobs] ->
                 Routes.job_path(socket, Map.get(assigns, :live_action), job.id)
+
               true ->
                 Routes.client_path(socket, :job_history, job.client_id)
             end
@@ -540,14 +544,16 @@ defmodule PicselloWeb.JobLive.Shared do
         )
         |> redirect(
           to:
-          cond do
-            Map.has_key?(assigns, :type) ->
-              Routes.job_path(socket, String.to_atom(assigns.type.plural))
-            Map.get(assigns, :live_action) in [:leads, :jobs] ->
-              Routes.job_path(socket, Map.get(assigns, :live_action), job.id)
-            true ->
-              Routes.client_path(socket, :job_history, job.client_id)
-          end
+            cond do
+              Map.has_key?(assigns, :type) ->
+                Routes.job_path(socket, String.to_atom(assigns.type.plural))
+
+              Map.get(assigns, :live_action) in [:leads, :jobs] ->
+                Routes.job_path(socket, Map.get(assigns, :live_action), job.id)
+
+              true ->
+                Routes.client_path(socket, :job_history, job.client_id)
+            end
         )
 
       {:error, _} ->
@@ -733,9 +739,12 @@ defmodule PicselloWeb.JobLive.Shared do
            Enum.any?(job.payment_schedules, fn schedule ->
              DateTime.compare(schedule.due_at, DateTime.utc_now()) == :lt and
                is_nil(schedule.paid_at)
-           end) and status not in [:archived, :completed],
+           end),
          do: {"Overdue", :red},
          else: status_content(is_lead, status)
+
+    second_badge = second_badge(status, label)
+    IO.inspect(second_badge)
 
     assigns =
       assigns
@@ -746,9 +755,16 @@ defmodule PicselloWeb.JobLive.Shared do
       })
 
     ~H"""
-      <.badge class={@class} color={@color}>
-        <%= @label %>
-      </.badge>
+      <span>
+        <.badge class={@class} color={@color}>
+          <%= @label %>
+        </.badge>
+        <%= if second_badge do %>
+          <.badge class={"ml-1 #{@class}"} color={second_badge.color}>
+            <%= second_badge.label %>
+          </.badge>
+        <% end %>
+      </span>
     """
   end
 
@@ -1724,6 +1740,18 @@ defmodule PicselloWeb.JobLive.Shared do
       |> assign(payment_schedules: payment_schedules)
       |> validate_payment_schedule()
     end)
+  end
+
+  defp second_badge(status, label) do
+    if label == "Overdue" do
+      case status do
+        :completed -> %{label: "Completed", color: :green}
+        :archived -> %{label: "Archived", color: :red}
+        _ -> nil
+      end
+    else
+      nil
+    end
   end
 
   defp removal_button(assigns) do

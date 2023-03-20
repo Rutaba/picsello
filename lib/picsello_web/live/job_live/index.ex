@@ -3,6 +3,7 @@ defmodule PicselloWeb.JobLive.Index do
   use PicselloWeb, :live_view
 
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
+
   import PicselloWeb.Shared.CustomPagination,
     only: [
       pagination_component: 1,
@@ -123,7 +124,9 @@ defmodule PicselloWeb.JobLive.Index do
   @impl true
   def handle_event("view-galleries", %{"id" => id}, %{assigns: %{type: type}} = socket) do
     socket
-    |> push_redirect(to: Routes.job_path(socket, String.to_atom(type.plural), id, anchor: "anchor-to-gallery"))
+    |> push_redirect(
+      to: Routes.job_path(socket, String.to_atom(type.plural), id, anchor: "anchor-to-gallery")
+    )
     |> noreply()
   end
 
