@@ -37,6 +37,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
     |> assign(:job_types, Picsello.JobType.all())
     |> assign(:client_tags, %{})
     |> assign_clients_job(id)
+    |> assign_type_strings()
     |> ok()
   end
 
@@ -174,6 +175,16 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
     end
   end
 
+  defp assign_type_strings(%{assigns: %{live_action: live_action}} = socket) do
+    if live_action == :jobs do
+      socket
+      |> assign(:type, %{singular: "job", plural: "jobs"})
+    else
+      socket
+      |> assign(:type, %{singular: "lead", plural: "leads"})
+    end
+  end
+
   defp assign_clients_job(
          %{
            assigns: %{
@@ -212,7 +223,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
           <%= Calendar.strftime(@job.inserted_at, "%m/%d/%y") %>
         </div>
         <div class={"font-bold w-full"}>
-          <a href={Routes.job_path(@socket, if(@job.job_status.is_lead, do: :leads, else: :jobs), @job.id, %{"request_from" => "job_history"})} target="_blank">
+          <a href={Routes.job_path(@socket, String.to_atom(@type.plural), @job.id, %{"request_from" => "job_history"})} target="_blank">
             <span class={classes("w-full text-blue-planning-300 underline", %{"truncate" => String.length(Job.name(@job)) > 29})}><%= Job.name(@job) %></span>
           </a>
         </div>

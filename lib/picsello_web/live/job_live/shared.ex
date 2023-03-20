@@ -406,7 +406,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def handle_event(
         "confirm-archive-unarchive",
         %{"id" => job_id},
-        socket
+        %{assigns: %{type: type}} = socket
       ) do
     job =
       if Map.get(socket.assigns, :jobs) do
@@ -418,15 +418,13 @@ defmodule PicselloWeb.JobLive.Shared do
     action_string =
       if job.job_status.current_status == :archived, do: "unarchive", else: "archive"
 
-    type = if(job.job_status.is_lead, do: "lead", else: "job")
-
     socket
     |> ConfirmationComponent.open(%{
       close_label: "No! Get me out of here",
       confirm_event: "#{action_string}-entity",
-      confirm_label: "Yes, #{action_string} the #{type}",
+      confirm_label: "Yes, #{action_string} the #{type.singular}",
       icon: "warning-orange",
-      title: "Are you sure you want to #{action_string} this #{type}?",
+      title: "Are you sure you want to #{action_string} this #{type.singular}?",
       payload: %{job_id: job_id}
     })
     |> noreply()
@@ -486,7 +484,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_info(
         {:confirm_event, "archive-entity", %{job_id: job_id}},
-        %{assigns: assigns} = socket
+        %{assigns: %{type: type} = assigns} = socket
       ) do
     job =
       if Map.get(assigns, :jobs) do
@@ -500,7 +498,7 @@ defmodule PicselloWeb.JobLive.Shared do
         socket
         |> put_flash(
           :success,
-          "#{if job.job_status.is_lead == true, do: "Lead", else: "Job"} has been archived"
+          "#{String.capitalize(type.singular)} has been archived"
         )
         |> redirect(
           to:
@@ -526,7 +524,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_info(
         {:confirm_event, "unarchive-entity", %{job_id: job_id}},
-        %{assigns: assigns} = socket
+        %{assigns: %{type: type} = assigns} = socket
       ) do
     job =
       if Map.get(assigns, :jobs) do
@@ -540,7 +538,7 @@ defmodule PicselloWeb.JobLive.Shared do
         socket
         |> put_flash(
           :success,
-          "#{if job.job_status.is_lead == true, do: "Lead", else: "Job"} has been unarchived"
+          "#{String.capitalize(type.singular)} has been unarchived"
         )
         |> redirect(
           to:
@@ -744,7 +742,6 @@ defmodule PicselloWeb.JobLive.Shared do
          else: status_content(is_lead, status)
 
     second_badge = second_badge(status, label)
-    IO.inspect(second_badge)
 
     assigns =
       assigns
