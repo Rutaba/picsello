@@ -510,11 +510,11 @@ defmodule PicselloWeb.JobLive.Index do
       status == :answered ->
         "Pending on #{format_date(job.updated_at, time_zone)}"
 
-      !job.package ->
-        "Pending on #{format_date(job.updated_at, time_zone)}"
-
       status == :sent ->
         "Created on #{format_date(job.updated_at, time_zone)}"
+
+      !job.package ->
+        "Pending on #{format_date(job.updated_at, time_zone)}"
 
       booking_proposal && !is_nil(booking_proposal.questionnaire_id) ->
         "Awaiting on #{signed_at(booking_proposal, job.updated_at) |> format_date(time_zone)}"
