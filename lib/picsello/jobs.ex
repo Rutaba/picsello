@@ -145,7 +145,8 @@ defmodule Picsello.Jobs do
           ^dynamic and
             (ilike(client.name, ^search_phrase) or
                ilike(client.email, ^search_phrase) or
-               ilike(client.phone, ^search_phrase))
+               ilike(client.phone, ^search_phrase) or
+               ilike(j.job_name, ^search_phrase))
         )
 
       {_, _}, dynamic ->

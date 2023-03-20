@@ -121,16 +121,12 @@ defmodule PicselloWeb.Shared.CustomPagination do
           changeset(pagination_changeset, params)
         )
 
-  def reset_pagination(
-        %{assigns: %{pagination_changeset: pagination_changeset}} = socket,
-        params
-      ),
-      do:
-        socket
-        |> assign(
-          :pagination_changeset,
-          changeset(%__MODULE__{}, params)
-        )
+  def reset_pagination(socket, params), do:
+    socket
+    |> assign(
+      :pagination_changeset,
+      changeset(%__MODULE__{}, params)
+    )
 
   def pagination_index(changeset, index),
     do: changeset |> current() |> Map.get(index)
