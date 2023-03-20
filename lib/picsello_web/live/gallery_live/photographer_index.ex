@@ -9,7 +9,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
   alias PicselloWeb.Shared.ConfirmationComponent
-  alias Ecto.{Multi, Changeset}
 
   alias PicselloWeb.GalleryLive.{
     Settings.CustomWatermarkComponent
