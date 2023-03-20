@@ -41,7 +41,7 @@ defmodule Picsello.Albums do
       left_join: thumbnail_photo in subquery(Picsello.Photos.watermarked_query()),
       on: a.thumbnail_photo_id == thumbnail_photo.id,
       where: a.gallery_id == ^gallery_id,
-      order_by: [a.is_finals, a.is_proofing],
+      order_by: [a.is_finals, a.is_proofing, a.position],
       select_merge: %{thumbnail_photo: thumbnail_photo}
     )
     |> Repo.all()
@@ -59,7 +59,11 @@ defmodule Picsello.Albums do
   Insert album
   """
   def insert_album(params),
-    do: Album.create_changeset(params) |> Repo.insert()
+    do:
+      Multi.new()
+      |> Multi.insert(:album, Album.create_changeset(params))
+      |> sort_albums_alphabetically()
+      |> Repo.transaction()
 
   def insert_album_with_selected_photos(params, selected_photos) do
     Multi.new()
@@ -71,14 +75,21 @@ defmodule Picsello.Albums do
       end,
       []
     )
+    |> sort_albums_alphabetically()
     |> Repo.transaction()
   end
 
   @doc """
   Update album
   """
-  def update_album(album, params \\ %{}),
-    do: album |> Album.update_changeset(params) |> Repo.update()
+  def update_album(album, params \\ %{}) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:album, Album.update_changeset(album, params))
+    |> sort_albums_alphabetically()
+    |> Repo.transaction()
+  end
+
+  defp now(), do: DateTime.utc_now() |> DateTime.truncate(:second)
 
   def save_thumbnail(album, photo), do: album |> Album.update_thumbnail(photo) |> Repo.update()
 
@@ -117,6 +128,39 @@ defmodule Picsello.Albums do
       )
     end)
     |> Repo.transaction()
+  end
+
+  def sort_albums_alphabetically(multi) do
+    Ecto.Multi.run(
+      multi,
+      :write,
+      fn _repo, %{album: album} ->
+        albums =
+          from(a in Album, where: a.gallery_id == ^album.gallery_id, order_by: a.name)
+          |> Repo.all()
+
+        albums =
+          Enum.with_index(albums, fn album, position ->
+            album
+            |> Ecto.Changeset.change(%{position: position + 1.0, updated_at: now()})
+            |> Repo.update!()
+          end)
+
+        {:ok, albums}
+      end
+    )
+  end
+
+  def sort_albums_alphabetically_by_gallery_id(gallery_id) do
+    albums =
+      from(a in Album, where: a.gallery_id == ^gallery_id, order_by: a.name)
+      |> Repo.all()
+
+    Enum.with_index(albums, fn album, position ->
+      album
+      |> Album.update_changeset(%{position: position + 1})
+      |> Repo.update!()
+    end)
   end
 
   @separator "-dsp-"

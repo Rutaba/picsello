@@ -81,6 +81,10 @@ html {
   @apply max-w-screen-xl relative bare-modal;
 }
 
+.modal.no-pad {
+  @apply p-0;
+}
+
 .modal-banner {
   @apply -mx-4 sm:-mx-8 px-4 sm:px-8;
 }

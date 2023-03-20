@@ -103,11 +103,18 @@ defmodule Picsello.Payments do
   @callback create_subscription(create_subscription(), Stripe.options()) ::
               {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
 
+  @callback update_subscription(Stripe.id() | String.t(), params, Stripe.options()) ::
+              {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
+            when params: %{:coupon => String.t()} | %{}
+
   @callback retrieve_subscription(String.t(), keyword(binary())) ::
               {:ok, Stripe.Subscription.t()} | {:error, Stripe.Error.t()}
 
   @callback list_prices(%{optional(:active) => boolean()}) ::
               {:ok, Stripe.List.t(Stripe.Price.t())} | {:error, Stripe.Error.t()}
+
+  @callback list_promotion_codes(%{optional(:active) => boolean()}) ::
+              {:ok, Stripe.List.t(Stripe.PromotionCode.t())} | {:error, Stripe.Error.t()}
 
   @callback create_billing_portal_session(%{customer: String.t()}) ::
               {:ok, Stripe.BillingPortal.Session.t()} | {:error, Stripe.Error.t()}
@@ -194,8 +201,13 @@ defmodule Picsello.Payments do
   def retrieve_customer(id, opts \\ []), do: impl().retrieve_customer(id, opts)
   def retrieve_account(id, opts \\ []), do: impl().retrieve_account(id, opts)
   def create_subscription(params, opts \\ []), do: impl().create_subscription(params, opts)
+
+  def update_subscription(id, params, opts \\ []),
+    do: impl().update_subscription(id, params, opts)
+
   def retrieve_subscription(id, opts), do: impl().retrieve_subscription(id, opts)
   def list_prices(params), do: impl().list_prices(params)
+  def list_promotion_codes(params), do: impl().list_promotion_codes(params)
   def create_account_link(params), do: impl().create_account_link(params, [])
   def create_account(params, opts \\ []), do: impl().create_account(params, opts)
   def create_billing_portal_session(params), do: impl().create_billing_portal_session(params)

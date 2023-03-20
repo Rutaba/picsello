@@ -35,7 +35,7 @@
           </div>
         </.form>
       </div>
-      <div class="grid grid-cols-1 p-5 mt-6 bg-base-200 rounded-xl grid-container lg:w-80 gap-y-1 mb-16">
+      <div class="grid grid-cols-1 p-5 mt-6 bg-base-200 rounded-xl grid-container lg:w-80 gap-y-1 mb-32 md:mb-16">
         <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
           <.bar class="block" route={Routes.gallery_photographer_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title="Overview" icon="globe-icon.png" arrow_show={@arrow_show == "overview"}>
             <%= if expire_soon(@gallery) do %>

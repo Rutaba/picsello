@@ -144,11 +144,12 @@ defmodule Picsello.Packages do
             else: &1
         )
         |> then(
-          &if(get_field(&1, :is_custom_price),
+          &if(get_field(&1, :status) == :none,
             do:
               &1
               |> force_change(:each_price, get_field(&1, :each_price))
               |> validate_required([:each_price])
+              |> validate_inclusion(:is_custom_price, ["true"])
               |> Picsello.Package.validate_money(:each_price, greater_than: 0),
             else: &1
           )
@@ -159,6 +160,7 @@ defmodule Picsello.Packages do
               &1
               |> force_change(:count, get_field(&1, :count))
               |> validate_required([:count])
+              |> validate_inclusion(:is_custom_price, ["true"])
               |> validate_number(:count, greater_than: 0),
             else: force_change(&1, :count, nil)
           )
@@ -221,7 +223,6 @@ defmodule Picsello.Packages do
           %__MODULE__{
             status: :limited,
             is_custom_price: true,
-            is_buy_all: true,
             each_price: each_price,
             count: count
           }
@@ -231,14 +232,13 @@ defmodule Picsello.Packages do
           %__MODULE__{
             status: :none,
             is_custom_price: true,
-            is_buy_all: true,
             each_price: each_price,
             count: nil
           }
           |> Map.merge(set_buy_all(package, global_settings))
 
         true ->
-          %__MODULE__{status: :unlimited, is_custom_price: true, is_buy_all: true, count: nil}
+          %__MODULE__{status: :unlimited, is_custom_price: true, count: nil}
           |> Map.merge(set_default_download_each_price(global_settings))
           |> Map.merge(set_buy_all(package, global_settings))
       end
@@ -317,7 +317,11 @@ defmodule Picsello.Packages do
     end
 
     defp set_buy_all(%{buy_all: buy_all}, global_settings) do
-      %{buy_all: if(buy_all, do: buy_all, else: global_settings.buy_all_price)}
+      if buy_all do
+        %{buy_all: buy_all, is_buy_all: true}
+      else
+        %{buy_all: global_settings.buy_all_price, is_buy_all: false}
+      end
     end
 
     defp set_count_fields(download, count) when count in [nil, 0],
@@ -639,5 +643,9 @@ defmodule Picsello.Packages do
     from query,
       limit: ^limit,
       offset: ^offset
+  end
+
+  def update_all_query(package_ids, opts) do
+    from(p in Package, where: p.id in ^package_ids, update: [set: ^opts])
   end
 end

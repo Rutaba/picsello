@@ -19,6 +19,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Utils
   }
 
+  alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
@@ -318,7 +319,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def expired_at(organization_id) do
     case GlobalSettings.get(organization_id) do
-      %{expiration_days: exp_days} when exp_days > 0 ->
+      %{expiration_days: exp_days} when not is_nil(exp_days) and exp_days > 0 ->
         Timex.shift(DateTime.utc_now(), days: exp_days)
 
       _ ->
@@ -1087,7 +1088,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp upsert_album(result, message) do
     case result do
-      {:ok, album} -> {album, message}
+      {:ok, %Album{} = album} -> {album, message}
+      {:ok, result} -> {result.album, message}
       _ -> {nil, "something went wrong"}
     end
   end
@@ -1165,5 +1167,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
     ~H"""
       <span class="lg:ml-[54px] sm:ml-0 inline-block mt-2 border rounded-md bg-base-200 px-2 pb-0.5 text-base-250 font-bold text-base"><%= Utils.capitalize_all_words(@type) %></span>
     """
+  end
+
+  def delete_watermark(gallery) do
+    Multi.new()
+    |> Multi.delete(:delete_watermark, gallery.watermark)
+    |> Galleries.save_use_global(gallery, %{watermark: false})
   end
 end
