@@ -265,7 +265,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         </div>
       </.icon_button>
       <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-offset-x="-21" data-placement="bottom-end" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{@booking_event.status}"}>
-        <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 w-full" id="Manage">
+        <button {testid("actions")} title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 w-full" id="Manage">
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
           <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
