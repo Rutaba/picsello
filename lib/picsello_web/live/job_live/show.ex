@@ -40,6 +40,7 @@ defmodule PicselloWeb.JobLive.Show do
   def mount(%{"id" => job_id} = assigns, _session, socket) do
     socket
     |> assign_job(job_id)
+    |> assign_new(:anchor, fn -> Map.get(assigns, "anchor", nil) end)
     |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
     |> assign(:new_gallery, nil)

@@ -64,8 +64,9 @@ defmodule Picsello.Jobs do
     |> Enum.sum()
   end
 
-  def archive_lead(%Job{} = job) do
+  def archive_job(%Job{} = job) do
     now = current_datetime()
+
     if job.job_status.is_lead do
       job |> Job.archive_changeset() |> Repo.update()
     else
@@ -77,7 +78,7 @@ defmodule Picsello.Jobs do
     end
   end
 
-  def unarchive_lead(%Job{} = job) do
+  def unarchive_job(%Job{} = job) do
     job |> Job.unarchive_changeset() |> Repo.update()
   end
 

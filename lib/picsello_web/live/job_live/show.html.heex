@@ -112,7 +112,7 @@
 
     <.shoot_details_section package={@package} job={@job} current_user={@current_user} shoots={@shoots} shoot_path={&Routes.shoot_path(@socket, @live_action, @job.id, &1)} collapsed_sections={@collapsed_sections} />
 
-    <.section id="gallery" icon="camera-check" title="Gallery" collapsed_sections={@collapsed_sections}>
+    <.section anchor={@anchor} id="gallery" icon="camera-check" title="Gallery" collapsed_sections={@collapsed_sections}>
       <div class="grid md:grid-cols-2 gap-5">
         <.galleries galleries={@job.galleries} socket={@socket} />
       </div>

@@ -493,7 +493,7 @@ defmodule PicselloWeb.JobLive.Shared do
         Jobs.get_job_by_id(job_id) |> Repo.preload([:job_status])
       end
 
-    case Jobs.archive_lead(job) do
+    case Jobs.archive_job(job) do
       {:ok, _job} ->
         socket
         |> put_flash(
@@ -531,7 +531,7 @@ defmodule PicselloWeb.JobLive.Shared do
         Jobs.get_job_by_id(job_id) |> Repo.preload([:job_status])
       end
 
-    case Jobs.unarchive_lead(job) do
+    case Jobs.unarchive_job(job) do
       {:ok, _job} ->
         socket
         |> put_flash(
@@ -791,7 +791,7 @@ defmodule PicselloWeb.JobLive.Shared do
     assigns = assigns |> Enum.into(%{badge: 0})
 
     ~H"""
-    <section class="sm:border sm:border-base-200 sm:rounded-lg mt-8 overflow-hidden">
+    <section {if @id == "gallery" && @anchor == "anchor-to-gallery", do: %{id: "gallery-anchor", phx_hook: "ScrollIntoView"}, else: %{}} class="sm:border sm:border-base-200 sm:rounded-lg mt-8 overflow-hidden">
       <div class="flex bg-base-200 px-4 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id={@id}>
         <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
           <.icon name={@icon} class="w-5 h-5" />

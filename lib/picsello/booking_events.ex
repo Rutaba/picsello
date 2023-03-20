@@ -492,7 +492,7 @@ defmodule Picsello.BookingEvents do
          } <-
            job |> Repo.preload([:payment_schedules, :job_status, client: :organization]),
          %Picsello.JobStatus{is_lead: true} <- job_status,
-         {:ok, _} <- Picsello.Jobs.archive_lead(job) do
+         {:ok, _} <- Picsello.Jobs.archive_job(job) do
       for %{stripe_session_id: "" <> session_id} <- payment_schedules,
           do:
             Picsello.Payments.expire_session(session_id,
