@@ -529,13 +529,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:searched_client, nil)
-  end
-
-  defp search_assigns(socket) do
-    socket
-    |> assign(:search_results, [])
-    |> assign(:search_phrase, nil)
-    |> assign(:searched_client, nil)
     |> assign(:selected_client, nil)
     |> assign(:current_focus, -1)
   end
