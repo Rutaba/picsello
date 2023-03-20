@@ -1,7 +1,6 @@
 defmodule PicselloWeb.JobLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  import Ecto.Query
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
   import PicselloWeb.Shared.CustomPagination, only: [pagination_component: 1, assign_pagination: 2, update_pagination: 2, reset_pagination: 2, pagination_index: 2]
 
@@ -482,6 +481,7 @@ defmodule PicselloWeb.JobLive.Index do
   do:
     (job.job_status.current_status == :archived || job.job_status.current_status == :completed) and (icon == "trash" || icon == "checkcircle")
 
+  #credo:disable-for-next-line
   defp status_label(
          %{job_status: %{current_status: status}, booking_proposals: booking_proposals} = job,
          time_zone
@@ -501,11 +501,11 @@ defmodule PicselloWeb.JobLive.Index do
       status == :answered ->
         "Pending on #{format_date(job.updated_at, time_zone)}"
 
-      !job.package ->
-        "Pending on #{format_date(job.updated_at, time_zone)}"
-
       status == :sent ->
         "Created on #{format_date(job.updated_at, time_zone)}"
+
+      !job.package ->
+        "Pending on #{format_date(job.updated_at, time_zone)}"
 
       booking_proposal && !is_nil(booking_proposal.questionnaire_id) ->
         "Awaiting on #{signed_at(booking_proposal, job.updated_at) |> format_date(time_zone)}"

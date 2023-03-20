@@ -14,7 +14,7 @@ defmodule Picsello.Jobs do
 
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
     shoots = from(s in Shoot,
-      where: s.starts_at < ^current_datetime,
+      where: s.starts_at < ^current_datetime(),
       select: %{starts_at: s.starts_at, job_id: s.job_id},
       limit: 1
     )
@@ -155,6 +155,7 @@ defmodule Picsello.Jobs do
     end)
   end
 
+  #credo:disable-for-next-line
   defp filters_status(opts) do
     Enum.reduce(opts, dynamic(true), fn
       {:status, value}, dynamic ->
@@ -263,7 +264,7 @@ defmodule Picsello.Jobs do
   defp filter_overdue_jobs(dynamic) do
     dynamic(
       [j, client, job_status, job_status_, shoots, package, payment_schedules],
-      ^dynamic and payment_schedules.due_at <= ^current_datetime and
+      ^dynamic and payment_schedules.due_at <= ^current_datetime() and
         is_nil(payment_schedules.paid_at)
     )
   end
