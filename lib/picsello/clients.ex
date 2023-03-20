@@ -82,19 +82,14 @@ defmodule Picsello.Clients do
       |> Repo.delete()
   end
 
-  def get_client(id, user) do
-    from(c in Client,
-      preload: [:tags, :jobs],
-      where: c.id == ^id and c.organization_id == ^user.organization_id and is_nil(c.archived_at)
-    )
-    |> Repo.one()
-  end
+  def get_client_query(user, opts),
+    do:
+      Client
+      |> preload([:tags, :jobs])
+      |> where(^conditions(user, opts))
 
-  def get_client_by_email(email, user) do
-    from(c in Client,
-      where:
-        c.email == ^email and c.organization_id == ^user.organization_id and is_nil(c.archived_at)
-    )
+  def get_client(user, opts) do
+    get_client_query(user, opts)
     |> Repo.one()
   end
 
@@ -109,6 +104,23 @@ defmodule Picsello.Clients do
       preload: [jobs: [galleries: [orders: [:intent, :digitals, :products]]]],
       where: c.id == ^client_id
     )
+  end
+
+  defp conditions(user, opts) do
+    id_filter = Keyword.get(opts, :id, false)
+    email_filter = Keyword.get(opts, :email, false)
+
+    conditions =
+      dynamic([c], c.organization_id == ^user.organization_id and is_nil(c.archived_at))
+
+    conditions =
+      if id_filter,
+        do: dynamic([c], c.id == ^id_filter and ^conditions),
+        else: conditions
+
+    if email_filter,
+      do: dynamic([c], c.email == ^email_filter and ^conditions),
+      else: conditions
   end
 
   defp filters_where(opts) do

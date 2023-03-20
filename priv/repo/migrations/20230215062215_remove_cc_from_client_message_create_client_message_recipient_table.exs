@@ -5,12 +5,14 @@ defmodule Picsello.Repo.Migrations.RemoveCCFromClientMessageCreateClientMessageR
   @table :client_message_recipients
 
   def up do
+    execute("CREATE TYPE recipient_type AS ENUM ('to','cc','bcc')")
+
     create table(@table) do
       add(:client_id, references(:clients, on_delete: :nothing), null: false)
       add(:client_message_id, references(:client_messages, on_delete: :nothing), null: false)
-      add(:recipient_type, :string, null: false)
+      add(:recipient_type, :string, null: false, default: "to")
 
-      timestamps()
+      timestamps(type: :utc_datetime)
     end
 
     create(index(@table, [:client_id, :client_message_id], unique: true))

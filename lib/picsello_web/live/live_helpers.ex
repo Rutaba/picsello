@@ -320,6 +320,12 @@ defmodule PicselloWeb.LiveHelpers do
 
   def to_integer(_), do: nil
 
+  def blank?(""), do: true
+
+  def blank?(nil), do: true
+
+  def blank?(str), do: if(String.trim(str) == "", do: true, else: false)
+
   def display_cover_photo(%{cover_photo: %{id: photo_id}}),
     do: %{
       style:

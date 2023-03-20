@@ -34,24 +34,6 @@ defmodule Picsello.Messages do
     |> save_message(recipients, user)
   end
 
-  def save_message(changeset, recipients_list, user) do
-    recipient_attrs = get_recipient_attrs(recipients_list, user)
-
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:client_message, changeset)
-    |> Ecto.Multi.insert_all(:client_message_recipients, ClientMessageRecipient, fn %{
-                                                                                      client_message:
-                                                                                        client_message
-                                                                                    } ->
-      recipient_attrs
-      |> Enum.map(fn attrs ->
-        attrs
-        |> Map.put(:client_message_id, client_message.id)
-      end)
-    end)
-    |> Repo.transaction()
-  end
-
   def insert_scheduled_message!(params, %Job{} = job) do
     params
     |> scheduled_message_changeset(job)
@@ -64,7 +46,7 @@ defmodule Picsello.Messages do
     |> Ecto.Changeset.put_change(:job_id, job.id)
     |> Ecto.Changeset.put_change(:scheduled, true)
     |> Ecto.Changeset.put_assoc(:client_message_recipients, [
-      %{client_id: job.client_id, recipient_type: "to"}
+      %{client_id: job.client_id, recipient_type: String.to_atom("to")}
     ])
   end
 
@@ -122,21 +104,42 @@ defmodule Picsello.Messages do
     end
   end
 
+  defp save_message(changeset, recipients_list, user) do
+    recipient_attrs = get_recipient_attrs(recipients_list, user)
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:client_message, changeset)
+    |> Ecto.Multi.insert_all(
+      :client_message_recipients,
+      ClientMessageRecipient,
+      fn %{client_message: client_message} ->
+        recipient_attrs
+        |> Enum.map(fn attrs ->
+          attrs
+          |> Map.put(:client_message_id, client_message.id)
+        end)
+      end
+    )
+    |> Repo.transaction()
+  end
+
   defp get_recipient_attrs(recipients_list, user),
     do:
       recipients_list
       |> Enum.map(fn {type, recipients} ->
         recipients
         |> Enum.map(fn recipient ->
-          client = Clients.get_client_by_email(recipient, user)
+          client = Clients.get_client(user, email: recipient)
 
           %{
             client_id: client.id,
-            recipient_type: type,
-            inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
-            updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+            recipient_type: String.to_atom(type),
+            inserted_at: now(),
+            updated_at: now()
           }
         end)
       end)
       |> List.flatten()
+
+  defp now(), do: DateTime.utc_now() |> DateTime.truncate(:second)
 end

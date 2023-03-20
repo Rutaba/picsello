@@ -173,11 +173,11 @@ export default {
     quill.on('text-change', textChange);
 
     this.handleEvent('quill:update', ({ html }) => {
-      quill.clipboard.dangerouslyPasteHTML(html, 'api');
+      quill.clipboard.dangerouslyPasteHTML(html, '');
       textChange();
     });
 
-    quill.clipboard.dangerouslyPasteHTML(htmlInput.value, 'api');
+    quill.clipboard.dangerouslyPasteHTML(htmlInput.value, '');
   },
 };
   
