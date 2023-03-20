@@ -50,6 +50,7 @@ defmodule Picsello.ClientsIndexTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
     )
     |> scroll_into_view(css("#download_is_buy_all"))
+    |> click(css("#download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
@@ -104,7 +105,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Add client"))
+    |> find(css("#intro_hints_only"), &click(&1, button("Add client")))
     |> fill_in(text_field("Email"), with: "john@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))

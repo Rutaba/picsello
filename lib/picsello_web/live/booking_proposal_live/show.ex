@@ -357,16 +357,16 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> assign(booking_countdown: countdown)
   end
 
-  def show_booking_countdown?(job),
-    do:
-      job.booking_event && !PaymentSchedules.all_paid?(job) &&
-        !PaymentSchedules.is_with_cash?(job)
+  def show_booking_countdown?(job) do
+    job.booking_event && !PaymentSchedules.paid_any?(job) &&
+      !PaymentSchedules.is_with_cash?(job)
+  end
 
   defp maybe_expire_booking(
          %{assigns: %{booking_countdown: booking_countdown, job: job, organization: organization}} =
            socket
        ) do
-    if booking_countdown <= 0 do
+    if booking_countdown <= 0 && !PaymentSchedules.paid_any?(job) do
       case Picsello.BookingEvents.expire_booking(job) do
         {:ok, _} ->
           socket

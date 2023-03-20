@@ -564,4 +564,16 @@ defmodule PicselloWeb.PackageLive.Shared do
   defp truncate_package_name(name) do
     if(String.length(name) > 25, do: String.slice(name, 0..25) <> "...", else: name)
   end
+
+  def assign_turnaround_weeks(package) do
+    weeks =
+      case package.turnaround_weeks do
+        1 -> "1 week"
+        num_weeks -> "#{num_weeks} weeks"
+      end
+
+    text = package.contract.content
+    updated_content = Regex.replace(~r/(\d+)\s+(week\b|weeks\b)/, text, weeks)
+    Map.put(package.contract, :content, updated_content)
+  end
 end

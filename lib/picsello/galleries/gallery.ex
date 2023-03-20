@@ -26,7 +26,6 @@ defmodule Picsello.Galleries.Gallery do
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
     field :total_count, :integer, default: 0
-    field :use_global, :boolean, default: true
     field :type, Ecto.Enum, @type_opts
 
     belongs_to(:job, Job)
@@ -43,6 +42,13 @@ defmodule Picsello.Galleries.Gallery do
     has_one(:package, through: [:job, :package])
     has_one(:photographer, through: [:job, :client, :organization, :user])
 
+    embeds_one :use_global, UseGlobal, on_replace: :update do
+      field :expiration, :boolean
+      field :watermark, :boolean
+      field :products, :boolean
+      field :digital, :boolean
+    end
+
     timestamps(type: :utc_datetime)
   end
 
@@ -58,7 +64,6 @@ defmodule Picsello.Galleries.Gallery do
     :expired_at,
     :client_link_hash,
     :total_count,
-    :use_global,
     :type,
     :parent_id
   ]

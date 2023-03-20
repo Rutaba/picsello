@@ -195,6 +195,8 @@ defmodule PicselloWeb.JobLive.Shared do
         %{"client_id" => client_id},
         %{assigns: %{search_results: search_results, job_changeset: job_changeset}} = socket
       ) do
+    {current_focus, _} = Integer.parse(client_id)
+
     socket
     |> assign(:search_results, [])
     |> assign(:searched_client, Enum.find(search_results, &(&1.id == to_integer(client_id))))
@@ -206,6 +208,7 @@ defmodule PicselloWeb.JobLive.Shared do
       :job_changeset,
       Job.new_job_changeset(Map.merge(job_changeset.changes, %{:client_id => client_id}))
     )
+    |> assign(:current_focus, current_focus)
     |> noreply()
   end
 
@@ -214,6 +217,8 @@ defmodule PicselloWeb.JobLive.Shared do
         %{"client_id" => client_id},
         %{assigns: %{search_results: search_results, changeset: changeset}} = socket
       ) do
+    {current_focus, _} = Integer.parse(client_id)
+
     socket
     |> assign(:search_results, [])
     |> assign(:searched_client, Enum.find(search_results, &(&1.id == to_integer(client_id))))
@@ -225,6 +230,7 @@ defmodule PicselloWeb.JobLive.Shared do
       :changeset,
       Job.new_job_changeset(Map.merge(changeset.changes, %{:client_id => client_id}))
     )
+    |> assign(:current_focus, current_focus)
     |> noreply()
   end
 
@@ -523,6 +529,15 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:searched_client, nil)
+  end
+
+  defp search_assigns(socket) do
+    socket
+    |> assign(:search_results, [])
+    |> assign(:search_phrase, nil)
+    |> assign(:searched_client, nil)
+    |> assign(:selected_client, nil)
+    |> assign(:current_focus, -1)
   end
 
   defp search(nil, _socket), do: []
@@ -1071,10 +1086,15 @@ defmodule PicselloWeb.JobLive.Shared do
             <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={if !is_nil(@selected_client), do: @selected_client.name, else: "#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients by email or first and last names..." />
             <%= if Enum.any?(@search_results) && @search_phrase do %>
               <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
-                <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white">
+                <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white w-full overflow-auto max-h-48 h-fit">
                   <%= for {search_result, idx} <- Enum.with_index(@search_results) do %>
                     <div class={"flex items-center cursor-pointer p-2"} phx-click="pick" phx-target={@myself} phx-value-client_id={"#{search_result.id}"}>
-                      <%= radio_button(:search_radio, :name, search_result.name, checked: idx == @current_focus, class: "mr-5 w-5 h-5 radio") %>
+                      <%= if search_result.id == @current_focus do %>
+                        <.icon name="radio-solid" class="mr-5 w-5 h-5" />
+                      <% else %>
+                        <.icon name="radio" class="mr-5 w-5 h-5" />
+                      <% end %>
+                      <%= radio_button(:search_radio, :name, search_result.name, checked: idx == @current_focus, class: "mr-5 w-5 h-5 radio text-blue-planning-300 hidden") %>
                       <div>
                         <p><%= search_result.name %></p>
                         <p class="text-sm"><%= search_result.email %></p>

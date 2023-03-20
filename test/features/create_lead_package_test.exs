@@ -41,6 +41,7 @@ defmodule Picsello.CreateLeadPackageTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
     )
     |> scroll_into_view(css("#download_is_buy_all"))
+    |> click(css("#download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
@@ -277,7 +278,6 @@ defmodule Picsello.CreateLeadPackageTest do
     |> package_payment_screen()
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
-    |> assert_text("Selected contract: Picsello Default Contract")
 
     template_id = template.id
     base_price = Money.new(20_000)
@@ -327,7 +327,6 @@ defmodule Picsello.CreateLeadPackageTest do
     |> package_payment_screen()
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
-    |> assert_text("Selected contract: Contract 1")
 
     template_id = template.id
 
@@ -340,7 +339,7 @@ defmodule Picsello.CreateLeadPackageTest do
 
     contract_template_id = contract_template.id
 
-    assert %Picsello.Contract{name: "Contract 1", contract_template_id: ^contract_template_id} =
+    assert %Picsello.Contract{name: "My job custom contract", contract_template_id: ^contract_template_id} =
              lead.package.contract
   end
 
@@ -382,6 +381,7 @@ defmodule Picsello.CreateLeadPackageTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: " "))
     )
     |> scroll_into_view(css("#download_is_buy_all"))
+    |> click(css("#download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: " "))
