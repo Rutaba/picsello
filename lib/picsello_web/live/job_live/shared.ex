@@ -786,7 +786,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def title_header(assigns) do
     ~H"""
     <h1 class="flex items-center mt-4 text-4xl font-bold md:justify-start">
-      <div class="flex items-center">
+      <div class="flex items-center max-w-4xl">
         <.live_link to={@back_path} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
           <.icon name="back" class="w-4 h-4 stroke-2"/>
         </.live_link>
