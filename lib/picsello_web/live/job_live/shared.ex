@@ -732,22 +732,22 @@ defmodule PicselloWeb.JobLive.Shared do
       ) do
     job = job |> Repo.preload(:payment_schedules)
 
-    {label, color} =
+    badge =
       if not is_lead and
            Enum.any?(job.payment_schedules, fn schedule ->
              DateTime.compare(schedule.due_at, DateTime.utc_now()) == :lt and
                is_nil(schedule.paid_at)
            end),
-         do: {"Overdue", :red},
+         do: %{label: "Overdue", color: :red},
          else: status_content(is_lead, status)
 
-    second_badge = second_badge(status, label)
+    second_badge = second_badge(is_lead, status, badge.label)
 
     assigns =
       assigns
       |> Enum.into(%{
-        label: label,
-        color: color,
+        label: badge.label,
+        color: badge.color,
         class: ""
       })
 
@@ -765,22 +765,22 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  def status_content(_, :archived), do: {"Archived", :red}
-  def status_content(false, :completed), do: {"Completed", :green}
-  def status_content(false, _), do: {"Active", :blue}
-  def status_content(true, :not_sent), do: {"New", :blue}
-  def status_content(true, :sent), do: {"Active", :blue}
-  def status_content(true, :accepted), do: {"Awaiting Contract", :blue}
+  def status_content(_, :archived), do: %{label: "Archived", color: :red}
+  def status_content(false, :completed), do: %{label: "Completed", color: :green}
+  def status_content(false, _), do: %{label: "Active", color: :blue}
+  def status_content(true, :not_sent), do: %{label: "New", color: :blue}
+  def status_content(true, :sent), do: %{label: "Active", color: :blue}
+  def status_content(true, :accepted), do: %{label: "Awaiting Contract", color: :blue}
 
   def status_content(true, :signed_with_questionnaire),
-    do: {"Awaiting Questionnaire", :blue}
+    do: %{label: "Awaiting Questionnaire", color: :blue}
 
   def status_content(true, status) when status in [:signed_without_questionnaire, :answered],
-    do: {"Pending Invoice", :blue}
+    do: %{label: "Pending Invoice", color: :blue}
 
-  def status_content(true, _), do: {"Active", :blue}
+  def status_content(true, _), do: %{label: "Active", color: :blue}
 
-  def status_content(_, status), do: {status |> Phoenix.Naming.humanize(), :blue}
+  def status_content(_, status), do: %{label: status |> Phoenix.Naming.humanize(), color: :blue}
 
   def title_header(assigns) do
     ~H"""
@@ -1739,13 +1739,9 @@ defmodule PicselloWeb.JobLive.Shared do
     end)
   end
 
-  defp second_badge(status, label) do
+  defp second_badge(is_lead, status, label) do
     if label == "Overdue" do
-      case status do
-        :completed -> %{label: "Completed", color: :green}
-        :archived -> %{label: "Archived", color: :red}
-        _ -> nil
-      end
+      status_content(is_lead, status)
     else
       nil
     end
