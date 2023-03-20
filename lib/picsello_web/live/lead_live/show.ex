@@ -38,6 +38,7 @@ defmodule PicselloWeb.LeadLive.Show do
     socket
     |> assign_stripe_status()
     |> assign(include_questionnaire: true)
+    |> assign(:type, %{singular: "lead", plural: "leads"})
     |> assign(:request_from, assigns["request_from"])
     |> assign_job(job_id)
     |> assign(:request_from, assigns["request_from"])

@@ -32,7 +32,7 @@ defmodule Picsello.ImportJobTest do
 
   def fill_in_existing_client_form(session, _opts \\ []) do
     session
-    |> fill_in(text_field("search_phrase"), with: "tayl")
+    |> fill_in(text_field("search_phrase", count: 2, at: 0), with: "tayl")
     |> assert_has(css("#search_results"))
     |> send_keys([:down_arrow])
     |> send_keys([:enter])

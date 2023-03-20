@@ -66,6 +66,7 @@ defmodule Picsello.Jobs do
 
   def archive_job(%Job{} = job) do
     now = current_datetime()
+    job = job |> Repo.preload(:job_status)
 
     if job.job_status.is_lead do
       job |> Job.archive_changeset() |> Repo.update()

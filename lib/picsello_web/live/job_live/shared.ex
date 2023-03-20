@@ -574,10 +574,11 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_info(
         {:message_composed, message_changeset},
-        %{assigns: %{job: %{client: client} = job}} = socket
+        %{assigns: %{job: job}} = socket
       ) do
+    job = job |> Repo.preload(:client)
     with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, client.email) do
+         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
       socket
       |> ConfirmationComponent.open(%{
         title: "Email sent",

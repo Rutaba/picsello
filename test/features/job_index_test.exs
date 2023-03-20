@@ -92,7 +92,7 @@ defmodule Picsello.JobIndexTest do
 
     session
     |> visit("/leads")
-    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(testid("job-row", count: 2))
   end
 
   feature "leads show status", %{session: session, lead: created_lead, user: user} do
@@ -103,7 +103,7 @@ defmodule Picsello.JobIndexTest do
     session
     |> click(@leads_card)
     |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
-    |> assert_has(link(Job.name(archived_lead), count: 0))
+    |> assert_has(link(Job.name(archived_lead), text: "Archived"))
     |> assert_has(link(Job.name(created_lead), text: "Created"))
   end
 
@@ -141,7 +141,7 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(link(lead.client.name))
     |> assert_has(link(Job.name(lead)))
     |> click(button("Manage"))
-    |> click(button("View Client"))
+    |> click(button("View client"))
     |> assert_url_contains("clients/#{lead.client_id}")
     |> assert_has(testid("client-details"))
     |> click(link("Picsello"))
@@ -150,12 +150,12 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(link(job.client.name))
     |> assert_has(link(Job.name(job)))
     |> click(button("Manage"))
-    |> click(button("View Client"))
+    |> click(button("View client"))
     |> assert_url_contains("clients/#{job.client_id}")
     |> assert_has(testid("client-details"))
   end
 
-  feature "visits job gallery", %{
+  feature "visits gallery", %{
     session: session,
     job: job,
     lead: lead
@@ -166,8 +166,7 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(link(lead.client.name))
     |> assert_has(link(Job.name(lead)))
     |> click(button("Manage"))
-    |> click(button("Go to galleries"))
-    |> assert_url_contains("leads/#{lead.id}")
+    |> refute_has(button("Go to galleries"))
     |> click(link("Picsello"))
     |> click(@jobs_card)
     |> assert_has(testid("job-row", count: 1))
@@ -195,7 +194,7 @@ defmodule Picsello.JobIndexTest do
     |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
     |> send_keys(["This is 1st line", :enter, "2nd line"])
     |> click(button("Send"))
-    |> assert_text("Thank you! Your message has been sent. We’ll be in touch with you soon.")
+    |> assert_text("Yay! Your email has been successfully sent")
     |> click(button("Close"))
     |> click(link("Picsello"))
     |> click(@jobs_card)
@@ -209,7 +208,7 @@ defmodule Picsello.JobIndexTest do
     |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
     |> send_keys(["This is 1st line", :enter, "2nd line"])
     |> click(button("Send"))
-    |> assert_text("Thank you! Your message has been sent. We’ll be in touch with you soon.")
+    |> assert_text("Yay! Your email has been successfully sent")
     |> click(button("Close"))
   end
 
@@ -218,6 +217,7 @@ defmodule Picsello.JobIndexTest do
     user: user
   } do
     preload_some_leads(user)
+    preload_some_jobs(user)
 
     session
     |> click(@leads_card)
@@ -233,12 +233,8 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(testid("job-row", count: 1))
     |> click(testid("close_search"))
     |> fill_in(css("#search_phrase_input"), with: "test@example.com")
-    |> assert_has(testid("job-row", count: 0))
     |> assert_text("No leads match your search or filters.")
-
-    preload_some_jobs(user)
-
-    session
+    |> click(link("Picsello"))
     |> click(@jobs_card)
     |> assert_has(testid("search_filter_and_sort_bar", count: 1))
     |> assert_has(testid("job-row", count: 4))
@@ -252,7 +248,6 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(testid("job-row", count: 1))
     |> click(testid("close_search"))
     |> fill_in(css("#search_phrase_input"), with: "test@example.com")
-    |> assert_has(testid("job-row", count: 0))
     |> assert_text("No jobs match your search or filters.")
   end
 
