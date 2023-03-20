@@ -241,6 +241,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign(custom: false)
     |> assign(job_type: nil)
     |> assign(custom_schedule_type: nil)
+    |> assign(active_tab: :contract)
+    |> assign(tabs: tabs_list())
     |> assign(default_payment_changeset: nil)
     |> ok()
   end
@@ -476,7 +478,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step(%{name: :documents} = assigns) do
+  def step(%{name: :documents1} = assigns) do
     ~H"""
       <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
         <div class="flex bg-base-200 px-4 py-2 items-center cursor-pointer" phx-click="toggle-collapsed-documents" phx-value-index={0} phx-target={@myself}>
@@ -550,9 +552,38 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       </section>
     """
   end
-  def step(%{name: :documents1}=assigns) do
+  def step(%{name: :documents}=assigns) do
     ~H"""
       <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
+      <%= for %{name: name, concise_name: concise_name} <- @tabs do %>
+        <div class={classes("text-blue-planning-300 flex font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @active_tab === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @active_tab !== concise_name})}>
+          <button type="button" phx-click={"toggle-tab"} phx-value-active={concise_name} phx-target={@myself} ><%= name %></button>
+        </div>
+      <% end %>
+      <div class={classes("p-4", %{"hidden" => !(@active_tab == :contract)})}>
+          <p>Here you can copy and paste your own contract or use the legally approved contract we have developed. You're also able to version your contract for different needs if you want!</p>
+          <% c = form_for(@contract_changeset, "#") %>
+          <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
+              <div class="w-1/3">Contract name</div>
+              <div class="w-1/3 text-center">Job type</div>
+              <div class="w-1/3 text-center">Select contract</div>
+            </div>
+            <%= for contract <- @contract_options do %>
+              <% checked = input_value(c, :contract_template_id) == contract.id %>
+              <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => checked})}>
+                <label class="flex items-center justify-between cursor-pointer">
+                  <h3 class="font-xl font-bold w-1/3"><%= contract.name %></h3>
+                  <p class="w-1/3 text-center"><%= contract.job_type %></p>
+                  <div class="w-1/3 text-center">
+                    <%= radio_button(c, :contract_template_id, contract.id, class: "w-5 h-5 mr-2.5 radio") %>
+                  </div>
+                </label>
+              </div>
+            <% end %>
+      </div>
+      <div class={classes("p-4", %{"hidden" => !(@active_tab == :question)})}>
+        <h1> Hello  Question</h1>
+      </div>
       </section>
       """
   end
@@ -771,6 +802,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> noreply()
   end
 
+  def handle_event("toggle-tab",  %{"active" => active_tab}, socket) do
+    socket
+    |> assign(:active_tab, String.to_atom(active_tab))
+    |> noreply()
+  end
+
   @impl true
   def handle_event(
         "back",
@@ -890,18 +927,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{assigns: %{changeset: changeset}} = socket
       ) do
     template_id = template_id |> to_integer()
-    IO.inspect(template_id, label: "template_id===>")
-    contract =
-      case template_id do
-        nil ->
-          nil
+    # contract =
+    #   case template_id do
+    #     nil ->
+    #       nil
 
-        id ->
-          package = changeset |> current()
+    #     id ->
+    #       package = changeset |> current()
 
-          package
-          |> Contracts.find_by!(id)
-      end
+    #       package
+    #       |> Contracts.find_by!(id)
+    #   end
 
     socket
     |> assign_contract_changeset(%{"edited" => false, "contract_template_id" => template_id})
@@ -911,7 +947,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   @impl true
   def handle_event("validate", %{"contract" => contract} = params, socket) do
-    IO.inspect(params, label: "params validate ===> ")
+    # IO.inspect(params, label: "params validate ===> ")
     contract = contract |> Map.put_new("edited", Map.get(contract, "quill_source") == "user")
 
     params = params |> Map.put("contract", contract)
@@ -1521,7 +1557,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          params,
          action \\ nil
        ) do
-      IO.inspect(params, label: "params")
+      # IO.inspect(params, label: "params")
     global_settings =
       if global_settings,
         do: global_settings,
@@ -1601,22 +1637,24 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp assign_contract_changeset(%{assigns: %{step: :documents}} = socket, params) do
-    IO.inspect(params, label: "params conract")
+    # IO.inspect(params, label: "params conract")
     contract_template_id= Map.get(params, "contract_template_id")
     contract_params = Map.get(params, "contract", %{})
-    IO.inspect(contract_params, label: "contract_params")
+    # IO.inspect(contract_params, label: "contract_params")
     contract = if contract_template_id do
       socket.assigns.changeset
       |> current()
+      # |> IO.inspect(label: "package==> ")
       |> Contracts.find_by!(contract_template_id)
     else
       socket.assigns.changeset
       |> current()
       |> package_contract()
+      # |> IO.inspect(label: "package contract 1 ==>")
     end
     contract_changeset =
       contract
-      |> Contract.changeset(contract_params,
+      |> Contract.changeset(params,
         skip_package_id: true,
         validate_unique_name_on_organization:
           if(validate_contract_name?(contract_params),
@@ -1624,7 +1662,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           )
       )
       |> Map.put(:action, :validate)
-      IO.inspect(contract_changeset, label: "contract_changeset===> ")
+      # IO.inspect(contract_changeset, label: "contract_changeset===> ")
     socket |> assign(contract_changeset: contract_changeset)
   end
 
@@ -1906,4 +1944,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp get_shoots(job_id), do: Shoot.for_job(job_id) |> Repo.all()
+
+  defp tabs_list() do
+    [
+       %{
+         name: "Contracts",
+         concise_name: "contract"
+       },
+       %{
+        name: "Questions",
+        concise_name: "question"
+      },
+    ]
+  end
 end

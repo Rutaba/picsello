@@ -163,7 +163,7 @@ defmodule Picsello.Contracts do
     from(c in Contract,
       where: c.organization_id == ^organization_id or is_nil(c.contract_template_id),
       where: is_nil(c.package_id),
-      order_by: [asc: c.organization_id, desc: c.inserted_at]
+      order_by: [asc: c.job_type, asc: c.name]
     )
   end
 
