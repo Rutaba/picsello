@@ -9,7 +9,6 @@ defmodule PicselloWeb.Shared.CustomPagination do
 
   alias Ecto.Changeset
 
-
   @primary_key false
   embedded_schema do
     field(:first_index, :integer, default: 1)
@@ -121,12 +120,13 @@ defmodule PicselloWeb.Shared.CustomPagination do
           changeset(pagination_changeset, params)
         )
 
-  def reset_pagination(socket, params), do:
-    socket
-    |> assign(
-      :pagination_changeset,
-      changeset(%__MODULE__{}, params)
-    )
+  def reset_pagination(socket, params),
+    do:
+      socket
+      |> assign(
+        :pagination_changeset,
+        changeset(%__MODULE__{}, params)
+      )
 
   def pagination_index(changeset, index),
     do: changeset |> current() |> Map.get(index)

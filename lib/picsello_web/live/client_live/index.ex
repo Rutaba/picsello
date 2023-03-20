@@ -5,7 +5,14 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
   import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 2, new_gallery_path: 2]
 
-  import PicselloWeb.Shared.CustomPagination, only: [pagination_component: 1, assign_pagination: 2, update_pagination: 2, reset_pagination: 2, pagination_index: 2]
+  import PicselloWeb.Shared.CustomPagination,
+    only: [
+      pagination_component: 1,
+      assign_pagination: 2,
+      update_pagination: 2,
+      reset_pagination: 2,
+      pagination_index: 2
+    ]
 
   alias Ecto.Changeset
   alias Picsello.{Repo, Clients, ClientTag}
@@ -629,6 +636,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   defp reassign_pagination_and_clients(%{assigns: %{pagination_changeset: changeset}} = socket) do
     limit = pagination_index(changeset, :limit)
+
     socket
     |> reset_pagination(%{limit: limit, last_index: limit, total_count: client_count(socket)})
     |> fetch_clients()

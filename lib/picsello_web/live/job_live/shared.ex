@@ -364,9 +364,14 @@ defmodule PicselloWeb.JobLive.Shared do
   def handle_event(
         "confirm-archive-unarchive",
         %{"id" => job_id},
-        %{assigns: %{jobs: jobs}} = socket
+        socket
       ) do
-    job = Enum.find(jobs, fn job -> job.id == to_integer(job_id) end)
+    job =
+      if Map.get(socket.assigns, :jobs) do
+        Enum.find(socket.assigns.jobs, fn job -> job.id == to_integer(job_id) end)
+      else
+        Jobs.get_job_by_id(job_id) |> Repo.preload([:job_status])
+      end
 
     action_string =
       if job.job_status.current_status == :archived, do: "unarchive", else: "archive"
@@ -407,7 +412,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_info(
         {:confirm_event, "complete_job"},
-        %{assigns: %{job: job, request_from: request_from}} = socket
+        %{assigns: %{job: job, request_from: request_from} = assigns} = socket
       ) do
     case job |> Job.complete_changeset() |> Repo.update() do
       {:ok, job} ->
@@ -416,10 +421,14 @@ defmodule PicselloWeb.JobLive.Shared do
         |> put_flash(:success, "Job completed")
         |> push_redirect(
           to:
-            if(request_from == :jobs,
-              do: Routes.job_path(socket, :jobs),
-              else: Routes.client_path(socket, :job_history, job.client_id)
-            )
+            cond do
+              request_from == :jobs ->
+                Routes.job_path(socket, :jobs)
+              request_from == :clients ->
+                Routes.client_path(socket, :job_history, job.client_id)
+              true ->
+                Routes.job_path(socket, Map.get(assigns, :live_action), job.id)
+            end
         )
 
       {:error, _} ->
@@ -433,9 +442,14 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_info(
         {:confirm_event, "archive-entity", %{job_id: job_id}},
-        %{assigns: %{jobs: jobs} = assigns} = socket
+        %{assigns: assigns} = socket
       ) do
-    job = Enum.find(jobs, fn job -> job.id == to_integer(job_id) end)
+    job =
+      if Map.get(assigns, :jobs) do
+        Enum.find(assigns.jobs, fn job -> job.id == to_integer(job_id) end)
+      else
+        Jobs.get_job_by_id(job_id) |> Repo.preload([:job_status])
+      end
 
     case Jobs.archive_lead(job) do
       {:ok, _job} ->
@@ -446,10 +460,14 @@ defmodule PicselloWeb.JobLive.Shared do
         )
         |> redirect(
           to:
-            if(Map.has_key?(assigns, :type),
-              do: Routes.job_path(socket, String.to_atom(assigns.type.plural)),
-              else: Routes.client_path(socket, :job_history, job.client_id)
-            )
+            cond do
+              Map.has_key?(assigns, :type) ->
+                Routes.job_path(socket, String.to_atom(assigns.type.plural))
+              Map.get(assigns, :live_action) in [:leads, :jobs] ->
+                Routes.job_path(socket, Map.get(assigns, :live_action), job.id)
+              true ->
+                Routes.client_path(socket, :job_history, job.client_id)
+            end
         )
 
       {:error, _} ->
@@ -462,9 +480,14 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_info(
         {:confirm_event, "unarchive-entity", %{job_id: job_id}},
-        %{assigns: %{jobs: jobs} = assigns} = socket
+        %{assigns: assigns} = socket
       ) do
-    job = Enum.find(jobs, fn job -> job.id == to_integer(job_id) end)
+    job =
+      if Map.get(assigns, :jobs) do
+        Enum.find(assigns.jobs, fn job -> job.id == to_integer(job_id) end)
+      else
+        Jobs.get_job_by_id(job_id) |> Repo.preload([:job_status])
+      end
 
     case Jobs.unarchive_lead(job) do
       {:ok, _job} ->
@@ -475,10 +498,14 @@ defmodule PicselloWeb.JobLive.Shared do
         )
         |> redirect(
           to:
-            if(Map.has_key?(assigns, :type),
-              do: Routes.job_path(socket, String.to_atom(assigns.type.plural)),
-              else: Routes.client_path(socket, :job_history, job.client_id)
-            )
+          cond do
+            Map.has_key?(assigns, :type) ->
+              Routes.job_path(socket, String.to_atom(assigns.type.plural))
+            Map.get(assigns, :live_action) in [:leads, :jobs] ->
+              Routes.job_path(socket, Map.get(assigns, :live_action), job.id)
+            true ->
+              Routes.client_path(socket, :job_history, job.client_id)
+          end
         )
 
       {:error, _} ->

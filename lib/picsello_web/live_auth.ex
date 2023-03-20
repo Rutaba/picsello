@@ -100,8 +100,7 @@ defmodule PicselloWeb.LiveAuth do
     subscription_expired =
       gallery |> Galleries.gallery_photographer() |> Subscriptions.subscription_expired?()
 
-    job_expiry =
-      not is_nil(gallery.job.archived_at) or not is_nil(gallery.job.completed_at)
+    job_expiry = not is_nil(gallery.job.archived_at) or not is_nil(gallery.job.completed_at)
 
     if Galleries.expired?(gallery) || subscription_expired || job_expiry do
       socket

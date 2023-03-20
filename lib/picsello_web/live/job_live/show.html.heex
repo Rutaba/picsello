@@ -33,10 +33,22 @@
                 <.icon name="pencil" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
                 <a>Edit job name</a>
               </li>
-              <%= if !@job.job_status.is_lead and !@job.completed_at do  %>
+              <%= if !@job.job_status.is_lead and !@job.archived_at and !@job.completed_at do  %>
                 <li phx-click="confirm_job_complete" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
                   <.icon name="checkcircle" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
                   <a>Complete job</a>
+                </li>
+              <% end %>
+              <%= if !@job.archived_at and !@job.completed_at  do  %>
+                <li phx-click="confirm-archive-unarchive" phx-value-id={@job.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+                  <.icon name="trash" class="inline-block w-4 h-4 mx-2 fill-current text-red-sales-300" />
+                  <a>Archive job</a>
+                </li>
+              <% end %>
+              <%= if not is_nil(@job.archived_at) and !@job.completed_at  do  %>
+                <li phx-click="confirm-archive-unarchive" phx-value-id={@job.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+                  <.icon name="plus" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+                  <a>Unarchive job</a>
                 </li>
               <% end %>
             </ul>

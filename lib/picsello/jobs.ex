@@ -13,11 +13,12 @@ defmodule Picsello.Jobs do
   import Ecto.Query
 
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
-    shoots = from(s in Shoot,
-      where: s.starts_at < ^current_datetime,
-      select: %{starts_at: s.starts_at, job_id: s.job_id},
-      limit: 1
-    )
+    shoots =
+      from(s in Shoot,
+        where: s.starts_at < ^current_datetime(),
+        select: %{starts_at: s.starts_at, job_id: s.job_id},
+        limit: 1
+      )
 
     from(j in query,
       left_join: job_status in assoc(j, :job_status),
@@ -70,12 +71,8 @@ defmodule Picsello.Jobs do
     else
       Ecto.Multi.new()
       |> Ecto.Multi.update(:job, Job.archive_changeset(job))
-      |> Ecto.Multi.run(:write, fn _repo, %{job: job} ->
-        with from(ps in PaymentSchedule, where: ps.job_id == ^job.id, update: [set: [reminded_at: ^now]]) |> Repo.update_all([]),
-        from(s in Shoot, where: s.job_id == ^job.id, update: [set: [reminded_at: ^now]]) |> Repo.update_all([]) do
-          {:ok, nil}
-        end
-      end)
+      |> Ecto.Multi.update_all(:update_payment_schedules, from(ps in PaymentSchedule, where: ps.job_id == ^job.id), set: [reminded_at: now])
+      |> Ecto.Multi.update_all(:update_shoots, from(s in Shoot, where: s.job_id == ^job.id), set: [reminded_at: now])
       |> Repo.transaction()
     end
   end
@@ -155,6 +152,7 @@ defmodule Picsello.Jobs do
     end)
   end
 
+  # credo:disable-for-next-line
   defp filters_status(opts) do
     Enum.reduce(opts, dynamic(true), fn
       {:status, value}, dynamic ->
@@ -263,7 +261,7 @@ defmodule Picsello.Jobs do
   defp filter_overdue_jobs(dynamic) do
     dynamic(
       [j, client, job_status, job_status_, shoots, package, payment_schedules],
-      ^dynamic and payment_schedules.due_at <= ^current_datetime and
+      ^dynamic and payment_schedules.due_at <= ^current_datetime() and
         is_nil(payment_schedules.paid_at)
     )
   end
@@ -284,8 +282,7 @@ defmodule Picsello.Jobs do
 
   defp filter_order_by(:starts_at, order) do
     [
-      {order,
-       dynamic([j, client, job_status, job_status_, shoots], field(shoots, :starts_at))}
+      {order, dynamic([j, client, job_status, job_status_, shoots], field(shoots, :starts_at))}
     ]
   end
 
