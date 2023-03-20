@@ -33,7 +33,7 @@ defmodule Picsello.ClientMessage do
 
   def create_inbound_changeset(attrs, required_fields \\ []) do
     %__MODULE__{}
-    |> cast(attrs, [:body_text, :body_html, :job_id, :client_id, :subject])
+    |> cast(attrs, [:body_text, :body_html, :job_id, :subject])
     |> then(fn changeset ->
       if Enum.any?(required_fields) do
         changeset

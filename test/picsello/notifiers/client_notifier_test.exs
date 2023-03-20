@@ -13,7 +13,7 @@ defmodule Picsello.Notifiers.ClientNotifierTest do
     message = insert(:client_message, job: job, client_id: job.client_id) |> Repo.reload()
 
     assert {:ok, %{headers: %{"reply-to" => reply_to}}} =
-             ClientNotifier.deliver_email(message, "test@example.com")
+             ClientNotifier.deliver_email(message, %{"to" => "test@example.com"})
 
     token = Messages.token(job)
 
@@ -31,7 +31,7 @@ defmodule Picsello.Notifiers.ClientNotifierTest do
     message = insert(:client_message, client: client) |> Repo.reload()
 
     assert {:ok, %{headers: %{"reply-to" => reply_to}}} =
-             ClientNotifier.deliver_email(message, "test@example.com")
+             ClientNotifier.deliver_email(message, %{"to" => "test@example.com"})
 
     token = Messages.token(client)
 

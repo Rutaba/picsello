@@ -7,30 +7,34 @@ defmodule Picsello.InboxTest do
   setup %{user: user} do
     lead = insert(:lead, user: user, type: "wedding")
 
+    client_message =
     insert(:client_message,
       job: lead,
-      client_id: lead.client_id,
       body_text: "lead message 1",
       inserted_at: ~N[2021-10-10 08:00:00]
     )
 
+    insert(:client_message_recipient, client_message: client_message, client_id: lead.client_id)
+
     job = insert(:lead, user: user, type: "family") |> promote_to_job()
 
+    client_message_1 =
     insert(:client_message,
       job: job,
-      client_id: job.client_id,
       body_text: "job message 1",
       outbound: false,
       inserted_at: ~N[2021-10-10 08:00:00]
     )
 
+    client_message_2 =
     insert(:client_message,
       job: job,
-      client_id: job.client_id,
       outbound: true,
       body_text: "job message 2",
       inserted_at: ~N[2021-10-11 08:00:00]
     )
+    insert(:client_message_recipient, client_message: client_message_1, client_id: job.client_id)
+    insert(:client_message_recipient, client_message: client_message_2, client_id: job.client_id)
 
     [job: job, lead: lead]
   end

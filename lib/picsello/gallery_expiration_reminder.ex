@@ -75,7 +75,7 @@ defmodule Picsello.GalleryExpirationReminder do
       ])
       |> Ecto.Changeset.put_change(:scheduled, true)
       |> Repo.insert!()
-      |> ClientNotifier.deliver_email(client_email)
+      |> ClientNotifier.deliver_email(%{"to" => client_email})
     end
   end
 

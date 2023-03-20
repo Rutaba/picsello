@@ -80,7 +80,7 @@ defmodule Picsello.ProposalReminder do
         %{client_id: client_id, recipient_type: String.to_atom("to")}
       ])
       |> Repo.insert!()
-      |> ClientNotifier.deliver_booking_proposal(client_email)
+      |> ClientNotifier.deliver_booking_proposal(%{"to" => client_email})
     end
   end
 

@@ -30,7 +30,8 @@ defmodule Picsello.Factory do
     Profiles.Profile,
     BrandLink,
     Questionnaire,
-    PackagePaymentSchedule
+    PackagePaymentSchedule,
+    ClientMessageRecipient
   }
 
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
@@ -341,6 +342,8 @@ defmodule Picsello.Factory do
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
+
+  def client_message_recipient_factory(), do: %ClientMessageRecipient{}
 
   def promote_to_job(%Job{package_id: nil, client: %{organization: organization}} = job)
       when not is_nil(organization) do

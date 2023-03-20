@@ -85,7 +85,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
       %{subject: subject, body_text: HtmlSanitizeEx.strip_tags(body)}
       |> Picsello.Messages.insert_scheduled_message!(job)
       |> deliver_email(
-        client.email,
+        %{"to" => client.email},
         %{
           button: %{
             text: "Open invoice",
@@ -125,7 +125,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
            Picsello.EmailPresets.resolve_variables(preset, {job, payment_schedule}, helpers) do
       deliver_transactional_email(
         %{subject: subject, headline: subject, body: body},
-        client.email,
+        %{"to" => client.email},
         job
       )
     end
