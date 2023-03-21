@@ -164,7 +164,9 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
           }
         } = socket
       ) do
-    pending_payments = Enum.filter(payment_schedules, &is_nil(&1.paid_at)) |> Enum.sort_by(& &1.due_at, :asc)
+    pending_payments =
+      Enum.filter(payment_schedules, &is_nil(&1.paid_at)) |> Enum.sort_by(& &1.due_at, :asc)
+
     due_at = pending_payments |> hd() |> Map.get(:due_at)
     paid_at = date_to_datetime(paid_at, current_user.time_zone)
 
@@ -176,35 +178,49 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:new_payment, build_changeset(socket, params))
-    |> Ecto.Multi.merge(fn %{new_payment: new_payment} -> 
-      {for_delete, for_update, _} = 
-      pending_payments
-      |> Enum.reduce_while({[], nil, Money.new(0)}, fn %{price: price} = payment, {for_delete, for_update, acc} -> 
-        owed = Money.add(price, acc)
-        case Money.cmp(new_payment.price, owed) do
-          :gt ->
-            {:cont, {[payment.id | for_delete], for_update, owed}}
-          _ ->
-            updated_amount = Money.subtract(owed, new_payment.price)
-            for_update = PaymentSchedule.update_payment_changeset(payment, %{price: updated_amount})
-            {:halt, {for_delete, for_update, owed}}
-        end
-      end)
-      
+    |> Ecto.Multi.merge(fn %{new_payment: new_payment} ->
+      {for_delete, for_update, _} =
+        pending_payments
+        |> Enum.reduce_while({[], nil, Money.new(0)}, fn %{price: price} = payment,
+                                                         {for_delete, for_update, acc} ->
+          owed = Money.add(price, acc)
+
+          case Money.cmp(new_payment.price, owed) do
+            :gt ->
+              {:cont, {[payment.id | for_delete], for_update, owed}}
+
+            _ ->
+              updated_amount = Money.subtract(owed, new_payment.price)
+
+              for_update =
+                PaymentSchedule.update_payment_changeset(payment, %{price: updated_amount})
+
+              {:halt, {for_delete, for_update, owed}}
+          end
+        end)
+
       multi = Ecto.Multi.new()
       if for_update, do: Ecto.Multi.update(multi, :update_payment, for_update), else: multi
-      if Enum.any?(for_delete), do: Ecto.Multi.delete_all(multi, :delete_payments, from(p in PaymentSchedule, where: p.id in ^for_delete)), else: multi
+
+      if Enum.any?(for_delete),
+        do:
+          Ecto.Multi.delete_all(
+            multi,
+            :delete_payments,
+            from(p in PaymentSchedule, where: p.id in ^for_delete)
+          ),
+        else: multi
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, _} -> 
+      {:ok, _} ->
         socket
         |> assign(:add_payment_show, !add_payment_show)
         |> assign_payments()
         |> assign_job()
 
-      {:error, _} -> 
-        socket 
+      {:error, _} ->
+        socket
         |> put_flash(:error, "could not save payment_schedules.")
     end
     |> noreply()

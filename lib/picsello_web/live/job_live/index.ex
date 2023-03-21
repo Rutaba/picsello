@@ -495,7 +495,11 @@ defmodule PicselloWeb.JobLive.Index do
 
   # credo:disable-for-next-line
   defp status_label(
-         %{job_status: %{current_status: status}, booking_proposals: booking_proposals, payment_schedules: payment_schedules} = job,
+         %{
+           job_status: %{current_status: status},
+           booking_proposals: booking_proposals,
+           payment_schedules: payment_schedules
+         } = job,
          time_zone
        ) do
     booking_proposal = booking_proposals |> List.first()
@@ -516,8 +520,9 @@ defmodule PicselloWeb.JobLive.Index do
 
       status == :sent ->
         "Created on #{format_date(job.updated_at, time_zone)}"
-      
-      !unpaid? -> "Created on #{format_date(job.updated_at, time_zone)}"
+
+      !unpaid? ->
+        "Created on #{format_date(job.updated_at, time_zone)}"
 
       !job.package ->
         "Pending on #{format_date(job.updated_at, time_zone)}"

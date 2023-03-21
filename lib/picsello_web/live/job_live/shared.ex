@@ -577,6 +577,7 @@ defmodule PicselloWeb.JobLive.Shared do
         %{assigns: %{job: job}} = socket
       ) do
     job = job |> Repo.preload(:client)
+
     with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
          {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
       socket
