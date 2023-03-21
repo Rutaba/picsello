@@ -404,7 +404,7 @@ defmodule PicselloWeb.LiveHelpers do
       <div class="md:max-w-md">
         <h1 class="text-5xl font-bold mb-4"><%= @headline %></h1>
         <p class="text-base-250 text-xl"><%= @body %></p>
-        <div class={"flex flex-wrap md:flex-nowrap items-center md:justify-start justify-center gap-6 mt-4 #{@cta_class}"}>
+        <div class={"flex flex-wrap md:flex-nowrap items-center md:justify-start justify-center gap-6 mt-4 mb-8 sm:mb-0 #{@cta_class}"}>
           <%= if @inner_block do %>
             <%= render_block(@inner_block) %>
             <%= if @external_video_link do %>
