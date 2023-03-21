@@ -318,9 +318,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <%= inputs_for @f, :time_blocks, fn t -> %>
             <div class="flex lg:items-center flex-col lg:flex-row mb-4">
               <div class={classes("flex items-center lg:w-auto w-full lg:justify-start justify-between", %{"text-gray-400" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})}>
-                <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}-start-time"} input_label="Block Start" data_time_only="true" data_custom_display_format="h:i K" data_custom_date_format="H:i" data_time_picker="true" form={t} field={:start_time} input_placeholder="--:-- --" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} />
+                <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}-start-time-#{t.index}"} input_label="Block Start" data_time_only="true" data_custom_display_format="h:i K" data_custom_date_format="H:i" data_time_picker="true" form={t} field={:start_time} input_placeholder="--:-- --" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} />
                 <p class="mx-2 mt-6">-</p>
-                <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}-end-time"} input_label="Block End" data_time_only="true" data_custom_display_format="h:i K" data_custom_date_format="H:i" data_time_picker="true" form={t} field={:end_time} input_placeholder="--:-- --" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} />
+                <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}-end-time-#{t.index}"} input_label="Block End" data_time_only="true" data_custom_display_format="h:i K" data_custom_date_format="H:i" data_time_picker="true" form={t} field={:end_time} input_placeholder="--:-- --" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} />
                 <%= hidden_input t, :is_break%>
                 <%= hidden_input t, :is_valid, value: t |> current |> Map.get(:is_valid) %>
               </div>
