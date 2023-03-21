@@ -247,6 +247,15 @@ defmodule PicselloWeb.LayoutView do
     end
   end
 
+  def admin_banner(assigns) do
+    ~H"""
+    <div class="hidden fixed top-4 right-4 p-2 bg-red-sales-300/25 rounded-lg text-red-sales-300 shadow-lg backdrop-blur-md z-[1000]" id="admin-banner">
+      <span class="font-bold">You are logged in as a user, please log out when finished</span>
+      <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "ml-4 btn-tertiary px-2 py-1 text-sm text-red-sales-300") %>
+    </div>
+    """
+  end
+
   def main_header(assigns) do
     ~H"""
     <header class="border-b fixed left-0 right-0 top-0 z-40 bg-white">

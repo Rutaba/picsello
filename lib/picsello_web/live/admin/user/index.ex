@@ -8,7 +8,8 @@ defmodule PicselloWeb.Live.Admin.User.Index do
 
   import PicselloWeb.LayoutView,
     only: [
-      flash: 1
+      flash: 1,
+      admin_banner: 1
     ]
 
   @impl true
@@ -27,7 +28,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
       <h1 class="text-4xl font-bold">Find user to edit</h1>
       <p class="text-md">Search your user and pick the action you'd like to do</p>
     </header>
-    <div class="p-8">
+    <div class="p-8" phx-hook="showAdminBanner" id="show-admin-banner">
       <%= form_tag("#", [phx_change: :search, phx_submit: :search]) do %>
         <div class="flex flex-col px-1.5 mb-10">
           <label for="search_phrase_input" class="text-lg font-bold block mb-2">Enter user email</label>
@@ -50,9 +51,15 @@ defmodule PicselloWeb.Live.Admin.User.Index do
             </.form>
             <hr class="mb-4" />
             <%= live_redirect "Upload contacts", to: Routes.admin_user_contact_upload_path(@socket, :show, id), class: "underline text-blue-planning-300" %>
+            <form action={Routes.user_admin_session_path(@socket, :create)} method="POST" class="mt-4">
+              <%= csrf_input_tag("/admin/users/log_in") %>
+              <input type="hidden" value={id} name="user_id" />
+              <button type="submit" class="block btn-tertiary">Log in as user (danger)</button>
+            </form>
           </div>
         <% end %>
       </div>
+      <.admin_banner socket={@socket} />
     </div>
     """
   end

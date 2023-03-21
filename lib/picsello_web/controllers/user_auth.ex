@@ -39,6 +39,30 @@ defmodule PicselloWeb.UserAuth do
     |> redirect(to: redirect_to)
   end
 
+  @doc """
+  Logs the user in from the admin panel.
+
+  It renews the session ID and clears the whole session
+  to avoid fixation attacks. See the renew_session
+  function to customize this behaviour.
+
+  It also sets a `:live_socket_id` key in the session,
+  so LiveView sessions are identified and automatically
+  disconnected on log out. The line can be safely removed
+  if you are not using LiveView.
+  """
+  def log_in_user_from_admin(conn, user) do
+    token = Accounts.generate_user_session_token(user)
+
+    conn
+    |> renew_session()
+    |> put_session(:user_token, token)
+    |> put_resp_cookie("show_admin_banner", "true", http_only: false)
+    |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
+    |> put_flash(:info, "Logged in as user from admin")
+    |> redirect(to: "/home")
+  end
+
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
     put_resp_cookie(conn, @remember_me_cookie, token, @remember_me_options)
   end

@@ -1,4 +1,5 @@
 defmodule PicselloWeb.Router do
+  alias PicselloWeb.UserAdminSessionController
   use PicselloWeb, :router
 
   import PicselloWeb.UserAuth
@@ -99,6 +100,7 @@ defmodule PicselloWeb.Router do
     live "/user/:id/contact_upload", Live.Admin.User.ContactUpload, :show
     live "/workers", Live.Admin.Workers, :index
     live "/", Live.Admin.Index, :index
+    post "/users/log_in", UserAdminSessionController, :create
   end
 
   ## Authentication routes
