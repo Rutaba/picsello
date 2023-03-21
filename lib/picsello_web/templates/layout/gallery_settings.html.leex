@@ -1,4 +1,4 @@
-<main role="main" class="min-h-screen client-app">
+<main role="main" class="min-h-screen client-app" phx-hook="showAdminBanner" id="show-admin-banner">
   <%= flash(@flash) %>
   <div class="flex flex-col">
     <div class="flex flex-row">
@@ -78,4 +78,5 @@
     </div>
   </div>
   <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
+  <.admin_banner socket={@socket} />
 </main>
