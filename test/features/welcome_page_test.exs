@@ -191,7 +191,7 @@ defmodule Picsello.WelcomePageTest do
       session
       |> sign_in(user)
       |> click(button("Leads"))
-      |> assert_has(css("main > div > ul > li", count: 6))
+      |> assert_has(testid("job-row", count: 6))
     end
 
     feature "leads card has empty state", %{session: session, user: user} do
