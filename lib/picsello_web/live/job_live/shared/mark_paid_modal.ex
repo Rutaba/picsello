@@ -181,22 +181,8 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     |> Ecto.Multi.merge(fn %{new_payment: new_payment} ->
       {for_delete, for_update, _} =
         pending_payments
-        |> Enum.reduce_while({[], nil, Money.new(0)}, fn %{price: price} = payment,
-                                                         {for_delete, for_update, acc} ->
-          owed = Money.add(price, acc)
-
-          case Money.cmp(new_payment.price, owed) do
-            :gt ->
-              {:cont, {[payment.id | for_delete], for_update, owed}}
-
-            _ ->
-              updated_amount = Money.subtract(owed, new_payment.price)
-
-              for_update =
-                PaymentSchedule.update_payment_changeset(payment, %{price: updated_amount})
-
-              {:halt, {for_delete, for_update, owed}}
-          end
+        |> Enum.reduce_while({[], nil, Money.new(0)}, fn payment, {for_delete, for_update, acc} ->
+          calculate_payment(payment, new_payment, {for_delete, for_update, acc})
         end)
 
       multi = Ecto.Multi.new()
@@ -291,5 +277,21 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       |> Map.put(:action, :validate)
 
     assign(socket, changeset: changeset)
+  end
+
+  defp calculate_payment(%{price: price} = payment, new_payment, {for_delete, for_update, acc}) do
+    owed = Money.add(price, acc)
+
+    case Money.cmp(new_payment.price, owed) do
+      :gt ->
+        {:cont, {[payment.id | for_delete], for_update, owed}}
+
+      _ ->
+        updated_amount = Money.subtract(owed, new_payment.price)
+
+        for_update = PaymentSchedule.update_payment_changeset(payment, %{price: updated_amount})
+
+        {:halt, {for_delete, for_update, owed}}
+    end
   end
 end
