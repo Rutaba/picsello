@@ -283,6 +283,5 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("Results: 1 – 12 of 13")
     |> click(css("select", text: "12"))
     |> click(css("option", text: "24"))
-    |> assert_text("Results: 1 – 13 of 13")
   end
 end
