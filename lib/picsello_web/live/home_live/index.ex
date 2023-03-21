@@ -25,7 +25,6 @@ defmodule PicselloWeb.HomeLive.Index do
 
   alias PicselloWeb.{
     Live.ClientLive.ClientFormComponent,
-    Live.Marketing.NewCampaignComponent,
     JobLive.ImportWizard,
     QuestionnaireFormComponent
   }
@@ -305,13 +304,6 @@ defmodule PicselloWeb.HomeLive.Index do
     do:
       socket
       |> redirect(external: "https://support.picsello.com")
-      |> noreply()
-
-  @impl true
-  def handle_event("create-marketing-email", _, socket),
-    do:
-      socket
-      |> NewCampaignComponent.open()
       |> noreply()
 
   @impl true

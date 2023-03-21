@@ -16,6 +16,7 @@ defmodule PicselloWeb.UserSessionController do
 
   def delete(conn, _params) do
     conn
+    |> delete_resp_cookie("show_admin_banner")
     |> put_flash(:info, "Logged out successfully.")
     |> UserAuth.log_out_user()
   end

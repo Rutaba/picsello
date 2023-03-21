@@ -182,7 +182,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           </div>
         </div>
     <% end %>
-
+    <%= if @package_templates == [] do %>
+      <div class="flex flex-col rounded-lg h-fit md:mb-10 sm:mb-2 mt-8 p-1 border bg-base-200">
+        <div class="w-10 h-6 mt-2 ml-2 rounded-lg bg-blue-planning-300 text-center">
+          <span class="text-base-100"> TIP </span>
+        </div>
+        <div class="mt-2 ml-2 w-fit lg:w-11/12">
+          <p class="font-normal text-lg text-gray-400">If you aren’t seeing your package here, you need to make sure the package only has 1 shoot set. We calculate the # of sessions based off of that.
+            <a class="items-center text-blue-planning-300 underline font-normal" href={Routes.package_templates_path(@socket, :index)} target="_blank"> Manage your packages here<.icon name="external-link" class=" inline ml-2 w-4 h-4" /></a>
+          </p>
+        </div>
+      </div>
+    <% end %>
     <div class={classes("hidden sm:flex items-center border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250", %{"justify-between" => can_edit?})}>
       <%= for title <- ["Package name", "Package Pricing", "Select package"] do %>
         <%= if (!can_edit? and title !=  "Select package") || can_edit? do %>
@@ -192,13 +203,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       <% end %>
     </div>
     <%= if @package_templates == [] do %>
-      <div class="flex flex-col md:flex-row mt-6">
+      <div class="flex flex-col md:flex-row mt-2 lg:mt-8">
           <img src="/images/empty-state.png" class="my-auto block"/>
-          <div class="justify-center p-1 ml-6 flex flex-col">
+          <div class="justify-center p-1 md:ml-6 flex flex-col sm:mt-4">
             <div class="font-bold">Missing packages</div>
             <div>
-              <div class="font-normal pb-6 text-base-250">
-                You don’t have any packages with a single shoot! You’ll<br>need to create some packages before you can select one.<br>(Modal will close when you click “Package Settings”)
+              <div class="font-normal pb-6 text-base-250 w-fit lg:w-96">
+                You don’t have any packages with a single shoot! You’ll need to create some packages before you can select one.(Modal will close when you click “Package Settings”)
               </div>
               <a id="gallery-settings" class="w-48 btn-tertiary text-center flex-row items-center pt-3 text-grey-planning-300" href={Routes.package_templates_path(@socket, :index)} title="Package Settings">
                 <.icon name="gear" class="inline-block w-6 h-6 mr-2 text-blue-planning-300"/>
@@ -664,6 +675,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     end
   end
 
+  defp calculate_booked_slots(_booking_event, nil), do: 0
+
   defp calculate_booked_slots(booking_event, date) do
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: _time_blocks} ->
@@ -687,7 +700,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   defp is_checked(id, package) do
     if id do
-      id |> to_integer() == package.id
+      id == if(is_binary(id), do: package.id |> Integer.to_string(), else: package.id)
     else
       false
     end

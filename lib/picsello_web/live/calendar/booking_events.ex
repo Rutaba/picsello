@@ -163,7 +163,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         <div class="hidden sm:grid sm:grid-cols-5 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
           <div class="sm:col-span-2">Event Details</div>
           <div>Bookings so far</div>
-          <div>Actions</div>
         </div>
         <%= for event <- @booking_events do %>
           <div class="grid lg:grid-cols-5 grid-cols-1 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4">
@@ -189,7 +188,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
               <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
               <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
           </div>
-          <ul class="absolute z-30 hidden w-40 mt-2 bg-white toggle rounded-md popover-content border border-base-200">
+          <ul class={classes("absolute z-30 hidden mt-2 bg-white toggle rounded-md popover-content border border-base-200",%{"w-41" => @id == "status", "w-40" => @id=="sort-by"})}>
             <%= for option <- @options_list do %>
               <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
               class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
@@ -254,18 +253,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   defp actions_cell(assigns) do
     ~H"""
-    <div class="flex flex-wrap gap-3 items-center justify-start md:w-auto w-full col-span-2">
-      <.icon_button icon="eye" disabled={if @booking_event.status in [:archive, :disabled], do: 'disabled'} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+    <div class="flex flex-wrap gap-3 items-center lg:ml-auto justify-start md:w-auto w-full col-span-2">
+      <.icon_button icon="eye" disabled={if @booking_event.status in [:archive, :disabled], do: 'disabled'} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
         Preview
       </.icon_button>
-      <.icon_button icon="anchor" disabled={if @booking_event.status in [:archive, :disabled], do: 'disabled'} color="blue-planning-300" class="justify-center text-blue-planning-300 grow flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+      <.icon_button icon="anchor" disabled={if @booking_event.status in [:archive, :disabled], do: 'disabled'} color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
         <span>Copy link</span>
         <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
           Copied!
         </div>
       </.icon_button>
-      <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-offset-x="-21" data-placement="bottom-end" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{@booking_event.status}"}>
-        <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 w-full" id="Manage">
+      <div class="flex items-center w-full xl:w-auto grow sm:grow-0" data-offset-x="-21" data-placement="bottom-end" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{@booking_event.status}"}>
+        <button {testid("actions")} title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 w-full" id="Manage">
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
           <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />

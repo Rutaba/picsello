@@ -34,7 +34,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
             client: insert(:client, organization: organization),
             package: package
           ),
-        use_global: true
+        use_global: %{watermark: true, expiration: true, digital: true, products: true}
       )
 
     insert(:watermark, gallery: gallery)
