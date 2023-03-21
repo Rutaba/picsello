@@ -40,12 +40,6 @@ defmodule Picsello.PaymentSchedule do
     |> validate_required(~w[price paid_at]a)
   end
 
-  def update_payment_changeset(struct, attrs \\ %{}) do
-    struct
-    |> cast(attrs, @update_attrs)
-    |> validate_required(~w[price]a)
-  end
-
   def stripe_ids_changeset(
         %__MODULE__{} = payment_schedule,
         stripe_payment_intent_id,
