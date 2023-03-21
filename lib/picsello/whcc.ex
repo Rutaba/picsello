@@ -109,7 +109,7 @@ defmodule Picsello.WHCC do
         } = product,
         %{selections: %{"size" => size} = selections} = details,
         %{quantity: quantity},
-        %{use_global: true}
+        %{use_global: %{products: true}}
       )
       when whcc_id == @area_markup_category do
     type = selections["paper"] || selections["surface"]
@@ -197,7 +197,7 @@ defmodule Picsello.WHCC do
   def final_cost(%{final_cost: final_cost}),
     do: Money.multiply(Money.new(1), Decimal.mult(final_cost, 100))
 
-  def update_markup(%{category: %{whcc_id: whcc_id}} = product, %{use_global: true}) do
+  def update_markup(%{category: %{whcc_id: whcc_id}} = product, %{use_global: %{products: true}}) do
     %{category: %{gs_gallery_products: [%{markup: markup}]} = category} = product
     markup = if @area_markup_category == whcc_id, do: Decimal.new(0), else: markup
 

@@ -211,7 +211,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
 
   def notify_processed(_), do: :ignored
 
-  defp path(%{use_global: true}, %{}, %{type: "image"}, organization),
+  defp path(%{use_global: %{watermark: true}}, %{}, %{type: "image"}, organization),
     do: GSGallery.watermark_path(organization.id)
 
   defp path(%{id: id}, _, %{type: "image"}, _), do: Watermark.watermark_path(id)

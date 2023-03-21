@@ -43,8 +43,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
               <div>
                 <h4 class="font-bold text-xl">Pricing:</h4>
                 <i class="font-normal text-sm text-base-250">From
-                  <%= min_price(category, @organization_id, %{use_global: true}) %> -
-                  <%= max_price(category, @organization_id, %{use_global: true}) %>
+                  <%= min_price(category, @organization_id, %{use_global: %{products: true}}) %> -
+                  <%= max_price(category, @organization_id, %{use_global: %{products: true}}) %>
                 </i>
               </div>
               <%= if category.whcc_id == Category.print_category() do %>
@@ -111,12 +111,17 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
   def handle_event(
         "edit_pricing",
         %{"product_id" => product_id},
-        %{assigns: %{products: products}} = socket
+        socket
       ) do
-    product = Enum.find(products, &(to_string(&1.id) == product_id))
-    send(self(), {:select_print_prices, product})
-
-    socket |> noreply()
+    socket
+    |> push_patch(
+      to:
+        Routes.gallery_global_settings_index_path(socket, :edit,
+          section: "print_product",
+          product_id: product_id
+        )
+    )
+    |> noreply()
   end
 
   defp update_settings(%{assigns: %{products: products}} = socket, product_id, opts) do

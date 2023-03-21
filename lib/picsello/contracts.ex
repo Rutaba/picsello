@@ -73,9 +73,7 @@ defmodule Picsello.Contracts do
     end
   end
 
-  def insert_contract_multi(package, params) do
-    template_id = Map.get(params, "contract_template_id")
-
+  def insert_contract_multi(package, %{"contract_template_id" => template_id} = params) do
     Ecto.Multi.new()
     |> Ecto.Multi.put(
       :contract_template,
@@ -97,6 +95,9 @@ defmodule Picsello.Contracts do
       conflict_target: ~w[package_id]a
     )
   end
+
+  def insert_contract_multi(package, params),
+    do: insert_template_and_contract_multi(package, params)
 
   def default_contract(package) do
     package

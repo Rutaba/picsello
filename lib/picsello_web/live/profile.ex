@@ -335,7 +335,7 @@ defmodule PicselloWeb.Live.Profile do
       <div class={classes("rounded-3xl bg-white shadow-lg inline-block", %{"hidden" => Enum.any?(@image.entries)})}>
         <label class="inline-block p-3 cursor-pointer">
           <span class="font-sans font-semibold text-blue-planning-300 hover:opacity-75">
-            Choose a new photo
+            Choose a new logo
           </span>
           <%= live_file_input @image, class: "hidden" %>
         </label>

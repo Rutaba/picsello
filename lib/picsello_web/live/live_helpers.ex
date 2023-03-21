@@ -395,14 +395,16 @@ defmodule PicselloWeb.LiveHelpers do
       <div>
         <%# These next 2 lines with inline styles come from a third-party tool; we highly discourage usage of inline styles as a normal practice %>
         <div style={"position: relative; padding-bottom: #{@third_party_padding}; height: 0;"} class="shadow-xl rounded">
-          <iframe src={@tour_embed} frameborder="0" loading="lazy" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+          <%= if Application.get_env(:picsello, :show_arcade_tours) do %>
+            <iframe src={@tour_embed} frameborder="0" loading="lazy" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+          <% end %>
         </div>
         <h6 class="uppercase text-base-250 text-center my-4 text-xs tracking-widest"><%= @eyebrow_text %></h6>
       </div>
       <div class="md:max-w-md">
         <h1 class="text-5xl font-bold mb-4"><%= @headline %></h1>
         <p class="text-base-250 text-xl"><%= @body %></p>
-        <div class={"flex flex-wrap md:flex-nowrap items-center md:justify-start justify-center gap-6 mt-4 #{@cta_class}"}>
+        <div class={"flex flex-wrap md:flex-nowrap items-center md:justify-start justify-center gap-6 mt-4 mb-8 sm:mb-0 #{@cta_class}"}>
           <%= if @inner_block do %>
             <%= render_block(@inner_block) %>
             <%= if @external_video_link do %>
