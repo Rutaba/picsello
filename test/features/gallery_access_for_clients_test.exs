@@ -20,15 +20,17 @@ defmodule Picsello.GalleryAccessForClientsTest do
     session
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> assert_has(css(".w-screen.h-screen.bg-white"))
+    |> fill_in(css("#login_email"), with: "testing@picsello.com")
     |> fill_in(css("#login_password"), with: "ThisIsAStrongP@ssw0rd")
     |> click(button("Submit"))
-    |> assert_has(css("p", text: "Unfortunately, we do not recognize this password."))
+    |> assert_has(css("p", text: "Unfortunately, we do not recognize this password or incorrect email-format."))
   end
 
   feature "client logs in", %{session: session, gallery: gallery} do
     session
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> assert_has(css(".w-screen.h-screen.bg-white"))
+    |> fill_in(css("#login_email"), with: "testing@picsello.com")
     |> fill_in(css("#login_password"), with: gallery.password)
     |> click(button("Submit"))
     |> assert_path("/gallery/#{gallery.client_link_hash}")

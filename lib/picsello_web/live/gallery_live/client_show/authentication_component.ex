@@ -24,15 +24,21 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
     |> noreply()
   end
 
-  def handle_event("check", %{"login" => %{"password" => password}}, socket) do
-    socket.assigns
-    |> build_session_token(password)
-    |> case do
-      {:ok, token} ->
-        assign(socket, submit: true, session_token: token)
+  def handle_event("check", %{"login" => %{"email" => email, "password" => password}}, socket) do
+    valid_email? = Regex.match?(~r/^[^\s]+@[^\s]+.[^\s]+$/, email)
+    if String.length(email) > 0 and valid_email? do
+      socket.assigns
+      |> build_session_token(password)
+      |> case do
+        {:ok, token} ->
+          update_emails_map(email, socket.assigns.gallery.id)
+          assign(socket, submit: true, session_token: token)
 
-      _ ->
-        assign(socket, password_is_correct: false)
+        _ ->
+          assign(socket, password_is_correct: false)
+      end
+    else
+      assign(socket, password_is_correct: false, submit: false)
     end
     |> noreply()
   end
@@ -65,5 +71,19 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
 
   defp build_login_link(%{live_action: :album_login, socket: socket, album: album}) do
     Routes.gallery_session_path(socket, :album_login, album.client_link_hash)
+  end
+
+  defp update_emails_map(email, gallery_id) do
+    gallery = Galleries.get_gallery!(gallery_id)
+
+    new_email_map = %{
+      "email" => email,
+      "viewed_at" => DateTime.utc_now()
+    }
+
+    email_list = gallery.gallery_analytics || []
+    updated_email_list = email_list ++ [new_email_map]
+
+    Galleries.update_gallery(gallery, %{gallery_analytics: updated_email_list})
   end
 end

@@ -408,6 +408,7 @@ defmodule Picsello.FeatureCase do
 
       session
       |> visit(path)
+      |> fill_in(css("#login_email"), with: "testing@picsello.com")
       |> fill_in(css("#login_password"), with: password)
       |> click(button("Submit"))
       |> then(&wait_for_path_to_change_from(&1, path <> "/login"))
@@ -418,6 +419,7 @@ defmodule Picsello.FeatureCase do
 
       session
       |> visit(path)
+      |> fill_in(css("#login_email"), with: "testing@picsello.com")
       |> fill_in(css("#login_password"), with: password)
       |> click(button("Submit"))
       |> then(&wait_for_path_to_change_from(&1, path <> "/login"))

@@ -81,6 +81,11 @@
 
             <div class="relative flex flex-col settings__wrapper2 lg:grid-cols-2 lg:grid-rows-4 place-items-stretch gap-x-9 gap-y-6">
                <div class="galleryManagePassword xl:col-start-1 xl:col-end-2 xl:row-start-2 xl:row-end-3">
+                  <%= live_component PicselloWeb.GalleryLive.Settings.ManageGalleryAnalyticsComponent,
+                     id: "gallery-analytics-#{@gallery.id}",
+                     gallery: @gallery %>
+               </div>
+               <div class="galleryManagePassword xl:col-start-1 xl:col-end-2 xl:row-start-2 xl:row-end-3">
                   <%= live_component PicselloWeb.GalleryLive.Settings.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
                </div>
                <div id="expiration_component" class="galleryUpdateName xl:col-start-2 xl:col-end-3 xl:row-start-1 xl:row-end-2">

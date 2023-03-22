@@ -27,6 +27,7 @@ defmodule Picsello.Galleries.Gallery do
     field :expired_at, :utc_datetime
     field :total_count, :integer, default: 0
     field :type, Ecto.Enum, @type_opts
+    field :gallery_analytics, {:array, :map}
 
     belongs_to(:job, Job)
     belongs_to(:parent, __MODULE__)
@@ -74,7 +75,8 @@ defmodule Picsello.Galleries.Gallery do
     :password,
     :type,
     :client_link_hash,
-    :total_count
+    :total_count,
+    :gallery_analytics
   ]
   @required_attrs [:name, :job_id, :status, :password]
 

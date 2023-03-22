@@ -6,12 +6,13 @@
             <.form let={f} for={@password_changeset} as={:login} action={build_login_link(assigns)} phx-target={@myself} phx-change="change" phx-submit="check" phx_trigger_action={@submit}>
               <%= hidden_input f, :session_token, value: @session_token %>
 
-              <%= unless @password_is_correct do %>
-                <p class="errorPwdMsg text-red-error-300 pt-6 -mb-4 text-xs">Unfortunately, we do not recognize this password.</p>
+              <%= unless @password_is_correct or @submit do %>
+                <p class="errorPwdMsg text-red-error-300 pt-6 -mb-4 text-xs">Unfortunately, we do not recognize this password or incorrect email-format.</p>
               <% end %>
 
+              <%= live_component PicselloWeb.EmailFieldComponent, f: f, id: :email, label: "", placeholder: "Enter email", class: "bg-base-200" %>
               <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password, label: "", placeholder: "Enter password", class: "bg-base-200" %>
-              
+
               <div class="mt-6 text-center">
                 <%= submit "Submit", class: "btn-primary w-full" %>
               </div>
@@ -19,4 +20,3 @@
         </div>
     </div>
 </div>
-
