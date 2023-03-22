@@ -51,6 +51,7 @@ defmodule Picsello.CreateClientTest do
   } do
     session
     |> simulate_prepicsello_click_scenario()
+    |> sleep(300)
 
     assert Repo.all(Client) |> Enum.count() == 1
     assert Repo.all(Job) |> Enum.count() == 1
@@ -170,7 +171,7 @@ defmodule Picsello.CreateClientTest do
       |> wait_for_enabled_submit_button()
       |> click(button("Next"))
       |> assert_invoice_fields()
-      |> fill_invoice_form()
+      |> fill_invoice_form(session)
       |> wait_for_enabled_submit_button()
       |> click(button("Next"))
       |> click(button("Finish"))
@@ -238,10 +239,10 @@ defmodule Picsello.CreateClientTest do
     |> assert_text("Add Client: Custom Invoice")
     |> assert_text("Balance to collect: #{@base_price}.00")
     |> assert_text("Payment 1")
-    |> assert_has(css("#form-invoice_payment_schedules_0_due_date"))
+    |> assert_has(css("#form-invoice_payment_schedules_0_due_date", visible: false))
     |> assert_has(css("#form-invoice_payment_schedules_0_price"))
     |> assert_text("Payment 2")
-    |> assert_has(css("#form-invoice_payment_schedules_1_due_date"))
+    |> assert_has(css("#form-invoice_payment_schedules_1_due_date", visible: false))
     |> assert_has(css("#form-invoice_payment_schedules_1_price"))
     |> assert_has(button("Remove"))
     |> assert_text("Remaining to collect: #{@base_price}.00")
@@ -265,11 +266,25 @@ defmodule Picsello.CreateClientTest do
     )
   end
 
-  defp fill_invoice_form(session) do
-    session
+  defp fill_invoice_form(modal, session) do
+    modal
     |> find(testid("payment-1"), &fill_in(&1, text_field("Payment amount"), with: "$5"))
-    |> find(testid("payment-1"), &fill_in(&1, text_field("Due"), with: "01/01/2030"))
+    |> click(css("#payment-0"))
+
+    session
+    |> fill_in(css(".numInput.cur-year"), with: "2030")
+    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("January")))
+    |> click(css("[aria-label='January 1, 2030']"))
+
+    modal
     |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "$5"))
-    |> find(testid("payment-2"), &fill_in(&1, text_field("Due"), with: "01/02/2030"))
+    |> click(css("#payment-1"))
+
+    session
+    |> fill_in(css(".numInput.cur-year"), with: "2030")
+    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("January")))
+    |> click(css("[aria-label='January 2, 2030']"))
+
+    modal
   end
 end

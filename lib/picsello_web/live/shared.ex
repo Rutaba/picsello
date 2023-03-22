@@ -255,7 +255,7 @@ defmodule PicselloWeb.Live.Shared do
 
             <div class="flex flex-wrap w-full mb-8">
               <div class="w-full sm:w-auto">
-                <.date_picker_field class="sm:w-64 w-full px-4 text-lg" id={"payment-#{p.index}"} form={p} field={:due_date} input_placeholder="mm/dd/yyyy" data_custom_display_format="Y" />
+                <.date_picker_field class="sm:w-64 w-full text-lg" id={"payment-#{p.index}"} form={p} field={:due_date} input_placeholder="mm/dd/yyyy" input_label="Due" />
               </div>
               <div class="w-full sm:ml-16 sm:w-auto">
                 <%= labeled_input p, :price, label: "Payment amount", placeholder: "$0.00", class: "sm:w-36 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
