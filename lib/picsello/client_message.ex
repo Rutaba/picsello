@@ -22,7 +22,7 @@ defmodule Picsello.ClientMessage do
 
   def create_outbound_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:subject, :body_text, :body_html, :cc_email, :client_id])
+    |> cast(attrs, [:subject, :body_text, :body_html, :cc_email, :client_id, :job_id])
     |> validate_required([:subject, :body_text])
     |> validate_email_format(:cc_email)
     |> put_change(:outbound, true)
