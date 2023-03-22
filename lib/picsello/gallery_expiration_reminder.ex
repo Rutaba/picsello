@@ -57,6 +57,7 @@ defmodule Picsello.GalleryExpirationReminder do
             select: {client.id, client.name, client.email, organization.name}
           )
         )
+        |> IO.inspect
 
       body =
         EEx.eval_string(copy,

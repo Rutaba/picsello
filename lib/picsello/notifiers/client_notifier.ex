@@ -90,12 +90,11 @@ defmodule Picsello.Notifiers.ClientNotifier do
   def deliver_balance_due_email(job, helpers) do
     with client <- job |> Repo.preload(:client) |> Map.get(:client),
          proposal <- BookingProposal.last_for_job(job.id),
-         false <- is_nil(proposal),
          [preset | _] <- Picsello.EmailPresets.for(job, :balance_due),
          %{body_template: body, subject_template: subject} <-
            Picsello.EmailPresets.resolve_variables(preset, {job}, helpers) do
-      
-      Logger.warn("job: #{inspect(job)}")
+
+      Logger.warn("job: #{inspect(job.id)}")
       Logger.warn("Proposal: #{inspect(proposal)}")
 
       %{subject: subject, body_text: HtmlSanitizeEx.strip_tags(body)}
@@ -111,7 +110,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
       )
       else
         error -> 
-          Logger.warn("no match when retrieving stripe session: #{inspect(error)}")
+          Logger.warn("something went wrong: #{inspect(error)}")
           error
     end
   end
