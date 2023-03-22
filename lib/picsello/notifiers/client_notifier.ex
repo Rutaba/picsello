@@ -90,6 +90,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
   def deliver_balance_due_email(job, helpers) do
     with client <- job |> Repo.preload(:client) |> Map.get(:client),
          proposal <- BookingProposal.last_for_job(job.id),
+         false <- is_nil(proposal),
          [preset | _] <- Picsello.EmailPresets.for(job, :balance_due),
          %{body_template: body, subject_template: subject} <-
            Picsello.EmailPresets.resolve_variables(preset, {job}, helpers) do
@@ -110,6 +111,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
       )
       else
         error -> 
+          Logger.warn("job: #{inspect(job.id)}")
           Logger.warn("something went wrong: #{inspect(error)}")
           error
     end
