@@ -21,7 +21,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   }
 
   @impl true
-  def update(%{current_user: current_user, client: %{email: email} = client} = assigns, socket) do
+  def update(%{client: %{email: email} = client} = assigns, socket) do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
     |> assign(:client, client)
