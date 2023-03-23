@@ -339,8 +339,10 @@ defmodule Picsello.CreateLeadPackageTest do
 
     contract_template_id = contract_template.id
 
-    assert %Picsello.Contract{name: "My job custom contract", contract_template_id: ^contract_template_id} =
-             lead.package.contract
+    assert %Picsello.Contract{
+             name: "My job custom contract",
+             contract_template_id: ^contract_template_id
+           } = lead.package.contract
   end
 
   feature "user sees validation errors when creating a package", %{session: session, user: user} do

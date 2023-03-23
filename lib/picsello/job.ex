@@ -81,6 +81,7 @@ defmodule Picsello.Job do
   end
 
   def archive_changeset(job), do: job |> timestamp_changeset(:archived_at)
+  def unarchive_changeset(job), do: job |> Ecto.Changeset.change(%{archived_at: nil})
   def complete_changeset(job), do: job |> timestamp_changeset(:completed_at)
 
   def add_package_changeset(job \\ %__MODULE__{}, attrs) do
@@ -147,7 +148,7 @@ defmodule Picsello.Job do
   def leads(query \\ __MODULE__) do
     from(job in query,
       join: status in assoc(job, :job_status),
-      where: status.is_lead and job.is_gallery_only == false and is_nil(job.archived_at)
+      where: status.is_lead and job.is_gallery_only == false
     )
   end
 

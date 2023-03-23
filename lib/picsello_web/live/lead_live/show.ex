@@ -13,6 +13,8 @@ defmodule PicselloWeb.LeadLive.Show do
     Contracts
   }
 
+  alias PicselloWeb.JobLive
+
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
@@ -36,6 +38,7 @@ defmodule PicselloWeb.LeadLive.Show do
     socket
     |> assign_stripe_status()
     |> assign(include_questionnaire: true)
+    |> assign(:type, %{singular: "lead", plural: "leads"})
     |> assign(:request_from, assigns["request_from"])
     |> assign_job(job_id)
     |> assign(:request_from, assigns["request_from"])
@@ -66,7 +69,7 @@ defmodule PicselloWeb.LeadLive.Show do
 
     ~H"""
     <div class={"flex flex-col items-center #{@class}"}>
-      <button id="finish-proposal" title="finish proposal" class="w-full md:w-auto btn-primary intro-finish-proposal" phx-click="finish-proposal" disabled={!@is_schedule_valid || @disabled_message}>Send proposal</button>
+      <button id="finish-proposal" title="send proposal" class="w-full md:w-auto btn-primary intro-finish-proposal" phx-click="finish-proposal" disabled={!@is_schedule_valid || @disabled_message}>Send proposal</button>
       <%= if @show_message && @disabled_message do %>
         <em class="pt-1 text-xs text-red-sales-300"><%= @disabled_message %></em>
       <% end %>
@@ -197,6 +200,18 @@ defmodule PicselloWeb.LeadLive.Show do
     |> noreply()
   end
 
+  def handle_event("confirm_unarchive_lead", %{}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      close_label: "No! Get me out of here",
+      confirm_event: "unarchive-lead",
+      confirm_label: "Yes, unarchive the lead",
+      icon: "warning-orange",
+      title: "Are you sure you want to unarchive this lead?"
+    })
+    |> noreply()
+  end
+
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
@@ -267,19 +282,6 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  def handle_info({:action_event, "confirm_archive_lead"}, socket) do
-    socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No! Get me out of here",
-      confirm_event: "archive",
-      confirm_label: "Yes, archive the lead",
-      icon: "warning-orange",
-      title: "Are you sure you want to archive this lead?"
-    })
-    |> noreply()
-  end
-
-  @impl true
   def handle_info(
         {:proposal_message_composed, message_changeset},
         %{assigns: %{job: job}} = socket
@@ -320,24 +322,6 @@ defmodule PicselloWeb.LeadLive.Show do
     end
   end
 
-  @impl true
-  def handle_info({:confirm_event, "archive"}, %{assigns: %{job: job}} = socket) do
-    case Picsello.Jobs.archive_lead(job) do
-      {:ok, job} ->
-        socket
-        |> assign_job(job.id)
-        |> close_modal()
-        |> put_flash(:info, "Lead archived")
-        |> noreply()
-
-      {:error, _} ->
-        socket
-        |> close_modal()
-        |> put_flash(:error, "Failed to archive lead. Please try again.")
-        |> noreply()
-    end
-  end
-
   def handle_info({:confirm_event, "edit_package"}, %{assigns: assigns} = socket) do
     socket
     |> open_modal(
@@ -367,7 +351,7 @@ defmodule PicselloWeb.LeadLive.Show do
   end
 
   @impl true
-  defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
+  defdelegate handle_info(message, socket), to: JobLive.Shared
 
   def next_reminder_on(nil), do: nil
 
