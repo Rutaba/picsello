@@ -186,7 +186,7 @@ defmodule Picsello.Profiles do
               job_id: &1.lead.id,
               subject: "New lead from profile",
               body_text: Contact.to_string(contact)
-            })
+            }, [:job_id])
           )
           |> Ecto.Multi.run(
             :email,
