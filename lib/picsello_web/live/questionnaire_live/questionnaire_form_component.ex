@@ -30,7 +30,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
         <h2 class="text-2xl leading-6 text-gray-900 mb-8 font-bold">Details</h2>
         <%= hidden_input f, :package_id %>
 
-        <div class={classes("", %{"grid gap-3" => @state == :edit_lead})}>
+        <div class={classes(%{"grid gap-3" => @state == :edit_lead})}>
           <%= if @state == :edit_lead do %>
             <div class="flex flex-col">
               <label class="input-label">Select template to reset questions</label>

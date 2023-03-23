@@ -86,6 +86,93 @@ defmodule PicselloWeb.Live.Shared do
     end
   end
 
+  defmodule CustomPagination do
+    @moduledoc "For setting custom pagination using limit and offset"
+    use Ecto.Schema
+    import Ecto.Changeset
+
+    @primary_key false
+    embedded_schema do
+      field(:first_index, :integer, default: 1)
+      field(:last_index, :integer, default: 0)
+      field(:total_count, :integer, default: 0)
+      field(:limit, :integer, default: 12)
+      field(:offset, :integer, default: 0)
+    end
+
+    @attrs [:first_index, :last_index, :total_count, :limit, :offset]
+    def changeset(struct, attrs \\ %{}) do
+      struct
+      |> cast(attrs, @attrs)
+    end
+
+    def assign_pagination(socket, default_limit),
+      do:
+        socket
+        |> assign_new(:pagination_changeset, fn ->
+          changeset(%__MODULE__{}, %{limit: default_limit})
+        end)
+
+    def update_pagination(
+          %{assigns: %{pagination_changeset: pagination_changeset}} = socket,
+          %{"direction" => direction}
+        ) do
+      pagination = pagination_changeset |> Changeset.apply_changes()
+
+      updated_pagination =
+        case direction do
+          "back" ->
+            pagination
+            |> changeset(%{
+              first_index: pagination.first_index - pagination.limit,
+              offset: pagination.offset - pagination.limit
+            })
+
+          _ ->
+            pagination
+            |> changeset(%{
+              first_index: pagination.first_index + pagination.limit,
+              offset: pagination.offset + pagination.limit
+            })
+        end
+
+      socket
+      |> assign(:pagination_changeset, updated_pagination)
+    end
+
+    def update_pagination(
+          %{assigns: %{pagination_changeset: pagination_changeset}} = socket,
+          %{"custom_pagination" => %{"limit" => limit}}
+        ) do
+      limit = to_integer(limit)
+
+      updated_pagination_changeset =
+        pagination_changeset
+        |> changeset(%{
+          limit: limit,
+          last_index: limit,
+          total_count: pagination_changeset |> current() |> Map.get(:total_count)
+        })
+
+      socket
+      |> assign(:pagination_changeset, updated_pagination_changeset)
+    end
+
+    def reset_pagination(
+          %{assigns: %{pagination_changeset: pagination_changeset}} = socket,
+          params
+        ),
+        do:
+          socket
+          |> assign(
+            :pagination_changeset,
+            changeset(pagination_changeset |> Changeset.apply_changes(), params)
+          )
+
+    def pagination_index(changeset, index),
+      do: changeset |> current() |> Map.get(index)
+  end
+
   def step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
   def total_remaining_amount(package_changeset) do

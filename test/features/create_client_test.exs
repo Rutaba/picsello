@@ -114,7 +114,8 @@ defmodule Picsello.CreateClientTest do
     |> fill_in(css(".ql-editor"), with: "Test message")
     |> wait_for_enabled_submit_button()
     |> click(button("Send"))
-    |> assert_flash(:success, text: "Email sent!")
+    |> assert_text("Yay! Your email has been successfully sent")
+    |> click(button("Close"))
     |> visit("/clients/#{client.id}/job-history")
     |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
       row
@@ -132,18 +133,15 @@ defmodule Picsello.CreateClientTest do
       |> click(css(".action"))
       |> click(css(".trash"))
     end)
-    |> assert_text("Are you sure you want to complete this job?")
-    |> assert_text(
-      "After you complete the job this becomes read-only. This action cannot be undone."
-    )
-    |> click(button("Close"))
+    |> assert_text("Are you sure you want to archive this lead?")
+    |> click(button("No! Get me out of here"))
     |> visit("/clients/#{client.id}/job-history")
     |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
       row
       |> click(css(".action"))
       |> click(css(".trash"))
     end)
-    |> click(css("button", text: "Yes, complete"))
+    |> click(css("button", text: "Yes, archive the lead"))
   end
 
   feature "order-details anchor click, renders the order-details for client", %{session: session} do
