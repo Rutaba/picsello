@@ -1,9 +1,9 @@
 defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   @moduledoc false
   use PicselloWeb, :live_component
-  require Ecto.Query
   alias Picsello.{Repo, PaymentSchedule, PaymentSchedules, Job}
 
+  import Ecto.Query
   @impl true
   def update(assigns, socket) do
     socket
@@ -21,11 +21,9 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     <div class="modal">
       <h1 id="payment-modal" class="flex justify-between mb-4 pl-3 text-3xl font-bold">
         Mark <%= action_name(@live_action, :plural) %> as paid
-
         <button id="close" phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
           <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
-
       </h1>
       <div>
         <div class="flex items-center justify-start">
@@ -52,13 +50,11 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
               <td id="payments" class="font-bold font-sans pl-3 my-2">Payment <%= index + 1 %></td>
               <td class="pl-3 py-2" id="offline-amount"><%= payment_schedules.price %></td>
               <td class="pl-3 py-2"><%= String.capitalize(payment_schedules.type) %></td>
-              <td class={classes("text-red-sales-300 pl-3 py-2", %{"text-green-finances-300" => payment_schedules.paid_at})}><%= if payment_schedules.paid_at, do: "Paid "<> strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y"), else: "Due "<> strftime(payment_schedules.due_at.time_zone, payment_schedules.due_at, "%b %d, %Y") %></td>
+              <td class="text-green-finances-300 pl-3 py-2">Paid <%= strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y") %></td>
             </tr>
             <% end ) %>
           </tbody>
         </table>
-
-
         <%= if PaymentSchedules.owed_offline_price(assigns.job) |> Map.get(:amount) > 0 do %>
           <%= if !@add_payment_show do %>
             <.icon_button id="add-payment" class="border-solid border-2 border-blue-planning-300 rounded-md my-8 px-10 pb-1.5 flex items-center" title="Add a payment" color="blue-planning-300" icon="plus" phx-click="select_add_payment" phx-target={@myself}>
@@ -73,7 +69,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         <div class="mx-5 grid grid-cols-3 gap-12">
           <dl>
             <dd>
-            <%= labeled_input f, :price, placeholder: "$0.00", label: "Amount", class: "w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center h-12", phx_debounce: "1000", phx_hook: "PriceMask" %>
+            <%= labeled_input f, :price, placeholder: "$0.00", label: "Amount", class: "w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center h-12", phx_hook: "PriceMask" %>
             </dd>
           </dl>
           <dl>
@@ -92,7 +88,6 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         </.form>
     </div>
     <% end %>
-
         <div class="flex justify-end items-center mt-4 gap-8">
           <%= link to: Routes.job_download_path(@socket, :download_invoice_pdf, @proposal.job_id, @proposal.id) do %>
             <button class="link block leading-5 text-black text-base">Download invoice</button>
@@ -121,13 +116,13 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
               "type" => _
             } = params
         },
-        %{assigns: %{current_user: current_user, job: job}} = socket
+        %{assigns: %{current_user: current_user}} = socket
       ) do
     paid_at = date_to_datetime(paid_at, current_user.time_zone)
     params = Map.put(params, "paid_at", paid_at)
     socket = assign_changeset(socket, params)
 
-    owed = PaymentSchedules.owed_offline_price(job)
+    owed = PaymentSchedules.owed_offline_price(socket.assigns.job)
 
     price =
       Ecto.Changeset.get_field(socket.assigns.changeset, :price) ||
@@ -148,30 +143,43 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   @impl true
   def handle_event(
         "save",
-        _,
+        %{
+          "payment_schedule" =>
+            %{
+              "paid_at" => paid_at,
+              "price" => _,
+              "type" => _
+            } = params
+        },
         %{
           assigns: %{
             add_payment_show: add_payment_show,
-            payment_schedules: payment_schedules,
-            changeset: changeset,
-            job: job
+            job: %{payment_schedules: payment_schedules} = job,
+            current_user: current_user
           }
         } = socket
       ) do
-    result =
-      if Enum.any?(payment_schedules) do
-        due_payment_schedule = PaymentSchedules.next_due_payment(job)
+    pending_payments =
+      Enum.filter(payment_schedules, &is_nil(&1.paid_at)) |> Enum.sort_by(& &1.due_at, :asc)
 
-        if Money.cmp(Ecto.Changeset.get_field(changeset, :price), due_payment_schedule.price) ==
-             :eq && due_payment_schedule.is_with_cash,
-           do:
-             build_paid_changeset(due_payment_schedule) |> Map.put(:action, nil) |> Repo.update(),
-           else: changeset |> Map.put(:action, nil) |> Repo.insert()
-      else
-        changeset |> Map.put(:action, nil) |> Repo.insert()
-      end
+    due_at = pending_payments |> hd() |> Map.get(:due_at)
+    paid_at = date_to_datetime(paid_at, current_user.time_zone)
 
-    case result do
+    params =
+      Map.put(params, "due_at", due_at)
+      |> Map.put("paid_at", paid_at)
+      |> Map.put("job_id", job.id)
+      |> Map.put("description", "Offline Payment")
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:new_payment, build_changeset(socket, params))
+    |> Ecto.Multi.merge(fn %{new_payment: new_payment} ->
+      pending_payments
+      |> calculate_payment(new_payment)
+      |> update_or_delete_multi()
+    end)
+    |> Repo.transaction()
+    |> case do
       {:ok, _} ->
         socket
         |> assign(:add_payment_show, !add_payment_show)
@@ -180,7 +188,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
       {:error, _} ->
         socket
-        |> put_flash(:error, "could not save payment schedules.")
+        |> put_flash(:error, "could not save payment_schedules.")
     end
     |> noreply()
   end
@@ -207,10 +215,9 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
-  def build_paid_changeset(%PaymentSchedule{} = payment_schedule),
-    do: PaymentSchedule.paid_changeset(payment_schedule)
-
-  def build_changeset(%{}, params \\ %{}), do: PaymentSchedule.add_payment_changeset(params)
+  def build_changeset(%{}, params \\ %{}) do
+    PaymentSchedule.add_payment_changeset(params)
+  end
 
   defp date_to_datetime(paid_at, time_zone) do
     {:ok, datetime} = DateTime.now(time_zone)
@@ -239,6 +246,20 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     })
   end
 
+  defp update_or_delete_multi({for_delete, for_update, _}) do
+    multi = Ecto.Multi.new()
+    multi = if for_update, do: Ecto.Multi.update(multi, :update_payment, for_update), else: multi
+
+    if Enum.any?(for_delete),
+      do:
+        Ecto.Multi.delete_all(
+          multi,
+          :delete_payments,
+          from(p in PaymentSchedule, where: p.id in ^for_delete)
+        ),
+      else: multi
+  end
+
   defp assign_payments(%{assigns: %{job: job}} = socket) do
     payment_schedules = PaymentSchedules.get_offline_payment_schedules(job.id)
     socket |> assign(:payment_schedules, payment_schedules)
@@ -251,5 +272,30 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       |> Map.put(:action, :validate)
 
     assign(socket, changeset: changeset)
+  end
+
+  defp calculate_payment(pending_payments, new_payment) do
+    pending_payments
+    |> Enum.reduce_while({[], nil, Money.new(0)},
+      fn %{price: price} = payment, {for_delete, for_update, acc} ->
+        owed = Money.add(price, acc)
+
+        case Money.cmp(new_payment.price, owed) do
+          :gt ->
+            {:cont, {[payment.id | for_delete], for_update, owed}}
+
+          :eq ->
+            for_update =
+              Ecto.Changeset.change(payment, price: Money.subtract(owed, new_payment.price))
+
+            {:halt, {[payment.id | for_delete], for_update, owed}}
+
+          _ ->
+            for_update =
+              Ecto.Changeset.change(payment, price: Money.subtract(owed, new_payment.price))
+
+            {:halt, {for_delete, for_update, owed}}
+        end
+      end)
   end
 end
