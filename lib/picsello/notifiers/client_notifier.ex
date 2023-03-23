@@ -84,7 +84,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
          [preset | _] <- Picsello.EmailPresets.for(job, :balance_due),
          %{body_template: body, subject_template: subject} <-
            Picsello.EmailPresets.resolve_variables(preset, {job}, helpers) do
-
       Logger.warn("job: #{inspect(job.id)}")
       Logger.warn("Proposal: #{inspect(proposal)}")
 
@@ -99,11 +98,11 @@ defmodule Picsello.Notifiers.ClientNotifier do
           }
         }
       )
-      else
-        error -> 
-          Logger.warn("job: #{inspect(job.id)}")
-          Logger.warn("something went wrong: #{inspect(error)}")
-          error
+    else
+      error ->
+        Logger.warn("job: #{inspect(job.id)}")
+        Logger.warn("something went wrong: #{inspect(error)}")
+        error
     end
   end
 

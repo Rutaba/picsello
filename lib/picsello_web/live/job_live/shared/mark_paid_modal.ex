@@ -281,7 +281,8 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
   defp calculate_payment(pending_payments, new_payment) do
     pending_payments
-    |> Enum.reduce_while({[], nil, Money.new(0)},
+    |> Enum.reduce_while(
+      {[], nil, Money.new(0)},
       fn %{price: price} = payment, {for_delete, for_update, acc} ->
         owed = Money.add(price, acc)
 
@@ -301,6 +302,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
             {:halt, {for_delete, for_update, owed}}
         end
-      end)
+      end
+    )
   end
 end

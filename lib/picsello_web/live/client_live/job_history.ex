@@ -5,11 +5,11 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   require Ecto.Query
 
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
-  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1, add_message_and_notify: 3]
+  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1]
   import PicselloWeb.Live.ClientLive.Shared
 
   alias Ecto.Query
-  alias PicselloWeb.{ConfirmationComponent, ClientMessageComponent, JobLive.ImportWizard, JobLive}
+  alias PicselloWeb.{JobLive.ImportWizard, JobLive}
   alias Picsello.{Jobs, Job, Repo, Clients, Galleries}
 
   defmodule Pagination do

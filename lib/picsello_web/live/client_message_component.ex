@@ -25,7 +25,6 @@ defmodule PicselloWeb.ClientMessageComponent do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
     |> assign(:client, client)
-    |> assign(:clients, Clients.find_all_by(user: current_user))
     |> assign(:recipients, %{"to" => [email]})
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
@@ -282,11 +281,16 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   defp assign_presets(socket), do: socket
 
-  defp re_assign_clients(%{assigns: %{recipients: recipients, current_user: current_user}} = socket) do
-    email_list = recipients |> Map.values() |> List.flatten() |> IO.inspect()
+  defp re_assign_clients(
+         %{assigns: %{recipients: recipients, current_user: current_user}} = socket
+       ) do
+    email_list = recipients |> Map.values() |> List.flatten()
 
     socket
-    |> assign(:clients, Enum.filter(Clients.find_all_by(user: current_user), fn c -> c.email not in email_list end))
+    |> assign(
+      :clients,
+      Enum.filter(Clients.find_all_by(user: current_user), fn c -> c.email not in email_list end)
+    )
   end
 
   defp prepend_email(email, type, %{assigns: %{recipients: recipients}} = socket) do

@@ -46,16 +46,18 @@ defmodule Picsello.GalleryExpirationReminder do
     """
 
     unless has_gallery_expiration_messages? != [] do
-      data = Repo.one(
-        from(job in Job,
-          join: client in Client,
-          on: client.id == job.client_id,
-          join: organization in Organization,
-          on: organization.id == client.organization_id,
-          where: job.id == ^job_id and is_nil(job.archived_at),
-          select: {client.id, client.name, client.email, organization.name}
+      data =
+        Repo.one(
+          from(job in Job,
+            join: client in Client,
+            on: client.id == job.client_id,
+            join: organization in Organization,
+            on: organization.id == client.organization_id,
+            where: job.id == ^job_id and is_nil(job.archived_at),
+            select: {client.id, client.name, client.email, organization.name}
+          )
         )
-      )
+
       if data do
         {client_id, client_name, client_email, organization_name} = data
 
