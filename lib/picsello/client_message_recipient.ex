@@ -22,4 +22,10 @@ defmodule Picsello.ClientMessageRecipient do
     |> assoc_constraint(:client)
     |> assoc_constraint(:client_message)
   end
+
+  def create_changeset(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, @attrs)
+    |> validate_required(@attrs)
+  end
 end

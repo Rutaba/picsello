@@ -1,6 +1,6 @@
 defmodule PicselloWeb.SendgridInboundParseController do
   use PicselloWeb, :controller
-  alias Picsello.{Repo, ClientMessage, Messages, Client, Job}
+  alias Picsello.{Repo, ClientMessageRecipient, ClientMessage, Messages, Client, Job}
 
   def parse(conn, params) do
     %{"envelope" => envelope} = params
@@ -16,30 +16,35 @@ defmodule PicselloWeb.SendgridInboundParseController do
           {%{job_id: id}, [:job_id]}
       end
 
-    message =
-      Map.merge(
+      changeset = Map.merge(
         %{
           body_text: Map.get(params, "text", "") |> ElixirEmailReplyParser.parse_reply(),
           body_html: Map.get(params, "html", ""),
-          subject: Map.get(params, "subject", nil)
+          subject: Map.get(params, "subject", nil),
+          outbound: false
         },
         initail_obj
       )
       |> ClientMessage.create_inbound_changeset(required_fields)
-      |> then(fn changeset -> 
+
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:message, changeset)
+      |> Ecto.Multi.merge(fn %{message: %{id: message_id}} ->
+        multi = Ecto.Multi.new()
         case initail_obj do
           %{client_id: client_id} -> 
-            changeset 
-            |> Ecto.Changeset.put_change(
-              :client_message_recipients, [%{client_id: client_id, recipient_type: :to}],
-              outbound: false
-              )
-          _ -> changeset    
+            params = ClientMessageRecipient.create_changeset(%{client_id: client_id, client_message_id: message_id, recipient_type: :to})
+            multi |> Ecto.Multi.insert(:message_recipient, params)
+          _ -> multi
         end
       end)
-      |> Repo.insert!()
-
-    Messages.notify_inbound_message(message, PicselloWeb.Helpers)
+      |> Repo.transaction()
+      |> then(fn
+        {:ok, %{message: message}} ->
+          Messages.notify_inbound_message(message, PicselloWeb.Helpers)
+        {:error, reason} ->
+          reason
+      end)
 
     conn
     |> put_resp_content_type("text/plain")
