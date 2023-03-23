@@ -11,6 +11,7 @@ defmodule Picsello.Accounts.User do
 
   schema "users" do
     field :confirmed_at, :naive_datetime
+    field :deleted_at, :naive_datetime
     field :email, :string
     field :hashed_password, :string
     field :name, :string
@@ -22,6 +23,7 @@ defmodule Picsello.Accounts.User do
     field :stripe_customer_id, :string
     embeds_one(:onboarding, Onboarding, on_replace: :update)
     has_one(:subscription, Picsello.Subscription)
+    has_one(:subscription_event, Picsello.SubscriptionEvent)
     belongs_to(:organization, Picsello.Organization)
 
     timestamps()

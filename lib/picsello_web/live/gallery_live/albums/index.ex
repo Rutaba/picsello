@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_photographer"]
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Live.Shared, only: [make_popup: 2]
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Repo, Galleries, Albums}

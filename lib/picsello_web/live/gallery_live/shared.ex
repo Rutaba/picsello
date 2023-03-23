@@ -22,7 +22,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
-  alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
+  alias Picsello.{Galleries, Client}
+  alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @card_blank "/images/card_gray.png"
@@ -376,25 +377,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     socket
     |> assign(:photos, photos |> Enum.take(per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
-  end
-
-  def make_popup(socket, opts) do
-    socket
-    |> ConfirmationComponent.open(%{
-      close_label: opts[:close_label] || "No, go back",
-      confirm_event: opts[:event],
-      class: "dialog-photographer",
-      confirm_class: Keyword.get(opts, :confirm_class, "btn-warning"),
-      confirm_label: Keyword.get(opts, :confirm_label, "Yes, delete"),
-      icon: Keyword.get(opts, :icon, "warning-orange"),
-      title: opts[:title],
-      subtitle: opts[:subtitle],
-      dropdown?: opts[:dropdown?],
-      dropdown_label: opts[:dropdown_label],
-      dropdown_items: opts[:dropdown_items],
-      payload: Keyword.get(opts, :payload, %{})
-    })
-    |> noreply()
   end
 
   def prepare_gallery(%{id: gallery_id} = gallery) do

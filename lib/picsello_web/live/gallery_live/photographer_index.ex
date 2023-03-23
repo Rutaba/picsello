@@ -5,14 +5,14 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
+  import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
   alias Ecto.Changeset
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
-  alias Picsello.Repo
+  alias PicselloWeb.Shared.ConfirmationComponent
 
   alias PicselloWeb.GalleryLive.{
-    Settings.CustomWatermarkComponent,
-    Shared.ConfirmationComponent
+    Settings.CustomWatermarkComponent
   }
 
   alias Galleries.{

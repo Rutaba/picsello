@@ -21,6 +21,7 @@ defmodule PicselloWeb.Live.Shared do
   require Ecto.Query
 
   alias Ecto.{Changeset, Multi, Query}
+  alias PicselloWeb.Shared.ConfirmationComponent
 
   alias Picsello.{
     Job,
@@ -164,6 +165,25 @@ defmodule PicselloWeb.Live.Shared do
       step
     )
   end
+
+  def make_popup(socket, opts) do
+    socket
+    |> ConfirmationComponent.open(%{
+      close_label: opts[:close_label] || "No, go back",
+      confirm_event: opts[:event],
+      class: "dialog-photographer",
+      confirm_class: Keyword.get(opts, :confirm_class, "btn-warning"),
+      confirm_label: Keyword.get(opts, :confirm_label, "Yes, delete"),
+      icon: Keyword.get(opts, :icon, "warning-orange"),
+      title: opts[:title],
+      subtitle: opts[:subtitle],
+      dropdown?: opts[:dropdown?],
+      dropdown_label: opts[:dropdown_label],
+      dropdown_items: opts[:dropdown_items],
+      payload: Keyword.get(opts, :payload, %{})
+    })
+    |> noreply()
+    end
 
   def package_payment_step(%{package_changeset: package_changeset} = assigns) do
     base_price_zero? = base_price_zero?(package_changeset)

@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.Index do
   require Ecto.Query
 
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
   alias Ecto.Query
   alias Picsello.{Galleries, Job, Repo, Orders, Albums}

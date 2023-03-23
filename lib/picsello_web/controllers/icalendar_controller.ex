@@ -12,7 +12,7 @@ defmodule PicselloWeb.ICalendarController do
 
         params = %{
           "start" => DateTime.utc_now(),
-          "end" => DateTime.utc_now() |> DateTime.add(45 * 24 * 60 * 60)
+          "end" => DateTime.utc_now() |> DateTime.add(2 * 365 * 24 * 60 * 60)
         }
 
         events = Shoots.get_shoots(user, params) |> map(user)
