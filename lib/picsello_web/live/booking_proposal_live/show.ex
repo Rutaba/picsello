@@ -296,7 +296,6 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   defp open_compose(
          %{
            assigns: %{
-             current_user: current_user,
              organization: %{name: organization_name},
              job: job
            }
