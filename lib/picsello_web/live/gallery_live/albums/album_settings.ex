@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   @moduledoc false
   use PicselloWeb, :live_component
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
   alias Picsello.Albums
   alias Picsello.Galleries.Album

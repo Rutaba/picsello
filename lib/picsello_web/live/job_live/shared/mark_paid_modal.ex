@@ -180,29 +180,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     |> Ecto.Multi.insert(:new_payment, build_changeset(socket, params))
     |> Ecto.Multi.merge(fn %{new_payment: new_payment} ->
       pending_payments
-      |> Enum.reduce_while(
-        {[], nil, Money.new(0)},
-        fn %{price: price} = payment, {for_delete, for_update, acc} ->
-          owed = Money.add(price, acc)
-
-          case Money.cmp(new_payment.price, owed) do
-            :gt ->
-              {:cont, {[payment.id | for_delete], for_update, owed}}
-
-            :eq ->
-              for_update =
-                Ecto.Changeset.change(payment, price: Money.subtract(owed, new_payment.price))
-
-              {:halt, {[payment.id | for_delete], for_update, owed}}
-
-            _ ->
-              for_update =
-                Ecto.Changeset.change(payment, price: Money.subtract(owed, new_payment.price))
-
-              {:halt, {for_delete, for_update, owed}}
-          end
-        end
-      )
+      |> calculate_payment(new_payment)
       |> update_or_delete_multi()
     end)
     |> Repo.transaction()
@@ -301,19 +279,28 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     assign(socket, changeset: changeset)
   end
 
-  defp calculate_payment(%{price: price} = payment, new_payment, {for_delete, for_update, acc}) do
-    owed = Money.add(price, acc)
+  defp calculate_payment(pending_payments, new_payment) do
+    pending_payments
+    |> Enum.reduce_while({[], nil, Money.new(0)},
+      fn %{price: price} = payment, {for_delete, for_update, acc} ->
+        owed = Money.add(price, acc)
 
-    case Money.cmp(new_payment.price, owed) do
-      :gt ->
-        {:cont, {[payment.id | for_delete], for_update, owed}}
+        case Money.cmp(new_payment.price, owed) do
+          :gt ->
+            {:cont, {[payment.id | for_delete], for_update, owed}}
 
-      _ ->
-        updated_amount = Money.subtract(owed, new_payment.price)
+          :eq ->
+            for_update =
+              Ecto.Changeset.change(payment, price: Money.subtract(owed, new_payment.price))
 
-        for_update = PaymentSchedule.update_payment_changeset(payment, %{price: updated_amount})
+            {:halt, {[payment.id | for_delete], for_update, owed}}
 
-        {:halt, {for_delete, for_update, owed}}
-    end
+          _ ->
+            for_update =
+              Ecto.Changeset.change(payment, price: Money.subtract(owed, new_payment.price))
+
+            {:halt, {for_delete, for_update, owed}}
+        end
+      end)
   end
 end

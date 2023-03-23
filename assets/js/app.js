@@ -228,6 +228,23 @@ const showWelcomeModal = {
   },
 };
 
+const handleAdminCookie = () => {
+  const show = Cookies.get('show_admin_banner');
+
+  if (show == 'true') {
+    document?.querySelector('#admin-banner')?.classList?.remove('hidden');
+  }
+};
+
+const showAdminBanner = {
+  mounted() {
+    handleAdminCookie();
+  },
+  updated() {
+    handleAdminCookie();
+  },
+};
+
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -272,6 +289,7 @@ const Hooks = {
   SetGalleryCookie,
   GetGalleryCookie,
   showWelcomeModal,
+  showAdminBanner,
   FolderUpload,
 };
 

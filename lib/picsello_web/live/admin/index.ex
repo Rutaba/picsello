@@ -2,11 +2,17 @@ defmodule PicselloWeb.Live.Admin.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: false]
 
+  import PicselloWeb.LayoutView,
+    only: [
+      admin_banner: 1
+    ]
+
   @impl true
   def render(assigns) do
     ~H"""
-    <header class="p-8 bg-gray-100">
+    <header class="p-8 bg-gray-100" phx-hook="showAdminBanner" id="show-admin-banner">
       <h1 class="text-4xl font-bold">Picsello Admin</h1>
+      <.admin_banner socket={@socket} />
     </header>
     <nav class="p-8">
       <ul class="mt-4 font-bold grid gap-10 grid-cols-1 sm:grid-cols-4 text-blue-planning-300">

@@ -1,6 +1,7 @@
 <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
-<main role="main">
+<main role="main" phx-hook="showAdminBanner" id="show-admin-banner">
   <%= flash(@flash) %>
   <%= @inner_content %>
   <.sticky_upload current_user={@current_user} />
+  <.admin_banner socket={@socket} />
 </main>
