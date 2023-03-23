@@ -1,9 +1,9 @@
 defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   @moduledoc false
   use PicselloWeb, :live_component
+  require Ecto.Query
   alias Picsello.{Repo, PaymentSchedule, PaymentSchedules, Job}
 
-  import Ecto.Query
   @impl true
   def update(assigns, socket) do
     socket
@@ -171,7 +171,6 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         changeset |> Map.put(:action, nil) |> Repo.insert()
       end
 
-
     case result do
       {:ok, _} ->
         socket
@@ -240,20 +239,6 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     })
   end
 
-  defp update_or_delete_multi({for_delete, for_update, _}) do
-    multi = Ecto.Multi.new()
-    multi = if for_update, do: Ecto.Multi.update(multi, :update_payment, for_update), else: multi
-
-    if Enum.any?(for_delete),
-      do:
-        Ecto.Multi.delete_all(
-          multi,
-          :delete_payments,
-          from(p in PaymentSchedule, where: p.id in ^for_delete)
-        ),
-      else: multi
-  end
-
   defp assign_payments(%{assigns: %{job: job}} = socket) do
     payment_schedules = PaymentSchedules.get_offline_payment_schedules(job.id)
     socket |> assign(:payment_schedules, payment_schedules)
@@ -266,30 +251,5 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       |> Map.put(:action, :validate)
 
     assign(socket, changeset: changeset)
-  end
-
-  defp calculate_payment(pending_payments, new_payment) do
-    pending_payments
-    |> Enum.reduce_while({[], nil, Money.new(0)},
-      fn %{price: price} = payment, {for_delete, for_update, acc} ->
-        owed = Money.add(price, acc)
-
-        case Money.cmp(new_payment.price, owed) do
-          :gt ->
-            {:cont, {[payment.id | for_delete], for_update, owed}}
-
-          :eq ->
-            for_update =
-              Ecto.Changeset.change(payment, price: Money.subtract(owed, new_payment.price))
-
-            {:halt, {[payment.id | for_delete], for_update, owed}}
-
-          _ ->
-            for_update =
-              Ecto.Changeset.change(payment, price: Money.subtract(owed, new_payment.price))
-
-            {:halt, {for_delete, for_update, owed}}
-        end
-      end)
   end
 end

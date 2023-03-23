@@ -270,7 +270,7 @@ defmodule PicselloWeb.Live.Shared do
       payload: Keyword.get(opts, :payload, %{})
     })
     |> noreply()
-    end
+  end
 
   def package_payment_step(%{package_changeset: package_changeset} = assigns) do
     base_price_zero? = base_price_zero?(package_changeset)
