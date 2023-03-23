@@ -135,7 +135,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   @impl true
   def handle_info(
-        {:message_composed, changeset},
+        {:message_composed, changeset, _},
         %{
           assigns: %{
             organization: %{name: organization_name},
@@ -310,9 +310,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
            show_subject: false,
            subject: "#{Job.name(job)} proposal",
            presets: [],
-           send_button: "Send",
-           client: Job.client(job),
-           current_user: current_user
+           send_button: "Send"
          })
          |> noreply()
 
