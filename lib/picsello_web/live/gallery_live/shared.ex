@@ -22,7 +22,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
-  alias Picsello.{Galleries, Client}
+  alias Picsello.Galleries
   alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
 

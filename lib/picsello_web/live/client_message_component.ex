@@ -172,6 +172,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign(:show_cc, false)
     |> assign(:recipients, Map.put(recipients, "cc", []))
     |> assign(:cc_email_error, nil)
+    |> then(fn socket -> socket |> re_assign_clients() end)
     |> noreply()
   end
 
@@ -181,6 +182,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign(:show_bcc, false)
     |> assign(:recipients, Map.put(recipients, "bcc", []))
     |> assign(:bcc_email_error, nil)
+    |> then(fn socket -> socket |> re_assign_clients() end)
     |> noreply()
   end
 
@@ -280,11 +282,11 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   defp assign_presets(socket), do: socket
 
-  defp re_assign_clients(%{assigns: %{recipients: recipients, clients: clients}} = socket) do
-    email_list = recipients |> Map.values() |> List.flatten()
+  defp re_assign_clients(%{assigns: %{recipients: recipients, current_user: current_user}} = socket) do
+    email_list = recipients |> Map.values() |> List.flatten() |> IO.inspect()
 
     socket
-    |> assign(:clients, Enum.filter(clients, fn c -> c.email not in email_list end))
+    |> assign(:clients, Enum.filter(Clients.find_all_by(user: current_user), fn c -> c.email not in email_list end))
   end
 
   defp prepend_email(email, type, %{assigns: %{recipients: recipients}} = socket) do

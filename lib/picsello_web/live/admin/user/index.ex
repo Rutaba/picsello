@@ -11,6 +11,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
       flash: 1,
       admin_banner: 1
     ]
+
   import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
   @impl true
