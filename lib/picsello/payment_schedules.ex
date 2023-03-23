@@ -256,6 +256,7 @@ defmodule Picsello.PaymentSchedules do
       where: p.type in ["check", "cash"] and p.job_id == ^job_id
     )
     |> Repo.all()
+    |> Repo.preload(:job)
   end
 
   def payment_schedules_count(job) do
@@ -310,6 +311,13 @@ defmodule Picsello.PaymentSchedules do
 
       UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
     end)
+  end
+
+  def next_due_payment(job) do
+    job
+    |> payment_schedules()
+    |> Enum.filter(&(&1.paid_at == nil))
+    |> Enum.min_by(& &1.due_at)
   end
 
   def checkout_link(%BookingProposal{} = proposal, payment, opts) do
