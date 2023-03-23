@@ -21,11 +21,9 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     <div class="modal">
       <h1 id="payment-modal" class="flex justify-between mb-4 pl-3 text-3xl font-bold">
         Mark <%= action_name(@live_action, :plural) %> as paid
-
         <button id="close" phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
           <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
-
       </h1>
       <div>
         <div class="flex items-center justify-start">
@@ -57,8 +55,6 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
             <% end ) %>
           </tbody>
         </table>
-
-
         <%= if PaymentSchedules.owed_offline_price(assigns.job) |> Map.get(:amount) > 0 do %>
           <%= if !@add_payment_show do %>
             <.icon_button id="add-payment" class="border-solid border-2 border-blue-planning-300 rounded-md my-8 px-10 pb-1.5 flex items-center" title="Add a payment" color="blue-planning-300" icon="plus" phx-click="select_add_payment" phx-target={@myself}>
@@ -92,7 +88,6 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         </.form>
     </div>
     <% end %>
-
         <div class="flex justify-end items-center mt-4 gap-8">
           <%= link to: Routes.job_download_path(@socket, :download_invoice_pdf, @proposal.job_id, @proposal.id) do %>
             <button class="link block leading-5 text-black text-base">Download invoice</button>
