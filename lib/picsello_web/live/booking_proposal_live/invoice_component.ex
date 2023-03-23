@@ -34,7 +34,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
                     <%= if PaymentSchedules.paid?(payment) do %>
                       <dt><%= payment.description %> paid on <%= strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></dt>
                     <% else %>
-                      <dt><%= payment.description %> <%= if PaymentSchedules.past_due?(payment) || to_book(payment), do: "due today", else: "due on #{strftime(@photographer.time_zone, payment.due_at, "%b %d, %Y")}" %></dt>
+                      <dt><%= payment.description %> <%= if PaymentSchedules.past_due?(payment), do: "due today", else: "due on #{strftime(@photographer.time_zone, payment.due_at, "%b %d, %Y")}" %></dt>
                     <% end %>
                     <dd><%= payment.price %></dd>
                     </dl>
@@ -119,10 +119,5 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       shoots: shoots,
       package: package
     })
-  end
-
-  defp to_book(payment) do
-    to_book = String.split(payment.description, " ", trim: true) |> List.last()
-    if to_book == "Book", do: true, else: false
   end
 end
