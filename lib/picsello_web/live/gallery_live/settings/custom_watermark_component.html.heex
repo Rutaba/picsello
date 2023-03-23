@@ -73,7 +73,7 @@
     <% end %>
   <% else %>
     <div>
-      <.form let={f} for={@changeset} phx-change="validate_text_input" phx-target={@myself} class="mt-5 font-sans" id="textWatermarkForm">
+      <.form let={f} for={@changeset} phx-submit="save" phx-change="validate_text_input" phx-target={@myself} class="mt-5 font-sans" id="textWatermarkForm">
         <%= text_input f, :text , placeholder: "Enter your watermark text here", class: "gallerySettingsInput" %>
         <%= error_tag f, :text %>
       </.form>
