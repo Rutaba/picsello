@@ -1,4 +1,5 @@
 import flatpickr from 'flatpickr';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export default {
   mounted() {
@@ -10,6 +11,7 @@ export default {
       maxDate,
       customDisplayFormat,
       customDateFormat,
+      timeZone,
     } = el.dataset;
 
     this.pickr = flatpickr(this.el, {
@@ -23,6 +25,18 @@ export default {
         ? customDisplayFormat || 'm/d/Y h:i K'
         : customDisplayFormat || 'm/d/Y',
       dateFormat: customDateFormat || 'Y-m-d',
+      parseDate: (dateStr, format) => {
+        if (timeZone) {
+          const formatTimezone = formatInTimeZone(
+            dateStr,
+            timeZone,
+            "yyyy-MM-dd'T'HH:mm"
+          );
+
+          dateStr = new Date(formatTimezone);
+        }
+        return flatpickr.parseDate(dateStr, format);
+      },
     });
   },
 

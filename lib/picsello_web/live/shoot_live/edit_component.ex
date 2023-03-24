@@ -53,7 +53,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
             <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. #{dyn_gettext @job.type} Session, etc.", wrapper_class: "sm:col-span-3" %>
-            <.date_picker_field class="sm:col-span-3" id="shoot-time" placeholder="Select shoot time…" form={f} field={:starts_at} input_placeholder="mm/dd/yyyy" input_label="Shoot Date" data_min_date={Date.utc_today()} data_custom_date_format="Z" data_time_picker="true" />
+            <.date_picker_field class="sm:col-span-3" id="shoot-time" placeholder="Select shoot time…" form={f} field={:starts_at} input_placeholder="mm/dd/yyyy" input_label="Shoot Date" data_min_date={Date.utc_today()} data_custom_date_format="Y-m-d\\TH:i" data_time_picker="true" data_time_zone={@current_user.time_zone} />
             <%= labeled_select f, :duration_minutes, duration_options(),
                   label: "Shoot Duration",
                   prompt: "Select below",
