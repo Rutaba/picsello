@@ -66,7 +66,7 @@ defmodule Picsello.ManageLeadShootTest do
     |> click(link("updated chute"))
     |> wait_for_path_to_change_from(lead_path)
     |> click(button("Edit"))
-    |> assert_value(css("#shoot_starts_at", visible: false), "2040-05-05")
+    |> assert_value(css("#shoot_starts_at", visible: false), "2040-05-05T12:00")
     |> assert_value(select("Shoot Duration"), "120")
     |> assert_value(select("Shoot Location"), "studio")
     |> assert_value(text_field("Shoot Notes"), "new notes")
