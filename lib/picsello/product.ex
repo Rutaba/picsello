@@ -151,6 +151,7 @@ defmodule Picsello.Product do
     field :whcc_id, :string
     field :whcc_name, :string
     field :sizes, {:array, :map}, virtual: true
+    field :shipping_upcharge, :map
 
     belongs_to(:category, Picsello.Category)
     has_many(:markups, Picsello.Markup)

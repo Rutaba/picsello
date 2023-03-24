@@ -55,6 +55,9 @@ defmodule Picsello.WHCC do
   def create_order(account_id, %{items: items, order: order} = export) do
     sub_orders = order["Orders"] || []
 
+    order = Map.put(order, "Orders", sub_orders)
+    export = Map.put(export, :order, order)
+
     case Adapter.create_order(account_id, export) do
       {:ok, %{orders: orders} = created_order} ->
         for %{sequence_number: sequence_number} = order <- orders do
@@ -140,19 +143,12 @@ defmodule Picsello.WHCC do
     |> merge_details(details, quantity, product)
   end
 
-  def merge_details(product_details, details, quantity, product) do
-    %{category: category, id: whcc_product_id} = product
-
+  def merge_details(product_details, details, quantity, %{id: whcc_product_id} = product) do
     product_details
     |> Map.put(:quantity, quantity)
     |> Map.merge(
       details
       |> Map.take([:preview_url, :editor_id, :selections])
-    )
-    |> Map.merge(
-      category
-      |> Map.from_struct()
-      |> Map.take([:shipping_upcharge, :shipping_base_charge])
     )
     |> Map.merge(%{whcc_product: product, whcc_product_id: whcc_product_id})
   end

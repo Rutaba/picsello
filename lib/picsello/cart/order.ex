@@ -56,7 +56,6 @@ defmodule Picsello.Cart.Order do
     |> do_create_changeset()
     |> put_assoc(:products, [
       Product.update_price(product,
-        shipping_base_charge: true,
         credits: get_in(opts, [:credits, :print]) || Money.new(0)
       )
     ])
@@ -219,14 +218,12 @@ defmodule Picsello.Cart.Order do
       for {_, line_items} <- sort_products(products),
           reduce: {available_credit, []} do
         acc ->
-          for {product, index} <-
-                Enum.with_index(line_items),
+          for product <- line_items,
               reduce: acc do
             {credit_remaining, products} ->
               %{print_credit_discount: credit_used} =
                 product =
                 Product.update_price(product,
-                  shipping_base_charge: index == 0,
                   credits: credit_remaining
                 )
 

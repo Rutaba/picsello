@@ -16,6 +16,8 @@ defmodule Picsello.Cart do
     WHCC
   }
 
+  alias Ecto.Multi
+  alias Ecto.Changeset
   alias Picsello.Cart.Product, as: CartProduct
 
   def new_product(editor_id, gallery_id) do
@@ -385,6 +387,102 @@ defmodule Picsello.Cart do
       {:ok, _} -> :ok
       err -> err
     end
+  end
+
+  @shipping_fields ~w(shipping_upcharge shipping_base_charge shipping_type)a
+  def update_products_shipping(products) do
+    Enum.reduce(products, Multi.new(), fn
+      %{shipping_upcharge: nil}, multi ->
+        multi
+
+      product, multi ->
+        multi
+        |> Multi.update(
+          product.id,
+          Changeset.change(
+            Map.drop(product, @shipping_fields),
+            Map.take(product, @shipping_fields)
+          )
+        )
+    end)
+    |> Repo.transaction()
+  end
+
+  @products Application.compile_env(:picsello, :products)
+  @base_charges @products[:base_charges]
+  @whcc_photo_prints_id @products[:whcc_photo_prints_id]
+  @whcc_album_id @products[:whcc_album_id]
+  @whcc_books_id @products[:whcc_books_id]
+
+  def add_shipping_details(product, shipping_type) do
+    shipping_details = shipping_details(product, shipping_type)
+    Map.merge(product, shipping_details)
+  end
+
+  def shipping_details(product, shipping_type) do
+    %{
+      selections: selections,
+      whcc_product: %{
+        shipping_upcharge: upcharge
+      }
+    } = product
+
+    %{
+      shipping_type: shipping_type,
+      shipping_upcharge: upcharge |> upcharge(selections) |> to_string |> Decimal.new(),
+      shipping_base_charge:
+        (get_base_charge(product, shipping_type)[:value] * 100) |> trunc |> Money.new()
+    }
+  end
+
+  def get_base_charge(
+        %{
+          selections: %{"size" => size},
+          whcc_product: %{
+            whcc_id: product_whcc_id,
+            api: %{"category" => %{"id" => category_whcc_id}}
+          }
+        },
+        shipping_type
+      ) do
+    whcc_id =
+      whcc_id_for_base_charge(
+        category_whcc_id,
+        size
+        |> String.split("x")
+        |> Enum.map(&String.to_integer(&1)),
+        product_whcc_id
+      )
+
+    base_charge(whcc_id, shipping_type)
+  end
+
+  defp base_charge(@whcc_photo_prints_id, "economy"), do: @base_charges[:economy_usps]
+  defp base_charge(@whcc_album_id, "economy"), do: @base_charges[:album_flat_rate]
+  defp base_charge(@whcc_books_id, "economy"), do: @base_charges[:book_flat_rate]
+  defp base_charge(_whcc_id, "economy"), do: @base_charges[:economy_trackable]
+  defp base_charge(_whcc_id, "3_days"), do: @base_charges[:three_days]
+  defp base_charge(_whcc_id, "1_day"), do: @base_charges[:one_day]
+  defp base_charge(_whcc_id, _shipping_type), do: []
+
+  defp whcc_id_for_base_charge(_, [s1, s2], @whcc_photo_prints_id) when s1 < 9 and s2 < 13,
+    do: @whcc_photo_prints_id
+
+  defp whcc_id_for_base_charge(category_whcc_id, _, _), do: category_whcc_id
+
+  defp upcharge(shipping_upcharge, %{"size" => size} = selections) do
+    type = selections["paper"] || selections["surface"]
+    shipping_upcharge[type][size] || shipping_upcharge["default"]
+  end
+
+  def shipping_price(%{
+        shipping_upcharge: shipping_upcharge,
+        shipping_base_charge: shipping_base_charge,
+        unit_price: unit_price
+      }) do
+    unit_price
+    |> Money.multiply(Decimal.div(shipping_upcharge, 100))
+    |> Money.add(shipping_base_charge)
   end
 
   defdelegate lines_by_product(order), to: Order
