@@ -108,6 +108,19 @@ config :picsello, :whcc,
     ),
   whcc_sync_process_count: System.get_env("WHCC_SYNC_PROCESS_COUNT") || "2"
 
+config :picsello, :products,
+  whcc_album_id: System.get_env("ALBUM_CATEGORY_ID"),
+  whcc_books_id: System.get_env("BOOK_CATEGORY_ID"),
+  whcc_photo_prints_id: System.get_env("PHOTO_PRINTS_PRODUCT_ID"),
+  base_charges: [
+    economy_usps: [value: 3.8, uuid: 545],
+    economy_trackable: [value: 3.8, uuid: 546],
+    three_days: [value: 11.95, uuid: 100],
+    one_day: [value: 22.95, uuid: 1728],
+    album_flat_rate: [value: 7.50, uuid: 548],
+    book_flat_rate: [value: 7.50, uuid: 553]
+  ]
+
 config :picsello, Oban,
   repo: Picsello.Repo,
   queues: [default: 10, storage: 10, campaigns: 10, user_initiated: 10],
