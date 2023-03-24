@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
   use PicselloWeb, :live_view
   alias Picsello.{Contract, Contracts}
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+  import Picsello.Onboardings, only: [save_intro_state: 3]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -53,6 +54,49 @@ defmodule PicselloWeb.Live.Contracts.Index do
 
   @impl true
   def handle_event(
+        "duplicate-contract",
+        %{"contract-id" => contract_id},
+        %{assigns: %{current_user: %{organization: %{id: organization_id}}} = assigns} = socket
+      ) do
+    id = String.to_integer(contract_id)
+
+    contract =
+      Contracts.clean_contract_for_changeset(
+        get_contract(id),
+        organization_id
+      )
+      |> Map.put(:name, nil)
+
+    assigns = Map.merge(assigns, %{contract: contract})
+
+    socket
+    |> PicselloWeb.ContractTemplateComponent.open(
+      Map.merge(Map.take(assigns, [:contract, :current_user]), %{state: :edit})
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("delete-contract", %{"contract-id" => contract_id}, socket) do
+    id = String.to_integer(contract_id)
+
+    case Contracts.delete_contract_by_id(id) do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Contract deleted")
+        |> assign_contracts()
+        |> noreply()
+
+      _ ->
+        socket
+        |> put_flash(:error, "An error occurred")
+        |> assign_contracts()
+        |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_event(
         "view-contract",
         %{"contract-id" => contract_id},
         %{assigns: assigns} = socket
@@ -64,6 +108,17 @@ defmodule PicselloWeb.Live.Contracts.Index do
     |> PicselloWeb.ContractTemplateComponent.open(
       Map.merge(Map.take(assigns, [:contract, :current_user]), %{state: nil})
     )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "intro-close-contract",
+        _,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    socket
+    |> assign(current_user: save_intro_state(current_user, "intro_contract", :dismissed))
     |> noreply()
   end
 
@@ -81,7 +136,50 @@ defmodule PicselloWeb.Live.Contracts.Index do
         <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
         Edit
       </button>
+      <% else %>
+      <button title="Duplicate Table" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75"
+          >
+        <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300 text-white" />
+        Duplicate
+      </button>
       <% end %>
+      <div data-offset="0" phx-hook="Select" id={"manage-questionnaire-#{@contract.id}"}>
+        <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
+          Actions
+          <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+          <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+        </button>
+
+        <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content z-20">
+        <%= if @contract.organization_id do %>
+          <button title="Edit" type="button" phx-click="edit-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
+          >
+            <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+            Edit
+          </button>
+          <button title="Duplicate Table" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
+          >
+            <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+            Duplicate
+          </button>
+          <button title="Trash" type="button" phx-click="delete-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+            <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
+            Delete
+          </button>
+          <% else %>
+          <button title="View" type="button" phx-click="view-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
+          >
+            <.icon name="eye" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+            View
+          </button>
+          <button title="Duplicate" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold" {testid("duplicate")}
+          >
+            <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+            Duplicate
+          </button>
+          <% end %>
+        </div>
+      </div>
     </div>
     """
   end

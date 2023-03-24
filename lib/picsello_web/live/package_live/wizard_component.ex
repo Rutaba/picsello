@@ -552,71 +552,72 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       </section>
     """
   end
-  def step(%{name: :documents}=assigns) do
+
+  def step(%{name: :documents} = assigns) do
     ~H"""
-      <div class="font-normal pb-6 text-base-250 w-fit">
-        You don’t have any packages with a single shoot! You’ll need to create some packages before you can select one.(Modal will close when you click “Package Settings”)
-      </div>
-      <div class="flex flex-row">
-        <a class="items-center text-blue-planning-300 py-5 underline font-normal" href={Routes.contracts_index_path(@socket, :index)} target="_blank">Manage contracts</a>
-        <a class="items-center text-blue-planning-300 p-5 underline font-normal" href={Routes.questionnaires_index_path(@socket, :index)} target="_blank">Manage questionnaires</a>
-      </div>
+    <div class="font-normal pb-6 text-base-250 w-fit">
+      You don’t have any packages with a single shoot! You’ll need to create some packages before you can select one.(Modal will close when you click “Package Settings”)
+    </div>
+    <div class="flex flex-row">
+      <a class="items-center text-blue-planning-300 py-5 underline font-normal" href={Routes.contracts_index_path(@socket, :index)} target="_blank">Manage contracts</a>
+      <a class="items-center text-blue-planning-300 p-5 underline font-normal" href={Routes.questionnaires_index_path(@socket, :index)} target="_blank">Manage questionnaires</a>
+    </div>
 
-      <div class="flex flex-row">
-        <%= for %{name: name, concise_name: concise_name} <- @tabs do %>
-          <div class={classes("text-blue-planning-300 flex p-3 font-bold text-lg border-b-4 transition-all shrink-0 underline", %{"opacity-100 border-b-blue-planning-300" => @active_tab === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @active_tab !== concise_name})}>
-            <button type="button" phx-click={"toggle-tab"} phx-value-active={concise_name} phx-target={@myself} ><%= name %></button>
-          </div>
-        <% end %>
-      </div>
-
-      <span class="hidden sm:flex items-center justify-between border-b-4 border-blue-planning-300 font-semibold text-lg text-base-250" />
-      <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
-        <div class={classes("p-4", %{"hidden" => !(@active_tab == :contract)})}>
-          <% c = form_for(@contract_changeset, "#") %>
-          <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg pb-3 mt-4 bg-base-200">
-              <div class="w-1/3">Contract name</div>
-              <div class="w-1/3 text-center">Job type</div>
-              <div class="w-1/3 text-center">Select contract</div>
-            </div>
-            <%= for contract <- @contract_options do %>
-              <% checked = input_value(c, :contract_template_id) == contract.id %>
-              <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => checked})}>
-                <label class="flex items-center justify-between cursor-pointer">
-                  <h3 class="font-xl font-bold w-1/3"><%= contract.name %></h3>
-                  <p class="w-1/3 text-center"><%= contract.job_type %></p>
-                  <div class="w-1/3 text-center">
-                    <%= radio_button(c, :contract_template_id, contract.id, class: "w-5 h-5 mr-2.5 radio") %>
-                  </div>
-                </label>
-              </div>
-            <% end %>
+    <div class="flex flex-row">
+      <%= for %{name: name, concise_name: concise_name} <- @tabs do %>
+        <div class={classes("text-blue-planning-300 flex p-3 font-bold text-lg border-b-4 transition-all shrink-0 underline", %{"opacity-100 border-b-blue-planning-300" => @active_tab === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @active_tab !== concise_name})}>
+          <button type="button" phx-click={"toggle-tab"} phx-value-active={concise_name} phx-target={@myself} ><%= name %></button>
         </div>
-        <div class={classes("p-4", %{"hidden" => !(@active_tab == :question)})}>
-          <%= if Enum.empty?(@questionnaires) do %>
-            <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
-          <% else %>
-            <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
-              <div class="w-1/3">Questionnaire name</div>
-              <div class="w-1/3 text-center">Job type</div>
-              <div class="w-1/3 text-center">Select questionnaire</div>
-            </div>
-            <%= for questionnaire <- @questionnaires do %>
-              <% checked = input_value(@f, :questionnaire_template_id) == questionnaire.id %>
-              <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => checked})}>
+      <% end %>
+    </div>
+
+    <span class="hidden sm:flex items-center justify-between border-b-4 border-blue-planning-300 font-semibold text-lg text-base-250" />
+    <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
+      <div class={classes("p-4", %{"hidden" => !(@active_tab == :contract)})}>
+        <% c = form_for(@contract_changeset, "#") %>
+        <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg pb-3 mt-4 bg-base-200">
+            <div class="w-1/3">Contract name</div>
+            <div class="w-1/3 text-center">Job type</div>
+            <div class="w-1/3 text-center">Select contract</div>
+          </div>
+          <%= for contract <- @contract_options do %>
+            <% checked = input_value(c, :contract_template_id) == contract.id %>
+            <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => checked})}>
               <label class="flex items-center justify-between cursor-pointer">
-                <h3 class="font-xl font-bold w-1/3"><%= questionnaire.name %></h3>
-                <p class="w-1/3 text-center"><%= questionnaire.job_type %></p>
+                <h3 class="font-xl font-bold w-1/3"><%= contract.name %></h3>
+                <p class="w-1/3 text-center"><%= contract.job_type %></p>
                 <div class="w-1/3 text-center">
-                  <%= radio_button(@f, :questionnaire_template_id, questionnaire.id, class: "w-5 h-5 mr-2.5 radio") %>
+                  <%= radio_button(c, :contract_template_id, contract.id, class: "w-5 h-5 mr-2.5 radio") %>
                 </div>
               </label>
-              </div>
-            <% end %>
+            </div>
           <% end %>
-        </div>
-      </section>
-      """
+      </div>
+      <div class={classes("p-4", %{"hidden" => !(@active_tab == :question)})}>
+        <%= if Enum.empty?(@questionnaires) do %>
+          <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
+        <% else %>
+          <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
+            <div class="w-1/3">Questionnaire name</div>
+            <div class="w-1/3 text-center">Job type</div>
+            <div class="w-1/3 text-center">Select questionnaire</div>
+          </div>
+          <%= for questionnaire <- @questionnaires do %>
+            <% checked = input_value(@f, :questionnaire_template_id) == questionnaire.id %>
+            <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => checked})}>
+            <label class="flex items-center justify-between cursor-pointer">
+              <h3 class="font-xl font-bold w-1/3"><%= questionnaire.name %></h3>
+              <p class="w-1/3 text-center"><%= questionnaire.job_type %></p>
+              <div class="w-1/3 text-center">
+                <%= radio_button(@f, :questionnaire_template_id, questionnaire.id, class: "w-5 h-5 mr-2.5 radio") %>
+              </div>
+            </label>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+    """
   end
 
   def step(%{name: :pricing} = assigns) do
@@ -833,7 +834,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> noreply()
   end
 
-  def handle_event("toggle-tab",  %{"active" => active_tab}, socket) do
+  def handle_event("toggle-tab", %{"active" => active_tab}, socket) do
     socket
     |> assign(:active_tab, String.to_atom(active_tab))
     |> noreply()
@@ -955,24 +956,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           "contract" => %{"contract_template_id" => template_id},
           "_target" => ["contract", "contract_template_id"]
         },
-        %{assigns: %{changeset: changeset}} = socket
+        socket
       ) do
     template_id = template_id |> to_integer()
-    # contract =
-    #   case template_id do
-    #     nil ->
-    #       nil
-
-    #     id ->
-    #       package = changeset |> current()
-
-    #       package
-    #       |> Contracts.find_by!(id)
-    #   end
 
     socket
     |> assign_contract_changeset(%{"edited" => false, "contract_template_id" => template_id})
-    #|> push_event("quill:update", %{"html" => content})
     |> noreply()
   end
 
@@ -1588,7 +1577,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          params,
          action \\ nil
        ) do
-      # IO.inspect(params, label: "params")
+    # IO.inspect(params, label: "params")
     global_settings =
       if global_settings,
         do: global_settings,
@@ -1669,20 +1658,23 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp assign_contract_changeset(%{assigns: %{step: :documents}} = socket, params) do
     # IO.inspect(params, label: "params conract")
-    contract_template_id= Map.get(params, "contract_template_id")
+    contract_template_id = Map.get(params, "contract_template_id")
     contract_params = Map.get(params, "contract", %{})
     # IO.inspect(contract_params, label: "contract_params")
-    contract = if contract_template_id do
-      socket.assigns.changeset
-      |> current()
-      # |> IO.inspect(label: "package==> ")
-      |> Contracts.find_by!(contract_template_id)
-    else
-      socket.assigns.changeset
-      |> current()
-      |> package_contract()
-      # |> IO.inspect(label: "package contract 1 ==>")
-    end
+    contract =
+      if contract_template_id do
+        socket.assigns.changeset
+        |> current()
+        # |> IO.inspect(label: "package==> ")
+        |> Contracts.find_by!(contract_template_id)
+      else
+        socket.assigns.changeset
+        |> current()
+        |> package_contract()
+
+        # |> IO.inspect(label: "package contract 1 ==>")
+      end
+
     contract_changeset =
       contract
       |> Contract.changeset(params,
@@ -1693,7 +1685,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           )
       )
       |> Map.put(:action, :validate)
-      # IO.inspect(contract_changeset, label: "contract_changeset===> ")
+
+    # IO.inspect(contract_changeset, label: "contract_changeset===> ")
     socket |> assign(contract_changeset: contract_changeset)
   end
 
@@ -1718,9 +1711,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     #     |> Enum.map(&{&1.name, &1.id})
     #   )
     options =
-        socket.assigns.changeset
-        |> current()
-        |> Contracts.for_package()
+      socket.assigns.changeset
+      |> current()
+      |> Contracts.for_package()
 
     socket |> assign(contract_options: options)
   end
@@ -1978,14 +1971,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp tabs_list() do
     [
-       %{
-         name: "Contracts",
-         concise_name: "contract"
-       },
-       %{
+      %{
+        name: "Contracts",
+        concise_name: "contract"
+      },
+      %{
         name: "Questions",
         concise_name: "question"
-      },
+      }
     ]
   end
 end

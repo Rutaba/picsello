@@ -30,6 +30,11 @@
 </div>
 
 <div class="p-6 center-container">
+  <%= if show_intro?(@current_user, "intro_contract") === "true" do %>
+    <.empty_state_base wrapper_class="border rounded-lg p-4 mb-8" tour_embed="https://demo.arcade.software/J7LVwwRlcenKLiB7vKf3?embed" headline="Meet Contracts" eyebrow_text="Contract Product Tour" body="Explore our defaults in the table below or create your own and add to your packages to get the info you need and save time." third_party_padding="calc(66.66666666666666% + 41px)" close_event="intro-close-contract">
+      <button type="button" title="create Contract" href="#" class="w-full md:w-auto btn-tertiary flex-shrink-0 text-center" phx-click="create-contract">Create contract</button>
+    </.empty_state_base>
+  <% end %>
     <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
         <div class="sm:col-span-5">Name</div>
         <div class="sm:col-span-2">Job Type</div>

@@ -156,6 +156,25 @@ defmodule Picsello.Contracts do
   def get_contract_by_id(contract_id),
     do: get_contract(contract_id) |> Repo.one()
 
+  def clean_contract_for_changeset(
+        contract,
+        organization_id,
+        package_id \\ nil
+      ) do
+    %Picsello.Contract{
+      organization_id: organization_id,
+      content: contract.content,
+      package_id: package_id,
+      name: contract.name,
+      job_type: contract.job_type
+    }
+  end
+
+  def delete_contract_by_id(contract_id),
+    do:
+      get_contract_by_id(contract_id)
+      |> Repo.delete()
+
   defp get_contract(contract_id),
     do: from(c in Contract, where: c.id == ^contract_id)
 
