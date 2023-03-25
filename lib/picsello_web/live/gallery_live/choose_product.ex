@@ -13,6 +13,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       assign_checkout_routes: 1,
       disabled?: 1
     ]
+
   import PicselloWeb.GalleryLive.Photos.Photo.Shared, only: [js_like_click: 2]
 
   @defaults %{

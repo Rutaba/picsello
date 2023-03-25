@@ -283,7 +283,7 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_info(
-        {:proposal_message_composed, message_changeset},
+        {:proposal_message_composed, message_changeset, _recipients},
         %{assigns: %{job: job}} = socket
       ) do
     result =

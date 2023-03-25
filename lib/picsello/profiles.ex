@@ -182,11 +182,14 @@ defmodule Picsello.Profiles do
           )
           |> Ecto.Multi.insert(
             :message,
-            &ClientMessage.create_inbound_changeset(%{
-              job_id: &1.lead.id,
-              subject: "New lead from profile",
-              body_text: Contact.to_string(contact)
-            }, [:job_id])
+            &ClientMessage.create_inbound_changeset(
+              %{
+                job_id: &1.lead.id,
+                subject: "New lead from profile",
+                body_text: Contact.to_string(contact)
+              },
+              [:job_id]
+            )
           )
           |> Ecto.Multi.run(
             :email,

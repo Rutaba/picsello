@@ -61,7 +61,7 @@ defmodule Picsello.Messages do
     )
   end
 
-  def token(%Job{} = job), do: token(job, "JOB_ID") 
+  def token(%Job{} = job), do: token(job, "JOB_ID")
   def token(%Client{} = client), do: token(client, "CLIENT_ID")
 
   def token(%{id: id, inserted_at: inserted_at}, key),
