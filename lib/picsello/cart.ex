@@ -478,9 +478,9 @@ defmodule Picsello.Cart do
   def shipping_price(%{
         shipping_upcharge: shipping_upcharge,
         shipping_base_charge: shipping_base_charge,
-        unit_price: unit_price
+        total_markuped_price: total_markuped_price
       }) do
-    unit_price
+    total_markuped_price
     |> Money.multiply(Decimal.div(shipping_upcharge, 100))
     |> Money.add(shipping_base_charge)
   end

@@ -60,23 +60,25 @@
                           <div class="clear-both"></div>
                         </div>
                       </div>
-                      <div class={"border-l-2 #{index != 1 && 'hidden'}"}>
-                        <div class="p-6 mt-6">
-                          <.form let={f} for={:shipping} id={"#{id}"} phx-change="shiping_type" class="flex gap-2 flex-col">
-                            <%= hidden_input f, :product_id, value: id %>
-                            <%= for {label, shipping_type} <- [{"Economy", "economy"}, {"3-days or less", "3_days"}, {"Priority Overnight", "1_day"}] do %>
-                              <div class="flex justify-between">
-                                <label class="flex gap-4 items-center w-80">
-                                  <%= radio_button f, :type, shipping_type, checked: shipping_type == line_item.shipping_type, class: "w-6 h-6" %>
-                                  <span><%= label %></span>
-                                </label>
+                      <%= if index == 1 do %>
+                        <div class="border-l-2">
+                          <div class="p-6 mt-6">
+                            <.form let={f} for={:shipping} id={"#{id}"} phx-change="shiping_type" class="flex gap-2 flex-col">
+                              <%= hidden_input f, :product_id, value: id %>
+                              <%= for {label, shipping_type} <- [{"Economy", "economy"}, {"3-days or less", "3_days"}, {"Priority Overnight", "1_day"}] do %>
+                                <div class="flex justify-between">
+                                  <label class="flex gap-4 items-center w-80">
+                                    <%= radio_button f, :type, shipping_type, checked: shipping_type == line_item.shipping_type, class: "w-6 h-6" %>
+                                    <span><%= label %></span>
+                                  </label>
 
-                                <div> <%= line_item |> add_shipping_details(shipping_type) |> shipping_price() %></div>
-                              </div>
-                            <% end %>
-                          </.form>
+                                  <div> <%= line_item |> add_shipping_details(shipping_type) |> shipping_price() %></div>
+                                </div>
+                              <% end %>
+                            </.form>
+                          </div>
                         </div>
-                      </div>
+                      <% end %>
                     </div>
                   <% end %>
                 </div>

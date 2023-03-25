@@ -3,7 +3,7 @@ defmodule Mix.Tasks.UpdateInprogressOrders do
 
   use Mix.Task
 
-  alias Picsello.{Repo, Cart, Cart.Order, Cart.Product, Intents.Intent}
+  alias Picsello.{Repo, Cart, Galleries, WHCC, Cart.Order, Cart.Product, Intents.Intent}
   alias Ecto.{Multi, Changeset}
 
   import Ecto.Query
@@ -24,29 +24,39 @@ defmodule Mix.Tasks.UpdateInprogressOrders do
       |> Repo.all()
 
     orders
-    |> Enum.reduce(Multi.new(), fn %{id: id} = order, multi ->
-      order
-      |> Cart.lines_by_product()
-      |> Enum.reduce(multi, &products_multi(&2, &1))
-      |> Multi.update(
-        "#{id}-whcc-order",
+    |> Task.async_stream(
+      fn %{id: id, gallery_id: gallery_id} = order ->
         order
-        |> Changeset.cast(%{whcc_order: nil}, [])
-        |> Changeset.cast_embed(:whcc_order)
-      )
-      |> Multi.delete_all("#{id}-intents", from(i in Intent, where: i.order_id == ^id))
+        |> Cart.lines_by_product()
+        |> Enum.reduce(Multi.new(), &products_multi(&2, &1, gallery_id))
+        |> Multi.update(
+          "#{id}-whcc-order",
+          order
+          |> Changeset.cast(%{whcc_order: nil}, [])
+          |> Changeset.cast_embed(:whcc_order)
+        )
+        |> Multi.delete_all("#{id}-intents", from(i in Intent, where: i.order_id == ^id))
+      end,
+      timeout: 10_000
+    )
+    |> Enum.reduce(Multi.new(), fn {:ok, multi}, acc_multi ->
+      Multi.merge(acc_multi, fn _ -> multi end)
     end)
     |> Repo.transaction()
     |> tap(fn {:ok, _} = x -> x end)
   end
 
-  defp products_multi(multi, {_whcc_product, line_items}) do
+  defp products_multi(multi, {_whcc_product, line_items}, gallery_id) do
     line_items
     |> Enum.with_index(1)
     |> Enum.reduce(multi, fn
-      {product, 1}, multi ->
+      {%{editor_id: editor_id} = product, 1}, multi ->
+        account_id = Galleries.account_id(gallery_id)
+        %{total_markuped_price: price} = WHCC.get_item_attrs(account_id, editor_id)
+
         product
-        |> Picsello.Cart.shipping_details(@shipping_type)
+        |> Cart.shipping_details(@shipping_type)
+        |> Map.put(:total_markuped_price, price)
         |> update_product(product, multi)
 
       {product, _}, multi ->

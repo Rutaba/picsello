@@ -20,6 +20,7 @@ defmodule Picsello.Cart.Product do
     field :shipping_type, :string, @shipping_types
     field :shipping_upcharge, :decimal
     field :unit_markup, Money.Ecto.Amount.Type
+    field :total_markuped_price, Money.Ecto.Amount.Type
     field :unit_price, Money.Ecto.Amount.Type
 
     # recalculate for all items in cart on add or remove or edit of any product in cart
@@ -68,7 +69,7 @@ defmodule Picsello.Cart.Product do
       cast(
         product,
         attrs,
-        ~w[editor_id preview_url quantity round_up_to_nearest selections shipping_base_charge shipping_upcharge shipping_type unit_markup unit_price print_credit_discount volume_discount price whcc_product_id]a
+        ~w[editor_id preview_url quantity round_up_to_nearest selections shipping_base_charge shipping_upcharge shipping_type unit_markup unit_price print_credit_discount volume_discount price whcc_product_id total_markuped_price]a
       )
 
   def new(fields) do
