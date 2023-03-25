@@ -45,12 +45,12 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
             </tr>
           </thead>
           <tbody>
-          <%= @payment_schedules |> Enum.with_index |> Enum.map(fn({payment_schedules, index}) -> %>
+          <%= @payment_schedules |> Enum.with_index |> Enum.map(fn({payment_schedule, index}) -> %>
             <tr class="">
               <td id="payments" class="font-bold font-sans pl-3 my-2">Payment <%= index + 1 %></td>
-              <td class="pl-3 py-2" id="offline-amount"><%= payment_schedules.price %></td>
-              <td class="pl-3 py-2"><%= String.capitalize(payment_schedules.type) %></td>
-              <td class="text-green-finances-300 pl-3 py-2">Paid <%= strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y") %></td>
+              <td class="pl-3 py-2" id="offline-amount"><%= payment_schedule.price %></td>
+              <td class="pl-3 py-2"><%= String.capitalize(payment_schedule.type) %></td>
+              <td class="text-green-finances-300 pl-3 py-2">Paid <%= strftime(@current_user.time_zone, payment_schedule.paid_at, "%b %d, %Y") %></td>
             </tr>
             <% end ) %>
           </tbody>
