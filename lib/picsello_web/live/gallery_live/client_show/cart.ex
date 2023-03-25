@@ -196,7 +196,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
-  def assign_products_shipping(%{assigns: %{order: order}} = socket) do
+  defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
+
+  defp assign_products_shipping(%{assigns: %{order: order}} = socket) do
     for {_product, [product | products] = line_items} <- lines_by_product(order) do
       case Enum.any?(line_items, & &1.shipping_type) do
         true -> line_items
