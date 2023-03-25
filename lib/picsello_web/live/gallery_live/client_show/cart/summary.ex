@@ -164,14 +164,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
 
   defp product_charge_lines(%{products: []}), do: []
 
-  defp product_charge_lines(%{products: products}),
-    do: [
+  defp product_charge_lines(%{products: products}) do
+    [
       {"Products (#{length(products)})", sum_prices(products)},
-      {
-        "Shipping (#{Enum.count(products, &has_shipping?/1)})",
-        total_shipping(products)
-      }
+      if Enum.any?(products, & &1.total_markuped_price) do
+        count = Enum.count(products, &has_shipping?/1)
+        {"Shipping (#{count})", total_shipping(products)}
+      else
+        {"Shipping & handling", "Included"}
+      end
     ]
+  end
 
   defp digital_charge_lines(%{digitals: []}, _), do: []
 
@@ -242,6 +245,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   defp find_digital([{:digital, value} | _]), do: {:digital, value}
   defp find_digital(_credits), do: {:digital, 0}
 
-  defp has_shipping?(%{shipping_upcharge: nil}), do: false
+  defp has_shipping?(%{total_markuped_price: nil}), do: false
   defp has_shipping?(_product), do: true
 end
