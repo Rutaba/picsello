@@ -27,7 +27,7 @@ defmodule Picsello.GalleryExpirationReminder do
          expired_at: expired_at,
          client_link_hash: client_link_hash
        }) do
-    has_gallery_expiration_messages? =
+    has_gallery_expiration_messages =
       from(r in ClientMessage,
         where: r.subject == "Gallery Expiration Reminder" and r.job_id == ^job_id
       )
@@ -45,21 +45,24 @@ defmodule Picsello.GalleryExpirationReminder do
     It’s been a delight working with you and I can’t wait to hear what you think!
     """
 
-    unless has_gallery_expiration_messages? != [] do
-      data =
-        Repo.one(
-          from(job in Job,
-            join: client in Client,
-            on: client.id == job.client_id,
-            join: organization in Organization,
-            on: organization.id == client.organization_id,
-            where: job.id == ^job_id and is_nil(job.archived_at),
-            select: {client.id, client.name, client.email, organization.name}
-          )
-        )
-
-      if data do
-        {client_id, client_name, client_email, organization_name} = data
+    if Enum.empty?(has_gallery_expiration_messages) do
+      job = from(job in Job,
+      where: job.id == ^job_id and is_nil(job.archived_at) and is_nil(job.completed_at),
+      preload: [client: :organization]
+      )
+      |> Repo.one()
+      
+      if job do
+        %{
+          client: %{
+            id: client_id,
+            name: client_name,
+            email: client_email,
+            organization: %{
+              name: organization_name
+            }
+          }
+        } = job
 
         body =
           EEx.eval_string(copy,

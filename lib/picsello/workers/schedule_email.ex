@@ -2,10 +2,7 @@ defmodule Picsello.Workers.ScheduleEmail do
   @moduledoc "Background job to send scheduled emails"
   use Oban.Worker, queue: :default
 
-  alias Picsello.Job
-  alias Picsello.Messages
-  alias Picsello.Notifiers.ClientNotifier
-  alias Picsello.Repo
+  alias Picsello.{Job, Messages, Repo, Notifiers.ClientNotifier}
 
   def perform(%Oban.Job{
         args: %{

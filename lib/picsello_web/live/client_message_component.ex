@@ -26,7 +26,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign(Enum.into(assigns, @default_assigns))
     |> assign(:client, Map.get(assigns, :client, nil))
     |> assign_new(:recipients, fn ->
-      if Map.has_key?(assigns, :client), do: %{"to" => [assigns.client.email]}, else: nil
+      if Map.has_key?(assigns, :client), do: %{"to" => assigns.client.email}, else: nil
     end)
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)

@@ -10,7 +10,8 @@ defmodule PicselloWeb.LeadLive.Show do
     BookingProposal,
     Notifiers.ClientNotifier,
     Questionnaire,
-    Contracts
+    Contracts,
+    Messages
   }
 
   alias PicselloWeb.JobLive
@@ -283,43 +284,39 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_info(
-        {:proposal_message_composed, message_changeset, _recipients},
-        %{assigns: %{job: job}} = socket
+        {:proposal_message_composed, message_changeset, recipients},
+        %{assigns: %{current_user: current_user, job: job}} = socket
       ) do
-    result =
       socket
       |> upsert_booking_proposal(true)
-      |> Ecto.Multi.insert(
-        :message,
-        Ecto.Changeset.put_change(message_changeset, :job_id, job.id)
-      )
+      |> Ecto.Multi.merge(fn _ ->
+        Messages.add_message_to_job(message_changeset, job, recipients, current_user)
+      end)
       |> Repo.transaction()
+      |> case do
+        {:ok, %{client_message: message}} ->
+            job =
+            job
+            |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
+              force: true
+            )
 
-    case result do
-      {:ok, %{message: message}} ->
-        %{client: client} =
-          job =
-          job
-          |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
-            force: true
-          )
+          ClientNotifier.deliver_email(message, recipients)
 
-        ClientNotifier.deliver_booking_proposal(message, client.email)
+          socket
+          |> assign_proposal()
+          |> assign(job: job, package: job.package)
+          |> PicselloWeb.ConfirmationComponent.open(%{
+            title: "Email sent",
+            subtitle: "Yay! Your email has been successfully sent"
+          })
+          |> noreply()
 
-        socket
-        |> assign_proposal()
-        |> assign(job: job, package: job.package)
-        |> PicselloWeb.ConfirmationComponent.open(%{
-          title: "Email sent",
-          subtitle: "Yay! Your email has been successfully sent"
-        })
-        |> noreply()
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Failed to create booking proposal. Please try again.")
-        |> noreply()
-    end
+        {:error, _} ->
+          socket
+          |> put_flash(:error, "Failed to create booking proposal. Please try again.")
+          |> noreply()
+      end
   end
 
   def handle_info({:confirm_event, "edit_package"}, %{assigns: assigns} = socket) do
@@ -359,6 +356,7 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder
 
+  #  Todo: sent_to_client issue
   defp upsert_booking_proposal(
          %{
            assigns: %{

@@ -357,7 +357,7 @@ defmodule Picsello.WelcomePageTest do
           "text" => "client response",
           "html" => "<p>client response</p>",
           "subject" => "Re: subject",
-          "envelope" => Jason.encode!(%{"to" => ["#{token}@test-inbox.picsello.com"]})
+          "envelope" => Jason.encode!(%{"to" => "#{token}@test-inbox.picsello.com"})
         }
         |> URI.encode_query(),
         [{"Content-Type", "application/x-www-form-urlencoded"}]
