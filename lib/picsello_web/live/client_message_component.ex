@@ -4,6 +4,7 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
+  import Picsello.Messages, only: [get_emails: 2]
 
   alias Picsello.{Repo, Job, Clients}
 
@@ -458,10 +459,5 @@ defmodule PicselloWeb.ClientMessageComponent do
       <% end %>
     </button>
     """
-  end
-
-  def get_emails(recipients, type \\ "to") do
-    emails = Map.get(recipients, type)
-    if is_list(emails), do: Enum.join(emails, "; "), else: emails
   end
 end

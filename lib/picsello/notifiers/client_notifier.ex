@@ -1,6 +1,8 @@
 defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
+  import Picsello.Messages, only: [get_emails: 2]
+
   alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, Galleries.Gallery}
   alias Cart.Order
   require Logger
@@ -347,17 +349,17 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> sendgrid_template(params)
     |> put_header("reply-to", "#{from_display} <#{reply_to}>")
     |> from({from_display, "noreply@picsello.com"})
-    |> to(Map.get(recipients, "to"))
-    |> cc(Map.get(recipients, "cc", []))
-    |> bcc(Map.get(recipients, "bcc", []))
+    |> to(get_emails(recipients, "to"))
+    |> cc(get_emails(recipients, "cc"))
+    |> bcc(get_emails(recipients, "bcc"))
     |> deliver_later()
   end
 
   defp deliver_transactional_email(params, recipients) do
     sendgrid_template(:generic_transactional_template, params)
-    |> to(Map.get(recipients, "to"))
-    |> cc(Map.get(recipients, "cc", []))
-    |> bcc(Map.get(recipients, "bcc", []))
+    |> to(get_emails(recipients, "to"))
+    |> cc(get_emails(recipients, "cc"))
+    |> bcc(get_emails(recipients, "bcc"))
     |> from("noreply@picsello.com")
     |> deliver_later()
   end

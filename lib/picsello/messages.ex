@@ -25,7 +25,7 @@ defmodule Picsello.Messages do
         user
       ) do
     recipients = get_recipient_attrs(recipients_list, user)
-    
+
     changeset
     |> Changeset.put_change(:job_id, id)
     |> save_message(recipients)
@@ -33,10 +33,9 @@ defmodule Picsello.Messages do
 
   def add_message_to_client(%Changeset{} = changeset, recipients_list, user) do
     recipients = get_recipient_attrs(recipients_list, user)
-    
+
     changeset
     |> save_message(recipients)
-    |> Repo.transaction()
   end
 
   def insert_scheduled_message!(params, %Job{} = job) do
@@ -123,25 +122,39 @@ defmodule Picsello.Messages do
         end)
       end
     )
+    |> Repo.transaction()
   end
 
   defp get_recipient_attrs(recipients_list, user),
     do:
       recipients_list
       |> Enum.map(fn {type, recipients} ->
-        recipients
-        |> Enum.map(fn recipient ->
-          client = Clients.get_client(user, email: recipient)
-
-          %{
-            client_id: client.id,
-            recipient_type: String.to_atom(type),
-            inserted_at: now(),
-            updated_at: now()
-          }
-        end)
+        if is_list(recipients),
+        do:
+          recipients
+          |> Enum.map(fn recipient ->
+            get_attrs(recipient, type, user)
+          end),
+        else:
+          get_attrs(recipients, type, user)
       end)
       |> List.flatten()
 
+  defp get_attrs(email, type, user) do
+    client = Clients.get_client(user, email: email)
+
+    %{
+      client_id: client.id,
+      recipient_type: String.to_atom(type),
+      inserted_at: now(),
+      updated_at: now()
+    }
+  end
+
   defp now(), do: DateTime.utc_now() |> DateTime.truncate(:second)
+
+  def get_emails(recipients, type \\ "to") do
+    emails = Map.get(recipients, type)
+    if is_list(emails), do: Enum.join(emails, "; "), else: emails
+  end
 end
