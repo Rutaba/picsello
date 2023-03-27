@@ -195,7 +195,7 @@ defmodule PicselloWeb.Live.Profile do
 
     ~H"""
     <a href="#contact-form" class="flex items-center justify-center btn-primary" phx-click="select-job-type" phx-value-job-type={@job_type}>
-      Book Now
+      Let’s chat
     </a>
     """
   end
@@ -335,7 +335,11 @@ defmodule PicselloWeb.Live.Profile do
       <div class={classes("rounded-3xl bg-white shadow-lg inline-block", %{"hidden" => Enum.any?(@image.entries)})}>
         <label class="inline-block p-3 cursor-pointer">
           <span class="font-sans font-semibold text-blue-planning-300 hover:opacity-75">
-            Choose a new logo
+           <%= case @image_field do %>
+           <% "logo" -> %> Choose a new logo
+           <% _ -> %> Choose a new photo
+           <% %>
+           <% end %>
           </span>
           <%= live_file_input @image, class: "hidden" %>
         </label>
