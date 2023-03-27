@@ -25,7 +25,6 @@ defmodule PicselloWeb.ClientMessageComponent do
   def update(assigns, socket) do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
-    # |> assign_new(:client, fn -> Map.get(assigns, :client, nil) end)
     |> assign_new(:recipients, fn ->
       if Map.has_key?(assigns, :client), do: %{"to" => assigns.client.email}, else: nil
     end)
@@ -40,9 +39,10 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> assign_changeset(:validate, Map.take(assigns, [:subject, :body_text, :body_html]))
     end)
     |> then(fn socket ->
-      socket
-      |> assign_presets()
-      |> re_assign_clients()
+      socket =
+        socket
+        |> assign_presets()
+      if socket.assigns.show_client_email, do: re_assign_clients(socket), else: socket
     end)
     |> then(fn
       %{assigns: %{presets: [_ | _] = presets}} = socket ->
