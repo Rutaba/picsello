@@ -63,7 +63,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           <div class="flex flex-col">
             <label for="to_email" class="text-sm font-semibold mb-2">To: <span class="font-light text-sm ml-0.5 italic">(semicolon separated to add more emails)</span></label>
             <div class="flex flex-col md:flex-row">
-              <input type="text" class="w-full md:w-2/3 text-input" id="to_email" value={"#{Enum.join(Map.get(@recipients, "to"), "; ")}"} phx-keyup="validate_to_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
+              <input type="text" class="w-full md:w-2/3 text-input" id="to_email" value={"#{get_emails(@recipients, "to")}"} phx-keyup="validate_to_email" phx-target={@myself} phx-debounce="1000" spellcheck="false"/>
               <.search_existing_clients search_results={@search_results} search_phrase={@search_phrase} current_focus={@current_focus} clients={@clients} myself={@myself}/>
             </div>
             <span class={classes("text-red-sales-300 text-sm", %{"hidden" => !@to_email_error})}><%= @to_email_error %></span>
@@ -305,7 +305,9 @@ defmodule PicselloWeb.ClientMessageComponent do
     email_list =
       recipients
       |> Map.get(type, [])
-      |> List.insert_at(-1, String.downcase(email))
+
+    email = String.downcase(email)
+    email_list = if is_list(email_list), do: List.insert_at(email_list, -1, email), else: [email, email_list] 
 
     socket
     |> assign(:recipients, Map.put(recipients, type, email_list))
@@ -456,5 +458,10 @@ defmodule PicselloWeb.ClientMessageComponent do
       <% end %>
     </button>
     """
+  end
+
+  def get_emails(recipients, type \\ "to") do
+    emails = Map.get(recipients, type)
+    if is_list(emails), do: Enum.join(emails, "; "), else: emails
   end
 end
