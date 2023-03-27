@@ -24,7 +24,7 @@ defmodule PicselloWeb.ClientMessageComponent do
   def update(assigns, socket) do
     socket
     |> assign(Enum.into(assigns, @default_assigns))
-    |> assign(:client, Map.get(assigns, :client, nil))
+    # |> assign_new(:client, fn -> Map.get(assigns, :client, nil) end)
     |> assign_new(:recipients, fn ->
       if Map.has_key?(assigns, :client), do: %{"to" => assigns.client.email}, else: nil
     end)
@@ -289,7 +289,7 @@ defmodule PicselloWeb.ClientMessageComponent do
          %{assigns: %{recipients: recipients, current_user: current_user}} = socket
        ) do
     if recipients do
-      email_list = recipients |> Map.values() |> List.flatten()
+      email_list = recipients |> Map.values() |> Enum.into([]) |> List.flatten()
 
       socket
       |> assign(
@@ -307,7 +307,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> Map.get(type, [])
 
     email = String.downcase(email)
-    email_list = if is_list(email_list), do: List.insert_at(email_list, -1, email), else: [email, email_list] 
+    email_list = if is_list(email_list), do: List.insert_at(email_list, -1, email), else: [email, email_list]
 
     socket
     |> assign(:recipients, Map.put(recipients, type, email_list))
