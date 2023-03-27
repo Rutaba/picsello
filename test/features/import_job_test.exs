@@ -566,7 +566,7 @@ defmodule Picsello.ImportJobTest do
 
     session
     |> visit(stripe_success_url)
-    |> assert_text("Thank you! Your sessions are now booked")
+    |> assert_text("Congratulations - your sessions are now booked")
 
     %{paid_at: time} = payment |> Repo.reload!()
     refute is_nil(time)

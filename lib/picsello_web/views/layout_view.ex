@@ -113,9 +113,7 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def help_chat_widget(
-        %{assigns: %{current_user: %{email: _, user_id: _}}} = assigns
-      ) do
+  def help_chat_widget(%{assigns: %{current_user: %{email: _, user_id: _}}} = assigns) do
     assigns = get_intercom_id(assigns)
 
     ~H"""
@@ -461,7 +459,8 @@ defmodule PicselloWeb.LayoutView do
     |> extract_organization()
   end
 
-  defp get_intercom_id(assigns), do: assign(assigns, :itercom_id, Application.get_env(:picsello, :intercom_id))
+  defp get_intercom_id(assigns),
+    do: assign(assigns, :itercom_id, Application.get_env(:picsello, :intercom_id))
 
   defp extract_organization(%{job: %{client: %{organization: organization}}}), do: organization
 end
