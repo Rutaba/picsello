@@ -5,8 +5,13 @@ defmodule PicselloWeb.GalleryLive.Settings.ManageGalleryAnalyticsComponent do
 
   @impl true
   def update(assigns, socket) do
+    client_email = Map.get(assigns.gallery.job.client, :email)
+
     socket
-    |> assign(gallery_analytics: assign_unique_emails_list(assigns.gallery.gallery_analytics))
+    |> assign(
+      gallery_analytics: assign_unique_emails_list(assigns.gallery.gallery_analytics),
+      gallery_client_email: client_email
+    )
     |> ok
   end
 
@@ -29,7 +34,13 @@ defmodule PicselloWeb.GalleryLive.Settings.ManageGalleryAnalyticsComponent do
                 </div>
               </div>
               <div class="flex flex-col ml-2">
-                <p class="text-base-250 font-bold"><%= gallery_analytic["email"] <> " (client)" %></p>
+                <p class="text-base-250 font-bold">
+                  <%= if gallery_analytic["email"] == @gallery_client_email do %>
+                    <%= gallery_analytic["email"] <> " (client)" %>
+                  <% else %>
+                    <%= gallery_analytic["email"] %>
+                  <% end %>
+                </p>
                 <p class="text-base-250 font-normal">Viewed: <%= format_date_string(gallery_analytic["viewed_at"]) %></p>
               </div>
             </div>

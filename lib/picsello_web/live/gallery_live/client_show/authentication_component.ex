@@ -26,6 +26,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
 
   def handle_event("check", %{"login" => %{"email" => email, "password" => password}}, socket) do
     valid_email? = Regex.match?(~r/^[^\s]+@[^\s]+.[^\s]+$/, email)
+
     if String.length(email) > 0 and valid_email? do
       socket.assigns
       |> build_session_token(password)
