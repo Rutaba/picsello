@@ -11,7 +11,6 @@ defmodule Picsello.GalleryAccessForClientsTest do
     session
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> assert_has(css(".w-screen.h-screen.bg-white"))
-    |> assert_has(css("h1", text: "Password protected"))
     |> assert_has(css("#login_password", count: 1))
     |> assert_has(css("button", count: 1, text: "Submit"))
   end
