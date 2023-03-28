@@ -3,7 +3,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
   use Picsello.Notifiers
   import Picsello.Messages, only: [get_emails: 2]
 
-  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, Galleries.Gallery}
+  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery}
   alias Cart.Order
   require Logger
 
@@ -26,17 +26,13 @@ defmodule Picsello.Notifiers.ClientNotifier do
     "bcc" => [bcc@gmail.com, bcc@gmail.com],
   }
   """
-  def deliver_email(message, recipients, params \\ %{}) do
-    message = message |> Repo.preload([:job, :clients], force: true)
-
-    IO.inspect recipients, label: "recipients"
-    IO.inspect message, label: "message"
-
+  def deliver_email(message, recipients, params \\ %{}),
+  do:
     message
+    |> Repo.preload([:job, :clients], force: true)
     |> message_params()
     |> Map.merge(params)
-    |> deliver_transactional_email(recipients, if(message.job, do: message.job, else: message.clients))
-  end
+    |> deliver_transactional_email(recipients, message)
 
   def deliver_payment_made(proposal) do
     %{job: %{client: %{organization: organization} = client} = job} =
@@ -323,16 +319,18 @@ defmodule Picsello.Notifiers.ClientNotifier do
     deliver_transactional_email(params, recipients, reply_to, client)
   end
 
-  defp deliver_transactional_email(params, recipients, clients) do
-    IO.inspect clients
-    reply_to = Messages.email_address(hd(clients))
-    deliver_transactional_email(params, recipients, reply_to, hd(clients))
+  defp deliver_transactional_email(params, recipients, %ClientMessage{} = message) do
+    if message.job do
+      reply_to = Messages.email_address(message.job)
+      deliver_transactional_email(params, recipients, reply_to, hd(message.clients))
+    else
+      deliver_transactional_email(params, recipients)
+    end
   end
 
   defp deliver_transactional_email(params, recipients, reply_to, client) do
     client = client |> Repo.preload(organization: [:user])
     %{organization: organization} = client
-
     params =
       Map.merge(
         %{
