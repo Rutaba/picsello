@@ -4,9 +4,8 @@ defmodule PicselloWeb.LiveHelpers do
 
   alias Picsello.{Onboardings, PaymentSchedules, BookingProposal}
 
-  import Phoenix.LiveView,
-    only: [get_connect_params: 1, assign: 2, assign_new: 3, redirect: 2, put_flash: 3]
-
+  import Phoenix.LiveView
+  import Phoenix.Component
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
   require Logger

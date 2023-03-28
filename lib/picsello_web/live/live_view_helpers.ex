@@ -1,6 +1,7 @@
 defmodule PicselloWeb.LiveViewHelpers do
   @moduledoc false
   import Phoenix.LiveView
+  import Phoenix.Component
   alias PicselloWeb.LiveAuth
 
   def assign_defaults(socket, session) do

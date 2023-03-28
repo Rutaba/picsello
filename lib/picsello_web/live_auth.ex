@@ -1,6 +1,7 @@
 defmodule PicselloWeb.LiveAuth do
   @moduledoc false
   import Phoenix.LiveView
+  import Phoenix.Component
   alias PicselloWeb.Router.Helpers, as: Routes
   alias Picsello.{Accounts, Accounts.User, Subscriptions}
   alias Picsello.{Galleries, Albums}

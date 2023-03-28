@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
   """
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  use Phoenix.Component
+  import Phoenix.Component
   alias Picsello.{Profiles, BrandLinks, BrandLink}
 
   def update(assigns, socket) do

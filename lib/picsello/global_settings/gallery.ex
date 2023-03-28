@@ -16,11 +16,11 @@ defmodule Picsello.GlobalSettings.Gallery do
 
   @default_each_price ~M[5000]USD
   @default_buy_all_price ~M[75000]USD
-  @types ~w(image text)
+  
   schema "global_settings_galleries" do
     field(:expiration_days, :integer)
     field(:watermark_name, :string)
-    field(:watermark_type, :string, values: @types)
+    field(:watermark_type, Ecto.Enum, values: [:image, :text])
     field(:watermark_size, :integer)
     field(:watermark_text, :string)
     field(:global_watermark_path, :string)

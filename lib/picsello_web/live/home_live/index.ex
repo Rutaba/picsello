@@ -35,6 +35,7 @@ defmodule PicselloWeb.HomeLive.Index do
   import Ecto.Changeset, only: [get_change: 2]
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
+  import Phoenix.Component
 
   @card_concise_name_list [
     "send-confirmation-email",

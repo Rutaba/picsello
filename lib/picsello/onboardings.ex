@@ -21,13 +21,13 @@ defmodule Picsello.Onboardings do
     use Ecto.Schema
 
     @online_source_options [
-      "Facebook Group",
-      "Facebook Ad",
-      "Instagram",
-      "Search Engine (Google, Bing, etc)",
-      "YouTube",
-      "Quora/Reddit/Pinterest",
-      "Referral"
+      "Facebook Group": :facebook_group,
+      "Facebook Ad": :facebook_ad,
+      "Instagram": :instagram,
+      "Search Engine (Google, Bing, etc)": :search_engine,
+      "YouTube": :youtube,
+      "Quora/Reddit/Pinterest": :quora_reddit_pinterest,
+      "Referral": :referral
     ]
 
     defmodule IntroState do
@@ -63,7 +63,7 @@ defmodule Picsello.Onboardings do
       field(:completed_at, :utc_datetime)
       field(:state, :string)
       field(:social_handle, :string)
-      field(:online_source, :string, values: @online_source_options)
+      field(:online_source, Ecto.Enum, values: Keyword.values(@online_source_options))
       field(:welcome_count, :integer)
       field(:promotion_code, :string, default: nil)
       embeds_many(:intro_states, IntroState, on_replace: :delete)

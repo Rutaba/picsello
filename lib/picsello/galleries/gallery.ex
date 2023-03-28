@@ -7,8 +7,8 @@ defmodule Picsello.Galleries.Gallery do
   alias Picsello.{Job, Cart.Order, Repo, GlobalSettings}
 
   @status_options [
-    values: ~w(active inactive disabled expired),
-    default: "active"
+    values: ~w[active inactive disabled expired]a,
+    default: :active
   ]
 
   @session_opts [
@@ -21,7 +21,7 @@ defmodule Picsello.Galleries.Gallery do
 
   schema "galleries" do
     field :name, :string
-    field :status, :string, @status_options
+    field :status, Ecto.Enum, @status_options
     field :password, :string
     field :client_link_hash, :string
     field :expired_at, :utc_datetime

@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.Calendar.Shared do
   """
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  use Phoenix.Component
+  import Phoenix.Component
 
   def back_button(assigns) do
     ~H"""

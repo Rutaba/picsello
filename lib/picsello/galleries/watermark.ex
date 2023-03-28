@@ -5,10 +5,9 @@ defmodule Picsello.Galleries.Watermark do
   alias Picsello.Galleries.Gallery
   alias Picsello.Galleries.Watermark
 
-  @types ~w(image text)
   schema "gallery_watermarks" do
     field(:name, :string)
-    field(:type, :string, values: @types)
+    field(:type, Ecto.Enum, values: [:image, :text])
     field(:size, :integer)
     field(:text, :string)
     belongs_to(:gallery, Gallery)
