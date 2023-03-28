@@ -10,7 +10,7 @@
                 <p class="errorPwdMsg text-red-error-300 pt-6 -mb-4 text-xs">Unfortunately, we do not recognize this password or incorrect email-format.</p>
               <% end %>
 
-              <%= live_component PicselloWeb.EmailAndPasswordFieldComponent, f: f, id: :email_and_password, label: "", email_placeholder: "Enter email", password_placeholder: "Enter password", class: "bg-base-200" %>
+              <%= live_component PicselloWeb.ClientLoginComponent, f: f, id: :email_and_password, label: "", email_placeholder: "Enter email", password_placeholder: "Enter password", class: "bg-base-200" %>
 
               <div class="mt-6 text-center">
                 <%= submit "Submit", class: "btn-primary w-full" %>

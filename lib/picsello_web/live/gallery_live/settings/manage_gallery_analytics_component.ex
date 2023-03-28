@@ -26,25 +26,27 @@ defmodule PicselloWeb.GalleryLive.Settings.ManageGalleryAnalyticsComponent do
         <div class="flex flex-col mt-2">
           <p class="font-bold">Emails that have viewed:</p>
           <%= if @gallery_analytics != [] do %>
-            <%= for gallery_analytic <- @gallery_analytics do %>
-            <div class="flex flex-row mt-2 items-center">
-              <div class="flex">
-                <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
-                  <.icon name="envelope" class="w-4 h-4 text-white fill-current"/>
+            <div class="grid md:grid-cols-2">
+              <%= for gallery_analytic <- @gallery_analytics do %>
+              <div class="flex flex-row mt-2 items-center">
+                <div class="flex">
+                  <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
+                    <.icon name="envelope" class="w-4 h-4 text-white fill-current"/>
+                  </div>
+                </div>
+                <div class="flex flex-col ml-2">
+                  <p class="text-base-250 font-bold">
+                    <%= if gallery_analytic["email"] == @gallery_client_email do %>
+                      <%= gallery_analytic["email"] <> " (client)" %>
+                    <% else %>
+                      <%= gallery_analytic["email"] %>
+                    <% end %>
+                  </p>
+                  <p class="text-base-250 font-normal">Viewed: <%= format_date_string(gallery_analytic["viewed_at"]) %></p>
                 </div>
               </div>
-              <div class="flex flex-col ml-2">
-                <p class="text-base-250 font-bold">
-                  <%= if gallery_analytic["email"] == @gallery_client_email do %>
-                    <%= gallery_analytic["email"] <> " (client)" %>
-                  <% else %>
-                    <%= gallery_analytic["email"] %>
-                  <% end %>
-                </p>
-                <p class="text-base-250 font-normal">Viewed: <%= format_date_string(gallery_analytic["viewed_at"]) %></p>
-              </div>
+              <% end %>
             </div>
-            <% end %>
           <% else %>
             <p class="text-base-250">No one has viewed yet!</p>
           <% end %>
@@ -66,13 +68,11 @@ defmodule PicselloWeb.GalleryLive.Settings.ManageGalleryAnalyticsComponent do
   end
 
   defp format_date_string(date_string) do
-    date =
+    [year, month, day] =
       date_string
       |> String.slice(0..9)
       |> String.split("-")
 
-    [year, month, day] = date
-
-    "#{day}/#{month}/#{String.slice(year, 2..3)}"
+    "#{month}/#{day}/#{String.slice(year, 2..3)}"
   end
 end

@@ -1,4 +1,4 @@
-defmodule PicselloWeb.EmailAndPasswordFieldComponent do
+defmodule PicselloWeb.ClientLoginComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
