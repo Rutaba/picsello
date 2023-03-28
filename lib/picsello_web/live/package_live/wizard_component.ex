@@ -565,7 +565,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     <div class="flex flex-row">
       <%= for %{name: name, concise_name: concise_name} <- @tabs do %>
-        <div class={classes("text-blue-planning-300 flex p-3 font-bold text-lg border-b-4 transition-all shrink-0 underline", %{"opacity-100 border-b-blue-planning-300" => @active_tab === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @active_tab !== concise_name})}>
+        <div class={classes("text-blue-planning-300 flex p-3 font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @active_tab === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @active_tab !== concise_name})}>
           <button type="button" phx-click={"toggle-tab"} phx-value-active={concise_name} phx-target={@myself} ><%= name %></button>
         </div>
       <% end %>
@@ -597,7 +597,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <%= if Enum.empty?(@questionnaires) do %>
           <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
         <% else %>
-          <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
+          <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg pb-3 mt-4 bg-base-200">
             <div class="w-1/3">Questionnaire name</div>
             <div class="w-1/3 text-center">Job type</div>
             <div class="w-1/3 text-center">Select questionnaire</div>
@@ -1972,11 +1972,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp tabs_list() do
     [
       %{
-        name: "Contracts",
+        name: "Contract",
         concise_name: "contract"
       },
       %{
-        name: "Questions",
+        name: "Questionnaire",
         concise_name: "question"
       }
     ]
