@@ -15,13 +15,14 @@ defmodule PicselloWeb.SendgridInboundParseController do
         %Job{id: id} ->
           {%{job_id: id}, [:job_id]}
       end
-      
+
     body_text = Map.get(params, "text")
 
     changeset =
       Map.merge(
         %{
-          body_text: if(body_text, do: ElixirEmailReplyParser.parse_reply(body_text), else: body_text),
+          body_text:
+            if(body_text, do: ElixirEmailReplyParser.parse_reply(body_text), else: body_text),
           body_html: Map.get(params, "html", ""),
           subject: Map.get(params, "subject", nil),
           outbound: false

@@ -16,6 +16,20 @@ defmodule Picsello.ClientsIndexTest do
         phone: "(210) 111-1234"
       )
 
+    insert(:client, %{
+      organization: user.organization,
+      name: "John Snow",
+      phone: "(241) 567-2352",
+      email: "snow@example.com"
+    })
+
+    insert(:client, %{
+      organization: user.organization,
+      name: "Michael Stark",
+      phone: "(442) 567-2321",
+      email: "stark@example.com"
+    })
+
     lead = insert(:lead, client: client, user: user)
     [client: client, session: session, user: user, lead: lead]
   end
@@ -87,7 +101,7 @@ defmodule Picsello.ClientsIndexTest do
     |> click(link("All Clients"))
     |> assert_text(@name)
     |> assert_text(@email)
-    |> click(button("Manage", count: 2, at: 1))
+    |> click(button("Manage", count: 4, at: 1))
     |> click(button("Details"))
     |> assert_text("Client: #{@name}")
     |> click(button("Edit Contact"))
@@ -106,19 +120,19 @@ defmodule Picsello.ClientsIndexTest do
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
     |> find(css("#intro_hints_only"), &click(&1, button("Add client")))
-    |> fill_in(text_field("Email"), with: "john@example.com")
+    |> fill_in(text_field("Email"), with: "jane@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> click(link("All Clients"))
-    |> assert_text("john@example.com")
-    |> click(button("Manage", count: 2, at: 1))
+    |> assert_text("jane@example.com")
+    |> click(button("Manage", count: 4, at: 3))
     |> click(button("Details"))
-    |> assert_text("Client: john@example.com")
+    |> assert_text("Client: jane@example.com")
     |> click(button("Edit Contact"))
-    |> fill_in(text_field("Email"), with: "john2@example.com")
+    |> fill_in(text_field("Email"), with: "jane_mary@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_text("john2@example.com")
+    |> assert_text("jane_mary@example.com")
   end
 
   feature "edits client from actions that already has a job", %{
@@ -129,24 +143,24 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Manage"))
+    |> click(button("Manage", count: 3, at: 0))
     |> click(button("Details"))
     |> assert_text("Client: #{client.name}")
     |> click(button("Edit Contact"))
     |> fill_in(text_field("Name"), with: " ")
     |> assert_text("Name can't be blank")
-    |> fill_in(text_field("Name"), with: "John")
+    |> fill_in(text_field("Name"), with: "Liza Taylor")
     |> fill_in(text_field("Phone"), with: "")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_text("Client: John")
+    |> assert_text("Client: Liza Taylor")
   end
 
   feature "edits client and add private notes", %{session: session, client: client} do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Manage"))
+    |> click(button("Manage", count: 3, at: 0))
     |> click(button("Details"))
     |> assert_text("Client: #{client.name}")
     |> find(testid("card-Private notes"), &click(&1, button("Edit")))
@@ -169,7 +183,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Manage"))
+    |> click(button("Manage", count: 3, at: 0))
     |> click(button("Create gallery"))
     |> click(button("Next", count: 2, at: 0))
     |> click(css("label", text: "Wedding"))
@@ -193,7 +207,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Manage"))
+    |> click(button("Manage", count: 3, at: 0))
     |> click(button("Import job"))
     |> scroll_into_view(css("label", text: "Wedding"))
     |> click(css("label", text: "Wedding"))
@@ -230,21 +244,42 @@ defmodule Picsello.ClientsIndexTest do
   end
 
   feature "send email from client", %{
-    session: session,
-    client: client
+    session: session
   } do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Manage"))
+    |> click(button("Manage", count: 3, at: 0))
     |> click(button("Send email"))
     |> refute_has(select("Select email preset"))
-    |> take_screenshot()
     |> fill_in(text_field("Subject line"), with: "Here is what I propose")
     |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
     |> send_keys(["This is 1st line", :enter, "2nd line"])
     |> click(button("Send"))
-    |> assert_flash(:success, text: "Email sent to #{client.name}!")
+    |> assert_flash(:success, text: "Email sent!")
+    |> click(button("Manage", count: 3, at: 1))
+    |> click(button("Send email"))
+    |> within_modal(fn modal ->
+      modal
+      |> click(button("Add Cc"))
+      |> fill_in(text_field("cc_email"), with: "taylor@example.com; snow@example.com")
+      |> click(button("Add Bcc"))
+      |> fill_in(text_field("bcc_email"), with: "new")
+      |> assert_has(testid("bcc-error"))
+      |> click(button("remove-bcc"))
+      |> fill_in(text_field("search_phrase"), with: "stark")
+      |> assert_has(css("#search_results"))
+      |> find(testid("search-row", count: 1, at: 0), fn row ->
+        row
+        |> click(button("Add to"))
+      end)
+      |> fill_in(text_field("Subject line"), with: "My subject")
+      |> scroll_to_bottom()
+      |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
+      |> send_keys(["This is 1st line", :enter, "2nd line"])
+      |> click(button("Send"))
+    end)
+    |> assert_flash(:success, text: "Email sent!")
   end
 
   feature "user archives client", %{
@@ -260,7 +295,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
-    |> click(button("Manage", count: 2, at: 0))
+    |> click(button("Manage", count: 4, at: 0))
     |> click(button("Archive"))
     |> click(button("Yes, archive"))
     |> assert_flash(:success, text: "Client archived successfully")
@@ -272,15 +307,16 @@ defmodule Picsello.ClientsIndexTest do
 
     session
     |> visit("/clients")
-    |> assert_text("Results: 1 – 12 of 13")
+    |> scroll_to_bottom()
+    |> assert_text("Results: 1 – 12 of 15")
     |> assert_has(testid("client-row", count: 12))
     |> assert_has(css("button:disabled[title='Previous page']"))
     |> click(button("Next page"))
-    |> assert_text("Results: 13 – 13 of 13")
-    |> assert_has(testid("client-row", count: 1))
+    |> assert_text("Results: 13 – 15 of 15")
+    |> assert_has(testid("client-row", count: 3))
     |> assert_has(css("button:disabled[title='Next page']"))
     |> click(button("Previous page"))
-    |> assert_text("Results: 1 – 12 of 13")
+    |> assert_text("Results: 1 – 12 of 15")
     |> click(css("select", text: "12"))
     |> click(css("option", text: "24"))
   end

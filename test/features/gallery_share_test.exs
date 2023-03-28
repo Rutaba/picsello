@@ -100,9 +100,9 @@ defmodule Picsello.GalleryShareTest do
       |> find(testid("search-row", count: 1, at: 0), fn row ->
         row
         |> click(button("Add to"))
+      end)
       |> fill_in(text_field("Subject line"), with: "My subject")
       |> fill_in_quill("This is the body")
-      end)
       |> wait_for_enabled_submit_button(text: "Send Email")
       |> click(button("Send Email"))
     end)

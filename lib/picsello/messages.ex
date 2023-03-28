@@ -129,13 +129,12 @@ defmodule Picsello.Messages do
       recipients_list
       |> Enum.map(fn {type, recipients} ->
         if is_list(recipients),
-        do:
-          recipients
-          |> Enum.map(fn recipient ->
-            get_attrs(recipient, type, user)
-          end),
-        else:
-          get_attrs(recipients, type, user)
+          do:
+            recipients
+            |> Enum.map(fn recipient ->
+              get_attrs(recipient, type, user)
+            end),
+          else: get_attrs(recipients, type, user)
       end)
       |> List.flatten()
 

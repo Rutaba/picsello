@@ -6,8 +6,6 @@ defmodule Picsello.GalleryExpirationReminder do
     Job,
     Notifiers.ClientNotifier,
     ClientMessage,
-    Organization,
-    Client,
     Repo
   }
 
@@ -46,12 +44,13 @@ defmodule Picsello.GalleryExpirationReminder do
     """
 
     if Enum.empty?(has_gallery_expiration_messages) do
-      job = from(job in Job,
-      where: job.id == ^job_id and is_nil(job.archived_at) and is_nil(job.completed_at),
-      preload: [client: :organization]
-      )
-      |> Repo.one()
-      
+      job =
+        from(job in Job,
+          where: job.id == ^job_id and is_nil(job.archived_at) and is_nil(job.completed_at),
+          preload: [client: :organization]
+        )
+        |> Repo.one()
+
       if job do
         %{
           client: %{

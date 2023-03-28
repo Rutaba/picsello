@@ -287,36 +287,36 @@ defmodule PicselloWeb.LeadLive.Show do
         {:proposal_message_composed, message_changeset, recipients},
         %{assigns: %{current_user: current_user, job: job}} = socket
       ) do
-      socket
-      |> upsert_booking_proposal(true)
-      |> Ecto.Multi.merge(fn _ ->
-        Messages.add_message_to_job(message_changeset, job, recipients, current_user)
-      end)
-      |> Repo.transaction()
-      |> case do
-        {:ok, %{client_message: message, client_message_recipients: _}} ->
-            job =
-            job
-            |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
-              force: true
-            )
+    socket
+    |> upsert_booking_proposal(true)
+    |> Ecto.Multi.merge(fn _ ->
+      Messages.add_message_to_job(message_changeset, job, recipients, current_user)
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{client_message: message, client_message_recipients: _}} ->
+        job =
+          job
+          |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
+            force: true
+          )
 
-          ClientNotifier.deliver_email(message, recipients)
+        ClientNotifier.deliver_email(message, recipients)
 
-          socket
-          |> assign_proposal()
-          |> assign(job: job, package: job.package)
-          |> PicselloWeb.ConfirmationComponent.open(%{
-            title: "Email sent",
-            subtitle: "Yay! Your email has been successfully sent"
-          })
-          |> noreply()
+        socket
+        |> assign_proposal()
+        |> assign(job: job, package: job.package)
+        |> PicselloWeb.ConfirmationComponent.open(%{
+          title: "Email sent",
+          subtitle: "Yay! Your email has been successfully sent"
+        })
+        |> noreply()
 
-        {:error, _} ->
-          socket
-          |> put_flash(:error, "Failed to create booking proposal. Please try again.")
-          |> noreply()
-      end
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Failed to create booking proposal. Please try again.")
+        |> noreply()
+    end
   end
 
   def handle_info({:confirm_event, "edit_package"}, %{assigns: assigns} = socket) do

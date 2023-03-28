@@ -42,6 +42,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       socket =
         socket
         |> assign_presets()
+
       if socket.assigns.show_client_email, do: re_assign_clients(socket), else: socket
     end)
     |> then(fn
@@ -308,7 +309,9 @@ defmodule PicselloWeb.ClientMessageComponent do
       |> Map.get(type, [])
 
     email = String.downcase(email)
-    email_list = if is_list(email_list), do: List.insert_at(email_list, -1, email), else: [email, email_list]
+
+    email_list =
+      if is_list(email_list), do: List.insert_at(email_list, -1, email), else: [email, email_list]
 
     socket
     |> assign(:recipients, Map.put(recipients, type, email_list))

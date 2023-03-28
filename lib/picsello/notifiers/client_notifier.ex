@@ -27,12 +27,12 @@ defmodule Picsello.Notifiers.ClientNotifier do
   }
   """
   def deliver_email(message, recipients, params \\ %{}),
-  do:
-    message
-    |> Repo.preload([:job, :clients], force: true)
-    |> message_params()
-    |> Map.merge(params)
-    |> deliver_transactional_email(recipients, message)
+    do:
+      message
+      |> Repo.preload([:job, :clients], force: true)
+      |> message_params()
+      |> Map.merge(params)
+      |> deliver_transactional_email(recipients, message)
 
   def deliver_payment_made(proposal) do
     %{job: %{client: %{organization: organization} = client} = job} =
@@ -322,7 +322,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
   defp deliver_transactional_email(params, recipients, %ClientMessage{} = message) do
     if message.job == %Job{} do
       reply_to = Messages.email_address(message.job)
-      deliver_transactional_email(params, recipients, reply_to, hd(message.clients))
+      deliver_transactional_email(params, recipients, reply_to, message.job.client)
     else
       deliver_transactional_email(params, recipients)
     end
@@ -331,6 +331,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
   defp deliver_transactional_email(params, recipients, reply_to, client) do
     client = client |> Repo.preload(organization: [:user])
     %{organization: organization} = client
+
     params =
       Map.merge(
         %{
