@@ -354,7 +354,7 @@ defmodule PicselloWeb.InboxLive.Index do
         %{assigns: %{job: job, current_user: user}} = socket
       ) do
     with {:ok, %{client_message: message, client_message_recipients: _}} <-
-           Messages.add_message_to_job(message_changeset, job, recipients, user),
+           Messages.add_message_to_job(message_changeset, job, recipients, user) |> Repo.transaction(),
          {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> close_modal()

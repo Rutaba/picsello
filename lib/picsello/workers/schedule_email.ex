@@ -20,7 +20,7 @@ defmodule Picsello.Workers.ScheduleEmail do
     job = Job.by_id(job_id) |> Repo.one!()
 
     {:ok, %{client_message: message, client_message_recipients: _}} =
-      Messages.add_message_to_job(message_changeset, job, recipients, user)
+      Messages.add_message_to_job(message_changeset, job, recipients, user) |> Repo.transaction()
 
     ClientNotifier.deliver_email(message, recipients)
     :ok

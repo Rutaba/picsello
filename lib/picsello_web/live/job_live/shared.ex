@@ -546,7 +546,7 @@ defmodule PicselloWeb.JobLive.Shared do
         %{assigns: %{current_user: user, job: job}} = socket
       ) do
     with {:ok, %{client_message: message, client_message_recipients: _}} <-
-           Messages.add_message_to_job(message_changeset, job, recipients, user),
+           Messages.add_message_to_job(message_changeset, job, recipients, user) |> Repo.transaction(),
          {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> ConfirmationComponent.open(%{

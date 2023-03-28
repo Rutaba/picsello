@@ -320,7 +320,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
   end
 
   defp deliver_transactional_email(params, recipients, %ClientMessage{} = message) do
-    if message.job do
+    if message.job == %Job{} do
       reply_to = Messages.email_address(message.job)
       deliver_transactional_email(params, recipients, reply_to, hd(message.clients))
     else

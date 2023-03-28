@@ -216,7 +216,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       Oban.cancel_job(oban_job_id)
 
       {:ok, %{client_message: message, client_message_recipients: _}} =
-        Messages.add_message_to_job(message_changeset, job, recipients, user)
+        Messages.add_message_to_job(message_changeset, job, recipients, user) |> Repo.transaction()
 
       ClientNotifier.deliver_email(message, recipients)
     end)

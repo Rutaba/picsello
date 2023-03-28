@@ -122,7 +122,6 @@ defmodule Picsello.Messages do
         end)
       end
     )
-    |> Repo.transaction()
   end
 
   defp get_recipient_attrs(recipients_list, user),

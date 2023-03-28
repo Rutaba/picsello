@@ -294,7 +294,7 @@ defmodule PicselloWeb.LeadLive.Show do
       end)
       |> Repo.transaction()
       |> case do
-        {:ok, %{client_message: message}} ->
+        {:ok, %{client_message: message, client_message_recipients: _}} ->
             job =
             job
             |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
