@@ -1,7 +1,9 @@
 defmodule PicselloWeb.GalleryLive.Shared do
   @moduledoc "Shared function among gallery liveViews"
 
+  use Phoenix.LiveComponent
   import Phoenix.Component
+  # import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import Money.Sigils
 
@@ -9,6 +11,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Job,
     Repo,
     Galleries,
+    Client,
     GalleryProducts,
     Messages,
     Cart,
@@ -21,9 +24,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   alias Ecto.Multi
   alias Cart.{Order, Digital}
-  alias Galleries.{GalleryProduct, Photo}
-  alias Picsello.{Galleries, Client}
   alias Picsello.Cart.Order
+  alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @card_blank "/images/card_gray.png"

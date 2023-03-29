@@ -1,9 +1,10 @@
 defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
+  use PicselloWeb, live_view: [layout: :onboarding]
+
   import Picsello.Zapier.User, only: [user_trial_created_webhook: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
-  use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
 
   alias Ecto.Multi
