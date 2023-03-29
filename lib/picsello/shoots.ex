@@ -11,7 +11,7 @@ defmodule Picsello.Shoots do
       join: status in assoc(job, :job_status),
       where:
         client.organization_id == ^user.organization.id and
-          is_nil(job.archived_at) and shoot.starts_at >= ^start_date and
+          is_nil(job.archived_at) and is_nil(job.completed_at) and shoot.starts_at >= ^start_date and
           shoot.starts_at <= ^end_date and
           (status.is_lead == false or is_nil(job.booking_event_id)),
       select: {shoot, job, client, status},

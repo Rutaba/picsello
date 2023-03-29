@@ -61,7 +61,7 @@ defmodule Picsello.ProposalReminder do
          {client_id, client_name, client_email, organization_name, job_id} <-
            from(proposal in BookingProposal,
              join: job in Job,
-             on: job.id == proposal.job_id and is_nil(job.archived_at),
+             on: job.id == proposal.job_id and is_nil(job.archived_at) and is_nil(job.completed_at),
              join: client in Client,
              on: client.id == job.client_id,
              join: organization in Organization,
