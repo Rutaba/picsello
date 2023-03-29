@@ -2,7 +2,6 @@ defmodule PicselloWeb.Live.Profile.Shared do
   @moduledoc """
   functions used by editing profile components
   """
-  import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import Phoenix.Component
   alias Picsello.{Profiles, BrandLinks, BrandLink}

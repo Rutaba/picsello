@@ -148,7 +148,7 @@
             Enter <%= if only_digitals?(@order), do: "digital delivery", else: "your shipping" %> information
           </h2>
 
-          <.form let={f} for={@delivery_info_changeset} phx-change="validate_delivery_info" phx-submit="checkout" class="flex flex-col xl:flex-row">
+          <.form :let={f} for={@delivery_info_changeset} phx-change="validate_delivery_info" phx-submit="checkout" class="flex flex-col xl:flex-row">
             <div class="w-full px-6 py-8 border border-base-225 xl:w-2/3 xl:mr-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="flex flex-col flex-1 md:mr-4">

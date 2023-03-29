@@ -52,7 +52,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           <%= if @client, do: @client.email, else: client_email(@job) %>
         </div>
       <% end %>
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <div class="grid grid-flow-col gap-4 mt-4 auto-cols-fr">
           <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
           <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "h-12", phx_debounce: "500" %>

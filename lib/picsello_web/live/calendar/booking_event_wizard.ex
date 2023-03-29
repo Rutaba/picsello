@@ -63,7 +63,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
       <.step_heading name={@step} is_edit={@booking_event.id} />
 
-      <.form for={@changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+      <.form for={@changeset} :let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
         <input type="hidden" name="step" value={@step} />
 
         <.wizard_state form={f} />

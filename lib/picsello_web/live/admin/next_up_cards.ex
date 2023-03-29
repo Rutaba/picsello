@@ -34,7 +34,7 @@ defmodule PicselloWeb.Live.Admin.NextUpCards do
         <button class="mb-4 btn-primary" phx-click="add-card">Add card</button>
       </div>
       <%= for({%{card: %{id: id, buttons: buttons}, changeset: changeset}, index} <- @cards |> Enum.with_index()) do %>
-        <.form let={f} for={changeset} class="contents" phx-change="update-card" id={"form-cards-#{id}"}>
+        <.form :let={f} for={changeset} class="contents" phx-change="update-card" id={"form-cards-#{id}"}>
           <%= hidden_input f, :id %>
           <div class="flex items-center gap-4 bg-gray-100 rounded-t-lg py-4 px-6">
             <h4 class="font-bold text-lg">Card—<%= input_value f, :title %></h4>

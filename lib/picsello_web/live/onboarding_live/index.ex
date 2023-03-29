@@ -82,7 +82,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   def render(assigns) do
     ~H"""
       <.container step={@step} color_class={@color_class} title={@step_title} subtitle={@subtitle}>
-        <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"}>
+        <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"}>
           <.step f={f} {assigns} />
 
           <div class="flex items-center justify-between mt-5 sm:justify-end sm:mt-9" phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="retrieve">

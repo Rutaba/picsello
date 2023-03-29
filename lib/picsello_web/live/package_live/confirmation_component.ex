@@ -53,7 +53,7 @@ defmodule PicselloWeb.PackageLive.ConfirmationComponent do
 
   defp section(assigns) do
     ~H"""
-      <.form let={f} for={:check} phx-submit={@confirm_event} phx-target={@myself}>
+      <.form :let={f} for={:check} phx-submit={@confirm_event} phx-target={@myself}>
         <%= if @subtitle && @heading do %>
           <%= if @checkbox_event do %>
             <div class="flex flex-col pt-4 items-start">

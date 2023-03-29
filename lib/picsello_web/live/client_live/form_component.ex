@@ -95,7 +95,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
 
   def step(%{step: :add_client} = assigns) do
     ~H"""
-      <.form for={@changeset} let={f} phx_submit={:submit} phx-change="validate" phx-target={@myself}>
+      <.form for={@changeset} :let={f} phx_submit={:submit} phx-change="validate" phx-target={@myself}>
         <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
           <%= labeled_input f, :name, placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
           <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500" %>

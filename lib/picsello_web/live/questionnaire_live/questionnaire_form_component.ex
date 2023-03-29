@@ -26,7 +26,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
         <% end %>
       </div>
 
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <h2 class="text-2xl leading-6 text-gray-900 mb-8 font-bold">Details</h2>
         <%= hidden_input f, :package_id %>
 

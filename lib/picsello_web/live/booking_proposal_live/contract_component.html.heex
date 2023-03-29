@@ -1,5 +1,5 @@
 <div class="modal">
-  <.form for={@changeset} let={f} phx-change="validate" phx-submit="submit" phx-target={@myself}>
+  <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself}>
     <.close_x />
 
     <.banner title="Contract" job={@job} package={@package}>

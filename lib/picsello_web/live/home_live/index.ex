@@ -980,7 +980,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <% end %>
           </div>
           <div class="flex justify-end mt-6">
-            <.form let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form" phx-submit="save-promo-code">
+            <.form :let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form" phx-submit="save-promo-code">
               <%= hidden_inputs_for f %>
               <%= for onboarding <- inputs_for(f, :onboarding) do %>
                 <details class="group" open={@promotion_code_open} {testid("promo-code")}>

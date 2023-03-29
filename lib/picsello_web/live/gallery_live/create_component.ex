@@ -237,7 +237,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
       <.form
         for={@changeset}
-        let={f} phx_change={:validate}
+        :let={f} phx_change={:validate}
         phx_submit={:submit}
         phx_target={@myself}
         id={"form-#{step}"}

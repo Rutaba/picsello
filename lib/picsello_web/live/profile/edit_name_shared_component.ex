@@ -49,7 +49,7 @@ defmodule PicselloWeb.Live.Profile.EditNameSharedComponent do
       <% else %>
         <h1 class="text-3xl font-bold py-5"> Edit Job Name</h1>
       <% end %>
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <div class="py-5">
           <%= labeled_input f, :job_name, label: "Name:", class: "h-12", phx_debounce: "500" %>
         </div>

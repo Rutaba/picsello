@@ -36,7 +36,7 @@ defmodule PicselloWeb.Live.Admin.Categories do
             <div class="col-start-1"><%= whcc_name %></div>
             <div><%= whcc_id %></div>
 
-            <.form let={f} for={changeset} class="contents" phx-change="save" id={"form-#{whcc_id}"}>
+            <.form :let={f} for={changeset} class="contents" phx-change="save" id={"form-#{whcc_id}"}>
               <%= hidden_input f, :id %>
               <%= checkbox f, :coming_soon, class: "checkbox", phx_debounce: 200 %>
               <%= checkbox f, :hidden, class: "checkbox", phx_debounce: 200 %>

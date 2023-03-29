@@ -23,7 +23,7 @@ defmodule PicselloWeb.GalleryLive.Photos.FolderUpload do
         </button>
       </div>
 
-      <.form for={:folder_upload} let={f} phx-submit="submit" phx-change="change" phx-target={@myself} class="mt-8">
+      <.form for={:folder_upload} :let={f} phx-submit="submit" phx-change="change" phx-target={@myself} class="mt-8">
         <div class="py-4 pl-2 bg-base-200">
           <div class="flex">
             <.icon name="folder" class="w-6 h-6 mt-1 fill-blue-planning-300"/>

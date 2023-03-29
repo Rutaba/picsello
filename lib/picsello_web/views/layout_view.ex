@@ -209,15 +209,16 @@ defmodule PicselloWeb.LayoutView do
       }
     ]
 
-  def subscription_ending_soon(%{current_user: current_user, socket: socket} = assigns) do
+  def subscription_ending_soon(%{current_user: current_user} = assigns) do
     subscription = current_user |> Picsello.Subscriptions.subscription_ending_soon_info()
+    assigns = Enum.into(assigns, %{subscription: subscription})
 
     case assigns.type do
       "header" ->
         ~H"""
-        <div class={classes(%{"hidden" => subscription.hidden_30_days?})}>
-          <%= live_redirect to: Routes.user_settings_path(socket, :edit), class: "flex gap-2 items-center mr-4" do %>
-            <h6 class="text-xs italic text-gray-250 opacity-50">Trial ending soon! <%= ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)) %> left.</h6>
+        <div class={classes(%{"hidden" => @subscription.hidden_30_days?})}>
+          <%= live_redirect to: Routes.user_settings_path(@socket, :edit), class: "flex gap-2 items-center mr-4" do %>
+            <h6 class="text-xs italic text-gray-250 opacity-50">Trial ending soon! <%= ngettext("1 day", "%{count} days", Map.get(@subscription, :days_left, 0)) %> left.</h6>
             <button class="hidden sm:block text-xs rounded-lg px-4 py-1 border border-blue-planning-300 font-semibold hover:bg-blue-planning-100">Renew plan</button>
           <% end %>
         </div>
@@ -225,10 +226,10 @@ defmodule PicselloWeb.LayoutView do
 
       "banner" ->
         ~H"""
-        <div {testid("subscription-top-banner")} class={classes(@class, %{"hidden" => subscription.hidden?})}>
+        <div {testid("subscription-top-banner")} class={classes(@class, %{"hidden" => @subscription.hidden?})}>
           <.icon name="clock-filled" class="lg:w-5 lg:h-5 w-8 h-8 mr-2"/>
-          <span>You have <%= ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)) %> left before your subscription ends.
-            <%= live_redirect to: Routes.user_settings_path(socket, :edit), title: "Click here" do %>
+          <span>You have <%= ngettext("1 day", "%{count} days", Map.get(@subscription, :days_left, 0)) %> left before your subscription ends.
+            <%= live_redirect to: Routes.user_settings_path(@socket, :edit), title: "Click here" do %>
               <span class="font-bold underline px-1 cursor-pointer">Click here</span>
             <% end %>
             to upgrade.
@@ -238,9 +239,9 @@ defmodule PicselloWeb.LayoutView do
 
       _ ->
         ~H"""
-        <div {testid("subscription-footer")} class={classes(@class, %{"hidden" => subscription.hidden?})}>
-          <%= live_redirect to: Routes.user_settings_path(socket, :edit) do %>
-            <%= ngettext("1 day", "%{count} days", Map.get(subscription, :days_left, 0)) %> left until your subscription ends
+        <div {testid("subscription-footer")} class={classes(@class, %{"hidden" => @subscription.hidden?})}>
+          <%= live_redirect to: Routes.user_settings_path(@socket, :edit) do %>
+            <%= ngettext("1 day", "%{count} days", Map.get(@subscription, :days_left, 0)) %> left until your subscription ends
           <% end %>
         </div>
         """
@@ -346,16 +347,12 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def stripe_setup_banner(
-        %{
-          socket: socket,
-          current_user: current_user
-        } = assigns
-      ) do
+  def stripe_setup_banner(%{current_user: current_user} = assigns) do
     stripe_status = Payments.simple_status(current_user)
+    assigns = Enum.into(assigns, %{stripe_status: stripe_status})
 
     ~H"""
-    <%= if !Enum.member?([:charges_enabled, :loading], stripe_status) do %>
+    <%= if !Enum.member?([:charges_enabled, :loading], @stripe_status) do %>
       <div class="bg-gray-100 py-3 border-b border-b-white">
         <div class="center-container px-6">
           <div class="flex justify-between items-center gap-2">
@@ -368,7 +365,7 @@ defmodule PicselloWeb.LayoutView do
               To accept money from bookings & galleries, connect your Stripe account and add a payment method. <em>We also offer offline payments for bookings only. <a href="https://support.picsello.com/article/32-set-up-stripe" class="underline" target="_blank" rel="noreferrer">Learn more</a></em>
             </details>
             <div class="flex gap-2">
-              <a href={Routes.finance_settings_path(socket, :index)} class="flex text-xs items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75">
+              <a href={Routes.finance_settings_path(@socket, :index)} class="flex text-xs items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75">
                 <.icon name="settings" class="inline-block w-4 h-4 fill-current text-white mr-1" />
                 Connect Stripe
               </a>
@@ -418,14 +415,15 @@ defmodule PicselloWeb.LayoutView do
 
   defp footer_nav(assigns) do
     organization = load_organization(assigns.gallery)
+    assigns = Enum.into(assigns, %{organization: organization})
 
     ~H"""
     <nav class="flex text-lg font-bold">
       <div class="font-bold">
-        <.photographer_logo organization={organization} />
+        <.photographer_logo organization={@organization} />
       </div>
       <div class="ml-auto pt-3">
-        <a class="flex items-center justify-center px-2.5 py-1 text-base-300 bg-base-100 border border-base-300 hover:text-base-100 hover:bg-base-300" href={"#{public_url(organization)}#contact-form"}>
+        <a class="flex items-center justify-center px-2.5 py-1 text-base-300 bg-base-100 border border-base-300 hover:text-base-100 hover:bg-base-300" href={"#{public_url(@organization)}#contact-form"}>
           <.icon name="envelope" class="mr-2 w-4 h-4 fill-current"/>
           Contact
         </a>
@@ -433,7 +431,7 @@ defmodule PicselloWeb.LayoutView do
     </nav>
     <hr class="my-8 opacity-30 border-base-300" />
     <div class="flex text-base-250 flex-col sm:flex-row">
-      <div class="flex justify-center">©<%= DateTime.utc_now.year %> <span class="font-base-300 font-bold ml-2"><%= organization.name %></span>. All Rights Reserved</div>
+      <div class="flex justify-center">©<%= DateTime.utc_now.year %> <span class="font-base-300 font-bold ml-2"><%= @organization.name %></span>. All Rights Reserved</div>
       <div class="flex md:ml-auto justify-center">
         Powered by
         <a href="https://www.picsello.com/terms-conditions" class="underline ml-1" target="_blank" rel="noopener noreferrer"> <b>Picsello</b></a>

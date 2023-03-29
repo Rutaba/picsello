@@ -134,7 +134,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   @impl true
   def render(assigns) do
     ~H"""
-      <.form let={f} for={@changeset} phx-change={@change} phx-submit="save" id={"calculator-step-#{@step}"}>
+      <.form :let={f} for={@changeset} phx-change={@change} phx-submit="save" id={"calculator-step-#{@step}"}>
         <.step {assigns} f={f} />
       </.form>
     """
@@ -186,6 +186,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         assigns.pricing_calculations.self_employment_tax_percentage,
         after_tax_income
       )
+    assigns = Enum.into(assigns, %{desired_salary: desired_salary, tax_bracket: tax_bracket, after_tax_income: after_tax_income, take_home: take_home})
 
     ~H"""
       <.container {assigns}>
@@ -203,14 +204,14 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <hr class="hidden mb-4 sm:block"/>
           <div class="flex flex-wrap items-center justify-between px-4">
             <p class="font-extrabold">Approximate Tax Bracket <br /><span class="italic font-normal text-sm text-base-250">How did you calculate this? <.intro_hint content="Based on the salary you entered, we looked at what the IRS has listed as the percentage band of income you are in." class="ml-1" /></span></p>
-            <%= hidden_input(@f, :tax_bracket, value: tax_bracket.percentage ) %>
-            <p class="text-base-250 w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= tax_bracket.percentage %>%</p>
+            <%= hidden_input(@f, :tax_bracket, value: @tax_bracket.percentage ) %>
+            <p class="text-base-250 w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= @tax_bracket.percentage %>%</p>
           </div>
           <hr class="hidden mt-4 mb-4 sm:block" />
           <div class="flex flex-wrap items-center justify-between px-4">
             <p class="py-2 font-extrabold">Approximate After Income Tax <br /><span class="italic font-normal text-sm text-base-250"><a class="underline" target="_blank" rel="noopener noreferrer" href="https://support.picsello.com/article/122-how-federal-tax-brackets-work">Learn more</a> about this calculation</span></p>
-            <%= hidden_input(@f, :after_income_tax, value: after_tax_income ) %>
-            <p class="text-base-250 w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= after_tax_income %></p>
+            <%= hidden_input(@f, :after_income_tax, value: @after_tax_income ) %>
+            <p class="text-base-250 w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= @after_tax_income %></p>
           </div>
           <hr class="hidden mt-4 mb-4 sm:block" />
           <div class="flex flex-wrap items-center justify-between px-4">
@@ -220,13 +221,13 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <hr class="hidden mt-4 mb-4 sm:block" />
           <div class="flex flex-wrap items-center justify-between px-4">
             <p class="py-2 font-extrabold">Approximate After Income Tax & SE Tax <br /><span class="italic font-normal text-sm text-base-250">‘aka your take home pay’</span></p>
-            <%= hidden_input(@f, :take_home, value: take_home ) %>
-            <p class="text-blue-planning-300 font-bold w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= take_home %></p>
+            <%= hidden_input(@f, :take_home, value: @take_home ) %>
+            <p class="text-blue-planning-300 font-bold w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= @take_home %></p>
           </div>
           <hr class="hidden mt-4 mb-4 sm:block" />
         </div>
 
-        <.tax_review tax_amount={PricingCalculations.calculate_tax_amount(desired_salary, take_home)} desired_salary={desired_salary} take_home={take_home} />
+        <.tax_review tax_amount={PricingCalculations.calculate_tax_amount(@desired_salary, @take_home)} desired_salary={@desired_salary} take_home={@take_home} />
 
         <div class="flex justify-end mt-8">
           <button type="button" class="mr-4 btn-secondary" phx-click="previous">Back</button>
@@ -285,7 +286,9 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     assigns =
       Enum.into(assigns, %{
         costs: costs,
-        gross_revenue: gross_revenue
+        gross_revenue: gross_revenue,
+        calculations: calculations,
+        desired_salary: desired_salary
       })
 
     ~H"""
@@ -315,12 +318,12 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <div class="my-6">
           <h4 class="mt-4 text-xl font-bold text-base-250">Shoot breakdown based on desired salary</h4>
           <p class="mb-4 text-base-250">If you only focused on 100% of that shoot type per year</p>
-          <%= for {pricing_suggestion, index} <- Enum.with_index(PricingCalculations.calculate_pricing_by_job_types(calculations)) do %>
+          <%= for {pricing_suggestion, index} <- Enum.with_index(PricingCalculations.calculate_pricing_by_job_types(@calculations)) do %>
             <.pricing_suggestion job_type={pricing_suggestion.job_type} gross_revenue={@gross_revenue} pricing_calculations={@pricing_calculations} max_session_per_year={pricing_suggestion.max_session_per_year} base_price={pricing_suggestion.base_price} actual_salary={pricing_suggestion.actual_salary} index={index} />
           <% end %>
         </div>
 
-        <.financial_review desired_salary={desired_salary} costs={@costs} />
+        <.financial_review desired_salary={@desired_salary} costs={@costs} />
 
         <div class="flex justify-end mt-8">
           <button type="button" class="mr-4 btn-secondary" phx-click="previous">Back</button>

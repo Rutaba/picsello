@@ -3,7 +3,7 @@
         <div class="bg-white p-6 shadow-md text-black w-full">
             <h1 class="mb-4 text-3xl font-bold text-start">Password protected</h1>
             <p class="text-base">The photos you’re trying to view are password protected. Please enter the password below to view the photos.</p>
-            <.form let={f} for={@password_changeset} as={:login} action={build_login_link(assigns)} phx-target={@myself} phx-change="change" phx-submit="check" phx_trigger_action={@submit}>
+            <.form :let={f} for={@password_changeset} as={:login} action={build_login_link(assigns)} phx-target={@myself} phx-change="change" phx-submit="check" phx_trigger_action={@submit}>
               <%= hidden_input f, :session_token, value: @session_token %>
 
               <%= unless @password_is_correct do %>

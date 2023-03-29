@@ -53,7 +53,7 @@ defmodule Picsello.PaymentsTest do
       )
 
       user = insert(:user)
-      assert {:ok, url} = Payments.link(user, [])
+      assert {:ok, url} = Payments.custom_link(user, [])
 
       assert "/new-account-id" = url |> URI.parse() |> Map.get(:path)
 
@@ -76,7 +76,7 @@ defmodule Picsello.PaymentsTest do
         {:ok, %{url: "https://example.com/already-saved-stub-account-id"}}
       end)
 
-      assert {:ok, url} = Payments.link(user, [])
+      assert {:ok, url} = Payments.custom_link(user, [])
 
       assert "/already-saved-stub-account-id" = url |> URI.parse() |> Map.get(:path)
     end

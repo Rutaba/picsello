@@ -45,7 +45,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
             <h4><%= email %></h4>
             <h4>Organization id: <%= organization_id %></h4>
             <h5 class="mt-4 upppercase font-bold">Actions</h5>
-            <.form let={f} for={changeset} phx-change="save" id={"form-user-#{id}"} class="mb-4" phx-value-index={index}>
+            <.form :let={f} for={changeset} phx-change="save" id={"form-user-#{id}"} class="mb-4" phx-value-index={index}>
               <label class="flex items-center mt-3">
                 <input type="hidden" name="index" value={index} />
                 <%= checkbox(f, :is_test_account, class: "w-5 h-5 mr-2.5 checkbox") %>

@@ -13,10 +13,10 @@ defmodule PicselloWeb.WelcomeComponent do
   end
 
   @impl true
-  def render(%{socket: socket} = assigns) do
+  def render(assigns) do
     ~H"""
     <div class="modal">
-      <.close_x close_event={@close_event} myself={@myself} phx_value_link={Routes.home_path(socket, :index)} />
+      <.close_x close_event={@close_event} myself={@myself} phx_value_link={Routes.home_path(@socket, :index)} />
       <div class="flex items-center mb-1 justify-center">
         <.icon name="confetti-welcome" class="w-12 h-12" />
         <h1 class="welcome-text text-center text-4xl ml-4 font-bold">Welcome to the Picsello Family!</h1>
@@ -24,14 +24,14 @@ defmodule PicselloWeb.WelcomeComponent do
       <h2 class="text-center text-base-250 mb-8 text-lg">What would you like to do today?</h2>
       <div class="grid lg:grid-cols-3 gap-6">
         <div class="grid-span-1 flex border rounded-lg welcome-column cursor-pointer">
-          <div class="p-8 flex flex-col justify-between items-center" phx-click="close_event" phx-value-link={Routes.calendar_booking_events_path(socket, :index)} phx-target={@myself}>
+          <div class="p-8 flex flex-col justify-between items-center" phx-click="close_event" phx-value-link={Routes.calendar_booking_events_path(@socket, :index)} phx-target={@myself}>
             <h3 class="text-2xl text-blue-planning-300 font-bold text-center" >Explore client booking</h3>
             <img src="/images/events-1.png" class="aspect-video object-cover my-12 drop-shadow-xl" />
             <button type="button" class="btn-secondary">Get started</button>
           </div>
         </div>
         <div class="grid-span-1 flex border rounded-lg welcome-column cursor-pointer">
-          <div class="p-8 flex flex-col justify-between items-center" phx-click="close_event" phx-value-link={Routes.gallery_path(socket, :galleries)} phx-target={@myself}>
+          <div class="p-8 flex flex-col justify-between items-center" phx-click="close_event" phx-value-link={Routes.gallery_path(@socket, :galleries)} phx-target={@myself}>
             <h3 class="text-2xl text-blue-planning-300 font-bold text-center">Explore unlimited galleries</h3>
             <img src="/images/galleries-1.png" class="aspect-video object-cover my-12 drop-shadow-xl" />
             <button type="button" class="btn-secondary">Get started</button>

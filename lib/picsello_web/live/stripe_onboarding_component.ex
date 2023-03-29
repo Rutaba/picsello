@@ -90,7 +90,7 @@ defmodule PicselloWeb.StripeOnboardingComponent do
       ) do
     refresh_url = socket |> Routes.user_settings_url(:stripe_refresh)
 
-    case Payments.link(current_user, refresh_url: refresh_url, return_url: return_url) do
+    case Payments.custom_link(current_user, refresh_url: refresh_url, return_url: return_url) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
 

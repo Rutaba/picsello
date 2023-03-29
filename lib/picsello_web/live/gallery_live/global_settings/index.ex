@@ -698,7 +698,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
               <h1 class="text-xl font-bold">Pricing per image:</h1>
               <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
             </div>
-            <.form for={:digital_pricing} let={f} phx_change={:validate_each_price} class="ml-auto">
+            <.form for={:digital_pricing} :let={f} phx_change={:validate_each_price} class="ml-auto">
               <%= input(f, :each_price, class: "w-full w-24 text-lg text-center border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: if((@global_settings_gallery && @global_settings_gallery.download_each_price), do: Money.to_string(@global_settings_gallery.download_each_price), else: "$50.00")) %>
             </.form>
           </div>
@@ -710,7 +710,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
               <h1 class="text-xl font-bold">Pricing for all images:</h1>
               <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
             </div>
-            <.form for={:digital_pricing} let={f} phx_change={:validate_buy_all_price} class="ml-auto">
+            <.form for={:digital_pricing} :let={f} phx_change={:validate_buy_all_price} class="ml-auto">
               <%= input(f, :buy_all, class: "w-full w-24 text-lg text-center ml-auto border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: if((@global_settings_gallery && @global_settings_gallery.buy_all_price), do: Money.to_string(@global_settings_gallery.buy_all_price), else: "$750.00")) %>
             </.form>
           </div>
@@ -728,7 +728,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
             This will not affect your pre-existing galleries. If your job doesn’t have a shoot date, the gallery
             for that job will default to <i>“Never Expires”</i>. New galleries will expire:
           </p>
-          <.form let={f} for={:global_expiration_days} phx-submit="save" phx-change="validate_days">
+          <.form :let={f} for={:global_expiration_days} phx-submit="save" phx-change="validate_days">
             <div class="items-center">
               <%= for {name, max, number, title} <- [{:day, 31, @day, "days,"}, {:month, 11, @month, "months,"}, {:year, 5, @year, "years after their shoot date."}] do %>
                 <.date_input f={f} name={name} max={max} number={number} is_never_expires={@is_never_expires} />
@@ -753,6 +753,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   defp section(%{watermark_option: true, uploads: uploads} = assigns) do
     entry = Enum.at(uploads.image.entries, 0)
+    assigns = Enum.into(assigns, %{entry: entry})
 
     ~H"""
     <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @watermark_option})}>Watermark</h1>
@@ -816,11 +817,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
             </form>
         </div>
 
-        <%= for entry <- @uploads.image.entries do %>
-          <div class="flex items-center justify-between w-full uploadingList__wrapper watermarkProgress pt-7" id={entry.uuid}>
-              <p class="font-bold font-sans"><%= if entry.progress == 100, do: "Upload complete!", else: "Uploading..." %></p>
-
-              <progress class="grid-cols-1 font-sans" value={entry.progress} max="100"><%= entry.progress %>%</progress>
+        <%= for e <- @uploads.image.entries do %>
+          <div class="flex items-center justify-between w-full uploadingList__wrapper watermarkProgress pt-7" id={e.uuid}>
+            <p class="font-bold font-sans"><%= if e.progress == 100, do: "Upload complete!", else: "Uploading..." %></p>
+            <progress class="grid-cols-1 font-sans" value={e.progress} max="100"><%= e.progress %>%</progress>
           </div>
         <% end %>
 
@@ -832,7 +832,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
               <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
             </.watermark_name_delete>
           <% end %>
-          <.form let={f} for={@changeset} phx-change="validate_text_input"  class="mt-5 font-sans" id="textWatermarkForm">
+          <.form :let={f} for={@changeset} phx-change="validate_text_input"  class="mt-5 font-sans" id="textWatermarkForm">
             <div class="gallerySettingsInput flex flex-row p-1">
               <%= text_input f, :watermark_text , placeholder: "Enter your watermark text here", class: "bg-base-200 rounded-lg p-2 w-full focus:outline-inherit mr-1" %>
               <a class={classes("btn-secondary bg-base-200 flex items-center ml-auto whitespace-nowrap", %{"hidden" => !@ready_to_save})} phx-click="preview_watermark"><%= preview_button_text(@show_preview) %></a>
@@ -844,7 +844,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
       <div class="flex flex-col gap-2 py-6 lg:flex-row-reverse">
         <button class={"btn-primary #{!@ready_to_save && 'cursor-not-allowed'}"} phx-click="save_watermark" disabled={!@ready_to_save}>Save</button>
-        <button class="btn-secondary" phx-click="close" phx-value-ref={entry && entry.ref}><span>Cancel</span></button>
+        <button class="btn-secondary" phx-click="close" phx-value-ref={@entry && @entry.ref}><span>Cancel</span></button>
       </div>
     </.card>
     """
@@ -920,9 +920,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     """
   end
 
-  defp date_input(%{f: f, name: name, max: max, number: number} = assigns) do
+  defp date_input(assigns) do
     ~H"""
-      <%= input f, name, type: :number_input, min: 0, max: max , value: if(number > 0, do: number),
+      <%= input @f, @name, type: :number_input, min: 0, max: @max , value: if(@number > 0, do: @number),
       placeholder: "1",
       class: "border-blue-planning-300 mx-2 md:mx-3 w-20 cursor-pointer 'text-gray-400 cursor-default border-blue-planning-200",
       disabled: @is_never_expires %>

@@ -11,6 +11,8 @@ defmodule PicselloWeb.EmailSignatureView do
       |> Enum.filter(&(&1.use_publicly? && &1.active?))
       |> List.pop_at(0)
 
+    assigns = Enum.into(assigns, %{first_brand_link: first_brand_link, remaining_brand_links: remaining_brand_links})
+
     ~H"""
     <table style="font-family: sans-serif, Arial;line-height:22px;border-collapse: collapse;" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
       <tr style="border-collapse:collapse;" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -45,12 +47,12 @@ defmodule PicselloWeb.EmailSignatureView do
     </table>
     <div style="margin-top:15px;display:flex;flex-direction:column;">
       <div style="display:flex;flex-wrap:wrap;">
-          <%= case first_brand_link do %>
+          <%= case @first_brand_link do %>
             <% nil -> %>
             <% %{link: link, link_id: link_id} -> %>
               <.brand_link link={link} link_id={link_id} style="padding:16px 16px 16px 0px;"></.brand_link>
           <% end %>
-          <%= for %{link: link, link_id: link_id} <- remaining_brand_links do %>
+          <%= for %{link: link, link_id: link_id} <- @remaining_brand_links do %>
             <.brand_link link={link} link_id={link_id} style="padding:16px;"><span style="border-left:1px solid #898989;height:15px"></span></.brand_link>
           <% end %>
         </div>

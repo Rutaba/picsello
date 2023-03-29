@@ -307,7 +307,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <.steps step={@step} steps={@steps} target={@myself} />
       <.step_heading name={@step} is_edit={@package.id} />
 
-      <.form for={@changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+      <.form for={@changeset} :let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
         <input type="hidden" name="step" value={@step} />
 
         <.wizard_state form={f} contract_changeset={@contract_changeset} />

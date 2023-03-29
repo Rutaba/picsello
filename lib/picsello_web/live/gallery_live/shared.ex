@@ -562,6 +562,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
     any_client_liked_photo? =
       Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
+    
+    assigns = assigns |> Enum.into(%{any_client_liked_photo?: any_client_liked_photo?})
 
     ~H"""
     <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected || @disabled})} phx-update={@update_mode} data-offset-y="10" phx-hook="Select">
@@ -575,7 +577,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       <ul class="absolute z-30 hidden w-full mt-2 bg-white border rounded-md popover-content border-base-200">
         <%= render_slot(@inner_block) %>
         <%= if @has_orders do %>
-        <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter || @client_liked_album || any_client_liked_photo?})}>
+        <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter || @client_liked_album || @any_client_liked_photo?})}>
           <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
             <%= @delete_title %>
           </button>
@@ -588,8 +590,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def button(assigns) do
-    assigns = Map.put_new(assigns, :class, "")
-
     assigns =
       Enum.into(assigns, %{
         element: "button",
@@ -599,9 +599,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
       })
 
     button_attrs = Map.drop(assigns, [:inner_block, :__changed__, :class, :icon, :icon_class])
+    assigns = Enum.into(assigns, %{button_attrs: button_attrs})
 
     ~H"""
-    <.button_element {button_attrs} class={"#{@class}
+    <.button_element {@button_attrs} class={"#{@class}
         flex items-center justify-center p-2 font-medium text-base-300 bg-base-100 border border-base-300 min-w-[12rem]
         hover:text-base-100 hover:bg-base-300
         disabled:border-base-250 disabled:text-base-250 disabled:cursor-not-allowed disabled:opacity-60
@@ -666,17 +667,19 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp button_element(%{element: "a"} = assigns) do
     attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
+    assigns = Enum.into(assigns, %{attrs: attrs})
 
     ~H"""
-      <a {attrs}><%= render_slot(@inner_block) %></a>
+      <a {@attrs}><%= render_slot(@inner_block) %></a>
     """
   end
 
   defp button_element(%{element: "button"} = assigns) do
     attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
+    assigns = Enum.into(assigns, %{attrs: attrs})
 
     ~H"""
-      <button {attrs}><%= render_slot(@inner_block) %></button>
+      <button {@attrs}><%= render_slot(@inner_block) %></button>
     """
   end
 

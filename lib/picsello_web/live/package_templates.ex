@@ -211,7 +211,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
               </div>
               <%= if @pagination.total_count > 4 do %>
                 <div class="flex items-center px-6 pb-6 center-container">
-                  <.form let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
+                  <.form :let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
                     <%= select f, :limit, [4, 8, 12, 16], class: "cursor-pointer"%>
                   </.form>
 

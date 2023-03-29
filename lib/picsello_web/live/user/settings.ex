@@ -380,7 +380,7 @@ defmodule PicselloWeb.Live.User.Settings do
     <ul class="flex py-4 -ml-4 overflow-auto font-bold text-blue-planning-300">
     <%= for %{to: {path, action}} = link <- @link, !Map.get(link, :hide) do %>
         <li>
-          <.nav_link title={path} let={active} to={apply(Routes, :"#{path}_path", [@socket, action])} class="block rounded-lg whitespace-nowrap" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
+          <.nav_link title={path} :let={active} to={apply(Routes, :"#{path}_path", [@socket, action])} class="block rounded-lg whitespace-nowrap" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
             <div {if active, do: %{id: "active-settings-nav-link", phx_hook: "ScrollIntoView"}, else: %{}} class="px-4 py-3">
               <%= render_slot(link) %>
             </div>
