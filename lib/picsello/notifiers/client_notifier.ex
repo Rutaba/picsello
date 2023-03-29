@@ -30,7 +30,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
     message = message |> Repo.preload([:clients, job: :client], force: true)
 
     message
-    |> Repo.preload([:job, :clients], force: true)
     |> message_params()
     |> Map.merge(params)
     |> deliver_transactional_email(recipients, message)
