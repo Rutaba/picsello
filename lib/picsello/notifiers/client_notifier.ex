@@ -26,13 +26,15 @@ defmodule Picsello.Notifiers.ClientNotifier do
     "bcc" => [bcc@gmail.com, bcc@gmail.com],
   }
   """
-  def deliver_email(message, recipients, params \\ %{}),
-    do:
-      message
-      |> Repo.preload([:job, :clients], force: true)
-      |> message_params()
-      |> Map.merge(params)
-      |> deliver_transactional_email(recipients, message)
+  def deliver_email(message, recipients, params \\ %{}) do
+    message = message |> Repo.preload([:clients, job: :client], force: true)
+
+    message
+    |> Repo.preload([:job, :clients], force: true)
+    |> message_params()
+    |> Map.merge(params)
+    |> deliver_transactional_email(recipients, message)
+  end
 
   def deliver_payment_made(proposal) do
     %{job: %{client: %{organization: organization} = client} = job} =
