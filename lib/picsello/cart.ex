@@ -437,7 +437,7 @@ defmodule Picsello.Cart do
 
   def get_base_charge(
         %{
-          selections: %{"size" => size},
+          selections: selections,
           whcc_product: %{
             whcc_id: product_whcc_id,
             api: %{"category" => %{"id" => category_whcc_id}}
@@ -445,16 +445,16 @@ defmodule Picsello.Cart do
         },
         shipping_type
       ) do
-    whcc_id =
-      whcc_id_for_base_charge(
-        category_whcc_id,
+    sizes =
+      if size = get_size(selections) do
         size
         |> String.split("x")
-        |> Enum.map(&String.to_integer(&1)),
-        product_whcc_id
-      )
+        |> Enum.map(&String.to_integer(&1))
+      end
 
-    base_charge(whcc_id, shipping_type)
+    category_whcc_id
+    |> whcc_id_for_base_charge(sizes, product_whcc_id)
+    |> base_charge(shipping_type)
   end
 
   defp base_charge(@whcc_photo_prints_id, "economy"), do: @base_charges[:economy_usps]
@@ -470,10 +470,15 @@ defmodule Picsello.Cart do
 
   defp whcc_id_for_base_charge(category_whcc_id, _, _), do: category_whcc_id
 
-  defp upcharge(shipping_upcharge, %{"size" => size} = selections) do
+  defp upcharge(shipping_upcharge, selections) do
     type = selections["paper"] || selections["surface"]
+    size = get_size(selections)
+
     shipping_upcharge[type][size] || shipping_upcharge["default"]
   end
+
+  defp get_size(%{"size" => size}), do: size
+  defp get_size(_selections), do: nil
 
   def shipping_price(%{
         shipping_upcharge: shipping_upcharge,
