@@ -39,6 +39,79 @@ defmodule Picsello.JobIndexTest do
     Repo.delete_all(Picsello.Job)
   end
 
+  defp preload_some_leads(user) do
+    insert(:lead,
+    user: user,
+    type: "family",
+    package: %{shoot_count: 1},
+    client: %{
+      organization: user.organization,
+      name: "Elizabeth Taylor",
+      email: "taylor@example.com",
+      phone: "(210) 111-1234"
+    })
+
+    insert(:lead,
+    user: user,
+    type: "other",
+    package: %{shoot_count: 1},
+    client: %{
+      organization: user.organization,
+      name: "John Snow",
+      phone: "(241) 567-2352",
+      email: "snow@example.com"
+    })
+    
+    insert(:lead,
+      user: user,
+      type: "event",
+      package: %{shoot_count: 1},
+      client: %{
+        organization: user.organization,
+        name: "Michael Stark",
+        phone: "(442) 567-2321",
+        email: "stark@example.com"
+      })
+  end
+
+  defp preload_some_jobs(user) do
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "Rachel Green",
+        phone: "(210) 111-1214",
+        email: "green@example.com"
+      },
+      type: "family",
+      package: %{shoot_count: 1}
+    )
+    |> promote_to_job()
+
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "Ross Geller",
+        phone: "(241) 567-7352",
+        email: "ross@example.com"
+      },
+      type: "wedding",
+      package: %{shoot_count: 3}
+    )
+    |> promote_to_job()
+
+    insert(:lead,
+      client: %{
+        user: user,
+        name: "Joeshph Tribbiani",
+        phone: "(442) 567-2329",
+        email: "joey@example.com"
+      },
+      type: "event",
+      package: %{shoot_count: 1}
+    )
+    |> promote_to_job()
+  end
+
   feature "user with jobs looks at them", %{session: session, job: job, lead: lead} do
     session
     |> click(@leads_card)
@@ -177,42 +250,7 @@ defmodule Picsello.JobIndexTest do
     |> assert_url_contains("jobs/#{job.id}")
   end
 
-  feature "sends job email", %{
-    session: session,
-    job: job,
-    lead: lead
-  } do
-    session
-    |> click(@leads_card)
-    |> assert_has(testid("job-row", count: 1))
-    |> assert_has(link(lead.client.name))
-    |> assert_has(link(Job.name(lead)))
-    |> click(button("Manage"))
-    |> click(button("Send email"))
-    |> refute_has(select("Select email preset"))
-    |> fill_in(text_field("Subject line"), with: "Here is what I propose")
-    |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
-    |> send_keys(["This is 1st line", :enter, "2nd line"])
-    |> click(button("Send"))
-    |> assert_text("Yay! Your email has been successfully sent")
-    |> click(button("Close"))
-    |> click(link("Picsello"))
-    |> click(@jobs_card)
-    |> assert_has(testid("job-row", count: 1))
-    |> assert_has(link(job.client.name))
-    |> assert_has(link(Job.name(job)))
-    |> click(button("Manage"))
-    |> click(button("Send email"))
-    |> refute_has(select("Select email preset"))
-    |> fill_in(text_field("Subject line"), with: "Here is what I propose")
-    |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
-    |> send_keys(["This is 1st line", :enter, "2nd line"])
-    |> click(button("Send"))
-    |> assert_text("Yay! Your email has been successfully sent")
-    |> click(button("Close"))
-  end
-
-  feature "searches the leads/jobs by client-name, client-contact or client-email", %{
+  feature "searches the leads/jobs, sends email", %{
     session: session,
     user: user
   } do
@@ -222,6 +260,40 @@ defmodule Picsello.JobIndexTest do
     session
     |> click(@leads_card)
     |> assert_has(testid("search_filter_and_sort_bar", count: 1))
+    |> assert_has(testid("job-row", count: 4))
+    |> click(button("Manage", count: 4, at: 0))
+    |> click(button("Send email"))
+    |> refute_has(select("Select email preset"))
+    |> fill_in(text_field("Subject line"), with: "Here is what I propose")
+    |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
+    |> send_keys(["This is 1st line", :enter, "2nd line"])
+    |> click(button("Send"))
+    |> assert_text("Yay! Your email has been successfully sent")
+    |> click(button("Close"))
+    |> click(button("Manage", count: 4, at: 3))
+    |> click(button("Send email"))
+    |> within_modal(fn modal ->
+      modal
+      |> click(button("Add Cc"))
+      |> fill_in(text_field("cc_email"), with: "taylor@example.com")
+      |> click(button("Add Bcc"))
+      |> fill_in(text_field("bcc_email"), with: "new")
+      |> assert_has(testid("bcc-error"))
+      |> click(button("remove-bcc"))
+      |> fill_in(text_field("search_phrase"), with: "snow")
+      |> assert_has(css("#search_results"))
+      |> find(testid("search-row", count: 1, at: 0), fn row ->
+        row
+        |> click(button("Add to"))
+      end)
+      |> fill_in(text_field("Subject line"), with: "My subject")
+      |> scroll_into_view(css("div.ql-editor[data-placeholder='Compose message...']"))
+      |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
+      |> fill_in_quill("Are you ready for your shoot?")
+      |> click(button("Send"))
+    end)
+    |> assert_text("Yay! Your email has been successfully sent")
+    |> click(button("Close"))
     |> assert_has(testid("job-row", count: 4))
     |> fill_in(css("#search_phrase_input"), with: "Elizabeth Taylor")
     |> assert_has(testid("job-row", count: 1))
@@ -238,6 +310,39 @@ defmodule Picsello.JobIndexTest do
     |> click(@jobs_card)
     |> assert_has(testid("search_filter_and_sort_bar", count: 1))
     |> assert_has(testid("job-row", count: 4))
+    |> click(button("Manage", count: 4, at: 0))
+    |> click(button("Send email"))
+    |> refute_has(select("Select email preset"))
+    |> fill_in(text_field("Subject line"), with: "Here is what I propose")
+    |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
+    |> send_keys(["This is 1st line", :enter, "2nd line"])
+    |> click(button("Send"))
+    |> assert_text("Yay! Your email has been successfully sent")
+    |> click(button("Close"))
+    |> click(button("Manage", count: 4, at: 3))
+    |> click(button("Send email"))
+    |> within_modal(fn modal ->
+      modal
+      |> click(button("Add Cc"))
+      |> fill_in(text_field("cc_email"), with: "taylor@example.com")
+      |> click(button("Add Bcc"))
+      |> fill_in(text_field("bcc_email"), with: "new")
+      |> assert_has(testid("bcc-error"))
+      |> click(button("remove-bcc"))
+      |> fill_in(text_field("search_phrase"), with: "snow")
+      |> assert_has(css("#search_results"))
+      |> find(testid("search-row", count: 1, at: 0), fn row ->
+        row
+        |> click(button("Add to"))
+      end)
+      |> fill_in(text_field("Subject line"), with: "My subject")
+      |> scroll_into_view(css("div.ql-editor[data-placeholder='Compose message...']"))
+      |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
+      |> fill_in_quill("Are you ready for your shoot?")
+      |> click(button("Send"))
+    end)
+    |> assert_text("Yay! Your email has been successfully sent")
+    |> click(button("Close"))
     |> fill_in(css("#search_phrase_input"), with: "Rachel Green")
     |> assert_has(testid("job-row", count: 1))
     |> click(testid("close_search"))
@@ -249,72 +354,5 @@ defmodule Picsello.JobIndexTest do
     |> click(testid("close_search"))
     |> fill_in(css("#search_phrase_input"), with: "test@example.com")
     |> assert_text("No jobs match your search or filters.")
-  end
-
-  defp preload_some_leads(user) do
-    insert(:lead,
-      client: %{
-        user: user,
-        name: "Elizabeth Taylor",
-        phone: "(210) 111-1234",
-        email: "taylor@example.com"
-      }
-    )
-
-    insert(:lead,
-      client: %{
-        user: user,
-        name: "John Snow",
-        phone: "(241) 567-2352",
-        email: "johnsnow@example.com"
-      }
-    )
-
-    insert(:lead,
-      client: %{
-        user: user,
-        name: "Michael Stark",
-        phone: "(442) 567-2321",
-        email: "michaelstark@example.com"
-      }
-    )
-  end
-
-  defp preload_some_jobs(user) do
-    insert(:lead,
-      client: %{
-        user: user,
-        name: "Rachel Green",
-        phone: "(210) 111-1214",
-        email: "green@example.com"
-      },
-      type: "family",
-      package: %{shoot_count: 1}
-    )
-    |> promote_to_job()
-
-    insert(:lead,
-      client: %{
-        user: user,
-        name: "Ross Geller",
-        phone: "(241) 567-7352",
-        email: "ross@example.com"
-      },
-      type: "wedding",
-      package: %{shoot_count: 3}
-    )
-    |> promote_to_job()
-
-    insert(:lead,
-      client: %{
-        user: user,
-        name: "Joeshph Tribbiani",
-        phone: "(442) 567-2329",
-        email: "joey@example.com"
-      },
-      type: "event",
-      package: %{shoot_count: 1}
-    )
-    |> promote_to_job()
   end
 end
