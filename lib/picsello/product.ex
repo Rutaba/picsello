@@ -194,9 +194,7 @@ defmodule Picsello.Product do
         unit_price = Picsello.WHCC.Product.selection_unit_price(product, row)
 
         %{
-          shipping_base_charge: shipping_base,
-          unit_markup: markup,
-          shipping_upcharge: shipping_upcharge
+          unit_markup: markup
         } =
           product =
           product
@@ -210,7 +208,7 @@ defmodule Picsello.Product do
 
         [
           client_price,
-          Money.add(shipping_base, Money.multiply(unit_price, shipping_upcharge)),
+          Money.new(0),
           unit_price,
           markup,
           Money.subtract(
