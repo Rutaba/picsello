@@ -247,6 +247,8 @@ defmodule PicselloWeb.GalleryLive.Index do
           "Finals"
       end
 
+    assigns = assign(assigns, albums: albums)
+
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col md:flex-row grow">
@@ -281,7 +283,7 @@ defmodule PicselloWeb.GalleryLive.Index do
             <% end %>
           </div>
           <div class="text-base-250 font-normal ">
-            <%= albums %>
+            <%= @albums %>
           </div>
         </div>
       </div>
@@ -362,10 +364,11 @@ defmodule PicselloWeb.GalleryLive.Index do
 
     icon_text_class =
       if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
-
+    assigns = assign(assigns, icon_text_class: icon_text_class)
+    
     ~H"""
     <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={@id} }>
-      <.icon name={icon} class={"w-4 h-4 fill-current #{icon_text_class} inline mr-1"} />
+      <.icon name={@icon} class={"w-4 h-4 fill-current #{@icon_text_class} inline mr-1"} />
       <%= @title %>
     </a>
     """

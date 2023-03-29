@@ -21,7 +21,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   alias Ecto.Multi
   alias Ecto.Changeset
   alias PicselloWeb.JobLive.GalleryTypeComponent
-
+  
+  import Phoenix.Component
   import PicselloWeb.JobLive.Shared, only: [search_clients: 1, job_form_fields: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1, expired_at: 1]
 
@@ -215,23 +216,23 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
   @impl true
-  def render(%{step: step} = assigns) do
+  def render(%{step: _} = assigns) do
     ~H"""
-    <div class={classes("relative bg-white p-6", %{"modal" => step != :choose_type})}>
+    <div class={classes("relative bg-white p-6", %{"modal" => @step != :choose_type})}>
       <.close_x />
 
-      <.steps step={step} steps={@steps} target={@myself} />
+      <.steps step={@step} steps={@steps} target={@myself} />
 
       <h1 class="mt-2 mb-4 text-3xl">
         <span class="font-bold">Create a Gallery:</span>
-        <%= case step do %>
+        <%= case @step do %>
           <% :choose_type -> %> Get Started
           <% :details -> %> General Details
           <% :pricing -> %> Pricing
         <% end %>
       </h1>
 
-      <%= if is_nil(@selected_client) && step == :details do %>
+      <%= if is_nil(@selected_client) && @step == :details do %>
         <.search_clients new_client={@new_client} search_results={@search_results} search_phrase={@search_phrase} selected_client={@selected_client} searched_client={@searched_client} current_focus={@current_focus} clients={@clients} myself={@myself}/>
       <% end %>
 
@@ -240,14 +241,14 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         :let={f} phx_change={:validate}
         phx_submit={:submit}
         phx_target={@myself}
-        id={"form-#{step}"}
+        id={"form-#{@step}"}
       >
         <input type="hidden" name="step" value={@step} />
-        <.step name={step} f={f} {assigns} />
+        <.step name={@step} f={f} {assigns} />
 
-        <%= unless step == :choose_type do %>
+        <%= unless @step == :choose_type do %>
           <.footer>
-            <.step_button name={step} form={f} is_valid={valid?(assigns)} myself={@myself} searched_client={@searched_client} selected_client={@selected_client} new_client={@new_client} />
+            <.step_button name={@step} form={f} is_valid={valid?(assigns)} myself={@myself} searched_client={@searched_client} selected_client={@selected_client} new_client={@new_client} />
             <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">Cancel</button>
           </.footer>
         <% end %>
@@ -311,23 +312,23 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   def step_button(
         %{
           name: name,
-          is_valid: is_valid,
+          is_valid: _,
           selected_client: selected_client,
           searched_client: searched_client,
           new_client: new_client
         } = assigns
       ) do
     assigns = Map.put_new(assigns, :class, "")
-    title = button_title(name)
 
     disabled? =
       if name == :details,
         do: is_nil(searched_client) && is_nil(selected_client) && !new_client,
         else: false
+    assigns = assign(assigns, title: button_title(name), disabled?: disabled?)
 
     ~H"""
-    <button class="btn-primary" title={title} type="submit" disabled={!is_valid || disabled?} phx-disable-with={title}>
-      <%= title %>
+    <button class="btn-primary" title={@title} type="submit" disabled={!@is_valid || @disabled?} phx-disable-with={@title}>
+      <%= @title %>
     </button>
     """
   end

@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-
+  
   alias Picsello.{Repo, Galleries}
   alias Ecto.Multi
 

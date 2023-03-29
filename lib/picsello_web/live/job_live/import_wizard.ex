@@ -13,9 +13,9 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     Profiles
   }
 
+  import Phoenix.Component
   import PicselloWeb.Live.Shared
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-
   import PicselloWeb.JobLive.Shared,
     only: [
       job_form_fields: 1,
@@ -53,7 +53,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   end
 
   @impl true
-  def render(%{searched_client: searched_client, selected_client: selected_client} = assigns) do
+  def render(%{searched_client: _, selected_client: _} = assigns) do
     ~H"""
     <div class="modal">
       <.close_x />
@@ -76,7 +76,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         </a>
 
         <%= if step_number(@step, @steps) > 2 do%>
-          <.client_name_box searched_client={searched_client} selected_client={selected_client} assigns={assigns} />
+          <.client_name_box searched_client={@searched_client} selected_client={@selected_client} assigns={assigns} />
         <% end %>
       </div>
 

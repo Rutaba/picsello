@@ -206,14 +206,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp top_section(assigns) do
     {back_route, back_btn, title} = top_section_content(assigns)
+    assigns = assign(assigns, title: title, back_btn: back_btn, back_route: back_route)
 
     ~H"""
-    <%= live_redirect to: back_route, class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>
+    <%= live_redirect to: @back_route, class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>
       <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
-      <p class="mt-1"><%= back_btn %></p>
+      <p class="mt-1"><%= @back_btn %></p>
     <% end %>
 
-    <div class="py-5 text-xl font-extrabold lg:text-3xl lg:pt-8 lg:pb-10"><%= title %></div>
+    <div class="py-5 text-xl font-extrabold lg:text-3xl lg:pt-8 lg:pb-10"><%= @title %></div>
     """
   end
 

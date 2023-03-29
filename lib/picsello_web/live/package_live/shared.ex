@@ -6,7 +6,6 @@ defmodule PicselloWeb.PackageLive.Shared do
   use Phoenix.Component
 
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
-  import Phoenix.LiveView
   import PicselloWeb.FormHelpers
   import PicselloWeb.LiveHelpers
   import Phoenix.HTML.Form

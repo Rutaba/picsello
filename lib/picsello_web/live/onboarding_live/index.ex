@@ -103,14 +103,14 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defp step(%{step: 2} = assigns) do
-    input_class = "p-4"
+    assigns = assign(assigns, input_class: "p-4")
 
     ~H"""
       <%= for org <- inputs_for(@f, :organization) do %>
         <%= hidden_inputs_for org %>
 
         <.form_field label="Photography business name" error={:name} prefix="Photography business name" f={org} mt={0} >
-          <%= input org, :name, phx_debounce: "500", placeholder: "Business name", class: input_class %>
+          <%= input org, :name, phx_debounce: "500", placeholder: "Business name", class: @input_class %>
         </.form_field>
       <% end %>
 
@@ -118,29 +118,29 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
         <div class="grid sm:grid-cols-2 gap-4">
           <.form_field label="Are you a full-time or part-time photographer?" error={:schedule} f={onboarding} >
-            <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select #{input_class}" %>
+            <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select #{@input_class}" %>
           </.form_field>
 
           <.form_field label="How many years have you been a photographer?" error={:photographer_years} f={onboarding} >
-            <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: input_class %>
+            <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: @input_class %>
           </.form_field>
         </div>
 
         <%= hidden_input onboarding, :welcome_count, value: 0 %>
 
         <.form_field label="Where’s your business based?" error={:state} f={onboarding} >
-          <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select #{input_class}" %>
+          <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select #{@input_class}" %>
         </.form_field>
 
         <div class="grid sm:grid-cols-2 gap-4">
           <.form_field label="Share your Instagram handle" class="py-1.5" >
             <em class="pb-3 text-base-250 text-xs">(optional)</em>
-            <%= input onboarding, :social_handle, phx_debounce: 500, min: 0, placeholder: "Let’s meet on the Gram", class: input_class %>
+            <%= input onboarding, :social_handle, phx_debounce: 500, min: 0, placeholder: "Let’s meet on the Gram", class: @input_class %>
           </.form_field>
 
           <.form_field label="How did you first hear about us?" class="py-1.5" >
             <em class="pb-3 text-base-250 text-xs">(optional)</em>
-            <%= select onboarding, :online_source, [{"select one", nil} | Onboarding.online_source_options()], class: "select #{input_class}" %>
+            <%= select onboarding, :online_source, [{"select one", nil} | Onboarding.online_source_options()], class: "select #{@input_class}" %>
           </.form_field>
         </div>
       <% end %>

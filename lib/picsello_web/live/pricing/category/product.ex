@@ -160,9 +160,9 @@ defmodule PicselloWeb.Live.Pricing.Category.Product do
     build_class = &"#{&1} #{if &2,
       do: "bg-base-300 text-base-100",
       else: "bg-base-200 text-base-250"}"
-
+    assigns = assigns |> Enum.into(%{build_class: build_class})
     ~H"""
-    <h3 class={"uppercase py-3 font-bold #{build_class.(@class, @expanded)}" }>
+    <h3 class={"uppercase py-3 font-bold #{@build_class.(@class, @expanded)}" }>
       <%= render_slot(@inner_block) %>
     </h3>
     """

@@ -52,7 +52,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
   end
 
   @impl true
-  def render(%{changeset: changeset} = assigns) do
+  def render(%{changeset: _} = assigns) do
     ~H"""
       <div class="flex flex-col modal">
 
@@ -75,7 +75,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
             </a>
 
             <%= if step_number(@step, @steps) > 1 do%>
-              <.client_name_box changeset={changeset} assigns={assigns} />
+              <.client_name_box changeset={@changeset} assigns={assigns} />
             <% end %>
           </div>
         <% end %>

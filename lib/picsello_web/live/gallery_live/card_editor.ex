@@ -487,27 +487,26 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
   def ranges([]), do: []
 
-  defp img_box(
-         %{card_design: true, hide_next: hide_next, hide_prev: hide_prev, img_index: img_index} =
-           assigns
-       ) do
+  defp img_box(%{card_design: true, hide_next: _, hide_prev: _, img_index: _} = assigns) do
     value = Map.get(assigns, :value)
+
+    assigns = assign(assigns, value: value)
 
     ~H"""
       <div class="aspect-h-1 aspect-w-1">
         <div class="relative bg-gradient-to-bl from-[#f5f6f7] to-[#ededed] flex flex-col justify-center group">
-          <%= if !hide_prev do %>
-          <div phx-click="prev" phx-value-value={value} phx-value-img_index={img_index} class="z-30 left-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
+          <%= if !@hide_prev do %>
+          <div phx-click="prev" phx-value-value={@value} phx-value-img_index={@img_index} class="z-30 left-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
             <.icon name="back" class="w-6 h-6 cursor-pointer text-base-250" />
           </div>
           <% end %>
-          <%= if !hide_next do %>
-          <div phx-click="next" phx-value-value={value} phx-value-img_index={img_index} class="z-30 right-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
+          <%= if !@hide_next do %>
+          <div phx-click="next" phx-value-value={@value} phx-value-img_index={@img_index} class="z-30 right-0 absolute top-1/2 -translate-y-1/2 hidden group-hover:block">
             <.icon name="forth" class="w-6 h-6 cursor-pointer text-base-250" />
           </div>
           <% end %>
           <img class="object-scale-down min-h-0 p-6 drop-shadow-md" src={@src}/>
-          <div class="absolute right-0 left-0 mx-auto bottom-2 w-[90%] btn-primary hidden group-hover:block text-center hover:cursor-pointer" phx-click="open-editor" phx-value-value={value}>
+          <div class="absolute right-0 left-0 mx-auto bottom-2 w-[90%] btn-primary hidden group-hover:block text-center hover:cursor-pointer" phx-click="open-editor" phx-value-value={@value}>
             Continue with this design
           </div>
         </div>

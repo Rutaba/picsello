@@ -181,15 +181,15 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
 
   defp button_option(%{is_proofing: false} = assigns) do
     opts = [testid: "digital_download", title: "Digital Download"]
-
+    assigns = assign(assigns, :opts, opts)
     ~H"""
       <%= case @digital_status do %>
       <% :in_cart -> %>
-        <.option {opts}>
+        <.option {@opts}>
           <:button disabled>In cart</:button>
         </.option>
       <% :purchased -> %>
-        <.option {opts}>
+        <.option {@opts}>
           <:button
             element="a"
             download
@@ -201,7 +201,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
           </:button>
         </.option>
       <% _ -> %>
-        <.option {opts} min_price={if @digital_credit <= 0, do: @download_each_price}>
+        <.option {@opts} min_price={if @digital_credit <= 0, do: @download_each_price}>
           <:button phx-target={@myself} phx-click="digital_add_to_cart">
             Add to cart
           </:button>
@@ -220,23 +220,24 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       end
 
     opts = [testid: "digital_download", title: "Select for retouching"]
+    assigns = assign(assigns, opts: opts, button_label: button_label)
 
     ~H"""
       <%= case @digital_status do %>
       <% :available -> %>
-        <.option {opts} min_price={if @digital_credit <= 0, do: @download_each_price}>
+        <.option {@opts} min_price={if @digital_credit <= 0, do: @download_each_price}>
           <:button {testid("select")} phx-target={@myself} phx-click="digital_add_to_cart">
             <%= if @digital_credit > 0, do: "Select", else: "Add to cart" %>
           </:button>
         </.option>
       <% :in_cart -> %>
-        <.option {opts}>
+        <.option {@opts}>
           <:button phx-target={@myself} phx-click="remove_digital_from_cart" phx-value-photo-id={@photo.id}>
-            <%= button_label %>
+            <%= @button_label %>
           </:button>
         </.option>
         <% _ -> %>
-        <.option {opts} selected={true}>
+        <.option {@opts} selected={true}>
           <:button disabled>Unselect</:button>
         </.option>
       <% end %>

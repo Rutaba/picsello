@@ -2,7 +2,6 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
   @moduledoc """
   functions used by client booking events
   """
-  import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import Phoenix.Component
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]

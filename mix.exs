@@ -95,8 +95,8 @@ defmodule Picsello.MixProject do
         {:google_api_storage, "~> 0.34.0"},
         {:google_api_sheets, "~> 0.29.2"},
         {:elixir_uuid, "~> 1.2"},
-        # {:kane, "~> 0.9.0"}, major
-        {:kane, "~> 1.0"},
+        {:kane, "~> 0.9.0"},
+        # {:kane, "~> 1.0"}, major
         {:sentry, "~> 8.0"},
         {:struct_access, "~> 1.1"},
         {:size, "~> 0.1.0"},

@@ -1,7 +1,9 @@
 defmodule PicselloWeb.Live.Shared do
-  use Phoenix.{HTML, Component}
+  use Phoenix.{HTML}
 
   import Phoenix.LiveView
+  import Phoenix.Component
+  import Phoenix.LiveComponent
   import PicselloWeb.LiveHelpers
   import PicselloWeb.FormHelpers
   import Phoenix.HTML.Form
@@ -274,7 +276,7 @@ defmodule PicselloWeb.Live.Shared do
   end
 
   def package_payment_step(%{package_changeset: package_changeset} = assigns) do
-    base_price_zero? = base_price_zero?(package_changeset)
+    assigns = assign(assigns, base_price_zero?: base_price_zero?(package_changeset))
 
     ~H"""
     <.form for={@package_changeset} :let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
@@ -299,7 +301,7 @@ defmodule PicselloWeb.Live.Shared do
         </label>
         <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
           <span class="mx-4 text-2xl font-bold text-base-250">&nbsp;</span>
-          <%= input f, :print_credits, disabled: base_price_zero?, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
+          <%= input f, :print_credits, disabled: @base_price_zero?, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
         </div>
       </div>
 
@@ -311,7 +313,7 @@ defmodule PicselloWeb.Live.Shared do
         </label>
         <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
           <span class="mx-3 text-2xl font-bold text-base-250">-</span>
-          <%= input f, :collected_price, disabled: base_price_zero?, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
+          <%= input f, :collected_price, disabled: @base_price_zero?, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
         </div>
       </div>
 
@@ -335,20 +337,20 @@ defmodule PicselloWeb.Live.Shared do
   end
 
   def invoice_step(%{package_changeset: package_changeset} = assigns) do
-    remaining_amount_zero? = remaining_amount_zero?(package_changeset)
+    assigns = assign(assigns, remaining_amount_zero?: remaining_amount_zero?(package_changeset))
 
     ~H"""
     <.form for={@payments_changeset} :let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
       <h3 class="font-bold">Balance to collect: <%= total_remaining_amount(@package_changeset) %></h3>
 
-      <div class={classes("flex items-center bg-blue-planning-100 rounded-lg my-4 py-4", %{"hidden" => !remaining_amount_zero?})}}>
+      <div class={classes("flex items-center bg-blue-planning-100 rounded-lg my-4 py-4", %{"hidden" => !@remaining_amount_zero?})}}>
         <.intro_hint class="ml-4" content={"#"}/>
         <div class="pl-2">
           <b>Since your remaining balance is $0.00, we'll mark your job as paid for.</b> Make sure to follow up with any emails as needed to your client.
         </div>
       </div>
 
-      <div class={classes(%{"pointer-events-none opacity-40" => remaining_amount_zero?})}>
+      <div class={classes(%{"pointer-events-none opacity-40" => @remaining_amount_zero?})}>
         <%= inputs_for f, :payment_schedules, fn p -> %>
           <div {testid("payment-#{p.index + 1}")}>
             <div class="flex items-center mt-4">
@@ -392,7 +394,7 @@ defmodule PicselloWeb.Live.Shared do
         <p class="mb-2 text-sm italic font-light">limit two payments</p>
       </div>
       <.footer>
-        <button class="px-8 btn-primary" title="Next" type="submit" disabled={if remaining_amount_zero?, do: false, else: !@payments_changeset.valid?} phx-disable-with="Next">
+        <button class="px-8 btn-primary" title="Next" type="submit" disabled={if @remaining_amount_zero?, do: false, else: !@payments_changeset.valid?} phx-disable-with="Next">
           Next
         </button>
         <button class="btn-secondary" title="cancel" type="button" phx-click="back" phx-target={@myself}>Go back</button>
@@ -447,7 +449,7 @@ defmodule PicselloWeb.Live.Shared do
     """
   end
 
-  def client_name_box(%{assigns: %{job_changeset: job_changeset}} = assigns) do
+  def client_name_box(%{assigns: %{job_changeset: _}} = assigns) do
     assigns = assigns |> Enum.into(%{changeset: nil})
 
     ~H"""
@@ -460,7 +462,7 @@ defmodule PicselloWeb.Live.Shared do
               @changeset -> Changeset.get_field(@changeset, :name)
               @searched_client -> @searched_client.name
               @selected_client -> @selected_client.name
-              true -> Changeset.get_field(job_changeset.changes.client, :name)
+              true -> Changeset.get_field(@assigns.job_changeset.changes.client, :name)
             end
           %></span>
         </p>

@@ -344,10 +344,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       )
 
   def wizard_state(assigns) do
-    fields = @all_fields
+    assigns = assign(assigns, fields: @all_fields)
 
     ~H"""
-      <%= for field <- fields, input_value(@form, field) do %>
+      <%= for field <- @fields, input_value(@form, field) do %>
         <%= hidden_input @form, field, id: nil %>
       <% end %>
 
@@ -625,10 +625,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{
           name: :payment,
           f: %{params: params},
-          default_payment_changeset: default_payment_changeset
+          default_payment_changeset: _
         } = assigns
       ) do
     job_type = Map.get(params, "job_type", nil) || Map.get(assigns.job, :type, nil)
+    assigns = assign(assigns, job_type: job_type)
 
     ~H"""
     <div>
@@ -640,7 +641,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       </div>
       <% pc = form_for(@payments_changeset, "#") %>
       <div {testid("select-preset-type")} class="grid gap-6 md:grid-cols-2 grid-cols-1 mt-8">
-        <%= select pc, :schedule_type, payment_dropdown_options(job_type, input_value(pc, :schedule_type)), wrapper_class: "mt-4", class: "py-3 border rounded-lg border-base-200 cursor-pointer", phx_update: "update" %>
+        <%= select pc, :schedule_type, payment_dropdown_options(@job_type, input_value(pc, :schedule_type)), wrapper_class: "mt-4", class: "py-3 border rounded-lg border-base-200 cursor-pointer", phx_update: "update" %>
         <div {testid("preset-summary")} class="flex items-center"><%= get_tags(pc) %></div>
       </div>
       <hr class="w-full my-6 md:my-8"/>
@@ -706,7 +707,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               </div>
             </label>
             <%= unless input_value(p, :interval) do %>
-              <%= if input_value(p, :due_at) || ((input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(default_payment_changeset, :interval, p.index)) do %>
+              <%= if input_value(p, :due_at) || ((input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(@default_payment_changeset, :interval, p.index)) do %>
                 <div class="flex flex-col my-2 ml-8 cursor-pointer">
                   <%= input p, :due_at, type: :date_input, format: "mm/dd/yyyy", min: Date.utc_today(), placeholder: "mm/dd/yyyy", phx_debounce: "0", class: "w-full px-4 text-lg cursor-pointer" %>
                   <%= if message = p.errors[:schedule_date] do %>

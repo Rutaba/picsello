@@ -751,7 +751,8 @@ defmodule PicselloWeb.JobLive.Shared do
       |> Enum.into(%{
         label: badge.label,
         color: badge.color,
-        class: ""
+        class: "",
+        second_badge: second_badge
       })
 
     ~H"""
@@ -759,9 +760,9 @@ defmodule PicselloWeb.JobLive.Shared do
         <.badge class={@class} color={@color}>
           <%= @label %>
         </.badge>
-        <%= if second_badge do %>
-          <.badge class={"ml-1 #{@class}"} color={second_badge.color}>
-            <%= second_badge.label %>
+        <%= if @second_badge do %>
+          <.badge class={"ml-1 #{@class}"} color={@second_badge.color}>
+            <%= @second_badge.label %>
           </.badge>
         <% end %>
       </span>
@@ -1509,13 +1510,13 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  def error_action(%{error: error, entry: entry} = assigns) do
+  def error_action(assigns) do
     assigns = Map.put_new(assigns, :target, nil)
 
     ~H"""
-    <p class="error btn items-center px-2 sm:px-1"><%= Phoenix.Naming.humanize(error) %></p>
-    <p class={"retry rounded ml-2 py-1 px-2 sm:px-1 text-xs cursor-pointer #{!retryable?(error) && 'hidden'}"}
-      phx-value-ref={entry.ref} phx-click="retry" phx-target={@target}>
+    <p class="error btn items-center px-2 sm:px-1"><%= Phoenix.Naming.humanize(@error) %></p>
+    <p class={"retry rounded ml-2 py-1 px-2 sm:px-1 text-xs cursor-pointer #{!retryable?(@error) && 'hidden'}"}
+      phx-value-ref={@entry.ref} phx-click="retry" phx-target={@target}>
       Retry?
     </p>
     """
