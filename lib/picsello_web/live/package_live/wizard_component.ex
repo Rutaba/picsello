@@ -3,6 +3,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   use PicselloWeb, :live_component
 
+  import Phoenix.LiveView
+  import Phoenix.LiveComponent
+  import Phoenix.Component
+
+
   alias Ecto.Changeset
 
   alias Picsello.{

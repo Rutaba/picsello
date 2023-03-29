@@ -13,6 +13,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     Profiles
   }
 
+  import Phoenix.LiveView
+  import Phoenix.LiveComponent
   import Phoenix.Component
   import PicselloWeb.Live.Shared
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]

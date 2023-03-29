@@ -22,6 +22,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   alias Ecto.Changeset
   alias PicselloWeb.JobLive.GalleryTypeComponent
   
+  import Phoenix.LiveView
+  import Phoenix.LiveComponent
   import Phoenix.Component
   import PicselloWeb.JobLive.Shared, only: [search_clients: 1, job_form_fields: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1, expired_at: 1]

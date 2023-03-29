@@ -3,6 +3,9 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
   use PicselloWeb, :live_component
 
   import PicselloWeb.Live.Shared
+  import Phoenix.LiveView
+  import Phoenix.LiveComponent
+  import Phoenix.Component
 
   import PicselloWeb.JobLive.Shared,
     only: [
