@@ -517,7 +517,7 @@ defmodule PicselloWeb.HomeLive.Index do
         <% end %>
       </div>
       <div class={"mb-2 #{@inner_block_classes}"}>
-        <%= render_block(@inner_block) %>
+        <%= render_slot(@inner_block) %>
       </div>
       <%= if @link_action && @link_text do %>
         <button class="underline text-blue-planning-300 mt-auto inline-block" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
@@ -875,7 +875,7 @@ defmodule PicselloWeb.HomeLive.Index do
   def card_button(%{buttons: [%{external_link: external_link} = button]} = assigns)
       when not is_nil(external_link) do
     ~H"""
-    <.link
+    <.custom_link
     link={external_link}
     class={button.class}
     label={button.label}
@@ -886,7 +886,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def card_button(%{buttons: [%{link: link} = button]} = assigns) when not is_nil(link) do
     ~H"""
-    <.link link={link} class={button.class} label={button.label} />
+    <.custom_link link={link} class={button.class} label={button.label} />
     """
   end
 
@@ -907,7 +907,7 @@ defmodule PicselloWeb.HomeLive.Index do
     """
   end
 
-  def link(%{class: class, link: link, label: label} = assigns) do
+  def custom_link(%{class: class, link: link, label: label} = assigns) do
     assigns = Enum.into(assigns, %{target: "", rel: ""})
 
     ~H"""
@@ -936,7 +936,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <.icon name={@icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current text-#{@color}"} />
             <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
           </h1>
-          <%= render_block(@inner_block) %>
+          <%= render_slot(@inner_block) %>
         </div>
       </div>
     </li>

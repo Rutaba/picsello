@@ -240,7 +240,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <.steps step={@step} steps={@steps} for={:sign_up} />
             </div>
           </div>
-          <%= render_block(@inner_block) %>
+          <%= render_slot(@inner_block) %>
         </div>
         <div class="lg:w-2/3 w-full flex flex-col items-evenly pl-8 lg:pl-16 bg-blue-planning-300">
           <blockquote class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
@@ -279,7 +279,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
         <h1 class="text-3xl font-bold mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
         <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-lg"><%= @subtitle %></h2>
-        <%= render_block(@inner_block) %>
+        <%= render_slot(@inner_block) %>
        </div>
     </div>
     """

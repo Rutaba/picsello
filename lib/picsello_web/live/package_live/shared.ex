@@ -314,7 +314,7 @@ defmodule PicselloWeb.PackageLive.Shared do
         </div>
         <div class="w-1/3 text-center">
           <%= if @inner_block do %>
-            <%= render_block(@inner_block) %>
+            <%= render_slot(@inner_block) %>
           <% end %>
         </div>
       </label>

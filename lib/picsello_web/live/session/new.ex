@@ -39,7 +39,7 @@ defmodule PicselloWeb.Live.Session.New do
 
         <p class="font-bold text-center">or</p>
 
-        <.form let={ f } for={@changeset} action={Routes.user_session_path(@socket, :create)} phx-change={:validate} phx-submit={:submit} phx-trigger-action={@trigger_submit} as={:user}>
+        <.form :let={f} for={@changeset} action={Routes.user_session_path(@socket, :create)} phx-change={:validate} phx-submit={:submit} phx-trigger-action={@trigger_submit} as={:user}>
           <%= if @error_message do %>
             <p class="text-red-sales-300"><%= @error_message %></p>
           <% end %>

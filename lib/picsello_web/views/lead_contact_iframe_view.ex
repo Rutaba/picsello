@@ -1,6 +1,7 @@
 defmodule PicselloWeb.LeadContactIframeView do
   use PicselloWeb, :view
-
+  
+  import Phoenix.Component
   import PicselloWeb.LiveHelpers, only: [job_type_option: 1, icon: 1]
 
   def render("index.html", assigns) do
@@ -67,7 +68,7 @@ defmodule PicselloWeb.LeadContactIframeView do
   defp container(assigns) do
     ~H"""
     <div class="p-9 border-base-200 client-app">
-      <%= render_block(@inner_block) %>
+      <%= render_slot(@inner_block) %>
     </div>
     """
   end

@@ -869,7 +869,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       <div class="flex justify-between mb-8 mt-11 font-sans">
         <p><%= @name %></p>
         <div class="flex items-center">
-          <%= render_block @inner_block %>
+          <%= render_slot @inner_block %>
           <.remove_button />
         </div>
       </div>

@@ -733,7 +733,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
           <div class="w-full max-w-5xl mx-auto overflow-hidden rounded-lg bg-blue-planning-300">
             <div class="px-6 pt-8 pb-6 ml-3 bg-white sm:p-14">
-              <%= render_block(@inner_block) %>
+              <%= render_slot(@inner_block) %>
             </div>
           </div>
         </div>

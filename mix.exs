@@ -68,6 +68,7 @@ defmodule Picsello.MixProject do
         # {:phoenix_live_dashboard, "~> 0.6.2"},need to fix
         {:phoenix_live_dashboard, "~> 0.7.2"},
         {:phoenix_live_view, "~> 0.18.18"},
+        {:phoenix_view, "~> 2.0"},
         # {:phoenix_live_view, "~> 0.17.6"},
         # {:plug_cowboy, "~> 2.5.2"},
         {:plug_cowboy, "~> 2.6"},

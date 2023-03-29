@@ -1,7 +1,6 @@
 defmodule PicselloWeb.Live.Brand.Shared do
   @moduledoc false
 
-  import Phoenix.LiveView
   use Phoenix.Component
   use Phoenix.HTML
 

@@ -340,7 +340,7 @@ defmodule PicselloWeb.Live.User.Settings do
       </._settings_nav>
       <hr />
 
-      <%= render_block @inner_block %>
+      <%= render_slot @inner_block %>
     </div>
     """
   end

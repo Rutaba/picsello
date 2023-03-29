@@ -1,6 +1,7 @@
 defmodule PicselloWeb.Live.Shared do
   use Phoenix.{HTML, Component}
 
+  import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import PicselloWeb.FormHelpers
   import Phoenix.HTML.Form
@@ -715,7 +716,7 @@ defmodule PicselloWeb.Live.Shared do
             |> assign_package_changeset(%{})
             |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]}),
           else:
-            socket |> push_redirect(to: Routes.client_path(socket, :job_history, job.client_id))
+            socket |> push_navigate(to: Routes.client_path(socket, :job_history, job.client_id))
         )
 
       {:error, _} ->

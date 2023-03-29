@@ -1,6 +1,5 @@
 defmodule PicselloWeb.LiveViewHelpers do
   @moduledoc false
-  import Phoenix.LiveView
   import Phoenix.Component
   alias PicselloWeb.LiveAuth
 

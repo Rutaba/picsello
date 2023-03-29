@@ -554,10 +554,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   defp add_photo_button(assigns) do
     ~H"""
     <%= if @disable do %>
-      <div class={@class}><%= render_block(@inner_block) %></div>
+      <div class={@class}><%= render_slot(@inner_block) %></div>
     <% else %>
       <button disabled="disabled" class={"#{@class} disabled:opacity-50 disabled:cursor-not-allowed"}>
-        <%= render_block(@inner_block) %>
+        <%= render_slot(@inner_block) %>
       </button>
     <% end %>
     """

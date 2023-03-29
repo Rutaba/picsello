@@ -117,7 +117,7 @@ defmodule PicselloWeb.LiveHelpers do
     <a href={if @disabled, do: "javascript:void(0)", else: href} target={unless @disabled, do: @target} class={classes("btn-tertiary flex items-center px-2 py-1 font-sans rounded-lg hover:opacity-75 transition-colors text-#{@color} #{@class}", %{"opacity-30 hover:opacity-30 hover:cursor-not-allowed" => @disabled})} {@rest}>
       <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-2" => @inner_block})} />
       <%= if @inner_block do %>
-        <%= render_block(@inner_block) %>
+        <%= render_slot(@inner_block) %>
       <% end %>
     </a>
     """
@@ -133,7 +133,7 @@ defmodule PicselloWeb.LiveHelpers do
     <button type="button" class={classes("btn-tertiary flex items-center px-2 py-1 font-sans rounded-lg hover:opacity-75 transition-colors text-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
       <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-2" => @inner_block})} />
       <%= if @inner_block do %>
-        <%= render_block(@inner_block) %>
+        <%= render_slot(@inner_block) %>
       <% end %>
     </button>
     """
@@ -220,7 +220,7 @@ defmodule PicselloWeb.LiveHelpers do
       end)
 
     ~H"""
-      <.is_active socket={@socket} live_action={@live_action} path={@to} let={active} >
+      <.is_active socket={@socket} live_action={@live_action} path={@to} :let={active} >
         <%= if String.starts_with?(@to, "/") do %>
           <%= live_redirect to: @to, title: @title, class: classes(@class, %{@active_class => active}) do %>
             <%= render_slot(@inner_block, active) %>
@@ -236,7 +236,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   def live_link(%{} = assigns) do
     ~H"""
-    <%= assigns |> Map.drop([:__changed__, :inner_block]) |> Enum.to_list |> live_redirect do %><%= render_block(@inner_block) %><% end %>
+    <%= assigns |> Map.drop([:__changed__, :inner_block]) |> Enum.to_list |> live_redirect do %><%= render_slot(@inner_block) %><% end %>
     """
   end
 
@@ -262,17 +262,18 @@ defmodule PicselloWeb.LiveHelpers do
     assigns = Enum.into(assigns, %{disabled: false, class: "", color: "blue"})
 
     {bg_light, border_dark, bg_dark} = @job_type_colors |> Map.get(assigns.color)
+    assigns = Enum.into(assigns, %{bg_light: bg_light, border_dark: border_dark, bg_dark: bg_dark})
 
     ~H"""
       <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:#{bg_light}/60 cursor-pointer font-semibold text-sm leading-tight sm:text-base #{@class}",
-        %{"#{border_dark} #{bg_light}" => @checked}
+        "flex items-center p-2 border rounded-lg hover:#{@bg_light}/60 cursor-pointer font-semibold text-sm leading-tight sm:text-base #{@class}",
+        %{"#{@border_dark} #{@bg_light}" => @checked}
       )}>
         <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} disabled={@disabled} />
 
         <div class={classes(
           "flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0",
-          %{"#{bg_dark} text-white" => @checked, "bg-base-200" => !@checked}
+          %{"#{@bg_dark} text-white" => @checked, "bg-base-200" => !@checked}
         )}>
           <.icon name={@job_type} class="fill-current" width="14" height="14" />
         </div>
@@ -307,7 +308,7 @@ defmodule PicselloWeb.LiveHelpers do
 
     ~H"""
     <span role="status" class={"px-2 py-0.5 text-xs font-semibold #{@color_style} #{@class}"} >
-      <%= render_block @inner_block %>
+      <%= render_slot @inner_block %>
     </span>
     """
   end
@@ -408,7 +409,7 @@ defmodule PicselloWeb.LiveHelpers do
         <p class="text-base-250 text-xl"><%= @body %></p>
         <div class={"flex flex-wrap md:flex-nowrap items-center md:justify-start justify-center gap-6 mt-4 mb-8 sm:mb-0 #{@cta_class}"}>
           <%= if @inner_block do %>
-            <%= render_block(@inner_block) %>
+            <%= render_slot(@inner_block) %>
             <%= if @external_video_link do %>
               <a class="underline text-blue-planning-300 flex gap-3 items-center flex-shrink-0" href={@external_video_link} target="_blank" rel="noopener">
                 Video tour <.icon name="external-link" class="h-4 w-4 stroke-current stroke-1" />

@@ -93,7 +93,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         <div class="flex flex-col lg:flex-row lg:mt-8">
           <div class={classes("lg:block", %{"hidden" => !@is_mobile})}>
             <div class="h-auto">
-              <div phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
+              <div id={"replace-#{@package_name}"} phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
                 <%= for(job_type <- @job_types) do %>
                   <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == job_type})} phx-click="assign_templates_by_job_type" phx-value-job-type={job_type}>
                     <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >

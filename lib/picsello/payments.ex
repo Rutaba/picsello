@@ -262,25 +262,25 @@ defmodule Picsello.Payments do
 
   def account_status(%Stripe.Account{}), do: :missing_information
 
-  def link(%User{} = user, opts) do
+  def custom_link(%User{} = user, opts) do
     %{organization: organization} = user |> Repo.preload(:organization)
-    link(organization, opts)
+    custom_link(organization, opts)
   end
 
-  def link(%Organization{stripe_account_id: nil} = organization, opts) do
+  def custom_link(%Organization{stripe_account_id: nil} = organization, opts) do
     with {:ok, %{id: account_id}} <- create_account(%{type: "standard"}),
          {:ok, organization} <-
            organization
            |> Organization.assign_stripe_account_changeset(account_id)
            |> Repo.update() do
-      link(organization, opts)
+      custom_link(organization, opts)
     else
       {:error, _} = e -> e
       e -> {:error, e}
     end
   end
 
-  def link(%Organization{stripe_account_id: account_id}, opts) do
+  def custom_link(%Organization{stripe_account_id: account_id}, opts) do
     refresh_url = opts |> Keyword.get(:refresh_url)
     return_url = opts |> Keyword.get(:return_url)
 

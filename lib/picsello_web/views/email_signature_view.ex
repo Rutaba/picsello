@@ -62,7 +62,7 @@ defmodule PicselloWeb.EmailSignatureView do
     ~H"""
     <div {testid("marketing-links")} style="display:flex;align-items:center;margin-bottom:16px;">
       <a style="display:flex;align-items:center;justify-content:center;" href={@link} target="_blank" rel="noopener noreferrer">
-        <%= render_block(@inner_block) %>
+        <%= render_slot(@inner_block) %>
         <div style={"display:flex;align-items:center;justify-content:center;width:24px;height:24px;flex-shrink:0;#{@style}"}>
           <span style="fill:currentColor;color:#898989;">
             <img src={"#{PicselloWeb.Endpoint.static_url()}/images/social_icons/#{get_brand_link_icon(@link_id)}.png"} />

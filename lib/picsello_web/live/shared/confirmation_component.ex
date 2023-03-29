@@ -27,8 +27,8 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
 
   @impl true
   def render(assigns) do
-    class = Map.get(assigns, :class, "dialog")
-
+    assigns = Enum.into(assigns, %{class: "dialog"})
+    
     ~H"""
     <div class={class}>
       <%= if @icon && !@dropdown? do %>
