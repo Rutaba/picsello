@@ -21,7 +21,7 @@ defmodule Picsello.Galleries.Watermark do
   def image_changeset(%Watermark{} = watermark, attrs) do
     watermark
     |> cast(attrs, @image_attrs)
-    |> put_change(:type, "image")
+    |> put_change(:type, :image)
     |> validate_required(@image_attrs)
     |> nilify_fields(@text_attrs)
   end
@@ -29,7 +29,7 @@ defmodule Picsello.Galleries.Watermark do
   def text_changeset(%Watermark{} = watermark, attrs) do
     watermark
     |> cast(attrs, @text_attrs)
-    |> put_change(:type, "text")
+    |> put_change(:type, :text)
     |> validate_required(@text_attrs)
     |> validate_length(:text, min: 3, max: 30)
     |> nilify_fields(@image_attrs)
@@ -40,7 +40,7 @@ defmodule Picsello.Galleries.Watermark do
   end
 
   def build(organization_name, gallery) do
-    %Watermark{type: "text", text: organization_name, gallery_id: gallery.id}
+    %Watermark{type: :text, text: organization_name, gallery_id: gallery.id}
   end
 
   def watermark_path(id), do: "galleries/#{id}/watermark.png"

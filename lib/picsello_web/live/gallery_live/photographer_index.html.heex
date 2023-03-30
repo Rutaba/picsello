@@ -92,7 +92,7 @@
                   <div id="galleryWatermark" class="flex flex-col galleryCustomWatermark xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
                      <h3 class={classes("font-sans", %{"text-gray-400" => disabled?(@gallery)})}>Watermark</h3>
                      <%= if @gallery.watermark do %>
-                        <%= if @gallery.watermark.type == "image" do %>
+                        <%= if @gallery.watermark.type == :image do %>
                            <div class="flex justify-between py-3 font-sans">
                               <p class={classes(%{"text-gray-400" => disabled?(@gallery)})}><%= @gallery.watermark.name %></p>
                               <div class="flex">

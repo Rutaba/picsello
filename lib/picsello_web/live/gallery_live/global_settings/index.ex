@@ -601,15 +601,15 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   defp build_params(%{watermark_type: watermark_type} = global_settings) do
     case watermark_type do
-      "image" ->
+      :image ->
         %{
           name: global_settings.watermark_name,
           size: global_settings.watermark_size,
-          type: "image"
+          type: :image
         }
 
-      "text" ->
-        %{text: global_settings.watermark_text, type: "text"}
+      :text ->
+        %{text: global_settings.watermark_text, type: :text}
     end
   end
 
@@ -652,7 +652,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
          %{"gallery" => %{"watermark_text" => watermark_text}}
        ) do
     global_settings
-    |> changeset(%{watermark_text: watermark_text, watermark_type: "text"})
+    |> changeset(%{watermark_text: watermark_text, watermark_type: :text})
     |> then(fn %{valid?: valid?} = changeset ->
       socket
       |> assign(:changeset, changeset)
@@ -663,8 +663,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   defp preview_button_text(true), do: "Hide Preview"
   defp preview_button_text(false), do: "Show Preview"
 
-  defp watermark_type(%{watermark_type: "image"}), do: :image
-  defp watermark_type(%{watermark_type: "text"}), do: :text
+  defp watermark_type(%{watermark_type: :image}), do: :image
+  defp watermark_type(%{watermark_type: :text}), do: :text
   defp watermark_type(_), do: :undefined
 
   def card(assigns) do

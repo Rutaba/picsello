@@ -1140,7 +1140,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def standard?(%{type: type}), do: type == :standard
-  def disabled?(%{status: status}), do: status == "disabled"
+  def disabled?(%{status: status}), do: status == :disabled
 
   def order_status(%{intent: %{status: status}}) when is_binary(status),
     do: String.capitalize(status)

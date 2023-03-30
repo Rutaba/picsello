@@ -486,7 +486,7 @@ defmodule Picsello.Factory do
 
   def watermark_factory(attrs) do
     %Watermark{
-      type: "text",
+      type: :text,
       text: "007Agency:)"
     }
     |> merge_attributes(attrs)

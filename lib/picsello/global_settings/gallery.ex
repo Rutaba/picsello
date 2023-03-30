@@ -56,7 +56,7 @@ defmodule Picsello.GlobalSettings.Gallery do
   def watermark_image_changeset(global_settings_gallery, attrs) do
     global_settings_gallery
     |> cast(attrs, @image_attrs)
-    |> put_change(:watermark_type, "image")
+    |> put_change(:watermark_type, :image)
     |> validate_required(@image_attrs)
     |> nilify_fields(@text_attrs)
   end
@@ -64,7 +64,7 @@ defmodule Picsello.GlobalSettings.Gallery do
   def watermark_text_changeset(global_settings_gallery, attrs) do
     global_settings_gallery
     |> cast(attrs, @text_attrs)
-    |> put_change(:watermark_type, "text")
+    |> put_change(:watermark_type, :text)
     |> validate_required(@text_attrs)
     |> validate_length(:watermark_text, min: 3, max: 30)
     |> nilify_fields(@image_attrs)

@@ -153,16 +153,16 @@ defmodule Picsello.Galleries.Gallery do
     |> Repo.one()
     |> then(&GlobalSettings.get(&1))
     |> case do
-      %{watermark_type: "image", watermark_name: watermark_name, watermark_size: watermark_size} ->
+      %{watermark_type: :image, watermark_name: watermark_name, watermark_size: watermark_size} ->
         %{
           gallery_id: gallery.id,
           name: watermark_name,
           size: watermark_size,
-          type: "image"
+          type: :image
         }
 
-      %{watermark_type: "text", watermark_text: watermark_text} ->
-        %{text: watermark_text, type: "text", gallery_id: gallery.id}
+      %{watermark_type: :text, watermark_text: watermark_text} ->
+        %{text: watermark_text, type: :text, gallery_id: gallery.id}
 
       _ ->
         nil

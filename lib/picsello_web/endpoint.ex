@@ -2,7 +2,7 @@ defmodule PicselloWeb.Endpoint do
   use Sentry.PlugCapture
   use Phoenix.Endpoint, otp_app: :picsello
 
-  with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox) do
+  with sandbox when sandbox != nil <- Application.compile_env(:picsello, :sandbox) do
     plug Phoenix.Ecto.SQL.Sandbox, sandbox: sandbox
   end
 

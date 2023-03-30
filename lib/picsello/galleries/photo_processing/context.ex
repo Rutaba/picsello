@@ -44,7 +44,7 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
       "watermarkedPreviewPath" => Photo.watermarked_preview_path(photo),
       "watermarkedOriginalPath" => Photo.watermarked_path(photo),
       "watermarkPath" => watermark_path,
-      "watermarkText" => watermark.type == "text" && watermark.text
+      "watermarkText" => watermark.type == :text && watermark.text
     }
   end
 
@@ -211,9 +211,9 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
 
   def notify_processed(_), do: :ignored
 
-  defp path(%{use_global: %{watermark: true}}, %{}, %{type: "image"}, organization),
+  defp path(%{use_global: %{watermark: true}}, %{}, %{type: :image}, organization),
     do: GSGallery.watermark_path(organization.id)
 
-  defp path(%{id: id}, _, %{type: "image"}, _), do: Watermark.watermark_path(id)
+  defp path(%{id: id}, _, %{type: :image}, _), do: Watermark.watermark_path(id)
   defp path(_gallery, _, _, _), do: nil
 end

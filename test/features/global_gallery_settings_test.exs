@@ -57,15 +57,15 @@ defmodule Picsello.GSGalleryTest do
 
     attr =
       case global_watermark_change.changes.watermark_type do
-        "image" ->
+        :image ->
           %{
             name: global_gallery_settings.watermark_name,
             size: global_gallery_settings.watermark_size,
-            type: "image"
+            type: :image
           }
 
-        "text" ->
-          %{text: global_watermark_change.changes.watermark_text, type: "text"}
+        :text ->
+          %{text: global_watermark_change.changes.watermark_text, type: :text}
       end
 
     {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, attr)
@@ -92,15 +92,15 @@ defmodule Picsello.GSGalleryTest do
 
     attr =
       case global_text_watermark_change.changes.watermark_type do
-        "image" ->
+        :image ->
           %{
             name: global_text_watermark_change.changes.watermark_name,
             size: global_text_watermark_change.changes.watermark_size,
-            type: "image"
+            type: :image
           }
 
-        "text" ->
-          %{text: global_text_watermark_change.changes.watermark_text, type: "text"}
+        :text ->
+          %{text: global_text_watermark_change.changes.watermark_text, type: :text}
       end
 
     {:ok, %{watermark: text_watermark}} = Galleries.save_gallery_watermark(gallery, attr)
@@ -113,15 +113,15 @@ defmodule Picsello.GSGalleryTest do
 
     attr =
       case global_image_watermark_change.changes.watermark_type do
-        "image" ->
+        :image ->
           %{
             name: global_image_watermark_change.changes.watermark_name,
             size: global_image_watermark_change.changes.watermark_size,
-            type: "image"
+            type: :image
           }
 
-        "text" ->
-          %{text: global_image_watermark_change.changes.watermark_text, type: "text"}
+        :text ->
+          %{text: global_image_watermark_change.changes.watermark_text, type: :text}
       end
 
     {:ok, %{watermark: image_watermark}} = Galleries.save_gallery_watermark(gallery, attr)
@@ -136,15 +136,15 @@ defmodule Picsello.GSGalleryTest do
 
     attr =
       case global_watermark_change.changes.watermark_type do
-        "image" ->
+        :image ->
           %{
             name: global_watermark_change.changes.watermark_name,
             size: global_watermark_change.changes.watermark_size,
-            type: "image"
+            type: :image
           }
 
-        "text" ->
-          %{text: global_watermark_change.changes.watermark_text, type: "text"}
+        :text ->
+          %{text: global_watermark_change.changes.watermark_text, type: :text}
       end
 
     {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, attr)
