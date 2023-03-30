@@ -3,8 +3,10 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
 
   use PicselloWeb, :live_component
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.GalleryLive.Photos.Photo.Shared, only: [js_like_click: 2]
 
   alias Picsello.Galleries
+  alias Picsello.Photos
 
   @impl true
   def update(%{photo_id: photo_id, photo_ids: _photo_ids} = assigns, socket) do
@@ -51,6 +53,16 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
 
   def handle_event("keydown", _, socket), do: socket |> noreply
 
+  @impl true
+  def handle_event("like", %{"id" => id}, %{assigns: %{from: from}} = socket) do
+    {:ok, _} =
+      if from == :photographer,
+        do: Photos.toggle_photographer_liked(id),
+        else: Photos.toggle_liked(id)
+
+    socket |> noreply()
+  end
+
   defp move_carousel(%{assigns: %{photo_ids: photo_ids}} = socket, fun) do
     photo_ids = fun.(photo_ids)
     photo_id = CLL.value(photo_ids)
@@ -67,7 +79,10 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
   end
 
   @impl true
-  def render(assigns) do
+  def render(%{photo: photo} = assigns) do
+    is_liked =
+      if assigns.from == :photographer, do: photo.is_photographer_liked, else: photo.client_liked
+
     ~H"""
     <div>
       <div class="w-screen h-screen lg:h-full overflow-auto lg:overflow-y-scroll flex lg:justify-between">
@@ -83,8 +98,18 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
               <.icon name="forth" class="w-8 h-8 cursor-pointer text-base-100" />
             </div>
             <div class="flex flex-col md:items-center justify-center">
-              <div class="lg:h-[450px] sm:h-screen justify-center">
+              <div class="relative lg:h-[450px] sm:h-screen justify-center">
                 <img src={ @url } class="max-h-full sm:object-contain">
+
+                <button class="likeBtn absolute" phx-click={js_like_click(@photo.id, @myself)}>
+                  <div id={"photo-#{@photo.id}-liked"} style={!is_liked && "display: none"}>
+                    <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
+                  </div>
+
+                  <div id={"photo-#{@photo.id}-to-like"} style={is_liked && "display: none"}>
+                    <.icon name="heart-white" class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"/>
+                  </div>
+                </button>
               </div>
               <div class="flex mt-2 justify-between gap-1">
                 <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="flex lg:hidden ml-2">

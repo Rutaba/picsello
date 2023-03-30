@@ -32,9 +32,9 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
               <div class="bg-base-200 py-3 px-2">
                   <dl class={classes("flex justify-between font-semibold", %{"text-black" => PaymentSchedules.paid?(payment), "font-bold" => payment == PaymentSchedules.unpaid_payment(@job)})}>
                     <%= if PaymentSchedules.paid?(payment) do %>
-                      <dt><%= payment.description %> paid on <%= strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></dt>
+                      <dt><%= payment.price %> paid on <%= strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></dt>
                     <% else %>
-                      <dt><%= payment.description %> <%= if PaymentSchedules.past_due?(payment), do: "due today", else: "due on #{strftime(@photographer.time_zone, payment.due_at, "%b %d, %Y")}" %></dt>
+                      <dt><%= payment.price %> <%= to_book(payment, @photographer.time_zone)%></dt>
                     <% end %>
                     <dd><%= payment.price %></dd>
                     </dl>
@@ -82,8 +82,10 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
     if PaymentSchedules.free?(job) do
       finish_booking(socket) |> noreply()
     else
-      proposal.job.payment_schedules
-      |> Enum.each(&(&1 |> Ecto.Changeset.change(%{is_with_cash: true}) |> Repo.update!()))
+      job
+      |> PaymentSchedules.next_due_payment()
+      |> Ecto.Changeset.change(%{is_with_cash: true, type: "cash"})
+      |> Repo.update!()
 
       Notifiers.ClientNotifier.deliver_payment_due(proposal)
       Notifiers.ClientNotifier.deliver_paying_by_invoice(proposal)
@@ -117,5 +119,13 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       shoots: shoots,
       package: package
     })
+  end
+
+  defp to_book(payment, time_zone) do
+    to_book = String.split(payment.description, " ", trim: true) |> List.last()
+
+    if to_book == "Book",
+      do: "due to book",
+      else: "due on #{strftime(time_zone, payment.due_at, "%b %d, %Y")}"
   end
 end

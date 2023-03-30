@@ -91,7 +91,7 @@ defmodule PicselloWeb.SuccessComponent do
   defp description(%{for: "proofing"} = assigns) do
     ~H"""
       You can handle all the key steps of proofing your photos for your client right from this album, and
-      create additional proofing albums within this gallery if you need more. <a>Click here for help article.</a>
+      create additional proofing albums within this gallery if you need more.
     """
   end
 

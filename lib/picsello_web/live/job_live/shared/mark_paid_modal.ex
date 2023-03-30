@@ -21,11 +21,9 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     <div class="modal">
       <h1 id="payment-modal" class="flex justify-between mb-4 pl-3 text-3xl font-bold">
         Mark <%= action_name(@live_action, :plural) %> as paid
-
         <button id="close" phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
           <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
-
       </h1>
       <div>
         <div class="flex items-center justify-start">
@@ -47,18 +45,16 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
             </tr>
           </thead>
           <tbody>
-          <%= @payment_schedules |> Enum.with_index |> Enum.map(fn({payment_schedules, index}) -> %>
+          <%= @payment_schedules |> Enum.with_index |> Enum.map(fn({payment_schedule, index}) -> %>
             <tr class="">
               <td id="payments" class="font-bold font-sans pl-3 my-2">Payment <%= index + 1 %></td>
-              <td class="pl-3 py-2" id="offline-amount"><%= payment_schedules.price %></td>
-              <td class="pl-3 py-2"><%= String.capitalize(payment_schedules.type) %></td>
-              <td class="text-green-finances-300 pl-3 py-2">Paid <%= strftime(payment_schedules.paid_at.time_zone, payment_schedules.paid_at, "%b %d, %Y") %></td>
+              <td class="pl-3 py-2" id="offline-amount"><%= payment_schedule.price %></td>
+              <td class="pl-3 py-2"><%= String.capitalize(payment_schedule.type) %></td>
+              <td class="text-green-finances-300 pl-3 py-2">Paid <%= strftime(@current_user.time_zone, payment_schedule.paid_at, "%b %d, %Y") %></td>
             </tr>
             <% end ) %>
           </tbody>
         </table>
-
-
         <%= if PaymentSchedules.owed_offline_price(assigns.job) |> Map.get(:amount) > 0 do %>
           <%= if !@add_payment_show do %>
             <.icon_button id="add-payment" class="border-solid border-2 border-blue-planning-300 rounded-md my-8 px-10 pb-1.5 flex items-center" title="Add a payment" color="blue-planning-300" icon="plus" phx-click="select_add_payment" phx-target={@myself}>
@@ -92,7 +88,6 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         </.form>
     </div>
     <% end %>
-
         <div class="flex justify-end items-center mt-4 gap-8">
           <%= link to: Routes.job_download_path(@socket, :download_invoice_pdf, @proposal.job_id, @proposal.id) do %>
             <button class="link block leading-5 text-black text-base">Download invoice</button>
@@ -281,7 +276,8 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
   defp calculate_payment(pending_payments, new_payment) do
     pending_payments
-    |> Enum.reduce_while({[], nil, Money.new(0)},
+    |> Enum.reduce_while(
+      {[], nil, Money.new(0)},
       fn %{price: price} = payment, {for_delete, for_update, acc} ->
         owed = Money.add(price, acc)
 
@@ -301,6 +297,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
             {:halt, {for_delete, for_update, owed}}
         end
-      end)
+      end
+    )
   end
 end
