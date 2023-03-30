@@ -429,7 +429,7 @@ defmodule PicselloWeb.HomeLive.Index do
     """
   end
 
-  def tabs_content(assigns) do
+  def tabs_content(%{assigns: assigns}) do
     ~H"""
     <div>
       <%= case @attention_items do %>

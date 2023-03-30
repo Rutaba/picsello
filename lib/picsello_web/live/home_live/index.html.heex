@@ -48,7 +48,7 @@
             <p class="text-base-250">Get ready for your calendar to start filling up with shoots! Create a client booking event and you will be off to the races.</p>
           <% else %>
             <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@job_count} /> <%= ngettext "job", "jobs", @job_count %> upcoming this week</p>
-          <% end %>          
+          <% end %>
         </.dashboard_main_card>
         <.dashboard_main_card title="Clients" button_text="Add client" button_action="add-client" link_text="View clients" link_action="redirect" link_value="clients" redirect_route={Routes.clients_path(@socket, :index)}>
           <%= if @client_count === 0 do %>
