@@ -3,7 +3,6 @@ defmodule PicselloWeb.Live.Shared do
 
   import Phoenix.LiveView
   import Phoenix.Component
-  import Phoenix.LiveComponent
   import PicselloWeb.LiveHelpers
   import PicselloWeb.FormHelpers
   import Phoenix.HTML.Form
@@ -279,7 +278,7 @@ defmodule PicselloWeb.Live.Shared do
     assigns = assign(assigns, base_price_zero?: base_price_zero?(package_changeset))
 
     ~H"""
-    <.form for={@package_changeset} :let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+    <.form for={@package_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
       <h2 class="text-xl font-bold">Package Details</h2>
       <.package_basic_fields form={f} job_type={@job_type} />
 
@@ -340,7 +339,7 @@ defmodule PicselloWeb.Live.Shared do
     assigns = assign(assigns, remaining_amount_zero?: remaining_amount_zero?(package_changeset))
 
     ~H"""
-    <.form for={@payments_changeset} :let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+    <.form for={@payments_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
       <h3 class="font-bold">Balance to collect: <%= total_remaining_amount(@package_changeset) %></h3>
 
       <div class={classes("flex items-center bg-blue-planning-100 rounded-lg my-4 py-4", %{"hidden" => !@remaining_amount_zero?})}}>

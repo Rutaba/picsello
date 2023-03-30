@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   use Phoenix.LiveComponent
   import Phoenix.Component
+  import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import Money.Sigils
 

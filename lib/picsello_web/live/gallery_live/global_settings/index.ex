@@ -698,7 +698,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
               <h1 class="text-xl font-bold">Pricing per image:</h1>
               <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
             </div>
-            <.form for={:digital_pricing} :let={f} phx_change={:validate_each_price} class="ml-auto">
+            <.form for={:digital_pricing} :let={f} phx-change="validate_each_price" class="ml-auto">
               <%= input(f, :each_price, class: "w-full w-24 text-lg text-center border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: if((@global_settings_gallery && @global_settings_gallery.download_each_price), do: Money.to_string(@global_settings_gallery.download_each_price), else: "$50.00")) %>
             </.form>
           </div>
@@ -710,7 +710,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
               <h1 class="text-xl font-bold">Pricing for all images:</h1>
               <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
             </div>
-            <.form for={:digital_pricing} :let={f} phx_change={:validate_buy_all_price} class="ml-auto">
+            <.form for={:digital_pricing} :let={f} phx-change="validate_buy_all_price" class="ml-auto">
               <%= input(f, :buy_all, class: "w-full w-24 text-lg text-center ml-auto border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: if((@global_settings_gallery && @global_settings_gallery.buy_all_price), do: Money.to_string(@global_settings_gallery.buy_all_price), else: "$750.00")) %>
             </.form>
           </div>

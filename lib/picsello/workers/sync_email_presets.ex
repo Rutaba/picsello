@@ -13,7 +13,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
   def perform(%{args: %{type_ranges: %{}} = config}) do
     {:ok, %{token: token}} =
       Goth.Token.for_scope("https://www.googleapis.com/auth/spreadsheets.readonly")
-
+  
     connection = Sheets.Connection.new(token)
 
     now = DateTime.truncate(DateTime.utc_now(), :second)

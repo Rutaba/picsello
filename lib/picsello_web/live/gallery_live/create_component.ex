@@ -22,8 +22,6 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   alias Ecto.Changeset
   alias PicselloWeb.JobLive.GalleryTypeComponent
   
-  import Phoenix.LiveView
-  import Phoenix.LiveComponent
   import Phoenix.Component
   import PicselloWeb.JobLive.Shared, only: [search_clients: 1, job_form_fields: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1, expired_at: 1]
@@ -238,13 +236,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         <.search_clients new_client={@new_client} search_results={@search_results} search_phrase={@search_phrase} selected_client={@selected_client} searched_client={@searched_client} current_focus={@current_focus} clients={@clients} myself={@myself}/>
       <% end %>
 
-      <.form
-        for={@changeset}
-        :let={f} phx_change={:validate}
-        phx_submit={:submit}
-        phx_target={@myself}
-        id={"form-#{@step}"}
-      >
+      <.form for={@changeset} :let={f} phx-change={:validate} phx-submit={:submit} phx-target={@myself} id={"form-#{@step}"}>
         <input type="hidden" name="step" value={@step} />
         <.step name={@step} f={f} {assigns} />
 

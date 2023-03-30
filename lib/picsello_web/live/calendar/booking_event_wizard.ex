@@ -2,8 +2,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @moduledoc false
   use PicselloWeb, :live_component
   
-  import Phoenix.LiveView
-  import Phoenix.LiveComponent
   import Phoenix.Component
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
@@ -65,7 +63,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
       <.step_heading name={@step} is_edit={@booking_event.id} />
 
-      <.form for={@changeset} :let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+      <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
         <input type="hidden" name="step" value={@step} />
 
         <.wizard_state form={f} />

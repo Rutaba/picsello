@@ -47,7 +47,9 @@ defmodule PicselloWeb do
     options =
       case Keyword.get(options, :layout, "live") do
         false -> []
-        name -> [layout: {PicselloWeb.LayoutView, "#{name}.html"}]
+        name -> 
+          name = if is_atom(name), do: name, else: String.to_atom(name)
+          [layout: {PicselloWeb.LayoutView, name}]
       end
 
     quote do

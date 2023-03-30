@@ -13,8 +13,6 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     Profiles
   }
 
-  import Phoenix.LiveView
-  import Phoenix.LiveComponent
   import Phoenix.Component
   import PicselloWeb.Live.Shared
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
@@ -136,7 +134,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     ~H"""
     <.search_clients new_client={@new_client} search_results={@search_results} search_phrase={@search_phrase} selected_client={@selected_client} searched_client={@searched_client} current_focus={@current_focus} clients={@clients} myself={@myself}/>
 
-    <.form for={@job_changeset} :let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+    <.form for={@job_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
       <.job_form_fields myself={@myself} form={f} new_client={@new_client} job_types={Profiles.enabled_job_types(@current_user.organization.organization_job_types)} />
 
       <.footer>
