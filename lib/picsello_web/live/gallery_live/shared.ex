@@ -1,8 +1,7 @@
 defmodule PicselloWeb.GalleryLive.Shared do
   @moduledoc "Shared function among gallery liveViews"
 
-  use Phoenix.LiveComponent
-  import Phoenix.Component
+  use Phoenix.Component
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import Money.Sigils

@@ -10,7 +10,6 @@ defmodule PicselloWeb.JobLive.Shared do
   import Ecto.Query
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  import Phoenix.Component
   import PicselloWeb.FormHelpers
   import Phoenix.HTML.Form
   import PicselloWeb.Gettext, only: [ngettext: 3]
