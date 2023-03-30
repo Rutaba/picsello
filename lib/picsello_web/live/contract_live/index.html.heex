@@ -43,7 +43,15 @@
     <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("contracts-row")}>
         <div class="sm:col-span-5 flex flex-wrap items-center gap-x-4 col-y-3">
             <button {if contract.organization_id, do: %{phx_click: "edit-contract", phx_value_contract_id: contract.id}, else: %{phx_click: "view-contract", phx_value_contract_id: contract.id}} class="block text-xl text-left underline text-blue-planning-300 mt-2"><%= contract.name |> String.capitalize() %></button>
-          </div>  
+            <%= if !contract.organization_id do %>
+            <div><.badge color={:gray}>View Only</.badge></div>
+          <% else %>
+            <p class="w-full text-sm text-base-250">Created <%= contract.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
+          <% end %>
+          <%= if contract.status == :archive do %>
+            <div><.badge color={:gray}>Archived</.badge></div>
+          <% end %>
+        </div>  
         <div class="sm:col-span-2">
             <span class="sm:hidden font-bold">Job type: </span> <%= contract.job_type %>
         </div>

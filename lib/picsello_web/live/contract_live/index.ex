@@ -77,10 +77,29 @@ defmodule PicselloWeb.Live.Contracts.Index do
   end
 
   @impl true
-  def handle_event("delete-contract", %{"contract-id" => contract_id}, socket) do
+  def handle_event("archive-contract", %{"contract-id" => contract_id}, socket) do
     id = String.to_integer(contract_id)
 
-    case Contracts.delete_contract_by_id(id) do
+    case Contracts.archive_contract(id) do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Contract deleted")
+        |> assign_contracts()
+        |> noreply()
+
+      _ ->
+        socket
+        |> put_flash(:error, "An error occurred")
+        |> assign_contracts()
+        |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_event("enable-contract", %{"contract-id" => contract_id}, socket) do
+    id = String.to_integer(contract_id)
+
+    case Contracts.enable_contract(id) do
       {:ok, _} ->
         socket
         |> put_flash(:success, "Contract deleted")
@@ -130,6 +149,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex items-center justify-end gap-3">
+    <%= if @contract.status == :active do %>
       <%= if @contract.organization_id do %>
       <button title="Edit" type="button" phx-click="edit-contract" phx-value-contract-id={@contract.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75"
           >
@@ -143,7 +163,8 @@ defmodule PicselloWeb.Live.Contracts.Index do
         Duplicate
       </button>
       <% end %>
-      <div data-offset="0" phx-hook="Select" id={"manage-questionnaire-#{@contract.id}"}>
+      <% end %>
+      <div data-offset="0" phx-hook="Select" id={"manage-contract-#{@contract.id}"}>
         <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
@@ -151,33 +172,40 @@ defmodule PicselloWeb.Live.Contracts.Index do
         </button>
 
         <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content z-20">
-        <%= if @contract.organization_id do %>
-          <button title="Edit" type="button" phx-click="edit-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
-          >
-            <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-            Edit
+        <%= if @contract.status == :active do %>
+          <%= if @contract.organization_id do %>
+            <button title="Edit" type="button" phx-click="edit-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
+            >
+              <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+              Edit
+            </button>
+            <button title="Duplicate Table" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
+            >
+              <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+              Duplicate
+            </button>
+            <button title="Trash" type="button" phx-click="archive-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+              <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
+              Delete
+            </button>
+            <% else %>
+            <button title="View" type="button" phx-click="view-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
+            >
+              <.icon name="eye" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+              View
+            </button>
+            <button title="Duplicate" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold" {testid("duplicate")}
+            >
+              <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+              Duplicate
+            </button>
+            <% end %>
+        <% else %>
+          <button title="Plus" type="button" phx-click="enable-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+              <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+              Unarchive
           </button>
-          <button title="Duplicate Table" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
-          >
-            <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-            Duplicate
-          </button>
-          <button title="Trash" type="button" phx-click="delete-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-            <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
-            Delete
-          </button>
-          <% else %>
-          <button title="View" type="button" phx-click="view-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
-          >
-            <.icon name="eye" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-            View
-          </button>
-          <button title="Duplicate" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold" {testid("duplicate")}
-          >
-            <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-            Duplicate
-          </button>
-          <% end %>
+        <% end %>
         </div>
       </div>
     </div>
