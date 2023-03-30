@@ -174,7 +174,9 @@ defmodule Picsello.Photos do
 
     query =
       from(photo in watermarked_query(),
-        where: photo.gallery_id == ^gallery_id and photo.id != ^photo_id
+        where:
+          photo.gallery_id == ^gallery_id and photo.id != ^photo_id and
+            not is_nil(photo.height) and not is_nil(photo.width)
       )
       |> order_by.()
 
@@ -182,6 +184,12 @@ defmodule Picsello.Photos do
       true -> where(query, [photo], photo.client_liked == true)
       _ -> query
     end
+    |> then(
+      &case Keyword.get(opts, :album_id) do
+        nil -> &1
+        album_id -> where(&1, [photo], photo.album_id == ^album_id)
+      end
+    )
     |> Repo.all()
   end
 
