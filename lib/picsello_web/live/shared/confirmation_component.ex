@@ -28,7 +28,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
   @impl true
   def render(assigns) do
     assigns = Enum.into(assigns, %{class: "dialog"})
-    
+
     ~H"""
     <div class={@class}>
       <%= if @icon && !@dropdown? do %>
@@ -50,7 +50,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
 
   defp section(%{dropdown?: true} = assigns) do
     ~H"""
-    <.form :let={f} for={:dropdown} phx-submit={@confirm_event} phx-target={@myself} class="mt-2">
+    <.form :let={f} for={%{}} as={:dropdown} phx-submit={@confirm_event} phx-target={@myself} class="mt-2">
       <h1 class="font-extrabold text-sm"><%= @dropdown_label %></h1>
       <%= select(f, :item_id, @dropdown_items, class: "w-full px-2 py-3 border border-slate-400 rounded-md mt-1") %>
 

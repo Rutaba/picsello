@@ -25,7 +25,7 @@ defmodule PicselloWeb.StripeOnboardingComponent do
 
     ~H"""
     <div class={@container_class}>
-      <.form for={:stripe} phx-submit="link-stripe" phx-target={@myself}>
+      <.form :let={_} for={%{}} as={:stripe} phx-submit="link-stripe" phx-target={@myself}>
         <%= case @stripe_status do %>
           <% :loading -> %>
             <div class="flex items-center justify-center w-full m-2 text-xs">
