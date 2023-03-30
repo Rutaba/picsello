@@ -369,7 +369,7 @@ defmodule PicselloWeb.Live.User.Settings do
 
   defp sign_out(assigns) do
     ~H"""
-      <.form class={@class} for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete" phx-trigger-action={@sign_out} phx-submit="sign_out">
+      <.form class={@class} for={%{}} as={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete" phx-trigger-action={@sign_out} phx-submit="sign_out">
         <%= submit "Sign out", class: "btn-primary w-full" %>
       </.form>
     """

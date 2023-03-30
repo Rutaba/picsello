@@ -332,7 +332,7 @@ defmodule PicselloWeb.LayoutView do
                 <%= if Enum.any?(@current_user.onboarding.intro_states) do %>
                   <.live_component module={PicselloWeb.Live.RestartTourComponent} id="current_user", current_user={@current_user} />
                 <% end %>
-                <.form for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
+                <.form for={%{}} as={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete">
                   <%= submit "Logout", class: "text-center py-2 w-full" %>
                 </.form>
               </div>
