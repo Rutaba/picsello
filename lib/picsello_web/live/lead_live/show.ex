@@ -356,7 +356,6 @@ defmodule PicselloWeb.LeadLive.Show do
 
   defdelegate next_reminder_on(proposal), to: Picsello.ProposalReminder
 
-  #  Todo: sent_to_client issue
   defp upsert_booking_proposal(
          %{
            assigns: %{

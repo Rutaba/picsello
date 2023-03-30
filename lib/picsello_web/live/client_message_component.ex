@@ -291,7 +291,7 @@ defmodule PicselloWeb.ClientMessageComponent do
          %{assigns: %{recipients: recipients, current_user: current_user}} = socket
        ) do
     if recipients do
-      email_list = recipients |> Map.values() |> Enum.into([]) |> List.flatten()
+      email_list = recipients |> Map.values() |> List.flatten()
 
       socket
       |> assign(

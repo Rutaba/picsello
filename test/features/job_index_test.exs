@@ -41,27 +41,29 @@ defmodule Picsello.JobIndexTest do
 
   defp preload_some_leads(user) do
     insert(:lead,
-    user: user,
-    type: "family",
-    package: %{shoot_count: 1},
-    client: %{
-      organization: user.organization,
-      name: "Elizabeth Taylor",
-      email: "taylor@example.com",
-      phone: "(210) 111-1234"
-    })
+      user: user,
+      type: "family",
+      package: %{shoot_count: 1},
+      client: %{
+        organization: user.organization,
+        name: "Elizabeth Taylor",
+        email: "taylor@example.com",
+        phone: "(210) 111-1234"
+      }
+    )
 
     insert(:lead,
-    user: user,
-    type: "other",
-    package: %{shoot_count: 1},
-    client: %{
-      organization: user.organization,
-      name: "John Snow",
-      phone: "(241) 567-2352",
-      email: "snow@example.com"
-    })
-    
+      user: user,
+      type: "other",
+      package: %{shoot_count: 1},
+      client: %{
+        organization: user.organization,
+        name: "John Snow",
+        phone: "(241) 567-2352",
+        email: "snow@example.com"
+      }
+    )
+
     insert(:lead,
       user: user,
       type: "event",
@@ -71,7 +73,8 @@ defmodule Picsello.JobIndexTest do
         name: "Michael Stark",
         phone: "(442) 567-2321",
         email: "stark@example.com"
-      })
+      }
+    )
   end
 
   defp preload_some_jobs(user) do

@@ -10,10 +10,10 @@ defmodule Picsello.Notifiers.ClientNotifier do
   @doc """
   Deliver booking proposal email.
   """
-  def deliver_booking_proposal(message, to_email) do
+  def deliver_booking_proposal(message, recipients) do
     proposal = BookingProposal.last_for_job(message.job_id)
 
-    deliver_email(message, %{"to" => to_email}, %{
+    deliver_email(message, recipients, %{
       button: %{url: BookingProposal.url(proposal.id), text: "View booking proposal"}
     })
   end
