@@ -245,6 +245,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   defp find_digital([{:digital, value} | _]), do: {:digital, value}
   defp find_digital(_credits), do: {:digital, 0}
 
-  defp has_shipping?(%{total_markuped_price: nil}), do: false
+  defp has_shipping?(%{shipping_type: nil}), do: false
   defp has_shipping?(_product), do: true
 end
