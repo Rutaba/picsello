@@ -5,7 +5,7 @@ defmodule Picsello.Repo.Migrations.RemoveCCFromClientMessageCreateClientMessageR
   @table :client_message_recipients
 
   def up do
-    execute("CREATE TYPE recipient_type AS ENUM ('to','cc','bcc')")
+    execute("CREATE TYPE recipient_type AS ENUM ('to','cc','bcc','from')")
 
     create table(@table) do
       add(:client_id, references(:clients, on_delete: :nothing), null: false)
@@ -37,6 +37,8 @@ defmodule Picsello.Repo.Migrations.RemoveCCFromClientMessageCreateClientMessageR
   end
 
   def down do
+    execute("DROP TYPE recipient_type")
+
     alter table(:client_messages) do
       add(:cc_email, :string, null: true)
       add(:client_id, references(:clients))

@@ -254,7 +254,8 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:current_user) => %Picsello.Accounts.User{},
           optional(:client) => %Picsello.Client{},
           optional(:enable_size) => boolean,
-          optional(:enable_image) => boolean
+          optional(:enable_image) => boolean,
+          optional(:recipients) => map()
         }) :: %Phoenix.LiveView.Socket{}
   def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:
