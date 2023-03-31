@@ -172,7 +172,9 @@ defmodule Picsello.BookingEvents do
   end
 
   def available_times(%BookingEvent{} = booking_event, date, opts \\ []) do
-    duration =
+    duration = (booking_event.duration_minutes || Picsello.Shoot.durations() |> hd) * 60
+
+    duration_buffer =
       ((booking_event.duration_minutes || Picsello.Shoot.durations() |> hd) +
          (booking_event.buffer_minutes || 0)) * 60
 
@@ -187,7 +189,11 @@ defmodule Picsello.BookingEvents do
           slot <- 0..(available_slots - 1),
           available_slots > 0
         ) do
-          start_time |> Time.add(duration * slot)
+          if slot == available_slots - 1 do
+            start_time |> Time.add(duration_buffer * slot)
+          else
+            start_time |> Time.add(duration * slot)
+          end
         end
         |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
         |> filter_is_break_slots(booking_event, date)
