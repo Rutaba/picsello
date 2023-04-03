@@ -250,11 +250,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Pay your invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
-        definition("invoice paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        definition("$5.00 paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
           text: "$5.00"
         )
       )
-      |> assert_has(definition("invoice due today", text: "$5.00"))
+      |> assert_has(definition("$5.00 due on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}", text: "$5.00"))
       |> click(button("Pay with card Fast easy and secure"))
       |> assert_url_contains("stripe-checkout")
 
@@ -295,7 +295,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Completed Pay your invoice"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
-        definition("invoice paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+        definition("$5.00 paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
           text: "$5.00",
           count: 2
         )
