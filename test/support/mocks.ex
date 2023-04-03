@@ -4,7 +4,6 @@ defmodule Picsello.Mock do
   defmodule UeberauthStrategyBehaviorPatch do
     @moduledoc "callbacks we need to mock that aren't defined in the Ueberauth.Strategy behavior"
 
-    @callback default_options() :: keyword()
     @callback auth(Plug.Conn.t()) :: Ueberauth.Auth.t()
   end
 
