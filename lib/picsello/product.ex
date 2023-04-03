@@ -208,7 +208,6 @@ defmodule Picsello.Product do
 
         [
           client_price,
-          Money.new(0),
           unit_price,
           markup,
           Money.subtract(

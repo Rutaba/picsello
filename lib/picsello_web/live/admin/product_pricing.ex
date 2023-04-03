@@ -64,7 +64,6 @@ defmodule PicselloWeb.Live.Admin.ProductPricing do
 
             <tr>
               <th class="p-2 border">client price</th>
-              <th class="p-2 border">whcc - shipping total</th>
               <th class="p-2 border">whcc - print cost</th>
               <th class="p-2 border">user - markup</th>
               <th class="p-2 border">user - rounding</th>
