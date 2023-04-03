@@ -3,6 +3,7 @@ defmodule Picsello.Cart.Product do
     line items of customized whcc products
   """
 
+  alias Picsello.Cart
   import Ecto.Changeset
   import Money.Sigils
 
@@ -76,12 +77,15 @@ defmodule Picsello.Cart.Product do
     %__MODULE__{round_up_to_nearest: 100} |> Map.merge(fields)
   end
 
-  def charged_price(%__MODULE__{
-        print_credit_discount: print_credit_discount,
-        volume_discount: volume_discount,
-        price: price
-      }) do
-    Money.subtract(price, Money.add(print_credit_discount, volume_discount))
+  def charged_price(
+        %__MODULE__{
+          print_credit_discount: print_credit_discount,
+          price: price
+        } = product
+      ) do
+    price
+    |> Money.subtract(print_credit_discount)
+    |> Money.add(Cart.shipping_price(product))
   end
 
   def example_price(product), do: price(product)
