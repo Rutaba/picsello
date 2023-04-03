@@ -81,9 +81,9 @@ defmodule Picsello.Galleries.Workers.PhotoStorage.Impl do
   end
 
   defp connection do
-    {:ok, %{token: token}} =
-      Goth.Token.for_scope("https://www.googleapis.com/auth/cloud-platform")
-
+    credentials = Application.get_env(:picsello, :goth_json) |> Jason.decode!()
+    Goth.start_link(name: Picsello.Goth, source: {:service_account, credentials, scopes: ["https://www.googleapis.com/auth/cloud-platform"]})
+    {:ok, token} = Goth.fetch(Picsello.Goth)
     Connection.new(token)
   end
 end

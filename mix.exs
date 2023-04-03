@@ -88,7 +88,7 @@ defmodule Picsello.MixProject do
         {:gcs_sign, "~> 1.0"},
         # {:broadway_cloud_pub_sub, "~> 0.7.0"}, major
         {:broadway_cloud_pub_sub, "~> 0.8.0"},
-        {:goth, "~> 1.0"},
+        {:goth, "~> 1.4"},
         # {:google_api_pub_sub, "~> 0.34.1"}, major
         {:google_api_pub_sub, "~> 0.36.0"},
         # {:google_api_storage, "~> 0.32.0"}, major
