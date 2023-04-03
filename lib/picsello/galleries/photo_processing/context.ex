@@ -168,6 +168,9 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
     })
   end
 
+  defp do_save_processed(%{"task" => %{"photoId" => photo_id}}),
+    do: Galleries.update_photo(photo_id, %{})
+
   defp do_save_processed(%{
          "task" => %{
            "processCoverPhoto" => true,

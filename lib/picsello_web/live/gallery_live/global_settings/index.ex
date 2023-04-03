@@ -652,7 +652,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
          %{"gallery" => %{"watermark_text" => watermark_text}}
        ) do
     global_settings
-    |> changeset(%{watermark_text: watermark_text, watermark_type: :text})
+    |> GSGallery.text_watermark_change(%{watermark_text: watermark_text, watermark_type: :text})
     |> then(fn %{valid?: valid?} = changeset ->
       socket
       |> assign(:changeset, changeset)
