@@ -80,12 +80,16 @@ defmodule Picsello.Cart.Product do
   def charged_price(
         %__MODULE__{
           print_credit_discount: print_credit_discount,
-          price: price
+          price: price,
+          shipping_type: shipping_type
         } = product
       ) do
     price
     |> Money.subtract(print_credit_discount)
-    |> Money.add(Cart.shipping_price(product))
+    |> then(fn
+      price when is_nil(shipping_type) -> price
+      price when not is_nil(shipping_type) -> Money.add(price, Cart.shipping_price(product))
+    end)
   end
 
   def example_price(product), do: price(product)
