@@ -18,8 +18,6 @@ with dotenv = "#{__DIR__}/../.env",
 
 with "" <> base64 <- System.get_env("GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64"),
      {:ok, json} <- base64 |> String.trim() |> Base.decode64() do
-      IO.inspect base64, label: "base64"
-      IO.inspect json
   config :picsello, goth_json: json
   config :goth, json: json
 end
