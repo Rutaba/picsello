@@ -71,7 +71,7 @@ defmodule PicselloWeb.SuccessComponent do
     socket |> noreply()
   end
 
-  @spec open(%Phoenix.LiveView.Socket{}, %{
+  @spec open(Phoenix.LiveView.Socket.t(), %{
           optional(:close_label) => binary,
           optional(:close_class) => binary,
           optional(:success_event) => any,
@@ -82,7 +82,7 @@ defmodule PicselloWeb.SuccessComponent do
           optional(:payload) => map,
           optional(:for) => atom() | binary(),
           title: binary
-        }) :: %Phoenix.LiveView.Socket{}
+        }) :: Phoenix.LiveView.Socket.t()
   def open(socket, assigns) do
     socket
     |> open_modal(__MODULE__, Map.put(assigns, :parent_pid, self()))

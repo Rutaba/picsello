@@ -27,7 +27,7 @@ defmodule Picsello.Cart do
   """
   @spec place_product(
           {:bundle, Money.t()} | CartProduct.t() | Digital.t(),
-          %Gallery{id: integer()} | integer(),
+          Gallery.t() | integer(),
           integer() | nil
         ) ::
           Order.t()

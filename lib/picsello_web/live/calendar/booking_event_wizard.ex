@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @moduledoc false
   use PicselloWeb, :live_component
-  
+
   import Phoenix.Component
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
@@ -10,7 +10,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   alias Picsello.{BookingEvent, BookingEvents, Packages}
-  
+
   @impl true
   def update(assigns, socket) do
     socket
@@ -536,6 +536,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @impl true
   def handle_event("submit", %{"step" => "customize", "booking_event" => params}, socket) do
     %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
+
     case BookingEvents.upsert_booking_event(changeset) do
       {:ok, booking_event} ->
         successfull_save(socket, booking_event)
@@ -620,25 +621,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   end
 
   defp is_break_block_already_booked(dates) do
-    dates
-    |> Enum.filter(fn %{time_blocks: time_blocks} ->
-      Enum.filter(time_blocks, fn block ->
+    Enum.count(dates, fn %{time_blocks: time_blocks} ->
+      Enum.count(time_blocks, fn block ->
         !block.is_valid
-      end)
-      |> Enum.count() > 0
-    end)
-    |> Enum.count() > 0
+      end) > 0
+    end) > 0
   end
 
   defp is_any_block_booked(dates) do
-    dates
-    |> Enum.filter(fn %{time_blocks: time_blocks} ->
-      Enum.filter(time_blocks, fn block ->
+    Enum.count(dates, fn %{time_blocks: time_blocks} ->
+      Enum.count(time_blocks, fn block ->
         block.is_booked
-      end)
-      |> Enum.count() > 0
-    end)
-    |> Enum.count() > 0
+      end) > 0
+    end) > 0
   end
 
   defp calculate_break_blocks(booking_event, date) do
@@ -697,8 +692,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   end
 
   defp is_checked(id, package) do
-    IO.inspect id
-    IO.inspect package
     if id do
       id == if(is_binary(id), do: package.id |> Integer.to_string(), else: package.id)
     else

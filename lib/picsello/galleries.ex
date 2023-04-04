@@ -142,10 +142,10 @@ defmodule Picsello.Galleries do
       nil
 
   """
-  @spec get_gallery_by_hash(hash :: binary) :: %Gallery{} | nil
+  @spec get_gallery_by_hash(hash :: binary) :: Gallery.t() | nil
   def get_gallery_by_hash(hash), do: Repo.get_by(active_galleries(), client_link_hash: hash)
 
-  @spec get_gallery_by_hash!(hash :: binary) :: %Gallery{}
+  @spec get_gallery_by_hash!(hash :: binary) :: Gallery.t()
   def get_gallery_by_hash!(hash),
     do: Repo.get_by!(active_disabled_galleries(), client_link_hash: hash)
 
@@ -1010,8 +1010,7 @@ defmodule Picsello.Galleries do
         Gallery.update_changeset(gallery)
 
       %{cover_photo: %{id: original_url}} ->
-        Enum.filter(photos, &(&1.original_url == original_url))
-        |> Enum.count()
+        Enum.count(photos, &(&1.original_url == original_url))
         |> case do
           0 -> Gallery.update_changeset(gallery)
           _ -> Gallery.delete_cover_photo_changeset(gallery)

@@ -25,8 +25,7 @@ defmodule Picsello.PaymentSchedules do
     package
     |> Repo.preload(:package_payment_schedules, force: true)
     |> Map.get(:package_payment_schedules)
-    |> Enum.map(& &1.description)
-    |> Enum.join(", ")
+    |> Enum.map_join(", ", & &1.description)
   end
 
   def build_payment_schedules_for_lead(%Job{} = job) do

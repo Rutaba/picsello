@@ -114,7 +114,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
     socket |> noreply()
   end
 
-  @spec open(%Phoenix.LiveView.Socket{}, %{
+  @spec open(Phoenix.LiveView.Socket.t(), %{
           optional(:close_label) => binary,
           optional(:close_class) => binary,
           optional(:class) => binary,
@@ -131,7 +131,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
           optional(:dropdown_label) => binary | nil,
           optional(:dropdown_items) => list(),
           title: binary
-        }) :: %Phoenix.LiveView.Socket{}
+        }) :: Phoenix.LiveView.Socket.t()
   def open(socket, assigns) do
     socket
     |> open_modal(__MODULE__, Map.put(assigns, :parent_pid, self()))

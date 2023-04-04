@@ -222,7 +222,7 @@ defmodule Picsello.Payments do
   def construct_event(body, signature, secret),
     do: impl().construct_event(body, signature, secret)
 
-  @spec status(%Organization{} | %User{}) ::
+  @spec status(Organization.t() | User.t()) ::
           {:ok, :none | :processing | :charges_enabled | :details_submitted}
   def status(%User{} = user) do
     %{organization: organization} = user |> Repo.preload(:organization)

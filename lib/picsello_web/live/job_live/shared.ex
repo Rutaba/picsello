@@ -1226,12 +1226,12 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   @spec shoot_details(%{
-          current_user: %Picsello.Accounts.User{},
+          current_user: Picsello.Accounts.User.t(),
           shoot_path: fun(),
-          job: %Picsello.Job{},
-          shoots: list(%Picsello.Shoot{}),
-          socket: %Phoenix.LiveView.Socket{}
-        }) :: %Phoenix.LiveView.Rendered{}
+          job: Picsello.Job.t(),
+          shoots: list(Picsello.Shoot.t()),
+          socket: Phoenix.LiveView.Socket.t()
+        }) :: Phoenix.LiveView.Rendered.t()
   def shoot_details(assigns) do
     ~H"""
 

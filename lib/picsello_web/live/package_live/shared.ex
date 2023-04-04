@@ -102,8 +102,9 @@ defmodule PicselloWeb.PackageLive.Shared do
   end
 
   @spec package_card(%{
-          package: %Package{}
-        }) :: %Phoenix.LiveView.Rendered{}
+          package: Package.t(),
+          is_edit: boolean()
+        }) :: Phoenix.LiveView.Rendered.t()
   def package_card(assigns) do
     assigns =
       assigns
@@ -156,7 +157,8 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  @spec package_template_row(%{package: %Package{}}) :: %Phoenix.LiveView.Rendered{}
+  @spec package_template_row(%{package: Package.t(), update_mode: String.t()}) ::
+          Phoenix.LiveView.Rendered.t()
   def package_template_row(assigns) do
     assigns =
       assigns
@@ -286,7 +288,7 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  @spec package_row(%{package: %Package{}}) :: %Phoenix.LiveView.Rendered{}
+  @spec package_row(%{package: Package.t(), checked: boolean()}) :: Phoenix.LiveView.Rendered.t()
   def package_row(assigns) do
     assigns =
       assigns

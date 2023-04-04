@@ -225,11 +225,10 @@ defmodule Picsello.BookingEvents do
         %{start_time: %Time{} = start_time, end_time: %Time{} = end_time},
         slots
       ) do
-    Enum.filter(slots, fn {slot_time, is_available, _is_break, _is_hide} ->
+    Enum.count(slots, fn {slot_time, is_available, _is_break, _is_hide} ->
       !is_available && Time.compare(slot_time, start_time) in [:gt, :eq] &&
         Time.compare(slot_time, end_time) in [:lt, :eq]
-    end)
-    |> Enum.count() > 0
+    end) > 0
   end
 
   defp filter_is_break_slots(slot_times, booking_event, date) do
@@ -458,12 +457,23 @@ defmodule Picsello.BookingEvents do
 
   defp transform_text_to_date("" <> due_interval, shoot_date) do
     cond do
-      String.contains?(due_interval, "6 Months Before") -> Timex.shift(shoot_date, months: -6)
-      String.contains?(due_interval, "1 Month Before") -> Timex.shift(shoot_date, months: -1)
-      String.contains?(due_interval, "Week Before") -> Timex.shift(shoot_date, days: -7)
-      String.contains?(due_interval, "Day Before") -> Timex.shift(shoot_date, days: -1)
-      String.contains?(due_interval, "To Book") -> DateTime.utc_now() |> DateTime.truncate(:second)
-      true -> shoot_date
+      String.contains?(due_interval, "6 Months Before") ->
+        Timex.shift(shoot_date, months: -6)
+
+      String.contains?(due_interval, "1 Month Before") ->
+        Timex.shift(shoot_date, months: -1)
+
+      String.contains?(due_interval, "Week Before") ->
+        Timex.shift(shoot_date, days: -7)
+
+      String.contains?(due_interval, "Day Before") ->
+        Timex.shift(shoot_date, days: -1)
+
+      String.contains?(due_interval, "To Book") ->
+        DateTime.utc_now() |> DateTime.truncate(:second)
+
+      true ->
+        shoot_date
     end
   end
 

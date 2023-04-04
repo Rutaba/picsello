@@ -262,7 +262,9 @@ defmodule PicselloWeb.LiveHelpers do
     assigns = Enum.into(assigns, %{disabled: false, class: "", color: "blue"})
 
     {bg_light, border_dark, bg_dark} = @job_type_colors |> Map.get(assigns.color)
-    assigns = Enum.into(assigns, %{bg_light: bg_light, border_dark: border_dark, bg_dark: bg_dark})
+
+    assigns =
+      Enum.into(assigns, %{bg_light: bg_light, border_dark: border_dark, bg_dark: bg_dark})
 
     ~H"""
       <label class={classes(
@@ -505,8 +507,7 @@ defmodule PicselloWeb.LiveHelpers do
       "MM/DD/YY" ->
         [date.month, date.day, date.year]
         |> Enum.map(&to_string/1)
-        |> Enum.map(&String.pad_leading(&1, 2, "0"))
-        |> Enum.join("/")
+        |> Enum.map_join("/", &String.pad_leading(&1, 2, "0"))
 
       _ ->
         "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
