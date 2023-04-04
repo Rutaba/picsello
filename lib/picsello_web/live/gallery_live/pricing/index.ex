@@ -4,7 +4,10 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
 
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
+<<<<<<< HEAD
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
+=======
+>>>>>>> 5f7bfb3ee (gallery local pricing feature)
 
   alias Picsello.{Galleries, Repo, Orders}
 

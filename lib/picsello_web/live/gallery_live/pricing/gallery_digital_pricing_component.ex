@@ -44,7 +44,6 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     <div class="modal">
       <.close_x />
 
-
       <div class="flex flex-row">
         <h1 class="mt-2 mb-4 text-3xl font-bold mr-6">Edit digital pricing & credits</h1>
         <div class="flex flex-row items-center">

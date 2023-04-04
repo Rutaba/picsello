@@ -374,7 +374,6 @@ defmodule PicselloWeb.JobLive.Show do
 
     ~H"""
     <%= for %{name: name, type: type, child: child, orders: orders} = gallery <- @galleries do %>
-
       <%= case type do %>
         <% :proofing -> %>
           <div {testid("card-proofing")} class="flex overflow-hidden border border-base-200 rounded-lg">
