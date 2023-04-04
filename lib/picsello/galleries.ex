@@ -527,6 +527,7 @@ defmodule Picsello.Galleries do
   end
 
   defp check_digital_pricing(%{job: %{package: package, client: client}} = gallery) do
+    first_gallery = get_first_gallery(gallery)
     case package do
       nil ->
         Multi.new()
@@ -539,7 +540,7 @@ defmodule Picsello.Galleries do
             gallery_digital_pricing: %{
               buy_all: package.buy_all,
               print_credits:
-                if(is_nil(get_first_gallery(gallery)),
+                if(first_gallery.id == gallery.id,
                   do: package.print_credits,
                   else: Money.new(0)
                 ),
@@ -554,11 +555,13 @@ defmodule Picsello.Galleries do
   end
 
   def reset_gallery_pricing(gallery) do
+    first_gallery = get_first_gallery(gallery)
+
     Gallery.save_digital_pricing_changeset(gallery, %{
       gallery_digital_pricing: %{
         buy_all: gallery.package.buy_all,
         print_credits:
-          if(is_nil(get_first_gallery(gallery)),
+          if(first_gallery.id == gallery.id,
             do: gallery.package.print_credits,
             else: Money.new(0)
           ),
