@@ -47,8 +47,7 @@ config :picsello, :payments, Picsello.StripePayments
 config :picsello, :google_site_verification, System.get_env("GOOGLE_SITE_VERIFICATION")
 config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_API_KEY")
 config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGER_API_KEY")
-config :picsello, :help_scout_id, System.get_env("HELP_SCOUT_ID")
-config :picsello, :help_scout_id_business, System.get_env("HELP_SCOUT_ID_BUSINESS")
+config :picsello, :intercom_id, System.get_env("INTERCOM_ID")
 config :picsello, :booking_reservation_seconds, 60 * 10
 config :picsello, :card_category_id, System.get_env("CARD_CATEGORY_ID")
 config :picsello, :print_category, "h3GrtaTf5ipFicdrJ"

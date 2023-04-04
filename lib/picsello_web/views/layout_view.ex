@@ -11,8 +11,7 @@ defmodule PicselloWeb.LayoutView do
       icon: 1,
       nav_link: 1,
       classes: 1,
-      initials_circle: 1,
-      help_scout_output: 2
+      initials_circle: 1
     ]
 
   import Picsello.Profiles, only: [public_url: 1]
@@ -114,32 +113,42 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def help_scout_menu(assigns) do
+  def help_chat_widget(%{assigns: %{current_user: current_user}} = assigns) do
     ~H"""
-    <%= if @current_user && Application.get_env(:picsello, :help_scout_id) && Application.get_env(:picsello, :help_scout_id_business)  do %>
-    <div id="float-menu-help" class="hidden cursor-pointer md:blockhidden md:block" phx-update="ignore" phx-hook="ToggleContent">
-      <div class="fixed flex items-center justify-center text-white rounded-full bg-blue-planning-300 help-scout-facade-circle">
-        <.icon name="question-mark-help-scout" class="w-6 h-6" />
-      </div>
-      <div class="fixed top-0 bottom-0 left-0 right-0 flex flex-col items-end justify-end hidden bg-base-300/60 toggle-content">
-        <nav class="flex flex-col w-64 ml-8 mr-16 overflow-hidden bg-white rounded-lg shadow-md my-11">
-          <a href="#" class="flex items-center px-2 py-2 m-4 mb-0 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id)}>
-            <.icon name="question-mark" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
-            Help Center
-          </a>
-          <a href="#" class="flex items-center px-2 py-2 m-4 border border-white rounded-lg hover:border hover:border-blue-planning-300" {help_scout_output(@current_user, :help_scout_id_business)}>
-            <.icon name="camera-laptop" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
-            Business Coaching
-          </a>
-          <div class="p-4 pl-12 text-sm text-white uppercase bg-blue-planning-300">
-          Help
-          </div>
-        </nav>
-        <div class="fixed flex items-center justify-center text-white rounded-full bg-blue-planning-300 help-scout-facade-circle">
-          <.icon name="close-x" class="w-6 h-6 stroke-current stroke-2" />
-        </div>
-      </div>
-    </div>
+    <%= if Application.get_env(:picsello, :intercom_id) do %>
+      <script>
+        window.intercomSettings = {
+          api_base: "https://api-iam.intercom.io",
+          app_id: "<%= Application.get_env(:picsello, :intercom_id) %>",
+          name: "<%= current_user.name %>",
+          email: "<%= current_user.email %>",
+          user_id: "<%= current_user.id %>",
+          created_at: "<%= current_user.inserted_at %>",
+          custom_launcher_selector: '.open-help'
+        };
+      </script>
+
+      <script>
+      (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/<%= Application.get_env(:picsello, :intercom_id) %>';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+      </script>
+    <% end %>
+    """
+  end
+
+  def help_chat_widget(assigns) do
+    ~H"""
+    <%= if Application.get_env(:picsello, :intercom_id) do %>
+      <script>
+        window.intercomSettings = {
+          api_base: "https://api-iam.intercom.io",
+          app_id: "<%= Application.get_env(:picsello, :intercom_id) %>",
+          custom_launcher_selector: '.open-help'
+        };
+      </script>
+
+      <script>
+      (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/<%= Application.get_env(:picsello, :intercom_id) %>';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+      </script>
     <% end %>
     """
   end
@@ -175,14 +184,9 @@ defmodule PicselloWeb.LayoutView do
         path: Routes.profile_settings_path(socket, :index)
       },
       %{
-        title: "Business Coaching",
-        icon: "camera-laptop",
-        path: "#business-coaching"
-      },
-      %{
         title: "Help",
         icon: "question-mark",
-        path: "https://support.picsello.com/"
+        path: "https://support.picsello.com"
       }
     ]
     |> Enum.filter(&Map.get(&1, :path))
@@ -389,8 +393,8 @@ defmodule PicselloWeb.LayoutView do
           <nav class="flex text-lg font-bold mt-4 w-full items-center">
             <ul class="flex">
               <li><a href="https://support.picsello.com/" target="_blank" rel="noopener noreferrer">Help center</a></li>
-              <%= if @current_user && Application.get_env(:picsello, :help_scout_id) do %>
-              <li><a href="#" class="ml-10" {help_scout_output(@current_user, :help_scout_id)}>Contact us</a></li>
+              <%= if @current_user && Application.get_env(:picsello, :intercom_id) do %>
+              <li><a href="#help" class="ml-10 open-help">Contact us</a></li>
               <% end %>
               <li><a class="ml-10" href="https://www.picsello.com/blog" target="_blank" rel="noopener noreferrer">Blog</a></li>
             </ul>
