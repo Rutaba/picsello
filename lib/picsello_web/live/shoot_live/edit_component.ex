@@ -230,7 +230,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       schedule_date =
         cond do
           schedule.interval && String.contains?(schedule.due_interval, "To Book") ->
-            Timex.now() |> DateTime.truncate(:second)
+            Timex.now()
 
           schedule.shoot_interval &&
               String.contains?(schedule.shoot_interval, "Before Last Shoot") ->
@@ -242,6 +242,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           true ->
             Timex.shift(schedule.schedule_date, minutes: first_time_difference)
         end
+        |> DateTime.truncate(:second)
 
       Map.put(schedule, :schedule_date, schedule_date)
     end)
