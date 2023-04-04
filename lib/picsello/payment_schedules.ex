@@ -253,7 +253,7 @@ defmodule Picsello.PaymentSchedules do
 
   def get_offline_payment_schedules(job_id) do
     from(p in PaymentSchedule,
-      where: p.type in ["check", "cash"] and p.job_id == ^job_id
+      where: p.type in ["check", "cash"] and p.job_id == ^job_id and not is_nil(p.paid_at)
     )
     |> Repo.all()
     |> Repo.preload(:job)
