@@ -186,7 +186,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
 
     opts = [
       client_name: client_name,
-      order_first_name: client_name,
+      order_first_name: String.split(client_name, " ") |> List.first(),
       photographer_organization_name: organization.name,
       contains_digital: digitals != [],
       contains_physical: products != [],
