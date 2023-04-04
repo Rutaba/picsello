@@ -223,7 +223,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
           <%= Calendar.strftime(@job.inserted_at, "%m/%d/%y") %>
         </div>
         <div class={"font-bold w-full"}>
-          <a href={Routes.job_path(@socket, String.to_atom(@type.plural), @job.id, %{"request_from" => "job_history"})} target="_blank">
+          <a href={Routes.job_path(@socket, String.to_atom(@type.plural), @job.id, %{"request_from" => "job_history"})}>
             <span class={classes("w-full text-blue-planning-300 underline", %{"truncate" => String.length(Job.name(@job)) > 29})}><%= Job.name(@job) %></span>
           </a>
         </div>
