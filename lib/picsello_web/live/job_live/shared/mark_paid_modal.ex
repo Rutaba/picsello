@@ -6,6 +6,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   import Ecto.Query
   @impl true
   def update(assigns, socket) do
+    IO.inspect assigns
     socket
     |> assign(assigns)
     |> then(&assign(&1, changeset: build_changeset(&1)))
@@ -50,7 +51,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
               <td id="payments" class="font-bold font-sans pl-3 my-2">Payment <%= index + 1 %></td>
               <td class="pl-3 py-2" id="offline-amount"><%= payment_schedule.price %></td>
               <td class="pl-3 py-2"><%= String.capitalize(payment_schedule.type) %></td>
-              <td class="text-green-finances-300 pl-3 py-2">Paid <%= strftime(@current_user.time_zone, payment_schedule.paid_at, "%b %d, %Y") %></td>
+              <td class="text-green-finances-300 pl-3 py-2">Paid <%= strftime(@current_user.time_zone || "America/New_York", payment_schedule.paid_at, "%b %d, %Y") %></td>
             </tr>
             <% end ) %>
           </tbody>
