@@ -390,9 +390,9 @@ defmodule Picsello.Cart do
   end
 
   @shipping_fields ~w(shipping_upcharge shipping_base_charge shipping_type)a
-  def update_products_shipping(products) do
-    Enum.reduce(products, Multi.new(), fn
-      %{shipping_upcharge: nil}, multi ->
+  def update_products_shipping(multi, products) do
+    Enum.reduce(products, multi, fn
+      %{shipping_type: nil}, multi ->
         multi
 
       product, multi ->
@@ -414,9 +414,10 @@ defmodule Picsello.Cart do
   @whcc_album_id @products[:whcc_album_id]
   @whcc_books_id @products[:whcc_books_id]
 
-  def add_shipping_details(product, shipping_type) do
-    shipping_details = shipping_details(product, shipping_type)
-    Map.merge(product, shipping_details)
+  def add_shipping_details!(product, shipping_type) do
+    product
+    |> CartProduct.changeset(shipping_details(product, shipping_type))
+    |> Repo.update!()
   end
 
   def shipping_details(product, shipping_type) do
@@ -489,6 +490,28 @@ defmodule Picsello.Cart do
     |> Money.multiply(Decimal.div(shipping_upcharge, 100))
     |> Money.add(shipping_base_charge)
   end
+
+  def shipping_days(products) do
+    products
+    |> Enum.group_by(& &1.shipping_type)
+    |> Enum.reduce([], fn
+      {_k, []}, acc -> acc
+      {key, _}, acc -> [choose_days(key) | acc]
+    end)
+    |> Enum.sort()
+    |> Enum.take(2)
+    |> then(fn
+      [min, max] -> {min, max}
+      [min] -> {min, min}
+    end)
+  end
+
+  @one_day 1
+  @three_days 3
+  @economy 5
+  defp choose_days("1_day"), do: @one_day
+  defp choose_days("3_days"), do: @three_days
+  defp choose_days("economy"), do: @economy
 
   defdelegate lines_by_product(order), to: Order
   defdelegate product_quantity(line_item), to: CartProduct, as: :quantity

@@ -174,18 +174,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   end
 
   def handle_event(
-        "continue",
-        _params,
-        %{assigns: %{checkout_routes: checkout_routes, order: %{products: products}}} = socket
-      ) do
-    {:ok, _} = Cart.update_products_shipping(products)
-
-    socket
-    |> push_patch(to: checkout_routes.cart_address)
-    |> noreply()
-  end
-
-  def handle_event(
         "shiping_type",
         %{"shipping" => %{"product_id" => product_id, "type" => type}},
         %{assigns: %{order: %{products: products}}} = socket
@@ -199,10 +187,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
 
   defp assign_products_shipping(%{assigns: %{order: order}} = socket) do
-    for {_product, [product | products] = line_items} <- lines_by_product(order) do
-      case Enum.any?(line_items, & &1.shipping_type) do
-        true -> line_items
-        false -> [add_shipping_details(product, @default_shipping) | products]
+    for {_product, line_items} <- lines_by_product(order),
+        [product | products] = Enum.reverse(line_items) do
+      case product do
+        %{shipping_type: nil} ->
+          [add_shipping_details!(product, @default_shipping) | products]
+
+        _ ->
+          [product | products]
       end
     end
     |> Enum.concat()
@@ -217,7 +209,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp update_product(product, product_id, shipping_type) do
     case to_string(product.id) do
-      ^product_id -> add_shipping_details(product, shipping_type)
+      ^product_id -> add_shipping_details!(product, shipping_type)
       _ -> product
     end
   end
@@ -250,7 +242,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp continue_summary(assigns) do
     ~H"""
     <.summary caller={checkout_type(@is_proofing)} order={@order} id={@id}>
-      <%= live_patch to: "#", phx_click: "continue", class: "mx-5 text-lg mb-7 btn-primary text-center" do %>
+      <%= live_patch to: @checkout_routes.cart_address, class: "mx-5 text-lg mb-7 btn-primary text-center" do %>
         Continue
       <% end %>
     </.summary>
@@ -353,6 +345,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp zero_total?(order),
     do: order |> Cart.total_cost() |> Money.zero?()
 
-  defdelegate add_shipping_details(product, shipping_type), to: Picsello.Cart
+  defdelegate shipping_details(product, shipping_type), to: Picsello.Cart
+  defdelegate add_shipping_details!(product, shipping_type), to: Picsello.Cart
   defdelegate shipping_price(product), to: Picsello.Cart
 end

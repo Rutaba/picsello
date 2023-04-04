@@ -213,6 +213,7 @@ defmodule Picsello.Cart.Checkouts do
         application_fee_amount: application_fee_cents,
         capture_method: :manual
       },
+      shipping_options: shipping_options(order) |> IO.inspect(),
       success_url: success_url,
       billing_address_collection: "auto",
       cancel_url: cancel_url
@@ -230,6 +231,33 @@ defmodule Picsello.Cart.Checkouts do
       Intents.changeset(intent, order_id: order.id, session_id: session_id)
     end)
   end
+
+  alias Picsello.Cart
+
+  defp shipping_options(%{products: [_ | _] = products}) do
+    products = Enum.filter(products, & &1.shipping_type)
+    shipping = Enum.reduce(products, Money.new(0), &Money.add(&2, Cart.shipping_price(&1)))
+    {min, max} = Cart.shipping_days(products)
+
+    [
+      %{
+        shipping_rate_data: %{
+          type: "fixed_amount",
+          fixed_amount: %{
+            amount: shipping.amount,
+            currency: shipping.currency
+          },
+          delivery_estimate: %{
+            minimum: %{unit: "day", value: min},
+            maximum: %{unit: "day", value: max}
+          },
+          display_name: "Estimate Delivery"
+        }
+      }
+    ]
+  end
+
+  defp shipping_options(%{products: []}), do: []
 
   defp create_stripe_invoice(
          _repo,
@@ -311,7 +339,8 @@ defmodule Picsello.Cart.Checkouts do
       image: product,
       name: "#{product_name(product)} (Qty #{product_quantity(product)})",
       price: Product.charged_price(product),
-      tax: :product
+      tax: :product,
+      total_markuped_price: product.total_markuped_price
     }
   end
 
