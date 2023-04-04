@@ -67,7 +67,7 @@ config :ueberauth, Ueberauth, providers: [google: {Picsello.MockAuthStrategy, []
 
 config :picsello, :whcc, adapter: Picsello.MockWHCCClient
 
-config :picsello, Oban, queues: false, plugins: false
+config :picsello, Oban, testing: :manual
 
 config :picsello,
        :feature_flags,
