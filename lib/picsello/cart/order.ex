@@ -4,6 +4,7 @@ defmodule Picsello.Cart.Order do
   import Ecto.Changeset
 
   alias Picsello.{
+    Cart,
     Cart.DeliveryInfo,
     Cart.Digital,
     Cart.OrderNumber,
@@ -176,7 +177,11 @@ defmodule Picsello.Cart.Order do
 
   def product_total(%__MODULE__{products: products}) when is_list(products) do
     for product <- products, reduce: Money.new(0) do
-      sum -> product |> Product.charged_price() |> Money.add(sum)
+      sum ->
+        product
+        |> Product.charged_price()
+        |> Money.add(sum)
+        |> Money.add(Cart.shipping_price(product))
     end
   end
 

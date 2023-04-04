@@ -236,7 +236,7 @@ defmodule Picsello.Cart.Checkouts do
 
   defp shipping_options(%{products: [_ | _] = products}) do
     products = Enum.filter(products, & &1.shipping_type)
-    shipping = Enum.reduce(products, Money.new(0), &Money.add(&2, Cart.shipping_price(&1)))
+    shipping = Cart.total_shipping(products)
     {min, max} = Cart.shipping_days(products)
 
     [

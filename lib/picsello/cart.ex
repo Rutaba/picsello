@@ -502,7 +502,8 @@ defmodule Picsello.Cart do
     |> Enum.take(2)
     |> then(fn
       [min, max] -> {min, max}
-      [min] -> {min, min}
+      [1] -> {1, 1}
+      [min] -> {min - 1, min}
     end)
   end
 
@@ -512,6 +513,12 @@ defmodule Picsello.Cart do
   defp choose_days("1_day"), do: @one_day
   defp choose_days("3_days"), do: @three_days
   defp choose_days("economy"), do: @economy
+
+  def total_shipping(products) do
+    products
+    |> Enum.filter(& &1.shipping_type)
+    |> Enum.reduce(Money.new(0), &Money.add(&2, shipping_price(&1)))
+  end
 
   defdelegate lines_by_product(order), to: Order
   defdelegate product_quantity(line_item), to: CartProduct, as: :quantity
