@@ -23,11 +23,11 @@ defmodule Picsello.Onboardings do
     @online_source_options [
       :"Facebook Group",
       :"Facebook Ad",
-      :"Instagram",
+      :Instagram,
       :"Search Engine (Google, Bing, etc)",
-      :"YouTube",
+      :YouTube,
       :"Quora/Reddit/Pinterest",
-      :"Referral"
+      :Referral
     ]
 
     defmodule IntroState do
@@ -38,6 +38,11 @@ defmodule Picsello.Onboardings do
         field(:changed_at, :utc_datetime)
         field(:state, Ecto.Enum, values: [:completed, :dismissed, :restarted])
       end
+
+      @type t :: %__MODULE__{
+              changed_at: DateTime.t(),
+              state: atom()
+            }
     end
 
     @software_options [
@@ -67,6 +72,20 @@ defmodule Picsello.Onboardings do
       field(:welcome_count, :integer)
       field(:promotion_code, :string, default: nil)
       embeds_many(:intro_states, IntroState, on_replace: :delete)
+
+      @type t :: %__MODULE__{
+              phone: String.t(),
+              photographer_years: integer(),
+              switching_from_softwares: [atom()],
+              schedule: atom(),
+              completed_at: DateTime.t(),
+              state: String.t(),
+              social_handle: String.t(),
+              online_source: atom(),
+              welcome_count: integer(),
+              promotion_code: String.t(),
+              intro_states: [IntroState.t()]
+            }
     end
 
     def changeset(%__MODULE__{} = onboarding, attrs) do
