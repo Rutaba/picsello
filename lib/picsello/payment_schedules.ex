@@ -191,6 +191,7 @@ defmodule Picsello.PaymentSchedules do
     |> payment_schedules()
     |> Enum.filter(&(&1.paid_at != nil))
     |> Enum.reduce(Money.new(0), fn payment, acc -> Money.add(acc, payment.price) end)
+    |> Money.add(Map.get(job.package, :collected_price) || Money.new(0))
   end
 
   def paid_amount(%Job{} = job) do
