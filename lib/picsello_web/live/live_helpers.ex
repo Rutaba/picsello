@@ -82,7 +82,6 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def strftime("" <> time_zone, time, format) do
-    IO.inspect time_zone
     time
     |> DateTime.shift_zone!(time_zone)
     |> Calendar.strftime(format)

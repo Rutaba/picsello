@@ -6,7 +6,6 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   import Ecto.Query
   @impl true
   def update(assigns, socket) do
-    IO.inspect assigns
     socket
     |> assign(assigns)
     |> then(&assign(&1, changeset: build_changeset(&1)))
