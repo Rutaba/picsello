@@ -247,6 +247,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
+    |> scroll_to_bottom()
+    |> scroll_into_view(testid("actions"))
     |> click(button("Manage"))
     |> click(button("Edit"))
     |> assert_text("Edit booking event: Details")
@@ -262,6 +264,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
+    |> scroll_to_bottom()
+    |> scroll_into_view(testid("actions"))
     |> click(button("Manage"))
     |> click(button("Disable"))
     |> assert_text("Disable this event?")
@@ -279,6 +283,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
+    |> scroll_to_bottom()
+    |> scroll_into_view(testid("actions"))
     |> click(button("Manage"))
     |> click(button("Edit"))
     |> assert_text("Edit booking event: Details")
@@ -328,8 +334,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> visit("/calendar")
     |> click(link("Manage booking events"))
     |> scroll_to_bottom()
-    |> scroll_into_view(css("#Manage"))
-    |> click(testid("actions"))
+    |> scroll_into_view(testid("actions"))
+    |> click(button("Manage"))
     |> click(button("Duplicate"))
     |> assert_text("Add booking event: Details")
     |> fill_in(text_field("booking_event[dates][0][date]"), with: "10/10/2050")
@@ -375,6 +381,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
+    |> scroll_to_bottom()
+    |> scroll_into_view(testid("actions"))
     |> click(button("Manage"))
     |> click(button("Disable"))
     |> assert_text("Disable this event?")

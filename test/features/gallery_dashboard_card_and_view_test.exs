@@ -164,8 +164,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> fill_in(css(".ql-editor"), with: "Test message")
     |> wait_for_enabled_submit_button()
     |> click(button("Send"))
-    |> assert_text("Thank you! Your message has been sent. We’ll be in touch with you soon.")
-    |> click(button("Close"))
+    |> assert_flash(:success, text: "Email sent!")
   end
 
   defp delete_button_deletes_the_selected_gallery(session) do

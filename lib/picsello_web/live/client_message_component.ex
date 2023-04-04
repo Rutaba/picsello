@@ -254,7 +254,8 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:current_user) => %Picsello.Accounts.User{},
           optional(:client) => %Picsello.Client{},
           optional(:enable_size) => boolean,
-          optional(:enable_image) => boolean
+          optional(:enable_image) => boolean,
+          optional(:recipients) => map()
         }) :: %Phoenix.LiveView.Socket{}
   def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:
@@ -291,7 +292,7 @@ defmodule PicselloWeb.ClientMessageComponent do
          %{assigns: %{recipients: recipients, current_user: current_user}} = socket
        ) do
     if recipients do
-      email_list = recipients |> Map.values() |> Enum.into([]) |> List.flatten()
+      email_list = recipients |> Map.values() |> List.flatten()
 
       socket
       |> assign(
