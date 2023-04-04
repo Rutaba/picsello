@@ -224,7 +224,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <% checked = is_checked(input_value(@f, :package_template_id), package) %>
           <label class={classes(%{"cursor-not-allowed pointer-events-none" => !@can_edit?})}>
             <.package_row package={package} checked={checked}>
-              <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: nil, else: package.id} />
+              <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={package.id} />
             </.package_row>
           </label>
         <% end %>
@@ -536,7 +536,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @impl true
   def handle_event("submit", %{"step" => "customize", "booking_event" => params}, socket) do
     %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
-
     case BookingEvents.upsert_booking_event(changeset) do
       {:ok, booking_event} ->
         successfull_save(socket, booking_event)
@@ -698,6 +697,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   end
 
   defp is_checked(id, package) do
+    IO.inspect id
+    IO.inspect package
     if id do
       id == if(is_binary(id), do: package.id |> Integer.to_string(), else: package.id)
     else
