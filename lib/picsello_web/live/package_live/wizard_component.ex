@@ -563,55 +563,53 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <a class="items-center text-blue-planning-300 p-5 underline font-normal" href={Routes.questionnaires_index_path(@socket, :index)} target="_blank">Manage questionnaires</a>
     </div>
 
-    <div class="flex flex-row">
+    <div class="flex flex-row text-blue-planning-300 mb-4">
       <%= for %{name: name, concise_name: concise_name} <- @tabs do %>
-        <div class={classes("text-blue-planning-300 flex p-3 font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @active_tab === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @active_tab !== concise_name})}>
+        <div class={classes("flex px-3 font-bold rounded-lg whitespace-nowrap text-lg", %{"bg-blue-planning-100 text-base-300" => Atom.to_string(@active_tab) == concise_name})}>
           <button type="button" phx-click={"toggle-tab"} phx-value-active={concise_name} phx-target={@myself} ><%= name %></button>
         </div>
       <% end %>
     </div>
 
     <span class="hidden sm:flex items-center justify-between border-b-4 border-blue-planning-300 font-semibold text-lg text-base-250" />
-    <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
-      <div class={classes("p-4", %{"hidden" => !(@active_tab == :contract)})}>
+    <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-6 overflow-hidden">
+      <div class={classes("", %{"hidden" => !(@active_tab == :contract)})}>
         <% c = form_for(@contract_changeset, "#") %>
-        <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg pb-3 mt-4 bg-base-200">
+          <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg p-3 rounded-t-lg bg-base-200">
             <div class="w-1/3">Contract name</div>
             <div class="w-1/3 text-center">Job type</div>
             <div class="w-1/3 text-center">Select contract</div>
           </div>
           <%= for contract <- @contract_options do %>
-            <% checked = input_value(c, :contract_template_id) == contract.id %>
-            <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => checked})}>
+            <div class="md:mx-3 md:px-0 px-3 mx-0 border py-3 sm:py-4 md:border-none border-b md:rounded-lg rounded-none">
               <label class="flex items-center justify-between cursor-pointer">
                 <h3 class="font-xl font-bold w-1/3"><%= contract.name %></h3>
                 <p class="w-1/3 text-center"><%= contract.job_type %></p>
                 <div class="w-1/3 text-center">
-                  <%= radio_button(c, :contract_template_id, contract.id, class: "w-5 h-5 mr-2.5 radio") %>
+                  <%= radio_button(c, :contract_template_id, contract.id, class: "w-5 h-5 mr-2.5 radio cursor-pointer") %>
                 </div>
               </label>
             </div>
           <% end %>
       </div>
-      <div class={classes("p-4", %{"hidden" => !(@active_tab == :question)})}>
+      <div class={classes("", %{"hidden" => !(@active_tab == :question)})}>
         <%= if Enum.empty?(@questionnaires) do %>
           <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
         <% else %>
-          <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg pb-3 mt-4 bg-base-200">
+          <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg p-3 rounded-t-lg bg-base-200">
             <div class="w-1/3">Questionnaire name</div>
             <div class="w-1/3 text-center">Job type</div>
             <div class="w-1/3 text-center">Select questionnaire</div>
           </div>
           <%= for questionnaire <- @questionnaires do %>
-            <% checked = input_value(@f, :questionnaire_template_id) == questionnaire.id %>
-            <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => checked})}>
-            <label class="flex items-center justify-between cursor-pointer">
-              <h3 class="font-xl font-bold w-1/3"><%= questionnaire.name %></h3>
-              <p class="w-1/3 text-center"><%= questionnaire.job_type %></p>
-              <div class="w-1/3 text-center">
-                <%= radio_button(@f, :questionnaire_template_id, questionnaire.id, class: "w-5 h-5 mr-2.5 radio") %>
-              </div>
-            </label>
+            <div class="md:mx-3 md:px-0 px-3 mx-0 border py-3 sm:py-4 md:border-none border-b md:rounded-lg rounded-none">
+              <label class="flex items-center justify-between cursor-pointer">
+                <h3 class="font-xl font-bold w-1/3"><%= questionnaire.name %></h3>
+                <p class="w-1/3 text-center"><%= questionnaire.job_type %></p>
+                <div class="w-1/3 text-center">
+                  <%= radio_button(@f, :questionnaire_template_id, questionnaire.id, class: "w-5 h-5 mr-2.5 radio cursor-pointer") %>
+                </div>
+              </label>
             </div>
           <% end %>
         <% end %>
