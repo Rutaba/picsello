@@ -168,6 +168,9 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
     })
   end
 
+  defp do_save_processed(%{"task" => %{"photoId" => photo_id}}),
+    do: Galleries.update_photo(photo_id, %{})
+
   defp do_save_processed(%{
          "task" => %{
            "processCoverPhoto" => true,
@@ -211,9 +214,9 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
 
   def notify_processed(_), do: :ignored
 
-  defp path(%{use_global: true}, %{}, %{type: "image"}, organization),
-    do: "galleries/#{organization.id}/watermark.png"
+  defp path(%{use_global: %{watermark: true}}, %{}, %{type: "image"}, organization),
+    do: GSGallery.watermark_path(organization.id)
 
-  defp path(%{id: id}, _, %{type: "image"}, _), do: "galleries/#{id}/watermark.png"
+  defp path(%{id: id}, _, %{type: "image"}, _), do: Watermark.watermark_path(id)
   defp path(_gallery, _, _, _), do: nil
 end

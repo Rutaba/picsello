@@ -34,13 +34,14 @@ defmodule Picsello.BookingEvents do
   def get_booking_events_public(organization_id) do
     from(event in BookingEvent,
       join: package in assoc(event, :package_template),
-      where: package.organization_id == ^organization_id and is_nil(event.disabled_at),
+      where: package.organization_id == ^organization_id,
+      where: event.status == :active,
       select: %{
         package_name: package.name,
         id: event.id,
         name: event.name,
         thumbnail_url: event.thumbnail_url,
-        disabled_at: event.disabled_at,
+        status: event.status,
         location: event.location,
         duration_minutes: event.duration_minutes,
         dates: event.dates,
@@ -52,12 +53,16 @@ defmodule Picsello.BookingEvents do
     |> Repo.all()
   end
 
-  def get_booking_events(organization_id) do
+  def get_booking_events(organization_id,
+        filters: %{sort_by: sort_by, sort_direction: sort_direction} = opts
+      ) do
     from(event in BookingEvent,
       left_join: job in assoc(event, :jobs),
       left_join: status in assoc(job, :job_status),
       join: package in assoc(event, :package_template),
       where: package.organization_id == ^organization_id,
+      where: ^filters_search(opts),
+      where: ^filters_status(opts),
       select: %{
         booking_count: fragment("sum(case when ?.is_lead = false then 1 else 0 end)", status),
         can_edit?: fragment("count(?.*) = 0", job),
@@ -65,15 +70,89 @@ defmodule Picsello.BookingEvents do
         id: event.id,
         name: event.name,
         thumbnail_url: event.thumbnail_url,
-        disabled_at: event.disabled_at,
+        status: event.status,
         duration_minutes: event.duration_minutes,
         dates: event.dates
       },
       group_by: [event.id, package.name],
-      order_by: [desc: event.id]
+      order_by: ^filter_order_by(sort_by, sort_direction)
     )
     |> Repo.all()
   end
+
+  defp filters_search(opts) do
+    Enum.reduce(opts, dynamic(true), fn
+      {:search_phrase, nil}, dynamic ->
+        dynamic
+
+      {:search_phrase, search_phrase}, dynamic ->
+        search_phrase = "%#{search_phrase}%"
+
+        dynamic(
+          [client, jobs, job_status, package],
+          ^dynamic and
+            (ilike(client.name, ^search_phrase) or
+               ilike(package.name, ^search_phrase))
+        )
+
+      {_, _}, dynamic ->
+        # Not a where parameter
+        dynamic
+    end)
+  end
+
+  defp filters_status(opts) do
+    Enum.reduce(opts, dynamic(true), fn
+      {:status, value}, dynamic ->
+        case value do
+          "disabled_events" ->
+            filter_disabled_events(dynamic)
+
+          "archived_events" ->
+            filter_archived_events(dynamic)
+
+          _ ->
+            remove_archive_events(dynamic)
+        end
+
+      _any, dynamic ->
+        # Not a where parameter
+        dynamic
+    end)
+  end
+
+  defp remove_archive_events(dynamic) do
+    dynamic(
+      [client, jobs, job_status],
+      ^dynamic and client.status != :archive
+    )
+  end
+
+  defp filter_disabled_events(dynamic) do
+    dynamic(
+      [client, jobs, job_status],
+      ^dynamic and client.status == :disabled
+    )
+  end
+
+  defp filter_archived_events(dynamic) do
+    dynamic(
+      [client, jobs, job_status],
+      ^dynamic and client.status == :archive
+    )
+  end
+
+  # returned dynamic with join binding
+  defp filter_order_by(:id, order),
+    do: [{order, dynamic([client, event], count(field(event, :id)))}]
+
+  defp filter_order_by(column, order) do
+    column = update_column(column)
+    [{order, dynamic([client], field(client, ^column))}]
+  end
+
+  def update_column(:date), do: :dates
+  def update_column(column), do: column
 
   def get_booking_event!(organization_id, event_id) do
     from(event in BookingEvent,
@@ -94,7 +173,8 @@ defmodule Picsello.BookingEvents do
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
         for(
-          %{start_time: %Time{} = start_time, end_time: %Time{} = end_time} <- time_blocks,
+          %{start_time: %Time{} = start_time, end_time: %Time{} = end_time} <-
+            time_blocks,
           available_slots = (Time.diff(end_time, start_time) / duration) |> trunc(),
           slot <- 0..(available_slots - 1),
           available_slots > 0
@@ -102,15 +182,119 @@ defmodule Picsello.BookingEvents do
           start_time |> Time.add(duration * slot)
         end
         |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
+        |> filter_is_break_slots(booking_event, date)
 
       _ ->
         []
     end
   end
 
-  defp filter_overlapping_shoots(slot_times, _booking_event, _date, true), do: slot_times
+  def assign_booked_block_dates(dates, %BookingEvent{} = booking_event) do
+    dates
+    |> Enum.map(fn %{date: date, time_blocks: time_blocks} = block ->
+      blocks =
+        available_times(booking_event, date)
+        |> fetch_blocks(time_blocks)
 
-  defp filter_overlapping_shoots(slot_times, %BookingEvent{} = booking_event, date, false) do
+      block |> Map.put(:time_blocks, blocks)
+    end)
+  end
+
+  defp fetch_blocks(all_slots, time_blocks) do
+    Enum.map(time_blocks, fn block ->
+      is_booked_block = is_blocked_booked(block, all_slots)
+
+      block =
+        case block.is_break and is_booked_block do
+          true -> Map.put(block, :is_valid, false)
+          _ -> Map.put(block, :is_valid, true)
+        end
+
+      block |> Map.put(:is_booked, is_booked_block)
+    end)
+  end
+
+  def is_blocked_booked(
+        %{start_time: start_time, end_time: end_time},
+        _slots
+      )
+      when start_time == nil or end_time == nil,
+      do: false
+
+  def is_blocked_booked(
+        %{start_time: %Time{} = start_time, end_time: %Time{} = end_time},
+        slots
+      ) do
+    Enum.filter(slots, fn {slot_time, is_available, _is_break, _is_hide} ->
+      !is_available && Time.compare(slot_time, start_time) in [:gt, :eq] &&
+        Time.compare(slot_time, end_time) in [:lt, :eq]
+    end)
+    |> Enum.count() > 0
+  end
+
+  defp filter_is_break_slots(slot_times, booking_event, date) do
+    slot_times
+    |> Enum.map(fn {slot_time, is_available, _is_break, _is_hide} ->
+      blocker_slots = filter_is_break_time_slots(booking_event, slot_time, date)
+      hidden_slots = filter_is_hidden_time_slots(booking_event, slot_time, date)
+      is_break = Enum.any?(blocker_slots)
+      is_hidden = Enum.any?(hidden_slots)
+      {slot_time, is_available, is_break, is_hidden}
+    end)
+  end
+
+  defp filter_is_break_time_slots(booking_event, slot_time, date) do
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
+      %{time_blocks: time_blocks} ->
+        for(
+          %{
+            start_time: %Time{} = start_time,
+            end_time: %Time{} = end_time,
+            is_break: is_break
+          } <- time_blocks
+        ) do
+          if is_break do
+            Time.compare(slot_time, start_time) in [:gt, :eq] &&
+              Time.compare(slot_time, end_time) in [:lt, :eq]
+          end
+        end
+
+      _ ->
+        false
+    end
+  end
+
+  defp filter_is_hidden_time_slots(booking_event, slot_time, date) do
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
+      %{time_blocks: time_blocks} ->
+        for(
+          %{
+            start_time: %Time{} = start_time,
+            end_time: %Time{} = end_time,
+            is_hidden: is_hidden
+          } <- time_blocks
+        ) do
+          if is_hidden do
+            Time.compare(slot_time, start_time) in [:gt, :eq] &&
+              Time.compare(slot_time, end_time) in [:lt, :eq]
+          end
+        end
+
+      _ ->
+        false
+    end
+  end
+
+  defp filter_overlapping_shoots(slot_times, _booking_event, _date, true) do
+    slot_times |> Enum.map(fn slot_time -> {slot_time, true, true, true} end)
+  end
+
+  defp filter_overlapping_shoots(
+         slot_times,
+         %BookingEvent{} = booking_event,
+         date,
+         false
+       ) do
     %{package_template: %{organization: %{user: user} = organization}} =
       booking_event
       |> Repo.preload(package_template: [organization: :user])
@@ -131,7 +315,7 @@ defmodule Picsello.BookingEvents do
       |> Repo.all()
 
     slot_times
-    |> Enum.filter(fn slot_time ->
+    |> Enum.map(fn slot_time ->
       slot_start = DateTime.new!(date, slot_time, user.time_zone)
 
       slot_end =
@@ -139,16 +323,29 @@ defmodule Picsello.BookingEvents do
         |> DateTime.add(booking_event.duration_minutes * 60)
         |> DateTime.add((booking_event.buffer_minutes || 0) * 60 - 1)
 
-      !Enum.any?(shoots, fn shoot ->
-        start_time = shoot.starts_at |> DateTime.shift_zone!(user.time_zone)
-        end_time = shoot.starts_at |> DateTime.add(shoot.duration_minutes * 60)
+      is_available =
+        !Enum.any?(shoots, fn shoot ->
+          start_time = shoot.starts_at |> DateTime.shift_zone!(user.time_zone)
+          end_time = shoot.starts_at |> DateTime.add(shoot.duration_minutes * 60)
+          is_slot_booked(booking_event.buffer_minutes, slot_start, slot_end, start_time, end_time)
+        end)
 
-        (DateTime.compare(slot_start, start_time) in [:gt, :eq] &&
-           DateTime.compare(slot_start, end_time) in [:lt, :eq]) ||
-          (DateTime.compare(slot_end, start_time) in [:gt, :eq] &&
-             DateTime.compare(slot_end, end_time) in [:lt, :eq])
-      end)
+      {slot_time, is_available, false, false}
     end)
+  end
+
+  defp is_slot_booked(nil, slot_start, slot_end, start_time, end_time) do
+    (DateTime.compare(slot_start, start_time) in [:gt, :eq] &&
+       DateTime.compare(slot_start, end_time) == :lt) ||
+      (DateTime.compare(slot_end, start_time) in [:gt, :eq] &&
+         DateTime.compare(slot_end, end_time) == :lt)
+  end
+
+  defp is_slot_booked(_buffer, slot_start, slot_end, start_time, end_time) do
+    (DateTime.compare(slot_start, start_time) in [:gt, :eq] &&
+       DateTime.compare(slot_start, end_time) in [:lt, :eq]) ||
+      (DateTime.compare(slot_end, start_time) in [:gt, :eq] &&
+         DateTime.compare(slot_end, end_time) in [:lt, :eq])
   end
 
   def save_booking(booking_event, %Booking{
@@ -265,6 +462,7 @@ defmodule Picsello.BookingEvents do
       String.contains?(due_interval, "1 Month Before") -> Timex.shift(shoot_date, months: -1)
       String.contains?(due_interval, "Week Before") -> Timex.shift(shoot_date, days: -7)
       String.contains?(due_interval, "Day Before") -> Timex.shift(shoot_date, days: -1)
+      String.contains?(due_interval, "To Book") -> DateTime.utc_now() |> DateTime.truncate(:second)
       true -> shoot_date
     end
   end
@@ -272,6 +470,12 @@ defmodule Picsello.BookingEvents do
   def disable_booking_event(event_id, organization_id) do
     get_booking_event!(organization_id, event_id)
     |> BookingEvent.disable_changeset()
+    |> Repo.update()
+  end
+
+  def archive_booking_event(event_id, organization_id) do
+    get_booking_event!(organization_id, event_id)
+    |> BookingEvent.archive_changeset()
     |> Repo.update()
   end
 
@@ -289,7 +493,7 @@ defmodule Picsello.BookingEvents do
          } <-
            job |> Repo.preload([:payment_schedules, :job_status, client: :organization]),
          %Picsello.JobStatus{is_lead: true} <- job_status,
-         {:ok, _} <- Picsello.Jobs.archive_lead(job) do
+         {:ok, _} <- Picsello.Jobs.archive_job(job) do
       for %{stripe_session_id: "" <> session_id} <- payment_schedules,
           do:
             Picsello.Payments.expire_session(session_id,

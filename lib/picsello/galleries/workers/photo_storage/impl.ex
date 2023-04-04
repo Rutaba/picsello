@@ -43,6 +43,8 @@ defmodule Picsello.Galleries.Workers.PhotoStorage.Impl do
   def get(path, bucket),
     do: Objects.storage_objects_get(connection(), bucket, path)
 
+  def get_binary(path), do: Tesla.get(path_to_url(path))
+
   @impl PhotoStorage
   def initiate_resumable(name, content_type) do
     Objects.storage_objects_insert_resumable(

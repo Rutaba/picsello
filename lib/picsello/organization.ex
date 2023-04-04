@@ -48,6 +48,7 @@ defmodule Picsello.Organization do
     has_many(:organization_cards, OrganizationCard)
     has_many(:gs_gallery_products, GalleryProduct)
     has_many(:organization_job_types, OrganizationJobType, on_replace: :delete)
+    has_one(:global_setting, Picsello.GlobalSettings.Gallery)
     has_one(:user, User)
 
     timestamps()

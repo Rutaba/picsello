@@ -114,7 +114,7 @@ defmodule Picsello.CreateClientTest do
     |> fill_in(css(".ql-editor"), with: "Test message")
     |> wait_for_enabled_submit_button()
     |> click(button("Send"))
-    |> assert_text("Thank you! Your message has been sent. We’ll be in touch with you soon.")
+    |> assert_text("Yay! Your email has been successfully sent")
     |> click(button("Close"))
     |> visit("/clients/#{client.id}/job-history")
     |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
@@ -133,18 +133,15 @@ defmodule Picsello.CreateClientTest do
       |> click(css(".action"))
       |> click(css(".trash"))
     end)
-    |> assert_text("Are you sure you want to complete this job?")
-    |> assert_text(
-      "After you complete the job this becomes read-only. This action cannot be undone."
-    )
-    |> click(button("Close"))
+    |> assert_text("Are you sure you want to archive this lead?")
+    |> click(button("No! Get me out of here"))
     |> visit("/clients/#{client.id}/job-history")
     |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
       row
       |> click(css(".action"))
       |> click(css(".trash"))
     end)
-    |> click(css("button", text: "Yes, complete"))
+    |> click(css("button", text: "Yes, archive the lead"))
   end
 
   feature "order-details anchor click, renders the order-details for client", %{session: session} do
@@ -158,7 +155,7 @@ defmodule Picsello.CreateClientTest do
     session
     |> open_add_client_popup()
     |> fill_client_form()
-    |> click(css(".checkbox"))
+    |> click(css("#pre-picsello-check"))
     |> within_modal(fn modal ->
       modal
       |> scroll_to_bottom()
@@ -197,7 +194,6 @@ defmodule Picsello.CreateClientTest do
     |> assert_has(css("#client_notes"))
     |> assert_has(css("#clear-notes"))
     |> assert_text("Pre-Picsello Client")
-    |> assert_has(css(".checkbox"))
     |> assert_text("This is an old client and I want to add some historic information")
     |> assert_text("(Adds a few more steps - if you don't know what this is, leave unchecked)")
     |> assert_text("(Adds a few more steps - if you don't know what this is, leave unchecked)")
@@ -229,7 +225,7 @@ defmodule Picsello.CreateClientTest do
     |> assert_text("The amount you’ve already collected")
     |> assert_has(css("#form-package_payment_collected_price"))
     |> assert_text("Remaining balance to collect with Picsello")
-    |> assert_has(css(".checkbox"))
+    |> assert_has(css(".checkbox", count: 2))
     |> assert_has(button("Go back"))
     |> assert_has(button("Next"))
   end

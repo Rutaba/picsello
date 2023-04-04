@@ -1,4 +1,4 @@
-defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
+defmodule PicselloWeb.Shared.ConfirmationComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
@@ -40,7 +40,7 @@ defmodule PicselloWeb.GalleryLive.Shared.ConfirmationComponent do
       </h1>
 
       <%= if @subtitle do %>
-        <p class="pt-4"><%= @subtitle %></p>
+        <p class="pt-4"><%= raw(@subtitle) %></p>
       <% end %>
 
       <.section {assigns} />

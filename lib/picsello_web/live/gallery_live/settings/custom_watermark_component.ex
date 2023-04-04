@@ -4,6 +4,10 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
 
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
+  alias Picsello.Galleries.Watermark
+  alias Ecto.Multi
+
+  import PicselloWeb.GalleryLive.Shared, only: [delete_watermark: 1]
 
   @upload_options [
     accept: ~w(.png image/png),
@@ -68,9 +72,16 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
   end
 
   @impl true
-  def handle_event("save", _, %{assigns: %{gallery: gallery, changeset: changeset}} = socket) do
-    gallery |> Ecto.Changeset.change(%{use_global: false}) |> Picsello.Repo.update!()
-    {:ok, _gallery} = Galleries.save_gallery_watermark(gallery, changeset)
+  def handle_event(
+        "save",
+        _,
+        %{assigns: %{gallery: gallery, changeset: changeset}} = socket
+      ) do
+    Multi.new()
+    |> Multi.run(:save_watermark, fn _, _ ->
+      Galleries.save_gallery_watermark(gallery, changeset)
+    end)
+    |> Galleries.save_use_global(gallery, %{watermark: false})
 
     send(self(), :close_watermark_popup)
     send(self(), :preload_watermark)
@@ -81,7 +92,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
   @impl true
   def handle_event("delete", _, socket) do
     socket
-    |> delete_watermark()
+    |> clear_watermarks()
     |> noreply()
   end
 
@@ -92,7 +103,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
   end
 
   def presign_image(image, %{assigns: %{gallery: gallery}} = socket) do
-    key = "galleries/#{gallery.id}/watermark.png"
+    key = Watermark.watermark_path(gallery.id)
 
     sign_opts = [
       expires_in: 600,
@@ -159,8 +170,8 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
     |> assign(:ready_to_save, changeset.valid?)
   end
 
-  defp delete_watermark(%{assigns: %{gallery: gallery, watermark: watermark}} = socket) do
-    Galleries.delete_gallery_watermark(watermark)
+  defp clear_watermarks(%{assigns: %{gallery: gallery}} = socket) do
+    delete_watermark(gallery)
     send(self(), :clear_watermarks)
     send(self(), :preload_watermark)
 

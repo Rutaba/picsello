@@ -1,5 +1,5 @@
 <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
-<main role="main" class={"flex flex-col min-h-screen #{dynamic_background_class(assigns)}"}>
+<main role="main" class={"flex flex-col min-h-screen #{dynamic_background_class(assigns)}"} phx-hook="showAdminBanner" id="show-admin-banner">
   <.main_header socket={@socket} current_user={@current_user} live_action={@live_action} />
 
   <%= flash(@flash) %>
@@ -14,6 +14,7 @@
   </div>
 
   <.main_footer socket={@socket} current_user={@current_user} />
+  <.admin_banner socket={@socket} />
 </main>
 
 <%= if System.get_env("MIX_ENV") != "test" do %>

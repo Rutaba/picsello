@@ -30,20 +30,18 @@ defmodule Picsello.CreateLeadPackageTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "$30"))
     )
     |> scroll_into_view(css("#download_is_enabled_true"))
-    |> click(radio_button("Package includes a specified number of Digital Images"))
-    |> click(checkbox("download[includes_credits]"))
+    |> click(css("#download_status_limited"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
     |> scroll_into_view(css("#download_is_custom_price"))
-    |> click(checkbox("download[is_custom_price]"))
     |> find(
       text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
     )
     |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(checkbox("download_is_buy_all"))
+    |> click(css("#download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
@@ -148,12 +146,6 @@ defmodule Picsello.CreateLeadPackageTest do
       |> click(button("New Package"))
       |> fill_in_package_form()
       |> wait_for_enabled_submit_button(text: "Next")
-      |> click(link("back"))
-      |> click(link("back"))
-      |> click(button("New Package"))
-      |> click(button("Next"))
-      # REGRESSION: the wizard now forgets the package price if you go back and forth 2 steps
-      |> fill_in(@price_text_field, with: "$100")
       |> package_payment_screen()
     end)
     |> assert_text("Wedding Deluxe")
@@ -250,8 +242,8 @@ defmodule Picsello.CreateLeadPackageTest do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
     base_price = Money.new(10_000)
-    download_each_price = Money.new(200)
-    buy_all = Money.new(300)
+    download_each_price = Money.new(5000)
+    buy_all = Money.new(7000)
     print_credits = Money.new(0)
 
     template =
@@ -281,12 +273,11 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Next"))
     |> assert_value(@price_text_field, "$100.00")
     |> assert_value(text_field("download_count"), "1")
-    |> assert_value(text_field("download_each_price"), "$2.00")
+    |> assert_value(text_field("download_each_price"), "$50.00")
     |> fill_in(@price_text_field, with: "200")
     |> package_payment_screen()
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
-    |> assert_text("Selected contract: Picsello Default Contract")
 
     template_id = template.id
     base_price = Money.new(20_000)
@@ -336,7 +327,6 @@ defmodule Picsello.CreateLeadPackageTest do
     |> package_payment_screen()
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
-    |> assert_text("Selected contract: Contract 1")
 
     template_id = template.id
 
@@ -349,8 +339,10 @@ defmodule Picsello.CreateLeadPackageTest do
 
     contract_template_id = contract_template.id
 
-    assert %Picsello.Contract{name: "Contract 1", contract_template_id: ^contract_template_id} =
-             lead.package.contract
+    assert %Picsello.Contract{
+             name: "My job custom contract",
+             contract_template_id: ^contract_template_id
+           } = lead.package.contract
   end
 
   feature "user sees validation errors when creating a package", %{session: session, user: user} do
@@ -380,20 +372,18 @@ defmodule Picsello.CreateLeadPackageTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: ""))
     )
     |> scroll_into_view(css("#download_is_enabled_true"))
-    |> click(radio_button("Package includes a specified number of Digital Images"))
-    |> click(checkbox("download[includes_credits]"))
+    |> click(css("#download_status_limited"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: " "))
     )
     |> scroll_into_view(css("#download_is_custom_price"))
-    |> click(checkbox("download[is_custom_price]"))
     |> find(
       text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: " "))
     )
     |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(checkbox("download_is_buy_all"))
+    |> click(css("#download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: " "))

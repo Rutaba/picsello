@@ -61,7 +61,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         <label class="block mt-4 input-label" for="editor">Message</label>
         <.quill_input f={f} html_field={:body_html} text_field={:body_text} enable_size={@enable_size} enable_image={@enable_image} current_user={@current_user} />
         <.footer>
-          <button class="btn-primary px-11" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
+          <button class="btn-primary px-11" title="send email" type="submit" disabled={!@changeset.valid?} phx-disable-with="Sending...">
             <%= @send_button %>
           </button>
 

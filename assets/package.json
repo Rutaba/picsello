@@ -17,6 +17,8 @@
     "@fullcalendar/list": "^5.10.1",
     "@fullcalendar/timegrid": "^5.10.1",
     "@popperjs/core": "~2.10.1",
+    "@sentry/browser": "^7.40.0",
+    "@sentry/tracing": "^7.40.0",
     "clipboard": "~2.0.8",
     "imask": "~6.1.0",
     "intro.js": "~6.0.0",

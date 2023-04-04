@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ChooseProduct do
   @moduledoc "no doc"
   use PicselloWeb, :live_component
-  alias Picsello.{Cart, Cart.Digital, Galleries, GalleryProducts, Cart.Digital}
+  alias Picsello.{Cart, Cart.Digital, Galleries, GalleryProducts, Cart.Digital, Photos}
   alias PicselloWeb.GalleryLive.Photos.PhotoView
 
   import PicselloWeb.GalleryLive.Shared,
@@ -13,6 +13,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       assign_checkout_routes: 1,
       disabled?: 1
     ]
+  import PicselloWeb.GalleryLive.Photos.Photo.Shared, only: [js_like_click: 2]
 
   @defaults %{
     cart_count: 0,
@@ -76,6 +77,13 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     socket
     |> close_modal()
     |> noreply()
+  end
+
+  @impl true
+  def handle_event("like", %{"id" => id}, socket) do
+    {:ok, _} = Photos.toggle_liked(id)
+
+    socket |> noreply()
   end
 
   def handle_event(

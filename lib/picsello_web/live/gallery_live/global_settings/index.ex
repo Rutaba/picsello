@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   use PicselloWeb, :live_view
 
   alias Picsello.{Repo, Galleries}
+  alias Ecto.Multi
 
   alias Galleries.{PhotoProcessing.ProcessingManager, Workers.PhotoStorage}
   alias PicselloWeb.GalleryLive.GlobalSettings.{ProductComponent, PrintProductComponent}
@@ -24,12 +25,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   @impl true
   def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
-    global_settings_gallery =
-      Repo.get_by(GSGallery, organization_id: current_user.organization.id)
-
-    galleries =
-      Galleries.list_all_galleries_by_organization_query(current_user.organization.id)
-      |> Repo.all()
+    %{organization_id: organization_id} = current_user
+    global_settings_gallery = Repo.get_by(GSGallery, organization_id: organization_id)
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "preview_watermark:#{current_user.id}")
@@ -38,20 +35,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
     socket
     |> is_mobile(params)
-    |> assign(galleries: galleries)
+    |> assign(galleries: [])
     |> assign(global_settings_gallery: global_settings_gallery)
-    |> assign(print_price_section?: false)
-    |> assign(product_section?: false)
-    |> assign(digital_pricing?: false)
-    |> assign(watermark_option: false)
-    |> then(fn socket ->
-      %{assigns: %{is_mobile: is_mobile}} = socket
-      assign(socket, expiration_date?: !is_mobile)
-    end)
-    |> assign_title()
     |> assign_controls()
     |> assign_options()
-    |> assign_title()
     |> assign(total_days: 0)
     |> assign(:upload_bucket, @bucket)
     |> assign(:case, :image)
@@ -62,6 +49,25 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> allow_upload(:image, @upload_options)
     |> ok()
   end
+
+  @impl true
+  def handle_params(%{"section" => "products"}, _uri, socket),
+    do: new_section(socket, product_section?: true)
+
+  def handle_params(%{"section" => "print_product", "product_id" => product_id}, _uri, socket),
+    do:
+      socket
+      |> assign(:product, Picsello.GlobalSettings.gallery_product(product_id))
+      |> new_section(product_section?: true, print_price_section?: true)
+
+  def handle_params(%{"section" => "watermark"}, _uri, socket),
+    do: new_section(socket, watermark_option: true)
+
+  def handle_params(%{"section" => "digital_pricing"}, _uri, socket),
+    do: new_section(socket, digital_pricing?: true)
+
+  def handle_params(_params, _uri, %{assigns: %{is_mobile: is_mobile}} = socket),
+    do: new_section(socket, expiration_date?: !is_mobile)
 
   @impl true
   def handle_event(
@@ -163,43 +169,37 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         %{
           assigns: %{
             changeset: %{changes: changes},
-            galleries: galleries,
-            current_user: %{organization_id: organization_id},
+            current_user: %{organization_id: organization_id} = current_user,
             case: watermark_case,
-            global_settings_gallery: global_settings_gallery,
             uploads: uploads
           }
         } = socket
       ) do
-    global_settings_gallery
-    |> change(Map.put(changes, :organization_id, organization_id))
-    |> Repo.insert_or_update()
+    changes = Map.put(changes, :organization_id, organization_id)
+
+    socket
+    |> settings_multi(changes)
+    |> Multi.run(:save_galleries_watermark, fn _, %{global_settings: global_settings} ->
+      params = build_params(global_settings)
+
+      current_user
+      |> galleries_by_setting_type(:watermark)
+      |> Galleries.save_galleries_watermark(params)
+    end)
+    |> Repo.transaction()
     |> case do
-      {:ok, global_settings} ->
-        galleries
-        |> Enum.reject(&(!&1.use_global))
-        |> Enum.each(fn gallery ->
-          {:ok, _gallery} = Galleries.save_gallery_watermark(gallery, attrs(global_settings))
-        end)
-
+      {:ok, %{global_settings: global_settings}} ->
         if watermark_case == :image do
-          uploads =
-            Map.update(uploads, :image, [], fn image ->
-              Map.put(image, :entries, [])
-            end)
-
-          socket
-          |> assign(uploads: uploads)
+          uploads = Map.update(uploads, :image, [], &Map.put(&1, :entries, []))
+          assign(socket, uploads: uploads)
         else
-          socket
-          |> assign(:show_image_preview, false)
+          assign(socket, :show_image_preview, false)
         end
         |> assign(global_settings_gallery: global_settings)
         |> put_flash(:success, "Watermark Updated!")
 
       {:error, _} ->
-        socket
-        |> put_flash(:error, "Failed to Update Watermark")
+        put_flash(socket, :error, "Failed to Update Watermark")
     end
     |> noreply()
   end
@@ -219,15 +219,13 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> noreply()
   end
 
-  def handle_event("select_expiration", _, socket),
-    do: new_section(socket, expiration_date?: true)
-
-  def handle_event("select_digital_pricing", _, socket),
-    do: new_section(socket, digital_pricing?: true)
-
   def handle_event("back_to_menu", _, socket), do: new_section(socket)
-  def handle_event("select_watermark", _, socket), do: new_section(socket, watermark_option: true)
-  def handle_event("select_product", _, socket), do: new_section(socket, product_section?: true)
+
+  def handle_event("select_component", %{"section" => ""}, socket),
+    do: patch(socket)
+
+  def handle_event("select_component", %{"section" => section}, socket),
+    do: patch(socket, section: section)
 
   @impl true
   def handle_event("image_case", _params, socket) do
@@ -285,162 +283,89 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   @impl true
-  def handle_event(
-        "back_to_products",
-        _,
-        socket
-      ) do
-    send(self(), {:back_to_products})
-
-    socket |> noreply()
-  end
+  def handle_event("back_to_products", _, socket), do: new_section(socket, product_section?: true)
 
   def handle_event(
         "validate_each_price",
         %{"digital_pricing" => %{"each_price" => each_price}},
-        %{
-          assigns: %{
-            global_settings_gallery: global_settings_gallery,
-            current_user: current_user,
-            galleries: galleries
-          }
-        } = socket
+        %{assigns: %{global_settings_gallery: settings}} = socket
       ) do
-    buy_all_price =
-      if is_nil(global_settings_gallery) || is_nil(global_settings_gallery.buy_all_price) do
-        %Money{amount: 75_000, currency: :USD}
-      else
-        global_settings_gallery.buy_all_price
-      end
+    {:ok, download_each_price} = Money.parse(each_price, :USD)
 
-    case Money.parse(each_price, :USD) do
-      {:ok, download_each_price} ->
-        case validate_price(download_each_price, buy_all_price) do
-          true ->
-            socket =
-              change(global_settings_gallery, %{
-                download_each_price: download_each_price,
-                organization_id: current_user.organization.id
-              })
-              |> Repo.insert_or_update()
-              |> assign_update_settings(socket)
-
-            update_galleries_each_price(galleries, download_each_price)
-
-            socket
-            |> put_flash(:success, "Setting Updated")
-            |> noreply()
-
-          _ ->
-            socket
-            |> put_flash(:error, "Must be less than buy all price")
-            |> noreply()
-        end
-
-      :error ->
-        socket
-        |> noreply()
-    end
+    update_galleries_prices(
+      socket,
+      download_each_price,
+      buy_all_price(settings),
+      [download_each_price: download_each_price],
+      "Must be less than buy all price"
+    )
   end
 
   def handle_event(
         "validate_buy_all_price",
         %{"digital_pricing" => %{"buy_all" => buy_all}},
-        %{
-          assigns: %{
-            global_settings_gallery: global_settings_gallery,
-            current_user: current_user,
-            galleries: galleries
-          }
-        } = socket
+        %{assigns: %{global_settings_gallery: settings}} = socket
       ) do
-    download_each_price =
-      if is_nil(global_settings_gallery) ||
-           is_nil(global_settings_gallery.download_each_price) do
-        %Money{amount: 5_000, currency: :USD}
-      else
-        global_settings_gallery.download_each_price
-      end
+    {:ok, buy_all} = Money.parse(buy_all, :USD)
 
-    case Money.parse(buy_all, :USD) do
-      {:ok, buy_all_price} ->
-        case validate_price(download_each_price, buy_all_price) do
-          true ->
-            socket =
-              change(global_settings_gallery, %{
-                buy_all_price: buy_all_price,
-                organization_id: current_user.organization.id
-              })
-              |> Repo.insert_or_update()
-              |> assign_update_settings(socket)
+    update_galleries_prices(
+      socket,
+      download_price(settings),
+      buy_all,
+      [buy_all: buy_all],
+      "Must be more than single image price"
+    )
+  end
 
-            update_galleries_buy_all(galleries, buy_all_price)
+  defp download_price(%{download_each_price: down_price}), do: down_price
+  defp download_price(_), do: %Money{amount: 5_000, currency: :USD}
 
-            socket
-            |> put_flash(:success, "Setting Updated")
-            |> noreply()
+  defp buy_all_price(%{buy_all_price: buy_all_price}), do: buy_all_price
+  defp buy_all_price(_), do: %Money{amount: 75_000, currency: :USD}
 
-          _ ->
-            socket
-            |> put_flash(:error, "Must be more than single image price")
-            |> noreply()
-        end
+  defp update_galleries_prices(
+         socket,
+         download_each_price,
+         buy_all_price,
+         opts,
+         error_msg
+       ) do
+    %{assigns: %{current_user: current_user}} = socket
 
-      :error ->
+    case validate_price(download_each_price, buy_all_price) do
+      true ->
         socket
+        |> settings_multi(%{organization_id: current_user.organization.id})
+        |> Multi.update_all(
+          :update_package,
+          current_user
+          |> galleries_by_setting_type(:digital)
+          |> Enum.map(& &1.id)
+          |> Picsello.Packages.update_all_query(opts),
+          []
+        )
+        |> Repo.transaction()
+        |> assign_updated_settings(socket)
+        |> put_flash(:success, "Setting Updated")
         |> noreply()
+
+      _ ->
+        put_flash(socket, :error, error_msg) |> noreply()
     end
   end
 
-  defp assign_controls(%{assigns: %{global_settings_gallery: global_settings_gallery}} = socket)
-       when not is_nil(global_settings_gallery) do
-    socket |> assign(is_never_expires: global_settings_gallery.expiration_days == 0)
-  end
-
-  defp assign_controls(socket) do
-    socket |> assign(is_never_expires: true)
-  end
-
-  defp assign_update_settings(result, socket) do
-    case result do
-      {:ok, global_settings} ->
-        socket
-        |> assign(global_settings_gallery: global_settings)
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Failed to Set Price")
-    end
-  end
-
-  defp update_galleries_buy_all(galleries, updated_price) do
-    galleries
-    |> Enum.reject(&(&1.use_global == false))
-    |> Enum.map(fn gallery ->
-      gal =
-        gallery.job
-        |> Repo.preload(:package)
-
-      Ecto.Changeset.change(gal.package, %{buy_all: updated_price})
-      |> Repo.update()
-    end)
-  end
-
-  defp update_galleries_each_price(galleries, updated_price) do
-    galleries
-    |> Enum.reject(&(&1.use_global == false))
-    |> Enum.map(fn gallery ->
-      gal =
-        gallery.job
-        |> Repo.preload(:package)
-
-      Ecto.Changeset.change(gal.package, %{download_each_price: updated_price})
-      |> Repo.update()
-    end)
+  defp galleries_by_setting_type(%{organization_id: org_id}, value) do
+    org_id
+    |> Galleries.list_shared_setting_galleries()
+    |> Enum.filter(&Map.get(&1.use_global, value))
   end
 
   defp assign_options(
-         %{assigns: %{global_settings_gallery: %{expiration_days: expiration_days}}} = socket
+         %{
+           assigns: %{
+             global_settings_gallery: %{expiration_days: expiration_days}
+           }
+         } = socket
        )
        when not is_nil(expiration_days) do
     year = trunc(expiration_days / 365)
@@ -473,18 +398,20 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   defp to_int(""), do: 0
   defp to_int(value), do: String.to_integer(value)
 
+  defp assign_controls(%{assigns: %{global_settings_gallery: gs_g}} = socket)
+       when not is_nil(gs_g),
+       do: socket |> assign(is_never_expires: gs_g.expiration_days == 0)
+
+  defp assign_controls(socket), do: socket |> assign(is_never_expires: true)
+
+  defp assign_updated_settings({:ok, %{global_settings: ggs}}, socket),
+    do: assign(socket, global_settings_gallery: ggs)
+
   defp validate_price(download_each_price, buy_all_price) do
-    download_each_price =
-      download_each_price
-      |> Map.get(:amount)
+    download_each_price = Map.get(download_each_price, :amount)
+    buy_all_price = Map.get(buy_all_price, :amount)
 
-    buy_all_price =
-      buy_all_price
-      |> Map.get(:amount)
-
-    if download_each_price < buy_all_price && download_each_price != 0 && buy_all_price != 0 do
-      true
-    end
+    download_each_price < buy_all_price && download_each_price != 0 && buy_all_price != 0
   end
 
   defp new_section(socket, opts \\ []) do
@@ -513,37 +440,24 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @impl true
   def handle_info(
         {:save_watermark, %{"watermarkedPreviewPath" => watermarked_preview_path}},
-        %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket
+        %{assigns: %{global_settings_gallery: global_settings}} = socket
       ) do
-    global_settings_gallery
-    |> change(global_watermark_path: watermarked_preview_path)
+    global_settings
+    |> changeset(global_watermark_path: watermarked_preview_path)
     |> Repo.insert_or_update()
     |> then(fn {:ok, global_settings} ->
       socket |> assign(global_settings_gallery: global_settings) |> noreply()
     end)
   end
 
+  @never_expire_days 0
   @impl true
   def handle_info(
         {:confirm_event, "never_expire"},
-        %{
-          assigns: %{
-            global_settings_gallery: global_settings_gallery,
-            galleries: galleries,
-            current_user: current_user
-          }
-        } = socket
+        socket
       ) do
-    global_settings_gallery
-    |> change(%{
-      expiration_days: 0,
-      organization_id: current_user.organization.id
-    })
-    |> Repo.insert_or_update()
-
-    update_expired_at(galleries)
-
     socket
+    |> update_expired_at(@never_expire_days)
     |> close_modal()
     |> put_flash(:success, "Settings updated")
     |> assign(day: 0, month: 0, year: 0)
@@ -555,69 +469,40 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         {:confirm_event, "delete_watermarks"},
         %{
           assigns: %{
-            galleries: galleries,
-            global_settings_gallery: global_settings_gallery
+            current_user: current_user
           }
         } = socket
       ) do
-    socket =
-      global_settings_gallery
-      |> change(%{
-        watermark_type: nil,
-        watermark_name: nil,
-        watermark_text: nil,
-        watermark_size: nil
-      })
-      |> Repo.update()
-      |> case do
-        {:ok, global_settings} ->
-          socket
-          |> assign(global_settings_gallery: global_settings)
-          |> assign(:case, :image)
-          |> assign_default_changeset()
-          |> assign(:show_image_preview, false)
-          |> close_modal()
-          |> put_flash(:success, "Settings updated")
-
-        {:error, _} ->
-          socket
-          |> put_flash(:error, "Failed to Delete Watermark")
-      end
-
-    _gallery =
-      galleries
-      |> Enum.reject(&(&1.use_global == false))
-      |> Enum.map(fn x ->
-        gallery = Galleries.load_watermark_in_gallery(x)
-        Galleries.delete_gallery_watermark(gallery.watermark)
-      end)
-
     socket
+    |> settings_multi(%{
+      watermark_type: nil,
+      watermark_name: nil,
+      watermark_text: nil,
+      watermark_size: nil
+    })
+    |> Multi.run(:delete_watermarks, fn _, _ ->
+      current_user
+      |> galleries_by_setting_type(:watermark)
+      |> Enum.map(& &1.id)
+      |> Galleries.delete_multiple_watermarks()
+    end)
+    |> Repo.transaction()
+    |> assign_updated_settings(socket)
+    |> assign(:case, :image)
+    |> assign_default_changeset()
+    |> assign(:show_image_preview, false)
+    |> close_modal()
+    |> put_flash(:success, "Settings updated")
     |> noreply()
   end
 
   @impl true
   def handle_info(
         {:confirm_event, "set_expire", %{total_days: total_days}},
-        %{
-          assigns: %{
-            global_settings_gallery: global_settings_gallery,
-            galleries: galleries,
-            current_user: current_user
-          }
-        } = socket
+        socket
       ) do
-    {:ok, global_settings} =
-      change(global_settings_gallery, %{
-        expiration_days: total_days,
-        organization_id: current_user.organization.id
-      })
-      |> Repo.insert_or_update()
-
-    update_expired_at(galleries, Timex.shift(DateTime.utc_now(), days: total_days))
-
     socket
-    |> assign(global_settings_gallery: global_settings)
+    |> update_expired_at(total_days, Timex.shift(DateTime.utc_now(), days: total_days))
     |> assign(is_never_expires: false)
     |> close_modal()
     |> put_flash(:success, "Setting Updated")
@@ -640,18 +525,35 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> noreply()
   end
 
-  defp update_expired_at(galleries, expired_at \\ nil) do
-    for(%{use_global: true, id: id} <- galleries, do: id)
-    |> Galleries.update_all(expired_at: expired_at)
+  defp update_expired_at(
+         %{assigns: %{current_user: current_user}} = socket,
+         days,
+         expired_at \\ nil
+       ) do
+    socket
+    |> settings_multi(%{
+      expiration_days: days,
+      organization_id: current_user.organization_id
+    })
+    |> Multi.run(:update_expired_at, fn _, _ ->
+      current_user
+      |> galleries_by_setting_type(:expiration)
+      |> Enum.map(& &1.id)
+      |> Galleries.update_all(expired_at: expired_at)
+
+      {:ok, ""}
+    end)
+    |> Repo.transaction()
+    |> assign_updated_settings(socket)
   end
 
   def presign_image(
         image,
         %{
-          assigns: %{current_user: current_user}
+          assigns: %{current_user: %{organization_id: organization_id}}
         } = socket
       ) do
-    key = "galleries/#{current_user.organization_id}/watermark.png"
+    key = GSGallery.watermark_path(organization_id)
 
     sign_opts = [
       expires_in: 600,
@@ -697,7 +599,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> noreply()
   end
 
-  defp attrs(%{watermark_type: watermark_type} = global_settings) do
+  defp build_params(%{watermark_type: watermark_type} = global_settings) do
     case watermark_type do
       "image" ->
         %{
@@ -712,19 +614,19 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp assign_image_watermark_change(
-         %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket,
-         image
+         %{assigns: %{global_settings_gallery: global_settings}} = socket,
+         %{client_name: client_name, client_size: client_size}
        ) do
-    changeset =
-      GSGallery.image_watermark_change(global_settings_gallery, %{
-        watermark_name: image.client_name,
-        watermark_size: image.client_size
-      })
-
     socket
-    |> assign(:changeset, changeset)
+    |> assign(
+      :changeset,
+      GSGallery.image_watermark_change(global_settings, %{
+        watermark_name: client_name,
+        watermark_size: client_size
+      })
+    )
     |> assign(:show_image_preview, true)
-    |> assign(:ready_to_save, changeset.valid?)
+    |> then(&assign(&1, :ready_to_save, &1.assigns.changeset.valid?))
   end
 
   defp assign_default_changeset(
@@ -746,15 +648,15 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp assign_text_watermark_change(
-         %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket,
+         %{assigns: %{global_settings_gallery: global_settings}} = socket,
          %{"gallery" => %{"watermark_text" => watermark_text}}
        ) do
-    global_settings_gallery
-    |> change(%{watermark_text: watermark_text, watermark_type: "text"})
-    |> then(fn changeset ->
+    global_settings
+    |> GSGallery.text_watermark_change(%{watermark_text: watermark_text, watermark_type: "text"})
+    |> then(fn %{valid?: valid?} = changeset ->
       socket
       |> assign(:changeset, changeset)
-      |> assign(:ready_to_save, changeset.valid?)
+      |> assign(:ready_to_save, valid?)
     end)
   end
 
@@ -857,7 +759,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     <.card color="blue-planning-300" icon="three-people" title="Custom Watermark" badge={0} class="cursor-pointer mt-8" >
       <%= if @case == :image and @show_image_preview do  %>
 
-        <img src={"#{@global_settings_gallery.global_watermark_path && PhotoStorage.path_to_url(@global_settings_gallery.global_watermark_path)}"} />
+        <img src={"#{@global_settings_gallery && @global_settings_gallery.global_watermark_path && PhotoStorage.path_to_url(@global_settings_gallery.global_watermark_path)}"} />
         <%= if watermark_type(@global_settings_gallery) == :image do %>
           <.watermark_name_delete name={@global_settings_gallery.watermark_name}>
             <p><%= filesize(@global_settings_gallery.watermark_size) %></p>
@@ -924,7 +826,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
       <% else %>
         <div>
-          <img src={"#{@watermarked_preview_path && PhotoStorage.path_to_url(@watermarked_preview_path)}"} class={classes("", %{"hidden" => !@show_preview})} />
+          <img src={"#{@watermarked_preview_path && PhotoStorage.path_to_url(@watermarked_preview_path)}"} class={classes(%{"hidden" => !@show_preview})} />
           <%= if watermark_type(@global_settings_gallery) == :text do  %>
             <.watermark_name_delete name={@global_settings_gallery.watermark_text}>
               <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
@@ -960,11 +862,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     """
   end
 
-  defp section(assigns) do
-    ~H"""
-      <div></div>
-    """
-  end
+  defp section(assigns), do: ~H[<div></div>]
 
   defp watermark_name_delete(assigns) do
     ~H"""
@@ -983,7 +881,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
     ~H"""
     <div class={"bg-base-250/10 font-bold rounded-lg cursor-pointer grid-item"}>
-      <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" phx-click={@event_name}>
+      <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" phx-value-section={@value} phx-click="select_component">
         <.nav_title title={@item_title} open?={@open? && !@print_price_section?} />
       </div>
       <%= if @print_price_section? do %>
@@ -1031,7 +929,21 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     """
   end
 
-  defp change(global_settings_gallery, attrs) do
-    Changeset.change(global_settings_gallery || %GSGallery{}, attrs)
+  defp changeset(gs \\ nil, attrs), do: Changeset.change(gs || %GSGallery{}, attrs)
+
+  def settings_multi(socket, attrs, multi \\ Multi.new())
+
+  def settings_multi(%{assigns: %{global_settings_gallery: nil}}, attrs, multi) do
+    Multi.insert(multi, :global_settings, changeset(attrs))
+  end
+
+  def settings_multi(%{assigns: %{global_settings_gallery: global_settings}}, attrs, multi) do
+    Multi.update(multi, :global_settings, changeset(global_settings, attrs))
+  end
+
+  defp patch(socket, opts \\ []) do
+    socket
+    |> push_patch(to: Routes.gallery_global_settings_index_path(socket, :edit, opts))
+    |> noreply()
   end
 end

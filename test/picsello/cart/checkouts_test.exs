@@ -33,17 +33,17 @@ defmodule Picsello.Cart.CheckoutsTest do
     MockWHCCClient
     |> Mox.stub(:editors_export, fn _, _, _ ->
       build(:whcc_editor_export,
-         order_sequence_number: sequence_number,
-         order: %{
-           "Orders" => [
-             %{
-               "DropShipFlag" => 1,
-               "FromAddressValue" => 2,
-               "OrderAttributes" => [%{"AttributeUID" => 96}, %{"AttributeUID" => 546}]
-             }
-           ]
-         }
-       )
+        order_sequence_number: sequence_number,
+        order: %{
+          "Orders" => [
+            %{
+              "DropShipFlag" => 1,
+              "FromAddressValue" => 2,
+              "OrderAttributes" => [%{"AttributeUID" => 96}, %{"AttributeUID" => 546}]
+            }
+          ]
+        }
+      )
     end)
     |> Mox.stub(:create_order, fn _, _ -> {:ok, whcc_order} end)
 

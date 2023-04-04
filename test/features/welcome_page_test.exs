@@ -180,7 +180,7 @@ defmodule Picsello.WelcomePageTest do
       session
       |> sign_in(user)
       |> click(button("Leads"))
-      |> assert_has(css("main > div > ul > li", count: 6))
+      |> assert_has(testid("job-row", count: 6))
     end
 
     feature "leads card has empty state", %{session: session, user: user} do
@@ -273,15 +273,15 @@ defmodule Picsello.WelcomePageTest do
       |> click(button("View help center"))
     end
 
-    feature "marketing card is empty", %{session: session, user: user} do
+    feature "gallery card is empty", %{session: session, user: user} do
       session
       |> sign_in(user)
-      |> assert_text("Create a marketing event")
-      |> click(button("Send"))
-      |> assert_text("Edit email")
+      |> assert_text("Galleries")
+      |> click(button("Create a gallery"))
+      |> assert_text("Create a Gallery")
       |> visit("/")
-      |> click(button("View marketing"))
-      |> assert_text("Marketing")
+      |> click(button("View galleries"))
+      |> assert_text("Your Galleries")
     end
 
     feature "actions menu", %{session: session, user: user} do

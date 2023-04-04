@@ -42,9 +42,14 @@
                 <a>Edit lead name</a>
               </li>
               <%= if !@job.archived_at and @job.job_status.is_lead  do  %>
-                <li phx-click="confirm_archive_lead" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+                <li phx-click="confirm-archive-unarchive" phx-value-id={@job.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
                   <.icon name="trash" class="inline-block w-4 h-4 mx-2 fill-current text-red-sales-300" />
-                  <a >Archive lead</a>
+                  <a>Archive lead</a>
+                </li>
+              <% else %>
+                <li phx-click="confirm-archive-unarchive" phx-value-id={@job.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold cursor-pointer">
+                  <.icon name="plus" class="inline-block w-4 h-4 mx-2 fill-current text-blue-planning-300" />
+                  <a>Unarchive lead</a>
                 </li>
               <% end %>
             </ul>
@@ -69,7 +74,7 @@
           </div>
         </div>
       <% end %>
-      
+
       <.error message="You changed a shoot date. You need to review or fix your payment schedule date." button={%{title: "Edit payment schedule", action: "edit-package", class: "py-1 md:my-1 my-2"}} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => @is_schedule_valid})}/>
 
     </div>

@@ -76,4 +76,6 @@ defmodule Picsello.GlobalSettings.Gallery do
 
   def watermarked_path(),
     do: "picsello/temp/watermarked/#{UUID.uuid4()}"
+
+  def watermark_path(id), do: "global_settings/#{id}/watermark.png"
 end

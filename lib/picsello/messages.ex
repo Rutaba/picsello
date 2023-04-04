@@ -7,6 +7,7 @@ defmodule Picsello.Messages do
 
   alias Ecto.Changeset
   alias Picsello.{Job, Client, Repo, ClientMessage, Notifiers.UserNotifier}
+  require Logger
 
   def add_message_to_job(%Changeset{} = changeset, %Job{id: id, client_id: client_id}) do
     changeset
@@ -35,14 +36,16 @@ defmodule Picsello.Messages do
   end
 
   def notify_inbound_message(%ClientMessage{} = message, helpers) do
-    job = message |> Repo.preload(job: :client) |> Map.get(:job)
-    UserNotifier.deliver_new_inbound_message_email(message, helpers)
+    if Map.get(message, :job_id) do
+      job = message |> Repo.preload(job: :client) |> Map.get(:job)
+      UserNotifier.deliver_new_inbound_message_email(message, helpers)
 
-    Phoenix.PubSub.broadcast(
-      Picsello.PubSub,
-      "inbound_messages:#{job.client.organization_id}",
-      {:inbound_messages, message}
-    )
+      Phoenix.PubSub.broadcast(
+        Picsello.PubSub,
+        "inbound_messages:#{job.client.organization_id}",
+        {:inbound_messages, message}
+      )
+    end
   end
 
   def token(%Job{} = job), do: token(job, "JOB_ID")
@@ -58,15 +61,31 @@ defmodule Picsello.Messages do
     [token(record), domain] |> Enum.join("@")
   end
 
-  def find_by_token("" <> token) do    
-    case Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity) do
-      {:ok, id} -> Repo.get(Job, id)
-      _ -> find_by_token(token, "CLIENT_ID")
+  def find_by_token("" <> token) do
+    result = Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity)
+
+    Logger.warn(
+      "[Token] find_by_token result {#{Tuple.to_list(result) |> List.first()}, #{Tuple.to_list(result) |> List.last()}}"
+    )
+
+    case result do
+      {:ok, id} ->
+        job = Repo.get(Job, id)
+        if job, do: job, else: find_by_token(token, "CLIENT_ID")
+
+      _ ->
+        find_by_token(token, "CLIENT_ID")
     end
   end
 
-  def find_by_token("" <> token, key) do    
-    case Phoenix.Token.verify(PicselloWeb.Endpoint, key, token, max_age: :infinity) do
+  def find_by_token("" <> token, key) do
+    result = Phoenix.Token.verify(PicselloWeb.Endpoint, key, token, max_age: :infinity)
+
+    Logger.warn(
+      "[Token] find_by_token result {#{Tuple.to_list(result) |> List.first()}, #{Tuple.to_list(result) |> List.last()}}"
+    )
+
+    case result do
       {:ok, id} -> Repo.get(Client, id)
       _ -> nil
     end

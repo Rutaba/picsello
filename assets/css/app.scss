@@ -80,6 +80,10 @@ html {
   @apply max-w-screen-xl relative bare-modal;
 }
 
+.modal.no-pad {
+  @apply p-0;
+}
+
 .modal-banner {
   @apply -mx-4 sm:-mx-8 px-4 sm:px-8;
 }
@@ -280,6 +284,15 @@ canvas {
 @media (max-width: 640px) {
   *.custom-tooltip:hover span {
     display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:w-64 {
+      width: 16rem;
+  }
+  .md\:w-60 {
+    width: 15rem;
   }
 }
 

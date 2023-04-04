@@ -100,7 +100,9 @@ defmodule PicselloWeb.LiveAuth do
     subscription_expired =
       gallery |> Galleries.gallery_photographer() |> Subscriptions.subscription_expired?()
 
-    if Galleries.expired?(gallery) || subscription_expired do
+    job_expiry = not is_nil(gallery.job.archived_at)
+
+    if Galleries.expired?(gallery) || subscription_expired || job_expiry do
       socket
       |> push_redirect(
         to:
@@ -149,7 +151,10 @@ defmodule PicselloWeb.LiveAuth do
     end
   end
 
-  defp authenticate_album_client(socket, _session), do: assign(socket, authenticated: true)
+  defp authenticate_album_client(%{assigns: _} = socket, _session),
+    do: assign(socket, authenticated: true)
+
+  defp authenticate_album_client(socket, _session), do: socket
 
   defp allow_sandbox(socket) do
     with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox),

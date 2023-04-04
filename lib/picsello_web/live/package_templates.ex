@@ -50,8 +50,13 @@ defmodule PicselloWeb.Live.PackageTemplates do
       ) do
     package = Enum.find(templates, &(&1.id == to_integer(package_id)))
 
-    socket
-    |> open_wizard(%{package: package |> Repo.preload([:contract, :package_payment_schedules])})
+    if is_nil(package) do
+      socket
+      |> push_redirect(to: Routes.package_templates_path(socket, :index))
+    else
+      socket
+      |> open_wizard(%{package: package |> Repo.preload([:contract, :package_payment_schedules])})
+    end
     |> noreply()
   end
 
@@ -119,7 +124,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
                         <a class="flex w-full">
                           <div class="flex items-center justify-start">
                             <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
-                              <.icon name="archieved" class="w-3 h-3 m-1 fill-current text-white" />
+                              <.icon name="archive" class="w-3 h-3 m-1 fill-current text-white" />
                             </div>
                             <div class="justify-start ml-3">
                               <span class="">All <span class="font-normal">(<%= @all_templates_count %>)</span></span>
@@ -134,12 +139,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
                     <% end %>
                   </div>
 
-                  <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == "Archived"})} phx-click="assign_archieved_templates">
+                  <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == "Archived"})} phx-click="assign_archived_templates">
                     <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
                         <a class="flex w-full archived-anchor-click">
                           <div class="flex items-center justify-start">
                             <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
-                              <.icon name="archieved" class="w-3 h-3 m-1 fill-current text-white" />
+                              <.icon name="archive" class="w-3 h-3 m-1 fill-current text-white" />
                             </div>
                             <div class="justify-start ml-3">
                               <span class="">Archived <span class="font-normal">(<%= @archived_templates_count %>)</span></span>
@@ -155,13 +160,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
                   </div>
 
                 <div class="font-bold rounded-lg cursor-pointer grid-item" phx-click="edit-job-types">
-                  <div class="flex items-center lg:h-11 pr-4 lg:pl-2 border border-blue-planning-300 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
+                  <div class="flex items-center lg:h-11 pr-4 lg:pl-2 bg-blue-planning-300 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis text-white hover:bg-blue-planning-300/75 hover:opacity-75" >
                       <a class="flex w-full">
                         <div class="flex items-center justify-start">
-                          <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-blue-planning-300">
-                            <.icon name="pencil" class="w-3 h-3 m-1 fill-current text-white" />
+                          <div class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-white">
+                            <.icon name="pencil" class="w-3 h-3 m-1 fill-current text-blue-planning-300" />
                           </div>
-
                           <div class="justify-start ml-3">
                             <span class="">Edit photography types</span>
                           </div>
@@ -193,7 +197,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
             </div>
             <%= if Enum.any? @templates do %>
               <div class="font-bold md:grid grid-cols-6 mt-2 hidden md:inline-block">
-                <%= for title <- ["Package Details", "Pricing", "Actions"] do %>
+                <%= for title <- ["Package Details", "Pricing"] do %>
                   <div class="col-span-2 pl-2"><%= title %></div>
                 <% end %>
               </div>
@@ -315,7 +319,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event("add-package", %{}, socket),
     do:
       socket
-      |> assign_job_types()
+      # |> assign_job_types()
       |> push_patch(to: Routes.package_templates_path(socket, :new))
       |> noreply()
 
@@ -327,7 +331,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       ),
       do:
         socket
-        |> assign_job_types()
+        # |> assign_job_types()
         |> push_patch(to: Routes.package_templates_path(socket, :edit, package_id))
         |> noreply()
 
@@ -471,7 +475,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
   @impl true
   def handle_event(
-        "assign_archieved_templates",
+        "assign_archived_templates",
         _,
         socket
       ) do

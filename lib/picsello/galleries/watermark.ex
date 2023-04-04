@@ -43,4 +43,6 @@ defmodule Picsello.Galleries.Watermark do
   def build(organization_name, gallery) do
     %Watermark{type: "text", text: organization_name, gallery_id: gallery.id}
   end
+
+  def watermark_path(id), do: "galleries/#{id}/watermark.png"
 end

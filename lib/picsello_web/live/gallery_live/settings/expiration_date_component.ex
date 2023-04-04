@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
   use PicselloWeb, :live_component
 
   alias Picsello.Galleries
+  alias Ecto.Multi
   import PicselloWeb.GalleryLive.Shared, only: [disabled?: 1]
 
   @impl true
@@ -86,9 +87,11 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
         DateTime.new!(date, ~T[12:00:00], "Etc/UTC")
       end
 
-    {:ok, gallery} = Galleries.set_expire(gallery, %{expired_at: datetime})
-
-    gallery |> Ecto.Changeset.change(%{use_global: false}) |> Picsello.Repo.update!()
+    Multi.new()
+    |> Multi.run(:set_expire, fn _, _ ->
+      Galleries.set_expire(gallery, %{expired_at: datetime})
+    end)
+    |> Galleries.save_use_global(gallery, %{expiration: false})
 
     send(self(), :expiration_saved)
 

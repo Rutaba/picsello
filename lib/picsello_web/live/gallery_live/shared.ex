@@ -19,9 +19,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Utils
   }
 
+  alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
-  alias PicselloWeb.GalleryLive.Shared.ConfirmationComponent
   alias Picsello.{Galleries, Client}
   alias Picsello.Cart.Order
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -295,7 +295,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
     case DateTime.compare(DateTime.utc_now() |> DateTime.truncate(:second), expired_at) do
       :lt -> false
-      :gt -> true
+      _ -> true
     end
     |> never_expire(expired_at)
   end
@@ -317,8 +317,13 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def expired_at(organization_id) do
-    gs = GlobalSettings.get(organization_id)
-    gs && gs.expiration_days && Timex.shift(DateTime.utc_now(), days: gs.expiration_days)
+    case GlobalSettings.get(organization_id) do
+      %{expiration_days: exp_days} when not is_nil(exp_days) and exp_days > 0 ->
+        Timex.shift(DateTime.utc_now(), days: exp_days)
+
+      _ ->
+        nil
+    end
   end
 
   def make_opts(
@@ -370,25 +375,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     socket
     |> assign(:photos, photos |> Enum.take(per_page))
     |> assign(:has_more_photos, photos |> length > per_page)
-  end
-
-  def make_popup(socket, opts) do
-    socket
-    |> ConfirmationComponent.open(%{
-      close_label: opts[:close_label] || "No, go back",
-      confirm_event: opts[:event],
-      class: "dialog-photographer",
-      confirm_class: Keyword.get(opts, :confirm_class, "btn-warning"),
-      confirm_label: Keyword.get(opts, :confirm_label, "Yes, delete"),
-      icon: Keyword.get(opts, :icon, "warning-orange"),
-      title: opts[:title],
-      subtitle: opts[:subtitle],
-      dropdown?: opts[:dropdown?],
-      dropdown_label: opts[:dropdown_label],
-      dropdown_items: opts[:dropdown_items],
-      payload: Keyword.get(opts, :payload, %{})
-    })
-    |> noreply()
   end
 
   def prepare_gallery(%{id: gallery_id} = gallery) do
@@ -1082,7 +1068,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp upsert_album(result, message) do
     case result do
-      {:ok, album} -> {album, message}
+      {:ok, %Album{} = album} -> {album, message}
+      {:ok, result} -> {result.album, message}
       _ -> {nil, "something went wrong"}
     end
   end
@@ -1160,5 +1147,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
     ~H"""
       <span class="lg:ml-[54px] sm:ml-0 inline-block mt-2 border rounded-md bg-base-200 px-2 pb-0.5 text-base-250 font-bold text-base"><%= Utils.capitalize_all_words(@type) %></span>
     """
+  end
+
+  def delete_watermark(gallery) do
+    Multi.new()
+    |> Multi.delete(:delete_watermark, gallery.watermark)
+    |> Galleries.save_use_global(gallery, %{watermark: false})
   end
 end

@@ -1,4 +1,4 @@
-<div class="fixed top-0 pt-24 lg:left-0 flex flex-col h-screen px-5 pb-6 bg-white lg:z-10 z-30 shrink-0 lg:w-[384px] w-screen">
+<div class="fixed top-0 pt-24 lg:left-0 flex flex-col overflow-y-auto h-screen min-h-screen px-5 pb-6 bg-white lg:z-10 z-30 shrink-0 lg:w-[384px] w-screen">
     <div class="lg:mt-0 mt-28 w-full">      
       <div class="hidden lg:flex">
         <span class="flex-col circleBtn">
@@ -35,7 +35,7 @@
           </div>
         </.form>
       </div>
-      <div class="grid grid-cols-1 p-5 mt-6 bg-base-200 rounded-xl grid-container lg:w-80 gap-y-1">
+      <div class="grid grid-cols-1 p-5 mt-6 bg-base-200 rounded-xl grid-container lg:w-80 gap-y-1 mb-32 md:mb-16">
         <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
           <.bar class="block" route={Routes.gallery_photographer_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title="Overview" icon="globe-icon.png" arrow_show={@arrow_show == "overview"}>
             <%= if expire_soon(@gallery) do %>

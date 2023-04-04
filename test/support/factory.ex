@@ -469,7 +469,8 @@ defmodule Picsello.Factory do
       name: "Test Client Wedding",
       job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
-      client_link_hash: UUID.uuid4()
+      client_link_hash: UUID.uuid4(),
+      use_global: %{watermark: false, expiration: false, digital: false, products: false}
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
@@ -723,6 +724,15 @@ defmodule Picsello.Factory do
         ]
       }
       |> evaluate_lazy_attributes()
+
+  def subscription_promotion_codes_factory(attrs \\ %{}) do
+    %Picsello.SubscriptionPromotionCode{
+      code: "10OFF",
+      stripe_promotion_code_id: "1234asd",
+      percent_off: 10.0
+    }
+    |> merge_attributes(attrs)
+  end
 
   def subscription_plan_factory,
     do: %Picsello.SubscriptionPlan{

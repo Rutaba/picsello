@@ -49,6 +49,7 @@ defmodule Picsello.Profiles do
       field(:is_enabled, :boolean, default: true)
       field(:color, :string)
       field(:description, :string)
+      field(:job_types, {:array, :string})
       field(:job_types_description, :string)
 
       embeds_one(:logo, ProfileImage, on_replace: :update)
@@ -57,14 +58,16 @@ defmodule Picsello.Profiles do
 
     def enabled?(%__MODULE__{is_enabled: is_enabled}), do: is_enabled
 
+    @fields ~w[color description job_types_description]a
     def changeset(%__MODULE__{} = profile, attrs) do
       profile
-      |> cast(
-        attrs,
-        ~w[color description job_types_description]a
-      )
+      |> cast(attrs, @fields)
       |> cast_embed(:logo)
       |> cast_embed(:main_image)
+    end
+
+    def changeset_for_factory_reset(%__MODULE__{} = profile, attrs) do
+      cast(profile, attrs, [:job_types | @fields])
     end
 
     def url_validation_errors(url) do

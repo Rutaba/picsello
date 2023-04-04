@@ -25,6 +25,8 @@ defmodule PicselloWeb.JobLive.Show do
       renew_uploads: 3
     ]
 
+  import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1, new_gallery_path: 2]
+
   @upload_options [
     accept: ~w(.pdf .docx .txt),
     auto_upload: true,
@@ -34,12 +36,12 @@ defmodule PicselloWeb.JobLive.Show do
     max_file_size: String.to_integer(Application.compile_env(:picsello, :document_max_size))
   ]
 
-  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
-
   @impl true
   def mount(%{"id" => job_id} = assigns, _session, socket) do
     socket
     |> assign_job(job_id)
+    |> assign(:type, %{singular: "job", plural: "jobs"})
+    |> assign_new(:anchor, fn -> Map.get(assigns, "anchor", nil) end)
     |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
     |> assign(:new_gallery, nil)
@@ -334,7 +336,7 @@ defmodule PicselloWeb.JobLive.Show do
         parent_id: parent_id,
         client_link_hash: UUID.uuid4(),
         name: Job.name(job) <> " #{Enum.count(job.galleries) + 1}",
-        expired_at: PicselloWeb.GalleryLive.Shared.expired_at(organization_id),
+        expired_at: expired_at(organization_id),
         albums: Galleries.album_params_for_new(type)
       })
 

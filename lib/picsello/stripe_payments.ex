@@ -42,6 +42,9 @@ defmodule Picsello.StripePayments do
   defdelegate retrieve_customer(id, opts), to: Stripe.Customer, as: :retrieve
 
   @impl Payments
+  defdelegate update_subscription(id, params, opts), to: Stripe.Subscription, as: :update
+
+  @impl Payments
   defdelegate retrieve_subscription(id, opts), to: Stripe.Subscription, as: :retrieve
 
   @impl Payments
@@ -49,6 +52,9 @@ defmodule Picsello.StripePayments do
 
   @impl Payments
   defdelegate list_prices(params), to: Stripe.Price, as: :list
+
+  @impl Payments
+  defdelegate list_promotion_codes(params), to: Stripe.PromotionCode, as: :list
 
   @impl Payments
   defdelegate construct_event(body, stripe_signature, signing_secret), to: Stripe.Webhook

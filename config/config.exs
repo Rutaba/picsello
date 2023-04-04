@@ -91,6 +91,8 @@ config :picsello,
   document_max_size: System.get_env("DOCUMENT_MAX_SIZE") || "104822",
   logo_max_size: System.get_env("LOGO_MAX_SIZE") || "10485760"
 
+config :picsello, show_arcade_tours: true
+
 config :picsello, :whcc,
   adapter: Picsello.WHCC.Client,
   url: System.get_env("WHCC_URL"),

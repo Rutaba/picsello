@@ -69,7 +69,7 @@ defmodule Picsello.PaymentSchedules do
         is_nil(payment.paid_at) and
           is_nil(payment.reminded_at) and
           fragment("?.due_at <= now() + interval '3 days'", payment) and
-          not job_status.is_lead and job_status.current_status != :completed,
+          not job_status.is_lead and job_status.current_status not in [:completed, :archived],
       preload: :job
     )
     |> Repo.all()
@@ -168,6 +168,10 @@ defmodule Picsello.PaymentSchedules do
     job |> payment_schedules() |> Enum.any?()
   end
 
+  def paid_any?(%Job{} = job) do
+    job |> payment_schedules() |> Enum.any?(&PaymentSchedule.paid?/1)
+  end
+
   def all_paid?(%Job{} = job) do
     job |> payment_schedules() |> Enum.all?(&PaymentSchedule.paid?/1)
   end
@@ -249,9 +253,10 @@ defmodule Picsello.PaymentSchedules do
 
   def get_offline_payment_schedules(job_id) do
     from(p in PaymentSchedule,
-      where: p.type in ["check", "cash"] and p.job_id == ^job_id
+      where: p.type in ["check", "cash"] and p.job_id == ^job_id and not is_nil(p.paid_at)
     )
     |> Repo.all()
+    |> Repo.preload(:job)
   end
 
   def payment_schedules_count(job) do
@@ -306,6 +311,13 @@ defmodule Picsello.PaymentSchedules do
 
       UserNotifier.deliver_lead_converted_to_job(proposal, helpers)
     end)
+  end
+
+  def next_due_payment(job) do
+    job
+    |> payment_schedules()
+    |> Enum.filter(&(&1.paid_at == nil))
+    |> Enum.min_by(& &1.due_at)
   end
 
   def checkout_link(%BookingProposal{} = proposal, payment, opts) do
