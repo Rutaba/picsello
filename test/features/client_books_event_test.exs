@@ -121,7 +121,7 @@ defmodule Picsello.ClientBooksEventTest do
     |> assert_value(css("input:checked[name='booking[date]']", visible: false), "2050-12-11")
     |> assert_inner_text(
       testid("time_picker"),
-      "Sunday, December 11 11:00am 12:00pm 4:00pm"
+      "Sunday, December 11 11:00am 11:45am 4:00pm"
     )
     |> assert_disabled_submit(text: "Next")
     |> click(css("label", text: "11:00am"))
