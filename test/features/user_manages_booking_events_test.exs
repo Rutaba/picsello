@@ -183,7 +183,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
                    ]
                  },
                  %{
-                   date: ~D[2050-11-10],
+                   date: ~D[2050-10-11],
                    time_blocks: [
                      %{
                        end_time: ~T[10:00:00],

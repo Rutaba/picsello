@@ -182,24 +182,57 @@ defmodule Picsello.BookingEvents do
 
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
-        for(
-          %{start_time: %Time{} = start_time, end_time: %Time{} = end_time} <-
-            time_blocks,
-          available_slots = (Time.diff(end_time, start_time) / duration) |> trunc(),
-          slot <- 0..(available_slots - 1),
-          available_slots > 0
-        ) do
-          if slot == available_slots - 1 do
-            start_time |> Time.add(duration_buffer * slot)
-          else
-            start_time |> Time.add(duration * slot)
-          end
-        end
+        Enum.map(time_blocks, fn %{start_time: %Time{} = start_time, end_time: %Time{} = end_time} ->
+          available_slots = (Time.diff(end_time, start_time) / duration) |> trunc()
+          slot = 0..(available_slots - 1)
+
+          get_available_slots_each_block(
+            slot,
+            available_slots,
+            duration,
+            duration_buffer,
+            start_time,
+            end_time
+          )
+        end)
+        |> List.flatten()
+        |> Enum.uniq()
         |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
         |> filter_is_break_slots(booking_event, date)
 
       _ ->
         []
+    end
+  end
+
+  defp get_available_slots_each_block(
+         slot,
+         available_slots,
+         duration,
+         duration_buffer,
+         start_time,
+         end_time
+       ) do
+    if available_slots > 0 do
+      Enum.reduce_while(slot, [], fn x, acc ->
+        slot_time =
+          if x != available_slots - 1 do
+            start_time |> Time.add(duration_buffer * x)
+          else
+            start_time |> Time.add(duration * x)
+          end
+
+        slot_trunc = slot_time |> Time.add(duration_buffer) |> Time.truncate(:second)
+
+        if slot_trunc > end_time do
+          {:halt, acc}
+        else
+          {:cont, [slot_time | acc]}
+        end
+      end)
+      |> Enum.reverse()
+    else
+      []
     end
   end
 
