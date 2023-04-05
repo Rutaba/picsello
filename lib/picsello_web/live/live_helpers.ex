@@ -211,12 +211,8 @@ defmodule PicselloWeb.LiveHelpers do
 
   def nav_link(assigns) do
     assigns =
-      assign_new(assigns, :help_scout_or_external_link, fn ->
-        if String.starts_with?(assigns.to, "#business-coaching") do
-          help_scout_output(assigns.current_user, :help_scout_id_business)
-        else
-          %{target: "_blank", rel: "noopener noreferrer"}
-        end
+      assign_new(assigns, :intercom_or_external_link, fn ->
+        %{target: "_blank", rel: "noopener noreferrer"}
       end)
 
     ~H"""
@@ -226,7 +222,7 @@ defmodule PicselloWeb.LiveHelpers do
             <%= render_slot(@inner_block, active) %>
           <% end %>
         <% else %>
-          <a href={@to} class={@class} {@help_scout_or_external_link}>
+          <a href={@to} class={@class} {@intercom_or_external_link}>
             <%= render_slot(@inner_block, active) %>
           </a>
         <% end %>
@@ -432,17 +428,6 @@ defmodule PicselloWeb.LiveHelpers do
     socket
     |> assign(current_user: Onboardings.save_intro_state(current_user, intro_id, action))
     |> noreply()
-  end
-
-  def help_scout_output(current_user, help_scout_id, opts \\ []) do
-    %{
-      phx_hook: "HelpScout",
-      data_id: Application.get_env(:picsello, help_scout_id),
-      id: help_scout_id,
-      data_email: current_user.email,
-      data_name: current_user.name
-    }
-    |> Map.merge(Enum.into(opts, %{}))
   end
 
   def shoot_location(%{address: address, location: location}),

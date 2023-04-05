@@ -792,7 +792,7 @@ defmodule PicselloWeb.HomeLive.Index do
       "send-confirmation-email" => {!User.confirmed?(current_user), org_card},
       "open-user-settings" => {!subscription.hidden?, org_card},
       "getting-started-picsello" =>
-        {Application.get_env(:picsello, :help_scout_id) != nil, org_card},
+        {Application.get_env(:picsello, :intercom_id) != nil, org_card},
       "set-up-stripe" => {stripe_status != :charges_enabled, org_card},
       "open-billing-portal" =>
         {Picsello.Invoices.pending_invoices?(current_user.organization_id), org_card},
