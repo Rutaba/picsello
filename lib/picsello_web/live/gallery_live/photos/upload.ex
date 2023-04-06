@@ -473,7 +473,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   defp update_uploader(
-         %{assigns: %{inprogress_photos: inprogress_photos, uploads: uploads}} = socket
+         %{assigns: %{inprogress_photos: inprogress_photos, uploads: uploads} = assigns} = socket
        ) do
     upload_config = Map.fetch!(uploads || %{}, :photo)
 
@@ -482,9 +482,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       | entries: inprogress_photos,
         errors: []
     }
-
-    socket
-    |> assign(:uploads, put_in(socket.assigns.uploads, [:photo], photo))
+    
+    Map.put(assigns, :uploads, put_in(socket.assigns.uploads, [:photo], photo))
+    |> then(&Map.put(socket, :assigns, &1))
   end
 
   defp update_progress(%{assigns: %{inprogress_photos: inprogress_photos}} = socket) do

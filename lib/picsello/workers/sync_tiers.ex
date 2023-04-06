@@ -20,7 +20,7 @@ defmodule Picsello.Workers.SyncTiers do
     Goth.start_link(name: Picsello.Goth, source: {:service_account, credentials, scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"]})
     {:ok, token} = Goth.fetch(Picsello.Goth)
 
-    connection = Sheets.Connection.new(token)
+    connection = Sheets.Connection.new(token.token)
     {_number, _values} = sync_base_prices(connection)
     {_number, _values} = sync_cost_of_living(connection)
 

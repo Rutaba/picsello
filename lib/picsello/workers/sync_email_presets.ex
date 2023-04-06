@@ -15,7 +15,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
     Goth.start_link(name: Picsello.Goth, source: {:service_account, credentials, scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"]})
     {:ok, token} = Goth.fetch(Picsello.Goth)
   
-    connection = Sheets.Connection.new(token)
+    connection = Sheets.Connection.new(token.token)
 
     now = DateTime.truncate(DateTime.utc_now(), :second)
 
