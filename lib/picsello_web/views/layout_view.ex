@@ -113,7 +113,9 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def help_chat_widget(%{assigns: %{current_user: _}} = assigns) do
+  def help_chat_widget(%{assigns: %{current_user: current_user}} = assigns) do
+    assigns = assign(assigns, :current_user, current_user)
+
     ~H"""
     <%= if Application.get_env(:picsello, :intercom_id) do %>
       <script>
