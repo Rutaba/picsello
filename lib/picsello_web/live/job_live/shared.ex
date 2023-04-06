@@ -1604,8 +1604,7 @@ defmodule PicselloWeb.JobLive.Shared do
       {},
       &Enum.concat(Enum.filter(&1, fn {ref, _} -> ref != entry.ref end), errs)
     )
-    |> then(&Map.put(uploads, :documents, &1))
-    |> then(&assign(socket, :uploads, &1))
+    |> assign_documents_uploads(socket)
   end
 
   defdelegate path_to_url(path), to: PhotoStorage
@@ -1613,9 +1612,17 @@ defmodule PicselloWeb.JobLive.Shared do
   defp assign_documents(%{assigns: %{uploads: uploads}} = socket, entries) do
     %{documents: documents} = uploads
 
+    documents
+    |> Map.put(:entries, entries)
+    |> Map.put(:errors, [])
+    |> assign_documents_uploads(socket)
+  end
+
+  defp assign_documents_uploads(documents, %{assigns: %{uploads: uploads} = assigns} = socket) do
     uploads
-    |> Map.put(:documents, Map.put(documents, :entries, entries) |> Map.put(:errors, []))
-    |> then(&assign(socket, :uploads, &1))
+    |> Map.put(:documents, documents)
+    |> then(&Map.put(assigns, :uploads, &1))
+    |> then(&Map.put(socket, :assigns, &1))
   end
 
   defp ex_docs(%{job: %{documents: documents}}), do: Enum.map(documents, & &1.name)
