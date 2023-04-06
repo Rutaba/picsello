@@ -182,26 +182,33 @@ defmodule Picsello.BookingEvents do
 
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
-        Enum.map(time_blocks, fn %{start_time: %Time{} = start_time, end_time: %Time{} = end_time} ->
-          available_slots = (Time.diff(end_time, start_time) / duration) |> trunc()
-          slot = 0..(available_slots - 1)
-
-          get_available_slots_each_block(
-            slot,
-            available_slots,
-            duration,
-            duration_buffer,
-            start_time,
-            end_time
-          )
+        Enum.map(time_blocks, fn %{start_time: start_time, end_time: end_time} ->
+          get_available_slots_each_block(start_time, end_time, duration, duration_buffer)
         end)
         |> List.flatten()
         |> Enum.uniq()
+        |> Enum.filter(&(!is_nil(&1)))
         |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
         |> filter_is_break_slots(booking_event, date)
 
       _ ->
         []
+    end
+  end
+
+  defp get_available_slots_each_block(start_time, end_time, duration, duration_buffer) do
+    if !is_nil(start_time) and !is_nil(end_time) do
+      available_slots = (Time.diff(end_time, start_time) / duration) |> trunc()
+      slot = 0..(available_slots - 1)
+
+      get_available_slots_each_block(
+        slot,
+        available_slots,
+        duration,
+        duration_buffer,
+        start_time,
+        end_time
+      )
     end
   end
 
