@@ -113,17 +113,17 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def help_chat_widget(%{assigns: %{current_user: current_user}} = assigns) do
+  def help_chat_widget(%{assigns: %{current_user: _}} = assigns) do
     ~H"""
     <%= if Application.get_env(:picsello, :intercom_id) do %>
       <script>
         window.intercomSettings = {
           api_base: "https://api-iam.intercom.io",
           app_id: "<%= Application.get_env(:picsello, :intercom_id) %>",
-          name: "<%= current_user.name %>",
-          email: "<%= current_user.email %>",
-          user_id: "<%= current_user.id %>",
-          created_at: "<%= current_user.inserted_at %>",
+          name: "<%= @current_user.name %>",
+          email: "<%= @current_user.email %>",
+          user_id: "<%= @current_user.id %>",
+          created_at: "<%= @current_user.inserted_at %>",
           custom_launcher_selector: '.open-help'
         };
       </script>
