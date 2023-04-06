@@ -4,7 +4,10 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
 
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
+<<<<<<< HEAD
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
+=======
+>>>>>>> cfd1fbe29 (Add templates related to pricing-module)
 
   alias Picsello.{Galleries, Repo, Orders}
 
@@ -20,7 +23,11 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   def handle_params(%{"id" => id} = params, _, socket) do
     gallery =
       Galleries.get_gallery!(id)
+<<<<<<< HEAD
       |> Repo.preload([:photographer, :package, :gallery_digital_pricing])
+=======
+      |> Repo.preload([:photographer, :package])
+>>>>>>> cfd1fbe29 (Add templates related to pricing-module)
       |> Galleries.load_watermark_in_gallery()
 
     prepare_gallery(gallery)
@@ -163,7 +170,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
       </div>
     """
   end
-
+  
   def get_pricing_value(gallery) do
     if gallery.gallery_digital_pricing, do: gallery.gallery_digital_pricing, else: gallery.package
   end
