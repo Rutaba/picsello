@@ -995,6 +995,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         photos: photos,
         name: "Client Favorites",
         is_client_liked: true,
+        thumbnail_photo: nil,
         orders: []
       }
     end
