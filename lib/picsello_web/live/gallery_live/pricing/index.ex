@@ -36,6 +36,13 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
     socket |> assign(:is_mobile, !is_mobile) |> noreply
   end
 
+  @impl true
+  def handle_event("edit-global-pricing", _, socket) do
+    socket
+    |> redirect(to: "/galleries/settings?section=products")
+    |> noreply
+  end
+
   def grid_item(assigns) do
     ~H"""
       <div class="flex flex-row mt-2 items-center">
