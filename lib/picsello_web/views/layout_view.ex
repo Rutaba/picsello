@@ -119,7 +119,7 @@ defmodule PicselloWeb.LayoutView do
     assigns = assign(assigns, :current_user, current_user)
 
     ~H"""
-    <%= if Application.get_env(:picsello, :intercom_id) do %>
+    <%= if @current_user && Application.get_env(:picsello, :intercom_id) do %>
       <script>
         window.intercomSettings = {
           api_base: "https://api-iam.intercom.io",
