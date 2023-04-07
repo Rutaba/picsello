@@ -124,10 +124,10 @@ defmodule PicselloWeb.LayoutView do
         window.intercomSettings = {
           api_base: "https://api-iam.intercom.io",
           app_id: "<%= Application.get_env(:picsello, :intercom_id) %>",
-          name: "<%= Map.get(@current_user, :name) %>",
+          name: "<%= @current_user.name %>",
           email: "<%= @current_user.email %>",
           user_id: "<%= @current_user.id %>",
-          created_at: "<%= Map.get(@current_user, :inserted_at) %>",
+          created_at: "<%= @current_user.inserted_at %>",
           custom_launcher_selector: '.open-help'
         };
       </script>
