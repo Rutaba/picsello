@@ -14,7 +14,6 @@ defmodule Picsello.Cart.Product do
     field :editor_id, :string
     field :preview_url, :string
     field :quantity, :integer
-    field :round_up_to_nearest, :integer
     field :selections, :map
     field :shipping_base_charge, Money.Ecto.Amount.Type
     field :shipping_type, :string, @shipping_types
@@ -39,7 +38,6 @@ defmodule Picsello.Cart.Product do
           editor_id: String.t(),
           preview_url: String.t(),
           quantity: integer(),
-          round_up_to_nearest: integer(),
           selections: %{String.t() => any()},
           shipping_base_charge: Money.t(),
           shipping_upcharge: Decimal.t(),
@@ -69,11 +67,11 @@ defmodule Picsello.Cart.Product do
       cast(
         product,
         attrs,
-        ~w[editor_id preview_url quantity round_up_to_nearest selections shipping_base_charge shipping_upcharge shipping_type unit_markup unit_price print_credit_discount volume_discount price whcc_product_id total_markuped_price]a
+        ~w[editor_id preview_url quantity selections shipping_base_charge shipping_upcharge shipping_type unit_markup unit_price print_credit_discount volume_discount price whcc_product_id total_markuped_price]a
       )
 
   def new(fields) do
-    %__MODULE__{round_up_to_nearest: 100} |> Map.merge(fields)
+    %__MODULE__{} |> Map.merge(fields)
   end
 
   def charged_price(%__MODULE__{

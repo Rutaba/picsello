@@ -204,16 +204,10 @@ defmodule Picsello.Product do
           })
           |> Picsello.Cart.Product.new()
 
-        client_price = Picsello.Cart.Product.example_price(product)
-
         [
-          client_price,
+          Picsello.Cart.Product.example_price(product),
           unit_price,
-          markup,
-          Money.subtract(
-            client_price,
-            Picsello.Cart.Product.example_price(%{product | round_up_to_nearest: 1})
-          )
+          markup
         ] ++
           for(category_id <- categories, do: get_in(row_with_names, [category_id, :name]))
       end

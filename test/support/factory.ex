@@ -634,7 +634,6 @@ defmodule Picsello.Factory do
     %Picsello.Cart.Product{
       editor_id: sequence(:whcc_editor_id, &"whcc-editor-id#{&1}"),
       quantity: 1,
-      round_up_to_nearest: 500,
       shipping_base_charge: %Money{amount: 900, currency: :USD},
       shipping_upcharge: Decimal.new("0.09"),
       unit_markup: %Money{amount: 35_200, currency: :USD},

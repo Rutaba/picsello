@@ -42,7 +42,6 @@ defmodule Picsello.Cart.OrderTest do
         order
         |> update_changeset(
           build(:cart_product,
-            round_up_to_nearest: 100,
             shipping_base_charge: ~M[300]USD,
             shipping_upcharge: Decimal.new(0),
             unit_markup: ~M[100]USD,
@@ -61,7 +60,6 @@ defmodule Picsello.Cart.OrderTest do
         |> update_changeset(
           build(:cart_product,
             quantity: 2,
-            round_up_to_nearest: 1,
             shipping_upcharge: Decimal.new(0),
             shipping_base_charge: ~M[300]USD,
             unit_markup: ~M[100]USD,
@@ -80,7 +78,6 @@ defmodule Picsello.Cart.OrderTest do
       order =
         for product <-
               build_list(2, :cart_product,
-                round_up_to_nearest: 100,
                 shipping_base_charge: ~M[300]USD,
                 unit_markup: ~M[100]USD,
                 unit_price: ~M[0]USD,
@@ -102,7 +99,6 @@ defmodule Picsello.Cart.OrderTest do
               insert_list(2, :product)
               |> Enum.flat_map(
                 &build_list(2, :cart_product,
-                  round_up_to_nearest: 100,
                   shipping_base_charge: ~M[300]USD,
                   unit_markup: ~M[100]USD,
                   unit_price: ~M[0]USD,

@@ -66,7 +66,6 @@ defmodule PicselloWeb.Live.Admin.ProductPricing do
               <th class="p-2 border">client price</th>
               <th class="p-2 border">whcc - print cost</th>
               <th class="p-2 border">user - markup</th>
-              <th class="p-2 border">user - rounding</th>
 
               <%= for name <- @attribute_category_names do %>
                 <th><%= name %></th>

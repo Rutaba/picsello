@@ -8,7 +8,6 @@ defmodule Picsello.CartTest do
   defp cart_product(opts) do
     build(:cart_product,
       editor_id: Keyword.get(opts, :editor_id),
-      round_up_to_nearest: 100,
       shipping_base_charge: ~M[1000]USD,
       shipping_upcharge: Decimal.new(0),
       unit_markup: ~M[0]USD,

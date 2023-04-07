@@ -82,41 +82,23 @@ defmodule Picsello.GlobalSettings do
     end)
   end
 
-  def size([total_cost, print_cost, _, rounding, size, type], ["size", _]),
-    do: size(total_cost, add([print_cost, rounding]), size, type)
+  def size([total_cost, print_cost, _, size, type], ["size", _]),
+    do: size(total_cost, print_cost, size, type)
 
-  def size([total_cost, print_cost, _, rounding, type, size], [_, "size"]),
-    do: size(total_cost, add([print_cost, rounding]), size, type)
+  def size([total_cost, print_cost, _, type, size], [_, "size"]),
+    do: size(total_cost, print_cost, size, type)
 
   def size(
-        [
-          total_cost,
-          print_cost,
-          _,
-          rounding,
-          type,
-          _mounting,
-          size,
-          _surface,
-          _texture
-        ],
+        [total_cost, print_cost, _, type, _, size, _, _],
         [_, _, "size", _, _]
       ),
-      do: size(total_cost, add([print_cost, rounding]), size, type)
+      do: size(total_cost, print_cost, size, type)
 
-  def size([total_cost, print_cost, _, rounding, _mounting, type, size], [
-        _,
-        _,
-        "size"
-      ]),
-      do: size(total_cost, add([print_cost, rounding]), size, type)
+  def size([total_cost, print_cost, _, _mounting, type, size], [_, _, "size"]),
+    do: size(total_cost, print_cost, size, type)
 
   def size(final_cost, base_cost, size, type),
     do: %{final_cost: to_decimal(final_cost), base_cost: base_cost, size: size, type: type}
-
-  defp add(values) do
-    Enum.reduce(values, Money.new(0), fn value, total -> Money.add(total, value) end)
-  end
 
   def to_decimal(%Money{amount: amount, currency: :USD}),
     do: Decimal.round(to_string(amount / 100), 2)
