@@ -162,6 +162,15 @@ defmodule Picsello.BookingEvents do
     |> Repo.get!(event_id)
   end
 
+  def get_booking_event_preload!(organization_id, event_id) do
+    from(event in BookingEvent,
+      join: package in assoc(event, :package_template),
+      where: package.organization_id == ^organization_id,
+      preload: [package_template: package]
+    )
+    |> Repo.get!(event_id)
+  end
+
   def available_times(%BookingEvent{} = booking_event, date, opts \\ []) do
     duration =
       ((booking_event.duration_minutes || Picsello.Shoot.durations() |> hd) +

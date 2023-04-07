@@ -113,13 +113,17 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def help_chat_widget(%{assigns: %{current_user: _}} = assigns) do
+  def help_chat_widget(
+        %{assigns: %{current_user: %{email: _, user_id: _}}} = assigns
+      ) do
+    assigns = get_intercom_id(assigns)
+
     ~H"""
-    <%= if Application.get_env(:picsello, :intercom_id) do %>
+    <%= if @itercom_id do %>
       <script>
         window.intercomSettings = {
           api_base: "https://api-iam.intercom.io",
-          app_id: "<%= Application.get_env(:picsello, :intercom_id) %>",
+          app_id: "<%= @itercom_id %>",
           name: "<%= @current_user.name %>",
           email: "<%= @current_user.email %>",
           user_id: "<%= @current_user.id %>",
@@ -128,27 +132,24 @@ defmodule PicselloWeb.LayoutView do
         };
       </script>
 
-      <script>
-      (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/<%= Application.get_env(:picsello, :intercom_id) %>';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
-      </script>
+      <.reattach_activator itercom_id={@itercom_id} />
     <% end %>
     """
   end
 
   def help_chat_widget(assigns) do
+    assigns = get_intercom_id(assigns)
+
     ~H"""
-    <%= if Application.get_env(:picsello, :intercom_id) do %>
+    <%= if @itercom_id do %>
       <script>
         window.intercomSettings = {
           api_base: "https://api-iam.intercom.io",
-          app_id: "<%= Application.get_env(:picsello, :intercom_id) %>",
+          app_id: "<%= @itercom_id %>",
           custom_launcher_selector: '.open-help'
         };
       </script>
-
-      <script>
-      (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/<%= Application.get_env(:picsello, :intercom_id) %>';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
-      </script>
+      <.reattach_activator itercom_id={@itercom_id} />
     <% end %>
     """
   end
@@ -444,11 +445,21 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
+  defp reattach_activator(assigns) do
+    ~H"""
+    <script>
+    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/<%= @itercom_id %>';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+    </script>
+    """
+  end
+
   defp load_organization(gallery) do
     gallery
     |> Picsello.Repo.preload([job: [client: :organization]], force: true)
     |> extract_organization()
   end
+
+  defp get_intercom_id(assigns), do: assign(assigns, :itercom_id, Application.get_env(:picsello, :intercom_id))
 
   defp extract_organization(%{job: %{client: %{organization: organization}}}), do: organization
 end
