@@ -556,11 +556,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def step(%{name: :documents} = assigns) do
     ~H"""
     <div class="font-normal pb-6 text-base-250 w-fit">
-      You don’t have any packages with a single shoot! You’ll need to create some packages before you can select one.(Modal will close when you click “Package Settings”)
+    As with most things in Picsello, we have created default contracts/questionnaires for you to use. If you’d like to make your own, check out global questionnaire and contract management. (Modal will close & you can come back)
     </div>
     <div class="flex flex-row">
-      <a class="items-center text-blue-planning-300 py-5 underline font-normal" href={Routes.contracts_index_path(@socket, :index)} target="_blank">Manage contracts</a>
-      <a class="items-center text-blue-planning-300 p-5 underline font-normal" href={Routes.questionnaires_index_path(@socket, :index)} target="_blank">Manage questionnaires</a>
+      <a class="items-center text-blue-planning-300 py-5 underline font-normal" href={Routes.contracts_index_path(@socket, :index)}>Manage contracts</a>
+      <a class="items-center text-blue-planning-300 p-5 underline font-normal" href={Routes.questionnaires_index_path(@socket, :index)}>Manage questionnaires</a>
     </div>
 
     <div class="flex flex-row text-blue-planning-300 mb-4">

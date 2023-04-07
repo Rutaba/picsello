@@ -191,11 +191,10 @@ defmodule Picsello.Contracts do
     do: from(c in Contract, where: c.id == ^contract_id)
 
   defp get_organization_contracts(organization_id) do
-    from(c in Contract,
-      where: c.organization_id == ^organization_id or is_nil(c.contract_template_id),
-      where: is_nil(c.package_id),
-      order_by: [asc: c.job_type, asc: c.name]
-    )
+    Contract
+    |> where([c], c.organization_id == ^organization_id)
+    |> or_where([c], is_nil(c.organization_id) and is_nil(c.package_id))
+    |> order_by([c], asc: c.job_type, asc: c.name)
   end
 
   defp job_type(%Package{job_type: "" <> job_type}), do: job_type
