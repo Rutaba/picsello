@@ -246,10 +246,13 @@ defmodule Picsello.Cart.Order do
 
   defp sort_products(products) do
     products
+    |> Picsello.Repo.preload(whcc_product: :category)
     |> Enum.sort_by(& &1.id)
     |> Enum.reverse()
-    |> Enum.group_by(fn %{whcc_product: %Picsello.Product{} = whcc_product} ->
-      Map.take(whcc_product, [:id, :whcc_name])
+    |> Enum.group_by(fn %{whcc_product: %Picsello.Product{category: category} = whcc_product} ->
+      whcc_product
+      |> Map.take([:id, :whcc_name])
+      |> Map.put(:category, %{whcc_id: category.whcc_id})
     end)
     |> Enum.sort_by(fn {_whcc_product, cart_products} ->
       cart_products |> Enum.map(& &1.id) |> Enum.max()

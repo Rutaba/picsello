@@ -229,7 +229,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
     {categories, new_selections} = Picsello.Product.selections_with_prices(product)
 
     new_selections
-    |> Enum.map(&GlobalSettings.size(&1, categories))
+    |> GlobalSettings.build_print_products(categories)
     |> Enum.group_by(& &1.size)
     |> Enum.reduce(%{}, fn {k, v}, acc -> Map.put(acc, k, %{open?: false, values: v}) end)
     |> Enum.sort_by(fn {size, _value} ->
