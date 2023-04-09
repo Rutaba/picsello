@@ -213,7 +213,7 @@ defmodule Picsello.Cart.Checkouts do
         application_fee_amount: application_fee_cents,
         capture_method: :manual
       },
-      shipping_options: shipping_options(order) |> IO.inspect(),
+      shipping_options: shipping_options(order),
       success_url: success_url,
       billing_address_collection: "auto",
       cancel_url: cancel_url
