@@ -10,6 +10,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   import PicselloWeb.Live.Profile.Shared, only: [photographer_logo: 1]
 
   @default_shipping "economy"
+  @products_config Application.compile_env!(:picsello, :products)
+  @shipping_to_all [@products_config[:whcc_album_id], @products_config[:whcc_books_id]]
 
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
@@ -27,6 +29,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign_cart_count(gallery)
     |> assign_credits()
     |> assign_checkout_routes()
+    |> assign(:shipping_to_all, @shipping_to_all)
     |> assign(:default_shipping, @default_shipping)
     |> ok()
   end
@@ -187,16 +190,18 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
 
   defp assign_products_shipping(%{assigns: %{order: order}} = socket) do
-    for {_product, line_items} <- lines_by_product(order),
-        [product | products] = Enum.reverse(line_items) do
-      case product do
-        %{shipping_type: nil} ->
-          [add_shipping_details!(product, @default_shipping) | products]
+    shipping = fn p -> (p.shipping_type && p) || add_shipping_details!(p, @default_shipping) end
 
-        _ ->
-          [product | products]
-      end
-    end
+    order
+    |> lines_by_product()
+    |> Enum.map(fn
+      {%{category: %{whcc_id: whcc_id}}, line_items} when whcc_id in @shipping_to_all ->
+        for product <- line_items, do: shipping.(product)
+
+      {_whcc_product, line_items} ->
+        [product | products] = Enum.reverse(line_items)
+        [shipping.(product) | products]
+    end)
     |> Enum.concat()
     |> assign_products(socket)
   end

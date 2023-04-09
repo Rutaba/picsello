@@ -3,14 +3,15 @@ defmodule Mix.Tasks.UpdateInprogressOrders do
 
   use Mix.Task
 
-  alias Picsello.{Repo, Cart, Galleries, WHCC, Cart.Order, Cart.Product, Intents.Intent}
+  alias Picsello.{Repo, Category, Cart, Galleries, WHCC, Cart.Order, Cart.Product, Intents.Intent}
   alias Ecto.{Multi, Changeset}
 
   import Ecto.Query
 
-  @shortdoc "add shipping upchrage"
-
   @shipping_type "economy"
+  @shipping_to_all Category.shipping_all_whcc_ids()
+
+  @shortdoc "add shipping upchrage"
   def run(_) do
     load_app()
 
@@ -46,11 +47,12 @@ defmodule Mix.Tasks.UpdateInprogressOrders do
     |> tap(fn {:ok, _} = x -> x end)
   end
 
-  defp products_multi(multi, {_whcc_product, line_items}, gallery_id) do
+  defp products_multi(multi, {%{category: %{whcc_id: whcc_id}}, line_items}, gallery_id) do
     line_items
+    |> Enum.reverse()
     |> Enum.with_index(1)
     |> Enum.reduce(multi, fn
-      {%{editor_id: editor_id} = product, 1}, multi ->
+      {%{editor_id: editor_id} = product, i}, multi when i == 1 or whcc_id in @shipping_to_all ->
         account_id = Galleries.account_id(gallery_id)
         %{total_markuped_price: price} = WHCC.get_item_attrs(account_id, editor_id)
 
@@ -60,7 +62,8 @@ defmodule Mix.Tasks.UpdateInprogressOrders do
         |> update_product(product, multi)
 
       {product, _}, multi ->
-        update_product(%{shipping_price: nil, shipping_upcharge: nil}, product, multi)
+        details = %{shipping_base_charge: nil, shipping_upcharge: nil, shipping_type: nil}
+        update_product(details, product, multi)
     end)
   end
 

@@ -19,7 +19,7 @@
             </div>
 
             <div {testid("line-items")} class="col-span-1 lg:col-span-2">
-              <%= for {product, product_lines} <- lines_by_product(@order) do %>
+              <%= for {%{category: %{whcc_id: whcc_id}} = product, product_lines} <- lines_by_product(@order) do %>
                 <div class="mb-5 border border-base-200 divide-y">
                   <div class="mx-8 mb-4 mt-6">
                     <h1 class="text-lg text-base-250 font-medium leading-10 uppercase"><%= product.whcc_name %></h1>
@@ -60,7 +60,8 @@
                           <div class="clear-both"></div>
                         </div>
                       </div>
-                      <%= if index == 1 do %>
+
+                      <%= if index == 1 || whcc_id in @shipping_to_all do %>
                         <div class="md:border-l-2 md:w-1/3">
                           <div class="pl-6 mt-6">
                             <.form let={f} for={:shipping} id={"#{id}"} phx-change="shiping_type" class="flex gap-2 flex-col">
