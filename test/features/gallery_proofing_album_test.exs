@@ -94,7 +94,7 @@ defmodule Picsello.GalleryProofingAlbumTest do
         PicselloWeb.Endpoint,
         :download_all,
         gallery.client_link_hash,
-        photo_ids: Enum.map_join(",", order.digitals, fn digital -> digital.photo_id end)
+        photo_ids: Enum.map_join(order.digitals, ",", & &1.photo_id)
       )
 
     session
