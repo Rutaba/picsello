@@ -229,9 +229,10 @@ defmodule Picsello.BookingEvents do
             start_time |> Time.add(duration * x)
           end
 
-        slot_trunc = slot_time |> Time.add(duration_buffer) |> Time.truncate(:second)
+        slot_trunc = slot_time |> Time.truncate(:second)
+        end_trunc = end_time |> Time.add(-duration) |> Time.truncate(:second)
 
-        if slot_trunc > end_time do
+        if slot_trunc > end_trunc do
           {:halt, acc}
         else
           {:cont, [slot_time | acc]}
