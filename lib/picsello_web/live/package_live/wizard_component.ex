@@ -5,7 +5,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   import Phoenix.Component
 
-
   alias Ecto.Changeset
 
   alias Picsello.{
@@ -244,7 +243,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign_new(:show_on_public_profile, fn -> false end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
-    |> assign_new(:contract_changeset, fn -> nil end)
+    |> assign_new(:contract_changeset, fn -> %{} end)
     |> assign_new(:collapsed_documents, fn -> [0, 1] end)
     |> assign(is_template: assigns |> Map.get(:job) |> is_nil())
     |> assign(
@@ -354,7 +353,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <%= hidden_input @form, field, id: nil %>
       <% end %>
 
-      <% c = form_for(@contract_changeset, "#") %>
+      <% c = to_form(@contract_changeset) %>
       <%= for field <- [:name, :content, :contract_template_id, :edited], input_value(c, field) do %>
         <%= hidden_input c, field, id: nil %>
       <% end %>
@@ -511,7 +510,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         </div>
         <div class={classes("p-4", %{"hidden" => Enum.member?(@collapsed_documents, 0)})}>
           <p>Here you can copy and paste your own contract or use the legally approved contract we have developed. You're also able to version your contract for different needs if you want!</p>
-          <% c = form_for(@contract_changeset, "#") %>
+          <% c = to_form(@contract_changeset) %>
           <div class="grid grid-flow-col auto-cols-fr gap-4 mt-4">
             <%= labeled_select c, :contract_template_id, @contract_options, label: "Select a Contract Template" %>
             <%= labeled_input c, :name, label: "Contract Name", placeholder: "Enter new contract name", phx_debounce: "500" %>
@@ -586,7 +585,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             </div>
           </div>
 
-          <% m = form_for(@multiplier, "#") %>
+          <% m = to_form(@multiplier) %>
 
           <label class="flex items-center mt-6 sm:mt-8 justify-self-start font-bold">
             <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
@@ -642,7 +641,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           Use your default payment schedule or select a new one. Any changes made will result in a custom payment schedule.
         </div>
       </div>
-      <% pc = form_for(@payments_changeset, "#") %>
+      <% pc = to_form(@payments_changeset) %>
       <div {testid("select-preset-type")} class="grid gap-6 md:grid-cols-2 grid-cols-1 mt-8">
         <%= select pc, :schedule_type, payment_dropdown_options(@job_type, input_value(pc, :schedule_type)), wrapper_class: "mt-4", class: "py-3 border rounded-lg border-base-200 cursor-pointer", phx_update: "update" %>
         <div {testid("preset-summary")} class="flex items-center"><%= get_tags(pc) %></div>

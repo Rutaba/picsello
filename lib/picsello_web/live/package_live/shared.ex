@@ -351,7 +351,7 @@ defmodule PicselloWeb.PackageLive.Shared do
   def print_credit_fields(assigns) do
     ~H"""
     <div class="border border-solid mt-6 p-6 rounded-lg">
-      <% p = form_for(@package_pricing, "#") %>
+      <% p = to_form(@package_pricing) %>
       <.print_fields_heading />
 
       <div class="mt-4 font-normal text-base leading-6">
@@ -385,7 +385,7 @@ defmodule PicselloWeb.PackageLive.Shared do
 
     ~H"""
       <div class="border border-solid mt-6 p-6 rounded-lg">
-        <% d = form_for(@download_changeset, "#") %>
+        <% d = to_form(@download_changeset) %>
         <.download_fields_heading title="Digital Collection" d={d} for={@for}>
           <p class="text-base-250">High-Resolution Digital Images available via download.</p>
         </.download_fields_heading>

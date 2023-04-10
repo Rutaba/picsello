@@ -21,7 +21,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   alias Ecto.Multi
   alias Ecto.Changeset
   alias PicselloWeb.JobLive.GalleryTypeComponent
-  
+
   import Phoenix.Component
   import PicselloWeb.JobLive.Shared, only: [search_clients: 1, job_form_fields: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1, expired_at: 1]
@@ -270,7 +270,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       <.job_form_fields myself={@myself} form={@f} new_client={@new_client} job_types={@job_types} />
       <hr class="mt-10 mb-3" />
       <div class="grid md:grid-cols-2">
-        <%= labeled_select form_for(@package_changeset, "#"), :shoot_count, Enum.to_list(1..10), label: "# of Shoots", phx_debounce: "500" %>
+
+        <%= labeled_select to_form(@package_changeset), :shoot_count, Enum.to_list(1..10), label: "# of Shoots", phx_debounce: "500" %>
         <%= hidden_input @f, :is_gallery_only, value: true %>
       </div>
     """
@@ -279,7 +280,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   def step(%{name: :pricing} = assigns) do
     ~H"""
       <div class="">
-        <% package = form_for(@package_changeset, "#") %>
+        <% package = to_form(@package_changeset) %>
 
         <%= hidden_input package, :turnaround_weeks, value: 1 %>
 
@@ -318,6 +319,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
       if name == :details,
         do: is_nil(searched_client) && is_nil(selected_client) && !new_client,
         else: false
+
     assigns = assign(assigns, title: button_title(name), disabled?: disabled?)
 
     ~H"""
