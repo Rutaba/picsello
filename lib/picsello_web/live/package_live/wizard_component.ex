@@ -581,7 +581,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <div class="w-1/3 text-center">Select contract</div>
           </div>
           <%= for contract <- @contract_options do %>
-            <div {testid("contract-row")} class="md:mx-3 md:px-0 px-3 mx-0 border py-3 sm:py-4 md:border-none border-b md:rounded-lg rounded-none">
+            <div {testid("contracts-row")} class="md:mx-3 md:px-0 px-3 mx-0 border py-3 sm:py-4 md:border-none border-b md:rounded-lg rounded-none">
               <label class="flex items-center justify-between cursor-pointer">
                 <h3 class="font-xl font-bold w-1/3"><%= contract.name %></h3>
                 <p class="w-1/3 text-center"><%= contract.job_type %></p>

@@ -24,7 +24,7 @@ defmodule PicselloWeb.ContractTemplateComponent do
       <div class="sm:flex items-center gap-4">
       <.step_heading state={@state} />
         <%= if @state === nil do %>
-          <div><.badge color={:gray}>View Only</.badge></div>
+          <div {testid("view-only")}><.badge color={:gray}>View Only</.badge></div>
         <% end %>
       </div>
 
