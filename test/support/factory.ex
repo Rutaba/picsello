@@ -526,6 +526,7 @@ defmodule Picsello.Factory do
       order: %{},
       pricing: %{
         "totalOrderBasePrice" => Money.multiply(unit_base_price, quantity).amount / 100,
+        "totalOrderMarkedUpPrice" => 5.5,
         "code" => "USD"
       }
     }
@@ -566,6 +567,7 @@ defmodule Picsello.Factory do
       position: sequence(:product_position, & &1),
       attribute_categories: whcc_product.attribute_categories,
       api: whcc_product.api,
+      shipping_upcharge: %{default: 20},
       category: fn ->
         %{category: %{id: whcc_id}} = whcc_product
         Repo.get_by(Picsello.Category, whcc_id: whcc_id) || build(:category, whcc_id: whcc_id)
@@ -634,12 +636,14 @@ defmodule Picsello.Factory do
     %Picsello.Cart.Product{
       editor_id: sequence(:whcc_editor_id, &"whcc-editor-id#{&1}"),
       quantity: 1,
-      shipping_base_charge: %Money{amount: 900, currency: :USD},
+      shipping_type: "economy",
+      shipping_base_charge: %Money{amount: 3_800, currency: :USD},
       shipping_upcharge: Decimal.new("0.09"),
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
       whcc_product: fn -> insert(:product) end,
       preview_url: image_url(),
+      total_markuped_price: %Money{amount: 50_200, currency: :USD},
       selections: %{
         "display_options" => "no",
         "quantity" => Map.get(attrs, :quantity, 1),
@@ -651,7 +655,7 @@ defmodule Picsello.Factory do
       price: ~M[55500]USD
     }
     |> evaluate_lazy_attributes()
-    |> merge_attributes(attrs)
+    |> merge_attributes(Map.drop(attrs, [:account_id]))
   end
 
   def whcc_order_created_order_factory do

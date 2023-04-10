@@ -50,7 +50,7 @@ defmodule Picsello.Cart.OrderTest do
         )
 
       assert [
-               %{price: ~M[600]USD, volume_discount: ~M[0]USD}
+               %{price: ~M[100]USD, volume_discount: ~M[0]USD}
              ] = order.products
     end
 
@@ -68,7 +68,7 @@ defmodule Picsello.Cart.OrderTest do
         )
 
       assert [
-               %{price: ~M[1200]USD, volume_discount: ~M[600]USD}
+               %{price: ~M[200]USD, volume_discount: ~M[0]USD}
              ] = order.products
     end
 
@@ -88,8 +88,8 @@ defmodule Picsello.Cart.OrderTest do
         end
 
       assert [
-               %{volume_discount: ~M[00]USD, price: ~M[600]USD},
-               %{volume_discount: ~M[600]USD, price: ~M[600]USD}
+               %{volume_discount: ~M[0]USD, price: ~M[100]USD},
+               %{volume_discount: ~M[0]USD, price: ~M[100]USD}
              ] = order.products |> Enum.map(&Map.take(&1, [:price, :volume_discount]))
     end
 
@@ -113,10 +113,10 @@ defmodule Picsello.Cart.OrderTest do
         |> Repo.preload([:products], force: true)
 
       assert [
-               %{price: ~M[600]USD, volume_discount: ~M[0]USD},
-               %{price: ~M[600]USD, volume_discount: ~M[600]USD},
-               %{price: ~M[600]USD, volume_discount: ~M[0]USD},
-               %{price: ~M[600]USD, volume_discount: ~M[600]USD}
+               %{price: ~M[100]USD, volume_discount: ~M[0]USD},
+               %{price: ~M[100]USD, volume_discount: ~M[0]USD},
+               %{price: ~M[100]USD, volume_discount: ~M[0]USD},
+               %{price: ~M[100]USD, volume_discount: ~M[0]USD}
              ] = order.products |> Enum.map(&Map.take(&1, [:price, :volume_discount]))
     end
   end

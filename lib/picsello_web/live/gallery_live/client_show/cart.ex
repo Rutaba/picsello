@@ -281,7 +281,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     {
       checkout_routes.home_page,
       "Back to album",
-      (album.is_finals && "Cart & Shippping Review") || "Review Selections & Shipping"
+      (album.is_finals && "Cart & Shipping Review") || "Review Selections & Shipping"
     }
   end
 
@@ -289,7 +289,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     {
       checkout_routes.home_page,
       "Back to gallery",
-      "Cart & Shippping Review"
+      "Cart & Shipping Review"
     }
   end
 
