@@ -109,9 +109,9 @@ config :picsello, :whcc,
   whcc_sync_process_count: System.get_env("WHCC_SYNC_PROCESS_COUNT") || "2"
 
 config :picsello, :products,
-  whcc_album_id: System.get_env("ALBUM_CATEGORY_ID"),
-  whcc_books_id: System.get_env("BOOK_CATEGORY_ID"),
-  whcc_photo_prints_id: System.get_env("PHOTO_PRINTS_PRODUCT_ID"),
+  whcc_album_id: "2qNgr3zcSx9wvTAo9",
+  whcc_books_id: "B9FcAHDH5T63yvvgX",
+  whcc_photo_prints_id: "BBrgfCJLkGzseCdds",
   base_charges: [
     economy_usps: [value: 3.8, uuid: 545],
     economy_trackable: [value: 3.8, uuid: 546],
