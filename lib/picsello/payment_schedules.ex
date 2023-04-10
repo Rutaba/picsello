@@ -177,7 +177,7 @@ defmodule Picsello.PaymentSchedules do
   end
 
   def is_with_cash?(%Job{} = job) do
-    job |> payment_schedules() |> Enum.all?(&PaymentSchedule.is_with_cash?/1)
+    job |> payment_schedules() |> Enum.any?(&PaymentSchedule.is_with_cash?/1)
   end
 
   def total_price(%Job{} = job) do
