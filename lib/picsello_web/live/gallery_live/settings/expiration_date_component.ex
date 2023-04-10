@@ -218,7 +218,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ExpirationDateComponent do
     ~H"""
     <div>
       <h3>Expiration date</h3>
-      <.form :let={f} for={:date} phx-change="update-options" phx-submit="save" phx-target={@myself} id="updateGalleryExpirationForm">
+      <.form :let={f} for={%{}} as={:date} phx-change="update-options" phx-submit="save" phx-target={@myself} id="updateGalleryExpirationForm">
         <div class="flex justify-between">
           <%= select_field f, :month, @month_options, id: "month-#{@is_never_expires}", prompt: "Month", value: @month, class: "month border-blue-planning-300 w-1/3 cursor-pointer #{(@is_never_expires || disabled?(@gallery)) && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires || disabled?(@gallery) %>
           <%= select_field f, :day, @day_options, id: "day-#{@is_never_expires}", prompt: "Day", value: @day, class: "day border-blue-planning-300 mx-2 md:mx-3 w-1/3 cursor-pointer #{(@is_never_expires || disabled?(@gallery)) && 'text-gray-400 cursor-default border-blue-planning-200'}", disabled: @is_never_expires || disabled?(@gallery) %>

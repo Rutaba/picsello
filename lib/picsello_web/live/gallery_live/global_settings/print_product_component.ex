@@ -60,7 +60,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
                     <div class="hidden md:block">$<%= sub(final_cost, base_cost) %></div>
                     <div class="hidden md:block"><%= base_cost %></div>
                     <% size_type = size <> type %>
-                    <.form :let={f} for={:size} phx-target={@myself} phx-change="final_cost" id={size_type <> "form"} class="flex items-center">
+                    <.form :let={f} for={%{}} as={:size} phx-target={@myself} phx-change="final_cost" id={size_type <> "form"} class="flex items-center">
                       <%= for {name, value} <- [{:type, type}, {:product_id, @product.id}, {:size, size}, {:base_cost, to_decimal(base_cost)}] do %>
                         <%= hidden_input f, name, value: value %>
                       <% end %>

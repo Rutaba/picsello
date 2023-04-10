@@ -728,7 +728,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
             This will not affect your pre-existing galleries. If your job doesn’t have a shoot date, the gallery
             for that job will default to <i>“Never Expires”</i>. New galleries will expire:
           </p>
-          <.form :let={f} for={:global_expiration_days} phx-submit="save" phx-change="validate_days">
+          <.form :let={f} for={%{}} as={:global_expiration_days} phx-submit="save" phx-change="validate_days">
             <div class="items-center">
               <%= for {name, max, number, title} <- [{:day, 31, @day, "days,"}, {:month, 11, @month, "months,"}, {:year, 5, @year, "years after their shoot date."}] do %>
                 <.date_input f={f} name={name} max={max} number={number} is_never_expires={@is_never_expires} />
