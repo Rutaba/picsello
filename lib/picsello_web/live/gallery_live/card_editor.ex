@@ -129,7 +129,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
             <.icon name="close-x" class="w-5 h-5 stroke-current"/>
           </button>
 
-          <.form for={:filter} method="get" phx-change="apply-filters" id="filter-form">
+          <.form :let={f} for={%{}} as={:filter} method="get" phx-change="apply-filters" id="filter-form">
             <.ul
               filter={@filter}
               nested_list_class="mb-8 border shadow-lg border-base-200"
@@ -196,7 +196,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
 
         <hr class="border-base-225">
 
-        <.form method="get" for={:pills} phx-change="apply-filters" class="pb-6 relative">
+        <.form :let={f} for={%{}} as={:pills} method="get" phx-change="apply-filters" class="pb-6 relative">
           <%= for %{id: filter_id, options: options} <- @filter, %{id: option_id, checked: true} <- options do %>
             <input type="hidden" name={"filter[#{filter_id}][]"} value={option_id}/>
           <% end %>
@@ -348,7 +348,7 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   # for desktop view
   defp filter_navbar(assigns) do
     ~H"""
-    <.form method="get" for={:filter} phx-change="apply-filters" id="filter-form" class="hidden lg:block">
+    <.form :let={f} for={%{}} as={:filter} method="get" phx-change="apply-filters" id="filter-form" class="hidden lg:block">
       <nav class="bg-white">
         <div class="container flex flex-wrap justify-between items-center mx-auto">
           <div phx-click-away="close-filter-dropdown" class="w-auto">
