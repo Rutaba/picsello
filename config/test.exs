@@ -38,6 +38,7 @@ config :wallaby,
     ),
   driver: Wallaby.Chrome,
   otp_app: :picsello,
+  js_logger: nil,
   screenshot_on_failure: true
 
 config :bamboo, :refute_timeout, 10
