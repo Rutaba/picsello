@@ -94,7 +94,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
     case Questionnaire.archive_questionnaire(id) do
       {:ok, _questionnaire} ->
         socket
-        |> put_flash(:success, "Questionnaire deleted")
+        |> put_flash(:success, "Questionnaire archived")
         |> assign_questionnaires()
         |> noreply()
 
