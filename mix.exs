@@ -74,14 +74,15 @@ defmodule Picsello.MixProject do
         {:plug_cowboy, "~> 2.6"},
         {:postgrex, ">= 0.0.0"},
         # {:stripity_stripe, "~> 2.15.0"},
-        {:stripity_stripe, "~> 2.17"},
+        {:stripity_stripe, "~> 2.17.3"},
         {:telemetry_metrics, "~> 0.6.1"},
         {:telemetry_poller, "~> 1.0"},
         # {:telemetry_poller, "~> 0.5.1"}, need to fix
         # {:tesla, "~> 1.4.3"},
         {:tesla, "~> 1.5"},
-        {:tz, "~> 0.20"},
-        {:tz_extra, "~> 0.25.0"},
+        # {:tz, "~> 0.20"},
+        {:tz, "~> 0.26.1"},
+        {:tz_extra, "~> 0.26.0"},
         # {:tz_extra, "~> 0.20.1"},
         {:ueberauth_google, "~> 0.10"},
         {:packmatic, "~> 1.1.2"},
@@ -113,7 +114,7 @@ defmodule Picsello.MixProject do
       ],
       [
         # {:dialyxir, "~> 1.1.0", only: [:dev, :test], runtime: false}, changelog
-        {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
+        {:dialyxir, "~> 1.3", only: [:dev, :test], runtime: false},
         # {:phoenix_live_reload, "~> 1.3.3", only: :dev},
         {:phoenix_live_reload, "~> 1.4", only: :dev},
         # {:phx_gen_auth, "~> 0.7", only: :dev, runtime: false},
@@ -126,7 +127,7 @@ defmodule Picsello.MixProject do
         {:ex_machina, "~> 2.7.0", only: [:dev, :test]},
         # {:httpoison, "~> 2.1"},changelog, need to fix
         {:httpoison, "~> 1.8.0"},
-        {:wallaby, "~> 0.30.2", runtime: false, only: :test},
+        {:wallaby, "~> 0.30.3", runtime: false, only: :test},
         # {:wallaby, "~> 0.29.1", runtime: false, only: :test},
         # {:csv, "~> 2.4"} major
         {:csv, "~> 3.0"}
