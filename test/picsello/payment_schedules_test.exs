@@ -8,7 +8,12 @@ defmodule Picsello.PaymentSchedulesTest do
     user = insert(:user, email: "photographer@example.com")
 
     lead =
-      insert(:lead, type: "wedding", user: user, client: [email: "elizabeth-lead@example.com"])
+      insert(:lead,
+        type: "wedding",
+        user: user,
+        package: %{name: "test_package"},
+        client: [email: "elizabeth-lead@example.com"]
+      )
 
     insert(:email_preset, job_type: lead.type, state: :payment_confirmation_client)
 
