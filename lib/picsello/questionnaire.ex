@@ -52,7 +52,7 @@ defmodule Picsello.Questionnaire do
       :is_picsello_default
     ])
     |> cast_embed(:questions, required: true)
-    |> validate_required([:questions, :job_type, :name])
+    |> validate_required([:job_type, :name])
     |> validate_name(state)
     |> validate_is_picsello_default()
     |> maybe_validate_unique_name?(questionnaire)
