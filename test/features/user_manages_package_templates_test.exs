@@ -273,7 +273,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     contract_template =
       insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
 
-    insert(:contract, package_id: template.id, contract_template_id: contract_template.id)  |> IO.inspect()
+    insert(:contract, package_id: template.id, contract_template_id: contract_template.id)
 
     session
     |> click(link("Settings"))

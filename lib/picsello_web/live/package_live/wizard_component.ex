@@ -965,7 +965,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   @impl true
   def handle_event("validate", %{"contract" => contract} = params, socket) do
-    # IO.inspect(params, label: "params validate ===> ")
     contract = contract |> Map.put_new("edited", Map.get(contract, "quill_source") == "user")
 
     params = params |> Map.put("contract", contract)
@@ -1575,7 +1574,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          params,
          action \\ nil
        ) do
-    # IO.inspect(params, label: "params")
     global_settings =
       if global_settings,
         do: global_settings,
@@ -1655,22 +1653,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp assign_contract_changeset(%{assigns: %{step: :documents}} = socket, params) do
-    # IO.inspect(params, label: "params conract")
     contract_template_id = Map.get(params, "contract_template_id")
     contract_params = Map.get(params, "contract", %{})
-    # IO.inspect(contract_params, label: "contract_params")
+
     contract =
       if contract_template_id do
         socket.assigns.changeset
         |> current()
-        # |> IO.inspect(label: "package==> ")
         |> Contracts.find_by!(contract_template_id)
       else
         socket.assigns.changeset
         |> current()
         |> package_contract()
-
-        # |> IO.inspect(label: "package contract 1 ==>")
       end
 
     contract_changeset =
@@ -1684,7 +1678,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       )
       |> Map.put(:action, :validate)
 
-    # IO.inspect(contract_changeset, label: "contract_changeset===> ")
     socket |> assign(contract_changeset: contract_changeset)
   end
 

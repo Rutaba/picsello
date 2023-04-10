@@ -28,14 +28,13 @@ defmodule Picsello.ContractsIndexTest do
         |> click(css("label", text: "Wedding"))
         |> find(
           css("div.ql-editor"),
-          fn e -> (e |> Element.clear()) end
+          fn e -> e |> Element.clear() end
         )
         |> scroll_to_bottom()
         |> assert_has(css("button:disabled[type='submit']"))
         |> fill_in_quill("content of my new contract")
         |> wait_for_enabled_submit_button()
-        |> click(button("Save"))
-      )
+        |> click(button("Save")))
     )
     |> assert_flash(:success, text: "Contract saved")
     |> scroll_to_bottom()
@@ -51,11 +50,10 @@ defmodule Picsello.ContractsIndexTest do
         |> scroll_to_bottom()
         |> find(
           css("div.ql-editor"),
-          fn e -> (e |> Element.clear() |> Element.fill_in(with: "the greatest contract ever")) end
+          fn e -> e |> Element.clear() |> Element.fill_in(with: "the greatest contract ever") end
         )
         |> wait_for_enabled_submit_button()
-        |> click(button("Save"))
-      )
+        |> click(button("Save")))
     )
     |> assert_flash(:success, text: "Contract saved")
 
@@ -81,8 +79,7 @@ defmodule Picsello.ContractsIndexTest do
         |> fill_in(text_field("Name"), with: "Duplicate Contract")
         |> click(css("label", text: "Other", count: 2, at: 1))
         |> wait_for_enabled_submit_button()
-        |> click(button("Save"))
-      )
+        |> click(button("Save")))
     )
     |> assert_flash(:success, text: "Contract saved")
     |> assert_has(testid("contracts-row", count: 3))

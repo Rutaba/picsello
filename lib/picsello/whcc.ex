@@ -197,7 +197,11 @@ defmodule Picsello.WHCC do
   def final_cost(%{final_cost: final_cost}),
     do: Money.multiply(Money.new(1), Decimal.mult(final_cost, 100))
 
-  def update_markup(%{category: %{gs_gallery_products: [%{markup: markup}], whcc_id: whcc_id} = category} = product, %{use_global: %{products: true}}) do
+  def update_markup(
+        %{category: %{gs_gallery_products: [%{markup: markup}], whcc_id: whcc_id} = category} =
+          product,
+        %{use_global: %{products: true}}
+      ) do
     markup = if @area_markup_category == whcc_id, do: Decimal.new(0), else: markup
 
     %{product | category: %{category | default_markup: markup}}
