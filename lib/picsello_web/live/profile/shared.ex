@@ -4,11 +4,17 @@ defmodule PicselloWeb.Live.Profile.Shared do
   """
   import PicselloWeb.LiveHelpers
   import Phoenix.Component
+  import PicselloWeb.JobLive.Shared, only: [assign_existing_uploads: 2]
   alias Picsello.{Profiles, BrandLinks, BrandLink}
 
   def update(assigns, socket) do
-    socket
-    |> assign(assigns)
+    assigns
+    |> Map.pop(:uploads)
+    |> then(fn {uploads, assigns} ->
+      uploads
+      |> assign_existing_uploads(socket)
+      |> assign(assigns)
+    end)
     |> assign_brand_links()
     |> assign_changeset()
     |> ok()

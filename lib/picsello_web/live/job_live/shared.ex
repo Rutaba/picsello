@@ -1543,6 +1543,14 @@ defmodule PicselloWeb.JobLive.Shared do
     end
   end
 
+  def assign_existing_uploads(%{} = uploads, %{assigns: assigns} = socket) do
+    assigns
+    |> Map.put(:uploads, uploads)
+    |> then(&Map.put(socket, :assigns, &1))
+  end
+
+  def assign_existing_uploads(_uploads, socket), do: socket
+
   def check_max_entries(
         %{assigns: %{uploads: %{documents: %{entries: entries} = documents}}} = socket
       ) do
@@ -1618,11 +1626,10 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_documents_uploads(socket)
   end
 
-  defp assign_documents_uploads(documents, %{assigns: %{uploads: uploads} = assigns} = socket) do
+  defp assign_documents_uploads(documents, %{assigns: %{uploads: uploads}} = socket) do
     uploads
     |> Map.put(:documents, documents)
-    |> then(&Map.put(assigns, :uploads, &1))
-    |> then(&Map.put(socket, :assigns, &1))
+    |> assign_existing_uploads(socket)
   end
 
   defp ex_docs(%{job: %{documents: documents}}), do: Enum.map(documents, & &1.name)
