@@ -142,7 +142,7 @@ defmodule PicselloWeb.UserAuthTest do
       assert conn.halted
       assert redirected_to(conn) == Routes.user_session_path(conn, :new)
 
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
+      assert get_flash(conn.assigns.flash, :error) ==
                "You must log in to access this page."
     end
 

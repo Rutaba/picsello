@@ -46,7 +46,7 @@ defmodule PicselloWeb.AuthControllerTest do
 
     assert conn
            |> get(Routes.auth_path(conn, :callback, :google))
-           |> Phoenix.Flash.get("error")
+           |> get_flash("error")
            |> String.contains?("contact support")
   end
 
