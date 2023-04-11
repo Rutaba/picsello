@@ -49,7 +49,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
     gallery =
       Galleries.get_gallery!(id)
-      |> Repo.preload(:photographer)
+      |> Repo.preload([:photographer, job: :client])
       |> Galleries.load_watermark_in_gallery()
 
     prepare_gallery(gallery)
