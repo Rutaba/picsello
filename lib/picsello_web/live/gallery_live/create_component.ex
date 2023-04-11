@@ -126,6 +126,9 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   end
 
   @impl true
+  def handle_event("submit", %{"step" => "choose_type"}, socket), do: socket |> noreply()
+
+  @impl true
   def handle_event(
         "submit",
         %{"job" => _job_params},
