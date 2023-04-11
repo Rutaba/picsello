@@ -128,6 +128,10 @@ defmodule Picsello.SignUpTest do
         provider: :google
       }
     end)
+    |> Mox.stub(:uid, fn _ -> "12345" end)
+    |> Mox.stub(:info, fn _ -> %Ueberauth.Auth.Info{name: "brian", email: "brian@example.com"} end)
+    |> Mox.stub(:extra, fn _ -> %Ueberauth.Auth.Extra{} end)
+    |> Mox.stub(:credentials, fn _ -> %Ueberauth.Auth.Credentials{} end)
 
     session
     |> visit("/")
