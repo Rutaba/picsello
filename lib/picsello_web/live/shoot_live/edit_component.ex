@@ -7,10 +7,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   import PicselloWeb.JobLive.Shared, only: [error: 1]
   import Ecto.Query, warn: false
 
-  alias Picsello.{Package, Shoot, Repo, PackagePaymentSchedule, PaymentSchedule, PackagePayments}
+  alias Picsello.{Package, Packages, Shoot, Repo, PackagePaymentSchedule, PaymentSchedule, PackagePayments}
   alias Ecto.{Changeset, Multi}
-
-  @future_date ~U[3022-01-01 00:00:00Z]
 
   @impl true
   def update(%{job: job} = assigns, socket) do
@@ -249,8 +247,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   end
 
   defp get_schedules_for_insert(job, package_payment_schedules, first_shoot_date, last_shoot_date) do
-    first_time_difference = get_diff(@future_date, first_shoot_date)
-    last_time_difference = get_diff(@future_date, last_shoot_date)
+    first_time_difference = get_diff(Packages.future_date(), first_shoot_date)
+    last_time_difference = get_diff(Packages.future_date(), last_shoot_date)
 
     updated_package_payment_schedules =
       get_package_payment_schedules(

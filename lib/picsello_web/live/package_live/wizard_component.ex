@@ -38,28 +38,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @all_fields Package.__schema__(:fields)
-  @payment_defaults_fixed %{
-    "wedding" => ["To Book", "6 Months Before", "Week Before"],
-    "family" => ["To Book", "Day Before Shoot"],
-    "maternity" => ["To Book", "Day Before Shoot"],
-    "newborn" => ["To Book", "Day Before Shoot"],
-    "event" => ["To Book", "Day Before Shoot"],
-    "headshot" => ["To Book"],
-    "portrait" => ["To Book"],
-    "mini" => ["To Book"],
-    "boudoir" => ["To Book", "Day Before Shoot"],
-    "other" => ["To Book", "Day Before Shoot"],
-    "payment_due_book" => ["To Book"],
-    "splits_2" => ["To Book", "Day Before Shoot"],
-    "splits_3" => ["To Book", "6 Months Before", "Week Before"]
-  }
-
+  
   defmodule CustomPayments do
     @moduledoc "For setting payments on last step"
     use Ecto.Schema
     import Ecto.Changeset
-
-    @future_date ~U[3022-01-01 00:00:00Z]
 
     @primary_key false
     embedded_schema do
@@ -230,7 +213,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       end
     end
 
-    defp get_shoot_date(shoot_date), do: if(shoot_date, do: shoot_date, else: @future_date)
+    defp get_shoot_date(shoot_date), do: if(shoot_date, do: shoot_date, else: Packages.future_date())
   end
 
   @impl true
@@ -1387,8 +1370,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           "schedule_type" => params.schedule_type
         }
       else
-        default_presets = get_payment_defaults(job_type, true)
-
+        default_presets = Packages.get_payment_defaults(job_type)
+        
         presets =
           default_presets
           |> Enum.with_index(
@@ -1735,9 +1718,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> Map.merge(options)
   end
 
-  def get_payment_defaults(schedule_type, _) do
-    Map.get(@payment_defaults_fixed, schedule_type, ["To Book", "6 Months Before", "Week Before"])
-  end
 
   defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
 
@@ -1847,12 +1827,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
            }
          },
          schedule_type,
-         fixed
+         _
        ) do
     if custom && schedule_type in ["custom_#{job_type}", "custom"] do
-      get_payment_defaults(custom_schedule_type, fixed)
+      Packages.get_payment_defaults(custom_schedule_type)
     else
-      get_payment_defaults(schedule_type, fixed)
+      Packages.get_payment_defaults(schedule_type)
     end
   end
 
