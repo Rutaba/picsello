@@ -254,7 +254,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           text: "$5.00"
         )
       )
-      |> assert_has(definition("$5.00 due on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}", text: "$5.00"))
+      |> assert_has(
+        definition("$5.00 due on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+          text: "$5.00"
+        )
+      )
       |> click(button("Pay with card Fast easy and secure"))
       |> assert_url_contains("stripe-checkout")
 
