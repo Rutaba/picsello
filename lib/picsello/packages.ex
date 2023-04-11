@@ -10,13 +10,30 @@ defmodule Picsello.Packages do
     JobType,
     Packages.BasePrice,
     Packages.CostOfLivingAdjustment,
-    PackagePayments,
-    Questionnaire
+    PackagePaymentSchedule,
+    Questionnaire,
+    PackagePayments
   }
 
   import Picsello.Repo.CustomMacros
   import Picsello.Package, only: [validate_money: 3]
   import Ecto.Query, only: [from: 2]
+  
+  @payment_defaults_fixed %{
+    "wedding" => ["To Book", "6 Months Before", "Week Before"],
+    "family" => ["To Book", "Day Before Shoot"],
+    "maternity" => ["To Book", "Day Before Shoot"],
+    "newborn" => ["To Book", "Day Before Shoot"],
+    "event" => ["To Book", "Day Before Shoot"],
+    "headshot" => ["To Book"],
+    "portrait" => ["To Book"],
+    "mini" => ["To Book"],
+    "boudoir" => ["To Book", "Day Before Shoot"],
+    "other" => ["To Book", "Day Before Shoot"],
+    "payment_due_book" => ["To Book"],
+    "splits_2" => ["To Book", "Day Before Shoot"],
+    "splits_3" => ["To Book", "6 Months Before", "Week Before"]
+  }
 
   defmodule PackagePricing do
     @moduledoc "For setting buy_all and print_credits price"
@@ -331,6 +348,12 @@ defmodule Picsello.Packages do
       do: %{download | count: count, includes_credits: true}
   end
 
+  def get_payment_defaults(schedule_type) do
+    Map.get(@payment_defaults_fixed, schedule_type, ["To Book", "6 Months Before", "Week Before"])
+  end
+
+  def future_date, do: ~U[3022-01-01 00:00:00Z]
+  
   def templates_with_single_shoot(%User{organization_id: organization_id}) do
     query = Package.templates_for_organization_query(organization_id)
 
@@ -499,14 +522,8 @@ defmodule Picsello.Packages do
       user = Repo.preload(user, organization: :organization_job_types)
 
     enabled_job_types = Profiles.enabled_job_types(job_types)
-
-    templates_query =
-      from q in templates_query(user),
-        where: q.job_type in ^enabled_job_types
-
-    {_count, templates} = Repo.insert_all(Package, templates_query, returning: true)
-
-    templates
+    
+    create_templates(user, enabled_job_types)
   end
 
   def create_initial(_user), do: []
@@ -518,17 +535,86 @@ defmodule Picsello.Packages do
         job_type
       )
       when is_integer(years_experience) and is_atom(schedule) and is_binary(state) do
-    templates_query =
-      from q in templates_query(user),
-        where: q.job_type == ^job_type
 
-    {_count, templates} = Repo.insert_all(Package, templates_query, returning: true)
-
-    templates
+    create_templates(user, job_type)
   end
 
   def create_initial(_user, _type), do: []
+  
+  def get_price(
+         %{base_multiplier: base_multiplier, base_price: base_price},
+         presets_count,
+         index
+       ) do
+    base_price = if(base_price, do: base_price, else: 0)
 
+    amount =
+      Decimal.mult(base_price, base_multiplier)
+      |> Decimal.round(0, :floor)
+      |> Decimal.to_integer()
+
+    total_price = div(amount, 100)
+
+    remainder = rem(total_price, presets_count)
+    amount = if remainder == 0, do: total_price, else: total_price - remainder
+
+    if index + 1 == presets_count do
+      amount / presets_count + remainder
+    else
+      amount / presets_count
+    end
+    |> Kernel.trunc()
+  end
+
+  def make_package_payment_schedule(templates) do
+    templates 
+    |> Enum.map(&get_package_payment_schedule/1) 
+    |> List.flatten()
+  end
+
+  defp create_templates(user, job_types) do
+    job_types = if is_list(job_types), do: job_types, else: List.wrap(job_types)
+
+    templates_query =
+      from q in templates_query(user),
+        where: q.job_type in ^job_types
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert_all(:templates, Package, fn _ -> templates_query end, returning: true)
+    |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn %{templates: {_, templates}} ->
+      make_package_payment_schedule(templates)
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{templates: {_, templates}}} -> templates
+
+      {:error, _} -> []
+    end
+  end
+
+  defp get_package_payment_schedule(package) do
+    current_date = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    default_presets = get_payment_defaults(package.job_type)
+    count = length(default_presets)
+    base_price = %{base_multiplier: package.base_multiplier, base_price: package.base_price.amount}
+    
+    Enum.with_index(
+      default_presets,
+      fn default, index ->
+        %{
+          package_id: package.id,
+          price: Money.new(get_price(base_price, count, index) * 100),
+          description: "$#{get_price(base_price, count, index)} to #{default}",
+          schedule_date: future_date(),
+          interval: true,
+          due_interval: default,
+          inserted_at: current_date,
+          updated_at: current_date
+        }
+      end
+    )
+end
+  
   defp minimum_years_query(years_experience),
     do:
       from(base in BasePrice,
@@ -566,6 +652,8 @@ defmodule Picsello.Packages do
         inserted_at: now(),
         job_type: base.job_type,
         buy_all: base.buy_all,
+        schedule_type: base.job_type,
+        fixed: type(^true, base.full_time),
         print_credits: type(^zero_price, base.print_credits),
         name: name.initcap,
         organization_id: type(^organization_id, base.id),

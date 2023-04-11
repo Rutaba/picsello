@@ -55,7 +55,11 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
 
   @impl true
   def handle_event("like", %{"id" => id}, %{assigns: %{from: from}} = socket) do
-    {:ok, _} = if from == :photographer, do: Photos.toggle_photographer_liked(id), else: Photos.toggle_liked(id)
+    {:ok, _} =
+      if from == :photographer,
+        do: Photos.toggle_photographer_liked(id),
+        else: Photos.toggle_liked(id)
+
     socket |> noreply()
   end
 
@@ -76,7 +80,9 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
 
   @impl true
   def render(%{photo: photo} = assigns) do
-    is_liked = if assigns.from == :photographer, do: photo.is_photographer_liked, else: photo.client_liked
+    is_liked =
+      if assigns.from == :photographer, do: photo.is_photographer_liked, else: photo.client_liked
+
     assigns = assign(assigns, :is_liked, is_liked)
 
     ~H"""

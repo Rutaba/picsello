@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  
+
   alias Picsello.{Repo, Galleries}
   alias Ecto.Multi
 
@@ -832,7 +832,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
               <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
             </.watermark_name_delete>
           <% end %>
-          <.form :let={f} for={@changeset} phx-change="validate_text_input"  class="mt-5 font-sans" id="textWatermarkForm">
+          <.form :let={f} for={@changeset} phx-change="validate_text_input" phx-submit="save_watermark" class="mt-5 font-sans" id="textWatermarkForm">
             <div class="gallerySettingsInput flex flex-row p-1">
               <%= text_input f, :watermark_text , placeholder: "Enter your watermark text here", class: "bg-base-200 rounded-lg p-2 w-full focus:outline-inherit mr-1" %>
               <a class={classes("btn-secondary bg-base-200 flex items-center ml-auto whitespace-nowrap", %{"hidden" => !@ready_to_save})} phx-click="preview_watermark"><%= preview_button_text(@show_preview) %></a>
