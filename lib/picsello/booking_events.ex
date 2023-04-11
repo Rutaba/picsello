@@ -462,6 +462,7 @@ defmodule Picsello.BookingEvents do
       String.contains?(due_interval, "1 Month Before") -> Timex.shift(shoot_date, months: -1)
       String.contains?(due_interval, "Week Before") -> Timex.shift(shoot_date, days: -7)
       String.contains?(due_interval, "Day Before") -> Timex.shift(shoot_date, days: -1)
+      String.contains?(due_interval, "To Book") -> DateTime.utc_now() |> DateTime.truncate(:second)
       true -> shoot_date
     end
   end

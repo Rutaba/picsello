@@ -145,6 +145,6 @@ defmodule Picsello.FactoryReset do
       set: Keyword.put([], key, true)
     )
   end
-  
+
   defp now(), do: DateTime.utc_now() |> DateTime.to_naive() |> NaiveDateTime.truncate(:second)
 end
