@@ -58,173 +58,6 @@ defmodule PicselloWeb.JobLive.Show do
     |> ok()
   end
 
-  def gallery_attrs(%Gallery{type: type} = gallery, parent_has_orders? \\ false) do
-    case Picsello.Galleries.gallery_current_status(gallery) do
-      :none_created when type == :finals ->
-        %{
-          button_text: "Create Finals",
-          button_click: "create-gallery",
-          button_disabled: !parent_has_orders?,
-          text: text(:finals, :none_created, parent_has_orders?),
-          status: :none_created
-        }
-
-      :none_created ->
-        %{
-          button_text: "Start Setup",
-          button_click: "create-gallery",
-          button_disabled: false,
-          text: "You don't have galleries for this job setup. Create one now!",
-          status: :none_created
-        }
-
-      :no_photo when type == :finals ->
-        %{
-          button_text: "Upload Finals",
-          button_click: "view-gallery",
-          button_disabled: false,
-          text: "Selects are ready",
-          status: :no_photo
-        }
-
-      :no_photo ->
-        %{
-          button_text: "Upload Photos",
-          button_click: "view-gallery",
-          button_disabled: false,
-          text: "Upload photos",
-          status: :no_photo
-        }
-
-      :deactivated ->
-        %{
-          button_text: "View gallery",
-          button_click: "view-gallery",
-          button_disabled: true,
-          text: "Gallery is disabled",
-          status: :deactivated
-        }
-
-      status ->
-        photos_count = Galleries.get_gallery_photos_count(gallery.id)
-
-        %{
-          button_text: button_text(type),
-          button_click: "view-gallery",
-          button_disabled: false,
-          text: "#{photos_count} #{ngettext("photo", "photos", photos_count)}",
-          status: status
-        }
-    end
-  end
-
-  defp text(:finals, :none_created, true), do: "Selects are ready"
-  defp text(:finals, :none_created, false), do: "Need selects from client first"
-
-  defp button_text(:proofing), do: "View selects"
-  defp button_text(:finals), do: "View finals"
-  defp button_text(_), do: "View gallery"
-
-  defp galleries(%{galleries: []} = assigns) do
-    %{
-      button_text: button_text,
-      button_click: button_click,
-      button_disabled: button_disabled,
-      text: text
-    } = gallery_attrs(%Gallery{})
-
-    assigns = assign(assigns,
-    button_text: button_text,
-    button_click: button_click,
-    button_disabled: button_disabled,
-    text: text
-    )
-
-    ~H"""
-    <div {testid("card-Gallery")}>
-      <p><%= @text %></p>
-      <button class="btn-primary mt-4 intro-gallery" phx-click={@button_click} disabled={@button_disabled}>
-        <%= @button_text %>
-      </button>
-    </div>
-    """
-  end
-
-  defp galleries(%{galleries: _} = assigns) do
-    build_type = fn
-      :finals -> :unlinked_finals
-      type -> type
-    end
-    assigns = assign(assigns, build_type: build_type)
-
-    ~H"""
-    <%= for %{name: name, type: type, child: child, orders: orders} = gallery <- @galleries do %>
-      <%= case type do %>
-        <% :proofing -> %>
-          <div {testid("card-proofing")} class="flex overflow-hidden border border-base-200 rounded-lg">
-            <div class="flex flex-col w-full p-4">
-              <.card_title title={name} gallery_type={type} color="black" gallery_card?={true} />
-              <div class="flex justify-between w-full">
-                <.card_content gallery={gallery} icon_name="proofing" title="Client Proofing" padding="pr-3" {assigns} />
-                <div class="h-full w-px bg-base-200"/>
-                <.card_content gallery={child || %Gallery{type: :finals, orders: []}} parent_id={gallery.id} parent_has_orders?={orders != []} icon_name="finals" title="Client Finals" padding="pl-3" {assigns} />
-              </div>
-            </div>
-          </div>
-        <% _ -> %>
-          <.card title={name} gallery_card?={true} color="black" gallery_type={@build_type.(type)}>
-            <.inner_section {assigns} gallery={gallery} p_class="text-lg" btn_section_class="mt-[3.7rem]" link_class="font-semibold text-base" />
-          </.card>
-      <% end %>
-    <% end %>
-    """
-  end
-
-  defp card_content(assigns) do
-    ~H"""
-    <div class={"flex flex-col w-2/4 #{@padding}"}>
-      <div class="flex">
-        <div class="border p-1.5 rounded-full bg-base-200">
-          <.icon name={@icon_name} class="w-4 h-4 stroke-2 fill-current text-blue-planning-300"/>
-        </div>
-        <span class="mt-0.5 ml-3 text-base font-bold"><%= @title %></span>
-      </div>
-      <.inner_section {assigns} btn_class="px-4" socket={@socket} />
-    </div>
-    """
-  end
-
-  defp inner_section(%{gallery: %{orders: orders}} = assigns) do
-    assigns =
-      Enum.into(
-        assigns,
-        %{
-          p_class: "text-base h-12",
-          btn_section_class: "mt-2",
-          btn_class: "px-3",
-          count: Enum.count(orders),
-          parent_has_orders?: true,
-          parent_id: nil
-        }
-      )
-
-    ~H"""
-    <%= case gallery_attrs(@gallery, @parent_has_orders?) do %>
-      <% %{button_text: button_text, button_click: button_click, button_disabled: button_disabled, text: text, status: status} -> %>
-        <p class={"text-base-250 font-normal #{@p_class}"}>
-          <%= text %>
-          <%= unless status in [:no_photo, :none_created] do %>
-            - <%= if @count == 0, do: "No", else: @count %> orders
-          <% end %>
-        </p>
-        <div {testid("card-buttons")} class={"flex self-end items-center gap-4 #{@btn_section_class}"} >
-          <%= link "View Orders", to: (if @gallery.id, do: Routes.transaction_path(@socket, :transactions, @gallery.id), else: "#"), class: "font-normal text-sm text-blue-planning-300 underline #{@count == 0 && 'opacity-30 pointer-events-none'}" %>
-          <button class={"btn-primary intro-gallery py-2 font-normal rounded-lg #{@btn_class}"} phx-click={button_click} phx-value-gallery_id={@gallery.id} phx-value-parent_id={@parent_id} disabled={button_disabled}><%= button_text %></button>
-        </div>
-    <% end %>
-    """
-  end
-
   @impl true
   def handle_event("confirm_job_complete", %{}, socket) do
     socket
@@ -262,6 +95,13 @@ defmodule PicselloWeb.JobLive.Show do
       socket
       |> push_redirect(to: Routes.transaction_path(socket, :transactions, job.id))
       |> noreply()
+
+  @impl true
+  def handle_event("edit-digital-pricing", %{"gallery_id" => gallery_id}, socket) do
+    socket
+    |> redirect(to: Routes.gallery_pricing_index_path(socket, :index, gallery_id))
+    |> noreply
+  end
 
   @impl true
   def handle_event("view-gallery", %{"gallery_id" => gallery_id}, socket),
@@ -394,6 +234,193 @@ defmodule PicselloWeb.JobLive.Show do
     else
       socket |> noreply()
     end
+  end
+
+  def gallery_attrs(%Gallery{type: type} = gallery, parent_has_orders? \\ false) do
+    case Picsello.Galleries.gallery_current_status(gallery) do
+      :none_created when type == :finals ->
+        %{
+          button_text: "Create Finals",
+          button_click: "create-gallery",
+          button_disabled: !parent_has_orders?,
+          text: text(:finals, :none_created, parent_has_orders?),
+          status: :none_created
+        }
+
+      :none_created ->
+        %{
+          button_text: "Start Setup",
+          button_click: "create-gallery",
+          button_disabled: false,
+          text: "You don't have galleries for this job setup. Create one now!",
+          status: :none_created
+        }
+
+      :no_photo when type == :finals ->
+        %{
+          button_text: "Upload Finals",
+          button_click: "view-gallery",
+          button_disabled: false,
+          text: "Selects are ready",
+          status: :no_photo
+        }
+
+      :no_photo ->
+        %{
+          button_text: "Upload Photos",
+          button_click: "view-gallery",
+          button_disabled: false,
+          text: "Upload photos",
+          status: :no_photo
+        }
+
+      :deactivated ->
+        %{
+          button_text: "View gallery",
+          button_click: "view-gallery",
+          button_disabled: true,
+          text: "Gallery is disabled",
+          status: :deactivated
+        }
+
+      status ->
+        photos_count = Galleries.get_gallery_photos_count(gallery.id)
+
+        %{
+          button_text: button_text(type),
+          button_click: "view-gallery",
+          button_disabled: false,
+          text: "#{photos_count} #{ngettext("photo", "photos", photos_count)}",
+          status: status
+        }
+    end
+  end
+
+  defp text(:finals, :none_created, true), do: "Selects are ready"
+  defp text(:finals, :none_created, false), do: "Need selects from client first"
+
+  defp button_text(:proofing), do: "View selects"
+  defp button_text(:finals), do: "View finals"
+  defp button_text(_), do: "View gallery"
+
+  defp actions(assigns) do
+    ~H"""
+    <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-offset-x="-21" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-gallery-#{@gallery.id}"}>
+      <button title="Manage" class="btn-tertiary px-3 py-2 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
+        Actions
+        <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+        <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+      </button>
+
+      <div class="z-10 flex flex-col hidden w-68 bg-white border rounded-lg shadow-lg popover-content">
+        <%= for %{title: title, action: action, icon: icon} <- actions() do %>
+          <button title={title} type="button" phx-click={action} phx-value-gallery_id={@gallery.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+            <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
+            <%= title %>
+          </button>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  defp galleries(%{galleries: []} = assigns) do
+    %{
+      button_text: button_text,
+      button_click: button_click,
+      button_disabled: button_disabled,
+      text: text
+    } = gallery_attrs(%Gallery{})
+
+    ~H"""
+    <div {testid("card-Gallery")}>
+      <p><%= text %></p>
+      <button class="btn-primary mt-4 intro-gallery" phx-click={button_click} disabled={button_disabled}>
+        <%= button_text %>
+      </button>
+    </div>
+    """
+  end
+
+  defp galleries(%{galleries: galleries} = assigns) do
+    build_type = fn
+      :finals -> :unlinked_finals
+      type -> type
+    end
+
+    ~H"""
+    <%= for %{name: name, type: type, child: child, orders: orders} = gallery <- galleries do %>
+      <%= case type do %>
+        <% :proofing -> %>
+          <div {testid("card-proofing")} class="flex overflow-hidden border border-base-200 rounded-lg">
+            <div class="flex flex-col w-full p-4">
+              <.card_title title={name} gallery_type={type} color="black" gallery_card?={true} />
+              <div class="flex justify-between w-full">
+                <.card_content gallery={gallery} icon_name="proofing" title="Client Proofing" padding="pr-3" {assigns} />
+                <div class="h-full w-px bg-base-200"/>
+                <.card_content gallery={child || %Gallery{type: :finals, orders: []}} parent_id={gallery.id} parent_has_orders?={orders != []} icon_name="finals" title="Client Finals" padding="pl-3" {assigns} />
+              </div>
+            </div>
+          </div>
+        <% _ -> %>
+          <.card title={name} gallery_card?={true} color="black" gallery_type={build_type.(type)}>
+            <.inner_section {assigns} gallery={gallery} p_class="text-lg" btn_section_class="mt-[3.7rem]" link_class="font-semibold text-base" />
+          </.card>
+      <% end %>
+    <% end %>
+    """
+  end
+
+  defp card_content(assigns) do
+    ~H"""
+    <div class={"flex flex-col w-2/4 #{@padding}"}>
+      <div class="flex">
+        <div class="border p-1.5 rounded-full bg-base-200">
+          <.icon name={@icon_name} class="w-4 h-4 stroke-2 fill-current text-blue-planning-300"/>
+        </div>
+        <span class="mt-0.5 ml-3 text-base font-bold"><%= @title %></span>
+      </div>
+      <.inner_section {assigns} btn_class="px-4" socket={@socket} />
+    </div>
+    """
+  end
+
+  defp inner_section(%{gallery: %{orders: orders}} = assigns) do
+    assigns =
+      Enum.into(
+        assigns,
+        %{
+          p_class: "text-base h-12",
+          btn_section_class: "mt-2",
+          btn_class: "px-3",
+          count: Enum.count(orders),
+          parent_has_orders?: true,
+          parent_id: nil
+        }
+      )
+
+    ~H"""
+    <%= case gallery_attrs(@gallery, @parent_has_orders?) do %>
+      <% %{button_text: button_text, button_click: button_click, button_disabled: button_disabled, text: text, status: status} -> %>
+        <p class={"text-base-250 font-normal #{@p_class}"}>
+          <%= text %>
+          <%= unless status in [:no_photo, :none_created] do %>
+            - <%= if @count == 0, do: "No", else: @count %> orders
+          <% end %>
+        </p>
+        <div {testid("card-buttons")} class={"flex self-end items-center gap-4 #{@btn_section_class}"} >
+          <button class={"btn-primary intro-gallery font-normal rounded-lg py-2 #{@btn_class}"} phx-click={button_click} phx-value-gallery_id={@gallery.id} phx-value-parent_id={@parent_id} disabled={button_disabled}><%= button_text %></button>
+          <.actions gallery={@gallery}/>
+        </div>
+    <% end %>
+    """
+  end
+
+  defp actions do
+    [
+      %{title: "View orders", action: "view-orders", icon: "shopping-cart"},
+      %{title: "Edit digital pricing & credits", action: "edit-digital-pricing", icon: "pencil"}
+    ]
   end
 
   defp split({type, parent_id}), do: {type, parent_id}
