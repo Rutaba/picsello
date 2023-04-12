@@ -25,7 +25,7 @@
                     <h1 class="text-lg text-base-250 font-medium leading-10 uppercase"><%= product.whcc_name %></h1>
                   </div>
 
-                  <%= for {%{id: id} = line_item, index} <- product_lines |> Enum.with_index(1) do %>
+                  <%= for {%{id: id} = line_item, index} <- product_lines |> Enum.reverse |> Enum.with_index(1) do %>
                     <div {testid("product-#{item_id(line_item)}")} class="py-8 mx-8 flex md:flex-row flex-col">
                       <div class="flex md:w-2/3">
                         <img class="object-contain w-48 h-32 mr-4 md:w-72 md:h-48 md:mr-7" src={item_image_url(line_item)}/>
