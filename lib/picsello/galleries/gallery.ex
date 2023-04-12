@@ -48,6 +48,7 @@ defmodule Picsello.Galleries.Gallery do
     timestamps(type: :utc_datetime)
   end
 
+  @moduledoc false
   defmodule UseGlobal do
     use Ecto.Schema
     import Ecto.Changeset
