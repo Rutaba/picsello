@@ -69,7 +69,7 @@
                               <%= for {label, shipping_type} <- [{"Economy", "economy"}, {"3-days or less", "3_days"}, {"Priority Overnight", "1_day"}] do %>
                                 <div class="flex justify-between">
                                   <label class="flex gap-4 items-center w-80">
-                                    <%= radio_button f, :type, shipping_type, checked: shipping_type == line_item.shipping_type, class: "w-6 h-6" %>
+                                    <%= radio_button f, :type, shipping_type, checked: shipping_type == Atom.to_string(line_item.shipping_type), class: "w-6 h-6" %>
                                     <span><%= label %></span>
                                   </label>
 

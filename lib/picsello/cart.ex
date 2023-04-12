@@ -436,6 +436,9 @@ defmodule Picsello.Cart do
     }
   end
 
+  def get_base_charge(product, shipping_type) when is_atom(shipping_type),
+    do: get_base_charge(product, Atom.to_string(shipping_type))
+
   def get_base_charge(
         %{
           selections: selections,
@@ -510,6 +513,7 @@ defmodule Picsello.Cart do
   @one_day 1
   @three_days 3
   @economy 5
+  defp choose_days(value) when is_atom(value), do: value |> Atom.to_string() |> choose_days()
   defp choose_days("1_day"), do: @one_day
   defp choose_days("3_days"), do: @three_days
   defp choose_days("economy"), do: @economy
