@@ -64,7 +64,7 @@
                       <%= if index == 1 || whcc_id in @shipping_to_all do %>
                         <div class="md:border-l-2 md:w-1/3">
                           <div class="pl-6 mt-6">
-                            <.form let={f} for={:shipping} id={"#{id}"} phx-change="shiping_type" class="flex gap-2 flex-col">
+                            <.form :let={f} for={:shipping} id={"#{id}"} phx-change="shiping_type" class="flex gap-2 flex-col">
                               <%= hidden_input f, :product_id, value: id %>
                               <%= for {label, shipping_type} <- [{"Economy", "economy"}, {"3-days or less", "3_days"}, {"Priority Overnight", "1_day"}] do %>
                                 <div class="flex justify-between">
