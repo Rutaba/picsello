@@ -100,6 +100,7 @@ defmodule Picsello.GalleryOverviewTest do
     |> scroll_into_view(css("#updateGalleryNeverExpire"))
     |> click(css("#updateGalleryNeverExpire"))
     |> click(css("#saveGalleryExpiration"))
+    |> sleep(100)
 
     updated_gallery = Galleries.get_gallery!(gallery.id)
 

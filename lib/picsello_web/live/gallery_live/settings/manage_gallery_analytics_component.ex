@@ -2,15 +2,16 @@ defmodule PicselloWeb.GalleryLive.Settings.ManageGalleryAnalyticsComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias PicselloWeb.GalleryLive.Shared, as: GalleryLiveShared
+  alias Picsello.Repo
 
   @impl true
-  def update(assigns, socket) do
-    client_email = Map.get(assigns.gallery.job.client, :email)
+  def update(%{gallery: %{gallery_analytics: gallery_analytics} = gallery}, socket) do
+    %{email: email} = Repo.preload(gallery, job: :client) |> Map.get(:job) |> Map.get(:client)
 
     socket
     |> assign(
-      gallery_analytics: assign_unique_emails_list(assigns.gallery.gallery_analytics),
-      gallery_client_email: client_email
+      gallery_analytics: assign_unique_emails_list(gallery_analytics),
+      gallery_client_email: email
     )
     |> ok
   end
