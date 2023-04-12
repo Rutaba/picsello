@@ -226,7 +226,7 @@ defmodule Picsello.BookingEvents do
         %{start_time: start_time, end_time: end_time},
         _slots
       )
-      when start_time == nil or end_time == nil,
+      when is_nil(start_time) or is_nil(end_time),
       do: false
 
   def is_blocked_booked(

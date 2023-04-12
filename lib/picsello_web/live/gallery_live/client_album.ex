@@ -120,12 +120,13 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_info(
         {:customize_and_buy_product, whcc_product, photo, size},
-        %{assigns: %{favorites_filter: favorites_filter}} = socket
+        %{assigns: %{album: album, favorites_filter: favorites_filter}} = socket
       ) do
     socket
     |> customize_and_buy_product(whcc_product, photo,
       size: size,
-      favorites_only: favorites_filter
+      favorites_only: favorites_filter,
+      album_id: album.id
     )
   end
 

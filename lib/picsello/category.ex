@@ -7,6 +7,8 @@ defmodule Picsello.Category do
 
   @album %{w: 2348, h: 2331, image: "album", slot: %{x: 768, y: 710, w: 915, h: 916}}
   @whcc_print_category "h3GrtaTf5ipFicdrJ"
+  @products_config Application.compile_env!(:picsello, :products)
+  @shipping_to_all [@products_config[:whcc_album_id], @products_config[:whcc_books_id]]
 
   @preview_templates %{
     "album" => %{portrait: @album, landscape: @album},
@@ -110,4 +112,18 @@ defmodule Picsello.Category do
 
   def frame_image(%{frame_image: frame_image}), do: frame_image
   def print_category(), do: @whcc_print_category
+
+  def all_query() do
+    from(category in __MODULE__,
+      preload: [products: ^from(p in Picsello.Product, where: is_nil(p.deleted_at))]
+    )
+  end
+
+  def shipping_all_whcc_ids do
+    if Enum.any?(@shipping_to_all, &is_nil(&1)) do
+      raise("Recieved nil values")
+    end
+
+    @shipping_to_all
+  end
 end

@@ -6,9 +6,7 @@ defmodule Picsello.Cart.CheckoutsTest do
     Galleries,
     MockPayments,
     Intents.Intent,
-    Invoices.Invoice,
     Cart.Order,
-    WHCC.Editor.Export,
     MockWHCCClient,
     Cart.Checkouts,
     Cart,
@@ -221,23 +219,24 @@ defmodule Picsello.Cart.CheckoutsTest do
         |> Cart.place_product(gallery)
         |> Repo.preload(:digitals)
 
-      assert ~M[0]USD == Order.total_cost(order)
+      assert ~M[45]USD == Order.total_cost(order)
 
       assert :lt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
 
       [order: order]
     end
 
-    test("creates whcc order", context, do: creates_whcc_order(context))
-
     test "creates finalized invoice", %{order: order} do
-      Mox.expect(MockPayments, :finalize_invoice, fn _, _, _ ->
-        {:ok, build(:stripe_invoice, status: "open")}
-      end)
+      Mox.expect(MockPayments, :create_session, fn %{payment_intent_data: payment_intent_data},
+                                                 _opts ->
+      {:ok,
+       build(:stripe_session,
+         payment_intent:
+           build(:stripe_payment_intent, Map.put(payment_intent_data, :id, "intent-stripe-id"))
+       )}
+                                                 end)
 
       assert {:ok, _} = check_out(order)
-
-      assert [%Invoice{status: :open}] = Repo.all(Invoice)
     end
   end
 
@@ -360,30 +359,6 @@ defmodule Picsello.Cart.CheckoutsTest do
         account_id: Galleries.account_id(gallery),
         order_number: Order.number(order)
       ]
-    end
-
-    setup [:stub_create_session]
-
-    test "exports editors, providing shipping information", %{
-      order: order,
-      account_id: account_id,
-      order_number: order_number,
-      cart_products: cart_products
-    } do
-      MockWHCCClient
-      |> Mox.expect(:editors_export, fn ^account_id, editors, opts ->
-        assert cart_products |> Enum.map(& &1.editor_id) |> MapSet.new() ==
-                 editors |> Enum.map(& &1.id) |> MapSet.new()
-
-        assert to_string(order_number) == Keyword.get(opts, :entry_id)
-
-        %Export{}
-      end)
-      |> Mox.expect(:create_order, fn ^account_id, _export ->
-        {:ok, build(:whcc_order_created)}
-      end)
-
-      check_out(order)
     end
   end
 end

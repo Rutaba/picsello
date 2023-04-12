@@ -194,7 +194,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
       order_date: helpers.strftime(time_zone, order.placed_at, "%-m/%-d/%y"),
       order_items: products ++ digitals,
       order_number: Picsello.Cart.Order.number(order),
-      order_shipping: Money.new(0),
+      order_shipping: Cart.total_shipping(Cart.preload_products(order).products),
       order_subtotal: Order.total_cost(order),
       order_total: Order.total_cost(order),
       order_url:

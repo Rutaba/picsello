@@ -49,6 +49,9 @@
         <% else %>
           <p class="w-full text-sm text-base-250">Created <%= questionnaire.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
         <% end %>
+        <%= if questionnaire.status == :archive do %>
+          <div><.badge color={:gray}>Archived</.badge></div>
+        <% end %>
       </div>
       <div class="sm:col-span-2">
         <span class="sm:hidden font-bold">Job type: </span> <%= questionnaire.job_type |> String.capitalize()  %>

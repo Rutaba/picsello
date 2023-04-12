@@ -34,6 +34,7 @@ defmodule Picsello.Questionnaire do
     field(:name, :string)
     field(:is_organization_default, :boolean, default: false)
     field(:is_picsello_default, :boolean, default: false)
+    field(:status, Ecto.Enum, values: [:active, :archive])
     belongs_to :organization, Picsello.Organization
     belongs_to :package, Picsello.Package
 
@@ -97,6 +98,12 @@ defmodule Picsello.Questionnaire do
 
   def get_questionnaire_by_id(questionnaire_id),
     do: get_questionnaire(questionnaire_id) |> Repo.one()
+
+  def update_questionnaire_status(questionnaire_id, status) do
+    get_questionnaire_by_id(questionnaire_id)
+    |> change(status: status)
+    |> Repo.update()
+  end
 
   def clean_questionnaire_for_changeset(
         questionnaire,

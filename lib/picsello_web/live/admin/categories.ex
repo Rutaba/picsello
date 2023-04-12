@@ -19,7 +19,7 @@ defmodule PicselloWeb.Live.Admin.Categories do
       <h1 class="text-4xl font-bold">Manage Categories</h1>
     </header>
     <div class="p-4">
-      <div class="items-center mt-4 grid gap-2 grid-cols-[repeat(10,min-content)]">
+      <div class="items-center mt-4 grid gap-6 w-full grid-cols-[repeat(10,min-content)]">
         <div class="font-bold">WHCC Name</div>
         <div class="font-bold">WHCC ID</div>
         <div class="font-bold">Coming Soon?</div>
@@ -27,8 +27,6 @@ defmodule PicselloWeb.Live.Admin.Categories do
         <div class="font-bold">icon</div>
         <div class="font-bold">name</div>
         <div class="font-bold">default markup</div>
-        <div class="font-bold">shipping base charge (cents)</div>
-        <div class="font-bold">shipping upcharge (multiplier)</div>
         <div class="font-bold">frame image</div>
         <div class="font-bold">position</div>
         <%= for(%{category: %{id: id, whcc_id: whcc_id, whcc_name: whcc_name, icon: icon}, changeset: changeset} <- @rows) do %>
@@ -46,8 +44,6 @@ defmodule PicselloWeb.Live.Admin.Categories do
               </div>
               <%= input f, :name, phx_debounce: 200 %>
               <%= input f, :default_markup, type: :number_input, phx_debounce: 200, step: 0.01, min: 1.0, class: "w-24" %>
-              <%= input f, :shipping_base_charge, phx_debounce: 200, step: 1, min: 0, class: "w-24", phx_hook: "PriceMask" %>
-              <%= input f, :shipping_upcharge, type: :number_input, phx_debounce: 200, step: 0.01, min: 0.0, class: "w-24" %>
               <%= select f, :frame_image, [""| Picsello.Category.frame_images()], phx_debounce: 200 %>
             </.form>
 

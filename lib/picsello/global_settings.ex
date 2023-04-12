@@ -60,7 +60,7 @@ defmodule Picsello.GlobalSettings do
   end
 
   def gallery_products_params() do
-    categories = from(c in Category, preload: :products, where: not c.hidden) |> Repo.all()
+    categories = Category.all_query() |> where([c], not c.hidden) |> Repo.all()
 
     categories
     |> Enum.find(%{}, &(&1.whcc_id == @whcc_print_category))
@@ -68,7 +68,10 @@ defmodule Picsello.GlobalSettings do
     |> Enum.map(fn product ->
       product = Picsello.Repo.preload(product, :category)
       {categories, selections} = Picsello.Product.selections_with_prices(product)
-      build_selections(selections, categories, product.id)
+
+      selections
+      |> build_print_products(categories)
+      |> then(&%{product_id: product.id, sizes: &1})
     end)
     |> then(fn print_category ->
       Enum.map(
@@ -82,50 +85,37 @@ defmodule Picsello.GlobalSettings do
     end)
   end
 
-  def size([total_cost, shipping_cost, print_cost, _, rounding, size, type], ["size", _]),
-    do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
+  def size([total_cost, print_cost, _, size, type], ["size", _]),
+    do: size(total_cost, print_cost, size, type)
 
-  def size([total_cost, shipping_cost, print_cost, _, rounding, type, size], [_, "size"]),
-    do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
+  def size([total_cost, print_cost, _, type, size], [_, "size"]),
+    do: size(total_cost, print_cost, size, type)
 
-  def size(
-        [
-          total_cost,
-          shipping_cost,
-          print_cost,
-          _,
-          rounding,
-          type,
-          _mounting,
-          size,
-          _surface,
-          _texture
-        ],
-        [_, _, "size", _, _]
-      ),
-      do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
+  def size([total_cost, print_cost, _, type, _, size, _, _], [_, _, "size", _, _]),
+    do: size(total_cost, print_cost, size, type)
 
-  def size([total_cost, shipping_cost, print_cost, _, rounding, _mounting, type, size], [
-        _,
-        _,
-        "size"
-      ]),
-      do: size(total_cost, add([shipping_cost, print_cost, rounding]), size, type)
+  def size([total_cost, print_cost, _, _mounting, type, size], [_, _, "size"]),
+    do: size(total_cost, print_cost, size, type)
 
   def size(final_cost, base_cost, size, type),
     do: %{final_cost: to_decimal(final_cost), base_cost: base_cost, size: size, type: type}
 
-  defp add(values) do
-    Enum.reduce(values, Money.new(0), fn value, total -> Money.add(total, value) end)
-  end
-
   def to_decimal(%Money{amount: amount, currency: :USD}),
     do: Decimal.round(to_string(amount / 100), 2)
 
-  defp build_selections(selections, categories, product_id) do
-    selections
-    |> Enum.map(&size(&1, categories))
-    |> then(&%{product_id: product_id, sizes: &1})
+  @fine_art_prints ~w(torchon photo_rag_metallic)
+  def build_print_products(selections, categories) do
+    torchon = hd(@fine_art_prints)
+
+    Enum.reduce(selections, [], fn selection, acc ->
+      %{type: type} = p_product = size(selection, categories)
+
+      acc ++
+        case String.contains?(type, torchon) do
+          true -> Enum.map(@fine_art_prints, &Map.put(p_product, :type, &1))
+          false -> [p_product]
+        end
+    end)
   end
 
   defp print_products(@whcc_print_category, print_category), do: print_category

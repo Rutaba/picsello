@@ -40,7 +40,7 @@ defmodule Picsello.GalleryCartTest do
     session
     |> visit("/gallery/#{gallery.client_link_hash}/cart")
     |> assert_path("/gallery/#{gallery.client_link_hash}/cart")
-    |> assert_text("Cart Review")
+    |> assert_text("Cart & Shipping Review")
     |> assert_text("20 by 30 inches poster")
     |> assert_text(Money.to_string(price))
     |> assert_has(css("button", count: 1, text: "Edit"))

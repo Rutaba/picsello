@@ -290,7 +290,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     """
   end
 
-  defp open_compose(%{assigns: %{job: job}} = socket),
+  defp open_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
     do:
       socket
       |> PicselloWeb.ClientMessageComponent.open(%{
@@ -299,7 +299,8 @@ defmodule PicselloWeb.GalleryLive.Index do
         show_subject: true,
         presets: [],
         send_button: "Send",
-        client: Job.client(job)
+        client: Job.client(job),
+        current_user: current_user
       })
       |> noreply()
 

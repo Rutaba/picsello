@@ -159,30 +159,41 @@ defmodule Picsello.Photos do
 
   @spec get_related(Photo.t(), favorites_only: boolean()) :: [Photo.t()]
   def get_related(%{gallery_id: gallery_id, id: photo_id} = photo, opts \\ []) do
-    order_by =
-      case photo.album_id do
-        nil ->
-          &order_by(&1, [photo], asc_nulls_first: photo.album_id, asc: photo.position)
-
-        album_id ->
-          &order_by(&1, [photo],
-            desc_nulls_last: photo.album_id == ^album_id,
-            asc: photo.album_id,
-            asc: photo.position
-          )
-      end
-
-    query =
-      from(photo in watermarked_query(),
-        where: photo.gallery_id == ^gallery_id and photo.id != ^photo_id
-      )
-      |> order_by.()
+    query = get_related_query(gallery_id, photo_id, photo)
 
     case Keyword.get(opts, :favorites_only) do
       true -> where(query, [photo], photo.client_liked == true)
       _ -> query
     end
+    |> then(
+      &case Keyword.get(opts, :album_id) do
+        nil -> &1
+        album_id -> where(&1, [photo], photo.album_id == ^album_id)
+      end
+    )
     |> Repo.all()
+  end
+
+  def get_related_query(gallery_id, photo_id, photo) do
+    order_by =
+    case photo.album_id do
+      nil ->
+        &order_by(&1, [photo], asc_nulls_first: photo.album_id, asc: photo.position)
+
+      album_id ->
+        &order_by(&1, [photo],
+          desc_nulls_last: photo.album_id == ^album_id,
+          asc: photo.album_id,
+          asc: photo.position
+        )
+    end
+
+    from(photo in watermarked_query(),
+      where:
+        photo.gallery_id == ^gallery_id and photo.id != ^photo_id and
+          not is_nil(photo.height) and not is_nil(photo.width)
+    )
+    |> order_by.()
   end
 
   def active_photos, do: from(p in Photo, where: p.active == true)

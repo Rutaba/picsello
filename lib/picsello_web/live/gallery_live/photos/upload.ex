@@ -16,7 +16,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   alias Phoenix.PubSub
 
-  import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1, disabled?: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [disabled?: 1]
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -207,8 +207,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       photo
       |> Picsello.Repo.preload(:album)
       |> start_photo_processing(gallery)
-
-      if gallery.total_count == 1, do: prepare_gallery(gallery)
 
       socket
       |> assign(

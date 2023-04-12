@@ -32,7 +32,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def handle_event(
         "client-link",
         _,
-        %{assigns: %{gallery: %{type: :standard} = gallery}} = socket
+        %{assigns: %{current_user: current_user, gallery: %{type: :standard} = gallery}} = socket
       ) do
     case prepare_gallery(gallery) do
       {:ok, _} ->
@@ -57,7 +57,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
           presets: [],
           enable_image: true,
           enable_size: true,
-          client: Job.client(gallery.job)
+          client: Job.client(gallery.job),
+          current_user: current_user
         })
         |> noreply()
 
@@ -71,7 +72,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def handle_event(
         "client-link",
         _,
-        %{assigns: %{gallery: gallery}} = socket
+        %{assigns: %{current_user: current_user, gallery: gallery}} = socket
       ) do
     %{albums: [album]} = gallery = Repo.preload(gallery, :albums)
 
@@ -104,7 +105,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
           enable_image: true,
           enable_size: true,
           composed_event: :message_composed_for_album,
-          client: Job.client(gallery.job)
+          client: Job.client(gallery.job),
+          current_user: current_user
         })
         |> noreply()
 
@@ -338,28 +340,30 @@ defmodule PicselloWeb.GalleryLive.Shared do
         per_page,
         exclude_all \\ nil
       ) do
-    selected_filter = assigns[:selected_filter] || false
-    photographer_favorites_filter = assigns[:photographer_favorites_filter] || false
-
-    if exclude_all do
-      []
-    else
-      album = Map.get(assigns, :album, nil)
-
-      case album do
-        %{id: "client_liked"} -> []
-        %{} -> [album_id: album.id]
-        _ -> [exclude_album: true]
-      end ++
-        [
-          photographer_favorites_filter: photographer_favorites_filter,
+    case exclude_all do
+      nil ->
+        assigns
+        |> Map.get(:album)
+        |> photos_album_opts()
+        |> Enum.concat(
+          photographer_favorites_filter: assigns[:photographer_favorites_filter] || false,
           favorites_filter: filter,
-          selected_filter: selected_filter,
+          selected_filter: assigns[:selected_filter] || false,
           limit: per_page + 1,
           offset: per_page * page
-        ]
+        )
+
+      :only_valid ->
+        [valid: true]
+
+      _ ->
+        []
     end
   end
+
+  defp photos_album_opts(%{id: "client_liked"}), do: []
+  defp photos_album_opts(%{id: id}), do: [album_id: id]
+  defp photos_album_opts(_), do: [exclude_album: true]
 
   def assign_photos(
         %{
@@ -379,63 +383,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def prepare_gallery(%{id: gallery_id} = gallery) do
-    photos = Galleries.get_gallery_photos(gallery_id, limit: 1)
+    photos = Galleries.get_gallery_photos(gallery_id, opts())
 
     if length(photos) == 1 do
       [photo] = photos
-      maybe_set_cover_photo(gallery, photo)
-      maybe_set_product_previews(gallery, photo)
+      Galleries.may_be_prepare_gallery(gallery, photo)
     end
   end
 
-  def maybe_set_cover_photo(gallery, photo) do
-    with nil <- gallery.cover_photo,
-         {:ok, %{cover_photo: photo}} <-
-           Galleries.save_gallery_cover_photo(
-             gallery,
-             %{
-               cover_photo:
-                 photo
-                 |> Map.take([:aspect_ratio, :width, :height])
-                 |> Map.put(:id, photo.original_url)
-             }
-           ) do
-      {:ok, photo}
-    else
-      %{} -> {:ok, :already_set}
-      _ -> :error
-    end
-  end
-
-  def maybe_set_product_previews(gallery, photo) do
-    products = Galleries.products(gallery)
-
-    previews =
-      Enum.filter(products, fn product ->
-        case product.preview_photo do
-          %{id: nil} -> true
-          nil -> true
-          _ -> false
-        end
-      end)
-
-    if length(previews) > 0 do
-      Enum.each(previews, fn %{category_id: category_id} = product ->
-        product
-        |> Map.drop([:category, :preview_photo])
-        |> GalleryProducts.upsert_gallery_product(%{
-          preview_photo_id: photo.id,
-          category_id: category_id
-        })
-      end)
-
-      {:ok, photo}
-    else
-      {:ok, :already_set}
-    end
-  rescue
-    _ -> :error
-  end
+  defp opts(), do: [limit: 1, valid: true]
 
   def add_message_and_notify(%{assigns: %{job: job}} = socket, message_changeset, shared_item)
       when shared_item in ~w(gallery album) do

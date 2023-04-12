@@ -301,7 +301,7 @@ defmodule Picsello.ClientOrdersTest do
                {"Books", "$2,222.00"},
                {"Ornaments", "$2,020.00"},
                {"Loose Prints", "$50,000.00"},
-               {"Press Printed Cards", "$101.00"},
+               {"Press Printed Cards", "$77.77"},
                {"Display Products", "$3,939.00"},
                {"Digital Download", "$25.00"}
              ] =
@@ -316,7 +316,7 @@ defmodule Picsello.ClientOrdersTest do
     |> click(css("button[phx-value-template-id='#{gallery_product_id}']"))
     |> click(button("Customize & buy"))
     |> assert_url_contains("cart")
-    |> assert_text("Cart Review")
+    |> assert_text("Cart & Shipping Review")
     |> click(link("Continue"))
     |> fill_in(text_field("Email address"), with: "client@example.com")
     |> fill_in(text_field("Name"), with: "brian")
@@ -349,7 +349,7 @@ defmodule Picsello.ClientOrdersTest do
 
     session
     |> click(link("My orders"))
-    |> find(definition("Order total:"), &assert(Element.text(&1) == "$303.00"))
+    |> find(definition("Order total:"), &assert(Element.text(&1) == "$306.80"))
   end
 
   feature "client doesn't see products for non-US photographer", %{

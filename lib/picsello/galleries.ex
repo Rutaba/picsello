@@ -213,36 +213,33 @@ defmodule Picsello.Galleries do
   end
 
   defp conditions(id, opts) do
-    favorites_filter = Keyword.get(opts, :favorites_filter, false)
-    photographer_favorites_filter = Keyword.get(opts, :photographer_favorites_filter, false)
     exclude_album = Keyword.get(opts, :exclude_album, false)
     album_id = Keyword.get(opts, :album_id, false)
 
-    conditions = dynamic([p], p.gallery_id == ^id)
-
-    conditions =
-      if favorites_filter do
+    opts
+    |> Enum.reduce(dynamic([p], p.gallery_id == ^id), fn
+      {:favorites_filter, true}, conditions ->
         dynamic([p], p.client_liked == true and ^conditions)
-      else
-        conditions
-      end
 
-    conditions =
-      if photographer_favorites_filter do
+      {:photographer_favorites_filter, true}, conditions ->
         dynamic([p], p.is_photographer_liked == true and ^conditions)
-      else
-        conditions
-      end
 
-    if exclude_album do
-      dynamic([p], is_nil(p.album_id) and ^conditions)
-    else
-      if album_id do
-        dynamic([p], p.album_id == ^album_id and ^conditions)
-      else
+      {:valid, true}, conditions ->
+        dynamic([p], not is_nil(p.height) and not is_nil(p.width) and ^conditions)
+
+      {:exclude_album, true}, conditions ->
+        dynamic([p], is_nil(p.album_id) and ^conditions)
+
+      _, conditions ->
         conditions
-      end
-    end
+    end)
+    |> then(fn
+      conditions when exclude_album != true and is_integer(album_id) ->
+        dynamic([p], p.album_id == ^album_id and ^conditions)
+
+      conditons ->
+        conditons
+    end)
   end
 
   @spec get_all_album_photos(
@@ -692,9 +689,15 @@ defmodule Picsello.Galleries do
   Updates a photo
   """
   def update_photo(photo_id, %{} = attrs) when is_integer(photo_id) do
-    case Repo.get(Photo, photo_id) do
+    case Repo.get(Photo, photo_id) |> Repo.preload(:gallery) do
       nil ->
         {:error, :no_photo}
+
+      %{gallery: %{total_count: 1} = gallery} = photo ->
+        Multi.new()
+        |> Multi.update(:photo, Photo.update_changeset(photo, attrs))
+        |> Multi.run(:gallery, fn _, _ -> may_be_prepare_gallery(gallery, photo) end)
+        |> Repo.transaction()
 
       photo ->
         photo
@@ -704,6 +707,46 @@ defmodule Picsello.Galleries do
   end
 
   def update_photo(_, %{} = _attrs), do: {:error, :no_photo}
+
+  def may_be_prepare_gallery(gallery, photo) do
+    gallery
+    |> products()
+    |> Enum.filter(fn
+      %{preview_photo: %{id: id}} when not is_nil(id) -> false
+      _ -> true
+    end)
+    |> Enum.reduce(Multi.new(), fn %{category_id: category_id} = product, multi ->
+      multi
+      |> Multi.run(product.id, fn _, _ ->
+        product
+        |> Map.drop([:category, :preview_photo])
+        |> GalleryProducts.upsert_gallery_product(%{
+          preview_photo_id: photo.id,
+          category_id: category_id
+        })
+      end)
+    end)
+    |> Multi.run(:cover_photo, fn _, _ -> maybe_set_product_previews(gallery, photo) end)
+    |> Repo.transaction()
+  end
+
+  def maybe_set_product_previews(%{cover_photo: cover_photo} = gallery, photo) do
+    case cover_photo do
+      %Photo{} ->
+        {:ok, cover_photo}
+
+      _ ->
+        save_gallery_cover_photo(
+          gallery,
+          %{
+            cover_photo:
+              photo
+              |> Map.take([:aspect_ratio, :width, :height])
+              |> Map.put(:id, photo.original_url)
+          }
+        )
+    end
+  end
 
   @doc """
   get name of the selected photos
