@@ -103,6 +103,7 @@ defmodule Picsello.UserOnboardsTest do
 
     session
     |> assert_path(@onboarding_path)
+    |> sleep(250)
     |> assert_disabled_submit()
     |> assert_value(@org_name_field, user.organization.name)
     |> fill_in(@org_name_field, with: "")
@@ -112,6 +113,7 @@ defmodule Picsello.UserOnboardsTest do
     |> click(option("OK"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
+    |> sleep(250)
     |> assert_disabled_submit()
     |> click(css("label", text: "Portrait"))
     |> click(css("label", text: "Event"))
