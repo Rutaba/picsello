@@ -48,11 +48,7 @@ defmodule Picsello.Contract do
     |> unsafe_validate_unique([:name, :organization_id], Picsello.Repo)
   end
 
-  def archive_changeset(%__MODULE__{} = contract) do
-    contract |> change(status: :archive)
-  end
-
-  def enable_changeset(%__MODULE__{} = contract) do
-    contract |> change(status: :active)
+  def status_changeset(%__MODULE__{} = contract, status) do
+    contract |> change(status: status)
   end
 end

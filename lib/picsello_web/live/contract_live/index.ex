@@ -77,41 +77,31 @@ defmodule PicselloWeb.Live.Contracts.Index do
   end
 
   @impl true
-  def handle_event("archive-contract", %{"contract-id" => contract_id}, socket) do
+  def handle_event(
+        "update-contract-status",
+        %{"contract-id" => contract_id, "status" => status},
+        socket
+      ) do
     id = String.to_integer(contract_id)
+    status = String.to_atom(status)
 
-    case Contracts.archive_contract(id) do
+    message =
+      case status do
+        :archive -> "Contract deleted"
+        _ -> "Contract enabled"
+      end
+
+    case Contracts.update_contract_status(id, status) do
       {:ok, _} ->
         socket
-        |> put_flash(:success, "Contract deleted")
-        |> assign_contracts()
-        |> noreply()
+        |> put_flash(:success, message)
 
       _ ->
         socket
         |> put_flash(:error, "An error occurred")
-        |> assign_contracts()
-        |> noreply()
     end
-  end
-
-  @impl true
-  def handle_event("enable-contract", %{"contract-id" => contract_id}, socket) do
-    id = String.to_integer(contract_id)
-
-    case Contracts.enable_contract(id) do
-      {:ok, _} ->
-        socket
-        |> put_flash(:success, "Contract deleted")
-        |> assign_contracts()
-        |> noreply()
-
-      _ ->
-        socket
-        |> put_flash(:error, "An error occurred")
-        |> assign_contracts()
-        |> noreply()
-    end
+    |> assign_contracts()
+    |> noreply()
   end
 
   @impl true
@@ -149,20 +139,18 @@ defmodule PicselloWeb.Live.Contracts.Index do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex items-center justify-end gap-3">
-    <%= if @contract.status == :active do %>
-      <%= if @contract.organization_id do %>
-      <button title="Edit" type="button" phx-click="edit-contract" phx-value-contract-id={@contract.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75"
-          >
-        <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
-        Edit
-      </button>
-      <% else %>
-      <button title="Duplicate Table" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75"
-          >
-        <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300 text-white" />
-        Duplicate
-      </button>
-      <% end %>
+      <%= if @contract.status == :active do %>
+        <%= if @contract.organization_id do %>
+          <button title="Edit" type="button" phx-click="edit-contract" phx-value-contract-id={@contract.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75" >
+            <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
+            Edit
+          </button>
+        <% else %>
+          <button title="Duplicate Table" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75">
+            <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300 text-white" />
+            Duplicate
+          </button>
+        <% end %>
       <% end %>
       <div data-offset="0" phx-hook="Select" id={"manage-contract-#{@contract.id}"}>
         <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
@@ -172,48 +160,44 @@ defmodule PicselloWeb.Live.Contracts.Index do
         </button>
 
         <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content z-20">
-        <%= if @contract.status == :active do %>
-          <%= if @contract.organization_id do %>
-            <button title="Edit" type="button" phx-click="edit-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
-            >
-              <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-              Edit
-            </button>
-            <button title="Duplicate Table" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
-            >
-              <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-              Duplicate
-            </button>
-            <button title="Trash" type="button" phx-click="archive-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-              <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
-              Delete
-            </button>
-            <% else %>
-            <button title="View" type="button" phx-click="view-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
-            >
-              <.icon name="eye" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-              View
-            </button>
-            <button title="Duplicate" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold" {testid("duplicate")}
-            >
-              <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-              Duplicate
-            </button>
+          <%= if @contract.status == :active do %>
+            <%= if @contract.organization_id do %>
+              <button title="Edit" type="button" phx-click="edit-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                Edit
+              </button>
+              <button title="Duplicate Table" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                Duplicate
+              </button>
+              <button title="Trash" type="button" phx-click="update-contract-status" phx-value-contract-id={@contract.id} phx-value-status="archive" class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+                <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
+                Delete
+              </button>
+              <% else %>
+              <button title="View" type="button" phx-click="view-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                <.icon name="eye" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                View
+              </button>
+              <button title="Duplicate" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold" {testid("duplicate")}>
+                <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                Duplicate
+              </button>
             <% end %>
-        <% else %>
-          <button title="Plus" type="button" phx-click="enable-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-              <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-              Unarchive
-          </button>
-        <% end %>
+          <% else %>
+            <button title="Plus" type="button" phx-click="update-contract-status" phx-value-contract-id={@contract.id} phx-value-status="active" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                Unarchive
+            </button>
+          <% end %>
         </div>
       </div>
     </div>
     """
   end
 
-  defp assign_contracts(socket) do
-    contracts = Contracts.for_organization(socket.assigns.current_user.organization_id)
+  defp assign_contracts(%{assigns: %{current_user: %{organization_id: organization_id}}} = socket) do
+    contracts = Contracts.for_organization(organization_id)
 
     socket
     |> assign(

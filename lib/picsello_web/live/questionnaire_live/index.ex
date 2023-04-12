@@ -88,41 +88,31 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   end
 
   @impl true
-  def handle_event("archive-questionnaire", %{"questionnaire-id" => questionnaire_id}, socket) do
+  def handle_event(
+        "update-questionnaire-status",
+        %{"questionnaire-id" => questionnaire_id, "status" => status},
+        socket
+      ) do
     id = String.to_integer(questionnaire_id)
+    status = String.to_atom(status)
 
-    case Questionnaire.archive_questionnaire(id) do
+    message =
+      case status do
+        :archive -> "Questionnaire archived"
+        _ -> "Questionnaire enabled"
+      end
+
+    case Questionnaire.update_questionnaire_status(id, status) do
       {:ok, _questionnaire} ->
         socket
-        |> put_flash(:success, "Questionnaire archived")
-        |> assign_questionnaires()
-        |> noreply()
+        |> put_flash(:success, message)
 
       {:error, _} ->
         socket
         |> put_flash(:error, "An error occurred")
-        |> assign_questionnaires()
-        |> noreply()
     end
-  end
-
-  @impl true
-  def handle_event("enable-questionnaire", %{"questionnaire-id" => questionnaire_id}, socket) do
-    id = String.to_integer(questionnaire_id)
-
-    case Questionnaire.enable_questionnaire(id) do
-      {:ok, _questionnaire} ->
-        socket
-        |> put_flash(:success, "Questionnaire enabled")
-        |> assign_questionnaires()
-        |> noreply()
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "An error occurred")
-        |> assign_questionnaires()
-        |> noreply()
-    end
+    |> assign_questionnaires()
+    |> noreply()
   end
 
   @impl true
@@ -179,7 +169,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
               <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
               Duplicate
             </button>
-            <button title="Trash" type="button" phx-click="archive-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+            <button title="Trash" type="button" phx-click="update-questionnaire-status" phx-value-questionnaire-id={@questionnaire.id} phx-value-status="archive" class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
               <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
               Archive
             </button>
@@ -196,7 +186,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
             </button>
             <% end %>
           <% else %>
-            <button title="Plus" type="button" phx-click="enable-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+            <button title="Plus" type="button" phx-click="update-questionnaire-status" phx-value-questionnaire-id={@questionnaire.id} phx-value-status="active" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
                 <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                 Unarchive
             </button>
@@ -210,11 +200,13 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
 
   defp get_questionnaire(id), do: Questionnaire.get_questionnaire_by_id(id)
 
-  defp assign_questionnaires(socket) do
+  defp assign_questionnaires(
+         %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+       ) do
     socket
     |> assign(
       :questionnaires,
-      Questionnaire.for_organization(socket.assigns.current_user.organization_id)
+      Questionnaire.for_organization(organization_id)
     )
   end
 end

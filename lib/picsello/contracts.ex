@@ -156,15 +156,9 @@ defmodule Picsello.Contracts do
   def get_contract_by_id(contract_id),
     do: get_contract(contract_id) |> Repo.one()
 
-  def archive_contract(contract_id) do
+  def update_contract_status(contract_id, status) do
     get_contract_by_id(contract_id)
-    |> Contract.archive_changeset()
-    |> Repo.update()
-  end
-
-  def enable_contract(contract_id) do
-    get_contract_by_id(contract_id)
-    |> Contract.enable_changeset()
+    |> Contract.status_changeset(status)
     |> Repo.update()
   end
 

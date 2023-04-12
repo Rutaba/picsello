@@ -478,81 +478,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step(%{name: :documents1} = assigns) do
-    ~H"""
-      <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
-        <div class="flex bg-base-200 px-4 py-2 items-center cursor-pointer" phx-click="toggle-collapsed-documents" phx-value-index={0} phx-target={@myself}>
-          <h2 class="text-lg font-bold py-1">Add a contract</h2>
-          <div class="ml-auto">
-            <%= if Enum.member?(@collapsed_documents, 0) do %>
-              <.icon name="down" class="w-3 h-3 stroke-current stroke-3" />
-            <% else %>
-              <.icon name="up" class="w-3 h-3 stroke-current stroke-3" />
-            <% end %>
-          </div>
-        </div>
-        <div class={classes("p-4", %{"hidden" => Enum.member?(@collapsed_documents, 0)})}>
-          <p>Here you can copy and paste your own contract or use the legally approved contract we have developed. You're also able to version your contract for different needs if you want!</p>
-          <% c = form_for(@contract_changeset, "#") %>
-          <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
-              <div class="w-1/3">Contract name</div>
-              <div class="w-1/3 text-center">Job type</div>
-              <div class="w-1/3 text-center">Select contract</div>
-            </div>
-            <%= for contract <- @contract_options do %>
-              <% checked = input_value(c, :contract_template_id) == contract.id %>
-              <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => checked})}>
-                <label class="flex items-center justify-between cursor-pointer">
-                  <h3 class="font-xl font-bold w-1/3"><%= contract.name %></h3>
-                  <p class="w-1/3 text-center"><%= contract.job_type %></p>
-                  <div class="w-1/3 text-center">
-                    <%= radio_button(c, :contract_template_id, contract.id, class: "w-5 h-5 mr-2.5 radio") %>
-                  </div>
-                </label>
-              </div>
-            <% end %>
-        </div>
-      </section>
-      <section {testid("document-questionnaires")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
-        <div class="flex bg-base-200 px-4 py-2 items-center cursor-pointer" phx-click="toggle-collapsed-documents" phx-value-index={1} phx-target={@myself}>
-          <h2 class="text-lg font-bold py-1">Add a questionnaire</h2>
-
-          <div class="ml-auto">
-            <%= if Enum.member?(@collapsed_documents, 1) do %>
-              <.icon name="down" class="w-3 h-3 stroke-current stroke-3" />
-            <% else %>
-              <.icon name="up" class="w-3 h-3 stroke-current stroke-3" />
-            <% end %>
-          </div>
-        </div>
-        <div class={classes("p-4", %{"hidden" => Enum.member?(@collapsed_documents, 1)})}>
-          <p>As with most things in Picsello, we have created a default questionnaire for you to use. If you don't select one here, we'll provide a default that you can turn off if you want when creating a lead. If you'd like to create your own template to apply to packages templates for future use, you can do so <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link> (modal will close and you can come back).</p>
-          <%= if Enum.empty?(@questionnaires) do %>
-            <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
-          <% else %>
-            <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
-              <div class="w-1/3">Questionnaire name</div>
-              <div class="w-1/3 text-center">Job type</div>
-              <div class="w-1/3 text-center">Select questionnaire</div>
-            </div>
-            <%= for questionnaire <- @questionnaires do %>
-              <% checked = input_value(@f, :questionnaire_template_id) == questionnaire.id %>
-              <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => checked})}>
-              <label class="flex items-center justify-between cursor-pointer">
-                <h3 class="font-xl font-bold w-1/3"><%= questionnaire.name %></h3>
-                <p class="w-1/3 text-center"><%= questionnaire.job_type %></p>
-                <div class="w-1/3 text-center">
-                  <%= radio_button(@f, :questionnaire_template_id, questionnaire.id, class: "w-5 h-5 mr-2.5 radio") %>
-                </div>
-              </label>
-              </div>
-            <% end %>
-          <% end %>
-        </div>
-      </section>
-    """
-  end
-
   def step(%{name: :documents} = assigns) do
     ~H"""
     <div class="font-normal pb-6 text-base-250 w-fit">
@@ -573,7 +498,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     <span class="hidden sm:flex items-center justify-between border-b-4 border-blue-planning-300 font-semibold text-lg text-base-250" />
     <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-6 overflow-hidden">
-      <div class={classes("", %{"hidden" => !(@active_tab == :contract)})}>
+      <div class={classes(%{"hidden" => !(@active_tab == :contract)})}>
         <% c = form_for(@contract_changeset, "#") %>
           <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg p-3 rounded-t-lg bg-base-200">
             <div class="w-1/3">Contract name</div>
@@ -592,7 +517,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             </div>
           <% end %>
       </div>
-      <div class={classes("", %{"hidden" => !(@active_tab == :question)})}>
+      <div class={classes(%{"hidden" => !(@active_tab == :question)})}>
         <%= if Enum.empty?(@questionnaires) do %>
           <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
         <% else %>
@@ -1652,17 +1577,20 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     end
   end
 
-  defp assign_contract_changeset(%{assigns: %{step: :documents}} = socket, params) do
+  defp assign_contract_changeset(
+         %{assigns: %{step: :documents, changeset: changeset}} = socket,
+         params
+       ) do
     contract_template_id = Map.get(params, "contract_template_id")
     contract_params = Map.get(params, "contract", %{})
 
     contract =
       if contract_template_id do
-        socket.assigns.changeset
+        changeset
         |> current()
         |> Contracts.find_by!(contract_template_id)
       else
-        socket.assigns.changeset
+        changeset
         |> current()
         |> package_contract()
       end
@@ -1690,19 +1618,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp validate_contract_name?(_), do: false
 
-  defp assign_contract_options(%{assigns: %{step: :documents}} = socket) do
-    # options =
-    #   [
-    #     {"New Contract", ""}
-    #   ]
-    #   |> Enum.concat(
-    #     socket.assigns.changeset
-    #     |> current()
-    #     |> Contracts.for_package()
-    #     |> Enum.map(&{&1.name, &1.id})
-    #   )
+  defp assign_contract_options(%{assigns: %{step: :documents, changeset: changeset}} = socket) do
     options =
-      socket.assigns.changeset
+      changeset
       |> current()
       |> Contracts.for_package()
 

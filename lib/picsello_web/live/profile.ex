@@ -329,17 +329,16 @@ defmodule PicselloWeb.Live.Profile do
     |> assign(booking_events: booking_events)
   end
 
+  defp image_text("logo"), do: "Choose a new logo"
+  defp image_text(_field), do: "Choose a new photo"
+
   defp edit_image_button(assigns) do
     ~H"""
     <form id={@image_field <> "-form-existing"} phx-submit="save-image" phx-change="validate-image">
       <div class={classes("rounded-3xl bg-white shadow-lg inline-block", %{"hidden" => Enum.any?(@image.entries)})}>
         <label class="inline-block p-3 cursor-pointer">
           <span class="font-sans font-semibold text-blue-planning-300 hover:opacity-75">
-           <%= case @image_field do %>
-           <% "logo" -> %> Choose a new logo
-           <% _ -> %> Choose a new photo
-           <% %>
-           <% end %>
+            <%= image_text(@image_field) %>
           </span>
           <%= live_file_input @image, class: "hidden" %>
         </label>

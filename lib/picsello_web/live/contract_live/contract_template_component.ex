@@ -23,7 +23,7 @@ defmodule PicselloWeb.ContractTemplateComponent do
 
       <div class="sm:flex items-center gap-4">
       <.step_heading state={@state} />
-        <%= if @state === nil do %>
+        <%= if is_nil(@state) do %>
           <div {testid("view-only")}><.badge color={:gray}>View Only</.badge></div>
         <% end %>
       </div>
@@ -32,11 +32,11 @@ defmodule PicselloWeb.ContractTemplateComponent do
         <h2 class="text-2xl leading-6 text-gray-900 mb-8 font-bold">Details</h2>
         <%= hidden_input f, :package_id %>
 
-        <div class={classes("", %{"grid gap-3" => @state == :edit_lead})}>
+        <div class={classes(%{"grid gap-3" => @state == :edit_lead})}>
           <%= if @state == :edit_lead do %>
-            <%= labeled_input f, :name, label: "Name", disabled: @state === nil %>
+            <%= labeled_input f, :name, label: "Name", disabled: is_nil(@state) %>
           <% else %>
-            <%= labeled_input f, :name, label: "Name", disabled: @state === nil %>
+            <%= labeled_input f, :name, label: "Name", disabled: is_nil(@state) %>
           <% end %>
         </div>
 
@@ -44,7 +44,7 @@ defmodule PicselloWeb.ContractTemplateComponent do
           <%= label_for f, :type, label: "Type of Photography (select Other to use for all types)" %>
           <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
             <%= for job_type <- @job_types do %>
-              <.job_type_option type="radio" name={input_name(f, :job_type)} job_type={job_type} checked={input_value(f, :job_type) == job_type} disabled={@state === nil} />
+              <.job_type_option type="radio" name={input_name(f, :job_type)} job_type={job_type} checked={input_value(f, :job_type) == job_type} disabled={is_nil(@state)} />
             <% end %>
           </div>
         </div>
@@ -62,14 +62,14 @@ defmodule PicselloWeb.ContractTemplateComponent do
         <.quill_input f={f} id="quill_contract_input" html_field={:content} enable_size={true} track_quill_source={true} placeholder="Paste contract text here" />
 
         <.footer>
-          <%= if @state !== nil do %>
+          <%= if !is_nil(@state)do %>
           <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Save">
             Save
           </button>
           <% end %>
 
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-            <%= if @state === nil do %>Close<% else %>Cancel<% end %>
+            <%= if is_nil(@state) do %>Close<% else %>Cancel<% end %>
           </button>
         </.footer>
       </.form>

@@ -99,15 +99,9 @@ defmodule Picsello.Questionnaire do
   def get_questionnaire_by_id(questionnaire_id),
     do: get_questionnaire(questionnaire_id) |> Repo.one()
 
-  def archive_questionnaire(questionnaire_id) do
+  def update_questionnaire_status(questionnaire_id, status) do
     get_questionnaire_by_id(questionnaire_id)
-    |> change(status: :archive)
-    |> Repo.update()
-  end
-
-  def enable_questionnaire(questionnaire_id) do
-    get_questionnaire_by_id(questionnaire_id)
-    |> change(status: :active)
+    |> change(status: status)
     |> Repo.update()
   end
 
