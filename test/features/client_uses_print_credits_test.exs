@@ -294,16 +294,17 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           build(:stripe_invoice,
             id: "stripe-invoice-id",
             description: "stripe invoice!",
-            amount_due: 5000,
+            amount_due: 4510,
             amount_remaining: 5000,
             status: :draft
           ),
         whcc_unit_base_price: ~M[4200]USD,
-        whcc_total: ~M[5000]USD
+        whcc_total: ~M[5000]USD,
+        stripe_checkout: %{application_fee_amount: ~M[490]USD, amount: ~M[5500]USD}
       ]
     end
 
-    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc]
+    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc, :expect_stripe_checkout]
 
     feature "only charges photographer", %{
       session: session,
@@ -366,16 +367,17 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           build(:stripe_invoice,
             id: "stripe-invoice-id",
             description: "stripe invoice!",
-            amount_due: 5000,
+            amount_due: 4510,
             amount_remaining: 5000,
             status: :draft
           ),
         whcc_unit_base_price: ~M[2000]USD,
-        whcc_total: ~M[5000]USD
+        whcc_total: ~M[5000]USD,
+        stripe_checkout: %{application_fee_amount: ~M[490]USD, amount: ~M[5500]USD}
       ]
     end
 
-    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc]
+    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc, :expect_stripe_checkout]
 
     feature("only charges photographer", %{
       session: session,
