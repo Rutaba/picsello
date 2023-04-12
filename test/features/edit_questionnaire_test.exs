@@ -313,9 +313,9 @@ defmodule Picsello.EditQuestionnaireTest do
       |> find(testid("questionnaire-row", count: 6, at: 0), fn row ->
         row
         |> click(css("[phx-hook='Select']"))
-        |> click(button("Delete"))
+        |> click(button("Archive"))
       end)
-      |> assert_flash(:success, text: "Questionnaire deleted")
+      |> assert_flash(:success, text: "Questionnaire archived")
     end
   end
 end

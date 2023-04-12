@@ -1031,7 +1031,7 @@ defmodule PicselloWeb.JobLive.Shared do
             Additional files
           </div>
           <div class="flex flex-col">
-          <%= if(@job.documents == nil || @job.documents == []) do %>
+          <%= if(is_nil(@job.documents) || @job.documents == []) do %>
           <div class="p-12 text-gray-400 italic">No additional files have been uploaded</div>
           <% end %>
             <%= for document <- @job.documents do %>
@@ -1473,7 +1473,7 @@ defmodule PicselloWeb.JobLive.Shared do
       !Enum.member?([:charges_enabled, :loading], stripe_status) ->
         "Set up Stripe"
 
-      package == nil ->
+      is_nil(package) ->
         "Add a package first"
 
       package.shoot_count != Enum.count(shoots, &elem(&1, 1)) ->

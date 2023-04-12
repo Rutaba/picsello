@@ -169,7 +169,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     assert package.show_on_public_profile == false
   end
 
-  feature "Add a package with new contract", %{session: session} do
+  feature "Add a package with default contract", %{session: session} do
     session
     |> click(link("Settings"))
     |> click(link("Package Templates"))
@@ -185,11 +185,11 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Select Documents")
-    |> click(css("section", text: "Add a contract"))
-    |> find(select("Select a Contract Template"), &click(&1, option("New Contract")))
-    |> fill_in(text_field("Contract Name"), with: "My custom contract")
-    |> assert_has(css("div.ql-editor[data-placeholder='Paste contract text here']"))
-    |> fill_in_quill("content of my new contract")
+    |> assert_has(link("Manage contracts"))
+    |> assert_has(link("Manage questionnaires"))
+    |> assert_has(testid("contracts-row", count: 1))
+    |> assert_has(css("h3", text: "Picsello Default Contract"))
+    |> assert_has(radio_button("contract_contract_template_id_1", checked: true))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
@@ -210,7 +210,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
            } = package
 
     assert %Picsello.Contract{
-             name: "My custom contract"
+             name: "Picsello Default Contract"
            } = package.contract
   end
 
@@ -288,29 +288,16 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> wait_for_enabled_submit_button()
         |> click(button("Next"))
         |> assert_text("Edit Package: Select Documents")
-        |> click(css("h2", text: "Add a contract"))
-        |> assert_has(css("*[role='status']", text: "No edits made"))
-        |> assert_selected_option(select("Select a Contract Template"), "Contract 1")
-        |> replace_inner_content(css("div.ql-editor"), "updated content")
-        |> fill_in(text_field("Contract Name"), with: "Contract 2")
-        |> assert_has(css("*[role='status']", text: "Edited—new template will be saved"))
-        |> click(css("h2", text: "Add a contract"))
-        |> click(css("h2", text: "Add a questionnaire"))
-        |> click(css("h3", text: "Picsello Other Template"))
-        |> click(radio_button("Picsello Other Template", checked: false))
-        |> click(link("back"))
-        |> assert_text("Edit Package: Provide Details")
-        |> click(button("Next"))
-        |> assert_text("Edit Package: Select Documents")
-        |> click(css("h2", text: "Add a questionnaire"))
-        |> click(css("h2", text: "Add a contract"))
-        |> assert_selected_option(select("Select a Contract Template"), "Contract 1")
-        |> assert_value(text_field("Contract Name"), "Contract 2")
-        |> assert_text("updated content")
-        |> assert_has(css("*[role='status']", text: "Edited—new template will be saved"))
-        |> click(css("h2", text: "Add a contract"))
-        |> click(css("h2", text: "Add a questionnaire"))
-        |> assert_has(radio_button("Picsello Other Template", checked: true))
+        |> assert_has(link("Manage contracts"))
+        |> assert_has(link("Manage questionnaires"))
+        |> assert_has(testid("contracts-row", count: 2))
+        |> assert_has(css("h3", text: "Contract 1"))
+        |> assert_has(css("h3", text: "Picsello Default Contract"))
+        |> click(radio_button("Contract 1"))
+        |> click(radio_button("Picsello Default Contract"))
+        |> click(button("Questionnaire"))
+        |> click(radio_button("wedding"))
+        |> click(button("Contract"))
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
         |> edit_package_screen())
@@ -334,11 +321,11 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     assert ^updated = package |> Map.take([:id | form_fields])
 
     assert %Picsello.Contract{
-             content: "<p>updated content</p>",
-             name: "Contract 2",
+             content: "the greatest job contract",
+             name: "Contract 1",
              job_type: nil,
              contract_template: %{
-               name: "Contract 2",
+               name: "Contract 1",
                job_type: "wedding"
              }
            } = package.contract

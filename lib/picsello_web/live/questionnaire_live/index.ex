@@ -88,22 +88,31 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   end
 
   @impl true
-  def handle_event("delete-questionnaire", %{"questionnaire-id" => questionnaire_id}, socket) do
-    id = String.to_integer(questionnaire_id)
-
-    case Questionnaire.delete_questionnaire_by_id(id) do
-      {1, nil} ->
+  def handle_event(
+        "update-questionnaire-status",
+        %{"questionnaire-id" => questionnaire_id, "status" => status},
         socket
-        |> put_flash(:success, "Questionnaire deleted")
-        |> assign_questionnaires()
-        |> noreply()
+      ) do
+    id = String.to_integer(questionnaire_id)
+    status = String.to_atom(status)
 
-      _ ->
+    message =
+      case status do
+        :archive -> "Questionnaire archived"
+        _ -> "Questionnaire enabled"
+      end
+
+    case Questionnaire.update_questionnaire_status(id, status) do
+      {:ok, _questionnaire} ->
+        socket
+        |> put_flash(:success, message)
+
+      {:error, _} ->
         socket
         |> put_flash(:error, "An error occurred")
-        |> assign_questionnaires()
-        |> noreply()
     end
+    |> assign_questionnaires()
+    |> noreply()
   end
 
   @impl true
@@ -125,18 +134,20 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex items-center justify-end gap-3">
-      <%= if @questionnaire.organization_id do %>
-      <button title="Edit" type="button" phx-click="edit-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75"
-          >
-        <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
-        Edit
-      </button>
-      <% else %>
-      <button title="Duplicate Table" type="button" phx-click="duplicate-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75"
-          >
-        <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300 text-white" />
-        Duplicate
-      </button>
+      <%= if @questionnaire.status == :active do %>
+        <%= if @questionnaire.organization_id do %>
+          <button title="Edit" type="button" phx-click="edit-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75"
+              >
+            <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
+            Edit
+          </button>
+          <% else %>
+          <button title="Duplicate Table" type="button" phx-click="duplicate-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75"
+              >
+            <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300 text-white" />
+            Duplicate
+          </button>
+          <% end %>
       <% end %>
       <div data-offset="0" phx-hook="Select" id={"manage-questionnaire-#{@questionnaire.id}"}>
         <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
@@ -146,32 +157,40 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
         </button>
 
         <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content z-20">
-        <%= if @questionnaire.organization_id do %>
-          <button title="Edit" type="button" phx-click="edit-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
-          >
-            <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-            Edit
-          </button>
-          <button title="Edit" type="button" phx-click="duplicate-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
-          >
-            <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-            Duplicate
-          </button>
-          <button title="Trash" type="button" phx-click="delete-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-            <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
-            Delete
-          </button>
+        <%= if @questionnaire.status == :active do %>
+          <%= if @questionnaire.organization_id do %>
+            <button title="Edit" type="button" phx-click="edit-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
+            >
+              <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+              Edit
+            </button>
+            <button title="Edit" type="button" phx-click="duplicate-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
+            >
+              <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+              Duplicate
+            </button>
+            <button title="Trash" type="button" phx-click="update-questionnaire-status" phx-value-questionnaire-id={@questionnaire.id} phx-value-status="archive" class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+              <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
+              Archive
+            </button>
+            <% else %>
+            <button title="View" type="button" phx-click="view-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
+            >
+              <.icon name="eye" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+              View
+            </button>
+            <button title="Duplicate" type="button" phx-click="duplicate-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold" {testid("duplicate")}
+            >
+              <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+              Duplicate
+            </button>
+            <% end %>
           <% else %>
-          <button title="View" type="button" phx-click="view-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold"
-          >
-            <.icon name="eye" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-            View
-          </button>
-          <button title="Duplicate" type="button" phx-click="duplicate-questionnaire" phx-value-questionnaire-id={@questionnaire.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold" {testid("duplicate")}
-          >
-            <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-            Duplicate
-          </button>
+            <button title="Plus" type="button" phx-click="update-questionnaire-status" phx-value-questionnaire-id={@questionnaire.id} phx-value-status="active" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+                <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                Unarchive
+            </button>
+
           <% end %>
         </div>
       </div>
@@ -181,11 +200,13 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
 
   defp get_questionnaire(id), do: Questionnaire.get_questionnaire_by_id(id)
 
-  defp assign_questionnaires(socket) do
+  defp assign_questionnaires(
+         %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+       ) do
     socket
     |> assign(
       :questionnaires,
-      Questionnaire.for_organization(socket.assigns.current_user.organization_id)
+      Questionnaire.for_organization(organization_id)
     )
   end
 end

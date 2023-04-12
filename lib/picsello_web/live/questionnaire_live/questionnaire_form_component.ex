@@ -21,7 +21,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
 
       <div class="sm:flex items-center gap-4">
       <.step_heading state={@state} />
-        <%= if @state === nil do %>
+        <%= if is_nil(@state) do %>
           <div><.badge color={:gray}>View Only</.badge></div>
         <% end %>
       </div>
@@ -34,11 +34,11 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
           <%= if @state == :edit_lead do %>
             <div class="flex flex-col">
               <label class="input-label">Select template to reset questions</label>
-              <%= select f, :change_template, template_options(@current_user.organization_id), selected: "", class: "select", disabled: @state === nil %>
+              <%= select f, :change_template, template_options(@current_user.organization_id), selected: "", class: "select", disabled: is_nil(@state) %>
               <%= hidden_input f, :name, label: "Name" %>
             </div>
           <% else %>
-            <%= labeled_input f, :name, label: "Name", disabled: @state === nil %>
+            <%= labeled_input f, :name, label: "Name", disabled: is_nil(@state) %>
           <% end %>
         </div>
 
@@ -46,7 +46,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
           <%= label_for f, :type, label: "Type of Photography (select Other to use for all types)" %>
           <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
             <%= for job_type <- @job_types do %>
-              <.job_type_option type="radio" name={input_name(f, :job_type)} job_type={job_type} checked={input_value(f, :job_type) == job_type} disabled={@state === nil} />
+              <.job_type_option type="radio" name={input_name(f, :job_type)} job_type={job_type} checked={input_value(f, :job_type) == job_type} disabled={is_nil(@state)} />
             <% end %>
           </div>
         </div>
@@ -59,7 +59,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
           <%= for f_questions <- inputs_for(f, :questions) do %>
             <div class="mb-8 border rounded-lg" {testid("question-#{f_questions.index}")}>
               <%= hidden_inputs_for(f_questions) %>
-              <%= if @state !== nil do %>
+              <%= if !is_nil(@state) do %>
               <div class="flex items-center justify-between bg-gray-100 p-4 rounded-t-lg">
                 <div>
                   <h3 class="text-lg font-bold">Question <%= f_questions.index + 1 %></h3>
@@ -79,15 +79,15 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
               <% end %>
               <div class="p-4">
                 <div class="grid sm:grid-cols-3 gap-6">
-                  <%= labeled_input f_questions, :prompt, phx_debounce: 200, label: "What question would you like to ask your client?", type: :textarea, placeholder: "Enter the question you'd like to ask…", disabled: @state === nil, wrapper_class: "sm:col-span-2" %>
+                  <%= labeled_input f_questions, :prompt, phx_debounce: 200, label: "What question would you like to ask your client?", type: :textarea, placeholder: "Enter the question you'd like to ask…", disabled: is_nil(@state), wrapper_class: "sm:col-span-2" %>
                   <label class="flex items-center mt-6 sm:mt-8 justify-self-start sm:col-span-1 cursor-pointer font-bold" {testid("question-optional")}>
-                    <%= checkbox f_questions, :optional, class: "w-5 h-5 mr-2 checkbox", disabled: @state === nil %>
+                    <%= checkbox f_questions, :optional, class: "w-5 h-5 mr-2 checkbox", disabled: is_nil(@state) %>
                     Optional <em class="font-normal">(your client can skip this question)</em>
                   </label>
                 </div>
                 <div class="flex flex-col mt-6">
                   <%= label_for f_questions, :type, label: "What type of question is this? Text, checkboxes, etc" %>
-                  <%= select f_questions, :type, field_options(), class: "select", disabled: @state === nil, phx_target: @myself, phx_value_id: f_questions.index %>
+                  <%= select f_questions, :type, field_options(), class: "select", disabled: is_nil(@state), phx_target: @myself, phx_value_id: f_questions.index %>
                 </div>
 
                 <%= case input_value(f_questions, :type) do %>
@@ -110,23 +110,23 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
           <% end %>
         </fieldset>
 
-        <%= if @state !== nil do %>
-        <div class="mt-8">
-          <.icon_button {testid("add-question")} phx-click="add-question" phx-target={@myself} class="py-1 px-4 w-full sm:w-auto justify-center" title="Add question" color="blue-planning-300" icon="plus">
-            Add question
-          </.icon_button>
-        </div>
+        <%= if !is_nil(@state) do %>
+          <div class="mt-8">
+            <.icon_button {testid("add-question")} phx-click="add-question" phx-target={@myself} class="py-1 px-4 w-full sm:w-auto justify-center" title="Add question" color="blue-planning-300" icon="plus">
+              Add question
+            </.icon_button>
+          </div>
         <% end %>
 
         <.footer>
-          <%= if @state !== nil do %>
-          <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Save">
-            Save
-          </button>
+          <%= if !is_nil(@state) do %>
+            <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Save">
+              Save
+            </button>
           <% end %>
 
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
-            <%= if @state === nil do %>Close<% else %>Cancel<% end %>
+            <%= if is_nil(@state) do %>Close<% else %>Cancel<% end %>
           </button>
         </.footer>
       </.form>
@@ -347,8 +347,8 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       <ul class="mb-6">
         <%= for {option, index} <- input_value(@f_questions, :options) |> Enum.with_index() do %>
           <li class="mb-2 flex items-center gap-2" {testid("question-option-#{index}")}>
-            <input type="text" class="text-input" name={"questionnaire[questions][#{@f_questions.index}][options][]"} value={option} placeholder="Enter an option…" disabled={@state === nil} />
-            <%= if @state !== nil do %>
+            <input type="text" class="text-input" name={"questionnaire[questions][#{@f_questions.index}][options][]"} value={option} placeholder="Enter an option…" disabled={is_nil(@state)} />
+            <%= if !is_nil(@state) do %>
             <button class="bg-red-sales-100 border border-red-sales-300 hover:border-transparent rounded-lg flex items-center p-2" type="button" phx-click="delete-option" phx-value-id={@f_questions.index} phx-value-option-id={index} phx-target={@myself}>
               <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
             </button>
@@ -356,7 +356,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
           </li>
         <% end %>
       </ul>
-      <%= if @state !== nil do %>
+      <%= if !is_nil(@state) do %>
       <.icon_button {testid("add-option")} phx-click="add-option" phx-value-id={@f_questions.index} phx-target={@myself} class="py-1 px-4 w-full sm:w-auto justify-center" title="Add question option" color="blue-planning-300" icon="plus">
         Add option
       </.icon_button>
