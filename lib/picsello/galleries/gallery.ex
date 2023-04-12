@@ -3,7 +3,7 @@ defmodule Picsello.Galleries.Gallery do
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query
-  alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album, SessionToken}
+  alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album, SessionToken, DigitalPricing}
   alias Picsello.{Job, Cart.Order, Repo, GlobalSettings}
 
   @status_options [
@@ -39,6 +39,7 @@ defmodule Picsello.Galleries.Gallery do
     has_one(:watermark, Watermark, on_replace: :update)
     has_one(:child, __MODULE__, foreign_key: :parent_id)
     embeds_one(:cover_photo, CoverPhoto, on_replace: :update)
+    embeds_one(:digital_pricing, DigitalPricing, on_replace: :update)
     has_one(:organization, through: [:job, :client, :organization])
     has_one(:package, through: [:job, :package])
     has_one(:photographer, through: [:job, :client, :organization, :user])
@@ -141,6 +142,12 @@ defmodule Picsello.Galleries.Gallery do
     gallery
     |> change()
     |> put_embed(:cover_photo, nil)
+  end
+
+  def save_digital_pricing_changeset(gallery, attrs \\ %{}) do
+    gallery
+    |> cast(attrs, [])
+    |> cast_embed(:digital_pricing, with: {DigitalPricing, :changeset, [gallery.id]}, required: true)
   end
 
   def generate_password, do: Enum.random(100_000..999_999) |> to_string
