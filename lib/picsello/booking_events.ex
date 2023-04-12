@@ -173,13 +173,11 @@ defmodule Picsello.BookingEvents do
 
   def available_times(%BookingEvent{} = booking_event, date, opts \\ []) do
     duration = (booking_event.duration_minutes || Picsello.Shoot.durations() |> hd) * 60
-    IO.inspect(duration, label: "duration")
 
     duration_buffer =
       ((booking_event.duration_minutes || Picsello.Shoot.durations() |> hd) +
          (booking_event.buffer_minutes || 0)) * 60
 
-    IO.inspect(duration_buffer)
     skip_overlapping_shoots = opts |> Keyword.get(:skip_overlapping_shoots, false)
 
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
@@ -192,7 +190,6 @@ defmodule Picsello.BookingEvents do
         |> Enum.filter(&(!is_nil(&1)))
         |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
         |> filter_is_break_slots(booking_event, date)
-        |> IO.inspect(label: "slots===> ")
 
       _ ->
         []
@@ -203,7 +200,6 @@ defmodule Picsello.BookingEvents do
     if !is_nil(start_time) and !is_nil(end_time) do
       available_slots = (Time.diff(end_time, start_time) / duration) |> trunc()
       slot = 0..(available_slots - 1)
-      IO.inspect(%{start_time: start_time, end_time: end_time, available_slots: available_slots})
 
       get_available_slots_each_block(
         slot,
@@ -241,11 +237,7 @@ defmodule Picsello.BookingEvents do
 
         slot_trunc = slot_end |> Time.truncate(:second)
         time = duration * -1
-        IO.inspect(time, label: "time")
         end_trunc = end_time |> Time.add(time) |> Time.truncate(:second)
-        IO.inspect(slot_trunc, label: "slot_trunc")
-        IO.inspect(end_trunc, label: "end_trunc")
-        IO.inspect(slot_time, label: "slot_time")
 
         if slot_trunc > end_trunc do
           {:halt, [slot_time | acc]}
