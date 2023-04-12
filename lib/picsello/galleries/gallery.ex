@@ -43,14 +43,22 @@ defmodule Picsello.Galleries.Gallery do
     has_one(:package, through: [:job, :package])
     has_one(:photographer, through: [:job, :client, :organization, :user])
 
-    embeds_one :use_global, UseGlobal, on_replace: :update do
+    embeds_one :use_global, __MODULE__.UseGlobal, on_replace: :update
+
+    timestamps(type: :utc_datetime)
+  end
+
+  defmodule UseGlobal do
+    use Ecto.Schema
+    import Ecto.Changeset
+
+    @primary_key false
+    embedded_schema do
       field :expiration, :boolean
       field :watermark, :boolean
       field :products, :boolean
       field :digital, :boolean
     end
-
-    timestamps(type: :utc_datetime)
   end
 
   @type t :: %__MODULE__{
