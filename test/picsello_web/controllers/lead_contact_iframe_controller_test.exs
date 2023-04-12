@@ -61,7 +61,9 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
                ),
                %{}
              )
-             |> get_flash("error")
+             |> Map.get(:assigns)
+             |> Map.get(:flash)
+             |> Phoenix.Flash.get("error")
              |> String.contains?("Form is empty")
     end
 
@@ -83,7 +85,9 @@ defmodule PicselloWeb.LeadContactIframeControllerTest do
                  "organization_slug" => user.organization.slug
                }
              )
-             |> get_flash("error")
+             |> Map.get(:assigns)
+             |> Map.get(:flash)
+             |> Phoenix.Flash.get("error")
              |> String.contains?("Form has errors")
     end
 
