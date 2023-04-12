@@ -515,12 +515,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   @impl true
   def handle_event("validate", %{"booking_event" => params}, socket) do
+    params = Map.put_new(params, "buffer_minutes", "")
     socket |> assign_changeset(params, :validate) |> noreply()
   end
 
   @impl true
   def handle_event("submit", %{"step" => step, "booking_event" => params}, socket)
       when step in ["details", "package"] do
+    params = Map.put_new(params, "buffer_minutes", "")
+
     case socket |> assign_changeset(params, :validate) do
       %{assigns: %{changeset: %{valid?: true}}} ->
         socket
@@ -536,6 +539,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   @impl true
   def handle_event("submit", %{"step" => "customize", "booking_event" => params}, socket) do
+    params = Map.put_new(params, "buffer_minutes", "")
     %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
 
     case BookingEvents.upsert_booking_event(changeset) do
@@ -609,7 +613,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     event = current(event_form)
 
     slot_count =
-      event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
+      event
+      |> BookingEvents.available_times(date, skip_overlapping_shoots: true)
+      |> filter_break_blocks()
+      |> Enum.count()
 
     booked_slots_count =
       case can_edit? do
@@ -620,6 +627,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     {slot_count, calculate_break_blocks(event, date), calculate_hidden_blocks(event, date),
      booked_slots_count}
   end
+
+  defp filter_break_blocks(slots), do: Enum.filter(slots, fn slot -> !elem(slot, 2) end)
 
   defp is_break_block_already_booked(dates) do
     Enum.count(dates, fn %{time_blocks: time_blocks} ->
