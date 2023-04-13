@@ -32,6 +32,7 @@ defmodule Mix.Tasks.UpdatePackagePaymentSchedules do
         end, [])
         |> Repo.transaction()
       end
+
     end)
   end
 

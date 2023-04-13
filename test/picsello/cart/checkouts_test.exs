@@ -241,13 +241,13 @@ defmodule Picsello.Cart.CheckoutsTest do
     end
 
     test "creates finalized invoice", %{order: order} do
-      Mox.expect(MockPayments, :create_session,
-      fn %{payment_intent_data: payment_intent_data}, _opts ->
+      Mox.expect(MockPayments, :create_session, fn %{payment_intent_data: payment_intent_data},
+                                                   _opts ->
         {:ok,
-        build(:stripe_session,
-          payment_intent:
-            build(:stripe_payment_intent, Map.put(payment_intent_data, :id, "intent-stripe-id"))
-        )}
+         build(:stripe_session,
+           payment_intent:
+             build(:stripe_payment_intent, Map.put(payment_intent_data, :id, "intent-stripe-id"))
+         )}
       end)
 
       assert {:ok, _} = check_out(order)
