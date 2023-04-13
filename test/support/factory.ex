@@ -633,6 +633,8 @@ defmodule Picsello.Factory do
   end
 
   def cart_product_factory(attrs \\ %{}) do
+    whcc_product = Map.get(attrs, :whcc_product, insert(:product))
+
     %Picsello.Cart.Product{
       editor_id: sequence(:whcc_editor_id, &"whcc-editor-id#{&1}"),
       quantity: 1,
@@ -640,8 +642,9 @@ defmodule Picsello.Factory do
       shipping_upcharge: Decimal.new("0.09"),
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
-      whcc_product: fn -> insert(:product) end,
+      whcc_product: fn -> whcc_product end,
       preview_url: image_url(),
+      whcc_product_id: whcc_product.id,
       total_markuped_price: %Money{amount: 50_200, currency: :USD},
       selections: %{
         "display_options" => "no",
