@@ -45,7 +45,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   end
 
   defp inner_content(%{caller: caller} = assigns)
-       when caller in ~w(order cart proofing_album_order)a do
+       when caller in ~w(order cart proofing_album_order proofing_album_cart)a do
     assigns = Map.put(assigns, :is_proofing, caller == :proofing_album_order)
 
     ~H"""
@@ -57,7 +57,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
         <dd class="self-center hidden toggle lg:block justify-self-end"><%= value %></dd>
       <% end %>
 
-      <dt class={"hidden #{!@is_proofing && 'text-2xl'} toggle lg:block"}>
+      <dt class={"hidden #{!@is_proofing && 'text-2xl'} toggle md:block"}>
         <%= if @is_proofing, do: "Purchased", else: "Subtotal" %>
       </dt>
       <dd class={"self-center hidden #{!@is_proofing && 'text-2xl'} toggle lg:block justify-self-end"}>
@@ -77,23 +77,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
 
       <dd class="self-center text-2xl font-extrabold justify-self-end"><%= @total %></dd>
     </dl>
-    </div>
-    """
-  end
-
-  defp inner_content(%{caller: :proofing_album_cart} = assigns) do
-    ~H"""
-    <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6 mb-5">
-      <dl class="text-lg contents">
-        <%= unless @discounts == [] do %>
-        <.discounts_content discounts={@discounts} class="text-base" />
-        <% end %>
-      </dl>
-      <hr class="hidden mt-2 mb-3 col-span-2 border-base-200 toggle lg:block">
-      <dl class="contents">
-        <dt class="text-2xl font-extrabold">Total</dt>
-        <dd class="self-center text-2xl font-extrabold justify-self-end"><%= @total %></dd>
-      </dl>
     </div>
     """
   end
@@ -228,17 +211,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   end
 
   defp credit(gallery, credit, caller) do
-    case caller do
-      :proofing_album_order ->
-        remainig_credit = gallery |> credits() |> find_digital() |> elem(1)
+    if caller == :proofing_album_order do
+      remainig_credit = gallery |> credits() |> find_digital() |> elem(1)
 
-        "#{credit} credit used - #{remainig_credit} credits remainig"
-
-      :proofing_album_cart ->
-        "Selected for retouching (#{credit})"
-
-      _ ->
-        "Digital download credit (#{credit})"
+      "#{credit} credit used - #{remainig_credit} credits remainig"
+    else
+      "Digital download credit (#{credit})"
     end
   end
 
