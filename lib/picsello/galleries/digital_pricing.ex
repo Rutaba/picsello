@@ -11,13 +11,14 @@ defmodule Picsello.Galleries.DigitalPricing do
     field :download_count, :integer
     field :print_credits, Money.Ecto.Amount.Type
     field :buy_all, Money.Ecto.Amount.Type
+    field :email_list, {:array, :string}
   end
 
-  @create_attrs [:download_each_price, :download_count, :print_credits, :buy_all]
+  @create_attrs [:download_each_price, :download_count, :print_credits, :buy_all, :email_list]
   def changeset(struct, attrs) do
     struct
     |> cast(attrs, @create_attrs)
-    |> validate_required(~w[download_count download_each_price]a)
+    |> validate_required(~w[download_count download_each_price email_list]a)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> Package.validate_money(:download_each_price)
     |> Package.validate_money(:print_credits,
