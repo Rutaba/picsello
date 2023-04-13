@@ -392,6 +392,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
     session
     |> click(link("Package Templates"))
+    |> scroll_to_top()
     |> click(testid("menu-btn-#{package.id}"))
     |> click(button("Hide on public profile"))
     |> assert_text("Hide on your Public Profile?")
