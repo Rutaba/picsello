@@ -3,7 +3,6 @@ defmodule Picsello.Galleries.Gallery do
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query
-<<<<<<< HEAD
 
   alias Picsello.Galleries.{
     Photo,
@@ -15,9 +14,6 @@ defmodule Picsello.Galleries.Gallery do
     GalleryDigitalPricing
   }
 
-=======
-  alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album, SessionToken, DigitalPricing}
->>>>>>> fc746a99a (gallery digital pricing schema)
   alias Picsello.{Job, Cart.Order, Repo, GlobalSettings}
 
   @status_options [
@@ -166,8 +162,12 @@ defmodule Picsello.Galleries.Gallery do
     |> cast_assoc(:gallery_digital_pricing, with: &GalleryDigitalPricing.changeset/2)
 =======
     |> cast(attrs, [])
+<<<<<<< HEAD
     |> cast_embed(:digital_pricing, with: {DigitalPricing, :changeset, [gallery.id]}, required: true)
 >>>>>>> fc746a99a (gallery digital pricing schema)
+=======
+    |> cast_embed(:digital_pricing, with: &DigitalPricing.changeset/2, required: true)
+>>>>>>> 7cc6c7f68 (added migration and saving functionality)
   end
 
   def generate_password, do: Enum.random(100_000..999_999) |> to_string
