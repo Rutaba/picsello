@@ -58,4 +58,8 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
       </div>
     """
   end
+
+  defp get_pricing_value(gallery) do
+    if gallery.digital_pricing, do: gallery.digital_pricing, else: gallery.package
+  end
 end

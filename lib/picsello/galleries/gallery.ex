@@ -147,7 +147,7 @@ defmodule Picsello.Galleries.Gallery do
   def save_digital_pricing_changeset(gallery, attrs \\ %{}) do
     gallery
     |> cast(attrs, [])
-    |> cast_embed(:digital_pricing, with: {DigitalPricing, :changeset, [gallery.id]}, required: true)
+    |> cast_embed(:digital_pricing, with: &DigitalPricing.changeset/2, required: true)
   end
 
   def generate_password, do: Enum.random(100_000..999_999) |> to_string

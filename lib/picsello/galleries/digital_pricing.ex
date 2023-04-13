@@ -3,6 +3,8 @@ defmodule Picsello.Galleries.DigitalPricing do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Picsello.Package
+
   @primary_key false
   embedded_schema do
     field :download_each_price, Money.Ecto.Amount.Type
@@ -17,8 +19,8 @@ defmodule Picsello.Galleries.DigitalPricing do
     |> cast(attrs, @create_attrs)
     |> validate_required(~w[download_count download_each_price]a)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
-    |> validate_money(:download_each_price)
-    |> validate_money(:print_credits,
+    |> Package.validate_money(:download_each_price)
+    |> Package.validate_money(:print_credits,
       greater_than_or_equal_to: 0,
       message: "must be equal to or less than total price"
     )

@@ -1037,6 +1037,12 @@ defmodule Picsello.Galleries do
   def gallery_text_watermark_change(nil, attrs),
     do: Watermark.text_changeset(%Watermark{}, attrs)
 
+  def save_gallery_digital_pricing(gallery, attrs \\ %{}) do
+    gallery
+    |> Gallery.save_digital_pricing_changeset(attrs)
+    |> Repo.update()
+  end
+
   def save_gallery_cover_photo(gallery, attrs \\ %{}) do
     gallery
     |> Gallery.save_cover_photo_changeset(attrs)

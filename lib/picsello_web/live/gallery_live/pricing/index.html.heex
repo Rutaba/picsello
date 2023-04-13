@@ -41,16 +41,16 @@
                         </div>
                         <div class="grid grid-cols-4">
                             <div class="col-span-2">
-                                <.grid_item icon="money-bags" item_name="Print Credit" item_value={@gallery.package.print_credits || "-"} />
+                                <.grid_item icon="money-bags" item_name="Print Credit" item_value={get_pricing_value(@gallery).print_credits || "-"} />
                             </div>
                             <div class="col-span-2">
-                                <.grid_item icon="photos-2" item_name="Included Digital Images" item_value={@gallery.package.download_count || "-"} />
+                                <.grid_item icon="photos-2" item_name="Included Digital Images" item_value={get_pricing_value(@gallery).download_count || "-"} />
                             </div>
                             <div class="col-span-2 mt-4">
-                                <.grid_item icon="money-bags" item_name="Digital Image Price" item_value={@gallery.package.download_each_price || "-"} />
+                                <.grid_item icon="money-bags" item_name="Digital Image Price" item_value={get_pricing_value(@gallery).download_each_price || "-"} />
                             </div>
                             <div class="col-span-2 mt-4">
-                                <.grid_item icon="money-bags" item_name="Buy Them All Price" item_value={@gallery.package.buy_all || "-"} />
+                                <.grid_item icon="money-bags" item_name="Buy Them All Price" item_value={get_pricing_value(@gallery).buy_all || "-"} />
                             </div>
                         </div>
                     </div>
