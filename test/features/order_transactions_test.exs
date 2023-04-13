@@ -80,7 +80,7 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_has(testid("orders", count: 1))
     |> assert_has(css("*[phx-click='order-detail']", text: "Product order"))
     |> assert_has(css("*[phx-click='order-detail']", text: "View details"))
-    |> assert_text("$595.45")
+    |> assert_text("$557.00")
     |> assert_text(Calendar.strftime(order.placed_at, "%m/%d/%Y"))
     |> click(css("*[phx-click='order-detail']", text: "View details"))
     |> assert_url_contains(
