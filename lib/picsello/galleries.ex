@@ -698,6 +698,10 @@ defmodule Picsello.Galleries do
         |> Multi.update(:photo, Photo.update_changeset(photo, attrs))
         |> Multi.run(:gallery, fn _, _ -> may_be_prepare_gallery(gallery, photo) end)
         |> Repo.transaction()
+        |> case do
+          {:ok, %{photo: photo}} -> {:ok, photo}
+          err -> err
+        end
 
       photo ->
         photo
