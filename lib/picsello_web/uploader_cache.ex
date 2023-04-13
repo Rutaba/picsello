@@ -22,7 +22,7 @@ defmodule PicselloWeb.UploaderCache do
 
   def delete(key) do
     case Enum.filter(get(key), fn {pid, _, _} ->
-           Process.alive?(pid)
+          is_pid(pid) && Process.alive?(pid)
          end) do
       [] -> ConCache.delete(:cache, key)
       values -> update(key, values)
