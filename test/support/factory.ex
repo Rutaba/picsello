@@ -567,7 +567,7 @@ defmodule Picsello.Factory do
       position: sequence(:product_position, & &1),
       attribute_categories: whcc_product.attribute_categories,
       api: whcc_product.api,
-      shipping_upcharge: %{default: 20},
+      shipping_upcharge: %{"default" => 20},
       category: fn ->
         %{category: %{id: whcc_id}} = whcc_product
         Repo.get_by(Picsello.Category, whcc_id: whcc_id) || build(:category, whcc_id: whcc_id)
@@ -636,7 +636,6 @@ defmodule Picsello.Factory do
     %Picsello.Cart.Product{
       editor_id: sequence(:whcc_editor_id, &"whcc-editor-id#{&1}"),
       quantity: 1,
-      shipping_type: "economy",
       shipping_base_charge: %Money{amount: 3_800, currency: :USD},
       shipping_upcharge: Decimal.new("0.09"),
       unit_markup: %Money{amount: 35_200, currency: :USD},

@@ -20,6 +20,10 @@ defmodule Picsello.Cart do
   alias Ecto.Changeset
   alias Picsello.Cart.Product, as: CartProduct
 
+  @default_shipping "economy"
+  @products_config Application.compile_env!(:picsello, :products)
+  @shipping_to_all [@products_config[:whcc_album_id], @products_config[:whcc_books_id]]
+
   def new_product(editor_id, gallery_id) do
     gallery_id |> WHCC.price_details(editor_id) |> CartProduct.new()
   end
@@ -428,6 +432,8 @@ defmodule Picsello.Cart do
       }
     } = product
 
+    IO.inspect(upcharge)
+
     %{
       shipping_type: shipping_type,
       shipping_upcharge: upcharge |> upcharge(selections) |> to_string |> Decimal.new(),
@@ -522,6 +528,23 @@ defmodule Picsello.Cart do
     products
     |> Enum.filter(& &1.shipping_type)
     |> Enum.reduce(Money.new(0), &Money.add(&2, shipping_price(&1)))
+  end
+
+  def add_default_shipping_to_products(order) do
+    shipping = fn p -> (p.shipping_type && p) || add_shipping_details!(p, @default_shipping) end
+
+    order
+    |> lines_by_product()
+    |> Enum.map(fn
+      {%{category: %{whcc_id: whcc_id}}, line_items} when whcc_id in @shipping_to_all ->
+        for product <- line_items, do: shipping.(product)
+
+      {_whcc_product, line_items} ->
+        [product | products] = Enum.reverse(line_items)
+
+        [shipping.(product) | products]
+    end)
+    |> Enum.concat()
   end
 
   defdelegate lines_by_product(order), to: Order

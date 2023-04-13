@@ -190,19 +190,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
 
   defp assign_products_shipping(%{assigns: %{order: order}} = socket) do
-    shipping = fn p -> (p.shipping_type && p) || add_shipping_details!(p, @default_shipping) end
-
     order
-    |> lines_by_product()
-    |> Enum.map(fn
-      {%{category: %{whcc_id: whcc_id}}, line_items} when whcc_id in @shipping_to_all ->
-        for product <- line_items, do: shipping.(product)
-
-      {_whcc_product, line_items} ->
-        [product | products] = Enum.reverse(line_items)
-        [shipping.(product) | products]
-    end)
-    |> Enum.concat()
+    |> Cart.add_default_shipping_to_products()
     |> assign_products(socket)
   end
 

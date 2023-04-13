@@ -7,7 +7,8 @@ defmodule Picsello.Orders.ConfirmationsTest do
     MockWHCCClient,
     Cart.Order,
     Invoices.Invoice,
-    Intents.Intent
+    Intents.Intent,
+    Cart
   }
 
   import Money.Sigils
