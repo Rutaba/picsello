@@ -432,8 +432,6 @@ defmodule Picsello.Cart do
       }
     } = product
 
-    IO.inspect(upcharge)
-
     %{
       shipping_type: shipping_type,
       shipping_upcharge: upcharge |> upcharge(selections) |> to_string |> Decimal.new(),
