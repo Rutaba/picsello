@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
-  alias Picsello.{Cart, Cart.Order, WHCC, Galleries}
+  alias Picsello.{Cart, Cart.Order, Cart.Digital, WHCC, Galleries, Repo}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   alias PicselloWeb.Endpoint
   import PicselloWeb.GalleryLive.Shared
@@ -143,6 +143,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         |> maybe_redirect()
 
       {:loaded, order} ->
+        digital_items = Enum.map(order.digitals, fn digital -> Map.drop(digital, [:photo]) end)
+
+        digital_items
+        |> Enum.reduce(Ecto.Multi.new(), fn %{id: id} = digital, multi ->
+          Digital
+          |> Repo.get(id)
+          |> Ecto.Changeset.change(is_credit: digital.is_credit)
+          |> then(&Ecto.Multi.update(multi, id, &1))
+        end)
+        |> Repo.transaction()
+
         send_update(ClientMenuComponent, id: client_menu_id, cart_count: count - 1)
 
         assign(socket, :order, order)
