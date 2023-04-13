@@ -501,7 +501,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     <span class="hidden sm:flex items-center justify-between border-b-4 border-blue-planning-300 font-semibold text-lg text-base-250" />
     <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-6 overflow-hidden">
       <div class={classes(%{"hidden" => !(@active_tab == :contract)})}>
-        <% c = form_for(@contract_changeset, "#") %>
+        <% c = to_form(@contract_changeset) %>
           <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg p-3 rounded-t-lg bg-base-200">
             <div class="w-1/3">Contract name</div>
             <div class="w-1/3 text-center">Job type</div>
