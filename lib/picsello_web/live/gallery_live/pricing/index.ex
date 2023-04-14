@@ -43,6 +43,33 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
     |> noreply
   end
 
+  @impl true
+  def handle_event("edit-digital-pricing", _, %{assigns: assigns} = socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricing,
+      assigns |> Map.take([:current_user, :gallery])
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("reset-digital-pricing", _, %{assigns: %{gallery: gallery}} = socket) do
+    case Galleries.reset_gallery_pricing(gallery) do
+      {:ok, updated_gallery} ->
+        updated_gallery = updated_gallery |> Repo.preload([:photographer, :package]) |> Galleries.load_watermark_in_gallery()
+
+        socket
+        |> assign(:gallery, updated_gallery)
+        |> put_flash(:success, "Gallery pricing reset to package")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Gallery pricing could not reset to package")
+    end
+    |> noreply()
+  end
+
   def grid_item(assigns) do
     ~H"""
       <div class="flex flex-row mt-2 items-center">

@@ -543,6 +543,17 @@ defmodule Picsello.Galleries do
     end
   end
 
+  def reset_gallery_pricing(gallery) do
+    Gallery.save_digital_pricing_changeset(gallery, %{digital_pricing: %{
+      buy_all: gallery.package.buy_all,
+      print_credits: gallery.package.print_credits,
+      download_count: gallery.package.download_count,
+      download_each_price: gallery.package.download_each_price,
+    }
+    })
+    |> Repo.update()
+  end
+
   def album_params_for_new("standard"), do: []
 
   def album_params_for_new(type),
