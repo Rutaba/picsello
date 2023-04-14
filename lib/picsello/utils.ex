@@ -7,7 +7,6 @@ defmodule Picsello.Utils do
     value
     |> Phoenix.Naming.humanize()
     |> String.split()
-    |> Enum.map(&String.capitalize(&1))
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &String.capitalize(&1))
   end
 end

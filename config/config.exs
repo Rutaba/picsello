@@ -1,11 +1,11 @@
 # This file is responsible for configuring your application
-# and its dependencies with the aid of the Mix.Config module.
+# and its dependencies with the aid of the Config module.
 #
 # This configuration file is loaded before any dependency and
 # is restricted to this project.
 
 # General application configuration
-use Mix.Config
+import Config
 
 with dotenv = "#{__DIR__}/../.env",
      {:ok, data} <- File.read(dotenv),
@@ -14,10 +14,11 @@ with dotenv = "#{__DIR__}/../.env",
          "export" <> kv <- String.split(data, "\n"),
          [k, v] = String.split(kv, "=", parts: 2),
          do: k |> String.trim() |> System.put_env(v)
-       )
+       )  
 
 with "" <> base64 <- System.get_env("GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64"),
      {:ok, json} <- base64 |> String.trim() |> Base.decode64() do
+  config :picsello, goth_json: json
   config :goth, json: json
 end
 

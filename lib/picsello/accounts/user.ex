@@ -285,4 +285,18 @@ defmodule Picsello.Accounts.User do
         {first_name, nil}
     end
   end
+
+  @type t :: %__MODULE__{
+          id: Ecto.UUID.t(),
+          name: String.t(),
+          email: String.t(),
+          hashed_password: String.t(),
+          sign_up_auth_provider: String.t(),
+          stripe_customer_id: String.t(),
+          time_zone: String.t(),
+          confirmed_at: DateTime.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t(),
+          onboarding: Picsello.Onboardings.Onboarding.t()
+        }
 end

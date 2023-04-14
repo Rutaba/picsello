@@ -3,7 +3,7 @@ defmodule Picsello.Galleries.ClientLinkTest do
 
   alias Picsello.Galleries
 
-  @valid_attrs %{name: "MainGallery", status: "active", client_link_hash: nil}
+  @valid_attrs %{name: "MainGallery", status: :active, client_link_hash: nil}
 
   describe "gallery client link" do
     setup do

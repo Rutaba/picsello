@@ -27,10 +27,10 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
 
   @impl true
   def render(assigns) do
-    class = Map.get(assigns, :class, "dialog")
+    assigns = Enum.into(assigns, %{class: "dialog"})
 
     ~H"""
-    <div class={class}>
+    <div class={@class}>
       <%= if @icon && !@dropdown? do %>
         <.icon name={@icon} class="mb-2 w-11 h-11" />
       <% end %>
@@ -50,7 +50,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
 
   defp section(%{dropdown?: true} = assigns) do
     ~H"""
-    <.form let={f} for={:dropdown} phx-submit={@confirm_event} phx-target={@myself} class="mt-2">
+    <.form :let={f} for={%{}} as={:dropdown} phx-submit={@confirm_event} phx-target={@myself} class="mt-2">
       <h1 class="font-extrabold text-sm"><%= @dropdown_label %></h1>
       <%= select(f, :item_id, @dropdown_items, class: "w-full px-2 py-3 border border-slate-400 rounded-md mt-1") %>
 
@@ -114,7 +114,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
     socket |> noreply()
   end
 
-  @spec open(%Phoenix.LiveView.Socket{}, %{
+  @spec open(Phoenix.LiveView.Socket.t(), %{
           optional(:close_label) => binary,
           optional(:close_class) => binary,
           optional(:class) => binary,
@@ -131,7 +131,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
           optional(:dropdown_label) => binary | nil,
           optional(:dropdown_items) => list(),
           title: binary
-        }) :: %Phoenix.LiveView.Socket{}
+        }) :: Phoenix.LiveView.Socket.t()
   def open(socket, assigns) do
     socket
     |> open_modal(__MODULE__, Map.put(assigns, :parent_pid, self()))

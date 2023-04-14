@@ -52,7 +52,7 @@ defmodule PicselloWeb.ClientMessageComponent do
           <%= if @client, do: @client.email, else: client_email(@job) %>
         </div>
       <% end %>
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <div class="grid grid-flow-col gap-4 mt-4 auto-cols-fr">
           <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
           <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "h-12", phx_debounce: "500" %>
@@ -123,7 +123,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     end
   end
 
-  @spec open(%Phoenix.LiveView.Socket{}, %{
+  @spec open(Phoenix.LiveView.Socket.t(), %{
           optional(:body_html) => String.t(),
           optional(:body_text) => any,
           optional(:composed_event) => any,
@@ -132,12 +132,12 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:show_client_email) => boolean,
           optional(:show_subject) => boolean,
           optional(:subject) => String.t(),
-          optional(:presets) => [%Picsello.EmailPresets.EmailPreset{}],
-          optional(:current_user) => %Picsello.Accounts.User{},
-          optional(:client) => %Picsello.Client{},
+          optional(:presets) => [Picsello.EmailPresets.EmailPreset.t()],
+          optional(:current_user) => Picsello.Accounts.User.t(),
+          optional(:client) => Picsello.Client.t(),
           optional(:enable_size) => boolean,
           optional(:enable_image) => boolean
-        }) :: %Phoenix.LiveView.Socket{}
+        }) :: Phoenix.LiveView.Socket.t()
   def open(%{assigns: assigns} = socket, opts \\ %{}),
     do:
       open_modal(

@@ -51,7 +51,7 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
           </div>
         </div>
         <div class={classes("lg:block w-full lg:ml-16 lg:mr-8", %{"hidden" => @is_mobile})}>
-          <.form id="brand-link" let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+          <.form id="brand-link" :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
             <%= hidden_input f, :organization_id %>
             <%= hidden_input f, :link_id %>
             <.title_field form={f} class="mt-4" custom?={is_custom_brand_link(@brand_link.link_id)} link_id={@brand_link.link_id}/>

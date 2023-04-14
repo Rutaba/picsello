@@ -181,7 +181,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
     |> assign_default_changeset()
   end
 
-  defp watermark_type(%{type: "image"}), do: :image
-  defp watermark_type(%{type: "text"}), do: :text
+  defp watermark_type(%{type: :image}), do: :image
+  defp watermark_type(%{type: :text}), do: :text
   defp watermark_type(_), do: :undefined
 end

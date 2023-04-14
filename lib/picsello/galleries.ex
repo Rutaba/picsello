@@ -53,7 +53,7 @@ defmodule Picsello.Galleries do
 
   """
   def list_expired_galleries do
-    from(g in active_galleries(), where: g.status == "expired")
+    from(g in active_galleries(), where: g.status == :expired)
     |> Repo.all()
   end
 
@@ -142,10 +142,10 @@ defmodule Picsello.Galleries do
       nil
 
   """
-  @spec get_gallery_by_hash(hash :: binary) :: %Gallery{} | nil
+  @spec get_gallery_by_hash(hash :: binary) :: Gallery.t() | nil
   def get_gallery_by_hash(hash), do: Repo.get_by(active_galleries(), client_link_hash: hash)
 
-  @spec get_gallery_by_hash!(hash :: binary) :: %Gallery{}
+  @spec get_gallery_by_hash!(hash :: binary) :: Gallery.t()
   def get_gallery_by_hash!(hash),
     do: Repo.get_by!(active_disabled_galleries(), client_link_hash: hash)
 
@@ -621,7 +621,7 @@ defmodule Picsello.Galleries do
 
   """
   def delete_gallery(%Gallery{} = gallery) do
-    update_gallery(gallery, %{status: "inactive"})
+    update_gallery(gallery, %{status: :inactive})
   end
 
   def delete_gallery_by_id(id), do: get_gallery!(id) |> delete_gallery()
@@ -890,7 +890,7 @@ defmodule Picsello.Galleries do
 
   def gallery_current_status(%Gallery{id: nil}), do: :none_created
 
-  def gallery_current_status(%Gallery{status: "expired"}), do: :deactivated
+  def gallery_current_status(%Gallery{status: :expired}), do: :deactivated
 
   def gallery_current_status(%Gallery{} = gallery) do
     gallery = Repo.preload(gallery, [:photos, :organization])
@@ -1020,7 +1020,7 @@ defmodule Picsello.Galleries do
   def gallery_watermark_change(%Watermark{} = watermark), do: Ecto.Changeset.change(watermark)
 
   @doc """
-  Returns the changeset of watermark struct with :type => "image".
+  Returns the changeset of watermark struct with :type => :image.
   """
   def gallery_image_watermark_change(%Watermark{} = watermark, attrs),
     do: Watermark.image_changeset(watermark, attrs)
@@ -1029,7 +1029,7 @@ defmodule Picsello.Galleries do
     do: Watermark.image_changeset(%Watermark{}, attrs)
 
   @doc """
-  Returns the changeset of watermark struct with :type => "text".
+  Returns the changeset of watermark struct with :type => :text.
   """
   def gallery_text_watermark_change(%Watermark{} = watermark, attrs),
     do: Watermark.text_changeset(watermark, attrs)
@@ -1057,8 +1057,7 @@ defmodule Picsello.Galleries do
         Gallery.update_changeset(gallery)
 
       %{cover_photo: %{id: original_url}} ->
-        Enum.filter(photos, &(&1.original_url == original_url))
-        |> Enum.count()
+        Enum.count(photos, &(&1.original_url == original_url))
         |> case do
           0 -> Gallery.update_changeset(gallery)
           _ -> Gallery.delete_cover_photo_changeset(gallery)
@@ -1268,10 +1267,10 @@ defmodule Picsello.Galleries do
 
   defp topic(gallery), do: "gallery:#{gallery.id}"
 
-  defp active_galleries, do: from(g in Gallery, where: g.status == "active")
+  defp active_galleries, do: from(g in Gallery, where: g.status == :active)
 
   defp active_disabled_galleries,
-    do: from(g in Gallery, where: g.status == "active" or g.status == "disabled")
+    do: from(g in Gallery, where: g.status in [:active, :disabled])
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
   defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue

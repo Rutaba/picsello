@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 # Only in tests, remove the complexity from the password hashing algorithm
 config :bcrypt_elixir, :log_rounds, 1
@@ -38,6 +38,7 @@ config :wallaby,
     ),
   driver: Wallaby.Chrome,
   otp_app: :picsello,
+  js_logger: nil,
   screenshot_on_failure: true
 
 config :bamboo, :refute_timeout, 10
@@ -67,7 +68,7 @@ config :ueberauth, Ueberauth, providers: [google: {Picsello.MockAuthStrategy, []
 
 config :picsello, :whcc, adapter: Picsello.MockWHCCClient
 
-config :picsello, Oban, queues: false, plugins: false
+config :picsello, Oban, testing: :manual
 
 config :picsello,
        :feature_flags,

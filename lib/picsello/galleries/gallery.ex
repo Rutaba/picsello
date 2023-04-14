@@ -7,8 +7,8 @@ defmodule Picsello.Galleries.Gallery do
   alias Picsello.{Job, Cart.Order, Repo, GlobalSettings}
 
   @status_options [
-    values: ~w(active inactive disabled expired),
-    default: "active"
+    values: ~w[active inactive disabled expired]a,
+    default: :active
   ]
 
   @session_opts [
@@ -21,7 +21,7 @@ defmodule Picsello.Galleries.Gallery do
 
   schema "galleries" do
     field :name, :string
-    field :status, :string, @status_options
+    field :status, Ecto.Enum, @status_options
     field :password, :string
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
@@ -43,14 +43,23 @@ defmodule Picsello.Galleries.Gallery do
     has_one(:package, through: [:job, :package])
     has_one(:photographer, through: [:job, :client, :organization, :user])
 
-    embeds_one :use_global, UseGlobal, on_replace: :update do
+    embeds_one :use_global, __MODULE__.UseGlobal, on_replace: :update
+
+    timestamps(type: :utc_datetime)
+  end
+
+  defmodule UseGlobal do
+    @moduledoc false
+    use Ecto.Schema
+    import Ecto.Changeset
+
+    @primary_key false
+    embedded_schema do
       field :expiration, :boolean
       field :watermark, :boolean
       field :products, :boolean
       field :digital, :boolean
     end
-
-    timestamps(type: :utc_datetime)
   end
 
   @type t :: %__MODULE__{
@@ -155,16 +164,16 @@ defmodule Picsello.Galleries.Gallery do
     |> Repo.one()
     |> then(&GlobalSettings.get(&1))
     |> case do
-      %{watermark_type: "image", watermark_name: watermark_name, watermark_size: watermark_size} ->
+      %{watermark_type: :image, watermark_name: watermark_name, watermark_size: watermark_size} ->
         %{
           gallery_id: gallery.id,
           name: watermark_name,
           size: watermark_size,
-          type: "image"
+          type: :image
         }
 
-      %{watermark_type: "text", watermark_text: watermark_text} ->
-        %{text: watermark_text, type: "text", gallery_id: gallery.id}
+      %{watermark_type: :text, watermark_text: watermark_text} ->
+        %{text: watermark_text, type: :text, gallery_id: gallery.id}
 
       _ ->
         nil

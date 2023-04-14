@@ -52,7 +52,7 @@ defmodule PicselloWeb.Live.Marketing.NewCampaignComponent do
         </button>
       </div>
 
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <fieldset class={classes(%{"hidden" => @review})}>
           <%= labeled_input f, :subject, label: "Subject", placeholder: "Type subject…", wrapper_class: "mt-4", phx_debounce: "500" %>
 

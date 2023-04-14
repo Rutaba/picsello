@@ -546,7 +546,6 @@ defmodule PicselloWeb.JobLive.Index do
 
   defp capitalize_per_word(string) do
     String.split(string)
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &String.capitalize/1)
   end
 end

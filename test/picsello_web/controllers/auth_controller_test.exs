@@ -31,6 +31,9 @@ defmodule PicselloWeb.AuthControllerTest do
       |> Mox.stub(:default_options, fn -> [ignores_csrf_attack: true] end)
       |> Mox.stub(:handle_cleanup!, & &1)
       |> Mox.stub(:handle_callback!, & &1)
+      |> Mox.stub(:uid, fn _ -> "12345" end)
+      |> Mox.stub(:extra, fn _ -> %Ueberauth.Auth.Extra{} end)
+      |> Mox.stub(:credentials, fn _ -> %Ueberauth.Auth.Credentials{} end)
 
     [auth: mock_auth]
   end
@@ -43,10 +46,15 @@ defmodule PicselloWeb.AuthControllerTest do
         provider: :google
       }
     end)
+    |> Mox.stub(:info, fn _ ->
+      %Ueberauth.Auth.Info{name: "", email: "brian@example.com"}
+    end)
 
     assert conn
            |> get(Routes.auth_path(conn, :callback, :google))
-           |> get_flash("error")
+           |> Map.get(:assigns)
+           |> Map.get(:flash)
+           |> Phoenix.Flash.get("error")
            |> String.contains?("contact support")
   end
 
@@ -58,6 +66,9 @@ defmodule PicselloWeb.AuthControllerTest do
           info: %Ueberauth.Auth.Info{name: "brian", email: "brian@example.com"},
           provider: :google
         }
+      end)
+      |> Mox.stub(:info, fn _ ->
+        %Ueberauth.Auth.Info{name: "brian", email: "brian@example.com"}
       end)
 
       conn

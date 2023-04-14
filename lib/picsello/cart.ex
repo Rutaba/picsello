@@ -20,6 +20,10 @@ defmodule Picsello.Cart do
   alias Ecto.Changeset
   alias Picsello.Cart.Product, as: CartProduct
 
+  @default_shipping "economy"
+  @products_config Application.compile_env!(:picsello, :products)
+  @shipping_to_all [@products_config[:whcc_album_id], @products_config[:whcc_books_id]]
+
   def new_product(editor_id, gallery_id) do
     gallery_id |> WHCC.price_details(editor_id) |> CartProduct.new()
   end
@@ -29,7 +33,7 @@ defmodule Picsello.Cart do
   """
   @spec place_product(
           {:bundle, Money.t()} | CartProduct.t() | Digital.t(),
-          %Gallery{id: integer()} | integer(),
+          Gallery.t() | integer(),
           integer() | nil
         ) ::
           Order.t()
@@ -436,6 +440,9 @@ defmodule Picsello.Cart do
     }
   end
 
+  def get_base_charge(product, shipping_type) when is_atom(shipping_type),
+    do: get_base_charge(product, Atom.to_string(shipping_type))
+
   def get_base_charge(
         %{
           selections: selections,
@@ -510,6 +517,7 @@ defmodule Picsello.Cart do
   @one_day 1
   @three_days 3
   @economy 5
+  defp choose_days(value) when is_atom(value), do: value |> Atom.to_string() |> choose_days()
   defp choose_days("1_day"), do: @one_day
   defp choose_days("3_days"), do: @three_days
   defp choose_days("economy"), do: @economy
@@ -518,6 +526,23 @@ defmodule Picsello.Cart do
     products
     |> Enum.filter(& &1.shipping_type)
     |> Enum.reduce(Money.new(0), &Money.add(&2, shipping_price(&1)))
+  end
+
+  def add_default_shipping_to_products(order) do
+    shipping = fn p -> (p.shipping_type && p) || add_shipping_details!(p, @default_shipping) end
+
+    order
+    |> lines_by_product()
+    |> Enum.map(fn
+      {%{category: %{whcc_id: whcc_id}}, line_items} when whcc_id in @shipping_to_all ->
+        for product <- line_items, do: shipping.(product)
+
+      {_whcc_product, line_items} ->
+        [product | products] = Enum.reverse(line_items)
+
+        [shipping.(product) | products]
+    end)
+    |> Enum.concat()
   end
 
   defdelegate lines_by_product(order), to: Order

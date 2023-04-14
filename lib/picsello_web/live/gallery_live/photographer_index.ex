@@ -49,7 +49,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
     gallery =
       Galleries.get_gallery!(id)
-      |> Repo.preload(:photographer)
+      |> Repo.preload([:photographer, job: :client])
       |> Galleries.load_watermark_in_gallery()
 
     prepare_gallery(gallery)
@@ -354,7 +354,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     gallery
-    |> Galleries.update_gallery(%{status: "disabled"})
+    |> Galleries.update_gallery(%{status: :disabled})
     |> process_gallery(socket, :disabled)
   end
 
@@ -363,7 +363,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     gallery
-    |> Galleries.update_gallery(%{status: "active"})
+    |> Galleries.update_gallery(%{status: :active})
     |> process_gallery(socket, :enabled)
   end
 

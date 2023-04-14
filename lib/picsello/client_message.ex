@@ -56,4 +56,20 @@ defmodule Picsello.ClientMessage do
       where: is_nil(message.read_at) and is_nil(message.deleted_at)
     )
   end
+
+  @type t :: %__MODULE__{
+          id: integer(),
+          subject: String.t(),
+          cc_email: String.t(),
+          body_text: String.t(),
+          body_html: String.t(),
+          scheduled: boolean(),
+          outbound: boolean(),
+          read_at: DateTime.t(),
+          deleted_at: DateTime.t(),
+          job_id: integer(),
+          client_id: integer(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 end

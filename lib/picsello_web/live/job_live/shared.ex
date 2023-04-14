@@ -750,7 +750,8 @@ defmodule PicselloWeb.JobLive.Shared do
       |> Enum.into(%{
         label: badge.label,
         color: badge.color,
-        class: ""
+        class: "",
+        second_badge: second_badge
       })
 
     ~H"""
@@ -758,9 +759,9 @@ defmodule PicselloWeb.JobLive.Shared do
         <.badge class={@class} color={@color}>
           <%= @label %>
         </.badge>
-        <%= if second_badge do %>
-          <.badge class={"ml-1 #{@class}"} color={second_badge.color}>
-            <%= second_badge.label %>
+        <%= if @second_badge do %>
+          <.badge class={"ml-1 #{@class}"} color={@second_badge.color}>
+            <%= @second_badge.label %>
           </.badge>
         <% end %>
       </span>
@@ -1225,12 +1226,12 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   @spec shoot_details(%{
-          current_user: %Picsello.Accounts.User{},
+          current_user: Picsello.Accounts.User.t(),
           shoot_path: fun(),
-          job: %Picsello.Job{},
-          shoots: list(%Picsello.Shoot{}),
-          socket: %Phoenix.LiveView.Socket{}
-        }) :: %Phoenix.LiveView.Rendered{}
+          job: Picsello.Job.t(),
+          shoots: list(Picsello.Shoot.t()),
+          socket: Phoenix.LiveView.Socket.t()
+        }) :: Phoenix.LiveView.Rendered.t()
   def shoot_details(assigns) do
     ~H"""
 
@@ -1508,13 +1509,13 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  def error_action(%{error: error, entry: entry} = assigns) do
+  def error_action(assigns) do
     assigns = Map.put_new(assigns, :target, nil)
 
     ~H"""
-    <p class="error btn items-center px-2 sm:px-1"><%= Phoenix.Naming.humanize(error) %></p>
-    <p class={"retry rounded ml-2 py-1 px-2 sm:px-1 text-xs cursor-pointer #{!retryable?(error) && 'hidden'}"}
-      phx-value-ref={entry.ref} phx-click="retry" phx-target={@target}>
+    <p class="error btn items-center px-2 sm:px-1"><%= Phoenix.Naming.humanize(@error) %></p>
+    <p class={"retry rounded ml-2 py-1 px-2 sm:px-1 text-xs cursor-pointer #{!retryable?(@error) && 'hidden'}"}
+      phx-value-ref={@entry.ref} phx-click="retry" phx-target={@target}>
       Retry?
     </p>
     """
@@ -1541,6 +1542,14 @@ defmodule PicselloWeb.JobLive.Shared do
       nil
     end
   end
+
+  def assign_existing_uploads(%{} = uploads, %{assigns: assigns} = socket) do
+    assigns
+    |> Map.put(:uploads, uploads)
+    |> then(&Map.put(socket, :assigns, &1))
+  end
+
+  def assign_existing_uploads(_uploads, socket), do: socket
 
   def check_max_entries(
         %{assigns: %{uploads: %{documents: %{entries: entries} = documents}}} = socket
@@ -1603,8 +1612,7 @@ defmodule PicselloWeb.JobLive.Shared do
       {},
       &Enum.concat(Enum.filter(&1, fn {ref, _} -> ref != entry.ref end), errs)
     )
-    |> then(&Map.put(uploads, :documents, &1))
-    |> then(&assign(socket, :uploads, &1))
+    |> assign_documents_uploads(socket)
   end
 
   defdelegate path_to_url(path), to: PhotoStorage
@@ -1612,9 +1620,16 @@ defmodule PicselloWeb.JobLive.Shared do
   defp assign_documents(%{assigns: %{uploads: uploads}} = socket, entries) do
     %{documents: documents} = uploads
 
+    documents
+    |> Map.put(:entries, entries)
+    |> Map.put(:errors, [])
+    |> assign_documents_uploads(socket)
+  end
+
+  defp assign_documents_uploads(documents, %{assigns: %{uploads: uploads}} = socket) do
     uploads
-    |> Map.put(:documents, Map.put(documents, :entries, entries) |> Map.put(:errors, []))
-    |> then(&assign(socket, :uploads, &1))
+    |> Map.put(:documents, documents)
+    |> assign_existing_uploads(socket)
   end
 
   defp ex_docs(%{job: %{documents: documents}}), do: Enum.map(documents, & &1.name)

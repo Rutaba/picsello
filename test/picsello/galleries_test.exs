@@ -6,9 +6,9 @@ defmodule Picsello.GalleriesTest do
   alias Picsello.Repo
   alias Picsello.Job
 
-  @valid_attrs %{name: "MainGallery", status: "active"}
-  @update_attrs %{status: "expired"}
-  @invalid_attrs %{status: "draft"}
+  @valid_attrs %{name: "MainGallery", status: :active}
+  @update_attrs %{status: :expired}
+  @invalid_attrs %{status: :draft}
 
   def gallery_fixture(attrs \\ %{}) do
     insert(:gallery, attrs)

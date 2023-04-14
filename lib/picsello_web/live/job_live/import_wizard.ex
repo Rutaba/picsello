@@ -13,9 +13,9 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     Profiles
   }
 
+  import Phoenix.Component
   import PicselloWeb.Live.Shared
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-
   import PicselloWeb.JobLive.Shared,
     only: [
       job_form_fields: 1,
@@ -53,7 +53,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   end
 
   @impl true
-  def render(%{searched_client: searched_client, selected_client: selected_client} = assigns) do
+  def render(%{searched_client: _, selected_client: _} = assigns) do
     ~H"""
     <div class="modal">
       <.close_x />
@@ -76,7 +76,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
         </a>
 
         <%= if step_number(@step, @steps) > 2 do%>
-          <.client_name_box searched_client={searched_client} selected_client={selected_client} assigns={assigns} />
+          <.client_name_box searched_client={@searched_client} selected_client={@selected_client} assigns={assigns} />
         <% end %>
       </div>
 
@@ -134,7 +134,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     ~H"""
     <.search_clients new_client={@new_client} search_results={@search_results} search_phrase={@search_phrase} selected_client={@selected_client} searched_client={@searched_client} current_focus={@current_focus} clients={@clients} myself={@myself}/>
 
-    <.form for={@job_changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+    <.form for={@job_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
       <.job_form_fields myself={@myself} form={f} new_client={@new_client} job_types={Profiles.enabled_job_types(@current_user.organization.organization_job_types)} />
 
       <.footer>

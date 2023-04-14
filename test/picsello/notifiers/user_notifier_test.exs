@@ -26,22 +26,27 @@ defmodule Picsello.Notifiers.UserNotifierTest do
   end
 
   def insert_order(%{gallery: gallery, products: products}) do
+    order =
+      for product <- products, reduce: nil do
+        _ ->
+          Cart.place_product(product, gallery)
+      end
+      |> Repo.preload(
+        [
+          :products,
+          :digitals,
+          :invoice,
+          :intent,
+          gallery: [job: [:package, client: [organization: :user]]]
+        ],
+        force: true
+      )
+
     [
       order:
-        for product <- products, reduce: nil do
-          _ ->
-            Cart.place_product(product, gallery)
-        end
-        |> Repo.preload(
-          [
-            :products,
-            :digitals,
-            :invoice,
-            :intent,
-            gallery: [job: [:package, client: [organization: :user]]]
-          ],
-          force: true
-        )
+        order
+        |> Cart.add_default_shipping_to_products()
+        |> then(&Map.put(order, :products, &1))
     ]
   end
 
@@ -97,8 +102,8 @@ defmodule Picsello.Notifiers.UserNotifierTest do
              |> Map.merge(%{
                print_credit_remaining: ~M[0]USD,
                print_credit_used: ~M[10000]USD,
-               client_charge: ~M[46645]USD,
-               photographer_payment: ~M[46145]USD,
+               client_charge: ~M[53220]USD,
+               photographer_payment: ~M[52720]USD,
                print_cost: ~M[500]USD
              }) ==
                template_variables(email)

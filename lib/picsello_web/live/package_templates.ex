@@ -65,7 +65,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     do: socket |> noreply()
 
   @impl true
-  def render(%{current_user: %{organization: %{id: org_id}}} = assigns) do
+  def render(%{current_user: %{organization: %{id: _}}} = assigns) do
     ~H"""
     <.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
       <div class={classes("flex flex-col justify-between flex-1 mt-5 sm:flex-row", %{"flex-grow-0" => Enum.any?(@templates) })}>
@@ -93,7 +93,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
         <div class="flex flex-col lg:flex-row lg:mt-8">
           <div class={classes("lg:block", %{"hidden" => !@is_mobile})}>
             <div class="h-auto">
-              <div phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
+              <div id={"replace-#{@package_name}"} phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
                 <%= for(job_type <- @job_types) do %>
                   <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @package_name == job_type})} phx-click="assign_templates_by_job_type" phx-value-job-type={job_type}>
                     <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
@@ -106,7 +106,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
                               <span class="capitalize"><%= job_type %> <span class="font-normal">(<%= @job_type_packages |> Map.get(job_type, [])|> Enum.count() %>)</span></span>
                             </div>
                           </div>
-                          <div class="flex items-center px-2 ml-auto" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(job_type, org_id).id}>
+                          <div class="flex items-center px-2 ml-auto" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(job_type, @current_user.organization.id).id}>
                               <span class="text-blue-planning-300 link font-normal">Edit</span>
                           </div>
                         </a>
@@ -185,7 +185,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
             </div>
             <div class="pl-2 font-bold text-xl capitalize"><%= @package_name %> Packages</div>
               <%= if @package_name not in ["All", "Archived"] do%>
-                <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(@package_name, org_id).id}>
+                <div class="flex custom-tooltip hover:cursor-pointer" phx-click="edit-job-type" phx-value-job-type-id={Jobs.get_job_type(@package_name, @current_user.organization.id).id}>
                   <%= if @show_on_public_profile do %>
                     <.icon name="eye" class={classes("inline-block w-5 h-5 ml-2 fill-current", %{"text-blue-planning-300" => @show_on_public_profile, "text-gray-400" => !@show_on_public_profile})} />
                   <% else %>
@@ -211,7 +211,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
               </div>
               <%= if @pagination.total_count > 4 do %>
                 <div class="flex items-center px-6 pb-6 center-container">
-                  <.form let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
+                  <.form :let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
                     <%= select f, :limit, [4, 8, 12, 16], class: "cursor-pointer"%>
                   </.form>
 

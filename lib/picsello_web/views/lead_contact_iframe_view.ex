@@ -1,6 +1,7 @@
 defmodule PicselloWeb.LeadContactIframeView do
   use PicselloWeb, :view
-
+  
+  import Phoenix.Component
   import PicselloWeb.LiveHelpers, only: [job_type_option: 1, icon: 1]
 
   def render("index.html", assigns) do
@@ -8,7 +9,7 @@ defmodule PicselloWeb.LeadContactIframeView do
     <.container>
       <h1 class="text-3xl font-bold max-w-md">Get in touch</h1>
 
-      <.form for={@changeset} let={f} id="client-form">
+      <.form for={@changeset} :let={f} id="client-form">
         <div class="flex flex-col mt-3">
           <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-bold" %>
 
@@ -67,7 +68,7 @@ defmodule PicselloWeb.LeadContactIframeView do
   defp container(assigns) do
     ~H"""
     <div class="p-9 border-base-200 client-app">
-      <%= render_block(@inner_block) %>
+      <%= render_slot(@inner_block) %>
     </div>
     """
   end

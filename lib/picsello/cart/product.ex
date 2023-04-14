@@ -8,7 +8,7 @@ defmodule Picsello.Cart.Product do
 
   use Ecto.Schema
 
-  @shipping_types [values: ~w(economy 3_days 1_day)]
+  @shipping_types [values: ~w(economy 3_days 1_day)a]
 
   schema "product_line_items" do
     field :editor_id, :string
@@ -16,7 +16,7 @@ defmodule Picsello.Cart.Product do
     field :quantity, :integer
     field :selections, :map
     field :shipping_base_charge, Money.Ecto.Amount.Type
-    field :shipping_type, :string, @shipping_types
+    field :shipping_type, Ecto.Enum, @shipping_types
     field :shipping_upcharge, :decimal
     field :unit_markup, Money.Ecto.Amount.Type
     field :total_markuped_price, Money.Ecto.Amount.Type

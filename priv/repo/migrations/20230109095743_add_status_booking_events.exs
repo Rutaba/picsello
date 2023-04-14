@@ -21,8 +21,6 @@ defmodule Picsello.Repo.Migrations.AddStatusBookingEvents do
       add(:disabled_at, :utc_datetime)
     end
 
-    current_time = DateTime.utc_now() |> DateTime.truncate(:second)
-
     execute(
       "UPDATE booking_events SET disabled_at='2023-02-20 17:12:15' WHERE status='disabled';"
     )

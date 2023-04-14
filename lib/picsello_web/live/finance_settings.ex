@@ -61,7 +61,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
               <p class="font-normal flex text-base-250">Accept offline payments</p>
             </div>
             <div class="flex justify-end items-center">
-              <.form for={:toggle} phx-change="toggle">
+              <.form :let={_} for={%{}} as={:toggle} phx-change="toggle">
                 <label class="mt-4 text-lg flex">
                   <input type="checkbox" class="peer hidden" checked={User.enabled?(@current_user)}/>
                   <div class="hidden peer-checked:flex cursor-pointer">

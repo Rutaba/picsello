@@ -233,11 +233,10 @@ defmodule Picsello.BookingEvents do
         %{start_time: %Time{} = start_time, end_time: %Time{} = end_time},
         slots
       ) do
-    Enum.filter(slots, fn {slot_time, is_available, _is_break, _is_hide} ->
+    Enum.count(slots, fn {slot_time, is_available, _is_break, _is_hide} ->
       !is_available && Time.compare(slot_time, start_time) in [:gt, :eq] &&
         Time.compare(slot_time, end_time) in [:lt, :eq]
-    end)
-    |> Enum.count() > 0
+    end) > 0
   end
 
   defp filter_is_break_slots(slot_times, booking_event, date) do

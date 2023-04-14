@@ -6,7 +6,7 @@ defmodule Picsello.Galleries.WatermarkTest do
     test "image changeset is valid" do
       changeset = Watermark.image_changeset(%Watermark{}, %{name: "image.png", size: 123_456})
       assert true = changeset.valid?
-      assert "image" = changeset.changes[:type]
+      assert :image = changeset.changes[:type]
     end
 
     test "image changeset is not valid" do
@@ -17,7 +17,7 @@ defmodule Picsello.Galleries.WatermarkTest do
     test "text changeset is valid" do
       changeset = Watermark.text_changeset(%Watermark{}, %{text: "007 Agency"})
       assert true = changeset.valid?
-      assert "text" = changeset.changes[:type]
+      assert :text = changeset.changes[:type]
     end
 
     test "text changeset is not valid [blank text]" do
@@ -40,15 +40,15 @@ defmodule Picsello.Galleries.WatermarkTest do
     end
 
     test "switches the type from image to text" do
-      watermark = %Watermark{type: "image", name: "image", size: 123_456}
+      watermark = %Watermark{type: :image, name: :image, size: 123_456}
       changeset = Watermark.text_changeset(watermark, %{text: "007 Agency"})
-      assert %{text: "007 Agency", name: nil, size: nil, type: "text"} = changeset.changes
+      assert %{text: "007 Agency", name: nil, size: nil, type: :text} = changeset.changes
     end
 
     test "switches the type from text to image" do
-      watermark = %Watermark{type: "text", text: "007 Agency"}
+      watermark = %Watermark{type: :text, text: "007 Agency"}
       changeset = Watermark.image_changeset(watermark, %{name: "image.png", size: 123_456})
-      assert %{text: nil, name: "image.png", size: 123_456, type: "image"} = changeset.changes
+      assert %{text: nil, name: "image.png", size: 123_456, type: :image} = changeset.changes
     end
   end
 end

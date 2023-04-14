@@ -23,8 +23,9 @@ defmodule Picsello.GalleryCartTest do
 
     cart_product = build(:cart_product, whcc_product: whcc_product)
 
-    Cart.place_product(cart_product, gallery.id)
-    |> Repo.preload(:digitals, products: :whcc_product)
+    cart_product
+    |> Cart.place_product(gallery.id)
+    |> preload_order_items()
   end
 
   feature "redirects to gallery if cart is empty", %{session: session, gallery: gallery} do
@@ -45,7 +46,11 @@ defmodule Picsello.GalleryCartTest do
     |> assert_text(Money.to_string(price))
     |> assert_has(css("button", count: 1, text: "Edit"))
     |> assert_has(css("button", count: 1, text: "Delete"))
-    |> assert_has(definition("Subtotal", text: order |> Order.total_cost() |> to_string()))
+    |> assert_has(
+      definition("Subtotal",
+        text: order |> preload_order_items() |> Order.total_cost() |> to_string()
+      )
+    )
     |> assert_has(testid("product-#{cart_product.editor_id}"))
   end
 
@@ -69,5 +74,9 @@ defmodule Picsello.GalleryCartTest do
     |> fill_in(text_field("delivery_info_address_zip"), with: "74104")
     |> wait_for_enabled_submit_button()
     |> assert_has(button("Check out with Stripe"))
+  end
+
+  defp preload_order_items(order) do
+    order |> Repo.preload([:digitals, products: :whcc_product], force: true)
   end
 end

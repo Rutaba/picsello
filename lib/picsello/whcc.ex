@@ -205,7 +205,6 @@ defmodule Picsello.WHCC do
         %{use_global: %{products: true}}
       ) do
     markup = if @area_markup_category == whcc_id, do: Decimal.new(0), else: markup
-
     %{product | category: %{category | default_markup: markup}}
   end
 

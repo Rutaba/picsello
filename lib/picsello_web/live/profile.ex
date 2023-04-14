@@ -27,8 +27,10 @@ defmodule PicselloWeb.Live.Profile do
   def mount(%{"organization_slug" => slug}, session, socket) do
     socket
     |> assign(:edit, false)
-    |> assign(:uploads, nil)
     |> assign(:entry, nil)
+    |> then(fn %{assigns: assigns} = socket -> 
+      Map.put(socket, :assigns, Map.put(assigns, :uploads, nil))
+    end)
     |> assign_defaults(session)
     |> assign_organization_by_slug(slug)
     |> assign_booking_events()

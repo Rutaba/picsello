@@ -16,26 +16,28 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
 
   defp print_item(%{selections: selections, product: product} = assigns) do
     p_selections = Map.get(selections, product.id)
-    open? = p_selections && p_selections.open?
+    is_open? = p_selections && p_selections.open?
+
     icon_class = "w-3 h-3 stroke-current stroke-2"
+    assigns = assign(assigns, p_selections: p_selections, is_open?: is_open?, icon_class: icon_class)
 
     ~H"""
       <div class="flex flex-col">
-      <div class={"flex flex-col p-3 border-t border-r border-l border-b-8 rounded-t-lg #{if(open?, do: "border-blue-planning-300", else: "border-base-250 rounded-b-lg")}"}>
+      <div class={"flex flex-col p-3 border-t border-r border-l border-b-8 rounded-t-lg #{if(@is_open?, do: "border-blue-planning-300", else: "border-base-250 rounded-b-lg")}"}>
           <div class="flex p-3">
             <div class="bg-black rounded-lg p-2 mr-4 text-white h-fit cursor-pointer" phx-click="expand_product" phx-value-product_id={@product.id} phx-target={@myself}>
-              <.icon name={if open?, do: "up", else: "down"} class={"#{icon_class} text-white"} />
+              <.icon name={if @is_open?, do: "up", else: "down"} class={"#{@icon_class} text-white"} />
             </div>
             <b class="text-lg">
               <%="#{@title}s"%>
             </b>
-            <%= if open? do %>
-            <.icon_button color="blue-planning-300" icon="down" class="flex ml-auto px-2" phx-click="expand_product_all" phx-value-product-id={product.id} phx-target={@myself}>
+            <%= if @is_open? do %>
+            <.icon_button color="blue-planning-300" icon="down" class="flex ml-auto px-2" phx-click="expand_product_all" phx-value-product-id={@product.id} phx-target={@myself}>
               Expand All
             </.icon_button>
             <% end %>
           </div>
-          <div class={classes("grid md:grid-cols-4 grid-cols-2 p-2 pl-14 text-base-250", %{"text-base-300" => open?})}>
+          <div class={classes("grid md:grid-cols-4 grid-cols-2 p-2 pl-14 text-base-250", %{"text-base-300" => @is_open?})}>
             <%= for item <- ["Variation", "Your Profit", "Base Cost", "Final Price"] do %>
               <div class="font-bold hidden md:block"><%= item %></div>
             <% end %>
@@ -45,21 +47,21 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
           </div>
         </div>
 
-        <%= if p_selections && p_selections.open? do %>
+        <%= if @is_open? do %>
           <div class="border-l border-r border-b rounded-b border-blue-planning-300">
-            <%= for {size, %{values: values, open?: open?}} <- p_selections.selections do %>
-              <.size_row size={size} values={values} open?={open?} myself={@myself} print_products_map={@print_products_map} product={product} />
+            <%= for {size, %{values: values, open?: open?}} <- @p_selections.selections do %>
+              <.size_row size={size} values={values} open?={open?} myself={@myself} print_products_map={@print_products_map} product={@product} />
               <%= for %{type: type, base_cost: base_cost} <- values, open? == true do %>
                   <div class="flex flex-col md:grid md:grid-cols-4 md:pl-12 md:py-2 cursor-pointer md:items-center hover:bg-blue-planning-100 md:border-none md:rounded-none m-6 rounded-lg border border-base-200">
-                    <% final_cost = final_cost(@print_products_map, product.id, size, type) %>
-                    <.pricing_card_mobile type={type} size={size} base_cost={base_cost} final_cost={final_cost} product={product} target={@myself}/>
+                    <% final_cost = final_cost(@print_products_map, @product.id, size, type) %>
+                    <.pricing_card_mobile type={type} size={size} base_cost={base_cost} final_cost={final_cost} product={@product} target={@myself}/>
 
                     <div class="font-bold hidden md:block"><%= split(type, "_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ") %> </div>
                     <div class="hidden md:block">$<%= sub(final_cost, base_cost) %></div>
                     <div class="hidden md:block"><%= base_cost %></div>
                     <% size_type = size <> type %>
-                    <.form let={f} for={:size} phx-target={@myself} phx-change="final_cost" id={size_type <> "form"} class="flex items-center">
-                      <%= for {name, value} <- [{:type, type}, {:product_id, product.id}, {:size, size}, {:base_cost, to_decimal(base_cost)}] do %>
+                    <.form :let={f} for={%{}} as={:size} phx-target={@myself} phx-change="final_cost" id={size_type <> "form"} class="flex items-center">
+                      <%= for {name, value} <- [{:type, type}, {:product_id, @product.id}, {:size, size}, {:base_cost, to_decimal(base_cost)}] do %>
                         <%= hidden_input f, name, value: value %>
                       <% end %>
                       <b class="md:hidden mr-3">Final Price</b>
@@ -90,17 +92,18 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
         final_cost = final_cost(print_products_map, product.id, size, type)
         %{final_cost: final_cost, profit: sub(final_cost, base_cost)}
       end)
+    assigns = assign(assigns, details: details)
 
     ~H"""
-    <div class={"grid md:grid-cols-4 grid-cols-2 pl-6 py-3 border-b border-base-200 cursor-pointer #{if @open?, do: "bg-blue-planning-300"}"} phx-target={@myself} phx-click="expand_product_size" phx-value-size={size} phx-value-product_id={product.id}>
+    <div class={"grid md:grid-cols-4 grid-cols-2 pl-6 py-3 border-b border-base-200 cursor-pointer #{if @open?, do: "bg-blue-planning-300"}"} phx-target={@myself} phx-click="expand_product_size" phx-value-size={@size} phx-value-product_id={@product.id}>
       <div class={"flex items-center font-bold pl-4 #{if @open?, do: "text-white", else: "text-black"}"}>
         <.icon name={if @open?, do: "up", else: "down"} class="w-3 h-3 stroke-current stroke-2 mr-4" />
-        <%= split(size, "x") |> Enum.join(" x ") %>
+        <%= split(@size, "x") |> Enum.join(" x ") %>
       </div>
       <%= if !@open? do %>
-        <div class="pl-6 text-base-250 hidden md:flex">From $<%= get_min(details, :profit) %></div>
-        <div class="pl-4 text-base-250 hidden md:flex">From <%= get_min(values, :base_cost) %></div>
-        <div class="pl-3 md:pl-0 text-base-250">From $<%= get_min(details, :final_cost) |> Decimal.round(2) %> </div>
+        <div class="pl-6 text-base-250 hidden md:flex">From $<%= get_min(@details, :profit) %></div>
+        <div class="pl-4 text-base-250 hidden md:flex">From <%= get_min(@values, :base_cost) %></div>
+        <div class="pl-3 md:pl-0 text-base-250">From $<%= get_min(@details, :final_cost) |> Decimal.round(2) %> </div>
       <% end %>
     </div>
     """

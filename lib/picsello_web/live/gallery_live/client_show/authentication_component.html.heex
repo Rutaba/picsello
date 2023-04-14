@@ -3,7 +3,7 @@
         <div class="bg-white p-6 shadow-md text-black w-full">
             <h1 class="mb-2 text-3xl font-bold text-start">Welcome!</h1>
             <p class="text-base">We need some information here before you can see your photos.</p>
-            <.form let={f} for={@password_changeset} as={:login} action={build_login_link(assigns)} phx-target={@myself} phx-change="change" phx-submit="check" phx_trigger_action={@submit}>
+            <.form :let={f} for={@password_changeset} as={:login} action={build_login_link(assigns)} phx-target={@myself} phx-change="change" phx-submit="check" phx-trigger-action={@submit}>
               <%= hidden_input f, :session_token, value: @session_token %>
 
               <%= unless @password_is_correct or @submit do %>

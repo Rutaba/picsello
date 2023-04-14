@@ -12,7 +12,7 @@ defmodule Mix.Tasks.UpdateGlobalWatermarkPaths do
     load_app()
 
     from(gs in GSGallery,
-      where: gs.watermark_type == "image",
+      where: gs.watermark_type == :image,
       preload: [:organization]
     )
     |> Repo.all()

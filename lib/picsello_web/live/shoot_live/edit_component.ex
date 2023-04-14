@@ -33,7 +33,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
   @impl true
   def render(assigns) do
-    message = get_messgae(assigns)
+    assigns = assign(assigns, message: get_messgae(assigns))
 
     ~H"""
       <div class="flex flex-col modal">
@@ -45,9 +45,9 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           </button>
         </div>
 
-        <.error message={message} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => is_nil(@shoot) || is_nil(message)})}/>
+        <.error message={@message} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => is_nil(@shoot) || is_nil(@message)})}/>
 
-        <.form let={f} for={@changeset}, phx-change="validate" phx-submit="save" phx-target={@myself}>
+        <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
 
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
             <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. #{dyn_gettext @job.type} Session, etc.", wrapper_class: "sm:col-span-3" %>
@@ -228,7 +228,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       schedule_date =
         cond do
           schedule.interval && String.contains?(schedule.due_interval, "To Book") ->
-            Timex.now() |> DateTime.truncate(:second)
+            Timex.now()
 
           schedule.shoot_interval &&
               String.contains?(schedule.shoot_interval, "Before Last Shoot") ->
@@ -240,6 +240,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           true ->
             Timex.shift(schedule.schedule_date, minutes: first_time_difference)
         end
+        |> DateTime.truncate(:second)
 
       Map.put(schedule, :schedule_date, schedule_date)
     end)

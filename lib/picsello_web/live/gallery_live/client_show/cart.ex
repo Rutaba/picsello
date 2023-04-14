@@ -190,19 +190,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
 
   defp assign_products_shipping(%{assigns: %{order: order}} = socket) do
-    shipping = fn p -> (p.shipping_type && p) || add_shipping_details!(p, @default_shipping) end
-
     order
-    |> lines_by_product()
-    |> Enum.map(fn
-      {%{category: %{whcc_id: whcc_id}}, line_items} when whcc_id in @shipping_to_all ->
-        for product <- line_items, do: shipping.(product)
-
-      {_whcc_product, line_items} ->
-        [product | products] = Enum.reverse(line_items)
-        [shipping.(product) | products]
-    end)
-    |> Enum.concat()
+    |> Cart.add_default_shipping_to_products()
     |> assign_products(socket)
   end
 
@@ -256,15 +245,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp top_section(assigns) do
     {back_route, back_btn, title} = top_section_content(assigns)
+    assigns = assign(assigns, title: title, back_btn: back_btn, back_route: back_route)
 
     ~H"""
-    <%= live_redirect to: back_route, class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>
+    <%= live_redirect to: @back_route, class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>
       <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
-      <p class="mt-1"><%= back_btn %></p>
+      <p class="mt-1"><%= @back_btn %></p>
     <% end %>
 
     <div class="py-5 lg:pt-8 lg:pb-10">
-      <div class=" text-xl font-extrabold lg:text-3xl"><%= title %></div>
+      <div class=" text-xl font-extrabold lg:text-3xl"><%= @title %></div>
       <div class="mt-2 text-lg">
         Choose how you want your items shipped; certain types of items will ship separately.
         Shipping estimates don’t include printing/production turnaround times.

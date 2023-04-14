@@ -3,6 +3,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   use PicselloWeb, :live_component
 
+  import Phoenix.Component
+
   alias Ecto.Changeset
 
   alias Picsello.{
@@ -224,7 +226,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign_new(:show_on_public_profile, fn -> false end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
-    |> assign_new(:contract_changeset, fn -> nil end)
+    |> assign_new(:contract_changeset, fn -> %{} end)
     |> assign_new(:collapsed_documents, fn -> [0, 1] end)
     |> assign(is_template: assigns |> Map.get(:job) |> is_nil())
     |> assign(
@@ -292,7 +294,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <.steps step={@step} steps={@steps} target={@myself} />
       <.step_heading name={@step} is_edit={@package.id} />
 
-      <.form for={@changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+      <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
         <input type="hidden" name="step" value={@step} />
 
         <.wizard_state form={f} contract_changeset={@contract_changeset} />
@@ -329,14 +331,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       )
 
   def wizard_state(assigns) do
-    fields = @all_fields
+    assigns = assign(assigns, fields: @all_fields)
 
     ~H"""
-      <%= for field <- fields, input_value(@form, field) do %>
+      <%= for field <- @fields, input_value(@form, field) do %>
         <%= hidden_input @form, field, id: nil %>
       <% end %>
 
-      <% c = form_for(@contract_changeset, "#") %>
+      <% c = to_form(@contract_changeset) %>
       <%= for field <- [:name, :content, :contract_template_id, :edited], input_value(c, field) do %>
         <%= hidden_input c, field, id: nil %>
       <% end %>
@@ -481,7 +483,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   def step(%{name: :documents} = assigns) do
     ~H"""
     <div class="font-normal pb-6 text-base-250 w-fit">
-    As with most things in Picsello, we have created default contracts/questionnaires for you to use. If you’d like to make your own, check out global questionnaire and contract management. (Modal will close & you can come back)
+      As with most things in Picsello, we have created default contracts/questionnaires for you to use. If you’d like to make your own, check out global questionnaire and contract management. (Modal will close & you can come back)
     </div>
     <div class="flex flex-row">
       <a class="items-center text-blue-planning-300 py-5 underline font-normal" href={Routes.contracts_index_path(@socket, :index)}>Manage contracts</a>
@@ -499,7 +501,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     <span class="hidden sm:flex items-center justify-between border-b-4 border-blue-planning-300 font-semibold text-lg text-base-250" />
     <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-6 overflow-hidden">
       <div class={classes(%{"hidden" => !(@active_tab == :contract)})}>
-        <% c = form_for(@contract_changeset, "#") %>
+        <% c = to_form(@contract_changeset) %>
           <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg p-3 rounded-t-lg bg-base-200">
             <div class="w-1/3">Contract name</div>
             <div class="w-1/3 text-center">Job type</div>
@@ -559,7 +561,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             </div>
           </div>
 
-          <% m = form_for(@multiplier, "#") %>
+          <% m = to_form(@multiplier) %>
 
           <label class="flex items-center mt-6 sm:mt-8 justify-self-start font-bold">
             <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
@@ -601,10 +603,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{
           name: :payment,
           f: %{params: params},
-          default_payment_changeset: default_payment_changeset
+          default_payment_changeset: _
         } = assigns
       ) do
     job_type = Map.get(params, "job_type", nil) || Map.get(assigns.job, :type, nil)
+    assigns = assign(assigns, job_type: job_type)
 
     ~H"""
     <div>
@@ -614,9 +617,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           Use your default payment schedule or select a new one. Any changes made will result in a custom payment schedule.
         </div>
       </div>
-      <% pc = form_for(@payments_changeset, "#") %>
+      <% pc = to_form(@payments_changeset) %>
       <div {testid("select-preset-type")} class="grid gap-6 md:grid-cols-2 grid-cols-1 mt-8">
-        <%= select pc, :schedule_type, payment_dropdown_options(job_type, input_value(pc, :schedule_type)), wrapper_class: "mt-4", class: "py-3 border rounded-lg border-base-200 cursor-pointer", phx_update: "update" %>
+        <%= select pc, :schedule_type, payment_dropdown_options(@job_type, input_value(pc, :schedule_type)), wrapper_class: "mt-4", class: "py-3 border rounded-lg border-base-200 cursor-pointer", phx_update: "update" %>
         <div {testid("preset-summary")} class="flex items-center"><%= get_tags(pc) %></div>
       </div>
       <hr class="w-full my-6 md:my-8"/>
@@ -682,7 +685,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               </div>
             </label>
             <%= unless input_value(p, :interval) do %>
-              <%= if input_value(p, :due_at) || ((input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(default_payment_changeset, :interval, p.index)) do %>
+              <%= if input_value(p, :due_at) || ((input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(@default_payment_changeset, :interval, p.index)) do %>
                 <div class="flex flex-col my-2 ml-8 cursor-pointer">
                   <%= input p, :due_at, type: :date_input, format: "mm/dd/yyyy", min: Date.utc_today(), placeholder: "mm/dd/yyyy", phx_debounce: "0", class: "w-full px-4 text-lg cursor-pointer" %>
                   <%= if message = p.errors[:schedule_date] do %>
