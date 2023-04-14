@@ -498,6 +498,11 @@ defmodule Picsello.Galleries do
     )
     |> Multi.merge(fn %{gallery: gallery} ->
       gallery
+      |> Repo.preload(job: [:client, :package])
+      |> check_digital_pricing()
+    end)
+    |> Multi.merge(fn %{gallery: gallery} ->
+      gallery
       |> Repo.preload(:package)
       |> check_watermark()
     end)
@@ -518,6 +523,23 @@ defmodule Picsello.Galleries do
             watermark
           )
         end)
+    end
+  end
+
+  defp check_digital_pricing(%{job: %{package: package, client: client}} = gallery) do
+    case package do
+      nil -> Multi.new()
+
+      package ->
+        Multi.new()
+        |> Multi.update(:gallery_digital_pricing, Gallery.save_digital_pricing_changeset(gallery, %{digital_pricing: %{
+          buy_all: package.buy_all,
+          print_credits: package.print_credits,
+          download_count: package.download_count,
+          download_each_price: package.download_each_price,
+          email_list: [client.email]
+        }
+        }), [])
     end
   end
 
@@ -1036,12 +1058,6 @@ defmodule Picsello.Galleries do
 
   def gallery_text_watermark_change(nil, attrs),
     do: Watermark.text_changeset(%Watermark{}, attrs)
-
-  def save_gallery_digital_pricing(gallery, attrs \\ %{}) do
-    gallery
-    |> Gallery.save_digital_pricing_changeset(attrs)
-    |> Repo.update()
-  end
 
   def save_gallery_cover_photo(gallery, attrs \\ %{}) do
     gallery
