@@ -1,7 +1,9 @@
 defmodule PicselloWeb.ContractTemplateComponent do
   @moduledoc false
   use PicselloWeb, :live_component
+  alias Picsello.{Contract, Contracts}
   alias Picsello.{Contract, Profiles, Repo}
+  import PicselloWeb.Live.Contracts.Index, only: [get_contract: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
@@ -66,8 +68,11 @@ defmodule PicselloWeb.ContractTemplateComponent do
           <button class="btn-primary" title="save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Save">
             Save
           </button>
+          <% else %>
+          <button title="Duplicate Table" type="button" phx-click="duplicate-contract" phx-value-contract-id={@contract.id} phx-target={@myself} class="btn-primary">
+            Duplicate
+          </button>
           <% end %>
-
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
             <%= if is_nil(@state) do %>Close<% else %>Cancel<% end %>
           </button>
@@ -131,6 +136,29 @@ defmodule PicselloWeb.ContractTemplateComponent do
 
     socket
     |> assign(changeset: changeset)
+  end
+
+  @impl true
+  def handle_event(
+        "duplicate-contract",
+        %{"contract-id" => contract_id},
+        %{assigns: %{current_user: %{organization: %{id: organization_id}}} = assigns} = socket
+      ) do
+    id = String.to_integer(contract_id)
+
+    contract =
+      Contracts.clean_contract_for_changeset(
+        get_contract(id),
+        organization_id
+      )
+      |> Map.put(:name, nil)
+
+    assigns = Map.merge(assigns, %{contract: contract, state: :edit})
+    assigns = Map.take(assigns, [:contract, :current_user, :state])
+
+    socket
+    |> assign(assigns)
+    |> noreply()
   end
 
   @impl true

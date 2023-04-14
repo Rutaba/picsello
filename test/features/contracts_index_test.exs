@@ -103,7 +103,7 @@ defmodule Picsello.ContractsIndexTest do
     |> assert_has(testid("contracts-row", count: 3))
     |> click(button("Manage", count: 3, at: 0))
     |> click(button("Delete"))
-    |> assert_flash(:success, text: "Contract deleted")
+    |> assert_flash(:success, text: "Contract archived")
     |> scroll_to_bottom()
     |> assert_has(testid("contracts-row", count: 3))
     |> assert_has(button("Duplicate Contract"))

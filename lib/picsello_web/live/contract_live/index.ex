@@ -31,7 +31,9 @@ defmodule PicselloWeb.Live.Contracts.Index do
       }
     end)
     |> PicselloWeb.ContractTemplateComponent.open(
-      Map.merge(Map.take(assigns, [:contract, :current_user]), %{state: :create})
+      Map.merge(Map.take(assigns, [:contract, :current_user]), %{
+        state: :create
+      })
     )
     |> noreply()
   end
@@ -87,7 +89,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
 
     message =
       case status do
-        :archive -> "Contract deleted"
+        :archive -> "Contract archived"
         _ -> "Contract enabled"
       end
 
@@ -172,7 +174,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
               </button>
               <button title="Trash" type="button" phx-click="update-contract-status" phx-value-contract-id={@contract.id} phx-value-status="archive" class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
                 <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
-                Delete
+                Archive
               </button>
               <% else %>
               <button title="View" type="button" phx-click="view-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
@@ -206,5 +208,5 @@ defmodule PicselloWeb.Live.Contracts.Index do
     )
   end
 
-  defp get_contract(id), do: Contracts.get_contract_by_id(id)
+  def get_contract(id), do: Contracts.get_contract_by_id(id)
 end
