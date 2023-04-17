@@ -22,7 +22,7 @@ defmodule Picsello.ClientMessage do
 
   def create_outbound_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:subject, :body_text, :body_html, :cc_email, :client_id])
+    |> cast(attrs, [:subject, :body_text, :body_html, :cc_email, :client_id, :job_id])
     |> validate_required([:subject, :body_text])
     |> validate_email_format(:cc_email)
     |> put_change(:outbound, true)
@@ -56,4 +56,20 @@ defmodule Picsello.ClientMessage do
       where: is_nil(message.read_at) and is_nil(message.deleted_at)
     )
   end
+
+  @type t :: %__MODULE__{
+          id: integer(),
+          subject: String.t(),
+          cc_email: String.t(),
+          body_text: String.t(),
+          body_html: String.t(),
+          scheduled: boolean(),
+          outbound: boolean(),
+          read_at: DateTime.t(),
+          deleted_at: DateTime.t(),
+          job_id: integer(),
+          client_id: integer(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 end

@@ -3,16 +3,16 @@
     <div class="flex content-center justify-between md:flex-row">
       <div class="flex-col">
         <h1 class="text-4xl font-bold center-container">
-          Your <%= action_name(@live_action, :plural) %>
+          Your <%= String.capitalize(@type.plural) %>
         </h1>
       </div>
       <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
-        <%= case @live_action do %>
-          <% :leads -> %>
-            <a title="create lead" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
+        <%= case @type.singular do %>
+          <% "lead" -> %>
+            <a {testid("create-a-lead")} title="create lead" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
               Create a lead
             </a>
-          <% :jobs -> %>
+          <% "job" -> %>
             <a title="import job" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="import-job">
               Import existing job
             </a>
@@ -22,81 +22,80 @@
     <hr class="mt-4 sm:mt-10" />
   </div>
 </header>
+
+<.search_sort_bar type={@type.singular} sort_direction={@sort_direction} search_phrase={@search_phrase} selected_job={@selected_job} job_status={@job_status} job_type={@job_type} job_types={@job_types} sort_by={@sort_by} placeholder={"Search #{@type.plural}..."} />
+
 <%= if Enum.empty? @jobs do %>
   <div class="flex flex-col justify-between flex-auto p-6 center-container lg:flex-none">
     <div></div> <%# flex in thirds %>
-    <%= case {@live_action, @stripe_status} do %>
-      <% {:leads, _stripe_status} -> %>
-        <.empty_state_base tour_embed="https://demo.arcade.software/2rNmJeh5ZDMmrhth7v0P?embed" headline="Meet Leads" eyebrow_text="Leads Product Tour" body="Leads are the beginning to a great relationship between you and your client! Creating one takes less than a minute." third_party_padding="calc(59.916666666666664% + 41px)">
-          <a title="create lead" href="#" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="create-lead">
-            Create a lead
-          </a>
-        </.empty_state_base>
-      <% {:jobs, :loading} -> %>
-      <% {:jobs, _stripe_status} -> %>
-        <.empty_state_base tour_embed="https://demo.arcade.software/UyCDDjBKFuMgVF6LOSG7?embed" headline="Meet Jobs" eyebrow_text="Jobs Product Tour" body="Jobs are the core to your business. They mean you have been booked and contain the history of your shoots and galleries. You can import a job if you are migrating or have something in progress." third_party_padding="calc(66.66666666666666% + 41px)">
-          <a title="import a job" href="#" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="import-job">
-            Import a job
-          </a>
-        </.empty_state_base>
+    <%= case {@type.singular, @stripe_status} do %>
+      <% {"lead", _stripe_status} -> %>
+        <%= if @search_phrase || @job_status !== "all" || @job_type !== "all" do %>
+          <p class="text-center text-lg lg:text-2xl text-base-250">No leads match your search or filters.</p>
+        <% else %>
+          <.empty_state_base tour_embed="https://demo.arcade.software/2rNmJeh5ZDMmrhth7v0P?embed" headline="Meet Leads" eyebrow_text="Leads Product Tour" body="Leads are the beginning to a great relationship between you and your client! Creating one takes less than a minute." third_party_padding="calc(59.916666666666664% + 41px)">
+            <a title="create lead" href="#" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="create-lead">
+              Create a lead
+            </a>
+          </.empty_state_base>
+          <% end %>
+      <% {"job", :loading} -> %>
+      <% {"job", _stripe_status} -> %>
+        <%= if @search_phrase || @job_status !== "all" || @job_type !== "all" do %>
+          <p class="text-center text-lg lg:text-2xl text-base-250">No jobs match your search or filters.</p>
+        <% else %>
+          <.empty_state_base tour_embed="https://demo.arcade.software/UyCDDjBKFuMgVF6LOSG7?embed" headline="Meet Jobs" eyebrow_text="Jobs Product Tour" body="Jobs are the core to your business. They mean you have been booked and contain the history of your shoots and galleries. You can import a job if you are migrating or have something in progress." third_party_padding="calc(66.66666666666666% + 41px)">
+            <a title="import a job" href="#" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="import-job">
+              Import a job
+            </a>
+          </.empty_state_base>
+        <% end %>
     <% end %>
   </div>
 <% else %>
-<ul class="grid gap-5 p-6 center-container lg:grid-cols-3 sm:grid-cols-2">
-<%= for job <- @jobs do %>
-  <li class="border rounded-lg hover:bg-blue-planning-100 hover:border-blue-planning-300">
-    <%= live_redirect to: Routes.job_path(@socket, @live_action, job.id), class: "p-4 block group", title: Job.name(job) do %>
-      <.status_badge job_status={job.job_status} />
-
-      <div class="flex items-center justify-between text-xl font-semibold">
-        <%= job |> Job.name() %>
-        <.icon name="forth" class="w-4 h-4 stroke-current text-base-300 stroke-2" />
+  <div class="p-6 center-container">
+    <div class="hidden items-center sm:grid sm:grid-cols-6 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
+      <div class="sm:col-span-2"><%= String.capitalize(@type.singular)%> Information</div>
+      <div class="sm:col-span-2">Package</div>
+      <div>Status</div>
+    </div>
+    <%= for job <- @jobs do %>
+      <div {testid("job-row")} class="grid sm:grid-cols-6 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
+        <div phx-click="view-job" phx-value-id={job.id} class="sm:col-span-2 flex flex-col">
+          <%= live_redirect to: Routes.job_path(@socket, String.to_atom(@type.plural), job.id) do %>
+            <p class="text-blue-planning-300 font-bold underline hover:cursor-pointer capitalize">
+              <%= if String.length(job.client.name) < 20 do
+                  job.client.name || "-"
+                else
+                  "#{job.client.name |> String.slice(0..20)} ..."
+                end %>
+            </p>
+            <p class="text-gray-400 italic font-normal text-sm">
+              <%= if String.length(job |> Job.name()) < 20 do
+                  (job |> Job.name()) || "-"
+                else
+                  "#{job |> Job.name() |> String.slice(0..20)} ..."
+                end %>
+            </p>
+            <p class="text-gray-400 font-normal text-sm"><%= status_label(job, @current_user.time_zone) %></p>
+          <% end %>
+        </div>
+        <div class="sm:col-span-2 flex flex-col sm:flex gap-2 sm:gap-0 hidden md:block">
+          <%= if job.package do %>
+            <p class="capitalize font-bold"><%= job.package.name || "-" %><span class="font-normal capitalize"><%= "-#{job.type}" %></span></p>
+            <p class="text-gray-400"><%= job.package.base_price || "-" %></p>
+          <% else %>
+            <p class="font-bold text-red-sales-300">No package selected</p>
+            <p>-</p>
+          <% end %>
+        </div>
+        <.status_badge class="w-fit" job={job}/>
+        <hr class="sm:hidden border-gray-100 my-2" />
+        <.actions type={@type} job={job}/>
       </div>
-
-      <%= case card_date(@live_action, @current_user.time_zone, job) do %>
-        <% nil -> %>
-        <% date -> %> <span class="font-semibold text-blue-planning-300"> On <%= date %> </span>
-      <% end %>
-
-      <hr class="my-3 border-top">
-
-      <div class="flex justify-between">
-        <%= if job.package do %>
-          <div class="text-gray-400">
-            <span class="font-semibold"><%= job.package.name %></span>
-            —
-            <span class="font-light"><%= dyn_gettext job.type %></span>
-          </div>
-          <span class="font-semibold"><%= job.package |> Package.price() |> Money.to_string(fractional_unit: false) %></span>
-        <% else %>
-          <span class="font-light"><%= dyn_gettext job.type %></span>
-        <% end %>
-      </div>
-
     <% end %>
-  </li>
-<% end %>
-</ul>
-
-<div class="flex items-center px-6 pb-6 center-container">
-  <form phx-change="page">
-    <%= select(Integer, :page_dropdown, ["12", "24", "36", "48"], wrapper_class: "mt-4", class: "focus:ring-0 focus:outline-none focus:border-blue-planning-300 border border-gray-200 rounded-lg p-3 ", name: "per-page") %>
-  </form>
-  
-  <div class="flex ml-2 text-xs font-bold text-gray-500">
-      Results: <%= @pagination.first_index %> – <%= @pagination.last_index %> of <%= @pagination.total_count %>
   </div>
 
-  <div class="flex items-center ml-auto">
-    <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Previous page" phx-click="page" phx-value-direction="back" disabled={is_nil(@pagination.before)} phx-value-cursor={@pagination.before}>
-      <.icon name="back" class="w-3 h-3 mr-1 stroke-current stroke-2" />
-      Prev
-    </button>
-    <button class="flex items-center p-4 text-xs font-bold rounded disabled:text-gray-300 hover:bg-gray-100" title="Next page" phx-click="page" phx-value-direction="forth"  disabled={is_nil(@pagination.after)} phx-value-cursor={@pagination.after}>
-      Next
-      <.icon name="forth" class="w-3 h-3 ml-1 stroke-current stroke-2" />
-    </button>
-  </div>
-</div>
+  <.pagination_component pagination_changeset={@pagination_changeset} limit_options={[6, 12, 18, 24]} />
 
 <% end %>

@@ -59,7 +59,7 @@ defmodule PicselloWeb.GalleryLive.Settings.UpdateNameComponent do
   def render(assigns) do
     ~H"""
     <div class="h-full">
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameForm" class="flex flex-col items-start h-full">
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself} id="updateGalleryNameForm" class="flex flex-col items-start h-full">
         <h3 class="font-sans">Gallery name</h3>
         <%= text_input f, :name, disabled: disabled?(@gallery), class: "galleryName gallerySettingsInput mt-auto" %>
         <button type="button" phx-click="reset" phx-target={@myself} class={classes("mt-2 font-bold cursor-pointer text-blue-planning-300 lg:pt-0", %{"pointer-events-none text-gray-200" => disabled?(@gallery)})}>Reset</button>

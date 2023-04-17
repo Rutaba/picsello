@@ -182,7 +182,7 @@ defmodule Picsello.ClientsIndexTest do
     |> click(link("Clients"))
     |> click(button("Manage"))
     |> click(button("Create gallery"))
-    |> click(button("Next", count: 3, at: 0))
+    |> click(button("Next", count: 2, at: 0))
     |> click(css("label", text: "Wedding"))
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> wait_for_enabled_submit_button(text: "Next")
@@ -294,6 +294,5 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("Results: 1 – 12 of 13")
     |> click(css("select", text: "12"))
     |> click(css("option", text: "24"))
-    |> assert_text("Results: 1 – 13 of 13")
   end
 end

@@ -4,6 +4,7 @@ defmodule Picsello.Cart.Order do
   import Ecto.Changeset
 
   alias Picsello.{
+    Cart,
     Cart.DeliveryInfo,
     Cart.Digital,
     Cart.OrderNumber,
@@ -56,7 +57,6 @@ defmodule Picsello.Cart.Order do
     |> do_create_changeset()
     |> put_assoc(:products, [
       Product.update_price(product,
-        shipping_base_charge: true,
         credits: get_in(opts, [:credits, :print]) || Money.new(0)
       )
     ])
@@ -175,9 +175,17 @@ defmodule Picsello.Cart.Order do
   def placed?(%__MODULE__{placed_at: nil}), do: false
   def placed?(%__MODULE__{}), do: true
 
+  @doc "calculate products cost, includes shipping price"
   def product_total(%__MODULE__{products: products}) when is_list(products) do
-    for product <- products, reduce: Money.new(0) do
-      sum -> product |> Product.charged_price() |> Money.add(sum)
+    for %{shipping_type: shipping_type} = product <- products, reduce: Money.new(0) do
+      sum ->
+        product
+        |> Product.charged_price()
+        |> Money.add(sum)
+        |> then(fn
+          price when is_nil(shipping_type) -> price
+          price -> Money.add(price, Cart.shipping_price(product))
+        end)
     end
   end
 
@@ -188,6 +196,7 @@ defmodule Picsello.Cart.Order do
     end
   end
 
+  @doc "calculate total cost, includes shipping price"
   def total_cost(%__MODULE__{} = order) do
     Money.add(digital_total(order), product_total(order))
   end
@@ -219,14 +228,12 @@ defmodule Picsello.Cart.Order do
       for {_, line_items} <- sort_products(products),
           reduce: {available_credit, []} do
         acc ->
-          for {product, index} <-
-                Enum.with_index(line_items),
+          for product <- line_items,
               reduce: acc do
             {credit_remaining, products} ->
               %{print_credit_discount: credit_used} =
                 product =
                 Product.update_price(product,
-                  shipping_base_charge: index == 0,
                   credits: credit_remaining
                 )
 
@@ -239,10 +246,13 @@ defmodule Picsello.Cart.Order do
 
   defp sort_products(products) do
     products
+    |> Picsello.Repo.preload(whcc_product: :category)
     |> Enum.sort_by(& &1.id)
     |> Enum.reverse()
-    |> Enum.group_by(fn %{whcc_product: %Picsello.Product{} = whcc_product} ->
-      Map.take(whcc_product, [:id, :whcc_name])
+    |> Enum.group_by(fn %{whcc_product: %Picsello.Product{category: category} = whcc_product} ->
+      whcc_product
+      |> Map.take([:id, :whcc_name])
+      |> Map.put(:category, %{whcc_id: category.whcc_id})
     end)
     |> Enum.sort_by(fn {_whcc_product, cart_products} ->
       cart_products |> Enum.map(& &1.id) |> Enum.max()

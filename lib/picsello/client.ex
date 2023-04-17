@@ -102,4 +102,18 @@ defmodule Picsello.Client do
       changeset
     end
   end
+
+  @type t :: %__MODULE__{
+          id: integer(),
+          email: String.t(),
+          name: String.t(),
+          phone: String.t(),
+          address: String.t(),
+          notes: String.t(),
+          stripe_customer_id: String.t(),
+          archived_at: DateTime.t(),
+          organization_id: integer(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 end

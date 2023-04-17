@@ -22,7 +22,7 @@ defmodule Picsello.Galleries.ImageProcessingTest do
 
     [
       photo: %Photo{gallery_id: gallery.id, original_url: @original_path, name: "test.jpg"},
-      watermark: %Watermark{gallery_id: gallery.id, type: "image"},
+      watermark: %Watermark{gallery_id: gallery.id, type: :image},
       gallery: gallery
     ]
   end
@@ -84,7 +84,7 @@ defmodule Picsello.Galleries.ImageProcessingTest do
     end
 
     test "text watermark task", %{photo: photo, watermark: watermark} do
-      text_watermark = %{watermark | type: "text", text: "text mark"}
+      text_watermark = %{watermark | type: :text, text: "text mark"}
 
       assert match?(
                %{

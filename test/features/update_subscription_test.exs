@@ -289,6 +289,7 @@ defmodule Picsello.SubscriptionChangesTest do
 
     session
     |> click(link("Settings"))
+    |> sleep(500)
     |> click(button("Open Billing Portal"))
     |> assert_url_contains("stripe-billing-portal")
 

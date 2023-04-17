@@ -251,4 +251,24 @@ defmodule Picsello.Package do
     |> join(:inner, [shoot], job in assoc(shoot, :job), on: job.package_id == ^package_id)
     |> Repo.aggregate(:count)
   end
+
+  @type t :: %__MODULE__{
+          id: integer(),
+          name: String.t(),
+          description: String.t(),
+          organization_id: integer(),
+          shoot_count: integer(),
+          turnaround_weeks: integer(),
+          schedule_type: String.t(),
+          fixed: boolean(),
+          base_price: Money.t(),
+          download_count: integer(),
+          download_each_price: Money.t(),
+          base_multiplier: float(),
+          print_credits: Money.t(),
+          buy_all: Money.t(),
+          job_type: String.t(),
+          show_on_public_profile: boolean(),
+          archived_at: DateTime.t()
+        }
 end

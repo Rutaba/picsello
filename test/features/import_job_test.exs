@@ -32,7 +32,7 @@ defmodule Picsello.ImportJobTest do
 
   def fill_in_existing_client_form(session, _opts \\ []) do
     session
-    |> fill_in(text_field("search_phrase"), with: "tayl")
+    |> fill_in(text_field("search_phrase", count: 2, at: 0), with: "tayl")
     |> assert_has(css("#search_results"))
     |> send_keys([:down_arrow])
     |> send_keys([:enter])
@@ -168,8 +168,8 @@ defmodule Picsello.ImportJobTest do
     |> click(button("View invoice"))
     |> scroll_to_bottom()
     |> assert_has(definition("Previously collected", text: "$200.00"))
-    |> assert_has(definition("Payment 1 due on Jan 01, 2030", text: "$300.00"))
-    |> assert_has(definition("Payment 2 due on Feb 01, 2030", text: "$500.00"))
+    |> assert_has(definition("$300.00 due on Jan 01, 2030", text: "$300.00"))
+    |> assert_has(definition("$500.00 due on Feb 01, 2030", text: "$500.00"))
 
     base_price = Money.new(100_000)
     download_each_price = Money.new(200)
@@ -546,8 +546,8 @@ defmodule Picsello.ImportJobTest do
     |> assert_has(button("Invoice", count: 1))
     |> click(button("Invoice"))
     |> assert_has(definition("Previously collected", text: "$200.00"))
-    |> assert_has(definition("Payment 1 due on Jan 01, 2030", text: "$300.00"))
-    |> assert_has(definition("Payment 2 due on Feb 01, 2030", text: "$500.00"))
+    |> assert_has(definition("$300.00 due on Jan 01, 2030", text: "$300.00"))
+    |> assert_has(definition("$500.00 due on Feb 01, 2030", text: "$500.00"))
     |> click(button("Pay with card Fast easy and secure"))
     |> assert_url_contains("stripe-checkout")
 

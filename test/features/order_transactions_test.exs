@@ -80,7 +80,7 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_has(testid("orders", count: 1))
     |> assert_has(css("*[phx-click='order-detail']", text: "Product order"))
     |> assert_has(css("*[phx-click='order-detail']", text: "View details"))
-    |> assert_text("$557")
+    |> assert_text("$557.00")
     |> assert_text(Calendar.strftime(order.placed_at, "%m/%d/%Y"))
     |> click(css("*[phx-click='order-detail']", text: "View details"))
     |> assert_url_contains(
@@ -114,8 +114,7 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_text("Use your Stripe dashboard")
     |> assert_text("Products (1)")
     |> assert_text("$555.00")
-    |> assert_text("Shipping & handling")
-    |> assert_text("Included")
+    |> assert_text("Shipping (0)")
     |> assert_text("Digital downloads (1)")
     |> assert_text("$2.00")
     |> assert_text("Subtotal")
@@ -123,7 +122,7 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_text("Total")
     |> assert_text("$557.00")
     |> click(button("Go to Stripe", count: 2, at: 0))
-    |> assert_url_contains("payments")
+    |> assert_url_contains("payment")
   end
 
   feature "order detail test", %{

@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       layout: "live_photographer"
     ]
 
-  import PicselloWeb.LiveHelpers
+  import PicselloWeb.Live.Shared, only: [make_popup: 2]
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
@@ -267,6 +267,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       PhotoView,
       %{
         photo_id: photo_id,
+        from: :photographer,
         photo_ids:
           assigns.photo_ids
           |> CLL.init()

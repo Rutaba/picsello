@@ -24,7 +24,7 @@ defmodule PicselloWeb.JobLive.Shared.NotesModal do
 
       </h1>
 
-      <.form let={f} for={@changeset}, phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-submit="save" phx-target={@myself}>
         <div class="mt-2">
           <div class="flex items-center justify-between mb-2">
             <%= label_for f, :notes, label: "Private Notes" %>

@@ -1,9 +1,10 @@
 defmodule PicselloWeb.OnboardingLive.Index do
   @moduledoc false
+  use PicselloWeb, live_view: [layout: :onboarding]
+
   import Picsello.Zapier.User, only: [user_trial_created_webhook: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
-  use PicselloWeb, live_view: [layout: :onboarding]
   require Logger
 
   alias Ecto.Multi
@@ -81,7 +82,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   def render(assigns) do
     ~H"""
       <.container step={@step} color_class={@color_class} title={@step_title} subtitle={@subtitle}>
-        <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"}>
+        <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" id={"onboarding-step-#{@step}"}>
           <.step f={f} {assigns} />
 
           <div class="flex items-center justify-between mt-5 sm:justify-end sm:mt-9" phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="retrieve">
@@ -102,14 +103,14 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defp step(%{step: 2} = assigns) do
-    input_class = "p-4"
+    assigns = assign(assigns, input_class: "p-4")
 
     ~H"""
       <%= for org <- inputs_for(@f, :organization) do %>
         <%= hidden_inputs_for org %>
 
         <.form_field label="Photography business name" error={:name} prefix="Photography business name" f={org} mt={0} >
-          <%= input org, :name, phx_debounce: "500", placeholder: "Business name", class: input_class %>
+          <%= input org, :name, phx_debounce: "500", placeholder: "Business name", class: @input_class %>
         </.form_field>
       <% end %>
 
@@ -117,29 +118,29 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
         <div class="grid sm:grid-cols-2 gap-4">
           <.form_field label="Are you a full-time or part-time photographer?" error={:schedule} f={onboarding} >
-            <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select #{input_class}" %>
+            <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select #{@input_class}" %>
           </.form_field>
 
           <.form_field label="How many years have you been a photographer?" error={:photographer_years} f={onboarding} >
-            <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: input_class %>
+            <%= input onboarding, :photographer_years, type: :number_input, phx_debounce: 500, min: 0, placeholder: "e.g. 0, 1, 2, etc.", class: @input_class %>
           </.form_field>
         </div>
 
         <%= hidden_input onboarding, :welcome_count, value: 0 %>
 
         <.form_field label="Where’s your business based?" error={:state} f={onboarding} >
-          <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select #{input_class}" %>
+          <%= select onboarding, :state, [{"select one", nil}] ++ @states, class: "select #{@input_class}" %>
         </.form_field>
 
         <div class="grid sm:grid-cols-2 gap-4">
           <.form_field label="Share your Instagram handle" class="py-1.5" >
             <em class="pb-3 text-base-250 text-xs">(optional)</em>
-            <%= input onboarding, :social_handle, phx_debounce: 500, min: 0, placeholder: "Let’s meet on the Gram", class: input_class %>
+            <%= input onboarding, :social_handle, phx_debounce: 500, min: 0, placeholder: "Let’s meet on the Gram", class: @input_class %>
           </.form_field>
 
           <.form_field label="How did you first hear about us?" class="py-1.5" >
             <em class="pb-3 text-base-250 text-xs">(optional)</em>
-            <%= select onboarding, :online_source, [{"select one", nil} | Onboarding.online_source_options()], class: "select #{input_class}" %>
+            <%= select onboarding, :online_source, [{"select one", nil} | Onboarding.online_source_options()], class: "select #{@input_class}" %>
           </.form_field>
         </div>
       <% end %>
@@ -239,7 +240,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
               <.steps step={@step} steps={@steps} for={:sign_up} />
             </div>
           </div>
-          <%= render_block(@inner_block) %>
+          <%= render_slot(@inner_block) %>
         </div>
         <div class="lg:w-2/3 w-full flex flex-col items-evenly pl-8 lg:pl-16 bg-blue-planning-300">
           <blockquote class="max-w-lg mt-auto mx-auto py-8 lg:py-12">
@@ -278,7 +279,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
         <h1 class="text-3xl font-bold mt-7 sm:leading-tight sm:mt-11"><%= @title %></h1>
         <h2 class="mt-2 mb-2 sm:mb-7 sm:mt-5 sm:text-lg"><%= @subtitle %></h2>
-        <%= render_block(@inner_block) %>
+        <%= render_slot(@inner_block) %>
        </div>
     </div>
     """

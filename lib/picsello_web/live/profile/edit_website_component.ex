@@ -8,7 +8,7 @@ defmodule PicselloWeb.Live.Profile.EditWebsiteComponent do
     <div class="modal !max-w-xl">
       <h1 class="text-3xl font-bold">Edit Link</h1>
 
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
 
         <%= for b <- inputs_for(f, :brand_links) do %>
           <%= hidden_inputs_for b %>

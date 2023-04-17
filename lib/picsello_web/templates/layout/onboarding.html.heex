@@ -1,4 +1,4 @@
 <main role="main">
-  <%= @conn |> get_flash() |> flash() %>
+  <%= flash(@flash) %>
   <%= @inner_content %>
 </main>

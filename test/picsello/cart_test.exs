@@ -8,7 +8,6 @@ defmodule Picsello.CartTest do
   defp cart_product(opts) do
     build(:cart_product,
       editor_id: Keyword.get(opts, :editor_id),
-      round_up_to_nearest: 100,
       shipping_base_charge: ~M[1000]USD,
       shipping_upcharge: Decimal.new(0),
       unit_markup: ~M[0]USD,
@@ -65,7 +64,13 @@ defmodule Picsello.CartTest do
     test "expires previous stripe session", %{gallery: gallery} do
       product = build(:cart_product)
 
-      order = Cart.place_product(product, gallery)
+      order =
+        product
+        |> Cart.place_product(gallery)
+        |> then(fn order ->
+          products = Cart.add_default_shipping_to_products(order)
+          Map.put(order, :products, products)
+        end)
 
       check_out(order)
 
@@ -88,8 +93,8 @@ defmodule Picsello.CartTest do
       end
 
       assert [
-               %{print_credit_discount: ~M[41000]USD},
-               %{print_credit_discount: ~M[41000]USD}
+               %{print_credit_discount: ~M[52800]USD},
+               %{print_credit_discount: ~M[47200]USD}
              ] = Repo.all(CartProduct)
     end
 
@@ -100,7 +105,7 @@ defmodule Picsello.CartTest do
       end
 
       assert [
-               %{print_credit_discount: ~M[79000]USD}
+               %{print_credit_discount: ~M[100000]USD}
              ] = Repo.all(CartProduct)
     end
   end
@@ -213,11 +218,11 @@ defmodule Picsello.CartTest do
             |> Cart.place_product(gallery)
         end
 
-      assert Order.total_cost(order) == ~M[18000]USD
+      assert Order.total_cost(order) == ~M[3000]USD
 
       assert {:loaded,
               %Order{
-                products: [%{editor_id: "123", print_credit_discount: ~M[10000]USD}]
+                products: [%{editor_id: "123", print_credit_discount: ~M[6500]USD}]
               }} = Cart.delete_product(order, editor_id: "abc")
     end
   end
@@ -234,6 +239,10 @@ defmodule Picsello.CartTest do
       |> Repo.preload(:products)
       |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
       |> Repo.update!()
+      |> then(fn order ->
+        products = Cart.add_default_shipping_to_products(order)
+        Map.put(order, :products, products)
+      end)
 
       check_out(order)
 
@@ -256,7 +265,7 @@ defmodule Picsello.CartTest do
                 products: [%{editor_id: "123"}]
               } = order} = Cart.delete_product(order, editor_id: "abc")
 
-      assert Order.total_cost(order) == ~M[2400]USD
+      assert Order.total_cost(order) == ~M[200]USD
     end
 
     test "with an editor id and some digitals removes the product", %{order: order} do
@@ -358,7 +367,7 @@ defmodule Picsello.CartTest do
 
       assert {:loaded, order} = Cart.delete_product(order, digital_id: digital_id)
       assert [%{editor_id: "abc"}] = order |> Ecto.assoc(:products) |> Repo.all()
-      assert Order.total_cost(order) == ~M[2600]USD
+      assert Order.total_cost(order) == ~M[300]USD
     end
 
     test "with a digital id and one digital the order", %{order: order} do

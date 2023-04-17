@@ -81,6 +81,7 @@ defmodule Picsello.Job do
   end
 
   def archive_changeset(job), do: job |> timestamp_changeset(:archived_at)
+  def unarchive_changeset(job), do: job |> Ecto.Changeset.change(%{archived_at: nil})
   def complete_changeset(job), do: job |> timestamp_changeset(:completed_at)
 
   def add_package_changeset(job \\ %__MODULE__{}, attrs) do
@@ -147,7 +148,7 @@ defmodule Picsello.Job do
   def leads(query \\ __MODULE__) do
     from(job in query,
       join: status in assoc(job, :job_status),
-      where: status.is_lead and job.is_gallery_only == false and is_nil(job.archived_at)
+      where: status.is_lead and job.is_gallery_only == false
     )
   end
 
@@ -164,4 +165,26 @@ defmodule Picsello.Job do
 
   def document_path(name, uuid),
     do: "jobs/documents/#{uuid}#{Path.extname(name)}"
+
+  @type t :: %__MODULE__{
+          id: integer(),
+          type: String.t(),
+          notes: String.t(),
+          archived_at: DateTime.t(),
+          is_gallery_only: boolean(),
+          completed_at: DateTime.t(),
+          job_name: String.t(),
+          client_id: integer(),
+          package_id: integer(),
+          booking_event_id: integer(),
+          job_status: JobStatus.t(),
+          galleries: [Gallery.t()],
+          payment_schedules: [PaymentSchedule.t()],
+          shoots: [Shoot.t()],
+          booking_proposals: [BookingProposal.t()],
+          client_messages: [ClientMessage.t()],
+          documents: [name: String.t(), url: String.t()],
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 end

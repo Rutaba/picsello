@@ -16,7 +16,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   alias Phoenix.PubSub
 
-  import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1, disabled?: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [disabled?: 1]
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -207,8 +207,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       photo
       |> Picsello.Repo.preload(:album)
       |> start_photo_processing(gallery)
-
-      if gallery.total_count == 1, do: prepare_gallery(gallery)
 
       socket
       |> assign(
@@ -473,7 +471,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   end
 
   defp update_uploader(
-         %{assigns: %{inprogress_photos: inprogress_photos, uploads: uploads}} = socket
+         %{assigns: %{inprogress_photos: inprogress_photos, uploads: uploads} = assigns} = socket
        ) do
     upload_config = Map.fetch!(uploads || %{}, :photo)
 
@@ -482,9 +480,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       | entries: inprogress_photos,
         errors: []
     }
-
-    socket
-    |> assign(:uploads, put_in(socket.assigns.uploads, [:photo], photo))
+    
+    Map.put(assigns, :uploads, put_in(socket.assigns.uploads, [:photo], photo))
+    |> then(&Map.put(socket, :assigns, &1))
   end
 
   defp update_progress(%{assigns: %{inprogress_photos: inprogress_photos}} = socket) do
@@ -554,10 +552,10 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   defp add_photo_button(assigns) do
     ~H"""
     <%= if @disable do %>
-      <div class={@class}><%= render_block(@inner_block) %></div>
+      <div class={@class}><%= render_slot(@inner_block) %></div>
     <% else %>
       <button disabled="disabled" class={"#{@class} disabled:opacity-50 disabled:cursor-not-allowed"}>
-        <%= render_block(@inner_block) %>
+        <%= render_slot(@inner_block) %>
       </button>
     <% end %>
     """

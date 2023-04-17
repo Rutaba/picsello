@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
   @moduledoc "Find and select user"
   use PicselloWeb, live_view: [layout: false]
 
-  alias Picsello.{Repo, Accounts.User}
+  alias Picsello.{Repo, Accounts.User, FactoryReset}
 
   import Ecto.Query
 
@@ -11,6 +11,8 @@ defmodule PicselloWeb.Live.Admin.User.Index do
       flash: 1,
       admin_banner: 1
     ]
+
+  import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -24,6 +26,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
   def render(assigns) do
     ~H"""
     <%= flash(@flash) %>
+    <%= live_render @socket, PicselloWeb.LiveModal, id: "live_modal" %>
     <header class="p-8 bg-gray-100">
       <h1 class="text-4xl font-bold">Find user to edit</h1>
       <p class="text-md">Search your user and pick the action you'd like to do</p>
@@ -42,7 +45,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
             <h4><%= email %></h4>
             <h4>Organization id: <%= organization_id %></h4>
             <h5 class="mt-4 upppercase font-bold">Actions</h5>
-            <.form let={f} for={changeset} phx-change="save" id={"form-user-#{id}"} class="mb-4" phx-value-index={index}>
+            <.form :let={f} for={changeset} phx-change="save" id={"form-user-#{id}"} class="mb-4" phx-value-index={index}>
               <label class="flex items-center mt-3">
                 <input type="hidden" name="index" value={index} />
                 <%= checkbox(f, :is_test_account, class: "w-5 h-5 mr-2.5 checkbox") %>
@@ -51,6 +54,7 @@ defmodule PicselloWeb.Live.Admin.User.Index do
             </.form>
             <hr class="mb-4" />
             <%= live_redirect "Upload contacts", to: Routes.admin_user_contact_upload_path(@socket, :show, id), class: "underline text-blue-planning-300" %>
+            <a phx-click="open_reset_popup" phx-value-user_id={id} class="block underline text-blue-planning-300 cursor-pointer">Reset Data</a>
             <form action={Routes.user_admin_session_path(@socket, :create)} method="POST" class="mt-4">
               <%= csrf_input_tag("/admin/users/log_in") %>
               <input type="hidden" value={id} name="user_id" />
@@ -100,11 +104,40 @@ defmodule PicselloWeb.Live.Admin.User.Index do
     |> noreply()
   end
 
+  def handle_event("open_reset_popup", %{"user_id" => user_id}, socket) do
+    %{assigns: %{users: users}} = socket
+    %{user: %{name: name}} = Enum.find(users, &(to_string(&1.user.id) == user_id))
+
+    socket
+    |> make_popup(
+      event: "reset_data",
+      title: "Reset all data for user?",
+      subtitle: """
+      Are you sure you wish to reset all data of user
+      <b style="font-size: 20px">#{name}</b>? It will delete
+      all the data except subscription related information.
+      """,
+      payload: %{user_id: user_id}
+    )
+  end
+
+  def handle_info({:confirm_event, "reset_data", %{user_id: user_id}}, socket) do
+    user_id
+    |> FactoryReset.start()
+    |> case do
+      {:error, _err} -> {:error, "Something went wrong"}
+      {:ok, _result} -> {:info, "Successfully reset all the data"}
+    end
+    |> then(fn {type, message} -> put_flash(socket, type, message) end)
+    |> close_modal()
+    |> noreply()
+  end
+
   defp find_users(%{assigns: %{search_phrase: search_phrase}} = socket) do
     users =
       Repo.all(
         from u in User,
-          where: ilike(u.email, ^"%#{search_phrase}%"),
+          where: ilike(u.email, ^"%#{search_phrase}%") and is_nil(u.deleted_at),
           order_by: [asc: u.email]
       )
       |> Enum.map(&%{user: &1, changeset: User.is_test_account_changeset(&1)})

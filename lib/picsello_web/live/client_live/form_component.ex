@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
   use PicselloWeb, :live_component
 
   import PicselloWeb.Live.Shared
+  import Phoenix.Component
 
   import PicselloWeb.JobLive.Shared,
     only: [
@@ -52,7 +53,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
   end
 
   @impl true
-  def render(%{changeset: changeset} = assigns) do
+  def render(%{changeset: _} = assigns) do
     ~H"""
       <div class="flex flex-col modal">
 
@@ -75,7 +76,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
             </a>
 
             <%= if step_number(@step, @steps) > 1 do%>
-              <.client_name_box changeset={changeset} assigns={assigns} />
+              <.client_name_box changeset={@changeset} assigns={assigns} />
             <% end %>
           </div>
         <% end %>
@@ -95,7 +96,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
 
   def step(%{step: :add_client} = assigns) do
     ~H"""
-      <.form for={@changeset} let={f} phx_submit={:submit} phx-change="validate" phx-target={@myself}>
+      <.form for={@changeset} :let={f} phx-submit="submit" phx-change="validate" phx-target={@myself}>
         <div class="px-1.5 grid grid-cols-1 sm:grid-cols-2 gap-5">
           <%= labeled_input f, :name, placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
           <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500" %>

@@ -30,7 +30,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
       </div>
       <%= for(%{tax_schedule: %{id: id}, changeset: changeset} <- @tax_schedules) do %>
         <div class="mb-8 border rounded-lg">
-          <.form let={f} for={changeset} class="contents" phx-change="save-taxes" id={"form-taxes-#{id}"}>
+          <.form :let={f} for={changeset} class="contents" phx-change="save-taxes" id={"form-taxes-#{id}"}>
             <div class="flex items-center justify-between mb-8 bg-gray-100  p-6 ">
               <div class="grid grid-cols-3 gap-2 items-center w-3/4">
                 <div class="col-start-1 font-bold">Tax Schedule Year</div>
@@ -70,7 +70,7 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
         </div>
         <%= for(%{business_cost: %{id: id}, changeset: changeset} <- @business_costs) do %>
         <div class="mb-8 border rounded-lg">
-          <.form let={fcosts} for={changeset} class="contents" phx-change="save-line-items" id={"form-line-items-#{id}"}>
+          <.form :let={fcosts} for={changeset} class="contents" phx-change="save-line-items" id={"form-line-items-#{id}"}>
             <div class="flex items-center justify-between mb-8 bg-gray-100  p-6 ">
               <div class="grid grid-cols-3 gap-2 items-center w-3/4">
                 <div class="col-start-1 font-bold">Category Title</div>

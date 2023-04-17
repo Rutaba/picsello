@@ -11,10 +11,11 @@ defmodule Picsello.Workers.SyncEmailPresets do
   def perform(), do: perform(%{args: config()})
 
   def perform(%{args: %{type_ranges: %{}} = config}) do
-    {:ok, %{token: token}} =
-      Goth.Token.for_scope("https://www.googleapis.com/auth/spreadsheets.readonly")
-
-    connection = Sheets.Connection.new(token)
+    credentials = Application.get_env(:picsello, :goth_json) |> Jason.decode!()
+    Goth.start_link(name: Picsello.Goth, source: {:service_account, credentials, scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"]})
+    {:ok, token} = Goth.fetch(Picsello.Goth)
+  
+    connection = Sheets.Connection.new(token.token)
 
     now = DateTime.truncate(DateTime.utc_now(), :second)
 

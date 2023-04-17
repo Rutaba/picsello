@@ -42,15 +42,11 @@ defmodule Picsello.Workers.PackDigitals do
         fragment("? -> ?", job.args, "packable") == ^module and
           fragment("? -> ?", job.args, "id") == ^id
     )
-    |> Repo.one()
-    |> case do
-      %{id: job_id} ->
+    |> Repo.all()
+    |> Enum.map(fn %{id: job_id} ->
         Oban.cancel_job(job_id)
         :ok
-
-      nil ->
-        :ok
-    end
+    end)
   end
 
   def broadcast(packable, status, payload) do

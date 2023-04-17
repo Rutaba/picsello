@@ -56,4 +56,14 @@ defmodule Picsello.BrandLink do
       &for(e <- Picsello.Profiles.Profile.url_validation_errors(&2), do: {&1, e})
     )
   end
+
+  @type t :: %__MODULE__{
+          title: String.t(),
+          link_id: String.t(),
+          link: String.t(),
+          active?: boolean(),
+          use_publicly?: boolean(),
+          show_on_profile?: boolean(),
+          organization_id: integer()
+        }
 end

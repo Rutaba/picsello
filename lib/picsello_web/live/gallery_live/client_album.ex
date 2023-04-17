@@ -120,12 +120,13 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_info(
         {:customize_and_buy_product, whcc_product, photo, size},
-        %{assigns: %{favorites_filter: favorites_filter}} = socket
+        %{assigns: %{album: album, favorites_filter: favorites_filter}} = socket
       ) do
     socket
     |> customize_and_buy_product(whcc_product, photo,
       size: size,
-      favorites_only: favorites_filter
+      favorites_only: favorites_filter,
+      album_id: album.id
     )
   end
 
@@ -260,11 +261,12 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   defp photos_count(%{is_proofing: true, album: album, socket: socket} = assigns) do
     cart_route =
       Routes.gallery_client_show_cart_path(socket, :proofing_album, album.client_link_hash)
+    assigns = assign(assigns, cart_route: cart_route)
 
     ~H"""
     <div class="flex flex-col justify-between w-full my-4 lg:flex-row lg:items-center">
       <div class="flex items-center">
-        <%= live_redirect to: cart_route do %>
+        <%= live_redirect to: @cart_route do %>
           <button class="py-8 btn-primary">Review my Selections</button>
         <% end %>
         <.photos_count photos_count={@photos_count} class="ml-4" />
@@ -276,8 +278,9 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   defp photos_count(%{photos_count: count} = assigns) do
     count = (count && "#{count} #{ngettext("photo", "photos", count)}") || "photo"
+    assigns = assign(assigns, count: count)
 
-    ~H[<div class={"text-sm lg:text-xl text-base-250 #{@class}"}> <%= count %></div>]
+    ~H[<div class={"text-sm lg:text-xl text-base-250 #{@class}"}> <%= @count %></div>]
   end
 
   defp photos_count(nil), do: "photo"
@@ -286,6 +289,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   defp toggle_filter(%{applied?: applied?} = assigns) do
     class_1 = if applied?, do: ~s(bg-blue-planning-100), else: ~s(bg-gray-200)
     class_2 = if applied?, do: ~s(right-1), else: ~s(left-1)
+    assigns = assign(assigns, class_1: class_1, class_2: class_2)
 
     ~H"""
     <div class="flex mt-4 lg:mt-0">
@@ -295,8 +299,8 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
         <div class="relative ml-3">
           <input type="checkbox" class="sr-only" phx-click={@event}>
 
-          <div class={"block h-8 border rounded-full w-14 border-blue-planning-300 #{class_1}"}></div>
-          <div class={"absolute w-6 h-6 rounded-full dot top-1 bg-blue-planning-300 transition #{class_2}"}></div>
+          <div class={"block h-8 border rounded-full w-14 border-blue-planning-300 #{@class_1}"}></div>
+          <div class={"absolute w-6 h-6 rounded-full dot top-1 bg-blue-planning-300 transition #{@class_2}"}></div>
         </div>
       </label>
     </div>

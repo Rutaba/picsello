@@ -26,7 +26,7 @@ defmodule Picsello.GalleryExpirationReminderTest do
     Galleries.Gallery.create_changeset(%Galleries.Gallery{}, %{
       job_id: job_id,
       name: "12345Gallery",
-      status: "active"
+      status: :active
     })
     |> Galleries.Gallery.expire_changeset(%{expired_at: now |> DateTime.add(7 * day())})
     |> Repo.insert!()

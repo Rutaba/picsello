@@ -19,7 +19,7 @@ defmodule Picsello.BrandLinks do
       nil
 
   """
-  @spec get_brand_link(link_id :: integer, organization_id :: integer) :: %BrandLink{} | nil
+  @spec get_brand_link(link_id :: integer, organization_id :: integer) :: BrandLink.t() | nil
   def get_brand_link(link_id, organization_id) do
     Repo.get_by(BrandLink, organization_id: organization_id, link_id: link_id)
   end
@@ -64,7 +64,7 @@ defmodule Picsello.BrandLinks do
     end
   end
 
-  @spec delete_brand_link(brand_link :: %BrandLink{}) ::
-          {:ok, %BrandLink{}} | {:error, %Ecto.Changeset{}}
+  @spec delete_brand_link(brand_link :: BrandLink.t()) ::
+          {:ok, BrandLink.t()} | {:error, Ecto.Changeset.t()}
   def delete_brand_link(brand_link), do: brand_link |> Repo.delete()
 end

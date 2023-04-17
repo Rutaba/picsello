@@ -23,7 +23,7 @@
           <div class="center-container">
             <%= cond do %>
               <% Picsello.Onboardings.non_us_state?(@gallery.photographer) -> %>
-                  <p>Product ordering is not available in your country yet. Please <a class="link" href="javascript:void(0);" {help_scout_output(@current_user, :help_scout_id, data_ask: true)}>contact us</a> if there is a favorite vendor / lab partner you would like to see available on Picsello.</p>
+                  <p>Product ordering is not available in your country yet. Please <a class="link open-help" href="#help">contact us</a> if there is a favorite vendor / lab partner you would like to see available on Picsello.</p>
                 <% !Picsello.Subscriptions.subscription_payment_method?(@gallery.photographer) -> %>
                   <div class="flex flex-col items-center px-4 py-2 mt-8 text-center rounded-lg md:flex-row bg-red-sales-300/10 sm:text-left">
                     <.icon name="warning-orange-dark" class="inline-block w-8 h-8 mr-2"/>

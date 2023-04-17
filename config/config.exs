@@ -1,11 +1,11 @@
 # This file is responsible for configuring your application
-# and its dependencies with the aid of the Mix.Config module.
+# and its dependencies with the aid of the Config module.
 #
 # This configuration file is loaded before any dependency and
 # is restricted to this project.
 
 # General application configuration
-use Mix.Config
+import Config
 
 with dotenv = "#{__DIR__}/../.env",
      {:ok, data} <- File.read(dotenv),
@@ -14,10 +14,11 @@ with dotenv = "#{__DIR__}/../.env",
          "export" <> kv <- String.split(data, "\n"),
          [k, v] = String.split(kv, "=", parts: 2),
          do: k |> String.trim() |> System.put_env(v)
-       )
+       )  
 
 with "" <> base64 <- System.get_env("GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64"),
      {:ok, json} <- base64 |> String.trim() |> Base.decode64() do
+  config :picsello, goth_json: json
   config :goth, json: json
 end
 
@@ -47,8 +48,7 @@ config :picsello, :payments, Picsello.StripePayments
 config :picsello, :google_site_verification, System.get_env("GOOGLE_SITE_VERIFICATION")
 config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_API_KEY")
 config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGER_API_KEY")
-config :picsello, :help_scout_id, System.get_env("HELP_SCOUT_ID")
-config :picsello, :help_scout_id_business, System.get_env("HELP_SCOUT_ID_BUSINESS")
+config :picsello, :intercom_id, System.get_env("INTERCOM_ID")
 config :picsello, :booking_reservation_seconds, 60 * 10
 config :picsello, :card_category_id, System.get_env("CARD_CATEGORY_ID")
 config :picsello, :print_category, "h3GrtaTf5ipFicdrJ"
@@ -108,6 +108,19 @@ config :picsello, :whcc,
       end
     ),
   whcc_sync_process_count: System.get_env("WHCC_SYNC_PROCESS_COUNT") || "2"
+
+config :picsello, :products,
+  whcc_album_id: "2qNgr3zcSx9wvTAo9",
+  whcc_books_id: "B9FcAHDH5T63yvvgX",
+  whcc_photo_prints_id: "BBrgfCJLkGzseCdds",
+  base_charges: [
+    economy_usps: [value: 3.8, uuid: 545],
+    economy_trackable: [value: 3.8, uuid: 546],
+    three_days: [value: 11.95, uuid: 100],
+    one_day: [value: 22.95, uuid: 1728],
+    album_flat_rate: [value: 7.50, uuid: 548],
+    book_flat_rate: [value: 7.50, uuid: 553]
+  ]
 
 config :picsello, Oban,
   repo: Picsello.Repo,

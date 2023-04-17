@@ -55,6 +55,9 @@ defmodule Picsello.WHCC do
   def create_order(account_id, %{items: items, order: order} = export) do
     sub_orders = order["Orders"] || []
 
+    order = Map.put(order, "Orders", sub_orders)
+    export = Map.put(export, :order, order)
+
     case Adapter.create_order(account_id, export) do
       {:ok, %{orders: orders} = created_order} ->
         for %{sequence_number: sequence_number} = order <- orders do
@@ -86,8 +89,7 @@ defmodule Picsello.WHCC do
 
     account_id = Galleries.account_id(gallery_id)
     details = editor_details(account_id, editor_id)
-    %{items: [item]} = editors_export(account_id, [Editor.Export.Editor.new(editor_id)])
-    item_attrs = item |> Map.from_struct() |> Map.take([:unit_base_price, :quantity])
+    item_attrs = get_item_attrs(account_id, editor_id)
 
     details
     |> get_product!(organization_id)
@@ -108,7 +110,7 @@ defmodule Picsello.WHCC do
           }
         } = product,
         %{selections: %{"size" => size} = selections} = details,
-        %{quantity: quantity},
+        item_attrs,
         %{use_global: %{products: true}}
       )
       when whcc_id == @area_markup_category do
@@ -121,40 +123,40 @@ defmodule Picsello.WHCC do
       unit_price: final_cost,
       unit_markup: Money.new(0)
     }
-    |> merge_details(details, quantity, product)
+    |> merge_details(details, item_attrs, product)
   end
 
   def price_details(
         product,
         details,
-        %{
-          unit_base_price: unit_price,
-          quantity: quantity
-        },
+        %{unit_base_price: unit_price} = item_attrs,
         _
       ) do
     %{
       unit_markup: mark_up_price(product, details, unit_price),
       unit_price: unit_price
     }
-    |> merge_details(details, quantity, product)
+    |> merge_details(details, item_attrs, product)
   end
 
-  def merge_details(product_details, details, quantity, product) do
-    %{category: category, id: whcc_product_id} = product
-
+  def merge_details(product_details, details, item_attrs, %{id: whcc_product_id} = product) do
     product_details
-    |> Map.put(:quantity, quantity)
+    |> Map.merge(Map.take(item_attrs, [:total_markuped_price, :quantity]))
     |> Map.merge(
       details
       |> Map.take([:preview_url, :editor_id, :selections])
     )
-    |> Map.merge(
-      category
-      |> Map.from_struct()
-      |> Map.take([:shipping_upcharge, :shipping_base_charge])
-    )
     |> Map.merge(%{whcc_product: product, whcc_product_id: whcc_product_id})
+  end
+
+  def get_item_attrs(account_id, editor_id) do
+    %{items: [item], pricing: %{"totalOrderMarkedUpPrice" => total_markuped_price}} =
+      editors_export(account_id, [Editor.Export.Editor.new(editor_id)])
+
+    item
+    |> Map.from_struct()
+    |> Map.take([:unit_base_price, :quantity])
+    |> Map.put(:total_markuped_price, Money.new(round(total_markuped_price * 100)))
   end
 
   def log(message),
@@ -197,10 +199,12 @@ defmodule Picsello.WHCC do
   def final_cost(%{final_cost: final_cost}),
     do: Money.multiply(Money.new(1), Decimal.mult(final_cost, 100))
 
-  def update_markup(%{category: %{whcc_id: whcc_id}} = product, %{use_global: %{products: true}}) do
-    %{category: %{gs_gallery_products: [%{markup: markup}]} = category} = product
+  def update_markup(
+        %{category: %{gs_gallery_products: [%{markup: markup}], whcc_id: whcc_id} = category} =
+          product,
+        %{use_global: %{products: true}}
+      ) do
     markup = if @area_markup_category == whcc_id, do: Decimal.new(0), else: markup
-
     %{product | category: %{category | default_markup: markup}}
   end
 

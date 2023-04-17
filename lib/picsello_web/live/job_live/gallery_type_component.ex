@@ -51,7 +51,7 @@ defmodule PicselloWeb.JobLive.GalleryTypeComponent do
               <h1 class="text-lg font-bold">
                 <%= @title %> Gallery
               </h1>
-              <%= render_block(@inner_block) %>
+              <%= render_slot(@inner_block) %>
             </div>
             <button class={"#{@button_class} px-9 ml-auto"} phx-value-type={@type} phx-click="gallery_type" phx-target={@target} phx-disable-with="Next">
               <%= @button_title %>

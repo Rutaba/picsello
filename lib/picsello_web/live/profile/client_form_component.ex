@@ -20,7 +20,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
       <h2 class="text-3xl font-bold max-w-md">Get in touch<%= @header_suffix %></h2>
 
       <%= if @changeset do %>
-        <.form for={@changeset} let={f} phx-change="validate-client" phx-submit="save-client" id="contact-form" phx_target={@myself}>
+        <.form for={@changeset} :let={f} phx-change="validate-client" phx-submit="save-client" id="contact-form" phx-target={@myself}>
           <div class="flex flex-col mt-3">
             <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-bold" %>
 

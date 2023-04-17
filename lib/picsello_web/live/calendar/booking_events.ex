@@ -640,7 +640,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
 
   def capitalize_per_word(string) do
     String.split(string)
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &String.capitalize/1)
   end
 end

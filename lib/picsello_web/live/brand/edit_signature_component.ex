@@ -27,7 +27,7 @@ defmodule PicselloWeb.Live.Brand.EditSignatureComponent do
           </button>
         </div>
 
-        <.form for={@changeset} let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
+        <.form for={@changeset} :let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
           <%= for e <- inputs_for(f, :email_signature) do %>
             <div class="grid mt-4 grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-12 mb-6">
 

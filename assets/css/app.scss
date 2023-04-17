@@ -7,7 +7,6 @@
 @import './components/forms.css';
 @import './components/typography.css';
 @import './components/uploadPopup.css';
-@import './components/helpScoutFacade.css';
 @import 'intro.js/introjs.css';
 @import './components/intro.css';
 @import './components/quill.scss';
@@ -286,6 +285,15 @@ canvas {
 @media (max-width: 640px) {
   *.custom-tooltip:hover span {
     display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:w-64 {
+      width: 16rem;
+  }
+  .md\:w-60 {
+    width: 15rem;
   }
 }
 

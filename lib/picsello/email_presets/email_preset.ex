@@ -38,4 +38,17 @@ defmodule Picsello.EmailPresets.EmailPreset do
   end
 
   def states(), do: @states
+
+  @type t :: %__MODULE__{
+          id: integer(),
+          body_template: String.t(),
+          type: String.t(),
+          state: String.t(),
+          job_type: String.t(),
+          name: String.t(),
+          subject_template: String.t(),
+          position: integer(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 end

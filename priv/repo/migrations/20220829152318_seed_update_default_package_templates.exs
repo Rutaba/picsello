@@ -2,7 +2,7 @@ defmodule Picsello.Repo.Migrations.SeedUpdateDefaultPackageTemplates do
   use Ecto.Migration
 
   import Ecto.Query, only: [from: 2]
-  alias Picsello.Repo
+  alias Picsello.{Repo, Packages}
 
   def change do
     query =
@@ -17,8 +17,7 @@ defmodule Picsello.Repo.Migrations.SeedUpdateDefaultPackageTemplates do
 
     Repo.all(query)
     |> Enum.reduce(0, fn package, acc ->
-      payment_defaults =
-        PicselloWeb.PackageLive.WizardComponent.get_payment_defaults(package.job_type, true)
+      payment_defaults = Packages.get_payment_defaults(package.job_type)
 
       count = length(payment_defaults)
 
@@ -29,8 +28,8 @@ defmodule Picsello.Repo.Migrations.SeedUpdateDefaultPackageTemplates do
             %{
               id: acc + (index + 1),
               package_id: package.id,
-              price: get_price(package, count, index) * 100,
-              description: "$#{get_price(package, count, index)} to #{default}",
+              price: Packages.get_price(package, count, index) * 100,
+              description: "$#{Packages.get_price(package, count, index)} to #{default}",
               schedule_date: "3022-01-01 00:00:00",
               interval: true,
               due_interval: default,
@@ -52,30 +51,5 @@ defmodule Picsello.Repo.Migrations.SeedUpdateDefaultPackageTemplates do
 
       acc + count
     end)
-  end
-
-  defp get_price(
-         %{base_multiplier: base_multiplier, base_price: base_price},
-         presets_count,
-         index
-       ) do
-    base_price = if(base_price, do: base_price, else: 0)
-
-    amount =
-      Decimal.mult(base_price, base_multiplier)
-      |> Decimal.round(0, :floor)
-      |> Decimal.to_integer()
-
-    total_price = div(amount, 100)
-
-    remainder = rem(total_price, presets_count)
-    amount = if remainder == 0, do: total_price, else: total_price - remainder
-
-    if index + 1 == presets_count do
-      amount / presets_count + remainder
-    else
-      amount / presets_count
-    end
-    |> Kernel.trunc()
   end
 end

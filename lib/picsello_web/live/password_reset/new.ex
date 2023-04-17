@@ -31,7 +31,7 @@ defmodule PicselloWeb.Live.PasswordReset.New do
           </.live_link>
           <h1 class="mt-10 text-4xl font-bold">Forgot your password?</h1>
 
-          <.form let={f} for={@changeset} phx-change="validate" phx-submit="submit" >
+          <.form :let={f} for={@changeset} phx-change="validate" phx-submit="submit" >
             <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
 
 

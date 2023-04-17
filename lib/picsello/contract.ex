@@ -9,6 +9,7 @@ defmodule Picsello.Contract do
     field :name, :string
     field :job_type, :string
     field :edited, :boolean, virtual: true
+    field(:status, Ecto.Enum, values: [:active, :archive])
     belongs_to(:organization, Organization)
     belongs_to(:package, Package)
     belongs_to(:contract_template, __MODULE__)
@@ -45,5 +46,9 @@ defmodule Picsello.Contract do
     |> cast(attrs, [:name, :content, :organization_id, :job_type])
     |> validate_required([:name, :content, :organization_id, :job_type])
     |> unsafe_validate_unique([:name, :organization_id], Picsello.Repo)
+  end
+
+  def status_changeset(%__MODULE__{} = contract, status) do
+    contract |> change(status: status)
   end
 end

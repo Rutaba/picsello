@@ -73,11 +73,11 @@ defmodule PicselloWeb.FormHelpers do
 
   def input_label(assigns) do
     %{form: form, field: field, class: class} = assigns |> Enum.into(%{class: ""})
-
     class = classes([class], %{"input-label-invalid" => form.errors[field]})
+    assigns = Enum.into(assigns, %{class: class})
 
     ~H"""
-    <label class={class} phx-feedback-for={input_name(form,field)} for={input_id(form, field)}><%= render_block @inner_block %></label>
+    <label class={@class} phx-feedback-for={input_name(@form, @field)} for={input_id(@form, @field)}><%= render_slot @inner_block %></label>
     """
   end
 

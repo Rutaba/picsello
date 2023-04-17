@@ -5,12 +5,12 @@ defmodule Picsello.WHCC.Editor.Params do
   def build(%Product{} = product, photo, opts) do
     product = product |> Repo.preload(:category)
 
-    {favorites_only, opts} = Keyword.pop(opts, :favorites_only, false)
+    {opts, photo_opts} = split_opts(opts)
 
     %{gallery: %{organization: organization} = gallery} =
       photo = Repo.preload(photo, gallery: :organization)
 
-    gallery_photos = Photos.get_related(photo, favorites_only: favorites_only)
+    gallery_photos = Photos.get_related(photo, photo_opts)
 
     color = Picsello.Profiles.color(organization)
 
@@ -23,6 +23,13 @@ defmodule Picsello.WHCC.Editor.Params do
       "selections" => selections(photo, opts)
     }
     |> add_design(Keyword.get(opts, :design))
+  end
+
+  defp split_opts(opts) do
+    {favorites_only, opts} = Keyword.pop(opts, :favorites_only, false)
+    {album_id, opts} = Keyword.pop(opts, :album_id)
+
+    {opts, album_id: album_id, favorites_only: favorites_only}
   end
 
   defp add_design(selected_params, nil), do: selected_params

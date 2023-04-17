@@ -7,10 +7,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   import PicselloWeb.JobLive.Shared, only: [error: 1]
   import Ecto.Query, warn: false
 
-  alias Picsello.{Package, Shoot, Repo, PackagePaymentSchedule, PaymentSchedule, PackagePayments}
+  alias Picsello.{Package, Packages, Shoot, Repo, PackagePaymentSchedule, PaymentSchedule, PackagePayments}
   alias Ecto.{Changeset, Multi}
-
-  @future_date ~U[3022-01-01 00:00:00Z]
 
   @impl true
   def update(%{job: job} = assigns, socket) do
@@ -35,7 +33,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
   @impl true
   def render(assigns) do
-    message = get_messgae(assigns)
+    assigns = assign(assigns, message: get_messgae(assigns))
 
     ~H"""
       <div class="flex flex-col modal">
@@ -47,9 +45,9 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           </button>
         </div>
 
-        <.error message={message} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => is_nil(@shoot) || is_nil(message)})}/>
+        <.error message={@message} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => is_nil(@shoot) || is_nil(@message)})}/>
 
-        <.form let={f} for={@changeset}, phx-change="validate" phx-submit="save" phx-target={@myself}>
+        <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
 
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
             <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. #{dyn_gettext @job.type} Session, etc.", wrapper_class: "sm:col-span-3" %>
@@ -57,7 +55,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
             <%= labeled_select f, :duration_minutes, duration_options(),
                   label: "Shoot Duration",
                   prompt: "Select below",
-                  wrapper_class: classes("",%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
+                  wrapper_class: classes(%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
             %>
 
             <.location f={f} address_field={@address_field} myself={@myself} />
@@ -230,7 +228,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       schedule_date =
         cond do
           schedule.interval && String.contains?(schedule.due_interval, "To Book") ->
-            Timex.now() |> DateTime.truncate(:second)
+            Timex.now()
 
           schedule.shoot_interval &&
               String.contains?(schedule.shoot_interval, "Before Last Shoot") ->
@@ -242,6 +240,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           true ->
             Timex.shift(schedule.schedule_date, minutes: first_time_difference)
         end
+        |> DateTime.truncate(:second)
 
       Map.put(schedule, :schedule_date, schedule_date)
     end)
@@ -249,8 +248,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   end
 
   defp get_schedules_for_insert(job, package_payment_schedules, first_shoot_date, last_shoot_date) do
-    first_time_difference = get_diff(@future_date, first_shoot_date)
-    last_time_difference = get_diff(@future_date, last_shoot_date)
+    first_time_difference = get_diff(Packages.future_date(), first_shoot_date)
+    last_time_difference = get_diff(Packages.future_date(), last_shoot_date)
 
     updated_package_payment_schedules =
       get_package_payment_schedules(

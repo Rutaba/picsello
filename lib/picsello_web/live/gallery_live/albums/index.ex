@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_photographer"]
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Live.Shared, only: [make_popup: 2]
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Repo, Galleries, Albums}
@@ -20,12 +21,14 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   @impl true
   def handle_params(%{"id" => gallery_id} = params, _uri, socket) do
     gallery = Galleries.get_gallery!(gallery_id) |> Repo.preload(:photographer)
+    albums = Albums.get_albums_by_gallery_id(gallery.id)
 
     albums =
       case client_liked_album(gallery.id) do
-        nil -> Albums.get_albums_by_gallery_id(gallery.id) |> Repo.preload(:orders)
-        album -> (Albums.get_albums_by_gallery_id(gallery.id) |> Repo.preload(:orders)) ++ [album]
+        nil -> albums
+        album -> albums ++ [album] 
       end
+      |> Repo.preload(:orders)
 
     socket
     |> assign(:gallery_id, gallery_id)
@@ -194,16 +197,14 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
           socket
           |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
         end
-        |> close_modal()
         |> put_flash(:success, "Album deleted successfully")
-        |> noreply()
-
+        
       _any ->
         socket
-        |> close_modal()
         |> put_flash(:success, "Could not delete album")
-        |> noreply()
     end
+    |> close_modal()
+    |> noreply()
   end
 
   @impl true
@@ -222,26 +223,24 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     case Galleries.delete_photos(photo_ids) do
       {:ok, {count, _}} ->
         socket
-        |> close_modal()
         |> put_flash(
           :success,
           "#{count} unsorted #{ngettext("photo", "photos", count)} deleted successfully"
         )
-        |> noreply()
 
       _ ->
         socket
         |> put_flash(:error, "Could not delete photos")
-        |> close_modal()
-        |> noreply()
     end
+    |> close_modal()
+    |> noreply()
   end
 
   @impl true
   def handle_info({:save, _}, %{assigns: %{gallery_id: gallery_id}} = socket) do
     socket
     |> close_modal()
-    |> assign(:albums, Albums.get_albums_by_gallery_id(gallery_id))
+    |> assign(:albums, Albums.get_albums_by_gallery_id(gallery_id) |> Repo.preload(:orders))
     |> put_flash(:success, "Album thumbnail successfully updated")
     |> noreply
   end

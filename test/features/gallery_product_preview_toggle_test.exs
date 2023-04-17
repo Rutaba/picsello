@@ -160,7 +160,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
                {"Books", "$2,222.00"},
                {"Ornaments", "$2,020.00"},
                {"Loose Prints", "$50,000.00"},
-               {"Press Printed Cards", "$101.00"},
+               {"Press Printed Cards", "$77.77"},
                {"Display Products", "$3,939.00"},
                {"Digital Download", "$25.00"}
              ] =

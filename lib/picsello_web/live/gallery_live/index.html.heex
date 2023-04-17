@@ -32,7 +32,7 @@
     <div class="font-bold grid md:grid-cols-2">
       <div class="lg:col-span-3 md:col-span-3 hidden md:block pl-2">Gallery Details</div>
     </div>
-    
+
     <hr class="md:block border-blue-planning-300 border-2 mt-4 mb-1 hidden" />
 
     <%= for {gallery, gallery_index} <- @galleries |> Enum.with_index() do %>
@@ -40,13 +40,6 @@
         <div class="relative md:grid md:grid-cols-2 flex flex-wrap my-4 md:mx-0 mx-4">
           <div class="flex flex-row align-top">
             <.image_item socket={@socket} gallery={gallery} index={@index} gallery_index={gallery_index}/>
-            <button type="button" class={classes("h-fit md:hidden flex ml-auto justify-center py-2 px-1 md:ml-2 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-blue-planning-300", %{"pr-2" => @index == gallery_index})} id="menu-button" aria-expanded="true"  aria-hidden="true" aria-haspopup="true" phx-click="show_dropdown" phx-value-show_index={gallery_index}>
-              <%= if @index != gallery_index do %>
-                <.icon name="meatballs" class="w-4 h-4 fill-current text-blue-planning-300 inline mx-1.5" />
-              <% else %>
-                <.icon name="close-x" class="pl-1 w-4 h-4 mx-1 stroke-current close-icon stroke-2 text-blue-planning-300" />
-              <% end %>
-            </button>
             <%= if disabled?(gallery) do %>
               <div class="flex items-center">
                 <span class="font-bold text-xs text-base-250 bg-slate-200 mb-8 ml-2 rounded px-1">Disabled</span>
@@ -67,25 +60,25 @@
                 Copied!
               </div>
             </button>
-            <div id="manage" phx-hook="Select" class="md:w-auto w-full" phx-update="ignore">
+            <div id={"manage-#{gallery.id}"} phx-hook="Select" class="md:w-auto w-full" phx-update="ignore">
               <button class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id="menu-button" phx-click="show_dropdown" phx-value-show_index={gallery_index}>
                 Actions
                 <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
                 <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
               </button>
               <div class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
-                <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes("", %{"hidden" => disabled?(gallery)})} />
-                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} />
-                <.dropdown_item {assigns} id="send_email_link" icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
+                <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes(%{"hidden" => disabled?(gallery)})} />
+                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} class={classes(%{"hidden" => disabled?(gallery)})} />
+                <.dropdown_item {assigns} id="send_email_link" class={classes("hover:cursor-pointer", %{"hidden" => disabled?(gallery)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
                 <%= if Enum.any?(gallery.orders) do %>
                   <%= case disabled?(gallery) do %>
-                    <% true -> %>  
-                      <.dropdown_item {assigns} class="enable-link" icon="eye" title="Enable" link={[phx_click: "enable_gallery_popup", phx_value_gallery_id: gallery.id]})} />
+                    <% true -> %>
+                      <.dropdown_item {assigns} class="enable-link hover:cursor-pointer" icon="eye" title="Enable" link={[phx_click: "enable_gallery_popup", phx_value_gallery_id: gallery.id]})} />
                     <% _ -> %>
-                      <.dropdown_item {assigns} class="disable-link" icon="closed-eye" title="Disable" link={[phx_click: "disable_gallery_popup", phx_value_gallery_id: gallery.id]})} />
+                      <.dropdown_item {assigns} class="disable-link hover:cursor-pointer" icon="closed-eye" title="Disable" link={[phx_click: "disable_gallery_popup", phx_value_gallery_id: gallery.id]})} />
                   <% end %>
                 <% else %>
-                  <.dropdown_item {assigns} class="delete-link" icon="trash" title="Delete" link={[phx_click: "delete_gallery_popup", phx_value_gallery_id: gallery.id]}/>
+                  <.dropdown_item {assigns} class={classes("delete-link hover:cursor-pointer", %{"hidden" => disabled?(gallery)})} icon="trash" title="Delete" link={[phx_click: "delete_gallery_popup", phx_value_gallery_id: gallery.id]} />
                 <% end %>
               </div>
             </div>
@@ -96,8 +89,8 @@
     <% end %>
   </div>
 
-  <div class="flex items-center px-6 pb-6 center-container">
-    <.form let={f} for={:pagination} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
+  <div class="flex items-center px-6 pb-6 center-container mb-8">
+    <.form :let={f} for={%{}} as={:pagination} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
       <%= select f, :limit, [4, 8, 12, 16], class: "cursor-pointer"%>
     </.form>
 

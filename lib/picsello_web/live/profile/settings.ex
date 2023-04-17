@@ -61,7 +61,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
         <.card title="Enable/disable your public profile">
           <p class="mt-4 text-base-250">Hide your public profile or make it visible.</p>
 
-          <.form for={:toggle} phx-change="toggle">
+          <.form :let={_} for={%{}} as={:toggle} phx-change="toggle">
             <label class="mt-4 text-2xl flex">
               <input type="checkbox" class="peer hidden" checked={Profiles.enabled?(@organization)} />
 

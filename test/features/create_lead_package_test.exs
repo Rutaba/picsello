@@ -109,8 +109,6 @@ defmodule Picsello.CreateLeadPackageTest do
     insert(:package_payment_schedule, %{package: template2})
     insert(:package_template, user: user, job_type: "other")
 
-    selected_card = css("[data-testid='template-card'].bg-gray-100")
-
     session
     |> visit("/leads/#{lead.id}")
     |> click(@add_package_button)
@@ -124,9 +122,9 @@ defmodule Picsello.CreateLeadPackageTest do
     |> find(button("New Package"), &assert(!Element.attr(&1, :disabled)))
     |> find(button("Use template"), &assert(Element.attr(&1, :disabled)))
     |> click(testid("template-card", text: "best wedding"))
-    |> find(selected_card, &assert_text(&1, "best wedding"))
+    |> find(testid("template-card", at: 0), &assert_text(&1, "best wedding"))
     |> click(testid("template-card", text: "lame wedding"))
-    |> find(selected_card, &assert_text(&1, "lame wedding"))
+    |> find(testid("template-card", at: 1), &assert_text(&1, "lame wedding"))
   end
 
   feature "user with package templates creates new package", %{session: session, user: user} do
@@ -339,8 +337,10 @@ defmodule Picsello.CreateLeadPackageTest do
 
     contract_template_id = contract_template.id
 
-    assert %Picsello.Contract{name: "My job custom contract", contract_template_id: ^contract_template_id} =
-             lead.package.contract
+    assert %Picsello.Contract{
+             name: "My job custom contract",
+             contract_template_id: ^contract_template_id
+           } = lead.package.contract
   end
 
   feature "user sees validation errors when creating a package", %{session: session, user: user} do

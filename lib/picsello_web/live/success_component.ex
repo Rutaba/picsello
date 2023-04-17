@@ -71,7 +71,7 @@ defmodule PicselloWeb.SuccessComponent do
     socket |> noreply()
   end
 
-  @spec open(%Phoenix.LiveView.Socket{}, %{
+  @spec open(Phoenix.LiveView.Socket.t(), %{
           optional(:close_label) => binary,
           optional(:close_class) => binary,
           optional(:success_event) => any,
@@ -82,7 +82,7 @@ defmodule PicselloWeb.SuccessComponent do
           optional(:payload) => map,
           optional(:for) => atom() | binary(),
           title: binary
-        }) :: %Phoenix.LiveView.Socket{}
+        }) :: Phoenix.LiveView.Socket.t()
   def open(socket, assigns) do
     socket
     |> open_modal(__MODULE__, Map.put(assigns, :parent_pid, self()))
@@ -91,7 +91,7 @@ defmodule PicselloWeb.SuccessComponent do
   defp description(%{for: "proofing"} = assigns) do
     ~H"""
       You can handle all the key steps of proofing your photos for your client right from this album, and
-      create additional proofing albums within this gallery if you need more. <a>Click here for help article.</a>
+      create additional proofing albums within this gallery if you need more.
     """
   end
 

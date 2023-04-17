@@ -5,13 +5,13 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
+  import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
-  alias Picsello.Repo
+  alias PicselloWeb.Shared.ConfirmationComponent
 
   alias PicselloWeb.GalleryLive.{
-    Settings.CustomWatermarkComponent,
-    Shared.ConfirmationComponent
+    Settings.CustomWatermarkComponent
   }
 
   alias Galleries.{
@@ -49,7 +49,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
     gallery =
       Galleries.get_gallery!(id)
-      |> Repo.preload(:photographer)
+      |> Repo.preload([:photographer, job: :client])
       |> Galleries.load_watermark_in_gallery()
 
     prepare_gallery(gallery)
@@ -354,7 +354,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     gallery
-    |> Galleries.update_gallery(%{status: "disabled"})
+    |> Galleries.update_gallery(%{status: :disabled})
     |> process_gallery(socket, :disabled)
   end
 
@@ -363,7 +363,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     gallery
-    |> Galleries.update_gallery(%{status: "active"})
+    |> Galleries.update_gallery(%{status: :active})
     |> process_gallery(socket, :enabled)
   end
 
@@ -437,7 +437,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   defp remove_watermark_button(assigns) do
     ~H"""
-    <button type="button" disabled={assigns.disabled} title="remove watermark" phx-click="delete_watermark_popup" class="pl-14">
+    <button type="button" disabled={assigns.disabled} title="remove watermark" phx-click="delete_watermark_popup" class="pl-5">
       <.icon name="remove-icon" class={classes("w-3.5 h-3.5 ml-1 text-base-250", %{"pointer-events-none" => assigns.disabled})}/>
     </button>
     """

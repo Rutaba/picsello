@@ -2,9 +2,8 @@ defmodule PicselloWeb.Live.Calendar.Shared do
   @moduledoc """
   functions used by calendar components
   """
-  import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  use Phoenix.Component
+  import Phoenix.Component
 
   def back_button(assigns) do
     ~H"""

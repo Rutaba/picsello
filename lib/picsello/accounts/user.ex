@@ -11,6 +11,7 @@ defmodule Picsello.Accounts.User do
 
   schema "users" do
     field :confirmed_at, :naive_datetime
+    field :deleted_at, :naive_datetime
     field :email, :string
     field :hashed_password, :string
     field :name, :string
@@ -22,6 +23,7 @@ defmodule Picsello.Accounts.User do
     field :stripe_customer_id, :string
     embeds_one(:onboarding, Onboarding, on_replace: :update)
     has_one(:subscription, Picsello.Subscription)
+    has_one(:subscription_event, Picsello.SubscriptionEvent)
     belongs_to(:organization, Picsello.Organization)
 
     timestamps()
@@ -283,4 +285,18 @@ defmodule Picsello.Accounts.User do
         {first_name, nil}
     end
   end
+
+  @type t :: %__MODULE__{
+          id: Ecto.UUID.t(),
+          name: String.t(),
+          email: String.t(),
+          hashed_password: String.t(),
+          sign_up_auth_provider: String.t(),
+          stripe_customer_id: String.t(),
+          time_zone: String.t(),
+          confirmed_at: DateTime.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t(),
+          onboarding: Picsello.Onboardings.Onboarding.t()
+        }
 end

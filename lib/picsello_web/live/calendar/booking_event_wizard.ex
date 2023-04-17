@@ -1,15 +1,15 @@
 defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @moduledoc false
-
   use PicselloWeb, :live_component
-  alias Picsello.{BookingEvent, BookingEvents, Packages}
 
+  import Phoenix.Component
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [package_row: 1, current: 1]
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
+  alias Picsello.{BookingEvent, BookingEvents, Packages}
 
   @impl true
   def update(assigns, socket) do
@@ -63,7 +63,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
       <.step_heading name={@step} is_edit={@booking_event.id} />
 
-      <.form for={@changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+      <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
         <input type="hidden" name="step" value={@step} />
 
         <.wizard_state form={f} />
@@ -143,23 +143,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     """
   end
 
-  def step(%{name: :details, can_edit?: can_edit?, booking_count: booking_count} = assigns) do
+  def step(%{name: :details, can_edit?: _, booking_count: _} = assigns) do
     ~H"""
       <div class="flex flex-col mt-4">
         <h2 class="text-xl font-bold">Set your details</h2>
         <p>Add in your session details and location to populate the event landing page and set your availability appropriately.</p>
         <div class="grid gap-5 sm:grid-cols-6 mt-4">
           <%= labeled_input @f, :name, label: "Title", placeholder: "Fall Mini-sessions", wrapper_class: "sm:col-span-2" %>
-          <.location f={@f} myself={@myself} allow_address_toggle={false} address_field={true} is_edit={can_edit?}/>
-          <%= labeled_select @f, :duration_minutes, duration_options(), label: "Session Length", prompt: "Select below", wrapper_class: "sm:col-span-3", disabled: !can_edit? %>
-          <%= labeled_select @f, :buffer_minutes, buffer_options(), label: "Session Buffer", prompt: "Select below", wrapper_class: "sm:col-span-3", optional: true, disabled: !can_edit? %>
+          <.location f={@f} myself={@myself} allow_address_toggle={false} address_field={true} is_edit={@can_edit?}/>
+          <%= labeled_select @f, :duration_minutes, duration_options(), label: "Session Length", prompt: "Select below", wrapper_class: "sm:col-span-3", disabled: !@can_edit? %>
+          <%= labeled_select @f, :buffer_minutes, buffer_options(), label: "Session Buffer", prompt: "Select below", wrapper_class: "sm:col-span-3", optional: true, disabled: !@can_edit? %>
         </div>
         <h2 class="text-xl font-bold mt-4">Event date(s)</h2>
         <p>You can create single- or multi-day events with specified time blocks each day. We will calculate the amount of slots you can do each day. Don’t forget to take a meal break!</p>
 
         <%= error_tag(@f, :dates, prefix: "Dates", class: "text-red-sales-300 text-sm mt-2") %>
         <%= inputs_for @f, :dates, fn d -> %>
-          <.event_date event_form={@f} f={d} id={"event-#{d.index}"} myself={@myself} collapsed_dates={@collapsed_dates} changeset={@changeset} booking_count={booking_count} is_edit={can_edit?}/>
+          <.event_date event_form={@f} f={d} id={"event-#{d.index}"} myself={@myself} collapsed_dates={@collapsed_dates} changeset={@changeset} booking_count={@booking_count} is_edit={@can_edit?}/>
         <% end %>
 
         <div class="mt-8">
@@ -171,9 +171,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     """
   end
 
-  def step(%{name: :package, can_edit?: can_edit?} = assigns) do
+  def step(%{name: :package, can_edit?: _} = assigns) do
     ~H"""
-     <%= if !can_edit? do %>
+     <%= if !@can_edit? do %>
         <div class="flex rounded-lg h-fit mt-8 p-1 ml-3 flex flex-row border bg-base-200">
           <.icon name="warning-orange" class="w-4 h-4 mt-2 mr-2" />
           <div class="warning-text">
@@ -194,10 +194,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         </div>
       </div>
     <% end %>
-    <div class={classes("hidden sm:flex items-center border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250", %{"justify-between" => can_edit?})}>
+    <div class={classes("hidden sm:flex items-center border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250", %{"justify-between" => @can_edit?})}>
       <%= for title <- ["Package name", "Package Pricing", "Select package"] do %>
-        <%= if (!can_edit? and title !=  "Select package") || can_edit? do %>
-            <div class={classes("w-1/3", %{"last:text-center" => can_edit?})}><%= title %></div>
+        <%= if (!@can_edit? and title !=  "Select package") || @can_edit? do %>
+            <div class={classes("w-1/3", %{"last:text-center" => @can_edit?})}><%= title %></div>
         <% end %>
 
       <% end %>
@@ -219,12 +219,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           </div>
       </div>
     <% end %>
-    <%= if can_edit? do %>
+    <%= if @can_edit? do %>
         <%= for package <- @package_templates do %>
           <% checked = is_checked(input_value(@f, :package_template_id), package) %>
-          <label class={classes(%{"cursor-not-allowed pointer-events-none" => !can_edit?})}>
+          <label class={classes(%{"cursor-not-allowed pointer-events-none" => !@can_edit?})}>
             <.package_row package={package} checked={checked}>
-              <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={if checked, do: nil, else: package.id} />
+              <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={package.id} />
             </.package_row>
           </label>
         <% end %>
@@ -232,8 +232,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       <% package_id = input_value(@f, :package_template_id) |> to_integer() %>
       <% package = Enum.filter(@package_templates, fn template -> template.id == package_id end) |> List.first() %>
       <%= if package do %>
-        <label class={classes(%{"cursor-not-allowed pointer-events-none" => !can_edit?})}>
-            <.package_row package={package} can_edit?={can_edit?}/>
+        <label class={classes(%{"cursor-not-allowed pointer-events-none" => !@can_edit?})}>
+            <.package_row package={package} can_edit?={@can_edit?}/>
         </label>
       <% else %>
         <div class="flex rounded-lg h-fit  mt-8 p-2 ml-3 flex flex-row border bg-base-200">
@@ -622,25 +622,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   end
 
   defp is_break_block_already_booked(dates) do
-    dates
-    |> Enum.filter(fn %{time_blocks: time_blocks} ->
-      Enum.filter(time_blocks, fn block ->
+    Enum.count(dates, fn %{time_blocks: time_blocks} ->
+      Enum.count(time_blocks, fn block ->
         !block.is_valid
-      end)
-      |> Enum.count() > 0
-    end)
-    |> Enum.count() > 0
+      end) > 0
+    end) > 0
   end
 
   defp is_any_block_booked(dates) do
-    dates
-    |> Enum.filter(fn %{time_blocks: time_blocks} ->
-      Enum.filter(time_blocks, fn block ->
+    Enum.count(dates, fn %{time_blocks: time_blocks} ->
+      Enum.count(time_blocks, fn block ->
         block.is_booked
-      end)
-      |> Enum.count() > 0
-    end)
-    |> Enum.count() > 0
+      end) > 0
+    end) > 0
   end
 
   defp calculate_break_blocks(booking_event, date) do

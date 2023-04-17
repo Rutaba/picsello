@@ -47,7 +47,9 @@ defmodule PicselloWeb do
     options =
       case Keyword.get(options, :layout, "live") do
         false -> []
-        name -> [layout: {PicselloWeb.LayoutView, "#{name}.html"}]
+        name -> 
+          name = if is_atom(name), do: name, else: String.to_atom(name)
+          [layout: {PicselloWeb.LayoutView, name}]
       end
 
     quote do
@@ -93,8 +95,8 @@ defmodule PicselloWeb do
       use Phoenix.HTML
 
       # Import LiveView helpers (live_render, live_component, live_patch, etc)
-      import Phoenix.LiveView.Helpers
-
+      # import Phoenix.LiveView.Helpers
+      import Phoenix.Component
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
 

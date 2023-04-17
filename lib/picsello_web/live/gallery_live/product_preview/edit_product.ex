@@ -46,7 +46,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.EditProduct do
       preview_photo_id: nil,
       selected: false
     )
-    |> assign_photos(@per_page, "all_photos")
+    |> assign_photos(@per_page, :only_valid)
     |> ok()
   end
 

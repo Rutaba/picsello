@@ -29,7 +29,7 @@ defmodule Picsello.WHCC.Product.AttributeCategory do
          %{"pricingRefsKey" => %{"keys" => keys, "separator" => separator}},
          selections
        ) do
-    key = keys |> Enum.map(&Map.get(selections, &1)) |> Enum.join(separator)
+    key = keys |> Enum.map_join(separator, &Map.get(selections, &1))
 
     case Map.get(pricing_refs, key) do
       nil -> ~M[0]USD

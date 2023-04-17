@@ -78,7 +78,9 @@ defmodule Picsello.Release do
   end
 
   defp gcs_token() do
-    {:ok, token} = Goth.Token.for_scope("https://www.googleapis.com/auth/cloud-platform")
+    credentials = Application.get_env(:picsello, :goth_json) |> Jason.decode!()
+    Goth.start_link(name: Picsello.Goth, source: {:service_account, credentials, scopes: ["https://www.googleapis.com/auth/cloud-platform"]})
+    {:ok, token} = Goth.fetch(Picsello.Goth)
     token.token
   end
 

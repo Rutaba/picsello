@@ -13,12 +13,11 @@ defmodule PicselloWeb.Live.Calendar.Settings do
 
   @impl true
   def render(%{current_user: user} = assigns) do
-    url =
-      Routes.i_calendar_url(
-        assigns.socket,
-        :index,
-        Phoenix.Token.sign(Endpoint, "USER_ID", user.id)
-      )
+    assigns = assign(assigns, url: Routes.i_calendar_url(
+      assigns.socket,
+      :index,
+      Phoenix.Token.sign(Endpoint, "USER_ID", user.id)
+    ))
 
     ~H"""
     <div class="pt-6 px-6 py-2 center-container">
@@ -49,10 +48,10 @@ defmodule PicselloWeb.Live.Calendar.Settings do
           <p class="text-base-250">Copy this link if you need to subscribe to your the Picsello calendar from another provider. They need to use the ICAL protocol.</p>
 
           <div class="flex flex-col my-7">
-            <div {testid("url")} class="text-input text-clip overflow-hidden"><%= url %></div>
+            <div {testid("url")} class="text-input text-clip overflow-hidden"><%= @url %></div>
           </div>
 
-          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 transition-colors text-blue-planning-300" id="copy-calendar-link" data-clipboard-text={url} phx-hook="Clipboard">
+          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 transition-colors text-blue-planning-300" id="copy-calendar-link" data-clipboard-text={@url} phx-hook="Clipboard">
             <span>Copy link</span>
             <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
               Copied!

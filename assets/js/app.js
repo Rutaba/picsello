@@ -14,7 +14,7 @@ Sentry.init({
   // Set tracesSampleRate to 1.0 to capture 100%
   // of transactions for performance monitoring.
   // We recommend adjusting this value in production
-  tracesSampleRate: 0.3,
+  tracesSampleRate: 0.1,
 });
 
 // We need to import the CSS so that webpack will load it.
@@ -52,7 +52,6 @@ import Flash from './hooks/flash';
 import GalleryMobile from './hooks/gallery-mobile';
 import GallerySelector from './hooks/gallery-selector';
 import HandleTrialCode from './hooks/handle-trial-code';
-import HelpScout from './hooks/help-scout';
 import IFrameAutoHeight from './hooks/iframe-auto-height';
 import ImageUploadInput from './hooks/image-upload-input';
 import InfiniteScroll from './hooks/infinite-scroll';
@@ -260,7 +259,6 @@ const Hooks = {
   GalleryMobile,
   GallerySelector,
   HandleTrialCode,
-  HelpScout,
   IFrameAutoHeight,
   ImageUploadInput,
   InfiniteScroll,
