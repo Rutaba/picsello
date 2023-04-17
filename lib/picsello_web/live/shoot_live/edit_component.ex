@@ -7,7 +7,16 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   import PicselloWeb.JobLive.Shared, only: [error: 1]
   import Ecto.Query, warn: false
 
-  alias Picsello.{Package, Packages, Shoot, Repo, PackagePaymentSchedule, PaymentSchedule, PackagePayments}
+  alias Picsello.{
+    Package,
+    Packages,
+    Shoot,
+    Repo,
+    PackagePaymentSchedule,
+    PaymentSchedule,
+    PackagePayments
+  }
+
   alias Ecto.{Changeset, Multi}
 
   @impl true
@@ -365,9 +374,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   end
 
   defp parse_in_zone("" <> str, zone) do
-    with {:ok, naive_datetime} <- NaiveDateTime.from_iso8601(str <> ":00"),
-         {:ok, datetime} <- DateTime.from_naive(naive_datetime, zone) do
-      {:ok, datetime}
+    with {:ok, naive_datetime} <- NaiveDateTime.from_iso8601(str <> ":00") do
+      DateTime.from_naive(naive_datetime, zone)
     end
   end
 
