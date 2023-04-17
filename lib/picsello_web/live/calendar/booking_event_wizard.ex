@@ -303,7 +303,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       </div>
       <div class={classes("p-4 grid gap-5 lg:grid-cols-3 grid-cols-1", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})} {intro_hints_only("intro_hints_only")}>
         <div class="flex flex-col">
-          <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today(), disabled: is_date_booked(@event_form, input_value(@f, :date)) %>
+          <h3 class="text-md font-bold">When is your event?</h3>
+          <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}"} form={@f} field={:date} input_placeholder="mm/dd/yyyy" input_label="Select Date" data_min_date={Date.utc_today()} disabled={is_date_booked(@event_form, input_value(@f, :date))} />
           <%= if is_date_booked(@event_form, input_value(@f, :date)) do %>
             <div class="flex justify-start mt-4 items-center">
               <.icon name="warning-red", class="w-10 h-10 red-sales-300 stroke-[4px]" />
@@ -312,18 +313,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <% end %>
         </div>
         <div class="col-span-2">
-          <p class="input-label">What times are you available this day?</p>
+          <h3 class="text-md font-bold">What times are you available this day?</h3>
           <%= error_tag(@f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
           <%= inputs_for @f, :time_blocks, fn t -> %>
             <div class="flex lg:items-center flex-col lg:flex-row mb-4">
               <div class={classes("flex items-center lg:w-auto w-full lg:justify-start justify-between", %{"text-gray-400" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})}>
-                <%= input t, :start_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))%>
-                <p class="mx-2">-</p>
-                <%= input t, :end_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break)) %>
+                <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}-start-time-#{t.index}"} input_label="Block Start" data_time_only="true" data_custom_display_format="h:i K" data_custom_date_format="H:i" data_time_picker="true" form={t} field={:start_time} input_placeholder="--:-- --" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} />
+                <p class="mx-2 mt-6">-</p>
+                <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}-end-time-#{t.index}"} input_label="Block End" data_time_only="true" data_custom_display_format="h:i K" data_custom_date_format="H:i" data_time_picker="true" form={t} field={:end_time} input_placeholder="--:-- --" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} />
                 <%= hidden_input t, :is_break%>
                 <%= hidden_input t, :is_valid, value: t |> current |> Map.get(:is_valid) %>
               </div>
-              <div class="flex justify-between w-full mt-2 lg:mt-0">
+              <div class="flex items-center justify-between w-full mt-2 lg:mt-6">
                   <%= if get_is_break!(@changeset, @f.index,t.index) do %>
                     <span class="italic text-base-250 ml-2"> Break Block <.intro_hint class="ml-2 hidden lg:inline-block" content="Breaks are important so you can catch your breath!"/></span>
                   <% end %>
@@ -332,7 +333,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                   <% end %>
                 <div class="flex ml-auto">
                   <div data-offset="0" phx-hook="Select" id={"manage-event-#{@f.index}-#{t.index}"} class={classes(%{"pointer-events-none opacity-40" => t |> current |> Map.get(:is_break)})}>
-                    <button title="Manage" type="button" class="flex flex-shrink-0 ml-2 px-2 bg-white border rounded-lg border-blue-planning-300 text-blue-planning-300">
+                    <button title="Manage" type="button" class="flex flex-shrink-0 ml-2 px-2 py-1 btn-tertiary">
                       <.icon name="gear" class="w-4 h-5 m-1 fill-current open-icon text-blue-planning-300" />
                       <.icon name="close-x" class="hidden w-4 h-5 m-1 stroke-current close-icon stroke-2 text-blue-planning-300" />
                     </button>
@@ -345,7 +346,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                       <p class="text-base-250 ml-8">In case you want to save some <br/> booking slots for later</p>
                     </div>
                   </div>
-                  <.icon_button {testid("remove-time-#{t.index}")} class={classes("ml-4 py-1",%{"pointer-events-none" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})} title="remove time" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
+                  <.icon_button {testid("remove-time-#{t.index}")} class={classes("ml-4 py-1 px-2",%{"pointer-events-none" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})} title="remove time" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} phx-click="remove-time-block" phx-value-index={@f.index} phx-value-time-block-index={t.index} phx-target={@myself} color="red-sales-300" icon="trash" />
                 </div>
               </div>
             </div>
@@ -362,11 +363,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                 </div>
             <% end %>
           <% end %>
-          <div class="flex flex-row">
-            <.icon_button class="py-1 lg:px-4 px-0 w-full sm:w-auto justify-center" title="Add block" phx-click="add-time-block" phx-value-index={@f.index}  phx-value-break={"false"} phx-target={@myself} color="blue-planning-300" icon="plus">
+          <div class="flex flex-row flex-wrap">
+            <.icon_button class="py-1 lg:px-4 px-2 w-full sm:w-auto justify-center" title="Add block" phx-click="add-time-block" phx-value-index={@f.index}  phx-value-break={"false"} phx-target={@myself} color="blue-planning-300" icon="plus">
               Add block
             </.icon_button>
-            <.icon_button class="py-1 lg:px-4 px-2 lg:ml-4 ml-2 w-full sm:w-auto justify-center" title="Add Break block" phx-click="add-time-block" phx-value-index={@f.index}  phx-value-break={"true"} phx-target={@myself} color="blue-planning-300" icon="plus">
+            <.icon_button class="py-1 lg:px-4 px-2 sm:ml-4 ml-0 mt-2 lg:mt-0 w-full sm:w-auto justify-center" title="Add Break block" phx-click="add-time-block" phx-value-index={@f.index}  phx-value-break={"true"} phx-target={@myself} color="blue-planning-300" icon="plus">
               Add break block
             </.icon_button>
           </div>

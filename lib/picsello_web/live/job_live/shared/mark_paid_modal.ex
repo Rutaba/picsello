@@ -77,7 +77,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
           </dl>
           <dl>
             <dd>
-            <%= labeled_input f, :paid_at, label: "Payment Date", type: :date_input, class: "w-full h-12" %>
+              <.date_picker_field class="w-full h-12" id="mark_as_paid_payment" form={f} field={:paid_at} input_placeholder="mm/dd/yyyy" input_label="Payment Date" />
             </dd>
           </dl>
           </div>

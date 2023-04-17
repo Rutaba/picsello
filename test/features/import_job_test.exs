@@ -81,11 +81,17 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Balance to collect: $800.00")
     |> assert_text("Remaining to collect: $800.00")
     |> find(testid("payment-1"), &fill_in(&1, text_field("Payment amount"), with: "$300"))
-    |> find(testid("payment-1"), &fill_in(&1, text_field("Due"), with: "01/01/2030"))
+    |> click(css("#payment-0"))
+    |> fill_in(css(".numInput.cur-year"), with: "2030")
+    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("January")))
+    |> click(css("[aria-label='January 1, 2030']"))
     |> assert_text("Remaining to collect: $500.00")
     |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "$500"))
+    |> click(css("#payment-1"))
     # please don't make it "01/02/2030"
-    |> find(testid("payment-2"), &fill_in(&1, text_field("Due"), with: "02/01/2030"))
+    |> fill_in(css(".numInput.cur-year"), with: "2030")
+    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("February")))
+    |> click(css("[aria-label='February 1, 2030']"))
     |> assert_text("Remaining to collect: $0.00")
   end
 

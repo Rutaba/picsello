@@ -36,15 +36,6 @@ defmodule PicselloWeb.FormHelpers do
 
     opts =
       case type do
-        :datetime_local_input ->
-          time_zone = opts |> Keyword.get(:time_zone, "UTC")
-
-          value =
-            input_value(form, field)
-            |> format_datetime(time_zone)
-
-          opts |> Keyword.put(:value, value)
-
         :number_input ->
           opts |> Keyword.put_new(:inputmode, "numeric") |> Keyword.put_new(:pattern, "[0-9]*")
 
@@ -61,18 +52,6 @@ defmodule PicselloWeb.FormHelpers do
 
     apply(Phoenix.HTML.Form, type, [form, field, input_opts])
   end
-
-  defp format_datetime(%DateTime{} = value, zone),
-    do: value |> DateTime.shift_zone!(zone) |> Calendar.strftime("%Y-%m-%dT%H:%M")
-
-  defp format_datetime("", _zone), do: nil
-
-  defp format_datetime("" <> value, zone) do
-    {:ok, value, _} = (value <> ":00Z") |> DateTime.from_iso8601()
-    format_datetime(value, zone)
-  end
-
-  defp format_datetime(_, _), do: nil
 
   def label_for(form, field, opts \\ []) do
     label_text = Keyword.get(opts, :label) || humanize(field)
@@ -218,6 +197,40 @@ defmodule PicselloWeb.FormHelpers do
           <%= error_tag @form, @name, class: "text-red-sales-300 text-sm", prefix: "Website URL" %>
         </div>
       </label>
+    """
+  end
+
+  def date_picker_field(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: "flex flex-col",
+        id: nil,
+        form: nil,
+        field: nil,
+        input_label: nil,
+        input_placeholder: "Select date…",
+        input_class: "text-input w-full",
+        data_min_date: nil,
+        data_time_only: nil,
+        data_custom_display_format: nil,
+        data_custom_date_format: nil,
+        data_time_picker: nil,
+        disabled: nil,
+        data_time_zone: nil
+      })
+
+    ~H"""
+    <div class={@class}>
+      <%= if @input_label do %>
+      <.input_label form={@form} class="input-label" field={@field}>
+        <%= @input_label %> <%= error_tag(@form, @field) %>
+      </.input_label>
+      <% end %>
+      <div class="flatpickr" phx-update="ignore" phx-hook="DatePicker" id={@id} data-min-date={@data_min_date} data-time-only={@data_time_only} data-time-picker={@data_time_picker} data-custom-display-format={@data_custom_display_format} data-custom-date-format={@data_custom_date_format} data-time-zone={@data_time_zone}>
+        <%= text_input @form, @field, class: @input_class, placeholder: @input_placeholder, data_input: true, disabled: @disabled %>
+      </div>
+    </div>
     """
   end
 end
