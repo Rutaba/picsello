@@ -30,14 +30,14 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     visit_homepage(session)
     |> homepage_assertions_for_gallery_card()
     |> visit_view_all_galleries()
-    |> gallerypage_assertions()
+    |> gallerypage_assertions(gallery)
     |> upload_photos_redirect_to_gallery_details(gallery)
     |> copy_link_copies_the_gallery_link_to_clipboard()
-    |> menu_button_click_opens_the_dropdown()
+    |> menu_button_click_opens_the_dropdown(gallery)
     |> edit_button_redirects_to_gallery_details(gallery)
-    |> go_to_job_redirects_to_job_details()
-    |> send_email_opens_email_modal()
-    |> delete_button_deletes_the_selected_gallery()
+    |> go_to_job_redirects_to_job_details(gallery)
+    |> send_email_opens_email_modal(gallery)
+    |> delete_button_deletes_the_selected_gallery(gallery)
     |> assertions_for_no_galleries_page()
   end
 
@@ -49,21 +49,21 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
 
     visit_homepage(session)
     |> visit_view_all_galleries()
-    |> click(css("#menu-button"))
+    |> click(css("#menu-button-#{gallery.id}"))
     |> assert_text("Disable")
     |> click(css(".disable-link"))
     |> click(button("Yes, disable orders"))
 
     visit_homepage(session)
     |> visit_view_all_galleries()
-    |> click(css("#menu-button"))
+    |> click(css("#menu-button-#{gallery.id}"))
     |> assert_text("Enable")
     |> click(css(".enable-link"))
     |> click(button("Yes, enable orders"))
 
     visit_homepage(session)
     |> visit_view_all_galleries()
-    |> click(css("#menu-button"))
+    |> click(css("#menu-button-#{gallery.id}"))
     |> assert_text("Disable")
   end
 
@@ -95,7 +95,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_url_contains("galleries")
   end
 
-  defp gallerypage_assertions(session) do
+  defp gallerypage_assertions(session, gallery) do
     session
     |> assert_text("Your Galleries")
     |> assert_has(testid("create-a-gallery"))
@@ -103,7 +103,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_text("Actions")
     |> assert_has(link("Upload photos"))
     |> assert_has(testid("copy-link"))
-    |> assert_has(css("#menu-button", count: 1))
+    |> assert_has(css("#menu-button-#{gallery.id}", count: 1))
   end
 
   defp upload_photos_redirect_to_gallery_details(session, gallery) do
@@ -123,9 +123,9 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_text("Copied!")
   end
 
-  defp menu_button_click_opens_the_dropdown(session) do
+  defp menu_button_click_opens_the_dropdown(session, gallery) do
     session
-    |> click(css("#menu-button"))
+    |> click(css("#menu-button-#{gallery.id}"))
     |> assert_has(link("Edit"))
     |> assert_has(link("Go to Job"))
     |> assert_has(css("#send_email_link"))
@@ -141,10 +141,10 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_text("Product previews")
     |> assert_text("Pricing & Print Credits")
     |> visit("/galleries")
-    |> click(css("#menu-button"))
+    |> click(css("#menu-button-#{gallery.id}"))
   end
 
-  defp go_to_job_redirects_to_job_details(session) do
+  defp go_to_job_redirects_to_job_details(session, gallery) do
     session
     |> click(link("Go to Job"))
     |> assert_text("Details & communications")
@@ -152,15 +152,15 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_text("Shoot details")
     |> assert_text("Booking details")
     |> visit("/galleries")
-    |> click(css("#menu-button"))
+    |> click(css("#menu-button-#{gallery.id}"))
   end
 
-  defp send_email_opens_email_modal(session) do
+  defp send_email_opens_email_modal(session, gallery) do
     session
     |> click(css("#send_email_link"))
     |> assert_text("Send an email")
     |> click(button("Cancel"))
-    |> click(css("#menu-button"))
+    |> click(css("#menu-button-#{gallery.id}"))
     |> click(css("#send_email_link"))
     |> fill_in(css("#client_message_subject"), with: "Test subject")
     |> fill_in(css(".ql-editor"), with: "Test message")
@@ -170,9 +170,9 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> click(button("Close"))
   end
 
-  defp delete_button_deletes_the_selected_gallery(session) do
+  defp delete_button_deletes_the_selected_gallery(session, gallery) do
     session
-    |> click(css("#menu-button"))
+    |> click(css("#menu-button-#{gallery.id}"))
     |> click(css(".delete-link"))
     |> click(button("Yes, delete"))
   end
