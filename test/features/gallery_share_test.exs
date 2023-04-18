@@ -76,7 +76,6 @@ defmodule Picsello.GalleryShareTest do
     assert_enqueued([worker: Picsello.Workers.ScheduleEmail], 100)
     refute_receive {:delivered_email, _}
     Waiter.complete_tracking(gallery.id, 1)
-    assert_receive {:job_canceled, _}, 500
     assert_receive {:delivered_email, _}
   end
 

@@ -3,7 +3,7 @@ defmodule PicselloWeb.Live.Calendar.Shared do
   functions used by calendar components
   """
   import PicselloWeb.LiveHelpers
-  use Phoenix.Component
+  import Phoenix.Component
 
   def back_button(assigns) do
     ~H"""

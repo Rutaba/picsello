@@ -15,4 +15,11 @@ defmodule Picsello.JobStatus do
     field(:is_lead, :boolean)
     belongs_to(:job, Job)
   end
+
+  @type t :: %__MODULE__{
+          current_status: String.t(),
+          changed_at: DateTime.t(),
+          is_lead: boolean(),
+          job: Picsello.Job.t()
+        }
 end

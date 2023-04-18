@@ -1,0 +1,63 @@
+<div class="pt-6 px-6 py-2 center-container">
+    <div class="flex text-4xl items-center">
+      <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
+      <.crumbs class="text-sm text-base-250">
+        <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
+        <:crumb>Your Contracts</:crumb>
+      </.crumbs>
+    </div>
+
+    <hr class="mt-2 border-white" />
+
+    <div class="flex justify-between lg:mt-2 md:justify-start">
+      <div class="flex">
+        <div>
+          <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
+        </div>
+
+        <div>
+          <h1 class="text-4xl font-bold">Contracts</h1>
+          <div class="max-w-4xl mt-2 text-base-250">
+            <p>Create and manage all of your global contracts here. We have default contracts for you to start with or go ahead and copy and paste in your own copy. Then you can set a default contract in your packages!</p>
+          </div>
+        </div>
+      </div>
+      <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
+        <button type="button" title="create Contract" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-contract">Create contract</button>
+      </div>
+    </div>
+    <hr class="mt-4 sm:mt-10" />
+</div>
+
+<div class="p-6 center-container">
+  <%= if show_intro?(@current_user, "intro_contract") === "true" do %>
+    <.empty_state_base wrapper_class="border rounded-lg p-4 mb-8" tour_embed="https://demo.arcade.software/J7LVwwRlcenKLiB7vKf3?embed" headline="Meet Contracts" eyebrow_text="Contract Product Tour" body="Explore our defaults in the table below or create your own and add to your packages to get the info you need and save time." third_party_padding="calc(66.66666666666666% + 41px)" close_event="intro-close-contract">
+      <button type="button" title="create Contract" href="#" class="w-full md:w-auto btn-tertiary flex-shrink-0 text-center" phx-click="create-contract">Create contract</button>
+    </.empty_state_base>
+  <% end %>
+    <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
+        <div class="sm:col-span-5">Name</div>
+        <div class="sm:col-span-2">Job Type</div>
+    </div>
+    <%= for contract <- @contracts do %>
+    <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("contracts-row")}>
+        <div class="sm:col-span-5 flex flex-wrap items-center gap-x-4 col-y-3">
+            <button {if contract.organization_id, do: %{phx_click: "edit-contract", phx_value_contract_id: contract.id}, else: %{phx_click: "view-contract", phx_value_contract_id: contract.id}} class="block text-xl text-left underline text-blue-planning-300 mt-2"><%= contract.name %></button>
+            <%= if !contract.organization_id do %>
+            <div><.badge color={:gray}>View Only</.badge></div>
+          <% else %>
+            <p class="w-full text-sm text-base-250">Created <%= contract.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
+          <% end %>
+          <%= if contract.status == :archive do %>
+            <div {testid("archived-badge")}><.badge color={:gray}>Archived</.badge></div>
+          <% end %>
+        </div>
+        <div class="sm:col-span-2">
+            <span class="sm:hidden font-bold">Job type: </span> <%= contract.job_type %>
+        </div>
+        <div class="sm:col-span-3 flex justify-end">
+            <.actions_cell contract={contract} />
+          </div>
+    </div>
+  <% end %>
+</div>

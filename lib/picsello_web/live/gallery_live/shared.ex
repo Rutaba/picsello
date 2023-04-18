@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   @moduledoc "Shared function among gallery liveViews"
 
   use Phoenix.Component
+  import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import Money.Sigils
 
@@ -9,6 +10,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Job,
     Repo,
     Galleries,
+    Client,
     GalleryProducts,
     Messages,
     Cart,
@@ -22,8 +24,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
-  alias Picsello.Galleries
   alias Picsello.Cart.Order
+  alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @card_blank "/images/card_gray.png"
@@ -71,7 +73,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def handle_event(
         "client-link",
         _,
-        %{assigns: %{gallery: gallery, current_user: current_user}} = socket
+        %{assigns: %{current_user: current_user, gallery: gallery}} = socket
       ) do
     %{albums: [album]} = gallery = Repo.preload(gallery, :albums)
 
@@ -339,28 +341,30 @@ defmodule PicselloWeb.GalleryLive.Shared do
         per_page,
         exclude_all \\ nil
       ) do
-    selected_filter = assigns[:selected_filter] || false
-    photographer_favorites_filter = assigns[:photographer_favorites_filter] || false
-
-    if exclude_all do
-      []
-    else
-      album = Map.get(assigns, :album, nil)
-
-      case album do
-        %{id: "client_liked"} -> []
-        %{} -> [album_id: album.id]
-        _ -> [exclude_album: true]
-      end ++
-        [
-          photographer_favorites_filter: photographer_favorites_filter,
+    case exclude_all do
+      nil ->
+        assigns
+        |> Map.get(:album)
+        |> photos_album_opts()
+        |> Enum.concat(
+          photographer_favorites_filter: assigns[:photographer_favorites_filter] || false,
           favorites_filter: filter,
-          selected_filter: selected_filter,
+          selected_filter: assigns[:selected_filter] || false,
           limit: per_page + 1,
           offset: per_page * page
-        ]
+        )
+
+      :only_valid ->
+        [valid: true]
+
+      _ ->
+        []
     end
   end
+
+  defp photos_album_opts(%{id: "client_liked"}), do: []
+  defp photos_album_opts(%{id: id}), do: [album_id: id]
+  defp photos_album_opts(_), do: [exclude_album: true]
 
   def assign_photos(
         %{
@@ -380,63 +384,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def prepare_gallery(%{id: gallery_id} = gallery) do
-    photos = Galleries.get_gallery_photos(gallery_id, limit: 1)
+    photos = Galleries.get_gallery_photos(gallery_id, opts())
 
     if length(photos) == 1 do
       [photo] = photos
-      maybe_set_cover_photo(gallery, photo)
-      maybe_set_product_previews(gallery, photo)
+      Galleries.may_be_prepare_gallery(gallery, photo)
     end
   end
 
-  def maybe_set_cover_photo(gallery, photo) do
-    with nil <- gallery.cover_photo,
-         {:ok, %{cover_photo: photo}} <-
-           Galleries.save_gallery_cover_photo(
-             gallery,
-             %{
-               cover_photo:
-                 photo
-                 |> Map.take([:aspect_ratio, :width, :height])
-                 |> Map.put(:id, photo.original_url)
-             }
-           ) do
-      {:ok, photo}
-    else
-      %{} -> {:ok, :already_set}
-      _ -> :error
-    end
-  end
-
-  def maybe_set_product_previews(gallery, photo) do
-    products = Galleries.products(gallery)
-
-    previews =
-      Enum.filter(products, fn product ->
-        case product.preview_photo do
-          %{id: nil} -> true
-          nil -> true
-          _ -> false
-        end
-      end)
-
-    if length(previews) > 0 do
-      Enum.each(previews, fn %{category_id: category_id} = product ->
-        product
-        |> Map.drop([:category, :preview_photo])
-        |> GalleryProducts.upsert_gallery_product(%{
-          preview_photo_id: photo.id,
-          category_id: category_id
-        })
-      end)
-
-      {:ok, photo}
-    else
-      {:ok, :already_set}
-    end
-  rescue
-    _ -> :error
-  end
+  defp opts(), do: [limit: 1, valid: true]
 
   def add_message_and_notify(
         %{assigns: %{job: job, current_user: user}} = socket,
@@ -575,6 +531,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
     any_client_liked_photo? =
       Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
 
+    assigns = assigns |> Enum.into(%{any_client_liked_photo?: any_client_liked_photo?})
+
     ~H"""
     <div id={@id} class={classes("relative",  %{"pointer-events-none opacity-40" => !@photo_selected || @disabled})} phx-update={@update_mode} data-offset-y="10" phx-hook="Select">
       <div {testid("dropdown-#{@id}")} class={"flex items-center lg:p-0 p-3 dropdown " <> @class}>
@@ -587,7 +545,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       <ul class="absolute z-30 hidden w-full mt-2 bg-white border rounded-md popover-content border-base-200">
         <%= render_slot(@inner_block) %>
         <%= if @has_orders do %>
-        <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter || @client_liked_album || any_client_liked_photo?})}>
+        <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter || @client_liked_album || @any_client_liked_photo?})}>
           <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
             <%= @delete_title %>
           </button>
@@ -600,8 +558,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def button(assigns) do
-    assigns = Map.put_new(assigns, :class, "")
-
     assigns =
       Enum.into(assigns, %{
         element: "button",
@@ -611,9 +567,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
       })
 
     button_attrs = Map.drop(assigns, [:inner_block, :__changed__, :class, :icon, :icon_class])
+    assigns = Enum.into(assigns, %{button_attrs: button_attrs})
 
     ~H"""
-    <.button_element {button_attrs} class={"#{@class}
+    <.button_element {@button_attrs} class={"#{@class}
         flex items-center justify-center p-2 font-medium text-base-300 bg-base-100 border border-base-300 min-w-[12rem]
         hover:text-base-100 hover:bg-base-300
         disabled:border-base-250 disabled:text-base-250 disabled:cursor-not-allowed disabled:opacity-60
@@ -678,17 +635,19 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp button_element(%{element: "a"} = assigns) do
     attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
+    assigns = Enum.into(assigns, %{attrs: attrs})
 
     ~H"""
-      <a {attrs}><%= render_slot(@inner_block) %></a>
+      <a {@attrs}><%= render_slot(@inner_block) %></a>
     """
   end
 
   defp button_element(%{element: "button"} = assigns) do
     attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
+    assigns = Enum.into(assigns, %{attrs: attrs})
 
     ~H"""
-      <button {attrs}><%= render_slot(@inner_block) %></button>
+      <button {@attrs}><%= render_slot(@inner_block) %></button>
     """
   end
 
@@ -1009,6 +968,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         photos: photos,
         name: "Client Favorites",
         is_client_liked: true,
+        thumbnail_photo: nil,
         orders: []
       }
     end
@@ -1150,7 +1110,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def standard?(%{type: type}), do: type == :standard
-  def disabled?(%{status: status}), do: status == "disabled"
+  def disabled?(%{status: status}), do: status == :disabled
 
   def order_status(%{intent: %{status: status}}) when is_binary(status),
     do: String.capitalize(status)

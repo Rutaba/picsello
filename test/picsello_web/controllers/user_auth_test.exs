@@ -141,12 +141,14 @@ defmodule PicselloWeb.UserAuthTest do
       conn = conn |> fetch_flash() |> UserAuth.require_authenticated_user([])
       assert conn.halted
       assert redirected_to(conn) == Routes.user_session_path(conn, :new)
-      assert get_flash(conn, :error) == "You must log in to access this page."
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
+               "You must log in to access this page."
     end
 
     test "stores the path to redirect to on GET", %{conn: conn} do
       halted_conn =
-        %{conn | request_path: "/foo", query_string: ""}
+        %{conn | path_info: ["foo"], query_string: "", method: "GET"}
         |> fetch_flash()
         |> UserAuth.require_authenticated_user([])
 
@@ -154,7 +156,7 @@ defmodule PicselloWeb.UserAuthTest do
       assert get_session(halted_conn, :user_return_to) == "/foo"
 
       halted_conn =
-        %{conn | request_path: "/foo", query_string: "bar=baz"}
+        %{conn | path_info: ["foo"], query_string: "bar=baz"}
         |> fetch_flash()
         |> UserAuth.require_authenticated_user([])
 

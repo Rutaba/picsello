@@ -213,9 +213,9 @@
         <%= for payment <- @job.payment_schedules do %>
           <div class="invoice-row invoice-between invoice-payment-container">
             <%= if Picsello.PaymentSchedules.paid?(payment) do %>
-              <div class="bold"><%= payment.description %> paid on <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></div>
+              <div class="bold"><%= payment.price %> paid on <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></div>
             <% else %>
-              <div class="bold"><%= payment.description %> <%= if Picsello.PaymentSchedules.past_due?(payment), do: "due today", else: "due on #{PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.due_at, "%b %d, %Y")}" %></div>
+              <div class="bold"><%= payment.price %> <%= PicselloWeb.BookingProposalLive.InvoiceComponent.to_book(payment, @photographer.time_zone) %></div>
             <% end %>
             <div><%= payment.price %></div>
           </div>

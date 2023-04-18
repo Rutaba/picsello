@@ -241,7 +241,7 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   defdelegate handle_event(event, params, socket), to: PicselloWeb.JobLive.Shared
 
-  @spec open(%Phoenix.LiveView.Socket{}, %{
+  @spec open(Phoenix.LiveView.Socket.t(), %{
           optional(:body_html) => String.t(),
           optional(:body_text) => any,
           optional(:composed_event) => any,
@@ -250,9 +250,9 @@ defmodule PicselloWeb.ClientMessageComponent do
           optional(:show_client_email) => boolean,
           optional(:show_subject) => boolean,
           optional(:subject) => String.t(),
-          optional(:presets) => [%Picsello.EmailPresets.EmailPreset{}],
-          optional(:current_user) => %Picsello.Accounts.User{},
-          optional(:client) => %Picsello.Client{},
+          optional(:presets) => [Picsello.EmailPresets.EmailPreset.t()],
+          optional(:current_user) => Picsello.Accounts.User.t(),
+          optional(:client) => Picsello.Client.t(),
           optional(:enable_size) => boolean,
           optional(:enable_image) => boolean,
           optional(:recipients) => map()

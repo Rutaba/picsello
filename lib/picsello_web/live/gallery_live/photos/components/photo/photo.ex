@@ -75,7 +75,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     ~H"""
     <div id={"img-#{@id}"} class="galleryItem" data-selected_photo_id={"img-#{@selected_photo_id}"} phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
         <div id={"photo-#{@id}-selected"} photo-id={@id} class="toggle-it"></div>
-        <%= render_block(@inner_block) %>
+        <%= render_slot(@inner_block) %>
     </div>
     """
   end

@@ -340,7 +340,7 @@ defmodule PicselloWeb.Live.User.Settings do
       </._settings_nav>
       <hr />
 
-      <%= render_block @inner_block %>
+      <%= render_slot @inner_block %>
     </div>
     """
   end
@@ -369,7 +369,7 @@ defmodule PicselloWeb.Live.User.Settings do
 
   defp sign_out(assigns) do
     ~H"""
-      <.form class={@class} for={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete" phx-trigger-action={@sign_out} phx-submit="sign_out">
+      <.form class={@class} :let={_} for={%{}} as={:sign_out} action={Routes.user_session_path(@socket, :delete)} method="delete" phx-trigger-action={@sign_out} phx-submit="sign_out">
         <%= submit "Sign out", class: "btn-primary w-full" %>
       </.form>
     """
@@ -380,7 +380,7 @@ defmodule PicselloWeb.Live.User.Settings do
     <ul class="flex py-4 -ml-4 overflow-auto font-bold text-blue-planning-300">
     <%= for %{to: {path, action}} = link <- @link, !Map.get(link, :hide) do %>
         <li>
-          <.nav_link title={path} let={active} to={apply(Routes, :"#{path}_path", [@socket, action])} class="block rounded-lg whitespace-nowrap" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
+          <.nav_link title={path} :let={active} to={apply(Routes, :"#{path}_path", [@socket, action])} class="block rounded-lg whitespace-nowrap" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
             <div {if active, do: %{id: "active-settings-nav-link", phx_hook: "ScrollIntoView"}, else: %{}} class="px-4 py-3">
               <%= render_slot(link) %>
             </div>

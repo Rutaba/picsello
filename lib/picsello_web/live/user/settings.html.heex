@@ -42,7 +42,7 @@
 
   <div class="grid gap-10 grid-cols-1 sm:grid-cols-2 mt-10">
     <.card title="Change your business name">
-      <.form let={f} for={@organization_name_changeset} phx-change="validate" phx-submit="save" id="name_form">
+      <.form :let={f} for={@organization_name_changeset} phx-change="validate" phx-submit="save" id="name_form">
         <%= hidden_input f, :action, name: "action", value: "update_name" %>
         <%= labeled_input f, :name, label: "Business name", wrapper_class: "mt-4"  %>
 
@@ -52,7 +52,7 @@
       </.form>
     </.card>
     <.card title="Change your timezone">
-      <.form let={f} for={@time_zone_changeset} phx-change="validate" phx-submit="save" id="time_zone_form">
+      <.form :let={f} for={@time_zone_changeset} phx-change="validate" phx-submit="save" id="time_zone_form">
         <%= hidden_input f, :action, name: "action", value: "update_time_zone" %>
         <%= labeled_select f, :time_zone, time_zone_options(), label: "Timezone", wrapper_class: "mt-4" %>
 
@@ -63,7 +63,7 @@
     </.card>
     <%= if @email_changeset do %>
       <.card title="Change email">
-        <.form let={f} for={@email_changeset} phx-change="validate" phx-submit="save" id="email_form">
+        <.form :let={f} for={@email_changeset} phx-change="validate" phx-submit="save" id="email_form">
         <%= hidden_input f, :action, name: "action", value: "update_email" %>
 
         <%= labeled_input f, :email, type: :email_input, wrapper_class: "mt-4"  %>
@@ -79,7 +79,7 @@
 
     <%= if @phone_changeset do %>
       <.card title="Change your phone number">
-        <.form let={f} for={@phone_changeset} phx-change="validate" phx-submit="save" id="phone_form">
+        <.form :let={f} for={@phone_changeset} phx-change="validate" phx-submit="save" id="phone_form">
           <%= hidden_input f, :action, name: "action", value: "update_phone" %>
           
           <%= for o <- inputs_for(f, :onboarding) do %>
@@ -95,7 +95,7 @@
 
     <%= if @password_changeset do %>
       <.card title="Change password">
-        <.form let={f} for={@password_changeset} action={Routes.user_settings_path(@socket, :update)} phx-change="validate" phx-submit="save" method="put" phx-trigger-action={@submit_changed_password}>
+        <.form :let={f} for={@password_changeset} action={Routes.user_settings_path(@socket, :update)} phx-change="validate" phx-submit="save" method="put" phx-trigger-action={@submit_changed_password}>
           <%= hidden_input f, :action, name: "action", value: "update_password" %>
 
           <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :change_new_password, label: "New password", placeholder: "Enter password" %>

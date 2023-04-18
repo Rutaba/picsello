@@ -133,24 +133,32 @@ defmodule PicselloWeb.JobLive.Show do
       text: text
     } = gallery_attrs(%Gallery{})
 
+    assigns = assign(assigns,
+    button_text: button_text,
+    button_click: button_click,
+    button_disabled: button_disabled,
+    text: text
+    )
+
     ~H"""
     <div {testid("card-Gallery")}>
-      <p><%= text %></p>
-      <button class="btn-primary mt-4 intro-gallery" phx-click={button_click} disabled={button_disabled}>
-        <%= button_text %>
+      <p><%= @text %></p>
+      <button class="btn-primary mt-4 intro-gallery" phx-click={@button_click} disabled={@button_disabled}>
+        <%= @button_text %>
       </button>
     </div>
     """
   end
 
-  defp galleries(%{galleries: galleries} = assigns) do
+  defp galleries(%{galleries: _} = assigns) do
     build_type = fn
       :finals -> :unlinked_finals
       type -> type
     end
+    assigns = assign(assigns, build_type: build_type)
 
     ~H"""
-    <%= for %{name: name, type: type, child: child, orders: orders} = gallery <- galleries do %>
+    <%= for %{name: name, type: type, child: child, orders: orders} = gallery <- @galleries do %>
       <%= case type do %>
         <% :proofing -> %>
           <div {testid("card-proofing")} class="flex overflow-hidden border border-base-200 rounded-lg">
@@ -164,7 +172,7 @@ defmodule PicselloWeb.JobLive.Show do
             </div>
           </div>
         <% _ -> %>
-          <.card title={name} gallery_card?={true} color="black" gallery_type={build_type.(type)}>
+          <.card title={name} gallery_card?={true} color="black" gallery_type={@build_type.(type)}>
             <.inner_section {assigns} gallery={gallery} p_class="text-lg" btn_section_class="mt-[3.7rem]" link_class="font-semibold text-base" />
           </.card>
       <% end %>

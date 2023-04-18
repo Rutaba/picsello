@@ -80,4 +80,19 @@ defmodule Picsello.Shoot do
   def for_job(job_id) do
     __MODULE__ |> where(job_id: ^job_id) |> by_starts_at()
   end
+
+  @type t :: %__MODULE__{
+          id: integer(),
+          duration_minutes: integer(),
+          location: String.t(),
+          name: String.t(),
+          notes: String.t(),
+          reminded_at: DateTime.t(),
+          thanked_at: DateTime.t(),
+          starts_at: DateTime.t(),
+          job_id: integer(),
+          address: String.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 end

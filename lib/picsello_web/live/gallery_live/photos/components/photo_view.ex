@@ -83,6 +83,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
     is_liked =
       if assigns.from == :photographer, do: photo.is_photographer_liked, else: photo.client_liked
 
+    assigns = assign(assigns, :is_liked, is_liked)
     ~H"""
     <div>
       <div class="w-screen h-screen lg:h-full overflow-auto lg:overflow-y-scroll flex lg:justify-between">
@@ -102,11 +103,11 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
                 <img src={ @url } class="max-h-full sm:object-contain">
 
                 <button class="likeBtn absolute" phx-click={js_like_click(@photo.id, @myself)}>
-                  <div id={"photo-#{@photo.id}-liked"} style={!is_liked && "display: none"}>
+                  <div id={"photo-#{@photo.id}-liked"} style={!@is_liked && "display: none"}>
                     <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
                   </div>
 
-                  <div id={"photo-#{@photo.id}-to-like"} style={is_liked && "display: none"}>
+                  <div id={"photo-#{@photo.id}-to-like"} style={@is_liked && "display: none"}>
                     <.icon name="heart-white" class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"/>
                   </div>
                 </button>

@@ -99,7 +99,7 @@ defmodule PicselloWeb.LiveModal do
       <div {testid("modal-buttons")} class="sticky px-4 -m-4 bg-white -bottom-6 sm:px-8 sm:-m-8 sm:-bottom-8">
         <div class="flex flex-col py-6 bg-white gap-2 sm:flex-row-reverse">
           <%= if @inner_block do %>
-            <%= render_block @inner_block %>
+            <%= render_slot @inner_block %>
           <% else %>
             <button class="btn-primary" title="save" type="submit" disabled={@disabled} phx-disable-with="Save">
               Save

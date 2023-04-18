@@ -7,7 +7,8 @@ defmodule Picsello.Orders.ConfirmationsTest do
     MockWHCCClient,
     Cart.Order,
     Invoices.Invoice,
-    Intents.Intent
+    Intents.Intent,
+    Cart
   }
 
   import Money.Sigils
@@ -198,9 +199,9 @@ defmodule Picsello.Orders.ConfirmationsTest do
     setup :insert_order
 
     setup %{gallery: gallery, order: order} do
-      Picsello.Cart.place_product(build(:cart_product), gallery)
+      Cart.place_product(build(:cart_product), gallery)
 
-      Picsello.Cart.place_product(
+      Cart.place_product(
         build(:digital, photo: insert(:photo, gallery: gallery)),
         gallery
       )
@@ -280,7 +281,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
     setup %{order: %{gallery: gallery} = order} do
       insert(:digital, order: order, photo: insert(:photo, gallery: gallery))
 
-      Picsello.Cart.place_product(build(:cart_product), gallery)
+      Cart.place_product(build(:cart_product), gallery)
 
       order = Repo.preload(order, [:digitals, :products], force: true)
 

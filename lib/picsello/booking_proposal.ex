@@ -73,4 +73,16 @@ defmodule Picsello.BookingProposal do
       force: true
     )
   end
+
+  @type t :: %__MODULE__{
+          id: integer(),
+          accepted_at: DateTime.t(),
+          signed_at: DateTime.t(),
+          signed_legal_name: String.t(),
+          sent_to_client: boolean(),
+          job_id: integer(),
+          questionnaire_id: integer(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 end

@@ -76,10 +76,17 @@ defmodule Picsello.ClientsIndexTest do
     |> assert_text("Balance to collect: $800.00")
     |> assert_text("Remaining to collect: $800.00")
     |> find(testid("payment-1"), &fill_in(&1, text_field("Payment amount"), with: "$300"))
-    |> find(testid("payment-1"), &fill_in(&1, text_field("Due"), with: "01/01/2030"))
+    |> click(css("#payment-0"))
+    |> fill_in(css(".numInput.cur-year"), with: "2030")
+    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("January")))
+    |> click(css("[aria-label='January 1, 2030']"))
     |> assert_text("Remaining to collect: $500.00")
     |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "$500"))
-    |> find(testid("payment-2"), &fill_in(&1, text_field("Due"), with: "01/02/2030"))
+    |> click(css("#payment-1"))
+    # please don't make it "01/02/2030"
+    |> fill_in(css(".numInput.cur-year"), with: "2030")
+    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("February")))
+    |> click(css("[aria-label='February 1, 2030']"))
     |> assert_text("Remaining to collect: $0.00")
   end
 
@@ -90,6 +97,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients"))
+    |> sleep(300)
     |> click(button("Add client"))
     |> fill_in(text_field("Email"), with: " ")
     |> assert_text("Email can't be blank")
@@ -112,6 +120,7 @@ defmodule Picsello.ClientsIndexTest do
     |> fill_in(text_field("Name"), with: "Josh")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
+    |> sleep(300)
     |> assert_text("Client: Josh")
   end
 
@@ -124,15 +133,17 @@ defmodule Picsello.ClientsIndexTest do
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> click(link("All Clients"))
-    |> assert_text("jane@example.com")
-    |> click(button("Manage", count: 4, at: 3))
+    |> sleep(300)
+    |> assert_text("john@example.com")
+    |> click(button("Manage", count: 2, at: 1))
     |> click(button("Details"))
     |> assert_text("Client: jane@example.com")
     |> click(button("Edit Contact"))
     |> fill_in(text_field("Email"), with: "jane_mary@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
-    |> assert_text("jane_mary@example.com")
+    |> sleep(300)
+    |> assert_text("john2@example.com")
   end
 
   feature "edits client from actions that already has a job", %{

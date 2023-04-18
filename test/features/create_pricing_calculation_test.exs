@@ -48,6 +48,8 @@ defmodule Picsello.CreatePricingCalculationTest do
       text_field("calculator-step-3_desired_salary"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$36000"))
     )
+    |> click(button("Next"))
+    |> click(button("Back"))
     |> assert_text("24%")
     |> assert_text("$28,759.04")
     |> assert_text("$24,358.91")

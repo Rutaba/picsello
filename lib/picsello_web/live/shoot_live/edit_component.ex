@@ -7,10 +7,17 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   import PicselloWeb.JobLive.Shared, only: [error: 1]
   import Ecto.Query, warn: false
 
-  alias Picsello.{Package, Shoot, Repo, PackagePaymentSchedule, PaymentSchedule, PackagePayments}
-  alias Ecto.{Changeset, Multi}
+  alias Picsello.{
+    Package,
+    Packages,
+    Shoot,
+    Repo,
+    PackagePaymentSchedule,
+    PaymentSchedule,
+    PackagePayments
+  }
 
-  @future_date ~U[3022-01-01 00:00:00Z]
+  alias Ecto.{Changeset, Multi}
 
   @impl true
   def update(%{job: job} = assigns, socket) do
@@ -35,7 +42,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
   @impl true
   def render(assigns) do
-    message = get_messgae(assigns)
+    assigns = assign(assigns, message: get_messgae(assigns))
 
     ~H"""
       <div class="flex flex-col modal">
@@ -47,13 +54,13 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           </button>
         </div>
 
-        <.error message={message} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => is_nil(@shoot) || is_nil(message)})}/>
+        <.error message={@message} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => is_nil(@shoot) || is_nil(@message)})}/>
 
-        <.form let={f} for={@changeset}, phx-change="validate" phx-submit="save" phx-target={@myself}>
+        <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
 
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
             <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. #{dyn_gettext @job.type} Session, etc.", wrapper_class: "sm:col-span-3" %>
-            <%= labeled_input f, :starts_at, type: :datetime_local_input, label: "Shoot Date", min: Date.utc_today(), time_zone: @current_user.time_zone, wrapper_class: "sm:col-span-3", class: "w-full" %>
+            <.date_picker_field class="sm:col-span-3" id="shoot-time" placeholder="Select shoot time…" form={f} field={:starts_at} input_placeholder="mm/dd/yyyy" input_label="Shoot Date" data_min_date={Date.utc_today()} data_custom_date_format="Y-m-d\\TH:i" data_time_picker="true" data_time_zone={@current_user.time_zone} />
             <%= labeled_select f, :duration_minutes, duration_options(),
                   label: "Shoot Duration",
                   prompt: "Select below",
@@ -230,7 +237,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       schedule_date =
         cond do
           schedule.interval && String.contains?(schedule.due_interval, "To Book") ->
-            Timex.now() |> DateTime.truncate(:second)
+            Timex.now()
 
           schedule.shoot_interval &&
               String.contains?(schedule.shoot_interval, "Before Last Shoot") ->
@@ -242,6 +249,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           true ->
             Timex.shift(schedule.schedule_date, minutes: first_time_difference)
         end
+        |> DateTime.truncate(:second)
 
       Map.put(schedule, :schedule_date, schedule_date)
     end)
@@ -249,8 +257,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   end
 
   defp get_schedules_for_insert(job, package_payment_schedules, first_shoot_date, last_shoot_date) do
-    first_time_difference = get_diff(@future_date, first_shoot_date)
-    last_time_difference = get_diff(@future_date, last_shoot_date)
+    first_time_difference = get_diff(Packages.future_date(), first_shoot_date)
+    last_time_difference = get_diff(Packages.future_date(), last_shoot_date)
 
     updated_package_payment_schedules =
       get_package_payment_schedules(
@@ -323,12 +331,25 @@ defmodule PicselloWeb.ShootLive.EditComponent do
          %{assigns: %{current_user: %{time_zone: time_zone}}} = socket,
          %{"starts_at" => "" <> starts_at} = params
        ) do
+    new_date =
+      if is_tz_date?(starts_at) do
+        {:ok, converted_date} = NaiveDateTime.from_iso8601(starts_at)
+
+        converted_date
+      else
+        case parse_in_zone(starts_at, time_zone) do
+          {:ok, datetime} -> datetime
+          {:error, _} -> nil
+          _ -> nil
+        end
+      end
+
     socket
     |> build_changeset(
       params
       |> Map.put(
         "starts_at",
-        parse_in_zone(starts_at, time_zone)
+        new_date
       )
     )
   end
@@ -353,9 +374,15 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   end
 
   defp parse_in_zone("" <> str, zone) do
-    with {:ok, naive_datetime} <- NaiveDateTime.from_iso8601(str <> ":00"),
-         {:ok, datetime} <- DateTime.from_naive(naive_datetime, zone) do
-      datetime
+    with {:ok, naive_datetime} <- NaiveDateTime.from_iso8601(str <> ":00") do
+      DateTime.from_naive(naive_datetime, zone)
+    end
+  end
+
+  defp is_tz_date?(date) do
+    case DateTime.from_iso8601(date) do
+      {:ok, _, _} -> true
+      _ -> false
     end
   end
 end

@@ -25,8 +25,7 @@ defmodule Picsello.PaymentSchedules do
     package
     |> Repo.preload(:package_payment_schedules, force: true)
     |> Map.get(:package_payment_schedules)
-    |> Enum.map(& &1.description)
-    |> Enum.join(", ")
+    |> Enum.map_join(", ", & &1.description)
   end
 
   def build_payment_schedules_for_lead(%Job{} = job) do
@@ -177,7 +176,7 @@ defmodule Picsello.PaymentSchedules do
   end
 
   def is_with_cash?(%Job{} = job) do
-    job |> payment_schedules() |> Enum.all?(&PaymentSchedule.is_with_cash?/1)
+    job |> payment_schedules() |> Enum.any?(&PaymentSchedule.is_with_cash?/1)
   end
 
   def total_price(%Job{} = job) do
@@ -191,6 +190,7 @@ defmodule Picsello.PaymentSchedules do
     |> payment_schedules()
     |> Enum.filter(&(&1.paid_at != nil))
     |> Enum.reduce(Money.new(0), fn payment, acc -> Money.add(acc, payment.price) end)
+    |> Money.add(Map.get(job.package, :collected_price) || Money.new(0))
   end
 
   def paid_amount(%Job{} = job) do
@@ -253,7 +253,7 @@ defmodule Picsello.PaymentSchedules do
 
   def get_offline_payment_schedules(job_id) do
     from(p in PaymentSchedule,
-      where: p.type in ["check", "cash"] and p.job_id == ^job_id
+      where: p.type in ["check", "cash"] and p.job_id == ^job_id and not is_nil(p.paid_at)
     )
     |> Repo.all()
     |> Repo.preload(:job)

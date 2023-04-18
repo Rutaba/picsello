@@ -3,6 +3,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   use PicselloWeb, :live_component
 
+  import Phoenix.Component
+
   alias Ecto.Changeset
 
   alias Picsello.{
@@ -38,28 +40,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @all_fields Package.__schema__(:fields)
-  @payment_defaults_fixed %{
-    "wedding" => ["To Book", "6 Months Before", "Week Before"],
-    "family" => ["To Book", "Day Before Shoot"],
-    "maternity" => ["To Book", "Day Before Shoot"],
-    "newborn" => ["To Book", "Day Before Shoot"],
-    "event" => ["To Book", "Day Before Shoot"],
-    "headshot" => ["To Book"],
-    "portrait" => ["To Book"],
-    "mini" => ["To Book"],
-    "boudoir" => ["To Book", "Day Before Shoot"],
-    "other" => ["To Book", "Day Before Shoot"],
-    "payment_due_book" => ["To Book"],
-    "splits_2" => ["To Book", "Day Before Shoot"],
-    "splits_3" => ["To Book", "6 Months Before", "Week Before"]
-  }
-
+  
   defmodule CustomPayments do
     @moduledoc "For setting payments on last step"
     use Ecto.Schema
     import Ecto.Changeset
-
-    @future_date ~U[3022-01-01 00:00:00Z]
 
     @primary_key false
     embedded_schema do
@@ -230,7 +215,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       end
     end
 
-    defp get_shoot_date(shoot_date), do: if(shoot_date, do: shoot_date, else: @future_date)
+    defp get_shoot_date(shoot_date), do: if(shoot_date, do: shoot_date, else: Packages.future_date())
   end
 
   @impl true
@@ -241,7 +226,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign_new(:show_on_public_profile, fn -> false end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
-    |> assign_new(:contract_changeset, fn -> nil end)
+    |> assign_new(:contract_changeset, fn -> %{} end)
     |> assign_new(:collapsed_documents, fn -> [0, 1] end)
     |> assign(is_template: assigns |> Map.get(:job) |> is_nil())
     |> assign(
@@ -258,6 +243,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign(custom: false)
     |> assign(job_type: nil)
     |> assign(custom_schedule_type: nil)
+    |> assign(active_tab: :contract)
+    |> assign(tabs: tabs_list())
     |> assign(default_payment_changeset: nil)
     |> ok()
   end
@@ -307,7 +294,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <.steps step={@step} steps={@steps} target={@myself} />
       <.step_heading name={@step} is_edit={@package.id} />
 
-      <.form for={@changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-#{@step}"}>
+      <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
         <input type="hidden" name="step" value={@step} />
 
         <.wizard_state form={f} contract_changeset={@contract_changeset} />
@@ -344,14 +331,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       )
 
   def wizard_state(assigns) do
-    fields = @all_fields
+    assigns = assign(assigns, fields: @all_fields)
 
     ~H"""
-      <%= for field <- fields, input_value(@form, field) do %>
+      <%= for field <- @fields, input_value(@form, field) do %>
         <%= hidden_input @form, field, id: nil %>
       <% end %>
 
-      <% c = form_for(@contract_changeset, "#") %>
+      <% c = to_form(@contract_changeset) %>
       <%= for field <- [:name, :content, :contract_template_id, :edited], input_value(c, field) do %>
         <%= hidden_input c, field, id: nil %>
       <% end %>
@@ -495,75 +482,66 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :documents} = assigns) do
     ~H"""
-      <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
-        <div class="flex bg-base-200 px-4 py-2 items-center cursor-pointer" phx-click="toggle-collapsed-documents" phx-value-index={0} phx-target={@myself}>
-          <h2 class="text-lg font-bold py-1">Add a contract</h2>
-          <div class="ml-auto">
-            <%= if Enum.member?(@collapsed_documents, 0) do %>
-              <.icon name="down" class="w-3 h-3 stroke-current stroke-3" />
-            <% else %>
-              <.icon name="up" class="w-3 h-3 stroke-current stroke-3" />
-            <% end %>
-          </div>
-        </div>
-        <div class={classes("p-4", %{"hidden" => Enum.member?(@collapsed_documents, 0)})}>
-          <p>Here you can copy and paste your own contract or use the legally approved contract we have developed. You're also able to version your contract for different needs if you want!</p>
-          <% c = form_for(@contract_changeset, "#") %>
-          <div class="grid grid-flow-col auto-cols-fr gap-4 mt-4">
-            <%= labeled_select c, :contract_template_id, @contract_options, label: "Select a Contract Template" %>
-            <%= labeled_input c, :name, label: "Contract Name", placeholder: "Enter new contract name", phx_debounce: "500" %>
-          </div>
+    <div class="font-normal pb-6 text-base-250 w-fit">
+      As with most things in Picsello, we have created default contracts/questionnaires for you to use. If you’d like to make your own, check out global questionnaire and contract management. (Modal will close & you can come back)
+    </div>
+    <div class="flex flex-row">
+      <a class="items-center text-blue-planning-300 py-5 underline font-normal" href={Routes.contracts_index_path(@socket, :index)}>Manage contracts</a>
+      <a class="items-center text-blue-planning-300 p-5 underline font-normal" href={Routes.questionnaires_index_path(@socket, :index)}>Manage questionnaires</a>
+    </div>
 
-          <div class="flex justify-between items-end pb-2">
-            <label class="block mt-4 input-label" for={input_id(c, :content)}>Contract Language</label>
-            <%= cond do %>
-              <% !input_value(c, :contract_template_id) -> %>
-              <% input_value(c, :edited) -> %>
-                <.badge color={:blue}>Edited—new template will be saved</.badge>
-              <% !input_value(c, :edited) -> %>
-                <.badge color={:gray}>No edits made</.badge>
-            <% end %>
-          </div>
-          <.quill_input f={c} id="quill_contract_input" html_field={:content} enable_size={true} track_quill_source={true} placeholder="Paste contract text here" />
+    <div class="flex flex-row text-blue-planning-300 mb-4">
+      <%= for %{name: name, concise_name: concise_name} <- @tabs do %>
+        <div class={classes("flex px-3 font-bold rounded-lg whitespace-nowrap text-lg", %{"bg-blue-planning-100 text-base-300" => Atom.to_string(@active_tab) == concise_name})}>
+          <button type="button" phx-click={"toggle-tab"} phx-value-active={concise_name} phx-target={@myself} ><%= name %></button>
         </div>
-      </section>
-      <section {testid("document-questionnaires")} class="border border-base-200 rounded-lg mt-4 overflow-hidden">
-        <div class="flex bg-base-200 px-4 py-2 items-center cursor-pointer" phx-click="toggle-collapsed-documents" phx-value-index={1} phx-target={@myself}>
-          <h2 class="text-lg font-bold py-1">Add a questionnaire</h2>
+      <% end %>
+    </div>
 
-          <div class="ml-auto">
-            <%= if Enum.member?(@collapsed_documents, 1) do %>
-              <.icon name="down" class="w-3 h-3 stroke-current stroke-3" />
-            <% else %>
-              <.icon name="up" class="w-3 h-3 stroke-current stroke-3" />
-            <% end %>
+    <span class="hidden sm:flex items-center justify-between border-b-4 border-blue-planning-300 font-semibold text-lg text-base-250" />
+    <section {testid("document-contracts")} class="border border-base-200 rounded-lg mt-6 overflow-hidden">
+      <div class={classes(%{"hidden" => !(@active_tab == :contract)})}>
+        <% c = to_form(@contract_changeset) %>
+          <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg p-3 rounded-t-lg bg-base-200">
+            <div class="w-1/3">Contract name</div>
+            <div class="w-1/3 text-center">Job type</div>
+            <div class="w-1/3 text-center">Select contract</div>
           </div>
-        </div>
-        <div class={classes("p-4", %{"hidden" => Enum.member?(@collapsed_documents, 1)})}>
-          <p>As with most things in Picsello, we have created a default questionnaire for you to use. If you don't select one here, we'll provide a default that you can turn off if you want when creating a lead. If you'd like to create your own template to apply to packages templates for future use, you can do so <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link> (modal will close and you can come back).</p>
-          <%= if Enum.empty?(@questionnaires) do %>
-            <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
-          <% else %>
-            <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
-              <div class="w-1/3">Questionnaire name</div>
-              <div class="w-1/3 text-center"># of questions</div>
-              <div class="w-1/3 text-center">Select questionnaire</div>
-            </div>
-            <%= for questionnaire <- @questionnaires do %>
-              <% checked = input_value(@f, :questionnaire_template_id) == questionnaire.id %>
-              <div class={classes("border p-3 sm:py-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100", %{"bg-gray-100" => checked})}>
+          <%= for contract <- @contract_options do %>
+            <div {testid("contracts-row")} class="md:mx-3 md:px-0 px-3 mx-0 border py-3 sm:py-4 md:border-none border-b md:rounded-lg rounded-none">
               <label class="flex items-center justify-between cursor-pointer">
-                <h3 class="font-xl font-bold w-1/3"><%= questionnaire.name %></h3>
-                <p class="w-1/3 text-center"><%= questionnaire.questions |> length()  %></p>
+                <h3 class="font-xl font-bold w-1/3"><%= contract.name %></h3>
+                <p class="w-1/3 text-center"><%= contract.job_type %></p>
                 <div class="w-1/3 text-center">
-                  <%= radio_button(@f, :questionnaire_template_id, questionnaire.id, class: "w-5 h-5 mr-2.5 radio") %>
+                  <%= radio_button(c, :contract_template_id, contract.id, class: "w-5 h-5 mr-2.5 radio cursor-pointer") %>
                 </div>
               </label>
-              </div>
-            <% end %>
+            </div>
           <% end %>
-        </div>
-      </section>
+      </div>
+      <div class={classes(%{"hidden" => !(@active_tab == :question)})}>
+        <%= if Enum.empty?(@questionnaires) do %>
+          <p>Looks like you don't have any questionnaires. Please add one first <.live_link to={Routes.questionnaires_index_path(@socket, :index)} class="underline text-blue-planning-300">here</.live_link>. (You're modal will close and you'll have to come back)</p>
+        <% else %>
+          <div class="hidden sm:flex items-center justify-between table-auto font-semibold text-lg p-3 rounded-t-lg bg-base-200">
+            <div class="w-1/3">Questionnaire name</div>
+            <div class="w-1/3 text-center">Job type</div>
+            <div class="w-1/3 text-center">Select questionnaire</div>
+          </div>
+          <%= for questionnaire <- @questionnaires do %>
+            <div class="md:mx-3 md:px-0 px-3 mx-0 border py-3 sm:py-4 md:border-none border-b md:rounded-lg rounded-none">
+              <label class="flex items-center justify-between cursor-pointer">
+                <h3 class="font-xl font-bold w-1/3"><%= questionnaire.name %></h3>
+                <p class="w-1/3 text-center"><%= questionnaire.job_type %></p>
+                <div class="w-1/3 text-center">
+                  <%= radio_button(@f, :questionnaire_template_id, questionnaire.id, class: "w-5 h-5 mr-2.5 radio cursor-pointer") %>
+                </div>
+              </label>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
     """
   end
 
@@ -583,7 +561,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             </div>
           </div>
 
-          <% m = form_for(@multiplier, "#") %>
+          <% m = to_form(@multiplier) %>
 
           <label class="flex items-center mt-6 sm:mt-8 justify-self-start font-bold">
             <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
@@ -625,10 +603,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{
           name: :payment,
           f: %{params: params},
-          default_payment_changeset: default_payment_changeset
+          default_payment_changeset: _
         } = assigns
       ) do
     job_type = Map.get(params, "job_type", nil) || Map.get(assigns.job, :type, nil)
+    assigns = assign(assigns, job_type: job_type)
 
     ~H"""
     <div>
@@ -638,9 +617,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           Use your default payment schedule or select a new one. Any changes made will result in a custom payment schedule.
         </div>
       </div>
-      <% pc = form_for(@payments_changeset, "#") %>
+      <% pc = to_form(@payments_changeset) %>
       <div {testid("select-preset-type")} class="grid gap-6 md:grid-cols-2 grid-cols-1 mt-8">
-        <%= select pc, :schedule_type, payment_dropdown_options(job_type, input_value(pc, :schedule_type)), wrapper_class: "mt-4", class: "py-3 border rounded-lg border-base-200 cursor-pointer", phx_update: "update" %>
+        <%= select pc, :schedule_type, payment_dropdown_options(@job_type, input_value(pc, :schedule_type)), wrapper_class: "mt-4", class: "py-3 border rounded-lg border-base-200 cursor-pointer", phx_update: "update" %>
         <div {testid("preset-summary")} class="flex items-center"><%= get_tags(pc) %></div>
       </div>
       <hr class="w-full my-6 md:my-8"/>
@@ -706,9 +685,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               </div>
             </label>
             <%= unless input_value(p, :interval) do %>
-              <%= if input_value(p, :due_at) || ((input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(default_payment_changeset, :interval, p.index)) do %>
+              <%= if input_value(p, :due_at) || ((input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(@default_payment_changeset, :interval, p.index)) do %>
                 <div class="flex flex-col my-2 ml-8 cursor-pointer">
-                  <%= input p, :due_at, type: :date_input, format: "mm/dd/yyyy", min: Date.utc_today(), placeholder: "mm/dd/yyyy", phx_debounce: "0", class: "w-full px-4 text-lg cursor-pointer" %>
+                  <.date_picker_field class="w-full px-4 text-lg cursor-pointer" id={"payment-interval-#{p.index}"} form={p} field={:due_at} input_placeholder="mm/dd/yyyy" input_label="Payment Date" data_min_data={Date.utc_today()} />
                   <%= if message = p.errors[:schedule_date] do %>
                     <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
                   <% end %>
@@ -778,6 +757,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     socket
     |> assign(:collapsed_documents, collapsed_documents)
+    |> noreply()
+  end
+
+  def handle_event("toggle-tab", %{"active" => active_tab}, socket) do
+    socket
+    |> assign(:active_tab, String.to_atom(active_tab))
     |> noreply()
   end
 
@@ -897,26 +882,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           "contract" => %{"contract_template_id" => template_id},
           "_target" => ["contract", "contract_template_id"]
         },
-        %{assigns: %{changeset: changeset}} = socket
+        socket
       ) do
     template_id = template_id |> to_integer()
 
-    content =
-      case template_id do
-        nil ->
-          nil
-
-        id ->
-          package = changeset |> current()
-
-          package
-          |> Contracts.find_by!(id)
-          |> Contracts.contract_content(package, PicselloWeb.Helpers)
-      end
-
     socket
-    |> assign_contract_changeset(%{"edited" => false})
-    |> push_event("quill:update", %{"html" => content})
+    |> assign_contract_changeset(%{"edited" => false, "contract_template_id" => template_id})
     |> noreply()
   end
 
@@ -1387,8 +1358,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           "schedule_type" => params.schedule_type
         }
       else
-        default_presets = get_payment_defaults(job_type, true)
-
+        default_presets = Packages.get_payment_defaults(job_type)
+        
         presets =
           default_presets
           |> Enum.with_index(
@@ -1609,14 +1580,27 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     end
   end
 
-  defp assign_contract_changeset(%{assigns: %{step: :documents}} = socket, params) do
+  defp assign_contract_changeset(
+         %{assigns: %{step: :documents, changeset: changeset}} = socket,
+         params
+       ) do
+    contract_template_id = Map.get(params, "contract_template_id")
     contract_params = Map.get(params, "contract", %{})
 
+    contract =
+      if contract_template_id do
+        changeset
+        |> current()
+        |> Contracts.find_by!(contract_template_id)
+      else
+        changeset
+        |> current()
+        |> package_contract()
+      end
+
     contract_changeset =
-      socket.assigns.changeset
-      |> current()
-      |> package_contract()
-      |> Contract.changeset(contract_params,
+      contract
+      |> Contract.changeset(params,
         skip_package_id: true,
         validate_unique_name_on_organization:
           if(validate_contract_name?(contract_params),
@@ -1637,17 +1621,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp validate_contract_name?(_), do: false
 
-  defp assign_contract_options(%{assigns: %{step: :documents}} = socket) do
+  defp assign_contract_options(%{assigns: %{step: :documents, changeset: changeset}} = socket) do
     options =
-      [
-        {"New Contract", ""}
-      ]
-      |> Enum.concat(
-        socket.assigns.changeset
-        |> current()
-        |> Contracts.for_package()
-        |> Enum.map(&{&1.name, &1.id})
-      )
+      changeset
+      |> current()
+      |> Contracts.for_package()
 
     socket |> assign(contract_options: options)
   end
@@ -1735,9 +1713,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> Map.merge(options)
   end
 
-  def get_payment_defaults(schedule_type, _) do
-    Map.get(@payment_defaults_fixed, schedule_type, ["To Book", "6 Months Before", "Week Before"])
-  end
 
   defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
 
@@ -1847,12 +1822,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
            }
          },
          schedule_type,
-         fixed
+         _
        ) do
     if custom && schedule_type in ["custom_#{job_type}", "custom"] do
-      get_payment_defaults(custom_schedule_type, fixed)
+      Packages.get_payment_defaults(custom_schedule_type)
     else
-      get_payment_defaults(schedule_type, fixed)
+      Packages.get_payment_defaults(schedule_type)
     end
   end
 
@@ -1905,4 +1880,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp get_shoots(job_id), do: Shoot.for_job(job_id) |> Repo.all()
+
+  defp tabs_list() do
+    [
+      %{
+        name: "Contract",
+        concise_name: "contract"
+      },
+      %{
+        name: "Questionnaire",
+        concise_name: "question"
+      }
+    ]
+  end
 end

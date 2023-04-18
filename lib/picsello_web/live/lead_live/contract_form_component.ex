@@ -34,7 +34,7 @@ defmodule PicselloWeb.ContractFormComponent do
     <div class="modal">
       <h1 class="text-3xl font-bold mb-4">Add Custom <%= dyn_gettext @job.type %> Contract</h1>
 
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
 
         <div class="grid grid-flow-col auto-cols-fr gap-4 mt-4">
           <%= labeled_select f, :contract_template_id, @options, label: "Select a Contract Template" %>

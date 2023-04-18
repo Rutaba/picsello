@@ -7,12 +7,12 @@
 @import './components/forms.css';
 @import './components/typography.css';
 @import './components/uploadPopup.css';
-@import './components/helpScoutFacade.css';
 @import 'intro.js/introjs.css';
 @import './components/intro.css';
 @import './components/quill.scss';
 @import './client-app.scss';
 @import './components/welcomeComponent.css';
+@import 'components/date-picker.css';
 
 html {
   @apply text-base-300 bg-white text-13px sm:text-16px;

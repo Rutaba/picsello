@@ -151,6 +151,7 @@ defmodule Picsello.Product do
     field :whcc_id, :string
     field :whcc_name, :string
     field :sizes, {:array, :map}, virtual: true
+    field :shipping_upcharge, :map
 
     belongs_to(:category, Picsello.Category)
     has_many(:markups, Picsello.Markup)
@@ -193,9 +194,7 @@ defmodule Picsello.Product do
         unit_price = Picsello.WHCC.Product.selection_unit_price(product, row)
 
         %{
-          shipping_base_charge: shipping_base,
-          unit_markup: markup,
-          shipping_upcharge: shipping_upcharge
+          unit_markup: markup
         } =
           product =
           product
@@ -205,17 +204,10 @@ defmodule Picsello.Product do
           })
           |> Picsello.Cart.Product.new()
 
-        client_price = Picsello.Cart.Product.example_price(product)
-
         [
-          client_price,
-          Money.add(shipping_base, Money.multiply(unit_price, shipping_upcharge)),
+          Picsello.Cart.Product.example_price(product),
           unit_price,
-          markup,
-          Money.subtract(
-            client_price,
-            Picsello.Cart.Product.example_price(%{product | round_up_to_nearest: 1})
-          )
+          markup
         ] ++
           for(category_id <- categories, do: get_in(row_with_names, [category_id, :name]))
       end

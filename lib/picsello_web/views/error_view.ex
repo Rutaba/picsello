@@ -1,6 +1,7 @@
 defmodule PicselloWeb.ErrorView do
   use PicselloWeb, :view
   import PicselloWeb.LiveHelpers, only: [icon: 1]
+  import PicselloWeb.LayoutView, only: [help_chat_widget: 1]
 
   # If you want to customize a particular status code
   # for a certain format, you may uncomment below.

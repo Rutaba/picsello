@@ -46,7 +46,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
         <hr class="border-gray-100 my-8">
         <h2 class="text-2xl font-bold">Your details</h2>
 
-        <.form let={f} for={@changeset} phx-change="validate" phx-submit="save">
+        <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save">
           <div class="grid gap-5 sm:grid-cols-2 mt-4">
             <%= labeled_input f, :name, label: "Your name", placeholder: "Type your first and last name…", phx_debounce: "500" %>
             <%= labeled_input f, :email, type: :email_input, label: "Your email", placeholder: "Type email…", phx_debounce: "500" %>

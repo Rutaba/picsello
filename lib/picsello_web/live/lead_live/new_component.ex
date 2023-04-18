@@ -42,7 +42,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
 
         <.search_clients new_client={@new_client} search_results={@search_results} search_phrase={@search_phrase} selected_client={@selected_client} searched_client={@searched_client} current_focus={@current_focus} clients={@clients} myself={@myself}/>
 
-        <.form for={@changeset} let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
+        <.form for={@changeset} :let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <.job_form_fields form={f} job_types={@job_types} new_client={@new_client} myself={@myself} />
           <PicselloWeb.LiveModal.footer disabled={!@changeset.valid? || (is_nil(@selected_client) && is_nil(@searched_client) && !@new_client)} />
         </.form>

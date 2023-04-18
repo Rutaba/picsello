@@ -35,6 +35,7 @@ defmodule PicselloWeb.HomeLive.Index do
   import Ecto.Changeset, only: [get_change: 2]
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
+  import Phoenix.Component
 
   @card_concise_name_list [
     "send-confirmation-email",
@@ -428,24 +429,16 @@ defmodule PicselloWeb.HomeLive.Index do
     """
   end
 
-  def tabs_content(
-        %{
-          assigns: %{
-            attention_items: attention_items,
-            should_attention_items_overflow: should_attention_items_overflow,
-            current_user: current_user
-          }
-        } = assigns
-      ) do
+  def tabs_content(%{assigns: assigns}) do
     ~H"""
     <div>
-      <%= case attention_items do %>
+      <%= case @attention_items do %>
         <% [] -> %>
           <h6 class="flex items-center font-bold text-blue-planning-300"><.icon name="confetti-welcome" class="inline-block w-8 h-8 text-blue-planning-300" /> You're all caught up!</h6>
         <% items -> %>
-          <ul class={classes("flex overflow-auto intro-next-up", %{"xl:overflow-none" => !should_attention_items_overflow })}>
+          <ul class={classes("flex overflow-auto intro-next-up", %{"xl:overflow-none" => !@should_attention_items_overflow })}>
             <%= for {true, %{card: %{title: title, body: body, icon: icon, buttons: buttons, concise_name: concise_name, color: color, class: class}} = org_card} <- items do %>
-              <li {testid("attention-item")} class={classes("attention-item flex-shrink-0 flex flex-col justify-between relative max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"xl:flex-1" => !should_attention_items_overflow})}>
+              <li {testid("attention-item")} class={classes("attention-item flex-shrink-0 flex flex-col justify-between relative max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"xl:flex-1" => !@should_attention_items_overflow})}>
                 <%= if org_card.status == :viewed and concise_name != "black-friday" do %>
                   <div class="flex justify-between absolute w-full">
                     <span></span>
@@ -464,7 +457,7 @@ defmodule PicselloWeb.HomeLive.Index do
                   <p class="my-2 text-sm"><%= body %></p>
                 </div>
 
-                <.card_buttons {assigns} current_user={current_user} socket={@socket} concise_name={concise_name} org_card_id={org_card.id} buttons={buttons} />
+                <.card_buttons {assigns} current_user={@current_user} socket={@socket} concise_name={concise_name} org_card_id={org_card.id} buttons={buttons} />
               </li>
             <% end %>
           </ul>
@@ -516,7 +509,7 @@ defmodule PicselloWeb.HomeLive.Index do
         <% end %>
       </div>
       <div class={"mb-2 #{@inner_block_classes}"}>
-        <%= render_block(@inner_block) %>
+        <%= render_slot(@inner_block) %>
       </div>
       <%= if @link_action && @link_text do %>
         <button class="underline text-blue-planning-300 mt-auto inline-block" type="button" phx-click={@link_action} phx-value-tab={@link_value} phx-value-to={@redirect_route}><%= @link_text %></button>
@@ -799,7 +792,7 @@ defmodule PicselloWeb.HomeLive.Index do
       "send-confirmation-email" => {!User.confirmed?(current_user), org_card},
       "open-user-settings" => {!subscription.hidden?, org_card},
       "getting-started-picsello" =>
-        {Application.get_env(:picsello, :help_scout_id) != nil, org_card},
+        {Application.get_env(:picsello, :intercom_id) != nil, org_card},
       "set-up-stripe" => {stripe_status != :charges_enabled, org_card},
       "open-billing-portal" =>
         {Picsello.Invoices.pending_invoices?(current_user.organization_id), org_card},
@@ -852,20 +845,20 @@ defmodule PicselloWeb.HomeLive.Index do
     %{org_card | card: %{card | body: body}}
   end
 
-  def card_buttons(%{concise_name: concise_name, buttons: buttons} = assigns) do
+  def card_buttons(%{concise_name: _, buttons: _} = assigns) do
     ~H"""
-    <%= case concise_name do %>
+    <%= case @concise_name do %>
       <% "set-up-stripe" -> %>
         <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
           error_class: "text-center",
-          class: "#{List.first(buttons).class} text-sm w-full py-2 mt-2",
+          class: "#{List.first(@buttons).class} text-sm w-full py-2 mt-2",
           current_user: @current_user,
           return_url: Routes.home_url(@socket, :index),
           org_card_id: @org_card_id,
           stripe_status: @stripe_status %>
       <% _ -> %>
       <span class="flex-shrink-0 flex flex-col justify-between" data-status="viewed" id={"#{@org_card_id}"} phx-hook="CardStatus">
-        <.card_button buttons={buttons} />
+        <.card_button buttons={@buttons} />
       </span>
     <% end %>
     """
@@ -873,45 +866,50 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def card_button(%{buttons: [%{external_link: external_link} = button]} = assigns)
       when not is_nil(external_link) do
+    assigns = assign(assigns, external_link: external_link, button: button)
+
     ~H"""
-    <.link
-    link={external_link}
-    class={button.class}
-    label={button.label}
+    <.custom_link
+    link={@external_link}
+    class={@button.class}
+    label={@button.label}
     target="_blank"
     rel="noopener noreferrer" />
     """
   end
 
   def card_button(%{buttons: [%{link: link} = button]} = assigns) when not is_nil(link) do
+    assigns = assign(assigns, link: link, button: button)
     ~H"""
-    <.link link={link} class={button.class} label={button.label} />
+    <.custom_link link={@link} class={@button.class} label={@button.label} />
     """
   end
 
   def card_button(%{buttons: [%{action: action} = button]} = assigns) when not is_nil(action) do
+    assigns = assign(assigns, action: action, button: button)
     ~H"""
-    <button type="button" phx-click={action} phx-click="sss" class={"#{button.class} text-sm w-full py-2 mt-2"}>
-      <%= button.label %>
+    <button type="button" phx-click={@action} phx-click="sss" class={"#{@button.class} text-sm w-full py-2 mt-2"}>
+      <%= @button.label %>
     </button>
     """
   end
 
   def card_button(%{buttons: [button_1, button_2]} = assigns) do
+    assigns = assign(assigns, button_1: button_1, button_2: button_2)
     ~H"""
     <div class="flex gap-4">
-     <.card_button buttons={[button_1]} />
-     <.card_button buttons={[button_2]} />
+     <.card_button buttons={[@button_1]} />
+     <.card_button buttons={[@button_2]} />
     </div>
     """
   end
 
-  def link(%{class: class, link: link, label: label} = assigns) do
+  def custom_link(assigns) do
     assigns = Enum.into(assigns, %{target: "", rel: ""})
 
     ~H"""
-     <a href={link} class={"#{class} text-center text-sm w-full py-2 mt-2"} target={@target} rel={@rel}>
-        <%= label %>
+     <a href={@link} class={"#{@class} text-center text-sm w-full py-2 mt-2"} target={@target} rel={@rel}>
+        <%= @label %>
       </a>
     """
   end
@@ -935,7 +933,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <.icon name={@icon} width="23" height="20" class={"inline-block mr-2 rounded-sm fill-current text-#{@color}"} />
             <%= @title %> <%= if @hint_content do %><.intro_hint content={@hint_content} /><% end %>
           </h1>
-          <%= render_block(@inner_block) %>
+          <%= render_slot(@inner_block) %>
         </div>
       </div>
     </li>
@@ -979,7 +977,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <% end %>
           </div>
           <div class="flex justify-end mt-6">
-            <.form let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form" phx-submit="save-promo-code">
+            <.form :let={f} for={@promotion_code_changeset} phx-change="validate-promo-code" id="modal-form" phx-submit="save-promo-code">
               <%= hidden_inputs_for f %>
               <%= for onboarding <- inputs_for(f, :onboarding) do %>
                 <details class="group" open={@promotion_code_open} {testid("promo-code")}>

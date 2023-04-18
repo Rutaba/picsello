@@ -9,7 +9,7 @@ defmodule PicselloWeb.Live.Profile.EditDescriptionComponent do
     <div class="modal !max-w-md ">
       <h1 class="text-3xl font-bold">Edit Description</h1>
 
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <%= for p <- inputs_for(f, :profile) do %>
           <.quill_input f={p} html_field={@field_name} placeholder="Start typing…" />
         <% end %>

@@ -90,7 +90,7 @@
   </div>
 
   <div class="flex items-center px-6 pb-6 center-container mb-8">
-    <.form let={f} for={:pagination} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
+    <.form :let={f} for={%{}} as={:pagination} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
       <%= select f, :limit, [4, 8, 12, 16], class: "cursor-pointer"%>
     </.form>
 

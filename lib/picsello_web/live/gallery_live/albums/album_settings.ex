@@ -163,7 +163,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
         <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
       </div>
-      <.form for={@changeset} let={f} phx-submit="submit" phx-change="validate" phx-target={@myself}>
+      <.form for={@changeset} :let={f} phx-submit="submit" phx-change="validate" phx-target={@myself}>
         <%= labeled_input f, :name, label: "Album Name", placeholder: @album && @album.name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500"%>
         <%= hidden_input f, :gallery_id%>
 

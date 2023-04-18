@@ -121,8 +121,11 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
     })
   end
 
-  defp to_book(payment, time_zone) do
+  def to_book(payment, time_zone) do
     to_book = String.split(payment.description, " ", trim: true) |> List.last()
-    if to_book == "Book", do: "due to book", else: "due on #{strftime(time_zone, payment.due_at, "%b %d, %Y")}"
+
+    if to_book == "Book",
+      do: "due to book",
+      else: "due on #{strftime(time_zone, payment.due_at, "%b %d, %Y")}"
   end
 end

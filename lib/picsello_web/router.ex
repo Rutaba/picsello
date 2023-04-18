@@ -198,6 +198,8 @@ defmodule PicselloWeb.Router do
       live "/inbox", InboxLive.Index, :index, as: :inbox
       live "/inbox/:id", InboxLive.Index, :show, as: :inbox
 
+      live "/contracts", Live.Contracts.Index, :index
+
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
     end
   end

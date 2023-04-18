@@ -3,7 +3,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
   functions used by client booking events
   """
   import PicselloWeb.LiveHelpers
-  use Phoenix.Component
+  import Phoenix.Component
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
 
   def blurred_thumbnail(assigns) do

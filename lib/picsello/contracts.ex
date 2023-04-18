@@ -118,6 +118,16 @@ defmodule Picsello.Contracts do
     :bbmustache.render(contract.content, variables, key_type: :atom)
   end
 
+  def default_contract_content(contract, organization, helpers) do
+    variables = %{
+      state: helpers.dyn_gettext(organization.onboarding.state),
+      organization_name: organization.name,
+      turnaround_weeks: helpers.ngettext("1 week", "%{count} weeks", 3)
+    }
+
+    :bbmustache.render(contract.content, variables, key_type: :atom)
+  end
+
   defp for_package_query(%Package{} = package) do
     job_type = job_type(package)
 
@@ -128,6 +138,57 @@ defmodule Picsello.Contracts do
           (is_nil(contract.organization_id) and is_nil(contract.package_id)),
       order_by: contract.name
     )
+  end
+
+  def get_default_template() do
+    from(contract in Contract,
+      where: is_nil(contract.organization_id) and is_nil(contract.package_id),
+      order_by: contract.name
+    )
+    |> Repo.one!()
+  end
+
+  def for_organization(organization_id) do
+    get_organization_contracts(organization_id)
+    |> Repo.all()
+  end
+
+  def get_contract_by_id(contract_id),
+    do: get_contract(contract_id) |> Repo.one()
+
+  def update_contract_status(contract_id, status) do
+    get_contract_by_id(contract_id)
+    |> Contract.status_changeset(status)
+    |> Repo.update()
+  end
+
+  def clean_contract_for_changeset(
+        contract,
+        organization_id,
+        package_id \\ nil
+      ) do
+    %Picsello.Contract{
+      organization_id: organization_id,
+      content: contract.content,
+      package_id: package_id,
+      name: contract.name,
+      job_type: contract.job_type
+    }
+  end
+
+  def delete_contract_by_id(contract_id),
+    do:
+      get_contract_by_id(contract_id)
+      |> Repo.delete()
+
+  defp get_contract(contract_id),
+    do: from(c in Contract, where: c.id == ^contract_id)
+
+  defp get_organization_contracts(organization_id) do
+    Contract
+    |> where([c], c.organization_id == ^organization_id)
+    |> or_where([c], is_nil(c.organization_id) and is_nil(c.package_id))
+    |> order_by([c], asc: c.job_type, asc: c.name)
   end
 
   defp job_type(%Package{job_type: "" <> job_type}), do: job_type

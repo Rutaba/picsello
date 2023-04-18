@@ -10,7 +10,7 @@
 
   <p class="m-6 text-center">or</p>
 
-  <.form let={f} for={@changeset} action={Routes.user_registration_path(@socket,:create)} phx-change="validate" phx-submit="save" phx-trigger-action={@trigger_submit}>
+  <.form :let={f} for={@changeset} action={Routes.user_registration_path(@socket,:create)} phx-change="validate" phx-submit="save" phx-trigger-action={@trigger_submit}>
     <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
     <%= labeled_input f, :name, placeholder: "First and last name", phx_debounce: "500", label: "Name", autocomplete: "name" %>
     <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>

@@ -8,8 +8,8 @@ defmodule Picsello.PackagePaymentSchedule do
   schema "package_payment_schedules" do
     field :price, Money.Ecto.Amount.Type
     field :percentage, :integer
-    field :interval, :boolean, null: false
-    field :description, :string, null: false
+    field :interval, :boolean
+    field :description, :string
     field :due_interval, :string
     field :count_interval, :string
     field :time_interval, :string
@@ -19,7 +19,7 @@ defmodule Picsello.PackagePaymentSchedule do
     field :payment_field_index, :integer, virtual: true
     field :shoot_date, :utc_datetime, virtual: true
     field :last_shoot_date, :utc_datetime, virtual: true
-    field :schedule_date, :utc_datetime, null: false
+    field :schedule_date, :utc_datetime
 
     belongs_to :package, Package
     belongs_to :package_payment_preset, PackagePaymentPreset

@@ -50,7 +50,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
     gallery =
       Galleries.get_gallery!(id)
-      |> Repo.preload(:photographer)
+      |> Repo.preload([:photographer, job: :client])
       |> Galleries.load_watermark_in_gallery()
 
     prepare_gallery(gallery)
@@ -373,7 +373,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     gallery
-    |> Galleries.update_gallery(%{status: "disabled"})
+    |> Galleries.update_gallery(%{status: :disabled})
     |> process_gallery(socket, :disabled)
   end
 
@@ -382,7 +382,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     gallery
-    |> Galleries.update_gallery(%{status: "active"})
+    |> Galleries.update_gallery(%{status: :active})
     |> process_gallery(socket, :enabled)
   end
 
@@ -456,7 +456,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   defp remove_watermark_button(assigns) do
     ~H"""
-    <button type="button" disabled={assigns.disabled} title="remove watermark" phx-click="delete_watermark_popup" class="pl-14">
+    <button type="button" disabled={assigns.disabled} title="remove watermark" phx-click="delete_watermark_popup" class="pl-5">
       <.icon name="remove-icon" class={classes("w-3.5 h-3.5 ml-1 text-base-250", %{"pointer-events-none" => assigns.disabled})}/>
     </button>
     """

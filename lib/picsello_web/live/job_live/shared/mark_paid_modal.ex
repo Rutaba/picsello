@@ -65,7 +65,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
       <%= if @add_payment_show do %>
       <div class="rounded-lg border border-base-200 mt-2">
       <h1 class="mb-4 rounded-t-lg bg-base-200 p-3 text-xl font-bold">Add a payment</h1>
-      <.form id={"add-payment-form"} let={f} for={@changeset} phx-submit="save" phx-target={@myself} phx-change="validate">
+      <.form id={"add-payment-form"} :let={f} for={@changeset} phx-submit="save" phx-target={@myself} phx-change="validate">
         <div class="mx-5 grid grid-cols-3 gap-12">
           <dl>
             <dd>
@@ -77,7 +77,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
           </dl>
           <dl>
             <dd>
-            <%= labeled_input f, :paid_at, label: "Payment Date", type: :date_input, class: "w-full h-12" %>
+              <.date_picker_field class="w-full h-12" id="mark_as_paid_payment" form={f} field={:paid_at} input_placeholder="mm/dd/yyyy" input_label="Payment Date" />
             </dd>
           </dl>
           </div>

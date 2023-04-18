@@ -15,6 +15,7 @@ defmodule Picsello.Cart.Checkouts do
   }
 
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
+  alias WHCC.Editor.Export.Editor
 
   import Picsello.Cart,
     only: [product_name: 1, product_quantity: 1, item_image_url: 1, preload_digitals: 1]
@@ -155,15 +156,11 @@ defmodule Picsello.Cart.Checkouts do
     end
   end
 
-  defp create_whcc_order(
-         %Order{products: products, delivery_info: delivery_info, gallery_id: gallery_id} = order
-       ) do
+  defp create_whcc_order(%Order{delivery_info: delivery_info, gallery_id: gallery_id} = order) do
     editors =
-      for product <- products do
-        WHCC.Editor.Export.Editor.new(product.editor_id,
-          order_attributes: WHCC.Shipping.to_attributes(product)
-        )
-      end
+      order
+      |> Picsello.Cart.Order.lines_by_product()
+      |> Enum.reduce([], &editors(&1, &2))
 
     account_id = Galleries.account_id(gallery_id)
 
@@ -178,6 +175,13 @@ defmodule Picsello.Cart.Checkouts do
       WHCC.create_order(account_id, export)
     end)
     |> update(:save_whcc_order, &Order.whcc_order_changeset(order, &1.whcc_order))
+  end
+
+  defp editors({_whcc_product, line_items}, acc) do
+    product = Enum.find(line_items, & &1.shipping_upcharge)
+    order_attributes = WHCC.Shipping.attributes(product)
+
+    acc ++ Enum.map(line_items, &Editor.new(&1.editor_id, order_attributes: order_attributes))
   end
 
   defp create_session(cart, %{whcc_order: whcc_order, client_total: client_total} = opts),
@@ -209,6 +213,7 @@ defmodule Picsello.Cart.Checkouts do
         application_fee_amount: application_fee_cents,
         capture_method: :manual
       },
+      shipping_options: shipping_options(order),
       success_url: success_url,
       billing_address_collection: "auto",
       cancel_url: cancel_url
@@ -226,6 +231,33 @@ defmodule Picsello.Cart.Checkouts do
       Intents.changeset(intent, order_id: order.id, session_id: session_id)
     end)
   end
+
+  alias Picsello.Cart
+
+  defp shipping_options(%{products: [_ | _] = products}) do
+    products = Enum.filter(products, & &1.shipping_type)
+    shipping = Cart.total_shipping(products)
+    {min, max} = Cart.shipping_days(products)
+
+    [
+      %{
+        shipping_rate_data: %{
+          type: "fixed_amount",
+          fixed_amount: %{
+            amount: shipping.amount,
+            currency: shipping.currency
+          },
+          delivery_estimate: %{
+            minimum: %{unit: "day", value: min},
+            maximum: %{unit: "day", value: max}
+          },
+          display_name: "Estimate Delivery"
+        }
+      }
+    ]
+  end
+
+  defp shipping_options(%{products: []}), do: []
 
   defp create_stripe_invoice(
          _repo,
@@ -307,7 +339,8 @@ defmodule Picsello.Cart.Checkouts do
       image: product,
       name: "#{product_name(product)} (Qty #{product_quantity(product)})",
       price: Product.charged_price(product),
-      tax: :product
+      tax: :product,
+      total_markuped_price: product.total_markuped_price
     }
   end
 

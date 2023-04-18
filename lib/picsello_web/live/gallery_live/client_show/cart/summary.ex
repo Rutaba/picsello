@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   use PicselloWeb, :live_component
   alias Phoenix.LiveView.JS
   alias Picsello.Galleries.Gallery
+  alias Picsello.Cart
   import Money.Sigils
   import PicselloWeb.GalleryLive.Shared, only: [credits: 1]
 
@@ -150,6 +151,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
       print_credit_lines(order) ++ digital_discount_lines(order, caller)
   end
 
+  defp total_shipping(products) do
+    products
+    |> Enum.filter(&has_shipping?/1)
+    |> Enum.reduce(~M[0]USD, &Money.add(&2, Cart.shipping_price(&1)))
+  end
+
   defp charges(order, caller) do
     product_charge_lines(order) ++
       digital_charge_lines(order, caller) ++ bundle_charge_lines(order)
@@ -157,11 +164,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
 
   defp product_charge_lines(%{products: []}), do: []
 
-  defp product_charge_lines(%{products: products}),
-    do: [
+  defp product_charge_lines(%{products: products}) do
+    [
       {"Products (#{length(products)})", sum_prices(products)},
-      {"Shipping & handling", "Included"}
+      if Enum.any?(products, & &1.total_markuped_price) do
+        count = Enum.count(products, &has_shipping?/1)
+        {"Shipping (#{count})", total_shipping(products)}
+      else
+        {"Shipping & handling", "Included"}
+      end
     ]
+  end
 
   defp digital_charge_lines(%{digitals: []}, _), do: []
 
@@ -231,4 +244,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
 
   defp find_digital([{:digital, value} | _]), do: {:digital, value}
   defp find_digital(_credits), do: {:digital, 0}
+
+  defp has_shipping?(%{shipping_type: nil}), do: false
+  defp has_shipping?(_product), do: true
 end

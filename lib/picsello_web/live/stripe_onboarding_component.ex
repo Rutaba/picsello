@@ -25,7 +25,7 @@ defmodule PicselloWeb.StripeOnboardingComponent do
 
     ~H"""
     <div class={@container_class}>
-      <.form for={:stripe} phx-submit="link-stripe" phx-target={@myself}>
+      <.form :let={_} for={%{}} as={:stripe} phx-submit="link-stripe" phx-target={@myself}>
         <%= case @stripe_status do %>
           <% :loading -> %>
             <div class="flex items-center justify-center w-full m-2 text-xs">
@@ -90,7 +90,7 @@ defmodule PicselloWeb.StripeOnboardingComponent do
       ) do
     refresh_url = socket |> Routes.user_settings_url(:stripe_refresh)
 
-    case Payments.link(current_user, refresh_url: refresh_url, return_url: return_url) do
+    case Payments.custom_link(current_user, refresh_url: refresh_url, return_url: return_url) do
       {:ok, url} ->
         socket |> redirect(external: url) |> noreply()
 

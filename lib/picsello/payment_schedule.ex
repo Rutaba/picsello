@@ -61,4 +61,20 @@ defmodule Picsello.PaymentSchedule do
 
   def paid?(%__MODULE__{paid_at: paid_at}), do: paid_at != nil
   def is_with_cash?(%__MODULE__{is_with_cash: is_with_cash}), do: is_with_cash == true
+
+  @type t :: %__MODULE__{
+          id: integer(),
+          price: Money.t(),
+          due_at: DateTime.t(),
+          reminded_at: DateTime.t(),
+          paid_at: DateTime.t(),
+          description: String.t(),
+          stripe_payment_intent_id: String.t(),
+          stripe_session_id: String.t(),
+          type: String.t(),
+          is_with_cash: boolean(),
+          job_id: integer(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 end

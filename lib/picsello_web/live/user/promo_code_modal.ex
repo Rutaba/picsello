@@ -16,7 +16,7 @@ defmodule PicselloWeb.Live.User.Settings.PromoCodeModal do
   def render(assigns) do
     ~H"""
     <div class="dialog">
-      <.form let={f} for={@changeset} phx-change="validate" phx-submit="save" id="modal-form" phx-target={@myself}>
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" id="modal-form" phx-target={@myself}>
         <%= hidden_inputs_for f %>
         <%= for onboarding <- inputs_for(f, :onboarding) do %>
           <%= hidden_inputs_for onboarding %>

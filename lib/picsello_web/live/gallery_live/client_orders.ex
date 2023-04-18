@@ -114,5 +114,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   defdelegate item_image_url(item, opts), to: Cart
   defdelegate quantity(item), to: Cart.Product
   defdelegate total_cost(order), to: Cart
+  defdelegate total_shipping(products), to: Cart
   defdelegate download_link(assigns), to: DownloadLinkComponent
 end

@@ -37,6 +37,7 @@ defmodule Picsello.FeatureCase do
 
     def fill_in_date(session, field, opts \\ []) do
       date = Keyword.get(opts, :with)
+
       input = find(session, field)
 
       date =
@@ -255,8 +256,7 @@ defmodule Picsello.FeatureCase do
       do: assert_disabled(session, session |> find(query))
 
     @disableable ~w(input select textarea button)
-                 |> Enum.map(&"#{&1}:not(:disabled)")
-                 |> Enum.join(",")
+                 |> Enum.map_join(",", &"#{&1}:not(:disabled)")
 
     def assert_enabled(session, %Wallaby.Element{} = el) do
       enabled = all(session, css(@disableable))
@@ -408,6 +408,7 @@ defmodule Picsello.FeatureCase do
 
       session
       |> visit(path)
+      |> fill_in(css("#login_email"), with: "testing@picsello.com")
       |> fill_in(css("#login_password"), with: password)
       |> click(button("Submit"))
       |> then(&wait_for_path_to_change_from(&1, path <> "/login"))
@@ -418,6 +419,7 @@ defmodule Picsello.FeatureCase do
 
       session
       |> visit(path)
+      |> fill_in(css("#login_email"), with: "testing@picsello.com")
       |> fill_in(css("#login_password"), with: password)
       |> click(button("Submit"))
       |> then(&wait_for_path_to_change_from(&1, path <> "/login"))

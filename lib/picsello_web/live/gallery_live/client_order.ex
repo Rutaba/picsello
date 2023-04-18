@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   import PicselloWeb.GalleryLive.Shared
 
   alias PicselloWeb.GalleryLive.Shared.DownloadLinkComponent
-  alias Picsello.{Orders, Galleries}
+  alias Picsello.{Orders, Galleries, Cart}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -102,7 +102,17 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
       shipping_name: order.delivery_info.name
     )
     |> assign_checkout_routes()
-    |> assign_cart_count(gallery)
+    |> assign(:cart_count, cart_count(gallery))
+  end
+
+  defp cart_count(gallery) do
+    case Cart.get_unconfirmed_order(gallery.id, preload: [:products, :digitals]) do
+      {:ok, order} ->
+        Cart.item_count(order)
+
+      _ ->
+        0
+    end
   end
 
   defp success_message(assigns) do

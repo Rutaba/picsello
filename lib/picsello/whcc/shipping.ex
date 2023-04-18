@@ -1,6 +1,7 @@
 defmodule Picsello.WHCC.Shipping do
   @moduledoc "WHCC shipping options"
 
+  alias Picsello.Cart.Product
   @doc "Returns options available for category, size"
   def options(%{whcc_product: product, selections: selections}) do
     category = product |> Picsello.Product.whcc_category()
@@ -75,8 +76,15 @@ defmodule Picsello.WHCC.Shipping do
   defp any(_), do: true
 
   @doc "Converts shipping option into order attributes"
-  def to_attributes(%Picsello.Cart.Product{} = product) do
+  def to_attributes(%Product{} = product) do
     product |> options() |> hd() |> Map.get(:attrs)
+  end
+
+  def attributes(%Product{shipping_type: type} = product) do
+    case Picsello.Cart.get_base_charge(product, type) do
+      [] -> to_attributes(product)
+      base_charge -> [96, base_charge[:uuid]]
+    end
   end
 
   defp fits?({a, b}, {x, y}), do: a <= x and b <= y
