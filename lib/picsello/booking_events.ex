@@ -316,7 +316,7 @@ defmodule Picsello.BookingEvents do
         ) do
           if is_break do
             Time.compare(slot_time, start_time) in [:gt, :eq] &&
-              Time.compare(slot_time, end_time) in [:lt, :eq]
+              Time.compare(slot_time, end_time) in [:lt]
           end
         end
 
@@ -337,7 +337,7 @@ defmodule Picsello.BookingEvents do
         ) do
           if is_hidden do
             Time.compare(slot_time, start_time) in [:gt, :eq] &&
-              Time.compare(slot_time, end_time) in [:lt, :eq]
+              Time.compare(slot_time, end_time) in [:lt]
           end
         end
 
