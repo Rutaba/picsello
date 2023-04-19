@@ -157,6 +157,7 @@ defmodule Picsello.Galleries.Gallery do
   def save_digital_pricing_changeset(gallery, attrs \\ %{}) do
     gallery
 <<<<<<< HEAD
+<<<<<<< HEAD
     |> Repo.preload(:gallery_digital_pricing)
     |> change(attrs)
     |> cast_assoc(:gallery_digital_pricing, with: &GalleryDigitalPricing.changeset/2)
@@ -168,6 +169,10 @@ defmodule Picsello.Galleries.Gallery do
 =======
     |> cast_embed(:digital_pricing, with: &DigitalPricing.changeset/2, required: true)
 >>>>>>> 7cc6c7f68 (added migration and saving functionality)
+=======
+    |> change(attrs)
+    |> cast_assoc(:gallery_digital_pricing, with: &GalleryDigitalPricing.changeset/2)
+>>>>>>> 1a4122b0b (create separate table for gallery_digital_pricing)
   end
 
   def generate_password, do: Enum.random(100_000..999_999) |> to_string

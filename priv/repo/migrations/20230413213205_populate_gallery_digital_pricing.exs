@@ -8,7 +8,9 @@ defmodule Picsello.Repo.Migrations.PopulateGalleryDigitalPricing do
     galleries =
       Gallery
       |> Repo.all()
-      |> Repo.preload(job: [:client, :package])
+      |> Repo.preload([:gallery_digital_pricing, job: [:client, :package]])
+
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
     Enum.map(galleries, fn gallery ->
       digital_pricing =
@@ -20,7 +22,7 @@ defmodule Picsello.Repo.Migrations.PopulateGalleryDigitalPricing do
           email_list: [gallery.job.client.email]
         }
 
-      Gallery.save_digital_pricing_changeset(gallery, %{digital_pricing: digital_pricing}) |> Repo.update!()
+      Gallery.save_digital_pricing_changeset(gallery, %{gallery_digital_pricing: digital_pricing}) |> Repo.update!()
     end)
   end
 end
