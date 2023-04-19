@@ -41,6 +41,28 @@ defmodule Picsello.Contract do
     end)
   end
 
+  def changeset_lead(contract \\ %__MODULE__{}, attrs, opts \\ []) do
+    validate_unique_name_on_organization =
+      Keyword.get(opts, :validate_unique_name_on_organization)
+
+    skip_package_id = Keyword.get(opts, :skip_package_id)
+
+    contract
+    |> cast(attrs, [:name, :content, :package_id, :contract_template_id])
+    |> validate_required([:content])
+    |> then(fn changeset ->
+      if skip_package_id, do: changeset, else: validate_required(changeset, [:package_id])
+    end)
+    |> then(fn changeset ->
+      if validate_unique_name_on_organization do
+        changeset
+        |> put_change(:organization_id, validate_unique_name_on_organization)
+      else
+        changeset
+      end
+    end)
+  end
+
   def template_changeset(contract \\ %__MODULE__{}, attrs) do
     contract
     |> cast(attrs, [:name, :content, :organization_id, :job_type])

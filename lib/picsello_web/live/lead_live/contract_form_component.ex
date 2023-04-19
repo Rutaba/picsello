@@ -108,12 +108,12 @@ defmodule PicselloWeb.ContractFormComponent do
         %{"contract" => params},
         %{assigns: %{package: package}} = socket
       ) do
-    save_fn =
+    _save_fn =
       if template_edit?(socket, params),
         do: &Contracts.save_template_and_contract/2,
         else: &Contracts.save_contract/2
 
-    case save_fn.(package, params) do
+    case Contracts.save_contract(package, params) do
       {:ok, contract} ->
         send(
           socket.parent_pid,
@@ -149,7 +149,7 @@ defmodule PicselloWeb.ContractFormComponent do
 
     changeset =
       contract
-      |> Contract.changeset(attrs,
+      |> Contract.changeset_lead(attrs,
         validate_unique_name_on_organization:
           if(template_edit?(socket, params), do: current_user.organization_id)
       )
@@ -169,11 +169,7 @@ defmodule PicselloWeb.ContractFormComponent do
   end
 
   defp assign_options(%{assigns: %{package: package}} = socket) do
-    options =
-      [
-        {"New Contract", ""}
-      ]
-      |> Enum.concat(package |> Contracts.for_package() |> Enum.map(&{&1.name, &1.id}))
+    options = package |> Contracts.for_package() |> Enum.map(&{&1.name, &1.id})
 
     socket |> assign(options: options)
   end
