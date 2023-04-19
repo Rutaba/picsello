@@ -47,7 +47,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   def handle_event("edit-digital-pricing", _, %{assigns: assigns} = socket) do
     socket
     |> open_modal(
-      PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricing,
+      PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent,
       assigns |> Map.take([:current_user, :gallery])
     )
     |> noreply()
