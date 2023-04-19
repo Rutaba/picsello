@@ -19,7 +19,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   def handle_params(%{"id" => id} = params, _, socket) do
     gallery =
       Galleries.get_gallery!(id)
-      |> Repo.preload([:photographer, :package])
+      |> Repo.preload([:photographer, :package, :gallery_digital_pricing])
       |> Galleries.load_watermark_in_gallery()
 
     prepare_gallery(gallery)
@@ -87,6 +87,6 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   end
 
   defp get_pricing_value(gallery) do
-    if gallery.digital_pricing, do: gallery.digital_pricing, else: gallery.package
+    if gallery.gallery_digital_pricing, do: gallery.gallery_digital_pricing, else: gallery.package
   end
 end

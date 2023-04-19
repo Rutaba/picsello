@@ -532,9 +532,9 @@ defmodule Picsello.Galleries do
 
       package ->
         Multi.new()
-        |> Multi.update(:gallery_digital_pricing, Gallery.save_digital_pricing_changeset(gallery, %{digital_pricing: %{
+        |> Multi.update(:gallery_digital_pricing, Gallery.save_digital_pricing_changeset(gallery, %{gallery_digital_pricing: %{
           buy_all: package.buy_all,
-          print_credits: package.print_credits,
+          print_credits: (if is_nil(get_first_gallery(gallery)), do: package.print_credits, else: Money.new(0)),
           download_count: package.download_count,
           download_each_price: package.download_each_price,
           email_list: [client.email]
@@ -544,14 +544,23 @@ defmodule Picsello.Galleries do
   end
 
   def reset_gallery_pricing(gallery) do
-    Gallery.save_digital_pricing_changeset(gallery, %{digital_pricing: %{
+    Gallery.save_digital_pricing_changeset(gallery, %{gallery_digital_pricing: %{
       buy_all: gallery.package.buy_all,
-      print_credits: gallery.package.print_credits,
+      print_credits: (if is_nil(get_first_gallery(gallery)), do: gallery.package.print_credits, else: Money.new(0)),
       download_count: gallery.package.download_count,
       download_each_price: gallery.package.download_each_price,
     }
     })
     |> Repo.update()
+  end
+
+  def get_first_gallery(%Gallery{job_id: job_id}) do
+    from(g in Gallery,
+      where: g.job_id == ^job_id and g.status == :active,
+      order_by: g.inserted_at,
+      limit: 1
+    )
+    |> Repo.one()
   end
 
   def album_params_for_new("standard"), do: []
