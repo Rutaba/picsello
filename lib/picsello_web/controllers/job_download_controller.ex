@@ -1,7 +1,7 @@
 defmodule PicselloWeb.JobDownloadController do
   use PicselloWeb, :controller
 
-  import PicselloWeb.BookingProposalLive.Shared, only: [get_print_credit: 1, get_amount: 1]
+  import PicselloWeb.BookingProposalLive.Shared, only: [get_print_credit: 1]
   alias Picsello.BookingProposal
 
   def download_invoice_pdf(conn, %{"booking_proposal_id" => booking_proposal_id}) do
