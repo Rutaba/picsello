@@ -54,6 +54,7 @@ export default {
       enableSize,
       enableImage,
       target,
+      editable,
     } = this.el.dataset;
     const textInput = textFieldName
       ? this.el.querySelector(`input[name="${textFieldName}"]`)
@@ -178,6 +179,8 @@ export default {
     });
 
     quill.clipboard.dangerouslyPasteHTML(htmlInput.value, 'api');
+    const element = document.querySelector('.ql-editor');
+    element.setAttribute("contenteditable", editable);
   },
 };
 

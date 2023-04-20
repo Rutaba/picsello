@@ -17,6 +17,7 @@ defmodule PicselloWeb.Shared.Quill do
     enable_image: false,
     track_quill_source: false,
     current_user: nil,
+    editable: "true",
     debounce: @debounce
   }
 
@@ -34,6 +35,7 @@ defmodule PicselloWeb.Shared.Quill do
       data-text-field-name={input_name(@f, @text_field)}
       data-enable-size={@enable_size}
       data-enable-image={@enable_image}
+      data-editable={@editable}
       data-target={@myself}>
       <%= if @enable_image do %>
         <input type="file" class="hidden" {testid("quill-image-input")} />
