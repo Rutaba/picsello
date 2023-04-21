@@ -76,7 +76,7 @@ defmodule Picsello.Subscriptions do
     end
   end
 
-  def subscription_ending_soon_info(nil), do: %{hidden?: true, hidden_30_days?: true}
+  def subscription_ending_soon_info(nil), do: %{hidden?: true, hidden_14_days?: true}
 
   def subscription_ending_soon_info(%User{subscription: %Ecto.Association.NotLoaded{}} = user),
     do: user |> Repo.preload(:subscription) |> subscription_ending_soon_info()
@@ -88,13 +88,13 @@ defmodule Picsello.Subscriptions do
 
         %{
           hidden?: calculate_days_left_boolean(days_left, 7),
-          hidden_30_days?: calculate_days_left_boolean(days_left, 30),
+          hidden_14_days?: calculate_days_left_boolean(days_left, 14),
           days_left: days_left |> Kernel.max(0),
           subscription_end_at: DateTime.to_date(current_period_end)
         }
 
       _ ->
-        %{hidden?: true, hidden_30_days?: true}
+        %{hidden?: true, hidden_14_days?: true}
     end
   end
 
@@ -336,13 +336,13 @@ defmodule Picsello.Subscriptions do
 
   defp subscription_plan_metadata_default(),
     do: %Picsello.SubscriptionPlansMetadata{
-      trial_length: 30,
+      trial_length: 14,
       onboarding_description:
-        "Your 30-day free trial lets you explore and use all of our amazing features. To get started we’ll ask you to enter your credit card to keep your account secure and for us to focus the team on those who are really interested in Picsello.",
-      onboarding_title: "Start your 30-day free trial",
+        "Your 14-day free trial lets you explore and use all of our amazing features. To get started we’ll ask you to enter your credit card to keep your account secure and for us to focus the team on those who are really interested in Picsello.",
+      onboarding_title: "Start your 14-day free trial",
       signup_description: "Start your free trial",
-      signup_title: "Get started with your 30-day free trial today",
-      success_title: "Your 30-day free trial has started!"
+      signup_title: "Get started with your 14-day free trial today",
+      success_title: "Your 14-day free trial has started!"
     }
 
   defp to_datetime(nil), do: nil

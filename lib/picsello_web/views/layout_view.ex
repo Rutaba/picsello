@@ -113,9 +113,7 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def help_chat_widget(
-        %{assigns: %{current_user: %{email: _, user_id: _}}} = assigns
-      ) do
+  def help_chat_widget(%{assigns: %{current_user: %{email: _, user_id: _}}} = assigns) do
     assigns = get_intercom_id(assigns)
 
     ~H"""
@@ -226,7 +224,7 @@ defmodule PicselloWeb.LayoutView do
     case assigns.type do
       "header" ->
         ~H"""
-        <div class={classes(%{"hidden" => @subscription.hidden_30_days?})}>
+        <div class={classes(%{"hidden" => @subscription.hidden_14_days?})}>
           <%= live_redirect to: Routes.user_settings_path(@socket, :edit), class: "flex gap-2 items-center mr-4" do %>
             <h6 class="text-xs italic text-gray-250 opacity-50">Trial ending soon! <%= ngettext("1 day", "%{count} days", Map.get(@subscription, :days_left, 0)) %> left.</h6>
             <button class="hidden sm:block text-xs rounded-lg px-4 py-1 border border-blue-planning-300 font-semibold hover:bg-blue-planning-100">Renew plan</button>
@@ -464,7 +462,8 @@ defmodule PicselloWeb.LayoutView do
     |> extract_organization()
   end
 
-  defp get_intercom_id(assigns), do: assign(assigns, :itercom_id, Application.get_env(:picsello, :intercom_id))
+  defp get_intercom_id(assigns),
+    do: assign(assigns, :itercom_id, Application.get_env(:picsello, :intercom_id))
 
   defp extract_organization(%{job: %{client: %{organization: organization}}}), do: organization
 end
