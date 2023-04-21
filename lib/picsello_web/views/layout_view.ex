@@ -217,37 +217,37 @@ defmodule PicselloWeb.LayoutView do
       %{
         title: "Contracts",
         icon: "contract",
-        path: Routes.package_templates_path(socket, :index)
+        path: Routes.contracts_index_path(socket, :index)
       },
       %{
         title: "Questionnaires",
         icon: "questionnaire",
-        path: Routes.package_templates_path(socket, :index)
+        path: Routes.questionnaires_index_path(socket, :index)
       },
       %{
         title: "Gallery",
-        icon: "package",
-        path: Routes.package_templates_path(socket, :index)
+        icon: "gallery-settings",
+        path: Routes.gallery_global_settings_index_path(socket, :edit)
       },
       %{
         title: "Finances",
         icon: "money-bags",
-        path: Routes.package_templates_path(socket, :index)
+        path: Routes.finance_settings_path(socket, :index)
       },
       %{
         title: "Brand",
         icon: "brand",
-        path: Routes.package_templates_path(socket, :index)
+        path: Routes.brand_settings_path(socket, :index)
       },
       %{
         title: "Public Profile",
         icon: "public-profile",
-        path: Routes.package_templates_path(socket, :index)
+        path: Routes.profile_settings_path(socket, :index)
       },
       %{
         title: "Account",
         icon: "settings",
-        path: Routes.package_templates_path(socket, :index)
+        path: Routes.user_settings_path(socket, :edit)
       }
     ]
 
