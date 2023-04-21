@@ -196,26 +196,136 @@ defmodule PicselloWeb.LayoutView do
     |> Enum.filter(&Map.get(&1, :path))
   end
 
-  def sub_nav(socket, _current_user),
+  def sub_nav_list(socket, :get_booked),
     do: [
-      %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
-      %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
       %{
-        title: "Galleries",
-        icon: "proof_notifier",
-        path: Routes.gallery_path(socket, :galleries)
+        title: "Booking Events",
+        icon: "calendar",
+        path: Routes.calendar_booking_events_path(socket, :index)
       },
+      %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
+      %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
+    ]
+
+  def sub_nav_list(socket, :settings),
+    do: [
       %{
         title: "Packages",
         icon: "package",
         path: Routes.package_templates_path(socket, :index)
       },
       %{
-        title: "Booking Events",
-        icon: "calendar",
-        path: Routes.calendar_booking_events_path(socket, :index)
+        title: "Contracts",
+        icon: "contract",
+        path: Routes.package_templates_path(socket, :index)
+      },
+      %{
+        title: "Questionnaires",
+        icon: "questionnaire",
+        path: Routes.package_templates_path(socket, :index)
+      },
+      %{
+        title: "Gallery",
+        icon: "package",
+        path: Routes.package_templates_path(socket, :index)
+      },
+      %{
+        title: "Finances",
+        icon: "money-bags",
+        path: Routes.package_templates_path(socket, :index)
+      },
+      %{
+        title: "Brand",
+        icon: "brand",
+        path: Routes.package_templates_path(socket, :index)
+      },
+      %{
+        title: "Public Profile",
+        icon: "public-profile",
+        path: Routes.package_templates_path(socket, :index)
+      },
+      %{
+        title: "Account",
+        icon: "settings",
+        path: Routes.package_templates_path(socket, :index)
       }
     ]
+
+  def main_nav(socket) do
+    [
+      %{
+        title: "Get booked",
+        class: "mr-4",
+        path: nil,
+        sub_nav_items: sub_nav_list(socket, :get_booked),
+        id: "get-booked"
+      },
+      %{
+        title: "Clients",
+        class: "mr-4",
+        path: Routes.clients_path(socket, :index),
+        sub_nav_items: nil,
+        id: nil
+      },
+      %{
+        title: "Galleries",
+        class: "mr-4",
+        path: Routes.gallery_path(socket, :galleries),
+        sub_nav_items: nil,
+        id: nil
+      },
+      %{title: "Jobs", class: "mr-4", path: Routes.job_path(socket, :jobs), sub_nav_items: nil},
+      %{
+        title: "Inbox",
+        class: "pl-4 border-l mr-4",
+        path: Routes.inbox_path(socket, :index),
+        sub_nav_items: nil,
+        id: nil
+      },
+      %{
+        title: "Calendar",
+        class: "mr-4",
+        path: Routes.calendar_index_path(socket, :index),
+        sub_nav_items: nil,
+        id: nil
+      },
+      %{
+        title: "Settings",
+        class: "mr-4",
+        path: nil,
+        sub_nav_items: sub_nav_list(socket, :settings),
+        id: "settings"
+      },
+      %{
+        title: "Help",
+        class: "mr-0 ml-auto",
+        path: "https://support.picsello.com",
+        sub_nav_items: nil,
+        id: nil
+      }
+    ]
+  end
+
+  def sub_nav(assigns) do
+    ~H"""
+      <div id={@id} class="relative cursor-pointer" phx-update="ignore" phx-hook="ToggleContent" data-icon="toggle-icon">
+        <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default top-10 toggle-content">
+          <nav class="flex flex-col bg-white rounded-lg shadow">
+            <%= for %{title: title, icon: icon, path: path} <- @sub_nav_list, @current_user do %>
+              <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-2 flex items-center py-2 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
+                <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300 shrink-0" />
+                <%= title %>
+              </.nav_link>
+            <% end %>
+          </nav>
+        </div>
+
+        <div class="group hidden lg:flex items-center mr-4 transition-all font-bold text-blue-planning-300 hover:opacity-70">
+          <%= @title %> <.icon name="down" class="w-3 h-3 stroke-current stroke-3 ml-2 toggle-icon transition-transform group-hover:rotate-180" />
+        </div>
+      </div>
+    """
+  end
 
   def subscription_ending_soon(%{current_user: current_user} = assigns) do
     subscription = current_user |> Picsello.Subscriptions.subscription_ending_soon_info()
@@ -295,36 +405,21 @@ defmodule PicselloWeb.LayoutView do
             <.icon name="logo" class="my-4 w-28 h-9 mr-6" />
           <% end %>
 
-          <div class="hidden lg:flex">
-            <div id="sub-menu" class="relative cursor-pointer" phx-update="ignore" phx-hook="ToggleContent" data-icon="toggle-icon">
-              <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default top-10 toggle-content">
-                <nav class="flex flex-col bg-white rounded-lg shadow-md">
-                  <%= for %{title: title, icon: icon, path: path} <- sub_nav(@socket, @current_user), @current_user do %>
-                    <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-4 flex items-center py-3 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
-                      <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300 shrink-0" />
-                      <%= title %>
-                    </.nav_link>
-                  <% end %>
-                </nav>
-              </div>
-
-              <div class="group hidden lg:flex items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70">
-              Your work <.icon name="down" class="w-3 h-3 stroke-current stroke-3 ml-2 toggle-icon transition-transform group-hover:rotate-180" />
-              </div>
-            </div>
-            <.nav_link title="Calendar" to="/calendar" socket={@socket} live_action={@live_action} class="hidden lg:block items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70" active_class="">
-              Calendar
-            </.nav_link>
-            <.nav_link title="Help" to="https://support.picsello.com/" socket={@socket} live_action={@live_action} class="hidden lg:block items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70" active_class="">
-              Help
-            </.nav_link>
-            <.nav_link title="Settings" to="/users/settings" socket={@socket} live_action={@live_action} class="hidden lg:block items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70" active_class="">
-              Settings
-            </.nav_link>
+          <div class="hidden lg:flex flex-grow">
+            <%= for %{title: title, path: path, class: class, sub_nav_items: sub_nav_items, id: id} <- main_nav(@socket) do %>
+              <%= if sub_nav_items do %>
+                <.sub_nav socket={@socket} live_action={@live_action} current_user={@current_user} sub_nav_list={sub_nav_items} title={title} id={id} />
+              <% else %>
+                <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class={"hidden lg:block items-center transition-all font-bold text-blue-planning-300 hover:opacity-70 #{class}"} active_class="">
+                  <%= title %>
+                </.nav_link>
+              <% end %>
+            <% end %>
           </div>
         </nav>
 
         <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
+
         <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
           <%= if @current_user do %>
             <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
