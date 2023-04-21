@@ -9,9 +9,11 @@ defmodule Picsello.GlobalSettings.Gallery do
   defmodule Photo do
     @moduledoc false
     defstruct original_url: nil,
-              user_id: nil,
+              organization_id: nil,
               id: nil,
-              text: nil
+              text: nil,
+              is_save_preview: false,
+              watermark_type: nil
   end
 
   @default_each_price ~M[5000]USD
@@ -34,8 +36,7 @@ defmodule Picsello.GlobalSettings.Gallery do
   @image_attrs [:watermark_name, :watermark_size]
   @text_attrs [:watermark_text]
   def expiration_changeset(global_settings_gallery, attrs) do
-    global_settings_gallery
-    |> cast(attrs, [:expiration_days])
+    cast(global_settings_gallery, attrs, [:expiration_days])
   end
 
   def price_changeset(%__MODULE__{} = global_settings_gallery, attrs) do
@@ -130,5 +131,9 @@ defmodule Picsello.GlobalSettings.Gallery do
 
   defp nilify_fields(changeset, fields) do
     Enum.reduce(fields, changeset, fn key, changeset -> put_change(changeset, key, nil) end)
+  end
+
+  def watermark_fields() do
+    @image_attrs ++ @text_attrs ++ [:watermark_type, :global_watermark_path]
   end
 end

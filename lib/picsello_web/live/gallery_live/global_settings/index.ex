@@ -2,14 +2,16 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.{Repo, Galleries}
+  alias Picsello.{Galleries, GlobalSettings}
+
   alias Galleries.{PhotoProcessing.ProcessingManager, Workers.PhotoStorage}
   alias PicselloWeb.GalleryLive.GlobalSettings.{ProductComponent, PrintProductComponent}
-  alias Picsello.GlobalSettings
   alias GlobalSettings.Gallery, as: GSGallery
   alias Ecto.Changeset
   alias Phoenix.PubSub
   require Logger
+
+  import PicselloWeb.JobLive.Shared, only: [assign_existing_uploads: 2]
 
   @upload_options [
     accept: ~w(.png image/png),
@@ -20,54 +22,49 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     progress: &__MODULE__.handle_image_progress/3
   ]
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
-  @global_watermark_photo ~s(assets/static/images/watermark_preview.png)
+  @global_watermarked_path Application.compile_env!(:picsello, :global_watermarked_path)
 
   @impl true
-  def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
+  def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
     %{organization_id: organization_id} = current_user
 
-    global_settings_gallery = GlobalSettings.get_or_add(organization_id)
-
     if connected?(socket) do
-      PubSub.subscribe(Picsello.PubSub, "preview_watermark:#{current_user.id}")
-      PubSub.subscribe(Picsello.PubSub, "save_watermark:#{current_user.id}")
+      PubSub.subscribe(Picsello.PubSub, "preview_watermark:#{organization_id}")
     end
 
     socket
+    |> is_mobile(params)
     |> assign(galleries: [])
-    |> assign(global_settings_gallery: global_settings_gallery)
-    |> assign(price_changeset: GSGallery.price_changeset(global_settings_gallery, %{}))
-    |> assign_controls()
+    |> assign_global_settings()
     |> assign_options()
-    |> assign(is_saved: false)
     |> assign(total_days: 0)
-    |> assign(:upload_bucket, @bucket)
     |> assign(:case, :image)
-    |> assign(:ready_to_save, false)
-    |> assign(show_preview: false)
-    |> assign(:show_image_preview, true)
-    |> assign(:watermarked_preview_path, nil)
+    |> then(fn %{assigns: %{gs_gallery: %{expiration_days: expiration_days}}} = socket ->
+      assign(socket, is_never_expires: expiration_days == 0)
+    end)
+    |> assign_default_changeset()
     |> allow_upload(:image, @upload_options)
     |> ok()
   end
 
   @impl true
+  def handle_params(%{"section" => "products"}, _uri, socket),
+    do: new_section(socket, product_section?: true)
+
   def handle_params(%{"section" => "print_product", "product_id" => product_id}, _uri, socket),
     do:
       socket
       |> assign(:product, Picsello.GlobalSettings.gallery_product(product_id))
-      |> assign(:show_side_nav, "print_product")
-      |> assign_title()
-      |> noreply()
+      |> new_section(product_section?: true, print_price_section?: true)
 
-  def handle_params(params, _uri, socket) do
-    show_side_nav = Map.get(params, "section")
+  def handle_params(%{"section" => "watermark"}, _uri, socket),
+    do: new_section(socket, watermark_section?: true)
 
-    socket
-    |> assign(:show_side_nav, show_side_nav)
-    |> assign_title()
-    |> noreply()
-  end
+  def handle_params(%{"section" => "digital_pricing"}, _uri, socket),
+    do: new_section(socket, digital_pricing_section?: true)
+
+  def handle_params(_params, _uri, %{assigns: %{is_mobile: is_mobile}} = socket),
+    do: new_section(socket, expiration_date_section?: !is_mobile)
 
   @impl true
   def handle_event(
@@ -75,16 +72,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         %{"global_expiration_days" => %{"month" => month, "day" => day, "year" => year}},
         socket
       ) do
-    day_count = to_int(day)
-    month_count = to_int(month)
-    year_count = to_int(year)
-    day_text = if day_count > 0, do: ngettext("1 day ", "%{count} days ", day_count), else: ""
-
-    month_text =
-      if month_count > 0, do: ngettext("1 month ", "%{count} months ", month_count), else: ""
-
-    year_text =
-      if year_count > 0, do: ngettext("1 year ", "%{count} years ", year_count), else: ""
+    {total_days, {d, m, y}} = total_days(day, month, year)
+    date_in_text = Enum.map_join([{d, "day"}, {m, "month"}, {y, "year"}], &date_part_in_text(&1))
 
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
@@ -93,29 +82,12 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       confirm_label: "Yes, set expiration date",
       icon: "warning-orange",
       subtitle:
-        "All new galleries will expire #{day_text}#{month_text}#{year_text}after their shoot date. When a gallery expires, a client will not be able to access it again unless you re-enable the individual gallery.",
-      title: "Set Galleries to Expire?",
-      payload: %{total_days: day_count + month_count * 30 + year_count * 365}
+        "All new galleries will expire #{date_in_text}after their shoot date. When a gallery expires, a client will not be able to access it again unless you re-enable the individual gallery.",
+      title: "Set Galleries to Never Expire?",
+      payload: %{total_days: total_days}
     })
     |> noreply()
   end
-
-  def handle_event(
-        "validate_days",
-        %{"global_expiration_days" => %{"month" => month, "day" => day, "year" => year}},
-        socket
-      ) do
-    day = to_int(day)
-    month = to_int(month)
-    year = to_int(year)
-    total_days = day + month * 30 + year * 365
-
-    socket
-    |> assign(total_days: total_days, day: day, month: month, year: year, is_saved: true)
-    |> noreply()
-  end
-
-  def handle_event("validate_days", _params, socket), do: noreply(socket)
 
   def handle_event(
         "save",
@@ -135,72 +107,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> noreply()
   end
 
-  @global_watermark_photo ~s(assets/static/images/watermark_preview.png)
-  def handle_event(
-        "preview_watermark",
-        %{},
-        %{
-          assigns: %{current_user: current_user, changeset: changeset, show_preview: show_preview}
-        } = socket
-      ) do
-    case show_preview do
-      false ->
-        file = File.read!(@global_watermark_photo)
-        path = Application.fetch_env!(:picsello, :global_watermarked_path)
-        {:ok, _object} = PhotoStorage.insert(path, file)
-
-        ProcessingManager.update_watermark(%GSGallery.Photo{
-          id: UUID.uuid4(),
-          user_id: current_user.id,
-          original_url: path,
-          text: Changeset.get_change(changeset, :watermark_text)
-        })
-
-        socket
-        |> noreply()
-
-      true ->
-        socket
-        |> assign(show_preview: false)
-        |> noreply()
-    end
-  end
-
-  def handle_event(
-        "save_watermark",
-        _params,
-        %{
-          assigns: %{
-            changeset: %{changes: changes},
-            current_user: %{organization_id: organization_id},
-            global_settings_gallery: global_settings,
-            case: watermark_case,
-            uploads: uploads
-          }
-        } = socket
-      ) do
-    changes = Map.put(changes, :organization_id, organization_id)
-
-    global_settings
-    |> GlobalSettings.save(changes)
-    |> case do
-      {:ok, global_settings} ->
-        if watermark_case == :image do
-          uploads = Map.update(uploads, :image, [], &Map.put(&1, :entries, []))
-          assign(socket, uploads: uploads)
-        else
-          assign(socket, :show_image_preview, false)
-        end
-        |> assign(global_settings_gallery: global_settings)
-        |> put_flash(:success, "Watermark Updated!")
-
-      {:error, _} ->
-        put_flash(socket, :error, "Failed to Update Watermark")
-    end
-    |> noreply()
-  end
-
-  @impl true
   def handle_event("delete", _, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
@@ -215,34 +121,123 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> noreply()
   end
 
-  def handle_event("back_to_menu", _, socket),
-    do: assign(socket, :show_side_nav, nil) |> noreply()
+  def handle_event("preview_watermark", %{}, %{assigns: %{show_preview: false}} = socket) do
+    %{assigns: %{current_user: current_user, changeset: changeset}} = socket
 
-  def handle_event("select_component", %{"section" => nil}, socket),
+    process_watermark_preview(
+      current_user,
+      :text,
+      Changeset.get_change(changeset, :watermark_text)
+    )
+
+    noreply(socket)
+  end
+
+  def handle_event("preview_watermark", %{}, %{assigns: %{show_preview: true}} = socket) do
+    socket |> assign(show_preview: false) |> assign_watermark_preview() |> noreply()
+  end
+
+  def handle_event(
+        "save_watermark",
+        _params,
+        %{
+          assigns: %{
+            changeset: %{changes: changes},
+            current_user: %{organization_id: organization_id} = current_user,
+            gs_gallery: gs_gallery,
+            uploads: uploads
+          }
+        } = socket
+      ) do
+    changes = Map.merge(changes, %{organization_id: organization_id, global_watermark_path: nil})
+
+    gs_gallery
+    |> GlobalSettings.save_watermark(changes)
+    |> case do
+      {:ok, %{gs_gallery: gs_gallery}} ->
+        process_watermark_preview(
+          current_user,
+          gs_gallery.watermark_type,
+          gs_gallery.watermark_text,
+          true
+        )
+
+        uploads
+        |> Map.update(:image, [], &Map.put(&1, :entries, []))
+        |> assign_existing_uploads(socket)
+        |> assign(gs_gallery: gs_gallery)
+        |> assign_default_changeset()
+        |> put_flash(:success, "Watermark Updated!")
+        |> noreply()
+
+      {:error, _} ->
+        socket |> put_flash(:error, "Failed to Update Watermark") |> noreply()
+    end
+  end
+
+  def handle_event("image_case", _params, socket) do
+    socket
+    |> assign(:case, :image)
+    |> assign_default_changeset()
+    |> noreply()
+  end
+
+  def handle_event("text_case", _params, socket) do
+    socket
+    |> assign(:case, :text)
+    |> assign_default_changeset()
+    |> noreply()
+  end
+
+  def handle_event("validate_image_input", _, %{assigns: %{uploads: uploads}} = socket) do
+    case uploads.image.entries do
+      [%{valid?: false, ref: ref}] -> socket |> cancel_upload(:photo, ref) |> noreply
+      _ -> noreply(socket)
+    end
+  end
+
+  def handle_event(
+        "validate_text_input",
+        %{"gallery" => %{"watermark_text" => watermark_text}},
+        %{assigns: %{gs_gallery: global_settings}} = socket
+      ) do
+    socket
+    |> assign(
+      :changeset,
+      GSGallery.text_watermark_change(global_settings, %{
+        watermark_text: watermark_text,
+        watermark_type: :text
+      })
+    )
+    |> noreply
+  end
+
+  def handle_event("close", _, socket) do
+    socket
+    |> assign_default_changeset()
+    |> noreply()
+  end
+
+  def handle_event("back_to_menu", _, socket), do: new_section(socket)
+  def handle_event("back_to_products", _, socket), do: new_section(socket, product_section?: true)
+
+  def handle_event("select_component", %{"section" => ""}, socket),
     do: patch(socket)
 
   def handle_event("select_component", %{"section" => section}, socket),
     do: patch(socket, section: section)
 
-  @impl true
-  def handle_event("image_case", _params, socket) do
-    socket
-    |> assign(:case, :image)
-    |> assign_default_changeset()
-    |> assign(:ready_to_save, false)
-    |> noreply()
+  def handle_event(
+        "validate_days",
+        %{"global_expiration_days" => %{"month" => month, "day" => day, "year" => year}},
+        socket
+      ) do
+    {total_days, {d, m, y}} = total_days(day, month, year)
+    socket |> assign(total_days: total_days, day: d, month: m, year: y) |> noreply()
   end
 
-  @impl true
-  def handle_event("text_case", _params, socket) do
-    socket
-    |> assign(:case, :text)
-    |> assign_default_changeset()
-    |> assign(:ready_to_save, false)
-    |> noreply()
-  end
+  def handle_event("validate_days", _params, socket), do: noreply(socket)
 
-  @impl true
   def handle_event(
         "toggle-never-expires",
         _,
@@ -251,176 +246,84 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     socket |> assign(is_never_expires: !is_never_expires) |> noreply()
   end
 
-  @impl true
-  def handle_event("validate_image_input", _params, socket) do
-    socket
-    |> handle_image_validation()
-    |> noreply
-  end
+  def handle_event(
+        "validate_each_price",
+        %{"digital_pricing" => %{"each_price" => each_price}},
+        %{assigns: %{gs_gallery: settings}} = socket
+      ) do
+    {:ok, download_each_price} = Money.parse(each_price, :USD)
 
-  def handle_event("validate_text_input", params, socket) do
-    socket
-    |> assign_text_watermark_change(params)
-    |> noreply
+    update_galleries_prices(
+      socket,
+      download_each_price,
+      buy_all_price(settings),
+      [download_each_price: download_each_price],
+      "Must be less than buy all price"
+    )
   end
-
-  @impl true
-  def handle_event("close", %{"ref" => ref}, socket) do
-    socket
-    |> assign_default_changeset()
-    |> cancel_upload(:image, ref)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("close", _, socket) do
-    socket
-    |> assign_default_changeset()
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("back_to_products", _, socket),
-    do: assign(socket, show_side_nav: "products") |> noreply()
 
   def handle_event(
-        "validate_price",
-        %{"gallery" => params},
-        %{assigns: %{global_settings_gallery: settings}} = socket
+        "validate_buy_all_price",
+        %{"digital_pricing" => %{"buy_all" => buy_all}},
+        %{assigns: %{gs_gallery: settings}} = socket
       ) do
-    price_changeset = GSGallery.price_changeset(settings, params)
+    {:ok, buy_all} = Money.parse(buy_all, :USD)
 
-    case price_changeset do
-      %{valid?: true} = price_changeset ->
-        {:ok, _} = Repo.insert_or_update(price_changeset)
+    update_galleries_prices(
+      socket,
+      download_price(settings),
+      buy_all,
+      [buy_all: buy_all],
+      "Must be more than single image price"
+    )
+  end
 
-        put_flash(socket, :success, "Setting Updated")
-
-      _ ->
-        socket
-    end
-    |> assign(price_changeset: price_changeset)
+  @impl true
+  def handle_info({:preview_watermark, %{"isSavePreview" => true}}, socket) do
+    socket
+    |> assign_global_settings()
+    |> assign_watermark_preview()
     |> noreply()
   end
 
-  defp assign_options(
-         %{
-           assigns: %{
-             global_settings_gallery: %{expiration_days: expiration_days}
-           }
-         } = socket
-       )
-       when not is_nil(expiration_days) do
-    {day, month, year} = GSGallery.explode_days(expiration_days)
-    socket |> assign(day: day, month: month, year: year)
-  end
-
-  defp assign_options(socket) do
-    socket |> assign(day: "day", month: "month", year: "year")
-  end
-
-  defp assign_title(%{assigns: %{show_side_nav: show_side_nav}} = socket) do
-    title =
-      case show_side_nav do
-        "expiration_date" -> "Global Expiration Date"
-        "watermark" -> "Watermark"
-        "products" -> "Print Pricing"
-        "print_product" -> "Product Settings & Prices"
-        "digital_pricing" -> "Digital Pricing"
-        _ -> "Gallery Settings"
-      end
-
-    socket |> assign(:title, title)
-  end
-
-  defp to_int(""), do: 0
-  defp to_int(value), do: to_integer(value)
-
-  defp assign_controls(%{assigns: %{global_settings_gallery: gs_g}} = socket)
-       when not is_nil(gs_g),
-       do: socket |> assign(is_never_expires: gs_g.expiration_days == 0)
-
-  defp assign_controls(socket), do: socket |> assign(is_never_expires: true)
-
-  defp assign_updated_settings({:ok, ggs}, socket),
-    do: assign(socket, global_settings_gallery: ggs)
-
-  @impl true
-  def handle_info(
-        {:preview_watermark, %{"watermarkedPreviewPath" => watermarked_preview_path}},
-        socket
-      ) do
+  def handle_info({:preview_watermark, %{"watermarkedPreviewPath" => path}}, socket) do
     socket
     |> assign(show_preview: true)
-    |> assign(:watermarked_preview_path, watermarked_preview_path)
+    |> assign(:watermarked_preview_path, path)
     |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:save_watermark, %{"watermarkedPreviewPath" => watermarked_preview_path}},
-        %{assigns: %{global_settings_gallery: global_settings}} = socket
-      ) do
-    global_settings
-    |> GlobalSettings.save(global_watermark_path: watermarked_preview_path)
-    |> assign_updated_settings(socket)
   end
 
   @never_expire_days 0
-  @impl true
-  def handle_info(
-        {:confirm_event, "never_expire"},
-        socket
-      ) do
+  def handle_info({:confirm_event, "never_expire"}, socket) do
     socket
     |> update_expired_at(@never_expire_days)
-    |> close_modal()
-    |> put_flash(:success, "Settings updated")
-    |> assign(is_saved: false)
     |> assign(day: 0, month: 0, year: 0)
-    |> noreply()
+    |> process_defaults
   end
 
-  @watermark_keys ~w(watermark_type watermark_name watermark_text watermark_size)a
-  @empty_watermark_params Enum.into(@watermark_keys, %{}, &{&1, nil})
-
-  @impl true
-  def handle_info(
-        {:confirm_event, "delete_watermarks"},
-        %{
-          assigns: %{
-            global_settings_gallery: global_settings_gallery
-          }
-        } = socket
-      ) do
-    global_settings_gallery
-    |> GlobalSettings.save(@empty_watermark_params)
-    |> assign_updated_settings(socket)
-    |> assign(:case, :image)
-    |> assign_default_changeset()
-    |> assign(:show_image_preview, false)
-    |> close_modal()
-    |> put_flash(:success, "Settings updated")
-    |> noreply()
-  end
-
-  @impl true
   def handle_info(
         {:confirm_event, "set_expire", %{total_days: total_days}},
         socket
       ) do
     socket
-    |> update_expired_at(total_days)
+    |> update_expired_at(total_days, Timex.shift(DateTime.utc_now(), days: total_days))
     |> assign(is_never_expires: false)
-    |> assign(is_saved: false)
-    |> close_modal()
-    |> put_flash(:success, "Setting Updated")
-    |> noreply()
+    |> process_defaults
+  end
+
+  def handle_info({:confirm_event, "delete_watermarks"}, socket) do
+    %{assigns: %{gs_gallery: gs_gallery}} = socket
+
+    gs_gallery
+    |> GlobalSettings.delete_watermark()
+    |> assign_updated_settings(socket)
+    |> assign(:case, :image)
+    |> process_defaults()
   end
 
   def handle_info({:select_print_prices, product}, socket) do
     socket
-    |> assign(show_side_nav: "print_product")
+    |> assign(print_price_section?: true)
     |> assign_title()
     |> assign(:product, product)
     |> noreply()
@@ -428,36 +331,33 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   def handle_info({:back_to_products}, socket) do
     socket
-    |> assign(show_side_nav: "products")
+    |> assign(print_price_section?: false)
+    |> assign(product_section?: true)
     |> assign_title()
     |> noreply()
   end
 
-  defp update_expired_at(
-         %{
-           assigns: %{
-             global_settings_gallery: gs,
-             current_user: %{organization_id: organization_id}
-           }
-         } = socket,
-         days
-       ) do
-    gs
-    |> GlobalSettings.save(%{expiration_days: days, organization_id: organization_id})
-    |> assign_updated_settings(socket)
+  defp process_defaults(socket) do
+    socket
+    |> close_modal()
+    |> put_flash(:success, "Setting Updated")
+    |> noreply()
   end
 
   def presign_image(
         image,
         %{
-          assigns: %{current_user: %{organization_id: organization_id}}
+          assigns: %{
+            current_user: %{organization_id: organization_id},
+            gs_gallery: gs_gallery
+          }
         } = socket
       ) do
     key = GSGallery.watermark_path(organization_id)
 
     sign_opts = [
       expires_in: 600,
-      bucket: socket.assigns.upload_bucket,
+      bucket: @bucket,
       key: key,
       fields: %{
         "content-type" => image.client_type,
@@ -474,84 +374,174 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
     params = PhotoStorage.params_for_upload(sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
-    {:ok, meta, socket}
+
+    {:ok, meta,
+     socket
+     |> assign(
+       :changeset,
+       GSGallery.image_watermark_change(gs_gallery, %{
+         watermark_name: image.client_name,
+         watermark_size: image.client_size
+       })
+     )}
   end
 
-  def handle_image_progress(:image, %{done?: false}, socket), do: socket |> noreply()
+  def handle_image_progress(:image, %{done?: false}, socket), do: noreply(socket)
 
-  def handle_image_progress(:image, image, %{assigns: %{current_user: current_user}} = socket) do
-    file = File.read!(@global_watermark_photo)
-    path = Application.fetch_env!(:picsello, :global_watermarked_path)
-    {:ok, _object} = PhotoStorage.insert(path, file)
+  def handle_image_progress(:image, _entry, socket),
+    do: __MODULE__.handle_event("save_watermark", %{}, socket)
 
-    ProcessingManager.update_watermark(
-      %GSGallery.Photo{
-        id: UUID.uuid4(),
-        user_id: current_user.id,
-        original_url: path,
-        text: "nil"
-      },
-      current_user.organization_id
-    )
-
-    socket
-    |> assign_image_watermark_change(image)
-    |> noreply()
-  end
-
-  defp assign_image_watermark_change(
-         %{assigns: %{global_settings_gallery: global_settings}} = socket,
-         %{client_name: client_name, client_size: client_size}
+  defp update_expired_at(
+         %{assigns: %{gs_gallery: gs_gallery}} = socket,
+         days,
+         expired_at \\ nil
        ) do
-    socket
-    |> assign(
-      :changeset,
-      GSGallery.image_watermark_change(global_settings, %{
-        watermark_name: client_name,
-        watermark_size: client_size
-      })
-    )
-    |> assign(:show_image_preview, true)
-    |> then(&assign(&1, :ready_to_save, &1.assigns.changeset.valid?))
+    gs_gallery
+    |> GlobalSettings.update_expired_at(%{expiration_days: days}, expired_at: expired_at)
+    |> assign_updated_settings(socket)
   end
 
-  defp assign_default_changeset(
-         %{assigns: %{global_settings_gallery: global_settings_gallery}} = socket
+  defp date_part_in_text({count, _date_part}) when count <= 0, do: ""
+
+  defp date_part_in_text({count, date_part}) when count > 0,
+    do: "#{count} #{date_part}#{(count > 1 && 's') || ""} "
+
+  defp total_days(day, month, year) do
+    {d, m, y} = date_parts = {to_int(day), to_int(month), to_int(year)}
+
+    {d + m * 30 + y * 365, date_parts}
+  end
+
+  defp download_price(%{download_each_price: down_price}), do: down_price
+  defp download_price(_), do: %Money{amount: 5_000, currency: :USD}
+
+  defp buy_all_price(%{buy_all_price: buy_all_price}), do: buy_all_price
+  defp buy_all_price(_), do: %Money{amount: 75_000, currency: :USD}
+
+  defp update_galleries_prices(
+         %{assigns: %{gs_gallery: gs_gallery}} = socket,
+         download_each_price,
+         buy_all_price,
+         opts,
+         error_msg
        ) do
-    socket
-    |> assign(
-      :changeset,
-      GSGallery.watermark_change(global_settings_gallery)
-    )
-    |> assign(show_preview: false)
-  end
+    case validate_price(download_each_price, buy_all_price) do
+      true ->
+        gs_gallery
+        |> GlobalSettings.update_prices(opts)
+        |> assign_updated_settings(socket)
+        |> put_flash(:success, "Setting Updated")
+        |> noreply()
 
-  defp handle_image_validation(%{assigns: %{uploads: uploads}} = socket) do
-    case uploads.image.entries do
-      %{valid?: false, ref: ref} -> cancel_upload(socket, :photo, ref)
-      _ -> socket
+      _ ->
+        put_flash(socket, :error, error_msg) |> noreply()
     end
   end
 
-  defp assign_text_watermark_change(
-         %{assigns: %{global_settings_gallery: global_settings}} = socket,
-         %{"gallery" => %{"watermark_text" => watermark_text}}
-       ) do
-    global_settings
-    |> GSGallery.text_watermark_change(%{watermark_text: watermark_text, watermark_type: :text})
-    |> then(fn %{valid?: valid?} = changeset ->
-      socket
-      |> assign(:changeset, changeset)
-      |> assign(:ready_to_save, valid?)
-    end)
+  defp validate_price(download_each_price, buy_all_price) do
+    download_each_price = Map.get(download_each_price, :amount)
+    buy_all_price = Map.get(buy_all_price, :amount)
+
+    download_each_price < buy_all_price && download_each_price != 0 && buy_all_price != 0
   end
 
-  defp preview_button_text(true), do: "Hide Preview"
-  defp preview_button_text(false), do: "Show Preview"
+  defp assign_options(
+         %{
+           assigns: %{
+             gs_gallery: %{expiration_days: expiration_days}
+           }
+         } = socket
+       )
+       when not is_nil(expiration_days) do
+    year = trunc(expiration_days / 365)
+    month = trunc((expiration_days - year * 365) / 30)
+    day = trunc(expiration_days - year * 365 - month * 30)
+
+    socket |> assign(day: day, month: month, year: year)
+  end
+
+  defp assign_options(socket), do: assign(socket, day: "day", month: "month", year: "year")
+
+  defp assign_updated_settings({:ok, %{gs_gallery: gs_gallery}}, socket),
+    do: assign(socket, gs_gallery: gs_gallery)
+
+  defp assign_global_settings(%{assigns: assigns} = socket) do
+    %{current_user: %{organization_id: organization_id}} = assigns
+    assign(socket, :gs_gallery, GlobalSettings.get_or_add(organization_id))
+  end
+
+  defp assign_watermark_preview(
+         %{
+           assigns: %{
+             gs_gallery: %{
+               watermark_type: :text,
+               global_watermark_path: global_watermark_path
+             }
+           }
+         } = socket
+       ) do
+    assign(
+      socket,
+      :watermarked_preview_path,
+      global_watermark_path
+    )
+  end
+
+  defp assign_watermark_preview(socket), do: assign(socket, :watermarked_preview_path, nil)
+
+  defp assign_default_changeset(%{assigns: %{gs_gallery: gs_gallery}} = socket) do
+    socket
+    |> assign(
+      :changeset,
+      gs_gallery
+      |> GSGallery.watermark_change()
+      |> Map.put(:valid?, false)
+    )
+    |> assign_watermark_preview()
+    |> assign(show_preview: false)
+  end
+
+  defp assign_title(%{assigns: assigns} = socket), do: assign(socket, :title, title(assigns))
+
+  defp title(%{watermark_section?: true}), do: "Watermark"
+  defp title(%{digital_pricing_section?: true}), do: "Digital Pricing"
+  defp title(%{print_price_section?: true}), do: "Print Pricing"
+  defp title(%{expiration_date_section?: true}), do: "Global Expiration Date"
+  defp title(%{product_section?: true}), do: "Product Settings & Prices"
+  defp title(_), do: "Gallery Settings"
+
+  defp to_int(""), do: 0
+  defp to_int(value), do: String.to_integer(value)
+
+  @sections ~w(print_price_section? product_section? expiration_date_section? watermark_section? digital_pricing_section?)a
+  defp new_section(socket, opts \\ []) do
+    @sections
+    |> Enum.reduce(socket, &assign(&2, &1, false))
+    |> assign(opts)
+    |> assign_title()
+    |> noreply()
+  end
+
+  defp process_watermark_preview(current_user, type, text, is_save_preview \\ false) do
+    ProcessingManager.update_watermark(%GSGallery.Photo{
+      is_save_preview: is_save_preview,
+      id: UUID.uuid4(),
+      organization_id: current_user.organization_id,
+      original_url: @global_watermarked_path,
+      watermark_type: type,
+      text: text
+    })
+  end
 
   defp watermark_type(%{watermark_type: :image}), do: :image
   defp watermark_type(%{watermark_type: :text}), do: :text
   defp watermark_type(_), do: :undefined
+
+  defp patch(socket, opts \\ []) do
+    socket
+    |> push_patch(to: Routes.gallery_global_settings_index_path(socket, :edit, opts))
+    |> noreply()
+  end
 
   def card(assigns) do
     assigns = Enum.into(assigns, %{class: "", title_badge: nil})
@@ -572,50 +562,42 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     """
   end
 
-  defp section(%{show_side_nav: "digital_pricing"} = assigns) do
+  defp section(%{digital_pricing_section?: true} = assigns) do
     ~H"""
       <h1 class="text-2xl font-bold mt-6 md:block">Digital Pricing</h1>
       <span class="text-base-250">Adjust on a per digital image and a "buy them all" option below. Defaults provided are our base recommendations but you know your clients and business best. And again, you can also adjust on an individual lead, package, or job level.</span>
-      <.form :let={f} for={@price_changeset} phx-change="validate_price">
-        <div class="grid gap-8 lg:grid-cols-2 grid-cols-1 mt-10">
-          <div>
-            <span class="text-xl font-bold">Single Image</span>
-            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-28 h-32">
-              <div class="flex items-center">
-                <div class="flex flex-col md:pr-4">
-                  <h1 class="text-xl font-bold">Pricing per image:</h1>
-                  <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
-                </div>
-                <%= input(f, :download_each_price, class: "w-full w-24 text-lg text-center border border-blue-planning-300 text-base-300", phx_debounce: 1000, phx_hook: "PriceMask") %>
-              </div>
-              <%= if message = @price_changeset.errors[:download_each_price] do %>
-                <div class="flex md:py-1 ml-auto text-red-sales-300 text-sm"><%= translate_error(message) %></div>
-              <% end %>
+      <div class="grid gap-8 lg:grid-cols-2 grid-cols-1 mt-10">
+        <div>
+          <span class="text-xl font-bold">Single Image</span>
+          <div class="flex items-center border p-3 rounded-md border-base-250 mt-4">
+            <div class="flex flex-col md:pr-4">
+              <h1 class="text-xl font-bold">Pricing per image:</h1>
+              <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
             </div>
-          </div>
-          <div>
-            <span class="text-xl font-bold">Buy them all</span>
-            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-28 h-32">
-              <div class="flex items-center">
-                <div class="flex flex-col md:pr-4">
-                  <h1 class="text-xl font-bold">Pricing for all images:</h1>
-                  <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
-                </div>
-                <%= input(f, :buy_all_price, class: "w-full w-24 text-lg text-center ml-auto border border-blue-planning-300 text-base-300", phx_debounce: 1000, phx_hook: "PriceMask") %>
-              </div>
-              <%= if message = @price_changeset.errors[:buy_all_price] do %>
-                <div class="flex ml-auto md:py-1 text-red-sales-300 text-sm"><%= translate_error(message) %></div>
-              <% end %>
-            </div>
+            <.form :let={f} for={%{}} as={:digital_pricing} phx-change="validate_each_price" class="ml-auto">
+              <%= input(f, :each_price, class: "w-full w-24 text-lg text-center border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: Money.to_string(@gs_gallery.download_each_price)) %>
+            </.form>
           </div>
         </div>
-      </.form>
+        <div>
+          <span class="text-xl font-bold	">Buy them all</span>
+          <div class="flex items-center border p-3 rounded-md border-base-250 mt-4">
+            <div class="flex flex-col md:pr-4">
+              <h1 class="text-xl font-bold">Pricing for all images:</h1>
+              <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
+            </div>
+            <.form :let={f} for={%{}} as={:digital_pricing} phx-change="validate_buy_all_price" class="ml-auto">
+              <%= input(f, :buy_all, class: "w-full w-24 text-lg text-center ml-auto border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: Money.to_string(@gs_gallery.buy_all_price)) %>
+            </.form>
+          </div>
+        </div>
+      </div>
     """
   end
 
-  defp section(%{show_side_nav: "expiration_date"} = assigns) do
+  defp section(%{expiration_date_section?: true} = assigns) do
     ~H"""
-      <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @show_side_nav == "expiration_date"})}>Global Expiration Date</h1>
+      <h1 class="text-2xl font-bold mt-6 md:block hidden">Global Expiration Date</h1>
       <.card color="blue-planning-300" icon="three-people" title="Expiration Date" badge={0} class="cursor-pointer mt-8" >
           <p class="my-2 text-base-250">
             Add a global expiration date that will be the default setting across all your new galleries.
@@ -624,8 +606,12 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           </p>
           <.form :let={f} for={%{}} as={:global_expiration_days} phx-submit="save" phx-change="validate_days">
             <div class="items-center">
-              <%= for {name, max, number, title} <- [{:day, 31, @day, "days,"}, {:month, 11, @month, "months,"}, {:year, 5, @year, "years after gallery creation date."}] do %>
-                <.date_input f={f} name={name} max={max} number={number} is_never_expires={@is_never_expires} />
+              <%= for {name, max, number, title} <- [{:day, 31, @day, "days,"}, {:month, 11, @month, "months,"}, {:year, 5, @year, "years after their shoot date."}] do %>
+                <%= input f, name, type: :number_input, min: 0, max: max , value: if(number > 0, do: number),
+                  placeholder: "1",
+                  class: "border-blue-planning-300 mx-2 md:mx-3 w-20 cursor-pointer 'text-gray-400 cursor-default border-blue-planning-200",
+                  disabled: @is_never_expires %>
+
                 <%= title %>
               <% end %>
             </div>
@@ -636,7 +622,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
                 </div>
                 <button class="btn-primary w-full mt-5 md:mt-0 md:w-32" id="saveGalleryExpiration"
                   phx-disable-with="Saving..." type="submit" phx-submit="save"
-                  disabled= {(@total_days == 0 && @is_never_expires == false )  or @is_saved == false} >
+                  disabled= {@total_days == 0 && @is_never_expires == false} >
                   Save
                 </button>
             </div>
@@ -645,147 +631,159 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     """
   end
 
-  defp section(%{show_side_nav: "watermark", uploads: uploads} = assigns) do
+  defp section(%{watermark_section?: true, uploads: uploads} = assigns) do
     entry = Enum.at(uploads.image.entries, 0)
     assigns = Enum.into(assigns, %{entry: entry})
 
     ~H"""
-    <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @show_side_nav == "watermark"})}>Watermark</h1>
+    <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @watermark_section?})}>Watermark</h1>
     <.card color="blue-planning-300" icon="three-people" title="Custom Watermark" badge={0} class="cursor-pointer mt-8" >
-      <%= if @case == :image and @show_image_preview do  %>
-
-        <img src={"#{@global_settings_gallery && @global_settings_gallery.global_watermark_path && PhotoStorage.path_to_url(@global_settings_gallery.global_watermark_path)}"} />
-        <%= if watermark_type(@global_settings_gallery) == :image do %>
-          <.watermark_name_delete name={@global_settings_gallery.watermark_name}>
-            <p><%= filesize(@global_settings_gallery.watermark_size) %></p>
-          </.watermark_name_delete>
-        <% end %>
-      <% end %>
-
-      <%= if @case == :image and watermark_type(@global_settings_gallery) == :text do  %>
-        <div class="flex items-start justify-between px-6 py-3 errorWatermarkMessage sm:items-center mb-7" role="alert">
-            <.icon name="warning-orange" class="inline-block w-12 h-7 sm:h-8"/>
-            <span class="pl-4 text-sm md:text-base font-sans">
-              <span style="font-bold font-sans">Note:</span>
-              You already have a text watermark saved. If you choose to save an image watermark,
-              this will replace your currently saved text watermark.</span>
-        </div>
-      <% end %>
-
-      <%= if @case == :text and watermark_type(@global_settings_gallery) == :image do  %>
-        <div class="flex items-start justify-between px-6 py-3 errorWatermarkMessage sm:items-center mb-7" role="alert">
-            <.icon name="warning-orange" class="inline-block w-12 h-7 sm:h-8"/>
-            <span class="pl-4 text-sm md:text-base">
-              <span style="font-bold font-sans">Note:</span> You already have an image watermark saved.
-              If you choose to save a text watermark, this will replace your currently saved image watermark.
-            </span>
-        </div>
-      <% end %>
-
       <div class="flex justify-start mb-4">
-          <button id="waterMarkImage" class={classes("watermarkTypeBtn", %{"active" => @case == :image})} phx-click="image_case" >
-          <span>Image</span>
-          </button>
-          <button id="waterMarkText" class={classes("watermarkTypeBtn", %{"active" => @case == :text})} phx-click="text_case" >
-          <span>Text</span>
-          </button>
+        <.switch_button id="waterMarkImage" expected_case={:image} event="image_case" case={@case} />
+        <.switch_button id="waterMarkText" expected_case={:text} event="text_case" case={@case} />
       </div>
 
-      <%= if @case == :image do %>
-        <div class="overflow-hidden dragDrop__wrapper">
-            <form id="dragDrop-form" phx-submit="save" phx-change="validate_image_input" >
-              <label>
-                  <div id="dropzone" phx-hook="DragDrop" phx-drop-target={@uploads.image.ref} class="flex flex-col items-center justify-center gap-8 cursor-pointer dragDrop">
-                    <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76"/>
-                    <div class="dragDrop__content">
-                        <p class="font-bold">
-                          <span class="font-bold text-base-300">Drop images or </span>
-                          <span class="cursor-pointer primary">Browse
-                            <%= live_file_input @uploads.image, class: "dragDropInput" %>
-                          </span>
-                        </p>
-                        <p class="text-center">Supports PNG</p>
-                    </div>
-                  </div>
-              </label>
-            </form>
-        </div>
-
-        <%= for e <- @uploads.image.entries do %>
-          <div class="flex items-center justify-between w-full uploadingList__wrapper watermarkProgress pt-7" id={e.uuid}>
-            <p class="font-bold font-sans"><%= if e.progress == 100, do: "Upload complete!", else: "Uploading..." %></p>
-            <progress class="grid-cols-1 font-sans" value={e.progress} max="100"><%= e.progress %>%</progress>
-          </div>
-        <% end %>
-
-      <% else %>
-        <div>
-          <img src={"#{@watermarked_preview_path && PhotoStorage.path_to_url(@watermarked_preview_path)}"} class={classes(%{"hidden" => !@show_preview})} />
-          <%= if watermark_type(@global_settings_gallery) == :text do  %>
-            <.watermark_name_delete name={@global_settings_gallery.watermark_text}>
-              <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
-            </.watermark_name_delete>
-          <% end %>
-          <.form :let={f} for={@changeset} phx-change="validate_text_input" phx-submit="save_watermark" class="mt-5 font-sans" id="textWatermarkForm">
-            <div class="gallerySettingsInput flex flex-row p-1">
-              <%= text_input f, :watermark_text , placeholder: "Enter your watermark text here", class: "bg-base-200 rounded-lg p-2 w-full focus:outline-inherit mr-1" %>
-              <a class={classes("btn-secondary bg-base-200 flex items-center ml-auto whitespace-nowrap", %{"hidden" => !@ready_to_save})} phx-click="preview_watermark"><%= preview_button_text(@show_preview) %></a>
-              <%= error_tag f, :watermark_text %>
-            </div>
-          </.form>
-        </div>
-      <% end %>
+      <.watermark_section {assigns} />
 
       <div class="flex flex-col gap-2 py-6 lg:flex-row-reverse">
-        <button class={"btn-primary #{!@ready_to_save && 'cursor-not-allowed'}"} phx-click="save_watermark" disabled={!@ready_to_save}>Save</button>
-        <button class="btn-secondary" phx-click="close" phx-value-ref={@entry && @entry.ref}><span>Cancel</span></button>
+        <%= unless @case == :image do %>
+          <button class={"btn-primary #{!@changeset.valid? && 'cursor-not-allowed'}"} phx-click="save_watermark" disabled={!@changeset.valid?}>Save</button>
+          <button class="btn-secondary" phx-click="close"><span>Cancel</span></button>
+        <% end %>
       </div>
     </.card>
     """
   end
 
-  defp section(%{show_side_nav: "products"} = assigns) do
+  defp section(%{product_section?: true, print_price_section?: false} = assigns) do
     ~H"""
       <.live_component id="products" module={ProductComponent} organization_id={@current_user.organization_id} />
     """
   end
 
-  defp section(%{show_side_nav: "print_product"} = assigns) do
+  defp section(%{product_section?: true, print_price_section?: true} = assigns) do
     ~H"""
-      <.live_component id="print_product" module={PrintProductComponent} product={@product} />
+      <.live_component id="product_prints" module={PrintProductComponent} product={@product} />
     """
   end
 
   defp section(assigns), do: ~H[<div></div>]
 
-  defp watermark_name_delete(assigns) do
+  defp watermark_section(%{case: :image} = assigns) do
+    ~H"""
+    <%= if @gs_gallery.watermark_type == :image && @gs_gallery.global_watermark_path do %>
+      <img src={"#{PhotoStorage.path_to_url(@gs_gallery.global_watermark_path)}"} />
+    <% end %>
+
+    <.watermark_name_delete name={@gs_gallery.watermark_name} case={@case} watermark_type={@gs_gallery.watermark_type}>
+      <p><%= @gs_gallery.watermark_size && filesize(@gs_gallery.watermark_size) %></p>
+    </.watermark_name_delete>
+    <.existing_watermark_message {assigns} />
+
+    <div class="overflow-hidden dragDrop__wrapper">
+        <form id="dragDrop-form" phx-submit="save" phx-change="validate_image_input" >
+          <label>
+              <div id="dropzone" phx-hook="DragDrop" phx-drop-target={@uploads.image.ref} class="flex flex-col items-center justify-center gap-8 cursor-pointer dragDrop">
+                <img src={Routes.static_path(PicselloWeb.Endpoint, "/images/drag-drop-img.png")} width="76" height="76"/>
+                <div class="dragDrop__content">
+                    <p class="font-bold">
+                      <span class="font-bold text-base-300">Drop images or </span>
+                      <span class="cursor-pointer primary">Browse
+                        <%= live_file_input @uploads.image, class: "dragDropInput" %>
+                      </span>
+                    </p>
+                    <p class="text-center">Supports PNG</p>
+                </div>
+              </div>
+          </label>
+        </form>
+    </div>
+
+    <%= for e <- @uploads.image.entries do %>
+      <div class="flex items-center justify-between w-full uploadingList__wrapper watermarkProgress pt-7" id={e.uuid}>
+        <p class="font-bold font-sans"><%= if e.progress == 100, do: "Upload complete!", else: "Uploading..." %></p>
+        <progress class="grid-cols-1 font-sans" value={e.progress} max="100"><%= e.progress %>%</progress>
+      </div>
+    <% end %>
+    """
+  end
+
+  defp watermark_section(%{case: :text} = assigns) do
+    ~H"""
+    <div class="flex flex-col justify-center">
+      <img src={"#{@watermarked_preview_path && PhotoStorage.path_to_url(@watermarked_preview_path)}"} />
+
+      <.watermark_name_delete name={@gs_gallery.watermark_text} case={@case} watermark_type={@gs_gallery.watermark_type}>
+        <.icon name="typography-symbol" class="w-3 h-3.5 ml-1 fill-current"/>
+      </.watermark_name_delete>
+      <.existing_watermark_message {assigns} />
+
+      <.form :let={f} for={@changeset} phx-change="validate_text_input" phx-submit="save_watermark" class="mt-5 font-sans" id="textWatermarkForm">
+        <div class="gallerySettingsInput flex flex-row p-1">
+          <%= text_input f, :watermark_text , placeholder: "Enter your watermark text here", class: "bg-base-200 rounded-lg p-2 w-full focus:outline-inherit mr-1" %>
+          <a class={classes("btn-secondary bg-base-200 flex items-center ml-auto whitespace-nowrap", %{"hidden" => !@changeset.valid?})} phx-click="preview_watermark"><%= @show_preview && "Hide Preview" || "Show Preview" %></a>
+          <%= error_tag f, :watermark_text %>
+        </div>
+      </.form>
+    </div>
+    """
+  end
+
+  defp switch_button(assigns) do
+    ~H"""
+    <button id={@id} class={classes("watermarkTypeBtn", %{"active" => @case == @expected_case})} phx-click={@event} >
+      <span><%= @expected_case |> Atom.to_string() |> String.capitalize() %></span>
+    </button>
+    """
+  end
+
+  defp existing_watermark_message(%{case: w_case, gs_gallery: gs_gallery} = assigns) do
+    text_watermarked? = w_case == :image and watermark_type(gs_gallery) == :text
+    assigns = Enum.into(assigns, %{current_watermark: (text_watermarked? && "text") || "image"})
+
+    ~H"""
+      <div id="any" phx-update="replace" class={"flex items-start justify-between px-6 py-3 errorWatermarkMessage sm:items-center mb-7 #{watermark_type(@gs_gallery) in [@case, :undefined] && 'hidden'}"} role="alert">
+        <.icon name="warning-orange" class="inline-block w-12 h-7 sm:h-8"/>
+        <span class="pl-4 text-sm md:text-base font-sans">
+        <span style="font-bold font-sans">Note:</span>
+        You already have a <%= @current_watermark %> watermark saved. If you choose to save an <%= @current_watermark %>
+        watermark, this will replace your currently saved <%= @current_watermark %> watermark.</span>
+      </div>
+    """
+  end
+
+  defp watermark_name_delete(%{case: type, watermark_type: type} = assigns) do
     ~H"""
       <div class="flex justify-between mb-8 mt-11 font-sans">
         <p><%= @name %></p>
         <div class="flex items-center">
           <%= render_slot @inner_block %>
-          <.remove_button />
+          <button phx-click="delete" class="pl-7">
+            <.icon name="remove-icon" class="w-4 h-4 ml-1 text-base-250"/>
+          </button>
         </div>
       </div>
     """
   end
 
+  defp watermark_name_delete(assigns), do: ~H[]
+
   defp nav_item(assigns) do
-    assigns = Enum.into(assigns, %{event_name: nil})
+    assigns = Enum.into(assigns, %{event_name: nil, print_price_section?: nil})
 
     ~H"""
     <div class={"bg-base-250/10 font-bold rounded-lg cursor-pointer grid-item"}>
       <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" phx-value-section={@value} phx-click="select_component">
-        <.nav_title title={@item_title} open?={@open? && @show_side_nav !== "print_product"} />
+        <.nav_title title={@item_title} open?={@open? && !@print_price_section?} />
       </div>
-      <%= if @value == "products" && @show_side_nav == "print_product" do %>
-        <div class={classes("flex items-center lg:h-11 pr-4 lg:pl-2 pl-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-b-lg border border-base-220 text-ellipsis hover:text-blue-planning-300", %{"bg-base-200" => @show_side_nav == "print_product"})}>
+      <%= if @print_price_section? do %>
+        <div class={"#{@print_price_section? && 'bg-base-200'} flex items-center lg:h-11 pr-4 lg:pl-2 pl-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-b-lg border border-base-220 text-ellipsis hover:text-blue-planning-300"}>
           <.nav_title title="Print Pricing" open?={@open?} />
         </div>
       <% end %>
       <%= if(@open?) do %>
         <span class="arrow show lg:block hidden">
-          <svg class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10">
+          <svg class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" style="">
             <use href="/images/icons.svg#arrow-filled"></use>
           </svg>
         </span>
@@ -804,28 +802,5 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       </div>
     </a>
     """
-  end
-
-  defp remove_button(assigns) do
-    ~H"""
-    <button phx-click="delete" class="pl-7">
-      <.icon name="remove-icon" class="w-4 h-4 ml-1 text-base-250"/>
-    </button>
-    """
-  end
-
-  defp date_input(assigns) do
-    ~H"""
-      <%= input @f, @name, type: :number_input, min: 0, max: @max , value: if(@number > 0, do: @number),
-      placeholder: "1",
-      class: "border-blue-planning-300 mx-2 md:mx-3 w-20 cursor-pointer 'text-gray-400 cursor-default border-blue-planning-200",
-      disabled: @is_never_expires %>
-    """
-  end
-
-  defp patch(socket, opts \\ []) do
-    socket
-    |> push_patch(to: Routes.gallery_global_settings_index_path(socket, :edit, opts))
-    |> noreply()
   end
 end

@@ -1060,6 +1060,7 @@ defmodule Picsello.Galleries do
   """
   def save_gallery_watermark(gallery, watermark_change) do
     gallery
+    |> Repo.preload(:watermark)
     |> save_watermark(watermark_change)
     |> tap(fn
       {:ok, gallery} -> apply_watermark_on_photos(gallery)
@@ -1069,16 +1070,16 @@ defmodule Picsello.Galleries do
 
   def save_watermark(gallery, watermark_change) do
     gallery
-    |> Repo.preload(:watermark)
     |> Gallery.save_watermark(watermark_change)
     |> Repo.update()
   end
 
-  def apply_watermark_on_photos(gallery) do
-    gallery = gallery |> Repo.preload([:watermark])
+  def apply_watermark_on_photos(%{id: id} = gallery) do
+    %{watermark: watermark} = Repo.preload(gallery, [:watermark])
 
-    get_gallery_photos(gallery.id)
-    |> Enum.each(&ProcessingManager.update_watermark(&1, gallery.watermark))
+    id
+    |> get_gallery_photos()
+    |> Enum.each(&ProcessingManager.update_watermark(&1, watermark))
   end
 
   @doc """

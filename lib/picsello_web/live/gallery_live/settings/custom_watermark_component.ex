@@ -102,7 +102,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
     socket |> noreply()
   end
 
-  def presign_image(image, %{assigns: %{gallery: gallery}} = socket) do
+  def presign_image(image, %{assigns: %{gallery: gallery, watermark: watermark}} = socket) do
     key = Watermark.watermark_path(gallery.id)
 
     sign_opts = [
@@ -125,15 +125,21 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
     params = PhotoStorage.params_for_upload(sign_opts)
     meta = %{uploader: "GCS", key: key, url: params[:url], fields: params[:fields]}
 
-    {:ok, meta, socket}
+    {:ok, meta,
+     assign(
+       socket,
+       :changeset,
+       Galleries.gallery_image_watermark_change(watermark, %{
+         name: image.client_name,
+         size: image.client_size
+       })
+     )}
   end
 
   def handle_image_progress(:image, %{done?: false}, socket), do: socket |> noreply()
 
-  def handle_image_progress(:image, image, socket) do
-    socket
-    |> assign_image_watermark_change(image)
-    |> noreply()
+  def handle_image_progress(:image, _image, socket) do
+    __MODULE__.handle_event("save", %{}, socket)
   end
 
   defp assign_default_changeset(%{assigns: %{watermark: watermark}} = socket) do
@@ -146,18 +152,6 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
       %{valid?: false, ref: ref} -> cancel_upload(socket, :photo, ref)
       _ -> socket
     end
-  end
-
-  defp assign_image_watermark_change(%{assigns: %{watermark: watermark}} = socket, image) do
-    changeset =
-      Galleries.gallery_image_watermark_change(watermark, %{
-        name: image.client_name,
-        size: image.client_size
-      })
-
-    socket
-    |> assign(:changeset, changeset)
-    |> assign(:ready_to_save, changeset.valid?)
   end
 
   defp assign_text_watermark_change(%{assigns: %{watermark: watermark}} = socket, %{

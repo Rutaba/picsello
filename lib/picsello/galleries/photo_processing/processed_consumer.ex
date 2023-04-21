@@ -10,7 +10,10 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
   alias Broadway.Message
   alias Picsello.Galleries.PhotoProcessing.Context
   alias Picsello.Galleries.PhotoProcessing.Waiter
+  alias Picsello.GlobalSettings
   alias Picsello.Workers.CleanStore
+  alias Ecto.Changeset
+  alias Picsello.Repo
   alias Phoenix.PubSub
 
   def start_link(opts) do
@@ -44,32 +47,36 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
   defp do_handle_message(%{
          "task" =>
            %{
-             "is_global" => true,
+             "globalWatermarkPreview" => true,
+             "isSavePreview" => is_save_preview,
              "watermarkedPreviewPath" => watermarked_preview_path,
              "watermarkedOriginalPath" => watermarked_original_path,
-             "user_id" => user_id
+             "organizationId" => organization_id
            } = task
        }) do
-    PubSub.broadcast(Picsello.PubSub, "preview_watermark:#{user_id}", {:preview_watermark, task})
-    scheduled_at = Timex.shift(DateTime.utc_now(), minutes: 1)
+    is_save_preview
+    |> then(fn
+      true ->
+        organization_id
+        |> GlobalSettings.get()
+        |> Changeset.change(%{global_watermark_path: watermarked_preview_path})
+        |> Repo.update!()
 
-    [watermarked_preview_path, watermarked_original_path]
-    |> Enum.map(fn path ->
-      CleanStore.new(%{path: path}, scheduled_at: scheduled_at)
+        [watermarked_original_path]
+
+      false ->
+        [watermarked_preview_path, watermarked_original_path]
     end)
+    |> Enum.map(
+      &CleanStore.new(%{path: &1}, scheduled_at: Timex.shift(DateTime.utc_now(), hours: 1))
+    )
     |> Oban.insert_all()
 
-    :ok
-  end
-
-  defp do_handle_message(%{
-         "task" =>
-           %{
-             "is_image" => true,
-             "user_id" => user_id
-           } = task
-       }) do
-    PubSub.broadcast(Picsello.PubSub, "save_watermark:#{user_id}", {:save_watermark, task})
+    PubSub.broadcast(
+      Picsello.PubSub,
+      "preview_watermark:#{organization_id}",
+      {:preview_watermark, task}
+    )
 
     :ok
   end
