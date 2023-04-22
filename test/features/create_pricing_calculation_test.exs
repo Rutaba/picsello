@@ -86,12 +86,12 @@ defmodule Picsello.CreatePricingCalculationTest do
                             "gross_revenue" => "$31,858.91",
                             "pricing_suggestions" => [
                               %{
-                                base_price: "$1,200.00",
+                                base_price: "$1,450.00",
                                 job_type: "Wedding",
                                 max_session_per_year: 30
                               },
                               %{
-                                base_price: "$190.48",
+                                base_price: "$230.16",
                                 job_type: "Other",
                                 max_session_per_year: 189
                               }
