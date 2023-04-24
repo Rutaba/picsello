@@ -23,8 +23,7 @@ with "" <> base64 <- System.get_env("GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64"
 else
   _ ->
     json = System.get_env("GOOGLE_APPLICATION_CREDENTIALS")
-    |> System.fetch_env!()
-    |> Jason.decode!()
+    |> File.read!()
   config :picsello, goth_json: json
   config :goth, json: json
 end
