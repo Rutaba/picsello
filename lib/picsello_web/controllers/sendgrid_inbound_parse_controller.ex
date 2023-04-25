@@ -16,7 +16,8 @@ defmodule PicselloWeb.SendgridInboundParseController do
         %Job{id: id} ->
           {%{job_id: id}, [:job_id]}
 
-        _ -> {nil, []}
+        _ ->
+          {nil, []}
       end
 
     body_text = Map.get(params, "text")

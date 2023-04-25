@@ -15,17 +15,24 @@ defmodule Mix.Tasks.UpdatePackagePaymentSchedules do
       preload: [:organization]
     )
     |> Repo.all()
-    |> then(fn packages -> 
+    |> then(fn packages ->
       packages_ids = Enum.map(packages, & &1.id)
-      
+
       Ecto.Multi.new()
       |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn _ ->
         Packages.make_package_payment_schedule(packages)
       end)
-      |> Ecto.Multi.update_all(:templates, fn _ -> 
-        from(p in Package, where: p.id in ^packages_ids, update: [set: [fixed: true, schedule_type: p.job_type]])
-      end, [])
-      |> Repo.transaction()  
+      |> Ecto.Multi.update_all(
+        :templates,
+        fn _ ->
+          from(p in Package,
+            where: p.id in ^packages_ids,
+            update: [set: [fixed: true, schedule_type: p.job_type]]
+          )
+        end,
+        []
+      )
+      |> Repo.transaction()
     end)
   end
 

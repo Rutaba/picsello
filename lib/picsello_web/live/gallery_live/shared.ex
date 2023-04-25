@@ -10,7 +10,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Job,
     Repo,
     Galleries,
-    Client,
     GalleryProducts,
     Messages,
     Cart,

@@ -84,6 +84,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
       if assigns.from == :photographer, do: photo.is_photographer_liked, else: photo.client_liked
 
     assigns = assign(assigns, :is_liked, is_liked)
+
     ~H"""
     <div>
       <div class="w-screen h-screen lg:h-full overflow-auto lg:overflow-y-scroll flex lg:justify-between">

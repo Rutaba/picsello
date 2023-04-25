@@ -1697,8 +1697,7 @@ defmodule PicselloWeb.JobLive.Shared do
         show_subject: true,
         presets: [],
         send_button: "Send",
-        client: Job.client(job),
-        current_user: current_user
+        client: Job.client(job)
       })
       |> noreply()
 
