@@ -134,7 +134,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         </div>
 
         <div class="flex flex-col col-span-2 sm:col-span-1">
-          <p> $<%= @print_credit.amount %> in print credits to use in your gallery</p>
+          <p> $<%= @print_credit.amount / 100 |> Float.round(2)%> in print credits to use in your gallery</p>
         </div>
       <% end %>
 
@@ -154,6 +154,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
   end
 
   def get_print_credit(%{print_credits: %Money{amount: _amount, currency: _usd} = print_credit}) do
+    IO.inspect(print_credit)
     print_credit
   end
 
