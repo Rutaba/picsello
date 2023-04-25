@@ -110,10 +110,13 @@ defmodule PicselloWeb.Live.Contracts.Index do
   def handle_event(
         "view-contract",
         %{"contract-id" => contract_id},
-        %{assigns: assigns} = socket
+        %{assigns: %{current_user: current_user} = assigns} = socket
       ) do
     id = String.to_integer(contract_id)
-    assigns = Map.merge(assigns, %{contract: get_contract(id)})
+    contract = get_contract(id)
+    content = Contracts.default_contract_content(contract, current_user, PicselloWeb.Helpers)
+    contract = Map.put(contract, :content, content)
+    assigns = Map.merge(assigns, %{contract: contract})
 
     socket
     |> PicselloWeb.ContractTemplateComponent.open(
@@ -210,3 +213,5 @@ defmodule PicselloWeb.Live.Contracts.Index do
 
   def get_contract(id), do: Contracts.get_contract_by_id(id)
 end
+
+# when contract is default
