@@ -26,7 +26,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
     albums =
       case client_liked_album(gallery.id) do
         nil -> albums
-        album -> albums ++ [album] 
+        album -> albums ++ [album]
       end
       |> Repo.preload(:orders)
 
@@ -114,7 +114,11 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
         } = socket
       ) do
     socket
-    |> open_modal(AlbumSettings, %{gallery_id: gallery_id, is_mobile: is_mobile})
+    |> open_modal(AlbumSettings, %{
+      gallery_id: gallery_id,
+      is_mobile: is_mobile,
+      is_redirect: true
+    })
     |> noreply()
   end
 
@@ -198,7 +202,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
           |> push_redirect(to: Routes.gallery_albums_index_path(socket, :index, gallery_id))
         end
         |> put_flash(:success, "Album deleted successfully")
-        
+
       _any ->
         socket
         |> put_flash(:success, "Could not delete album")
