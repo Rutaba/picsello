@@ -97,6 +97,10 @@ defmodule Picsello.Organization do
     |> validate_required([:name])
     |> prepare_changes(&change_slug/1)
     |> unique_constraint(:slug)
+    |> case do
+      %{changes: %{name: _}} = changeset -> changeset
+      %{} = changeset -> add_error(changeset, :name, "did not change")
+    end
   end
 
   def edit_profile_changeset(organization, attrs) do
