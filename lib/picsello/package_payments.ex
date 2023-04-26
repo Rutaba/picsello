@@ -187,7 +187,7 @@ defmodule Picsello.PackagePayments do
 
               %{
                 percentage: percentage,
-                description: String.replace(acc.description, acc.percentage, percentage)
+                description: String.replace(acc.description, "#{acc.percentage}", "#{percentage}")
               }
             end
 
