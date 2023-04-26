@@ -93,13 +93,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       socket
       |> assign(job: job |> Repo.preload(:payment_schedules, force: true))
       |> reorder_payment_schedules()
-      |> PicselloWeb.ConfirmationComponent.open(%{
-        title: "Session Booked",
-        subtitle: "Your session is booked with an in-person cash or check payment. Thank you!",
-        close_label: "Got it",
-        icon: nil,
-        close_class: "btn-primary"
-      })
+      |> show_confetti_banner()
       |> noreply()
 
   @impl true
@@ -193,20 +187,18 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> apply(:open_modal_from_proposal, [socket, proposal, read_only])
   end
 
-  defp show_confetti_banner(%{assigns: %{job: %{shoots: shoots} = job}} = socket) do
+  defp show_confetti_banner(%{assigns: %{job: %{shoots: shoots}}} = socket) do
     {title, subtitle} =
-      if !PaymentSchedules.all_paid?(job) || PaymentSchedules.free?(job) do
-        {"Thank you! Your #{ngettext("session is", "sessions are", Enum.count(shoots))} now booked.",
-         "We are so excited to be working with you, thank you for your business. See you soon."}
-      else
-        {"Paid in full. Thank you!", "Now it’s time to make some memories."}
-      end
+      {"Congratulations - your #{ngettext("session is", "sessions are", Enum.count(shoots))} now booked.",
+       "If you opted to pay via cash or check, please arrange for payment at your earliest convenience. You can save and refer back to your client portal for shoot details, if additional payments are due, and to contact me.
+
+I look forward to capturing these memories for you!"}
 
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
       title: title,
       subtitle: subtitle,
-      close_label: "Got it",
+      close_label: "Return to your portal",
       icon: nil,
       close_class: "btn-primary"
     })
