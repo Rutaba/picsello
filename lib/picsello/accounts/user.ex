@@ -191,6 +191,10 @@ defmodule Picsello.Accounts.User do
     |> cast(attrs, [:time_zone])
     |> validate_required([:time_zone])
     |> validate_time_zone_identifier(:time_zone)
+    |> case do
+      %{changes: %{time_zone: _}} = changeset -> changeset
+      %{} = changeset -> add_error(changeset, :time_zone, "did not change")
+    end
   end
 
   @doc """
