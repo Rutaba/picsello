@@ -42,9 +42,9 @@ defmodule PicselloWeb.GalleryLive.Pricing.ConfirmationComponent do
 
       <div class="flex flex-col mt-2">
         <.grid_item icon="money-bags" item_name="Print Credits" item_value={get_pricing_value(@gallery).print_credits || "-"} />
-        <.grid_item icon="money-bags" item_name="Digital Image Price" item_value={get_pricing_value(@gallery).print_credits || "-"} />
+        <.grid_item icon="money-bags" item_name="Digital Image Price" item_value={get_pricing_value(@gallery).download_each_price || "-"} />
         <.grid_item icon="photos-2" item_name="Included Digital Images" item_value={get_pricing_value(@gallery).download_count || "-"} />
-        <.grid_item icon="money-bags" item_name="Buy Them All Price" item_value={get_pricing_value(@gallery).print_credits || "-"} />
+        <.grid_item icon="money-bags" item_name="Buy Them All Price" item_value={get_pricing_value(@gallery).buy_all || "-"} />
 
       </div>
 
