@@ -200,10 +200,6 @@ defmodule Picsello.PackagePayments do
     end
   end
 
-  defp filter_payments(schedule) do
-    case Date.compare(current_datetime(), schedule.schedule_date) do
-      :gt -> true
-      _ -> false
-    end
-  end
+  defp filter_payments(schedule),
+    do: Date.compare(current_datetime(), schedule.schedule_date) == :gt
 end
