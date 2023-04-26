@@ -186,7 +186,14 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         assigns.pricing_calculations.self_employment_tax_percentage,
         after_tax_income
       )
-    assigns = Enum.into(assigns, %{desired_salary: desired_salary, tax_bracket: tax_bracket, after_tax_income: after_tax_income, take_home: take_home})
+
+    assigns =
+      Enum.into(assigns, %{
+        desired_salary: desired_salary,
+        tax_bracket: tax_bracket,
+        after_tax_income: after_tax_income,
+        take_home: take_home
+      })
 
     ~H"""
       <.container {assigns}>
@@ -280,7 +287,8 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         else
           average_time_per_week
         end,
-      desired_salary: desired_salary
+      desired_salary: desired_salary,
+      costs: costs
     }
 
     assigns =
@@ -298,14 +306,14 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
         <h4 class="mt-4 mb-4 text-xl font-bold text-base-250">Adjust calculation</h4>
         <div class="grid sm:grid-cols-2 gap-8 p-4 border rounded-lg">
-          <label class="flex gap-4 items-center">
+          <label class="flex flex-col gap-1">
             <p class="pb-2 font-bold shrink-0">Gross Salary Needed:</p>
-            <div class="flex flex-col items-center">
+            <div class="flex flex-col">
               <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center", phx_hook: "PriceMask" %>
               <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm block" %>
             </div>
           </label>
-          <label class="flex gap-4 items-center">
+          <label class="flex flex-col gap-1">
             <p class="pb-2 font-bold shrink-0">My average time each week is:</p>
             <div class="flex flex-wrap items-center">
               <%= input @f, :average_time_per_week, type: :text_input, phx_debounce: 500, min: 0, placeholder: "40", class: "p-4 w-24 text-center" %>
@@ -323,7 +331,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <% end %>
         </div>
 
-        <.financial_review desired_salary={@desired_salary} costs={@costs} />
+        <.financial_review desired_salary={input_value(assigns.f, :desired_salary)} costs={@costs} />
 
         <div class="flex justify-end mt-8">
           <button type="button" class="mr-4 btn-secondary" phx-click="previous">Back</button>
@@ -650,7 +658,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
               <%= @actual_salary %>
             </span>
             <span class="block w-full text-center italic">
-              Desired Salary
+              Gross Revenue
             </span>
           </div>
         </div>

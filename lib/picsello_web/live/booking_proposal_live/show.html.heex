@@ -11,7 +11,13 @@
     </div>
     <hr class="border-gray-100 my-8">
 
-    <h2 class="text-5xl md:mt-12">Welcome.</h2>
+    <h2 class="text-2xl md:mt-12">
+      <%= if PaymentSchedules.all_paid?(@job) do %>
+        <span class="capitalize"><%= @job.client.name %></span>, your shoot has been booked!
+      <% else %>
+        <span class="capitalize"><%= @job.client.name %></span>, let's get your shoot booked!
+      <% end %>
+    </h2>
 
     <div class="grid md:grid-cols-2 gap-5">
       <div class="md:mr-24">
@@ -23,13 +29,12 @@
 
             Thank you for choosing <%= @organization.name %>.
           <% else %>
-            Let’s get your shoot booked!
+            Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment.
 
-            We are so excited to work with you!
+            Once your payment has been confirmed, your session is booked for you exclusively and any other client inquiries will be declined. You will receive a payment confirmation email and additional emails about your session leading up to the shoot.
 
-            Your session will not be considered officially booked until the contract is signed and a retainer is paid. Once you are officially booked, the date and time of your photo session will be held for you and all other inquiries will be declined. When you’re officially booked, look for a confirmation email from us with more details about your session.
-
-            We can’t wait to capture this time for you!
+            I look forward to capturing these memories for you and greatly
+            appreciate your business.
 
             <span><%= @organization.name %></span>
           <% end %>
@@ -50,7 +55,7 @@
             </div>
           </div>
         <% end %>
-        <h3 class="text-3xl md:mr-20">Here’s how to officially book your photo session:</h3>
+        <h3 class="text-3xl md:mr-20">To officially book your session:</h3>
 
         <%= unless Job.imported?(@job) do %>
           <button title="Proposal" type="button" phx-click="open-details" class="mt-6 font-semibold btn-row">
@@ -61,7 +66,7 @@
                 <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
               <% end %>
               <div class="flex items-center justify-between w-full font-light">
-                Review your proposal
+                Review and accept your proposal
                 <.icon name="forth" class="stroke-2 stroke-current h-4 w-4" />
               </div>
             </div>
@@ -75,7 +80,7 @@
                 <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
               <% end %>
               <div class="flex items-center justify-between w-full font-light">
-                Read and agree to your contract
+                Review and sign your contract
                 <.icon name="forth" class="stroke-2 stroke-current h-4 w-4" />
               </div>
             </div>
@@ -102,14 +107,14 @@
           <div class="flex flex-col items-start w-full font-medium">
             <%= cond do %>
               <% PaymentSchedules.is_with_cash?(@job) && !PaymentSchedules.all_paid?(@job) -> %>
-                <.badge class="mb-1" color={:red} mode={:outlined}>Pending offline payment</.badge>            
+                <.badge class="mb-1" color={:red} mode={:outlined}>Pending offline payment</.badge>
               <% PaymentSchedules.all_paid?(@job) -> %>
                 <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
               <% true -> %>
                 <.badge class="mb-1" color={:red} mode={:outlined}><%= pending_amount_details(@job) %></.badge>
             <% end %>
             <div class="flex items-center justify-between w-full font-light">
-              <%= if PaymentSchedules.owed_amount(@job) > PaymentSchedules.paid_amount(@job), do: "Pay your retainer", else: "Pay your invoice" %>
+              Make payment
               <.icon name="forth" class="stroke-2 w-4 h-4 stroke-current"/>
             </div>
             <%= if PaymentSchedules.payment_schedules_count(@job) > 1 do %>

@@ -182,6 +182,18 @@
     </div>
 
     <hr />
+    <%= if @print_credit do %>
+      <div class="invoice-row">
+        <div class="invoice-column">
+          <div class="bold pl1">Print Credit</div>
+        </div>
+            <div class="invoice-column">
+              <div>$<%= @print_credit.amount / 100 |> Float.round(2)%> in print credits to use in your gallery</div>
+            </div>
+      </div>
+
+      <hr />
+    <% end %>
 
     <div class="invoice-column pl1 mlauto">
       <div class="contents">
