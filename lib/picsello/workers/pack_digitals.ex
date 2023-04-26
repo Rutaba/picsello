@@ -44,8 +44,8 @@ defmodule Picsello.Workers.PackDigitals do
     )
     |> Repo.all()
     |> Enum.map(fn %{id: job_id} ->
-        Oban.cancel_job(job_id)
-        :ok
+      Oban.cancel_job(job_id)
+      :ok
     end)
   end
 

@@ -5,7 +5,7 @@ defmodule PicselloWeb.ClientLoginComponent do
   @impl true
   def render(assigns) do
     assigns = Enum.into(assigns, %{class: nil})
-    
+
     ~H"""
     <div id="email-and-field-component">
       <div class='flex flex-col mt-4'>

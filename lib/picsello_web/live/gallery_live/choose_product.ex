@@ -183,6 +183,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   defp button_option(%{is_proofing: false} = assigns) do
     opts = [testid: "digital_download", title: "Digital Download"]
     assigns = assign(assigns, :opts, opts)
+
     ~H"""
       <%= case @digital_status do %>
       <% :in_cart -> %>

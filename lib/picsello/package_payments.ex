@@ -45,8 +45,12 @@ defmodule Picsello.PackagePayments do
     multi = Ecto.Multi.new()
 
     if job_id do
+      payment_schedules = merge_payments(opts.payment_schedules)
+
+      current_date = DateTime.utc_now() |> DateTime.truncate(:second)
+
       job_payment_schedules =
-        opts.payment_schedules
+        payment_schedules
         |> Enum.map(
           &%{
             job_id: job_id,
@@ -54,8 +58,8 @@ defmodule Picsello.PackagePayments do
             price: get_price(&1, opts.total_price),
             due_at: &1.schedule_date,
             description: &1.description,
-            inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
-            updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+            inserted_at: current_date,
+            updated_at: current_date
           }
         )
 
@@ -153,4 +157,53 @@ defmodule Picsello.PackagePayments do
   end
 
   defp current_datetime(), do: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
+  defp merge_payments(payment_schedules) do
+    schedules = Enum.group_by(payment_schedules, &filter_payments/1)
+    upcoming_payments = Map.get(schedules, false, [])
+    overdue_payments = Map.get(schedules, true, [])
+
+    first_payment_schedule = List.first(upcoming_payments)
+
+    if first_payment_schedule do
+      updated_payment_schedule =
+        overdue_payments
+        |> Enum.reduce(first_payment_schedule, fn schedule, acc ->
+          updates =
+            if schedule.price do
+              price = Money.add(schedule.price, acc.price)
+
+              %{
+                price: price,
+                description:
+                  String.replace(
+                    acc.description,
+                    "#{div(acc.price.amount, 100)}",
+                    "#{div(price.amount, 100)}"
+                  )
+              }
+            else
+              percentage = schedule.percentage + acc.percentage
+
+              %{
+                percentage: percentage,
+                description: String.replace(acc.description, acc.percentage, percentage)
+              }
+            end
+
+          Map.merge(acc, updates)
+        end)
+
+      List.replace_at(upcoming_payments, 0, updated_payment_schedule)
+    else
+      overdue_payments
+    end
+  end
+
+  defp filter_payments(schedule) do
+    case Date.compare(current_datetime(), schedule.schedule_date) do
+      :gt -> true
+      _ -> false
+    end
+  end
 end

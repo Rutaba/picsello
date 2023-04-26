@@ -133,12 +133,13 @@ defmodule PicselloWeb.JobLive.Show do
       text: text
     } = gallery_attrs(%Gallery{})
 
-    assigns = assign(assigns,
-    button_text: button_text,
-    button_click: button_click,
-    button_disabled: button_disabled,
-    text: text
-    )
+    assigns =
+      assign(assigns,
+        button_text: button_text,
+        button_click: button_click,
+        button_disabled: button_disabled,
+        text: text
+      )
 
     ~H"""
     <div {testid("card-Gallery")}>
@@ -155,6 +156,7 @@ defmodule PicselloWeb.JobLive.Show do
       :finals -> :unlinked_finals
       type -> type
     end
+
     assigns = assign(assigns, build_type: build_type)
 
     ~H"""
