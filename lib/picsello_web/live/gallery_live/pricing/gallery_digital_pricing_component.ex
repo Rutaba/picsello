@@ -4,23 +4,15 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   use PicselloWeb, :live_component
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-<<<<<<< HEAD
 
   import PicselloWeb.PackageLive.Shared,
     only: [
-=======
-  import PicselloWeb.PackageLive.Shared,
-    only: [
-      digital_download_fields: 1,
-      print_credit_fields: 1,
->>>>>>> 3170e8c29 (wip: gallery digital pricing component)
       current: 1,
       check?: 2,
       get_field: 2
     ]
 
   alias Ecto.Changeset
-<<<<<<< HEAD
 
   alias Picsello.{
     Repo,
@@ -29,21 +21,15 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     Packages.Download,
     Packages.PackagePricing
   }
-=======
-  alias Picsello.{Repo, Galleries, GlobalSettings, Galleries.GalleryDigitalPricing, Packages.Download, Packages.PackagePricing}
->>>>>>> 3170e8c29 (wip: gallery digital pricing component)
 
   @impl true
-  def update(%{current_user: current_user} = assigns, socket) do
+  def update(%{current_user: current_user, gallery: gallery} = assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
-<<<<<<< HEAD
     |> assign(:email_error, nil)
     |> assign(:email_input, nil)
-=======
     |> assign(:email_list, gallery.job.client.email)
->>>>>>> 3170e8c29 (wip: gallery digital pricing component)
     |> assign(
       global_settings:
         Repo.get_by(GlobalSettings.Gallery, organization_id: current_user.organization_id)
@@ -54,15 +40,11 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
   @impl true
   def render(assigns) do
-<<<<<<< HEAD
-=======
-    IO.inspect(assigns.download_changeset)
->>>>>>> 3170e8c29 (wip: gallery digital pricing component)
     ~H"""
     <div class="modal">
       <.close_x />
 
-<<<<<<< HEAD
+
       <div class="flex flex-row">
         <h1 class="mt-2 mb-4 text-3xl font-bold mr-6">Edit digital pricing & credits</h1>
         <div class="flex flex-row items-center">
@@ -76,13 +58,6 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       </div>
 
       <.form :let={f} for={@changeset} phx-change={:validate} phx-submit={:submit} phx-target={@myself} id={"form-digital-pricing-gallery-#{@gallery.id}"}>
-=======
-      <div>
-        <h1 class="mt-2 mb-4 text-3xl font-bold">Edit digital pricing & credits</h1>
-      </div>
-
-      <.form for={@changeset} let={f} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-digital-pricing-gallery-#{@gallery.id}"}>
->>>>>>> 3170e8c29 (wip: gallery digital pricing component)
 
       <div class="border border-solid mt-6 p-6 rounded-lg">
         <% p = to_form(@package_pricing) %>
@@ -100,15 +75,9 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
             </label>
             <div class="flex items-center gap-4 ml-7">
               <%= if p |> current() |> Map.get(:is_enabled) do %>
-<<<<<<< HEAD
                 <%= input(f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
                 <div class="flex items-center text-base-250">
                   <%= label_for f, :print_credits, label: "pulled from your package revenue", class: "font-normal" %>
-=======
-                <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
-                <div class="flex items-center text-base-250">
-                  <%= label_for f, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
->>>>>>> 3170e8c29 (wip: gallery digital pricing component)
                 </div>
               <% end %>
             </div>
@@ -124,7 +93,6 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       <hr class="block w-full mt-6 sm:hidden"/>
 
       <div class="border border-solid mt-6 p-6 rounded-lg">
-<<<<<<< HEAD
         <% d = to_form(@download_changeset) %>
         <div class="mt-9 md:mt-1" {testid("download")}>
           <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Digital Collection</h2>
@@ -201,15 +169,12 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       <hr class="block w-full mt-6 sm:hidden"/>
 
       <div class="border border-solid mt-6 p-6 rounded-lg">
-=======
->>>>>>> 3170e8c29 (wip: gallery digital pricing component)
         <div class="mt-9 md:mt-1" {testid("email_list")}>
           <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Restrict Print & Digital Image Credits</h2>
           <p class="text-base-250">Set who can use the print and digital image credits here via their email. Your client will be added automatically.</p>
         </div>
 
         <div class="mt-4 font-normal text-base leading-6">
-<<<<<<< HEAD
           <label class="flex mt-3 font-bold">Enter email</label>
           <div class="flex items-center gap-4">
             <input type="text" class="form-control text-input rounded" id="email_input" name="email" phx-debounce="500" spellcheck="false" placeholder="enter email..." />
@@ -224,62 +189,11 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
               <.icon name="envelope" class="text-blue-planning-300 w-4 h-4" />
               <span class="text-base-250 ml-2 mr-20"><%= email %> <%= if @gallery.job.client.email == email, do: "(client)" %></span>
               <button title="Trash" type="button" phx-target={@myself} phx-click="delete-email" phx-value-email={email} class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-=======
-          <%= form_tag("#", [phx_change: :validate_email, phx_submit: :add_email]) do %>
-            <label class="flex mt-3 font-bold">Enter email</label>
-            <div class="flex items-center gap-4">
-              <input type="text" class="form-control text-input rounded" id="email_input" name="email" phx-debounce="100" spellcheck="false" placeholder="enter email..." />
-              <button class="btn-primary" title="Add email" type="add_email">Add email</button>
-            </div>
+                <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
+              </button>
+            </a>
+            <hr class="block w-full mt-2"/>
           <% end %>
-        </div>
-
-        <div class="mt-4 grid grid-rows-2 grid-flow-col gap-4 ">
-          <div>
-            <a class="flex items-center mt-2 hover:cursor-pointer">
-              <.icon name="envelope" class="text-blue-planning-300 w-4 h-4" />
-              <span class="text-base-250 ml-2 mr-20"><%= @gallery.job.client.email %> (client)</span>
-              <button title="Trash" type="button" phx-click="delete-email" class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
->>>>>>> 3170e8c29 (wip: gallery digital pricing component)
-                <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
-              </button>
-            </a>
-            <hr class="block w-full mt-2"/>
-<<<<<<< HEAD
-          <% end %>
-=======
-          </div>
-          <div>
-            <a class="flex items-center mt-2 hover:cursor-pointer">
-              <.icon name="envelope" class="text-blue-planning-300 w-4 h-4" />
-              <span class="text-base-250 ml-2 mr-20"><%= @gallery.job.client.email %> (client)</span>
-              <button title="Trash" type="button" phx-click="delete-email" class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-                <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
-              </button>
-            </a>
-            <hr class="block w-auto mt-2"/>
-          </div>
-          <div>
-            <a class="flex items-center mt-2 hover:cursor-pointer">
-              <.icon name="envelope" class="text-blue-planning-300 w-4 h-4" />
-              <span class="text-base-250 ml-2 mr-20"><%= @gallery.job.client.email %> (client)</span>
-              <button title="Trash" type="button" phx-click="delete-email" class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-                <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
-              </button>
-            </a>
-            <hr class="block w-full mt-2"/>
-          </div>
-          <div>
-            <a class="flex items-center mt-2 hover:cursor-pointer">
-              <.icon name="envelope" class="text-blue-planning-300 w-4 h-4" />
-              <span class="text-base-250 ml-2 mr-20"><%= @gallery.job.client.email %> (client)</span>
-              <button title="Trash" type="button" phx-click="delete-email" class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-                <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
-              </button>
-            </a>
-            <hr class="block w-full mt-2"/>
-          </div>
->>>>>>> 3170e8c29 (wip: gallery digital pricing component)
         </div>
       </div>
 
