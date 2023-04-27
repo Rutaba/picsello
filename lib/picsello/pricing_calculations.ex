@@ -301,8 +301,15 @@ defmodule Picsello.PricingCalculations do
   def calculate_pricing_by_job_types(%{
         job_types: job_types,
         average_time_per_week: average_time_per_week,
-        desired_salary: desired_salary
+        desired_salary: desired_salary,
+        costs: costs
       }) do
+    gross_revenue =
+      calculate_revenue(
+        desired_salary,
+        costs
+      )
+
     job_types
     |> Enum.map(fn job_type ->
       shoots_per_year =
@@ -311,12 +318,12 @@ defmodule Picsello.PricingCalculations do
           job_type
         )
 
-      base_price = calculate_shoot_base_price(desired_salary, shoots_per_year)
+      base_price = calculate_shoot_base_price(gross_revenue, shoots_per_year)
       shoots_per_year = shoots_per_year |> Decimal.round(0, :ceiling)
 
       %{
         job_type: job_type,
-        base_price: calculate_shoot_base_price(desired_salary, shoots_per_year),
+        base_price: calculate_shoot_base_price(gross_revenue, shoots_per_year),
         max_session_per_year: shoots_per_year |> Decimal.round(0, :ceiling),
         actual_salary: calculate_actual_salary(base_price, shoots_per_year)
       }

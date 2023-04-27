@@ -129,21 +129,22 @@ defmodule Picsello.ClientBooksEventTest do
     |> click(button("Next"))
     |> assert_text("Your booking reservation expires in 9:")
     |> assert_text(
-      "Your session will not be considered officially booked until the contract is signed and a retainer is paid"
+      "Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment."
     )
     |> assert_text("Event 1")
     |> assert_text("3 images include | 45 min session | In Studio")
     |> assert_text("Sunday, December 11 @ 11:00 am")
     |> assert_text("320 1st St N")
-    |> click(button("To-Do Review your proposal"))
+    |> click(button("To-Do Review and accept your proposal"))
     |> assert_has(definition("Total", text: "$15.00"))
     |> click(button("Accept Quote"))
-    |> click(button("To-Do Read and agree to your contract"))
+    |> scroll_to_bottom()
+    |> click(button("To-Do Review and sign your contract"))
     |> assert_text("Retainer and Payment")
     |> fill_in(text_field("Type your full legal name"), with: "Chad Smith")
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
-    |> click(button("To-Do Pay your retainer"))
+    |> click(button("To-Do Make payment"))
     |> assert_has(definition("$1.00 due to book", text: "$1.00"))
     |> click(button("Pay with card Fast easy and secure"))
     |> assert_url_contains("stripe-checkout")
@@ -264,10 +265,11 @@ defmodule Picsello.ClientBooksEventTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text(
-      "Your session will not be considered officially booked until the contract is signed and a retainer is paid"
+      "Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment."
     )
-    |> click(button("To-Do Read and agree to your contract"))
-    |> assert_text("my custom contract desc")
+    |> scroll_to_bottom()
+    |> click(button("To-Do Review and accept your proposal"))
+    |> assert_text("My custom package")
   end
 
   feature "client tries to book unavailable time", %{
