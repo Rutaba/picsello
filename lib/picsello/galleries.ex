@@ -498,7 +498,7 @@ defmodule Picsello.Galleries do
     )
     |> Multi.merge(fn %{gallery: gallery} ->
       gallery
-      |> Repo.preload(:gallery_digital_pricing, job: [:client, :package])
+      |> Repo.preload(job: [:client, :package])
       |> check_digital_pricing()
     end)
     |> Multi.merge(fn %{gallery: gallery} ->

@@ -146,6 +146,7 @@ defmodule Picsello.Galleries.Gallery do
 
   def save_digital_pricing_changeset(gallery, attrs \\ %{}) do
     gallery
+    |> Repo.preload(:gallery_digital_pricing)
     |> change(attrs)
     |> cast_assoc(:gallery_digital_pricing, with: &GalleryDigitalPricing.changeset/2)
   end
