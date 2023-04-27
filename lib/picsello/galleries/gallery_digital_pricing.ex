@@ -17,7 +17,14 @@ defmodule Picsello.Galleries.GalleryDigitalPricing do
     timestamps(type: :utc_datetime)
   end
 
-  @create_attrs [:download_each_price, :download_count, :print_credits, :buy_all, :email_list, :gallery_id]
+  @create_attrs [
+    :download_each_price,
+    :download_count,
+    :print_credits,
+    :buy_all,
+    :email_list,
+    :gallery_id
+  ]
   def changeset(struct, attrs) do
     struct
     |> cast(attrs, @create_attrs)

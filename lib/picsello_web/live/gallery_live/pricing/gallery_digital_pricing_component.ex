@@ -4,17 +4,23 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   use PicselloWeb, :live_component
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
+
   import PicselloWeb.PackageLive.Shared,
     only: [
-      digital_download_fields: 1,
-      print_credit_fields: 1,
       current: 1,
       check?: 2,
       get_field: 2
     ]
 
   alias Ecto.Changeset
-  alias Picsello.{Repo, Galleries, GlobalSettings, Galleries.GalleryDigitalPricing, Packages.Download, Packages.PackagePricing}
+
+  alias Picsello.{
+    Repo,
+    GlobalSettings,
+    Galleries.GalleryDigitalPricing,
+    Packages.Download,
+    Packages.PackagePricing
+  }
 
   @impl true
   def update(%{current_user: current_user, gallery: gallery} = assigns, socket) do
@@ -192,7 +198,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"_target" => ["email"], "email" => email} = params, %{assigns: %{email_list: email_list}} = socket) do
+  def handle_event("validate", %{"_target" => ["email"], "email" => email}, socket) do
     email =
       email
       |> String.downcase()
@@ -219,28 +225,40 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   end
 
   @impl true
-  def handle_event("add-email", _, %{assigns: %{email_list: email_list, email_input: email}} = socket) do
+  def handle_event(
+        "add-email",
+        _,
+        %{assigns: %{email_list: email_list, email_input: email}} = socket
+      ) do
     socket
     |> assign(:email_list, email_list ++ [email])
     |> noreply()
   end
 
   @impl true
-  def handle_event("delete-email", %{"email" => email}, %{assigns: %{email_list: email_list}} = socket) do
+  def handle_event(
+        "delete-email",
+        %{"email" => email},
+        %{assigns: %{email_list: email_list}} = socket
+      ) do
     socket
     |> assign(:email_list, List.delete(email_list, email))
     |> noreply()
   end
 
   @impl true
-  def handle_event("submit", _params, %{assigns: %{changeset: changeset, gallery: gallery}} = socket) do
+  def handle_event("submit", _params, %{assigns: %{changeset: changeset}} = socket) do
     send(socket.parent_pid, {:update, %{changeset: changeset}})
 
     socket
     |> noreply()
   end
 
-  defp assign_changeset(%{assigns: %{gallery: gallery, global_settings: global_settings} = assigns} = socket, params, action \\ :validate) do
+  defp assign_changeset(
+         %{assigns: %{gallery: gallery, global_settings: global_settings} = assigns} = socket,
+         params,
+         action \\ :validate
+       ) do
     download_params = Map.get(params, "download", %{}) |> Map.put("step", :pricing)
 
     download_changeset =
@@ -263,14 +281,22 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       |> Map.merge(%{
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download),
-        "buy_all" => Download.buy_all(download),
+        "buy_all" => Download.buy_all(download)
       })
 
     digital_pricing_params =
-      if Ecto.Changeset.get_field(package_pricing_changeset, :is_enabled), do: digital_pricing_params, else: digital_pricing_params |> Map.put("print_credits", Money.new(0))
+      if Changeset.get_field(package_pricing_changeset, :is_enabled),
+        do: digital_pricing_params,
+        else: digital_pricing_params |> Map.put("print_credits", Money.new(0))
 
     changeset =
-      GalleryDigitalPricing.changeset((if gallery.gallery_digital_pricing, do: gallery.gallery_digital_pricing, else: %GalleryDigitalPricing{}), digital_pricing_params)
+      GalleryDigitalPricing.changeset(
+        if(gallery.gallery_digital_pricing,
+          do: gallery.gallery_digital_pricing,
+          else: %GalleryDigitalPricing{}
+        ),
+        digital_pricing_params
+      )
       |> Map.put(:action, action)
 
     socket

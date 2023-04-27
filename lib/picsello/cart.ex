@@ -111,7 +111,8 @@ defmodule Picsello.Cart do
       select: %{
         print:
           type(
-            coalesce(digital_pricing.print_credits, 0) - coalesce(sum(products.print_credit_discount), 0),
+            coalesce(digital_pricing.print_credits, 0) -
+              coalesce(sum(products.print_credit_discount), 0),
             Money.Ecto.Amount.Type
           )
       },

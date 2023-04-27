@@ -3,7 +3,17 @@ defmodule Picsello.Galleries.Gallery do
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query
-  alias Picsello.Galleries.{Photo, Watermark, CoverPhoto, GalleryProduct, Album, SessionToken, GalleryDigitalPricing}
+
+  alias Picsello.Galleries.{
+    Photo,
+    Watermark,
+    CoverPhoto,
+    GalleryProduct,
+    Album,
+    SessionToken,
+    GalleryDigitalPricing
+  }
+
   alias Picsello.{Job, Cart.Order, Repo, GlobalSettings}
 
   @status_options [

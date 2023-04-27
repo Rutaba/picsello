@@ -56,15 +56,24 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   @impl true
   def handle_event("confirm-reset-digital-pricing", _, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> PicselloWeb.GalleryLive.Pricing.ConfirmationComponent.open(%{title: "You're resetting this gallery's pricing", gallery: gallery})
+    |> PicselloWeb.GalleryLive.Pricing.ConfirmationComponent.open(%{
+      title: "You're resetting this gallery's pricing",
+      gallery: gallery
+    })
     |> noreply()
   end
 
   @impl true
-  def handle_info({:confirm_event, "reset-digital-pricing"}, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(
+        {:confirm_event, "reset-digital-pricing"},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
     case Galleries.reset_gallery_pricing(gallery) do
       {:ok, updated_gallery} ->
-        updated_gallery = updated_gallery |> Repo.preload([:photographer, :package]) |> Galleries.load_watermark_in_gallery()
+        updated_gallery =
+          updated_gallery
+          |> Repo.preload([:photographer, :package])
+          |> Galleries.load_watermark_in_gallery()
 
         socket
         |> assign(:gallery, updated_gallery)
