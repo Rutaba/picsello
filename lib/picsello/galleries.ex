@@ -528,28 +528,43 @@ defmodule Picsello.Galleries do
 
   defp check_digital_pricing(%{job: %{package: package, client: client}} = gallery) do
     case package do
-      nil -> Multi.new()
+      nil ->
+        Multi.new()
 
       package ->
         Multi.new()
-        |> Multi.update(:gallery_digital_pricing, Gallery.save_digital_pricing_changeset(gallery, %{gallery_digital_pricing: %{
-          buy_all: package.buy_all,
-          print_credits: (if is_nil(get_first_gallery(gallery)), do: package.print_credits, else: Money.new(0)),
-          download_count: package.download_count,
-          download_each_price: package.download_each_price,
-          email_list: [client.email]
-        }
-        }), [])
+        |> Multi.update(
+          :gallery_digital_pricing,
+          Gallery.save_digital_pricing_changeset(gallery, %{
+            gallery_digital_pricing: %{
+              buy_all: package.buy_all,
+              print_credits:
+                if(is_nil(get_first_gallery(gallery)),
+                  do: package.print_credits,
+                  else: Money.new(0)
+                ),
+              download_count: package.download_count,
+              download_each_price: package.download_each_price,
+              email_list: [client.email]
+            }
+          }),
+          []
+        )
     end
   end
 
   def reset_gallery_pricing(gallery) do
-    Gallery.save_digital_pricing_changeset(gallery, %{gallery_digital_pricing: %{
-      buy_all: gallery.package.buy_all,
-      print_credits: (if is_nil(get_first_gallery(gallery)), do: gallery.package.print_credits, else: Money.new(0)),
-      download_count: gallery.package.download_count,
-      download_each_price: gallery.package.download_each_price,
-    }
+    Gallery.save_digital_pricing_changeset(gallery, %{
+      gallery_digital_pricing: %{
+        buy_all: gallery.package.buy_all,
+        print_credits:
+          if(is_nil(get_first_gallery(gallery)),
+            do: gallery.package.print_credits,
+            else: Money.new(0)
+          ),
+        download_count: gallery.package.download_count,
+        download_each_price: gallery.package.download_each_price
+      }
     })
     |> Repo.update()
   end

@@ -23,6 +23,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign(:email_list, [gallery.job.client.email])
     |> assign(:email_error, nil)
+    |> assign(:email_input, nil)
     |> assign(
       global_settings:
         Repo.get_by(GlobalSettings.Gallery, organization_id: current_user.organization_id)
@@ -33,7 +34,6 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
   @impl true
   def render(assigns) do
-    IO.inspect(assigns.download_changeset)
     ~H"""
     <div class="modal">
       <.close_x />
@@ -161,28 +161,24 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
         </div>
 
         <div class="mt-4 font-normal text-base leading-6">
-          <form id={"email-form"} phx-submit="add-email" phx-change="validate-email" phx-target={@myself} >
-            <label class="flex mt-3 font-bold">Enter email</label>
-            <div class="flex items-center gap-4">
-              <input type="text" class="form-control text-input rounded" id="email_input" name="email" phx-debounce="500" spellcheck="false" placeholder="enter email..." />
-              <button class="btn-primary" title="Add email" type="submit">Add email</button>
-            </div>
-            <span {testid("email-error")} class={classes("text-red-sales-300 text-sm", %{"hidden" => !@email_error})}><%= @email_error %></span>
-          </form>
+          <label class="flex mt-3 font-bold">Enter email</label>
+          <div class="flex items-center gap-4">
+            <input type="text" class="form-control text-input rounded" id="email_input" name="email" phx-debounce="500" spellcheck="false" placeholder="enter email..." />
+            <button class="btn-primary" title="Add email" phx-target={@myself} phx-click="add-email" disabled={@email_error || !@email_input }>Add email</button>
+          </div>
+          <span {testid("email-error")} class={classes("text-red-sales-300 text-sm", %{"hidden" => !@email_error})}><%= @email_error %></span>
         </div>
 
         <div class="mt-4 grid grid-rows-2 grid-flow-col gap-4">
           <%= for(email <- @email_list) do %>
-            <div>
-              <a class="flex items-center mt-2 hover:cursor-pointer">
-                <.icon name="envelope" class="text-blue-planning-300 w-4 h-4" />
-                <span class="text-base-250 ml-2 mr-20"><%= email %> <%= if @gallery.job.client.email == email, do: "(client)" %></span>
-                <button title="Trash" type="button" phx-click="delete-email" class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-                  <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
-                </button>
-              </a>
-              <hr class="block w-full mt-2"/>
-            </div>
+            <a class="flex items-center mt-2 hover:cursor-pointer">
+              <.icon name="envelope" class="text-blue-planning-300 w-4 h-4" />
+              <span class="text-base-250 ml-2 mr-20"><%= email %> <%= if @gallery.job.client.email == email, do: "(client)" %></span>
+              <button title="Trash" type="button" phx-target={@myself} phx-click="delete-email" class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+                <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
+              </button>
+            </a>
+            <hr class="block w-full mt-2"/>
           <% end %>
         </div>
       </div>
@@ -196,21 +192,23 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"_target" => ["email"], "email" => email}, %{assigns: %{email_list: email_list}} = socket) do
+  def handle_event("validate", %{"_target" => ["email"], "email" => email} = params, %{assigns: %{email_list: email_list}} = socket) do
     email =
       email
       |> String.downcase()
-      |> String.trim(email)
+      |> String.trim()
 
-    if String.match?(email, Picsello.Accounts.User.email_regex()) |> IO.inspect(label: "Valid email?") do
+    if String.match?(email, Picsello.Accounts.User.email_regex()) do
       socket
       |> assign(:email_error, nil)
+      |> assign(:email_input, email)
     else
       socket
       |> assign(
         :email_error,
         "please enter valid email"
       )
+      |> assign(:email_input, nil)
     end
     |> noreply()
   end
@@ -221,23 +219,9 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   end
 
   @impl true
-  def handle_event("add-email", %{"email" => email}, %{assigns: %{email_list: email_list}} = socket) do
-    email =
-      email
-      |> String.downcase()
-      |> String.trim(email)
-
-    if String.match?(email, Picsello.Accounts.User.email_regex()) do
-      socket
-      |> assign(:email_error, nil)
-      |> assign(:email_list, List.append(email_list, email))
-    else
-      socket
-      |> assign(
-        :email_error,
-        "please enter valid email"
-      )
-    end
+  def handle_event("add-email", _, %{assigns: %{email_list: email_list, email_input: email}} = socket) do
+    socket
+    |> assign(:email_list, email_list ++ [email])
     |> noreply()
   end
 
@@ -249,26 +233,19 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   end
 
   @impl true
-  def handle_event("submit", params, %{assigns: %{changeset: changeset}} = socket) do
-    case Repo.update(changeset) do
-      {:ok, _gallery_digital_pricing} ->
-        socket
-        |> put_flash(:success, "Gallery pricing updated")
+  def handle_event("submit", _params, %{assigns: %{changeset: changeset, gallery: gallery}} = socket) do
+    send(socket.parent_pid, {:update, %{changeset: changeset}})
 
-      _ ->
-        socket
-        |> put_flash(:error, "Couldn't update gallery pricing")
-    end
+    socket
     |> noreply()
   end
 
   defp assign_changeset(%{assigns: %{gallery: gallery, global_settings: global_settings} = assigns} = socket, params, action \\ :validate) do
-    download_params = Map.get(params, "download", %{}) |> Map.put("step", "pricing")
+    download_params = Map.get(params, "download", %{}) |> Map.put("step", :pricing)
 
     download_changeset =
       gallery.gallery_digital_pricing
       |> Download.from_package(global_settings)
-      |> IO.inspect()
       |> Download.changeset(download_params)
       |> Map.put(:action, action)
 
@@ -282,11 +259,15 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
     digital_pricing_params =
       params
+      |> Map.get("gallery_digital_pricing", %{})
       |> Map.merge(%{
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download),
-        "buy_all" => Download.buy_all(download)
+        "buy_all" => Download.buy_all(download),
       })
+
+    digital_pricing_params =
+      if Ecto.Changeset.get_field(package_pricing_changeset, :is_enabled), do: digital_pricing_params, else: digital_pricing_params |> Map.put("print_credits", Money.new(0))
 
     changeset =
       GalleryDigitalPricing.changeset((if gallery.gallery_digital_pricing, do: gallery.gallery_digital_pricing, else: %GalleryDigitalPricing{}), digital_pricing_params)
@@ -303,7 +284,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   defp gallery_pricing_params(nil), do: %{}
 
   defp gallery_pricing_params(gallery) do
-    case gallery |> Map.get(:print_credits) do
+    case gallery.gallery_digital_pricing |> Map.get(:print_credits) do
       %Money{} = value -> %{is_enabled: Money.positive?(value)}
       _ -> %{is_enabled: false}
     end

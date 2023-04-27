@@ -78,6 +78,22 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
     |> noreply()
   end
 
+  @impl true
+  def handle_info({:update, %{changeset: changeset}}, %{assigns: %{gallery: gallery}} = socket) do
+    case Repo.update(changeset |> Map.put(:action, :update)) do
+      {:ok, _gallery_digital_pricing} ->
+        socket
+        |> assign(:gallery, Repo.preload(gallery, :gallery_digital_pricing, force: true))
+        |> put_flash(:success, "Gallery pricing updated")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Couldn't update gallery pricing")
+    end
+    |> close_modal()
+    |> noreply()
+  end
+
   def grid_item(assigns) do
     ~H"""
       <div class="flex flex-row mt-2 items-center">
