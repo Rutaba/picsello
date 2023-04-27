@@ -534,7 +534,6 @@ defmodule Picsello.Galleries do
 
       package ->
         Multi.new()
-<<<<<<< HEAD
         |> Multi.update(
           :gallery_digital_pricing,
           Gallery.save_digital_pricing_changeset(gallery, %{
@@ -552,21 +551,10 @@ defmodule Picsello.Galleries do
           }),
           []
         )
-=======
-        |> Multi.update(:gallery_digital_pricing, Gallery.save_digital_pricing_changeset(gallery, %{gallery_digital_pricing: %{
-          buy_all: package.buy_all,
-          print_credits: (if is_nil(get_first_gallery(gallery)), do: package.print_credits, else: Money.new(0)),
-          download_count: package.download_count,
-          download_each_price: package.download_each_price,
-          email_list: [client.email]
-        }
-        }), [])
->>>>>>> 1a4122b0b (create separate table for gallery_digital_pricing)
     end
   end
 
   def reset_gallery_pricing(gallery) do
-<<<<<<< HEAD
     first_gallery = get_first_gallery(gallery)
 
     Gallery.save_digital_pricing_changeset(gallery, %{
@@ -580,14 +568,6 @@ defmodule Picsello.Galleries do
         download_count: gallery.package.download_count,
         download_each_price: gallery.package.download_each_price
       }
-=======
-    Gallery.save_digital_pricing_changeset(gallery, %{gallery_digital_pricing: %{
-      buy_all: gallery.package.buy_all,
-      print_credits: (if is_nil(get_first_gallery(gallery)), do: gallery.package.print_credits, else: Money.new(0)),
-      download_count: gallery.package.download_count,
-      download_each_price: gallery.package.download_each_price,
-    }
->>>>>>> 1a4122b0b (create separate table for gallery_digital_pricing)
     })
     |> Repo.update()
   end
