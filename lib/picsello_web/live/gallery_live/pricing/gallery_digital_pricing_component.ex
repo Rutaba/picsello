@@ -297,7 +297,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       |> Map.merge(%{
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download),
-        "buy_all" => Download.buy_all(download),
+        "buy_all" => Download.buy_all(download)
       })
 
     digital_pricing_params =
