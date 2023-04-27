@@ -90,10 +90,10 @@ defmodule PicselloWeb.JobLive.Show do
     |> noreply()
   end
 
-  def handle_event("view-orders", _, %{assigns: %{job: job}} = socket),
+  def handle_event("view-orders", %{"gallery_id" => gallery_id}, socket),
     do:
       socket
-      |> push_redirect(to: Routes.transaction_path(socket, :transactions, job.id))
+      |> push_redirect(to: Routes.transaction_path(socket, :transactions, gallery_id))
       |> noreply()
 
   @impl true
