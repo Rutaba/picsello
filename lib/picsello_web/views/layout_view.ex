@@ -224,7 +224,7 @@ defmodule PicselloWeb.LayoutView do
     case assigns.type do
       "header" ->
         ~H"""
-        <div class={classes(%{"hidden" => @subscription.hidden_14_days?})}>
+        <div class={classes(%{"hidden" => @subscription.hidden_for_days?})}>
           <%= live_redirect to: Routes.user_settings_path(@socket, :edit), class: "flex gap-2 items-center mr-4" do %>
             <h6 class="text-xs italic text-gray-250 opacity-50">Trial ending soon! <%= ngettext("1 day", "%{count} days", Map.get(@subscription, :days_left, 0)) %> left.</h6>
             <button class="hidden sm:block text-xs rounded-lg px-4 py-1 border border-blue-planning-300 font-semibold hover:bg-blue-planning-100">Renew plan</button>
