@@ -48,7 +48,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
         <h1 class="mt-2 mb-4 text-3xl font-bold">Edit digital pricing & credits</h1>
       </div>
 
-      <.form :let={f} for={@changeset} phx_change={:validate} phx_submit={:submit} phx_target={@myself} id={"form-digital-pricing-gallery-#{@gallery.id}"}>
+      <.form :let={f} for={@changeset} phx-change={:validate} phx-submit={:submit} phx-target={@myself} id={"form-digital-pricing-gallery-#{@gallery.id}"}>
 
       <div class="border border-solid mt-6 p-6 rounded-lg">
         <% p = to_form(@package_pricing) %>
@@ -170,7 +170,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
           <label class="flex mt-3 font-bold">Enter email</label>
           <div class="flex items-center gap-4">
             <input type="text" class="form-control text-input rounded" id="email_input" name="email" phx-debounce="500" spellcheck="false" placeholder="enter email..." />
-            <button class="btn-primary" title="Add email" phx-target={@myself} phx-click="add-email" disabled={@email_error || !@email_input }>Add email</button>
+            <button class="btn-primary" type="button" title="Add email" phx-target={@myself} phx-click="add-email" disabled={@email_error || !@email_input }>Add email</button>
           </div>
           <span {testid("email-error")} class={classes("text-red-sales-300 text-sm", %{"hidden" => !@email_error})}><%= @email_error %></span>
         </div>
@@ -221,7 +221,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
   @impl true
   def handle_event("validate", params, socket) do
-    socket |> assign_changeset(params, :validate) |> noreply()
+    socket |> assign_changeset(params) |> noreply()
   end
 
   @impl true
