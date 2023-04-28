@@ -27,7 +27,6 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     socket
     |> assign(assigns)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
-    |> assign(:email_list, [gallery.job.client.email])
     |> assign(:email_error, nil)
     |> assign(:email_input, nil)
     |> assign(
@@ -180,7 +179,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
             <a class="flex items-center mt-2 hover:cursor-pointer">
               <.icon name="envelope" class="text-blue-planning-300 w-4 h-4" />
               <span class="text-base-250 ml-2 mr-20"><%= email %> <%= if @gallery.job.client.email == email, do: "(client)" %></span>
-              <button title="Trash" type="button" phx-target={@myself} phx-click="delete-email" class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+              <button title="Trash" type="button" phx-target={@myself} phx-click="delete-email" phx-value-email={email} class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
                 <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
               </button>
             </a>
@@ -228,10 +227,12 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   def handle_event(
         "add-email",
         _,
-        %{assigns: %{email_list: email_list, email_input: email}} = socket
+        %{assigns: %{email_list: email_list, email_input: email, changeset: changeset}} = socket
       ) do
+    updated_email_list = email_list ++ [email]
     socket
-    |> assign(:email_list, email_list ++ [email])
+    |> assign(:email_list, updated_email_list)
+    |> assign(:changeset, Changeset.put_change(changeset, :email_list, updated_email_list))
     |> noreply()
   end
 
@@ -239,10 +240,13 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   def handle_event(
         "delete-email",
         %{"email" => email},
-        %{assigns: %{email_list: email_list}} = socket
+        %{assigns: %{email_list: email_list, changeset: changeset}} = socket
       ) do
+    updated_email_list = List.delete(email_list, email)
+
     socket
-    |> assign(:email_list, List.delete(email_list, email))
+    |> assign(:email_list, updated_email_list)
+    |> assign(:changeset, Changeset.put_change(changeset, :email_list, updated_email_list))
     |> noreply()
   end
 
@@ -255,7 +259,11 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   end
 
   defp assign_changeset(
-         %{assigns: %{gallery: gallery, global_settings: global_settings} = assigns} = socket,
+         %{
+           assigns:
+             %{gallery: gallery, global_settings: global_settings} =
+               assigns
+         } = socket,
          params,
          action \\ :validate
        ) do
@@ -302,6 +310,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     socket
     |> assign(
       changeset: changeset,
+      email_list: Changeset.get_field(changeset, :email_list),
       package_pricing: package_pricing_changeset,
       download_changeset: download_changeset
     )
