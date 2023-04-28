@@ -1,6 +1,7 @@
 defmodule PicselloWeb.JobDownloadController do
   use PicselloWeb, :controller
 
+  import PicselloWeb.BookingProposalLive.Shared, only: [get_print_credit: 1, get_amount: 1]
   alias Picsello.BookingProposal
 
   def download_invoice_pdf(conn, %{"booking_proposal_id" => booking_proposal_id}) do
@@ -17,6 +18,9 @@ defmodule PicselloWeb.JobDownloadController do
       |> BookingProposal.by_id()
       |> BookingProposal.preloads()
 
+    print_credit = get_print_credit(package)
+    amount = get_amount(print_credit)
+
     PicselloWeb.PDFView.render("job_invoice.html", %{
       read_only: true,
       job: job,
@@ -25,7 +29,9 @@ defmodule PicselloWeb.JobDownloadController do
       organization: organization,
       client: client,
       shoots: shoots,
-      package: package
+      package: package,
+      print_credit: print_credit,
+      amount: amount
     })
     |> Phoenix.HTML.Safe.to_iodata()
     |> IO.iodata_to_binary()
