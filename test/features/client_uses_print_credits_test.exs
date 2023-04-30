@@ -45,6 +45,8 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     product = insert(:product, category: category)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
 
+    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, print_credits: Money.new(500_000)})
+
     insert(:gallery_product,
       category: category,
       preview_photo: insert(:photo, gallery: gallery),
@@ -80,7 +82,8 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       organization: organization,
       product: product,
       package: package,
-      photo_ids: photo_ids
+      photo_ids: photo_ids,
+      gallery_digital_pricing: gallery_digital_pricing
     ]
   end
 
@@ -461,7 +464,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_has(definition("Products (1)", text: "4,545.00"))
       |> assert_has(definition("Digital downloads (1)", text: "55.00"))
       |> assert_has(definition("Print credits used", text: "$4,545.00"))
-      |> assert_has(definition("Total", text: "$59.90"))
+      |> assert_has(definition("Total", text: "$4.90"))
       |> click(link("Continue"))
       |> fill_in_shipping()
       |> click(button("Check out with Stripe"))

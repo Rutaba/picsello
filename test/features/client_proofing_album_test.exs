@@ -19,6 +19,8 @@ defmodule Picsello.ClientProofingAlbumTest do
           )
       )
 
+    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 2})
+
     proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
     insert(:watermark, gallery: gallery)
 
@@ -42,7 +44,7 @@ defmodule Picsello.ClientProofingAlbumTest do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
     Repo.update_all(Package, set: [download_count: 2])
 
-    [gallery: gallery, proofing_album: proofing_album, photo_ids: photo_ids]
+    [gallery: gallery, proofing_album: proofing_album, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   setup :authenticated_proofing_album_client

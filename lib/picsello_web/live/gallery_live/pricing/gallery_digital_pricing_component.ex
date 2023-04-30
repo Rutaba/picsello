@@ -23,7 +23,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   }
 
   @impl true
-  def update(%{current_user: current_user, gallery: gallery} = assigns, socket) do
+  def update(%{current_user: current_user} = assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)

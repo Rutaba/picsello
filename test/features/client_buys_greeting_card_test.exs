@@ -33,6 +33,8 @@ defmodule Picsello.ClientBuysGreetingCardTest do
         use_global: %{watermark: true, expiration: true, digital: true, products: true}
       )
 
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
+
     insert(:watermark, gallery: gallery)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
 
@@ -79,7 +81,7 @@ defmodule Picsello.ClientBuysGreetingCardTest do
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
     end)
 
-    [gallery: gallery, organization: organization, package: package, photo_ids: photo_ids]
+    [gallery: gallery, organization: organization, package: package, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   setup :authenticated_gallery_client
