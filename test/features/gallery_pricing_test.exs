@@ -85,6 +85,7 @@ defmodule Picsello.GalleryPricingTest do
     |> click(button("Yes, reset"))
     |> assert_flash(:success, text: "Gallery pricing reset to package")
   end
+<<<<<<< HEAD
 
   test "Pricing & Print Credits, renders gallery digital pricings", %{
     session: session,
@@ -145,4 +146,6 @@ defmodule Picsello.GalleryPricingTest do
     |> assert_has(css("p", text: "$30"))
     |> assert_has(css("p", text: "$2"))
   end
+=======
+>>>>>>> 537b4b279 (Add test cases for gallery pricings)
 end
