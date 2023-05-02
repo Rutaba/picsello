@@ -122,7 +122,7 @@ defmodule Picsello.Contracts do
     variables = %{
       state: helpers.dyn_gettext(organization.onboarding.state),
       organization_name: organization.name,
-      turnaround_weeks: helpers.ngettext("1 week", "%{count} weeks", 3)
+      turnaround_weeks: helpers.ngettext("1 week", "%{count} weeks", 1)
     }
 
     :bbmustache.render(contract.content, variables, key_type: :atom)

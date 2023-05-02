@@ -58,18 +58,27 @@ defmodule PicselloWeb.Live.Contracts.Index do
   def handle_event(
         "duplicate-contract",
         %{"contract-id" => contract_id},
-        %{assigns: %{current_user: %{organization: %{id: organization_id}}} = assigns} = socket
+        %{
+          assigns:
+            %{current_user: %{organization: %{id: organization_id}} = current_user} = assigns
+        } = socket
       ) do
     id = String.to_integer(contract_id)
+    contract = get_contract(id)
 
-    contract =
-      Contracts.clean_contract_for_changeset(
-        get_contract(id),
-        organization_id
-      )
-      |> Map.put(:name, nil)
+    contract_clean =
+      if is_nil(contract.organization_id) do
+        content = Contracts.default_contract_content(contract, current_user, PicselloWeb.Helpers)
+        contract |> Map.put(:content, content) |> Map.put(:name, nil)
+      else
+        Contracts.clean_contract_for_changeset(
+          contract,
+          organization_id
+        )
+        |> Map.put(:name, nil)
+      end
 
-    assigns = Map.merge(assigns, %{contract: contract})
+    assigns = Map.merge(assigns, %{contract: contract_clean})
 
     socket
     |> PicselloWeb.ContractTemplateComponent.open(
