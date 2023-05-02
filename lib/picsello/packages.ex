@@ -337,7 +337,7 @@ defmodule Picsello.Packages do
       if buy_all do
         %{buy_all: buy_all, is_buy_all: true}
       else
-          %{buy_all: (if global_settings, do: global_settings.buy_all_price, else: Money.new(0)), is_buy_all: false}
+          %{buy_all: (if global_settings, do: global_settings.buy_all_price, else: nil), is_buy_all: false}
       end
     end
 
