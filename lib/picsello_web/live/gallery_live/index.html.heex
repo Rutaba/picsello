@@ -39,7 +39,9 @@
       <div {testid("galleries-#{gallery.id}")} class="md:py-0 md:mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">
         <div class="relative md:grid md:grid-cols-2 flex flex-wrap my-4 md:mx-0 mx-4">
           <div class="flex flex-row align-top">
-            <.image_item socket={@socket} gallery={gallery} is_mobile= {@is_mobile} index={@index} gallery_index={gallery_index}/>
+            <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery, if(@is_mobile, do: [is_mobile: false], else: []))}>
+              <.image_item socket={@socket} gallery={gallery} is_mobile= {@is_mobile} index={@index} gallery_index={gallery_index}/>
+            </a>
             <%= if disabled?(gallery) do %>
               <div class="flex items-center">
                 <span class="font-bold text-xs text-base-250 bg-slate-200 mb-8 ml-2 rounded px-1">Disabled</span>

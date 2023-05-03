@@ -236,7 +236,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     |> noreply()
   end
 
-  def image_item(%{gallery: gallery, is_mobile: is_mobile} = assigns) do
+  def image_item(%{gallery: gallery} = assigns) do
     albums =
       case gallery.type do
         :standard ->
@@ -367,6 +367,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
     icon_text_class =
       if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
+
     assigns = assign(assigns, icon_text_class: icon_text_class)
 
     ~H"""
