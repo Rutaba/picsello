@@ -246,6 +246,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign(active_tab: :contract)
     |> assign(tabs: tabs_list())
     |> assign(default_payment_changeset: nil)
+    |> assign(:show_print_credits, false)
+    |> assign(:show_discounts, false)
+    |> assign(:show_digitals, "close")
     |> ok()
   end
 
@@ -570,11 +573,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <hr class="w-full mt-6"/>
 
-        <.package_print_credit_fields f={@f} package_pricing={@package_pricing} />
+        <.package_print_credit_fields f={@f} package_pricing={@package_pricing} target={@myself} show_print_credits={@show_print_credits}/>
 
         <hr class="w-full mt-6"/>
 
-        <.digital_download_fields package_form={@f} download_changeset={@download_changeset} package_pricing={@package_pricing} />
+        <.digital_download_fields package_form={@f} download_changeset={@download_changeset} package_pricing={@package_pricing} target={@myself} show_digitals={@show_digitals}/>
 
         <hr class="w-full mt-6"/>
 
@@ -584,17 +587,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Package Total</h2>
               <p class="text-base-250 mb-2">Taxes will be calculated at checkout for your client</p>
             </div>
-            <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-click="edit-print-credits">Add a discount or surcharge</button>
+            <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@myself} phx-click="edit-discounts">Add a discount or surcharge</button>
           </div>
           <div class="flex w-1/5">
             <b><%= total_price(@f) %></b>
           </div>
         </div>
 
-        <div class="border border-solid mt-6 rounded-lg w-1/2">
+        <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => !@show_discounts})}>
           <div class="p-2 font-bold bg-base-200 flex flex-row">
             Discount or Surcharge Settings
-            <a phx-click="close" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
+            <a phx-target={@myself} phx-click="edit-discounts" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
           </div>
           <% m = to_form(@multiplier) %>
 
@@ -799,6 +802,27 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     socket
     |> assign(:collapsed_documents, collapsed_documents)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-print-credits", _, %{assigns: %{show_print_credits: show_print_credits}} = socket) do
+    socket
+    |> assign(:show_print_credits, !show_print_credits)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-discounts", _, %{assigns: %{show_discounts: show_discounts}} = socket) do
+    socket
+    |> assign(:show_discounts, !show_discounts)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-digitals", %{"type" => type}, socket) do
+    socket
+    |> assign(:show_digitals, type)
     |> noreply()
   end
 
@@ -1619,7 +1643,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp package_pricing_params(package) do
     case package |> Map.get(:print_credits) do
       nil -> %{is_enabled: false}
-      %Money{} = value -> %{is_enabled: Money.positive?(value)}
+      %Money{} = value -> 
+        %{
+          is_enabled: Money.positive?(value),
+          print_credits_include_in_total: Map.get(package, :print_credits_include_in_total)
+        }
       _ -> %{}
     end
   end

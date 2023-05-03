@@ -24,6 +24,11 @@ defmodule Picsello.Package do
     field :schedule_type, :string
     field :fixed, :boolean, default: true
     field :show_on_public_profile, :boolean, default: false
+    field :print_credits_include_in_total, :boolean, default: false
+    field :digitals_include_in_total, :boolean, default: false
+    field :discount_base_price, :boolean, default: false
+    field :discount_digitals, :boolean, default: false
+    field :discount_print_credits, :boolean, default: false
 
     belongs_to :questionnaire_template, Picsello.Questionnaire
     belongs_to(:organization, Picsello.Organization)
@@ -106,7 +111,7 @@ defmodule Picsello.Package do
     package
     |> cast(
       attrs,
-      ~w[schedule_type fixed description questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks show_on_public_profile]a
+      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed description questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks show_on_public_profile]a
     )
     |> validate_required(~w[name organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
@@ -141,7 +146,7 @@ defmodule Picsello.Package do
     package
     |> cast(
       attrs,
-      ~w[schedule_type fixed base_price download_count download_each_price base_multiplier print_credits buy_all]a
+      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed base_price download_count download_each_price base_multiplier print_credits buy_all]a
     )
     |> validate_required(~w[base_price download_count download_each_price]a)
     |> then(fn changeset ->
@@ -261,6 +266,11 @@ defmodule Picsello.Package do
           turnaround_weeks: integer(),
           schedule_type: String.t(),
           fixed: boolean(),
+          print_credits_include_in_total: boolean(),
+          discount_print_credits: boolean(),
+          discount_digitals: boolean(),
+          discount_base_price: boolean(),
+          digitals_include_in_total: boolean(),
           base_price: Money.t(),
           download_count: integer(),
           download_each_price: Money.t(),

@@ -43,17 +43,20 @@ defmodule Picsello.Packages do
     @primary_key false
     embedded_schema do
       field(:is_enabled, :boolean)
+      field(:print_credits_include_in_total, :boolean)
     end
 
     def changeset(package_pricing \\ %__MODULE__{}, attrs) do
       package_pricing
-      |> cast(attrs, [:is_enabled])
+      |> cast(attrs, [:is_enabled, :print_credits_include_in_total])
     end
 
     def handle_package_params(package, params) do
       case Map.get(params, "package_pricing", %{})
            |> Map.get("is_enabled") do
-        "false" -> Map.put(package, "print_credits", Money.new(0))
+        "false" -> 
+          Map.put(package, "print_credits", Money.new(0))
+          |> Map.put(package, "print_credits_include_in_total", false)
         _ -> package
       end
     end
@@ -122,6 +125,7 @@ defmodule Picsello.Packages do
       field(:status, Ecto.Enum, values: [:limited, :unlimited, :none])
       field(:is_custom_price, :boolean, default: false)
       field(:includes_credits, :boolean, default: false)
+      field(:digitals_include_in_total, :boolean, default: false)
       field(:each_price, Money.Ecto.Amount.Type)
       field(:count, :integer)
       field(:buy_all, Money.Ecto.Amount.Type)
@@ -138,7 +142,8 @@ defmodule Picsello.Packages do
           :each_price,
           :count,
           :is_buy_all,
-          :buy_all
+          :buy_all,
+          :digitals_include_in_total
         ])
 
       if Map.get(attrs, "step") in [:choose_type, :pricing] do
@@ -153,7 +158,8 @@ defmodule Picsello.Packages do
                   is_custom_price: false,
                   includes_credits: false,
                   is_buy_all: false,
-                  buy_all: nil
+                  buy_all: nil,
+                  digitals_include_in_total: false
                 ],
                 &1,
                 fn {k, v}, changeset -> force_change(changeset, k, v) end
@@ -165,6 +171,7 @@ defmodule Picsello.Packages do
             do:
               &1
               |> force_change(:each_price, get_field(&1, :each_price))
+              |> force_change(:digitals_include_in_total, false)
               |> validate_required([:each_price])
               |> validate_inclusion(:is_custom_price, ["true"])
               |> Picsello.Package.validate_money(:each_price, greater_than: 0),
@@ -176,6 +183,7 @@ defmodule Picsello.Packages do
             do:
               &1
               |> force_change(:count, get_field(&1, :count))
+              # |> force_change(:digitals_include_in_total, get_field(&1, :digitals_include_in_total))
               |> validate_required([:count])
               |> validate_inclusion(:is_custom_price, ["true"])
               |> validate_number(:count, greater_than: 0),
