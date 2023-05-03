@@ -5,7 +5,6 @@ defmodule PicselloWeb.PackageLive.Shared do
   use Phoenix.HTML
   use Phoenix.Component
 
-  import PicselloWeb.Gettext, only: [dyn_gettext: 1]
   import PicselloWeb.FormHelpers
   import PicselloWeb.LiveHelpers
   import Phoenix.HTML.Form
@@ -385,17 +384,17 @@ defmodule PicselloWeb.PackageLive.Shared do
       <% p = to_form(@package_pricing) %>
       <div class="flex flex-col w-4/5">
         <.print_fields_heading />
-        <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-click="edit-print-credits">Edit settings</button>
+        <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-click="edit-print-credits">Edit settings</button>
       </div>
-      <div class="flex w-1/5">
-        <b>$500</b>
+      <div class="flex w-1/5 text-base-250">
+        <b><%= get_total_print_credits(@package_pricing) %></b>
       </div>
     </div>
 
-    <div class="border border-solid mt-6 rounded-lg w-1/2">
+    <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => !@show_print_credits})}>
       <div class="p-2 font-bold bg-base-200 flex flex-row">
         Print credit settings
-        <a phx-click="close" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
+        <a phx-target={@target} phx-click="edit-print-credits" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
       </div>
 
       <div class="mt-4 font-normal text-base leading-6 pb-6 px-6">
@@ -409,8 +408,8 @@ defmodule PicselloWeb.PackageLive.Shared do
               <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
 
               <div class="flex items-center text-base-250">
-                <%= checkbox(@f, :include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
-                <%= label_for @f, :include_in_total, label: "Include in package total calculation", class: "font-normal" %>
+                <%= checkbox(@f, :print_credits_include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
+                <%= label_for @f, :print_credits_include_in_total, label: "Include in package total calculation", class: "font-normal" %>
               </div>
             <% end %>
           </div>
@@ -425,12 +424,36 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
+  defp get_digitals_count(download_changeset) do
+    changeset = current(download_changeset)
+    count = Map.get(changeset, :count)
+    if count, do: count, else: 0
+  end
+
+  defp get_buy_all(download_changeset) do
+    changeset = current(download_changeset)
+    buy_all = Map.get(changeset, :buy_all)
+    if buy_all, do: buy_all, else: Money.new(0)
+  end
+
+  defp digitals_total(download_changeset) do
+    changeset = current(download_changeset)
+    if Map.get(changeset, :digitals_include_in_total), do: Money.multiply(Map.get(changeset, :each_price), get_digitals_count(download_changeset)), else: nil
+  end
+
+  defp get_total_print_credits(package_pricing) do
+    package_pricing = package_pricing |> current()
+    print_credits = package_pricing |> Map.get(:print_credits)
+    if Map.get(package_pricing, :print_credits_include_in_total) && Map.get(:is_enabled), do: print_credits, else: nil
+  end
+
   # digital download fields for package & pricing
   def digital_download_fields(assigns) do
     assigns = Map.put_new(assigns, :for, nil)
 
     ~H"""
       <div class="flex mt-6">
+        <% d = to_form(@download_changeset) %>
         <div class="flex-col gap-3 w-4/5">
           <div class="flex flex-col w-4/5 items-center md:items-start">
             <h2 class="mb-1 text-xl font-bold">Digital Collection</h2>
@@ -438,43 +461,42 @@ defmodule PicselloWeb.PackageLive.Shared do
           </div>
           <div class="flex flex-row gap-8 my-2">
             <div>
-              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" />10 images included</span>
-              <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-click="edit-print-credits">Edit settings</button>
+              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" /><%= ngettext("%{count} image", "%{count} images", get_digitals_count(@download_changeset)) %> included</span>
+              <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="digitals" phx-click="edit-digitals">Edit settings</button>
             </div>
             <div>
-              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" />$50 an image</span>
-              <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-click="edit-print-credits">Edit image price</button>
+              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" /><%= current(@download_changeset) |> Map.get(:each_price) %> an image</span>
+              <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="image_price" phx-click="edit-digitals">Edit image price</button>
             </div>
             <div>
-              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" />$420 buy all</span>
-              <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-click="edit-print-credits">Edit upsell options</button>
+              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" /><%= get_buy_all(@download_changeset) %> buy all</span>
+              <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="buy_all" phx-click="edit-digitals">Edit upsell options</button>
             </div>
           </div>
         </div>
-        <b class="flex w-1/5 text-base-250">$200</b>
+        <b class="flex w-1/5 text-base-250"><%= digitals_total(@download_changeset) %></b>
       </div>
 
-      <% d = to_form(@download_changeset) %>
-      <div class="border border-solid mt-6 rounded-lg w-1/2">
+      <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => @show_digitals !== "digitals"})}>
         <div class="p-2 font-bold bg-base-200 flex flex-row">
           Digital Collection Settings
-          <a phx-click="close" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
         </div>
         <.build_download_fields download_changeset={d} {assigns} />
       </div>
 
-      <div class="border border-solid mt-6 rounded-lg w-1/2">
+      <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => @show_digitals !== "image_price"})}>
         <div class="p-2 font-bold bg-base-200 flex flex-row">
           Digital Image Price
-          <a phx-click="close" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
         </div>
         <.include_download_price download_changeset={d} />
       </div>
 
-      <div class="border border-solid mt-6 rounded-lg w-1/2">
+      <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => @show_digitals !== "buy_all"})}>
         <div class="p-2 font-bold bg-base-200 flex flex-row">
           Upsell Options
-          <a phx-click="close" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
         </div>
         <.is_buy_all download_changeset={d} />
       </div>
@@ -512,9 +534,9 @@ defmodule PicselloWeb.PackageLive.Shared do
               <span class="ml-2 text-base-250">included in the package</span>
             </div>
           </div>
-          <div class="flex items-center text-base-250 ml-7">
-            <%= checkbox(@download_changeset, :include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
-            <%= label_for @download_changeset, :include_in_total, label: "Include in package total calculation", class: "font-normal" %>
+          <div class="flex items-center text-base-250 ml-7 mt-2">
+            <%= checkbox(@download_changeset, :digitals_include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
+            <%= label_for @download_changeset, :digitals_include_in_total, label: "Include in package total calculation", class: "font-normal" %>
           </div>
         <% end %>
 
