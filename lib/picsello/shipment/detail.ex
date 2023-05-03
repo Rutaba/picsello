@@ -9,7 +9,6 @@ defmodule Picsello.Shipment.Detail do
     field :das_carrier, Ecto.Enum, values: [:mail, :parcel]
     field :order_attribute_id, :integer
     field(:type, Ecto.Enum, values: [:economy_usps, :economy_trackable, :three_days, :one_day])
-
     field :upcharge, :map
 
     timestamps()
