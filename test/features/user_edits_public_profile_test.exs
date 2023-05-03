@@ -87,4 +87,21 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> click(button("Save"))
     |> assert_has(testid("description", text: "my description"))
   end
+
+  feature "user manages photography types", %{session: session} do
+    session
+    |> visit("/profile/settings")
+    |> assert_has(css("a[href*='/package_templates']", count: 2))
+    |> click(css("a[href*='/package_templates']", text: "Manage photography types"))
+    |> assert_url_contains("package_templates")
+  end
+
+  feature "user can edit photography types while customizing profile", %{session: session} do
+    session
+    |> visit("/profile/settings")
+    |> maximize_window()
+    |> assert_has(button("Customize Profile"))
+    |> click(button("Customize Profile"))
+    |> assert_has(css("a[href*='/package_templates']", text: "Edit Photography Types"))
+  end
 end
