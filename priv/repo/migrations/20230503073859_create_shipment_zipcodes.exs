@@ -7,7 +7,7 @@ defmodule Picsello.Repo.Migrations.CreateShipmentZipcodes do
 
   def up do
     create table(:shipment_zipcodes) do
-      add(:zipcode, :string, null: false)
+      add(:zipcode, :integer, null: false)
       add(:das_type_id, references(:shipment_das_types, on_delete: :nothing), null: false)
     end
 
@@ -23,7 +23,7 @@ defmodule Picsello.Repo.Migrations.CreateShipmentZipcodes do
       |> CSV.decode!()
       |> Enum.each(fn [zipcode, type] ->
         execute(
-          "INSERT INTO shipment_zipcodes (zipcode, das_type_id) VALUES ('#{zipcode}', #{das_types[type]})"
+          "INSERT INTO shipment_zipcodes (zipcode, das_type_id) VALUES (#{zipcode}, #{das_types[type]})"
         )
       end)
     end
