@@ -6,7 +6,6 @@ defmodule Picsello.Repo.Migrations.CreateShipmentDasTypes do
       add(:name, :string)
       add(:parcel_cost, :integer)
       add(:mail_cost, :integer)
-
       timestamps()
     end
 
