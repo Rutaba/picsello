@@ -29,7 +29,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> assign(Map.merge(@defaults, assigns))
     |> assign(assigns)
     |> assign_details(photo_id)
-    |> assign(:download_each_price, Galleries.download_each_price(gallery))
+    |> assign(:download_each_price, gallery.gallery_digital_pricing.download_each_price)
     |> then(fn
       %{assigns: %{is_proofing: true}} = socket ->
         socket

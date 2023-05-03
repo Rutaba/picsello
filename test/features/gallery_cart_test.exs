@@ -31,7 +31,7 @@ defmodule Picsello.GalleryCartTest do
     cart_product = build(:cart_product, whcc_product: whcc_product)
 
     cart_product
-    |> Cart.place_product(gallery.id)
+    |> Cart.place_product(gallery)
     |> preload_order_items()
   end
 
