@@ -9,7 +9,7 @@ defmodule PicselloWeb.GalleryLive.ChooseBundle do
     |> assign(assigns)
     |> assign(
       bundle_status: Cart.bundle_status(gallery),
-      download_all_price: Galleries.get_package(gallery).buy_all,
+      download_all_price: gallery.gallery_digital_pricing.buy_all,
       gallery: gallery
     )
     |> ok()
