@@ -313,7 +313,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     push_redirect(socket, to: checkout_routes.home_page)
   end
 
-  defp assign_credits(%{assigns: %{gallery: gallery, is_proofing: true}} = socket) do
+  defp assign_credits(%{assigns: %{is_proofing: true}} = socket, gallery) do
     assign(socket, :credits, credits(gallery))
   end
 
