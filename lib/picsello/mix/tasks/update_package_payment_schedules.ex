@@ -3,6 +3,7 @@ defmodule Mix.Tasks.UpdatePackagePaymentSchedules do
 
   use Mix.Task
   import Ecto.Query, only: [from: 2]
+  require Logger
   alias Picsello.{Repo, Package, Packages, PackagePaymentSchedule}
 
   @shortdoc "update global watermark paths"
@@ -18,6 +19,8 @@ defmodule Mix.Tasks.UpdatePackagePaymentSchedules do
     |> then(fn packages -> 
       packages_ids = Enum.map(packages, & &1.id)
       
+      Logger.info("Records updated: #{inspect(packages_ids)}") 
+
       Ecto.Multi.new()
       |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn _ ->
         Packages.make_package_payment_schedule(packages)
