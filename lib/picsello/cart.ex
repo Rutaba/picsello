@@ -414,88 +414,82 @@ defmodule Picsello.Cart do
     |> Repo.transaction()
   end
 
-  @products Application.compile_env(:picsello, :products)
-  @base_charges @products[:base_charges]
-  @whcc_photo_prints_id @products[:whcc_photo_prints_id]
-  @whcc_album_id @products[:whcc_album_id]
-  @whcc_books_id @products[:whcc_books_id]
-
-  def add_shipping_details!(product, shipping_type) do
+  @whcc_wall_art_id @products_config[:whcc_wall_art_id]
+  @whcc_photo_prints_id @products_config[:whcc_photo_prints_id]
+  def add_shipping_details!(product, details) do
     product
-    |> CartProduct.changeset(shipping_details(product, shipping_type))
+    |> CartProduct.changeset(shipping_details(product, details))
     |> Repo.update!()
   end
 
-  def shipping_details(product, shipping_type) do
-    %{
-      selections: selections,
-      whcc_product: %{
-        shipping_upcharge: upcharge
-      }
-    } = product
+  def shipping_details(product, %{shipping_type: shipping_type} = details) do
+    shipments = details[:shipment_details] || []
+    das_type = details[:das_type]
+
+    {upcharge, shipment} = get_shipment!(product, shipping_type, shipments)
 
     %{
+      das_carrier_cost: das_carrier_cost(shipment, das_type),
       shipping_type: shipping_type,
-      shipping_upcharge: upcharge |> upcharge(selections) |> to_string |> Decimal.new(),
-      shipping_base_charge:
-        (get_base_charge(product, shipping_type)[:value] * 100) |> trunc |> Money.new()
+      shipping_upcharge: upcharge |> to_string |> Decimal.new(),
+      shipping_base_charge: shipment.base_charge
     }
   end
 
-  def get_base_charge(product, shipping_type) when is_atom(shipping_type),
-    do: get_base_charge(product, Atom.to_string(shipping_type))
+  defp das_carrier_cost(%{das_type: :mail}, %{mail_cost: mail_cost}), do: mail_cost
+  defp das_carrier_cost(%{das_type: :parcel}, %{parcel_cost: parcel_cost}), do: parcel_cost
+  defp das_carrier_cost(_, _), do: Money.new(0)
 
-  def get_base_charge(
-        %{
-          selections: selections,
-          whcc_product: %{
-            whcc_id: product_whcc_id,
-            api: %{"category" => %{"id" => category_whcc_id}}
-          }
-        },
-        shipping_type
-      ) do
+  alias Picsello.Shipment.Detail
+
+  def get_shipment!(product, shipping_type, shipments \\ []),
+    do: do_get_shipment!(product, shipping_type, shipments)
+
+  defp do_get_shipment!(
+         %{
+           selections: selections,
+           whcc_product: %{whcc_id: whcc_id, api: %{"category" => %{"id" => category_whcc_id}}}
+         },
+         shipping_type,
+         shipments
+       ) do
     sizes =
-      if size = get_size(selections) do
+      with %{"size" => size} <- selections do
         size
         |> String.split("x")
         |> Enum.map(&String.to_integer(&1))
       end
 
-    category_whcc_id
-    |> whcc_id_for_base_charge(sizes, product_whcc_id)
-    |> base_charge(shipping_type)
+    shipping_type = convert_shipping_type(whcc_id, sizes, shipping_type)
+    %{upcharge: upcharge} = shipment = do_get_shipment!(shipments, shipping_type)
+
+    {upcharge(category_whcc_id, upcharge), shipment}
   end
 
-  defp base_charge(@whcc_photo_prints_id, "economy"), do: @base_charges[:economy_usps]
-  defp base_charge(@whcc_album_id, "economy"), do: @base_charges[:album_flat_rate]
-  defp base_charge(@whcc_books_id, "economy"), do: @base_charges[:book_flat_rate]
-  defp base_charge(_whcc_id, "economy"), do: @base_charges[:economy_trackable]
-  defp base_charge(_whcc_id, "3_days"), do: @base_charges[:three_days]
-  defp base_charge(_whcc_id, "1_day"), do: @base_charges[:one_day]
-  defp base_charge(_whcc_id, _shipping_type), do: []
-
-  defp whcc_id_for_base_charge(_, [s1, s2], @whcc_photo_prints_id) when s1 < 9 and s2 < 13,
-    do: @whcc_photo_prints_id
-
-  defp whcc_id_for_base_charge(category_whcc_id, _, _), do: category_whcc_id
-
-  defp upcharge(shipping_upcharge, selections) do
-    type = selections["paper"] || selections["surface"]
-    size = get_size(selections)
-
-    shipping_upcharge[type][size] || shipping_upcharge["default"]
+  defp do_get_shipment!(shipments, shipping_type) do
+    Enum.find(shipments, &(&1.type == shipping_type)) ||
+      Repo.get!(Detail, type: shipping_type)
   end
 
-  defp get_size(%{"size" => size}), do: size
-  defp get_size(_selections), do: nil
+  defp convert_shipping_type(@whcc_photo_prints_id, [s1, s2], "economy")
+       when s1 < 9 and s2 < 13,
+       do: :economy_usps
+
+  defp convert_shipping_type(_whcc_id, _size, "economy"), do: :economy_trackable
+  defp convert_shipping_type(_whcc_id, _size, "3_days"), do: :three_days
+  defp convert_shipping_type(_whcc_id, _size, "1_day"), do: :one_day
+
+  defp upcharge(@whcc_wall_art_id, upcharge), do: upcharge["wall_art"]
+  defp upcharge(_category_whcc_id, upcharge), do: upcharge["default"]
 
   def shipping_price(%{
+        das_carrier_cost: das_carrier_cost,
         shipping_upcharge: shipping_upcharge,
         shipping_base_charge: shipping_base_charge,
         total_markuped_price: total_markuped_price
       }) do
     total_markuped_price
+    |> Money.add(das_carrier_cost || Money.new(0))
     |> Money.multiply(Decimal.div(shipping_upcharge, 100))
     |> Money.add(shipping_base_charge)
   end
@@ -519,7 +513,7 @@ defmodule Picsello.Cart do
   @one_day 1
   @three_days 3
   @economy 5
-  defp choose_days(value) when is_atom(value), do: value |> Atom.to_string() |> choose_days()
+  defp choose_days(value) when is_atom(value), do: value |> to_string() |> choose_days()
   defp choose_days("1_day"), do: @one_day
   defp choose_days("3_days"), do: @three_days
   defp choose_days("economy"), do: @economy
