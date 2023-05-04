@@ -9,10 +9,11 @@ defmodule Mix.Tasks.UpdatePackagePaymentSchedules do
   @shortdoc "update global watermark paths"
   def run(_) do
     load_app()
-    query = from(pps in PackagePaymentSchedule, group_by: pps.package_id, select: pps.package_id)
 
     from(p in Package,
-      where: p.id not in subquery(query),
+      left_join: pps in PackagePaymentSchedule,
+      on: pps.package_id == p.id,
+      where: is_nil(pps.id),
       preload: [:organization]
     )
     |> Repo.all()
@@ -20,15 +21,17 @@ defmodule Mix.Tasks.UpdatePackagePaymentSchedules do
       packages_ids = Enum.map(packages, & &1.id)
       
       Logger.info("Records updated: #{inspect(packages_ids)}") 
-
-      Ecto.Multi.new()
-      |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn _ ->
-        Packages.make_package_payment_schedule(packages)
-      end)
-      |> Ecto.Multi.update_all(:templates, fn _ -> 
-        from(p in Package, where: p.id in ^packages_ids, update: [set: [fixed: true, schedule_type: p.job_type]])
-      end, [])
-      |> Repo.transaction()  
+      
+      if Enum.any?(packages_ids) do
+        Ecto.Multi.new()
+        |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn _ ->
+          Packages.make_package_payment_schedule(packages)
+        end)
+        |> Ecto.Multi.update_all(:templates, fn _ -> 
+          from(p in Package, where: p.id in ^packages_ids, update: [set: [fixed: true, schedule_type: p.job_type]])
+        end, [])
+        |> Repo.transaction()
+      end
     end)
   end
 
