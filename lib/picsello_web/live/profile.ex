@@ -174,13 +174,14 @@ defmodule PicselloWeb.Live.Profile do
     </div>
     <div class="flex items-center">
       <span class="font-semibold w-auto mt-4">
-        <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
-          <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
-          <span {testid("job-type")} class="text-xl whitespace-nowrap"><%= dyn_gettext job_type %></span>
-        <% end) %>
-
+        <span class="mr-5">
+          <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
+            <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
+            <span {testid("job-type")} class="text-xl whitespace-nowrap"><%= dyn_gettext job_type %></span>
+          <% end) %>
+        </span>
         <span class="inline-block">
-          <.icon_button {testid("edit-link-button")} class="ml-5 bg-blue-planning-300 hover:bg-blue-planning-300/75" title="edit photography types" phx-click="edit-website" color="white" href={Routes.package_templates_path(@socket, :index)} target="_blank" icon="external-link-gear">
+          <.icon_button {testid("edit-link-button")} class="ml-0 bg-blue-planning-300 hover:bg-blue-planning-300/75" title="edit photography types" phx-click="edit-website" color="white" href={Routes.package_templates_path(@socket, :index)} target="_blank" icon="external-link-gear">
                 Edit Photography Types
           </.icon_button>
         </span>
