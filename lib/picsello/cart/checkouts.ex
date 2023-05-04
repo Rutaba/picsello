@@ -186,7 +186,7 @@ defmodule Picsello.Cart.Checkouts do
   end
 
   defp editors({_whcc_product, line_items}, acc, shipment_details) do
-    product = Enum.find(line_items, & &1.shipping_type)
+    product = Enum.find(line_items, & &1.shipping_upcharge)
     order_attributes = WHCC.Shipping.attributes(product, shipment_details)
 
     acc ++ Enum.map(line_items, &Editor.new(&1.editor_id, order_attributes: order_attributes))

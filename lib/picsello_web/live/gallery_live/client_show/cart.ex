@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
-  alias Picsello.{Cart, Cart.Order, Cart.Digital, WHCC, Galleries, Repo}
+  alias Picsello.{Cart, Cart.Order, WHCC, Galleries}
   alias Picsello.Shipment.{Detail, DasType}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   alias PicselloWeb.Endpoint
@@ -50,8 +50,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp assign_das_type(%{assigns: %{order: order}} = socket) do
     case order do
       %{delivery_info: %{address: %{zip: zipcode}}} when not is_nil(zipcode) ->
+        IO.inspect(zipcode)
 
-        assign(socket, :das_type, DasType.get_by_zipcode(zipcode))
+        socket
+        |> assign(:das_type, DasType.get_by_zipcode(String.to_integer(zipcode)) |> IO.inspect())
 
       _ ->
         socket |> assign(:das_type, nil)
@@ -255,12 +257,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
 
-  defp assign_products_shipping(
-         %{assigns: %{order: order, das_type: das_type}} = socket,
-         force_update \\ false
-       ) do
+  defp assign_products_shipping(%{assigns: %{order: order, das_type: das_type}} = socket) do
     order
-    |> Cart.add_default_shipping_to_products(%{das_type: das_type, force_update: force_update})
+    |> Cart.add_default_shipping_to_products(das_type)
     |> assign_products(socket)
   end
 
