@@ -73,7 +73,7 @@
                                     <span><%= label %></span>
                                   </label>
 
-                                  <div> <%= Map.merge(line_item, line_item |> shipping_details(shipping_type)) |> shipping_price() %></div>
+                                  <div> <%= Map.merge(line_item, line_item |> shipping_details(%{shipment_details: @shipment_details, das_type: @das_type, shipping_type: shipping_type})) |> shipping_price() %></div>
                                 </div>
                               <% end %>
                             </.form>
