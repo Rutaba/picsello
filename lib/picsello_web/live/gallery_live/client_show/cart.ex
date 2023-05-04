@@ -50,14 +50,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp assign_das_type(%{assigns: %{order: order}} = socket) do
     case order do
       %{delivery_info: %{address: %{zip: zipcode}}} when not is_nil(zipcode) ->
-<<<<<<< HEAD
-        assign(socket, :das_type, DasType.get_by_zipcode(zipcode))
-=======
-        IO.inspect(zipcode)
 
-        socket
-        |> assign(:das_type, DasType.get_by_zipcode(String.to_integer(zipcode)) |> IO.inspect())
->>>>>>> 3bb869af5 (Change shipping prices once zipcode received)
+        assign(socket, :das_type, DasType.get_by_zipcode(zipcode))
 
       _ ->
         socket |> assign(:das_type, nil)
@@ -261,18 +255,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
 
-<<<<<<< HEAD
   defp assign_products_shipping(
          %{assigns: %{order: order, das_type: das_type}} = socket,
          force_update \\ false
        ) do
     order
     |> Cart.add_default_shipping_to_products(%{das_type: das_type, force_update: force_update})
-=======
-  defp assign_products_shipping(%{assigns: %{order: order, das_type: das_type}} = socket) do
-    order
-    |> Cart.add_default_shipping_to_products(das_type)
->>>>>>> 3bb869af5 (Change shipping prices once zipcode received)
     |> assign_products(socket)
   end
 
