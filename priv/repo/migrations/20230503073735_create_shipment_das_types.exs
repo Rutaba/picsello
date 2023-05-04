@@ -4,8 +4,8 @@ defmodule Picsello.Repo.Migrations.CreateShipmentDasTypes do
   def change do
     create table(:shipment_das_types) do
       add(:name, :string)
-      add(:parcel_cost, :decimal)
-      add(:mail_cost, :decimal)
+      add(:parcel_cost, :integer)
+      add(:mail_cost, :integer)
 
       timestamps()
     end
@@ -15,11 +15,11 @@ defmodule Picsello.Repo.Migrations.CreateShipmentDasTypes do
     execute(
       """
         INSERT INTO shipment_das_types (name, parcel_cost, mail_cost, inserted_at, updated_at) VALUES
-        ('DAS', 4.17, 0.40, '#{now}', '#{now}'),
-        ('DAS Extended', 5.37, 0.51, '#{now}', '#{now}'),
-        ('DAS Remote', 9.94, 0.95, '#{now}', '#{now}'),
-        ('DAS Hawaii', 9.00, 0.86, '#{now}', '#{now}'),
-        ('DAS Alaska', 28.50, 2.71, '#{now}', '#{now}')
+        ('DAS', 417, 40, '#{now}', '#{now}'),
+        ('DAS Extended', 537, 51, '#{now}', '#{now}'),
+        ('DAS Remote', 994, 95, '#{now}', '#{now}'),
+        ('DAS Hawaii', 900, 86, '#{now}', '#{now}'),
+        ('DAS Alaska', 2850, 271, '#{now}', '#{now}')
         ;
       """,
       ""

@@ -3,7 +3,7 @@ defmodule Picsello.Shipment.Detail do
   import Ecto.Changeset
 
   schema "shipment_details" do
-    field :base_charge, :decimal
+    field :base_charge, Money.Ecto.Amount.Type
     field :das_carrier, Ecto.Enum, values: [:mail, :parcel]
     field :order_attribute_id, :integer
     field :type, :string
