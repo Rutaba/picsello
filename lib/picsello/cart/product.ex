@@ -21,6 +21,7 @@ defmodule Picsello.Cart.Product do
     field :unit_markup, Money.Ecto.Amount.Type
     field :total_markuped_price, Money.Ecto.Amount.Type
     field :unit_price, Money.Ecto.Amount.Type
+    field :das_carrier_cost, Money.Ecto.Amount.Type
 
     # recalculate for all items in cart on add or remove or edit of any product in cart
     field :print_credit_discount, Money.Ecto.Amount.Type, default: ~M[0]USD
@@ -67,7 +68,7 @@ defmodule Picsello.Cart.Product do
       cast(
         product,
         attrs,
-        ~w[editor_id preview_url quantity selections shipping_base_charge shipping_upcharge shipping_type unit_markup unit_price print_credit_discount volume_discount price whcc_product_id total_markuped_price]a
+        ~w[editor_id preview_url quantity selections shipping_base_charge shipping_upcharge shipping_type unit_markup unit_price print_credit_discount volume_discount price whcc_product_id total_markuped_price das_carrier_cost]a
       )
 
   def new(fields) do

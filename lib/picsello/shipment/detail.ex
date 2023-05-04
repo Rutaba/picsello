@@ -1,12 +1,14 @@
 defmodule Picsello.Shipment.Detail do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Picsello.Repo
 
   schema "shipment_details" do
     field :base_charge, Money.Ecto.Amount.Type
     field :das_carrier, Ecto.Enum, values: [:mail, :parcel]
     field :order_attribute_id, :integer
-    field :type, :string
+    field(:type, Ecto.Enum, values: [:economy_usps, :economy_trackable, :three_days, :one_day])
+
     field :upcharge, :map
 
     timestamps()
@@ -19,4 +21,6 @@ defmodule Picsello.Shipment.Detail do
     |> cast(attrs, @fields)
     |> validate_required(@fields -- [:upcharge])
   end
+
+  def all(), do: Repo.all(__MODULE__)
 end

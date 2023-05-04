@@ -157,10 +157,12 @@ defmodule Picsello.Cart.Checkouts do
   end
 
   defp create_whcc_order(%Order{delivery_info: delivery_info, gallery_id: gallery_id} = order) do
+    shipment_details = Picsello.Shipment.Detail.all()
+
     editors =
       order
       |> Picsello.Cart.Order.lines_by_product()
-      |> Enum.reduce([], &editors(&1, &2))
+      |> Enum.reduce([], &editors(&1, &2, shipment_details))
 
     account_id = Galleries.account_id(gallery_id)
 
@@ -177,9 +179,9 @@ defmodule Picsello.Cart.Checkouts do
     |> update(:save_whcc_order, &Order.whcc_order_changeset(order, &1.whcc_order))
   end
 
-  defp editors({_whcc_product, line_items}, acc) do
+  defp editors({_whcc_product, line_items}, acc, shipment_details) do
     product = Enum.find(line_items, & &1.shipping_upcharge)
-    order_attributes = WHCC.Shipping.attributes(product)
+    order_attributes = WHCC.Shipping.attributes(product, shipment_details)
 
     acc ++ Enum.map(line_items, &Editor.new(&1.editor_id, order_attributes: order_attributes))
   end
