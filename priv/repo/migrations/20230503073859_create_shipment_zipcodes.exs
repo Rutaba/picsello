@@ -7,7 +7,7 @@ defmodule Picsello.Repo.Migrations.CreateShipmentZipcodes do
 
   def up do
     create table(:shipment_zipcodes) do
-      add(:zipcode, :integer, null: false)
+      add(:zipcode, :string, null: false)
       add(:das_type_id, references(:shipment_das_types, on_delete: :nothing), null: false)
     end
 
