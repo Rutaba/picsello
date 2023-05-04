@@ -3,8 +3,8 @@ defmodule Picsello.Shipment.DasType do
   import Ecto.Changeset
 
   schema "shipment_das_types" do
-    field :mail_cost, :decimal
-    field :parcel_cost, :decimal
+    field :mail_cost, Money.Ecto.Amount.Type
+    field :parcel_cost, Money.Ecto.Amount.Type
     field :name, :string
 
     timestamps()
