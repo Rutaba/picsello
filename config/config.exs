@@ -14,7 +14,7 @@ with dotenv = "#{__DIR__}/../.env",
          "export" <> kv <- String.split(data, "\n"),
          [k, v] = String.split(kv, "=", parts: 2),
          do: k |> String.trim() |> System.put_env(v)
-       )  
+       )
 
 with "" <> base64 <- System.get_env("GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64"),
      {:ok, json} <- base64 |> String.trim() |> Base.decode64() do
@@ -22,10 +22,12 @@ with "" <> base64 <- System.get_env("GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64"
   config :goth, json: json
 else
   _ ->
-    json = System.get_env("GOOGLE_APPLICATION_CREDENTIALS")
-    |> File.read!()
-  config :picsello, goth_json: json
-  config :goth, json: json
+    json =
+      System.get_env("GOOGLE_APPLICATION_CREDENTIALS")
+      |> File.read!()
+
+    config :picsello, goth_json: json
+    config :goth, json: json
 end
 
 config :elixir, :time_zone_database, Tz.TimeZoneDatabase
@@ -117,16 +119,9 @@ config :picsello, :whcc,
 
 config :picsello, :products,
   whcc_album_id: "2qNgr3zcSx9wvTAo9",
+  whcc_wall_art_id: "tfhysKwZafFtmGqpQ",
   whcc_books_id: "B9FcAHDH5T63yvvgX",
-  whcc_photo_prints_id: "BBrgfCJLkGzseCdds",
-  base_charges: [
-    economy_usps: [value: 3.8, uuid: 545],
-    economy_trackable: [value: 3.8, uuid: 546],
-    three_days: [value: 11.95, uuid: 100],
-    one_day: [value: 22.95, uuid: 1728],
-    album_flat_rate: [value: 7.50, uuid: 548],
-    book_flat_rate: [value: 7.50, uuid: 553]
-  ]
+  whcc_photo_prints_id: "BBrgfCJLkGzseCdds"
 
 config :picsello, Oban,
   repo: Picsello.Repo,
