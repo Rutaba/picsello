@@ -14,6 +14,7 @@ defmodule Picsello.Galleries do
     Photos,
     Category,
     GalleryProducts,
+    GalleryClient,
     Galleries,
     Albums,
     Orders,
@@ -470,6 +471,13 @@ defmodule Picsello.Galleries do
   def create_gallery_multi(attrs) do
     Multi.new()
     |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
+    |> Multi.insert(:gallery_clients, fn %{gallery: gallery} ->
+      gallery = gallery |> Repo.preload([job: :client])
+      GalleryClient.changeset(%GalleryClient{}, %{
+        email: gallery.job.client.email,
+        gallery_id: gallery.id
+      })
+    end)
     |> Multi.insert_all(
       :gallery_products,
       GalleryProduct,

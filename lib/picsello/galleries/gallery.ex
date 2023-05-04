@@ -9,6 +9,7 @@ defmodule Picsello.Galleries.Gallery do
     Watermark,
     CoverPhoto,
     GalleryProduct,
+    GalleryClient,
     Album,
     SessionToken,
     GalleryDigitalPricing
@@ -44,6 +45,7 @@ defmodule Picsello.Galleries.Gallery do
     has_many(:photos, Photo)
     has_many(:gallery_products, GalleryProduct)
     has_many(:albums, Album)
+    has_many(:gallery_clients, GalleryClient)
     has_many(:orders, Order)
     has_many(:session_tokens, SessionToken, @session_opts)
     has_one(:watermark, Watermark, on_replace: :update)
