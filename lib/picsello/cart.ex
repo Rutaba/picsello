@@ -417,7 +417,7 @@ defmodule Picsello.Cart do
 
   @whcc_wall_art_id @products_config[:whcc_wall_art_id]
   @whcc_photo_prints_id @products_config[:whcc_photo_prints_id]
-  def add_shipping_details!(product, %{shipping_type: _} = details) do
+  def add_shipping_details!(product, details) do
     product
     |> CartProduct.changeset(shipping_details(product, details))
     |> Repo.update!()
@@ -437,14 +437,14 @@ defmodule Picsello.Cart do
     }
   end
 
-  defp das_carrier_cost(%{das_carrier: :mail}, %{mail_cost: mail_cost}), do: mail_cost
-  defp das_carrier_cost(%{das_carrier: :parcel}, %{parcel_cost: parcel_cost}), do: parcel_cost
+  defp das_carrier_cost(%{das_type: :mail}, %{mail_cost: mail_cost}), do: mail_cost
+  defp das_carrier_cost(%{das_type: :parcel}, %{parcel_cost: parcel_cost}), do: parcel_cost
   defp das_carrier_cost(_, _), do: Money.new(0)
 
   alias Picsello.Shipment.Detail
 
   def get_shipment!(product, shipping_type, shipments \\ []),
-    do: do_get_shipment!(product, to_string(shipping_type), shipments)
+    do: do_get_shipment!(product, shipping_type, shipments)
 
   defp do_get_shipment!(
          %{
@@ -469,7 +469,7 @@ defmodule Picsello.Cart do
 
   defp do_get_shipment!(shipments, shipping_type) do
     Enum.find(shipments, &(&1.type == shipping_type)) ||
-      Repo.get_by!(Detail, type: shipping_type)
+      Repo.get!(Detail, type: shipping_type)
   end
 
   defp convert_shipping_type(@whcc_photo_prints_id, [s1, s2], "economy")
@@ -480,7 +480,7 @@ defmodule Picsello.Cart do
   defp convert_shipping_type(_whcc_id, _size, "3_days"), do: :three_days
   defp convert_shipping_type(_whcc_id, _size, "1_day"), do: :one_day
 
-  defp upcharge(@whcc_wall_art_id, upcharge), do: upcharge["wallart"]
+  defp upcharge(@whcc_wall_art_id, upcharge), do: upcharge["wall_art"]
   defp upcharge(_category_whcc_id, upcharge), do: upcharge["default"]
 
   def shipping_price(%{
