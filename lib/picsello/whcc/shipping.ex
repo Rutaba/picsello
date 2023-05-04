@@ -80,10 +80,10 @@ defmodule Picsello.WHCC.Shipping do
     product |> options() |> hd() |> Map.get(:attrs)
   end
 
-  def attributes(%Product{shipping_type: type} = product) do
-    case Picsello.Cart.get_base_charge(product, type) do
+  def attributes(%Product{shipping_type: type} = product, shipment_details) do
+    case Picsello.Cart.get_shipment!(product, type, shipment_details) do
       [] -> to_attributes(product)
-      base_charge -> [96, base_charge[:uuid]]
+      {_, %{order_attribute_id: id}} -> [96, id]
     end
   end
 

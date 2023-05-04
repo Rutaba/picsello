@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
   alias Picsello.{Cart, Cart.Order, Cart.Digital, WHCC, Galleries, Repo}
+  alias Picsello.Shipment.{Detail, DasType}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   alias PicselloWeb.Endpoint
   import PicselloWeb.GalleryLive.Shared
@@ -22,8 +23,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       &(&1
         |> get_unconfirmed_order(preload: [:products, :digitals, :package])
         |> case do
-          {:ok, order} -> &1 |> assign(:order, order) |> assign_products_shipping()
-          {:error, _} -> assign_checkout_routes(&1) |> maybe_redirect()
+          {:ok, order} ->
+            &1
+            |> assign(:order, order)
+            |> assign_das_type()
+            |> assign_products_shipping()
+
+          {:error, _} ->
+            &1
+            |> assign_checkout_routes()
+            |> maybe_redirect()
         end)
     )
     |> assign_cart_count(gallery)
@@ -31,7 +40,21 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign_checkout_routes()
     |> assign(:shipping_to_all, @shipping_to_all)
     |> assign(:default_shipping, @default_shipping)
+    |> assign(:shipment_details, Detail.all())
     |> ok()
+  end
+
+  defp assign_das_type(%{assigns: %{order: order}} = socket) do
+    case order do
+      %{delivery_info: %{address: %{zip: zipcode}}} when not is_nil(zipcode) ->
+        IO.inspect(zipcode)
+
+        socket
+        |> assign(:das_type, DasType.get_by_zipcode(String.to_integer(zipcode)) |> IO.inspect())
+
+      _ ->
+        socket |> assign(:das_type, nil)
+    end
   end
 
   @impl true
@@ -190,19 +213,19 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def handle_event(
         "shiping_type",
         %{"shipping" => %{"product_id" => product_id, "type" => type}},
-        %{assigns: %{order: %{products: products}}} = socket
+        %{assigns: %{das_type: das_type, order: %{products: products}}} = socket
       ) do
     products
-    |> Enum.map(&update_product(&1, product_id, type))
+    |> Enum.map(&update_product(&1, product_id, %{shipping_type: type, das_type: das_type}))
     |> assign_products(socket)
     |> noreply()
   end
 
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
 
-  defp assign_products_shipping(%{assigns: %{order: order}} = socket) do
+  defp assign_products_shipping(%{assigns: %{order: order, das_type: das_type}} = socket) do
     order
-    |> Cart.add_default_shipping_to_products()
+    |> Cart.add_default_shipping_to_products(das_type)
     |> assign_products(socket)
   end
 
@@ -212,9 +235,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> then(&assign(socket, :order, &1))
   end
 
-  defp update_product(product, product_id, shipping_type) do
+  defp update_product(product, product_id, details) do
     case to_string(product.id) do
-      ^product_id -> add_shipping_details!(product, shipping_type)
+      ^product_id -> add_shipping_details!(product, details)
       _ -> product
     end
   end
