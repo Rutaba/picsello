@@ -28,7 +28,7 @@ defmodule PicselloWeb.Live.Profile.Settings do
             Allow potential clients to contact you directly through a website that we host for you. Customize the type of photography you offer, color, cover photo, etc.
           </p>
         </div>
-        <div class="text-center grid grid-cols-2 gap-4 content-start">
+        <div class="text-center grid sm:grid-cols-2 gap-4 content-start">
           <div class="flex flex-shrink-0 flex py-6 mt-auto">
             <a href={Routes.package_templates_path(@socket, :index)} class="text-right text-blue-planning-300 underline font-normal text-lg pt-2">Manage photography types</a>
           </div>
