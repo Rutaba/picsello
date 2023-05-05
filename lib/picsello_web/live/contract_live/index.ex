@@ -22,10 +22,10 @@ defmodule PicselloWeb.Live.Contracts.Index do
     socket
     |> assign_new(:contract, fn ->
       default_contract = Contracts.get_default_template()
+      content = Contracts.default_contract_content(default_contract, current_user, PicselloWeb.Helpers)
 
       %Contract{
-        content:
-          Contracts.default_contract_content(default_contract, current_user, PicselloWeb.Helpers),
+        content: content,
         contract_template_id: default_contract.id,
         organization_id: current_user.organization_id
       }
@@ -69,7 +69,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
     contract_clean =
       if is_nil(contract.organization_id) do
         content = Contracts.default_contract_content(contract, current_user, PicselloWeb.Helpers)
-        contract |> Map.put(:content, content) |> Map.put(:name, nil)
+        contract |> Map.put(:content, content) |> Map.put(:name, nil) |> Map.put(:organization_id, organization_id)
       else
         Contracts.clean_contract_for_changeset(
           contract,
@@ -89,29 +89,38 @@ defmodule PicselloWeb.Live.Contracts.Index do
 
   @impl true
   def handle_event(
-        "update-contract-status",
-        %{"contract-id" => contract_id, "status" => status},
+        "enable-contract",
+        %{"contract-id" => contract_id},
         socket
       ) do
     id = String.to_integer(contract_id)
-    status = String.to_atom(status)
 
-    message =
-      case status do
-        :archive -> "Contract archived"
-        _ -> "Contract enabled"
-      end
-
-    case Contracts.update_contract_status(id, status) do
+    case Contracts.update_contract_status(id, :active) do
       {:ok, _} ->
         socket
-        |> put_flash(:success, message)
+        |> put_flash(:success, "Contract enabled")
 
       _ ->
         socket
         |> put_flash(:error, "An error occurred")
     end
     |> assign_contracts()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("confirm-archive-contract", %{"contract-id" => contract_id}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      title: "Are you sure?",
+      subtitle: """
+      Are you sure you want to archive this event?
+      """,
+      confirm_event: "archive-contract_"<> contract_id,
+      confirm_label: "Yes, archive",
+      close_label: "Cancel",
+      icon: "warning-orange"
+    })
     |> noreply()
   end
 
@@ -150,6 +159,24 @@ defmodule PicselloWeb.Live.Contracts.Index do
     socket |> assign_contracts() |> put_flash(:success, "Contract saved") |> noreply()
   end
 
+  @impl true
+  def handle_info({:confirm_event, "archive-contract_" <> id}, socket) do
+    id = String.to_integer(id)
+
+    case Contracts.update_contract_status(id, :archive) do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Contract archived")
+
+      _ ->
+        socket
+        |> put_flash(:error, "An error occurred")
+    end
+    |> assign_contracts()
+    |> close_modal()
+    |> noreply()
+  end
+
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex items-center justify-end gap-3">
@@ -184,7 +211,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
                 <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                 Duplicate
               </button>
-              <button title="Trash" type="button" phx-click="update-contract-status" phx-value-contract-id={@contract.id} phx-value-status="archive" class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+              <button title="Trash" type="button" phx-click="confirm-archive-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
                 <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
                 Archive
               </button>
@@ -199,7 +226,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
               </button>
             <% end %>
           <% else %>
-            <button title="Plus" type="button" phx-click="update-contract-status" phx-value-contract-id={@contract.id} phx-value-status="active" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+            <button title="Plus" type="button" phx-click="enable-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
                 <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                 Unarchive
             </button>
@@ -222,5 +249,3 @@ defmodule PicselloWeb.Live.Contracts.Index do
 
   def get_contract(id), do: Contracts.get_contract_by_id(id)
 end
-
-# when contract is default

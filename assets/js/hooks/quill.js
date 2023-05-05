@@ -181,7 +181,27 @@ export default {
     quill.clipboard.dangerouslyPasteHTML(htmlInput.value, 'api');
     const element = document.querySelector('.ql-editor');
     element.setAttribute("contenteditable", editable);
+    const ol = document.querySelector('.ql-editor > ol');
+  
+    if (editable == "false") {
+      ol.classList.add('cursor-default');
+    }
+    else{
+      ol.classList.add('cursor-text');
+    }
   },
+  updated() {
+    const { el } = this;
+    const element = document.querySelector('.ql-editor');
+    element.setAttribute("contenteditable", el.dataset.editable);
+    const ol = document.querySelector('.ql-editor > ol');
+    if (el.dataset.editable == "false") {
+      ol.classList.add('cursor-default');
+    }
+    else{
+      ol.classList.add('cursor-text');
+    }
+  }
 };
 
 export const ClearQuillInput = {
