@@ -7,6 +7,7 @@ defmodule PicselloWeb.Live.User.Settings do
     Accounts.User,
     Organization,
     Onboardings,
+    Packages,
     Repo,
     Subscription,
     Subscriptions
@@ -22,6 +23,15 @@ defmodule PicselloWeb.Live.User.Settings do
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     socket
+    |> assigns_changesets()
+    |> assign(:promotion_code, Subscriptions.maybe_get_promotion_code?(user))
+    |> ok()
+  end
+
+  defp assigns_changesets(%{assigns: %{current_user: user}} = socket) do
+    user = Packages.get_current_user(user.id)
+
+    socket
     |> assign(
       case user.sign_up_auth_provider do
         :password ->
@@ -33,14 +43,14 @@ defmodule PicselloWeb.Live.User.Settings do
       |> Keyword.merge(
         submit_changed_password: false,
         sign_out: false,
-        page_title: "Settings",
-        organization_name_changeset: organization_name_changeset(user),
-        phone_changeset: phone_changeset(user),
-        time_zone_changeset: time_zone_changeset(user)
+        page_title: "Settings"
       )
     )
-    |> assign(:promotion_code, Subscriptions.maybe_get_promotion_code?(user))
-    |> ok()
+    |> assign(
+      organization_name_changeset: organization_name_changeset(user),
+      phone_changeset: phone_changeset(user),
+      time_zone_changeset: time_zone_changeset(user)
+    )
   end
 
   defp email_changeset(user, params \\ %{}) do
@@ -54,6 +64,10 @@ defmodule PicselloWeb.Live.User.Settings do
     user
     |> Ecto.Changeset.cast(params, [:password])
     |> User.validate_password([])
+    |> User.validate_current_password(
+      params |> Map.get("password_to_change"),
+      :password_to_change
+    )
   end
 
   defp phone_changeset(user, params \\ %{}) do
@@ -175,6 +189,7 @@ defmodule PicselloWeb.Live.User.Settings do
           :info,
           "A link to confirm your email change has been sent to the new address."
         )
+        |> assigns_changesets()
         |> noreply()
 
       {:error, changeset} ->
@@ -204,6 +219,7 @@ defmodule PicselloWeb.Live.User.Settings do
       password_changeset: changeset,
       submit_changed_password: changeset.valid?
     )
+    |> assigns_changesets()
     |> noreply()
   end
 
@@ -236,6 +252,7 @@ defmodule PicselloWeb.Live.User.Settings do
       {:ok, _user} ->
         socket
         |> put_flash(:success, "Timezone changed successfully")
+        |> assigns_changesets()
         |> noreply()
 
       {:error, changeset} ->
@@ -257,6 +274,7 @@ defmodule PicselloWeb.Live.User.Settings do
         socket
         |> assign(current_user: updated_user)
         |> put_flash(:success, "Phone number updated successfully")
+        |> assigns_changesets()
         |> noreply()
 
       {:error, changeset} ->
@@ -305,6 +323,7 @@ defmodule PicselloWeb.Live.User.Settings do
         socket
         |> close_modal()
         |> put_flash(:success, "Business name changed successfully")
+        |> assigns_changesets()
         |> noreply()
 
       {:error, changeset} ->
@@ -320,6 +339,7 @@ defmodule PicselloWeb.Live.User.Settings do
     |> put_flash(:success, "Updated promo code")
     |> redirect(to: Routes.user_settings_path(socket, :edit))
     |> close_modal()
+    |> assigns_changesets()
     |> noreply()
   end
 
