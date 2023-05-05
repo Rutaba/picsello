@@ -32,7 +32,7 @@
                 <div id="gallery-pricing" class="flex flex-col xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
                     <h3>Digital Pricing</h3>
                     <p class="font-sans text-base-250">
-                        Your pricing & print credits have been inherited from your initial package. You can <br/>
+                        Your pricing & print credits have been inherited from your initial package. You can
                         change that here if you’d like, it will only apply to this gallery if you have multiple!
                     </p>
                     <div class="flex flex-col mt-2">
@@ -54,9 +54,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex flex-row-reverse items-center w-full mt-8 lg:items-start">
+                    <div class="flex flex-col md:flex-row items-center w-full mt-8">
+                        <a id="reset-digital-pricing" phx-click="confirm-reset-digital-pricing" class="flex md:ml-auto underline text-blue-planning-300 mr-4 hover:cursor-pointer mb-6 md:mb-0">Reset to package pricing</a>
                         <button phx-click="edit-digital-pricing" class="btn-settings w-auto px-7">Edit digital pricing & credits</button>
-                        <a id="reset-digital-pricing" phx-click="confirm-reset-digital-pricing" class="underline text-blue-planning-300 mr-4 hover:cursor-pointer">Reset to package pricing</a>
                     </div>
                 </div>
                <div id="global-print-pricing" class="flex flex-col mb-40 lg:mb-3 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">

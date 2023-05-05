@@ -67,7 +67,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
               <%= if p |> current() |> Map.get(:is_enabled) do %>
                 <%= input(f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
                 <div class="flex items-center text-base-250">
-                  <%= label_for f, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
+                  <%= label_for f, :print_credits, label: "as a portion of package total", class: "font-normal" %>
                 </div>
               <% end %>
             </div>

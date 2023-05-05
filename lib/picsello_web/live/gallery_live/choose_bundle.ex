@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.ChooseBundle do
   @moduledoc "product info modal for digital bundle"
   use PicselloWeb, :live_component
   import PicselloWeb.GalleryLive.Shared, only: [bundle_image: 1, cover_photo_url: 1]
-  alias Picsello.{Cart, Galleries}
+  alias Picsello.Cart
 
   def update(%{gallery: gallery} = assigns, socket) do
     socket
