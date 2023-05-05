@@ -10,7 +10,8 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
 >>>>>>> 5f7bfb3ee (gallery local pricing feature)
 
   alias Picsello.{Galleries, Repo, Orders}
-
+  alias Ecto.Multi
+  
   @impl true
   def mount(_params, _session, socket) do
     socket
@@ -136,16 +137,22 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   end
 
   @impl true
-  def handle_info({:update, %{changeset: changeset}}, %{assigns: %{gallery: gallery}} = socket) do
-    case Repo.update(changeset |> Map.put(:action, :update)) do
-      {:ok, _gallery_digital_pricing} ->
+  def handle_info({:update, %{changeset: changeset, gallery_changeset: gallery_changeset}}, %{assigns: %{gallery: gallery}} = socket) do
+    Multi.new()
+    |> Multi.update(:gallery_digital_pricing, changeset)
+    |> Multi.update(:gallery, gallery_changeset)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{gallery_digital_pricing: _gallery_digital_pricing}} ->
         socket
         |> assign(:gallery, Repo.preload(gallery, :gallery_digital_pricing, force: true))
         |> put_flash(:success, "Gallery pricing updated")
 
-      _ ->
+      {:error, :gallery_digital_pricing, _changeset, _} ->
         socket
         |> put_flash(:error, "Couldn't update gallery pricing")
+
+      other -> other
     end
     |> close_modal()
     |> noreply()

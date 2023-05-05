@@ -17,6 +17,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   alias Picsello.{
     Repo,
     GlobalSettings,
+    Galleries,
     Galleries.GalleryDigitalPricing,
     Packages.Download,
     Packages.PackagePricing
@@ -260,8 +261,10 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   end
 
   @impl true
-  def handle_event("submit", _params, %{assigns: %{changeset: changeset}} = socket) do
-    send(socket.parent_pid, {:update, %{changeset: changeset}})
+  def handle_event("submit", _params, %{assigns: %{changeset: changeset, email_list: email_list, gallery: gallery}} = socket) do
+    gallery_changeset = Galleries.build_gallery_clients_changeset(gallery, email_list)
+
+    send(socket.parent_pid, {:update, %{changeset: changeset, gallery_changeset: gallery_changeset}})
 
     socket
     |> noreply()
@@ -298,6 +301,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
         "download_each_price" => Download.each_price(download),
         "buy_all" => Download.buy_all(download)
       })
+      |> IO.inspect()
 
     digital_pricing_params =
       if Changeset.get_field(package_pricing_changeset, :is_enabled),

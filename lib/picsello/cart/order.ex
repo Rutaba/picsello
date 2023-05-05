@@ -10,6 +10,7 @@ defmodule Picsello.Cart.Order do
     Cart.OrderNumber,
     Cart.Product,
     Galleries.Gallery,
+    Galleries.GalleryClient,
     Galleries.Album,
     Intents.Intent
   }
@@ -20,6 +21,7 @@ defmodule Picsello.Cart.Order do
     field :placed_at, :utc_datetime
     field :total_credits_amount, :integer, default: 0
 
+    # belongs_to(:gallery_client, GalleryClient)
     belongs_to(:gallery, Gallery)
     belongs_to(:album, Album)
 
@@ -76,9 +78,10 @@ defmodule Picsello.Cart.Order do
 
   defp do_create_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:gallery_id, :album_id])
-    |> validate_required([:gallery_id])
+    |> cast(attrs, [:gallery_id, :gallery_client_id, :album_id])
+    |> validate_required([:gallery_id, :gallery_client_id])
     |> foreign_key_constraint(:gallery_id)
+    |> foreign_key_constraint(:gallery_client_id)
   end
 
   def update_changeset(order, product, attrs \\ %{}, opts \\ [])

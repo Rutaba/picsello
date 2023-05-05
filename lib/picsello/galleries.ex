@@ -14,8 +14,6 @@ defmodule Picsello.Galleries do
     Photos,
     Category,
     GalleryProducts,
-    GalleryClient,
-    Galleries,
     Albums,
     Orders,
     Cart.Digital,
@@ -27,7 +25,7 @@ defmodule Picsello.Galleries do
 
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
-  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, Album}
+  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, GalleryClient, Album}
   import Repo.CustomMacros
 
   @area_markup_category Picsello.Category.print_category()
@@ -1134,6 +1132,15 @@ defmodule Picsello.Galleries do
       _ ->
         Gallery.update_changeset(gallery)
     end
+  end
+
+  def build_gallery_clients_changeset(gallery, email_list) do
+    gallery
+      |> Changeset.put_change(:gallery_clients,
+      Enum.map(email_list, fn email ->
+        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
+      end)
+    )
   end
 
   @doc """
