@@ -266,10 +266,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
     <div class="py-5 lg:pt-8 lg:pb-10">
       <div class=" text-xl font-extrabold lg:text-3xl"><%= @title %></div>
-      <div class="mt-2 text-lg">
-        Choose how you want your items shipped; certain types of items will ship separately.
-        Shipping estimates don’t include printing/production turnaround times.
-      </div>
+      <%= if @title != "Review Selections" do%>
+        <div class="mt-2 text-lg">
+          Choose how you want your items shipped; certain types of items will ship separately.
+          Shipping estimates don’t include printing/production turnaround times.
+        </div>
+      <% end %>
     </div>
     """
   end
@@ -282,7 +284,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     {
       checkout_routes.home_page,
       "Back to album",
-      (album.is_finals && "Cart & Shipping Review") || "Review Selections & Shipping"
+      (album.is_finals && "Cart & Shipping Review") || "Review Selections"
     }
   end
 

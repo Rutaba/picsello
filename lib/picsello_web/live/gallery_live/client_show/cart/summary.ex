@@ -164,7 +164,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   @proofing_album_calls ~w(proofing_album_cart proofing_album_order)a
   defp digital_charge_lines(%{digitals: digitals}, caller)
        when caller in @proofing_album_calls do
-    [{"Digitals (#{length(digitals)})", sum_prices(digitals)}]
+    [{"Selected for retouching (#{length(digitals)})", sum_prices(digitals)}]
   end
 
   defp digital_charge_lines(%{digitals: digitals}, _caller) do
