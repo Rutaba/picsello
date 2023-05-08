@@ -28,9 +28,9 @@ defmodule PicselloWeb.Live.Profile.Settings do
             Allow potential clients to contact you directly through a website that we host for you. Customize the type of photography you offer, color, cover photo, etc.
           </p>
         </div>
-        <div class="text-center grid sm:grid-cols-2 gap-4 content-start">
-          <div class="flex flex-shrink-0 flex py-6 mt-auto">
-            <a href={Routes.package_templates_path(@socket, :index)} class="text-right text-blue-planning-300 underline font-normal text-lg pt-2">Manage photography types</a>
+        <div class="text-center grid sm:grid-cols-2 gap-0 content-start">
+          <div class="flex flex-shrink-0 flex pt-3 pb-9 mt-auto">
+            <a href={Routes.package_templates_path(@socket, :index)} class="text-right text-blue-planning-300 underline font-normal text-lg pt-0">Manage photography types</a>
           </div>
           <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
             <button type="button" phx-click="edit-profile" class="w-full px-8 text-center btn-primary">Customize Profile</button>

@@ -170,10 +170,10 @@ defmodule PicselloWeb.Live.Profile do
   def job_types_details(assigns) do
     ~H"""
     <div class="flex items-center mt-8">
-      <h3 class="uppercase font-bold">Specializing In:</h3>
+      <h3 class="uppercase font-black">Specializing In</h3>
     </div>
     <div class="flex items-center">
-      <span class="font-semibold w-auto mt-4">
+      <span class="font-semibold w-auto mt-1">
         <span class="mr-5">
           <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
             <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
