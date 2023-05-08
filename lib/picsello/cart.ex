@@ -534,9 +534,14 @@ defmodule Picsello.Cart do
     end)
   end
 
-  def add_default_shipping_to_products(order, das_type \\ nil) do
+  def add_default_shipping_to_products(order, opts \\ %{}) do
+    das_type = opts[:das_type]
+    force_update = opts[:force_update]
     details = %{shipping_type: @default_shipping, das_type: das_type}
-    shipping = fn p -> (p.shipping_type && p) || add_shipping_details!(p, details) end
+
+    shipping = fn p ->
+      (!force_update && p.shipping_type && p) || add_shipping_details!(p, details)
+    end
 
     order
     |> lines_by_product()
