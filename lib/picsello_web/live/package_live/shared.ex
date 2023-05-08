@@ -99,7 +99,7 @@ defmodule PicselloWeb.PackageLive.Shared do
     |> PicselloWeb.PackageLive.ConfirmationComponent.open(params)
     |> noreply()
   end
-
+  
   @spec package_card(%{
           package: Package.t(),
           is_edit: boolean()
@@ -382,12 +382,16 @@ defmodule PicselloWeb.PackageLive.Shared do
     ~H"""
     <div class="flex">
       <% p = to_form(@package_pricing) %>
+      <% print_credits = current(p) %>
       <div class="flex flex-col w-4/5">
         <.print_fields_heading />
         <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-click="edit-print-credits">Edit settings</button>
       </div>
-      <div class="flex w-1/5 text-base-250">
-        <b><%= get_total_print_credits(@package_pricing) %></b>
+      <div class={classes("flex w-1/5", %{"text-base-250 grid" => !Map.get(print_credits, :print_credits_include_in_total)})}>
+        <div><b><%= get_total_print_credits(@f, @package_pricing) %></b></div>
+        <%= if Map.get(print_credits, :is_enabled) && !Map.get(print_credits, :print_credits_include_in_total) do %>
+          <div class="text-base-250 -mt-10">(not included)</div>
+        <% end %>
       </div>
     </div>
 
@@ -404,12 +408,12 @@ defmodule PicselloWeb.PackageLive.Shared do
             Gallery includes Print Credits
           </label>
           <div class="flex flex-col gap-4 ml-7">
-            <%= if p |> current() |> Map.get(:is_enabled) do %>
+            <%= if Map.get(print_credits, :is_enabled) do %>
               <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
 
               <div class="flex items-center text-base-250">
-                <%= checkbox(@f, :print_credits_include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
-                <%= label_for @f, :print_credits_include_in_total, label: "Include in package total calculation", class: "font-normal" %>
+                <%= checkbox(p, :print_credits_include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
+                <%= label_for p, :print_credits_include_in_total, label: "Include in package total calculation", class: "font-normal" %>
               </div>
             <% end %>
           </div>
@@ -424,28 +428,6 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  defp get_digitals_count(download_changeset) do
-    changeset = current(download_changeset)
-    count = Map.get(changeset, :count)
-    if count, do: count, else: 0
-  end
-
-  defp get_buy_all(download_changeset) do
-    changeset = current(download_changeset)
-    buy_all = Map.get(changeset, :buy_all)
-    if buy_all, do: buy_all, else: Money.new(0)
-  end
-
-  defp digitals_total(download_changeset) do
-    changeset = current(download_changeset)
-    if Map.get(changeset, :digitals_include_in_total), do: Money.multiply(Map.get(changeset, :each_price), get_digitals_count(download_changeset)), else: nil
-  end
-
-  defp get_total_print_credits(package_pricing) do
-    package_pricing = package_pricing |> current()
-    print_credits = package_pricing |> Map.get(:print_credits)
-    if Map.get(package_pricing, :print_credits_include_in_total) && Map.get(:is_enabled), do: print_credits, else: nil
-  end
 
   # digital download fields for package & pricing
   def digital_download_fields(assigns) do
@@ -461,20 +443,24 @@ defmodule PicselloWeb.PackageLive.Shared do
           </div>
           <div class="flex flex-row gap-8 my-2">
             <div>
-              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" /><%= ngettext("%{count} image", "%{count} images", get_digitals_count(@download_changeset)) %> included</span>
+              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" /><%= make_digital_text(@download_changeset) %> included</span>
               <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="digitals" phx-click="edit-digitals">Edit settings</button>
             </div>
             <div>
               <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" /><%= current(@download_changeset) |> Map.get(:each_price) %> an image</span>
-              <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="image_price" phx-click="edit-digitals">Edit image price</button>
+              <%= if (@download_changeset |> current |> Map.get(:status)) !=  :unlimited do %>
+                <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="image_price" phx-click="edit-digitals">Edit image price</button>
+              <% end %>
             </div>
             <div>
               <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" /><%= get_buy_all(@download_changeset) %> buy all</span>
-              <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="buy_all" phx-click="edit-digitals">Edit upsell options</button>
+              <%= if (@download_changeset |> current |> Map.get(:status)) !=  :unlimited do %>
+                <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="buy_all" phx-click="edit-digitals">Edit upsell options</button>
+              <% end %>
             </div>
           </div>
         </div>
-        <b class="flex w-1/5 text-base-250"><%= digitals_total(@download_changeset) %></b>
+        <b class="flex w-1/5"><%= digitals_total(@download_changeset) %></b>
       </div>
 
       <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => @show_digitals !== "digitals"})}>
@@ -534,10 +520,12 @@ defmodule PicselloWeb.PackageLive.Shared do
               <span class="ml-2 text-base-250">included in the package</span>
             </div>
           </div>
-          <div class="flex items-center text-base-250 ml-7 mt-2">
-            <%= checkbox(@download_changeset, :digitals_include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
-            <%= label_for @download_changeset, :digitals_include_in_total, label: "Include in package total calculation", class: "font-normal" %>
-          </div>
+          <%= if @for != :create_gallery do %>
+            <div class="flex items-center text-base-250 ml-7 mt-2">
+              <%= checkbox(@download_changeset, :digitals_include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
+              <%= label_for @download_changeset, :digitals_include_in_total, label: "Include in package total calculation", class: "font-normal" %>
+            </div>
+          <% end %>
         <% end %>
 
         <label class="flex mt-3 font-bold">
@@ -624,8 +612,9 @@ defmodule PicselloWeb.PackageLive.Shared do
   def package_description_length_long?(nil), do: false
   def package_description_length_long?(description), do: byte_size(description) > 100
 
-  defp truncate_package_name(name) do
-    if(String.length(name) > 25, do: String.slice(name, 0..25) <> "...", else: name)
+  def digitals_total(download_changeset) do
+    changeset = current(download_changeset)
+    if Map.get(changeset, :digitals_include_in_total), do: Money.multiply(Map.get(changeset, :each_price), get_digitals_count(download_changeset)), else: nil
   end
 
   def assign_turnaround_weeks(package) do
@@ -638,5 +627,35 @@ defmodule PicselloWeb.PackageLive.Shared do
     text = package.contract.content
     updated_content = Regex.replace(~r/(\d+)\s+(week\b|weeks\b)/, text, weeks)
     Map.put(package.contract, :content, updated_content)
+  end
+
+  defp truncate_package_name(name) do
+    if(String.length(name) > 25, do: String.slice(name, 0..25) <> "...", else: name)
+  end
+
+  defp get_digitals_count(download_changeset) do
+    changeset = current(download_changeset)
+    count = Map.get(changeset, :count)
+    if count, do: count, else: 0
+  end
+
+  defp make_digital_text(download_changeset) do
+    case download_changeset |> current() |> Map.get(:status) do
+      :unlimited -> "all images"
+      _ ->
+        ngettext("%{count} image", "%{count} images", get_digitals_count(download_changeset))
+    end
+  end
+
+  defp get_buy_all(download_changeset) do
+    changeset = current(download_changeset)
+    buy_all = Map.get(changeset, :buy_all)
+    if buy_all, do: buy_all, else: Money.new(0)
+  end
+  
+  defp get_total_print_credits(changeset, package_pricing) do
+    package_pricing = package_pricing |> current()
+    print_credits = changeset |> current() |> Map.get(:print_credits)
+    if Map.get(package_pricing, :is_enabled), do: print_credits, else: nil
   end
 end

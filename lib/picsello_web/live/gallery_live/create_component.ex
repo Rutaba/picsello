@@ -68,6 +68,9 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> assign(templates: [], step: :choose_type, steps: @steps)
     |> assign_package_changesets()
     |> assign(:job_types, Profiles.enabled_job_types(organization_job_types))
+    |> assign(:show_print_credits, false)
+    |> assign(:show_discounts, false)
+    |> assign(:show_digitals, "close")
     |> ok()
   end
 
@@ -216,6 +219,27 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> noreply()
   end
 
+  @impl true
+  def handle_event("edit-print-credits", _, %{assigns: %{show_print_credits: show_print_credits}} = socket) do
+    socket
+    |> assign(:show_print_credits, !show_print_credits)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-discounts", _, %{assigns: %{show_discounts: show_discounts}} = socket) do
+    socket
+    |> assign(:show_discounts, !show_discounts)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-digitals", %{"type" => type}, socket) do
+    socket
+    |> assign(:show_digitals, type)
+    |> noreply()
+  end
+
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
   @impl true
@@ -289,7 +313,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
         <.print_credit_fields f={package} package_pricing={@package_pricing} />
 
-        <.digital_download_fields for={:create_gallery} package_form={package} download_changeset={@download_changeset} package_pricing={@package_pricing} />
+        <.digital_download_fields for={:create_gallery} package_form={package} download_changeset={@download_changeset} package_pricing={@package_pricing}  target={@myself} show_digitals={@show_digitals} />
         <%= if @new_gallery do %>
           <div id="set-gallery-cookie" data-gallery-type={@new_gallery.type} phx-hook="SetGalleryCookie">
           </div>
@@ -413,8 +437,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   defp package_pricing_params(package) do
     case package |> Map.get(:print_credits) do
-      nil -> %{is_enabled: false}
-      %Money{} = value -> %{is_enabled: Money.positive?(value)}
+      nil -> %{"is_enabled" => false}
+      %Money{} = value -> %{"is_enabled" => Money.positive?(value), "print_credits" => value}
       _ -> %{}
     end
   end
