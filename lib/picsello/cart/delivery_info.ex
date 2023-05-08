@@ -45,6 +45,12 @@ defmodule Picsello.Cart.DeliveryInfo do
     |> validate_length(:name, min: 2, max: 30)
   end
 
+  def changeset_for_zipcode(delivery_info \\ %__MODULE__{}, attrs) do
+    delivery_info
+    |> cast(attrs, [])
+    |> cast_embed(:address, with: &Address.changeset_for_zipcode/2)
+  end
+
   def selected_state(changeset) do
     changeset
     |> get_field(:address)
@@ -160,6 +166,12 @@ defmodule Picsello.Cart.DeliveryInfo do
       struct
       |> cast(attrs, [:city, :state, :zip, :addr1, :addr2])
       |> validate_required([:city, :state, :zip, :addr1])
+    end
+
+    def changeset_for_zipcode(struct, attrs) do
+      struct
+      |> cast(attrs, [:zip])
+      |> validate_required([:zip])
     end
 
     def states, do: @states
