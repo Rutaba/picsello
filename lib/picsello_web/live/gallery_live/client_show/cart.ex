@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
   alias Picsello.{Cart, Cart.Order, WHCC, Galleries}
-  alias Picsello.Shipment.{Detail, DasType}
+  alias Picsello.Shipment.{Detail, DasType, Zipcode}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   alias PicselloWeb.Endpoint
   alias Picsello.Cart.DeliveryInfo
@@ -99,12 +99,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     end)
     |> Multi.run(:update_shipping, fn _, _ ->
       {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
-
-      unless Enum.empty?(order.products) do
-        %{delivery_info: %{address: %{zip: zipcode}}} = order
-        das_type = DasType.get_by_zipcode(zipcode)
-        Cart.add_default_shipping_to_products(order, %{das_type: das_type, force_update: true})
-      end
+      %{delivery_info: %{address: %{zip: zipcode}}} = order
+      das_type = DasType.get_by_zipcode(zipcode)
+      Cart.add_default_shipping_to_products(order, %{das_type: das_type, force_update: true})
 
       {:ok, :updated}
     end)
@@ -246,7 +243,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         placeholder: "enter zipcode..",
         save_event: "zipcode",
         change_event: "zipcode_change",
-        input_value: delivery_info && Map.get(delivery_info.address, :zip)
+        input_value: delivery_info && Map.get(delivery_info.address, :zip),
+        payload: %{zipcodes: Map.new(Zipcode.all(), &{&1.zipcode, &1})}
       }
     )
     |> noreply()
@@ -254,9 +252,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
 
-  defp assign_products_shipping(%{assigns: %{order: order, das_type: das_type}} = socket) do
+  defp assign_products_shipping(
+         %{assigns: %{order: order, das_type: das_type}} = socket,
+         force_update \\ false
+       ) do
     order
-    |> Cart.add_default_shipping_to_products(das_type)
+    |> Cart.add_default_shipping_to_products(%{das_type: das_type, force_update: force_update})
     |> assign_products(socket)
   end
 
@@ -298,23 +299,26 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> noreply()
   end
 
-  def handle_info({:save_event, "zipcode", %{"input" => input}}, socket) do
+  def handle_info({:save_event, "zipcode", %{"input" => input}, payload}, socket) do
     %{assigns: %{order: order}} = socket
+    %{zipcodes: zipcodes} = payload
 
-    Repo.transaction(fn ->
-      changeset = DeliveryInfo.changeset_for_zipcode(%{"address" => %{"zip" => input}})
+    if Map.get(zipcodes, input) do
+      Repo.transaction(fn ->
+        changeset = DeliveryInfo.changeset_for_zipcode(%{"address" => %{"zip" => input}})
 
-      {:ok, _order} = Cart.store_order_delivery_info(order, changeset)
-      {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
+        {:ok, _order} = Cart.store_order_delivery_info(order, changeset)
+        {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
 
-      socket
-      |> assign(:order, order)
-      |> assign_das_type()
-      |> assign_products_shipping(true)
-    end)
-    |> then(fn {:ok, socket} -> socket end)
-    |> close_modal()
-    |> noreply()
+        socket
+        |> assign(:order, order)
+        |> assign_das_type()
+        |> assign_products_shipping(true)
+      end)
+      |> then(fn {:ok, socket} -> socket end)
+      |> close_modal()
+      |> noreply()
+    end
   end
 
   defp continue_summary(assigns) do

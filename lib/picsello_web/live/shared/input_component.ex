@@ -67,11 +67,14 @@ defmodule PicselloWeb.Shared.InputComponent do
   def handle_event(
         "zipcode_change",
         %{"input" => input},
-        socket
+        %{assigns: %{payload: payload}} = socket
       ) do
-    case String.length(input) do
-      5 -> assign(socket, :error, nil)
-      _ -> assign(socket, :error, "Please enter 5 digit zipcode")
+    %{zipcodes: zipcodes} = payload
+
+    if !Map.get(zipcodes, input) do
+      assign(socket, :error, "Enter complete or valid zipcode")
+    else
+      assign(socket, :error, nil)
     end
     |> noreply
   end
