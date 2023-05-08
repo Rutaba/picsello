@@ -67,11 +67,13 @@ defmodule Picsello.Notifiers.ClientNotifier do
   def deliver_paying_by_invoice(proposal) do
     %{job: %{client: %{organization: organization} = client} = job} =
       proposal |> Repo.preload(job: [client: [organization: :user]])
-
+      booking_event = Map.get(job, :booking_event)
+      name = if booking_event, do: booking_event.name, else: Picsello.Job.name(job)
+  
     %{
       subject: "Cash or check payment",
       body: """
-      <p>You said you will pay #{organization.name} for #{Picsello.Job.name(job)} through a cash or check for the following #{Picsello.PaymentSchedules.owed_price(job) |> Money.to_string(fractional_unit: false)} it is due on #{Picsello.PaymentSchedules.remainder_due_on(job) |> Calendar.strftime("%B %d, %Y")}.</p>
+      <p>You said you will pay #{organization.name} for #{name} through a cash or check for the following #{Picsello.PaymentSchedules.owed_price(job) |> Money.to_string(fractional_unit: false)} it is due on #{Picsello.PaymentSchedules.remainder_due_on(job) |> Calendar.strftime("%B %d, %Y")}.</p>
       <p>Please arrange payment with me by replying to this email</p>
       <p>We can't wait to work with you!</p>
       <p>CTA: <a href="#{PicselloWeb.Helpers.invoice_url(job.id, proposal.id)}"> Download PDF </a></p>
