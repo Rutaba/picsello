@@ -182,12 +182,13 @@ export default {
     const element = document.querySelector('.ql-editor');
     element.setAttribute("contenteditable", editable);
     const ol = document.querySelector('.ql-editor > ol');
-  
-    if (editable == "false") {
-      ol.classList.add('cursor-default');
-    }
-    else{
-      ol.classList.add('cursor-text');
+    if (ol) {
+      if (editable === "false") {
+        ol.classList.add('cursor-default');
+      }
+      else{
+        ol.classList.add('cursor-text');
+      }
     }
   },
   updated() {
@@ -195,11 +196,13 @@ export default {
     const element = document.querySelector('.ql-editor');
     element.setAttribute("contenteditable", el.dataset.editable);
     const ol = document.querySelector('.ql-editor > ol');
-    if (el.dataset.editable == "false") {
-      ol.classList.add('cursor-default');
-    }
-    else{
-      ol.classList.add('cursor-text');
+    if (ol) {
+      if (el.dataset.editable  === "false") {
+        ol.classList.add('cursor-default');
+      }
+      else{
+        ol.classList.add('cursor-text');
+      }
     }
   }
 };
