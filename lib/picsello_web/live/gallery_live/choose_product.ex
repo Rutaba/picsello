@@ -131,7 +131,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     """
   end
 
-  defp add_to_cart(%{assigns: %{is_proofing: true} = assigns} = socket) do
+  defp add_to_cart(%{assigns: %{is_proofing: true, gallery_client: gallery_client} = assigns} = socket) do
     %{gallery: gallery, photo: photo, download_each_price: price} = assigns
     send(self(), :update_cart_count)
 
@@ -145,6 +145,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
         updated_at: date_time
       },
       gallery,
+      gallery_client,
       photo.album_id
     )
 

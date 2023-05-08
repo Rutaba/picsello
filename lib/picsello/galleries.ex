@@ -729,7 +729,7 @@ defmodule Picsello.Galleries do
   """
   def gallery_favorites_count(%Gallery{} = gallery) do
     Photo
-    |> where(gallery_id: ^gallery.id, client_liked: true)
+    |> where(gallery_id: ^gallery.id)
     |> Repo.aggregate(:count, [])
   end
 

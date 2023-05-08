@@ -17,9 +17,11 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   alias Picsello.{
     Repo,
     GlobalSettings,
+    Galleries,
     Galleries.GalleryDigitalPricing,
     Packages.Download,
-    Packages.PackagePricing
+    Packages.PackagePricing,
+    Cart.Order
   }
 
   @impl true
@@ -344,8 +346,25 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     |> Changeset.change()
     |> Changeset.put_assoc(:gallery_clients,
     Enum.map(email_list, fn email ->
-      %{email: email, gallery_id: gallery.id}
+      gallery_client = Galleries.get_gallery_client(gallery, email)
+      if gallery_client,
+      do:
+        %{id: gallery_client.id, email: email, gallery_id: gallery.id},
+      else:
+        %{email: email, gallery_id: gallery.id}
     end)
     )
+  end
+
+  defp hide_delete_email_button?(email, gallery) do
+    gallery_client = Galleries.get_gallery_client(gallery, email) |> Repo.preload(:orders)
+    if gallery_client do
+      case Map.get(gallery_client, :orders) do
+        nil -> false
+        _ -> true
+      end
+    else
+      false
+    end
   end
 end
