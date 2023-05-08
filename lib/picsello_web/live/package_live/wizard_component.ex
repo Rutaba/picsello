@@ -34,7 +34,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       digital_download_fields: 1,
       package_print_credit_fields: 1,
       current: 1,
-      assign_turnaround_weeks: 1
+      assign_turnaround_weeks: 1,
+      digitals_total: 1
     ]
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
@@ -568,7 +569,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg sm:mt-0 font-normal text-center", phx_hook: "PriceMask" %>
             </div>
           </div>
-          <b class="flex w-1/5 text-base-250"> $500 </b>
+          <b class="flex w-1/5"> <%= current(@f) |> Map.get(:base_price) %> </b>
         </div>
 
         <hr class="w-full mt-6"/>
@@ -589,8 +590,27 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             </div>
             <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@myself} phx-click="edit-discounts">Add a discount or surcharge</button>
           </div>
-          <div class="flex w-1/5">
-            <b><%= total_price(@f) %></b>
+          <div class="grid w-1/5">
+            <% changeset = current(@f) %>
+            <% multiplier = current(@multiplier) %>
+            <%= if Map.get(changeset, :print_credits_include_in_total) do %>
+              <.show_discounts>+<%= Map.get(changeset, :print_credits) %></.show_discounts>
+            <% end %>
+            <%= if Map.get(changeset, :digitals_include_in_total) do %>
+              <.show_discounts>+<%= digitals_total(@download_changeset) %></.show_discounts>
+            <% end %>
+            <.show_discounts><%= get_discount_text(multiplier) %></.show_discounts>
+            <%= if Map.get(multiplier, :discount_base_price) do %>
+              <.show_discounts><%= base_adjustment(@f) %></.show_discounts>
+            <% end %>
+            <%= if Map.get(multiplier, :discount_print_credits) do %>
+              <.show_discounts><%= print_cridets_adjustment(@f) %></.show_discounts>
+            <% end %>
+            <%= if Map.get(multiplier, :discount_digitals) do %>
+              <.show_discounts><%= digitals_adjustment(@f) %></.show_discounts>
+            <% end %>
+            <.hr f={@f} />
+            <div><b><%= total_price(@f) %></b></div>
           </div>
         </div>
 
@@ -617,18 +637,15 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
                   <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-4 py-4 pr-10") %>
                 </div>
-                <%!-- <div class="self-end mt-3 sm:self-auto justify-self-end sm:mt-0">
-                  <%= base_adjustment(@f) %>
-                </div> --%>
               </div>
 
               <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
-                <%= checkbox(m, :discount_creative, class: "w-5 h-5 mr-2.5 checkbox") %>
-                <%= label_for m, :discount_creative, label: "Apply to creative session", class: "font-normal" %>
+                <%= checkbox(m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox") %>
+                <%= label_for m, :discount_base_price, label: "Apply to creative session", class: "font-normal" %>
               </div>
               <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
-                <%= checkbox(m, :discount_credits, class: "w-5 h-5 mr-2.5 checkbox") %>
-                <%= label_for m, :discount_credits, label: "Apply to print credit", class: "font-normal" %>
+                <%= checkbox(m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox") %>
+                <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
               </div>
               <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
                 <%= checkbox(m, :discount_digitals, class: "w-5 h-5 mr-2.5 checkbox") %>
@@ -802,27 +819,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
     socket
     |> assign(:collapsed_documents, collapsed_documents)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("edit-print-credits", _, %{assigns: %{show_print_credits: show_print_credits}} = socket) do
-    socket
-    |> assign(:show_print_credits, !show_print_credits)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("edit-discounts", _, %{assigns: %{show_discounts: show_discounts}} = socket) do
-    socket
-    |> assign(:show_discounts, !show_discounts)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("edit-digitals", %{"type" => type}, socket) do
-    socket
-    |> assign(:show_digitals, type)
     |> noreply()
   end
 
@@ -1224,6 +1220,27 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> noreply()
   end
 
+  @impl true
+  def handle_event("edit-print-credits", _, %{assigns: %{show_print_credits: show_print_credits}} = socket) do
+    socket
+    |> assign(:show_print_credits, !show_print_credits)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-discounts", _, %{assigns: %{show_discounts: show_discounts}} = socket) do
+    socket
+    |> assign(:show_discounts, !show_discounts)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-digitals", %{"type" => type}, socket) do
+    socket
+    |> assign(:show_digitals, type)
+    |> noreply()
+  end
+
   defp update_package_changeset(changeset, payments_changeset) do
     payments_struct = payments_changeset |> current() |> Map.from_struct()
 
@@ -1578,13 +1595,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     package_pricing_changeset =
       assigns.package_pricing
       |> PackagePricing.changeset(
-        Map.get(params, "package_pricing", package_pricing_params(package))
+        Map.get(params, "package_pricing", package_pricing_params(package)) |> Map.put("step", step)
       )
 
     multiplier_changeset =
-      package.base_multiplier
+      package
       |> Multiplier.from_decimal()
-      |> Multiplier.changeset(Map.get(params, "multiplier", %{}))
+      |> Multiplier.changeset(Map.get(params, "multiplier", %{}) |> Map.put("step", step))
 
     download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 
@@ -1595,6 +1612,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Map.put(:action, action)
 
     download = current(download_changeset)
+    package_pricing = current(package_pricing_changeset)
+    multiplier = current(multiplier_changeset)
 
     package_params =
       params
@@ -1602,7 +1621,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> maybe_trim_package_base_price()
       |> PackagePricing.handle_package_params(params)
       |> Map.merge(%{
-        "base_multiplier" => multiplier_changeset |> current() |> Multiplier.to_decimal(),
+        "base_multiplier" =>  multiplier |> Multiplier.to_decimal(),
+        "discount_base_price" => multiplier |> Map.get(:discount_base_price),
+        "discount_print_credits" => multiplier |> Map.get(:discount_print_credits),
+        "discount_digitals" => multiplier |> Map.get(:discount_digitals),
+        "print_credits_include_in_total" => Map.get(package_pricing, :print_credits_include_in_total),
+        "digitals_include_in_total" => Map.get(download, :digitals_include_in_total),
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download),
         "buy_all" => Download.buy_all(download)
@@ -1624,13 +1648,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp maybe_trim_package_base_price(package), do: package
 
-  defp base_adjustment(package_form) do
-    adjustment = package_form |> current() |> Package.base_adjustment()
-
+  defp adjust(adjustment) do
     sign = if Money.negative?(adjustment), do: "-", else: "+"
-
     Enum.join([sign, Money.abs(adjustment)])
   end
+  
+  defp base_adjustment(package_form), do: package_form |> current() |> Package.base_adjustment() |> adjust()
+  defp digitals_adjustment(package_form), do: package_form |> current() |> Package.digitals_adjustment() |> adjust()
+  defp print_cridets_adjustment(package_form), do: package_form |> current() |> Package.print_cridets_adjustment() |> adjust()
 
   defp total_price(form), do: form |> current() |> Package.price()
 
@@ -1642,11 +1667,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp package_pricing_params(package) do
     case package |> Map.get(:print_credits) do
-      nil -> %{is_enabled: false}
+      nil -> %{"is_enabled" => false}
       %Money{} = value -> 
         %{
-          is_enabled: Money.positive?(value),
-          print_credits_include_in_total: Map.get(package, :print_credits_include_in_total)
+          "is_enabled" => Money.positive?(value),
+          "print_credits_include_in_total" => Map.get(package, :print_credits_include_in_total),
+          "print_credits" => value
         }
       _ -> %{}
     end
@@ -1964,5 +1990,33 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         concise_name: "question"
       }
     ]
+  end
+
+  defp hr(assigns) do
+    ~H"""
+    <% f = current(@f) %>
+    <%=if Map.get(f, :discount_base_price) || Map.get(f, :discount_print_credits) || Map.get(f, :discount_digitals) || Map.get(f, :print_credits_include_in_total) || Map.get(f, :digitals_include_in_total) do %>
+      <hr>
+    <% end %>
+    """
+  end
+
+  defp show_discounts(assigns) do
+    ~H"""
+    <div class="self-start mt-3 sm:self-auto justify-self-start sm:mt-0"> 
+      <%= render_slot(@inner_block) %>
+    </div>
+    """
+  end
+
+  defp get_discount_text(multiplier) do
+    if Map.get(multiplier, :is_enabled) && (Map.get(multiplier, :discount_base_price) || Map.get(multiplier, :discount_print_credits) || Map.get(multiplier, :discount_digitals)) do
+      sign = Map.get(multiplier, :sign)
+      sign_text = if sign == "-", do: "discount", else: "surcharge"
+
+      "with #{sign}#{Map.get(multiplier, :percent)}% #{sign_text}"
+    else
+      nil
+    end
   end
 end
