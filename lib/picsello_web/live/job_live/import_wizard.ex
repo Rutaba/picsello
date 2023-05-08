@@ -16,7 +16,6 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   import Phoenix.Component
   import PicselloWeb.Live.Shared
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-
   import PicselloWeb.JobLive.Shared,
     only: [
       job_form_fields: 1,

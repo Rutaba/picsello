@@ -480,7 +480,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       | entries: inprogress_photos,
         errors: []
     }
-
+    
     Map.put(assigns, :uploads, put_in(socket.assigns.uploads, [:photo], photo))
     |> then(&Map.put(socket, :assigns, &1))
   end

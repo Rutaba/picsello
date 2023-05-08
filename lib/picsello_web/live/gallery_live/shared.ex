@@ -517,7 +517,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
     any_client_liked_photo? =
       Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
-
+    
     assigns = assigns |> Enum.into(%{any_client_liked_photo?: any_client_liked_photo?})
 
     ~H"""

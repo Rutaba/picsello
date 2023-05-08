@@ -19,9 +19,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
     is_open? = p_selections && p_selections.open?
 
     icon_class = "w-3 h-3 stroke-current stroke-2"
-
-    assigns =
-      assign(assigns, p_selections: p_selections, is_open?: is_open?, icon_class: icon_class)
+    assigns = assign(assigns, p_selections: p_selections, is_open?: is_open?, icon_class: icon_class)
 
     ~H"""
       <div class="flex flex-col">
@@ -94,7 +92,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.PrintProductComponent do
         final_cost = final_cost(print_products_map, product.id, size, type)
         %{final_cost: final_cost, profit: sub(final_cost, base_cost)}
       end)
-
     assigns = assign(assigns, details: details)
 
     ~H"""

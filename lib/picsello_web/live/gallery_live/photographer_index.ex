@@ -293,10 +293,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   @impl true
   def handle_info(:expiration_saved, %{assigns: %{gallery: gallery}} = socket) do
-    gallery =
-      Galleries.get_gallery!(gallery.id)
-      |> Galleries.load_watermark_in_gallery()
-      |> Repo.preload(:photographer, job: :client)
+    gallery = Galleries.get_gallery!(gallery.id) |> Galleries.load_watermark_in_gallery() |> Repo.preload(:photographer, job: :client)
 
     socket
     |> assign(:gallery, gallery)
@@ -305,10 +302,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
-    gallery =
-      Galleries.get_gallery!(gallery.id)
-      |> Galleries.load_watermark_in_gallery()
-      |> Repo.preload(:photographer, job: :client)
+    gallery = Galleries.get_gallery!(gallery.id) |> Galleries.load_watermark_in_gallery() |> Repo.preload(:photographer, job: :client)
 
     socket
     |> assign(:gallery, gallery)
@@ -331,20 +325,14 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     socket
-    |> assign(
-      :gallery,
-      Galleries.delete_gallery_cover_photo(gallery) |> Repo.preload(:photographer, job: :client)
-    )
+    |> assign(:gallery, Galleries.delete_gallery_cover_photo(gallery) |> Repo.preload(:photographer, job: :client))
     |> close_modal()
     |> noreply()
   end
 
   @impl true
   def handle_info({:update_name, %{gallery: gallery}}, socket) do
-    gallery =
-      gallery
-      |> Galleries.load_watermark_in_gallery()
-      |> Repo.preload(:photographer, job: :client)
+    gallery = gallery |> Galleries.load_watermark_in_gallery() |> Repo.preload(:photographer, job: :client)
 
     socket
     |> assign(:gallery, gallery)
@@ -444,10 +432,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   defp preload_watermark(%{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> assign(
-      :gallery,
-      Galleries.load_watermark_in_gallery(gallery) |> Repo.preload(:photographer, job: :client)
-    )
+    |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery) |> Repo.preload(:photographer, job: :client))
   end
 
   defp remove_watermark_button(assigns) do
