@@ -1134,13 +1134,11 @@ defmodule Picsello.Galleries do
     end
   end
 
-  def build_gallery_clients_changeset(gallery, email_list) do
-    gallery
-      |> Changeset.put_change(:gallery_clients,
-      Enum.map(email_list, fn email ->
-        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
-      end)
+  def get_gallery_clients(gallery) do
+    from(gc in GalleryClient,
+      where: gc.gallery_id == ^gallery.id
     )
+    |> Repo.all()
   end
 
   @doc """

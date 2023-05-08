@@ -45,7 +45,7 @@ defmodule Picsello.Galleries.Gallery do
     has_many(:photos, Photo)
     has_many(:gallery_products, GalleryProduct)
     has_many(:albums, Album)
-    # has_many(:gallery_clients, GalleryClient)
+    has_many(:gallery_clients, GalleryClient, on_replace: :delete)
     has_many(:orders, Order)
     has_many(:session_tokens, SessionToken, @session_opts)
     has_one(:watermark, Watermark, on_replace: :update)

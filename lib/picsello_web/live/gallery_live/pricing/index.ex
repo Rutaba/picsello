@@ -11,7 +11,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
 
   alias Picsello.{Galleries, Repo, Orders}
   alias Ecto.Multi
-  
+
   @impl true
   def mount(_params, _session, socket) do
     socket

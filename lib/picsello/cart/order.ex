@@ -21,7 +21,7 @@ defmodule Picsello.Cart.Order do
     field :placed_at, :utc_datetime
     field :total_credits_amount, :integer, default: 0
 
-    # belongs_to(:gallery_client, GalleryClient)
+    belongs_to(:gallery_client, GalleryClient)
     belongs_to(:gallery, Gallery)
     belongs_to(:album, Album)
 
