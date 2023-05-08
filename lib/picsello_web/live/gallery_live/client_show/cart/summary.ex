@@ -91,6 +91,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     """
   end
 
+
   defp discounts_content(assigns) do
     ~H"""
     <dl class={"#{@class} contents"}>
