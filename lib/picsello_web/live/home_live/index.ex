@@ -308,6 +308,13 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
+  def handle_event("view-calculator", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.calculator_path(socket, :index))
+      |> noreply()
+
+  @impl true
   def handle_event("change-tab", %{"tab" => tab}, socket) do
     socket
     |> assign(:tab_active, tab)
@@ -499,7 +506,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
     ~H"""
     <div class="rounded-lg bg-white p-6 grow flex flex-col items-start">
-      <div class="flex justify-between items-center mb-2 w-full gap-6">
+      <div class="flex justify-between items-center mb-2 w-full gap-4">
         <h3 class="text-2xl font-bold flex items-center gap-2">
           <%= @title %>
           <.notification_bubble notification_count={@notification_count} />
@@ -563,7 +570,7 @@ defmodule PicselloWeb.HomeLive.Index do
       )
 
     inbox_threads =
-      from(message in subquery(message_query), order_by: [desc: message.inserted_at], limit: 3)
+      from(message in subquery(message_query), order_by: [desc: message.inserted_at], limit: 1)
       |> Repo.all()
       |> Repo.preload(job: :client)
       |> Enum.map(fn message ->
@@ -880,6 +887,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def card_button(%{buttons: [%{link: link} = button]} = assigns) when not is_nil(link) do
     assigns = assign(assigns, link: link, button: button)
+
     ~H"""
     <.custom_link link={@link} class={@button.class} label={@button.label} />
     """
@@ -887,6 +895,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def card_button(%{buttons: [%{action: action} = button]} = assigns) when not is_nil(action) do
     assigns = assign(assigns, action: action, button: button)
+
     ~H"""
     <button type="button" phx-click={@action} phx-click="sss" class={"#{@button.class} text-sm w-full py-2 mt-2"}>
       <%= @button.label %>
@@ -896,6 +905,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def card_button(%{buttons: [button_1, button_2]} = assigns) do
     assigns = assign(assigns, button_1: button_1, button_2: button_2)
+
     ~H"""
     <div class="flex gap-4">
      <.card_button buttons={[@button_1]} />
