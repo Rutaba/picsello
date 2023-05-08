@@ -9,15 +9,16 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   def mount(_params, _session, socket) do
     socket
     |> assign_step(1)
+    |> assign_job_types()
     |> then(fn %{assigns: %{current_user: user}} = socket ->
       assign(socket,
         pricing_calculations: %PricingCalculations{
           organization_id: user.organization_id,
           job_types: Profiles.enabled_job_types(user.organization.organization_job_types),
-          average_time_per_week: 40,
+          average_time_per_week: 35,
           take_home: Money.new(0),
           self_employment_tax_percentage: tax_schedule().self_employment_percentage,
-          desired_salary: Money.new(1_500_000),
+          desired_salary: Money.new(6_500_000),
           business_costs: cost_categories()
         }
       )
@@ -61,6 +62,40 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     socket
     |> assign_step(6)
     |> assign_cost_category_step(category_id, category)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{"pricing_calculations" => params},
+        %{
+          assigns: %{
+            step: 3,
+            pricing_calculations: %{
+              self_employment_tax_percentage: self_employment_tax_percentage
+            }
+          }
+        } = socket
+      ) do
+    desired_salary = Ecto.Changeset.get_change(build_changeset(socket, params), :desired_salary)
+    tax_bracket = PricingCalculations.get_income_bracket(desired_salary)
+    after_tax_income = PricingCalculations.calculate_after_tax_income(tax_bracket, desired_salary)
+
+    take_home =
+      PricingCalculations.calculate_take_home_income(
+        self_employment_tax_percentage,
+        after_tax_income
+      )
+
+    socket
+    |> assign(
+      desired_salary: desired_salary,
+      tax_bracket: tax_bracket,
+      after_tax_income: after_tax_income,
+      take_home: take_home
+    )
+    |> assign_changeset(params)
     |> noreply()
   end
 
@@ -154,13 +189,15 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </p>
 
           <div class="mt-2 grid md:grid-cols-3 grid-cols-2 gap-3 sm:gap-5">
-            <%= for(job_type <- job_types(), checked <- [Enum.member?(input_value(@f, :job_types) || [], job_type)]) do %>
+            <%= for(job_type <- @job_types, checked <- [Enum.member?(input_value(@f, :job_types) || [], job_type)]) do %>
               <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={checked} />
             <% end %>
           </div>
         </div>
 
-        <p class="py-2 font-extrabold mt-4">How much time do you spend on your photography business per week? <br /><span class="italic font-normal text-sm text-base-250">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
+        <p class="font-extrabold mt-4">How much time do you spend on your photography business per week? <br /><span class="italic font-normal text-sm text-base-250">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
+        <p class="py-2 bold font-normal text-sm text-base-250 mb-4">Please note if you are part-time but planning to go full-time, please use 35 hours for more accurate pricing</p>
+
         <label class="flex flex-col">
           <div class="flex items-center">
             <%= input @f, :average_time_per_week, type: :text_input, phx_debounce: 500, min: 0, placeholder: "40", class: "p-4 w-24 text-center" %>
@@ -177,24 +214,6 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   defp step(%{step: 3} = assigns) do
-    desired_salary = input_value(assigns.f, :desired_salary)
-    tax_bracket = PricingCalculations.get_income_bracket(desired_salary)
-    after_tax_income = PricingCalculations.calculate_after_tax_income(tax_bracket, desired_salary)
-
-    take_home =
-      PricingCalculations.calculate_take_home_income(
-        assigns.pricing_calculations.self_employment_tax_percentage,
-        after_tax_income
-      )
-
-    assigns =
-      Enum.into(assigns, %{
-        desired_salary: desired_salary,
-        tax_bracket: tax_bracket,
-        after_tax_income: after_tax_income,
-        take_home: take_home
-      })
-
     ~H"""
       <.container {assigns}>
         <h4 class="text-4xl font-bold">Let us know how much you’d like to make</h4>
@@ -227,7 +246,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
           <hr class="hidden mt-4 mb-4 sm:block" />
           <div class="flex flex-wrap items-center justify-between px-4">
-            <p class="py-2 font-extrabold">Approximate After Income Tax & SE Tax <br /><span class="italic font-normal text-sm text-base-250">‘aka your take home pay’</span></p>
+            <p class="py-2 font-extrabold">Approximate ‘Take Home Pay’ <br /><span class="italic font-normal text-sm text-base-250">Approximate income after income tax and SE tax</span></p>
             <%= hidden_input(@f, :take_home, value: @take_home ) %>
             <p class="text-blue-planning-300 font-bold w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= @take_home %></p>
           </div>
@@ -361,7 +380,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <.container {assigns}>
         <div class="items-center hidden w-full border-b-8 lg:grid lg:grid-cols-3 gap-2 border-blue-planning-300 ">
           <div class="pb-4 font-bold col-start-1">Item</div>
-          <div class="pb-4 font-bold text-center col-start-2">Your Cost Monthy</div>
+          <div class="pb-4 font-bold text-center col-start-2">Your Cost Monthly</div>
           <div class="pb-4 font-bold text-center col-start-3">Your Cost Yearly</div>
         </div>
         <%= inputs_for @f, :business_costs, fn fp -> %>
@@ -416,13 +435,34 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     )
   end
 
-  defp assign_step(socket, 3) do
+  defp assign_step(
+         %{
+           assigns: %{
+             pricing_calculations: %{
+               desired_salary: desired_salary,
+               self_employment_tax_percentage: self_employment_tax_percentage
+             }
+           }
+         } = socket,
+         3
+       ) do
+    tax_bracket = PricingCalculations.get_income_bracket(desired_salary)
+    after_tax_income = PricingCalculations.calculate_after_tax_income(tax_bracket, desired_salary)
+
     socket
     |> assign(
       step: 3,
       step_title: "Financial goals",
       page_title: "Smart Profit Calculator—Step 2",
-      change: "validate"
+      change: "validate",
+      desired_salary: desired_salary,
+      tax_bracket: tax_bracket,
+      after_tax_income: after_tax_income,
+      take_home:
+        PricingCalculations.calculate_take_home_income(
+          self_employment_tax_percentage,
+          after_tax_income
+        )
     )
   end
 
@@ -815,6 +855,11 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       true -> %{phx_click: "step", phx_value_id: step}
       _ -> %{}
     end
+  end
+
+  defp assign_job_types(socket) do
+    socket
+    |> assign(job_types: Enum.filter(job_types(), fn job_type -> job_type !== "other" end))
   end
 
   defdelegate job_types(), to: JobType, as: :all
