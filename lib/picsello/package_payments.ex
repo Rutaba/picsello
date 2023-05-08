@@ -158,7 +158,7 @@ defmodule Picsello.PackagePayments do
 
   defp current_datetime(), do: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
-  defp merge_payments(payment_schedules) do
+  def merge_payments(payment_schedules) do
     schedules = Enum.group_by(payment_schedules, &filter_payments/1)
     upcoming_payments = Map.get(schedules, false, [])
     overdue_payments = Map.get(schedules, true, [])
@@ -201,5 +201,5 @@ defmodule Picsello.PackagePayments do
   end
 
   defp filter_payments(schedule),
-    do: Date.compare(current_datetime(), schedule.schedule_date) == :gt
+    do: Date.compare(current_datetime(), Map.get(schedule, :schedule_date, schedule.due_at)) == :gt
 end

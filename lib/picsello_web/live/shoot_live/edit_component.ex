@@ -117,9 +117,11 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       |> Multi.insert_or_update(:shoot, changeset)
       |> Multi.merge(fn _ ->
         if job_status.is_lead do
-          {updated_package_payment_schedules, updated_payment_schedules} = get_schedules(socket)
-
+          {updated_package_payment_schedules, updated_payment_schedules, package_payment_schedule_ids, payment_schedule_ids} = get_schedules(socket)
+          
           Multi.new()
+          |> Ecto.Multi.delete_all(:delete_payments, from(p in PackagePaymentSchedule, where: p.id in ^package_payment_schedule_ids))
+          |> Ecto.Multi.delete_all(:delete_job_payments, from(p in PaymentSchedule, where: p.id in ^payment_schedule_ids))
           |> Multi.insert_all(
             :package_payment_schedules,
             PackagePaymentSchedule,
@@ -266,9 +268,10 @@ defmodule PicselloWeb.ShootLive.EditComponent do
         first_time_difference,
         last_time_difference
       )
-
+    
     updated_job_payment_schedules =
       updated_package_payment_schedules
+      |> PackagePayments.merge_payments()
       |> Enum.map(
         &%{
           job_id: job.id,
@@ -281,7 +284,10 @@ defmodule PicselloWeb.ShootLive.EditComponent do
         }
       )
 
-    {updated_package_payment_schedules, updated_job_payment_schedules}
+    package_payment_schedule_ids = Enum.map(updated_package_payment_schedules, & &1.id)
+    updated_package_payment_schedules = PackagePayments.merge_payments(updated_package_payment_schedules)
+
+    {updated_package_payment_schedules, updated_job_payment_schedules, package_payment_schedule_ids, []}
   end
 
   defp get_schedules_for_update(
@@ -308,8 +314,13 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       end)
       |> List.flatten()
       |> payment_schedules_struct_map()
+    
+    package_payment_schedule_ids = Enum.map(updated_package_payment_schedules, & &1.id)
+    payment_schedule_ids = Enum.map(updated_payment_schedules, & &1.id)
+    updated_package_payment_schedules = PackagePayments.merge_payments(updated_package_payment_schedules)
+    updated_payment_schedules = PackagePayments.merge_payments(updated_payment_schedules)
 
-    {updated_package_payment_schedules, updated_payment_schedules}
+    {updated_package_payment_schedules, updated_payment_schedules, package_payment_schedule_ids, payment_schedule_ids}
   end
 
   defp find_and_map_payment_schedule(payment_schedules, package_schedule) do
