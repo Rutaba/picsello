@@ -99,7 +99,7 @@ defmodule Picsello.Organization do
     |> unique_constraint(:slug)
     |> case do
       %{changes: %{name: _}} = changeset -> changeset
-      %{} = changeset -> add_error(changeset, :name, "did not change")
+      %{} = changeset -> add_error(changeset, :name, "")
     end
   end
 
