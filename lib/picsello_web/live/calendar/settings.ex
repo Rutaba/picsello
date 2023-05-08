@@ -13,15 +13,11 @@ defmodule PicselloWeb.Live.Calendar.Settings do
 
   @impl true
   def render(%{current_user: user} = assigns) do
-    assigns =
-      assign(assigns,
-        url:
-          Routes.i_calendar_url(
-            assigns.socket,
-            :index,
-            Phoenix.Token.sign(Endpoint, "USER_ID", user.id)
-          )
-      )
+    assigns = assign(assigns, url: Routes.i_calendar_url(
+      assigns.socket,
+      :index,
+      Phoenix.Token.sign(Endpoint, "USER_ID", user.id)
+    ))
 
     ~H"""
     <div class="pt-6 px-6 py-2 center-container">

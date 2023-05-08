@@ -285,28 +285,20 @@ I look forward to capturing these memories for you!"}
 
   defp invoice_disabled?(_proposal, _stripe_status), do: true
 
-  defp open_compose(
-         %{
-           assigns: %{
-             current_user: current_user,
-             organization: %{name: organization_name},
-             job: job
-           }
-         } = socket
-       ),
-       do:
-         socket
-         |> PicselloWeb.ClientMessageComponent.open(%{
-           modal_title: "Contact #{organization_name}",
-           show_client_email: false,
-           show_subject: false,
-           subject: "#{Job.name(job)} proposal",
-           presets: [],
-           send_button: "Send",
-           client: Job.client(job),
-           current_user: current_user
-         })
-         |> noreply()
+  defp open_compose(%{assigns: %{current_user: current_user, organization: %{name: organization_name}, job: job}} = socket),
+    do:
+      socket
+      |> PicselloWeb.ClientMessageComponent.open(%{
+        modal_title: "Contact #{organization_name}",
+        show_client_email: false,
+        show_subject: false,
+        subject: "#{Job.name(job)} proposal",
+        presets: [],
+        send_button: "Send",
+        client: Job.client(job),
+        current_user: current_user
+      })
+      |> noreply()
 
   defp assign_stripe_status(%{assigns: %{photographer: photographer}} = socket) do
     socket

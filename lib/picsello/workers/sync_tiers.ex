@@ -17,14 +17,7 @@ defmodule Picsello.Workers.SyncTiers do
 
   def perform(_) do
     credentials = Application.get_env(:picsello, :goth_json) |> Jason.decode!()
-
-    Goth.start_link(
-      name: Picsello.Goth,
-      source:
-        {:service_account, credentials,
-         scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"]}
-    )
-
+    Goth.start_link(name: Picsello.Goth, source: {:service_account, credentials, scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"]})
     {:ok, token} = Goth.fetch(Picsello.Goth)
 
     connection = Sheets.Connection.new(token.token)
