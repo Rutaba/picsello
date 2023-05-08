@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.Index do
   alias Ecto.Query
   alias Picsello.{Galleries, Job, Repo, Messages, Orders, Albums}
 
+  import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
@@ -21,13 +22,14 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   @impl true
   def mount(
-        _params,
+        params,
         _session,
         socket
       ) do
     socket
     |> assign_new(:pagination, fn -> %Pagination{} end)
     |> update_gallery_listing()
+    |> is_mobile(params)
     |> ok()
   end
 
@@ -272,7 +274,7 @@ defmodule PicselloWeb.GalleryLive.Index do
             <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %>
           </div>
           <div class={"font-bold w-full"}>
-            <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id) do %>
+            <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: [])) do %>
               <span class="w-full text-blue-planning-300 underline">
                 <%= if String.length(@gallery.name) < 30 do
                   @gallery.name
