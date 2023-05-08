@@ -261,6 +261,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   defp photos_count(%{is_proofing: true, album: album, socket: socket} = assigns) do
     cart_route =
       Routes.gallery_client_show_cart_path(socket, :proofing_album, album.client_link_hash)
+
     assigns = assign(assigns, cart_route: cart_route)
 
     ~H"""

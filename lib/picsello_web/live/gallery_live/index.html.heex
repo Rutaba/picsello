@@ -39,7 +39,9 @@
       <div {testid("galleries-#{gallery.id}")} class="md:py-0 md:mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">
         <div class="relative md:grid md:grid-cols-2 flex flex-wrap my-4 md:mx-0 mx-4">
           <div class="flex flex-row align-top">
-            <.image_item socket={@socket} gallery={gallery} index={@index} gallery_index={gallery_index}/>
+            <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery, if(@is_mobile, do: [is_mobile: false], else: []))}>
+              <.image_item socket={@socket} gallery={gallery} is_mobile= {@is_mobile} index={@index} gallery_index={gallery_index}/>
+            </a>
             <%= if disabled?(gallery) do %>
               <div class="flex items-center">
                 <span class="font-bold text-xs text-base-250 bg-slate-200 mb-8 ml-2 rounded px-1">Disabled</span>
@@ -47,9 +49,8 @@
             <% end %>
           </div>
           <hr class="block md:hidden base-250 w-full my-4"/>
-
           <div class="flex flex-wrap gap-3 items-center md:text-sm lg:text-base md:ml-auto md:w-auto w-full">
-            <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg text-white bg-blue-planning-300 hover:bg-blue-planning-300/75", %{"pointer-events-none text-gray-200 border-gray-200" => disabled?(gallery)})}>
+            <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery, if(@is_mobile, do: [is_mobile: false], else: []))} class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg text-white bg-blue-planning-300 hover:bg-blue-planning-300/75", %{"pointer-events-none text-gray-200 border-gray-200" => disabled?(gallery)})}>
               <.icon name="add-photos" class={classes("w-4 h-4 fill-current text-white inline mr-2", %{"opacity-50" => disabled?(gallery)})} />
               Upload photos
             </a>
@@ -67,7 +68,7 @@
                 <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
               </button>
               <div class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
-                <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes(%{"hidden" => disabled?(gallery)})} />
+                <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery, if(@is_mobile, do: [is_mobile: false], else: []))]} class={classes(%{"hidden" => disabled?(gallery)})} />
                 <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} class={classes(%{"hidden" => disabled?(gallery)})} />
                 <.dropdown_item {assigns} id="send_email_link" class={classes("hover:cursor-pointer", %{"hidden" => disabled?(gallery)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
                 <%= if Enum.any?(gallery.orders) do %>
