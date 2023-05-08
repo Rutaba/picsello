@@ -16,9 +16,10 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   @per_page 12
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, _session, %{assigns: %{gallery: gallery, client_email: client_email}} = socket) do
     socket
     |> assign(:photo_updates, "false")
+    |> assign(gallery_client: Galleries.get_gallery_client(gallery, client_email))
     |> assign(:download_all_visible, false)
     |> assign(:selected_filter, false)
     |> assign(:client_proofing, "true")
@@ -132,17 +133,17 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_info(
         {:add_digital_to_cart, digital, finals_album_id},
-        %{assigns: %{gallery: gallery}} = socket
+        %{assigns: %{gallery: gallery, gallery_client: gallery_client}} = socket
       ) do
-    order = Cart.place_product(digital, gallery, finals_album_id)
+    order = Cart.place_product(digital, gallery, gallery_client, finals_album_id)
     socket |> add_to_cart_assigns(order)
   end
 
   def handle_info(
         {:add_bundle_to_cart, bundle_price},
-        %{assigns: %{gallery: gallery}} = socket
+        %{assigns: %{gallery: gallery, gallery_client: gallery_client}} = socket
       ) do
-    order = Cart.place_product({:bundle, bundle_price}, gallery)
+    order = Cart.place_product({:bundle, bundle_price}, gallery, gallery_client)
     socket |> add_to_cart_assigns(order)
   end
 

@@ -12,6 +12,7 @@ defmodule Picsello.Cart do
     Cart.Order,
     Galleries,
     Galleries.Gallery,
+    Galleries.GalleryClient,
     Orders,
     Repo,
     WHCC
@@ -36,27 +37,28 @@ defmodule Picsello.Cart do
   @spec place_product(
           {:bundle, Money.t()} | CartProduct.t() | Digital.t(),
           Gallery.t() | integer(),
+          GalleryClient.t(),
           integer() | nil
         ) ::
           Order.t()
-  def place_product(product, gallery, album_id \\ nil)
+  def place_product(product, gallery, gallery_client, album_id \\ nil)
 
-  def place_product(product, %Gallery{id: id, use_global: use_global} = gallery, album_id) do
+  def place_product(product, %Gallery{id: id, use_global: use_global} = gallery, gallery_client, album_id) do
     opts = [credits: credit_remaining(gallery), use_global: use_global]
 
     order_opts = [preload: [:products, :digitals]]
 
-    case get_unconfirmed_order(id, Keyword.put(order_opts, :album_id, album_id)) do
+    case get_unconfirmed_order(id, Keyword.put(order_opts, :album_id, album_id) |> Keyword.put(:gallery_client_id, gallery_client.id)) do
       {:ok, order} ->
         place_product_in_order(order, product, opts)
 
       {:error, _} ->
-        create_order_with_product(product, %{gallery_id: id, album_id: album_id}, opts)
+        create_order_with_product(product, %{gallery_id: id, gallery_client_id: gallery_client.id, album_id: album_id}, opts)
     end
   end
 
-  def place_product(product, gallery_id, album_id) when is_integer(gallery_id),
-    do: place_product(product, Galleries.get_gallery!(gallery_id), album_id)
+  def place_product(product, gallery_id, gallery_client, album_id) when is_integer(gallery_id),
+    do: place_product(product, Galleries.get_gallery!(gallery_id), gallery_client, album_id)
 
   def bundle_status(gallery, album_id \\ nil) do
     cond do
@@ -190,6 +192,7 @@ defmodule Picsello.Cart do
   Gets the current order for gallery.
   """
   @spec get_unconfirmed_order(integer(),
+          gallery_client_id: integer(),
           album_id: integer(),
           preload: [:digitals | :products | :package]
         ) ::
@@ -210,6 +213,12 @@ defmodule Picsello.Cart do
         reduce:
           Order
           |> where([order], order.gallery_id == ^gallery_id and is_nil(order.placed_at))
+          |> then(
+            &case Keyword.get(opts, :gallery_client_id) do
+              nil -> where(&1, [order], is_nil(order.gallery_client_id))
+              gallery_client_id -> where(&1, [order], order.gallery_client_id == ^gallery_client_id)
+            end
+          )
           |> then(
             &case Keyword.get(opts, :album_id) do
               nil -> where(&1, [order], is_nil(order.album_id))

@@ -305,7 +305,7 @@ defmodule PicselloWeb.Router do
     pipe_through [:api]
 
     # WHCC secondary action
-    post "/", GalleryAddAndClone, :post
+    # post "/", GalleryAddAndClone, :post
   end
 
   scope "/gallery", PicselloWeb do

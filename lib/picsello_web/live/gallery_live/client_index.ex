@@ -30,6 +30,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
     socket
     |> assign(
+      gallery_client: Galleries.get_gallery_client(gallery, client_email),
       photo_updates: "false",
       download_all_visible: false,
       active: false,
@@ -176,17 +177,17 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   def handle_info(
         {:add_digital_to_cart, digital, _finals_album_id},
-        %{assigns: %{gallery: gallery}} = socket
+        %{assigns: %{gallery: gallery, gallery_client: gallery_client}} = socket
       ) do
-    order = Cart.place_product(digital, gallery.id)
+    order = Cart.place_product(digital, gallery, gallery_client)
     socket |> add_to_cart_assigns(order)
   end
 
   def handle_info(
         {:add_bundle_to_cart, bundle_price},
-        %{assigns: %{gallery: gallery}} = socket
+        %{assigns: %{gallery: gallery, gallery_client: gallery_client}} = socket
       ) do
-    order = Cart.place_product({:bundle, bundle_price}, gallery)
+    order = Cart.place_product({:bundle, bundle_price}, gallery, gallery_client)
     socket |> add_to_cart_assigns(order)
   end
 
