@@ -51,6 +51,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     ~H"""
     <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6 mb-5">
     <dl class="text-lg contents">
+      <%= with [{label, value} | _] <- @product_charge_lines do %>
+        <.summary_block label={label} value={value} />
+      <% end %>
+
+      <%= if Enum.any?(@order.products, & &1.total_markuped_price) do %>
+        <.shipping_block {assigns} />
+      <% else %>
+        <.summary_block label="Shipping & handling" value="Included" />
+      <% end %>
+
       <%= for {label, value} <- @charges do %>
         <dt class="hidden toggle lg:block"><%= label %></dt>
 
@@ -92,16 +102,47 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     """
   end
 
+  defp shipping_block(
+         %{order: %{products: [_ | _] = products, delivery_info: delivery_info}} = assigns
+       ) do
+    {added?, description} = shipping_description(delivery_info, products)
+    assigns = Enum.into(assigns, %{description: description, added?: added?})
+
+    ~H"""
+    <.summary_block label={"Shipping #{@description}"} value={total_shipping(@order.products)} />
+
+    <%= unless @order.placed_at do %>
+      <.summary_block
+        label={@added? && "#{zip(@order)} Edit" || "Add zipcode for actual"}
+        class="mt-[-4px] text-sm underline cursor-pointer text-blue-planning-300",
+        event="zipcode"
+      />
+    <% end %>
+    """
+  end
+
+  defp zip(%{delivery_info: delivery_info}) do
+    delivery_info && delivery_info |> Map.get(:address, %{}) |> Map.get(:zip)
+  end
+
+  defp shipping_description(%{address: %{zip: zip}}, products) when not is_nil(zip) do
+    {true, "(#{Enum.count(products, &has_shipping?/1)})"}
+  end
+
+  defp shipping_description(_, _), do: {false, "estimated"}
+
   def details(%{products: products, digitals: digitals} = order, caller)
       when is_list(products) and is_list(digitals) do
     charges = charges(order, caller)
+    product_charge = product_charge_lines(order)
     discounts = discounts(order, caller)
 
     %{
       charges: charges,
-      subtotal: sum_lines(charges),
+      product_charge_lines: product_charge,
+      subtotal: sum_lines(charges ++ product_charge),
       discounts: discounts,
-      total: sum_lines(charges ++ discounts)
+      total: sum_lines(charges ++ product_charge ++ discounts)
     }
   end
 
@@ -141,8 +182,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   end
 
   defp charges(order, caller) do
-    product_charge_lines(order) ++
-      digital_charge_lines(order, caller) ++ bundle_charge_lines(order)
+    digital_charge_lines(order, caller) ++ bundle_charge_lines(order)
   end
 
   defp product_charge_lines(%{products: []}), do: []
@@ -150,12 +190,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   defp product_charge_lines(%{products: products}) do
     [
       {"Products (#{length(products)})", sum_prices(products)},
-      if Enum.any?(products, & &1.total_markuped_price) do
-        count = Enum.count(products, &has_shipping?/1)
-        {"Shipping (#{count})", total_shipping(products)}
-      else
-        {"Shipping & handling", "Included"}
-      end
+      Enum.any?(products, & &1.total_markuped_price) && {"", total_shipping(products)}
     ]
   end
 
