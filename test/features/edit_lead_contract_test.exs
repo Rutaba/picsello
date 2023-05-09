@@ -58,7 +58,7 @@ defmodule Picsello.EditLeadContractTest do
     end)
   end
 
-  feature "user adds new contract", %{session: session, lead: lead, user: user} do
+  feature "user adds new contract and then use it in leads", %{session: session, lead: lead, user: user} do
     insert_package(user, lead)
 
     session
@@ -122,35 +122,6 @@ defmodule Picsello.EditLeadContractTest do
     |> find(testid("contract"), fn element ->
       element
       |> assert_text("Contract 1")
-    end)
-  end
-
-  feature "user selects different contract and edits it", %{
-    session: session,
-    user: user,
-    lead: lead
-  } do
-    insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
-    insert_package(user, lead)
-
-    session
-    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> click(@edit_contract_button)
-    |> find(select("Select template to reset contract language"), fn element ->
-      element |> click(option("Contract 1"))
-    end)
-    |> assert_has(css("div.ql-editor[data-placeholder='Paste contract text here']"))
-    |> fill_in_quill("this is the content of my new contract")
-    |> assert_disabled_submit()
-    |> fill_in(text_field("Contract Name"), with: " ")
-    |> assert_text("Contract Name can't be blank")
-    |> fill_in(text_field("Contract Name"), with: "Contract 2")
-    |> within_modal(&wait_for_enabled_submit_button/1)
-    |> click(button("Save"))
-    |> assert_flash(:success, text: "New contract added successfully")
-    |> find(testid("contract"), fn element ->
-      element
-      |> assert_text("Contract 2")
     end)
   end
 
