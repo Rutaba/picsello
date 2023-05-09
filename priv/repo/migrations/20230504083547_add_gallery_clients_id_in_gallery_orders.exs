@@ -24,7 +24,9 @@ defmodule Picsello.Repo.Migrations.AddGalleryClientsIdInGalleryOrders do
       update #{@table} set gallery_client_id = gallery_clients.id from gallery_clients where gallery_orders.gallery_id = gallery_clients.gallery_id;
     """)
 
-    execute("ALTER TABLE #{@table} DROP CONSTRAINT IF EXISTS gallery_orders_gallery_client_id_fkey")
+    execute(
+      "ALTER TABLE #{@table} DROP CONSTRAINT IF EXISTS gallery_orders_gallery_client_id_fkey"
+    )
 
     alter(table(@table)) do
       modify(:gallery_client_id, references(:gallery_clients, on_delete: :nothing), null: false)

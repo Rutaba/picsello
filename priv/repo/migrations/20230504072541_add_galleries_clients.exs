@@ -7,7 +7,7 @@ defmodule Picsello.Repo.Migrations.AddGalleriesClients do
       add(:email, :string, null: false)
       add(:gallery_id, references(:galleries, on_delete: :nothing), null: false)
 
-    timestamps()
+      timestamps()
     end
   end
 

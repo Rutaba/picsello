@@ -4,10 +4,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
 
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
-<<<<<<< HEAD
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
-=======
->>>>>>> 5f7bfb3ee (gallery local pricing feature)
 
   alias Picsello.{Galleries, Repo, Orders}
   alias Ecto.Multi
@@ -137,8 +134,10 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   end
 
   @impl true
-  def handle_info({:update, %{changeset: changeset, gallery_changeset: gallery_changeset}}, %{assigns: %{gallery: gallery}} = socket) do
-    changeset = Map.replace(changeset, :action, :update)
+  def handle_info(
+        {:update, %{changeset: changeset, gallery_changeset: gallery_changeset}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
     Multi.new()
     |> Multi.update(:gallery_digital_pricing, changeset)
     |> Multi.update(:gallery, gallery_changeset)
@@ -153,7 +152,8 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
         socket
         |> put_flash(:error, "Couldn't update gallery pricing")
 
-      other -> other
+      other ->
+        other
     end
     |> close_modal()
     |> noreply()

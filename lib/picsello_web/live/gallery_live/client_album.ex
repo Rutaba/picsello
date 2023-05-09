@@ -16,7 +16,11 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   @per_page 12
 
   @impl true
-  def mount(_params, _session, %{assigns: %{gallery: gallery, client_email: client_email}} = socket) do
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{gallery: gallery, client_email: client_email}} = socket
+      ) do
     socket
     |> assign(:photo_updates, "false")
     |> assign(gallery_client: Galleries.get_gallery_client(gallery, client_email))

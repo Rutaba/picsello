@@ -19,8 +19,12 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     ]
 
   @impl true
-  def handle_params(_, _, %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket) do
-    gallery_client = client_email && Galleries.get_gallery_client(gallery, client_email)
+  def handle_params(
+        _,
+        _,
+        %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
+      ) do
+    gallery_client = Galleries.get_gallery_client(gallery, client_email)
     orders = Orders.gallery_client_orders(gallery.id, gallery_client.id) |> maybe_filter(assigns)
     Enum.each(orders, &Orders.subscribe/1)
 
@@ -32,7 +36,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
         :credits_available,
         client_email && client_email in gallery.gallery_digital_pricing.email_list
       )
-
 
     socket
     |> assign(gallery: gallery, orders: orders, gallery_client: gallery_client)

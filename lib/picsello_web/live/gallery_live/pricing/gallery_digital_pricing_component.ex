@@ -206,7 +206,11 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"_target" => ["email"], "email" => email}, %{assigns: %{email_error: email_error}} = socket) do
+  def handle_event(
+        "validate",
+        %{"_target" => ["email"], "email" => email},
+        %{assigns: %{email_error: email_error}} = socket
+      ) do
     email =
       email
       |> String.downcase()
@@ -255,20 +259,38 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   def handle_event(
         "delete-email",
         %{"email" => email},
-        %{assigns: %{email_list: email_list, changeset: changeset, email_error: email_error}} = socket
+        %{assigns: %{email_list: email_list, changeset: changeset, email_error: email_error}} =
+          socket
       ) do
     updated_email_list = List.delete(email_list, email)
 
     socket
     |> assign(:email_list, updated_email_list)
-    |> assign(:email_error, (if Enum.empty?(updated_email_list), do: ["atleast one email required" | email_error], else: email_error))
+    |> assign(
+      :email_error,
+      if(Enum.empty?(updated_email_list),
+        do: ["atleast one email required" | email_error],
+        else: email_error
+      )
+    )
     |> assign(:changeset, Changeset.put_change(changeset, :email_list, updated_email_list))
     |> noreply()
   end
 
   @impl true
-  def handle_event("submit", _params, %{assigns: %{changeset: changeset, email_list: email_list, gallery: gallery}} = socket) do
-    send(socket.parent_pid, {:update, %{changeset: changeset, gallery_changeset: build_gallery_clients_params(gallery, email_list)}})
+  def handle_event(
+        "submit",
+        _params,
+        %{assigns: %{changeset: changeset, email_list: email_list, gallery: gallery}} = socket
+      ) do
+    send(
+      socket.parent_pid,
+      {:update,
+       %{
+         changeset: changeset,
+         gallery_changeset: build_gallery_clients_params(gallery, email_list)
+       }}
+    )
 
     socket
     |> noreply()
@@ -343,20 +365,21 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     gallery
     |> Repo.preload(:gallery_clients, force: true)
     |> Changeset.change()
-    |> Changeset.put_assoc(:gallery_clients,
-    Enum.map(email_list, fn email ->
-      gallery_client = Galleries.get_gallery_client(gallery, email)
-      if gallery_client,
-      do:
-        %{id: gallery_client.id, email: email, gallery_id: gallery.id},
-      else:
-        %{email: email, gallery_id: gallery.id}
-    end)
+    |> Changeset.put_assoc(
+      :gallery_clients,
+      Enum.map(email_list, fn email ->
+        gallery_client = Galleries.get_gallery_client(gallery, email)
+
+        if gallery_client,
+          do: %{id: gallery_client.id, email: email, gallery_id: gallery.id},
+          else: %{email: email, gallery_id: gallery.id}
+      end)
     )
   end
 
   defp hide_delete_email_button?(email, gallery) do
     gallery_client = Galleries.get_gallery_client(gallery, email) |> Repo.preload(:orders)
+
     if gallery_client do
       case Map.get(gallery_client, :orders) do
         nil -> false

@@ -43,17 +43,30 @@ defmodule Picsello.Cart do
           Order.t()
   def place_product(product, gallery, gallery_client, album_id \\ nil)
 
-  def place_product(product, %Gallery{id: id, use_global: use_global} = gallery, gallery_client, album_id) do
+  def place_product(
+        product,
+        %Gallery{id: id, use_global: use_global} = gallery,
+        gallery_client,
+        album_id
+      ) do
     opts = [credits: credit_remaining(gallery), use_global: use_global]
 
     order_opts = [preload: [:products, :digitals]]
 
-    case get_unconfirmed_order(id, Keyword.put(order_opts, :album_id, album_id) |> Keyword.put(:gallery_client_id, gallery_client.id)) do
+    case get_unconfirmed_order(
+           id,
+           Keyword.put(order_opts, :album_id, album_id)
+           |> Keyword.put(:gallery_client_id, gallery_client.id)
+         ) do
       {:ok, order} ->
         place_product_in_order(order, product, opts)
 
       {:error, _} ->
-        create_order_with_product(product, %{gallery_id: id, gallery_client_id: gallery_client.id, album_id: album_id}, opts)
+        create_order_with_product(
+          product,
+          %{gallery_id: id, gallery_client_id: gallery_client.id, album_id: album_id},
+          opts
+        )
     end
   end
 
@@ -215,8 +228,11 @@ defmodule Picsello.Cart do
           |> where([order], order.gallery_id == ^gallery_id and is_nil(order.placed_at))
           |> then(
             &case Keyword.get(opts, :gallery_client_id) do
-              nil -> where(&1, [order], is_nil(order.gallery_client_id))
-              gallery_client_id -> where(&1, [order], order.gallery_client_id == ^gallery_client_id)
+              nil ->
+                where(&1, [order], is_nil(order.gallery_client_id))
+
+              gallery_client_id ->
+                where(&1, [order], order.gallery_client_id == ^gallery_client_id)
             end
           )
           |> then(

@@ -470,7 +470,8 @@ defmodule Picsello.Galleries do
     Multi.new()
     |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
     |> Multi.insert(:gallery_clients, fn %{gallery: gallery} ->
-      gallery = gallery |> Repo.preload([job: :client])
+      gallery = gallery |> Repo.preload(job: :client)
+
       GalleryClient.changeset(%GalleryClient{}, %{
         email: gallery.job.client.email,
         gallery_id: gallery.id
@@ -1136,7 +1137,7 @@ defmodule Picsello.Galleries do
 
   def get_gallery_client(gallery, email) when not is_nil(email) do
     from(gc in GalleryClient,
-    where: gc.gallery_id == ^gallery.id and gc.email == ^email
+      where: gc.gallery_id == ^gallery.id and gc.email == ^email
     )
     |> Repo.one()
   end
@@ -1232,7 +1233,12 @@ defmodule Picsello.Galleries do
 
   def populate_organization_user(%Gallery{} = gallery) do
     gallery
-    |> Repo.preload([:package, :gallery_digital_pricing, :gallery_clients, job: [client: [organization: :user]]])
+    |> Repo.preload([
+      :package,
+      :gallery_digital_pricing,
+      :gallery_clients,
+      job: [client: [organization: :user]]
+    ])
   end
 
   def download_each_price(%Gallery{} = gallery) do

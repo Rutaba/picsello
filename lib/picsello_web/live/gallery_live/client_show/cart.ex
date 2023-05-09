@@ -21,7 +21,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @impl true
   def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> assign(gallery: gallery, client_menu_id: "clientMenu", gallery_client: Galleries.get_gallery_client(gallery, client_email))
+    |> assign(
+      gallery: gallery,
+      client_menu_id: "clientMenu",
+      gallery_client: Galleries.get_gallery_client(gallery, client_email)
+    )
     |> assign_is_proofing()
     |> then(
       &(&1
