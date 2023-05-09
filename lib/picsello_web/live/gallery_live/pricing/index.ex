@@ -138,6 +138,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
         {:update, %{changeset: changeset, gallery_changeset: gallery_changeset}},
         %{assigns: %{gallery: gallery}} = socket
       ) do
+    changeset = Map.replace(changeset, :action, :update)
     Multi.new()
     |> Multi.update(:gallery_digital_pricing, changeset)
     |> Multi.update(:gallery, gallery_changeset)

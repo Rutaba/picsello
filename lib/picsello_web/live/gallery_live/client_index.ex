@@ -25,12 +25,20 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   @blank_image "/images/album_placeholder.png"
 
   @impl true
-  def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
+      ) do
     if connected?(socket), do: Galleries.subscribe(gallery)
 
     socket
     |> assign(
-      gallery_client: Galleries.get_gallery_client(gallery, client_email),
+      gallery_client:
+        Galleries.get_gallery_client(
+          gallery,
+          if(client_email, do: client_email, else: assigns.current_user.email)
+        ),
       photo_updates: "false",
       download_all_visible: false,
       active: false,

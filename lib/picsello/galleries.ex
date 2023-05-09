@@ -455,9 +455,9 @@ defmodule Picsello.Galleries do
       iex> create_gallery(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
   """
-  def create_gallery(attrs \\ %{}) do
-    attrs
-    |> create_gallery_multi()
+  def create_gallery(user, attrs \\ %{}) do
+    user
+    |> create_gallery_multi(attrs)
     |> Repo.transaction()
     |> case do
       {:ok, %{gallery: gallery}} -> {:ok, gallery}
@@ -466,16 +466,27 @@ defmodule Picsello.Galleries do
     end
   end
 
-  def create_gallery_multi(attrs) do
+  def create_gallery_multi(user, attrs) do
     Multi.new()
     |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
-    |> Multi.insert(:gallery_clients, fn %{gallery: gallery} ->
-      gallery = gallery |> Repo.preload(job: :client)
+    |> Multi.insert_all(:gallery_clients, GalleryClient, fn %{gallery: gallery} ->
+      gallery = gallery |> Repo.preload(job: [client: [organization: :user]])
+      now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-      GalleryClient.changeset(%GalleryClient{}, %{
-        email: gallery.job.client.email,
-        gallery_id: gallery.id
-      })
+      [
+        %{
+          email: gallery.job.client.email,
+          gallery_id: gallery.id,
+          inserted_at: now,
+          updated_at: now
+        },
+        %{
+          email: user.email,
+          gallery_id: gallery.id,
+          inserted_at: now,
+          updated_at: now
+        }
+      ]
     end)
     |> Multi.insert_all(
       :gallery_products,
@@ -1135,7 +1146,7 @@ defmodule Picsello.Galleries do
     end
   end
 
-  def get_gallery_client(gallery, email) when not is_nil(email) do
+  def get_gallery_client(gallery, email) do
     from(gc in GalleryClient,
       where: gc.gallery_id == ^gallery.id and gc.email == ^email
     )
@@ -1157,18 +1168,22 @@ defmodule Picsello.Galleries do
     with true <- gallery_password == password,
          {:ok, %{token: token}} <-
            insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}) do
-          insert_gallery_client(gallery, email)
+      insert_gallery_client(gallery, email)
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
     end
   end
 
-  def build_album_session_token(%Album{id: id, password: album_password, gallery_id: gallery_id}, password, email \\ nil) do
+  def build_album_session_token(
+        %Album{id: id, password: album_password, gallery_id: gallery_id},
+        password,
+        email \\ nil
+      ) do
     with true <- album_password == password,
          {:ok, %{token: token}} <-
            insert_session_token(%{resource_id: id, resource_type: :album, email: email}) do
-          insert_gallery_client(get_gallery!(gallery_id), email)
+      insert_gallery_client(get_gallery!(gallery_id), email)
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -1184,9 +1199,8 @@ defmodule Picsello.Galleries do
   def insert_gallery_client(gallery, email) do
     gallery_client = Galleries.get_gallery_client(gallery, email)
 
-    attrs = if gallery_client,
-      do:
-        gallery_client,
+    if gallery_client,
+      do: gallery_client,
       else:
         GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
         |> Repo.insert()

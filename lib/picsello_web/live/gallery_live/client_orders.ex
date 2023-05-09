@@ -24,7 +24,12 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
         _,
         %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
       ) do
-    gallery_client = Galleries.get_gallery_client(gallery, client_email)
+    gallery_client =
+      Galleries.get_gallery_client(
+        gallery,
+        if(client_email, do: client_email, else: assigns.current_user.email)
+      )
+
     orders = Orders.gallery_client_orders(gallery.id, gallery_client.id) |> maybe_filter(assigns)
     Enum.each(orders, &Orders.subscribe/1)
 

@@ -19,11 +19,17 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   def mount(
         _params,
         _session,
-        %{assigns: %{gallery: gallery, client_email: client_email}} = socket
+        %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
       ) do
     socket
     |> assign(:photo_updates, "false")
-    |> assign(gallery_client: Galleries.get_gallery_client(gallery, client_email))
+    |> assign(
+      :gallery_client,
+      Galleries.get_gallery_client(
+        gallery,
+        if(client_email, do: client_email, else: assigns.current_user.email)
+      )
+    )
     |> assign(:download_all_visible, false)
     |> assign(:selected_filter, false)
     |> assign(:client_proofing, "true")
