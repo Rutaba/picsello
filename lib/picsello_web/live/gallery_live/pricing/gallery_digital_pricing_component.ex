@@ -20,8 +20,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     Galleries,
     Galleries.GalleryDigitalPricing,
     Packages.Download,
-    Packages.PackagePricing,
-    Cart.Order
+    Packages.PackagePricing
   }
 
   @impl true

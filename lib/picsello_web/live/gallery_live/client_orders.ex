@@ -20,9 +20,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
 
   @impl true
   def handle_params(_, _, %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket) do
-    IO.inspect(assigns, label: "Client orders assigns")
-
-    gallery_client = Galleries.get_gallery_client(gallery, client_email)
+    gallery_client = client_email && Galleries.get_gallery_client(gallery, client_email)
     orders = Orders.gallery_client_orders(gallery.id, gallery_client.id) |> maybe_filter(assigns)
     Enum.each(orders, &Orders.subscribe/1)
 

@@ -1144,23 +1144,30 @@ defmodule Picsello.Galleries do
   @doc """
   Creates session token for the gallery client.
   """
-  def build_gallery_session_token(%Gallery{id: id, password: gallery_password}, password) do
+  def build_gallery_session_token("" <> hash, password) do
+    hash |> get_gallery_by_hash!() |> build_gallery_session_token(password)
+  end
+
+  def build_gallery_session_token(
+        %Gallery{id: id, password: gallery_password} = gallery,
+        password,
+        email \\ nil
+      ) do
     with true <- gallery_password == password,
          {:ok, %{token: token}} <-
-           insert_session_token(%{resource_id: id, resource_type: :gallery}) do
+           insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}) do
+          insert_gallery_client(gallery, email)
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
     end
   end
 
-  def build_gallery_session_token("" <> hash, password) do
-    hash |> get_gallery_by_hash!() |> build_gallery_session_token(password)
-  end
-
-  def build_album_session_token(%Album{id: id, password: album_password}, password) do
+  def build_album_session_token(%Album{id: id, password: album_password, gallery_id: gallery_id}, password, email \\ nil) do
     with true <- album_password == password,
-         {:ok, %{token: token}} <- insert_session_token(%{resource_id: id, resource_type: :album}) do
+         {:ok, %{token: token}} <-
+           insert_session_token(%{resource_id: id, resource_type: :album, email: email}) do
+          insert_gallery_client(get_gallery!(gallery_id), email)
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -1171,6 +1178,17 @@ defmodule Picsello.Galleries do
     attrs
     |> SessionToken.changeset()
     |> Repo.insert()
+  end
+
+  def insert_gallery_client(gallery, email) do
+    gallery_client = Galleries.get_gallery_client(gallery, email)
+
+    attrs = if gallery_client,
+      do:
+        gallery_client,
+      else:
+        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
+        |> Repo.insert()
   end
 
   @doc """
