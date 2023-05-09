@@ -121,13 +121,10 @@ defmodule PicselloWeb.Live.Contracts.Index do
   def handle_event("confirm-archive-contract", %{"contract-id" => contract_id}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      title: "Are you sure?",
-      subtitle: """
-      Are you sure you want to archive this event?
-      """,
+      title: "Are you sure you want to archive this contract?",
       confirm_event: "archive-contract_" <> contract_id,
-      confirm_label: "Yes, archive",
-      close_label: "Cancel",
+      confirm_label: "Yes, archive the contract",
+      close_label: "No! Get me out of here",
       icon: "warning-orange"
     })
     |> noreply()
