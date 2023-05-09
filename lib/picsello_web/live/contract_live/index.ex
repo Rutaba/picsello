@@ -22,7 +22,9 @@ defmodule PicselloWeb.Live.Contracts.Index do
     socket
     |> assign_new(:contract, fn ->
       default_contract = Contracts.get_default_template()
-      content = Contracts.default_contract_content(default_contract, current_user, PicselloWeb.Helpers)
+
+      content =
+        Contracts.default_contract_content(default_contract, current_user, PicselloWeb.Helpers)
 
       %Contract{
         content: content,
@@ -69,14 +71,21 @@ defmodule PicselloWeb.Live.Contracts.Index do
     contract_clean =
       if is_nil(contract.organization_id) do
         content = Contracts.default_contract_content(contract, current_user, PicselloWeb.Helpers)
-        contract |> Map.put(:content, content) |> Map.put(:name, nil) |> Map.put(:organization_id, organization_id)
+
+        %Picsello.Contract{
+          organization_id: organization_id,
+          content: content,
+          package_id: nil,
+          name: contract.name,
+          job_type: contract.job_type
+        }
       else
         Contracts.clean_contract_for_changeset(
           contract,
           organization_id
         )
-        |> Map.put(:name, nil)
       end
+      |> Map.put(:name, nil)
 
     assigns = Map.merge(assigns, %{contract: contract_clean})
 
@@ -116,7 +125,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
       subtitle: """
       Are you sure you want to archive this event?
       """,
-      confirm_event: "archive-contract_"<> contract_id,
+      confirm_event: "archive-contract_" <> contract_id,
       confirm_label: "Yes, archive",
       close_label: "Cancel",
       icon: "warning-orange"
