@@ -43,8 +43,16 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     <div class="modal">
       <.close_x />
 
-      <div>
-        <h1 class="mt-2 mb-4 text-3xl font-bold">Edit digital pricing & credits</h1>
+      <div class="flex flex-row">
+        <h1 class="mt-2 mb-4 text-3xl font-bold mr-6">Edit digital pricing & credits</h1>
+        <div class="flex flex-row items-center">
+          <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-blue-planning-300">
+            <.icon name="gallery-camera" class="w-4 h-4 text-white fill-current"/>
+          </div>
+          <div class="flex flex-col ml-2">
+              <p><b>Gallery: </b><%= @gallery.name %></p>
+          </div>
+        </div>
       </div>
 
       <.form :let={f} for={@changeset} phx-change={:validate} phx-submit={:submit} phx-target={@myself} id={"form-digital-pricing-gallery-#{@gallery.id}"}>
