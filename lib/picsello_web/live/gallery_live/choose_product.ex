@@ -25,6 +25,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
 
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id} = assigns, socket) do
+    gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
     socket
     |> assign(Map.merge(@defaults, assigns))
     |> assign(assigns)

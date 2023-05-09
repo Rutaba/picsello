@@ -35,7 +35,7 @@ defmodule Picsello.ClientOrdersTest do
         use_global: %{watermark: true, expiration: true, digital: true, products: true}
       )
 
-    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0, download_each_price: Money.new(0), print_credits: Money.new(0)})
+    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0, download_each_price: ~M[2500]USD, print_credits: Money.new(0), buy_all: ~M[5000]USD})
 
     insert(:watermark, gallery: gallery)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})

@@ -4,6 +4,7 @@ defmodule Picsello.Cart do
   """
 
   import Ecto.Query
+  import Money.Sigils
 
   alias Picsello.{
     Cart.DeliveryInfo,
@@ -82,7 +83,7 @@ defmodule Picsello.Cart do
     if digital_credit && print_credit do
       Map.merge(digital_credit, print_credit)
     else
-      nil
+      %{digital: 0, print: ~M[0]USD}
     end
   end
 

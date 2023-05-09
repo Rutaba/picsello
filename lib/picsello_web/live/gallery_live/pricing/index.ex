@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
 
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
+  import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Galleries, Repo, Orders}
 
@@ -60,6 +61,51 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
       title: "You're resetting this gallery's pricing",
       payload: %{gallery: gallery}
     })
+    |> noreply()
+  end
+
+  @impl true
+  defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.Shared
+
+
+  @impl true
+  def handle_info({:message_composed, message_changeset}, socket) do
+    add_message_and_notify(socket, message_changeset, "gallery")
+  end
+
+  @impl true
+  def handle_info(
+        {:save, %{title: title}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    socket
+    |> close_modal()
+    |> assign(products: Galleries.products(gallery))
+    |> put_flash(:success, "#{title} successfully updated")
+    |> noreply
+  end
+
+  @impl true
+  def handle_info({:gallery_progress, %{total_progress: total_progress}}, socket) do
+    socket
+    |> assign(:total_progress, if(total_progress == 0, do: 1, else: total_progress))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:uploading, %{success_message: success_message}}, socket) do
+    socket |> put_flash(:success, success_message) |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:photos_error, %{photos_error_count: photos_error_count, entries: entries}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    if length(entries) > 0, do: inprogress_upload_broadcast(gallery.id, entries)
+
+    socket
+    |> assign(:photos_error_count, photos_error_count)
     |> noreply()
   end
 

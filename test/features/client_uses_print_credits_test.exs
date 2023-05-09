@@ -462,7 +462,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> click(button("Customize & buy"))
       |> assert_text("Cart & Shipping Review")
       |> assert_has(definition("Products (1)", text: "4,545.00"))
-      |> assert_has(definition("Digital downloads (1)", text: "55.00"))
+      |> assert_has(definition("Digital downloads (1)", text: "0.10"))
       |> assert_has(definition("Print credits used", text: "$4,545.00"))
       |> assert_has(definition("Total", text: "$4.90"))
       |> click(link("Continue"))

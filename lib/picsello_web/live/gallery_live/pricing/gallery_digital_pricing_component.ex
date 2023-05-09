@@ -67,7 +67,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
               <%= if p |> current() |> Map.get(:is_enabled) do %>
                 <%= input(f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
                 <div class="flex items-center text-base-250">
-                  <%= label_for f, :print_credits, label: "as a portion of package total", class: "font-normal" %>
+                  <%= label_for f, :print_credits, label: "pulled from your package revenue", class: "font-normal" %>
                 </div>
               <% end %>
             </div>
@@ -90,9 +90,9 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
         </div>
         <div class="flex flex-col md:flex-row w-full mt-3">
           <div class="flex flex-col">
-            <label class="flex font-bold">
+            <label class="flex">
               <%= radio_button(d, :status, :limited, class: "w-5 h-5 mr-2 radio mt-0.5") %>
-              <p>Set number of Digital Images included</p>
+              <p><b>Clients don’t have to pay for some Digital Images </b><i>(Charge for some Digital Images)</i></p>
             </label>
 
             <%= if get_field(d, :status) == :limited do %>
@@ -107,14 +107,13 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
               </div>
             <% end %>
 
-            <label class="flex mt-3 font-bold">
+            <label class="flex mt-3">
                 <%= radio_button(d, :status, :none, class: "w-5 h-5 mr-2 radio mt-0.5") %>
-                <p>Charge for each Digital Image</p>
+                <p><b>Clients have to pay for all Digital images </b><i>(Charge for all Digital Images)</i></p>
             </label>
-            <span class="font-normal ml-7 text-base-250">(no images included)</span>
-            <label class="flex mt-3 font-bold">
+            <label class="flex mt-3">
               <%= radio_button(d, :status, :unlimited, class: "w-5 h-5 mr-2 radio mt-0.5") %>
-              <p>All Digital Images included</p>
+              <p><b>Clients have Unlimited Digital Images </b><i>(Do not charge for any Digital Image)</i></p>
             </label>
           </div>
           <div class="my-8 border-t lg:my-0 lg:mx-8 lg:border-t-0 lg:border-l border-base-200"></div>

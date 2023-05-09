@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.ChooseBundle do
   alias Picsello.Cart
 
   def update(%{gallery: gallery} = assigns, socket) do
+    gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
     socket
     |> assign(assigns)
     |> assign(
