@@ -202,7 +202,7 @@ defmodule PicselloWeb.LiveAuthTest do
 
   describe "mount :proofing_album_client" do
     setup %{conn: conn} do
-      {conn, user, gallery, gallery_digital_pricing} = build_defaults(conn)
+      {conn, user, gallery, _} = build_defaults(conn)
       album = insert(:proofing_album, %{gallery_id: gallery.id})
       un_protected_album = insert(:proofing_album, %{gallery_id: gallery.id, set_password: false})
 

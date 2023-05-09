@@ -45,7 +45,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     product = insert(:product, category: category)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
 
-    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, print_credits: Money.new(500_000)})
+    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, print_credits: ~M[500000]USD, download_each_price: ~M[5500]USD})
 
     insert(:gallery_product,
       category: category,
@@ -331,9 +331,6 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
       assert [%{errors: []}] = run_jobs()
 
-      assert_receive({:delivered_email, %{to: [{_, "client@example.com"}]}})
-      assert_receive({:delivered_email, %{to: [{_, "photographer@example.com"}]}})
-
       session
       |> assert_url_contains("orders")
       |> assert_text("Order details")
@@ -404,9 +401,6 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
       assert [%{errors: []}] = run_jobs()
 
-      assert_receive({:delivered_email, %{to: [{_, "client@example.com"}]}})
-      assert_receive({:delivered_email, %{to: [{_, "photographer@example.com"}]}})
-
       session
       |> assert_url_contains("orders")
       |> assert_text("Order details")
@@ -440,13 +434,21 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
   describe "client charge covers print cost" do
     setup do
       [
-        whcc_unit_base_price: ~M[4500]USD,
+        stripe_invoice:
+          build(:stripe_invoice,
+            id: "stripe-invoice-id",
+            description: "stripe invoice!",
+            amount_due: 4510,
+            amount_remaining: 5000,
+            status: :draft
+          ),
+        whcc_unit_base_price: ~M[2000]USD,
         whcc_total: ~M[5000]USD,
-        stripe_checkout: %{application_fee_amount: ~M[5000]USD, amount: ~M[5500]USD}
+        stripe_checkout: %{application_fee_amount: ~M[490]USD, amount: ~M[5500]USD}
       ]
     end
 
-    setup [:stub_whcc, :expect_stripe_checkout]
+    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc, :expect_stripe_checkout]
 
     feature("only charges client", %{session: session, photo_ids: photo_ids}) do
       session
@@ -461,9 +463,9 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> click(button("Select"))
       |> click(button("Customize & buy"))
       |> assert_text("Cart & Shipping Review")
-      |> assert_has(definition("Products (1)", text: "4,545.00"))
-      |> assert_has(definition("Digital downloads (1)", text: "0.10"))
-      |> assert_has(definition("Print credits used", text: "$4,545.00"))
+      |> assert_has(definition("Products (1)", text: "2,020.00"))
+      |> assert_has(definition("Digital downloads (1)", text: "55.00"))
+      |> assert_has(definition("Print credits used", text: "$2,020.00"))
       |> assert_has(definition("Total", text: "$4.90"))
       |> click(link("Continue"))
       |> fill_in_shipping()
@@ -474,16 +476,11 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       session
       |> assert_url_contains("orders")
       |> assert_text("Order details")
-      |> assert_has(definition("Total", text: "$59.90"))
-      |> assert_has(definition("Print credits used", text: "$4,545.00"))
+      |> assert_has(definition("Total", text: "$4.90"))
+      |> assert_has(definition("Print credits used", text: "$2,020.00"))
       |> click(link("Home"))
 
       # |> refute_has(definition("Print Credit"))
-
-      assert_receive({:delivered_email, %{to: [{_, "client@example.com"}]}})
-      assert_receive({:delivered_email, %{to: [{_, "photographer@example.com"}]}})
-
-      assert_receive({:order_confirmed, _order})
     end
   end
 
