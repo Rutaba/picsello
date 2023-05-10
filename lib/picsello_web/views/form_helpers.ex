@@ -205,7 +205,6 @@ defmodule PicselloWeb.FormHelpers do
       assigns
       |> Enum.into(%{
         class: "flex flex-col",
-        id: nil,
         form: nil,
         field: nil,
         input_label: nil,
@@ -227,7 +226,7 @@ defmodule PicselloWeb.FormHelpers do
         <%= @input_label %> <%= error_tag(@form, @field) %>
       </.input_label>
       <% end %>
-      <div class="flatpickr" phx-update="ignore" phx-hook="DatePicker" id={@id} data-min-date={@data_min_date} data-time-only={@data_time_only} data-time-picker={@data_time_picker} data-custom-display-format={@data_custom_display_format} data-custom-date-format={@data_custom_date_format} data-time-zone={@data_time_zone}>
+      <div class="flatpickr" phx-hook="DatePicker" id={@id} data-min-date={@data_min_date} data-time-only={@data_time_only} data-time-picker={@data_time_picker} data-custom-display-format={@data_custom_display_format} data-custom-date-format={@data_custom_date_format} data-time-zone={@data_time_zone}>
         <%= text_input @form, @field, class: @input_class, placeholder: @input_placeholder, data_input: true, disabled: @disabled %>
       </div>
     </div>
