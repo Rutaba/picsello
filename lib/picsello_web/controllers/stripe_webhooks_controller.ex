@@ -9,6 +9,8 @@ defmodule PicselloWeb.StripeWebhooksController do
   end
 
   def app_webhooks(conn, _params) do
+    Logger.info("reached in app_webhooks")
+    Logger.warning("conn-------------: #{inspect(conn)}")
     do_webhook(:app, conn)
     success_response(conn)
   end
