@@ -40,7 +40,7 @@
       </.card>
   <% end %>
 
-  <div class="grid gap-10 grid-cols-1 sm:grid-cols-2 mt-10">
+  <div class="grid gap-10 grid-cols-1 sm:grid-cols-2 mt-10" phx-hook="BeforeUnload" id="setting-alert" data-is-save={@is_save_settings} >
     <.card title="Change your business name">
       <.form :let={f} for={@organization_name_changeset} phx-change="validate" phx-submit="save" id="name_form">
         <%= hidden_input f, :action, name: "action", value: "update_name" %>
