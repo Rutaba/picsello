@@ -1,5 +1,5 @@
 <div class="fixed top-0 pt-24 lg:left-0 flex flex-col overflow-y-auto h-screen min-h-screen px-5 pb-6 bg-white lg:z-10 z-30 shrink-0 lg:w-[384px] w-screen">
-    <div class="lg:mt-0 mt-28 w-full">      
+    <div class="lg:mt-0 mt-28 w-full">
       <div class="hidden lg:flex">
         <span class="flex-col circleBtn">
           <ul>
@@ -13,7 +13,7 @@
         </span>
       </div>
       <%= live_redirect to: Routes.job_path(@socket, :jobs, @gallery.job_id) do %>
-        <div class="flex lg:hidden px-4 py-3 w-fit mb-2 items-center rounded-full shadow-lg bg-base-100">          
+        <div class="flex lg:hidden px-4 py-3 w-fit mb-2 items-center rounded-full shadow-lg bg-base-100">
           <.icon name="back" class="stroke-current w-2 h-3 stroke-3 text-blue-planning-300"/>
           <span class="flex ml-2 items-center font-bold text-lg">Back to job</span>
         </div>
@@ -40,7 +40,7 @@
           <.bar class="block" route={Routes.gallery_photographer_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title="Overview" icon="globe-icon.png" arrow_show={@arrow_show == "overview"}>
             <%= if expire_soon(@gallery) do %>
               <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
-            <% end %>       
+            <% end %>
           </.bar>
           <%= if @arrow_show == "overview" do %>
             <span class="arrow show lg:block hidden">
@@ -123,6 +123,18 @@
             <% end %>
           </.bar>
           <%= if @arrow_show == "product_previews" do %>
+            <span class="arrow show lg:block hidden">
+              <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+            </span>
+          <% end %>
+        </div>
+        <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
+          <.bar class="block" route={Routes.gallery_pricing_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title="Pricing & Print Credits" icon="money-bag.png" arrow_show={@arrow_show == "pricing"}>
+            <%= if expire_soon(@gallery) do %>
+              <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
+            <% end %>
+          </.bar>
+          <%= if @arrow_show == "pricing" do %>
             <span class="arrow show lg:block hidden">
               <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
             </span>
