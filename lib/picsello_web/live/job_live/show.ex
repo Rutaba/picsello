@@ -37,14 +37,15 @@ defmodule PicselloWeb.JobLive.Show do
   ]
 
   @impl true
-  def mount(%{"id" => job_id} = assigns, _session, socket) do
+  def mount(%{"id" => job_id} = params, _session, socket) do
     socket
     |> assign_job(job_id)
     |> assign(:type, %{singular: "job", plural: "jobs"})
-    |> assign_new(:anchor, fn -> Map.get(assigns, "anchor", nil) end)
-    |> assign(:request_from, assigns["request_from"])
+    |> assign_new(:anchor, fn -> Map.get(params, "anchor", nil) end)
+    |> assign(:request_from, params["request_from"])
     |> assign(:collapsed_sections, [])
     |> assign(:new_gallery, nil)
+    |> is_mobile(params)
     |> then(fn %{assigns: %{job: job}} = socket ->
       payment_schedules = job |> Repo.preload(:payment_schedules) |> Map.get(:payment_schedules)
 
@@ -97,9 +98,21 @@ defmodule PicselloWeb.JobLive.Show do
       |> noreply()
 
   @impl true
-  def handle_event("edit-digital-pricing", %{"gallery_id" => gallery_id}, socket) do
+  def handle_event(
+        "edit-digital-pricing",
+        %{"gallery_id" => gallery_id},
+        %{assigns: %{is_mobile: is_mobile}} = socket
+      ) do
     socket
-    |> redirect(to: Routes.gallery_pricing_index_path(socket, :index, gallery_id))
+    |> redirect(
+      to:
+        Routes.gallery_pricing_index_path(
+          socket,
+          :index,
+          gallery_id,
+          if(is_mobile, do: [is_mobile: false], else: [])
+        )
+    )
     |> noreply
   end
 
