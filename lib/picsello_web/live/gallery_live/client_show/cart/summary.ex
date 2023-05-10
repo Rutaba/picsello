@@ -119,7 +119,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     assigns = Enum.into(assigns, %{description: description, added?: added?})
 
     ~H"""
-    <.summary_block label={"Shipping #{@description}"} value={total_shipping(@order.products)} />
+    <.summary_block label={"Shipping #{@description}"} value={Cart.total_shipping(@order)} />
 
     <%= unless @order.placed_at do %>
       <.summary_block
@@ -136,7 +136,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   end
 
   defp shipping_description(%{address: %{zip: zip}}, products) when not is_nil(zip) do
-    {true, "(#{Enum.count(products, &has_shipping?/1)})"}
+    {true, "(#{Enum.count(products, &Cart.has_shipping?/1)})"}
   end
 
   defp shipping_description(_, _), do: {false, "estimated"}
