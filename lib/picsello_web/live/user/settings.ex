@@ -29,8 +29,6 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   defp assigns_changesets(%{assigns: %{current_user: user}} = socket) do
-    user = Packages.get_current_user(user.id)
-
     socket
     |> assign(
       case user.sign_up_auth_provider do
@@ -58,7 +56,7 @@ defmodule PicselloWeb.Live.User.Settings do
     user = Packages.get_current_user(user.id)
 
     socket
-    |> assign(email_changeset: email_changeset(user))
+    |> assign(email_changeset: email_changeset(user), current_user: user)
     |> assign_is_save_settings()
   end
 
@@ -66,7 +64,7 @@ defmodule PicselloWeb.Live.User.Settings do
     user = Packages.get_current_user(user.id)
 
     socket
-    |> assign(password_changeset: password_changeset(user))
+    |> assign(password_changeset: password_changeset(user), current_user: user)
     |> assign_is_save_settings()
   end
 
@@ -74,7 +72,7 @@ defmodule PicselloWeb.Live.User.Settings do
     user = Packages.get_current_user(user.id)
 
     socket
-    |> assign(organization_name_changeset: organization_name_changeset(user))
+    |> assign(organization_name_changeset: organization_name_changeset(user), current_user: user)
     |> assign_is_save_settings()
   end
 
@@ -82,7 +80,7 @@ defmodule PicselloWeb.Live.User.Settings do
     user = Packages.get_current_user(user.id)
 
     socket
-    |> assign(time_zone_changeset: time_zone_changeset(user))
+    |> assign(time_zone_changeset: time_zone_changeset(user), current_user: user)
     |> assign_is_save_settings()
   end
 
@@ -90,7 +88,7 @@ defmodule PicselloWeb.Live.User.Settings do
     user = Packages.get_current_user(user.id)
 
     socket
-    |> assign(phone_changeset: phone_changeset(user))
+    |> assign(phone_changeset: phone_changeset(user), current_user: user)
     |> assign_is_save_settings()
   end
 
