@@ -516,11 +516,16 @@ defmodule Picsello.Cart do
   defp choose_days("3_days"), do: @three_days
   defp choose_days("economy"), do: @economy
 
-  def total_shipping(products) do
+  def total_shipping(%{products: [_ | _] = products}) do
     products
-    |> Enum.filter(& &1.shipping_type)
+    |> Enum.filter(&has_shipping?/1)
     |> Enum.reduce(Money.new(0), &Money.add(&2, shipping_price(&1)))
   end
+
+  def total_shipping(_order), do: Money.new(0)
+
+  def has_shipping?(%{shipping_type: nil}), do: false
+  def has_shipping?(_product), do: true
 
   def add_default_shipping_to_products(order, opts \\ %{}) do
     das_type = opts[:das_type]
