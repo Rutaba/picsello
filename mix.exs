@@ -73,8 +73,8 @@ defmodule Picsello.MixProject do
         # {:plug_cowboy, "~> 2.5.2"},
         {:plug_cowboy, "~> 2.6"},
         {:postgrex, ">= 0.0.0"},
-        {:stripity_stripe, "~> 2.15.0"},
-        # {:stripity_stripe, "~> 2.17.3"},
+        # {:stripity_stripe, "~> 2.15.0"},
+        {:stripity_stripe, "~> 2.17.3"},
         {:telemetry_metrics, "~> 0.6.1"},
         {:telemetry_poller, "~> 1.0"},
         # {:telemetry_poller, "~> 0.5.1"}, need to fix
