@@ -154,7 +154,6 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
   end
 
   def get_print_credit(%{print_credits: %Money{amount: _amount, currency: _usd} = print_credit}) do
-    IO.inspect(print_credit)
     print_credit
   end
 
