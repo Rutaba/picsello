@@ -525,6 +525,11 @@ defmodule Picsello.Cart do
     |> Enum.reduce(Money.new(0), &Money.add(&2, shipping_price(&1)))
   end
 
+  def total_shipping(_order), do: Money.new(0)
+
+  def has_shipping?(%{shipping_type: nil}), do: false
+  def has_shipping?(_product), do: true
+
   def add_default_shipping_to_products(order, opts \\ %{}) do
     das_type = opts[:das_type]
     force_update = opts[:force_update]
