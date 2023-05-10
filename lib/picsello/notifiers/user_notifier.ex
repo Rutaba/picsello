@@ -299,7 +299,12 @@ defmodule Picsello.Notifiers.UserNotifier do
   end
 
   defp print_cost(%{whcc_order: nil}), do: %{}
-  defp print_cost(%{whcc_order: whcc_order}), do: %{print_cost: WHCCOrder.total(whcc_order)}
+
+  defp print_cost(%{whcc_order: whcc_order} = order) do
+    shipping_price = Picsello.Cart.total_shipping(order)
+
+    %{print_cost: whcc_order |> WHCCOrder.total() |> Money.add(shipping_price)}
+  end
 
   defp photographer_payment(%{intent: nil}), do: %{}
 
