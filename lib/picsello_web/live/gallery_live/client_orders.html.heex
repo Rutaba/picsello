@@ -43,7 +43,7 @@
              <%= if is_list(products) && !Enum.empty?(products) do %>
               <div class="flex lg:ml-6">
                 <dt class="mr-2 font-extrabold lg:font-bold">Shipping Included:</dt>
-                <dd><%= products |> Enum.filter(& &1.shipping_type) |> total_shipping() %></dd>
+                <dd><%=  total_shipping(order) %></dd>
               </div>
               <% end %>
             </dl>

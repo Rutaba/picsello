@@ -109,7 +109,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     assigns = Enum.into(assigns, %{description: description, added?: added?})
 
     ~H"""
-    <.summary_block label={"Shipping #{@description}"} value={total_shipping(@order.products)} />
+    <.summary_block label={"Shipping #{@description}"} value={Cart.total_shipping(@order)} />
 
     <%= unless @order.placed_at do %>
       <.summary_block
@@ -126,7 +126,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   end
 
   defp shipping_description(%{address: %{zip: zip}}, products) when not is_nil(zip) do
-    {true, "(#{Enum.count(products, &has_shipping?/1)})"}
+    {true, "(#{Enum.count(products, &Cart.has_shipping?/1)})"}
   end
 
   defp shipping_description(_, _), do: {false, "estimated"}
@@ -175,22 +175,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
       print_credit_lines(order) ++ digital_discount_lines(order, caller)
   end
 
-  defp total_shipping(products) do
-    products
-    |> Enum.filter(&has_shipping?/1)
-    |> Enum.reduce(~M[0]USD, &Money.add(&2, Cart.shipping_price(&1)))
-  end
-
   defp charges(order, caller) do
     digital_charge_lines(order, caller) ++ bundle_charge_lines(order)
   end
 
   defp product_charge_lines(%{products: []}), do: []
 
-  defp product_charge_lines(%{products: products}) do
+  defp product_charge_lines(%{products: products} = order) do
     [
       {"Products (#{length(products)})", sum_prices(products)},
-      Enum.any?(products, & &1.total_markuped_price) && {"", total_shipping(products)}
+      Enum.any?(products, & &1.total_markuped_price) && {"", Cart.total_shipping(order)}
     ]
   end
 
@@ -257,7 +251,4 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
 
   defp find_digital([{:digital, value} | _]), do: {:digital, value}
   defp find_digital(_credits), do: {:digital, 0}
-
-  defp has_shipping?(%{shipping_type: nil}), do: false
-  defp has_shipping?(_product), do: true
 end
