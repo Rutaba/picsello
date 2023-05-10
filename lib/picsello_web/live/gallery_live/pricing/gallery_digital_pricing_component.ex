@@ -376,17 +376,4 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       end)
     )
   end
-
-  defp hide_delete_email_button?(email, gallery) do
-    gallery_client = Galleries.get_gallery_client(gallery, email) |> Repo.preload(:orders)
-
-    if gallery_client do
-      case Map.get(gallery_client, :orders) do
-        nil -> false
-        _ -> true
-      end
-    else
-      false
-    end
-  end
 end
