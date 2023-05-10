@@ -24,15 +24,19 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
     |> noreply()
   end
 
-  def handle_event("check", %{"login" => %{"email" => email, "password" => password}}, socket) do
+  def handle_event(
+        "check",
+        %{"login" => %{"email" => email, "password" => password}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
     valid_email? = Regex.match?(~r/^[^\s]+@[^\s]+.[^\s]+$/, email)
 
     if String.length(email) > 0 and valid_email? do
       socket.assigns
-      |> build_session_token(password)
+      |> build_session_token(password, email)
       |> case do
         {:ok, token} ->
-          update_emails_map(email, socket.assigns.gallery.id)
+          update_emails_map(email, gallery.id)
           assign(socket, submit: true, session_token: token)
 
         _ ->
@@ -58,12 +62,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
     |> then(&assign(socket, :password_changeset, &1))
   end
 
-  defp build_session_token(%{live_action: :gallery_login, gallery: gallery}, password) do
-    Galleries.build_gallery_session_token(gallery, password)
+  defp build_session_token(%{live_action: :gallery_login, gallery: gallery}, password, email) do
+    Galleries.build_gallery_session_token(gallery, password, email)
   end
 
-  defp build_session_token(%{live_action: :album_login, album: album}, password) do
-    Galleries.build_album_session_token(album, password)
+  defp build_session_token(%{live_action: :album_login, album: album}, password, email) do
+    Galleries.build_album_session_token(album, password, email)
   end
 
   defp build_login_link(%{live_action: :gallery_login, socket: socket, gallery: gallery}) do

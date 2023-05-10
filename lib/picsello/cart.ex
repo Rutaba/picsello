@@ -34,13 +34,6 @@ defmodule Picsello.Cart do
   @doc """
   Puts the product, digital, or bundle in the cart.
   """
-  @spec place_product(
-          {:bundle, Money.t()} | CartProduct.t() | Digital.t(),
-          Gallery.t() | integer(),
-          GalleryClient.t(),
-          integer() | nil
-        ) ::
-          Order.t()
   def place_product(product, gallery, gallery_client, album_id \\ nil)
 
   def place_product(
@@ -92,9 +85,13 @@ defmodule Picsello.Cart do
     end
   end
 
-  def credit_remaining(%Gallery{id: gallery_id}) do
-    digital_credit = digital_credit_remaining(gallery_id)
-    print_credit = print_credit_remaining(gallery_id)
+  def credit_remaining(%{id: gallery_id} = gallery) do
+    {digital_credit, print_credit} =
+      if gallery.credits_available do
+        {digital_credit_remaining(gallery_id), print_credit_remaining(gallery_id)}
+      else
+        {%{digital: 0}, %{print: ~M[0]USD}}
+      end
 
     if digital_credit && print_credit do
       Map.merge(digital_credit, print_credit)
@@ -178,8 +175,8 @@ defmodule Picsello.Cart do
   @doc """
   Deletes the product from order. Deletes order if order has only the one product.
   """
-  def delete_product(%Order{} = order, opts) do
-    %{gallery: %{use_global: use_global} = gallery} =
+  def delete_product(%Order{} = order, gallery, opts) do
+    %{gallery: %{use_global: use_global}} =
       order = Repo.preload(order, [:gallery, :digitals, products: :whcc_product])
 
     opts = Keyword.merge(opts, credits: credit_remaining(gallery), use_global: use_global)

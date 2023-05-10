@@ -10,6 +10,7 @@ defmodule Picsello.Galleries.SessionToken do
   schema "session_tokens" do
     field :token, :string
     field :resource_id, :integer
+    field :email, :string
     field :resource_type, Ecto.Enum, values: [:gallery, :album]
 
     timestamps(updated_at: false)
@@ -17,7 +18,7 @@ defmodule Picsello.Galleries.SessionToken do
 
   def changeset(attrs \\ %{}) do
     %SessionToken{}
-    |> cast(attrs, [:resource_id, :resource_type])
+    |> cast(attrs, [:resource_id, :resource_type, :email])
     |> validate_required([:resource_id, :resource_type])
     |> put_token()
   end

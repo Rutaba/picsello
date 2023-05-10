@@ -24,7 +24,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         _session,
         %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
       ) do
-    gallery = Repo.preload(gallery, :gallery_digital_pricing)
+    gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
 
     gallery =
       Map.put(
@@ -198,7 +198,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{"bundle" => _} -> [bundle: true]
       end
 
-    case Cart.delete_product(order, item) do
+    case Cart.delete_product(order, gallery, item) do
       {:deleted, _} ->
         socket
         |> assign(order: nil)
@@ -429,7 +429,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     assign(socket, :credits, credits(gallery))
   end
 
-  defp assign_credits(%{assigns: %{is_proofing: false}} = socket, _), do: socket
+  defp assign_credits(%{assigns: %{is_proofing: false}} = socket, _gallery), do: socket
 
   defp checkout_type(true), do: :proofing_album_cart
   defp checkout_type(false), do: :cart

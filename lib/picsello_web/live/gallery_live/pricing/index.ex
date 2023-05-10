@@ -7,7 +7,6 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Galleries, Repo, Orders}
-  alias Ecto.Multi
 
   @impl true
   def mount(_params, _session, socket) do
@@ -134,27 +133,16 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   end
 
   @impl true
-  def handle_info(
-        {:update, %{changeset: changeset, gallery_changeset: gallery_changeset}},
-        %{assigns: %{gallery: gallery}} = socket
-      ) do
-    changeset = Map.replace(changeset, :action, :update)
-    Multi.new()
-    |> Multi.update(:gallery_digital_pricing, changeset)
-    |> Multi.update(:gallery, gallery_changeset)
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{gallery_digital_pricing: _gallery_digital_pricing}} ->
+  def handle_info({:update, %{changeset: changeset}}, %{assigns: %{gallery: gallery}} = socket) do
+    case Repo.update(changeset |> Map.put(:action, :update)) do
+      {:ok, _gallery_digital_pricing} ->
         socket
         |> assign(:gallery, Repo.preload(gallery, :gallery_digital_pricing, force: true))
         |> put_flash(:success, "Gallery pricing updated")
 
-      {:error, :gallery_digital_pricing, _changeset, _} ->
+      _ ->
         socket
         |> put_flash(:error, "Couldn't update gallery pricing")
-
-      other ->
-        other
     end
     |> close_modal()
     |> noreply()

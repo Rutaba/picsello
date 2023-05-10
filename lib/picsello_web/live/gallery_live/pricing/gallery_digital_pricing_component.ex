@@ -17,19 +17,19 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   alias Picsello.{
     Repo,
     GlobalSettings,
-    Galleries,
     Galleries.GalleryDigitalPricing,
     Packages.Download,
     Packages.PackagePricing
   }
 
   @impl true
-  def update(%{current_user: current_user} = assigns, socket) do
+  def update(%{current_user: current_user, gallery: gallery} = assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign(:email_error, [])
     |> assign(:email_input, nil)
+    |> assign(:email_value, nil)
     |> assign(:email_list, gallery.job.client.email)
     |> assign(
       global_settings:
@@ -183,18 +183,18 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
           <span {testid("email-error")} class={classes("text-red-sales-300 text-sm", %{"hidden" => Enum.empty?(@email_error)})}><%= if length(@email_error) > 0, do: hd(@email_error) %></span>
         </div>
 
-        <div class="mt-4 grid grid-rows-2 grid-flow-col gap-4">
+        <div class="mt-4 grid grid-cols-2 gap-x-10">
           <%= for(email <- @email_list) do %>
             <a class="flex items-center mt-2 hover:cursor-pointer">
               <.icon name="envelope" class="text-blue-planning-300 w-4 h-4" />
-              <span class="text-base-250 ml-2 mr-20"><%= email %> <%= if @gallery.job.client.email == email, do: "(client)" %></span>
-              <button title="Trash" type="button" phx-target={@myself} phx-click="delete-email" phx-value-email={email} class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+              <span class="text-base-250 ml-2"><%= email %> <%= if @gallery.job.client.email == email, do: "(client)" %></span>
+              <button title="Trash" type="button" phx-target={@myself} phx-click="delete-email" phx-value-email={email} class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold ml-auto">
                 <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
               </button>
             </a>
-            <hr class="block w-full mt-2"/>
           <% end %>
         </div>
+        <hr class="block w-full mt-2"/>
       </div>
 
         <.footer class="pt-10">
@@ -278,19 +278,8 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   end
 
   @impl true
-  def handle_event(
-        "submit",
-        _params,
-        %{assigns: %{changeset: changeset, email_list: email_list, gallery: gallery}} = socket
-      ) do
-    send(
-      socket.parent_pid,
-      {:update,
-       %{
-         changeset: changeset,
-         gallery_changeset: build_gallery_clients_params(gallery, email_list)
-       }}
-    )
+  def handle_event("submit", _params, %{assigns: %{changeset: changeset}} = socket) do
+    send(socket.parent_pid, {:update, %{changeset: changeset}})
 
     socket
     |> noreply()
@@ -359,21 +348,5 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       %Money{} = value -> %{is_enabled: Money.positive?(value)}
       _ -> %{is_enabled: false}
     end
-  end
-
-  def build_gallery_clients_params(gallery, email_list) do
-    gallery
-    |> Repo.preload(:gallery_clients, force: true)
-    |> Changeset.change()
-    |> Changeset.put_assoc(
-      :gallery_clients,
-      Enum.map(email_list, fn email ->
-        gallery_client = Galleries.get_gallery_client(gallery, email)
-
-        if gallery_client,
-          do: %{id: gallery_client.id, email: email, gallery_id: gallery.id},
-          else: %{email: email, gallery_id: gallery.id}
-      end)
-    )
   end
 end

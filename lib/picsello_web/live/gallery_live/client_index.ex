@@ -13,7 +13,8 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     Albums,
     Cart,
     GalleryProducts,
-    Orders
+    Orders,
+    Repo
   }
 
   alias PicselloWeb.GalleryLive.Photos.Photo.ClientPhoto
@@ -31,6 +32,14 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
         %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
       ) do
     if connected?(socket), do: Galleries.subscribe(gallery)
+    gallery = Repo.preload(gallery, :gallery_digital_pricing)
+
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        client_email && client_email in gallery.gallery_digital_pricing.email_list
+      )
 
     socket
     |> assign(
@@ -42,6 +51,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       photo_updates: "false",
       download_all_visible: false,
       active: false,
+      gallery: gallery,
       credits: credits(gallery)
     )
     |> ok()

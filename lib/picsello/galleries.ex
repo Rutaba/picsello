@@ -741,7 +741,7 @@ defmodule Picsello.Galleries do
   """
   def gallery_favorites_count(%Gallery{} = gallery) do
     Photo
-    |> where(gallery_id: ^gallery.id)
+    |> where(gallery_id: ^gallery.id, client_liked: true)
     |> Repo.aggregate(:count, [])
   end
 
@@ -1222,6 +1222,8 @@ defmodule Picsello.Galleries do
     )
     |> Repo.exists?()
   end
+
+  def get_session_token(token), do: Repo.get_by(SessionToken, token: token)
 
   @doc """
   Loads the gallery creator.

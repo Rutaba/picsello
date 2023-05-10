@@ -7,12 +7,11 @@ defmodule Picsello.Repo.Migrations.AddGalleryClientsIdInGalleryOrders do
   def up do
       execute("""
         insert into gallery_clients (gallery_id, email, inserted_at, updated_at)
-        select o.id, c.email, now(), now()
-        from order o join galleries g on g.id = o.gallery_id
+        select o.gallery_id, c.email, now(), now()
+        from gallery_orders o join galleries g on g.id = o.gallery_id
         join jobs j on j.id = g.job_id
         join clients c on c.id = j.client_id
       """)
-    end)
 
     execute("""
       update #{@table} set gallery_client_id = gallery_clients.id from gallery_clients where gallery_orders.gallery_id = gallery_clients.gallery_id;

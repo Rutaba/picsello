@@ -177,11 +177,21 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> noreply()
   end
 
-  defp assigns(%{assigns: %{album: album, gallery: gallery}} = socket) do
+  defp assigns(%{assigns: %{album: album, gallery: gallery, client_email: client_email}} = socket) do
     album = album |> Repo.preload(:photos)
 
     %{job: %{client: %{organization: organization}}} =
-      gallery = gallery |> Repo.preload(:watermark) |> Galleries.populate_organization_user()
+      gallery =
+      gallery
+      |> Repo.preload([:watermark, :gallery_digital_pricing])
+      |> Galleries.populate_organization_user()
+
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        client_email && client_email in gallery.gallery_digital_pricing.email_list
+      )
 
     if album.is_proofing && is_nil(gallery.watermark) do
       %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
