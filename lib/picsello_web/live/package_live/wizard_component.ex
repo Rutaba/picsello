@@ -588,7 +588,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Package Total</h2>
               <p class="text-base-250 mb-2">Taxes will be calculated at checkout for your client</p>
             </div>
-            <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@myself} phx-click="edit-discounts">Add a discount or surcharge</button>
+            <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_discounts})} type="button" phx-target={@myself} phx-click="edit-discounts">Add a discount or surcharge</button>
           </div>
           <div class="grid w-1/5">
             <% changeset = current(@f) %>
@@ -614,7 +614,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           </div>
         </div>
 
-        <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => !@show_discounts})}>
+        <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => !@show_discounts})}>
           <div class="p-2 font-bold bg-base-200 flex flex-row">
             Discount or Surcharge Settings
             <a phx-target={@myself} phx-click="edit-discounts" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
@@ -643,8 +643,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                 <%= checkbox(m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox") %>
                 <%= label_for m, :discount_base_price, label: "Apply to creative session", class: "font-normal" %>
               </div>
-              <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
-                <%= checkbox(m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox") %>
+              <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !Map.get(changeset, :print_credits_include_in_total)})}>
+                <%= checkbox(m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !Map.get(changeset, :print_credits_include_in_total)) %>
                 <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
               </div>
               <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
@@ -1652,7 +1652,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     sign = if Money.negative?(adjustment), do: "-", else: "+"
     Enum.join([sign, Money.abs(adjustment)])
   end
-  
+
   defp base_adjustment(package_form), do: package_form |> current() |> Package.base_adjustment() |> adjust()
   defp digitals_adjustment(package_form), do: package_form |> current() |> Package.digitals_adjustment() |> adjust()
   defp print_cridets_adjustment(package_form), do: package_form |> current() |> Package.print_cridets_adjustment() |> adjust()
@@ -1668,7 +1668,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   defp package_pricing_params(package) do
     case package |> Map.get(:print_credits) do
       nil -> %{"is_enabled" => false}
-      %Money{} = value -> 
+      %Money{} = value ->
         %{
           "is_enabled" => Money.positive?(value),
           "print_credits_include_in_total" => Map.get(package, :print_credits_include_in_total),
@@ -2003,7 +2003,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp show_discounts(assigns) do
     ~H"""
-    <div class="self-start mt-3 sm:self-auto justify-self-start sm:mt-0"> 
+    <div class="self-start mt-3 sm:self-auto justify-self-start sm:mt-0">
       <%= render_slot(@inner_block) %>
     </div>
     """

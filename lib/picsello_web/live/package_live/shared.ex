@@ -99,7 +99,7 @@ defmodule PicselloWeb.PackageLive.Shared do
     |> PicselloWeb.PackageLive.ConfirmationComponent.open(params)
     |> noreply()
   end
-  
+
   @spec package_card(%{
           package: Package.t(),
           is_edit: boolean()
@@ -385,20 +385,26 @@ defmodule PicselloWeb.PackageLive.Shared do
       <% print_credits = current(p) %>
       <div class="flex flex-col w-4/5">
         <.print_fields_heading />
-        <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-click="edit-print-credits">Edit settings</button>
+        <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_print_credits})} type="button" phx-target={@target} phx-click="edit-print-credits">Edit settings</button>
       </div>
-      <div class={classes("flex w-1/5", %{"text-base-250 grid" => !Map.get(print_credits, :print_credits_include_in_total)})}>
-        <div><b><%= get_total_print_credits(@f, @package_pricing) %></b></div>
+      <div class="flex w-1/5 flex-col">
+        <b class="mt-9">
+          <%= if get_total_print_credits(@f, @package_pricing) == nil do%>
+            -
+          <% else %>
+            <%= get_total_print_credits(@f, @package_pricing) %>
+          <% end %>
+        </b>
         <%= if Map.get(print_credits, :is_enabled) && !Map.get(print_credits, :print_credits_include_in_total) do %>
-          <div class="text-base-250 -mt-10">(not included)</div>
+          <div class="text-base-250">(not included)</div>
         <% end %>
       </div>
     </div>
 
-    <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => !@show_print_credits})}>
+    <div class= {classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => !@show_print_credits})}>
       <div class="p-2 font-bold bg-base-200 flex flex-row">
-        Print credit settings
-        <a phx-target={@target} phx-click="edit-print-credits" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
+        Print Credit Settings
+        <a phx-target={@target} phx-click="edit-print-credits" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
       </div>
 
       <div class="mt-4 font-normal text-base leading-6 pb-6 px-6">
@@ -437,52 +443,57 @@ defmodule PicselloWeb.PackageLive.Shared do
       <div class="flex mt-6">
         <% d = to_form(@download_changeset) %>
         <div class="flex-col gap-3 w-4/5">
-          <div class="flex flex-col w-4/5 items-center md:items-start">
+          <div class="flex flex-col w-4/5">
             <h2 class="mb-1 text-xl font-bold">Digital Collection</h2>
             <span class="text-base-250">High-Resolution Digital Images available via download.</span>
           </div>
-          <div class="flex flex-row gap-8 my-2">
+          <div class="flex flex-row md:gap-8 gap-4 my-2">
             <div>
-              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" /><%= make_digital_text(@download_changeset) %> included</span>
-              <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="digitals" phx-click="edit-digitals">Edit settings</button>
+              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green-finances-300" /><%= make_digital_text(@download_changeset) %> included</span>
+              <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_digitals in ["digitals", "image_price", "buy_all"]})} type="button" phx-target={@target} phx-value-type="digitals" phx-click="edit-digitals">Edit settings</button>
             </div>
             <div>
-              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" /><%= current(@download_changeset) |> Map.get(:each_price) %> an image</span>
+              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green-finances-300" /><%= current(@download_changeset) |> Map.get(:each_price) %> an image</span>
               <%= if (@download_changeset |> current |> Map.get(:status)) !=  :unlimited do %>
-                <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="image_price" phx-click="edit-digitals">Edit image price</button>
+                <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_digitals in ["digitals", "image_price", "buy_all"]})} type="button" phx-target={@target} phx-value-type="image_price" phx-click="edit-digitals">Edit image price</button>
               <% end %>
             </div>
             <div>
-              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green" /><%= get_buy_all(@download_changeset) %> buy all</span>
+              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green-finances-300" /><%= get_buy_all(@download_changeset) %> buy all</span>
               <%= if (@download_changeset |> current |> Map.get(:status)) !=  :unlimited do %>
-                <button class="underline text-blue-planning-300 mt-auto inline-block w-max" type="button" phx-target={@target} phx-value-type="buy_all" phx-click="edit-digitals">Edit upsell options</button>
+                <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_digitals in ["digitals", "image_price", "buy_all"]})} type="button" phx-target={@target} phx-value-type="buy_all" phx-click="edit-digitals">Edit upsell options</button>
               <% end %>
             </div>
           </div>
         </div>
-        <b class="flex w-1/5"><%= digitals_total(@download_changeset) %></b>
+        <b class="flex w-1/5"><%= if digitals_total(@download_changeset) == nil do%>
+            -
+          <% else %>
+            <%= digitals_total(@download_changeset) %>
+          <% end %>
+        </b>
       </div>
 
-      <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => @show_digitals !== "digitals"})}>
+      <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "digitals"})}>
         <div class="p-2 font-bold bg-base-200 flex flex-row">
           Digital Collection Settings
-          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
         <.build_download_fields download_changeset={d} {assigns} />
       </div>
 
-      <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => @show_digitals !== "image_price"})}>
+      <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "image_price"})}>
         <div class="p-2 font-bold bg-base-200 flex flex-row">
           Digital Image Price
-          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
         <.include_download_price download_changeset={d} />
       </div>
 
-      <div class={classes("border border-solid mt-6 rounded-lg w-1/2", %{"hidden" => @show_digitals !== "buy_all"})}>
+      <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "buy_all"})}>
         <div class="p-2 font-bold bg-base-200 flex flex-row">
           Upsell Options
-          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
         <.is_buy_all download_changeset={d} />
       </div>
@@ -598,7 +609,7 @@ defmodule PicselloWeb.PackageLive.Shared do
     ~H"""
     <div class="mt-9 md:mt-1 mb-2" {testid("print")}>
       <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
-      <p class="text-base-250">Print Credits allow your clients to order professional prints and products from your gallery.</p>
+      <p class="text-base-250">Print Credits allow your clients to order professional prints and products from your gallery based on the amount you set.</p>
     </div>
     """
   end
@@ -652,7 +663,7 @@ defmodule PicselloWeb.PackageLive.Shared do
     buy_all = Map.get(changeset, :buy_all)
     if buy_all, do: buy_all, else: Money.new(0)
   end
-  
+
   defp get_total_print_credits(changeset, package_pricing) do
     package_pricing = package_pricing |> current()
     print_credits = changeset |> current() |> Map.get(:print_credits)
