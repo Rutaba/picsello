@@ -68,6 +68,7 @@ defmodule PicselloWeb.StripeWebhooksController do
          type: "customer.subscription.trial_will_end",
          data: %{object: subscription}
        }) do
+    Logger.warning("subscription.trial_will_end-------------: #{inspect(subscription)}")
     {:ok, _} = Picsello.Subscriptions.handle_trial_ending_soon(subscription)
     :ok
   end
@@ -78,6 +79,7 @@ defmodule PicselloWeb.StripeWebhooksController do
               "customer.subscription.updated",
               "customer.subscription.deleted"
             ] do
+    Logger.warning("subscription-------------: #{inspect(subscription)}")
     {:ok, _} = Picsello.Subscriptions.handle_stripe_subscription(subscription)
     :ok
   end
@@ -96,7 +98,14 @@ defmodule PicselloWeb.StripeWebhooksController do
               "invoice.payment_succeeded",
               "invoice.payment_failed"
             ] do
+    Logger.warning("invoice-------------: #{inspect(invoice)}")
     {:ok, _} = Orders.handle_invoice(invoice)
+    :ok
+  end
+
+  defp handle_webhook(a, b) do
+    Logger.warning("a-------------: #{inspect(a)}")
+    Logger.warning("b-------------: #{inspect(b)}")
     :ok
   end
 end
