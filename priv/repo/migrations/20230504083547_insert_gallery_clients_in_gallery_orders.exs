@@ -1,7 +1,5 @@
-defmodule Picsello.Repo.Migrations.AddGalleryClientsIdInGalleryOrders do
+defmodule Picsello.Repo.Migrations.InsertGalleryClientsInGalleryOrders do
   use Ecto.Migration
-
-  alias Picsello.{Repo, Cart.Order}
 
   @table "gallery_orders"
   def up do

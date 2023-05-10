@@ -12,7 +12,6 @@ defmodule Picsello.Cart do
     Cart.Order,
     Galleries,
     Galleries.Gallery,
-    Galleries.GalleryClient,
     Orders,
     Repo,
     WHCC
