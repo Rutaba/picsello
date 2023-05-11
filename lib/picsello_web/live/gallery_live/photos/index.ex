@@ -268,6 +268,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       %{
         photo_id: photo_id,
         from: :photographer,
+        is_proofing: false,
         photo_ids:
           assigns.photo_ids
           |> CLL.init()

@@ -1226,13 +1226,8 @@ defmodule Picsello.Galleries do
   end
 
   def do_not_charge_for_download?(%Gallery{} = gallery) do
-    package = gallery |> get_package()
-
-    if package do
-      package |> Map.get(:download_each_price) |> Money.zero?()
-    else
-      false
-    end
+    gallery = gallery |> Picsello.Repo.preload(:gallery_digital_pricing)
+    Map.get(gallery.gallery_digital_pricing, :download_each_price) |> Money.zero?()
   end
 
   def max_price(%{whcc_id: @area_markup_category} = category, org_id, %{

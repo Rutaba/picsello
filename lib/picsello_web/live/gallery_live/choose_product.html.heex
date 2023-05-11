@@ -19,11 +19,12 @@
             <button phx-click="photo_view" phx-value-photo_id={@photo.id} phx-target={@myself} class="absolute opacity-100 cursor-pointer removeBtn">
               <.icon name={"eye"} class="h-7 text-white z-1 w-8"/>
             </button>
-            <%= if @is_proofing && @photo.is_selected do %>
+            <%= cond do %>
+            <% @is_proofing && @photo.is_selected -> %>
               <div class="absolute opacity-100 cursor-pointer likeBtn">
                 <.icon name="star" class="h-6 text-white z-1 w-7"/>
               </div>
-            <% else %>
+            <% !@is_proofing -> %>
               <button class="likeBtn absolute" phx-click={js_like_click(@photo.id, @myself)}>
                 <div id={"photo-#{@photo.id}-liked"} style={!@photo.client_liked && "display: none"}>
                   <.icon name="heart-filled" class="text-gray-200 w-8 h-8"/>
@@ -33,6 +34,7 @@
                   <.icon name="heart-white" class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"/>
                 </div>
               </button>
+            <% true -> %>
             <% end %>
             <div class="relative lg:h-[450px] items-center">
               <img src={preview_url(@photo, proofing_client_view?: @is_proofing)} class="lg:h-full lg:max-h-max max-h-96">
