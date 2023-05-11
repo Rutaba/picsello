@@ -169,7 +169,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   @impl true
   def render(assigns) do
     ~H"""
-      <.form :let={f} for={@changeset} phx-change={@change} phx-submit="save" id={"calculator-step-#{@step}"}>
+      <.form :let={f} for={@changeset} phx-change={@change} phx-submit="save" id={"calculator-step-#{@step}"} onkeydown="return event.key != 'Enter';">
         <.step {assigns} f={f} />
       </.form>
     """
