@@ -94,7 +94,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       icon: "warning-orange",
       subtitle:
         "All new galleries will expire #{day_text}#{month_text}#{year_text}after their shoot date. When a gallery expires, a client will not be able to access it again unless you re-enable the individual gallery.",
-      title: "Set Galleries to Never Expire?",
+      title: "Set Galleries to Expire?",
       payload: %{total_days: day_count + month_count * 30 + year_count * 365}
     })
     |> noreply()
