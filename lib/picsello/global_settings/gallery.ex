@@ -3,7 +3,7 @@ defmodule Picsello.GlobalSettings.Gallery do
   use Ecto.Schema
   import Ecto.Changeset
   import Money.Sigils
-  alias Picsello.Organization
+  alias Picsello.{Organization, Package}
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
   defmodule Photo do
@@ -18,7 +18,7 @@ defmodule Picsello.GlobalSettings.Gallery do
   @default_buy_all_price ~M[75000]USD
   
   schema "global_settings_galleries" do
-    field(:expiration_days, :integer)
+    field(:expiration_days, :integer, default: 0)
     field(:watermark_name, :string)
     field(:watermark_type, Ecto.Enum, values: [:image, :text])
     field(:watermark_size, :integer)
@@ -36,6 +36,32 @@ defmodule Picsello.GlobalSettings.Gallery do
   def expiration_changeset(global_settings_gallery, attrs) do
     global_settings_gallery
     |> cast(attrs, [:expiration_days])
+  end
+
+  def price_changeset(%__MODULE__{} = global_settings_gallery, attrs) do
+    global_settings_gallery
+    |> cast(attrs, [:organization_id, :expiration_days, :buy_all_price, :download_each_price])
+    |> validate_required([:download_each_price])
+    |> Package.validate_money(:download_each_price,
+      greater_than: 0,
+      message: "must be greater than zero"
+    )
+    |> then(fn changeset -> 
+      each_price = get_field(changeset, :download_each_price) || Money.new(0)
+      changeset
+      |> Package.validate_money(:buy_all_price,
+        greater_than: each_price.amount,
+        message: "must be greater than each price"
+      )
+    end)
+    |> then(fn changeset -> 
+      buy_all_price = get_field(changeset, :buy_all_price) || Money.new(0)
+      changeset
+      |> Package.validate_money(:download_each_price,
+        less_than: buy_all_price.amount,
+        message: "must be less than buy all price"
+      )
+    end)
   end
 
   def watermark_change(nil), do: change(%GSGallery{})
@@ -69,6 +95,9 @@ defmodule Picsello.GlobalSettings.Gallery do
     |> validate_length(:watermark_text, min: 3, max: 30)
     |> nilify_fields(@image_attrs)
   end
+
+  def default_each_price(), do: @default_each_price
+  def default_buy_all_price(), do: @default_buy_all_price
 
   defp nilify_fields(changeset, fields) do
     Enum.reduce(fields, changeset, fn key, changeset -> put_change(changeset, key, nil) end)

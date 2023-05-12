@@ -23,7 +23,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Questionnaire,
     GlobalSettings
   }
-
+  
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
 
@@ -583,34 +583,56 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <hr class="w-full mt-6"/>
 
         <div class="flex">
-          <div class="flex flex-col w-4/5">
+          <div class="flex flex-col w-2/3">
             <div class="mt-9 md:mt-1">
               <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Package Total</h2>
               <p class="text-base-250 mb-2">Taxes will be calculated at checkout for your client</p>
             </div>
             <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_discounts})} type="button" phx-target={@myself} phx-click="edit-discounts">Add a discount or surcharge</button>
           </div>
-          <div class="grid w-1/5">
+          <div class="grid w-1/3">
             <% changeset = current(@f) %>
             <% multiplier = current(@multiplier) %>
-            <%= if Map.get(changeset, :print_credits_include_in_total) do %>
-              <.show_discounts>+<%= Map.get(changeset, :print_credits) %></.show_discounts>
-            <% end %>
-            <%= if Map.get(changeset, :digitals_include_in_total) do %>
-              <.show_discounts>+<%= digitals_total(@download_changeset) %></.show_discounts>
-            <% end %>
-            <.show_discounts><%= get_discount_text(multiplier) %></.show_discounts>
+            <.show_discounts>
+              <span class="mt-4 font-bold">Creative Session Fee</span> 
+              <span>+ <%= Map.get(changeset, :base_price) %></span> 
+            </.show_discounts>
             <%= if Map.get(multiplier, :discount_base_price) do %>
-              <.show_discounts><%= base_adjustment(@f) %></.show_discounts>
+              <.show_discounts>
+              <span class="text-base-250"><%= get_discount_text(multiplier) %></span>
+              <span class="text-base-250"><%= base_adjustment(@f) %></span>
+              </.show_discounts>
+            <% end %>
+            <%= if Map.get(changeset, :print_credits_include_in_total) do %>
+              <.show_discounts>
+                <span class="mt-2 font-bold">Professional Print Credit</span>
+                <span>+ <%= Map.get(changeset, :print_credits) %></span> 
+              </.show_discounts>
             <% end %>
             <%= if Map.get(multiplier, :discount_print_credits) do %>
-              <.show_discounts><%= print_cridets_adjustment(@f) %></.show_discounts>
+              <.show_discounts>
+                <span class="text-base-250"><%= get_discount_text(multiplier) %></span>
+                <span class="text-base-250"><%= print_cridets_adjustment(@f) %></span>
+              </.show_discounts>
+            <% end %>
+            <%= if Map.get(changeset, :digitals_include_in_total) do %>
+            <.show_discounts>
+                <span class="mt-2 font-bold">Digital Collection</span>
+                <span>+ <%= digitals_total(@download_changeset) %></span> 
+              </.show_discounts>
             <% end %>
             <%= if Map.get(multiplier, :discount_digitals) do %>
-              <.show_discounts><%= digitals_adjustment(@f) %></.show_discounts>
+              <.show_discounts>
+                <span class="text-base-250"><%= get_discount_text(multiplier) %></span>
+                <span class="text-base-250"><%= digitals_adjustment(@f) %></span>
+              </.show_discounts>
             <% end %>
-            <.hr f={@f} />
-            <div><b><%= total_price(@f) %></b></div>
+            <.show_discounts>
+              <div class="mb-2 mt-4 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">
+                <span class="font-bold">Package Total</span>
+                <span class="font-bold mr-2"><%= total_price(@f) %></span>
+              </div>
+            </.show_discounts>
           </div>
         </div>
 
@@ -640,15 +662,15 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               </div>
 
               <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
-                <%= checkbox(m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox") %>
+                <%= checkbox m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox" %>
                 <%= label_for m, :discount_base_price, label: "Apply to creative session", class: "font-normal" %>
               </div>
-              <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !Map.get(changeset, :print_credits_include_in_total)})}>
-                <%= checkbox(m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !Map.get(changeset, :print_credits_include_in_total)) %>
+              <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
+                <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox" %>
                 <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
               </div>
               <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
-                <%= checkbox(m, :discount_digitals, class: "w-5 h-5 mr-2.5 checkbox") %>
+                <%= checkbox m, :discount_digitals, class: "w-5 h-5 mr-2.5 checkbox" %>
                 <%= label_for m, :discount_digitals, label: "Apply to digitals", class: "font-normal" %>
               </div>
             <% end %>
@@ -1587,11 +1609,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          params,
          action \\ nil
        ) do
-    global_settings =
-      if global_settings,
-        do: global_settings,
-        else: %{download_each_price: nil, buy_all_price: nil}
-
     package_pricing_changeset =
       assigns.package_pricing
       |> PackagePricing.changeset(
@@ -1992,15 +2009,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     ]
   end
 
-  defp hr(assigns) do
-    ~H"""
-    <% f = current(@f) %>
-    <%=if Map.get(f, :discount_base_price) || Map.get(f, :discount_print_credits) || Map.get(f, :discount_digitals) || Map.get(f, :print_credits_include_in_total) || Map.get(f, :digitals_include_in_total) do %>
-      <hr>
-    <% end %>
-    """
-  end
-
   defp show_discounts(assigns) do
     ~H"""
     <div class="self-start mt-3 sm:self-auto justify-self-start sm:mt-0">
@@ -2014,7 +2022,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       sign = Map.get(multiplier, :sign)
       sign_text = if sign == "-", do: "discount", else: "surcharge"
 
-      "with #{sign}#{Map.get(multiplier, :percent)}% #{sign_text}"
+      "with #{Map.get(multiplier, :percent)}% #{sign_text}"
     else
       nil
     end
