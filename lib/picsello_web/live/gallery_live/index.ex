@@ -253,7 +253,10 @@ defmodule PicselloWeb.GalleryLive.Index do
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col md:flex-row grow">
           <%= if Galleries.preview_image(@gallery) do %>
-            <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{cover_photo_url(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}>
+            <div>
+              <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id) do %>
+              <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{cover_photo_url(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
+              <% end %>
             </div>
           <% else %>
             <div class="rounded-lg h-full p-4 items-center flex flex-col w-[200px] h-[130px] mr-4 md:mr-7 bg-base-200">
@@ -366,7 +369,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     icon_text_class =
       if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
     assigns = assign(assigns, icon_text_class: icon_text_class)
-    
+
     ~H"""
     <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={@id} }>
       <.icon name={@icon} class={"w-4 h-4 fill-current #{@icon_text_class} inline mr-1"} />
