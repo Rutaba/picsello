@@ -23,7 +23,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Questionnaire,
     GlobalSettings
   }
-  
+
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
 
@@ -582,100 +582,103 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <hr class="w-full mt-6"/>
 
-        <div class="flex">
-          <div class="flex flex-col w-2/3">
+        <div class="flex md:flex-row flex-col">
+          <div class="flex flex-col w-full md:w-2/3">
             <div class="mt-9 md:mt-1">
               <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Package Total</h2>
               <p class="text-base-250 mb-2">Taxes will be calculated at checkout for your client</p>
             </div>
-            <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_discounts})} type="button" phx-target={@myself} phx-click="edit-discounts">Add a discount or surcharge</button>
+            <button class={classes("underline text-blue-planning-300 inline-block w-max", %{"hidden" => @show_discounts})} type="button" phx-target={@myself} phx-click="edit-discounts">Add a discount or surcharge</button>
+
+            <div class={classes("border border-solid mt-6 rounded-lg md:w-3/4 w-full", %{"hidden" => !@show_discounts})}>
+              <div class="p-2 font-bold bg-base-200 flex flex-row">
+                Discount or Surcharge Settings
+                <a phx-target={@myself} phx-click="edit-discounts" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
+              </div>
+              <% m = to_form(@multiplier) %>
+
+              <div class="mt-4 px-6 pb-6">
+                <label class="flex items-center sm:mt-8 justify-self-start font-bold">
+                  <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
+
+                  Apply a discount or surcharge
+                </label>
+
+                <%= if m |> current() |> Map.get(:is_enabled) do %>
+                  <div class="flex flex-col items-center pl-0 my-6 sm:flex-row sm:pl-16">
+                    <h2 class="self-start mt-3 text-base-250 sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
+
+                    <div class="flex w-full mt-3 sm:mt-0">
+                      <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
+
+                      <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-4 py-4 pr-10") %>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
+                    <%= checkbox m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox" %>
+                    <%= label_for m, :discount_base_price, label: "Apply to creative session", class: "font-normal" %>
+                  </div>
+                  <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
+                    <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox" %>
+                    <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
+                  </div>
+                  <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
+                    <%= checkbox m, :discount_digitals, class: "w-5 h-5 mr-2.5 checkbox" %>
+                    <%= label_for m, :discount_digitals, label: "Apply to digitals", class: "font-normal" %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+
           </div>
-          <div class="grid w-1/3">
+          <div class="grid w-full md:w-1/3 h-fit">
             <% changeset = current(@f) %>
             <% multiplier = current(@multiplier) %>
             <.show_discounts>
-              <span class="mt-4 font-bold">Creative Session Fee</span> 
-              <span>+ <%= Map.get(changeset, :base_price) %></span> 
+              <span class="flex w-2/3 mt-4 font-bold">Creative Session Fee</span>
+              <span class="flex w-1/3 mt-4">+ <%= Map.get(changeset, :base_price) %></span>
             </.show_discounts>
             <%= if Map.get(multiplier, :discount_base_price) do %>
               <.show_discounts>
-              <span class="text-base-250"><%= get_discount_text(multiplier) %></span>
-              <span class="text-base-250"><%= base_adjustment(@f) %></span>
+              <span class="flex w-2/3 text-base-250"><%= get_discount_text(multiplier) %></span>
+              <span class="flex w-1/3 text-base-250"><%= base_adjustment(@f) %></span>
               </.show_discounts>
             <% end %>
             <%= if Map.get(changeset, :print_credits_include_in_total) do %>
               <.show_discounts>
-                <span class="mt-2 font-bold">Professional Print Credit</span>
-                <span>+ <%= Map.get(changeset, :print_credits) %></span> 
+                <span class="flex w-2/3 mt-2 font-bold">Professional Print Credit</span>
+                <span class="flex w-1/3 mt-2">+ <%= Map.get(changeset, :print_credits) %></span>
               </.show_discounts>
             <% end %>
             <%= if Map.get(multiplier, :discount_print_credits) do %>
               <.show_discounts>
-                <span class="text-base-250"><%= get_discount_text(multiplier) %></span>
-                <span class="text-base-250"><%= print_cridets_adjustment(@f) %></span>
+                <span class="flex w-2/3 text-base-250"><%= get_discount_text(multiplier) %></span>
+                <span class="flex w-1/3 text-base-250"><%= print_cridets_adjustment(@f) %></span>
               </.show_discounts>
             <% end %>
             <%= if Map.get(changeset, :digitals_include_in_total) do %>
             <.show_discounts>
-                <span class="mt-2 font-bold">Digital Collection</span>
-                <span>+ <%= digitals_total(@download_changeset) %></span> 
+                <span class="flex w-2/3 mt-2 font-bold">Digital Collection</span>
+                <span class="flex w-1/3 mt-2">+ <%= digitals_total(@download_changeset) %></span>
               </.show_discounts>
             <% end %>
             <%= if Map.get(multiplier, :discount_digitals) do %>
               <.show_discounts>
-                <span class="text-base-250"><%= get_discount_text(multiplier) %></span>
-                <span class="text-base-250"><%= digitals_adjustment(@f) %></span>
+                <span class="flex w-2/3 text-base-250"><%= get_discount_text(multiplier) %></span>
+                <span class="flex w-1/3 text-base-250"><%= digitals_adjustment(@f) %></span>
               </.show_discounts>
             <% end %>
             <.show_discounts>
-              <div class="mb-2 mt-4 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">
-                <span class="font-bold">Package Total</span>
-                <span class="font-bold mr-2"><%= total_price(@f) %></span>
+              <div class="flex flex-row gap-4 p-2 mt-4 w-full bg-base-200 rounded-lg mb-2 mt-4 text-xl font-bold justify-self-start whitespace-nowrap">
+                <span class="flex w-2/3 font-bold">Package Total</span>
+                <span class="flex w-1/3 font-bold mr-2"><%= total_price(@f) %></span>
               </div>
             </.show_discounts>
           </div>
         </div>
 
-        <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => !@show_discounts})}>
-          <div class="p-2 font-bold bg-base-200 flex flex-row">
-            Discount or Surcharge Settings
-            <a phx-target={@myself} phx-click="edit-discounts" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2"/></a>
-          </div>
-          <% m = to_form(@multiplier) %>
 
-          <div class="mt-4 px-6 pb-6">
-            <label class="flex items-center sm:mt-8 justify-self-start font-bold">
-              <%= checkbox(m, :is_enabled, class: "w-5 h-5 mr-2 checkbox") %>
-
-              Apply a discount or surcharge
-            </label>
-
-            <%= if m |> current() |> Map.get(:is_enabled) do %>
-              <div class="flex flex-col items-center pl-0 my-6 sm:flex-row sm:pl-16">
-                <h2 class="self-start mt-3 text-base-250 sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
-
-                <div class="flex w-full mt-3 sm:mt-0">
-                  <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
-
-                  <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-4 py-4 pr-10") %>
-                </div>
-              </div>
-
-              <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
-                <%= checkbox m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox" %>
-                <%= label_for m, :discount_base_price, label: "Apply to creative session", class: "font-normal" %>
-              </div>
-              <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
-                <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox" %>
-                <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
-              </div>
-              <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
-                <%= checkbox m, :discount_digitals, class: "w-5 h-5 mr-2.5 checkbox" %>
-                <%= label_for m, :discount_digitals, label: "Apply to digitals", class: "font-normal" %>
-              </div>
-            <% end %>
-          </div>
-        </div>
 
       <hr class="w-full mt-6"/>
 
@@ -2011,7 +2014,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp show_discounts(assigns) do
     ~H"""
-    <div class="self-start mt-3 sm:self-auto justify-self-start sm:mt-0">
+    <div class="flex flex-row px-2 items-center w-full self-start mt-3 sm:self-auto justify-self-start sm:mt-0">
       <%= render_slot(@inner_block) %>
     </div>
     """
