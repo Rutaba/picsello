@@ -3,6 +3,7 @@ defmodule Picsello.Package do
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.{Repo, Shoot, Accounts.User, PackagePaymentSchedule}
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   require Ecto.Query
   import Ecto.Query
 
@@ -64,7 +65,10 @@ defmodule Picsello.Package do
     |> put_change(:base_price, Money.new(0))
     |> validate_required(~w[download_count name download_each_price organization_id shoot_count]a)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
-    |> validate_money(:download_each_price)
+    |> validate_money(:download_each_price,
+      greater_than: 0,
+      message: "must be greater than zero"
+    )
     |> validate_money(:print_credits,
       greater_than_or_equal_to: 0,
       message: "must be equal to or less than total price"

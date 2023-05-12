@@ -17,7 +17,6 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     GlobalSettings,
     Clients
   }
-
   alias Ecto.Multi
   alias Ecto.Changeset
   alias PicselloWeb.JobLive.GalleryTypeComponent
@@ -394,11 +393,6 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         params \\ %{},
         action \\ nil
       ) do
-    global_settings =
-      if global_settings,
-        do: global_settings,
-        else: %{download_each_price: nil, buy_all_price: nil}
-
     download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 
     download_changeset =

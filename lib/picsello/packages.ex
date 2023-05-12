@@ -224,13 +224,13 @@ defmodule Picsello.Packages do
         changeset
       end
     end
-
+    
     defp update_buy_all(changeset, download) do
       each_price = get_field(changeset, :each_price)
       buy_all = get_field(changeset, :buy_all)
       is_buy_all = get_field(changeset, :is_buy_all) || (is_nil(buy_all) && download.buy_all)
       updated_buy_all = if is_nil(buy_all), do: download.buy_all, else: buy_all
-      updated_each_price = if Money.zero?(each_price), do: download.each_price, else: each_price
+      updated_each_price = if each_price && Money.zero?(each_price), do: download.each_price, else: each_price
 
       changeset
       |> force_change(:each_price, updated_each_price)

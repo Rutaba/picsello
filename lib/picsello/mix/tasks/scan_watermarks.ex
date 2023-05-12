@@ -49,7 +49,13 @@ defmodule Mix.Tasks.ScanWatermarks do
       {exist_globally, not_exist} ->
         Multi.new()
         |> Multi.run(:update_exist_globally_ids, fn _, _ ->
-          Galleries.update_all(exist_globally, use_global: true)
+          galleries = exist_globally
+          |> Enum.map(&[id: &1.id, name: &1.name, updated_at: &1.updated_at, inserted_at: &1.inserted_at, status: &1.status, job_id: &1.job_id, use_global: true])
+          
+          Repo.update_all(Gallery, galleries,
+            on_conflict: {:replace, [:use_global]},
+            conflict_target: :id
+          )
 
           {:ok, ""}
         end)
