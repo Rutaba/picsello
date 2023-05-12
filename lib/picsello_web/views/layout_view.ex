@@ -154,46 +154,99 @@ defmodule PicselloWeb.LayoutView do
 
   def side_nav(socket, _current_user) do
     [
-      %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{
-        title: "Contracts",
-        icon: "package",
-        path: Routes.contracts_index_path(socket, :index)
-      },
-      %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
-      %{title: "Clients", icon: "phone", path: Routes.clients_path(socket, :index)},
-      %{
-        title: "Galleries",
-        icon: "proof_notifier",
-        path: Routes.gallery_path(socket, :galleries)
-      },
-      %{title: "Calendar", icon: "calendar", path: Routes.calendar_index_path(socket, :index)},
-      %{title: "Orders", icon: "cart"},
-      %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
-      %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)},
-      %{
-        title: "Questionnaires",
-        icon: "package",
-        path: Routes.questionnaires_index_path(socket, :index)
+        heading: "Get Booked",
+        items: [
+          %{
+            title: "Booking Events",
+            icon: "calendar",
+            path: Routes.calendar_booking_events_path(socket, :index)
+          },
+          %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)}
+        ]
       },
       %{
-        title: "Finances",
-        icon: "money-bags",
-        path: Routes.finance_settings_path(socket, :index)
+        heading: "Manage",
+        items: [
+          %{
+            title: "Clients",
+            icon: "client-icon",
+            path: Routes.clients_path(socket, :index)
+          },
+          %{
+            title: "Galleries",
+            icon: "upload",
+            path: Routes.gallery_path(socket, :galleries)
+          },
+          %{
+            title: "Jobs",
+            icon: "camera-check",
+            path: Routes.job_path(socket, :jobs)
+          },
+          %{
+            title: "Inbox",
+            icon: "envelope",
+            path: Routes.inbox_path(socket, :index)
+          },
+          %{
+            title: "Calendar",
+            icon: "calendar",
+            path: Routes.calendar_index_path(socket, :index)
+          }
+        ]
       },
-      %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
       %{
-        title: "Public profile",
-        icon: "profile",
-        path: Routes.profile_settings_path(socket, :index)
+        heading: "Market",
+        items: [
+          %{
+            title: "Public Profile",
+            icon: "public-profile",
+            path: Routes.profile_settings_path(socket, :index)
+          },
+          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
+        ]
       },
       %{
-        title: "Help",
-        icon: "question-mark",
-        path: "https://support.picsello.com"
+        heading: "Settings",
+        items: [
+          %{
+            title: "Packages",
+            icon: "package",
+            path: Routes.package_templates_path(socket, :index)
+          },
+          %{
+            title: "Contracts",
+            icon: "contract",
+            path: Routes.contracts_index_path(socket, :index)
+          },
+          %{
+            title: "Questionnaires",
+            icon: "questionnaire",
+            path: Routes.questionnaires_index_path(socket, :index)
+          },
+          %{
+            title: "Gallery",
+            icon: "gallery-settings",
+            path: Routes.gallery_global_settings_index_path(socket, :edit)
+          },
+          %{
+            title: "Finances",
+            icon: "money-bags",
+            path: Routes.finance_settings_path(socket, :index)
+          },
+          %{
+            title: "Brand",
+            icon: "brand",
+            path: Routes.brand_settings_path(socket, :index)
+          },
+          %{
+            title: "Account",
+            icon: "settings",
+            path: Routes.user_settings_path(socket, :edit)
+          }
+        ]
       }
     ]
-    |> Enum.filter(&Map.get(&1, :path))
   end
 
   def sub_nav_list(socket, :get_booked),
@@ -255,43 +308,43 @@ defmodule PicselloWeb.LayoutView do
     [
       %{
         title: "Get booked",
-        class: "mr-4",
+        class: "mr-6",
         path: nil,
         sub_nav_items: sub_nav_list(socket, :get_booked),
         id: "get-booked"
       },
       %{
         title: "Clients",
-        class: "mr-4",
+        class: "mr-6",
         path: Routes.clients_path(socket, :index),
         sub_nav_items: nil,
         id: nil
       },
       %{
         title: "Galleries",
-        class: "mr-4",
+        class: "mr-6",
         path: Routes.gallery_path(socket, :galleries),
         sub_nav_items: nil,
         id: nil
       },
-      %{title: "Jobs", class: "mr-4", path: Routes.job_path(socket, :jobs), sub_nav_items: nil},
+      %{title: "Jobs", class: "mr-6", path: Routes.job_path(socket, :jobs), sub_nav_items: nil},
       %{
         title: "Inbox",
-        class: "pl-4 border-l mr-4",
+        class: "pl-4 border-l mr-6",
         path: Routes.inbox_path(socket, :index),
         sub_nav_items: nil,
         id: nil
       },
       %{
         title: "Calendar",
-        class: "mr-4",
+        class: "mr-6",
         path: Routes.calendar_index_path(socket, :index),
         sub_nav_items: nil,
         id: nil
       },
       %{
         title: "Settings",
-        class: "mr-4",
+        class: "mr-6",
         path: nil,
         sub_nav_items: sub_nav_list(socket, :settings),
         id: "settings"
@@ -312,8 +365,8 @@ defmodule PicselloWeb.LayoutView do
         <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default top-10 toggle-content">
           <nav class="flex flex-col bg-white rounded-lg shadow">
             <%= for %{title: title, icon: icon, path: path} <- @sub_nav_list, @current_user do %>
-              <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-2 flex items-center py-2 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
-                <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300 shrink-0" />
+              <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-2 flex items-center py-2 text-sm whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
+                <.icon name={icon} class="inline-block w-4 h-4 mr-2 text-blue-planning-300 shrink-0" />
                 <%= title %>
               </.nav_link>
             <% end %>
@@ -387,11 +440,14 @@ defmodule PicselloWeb.LayoutView do
             </div>
 
             <nav class="flex flex-col bg-white rounded-lg shadow-md">
-              <%= for %{title: title, icon: icon, path: path} <- side_nav(@socket, @current_user), @current_user do %>
-                <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-4 flex items-center py-3 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
-                  <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300 shrink-0" />
-                  <%= title %>
-                </.nav_link>
+              <%= for %{heading: heading, items: items} <- side_nav(@socket, @current_user), @current_user do %>
+                <p class="uppercase font-bold px-4 mt-2 mb-1 tracking-widest text-xs"><%= heading %></p>
+                <%= for %{title: title, icon: icon, path: path} <- items do %>
+                  <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-1.5 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
+                    <.icon name={icon} class="inline-block w-4 h-4 mr-2 text-blue-planning-300 shrink-0" />
+                    <%= title %>
+                  </.nav_link>
+                <% end %>
               <% end %>
             </nav>
           </div>
