@@ -621,8 +621,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                     <%= checkbox m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox" %>
                     <%= label_for m, :discount_base_price, label: "Apply to creative session", class: "font-normal" %>
                   </div>
+
                   <% print_credits_include_in_total = Map.get(changeset, :print_credits_include_in_total) %>
                   <% digitals_include_in_total = Map.get(changeset, :digitals_include_in_total) %>
+                  
                   <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !print_credits_include_in_total})}>
                     <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !print_credits_include_in_total %>
                     <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>

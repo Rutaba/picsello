@@ -18,7 +18,7 @@ defmodule Picsello.Packages do
   import Picsello.Repo.CustomMacros
   import Picsello.Package, only: [validate_money: 3]
   import Ecto.Query, only: [from: 2]
-  
+
   @payment_defaults_fixed %{
     "wedding" => ["To Book", "6 Months Before", "Week Before"],
     "family" => ["To Book", "Day Before Shoot"],
@@ -55,7 +55,7 @@ defmodule Picsello.Packages do
     def handle_package_params(package, params) do
       case Map.get(params, "package_pricing", %{})
            |> Map.get("is_enabled") do
-        "false" -> 
+        "false" ->
           Map.put(package, "print_credits", Money.new(0))
           |> Map.put("print_credits_include_in_total", false)
         _ -> package
@@ -89,7 +89,7 @@ defmodule Picsello.Packages do
         &if(get_field(&1, :is_enabled) && Map.get(attrs, "step") in [:choose_type, :pricing],
           do:
             validate_discounts(&1),
-          else: 
+          else:
             &1
             |> force_change(:discount_base_price, false)
             |> force_change(:discount_print_credits, false)
@@ -404,7 +404,7 @@ defmodule Picsello.Packages do
   end
 
   def future_date, do: ~U[3022-01-01 00:00:00Z]
-  
+
   def templates_with_single_shoot(%User{organization_id: organization_id}) do
     query = Package.templates_for_organization_query(organization_id)
 
@@ -573,7 +573,7 @@ defmodule Picsello.Packages do
       user = Repo.preload(user, organization: :organization_job_types)
 
     enabled_job_types = Profiles.enabled_job_types(job_types)
-    
+
     create_templates(user, enabled_job_types)
   end
 
@@ -591,7 +591,7 @@ defmodule Picsello.Packages do
   end
 
   def create_initial(_user, _type), do: []
-  
+
   def get_price(
          %{base_multiplier: base_multiplier, base_price: base_price},
          presets_count,
@@ -618,8 +618,8 @@ defmodule Picsello.Packages do
   end
 
   def make_package_payment_schedule(templates) do
-    templates 
-    |> Enum.map(&get_package_payment_schedule/1) 
+    templates
+    |> Enum.map(&get_package_payment_schedule/1)
     |> List.flatten()
   end
 
@@ -648,7 +648,7 @@ defmodule Picsello.Packages do
     default_presets = get_payment_defaults(package.job_type)
     count = length(default_presets)
     base_price = %{base_multiplier: package.base_multiplier, base_price: package.base_price.amount}
-    
+
     Enum.with_index(
       default_presets,
       fn default, index ->
@@ -665,7 +665,7 @@ defmodule Picsello.Packages do
       end
     )
 end
-  
+
   defp minimum_years_query(years_experience),
     do:
       from(base in BasePrice,

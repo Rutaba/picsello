@@ -3,7 +3,6 @@ defmodule Picsello.Package do
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.{Repo, Shoot, Accounts.User, PackagePaymentSchedule}
-  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   require Ecto.Query
   import Ecto.Query
 
@@ -181,13 +180,13 @@ defmodule Picsello.Package do
   end
 
   def digitals_price(%__MODULE__{} = package), do: Money.multiply(download_each_price(package), download_count(package))
-  
+
   def download_each_price(%__MODULE__{download_each_price: nil}), do: Money.new(0)
   def download_each_price(%__MODULE__{download_each_price: download_each_price}), do: download_each_price
 
   def download_count(%__MODULE__{download_count: nil}), do: 0
   def download_count(%__MODULE__{download_count: download_count}), do: download_count
-  
+
   def base_price(%__MODULE__{base_price: nil}), do: Money.new(0)
   def base_price(%__MODULE__{base_price: base}), do: base
 
@@ -218,7 +217,7 @@ defmodule Picsello.Package do
     else
       Money.new(0)
     end
-    
+
     digitals_price = if package.digitals_include_in_total do
       Money.add(print_credits_price, digitals_price(package))
     else
@@ -230,7 +229,7 @@ defmodule Picsello.Package do
     else
       base_price(package)
     end
-    
+
     updated_price = if package.discount_print_credits do
       Money.add(updated_price, print_cridets_adjustment(package))
     else
