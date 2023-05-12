@@ -13,7 +13,11 @@ defmodule Picsello.ClientViewsOrdersTest do
   end
 
   setup do
-    [gallery: insert(:gallery, job: insert(:lead, package: insert(:package)))]
+    gallery = insert(:gallery, job: insert(:lead, package: insert(:package)))
+
+    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0})
+
+    [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   setup :authenticated_gallery_client

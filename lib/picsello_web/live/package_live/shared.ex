@@ -614,8 +614,8 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  defp check?(d, field), do: d |> current() |> Map.get(field)
-  defp get_field(d, field), do: d |> current() |> Map.get(field)
+  def check?(d, field), do: d |> current() |> Map.get(field)
+  def get_field(d, field), do: d |> current() |> Map.get(field)
 
   def current(%{source: changeset}), do: current(changeset)
   def current(changeset), do: Ecto.Changeset.apply_changes(changeset)
