@@ -254,7 +254,7 @@ defmodule PicselloWeb.GalleryLive.Index do
         <div class="flex flex-col md:flex-row grow">
           <%= if Galleries.preview_image(@gallery) do %>
             <div>
-              <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id) do %>
+              <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
               <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{cover_photo_url(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
               <% end %>
             </div>
@@ -275,7 +275,7 @@ defmodule PicselloWeb.GalleryLive.Index do
             <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %>
           </div>
           <div class={"font-bold w-full"}>
-            <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id) do %>
+            <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
               <span class="w-full text-blue-planning-300 underline">
                 <%= if String.length(@gallery.name) < 30 do
                   @gallery.name
