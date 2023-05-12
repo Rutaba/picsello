@@ -581,6 +581,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <.digital_download_fields package_form={@f} download_changeset={@download_changeset} package_pricing={@package_pricing} target={@myself} show_digitals={@show_digitals}/>
 
         <hr class="w-full mt-6"/>
+        <% changeset = current(@f) %>
+        <% multiplier = current(@multiplier) %>
 
         <div class="flex md:flex-row flex-col">
           <div class="flex flex-col w-full md:w-2/3">
@@ -619,12 +621,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                     <%= checkbox m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox" %>
                     <%= label_for m, :discount_base_price, label: "Apply to creative session", class: "font-normal" %>
                   </div>
-                  <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
-                    <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox" %>
+                  <% print_credits_include_in_total = Map.get(changeset, :print_credits_include_in_total) %>
+                  <% digitals_include_in_total = Map.get(changeset, :digitals_include_in_total) %>
+                  <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !print_credits_include_in_total})}>
+                    <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !print_credits_include_in_total %>
                     <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
                   </div>
-                  <div class="flex items-center pl-0 sm:flex-row sm:pl-16">
-                    <%= checkbox m, :discount_digitals, class: "w-5 h-5 mr-2.5 checkbox" %>
+                  <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !digitals_include_in_total})}>
+                    <%= checkbox m, :discount_digitals, class: "w-5 h-5 mr-2.5 checkbox", disabled: !digitals_include_in_total %>
                     <%= label_for m, :discount_digitals, label: "Apply to digitals", class: "font-normal" %>
                   </div>
                 <% end %>
@@ -633,8 +637,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
           </div>
           <div class="grid w-full md:w-1/3 h-fit">
-            <% changeset = current(@f) %>
-            <% multiplier = current(@multiplier) %>
             <.show_discounts>
               <span class="flex w-2/3 mt-4 font-bold">Creative Session Fee</span>
               <span class="flex w-1/3 mt-4">+ <%= Map.get(changeset, :base_price) %></span>
