@@ -304,7 +304,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       <div class={classes("p-4 grid gap-5 lg:grid-cols-3 grid-cols-1", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})} {intro_hints_only("intro_hints_only")}>
         <div class="flex flex-col">
           <h3 class="text-md font-bold">When is your event?</h3>
-          <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}"} form={@f} field={:date} input_placeholder="mm/dd/yyyy" input_label="Select Date" data_min_date={Date.utc_today()} disabled={is_date_booked(@event_form, input_value(@f, :date))} />
+          <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today(), disabled: is_date_booked(@event_form, input_value(@f, :date)) %>
           <%= if is_date_booked(@event_form, input_value(@f, :date)) do %>
             <div class="flex justify-start mt-4 items-center">
               <.icon name="warning-red", class="w-10 h-10 red-sales-300 stroke-[4px]" />
@@ -318,9 +318,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <%= inputs_for @f, :time_blocks, fn t -> %>
             <div class="flex lg:items-center flex-col lg:flex-row mb-4">
               <div class={classes("flex items-center lg:w-auto w-full lg:justify-start justify-between", %{"text-gray-400" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})}>
-                <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}-start-time-#{t.index}"} input_label="Block Start" data_time_only="true" data_custom_display_format="h:i K" data_custom_date_format="H:i" data_time_picker="true" form={t} field={:start_time} input_placeholder="--:-- --" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} />
+              <%= input t, :start_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))%>
                 <p class="mx-2 mt-6">-</p>
-                <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}-end-time-#{t.index}"} input_label="Block End" data_time_only="true" data_custom_display_format="h:i K" data_custom_date_format="H:i" data_time_picker="true" form={t} field={:end_time} input_placeholder="--:-- --" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} />
+                <%= input t, :end_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break)) %>
                 <%= hidden_input t, :is_break%>
                 <%= hidden_input t, :is_valid, value: t |> current |> Map.get(:is_valid) %>
               </div>
