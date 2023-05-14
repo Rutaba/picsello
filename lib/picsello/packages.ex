@@ -268,6 +268,7 @@ defmodule Picsello.Packages do
     end
 
     def from_package(package, global_settings \\ %{download_each_price: nil, buy_all_price: nil})
+    def from_package(package, nil), do: from_package(package, %{download_each_price: nil, buy_all_price: nil})
 
     def from_package(
           %{download_each_price: nil, buy_all: nil, download_count: nil} = package,
@@ -290,7 +291,7 @@ defmodule Picsello.Packages do
             status: :limited,
             is_custom_price: true,
             count: count,
-            digitals_include_in_total: package.digitals_include_in_total
+            digitals_include_in_total: Map.get(package,:digitals_include_in_total, false)
           }
           |> Map.merge(set_each_price(%{each_price: each_price}, global_settings))
           |> Map.merge(set_buy_all(package, global_settings))
@@ -329,7 +330,7 @@ defmodule Picsello.Packages do
         )
         when each_price in [global_settings.download_each_price, @default_each_price, nil] do
       Map.merge(
-        %__MODULE__{status: :limited, is_custom_price: true, is_buy_all: true, digitals_include_in_total: package.digitals_include_in_total},
+        %__MODULE__{status: :limited, is_custom_price: true, is_buy_all: true, digitals_include_in_total: Map.get(package, :digitals_include_in_total, false)},
         set_download_fields(package, global_settings)
       )
       |> set_count_fields(count)

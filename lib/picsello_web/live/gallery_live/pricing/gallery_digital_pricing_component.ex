@@ -275,7 +275,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
          action \\ :validate
        ) do
     download_params = Map.get(params, "download", %{}) |> Map.put("step", :pricing)
-
+    
     download_changeset =
       gallery.gallery_digital_pricing
       |> Download.from_package(global_settings)

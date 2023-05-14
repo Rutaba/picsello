@@ -27,8 +27,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @impl true
   def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
     %{organization_id: organization_id} = current_user
-    global_settings_gallery = Repo.get_by(GSGallery, organization_id: organization_id)
-
+    global_settings_gallery = Repo.get_by(GSGallery, organization_id: organization_id) || %GSGallery{}
+    
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "preview_watermark:#{current_user.id}")
       PubSub.subscribe(Picsello.PubSub, "save_watermark:#{current_user.id}")
