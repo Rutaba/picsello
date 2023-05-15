@@ -28,7 +28,7 @@ defmodule PicselloWeb.Live.Profile do
     socket
     |> assign(:edit, false)
     |> assign(:entry, nil)
-    |> then(fn %{assigns: assigns} = socket ->
+    |> then(fn %{assigns: assigns} = socket -> 
       Map.put(socket, :assigns, Map.put(assigns, :uploads, nil))
     end)
     |> assign_defaults(session)

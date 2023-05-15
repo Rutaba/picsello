@@ -73,6 +73,7 @@ import Select from './hooks/select';
 import ToggleContent from './hooks/toggle-content';
 import ToggleSiblings from './hooks/toggle-siblings';
 import DatePicker from './hooks/date-picker';
+import  BeforeUnload from './hooks/before-unload';
 import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
 
@@ -253,6 +254,7 @@ const Hooks = {
   ClientGalleryCookie,
   Clipboard,
   DatePicker,
+  BeforeUnload,
   DefaultCostTooltip,
   DragDrop,
   Flash,

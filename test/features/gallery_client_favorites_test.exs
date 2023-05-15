@@ -13,8 +13,9 @@ defmodule Picsello.GalleryClientFavoritesTest do
 
       insert(:photo, client_liked: true, active: true, gallery: gallery)
       insert(:photo, album: album, gallery: gallery)
+      gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
 
-      [album: album, gallery: gallery]
+      [album: album, gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
     end
 
     feature "Remove from album dropdown-option doesn't appears in Client favorites album", %{
@@ -117,8 +118,9 @@ defmodule Picsello.GalleryClientFavoritesTest do
       Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
       photo_ids = insert_photo(%{gallery: gallery, total_photos: 5})
+      gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
 
-      [gallery: gallery, photo_ids: photo_ids, photos_count: length(photo_ids)]
+      [gallery: gallery, photo_ids: photo_ids, photos_count: length(photo_ids), gallery_digital_pricing: gallery_digital_pricing]
     end
 
     feature "Show Unsorted photos if photo doesn't belongs to album", %{

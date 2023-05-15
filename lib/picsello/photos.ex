@@ -176,17 +176,17 @@ defmodule Picsello.Photos do
 
   def get_related_query(gallery_id, photo_id, photo) do
     order_by =
-      case photo.album_id do
-        nil ->
-          &order_by(&1, [photo], asc_nulls_first: photo.album_id, asc: photo.position)
+    case photo.album_id do
+      nil ->
+        &order_by(&1, [photo], asc_nulls_first: photo.album_id, asc: photo.position)
 
-        album_id ->
-          &order_by(&1, [photo],
-            desc_nulls_last: photo.album_id == ^album_id,
-            asc: photo.album_id,
-            asc: photo.position
-          )
-      end
+      album_id ->
+        &order_by(&1, [photo],
+          desc_nulls_last: photo.album_id == ^album_id,
+          asc: photo.album_id,
+          asc: photo.position
+        )
+    end
 
     from(photo in watermarked_query(),
       where:

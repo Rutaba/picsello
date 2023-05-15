@@ -40,7 +40,7 @@
       </.card>
   <% end %>
 
-  <div class="grid gap-10 grid-cols-1 sm:grid-cols-2 mt-10">
+  <div class="grid gap-10 grid-cols-1 sm:grid-cols-2 mt-10" phx-hook="BeforeUnload" id="setting-alert" data-is-save={@is_save_settings} >
     <.card title="Change your business name">
       <.form :let={f} for={@organization_name_changeset} phx-change="validate" phx-submit="save" id="name_form">
         <%= hidden_input f, :action, name: "action", value: "update_name" %>
@@ -54,7 +54,7 @@
     <.card title="Change your timezone">
       <.form :let={f} for={@time_zone_changeset} phx-change="validate" phx-submit="save" id="time_zone_form">
         <%= hidden_input f, :action, name: "action", value: "update_time_zone" %>
-        <%= labeled_select f, :time_zone, time_zone_options(), label: "Timezone", wrapper_class: "mt-4" %>
+        <%= labeled_select f, :time_zone, time_zone_options(), label: "Timezone", class: "mt-4" %>
 
         <div class="mt-5 text-right">
           <%= submit "Change timezone", class: "btn-primary mx-1", disabled: !@time_zone_changeset.valid?, phx_disable_with: "Change timezone" %>

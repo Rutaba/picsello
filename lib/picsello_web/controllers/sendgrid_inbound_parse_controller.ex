@@ -14,12 +14,11 @@ defmodule PicselloWeb.SendgridInboundParseController do
 
         %Job{id: id} ->
           {%{job_id: id}, [:job_id]}
-
-        _ ->
-          {nil, []}
+        
+        _ -> {nil, []}  
       end
 
-    if initail_obj do
+    if initail_obj do 
       Map.merge(
         %{
           body_text: Map.get(params, "text", "") |> ElixirEmailReplyParser.parse_reply(),
@@ -30,7 +29,7 @@ defmodule PicselloWeb.SendgridInboundParseController do
       )
       |> ClientMessage.create_inbound_changeset(required_fields)
       |> Repo.insert!()
-      |> Messages.notify_inbound_message(PicselloWeb.Helpers)
+      |> Messages.notify_inbound_message(PicselloWeb.Helpers)  
     end
 
     conn

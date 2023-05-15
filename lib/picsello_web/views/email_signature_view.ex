@@ -11,11 +11,7 @@ defmodule PicselloWeb.EmailSignatureView do
       |> Enum.filter(&(&1.use_publicly? && &1.active?))
       |> List.pop_at(0)
 
-    assigns =
-      Enum.into(assigns, %{
-        first_brand_link: first_brand_link,
-        remaining_brand_links: remaining_brand_links
-      })
+    assigns = Enum.into(assigns, %{first_brand_link: first_brand_link, remaining_brand_links: remaining_brand_links})
 
     ~H"""
     <table style="font-family: sans-serif, Arial;line-height:22px;border-collapse: collapse;" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">

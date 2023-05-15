@@ -18,7 +18,7 @@ defmodule Picsello.Packages do
   import Picsello.Repo.CustomMacros
   import Picsello.Package, only: [validate_money: 3]
   import Ecto.Query, only: [from: 2]
-
+  
   @payment_defaults_fixed %{
     "wedding" => ["To Book", "6 Months Before", "Week Before"],
     "family" => ["To Book", "Day Before Shoot"],
@@ -337,7 +337,7 @@ defmodule Picsello.Packages do
       if buy_all do
         %{buy_all: buy_all, is_buy_all: true}
       else
-        %{buy_all: global_settings.buy_all_price, is_buy_all: false}
+          %{buy_all: (if global_settings, do: global_settings.buy_all_price, else: nil), is_buy_all: false}
       end
     end
 
@@ -353,7 +353,7 @@ defmodule Picsello.Packages do
   end
 
   def future_date, do: ~U[3022-01-01 00:00:00Z]
-
+  
   def templates_with_single_shoot(%User{organization_id: organization_id}) do
     query = Package.templates_for_organization_query(organization_id)
 
@@ -522,7 +522,7 @@ defmodule Picsello.Packages do
       user = Repo.preload(user, organization: :organization_job_types)
 
     enabled_job_types = Profiles.enabled_job_types(job_types)
-
+    
     create_templates(user, enabled_job_types)
   end
 
@@ -535,16 +535,17 @@ defmodule Picsello.Packages do
         job_type
       )
       when is_integer(years_experience) and is_atom(schedule) and is_binary(state) do
+
     create_templates(user, job_type)
   end
 
   def create_initial(_user, _type), do: []
-
+  
   def get_price(
-        %{base_multiplier: base_multiplier, base_price: base_price},
-        presets_count,
-        index
-      ) do
+         %{base_multiplier: base_multiplier, base_price: base_price},
+         presets_count,
+         index
+       ) do
     base_price = if(base_price, do: base_price, else: 0)
 
     amount =
@@ -566,8 +567,8 @@ defmodule Picsello.Packages do
   end
 
   def make_package_payment_schedule(templates) do
-    templates
-    |> Enum.map(&get_package_payment_schedule/1)
+    templates 
+    |> Enum.map(&get_package_payment_schedule/1) 
     |> List.flatten()
   end
 
@@ -580,16 +581,13 @@ defmodule Picsello.Packages do
 
     Ecto.Multi.new()
     |> Ecto.Multi.insert_all(:templates, Package, fn _ -> templates_query end, returning: true)
-    |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn %{
-                                                                                      templates:
-                                                                                        {_,
-                                                                                         templates}
-                                                                                    } ->
+    |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn %{templates: {_, templates}} ->
       make_package_payment_schedule(templates)
     end)
     |> Repo.transaction()
     |> case do
       {:ok, %{templates: {_, templates}}} -> templates
+
       {:error, _} -> []
     end
   end
@@ -598,12 +596,8 @@ defmodule Picsello.Packages do
     current_date = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     default_presets = get_payment_defaults(package.job_type)
     count = length(default_presets)
-
-    base_price = %{
-      base_multiplier: package.base_multiplier,
-      base_price: package.base_price.amount
-    }
-
+    base_price = %{base_multiplier: package.base_multiplier, base_price: package.base_price.amount}
+    
     Enum.with_index(
       default_presets,
       fn default, index ->
@@ -619,8 +613,8 @@ defmodule Picsello.Packages do
         }
       end
     )
-  end
-
+end
+  
   defp minimum_years_query(years_experience),
     do:
       from(base in BasePrice,
