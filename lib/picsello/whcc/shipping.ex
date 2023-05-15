@@ -82,8 +82,8 @@ defmodule Picsello.WHCC.Shipping do
 
   def attributes(%Product{shipping_type: type} = product, shipment_details) do
     case Picsello.Cart.get_shipment!(product, type, shipment_details) do
-      [] -> to_attributes(product)
       {_, %{order_attribute_id: id}} -> [96, id]
+      _ -> to_attributes(product)
     end
   end
 
