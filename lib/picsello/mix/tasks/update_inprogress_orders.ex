@@ -57,7 +57,7 @@ defmodule Mix.Tasks.UpdateInprogressOrders do
         %{total_markuped_price: price} = WHCC.get_item_attrs(account_id, editor_id)
 
         product
-        |> Cart.shipping_details(@shipping_type)
+        |> Cart.shipping_details(%{shipping_type: @shipping_type})
         |> Map.put(:total_markuped_price, price)
         |> update_product(product, multi)
 
