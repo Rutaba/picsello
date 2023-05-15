@@ -113,6 +113,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_text("Overview")
     |> assert_text("Photos")
     |> assert_text("Product previews")
+    |> assert_text("Pricing & Print Credits")
     |> visit("/galleries")
   end
 
@@ -138,6 +139,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_text("Overview")
     |> assert_text("Photos")
     |> assert_text("Product previews")
+    |> assert_text("Pricing & Print Credits")
     |> visit("/galleries")
     |> click(css("#menu-button-#{gallery.id}"))
   end

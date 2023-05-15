@@ -66,11 +66,12 @@ defmodule PicselloWeb.LiveAuthTest do
 
   describe "mount :gallery_client" do
     setup %{conn: conn} do
-      {conn, user, gallery} = build_defaults(conn)
+      {conn, user, gallery, gallery_digital_pricing} = build_defaults(conn)
 
       [
         conn: conn,
         gallery: gallery,
+        gallery_digital_pricing: gallery_digital_pricing,
         user: user,
         show_path: Routes.gallery_client_index_path(conn, :index, gallery.client_link_hash)
       ]
@@ -201,7 +202,7 @@ defmodule PicselloWeb.LiveAuthTest do
 
   describe "mount :proofing_album_client" do
     setup %{conn: conn} do
-      {conn, user, gallery} = build_defaults(conn)
+      {conn, user, gallery, _} = build_defaults(conn)
       album = insert(:proofing_album, %{gallery_id: gallery.id})
       un_protected_album = insert(:proofing_album, %{gallery_id: gallery.id, set_password: false})
 
@@ -293,7 +294,8 @@ defmodule PicselloWeb.LiveAuthTest do
     user = insert(:user)
     job = insert(:lead, type: "wedding", user: user) |> promote_to_job()
     gallery = insert(:gallery, %{name: "Test Client Weeding", job: job})
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
 
-    {conn, user, gallery}
+    {conn, user, gallery, gallery_digital_pricing}
   end
 end

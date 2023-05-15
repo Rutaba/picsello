@@ -4,6 +4,7 @@ defmodule Picsello.Cart do
   """
 
   import Ecto.Query
+  import Money.Sigils
 
   alias Picsello.{
     Cart.DeliveryInfo,
@@ -82,40 +83,41 @@ defmodule Picsello.Cart do
     if digital_credit && print_credit do
       Map.merge(digital_credit, print_credit)
     else
-      nil
+      %{digital: 0, print: ~M[0]USD}
     end
   end
 
   defp digital_credit_remaining(gallery_id) do
     from(gallery in Gallery,
-      join: package in assoc(gallery, :package),
+      join: digital_pricing in assoc(gallery, :gallery_digital_pricing),
       left_join: orders in assoc(gallery, :orders),
       left_join: digitals in assoc(orders, :digitals),
       where: gallery.id == ^gallery_id,
       select: %{
         digital:
-          package.download_count -
+          digital_pricing.download_count -
             fragment("count(?) filter (where ?)", digitals.id, digitals.is_credit)
       },
-      group_by: package.download_count
+      group_by: digital_pricing.download_count
     )
     |> Repo.one()
   end
 
   defp print_credit_remaining(gallery_id) do
     from(gallery in Gallery,
-      join: package in assoc(gallery, :package),
+      join: digital_pricing in assoc(gallery, :gallery_digital_pricing),
       left_join: orders in assoc(gallery, :orders),
       left_join: products in assoc(orders, :products),
       where: gallery.id == ^gallery_id,
       select: %{
         print:
           type(
-            coalesce(package.print_credits, 0) - coalesce(sum(products.print_credit_discount), 0),
+            coalesce(digital_pricing.print_credits, 0) -
+              coalesce(sum(products.print_credit_discount), 0),
             Money.Ecto.Amount.Type
           )
       },
-      group_by: package.print_credits
+      group_by: digital_pricing.print_credits
     )
     |> Repo.one()
   end

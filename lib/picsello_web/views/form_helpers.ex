@@ -205,7 +205,6 @@ defmodule PicselloWeb.FormHelpers do
       assigns
       |> Enum.into(%{
         class: "flex flex-col",
-        id: nil,
         form: nil,
         field: nil,
         input_label: nil,

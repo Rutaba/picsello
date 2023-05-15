@@ -149,13 +149,12 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     """
   end
 
-  def get_print_credit(%{print_credits: %Money{amount: 0, currency: _usd} = _print_credit}) do
-    nil
-  end
-
-  def get_print_credit(%{print_credits: %Money{amount: _amount, currency: _usd} = print_credit}) do
-    IO.inspect(print_credit)
-    print_credit
+  def get_print_credit(%{print_credits: print_credit}) do
+    if Money.zero?(print_credit) do
+      nil
+    else
+      print_credit
+    end
   end
 
   def package_description_length_long?(nil), do: false
