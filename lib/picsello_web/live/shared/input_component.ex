@@ -71,10 +71,12 @@ defmodule PicselloWeb.Shared.InputComponent do
       ) do
     %{zipcodes: zipcodes} = payload
 
-    if !Map.get(zipcodes, input) do
-      assign(socket, :error, "Enter complete or valid zipcode")
-    else
+    zipcodes
+    |> Map.get(input)
+    |> if do
       assign(socket, :error, nil)
+    else
+      assign(socket, :error, "Enter complete or valid zipcode")
     end
     |> noreply
   end
