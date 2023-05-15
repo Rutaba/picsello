@@ -174,7 +174,7 @@ defmodule Picsello.Packages do
           :buy_all,
           :digitals_include_in_total
         ])
-      
+
       if Map.get(attrs, "step") in [:choose_type, :pricing] do
         changeset
         |> validate_required([:status])
@@ -224,7 +224,7 @@ defmodule Picsello.Packages do
         changeset
       end
     end
-    
+
     defp update_buy_all(changeset, download) do
       each_price = get_field(changeset, :each_price)
       buy_all = get_field(changeset, :buy_all)
@@ -291,7 +291,7 @@ defmodule Picsello.Packages do
             status: :limited,
             is_custom_price: true,
             count: count,
-            digitals_include_in_total: Map.get(package,:digitals_include_in_total, false)
+            digitals_include_in_total: Map.get(package, :digitals_include_in_total, false)
           }
           |> Map.merge(set_each_price(%{each_price: each_price}, global_settings))
           |> Map.merge(set_buy_all(package, global_settings))
@@ -386,7 +386,7 @@ defmodule Picsello.Packages do
 
     defp set_buy_all(%{buy_all: buy_all}, global_settings) do
       cond do
-        buy_all && Money.zero?(buy_all) && global_settings.buy_all_price -> 
+        buy_all && Money.zero?(buy_all) && global_settings.buy_all_price ->
           %{buy_all: global_settings.buy_all_price, is_buy_all: true}
         buy_all -> %{buy_all: buy_all, is_buy_all: true}
         true -> %{buy_all: global_settings.buy_all_price, is_buy_all: false}
