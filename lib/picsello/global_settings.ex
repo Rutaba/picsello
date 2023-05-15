@@ -200,7 +200,7 @@ defmodule Picsello.GlobalSettings do
 
   def update_prices(gs_gallery, opts) do
     gs_gallery
-    |> save_with_galleries_multi(build_price(opts), :digita)
+    |> save_with_galleries_multi(build_price(opts), :digital)
     |> Multi.update_all(
       :update_package,
       fn %{galleries: galleries} ->
@@ -235,8 +235,7 @@ defmodule Picsello.GlobalSettings do
     |> Multi.run(:galleries, fn _, %{gs_gallery: %{organization_id: org_id}} ->
       {:ok,
        org_id
-       |> Galleries.list_shared_setting_galleries()
-       |> Enum.filter(&Map.get(&1.use_global, setting_type))}
+       |> Galleries.list_shared_setting_galleries(to_string(setting_type))}
     end)
   end
 
