@@ -372,7 +372,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   def handle_info({:success_event, "view-gallery", %{gallery_id: gallery_id}}, socket) do
     socket
-    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id))
+    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id, is_mobile: false))
     |> noreply()
   end
 
