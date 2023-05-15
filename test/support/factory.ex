@@ -549,6 +549,24 @@ defmodule Picsello.Factory do
       }
       |> merge_attributes(attr)
 
+  def gallery_digital_pricing_factory(attrs \\ %{}) do
+    %Picsello.Galleries.GalleryDigitalPricing{
+      download_each_price: Money.new(10),
+      download_count: 10,
+      print_credits: Money.new(10),
+      buy_all: nil,
+      email_list: ["test@test.com"],
+      gallery: fn ->
+        case attrs do
+          %{gallery: gallery} -> gallery
+          _ -> build(:gallery)
+        end
+      end
+    }
+    |> merge_attributes(Map.drop(attrs, [:gallery]))
+    |> evaluate_lazy_attributes()
+  end
+
   def product_factory do
     product_json =
       "test/support/fixtures/whcc/api/v1/products/44oa66BP8N9NtBknE.json"

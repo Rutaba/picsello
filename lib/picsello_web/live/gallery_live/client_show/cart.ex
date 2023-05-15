@@ -27,7 +27,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         end)
     )
     |> assign_cart_count(gallery)
-    |> assign_credits()
+    |> assign_credits(gallery)
     |> assign_checkout_routes()
     |> assign(:shipping_to_all, @shipping_to_all)
     |> assign(:default_shipping, @default_shipping)
@@ -148,7 +148,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         assign(socket, :order, order)
     end
     |> assign_cart_count(gallery)
-    |> assign_credits()
+    |> assign_credits(gallery)
     |> assign_products_shipping()
     |> noreply()
   end
@@ -313,11 +313,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     push_redirect(socket, to: checkout_routes.home_page)
   end
 
-  defp assign_credits(%{assigns: %{gallery: gallery, is_proofing: true}} = socket) do
+  defp assign_credits(%{assigns: %{is_proofing: true}} = socket, gallery) do
     assign(socket, :credits, credits(gallery))
   end
 
-  defp assign_credits(%{assigns: %{is_proofing: false}} = socket), do: socket
+  defp assign_credits(%{assigns: %{is_proofing: false}} = socket, _), do: socket
 
   defp checkout_type(true), do: :proofing_album_cart
   defp checkout_type(false), do: :cart

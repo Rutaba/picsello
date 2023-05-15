@@ -7,7 +7,14 @@ defmodule Picsello.GalleryCartTest do
   setup do
     Mox.stub(Picsello.PhotoStorageMock, :get, fn _ -> {:error, nil} end)
 
-    :ok
+    gallery =
+      insert(:gallery,
+        job: insert(:lead, package: insert(:package, download_each_price: ~M[3500]USD))
+      )
+
+    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0, print_credits: Money.new(0)})
+
+    [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   setup :authenticated_gallery_client
@@ -24,7 +31,7 @@ defmodule Picsello.GalleryCartTest do
     cart_product = build(:cart_product, whcc_product: whcc_product)
 
     cart_product
-    |> Cart.place_product(gallery.id)
+    |> Cart.place_product(gallery)
     |> preload_order_items()
   end
 

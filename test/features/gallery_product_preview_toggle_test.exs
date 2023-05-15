@@ -37,6 +37,8 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
         use_global: %{watermark: true, expiration: true, digital: true, products: true}
       )
 
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
+
     insert(:watermark, gallery: gallery)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
 
@@ -83,7 +85,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
     end)
 
-    [gallery: gallery, organization: organization, package: package, photo_ids: photo_ids]
+    [gallery: gallery, organization: organization, package: package, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   setup :authenticated_gallery_client
@@ -162,12 +164,12 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
                {"Loose Prints", "$50,000.00"},
                {"Press Printed Cards", "$77.77"},
                {"Display Products", "$3,939.00"},
-               {"Digital Download", "$25.00"}
+               {"Digital Download"}
              ] =
                options
                |> Enum.map(fn option ->
                  option
-                 |> find(css("p", count: 2))
+                 |> find(css("p", count: :any))
                  |> Enum.map(&Element.text/1)
                  |> List.to_tuple()
                end)

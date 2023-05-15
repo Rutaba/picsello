@@ -93,21 +93,23 @@
 
         <div class={classes(hidden: length(@albums) > 0)}>
           <label class="flex items-center mt-4 cursor-pointer">
-            <div class="text-sm lg:text-xl text-base-250">Show favorites only</div>
+            <%= if @favorites_count > 0 do %>
+              <div class="text-sm lg:text-xl text-base-250">Show favorites only</div>
 
-            <div class="relative ml-3">
-              <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
+              <div class="relative ml-3">
+                <input type="checkbox" class="sr-only" phx-click="toggle_favorites">
 
-              <%= if @favorites_filter do %>
-                <div class="block h-8 border rounded-full bg-blue-planning-100 w-14 border-blue-planning-300"></div>
+                <%= if @favorites_filter do %>
+                  <div class="block h-8 border rounded-full bg-blue-planning-100 w-14 border-blue-planning-300"></div>
 
-                <div class="absolute w-6 h-6 rounded-full dot right-1 top-1 bg-blue-planning-300 transition"></div>
-              <% else %>
-                <div class="block h-8 bg-gray-200 border rounded-full w-14 border-blue-planning-300"></div>
+                  <div class="absolute w-6 h-6 rounded-full dot right-1 top-1 bg-blue-planning-300 transition"></div>
+                <% else %>
+                  <div class="block h-8 bg-gray-200 border rounded-full w-14 border-blue-planning-300"></div>
 
-                <div class="absolute w-6 h-6 rounded-full dot left-1 top-1 bg-blue-planning-300 transition"></div>
-              <% end %>
-            </div>
+                  <div class="absolute w-6 h-6 rounded-full dot left-1 top-1 bg-blue-planning-300 transition"></div>
+                <% end %>
+              </div>
+            <% end %>
           </label>
         </div>
       </div>
@@ -147,6 +149,7 @@
               <%= live_component ClientPhoto,
                   id: photo.id,
                   photo: photo,
+                  favorites_count: @favorites_count,
                   photo_width: 300,
                   is_likable: true
               %>
