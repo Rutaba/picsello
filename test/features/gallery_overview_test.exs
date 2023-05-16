@@ -9,7 +9,8 @@ defmodule Picsello.GalleryOverviewTest do
 
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-    [job: gallery.job]
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
+    [job: gallery.job, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   def insert_order(gallery) do

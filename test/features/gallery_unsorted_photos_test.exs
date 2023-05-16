@@ -8,9 +8,10 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
     album = insert(:album, %{gallery_id: gallery.id})
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
 
-    [album: album, photo_ids: photo_ids, photos_count: length(photo_ids)]
+    [album: album, photo_ids: photo_ids, photos_count: length(photo_ids), gallery_digital_pricing: gallery_digital_pricing]
   end
 
   test "Unsorted Photos, render unsorted photos", %{
