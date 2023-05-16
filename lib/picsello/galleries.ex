@@ -20,7 +20,8 @@ defmodule Picsello.Galleries do
     Cart.Digital,
     Job,
     Client,
-    WHCC
+    WHCC,
+    Galleries.Gallery.UseGlobal
   }
 
   alias Picsello.Workers.CleanStore
@@ -57,13 +58,11 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
-  def list_shared_setting_galleries(organization_id) do
+  @setting_types :fields |> UseGlobal.__schema__() |> Enum.map(&to_string/1)
+  def list_shared_setting_galleries(organization_id, type) when type in @setting_types do
     organization_id
     |> list_all_galleries_by_organization_query()
-    |> where([g], fragment("? ->> 'expiration' = 'true'", g.use_global))
-    |> or_where([g], fragment("? ->> 'watermark' = 'true'", g.use_global))
-    |> or_where([g], fragment("? ->> 'products' = 'true'", g.use_global))
-    |> or_where([g], fragment("? ->> 'digital' = 'true'", g.use_global))
+    |> where([g], fragment("? ->> ? = 'true'", g.use_global, ^type))
     |> Repo.all()
   end
 
@@ -528,6 +527,7 @@ defmodule Picsello.Galleries do
 
   defp check_digital_pricing(%{job: %{package: package, client: client}} = gallery) do
     first_gallery = get_first_gallery(gallery)
+
     case package do
       nil ->
         Multi.new()
