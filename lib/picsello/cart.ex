@@ -20,6 +20,7 @@ defmodule Picsello.Cart do
   alias Ecto.Multi
   alias Ecto.Changeset
   alias Picsello.Cart.Product, as: CartProduct
+  import Money.Sigils
 
   @default_shipping "economy"
   @products_config Application.compile_env!(:picsello, :products)
@@ -518,16 +519,33 @@ defmodule Picsello.Cart do
   defp choose_days("3_days"), do: @three_days
   defp choose_days("economy"), do: @economy
 
-  def total_shipping(%{products: [_ | _] = products}) do
-    products
-    |> Enum.filter(&has_shipping?/1)
-    |> Enum.reduce(Money.new(0), &Money.add(&2, shipping_price(&1)))
+  def total_shipping(%{products: [_ | _]} = order) do
+    order
+    |> lines_by_product()
+    |> Enum.reduce(Money.new(0), fn
+      {%{category: %{whcc_id: whcc_id}}, line_items}, acc when whcc_id in @shipping_to_all ->
+        Enum.reduce(line_items, acc, &Money.add(&2, shipping_price(&1)))
+
+      {_whcc_product, line_items}, acc ->
+        product = Enum.find(line_items, &has_shipping?/1)
+        product = add_total_markuped_sum(product, line_items)
+
+        Money.add(acc, shipping_price(product))
+    end)
   end
 
   def total_shipping(_order), do: Money.new(0)
 
   def has_shipping?(%{shipping_type: nil}), do: false
   def has_shipping?(_product), do: true
+
+  def add_total_markuped_sum(shipping_product, []), do: shipping_product
+
+  def add_total_markuped_sum(shipping_product, products) do
+    total_markuped = Enum.reduce(products, ~M[0], &Money.add(&2, &1.total_markuped_price))
+
+    %{shipping_product | total_markuped_price: total_markuped}
+  end
 
   def add_default_shipping_to_products(order, opts \\ %{}) do
     das_type = opts[:das_type]
@@ -546,7 +564,6 @@ defmodule Picsello.Cart do
 
       {_whcc_product, line_items} ->
         [product | products] = Enum.reverse(line_items)
-
         [shipping.(product) | products]
     end)
     |> Enum.concat()
