@@ -192,9 +192,16 @@ defmodule Picsello.Cart.CheckoutsTest do
     setup [:stub_create_session, :stub_create_order]
 
     setup %{gallery: gallery, whcc_order: whcc_order} do
+<<<<<<< HEAD
       order = build(:cart_product)
       |> Cart.place_product(gallery)
       |> Repo.preload(:digitals)
+=======
+      order =
+        build(:cart_product)
+        |> Cart.place_product(gallery)
+        |> Repo.preload(:digitals)
+>>>>>>> 47ecf5b3b (Fix test cases)
 
       products = order |> Cart.add_default_shipping_to_products()
       order = Map.put(order, :products, products)
@@ -233,7 +240,11 @@ defmodule Picsello.Cart.CheckoutsTest do
       products = order |> Cart.add_default_shipping_to_products()
       order = Map.put(order, :products, products)
 
+<<<<<<< HEAD
       assert ~M[10420]USD == Order.total_cost(order)
+=======
+      assert ~M[5563]USD == Order.total_cost(order)
+>>>>>>> 47ecf5b3b (Fix test cases)
 
       assert :lt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
 
@@ -311,6 +322,7 @@ defmodule Picsello.Cart.CheckoutsTest do
           _ ->
             Picsello.Cart.place_product(product, gallery)
         end
+
       products = order |> Cart.add_default_shipping_to_products()
       order = Map.put(order, :products, products)
       check_out(order)

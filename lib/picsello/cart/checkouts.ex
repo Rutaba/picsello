@@ -186,19 +186,23 @@ defmodule Picsello.Cart.Checkouts do
   end
 
   defp editors({_whcc_product, line_items}, acc, shipment_details) do
-    product = Enum.find(line_items, & &1.shipping_upcharge)
+    product = Enum.find(line_items, & &1.shipping_type)
     order_attributes = WHCC.Shipping.attributes(product, shipment_details)
 
     acc ++ Enum.map(line_items, &Editor.new(&1.editor_id, order_attributes: order_attributes))
   end
 
-  defp create_session(cart, %{whcc_order: whcc_order} = opts) do
+  defp create_session(cart, %{whcc_order: whcc_order, client_total: client_total} = opts) do
     shipping_price = Cart.total_shipping(cart)
 
-    whcc_order
-    |> WHCCOrder.total()
-    |> Money.add(shipping_price)
-    |> then(&create_session(cart, &1, opts))
+    create_session(
+      cart,
+      Enum.min_by(
+        [client_total, WHCCOrder.total(whcc_order) |> Money.add(shipping_price)],
+        & &1.amount
+      ),
+      opts
+    )
   end
 
   defp create_session(cart, opts) do
