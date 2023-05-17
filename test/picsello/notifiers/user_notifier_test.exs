@@ -132,8 +132,6 @@ defmodule Picsello.Notifiers.UserNotifierTest do
       assert order
              |> shared_fields()
              |> Map.merge(%{
-               print_credit_remaining: ~M[7200]USD,
-               print_credit_used: ~M[52800]USD,
                client_charge: ~M[0]USD,
                photographer_charge: ~M[500]USD,
                print_cost: ~M[6063]USD

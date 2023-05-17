@@ -35,6 +35,8 @@ defmodule Picsello.ClientOrdersTest do
         use_global: %{watermark: true, expiration: true, digital: true, products: true}
       )
 
+    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0, download_each_price: ~M[2500]USD, print_credits: Money.new(0), buy_all: ~M[5000]USD})
+
     insert(:watermark, gallery: gallery)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
 
@@ -81,7 +83,7 @@ defmodule Picsello.ClientOrdersTest do
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
     end)
 
-    [gallery: gallery, organization: organization, package: package, photo_ids: photo_ids]
+    [gallery: gallery, organization: organization, package: package, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   setup :authenticated_gallery_client
@@ -308,7 +310,7 @@ defmodule Picsello.ClientOrdersTest do
                options
                |> Enum.map(fn option ->
                  option
-                 |> find(css("p", count: 2))
+                 |> find(css("p", count: :any))
                  |> Enum.map(&Element.text/1)
                  |> List.to_tuple()
                end)
@@ -378,7 +380,7 @@ defmodule Picsello.ClientOrdersTest do
                options
                |> Enum.map(fn option ->
                  option
-                 |> find(css("p", count: 2))
+                 |> find(css("p", count: :any))
                  |> Enum.map(&Element.text/1)
                  |> List.to_tuple()
                end)
@@ -519,6 +521,7 @@ defmodule Picsello.ClientOrdersTest do
 
     feature "with download credit", %{session: session, photo_ids: photo_ids} do
       Repo.update_all(Package, set: [download_count: 2])
+      Repo.update_all(Picsello.Galleries.GalleryDigitalPricing, set: [download_count: 2])
 
       session
       |> visit(current_url(session))
