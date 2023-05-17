@@ -38,8 +38,10 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> click(button("Get started"))
     |> assert_path("/pricing/calculator")
     |> click(css("label", text: "Wedding"))
+    |> click(css("label", text: "Family"))
+    |> refute_has(css("label", text: "Other"))
     |> assert_has(css("label.border-blue-planning-300", count: 2))
-    |> assert_has(css("#calculator-step-2_average_time_per_week", value: "26"))
+    |> assert_has(css("#calculator-step-2_average_time_per_week", value: "35"))
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Financial goals")
@@ -61,6 +63,7 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> assert_text("$6,500")
     |> assert_text("$42,500.00")
     |> click(button("Edit costs"))
+    |> assert_text("Your Cost Monthly")
     |> assert_text("Edit Equipment costs")
     |> assert_text("Camera")
     |> fill_in(css("#calculator-step-6_business_costs_0_line_items_0_yearly_cost"),
@@ -86,14 +89,14 @@ defmodule Picsello.CreatePricingCalculationTest do
                             "gross_revenue" => "$31,858.91",
                             "pricing_suggestions" => [
                               %{
-                                base_price: "$1,450.00",
+                                base_price: "$1,673.08",
                                 job_type: "Wedding",
-                                max_session_per_year: 30
+                                max_session_per_year: 26
                               },
                               %{
-                                base_price: "$230.16",
-                                job_type: "Other",
-                                max_session_per_year: 189
+                                base_price: "$478.02",
+                                job_type: "Family",
+                                max_session_per_year: 91
                               }
                             ],
                             "projected_costs" => "$7,500.00",
@@ -111,6 +114,8 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> click(button("Get started"))
     |> assert_path("/pricing/calculator")
     |> click(css("label", text: "Wedding"))
+    |> click(css("label", text: "Family"))
+    |> refute_has(css("label", text: "Other"))
     |> assert_has(css("label.border-blue-planning-300", count: 2))
     |> fill_in(css("#calculator-step-2_average_time_per_week"), with: "0")
     |> assert_disabled(css("button", text: "Next"))
