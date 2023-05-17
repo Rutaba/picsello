@@ -8,6 +8,7 @@ defmodule NylasCalendarTest do
     :ok
   end
 
+  @calendar_id "qulli2ad0f0ikawkdnl534oz"
   describe "Basic Calendar tests" do
     test "Get Calendars" do
       ExVCR.Config.filter_request_headers("Authorization")
@@ -91,10 +92,15 @@ defmodule NylasCalendarTest do
       end
     end
 
-    @tag :skip
     test "Get Events" do
-      throw(:NYI)
-      NylasCalendar.get_events("calendar_id")
+      ExVCR.Config.filter_request_headers("Authorization")
+
+      use_cassette "#{__MODULE__}_get_events" do
+        {:ok, events} = NylasCalendar.get_events(@calendar_id)
+        target_id = "3gcdorp3zvqheegatbzdnjnkd"
+
+        assert events |> Enum.map(& &1["id"]) |> Enum.member?(target_id)
+      end
     end
   end
 end

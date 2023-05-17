@@ -72,7 +72,8 @@ defmodule NylasCalendar do
   """
   def get_events(calendar_id) do
     headers = build_headers()
-    url = "#{@base_url}#{@calendar_endpoint}/#{calendar_id}#{@event_endpoint}"
+
+    url = "#{@base_url}#{@event_endpoint}?calendar_id=#{calendar_id}"
 
     response = HTTPoison.get!(url, headers)
 
