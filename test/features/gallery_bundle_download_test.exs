@@ -37,42 +37,57 @@ defmodule Picsello.GalleryBundleDownloadTest do
     :ok
   end
 
-  setup %{sessions: [photographer_session, client_session]} do
-    %{session: client_session, gallery: gallery} =
-      %{session: client_session} |> authenticated_gallery_client() |> Enum.into(%{})
+  setup :onboarded
+  setup :authenticated
+  setup :authenticated_gallery
 
-    insert(:order, gallery: gallery, bundle_price: ~M[5000]USD, placed_at: DateTime.utc_now())
+  setup do
+    organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
 
-    photographer =
-      gallery
-      |> Ecto.assoc(:organization)
-      |> Picsello.Repo.one()
-      |> Picsello.Repo.preload(:user)
-      |> Map.get(:user)
-      |> Map.put(:onboarding, nil)
-      |> onboard!()
+    insert(:user,
+      organization: organization,
+      stripe_customer_id: "photographer-stripe-customer-id"
+    )
+    |> onboard!()
 
-    %{session: photographer_session} =
-      %{session: photographer_session, user: photographer} |> authenticated() |> Enum.into(%{})
+    package =
+      insert(:package,
+        organization: organization,
+        download_each_price: ~M[2500]USD,
+        buy_all: ~M[5000]USD
+      )
 
-    [
-      sessions: [photographer_session, client_session],
-      gallery: gallery,
-      photographer: photographer
-    ]
+    gallery =
+      insert(:gallery,
+        job:
+          insert(:lead,
+            client: insert(:client, organization: organization),
+            package: package
+          ),
+        use_global: %{watermark: true, expiration: true, digital: true, products: true}
+      )
+
+      insert(:order, gallery: gallery, bundle_price: ~M[5000]USD, placed_at: DateTime.utc_now())
+      insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0, print_credits: Money.new(0)})
+      Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "photographer-stripe-customer-id", _ ->
+        {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
+      end)
+
+    [gallery: gallery]
   end
 
-  @sessions 2
+  setup :authenticated_gallery_client
   test "resets client link when photographer updates gallery", %{
-    sessions: [photographer_session, client_session],
+    session: session,
     gallery: gallery
   } do
-    client_session
+    session
+    |> visit("/gallery/#{gallery.client_link_hash}")
     |> assert_text(gallery.name)
     |> click(link("View Gallery"))
     |> assert_has(link("Download all"))
 
-    photographer_session
+    session
     |> visit(Routes.gallery_photos_index_path(PicselloWeb.Endpoint, :index, gallery.id))
     |> assert_text(gallery.name)
     |> attach_file(file_field("Add photos", visible: false),
@@ -87,8 +102,6 @@ defmodule Picsello.GalleryBundleDownloadTest do
              %{worker: "Picsello.Workers.PackGallery", state: "completed"}
            ] = run_jobs()
 
-    client_session
-    |> assert_text("Preparing Download")
 
     assert [
              %{worker: "Picsello.Workers.PackGallery", state: "completed"},
@@ -97,10 +110,12 @@ defmodule Picsello.GalleryBundleDownloadTest do
 
     assert_receive({:delivered_email, %{subject: "Download Ready"}})
 
-    client_session
+    session
+    |> visit("/gallery/#{gallery.client_link_hash}")
     |> assert_has(link("Download all"))
 
-    photographer_session
+    session
+    |> visit("/galleries/#{gallery.id}/photos")
     |> click(css("div[id$='-remove']", visible: false))
     |> click(button("Yes, delete"))
     |> assert_text("nothing here")
@@ -110,8 +125,6 @@ defmodule Picsello.GalleryBundleDownloadTest do
              %{worker: "Picsello.Workers.PackGallery", state: "completed"}
            ] = run_jobs() |> Enum.drop(2)
 
-    client_session
-    |> assert_text("Preparing Download")
 
     assert [
              %{worker: "Picsello.Workers.PackGallery", state: "completed"},

@@ -67,7 +67,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       ) do
     %{job: %{client: %{organization: organization}}} =
       gallery = gallery |> Galleries.populate_organization_user()
-
     socket
     |> assign(
       creator: Galleries.get_gallery_creator(gallery),

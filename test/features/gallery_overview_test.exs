@@ -79,7 +79,7 @@ defmodule Picsello.GalleryOverviewTest do
 
   feature "Update gallery password", %{session: session, job: job} do
     gallery = insert(:gallery, %{job: job, password: "666666"})
-
+    insert(:gallery_digital_pricing, gallery: gallery)
     session
     |> visit("/galleries/#{gallery.id}/")
     |> resize_window(1280, 800)
@@ -94,7 +94,7 @@ defmodule Picsello.GalleryOverviewTest do
 
   feature "Expiration date, set gallery to never expire", %{session: session, job: job} do
     gallery = insert(:gallery, %{job: job, expired_at: ~U[2021-02-01 12:00:00Z]})
-
+    insert(:gallery_digital_pricing, gallery: gallery)
     session
     |> visit("/galleries/#{gallery.id}/")
     |> resize_window(1280, 1000)
