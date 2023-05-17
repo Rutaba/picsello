@@ -438,4 +438,5 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defdelegate shipping_details(product, shipping_type), to: Picsello.Cart
   defdelegate add_shipping_details!(product, shipping_type), to: Picsello.Cart
   defdelegate shipping_price(product), to: Picsello.Cart
+  defdelegate add_total_markuped_sum(product, products), to: Picsello.Cart
 end
