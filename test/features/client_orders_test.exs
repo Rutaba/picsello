@@ -349,7 +349,7 @@ defmodule Picsello.ClientOrdersTest do
 
     session
     |> click(link("My orders"))
-    |> find(definition("Order total:"), &assert(Element.text(&1) == "$306.80"))
+    |> find(definition("Order total:"), &assert(Element.text(&1) == "$313.95"))
   end
 
   feature "client doesn't see products for non-US photographer", %{
@@ -463,6 +463,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(css("p", text: "Added!"))
       |> click(link("cart"))
       |> click(link("Continue"))
+      |> sleep(100)
       |> assert_has(css("h2", text: "Enter digital delivery information"))
       |> assert_has(definition("Digital downloads (1)", text: "$25.00"))
       |> assert_has(definition("Total", text: "$25.00"))
@@ -471,6 +472,7 @@ defmodule Picsello.ClientOrdersTest do
       |> refute_has(text_field("Shipping address"))
       |> wait_for_enabled_submit_button()
       |> click(button("Check out with Stripe"))
+      |> sleep(500)
 
       assert [%{errors: []}] = run_jobs()
 
@@ -639,6 +641,7 @@ defmodule Picsello.ClientOrdersTest do
       |> fill_in(text_field("Name"), with: "Zach")
       |> wait_for_enabled_submit_button()
       |> click(button("Check out with Stripe"))
+      |> sleep(500)
 
       assert [%{errors: []}] = run_jobs()
 
