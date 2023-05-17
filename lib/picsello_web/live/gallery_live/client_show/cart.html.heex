@@ -25,7 +25,7 @@
                     <h1 class="text-lg text-base-250 font-medium leading-10 uppercase"><%= product.whcc_name %></h1>
                   </div>
 
-                  <%= for {%{id: id} = line_item, index} <- product_lines |> Enum.reverse |> Enum.with_index(1) do %>
+                  <%= for {%{id: id} = line_item, index} <- product_lines |> Enum.reverse |> Enum.with_index(1) do %>                  
                     <div {testid("product-#{item_id(line_item)}")} class="py-8 mx-8 flex md:flex-row flex-col">
                       <div class="flex md:w-2/3">
                         <img class="object-contain w-48 h-32 mr-4 md:w-72 md:h-48 md:mr-7" src={item_image_url(line_item)}/>
@@ -43,6 +43,9 @@
                                   <div class="px-1.5 mb-1 pt-1 pb-0.5 text-xs bg-green-finances-100 text-green-finances-300">Volume Discount</div>
                                 </div>
                             <% end %>
+                            <div class="flex flex-col">
+                            <span>Editor total: <%= line_item.total_markuped_price %></span>
+                            </div>
                           </div>
 
                           <div class="flex flex-wrap items-center pt-4 md:clear-none clear-left gap-2 mr-3">
@@ -72,9 +75,10 @@
                                     <%= radio_button f, :type, shipping_type, checked: shipping_type == Atom.to_string(line_item.shipping_type), class: "w-6 h-6" %>
                                     <span><%= label %></span>
                                   </label>
-
+                                  
                                   <div> <%= Map.merge(line_item, line_item |> shipping_details(%{shipment_details: @shipment_details, das_type: @das_type, shipping_type: shipping_type})) |> shipping_price() %></div>
                                 </div>
+                                <div> Base: <%= abc(line_item, @shipment_details, @das_type, shipping_type).shipping_base_charge%>,Up: <%= abc(line_item, @shipment_details, @das_type, shipping_type).shipping_upcharge%></div>
                               <% end %>
                             </.form>
                           </div>
