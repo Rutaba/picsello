@@ -75,8 +75,7 @@
                                     <%= radio_button f, :type, shipping_type, checked: shipping_type == Atom.to_string(line_item.shipping_type), class: "w-6 h-6" %>
                                     <span><%= label %></span>
                                   </label>
-                                  
-                                  <div> <%= Map.merge(line_item, line_item |> shipping_details(%{shipment_details: @shipment_details, das_type: @das_type, shipping_type: shipping_type})) |> shipping_price() %></div>
+                                  <div> <%= Map.merge(line_item, line_item |> shipping_details(%{shipment_details: @shipment_details, das_type: @das_type, shipping_type: shipping_type})) |> add_total_markuped_sum(whcc_id in @shipping_to_all && [] || product_lines) |> shipping_price() %></div>
                                 </div>
                                 <div> Base: <%= abc(line_item, @shipment_details, @das_type, shipping_type).shipping_base_charge%>,Up: <%= abc(line_item, @shipment_details, @das_type, shipping_type).shipping_upcharge%></div>
                               <% end %>
