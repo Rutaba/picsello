@@ -66,8 +66,28 @@ config :picsello, PicselloWeb.Endpoint,
     ]
   ]
 
+format = {LogFormatter, :format}
 # Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$level] $message\n", infinity: true
+config :logger, :console,
+  format: format,
+  infinity: true,
+  level: :error,
+  metadata: [:request_id, :mfa, :pid, :file, :line]
+
+config :logger,
+  backends: [{LoggerFileBackend, :info_log}, {LoggerFileBackend, :debug_log}, :console]
+
+config :logger, :info_log,
+  format: format,
+  metadata: [:pid, :mfa, :file, :line],
+  path: "/Users/zkessin/logs/picsello_info.log",
+  level: :info
+
+config :logger, :debug_log,
+  format: format,
+  metadata: [:pid, :mfa, :file, :line],
+  path: "/Users/zkessin/logs/picsello_error.log",
+  level: :warn
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

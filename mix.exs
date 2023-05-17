@@ -87,7 +87,8 @@ defmodule Picsello.MixProject do
         {:floki, "~> 0.32"},
         {:icalendar, "~> 1.1.0"},
         {:con_cache, "~> 1.0"},
-        {:pdf_generator, ">=0.6.0"}
+        {:pdf_generator, ">=0.6.0"},
+        {:logger_file_backend, "~> 0.0.13"}
       ],
       [
         {:dialyxir, "~> 1.3", only: [:dev, :test], runtime: false},
@@ -100,7 +101,8 @@ defmodule Picsello.MixProject do
         {:ex_machina, "~> 2.7.0", only: [:dev, :test]},
         {:httpoison, "~> 1.8.0"},
         {:wallaby, "~> 0.30.3", runtime: false, only: :test},
-        {:csv, "~> 3.0"}
+        {:csv, "~> 3.0"},
+        {:exvcr, "~> 0.14.1", only: :test}
       ]
     ]
     |> Enum.concat()
