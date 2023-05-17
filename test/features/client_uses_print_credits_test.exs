@@ -185,8 +185,6 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
   end
 
   def expect_create_invoice(%{stripe_invoice: %{amount_due: amount} = invoice}) do
-    IO.inspect(amount)
-
     Picsello.MockPayments
     |> Mox.expect(:create_invoice, fn %{
                                         auto_advance: true,
@@ -196,11 +194,10 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       {:ok, invoice}
     end)
     |> Mox.expect(:create_invoice_item, fn %{
-                                             amount: amount,
+                                             amount: ^amount,
                                              customer: "photographer-stripe-customer-id"
                                            },
                                            _opts ->
-      IO.inspect(amount)
       {:ok, %Stripe.Invoiceitem{invoice: invoice}}
     end)
 
@@ -233,8 +230,6 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     Picsello.MockPayments
     |> Mox.expect(:create_session, fn params, _ ->
-      IO.inspect(params)
-
       assert %{
                success_url: success_url,
                payment_intent_data: %{
