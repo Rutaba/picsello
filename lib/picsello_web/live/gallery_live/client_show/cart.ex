@@ -99,9 +99,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     end)
     |> Multi.run(:update_shipping, fn _, _ ->
       {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
-      %{delivery_info: %{address: %{zip: zipcode}}} = order
-      das_type = DasType.get_by_zipcode(zipcode)
-      Cart.add_default_shipping_to_products(order, %{das_type: das_type, force_update: true})
+
+      unless Enum.empty?(order.products) do
+        %{delivery_info: %{address: %{zip: zipcode}}} = order
+        das_type = DasType.get_by_zipcode(zipcode)
+        Cart.add_default_shipping_to_products(order, %{das_type: das_type, force_update: true})
+      end
 
       {:ok, :updated}
     end)
