@@ -23,7 +23,7 @@ defmodule Picsello.Repo.Migrations.CreateShipmentZipcodes do
       |> CSV.decode!()
       |> Enum.each(fn [zipcode, type] ->
         execute(
-          "INSERT INTO shipment_zipcodes (zipcode, das_type_id) VALUES (#{zipcode}, #{das_types[type]})"
+          "INSERT INTO shipment_zipcodes (zipcode, das_type_id) VALUES ('#{zipcode}', #{das_types[type]})"
         )
       end)
     end
