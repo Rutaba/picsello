@@ -1,4 +1,5 @@
 defmodule Picsello.Shipment.Zipcode do
+  @moduledoc false
   use Ecto.Schema
   alias Picsello.Repo
 

@@ -18,7 +18,8 @@ defmodule Picsello.ClientCancelsOrderTest do
     Picsello.MockPayments
     |> Mox.stub(:create_session, fn params, _opts ->
       send(test_pid, {:create_session, params})
-      {:ok, build(:stripe_session)}
+
+      {:ok, build(:stripe_session, url: "test_url")}
     end)
     |> Mox.stub(:expire_session, fn _id, _opts ->
       {:ok,

@@ -1,4 +1,5 @@
 defmodule Picsello.Shipment.Detail do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.Repo
@@ -14,7 +15,7 @@ defmodule Picsello.Shipment.Detail do
     timestamps()
   end
 
-  @fields ~w(type base_charge order_attribute_id das upcharge)
+  @fields ~w(type base_charge order_attribute_id das upcharge)a
   @doc false
   def changeset(shipment_detail, attrs) do
     shipment_detail
