@@ -78,12 +78,14 @@ defmodule Picsello.WelcomePageTest do
     end
 
     feature "user open billing portal from invoices card", %{session: session, user: user} do
+      gallery = insert(:gallery,
+      job: insert(:lead, user: user) |> promote_to_job()
+    )
+      gallery_client = insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
       order =
         insert(:order,
-          gallery:
-            insert(:gallery,
-              job: insert(:lead, user: user) |> promote_to_job()
-            )
+          gallery: gallery,
+          gallery_client: gallery_client
         )
 
       insert(:invoice,

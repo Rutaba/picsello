@@ -5,9 +5,13 @@ defmodule Picsello.Cart.OrderTest do
 
   describe "priced_lines_by_product" do
     test "newest group first, newest change first" do
+      gallery = insert(:gallery)
+      gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
       %{products: products} =
         order =
         insert(:order,
+          gallery_client: gallery_client,
           products:
             insert_list(2, :product)
             |> Enum.flat_map(&build_list(2, :cart_product, whcc_product: &1))
@@ -27,7 +31,11 @@ defmodule Picsello.Cart.OrderTest do
 
   describe "update_changeset" do
     setup do
-      [order: :order |> insert() |> Repo.preload(:products)]
+      gallery = insert(:gallery)
+      gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+      order = insert(:order, gallery_client: gallery_client, gallery: gallery) |> Repo.preload(:products)
+      [order: order]
     end
 
     def update_changeset(order, product) do

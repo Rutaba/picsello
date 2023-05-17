@@ -12,7 +12,7 @@ defmodule Picsello.ClientOrdersTest do
   setup do
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
 
-    insert(:user,
+    user = insert(:user,
       organization: organization,
       stripe_customer_id: "photographer-stripe-customer-id"
     )
@@ -34,6 +34,8 @@ defmodule Picsello.ClientOrdersTest do
           ),
         use_global: %{watermark: true, expiration: true, digital: true, products: true}
       )
+    insert(:gallery_client, %{email: user.email, gallery_id: gallery.id})
+    insert(:gallery_client, %{email: gallery.job.client.email, gallery_id: gallery.id})
 
     gallery_digital_pricing =
       insert(:gallery_digital_pricing, %{
@@ -532,10 +534,9 @@ defmodule Picsello.ClientOrdersTest do
       end)
     end
 
-    feature "with download credit", %{session: session, photo_ids: photo_ids} do
+    feature "with download credit", %{session: session, photo_ids: photo_ids, gallery: gallery} do
       Repo.update_all(Package, set: [download_count: 2])
       Repo.update_all(Picsello.Galleries.GalleryDigitalPricing, set: [download_count: 2])
-
       session
       |> visit(current_url(session))
       |> click(link("View Gallery"))

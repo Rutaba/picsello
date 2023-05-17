@@ -51,7 +51,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
         print_credits: ~M[500000]USD,
         download_each_price: ~M[5500]USD
       })
-
+    insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
     insert(:gallery_product,
       category: category,
       preview_photo: insert(:photo, gallery: gallery),
@@ -470,7 +470,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_text("Cart & Shipping Review")
       |> assert_has(definition("Products (1)", text: "2,020.00"))
       |> assert_has(definition("Digital downloads (1)", text: "55.00"))
-      |> assert_has(definition("Print credits used", text: "$4,545.00"))
+      |> assert_has(definition("Print credits used", text: "$2,020.00"))
       |> assert_has(definition("Total", text: "$4.90"))
       |> click(link("Continue"))
       |> fill_in_shipping()

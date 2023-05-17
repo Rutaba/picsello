@@ -65,21 +65,21 @@ defmodule Picsello.Cart do
   def place_product(product, gallery_id, gallery_client, album_id) when is_integer(gallery_id),
     do: place_product(product, Galleries.get_gallery!(gallery_id), gallery_client, album_id)
 
-  def bundle_status(gallery, album_id \\ nil) do
+  def bundle_status(gallery, gallery_client, album_id \\ nil) do
     cond do
       Orders.bundle_purchased?(gallery) -> :purchased
-      contains_bundle?(gallery, album_id) -> :in_cart
+      contains_bundle?(gallery, gallery_client, album_id) -> :in_cart
       true -> :available
     end
   end
 
-  def digital_status(gallery, photo, album_id \\ nil) do
+  def digital_status(gallery, gallery_client, photo, album_id \\ nil) do
     cond do
       Orders.bundle_purchased?(gallery) -> :purchased
       digital_purchased?(gallery, photo) -> :purchased
       Galleries.do_not_charge_for_download?(gallery) -> :purchased
-      contains_bundle?(gallery, album_id) -> :in_cart
-      contains_digital?(gallery, photo, album_id) -> :in_cart
+      contains_bundle?(gallery, gallery_client, album_id) -> :in_cart
+      contains_digital?(gallery, gallery_client, photo, album_id) -> :in_cart
       true -> :available
     end
   end
@@ -145,17 +145,17 @@ defmodule Picsello.Cart do
              photo_fk == photo_id
          end)
 
-  defp contains_digital?(%{id: gallery_id}, photo, album_id) do
+  defp contains_digital?(%{id: gallery_id}, gallery_client, photo, album_id) do
     gallery_id
-    |> get_unconfirmed_order(album_id: album_id, preload: [:digitals])
+    |> get_unconfirmed_order([gallery_client_id: gallery_client.id, album_id: album_id, preload: [:digitals]])
     |> case do
       {:ok, order} -> contains_digital?(order, photo, album_id)
       _ -> false
     end
   end
 
-  defp contains_bundle?(%{id: gallery_id}, album_id) do
-    case(get_unconfirmed_order(gallery_id, album_id: album_id)) do
+  defp contains_bundle?(%{id: gallery_id}, gallery_client, album_id) do
+    case(get_unconfirmed_order(gallery_id, [gallery_client_id: gallery_client.id, album_id: album_id])) do
       {:ok, order} -> order.bundle_price != nil
       _ -> false
     end

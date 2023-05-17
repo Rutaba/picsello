@@ -8,9 +8,15 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   alias Picsello.{Orders, Galleries, Cart}
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, _session, %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket) do
     socket
     |> assign(from_checkout: false)
+    |> assign(gallery_client:
+        Galleries.get_gallery_client(
+          gallery,
+          if(client_email, do: client_email, else: assigns.current_user.email)
+        )
+    )
     |> assign_new(:album, fn -> nil end)
     |> assign_is_proofing()
     |> ok()
@@ -102,11 +108,11 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
       shipping_name: order.delivery_info.name
     )
     |> assign_checkout_routes()
-    |> assign(:cart_count, cart_count(gallery))
+    |> assign(:cart_count, cart_count(socket, gallery))
   end
 
-  defp cart_count(gallery) do
-    case Cart.get_unconfirmed_order(gallery.id, preload: [:products, :digitals]) do
+  defp cart_count(%{assigns: %{gallery_client: gallery_client}}, gallery) do
+    case Cart.get_unconfirmed_order(gallery.id, gallery_client_id: gallery_client.id, preload: [:products, :digitals]) do
       {:ok, order} ->
         Cart.item_count(order)
 

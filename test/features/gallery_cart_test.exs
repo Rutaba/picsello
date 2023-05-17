@@ -9,8 +9,9 @@ defmodule Picsello.GalleryCartTest do
 
     gallery =
       insert(:gallery,
-        job: insert(:lead, package: insert(:package, download_each_price: ~M[3500]USD))
+      job: insert(:lead, package: insert(:package, download_each_price: ~M[3500]USD))
       )
+      |> Repo.preload(job: [client: [organization: :user]])
 
     gallery_digital_pricing =
       insert(:gallery_digital_pricing, %{
@@ -18,13 +19,20 @@ defmodule Picsello.GalleryCartTest do
         download_count: 0,
         print_credits: Money.new(0)
       })
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        gallery.job.client.email in gallery_digital_pricing.email_list
+      )
+    gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
-    [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
+    [gallery: gallery, gallery_client: gallery_client, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   setup :authenticated_gallery_client
 
-  def fill_gallery_cart(gallery) do
+  def fill_gallery_cart(gallery, gallery_client) do
     whcc_product =
       insert(:product,
         whcc_name: "poster",
@@ -36,7 +44,7 @@ defmodule Picsello.GalleryCartTest do
     cart_product = build(:cart_product, whcc_product: whcc_product)
 
     cart_product
-    |> Cart.place_product(gallery)
+    |> Cart.place_product(gallery, gallery_client)
     |> preload_order_items()
   end
 
@@ -47,8 +55,9 @@ defmodule Picsello.GalleryCartTest do
     |> assert_text(gallery.name)
   end
 
-  feature "shows cart info", %{session: session, gallery: gallery} do
-    %{products: [%{price: price} = cart_product]} = order = fill_gallery_cart(gallery)
+  feature "shows cart info", %{session: session, gallery: gallery, gallery_client: gallery_client} do
+    %{products: [%{price: price} = cart_product]} =
+      order = fill_gallery_cart(gallery, gallery_client)
 
     session
     |> visit("/gallery/#{gallery.client_link_hash}/cart")
@@ -66,8 +75,8 @@ defmodule Picsello.GalleryCartTest do
     |> assert_has(testid("product-#{cart_product.editor_id}"))
   end
 
-  feature "continue", %{session: session, gallery: gallery} do
-    fill_gallery_cart(gallery)
+  feature "continue", %{session: session, gallery: gallery, gallery_client: gallery_client} do
+    fill_gallery_cart(gallery, gallery_client)
 
     Mox.stub(Picsello.MockWHCCClient, :create_order, fn _account_id, _export ->
       build(:whcc_order_created, total: ~M[0]USD)

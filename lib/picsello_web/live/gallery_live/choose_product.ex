@@ -171,14 +171,14 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> assign_details(photo_ids |> CLL.value())
   end
 
-  defp assign_details(%{assigns: %{gallery: gallery, album: album}} = socket, photo_id) do
+  defp assign_details(%{assigns: %{gallery: gallery, album: album, gallery_client: gallery_client}} = socket, photo_id) do
     %{digital: digital_credit} = credits = Cart.credit_remaining(gallery)
     photo = Galleries.get_photo(photo_id)
     proofing_album_id = get_proofing_album_id(album, photo)
 
     socket
     |> assign(
-      digital_status: Cart.digital_status(gallery, photo, proofing_album_id),
+      digital_status: Cart.digital_status(gallery, gallery_client, photo, proofing_album_id),
       digital_credit: digital_credit,
       photo: photo,
       credits: credits(credits)
