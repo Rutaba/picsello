@@ -132,7 +132,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
          %{order: %{products: [_ | _] = products, delivery_info: delivery_info}} = assigns
        ) do
     {added?, description} = shipping_description(delivery_info, products)
-    assigns = Enum.into(assigns, %{description: description, added?: added?})
+    assigns = assign(assigns, %{description: description, added?: added?})
 
     ~H"""
     <.summary_block label={"Shipping #{@description}"} value={Cart.total_shipping(@order)} />
