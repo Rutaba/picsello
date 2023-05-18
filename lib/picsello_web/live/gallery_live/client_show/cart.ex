@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
   alias Picsello.{Cart, Cart.Order, Cart.Digital, WHCC, Galleries, Repo}
-  alias Picsello.Shipment.{Detail, DasType, Zipcode}
+  alias Picsello.Shipment.{Detail, DasType}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   alias PicselloWeb.Endpoint
   alias Picsello.Cart.DeliveryInfo
