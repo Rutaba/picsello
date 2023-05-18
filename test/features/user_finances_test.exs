@@ -8,7 +8,7 @@ defmodule Picsello.UserFinancesTest do
 
   feature "user cannot edit tax info when stripe is not configured", %{session: session} do
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
     |> click(link("Finances"))
     |> assert_disabled(button("View tax settings in Stripe"))
     |> assert_text("Set up Stripe to view tax settings")
@@ -25,7 +25,7 @@ defmodule Picsello.UserFinancesTest do
     |> Repo.update!()
 
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
     |> click(link("Finances"))
     |> assert_has(
       css("a[href='https://dashboard.stripe.com/settings/tax']",

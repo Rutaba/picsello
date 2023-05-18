@@ -373,7 +373,7 @@ defmodule PicselloWeb.LayoutView do
           </nav>
         </div>
 
-        <div class="group hidden lg:flex items-center mr-4 transition-all font-bold text-blue-planning-300 hover:opacity-70">
+        <div {testid("subnav-#{@title}")} class="group hidden lg:flex items-center mr-4 transition-all font-bold text-blue-planning-300 hover:opacity-70">
           <%= @title %> <.icon name="down" class="w-3 h-3 stroke-current stroke-3 ml-2 toggle-icon transition-transform group-hover:rotate-180" />
         </div>
       </div>

@@ -68,8 +68,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
   feature "navigate", %{session: session} do
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> assert_text("Meet Packages")
   end
 
@@ -81,8 +81,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     )
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> assert_text("Deluxe Template")
   end
 
@@ -96,8 +96,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     )
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("intro-state-close-button"))
     |> find(testid("package-template-card"), &assert_text(&1, "Super Deluxe Template"))
     |> assert_text("$0.20/each")
@@ -107,8 +107,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session: session
   } do
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("intro-state-close-button"))
     |> click(button("Add package"))
     |> assert_text("Add a Package: Provide Details")
@@ -171,8 +171,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
   feature "Add a package with default contract", %{session: session} do
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("intro-state-close-button"))
     |> click(button("Add package"))
     |> assert_text("Add a Package: Provide Details")
@@ -218,8 +218,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     template = insert(:package_template, user: user, print_credits: 20)
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("edit-package-#{template.id}"))
 
     session
@@ -276,8 +276,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     insert(:contract, package_id: template.id, contract_template_id: contract_template.id)
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("edit-package-#{template.id}"))
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
     |> within_modal(
@@ -356,8 +356,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     package = Repo.all(Package) |> hd()
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("intro-state-close-button"))
     |> click(testid("menu-btn-#{package.id}"))
     |> click(button("Archive"))
@@ -426,17 +426,16 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     end
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> assert_has(button("Next"))
 
     from(pt in Package, where: pt.name in ["deluxe", "lame", "highfive"])
     |> Repo.delete_all()
 
     session
-    |> click(link("Settings"))
-    |> sleep(500)
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> refute_has(button("Next"))
   end
 end
