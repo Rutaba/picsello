@@ -122,6 +122,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     """
   end
 
+  defp summary_block(assigns) do
+    assigns = Enum.into(assigns, %{value: nil, icon: nil, class: nil, event: nil})
+
+    ~H"""
+    <dt class={"hidden toggle lg:block #{@class}"} phx-click={@event}><%= @label %></dt>
+    <dd class="self-center hidden toggle lg:block justify-self-end"><%= @value %></dd>
+    """
+  end
+
   defp zip(%{delivery_info: delivery_info}) do
     delivery_info && delivery_info |> Map.get(:address, %{}) |> Map.get(:zip)
   end
