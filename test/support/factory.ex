@@ -585,7 +585,6 @@ defmodule Picsello.Factory do
       position: sequence(:product_position, & &1),
       attribute_categories: whcc_product.attribute_categories,
       api: whcc_product.api,
-      shipping_upcharge: %{"default" => 20},
       category: fn ->
         %{category: %{id: whcc_id}} = whcc_product
         Repo.get_by(Picsello.Category, whcc_id: whcc_id) || build(:category, whcc_id: whcc_id)
