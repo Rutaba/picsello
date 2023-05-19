@@ -1,19 +1,26 @@
 defmodule PicselloWeb.NylasControllerTest do
   use PicselloWeb.ConnCase, async: true
 
-  describe "GET nylas controller" do
-    test "puts session token and redirects to gallery", %{conn: conn} do
+  setup do
+    %{user: insert(:user) |> onboard!, password: valid_user_password()}
+  end
+
+  describe "Nylas OAuth code" do
+    test "puts session token and redirects to gallery", %{conn: conn, user: user} do
       conn =
-        get(conn, "/nylas/callback", %{
+        conn
+        |> log_in_user(user)
+        |> get("/nylas/callback", %{
           "code" => "HfHP3lDgBQIQRWRQLWBZLOiOwOQ5ls"
         })
 
-      response = html_response(conn, 200)
+      response = text_response(conn, 200)
 
-      # assert get_session(conn, :gallery_session_token)
+      assert response =~ "OK"
+    end
 
-      # assert response =~
-      #          "<html><body>You are being <a href=\"/gallery/#{gallery.client_link_hash}\">redirected</a>.</body></html>"
+    test "Add Nylas code to user object", %{conn: _conn, user: _user} do
+      throw(:NYI)
     end
   end
 end

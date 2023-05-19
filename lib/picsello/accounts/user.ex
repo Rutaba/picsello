@@ -19,6 +19,7 @@ defmodule Picsello.Accounts.User do
     field :time_zone, :string
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
     field :stripe_customer_id, :string
+    field :nylas_oauth_token, :string
     embeds_one(:onboarding, Onboarding, on_replace: :update)
     has_one(:subscription, Subscription)
     has_one(:subscription_event, SubscriptionEvent)
@@ -50,7 +51,8 @@ defmodule Picsello.Accounts.User do
       :email,
       :name,
       :password,
-      :time_zone
+      :time_zone,
+      :nylas_oauth_token
     ])
     |> validate_required([:name])
     |> validate_email()
@@ -289,6 +291,7 @@ defmodule Picsello.Accounts.User do
           confirmed_at: DateTime.t(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t(),
-          onboarding: Picsello.Onboardings.Onboarding.t()
+          onboarding: Picsello.Onboardings.Onboarding.t(),
+          nylas_oauth_token: String.t()
         }
 end
