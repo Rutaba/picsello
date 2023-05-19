@@ -78,6 +78,7 @@
                                   <div> <%= Map.merge(line_item, line_item |> shipping_details(%{shipment_details: @shipment_details, das_type: @das_type, shipping_type: shipping_type})) |> add_total_markuped_sum(whcc_id in @shipping_to_all && [] || product_lines) |> shipping_price() %></div>
                                 </div>
                                 <div> Base: <%= abc(line_item, @shipment_details, @das_type, shipping_type).shipping_base_charge%>,Up: <%= abc(line_item, @shipment_details, @das_type, shipping_type).shipping_upcharge%></div>
+                                <div> Total Markuped price: <%= whcc_id in @shipping_to_all && line_item.total_markuped_price || Enum.reduce(product_lines, ~M[0], &Money.add(&2, &1.total_markuped_price)) %></div>
                               <% end %>
                             </.form>
                           </div>
