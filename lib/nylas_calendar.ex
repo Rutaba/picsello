@@ -6,7 +6,32 @@ defmodule NylasCalendar do
   @base_url "https://api.nylas.com"
   @calendar_endpoint "/calendars"
   @event_endpoint "/events"
+  @base_url "https://api.nylas.com"
+  @auth_endpoint "/oauth/authorize"
   @type result(x) :: {:ok, x} | {:error, String.t()}
+  @spec generate_login_link(any, any) :: {:ok, <<_::64, _::_*8>>}
+  @doc """
+  Generates a login link for the Nylas API.
+  """
+  def generate_login_link(client_id, redirect_uri) do
+    params =
+      URI.encode_query(%{
+        client_id: client_id,
+        response_type: "code",
+        redirect_uri: redirect_uri,
+        scopes: "calendar"
+      })
+
+    url = "#{@base_url}#{@auth_endpoint}?#{params}"
+
+    {:ok, url}
+  end
+
+  def generate_login_link() do
+    %{client_id: client_id, redirect_uri: redirect} = Application.get_env(:picsello, :nylas)
+    generate_login_link(client_id, redirect)
+  end
+
   @spec get_calendars :: result([map()])
   @doc """
   Retrieves a list of calendars associated with the authenticated account.
@@ -61,7 +86,6 @@ defmodule NylasCalendar do
         {:ok, Jason.decode!(response.body)}
 
       code ->
-        IO.inspect(response)
         {:error, "Failed to add event. Status code: #{code}"}
     end
   end

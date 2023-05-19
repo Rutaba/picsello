@@ -1,4 +1,7 @@
 defmodule LogFormatter do
+  @moduledoc """
+  An Elixir module for nicely formatted text logs
+  """
   @red "\e[0;31m"
   @dark_red "\e[1;31m"
   @black "\e[0;30m"

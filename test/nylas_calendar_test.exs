@@ -10,6 +10,31 @@ defmodule NylasCalendarTest do
 
   @calendar_id "qulli2ad0f0ikawkdnl534oz"
   describe "Basic Calendar tests" do
+    test "Login Link/2" do
+      %{client_id: client_id, redirect_uri: redirect} = Application.get_env(:picsello, :nylas)
+
+      query =
+        URI.encode_query(%{
+          client_id: client_id,
+          response_type: "code",
+          scopes: "calendar",
+          redirect_uri: redirect
+        })
+
+      link = "https://api.nylas.com/oauth/authorize?#{query}"
+
+      # System.cmd("open", [link])
+      assert {:ok, ^link} = NylasCalendar.generate_login_link(client_id, redirect)
+    end
+
+    test "Login Link/0 test defaults" do
+      %{client_id: client_id, redirect_uri: redirect} = Application.get_env(:picsello, :nylas)
+
+      assert {:ok, link} = NylasCalendar.generate_login_link(client_id, redirect)
+
+      assert {:ok, ^link} = NylasCalendar.generate_login_link()
+    end
+
     test "Get Calendars" do
       ExVCR.Config.filter_request_headers("Authorization")
 

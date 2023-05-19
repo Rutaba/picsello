@@ -87,7 +87,7 @@ config :logger, :debug_log,
   format: format,
   metadata: [:pid, :mfa, :file, :line],
   path: "/Users/zkessin/logs/picsello_error.log",
-  level: :warn
+  level: :debug
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
