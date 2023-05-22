@@ -138,13 +138,6 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         </div>
       <% end %>
 
-
-        <div class="flex flex-col col-span-2 sm:col-span-1">
-          <p> $<%= @print_credit.amount / 100 |> Float.round(2)%> in print credits to use in your gallery</p>
-        </div>
-      <% end %>
-
-
       <hr class="hidden col-span-2 sm:block">
 
       <div class="hidden col-start-2 sm:block">
