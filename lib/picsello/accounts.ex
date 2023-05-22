@@ -358,6 +358,11 @@ defmodule Picsello.Accounts do
     end
   end
 
+  @spec set_user_nylas_code(Picsello.Accounts.User.t(), String.t()) :: User.t()
+  def set_user_nylas_code(%User{} = user, code) do
+    User.set_user_nylas_code(user, code)
+  end
+
   @doc """
   Resets the user password.
 

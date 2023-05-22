@@ -64,6 +64,23 @@ defmodule Picsello.Accounts.User do
     end)
   end
 
+  def enabled?(%{allow_cash_payment: allow_cash_payment}), do: allow_cash_payment
+
+  def enabled?(_), do: false
+
+  def toggle(%__MODULE__{} = current_user) do
+    current_user
+    |> Ecto.Changeset.change(%{allow_cash_payment: !enabled?(current_user)})
+    |> Repo.update!()
+  end
+
+  @spec set_user_nylas_code(Picsello.Accounts.User.t(), String.t()) :: User.t()
+  def set_user_nylas_code(%__MODULE__{} = current_user, nylas_code) do
+    current_user
+    |> Ecto.Changeset.change(%{nylas_oauth_token: nylas_code})
+    |> Repo.update!()
+  end
+
   def is_test_account_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
     user |> cast(attrs, [:is_test_account])
   end
