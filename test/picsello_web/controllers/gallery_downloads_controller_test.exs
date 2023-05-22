@@ -78,7 +78,9 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      %{gallery: gallery} = insert_gallery(organization_name: "org name") |> insert_gallery_digital_pricing(Money.new(20))
+      %{gallery: gallery} =
+        insert_gallery(organization_name: "org name")
+        |> insert_gallery_digital_pricing(Money.new(20))
 
       insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
 
@@ -101,7 +103,9 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      %{gallery: gallery} = insert_gallery(organization_name: "org name", charge_for_downloads: false) |> insert_gallery_digital_pricing(Money.new(0))
+      %{gallery: gallery} =
+        insert_gallery(organization_name: "org name", charge_for_downloads: false)
+        |> insert_gallery_digital_pricing(Money.new(0))
 
       [first_photo | _] =
         insert_list(3, :photo,
@@ -119,7 +123,9 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
     end
 
     test "photo is in gallery's placed order", %{conn: conn, original_url: original_url} do
-      %{gallery: gallery} = insert_gallery(organization_name: "org name") |> insert_gallery_digital_pricing(Money.new(0))
+      %{gallery: gallery} =
+        insert_gallery(organization_name: "org name")
+        |> insert_gallery_digital_pricing(Money.new(0))
 
       photo =
         insert(:photo,
