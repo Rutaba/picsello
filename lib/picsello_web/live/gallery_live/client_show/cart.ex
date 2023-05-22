@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
-  alias Picsello.{Cart, Cart.Order, WHCC, Galleries}
+  alias Picsello.{Cart, Cart.Order, Cart.Digital, WHCC, Galleries, Repo}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   alias PicselloWeb.Endpoint
   import PicselloWeb.GalleryLive.Shared
@@ -143,6 +143,17 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         |> maybe_redirect()
 
       {:loaded, order} ->
+        digital_items = Enum.map(order.digitals, fn digital -> Map.drop(digital, [:photo]) end)
+
+        digital_items
+        |> Enum.reduce(Ecto.Multi.new(), fn %{id: id} = digital, multi ->
+          Digital
+          |> Repo.get(id)
+          |> Ecto.Changeset.change(is_credit: digital.is_credit)
+          |> then(&Ecto.Multi.update(multi, id, &1))
+        end)
+        |> Repo.transaction()
+
         send_update(ClientMenuComponent, id: client_menu_id, cart_count: count - 1)
 
         assign(socket, :order, order)
@@ -255,10 +266,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
     <div class="py-5 lg:pt-8 lg:pb-10">
       <div class=" text-xl font-extrabold lg:text-3xl"><%= @title %></div>
-      <div class="mt-2 text-lg">
-        Choose how you want your items shipped; certain types of items will ship separately.
-        Shipping estimates don’t include printing/production turnaround times.
-      </div>
+      <%= if @title != "Review Selections" do%>
+        <div class="mt-2 text-lg">
+          Choose how you want your items shipped; certain types of items will ship separately.
+          Shipping estimates don’t include printing/production turnaround times.
+        </div>
+      <% end %>
     </div>
     """
   end
@@ -271,7 +284,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     {
       checkout_routes.home_page,
       "Back to album",
-      (album.is_finals && "Cart & Shipping Review") || "Review Selections & Shipping"
+      (album.is_finals && "Cart & Shipping Review") || "Review Selections"
     }
   end
 

@@ -134,6 +134,12 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         </div>
 
         <div class="flex flex-col col-span-2 sm:col-span-1">
+          <p> $<%= get_amount(@print_credit) %> in print credits to use in your gallery</p>
+        </div>
+      <% end %>
+
+
+        <div class="flex flex-col col-span-2 sm:col-span-1">
           <p> $<%= @print_credit.amount / 100 |> Float.round(2)%> in print credits to use in your gallery</p>
         </div>
       <% end %>
@@ -147,6 +153,21 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       </div>
     </div>
     """
+  end
+
+  def get_amount(nil), do: nil
+
+  def get_amount(print_credit) do
+    num = print_credit.amount
+    decimal_places = 2
+    integer_length = (num / 100.0) |> round() |> to_string() |> String.length()
+    total_length = integer_length + decimal_places + 1
+
+    (num / 100.0)
+    |> Float.round(decimal_places)
+    |> Float.to_string()
+    |> String.replace(",", "")
+    |> String.pad_trailing(total_length, "0")
   end
 
   def get_print_credit(%{print_credits: print_credit}) do
