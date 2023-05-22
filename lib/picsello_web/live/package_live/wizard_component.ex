@@ -308,7 +308,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <.footer class="pt-10">
           <.step_buttons name={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
-
+          
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
             Cancel
           </button>
@@ -642,42 +642,42 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           <div class="grid w-full md:w-1/3 h-fit">
             <.show_discounts>
               <span class="flex w-2/3 mt-4 font-bold">Creative Session Fee</span>
-              <span class="flex w-1/3 mt-4">+<%= Map.get(changeset, :base_price) %></span>
+              <span class="flex w-1/3 mt-4 justify-end mr-5">+<%= Map.get(changeset, :base_price) %></span>
             </.show_discounts>
             <%= if Map.get(multiplier, :discount_base_price) do %>
               <.show_discounts>
               <span class="flex w-2/3 text-base-250"><%= get_discount_text(multiplier) %></span>
-              <span class="flex w-1/3 text-base-250"><%= base_adjustment(@f) %></span>
+              <span class="flex w-1/3 text-base-250 justify-end mr-5"><%= base_adjustment(@f) %></span>
               </.show_discounts>
             <% end %>
             <%= if Map.get(changeset, :print_credits_include_in_total) do %>
               <.show_discounts>
                 <span class="flex w-2/3 mt-2 font-bold">Professional Print Credit</span>
-                <span class="flex w-1/3 mt-2">+<%= Map.get(changeset, :print_credits) %></span>
+                <span class="flex w-1/3 mt-2 justify-end mr-5">+<%= Map.get(changeset, :print_credits) %></span>
               </.show_discounts>
             <% end %>
             <%= if Map.get(multiplier, :discount_print_credits) do %>
               <.show_discounts>
                 <span class="flex w-2/3 text-base-250"><%= get_discount_text(multiplier) %></span>
-                <span class="flex w-1/3 text-base-250"><%= print_cridets_adjustment(@f) %></span>
+                <span class="flex w-1/3 text-base-250 justify-end mr-5"><%= print_cridets_adjustment(@f) %></span>
               </.show_discounts>
             <% end %>
             <%= if Map.get(changeset, :digitals_include_in_total) do %>
             <.show_discounts>
                 <span class="flex w-2/3 mt-2 font-bold">Digital Collection</span>
-                <span class="flex w-1/3 mt-2">+<%= digitals_total(@download_changeset) %></span>
+                <span class="flex w-1/3 mt-2 justify-end mr-5">+<%= digitals_total(@download_changeset) %></span>
               </.show_discounts>
             <% end %>
             <%= if Map.get(multiplier, :discount_digitals) do %>
               <.show_discounts>
                 <span class="flex w-2/3 text-base-250"><%= get_discount_text(multiplier) %></span>
-                <span class="flex w-1/3 text-base-250"><%= digitals_adjustment(@f) %></span>
+                <span class="flex w-1/3 text-base-250 justify-end mr-5"><%= digitals_adjustment(@f) %></span>
               </.show_discounts>
             <% end %>
             <.show_discounts>
               <div class="flex flex-row gap-4 p-2 mt-4 w-full bg-base-200 rounded-lg mb-2 mt-4 text-xl font-bold justify-self-start whitespace-nowrap">
                 <span class="flex w-2/3 font-bold">Package Total</span>
-                <span class="flex w-1/3 font-bold mr-2"><%= total_price(@f) %></span>
+                <span class="flex w-1/3 font-bold justify-end mr-3"><%= total_price(@f) %></span>
               </div>
             </.show_discounts>
           </div>

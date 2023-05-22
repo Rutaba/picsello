@@ -21,11 +21,12 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   @impl true
   def mount(
-        _params,
+        params,
         _session,
         socket
       ) do
     socket
+    |> is_mobile(params)
     |> assign_new(:pagination, fn -> %Pagination{} end)
     |> update_gallery_listing()
     |> ok()
