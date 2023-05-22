@@ -1,12 +1,20 @@
 defmodule Picsello.ClientIndexTest do
   use Picsello.FeatureCase, async: true
+  import Money.Sigils
 
   setup do
     Picsello.PhotoStorageMock
     |> Mox.stub(:get, fn _ -> {:ok, %{name: "example.png"}} end)
     |> Mox.stub(:path_to_url, & &1)
 
-    :ok
+    gallery =
+      insert(:gallery,
+        job: insert(:lead, package: insert(:package, download_each_price: ~M[3500]USD))
+      )
+
+    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0})
+
+    [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   setup :authenticated_gallery_client

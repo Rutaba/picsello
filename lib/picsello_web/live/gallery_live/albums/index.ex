@@ -114,7 +114,11 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
         } = socket
       ) do
     socket
-    |> open_modal(AlbumSettings, %{gallery_id: gallery_id, is_mobile: is_mobile})
+    |> open_modal(AlbumSettings, %{
+      gallery_id: gallery_id,
+      is_mobile: is_mobile,
+      is_redirect: true
+    })
     |> noreply()
   end
 

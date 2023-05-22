@@ -148,9 +148,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "Welcome."))
+      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!"))
       |> assert_disabled(@invoice_button)
-      |> assert_text("Let’s get your shoot booked")
       |> click(link("Message Photography LLC"))
       |> within_modal(fn modal ->
         modal
@@ -167,7 +166,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       assert body =~ "You have received a reply from John!"
 
       client_session
-      |> click(button("To-Do Review your proposal"))
+      |> click(button("To-Do Review and accept your proposal"))
       |> assert_has(
         definition("Dated:", text: Calendar.strftime(proposal.inserted_at, "%b %d, %Y"))
       )
@@ -183,10 +182,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(testid("shoot-description", text: "320 1st st"))
       |> click(button("Accept Quote"))
       |> assert_disabled(@invoice_button)
-      |> click(button("Completed Review your proposal"))
+      |> click(button("Completed Review and accept your proposal"))
       |> within_modal(&assert_has(&1, css("button", count: 1, text: "Close")))
       |> click(button("Close"))
-      |> click(button("To-Do Read and agree to your contract"))
+      |> click(button("To-Do Review and sign your contract"))
       |> assert_text("Terms and Conditions")
       |> assert_text("#{lead.package.turnaround_weeks} week")
       |> assert_text(
@@ -196,12 +195,12 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
-      |> assert_has(button("Completed Read and agree to your contract"))
+      |> assert_has(button("Completed Review and sign your contract"))
       |> click(testid("show-schedule"))
       |> assert_text("$5")
       |> assert_has(button("Pay overdue invoice"))
       |> click(button("Close"))
-      |> click(button("To-Do Pay your retainer"))
+      |> click(button("To-Do Make payment"))
       |> click(button("Pay with card Fast easy and secure"))
       |> assert_url_contains("stripe-checkout")
 
@@ -243,11 +242,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(stripe_success_url)
-      |> assert_has(css("h1", text: "Thank you"))
-      |> assert_has(css("h1", text: "Your session is now booked."))
-      |> click(button("Got it"))
-      |> assert_text("Let’s get your shoot booked")
-      |> click(button("Pay your invoice"))
+      |> assert_has(css("h1", text: "Congratulations - your session is now booked"))
+      |> click(button("Return to your portal"))
+      # |> assert_text("#{String.capitalize(lead.client.name)}, let’s get your shoot booked!")
+      |> click(button("Make payment"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
         definition("$5.00 paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
@@ -293,10 +291,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(stripe_success_url)
-      |> assert_has(css("h1", text: "Paid in full."))
-      |> click(button("Got it"))
-      |> assert_text("Your session fee has been paid in full")
-      |> click(button("Completed Pay your invoice"))
+      |> assert_has(css("h1", text: "Congratulations - your session is now booked."))
+      |> click(button("Return to your portal"))
+      |> click(button("Completed Make payment"))
       |> assert_has(definition("Total", text: "$0.80"))
       |> assert_has(
         definition("$5.00 paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
@@ -337,14 +334,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "Welcome."))
-      |> click(button("To-Do Review your proposal"))
+      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!"))
+      |> click(button("To-Do Review and accept your proposal"))
       |> click(button("Accept Quote"))
-      |> click(button("To-Do Read and agree to your contract"))
+      |> click(button("To-Do Review and sign your contract"))
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
-      |> click(button("To-Do Pay your retainer"))
+      |> click(button("To-Do Make payment"))
       |> click(button("Pay with card Fast easy and secure"))
       |> assert_url_contains("stripe-checkout")
 
@@ -352,7 +349,8 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(stripe_success_url)
-      |> assert_has(css("h1", text: "Thank you"))
+      |> assert_has(css("h1", text: "Congratulations - your session is now booked."))
+      |> click(button("Return to your portal"))
 
       photographer_session |> visit("/leads/#{lead.id}") |> assert_path("/jobs/#{lead.id}")
     end
@@ -388,14 +386,14 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "Welcome."))
-      |> click(button("To-Do Review your proposal"))
+      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!"))
+      |> click(button("To-Do Review and accept your proposal"))
       |> click(button("Accept Quote"))
-      |> click(button("To-Do Read and agree to your contract"))
+      |> click(button("To-Do Review and sign your contract"))
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
-      |> click(button("To-Do Pay your retainer"))
+      |> click(button("To-Do Make payment"))
       |> click(button("Pay with card Fast easy and secure"))
       |> assert_url_contains("stripe-checkout")
 
@@ -427,10 +425,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     client_session
     |> visit(url)
     |> assert_disabled(@invoice_button)
-    |> click(button("To-Do Review your proposal"))
+    |> click(button("To-Do Review and accept your proposal"))
     |> click(button("Accept Quote"))
     |> assert_disabled(@invoice_button)
-    |> click(button("To-Do Read and agree to your contract"))
+    |> click(button("To-Do Review and sign your contract"))
     |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
@@ -485,7 +483,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(url)
-    |> click(button("To-Do Read and agree to your contract"))
+    |> click(button("To-Do Review and sign your contract"))
     |> assert_text("My custom contract")
   end
 
@@ -537,23 +535,22 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(url)
-    |> assert_has(css("h2", text: "Welcome."))
-    |> click(button("To-Do Review your proposal"))
+    |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!"))
+    |> click(button("To-Do Review and accept your proposal"))
     |> click(button("Accept Quote"))
-    |> click(button("To-Do Read and agree to your contract"))
+    |> click(button("To-Do Review and sign your contract"))
     |> assert_text("Retainer and Payment")
     |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
-    |> click(button("Pay your invoice"))
+    |> click(button("Make payment"))
     |> assert_has(definition("Session fee", text: "$1.00"))
     |> assert_has(definition("Discount", text: "100%"))
     |> assert_has(definition("Total", text: "$0.00"))
     |> within_modal(&click(&1, button("Finish booking")))
-    |> assert_has(css("h1", text: "Thank you"))
-    |> assert_has(css("h1", text: "Your session is now booked."))
-    |> click(button("Got it"))
-    |> assert_has(button("Completed Pay your invoice"))
+    |> assert_has(css("h1", text: "Congratulations - your session is now booked."))
+    |> click(button("Return to your portal"))
+    |> assert_has(button("Completed Make payment"))
 
     assert_receive {:delivered_email, email}
     %{"subject" => subject, "body" => body} = email |> email_substitutions

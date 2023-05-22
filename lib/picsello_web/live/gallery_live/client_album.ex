@@ -134,7 +134,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
         {:add_digital_to_cart, digital, finals_album_id},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    order = Cart.place_product(digital, gallery.id, finals_album_id)
+    order = Cart.place_product(digital, gallery, finals_album_id)
     socket |> add_to_cart_assigns(order)
   end
 
@@ -142,7 +142,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
         {:add_bundle_to_cart, bundle_price},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    order = Cart.place_product({:bundle, bundle_price}, gallery.id)
+    order = Cart.place_product({:bundle, bundle_price}, gallery)
     socket |> add_to_cart_assigns(order)
   end
 

@@ -116,7 +116,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       order =
         insert(:order,
           gallery: gallery,
-          delivery_info: %{email: "client@example.com"}
+          delivery_info: %{name: "abc", email: "client@example.com"}
         )
 
       insert(:intent, order: order, stripe_payment_intent_id: intent().id)
@@ -234,13 +234,13 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
                             dynamic_template_data: email_variables
                           }
                         },
-                        to: [{nil, "client@example.com"}]
+                        to: [{"abc", "client@example.com"}]
                       }}
 
       order_number = Order.number(order)
 
       assert %{
-               "client_name" => nil,
+               "client_name" => "abc",
                "gallery_url" => gallery_url,
                "logo_url" => nil,
                "order_address" => nil,
@@ -327,7 +327,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       order =
         insert(:order,
-          delivery_info: %{email: "client@example.com"},
+          delivery_info: %{name: "abc", email: "client@example.com"},
           whcc_order: build(:whcc_order_created),
           placed_at: DateTime.utc_now()
         )

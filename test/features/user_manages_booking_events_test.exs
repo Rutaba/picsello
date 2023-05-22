@@ -283,6 +283,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> click(css("#booking-event-0-end-time-0"))
     |> fill_in(css(".numInput.flatpickr-hour"), with: "1")
     |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
+    |> scroll_to_bottom()
     |> click(button("Add another date"))
     |> assert_has(testid("event-date", count: 2))
     |> scroll_into_view(testid("add-date"))

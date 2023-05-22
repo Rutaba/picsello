@@ -5,10 +5,12 @@ defmodule Picsello.ClientCancelsOrderTest do
   setup do
     gallery =
       insert(:gallery,
-        job: insert(:lead, package: insert(:package, download_each_price: ~M[2500]USD))
+        job: insert(:lead, package: insert(:package, download_each_price: ~M[3500]USD))
       )
 
-    photo_ids = insert_photo(%{gallery: gallery, total_photos: 2})
+    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0})
+
+    photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
     test_pid = self()
@@ -29,7 +31,7 @@ defmodule Picsello.ClientCancelsOrderTest do
       {:ok, build(:stripe_payment_intent, status: "canceled")}
     end)
 
-    [gallery: gallery, photo_ids: photo_ids]
+    [gallery: gallery, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   setup :authenticated_gallery_client
@@ -59,7 +61,8 @@ defmodule Picsello.ClientCancelsOrderTest do
 
     session
     |> visit(cancel_url)
-    |> find(css("*[data-testid^='digital-']", count: 2, at: 0), &click(&1, button("Delete")))
+    |> assert_has(css("*[data-testid^='digital-']", count: 2))
+    |> click(button("Delete", count: 2, at: 0))
     |> click(link("Continue"))
     |> wait_for_enabled_submit_button()
     |> click(button("Check out with Stripe"))

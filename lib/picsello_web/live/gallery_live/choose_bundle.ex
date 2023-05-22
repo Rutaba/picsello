@@ -2,14 +2,15 @@ defmodule PicselloWeb.GalleryLive.ChooseBundle do
   @moduledoc "product info modal for digital bundle"
   use PicselloWeb, :live_component
   import PicselloWeb.GalleryLive.Shared, only: [bundle_image: 1, cover_photo_url: 1]
-  alias Picsello.{Cart, Galleries}
+  alias Picsello.Cart
 
   def update(%{gallery: gallery} = assigns, socket) do
+    gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
     socket
     |> assign(assigns)
     |> assign(
       bundle_status: Cart.bundle_status(gallery),
-      download_all_price: Galleries.get_package(gallery).buy_all,
+      download_all_price: gallery.gallery_digital_pricing.buy_all,
       gallery: gallery
     )
     |> ok()

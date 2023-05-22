@@ -25,7 +25,7 @@ defmodule Picsello.PhotographerViewOrdersTest do
     |> assert_has(css("h1", text: "Set Up Your Gallery"))
     |> click(button("Get Started", count: 2, at: 0))
     |> visit("/jobs/#{job.id}/")
-    |> find(testid("card-buttons"), &assert_has(&1, css(".pointer-events-none")))
+    |> find(testid("card-buttons"))
   end
 
   setup :authenticated_gallery
@@ -61,6 +61,8 @@ defmodule Picsello.PhotographerViewOrdersTest do
 
     session
     |> visit("/jobs/#{job.id}/")
-    |> assert_has(link("View Orders"))
+    |> find(testid("card-buttons"))
+    |> click(button("Actions"))
+    |> assert_has(button("View orders"))
   end
 end

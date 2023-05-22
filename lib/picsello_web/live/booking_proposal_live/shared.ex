@@ -49,8 +49,8 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     """
   end
 
-  def items(assigns) do
-    assigns = Enum.into(assigns, %{inner_block: nil})
+  def items(%{package: package} = assigns) do
+    assigns = Enum.into(assigns, %{inner_block: nil, print_credit: get_print_credit(package)})
 
     ~H"""
     <div class="mt-4 grid grid-cols-3 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
@@ -125,7 +125,19 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
           <% _ -> %>
             <p> All photos downloadable </p>
           <% end %>
+      </div>
+
+      <%= if @print_credit do %>
+        <hr class="col-span-2">
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <h3 class="font-bold">Print Credits</h3>
         </div>
+
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <p> $<%= get_amount(@print_credit) %> in print credits to use in your gallery</p>
+        </div>
+      <% end %>
+
 
       <hr class="hidden col-span-2 sm:block">
 
@@ -135,6 +147,29 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       </div>
     </div>
     """
+  end
+
+  def get_amount(nil), do: nil
+
+  def get_amount(print_credit) do
+    num = print_credit.amount
+    decimal_places = 2
+    integer_length = (num / 100.0) |> round() |> to_string() |> String.length()
+    total_length = integer_length + decimal_places + 1
+
+    (num / 100.0)
+    |> Float.round(decimal_places)
+    |> Float.to_string()
+    |> String.replace(",", "")
+    |> String.pad_trailing(total_length, "0")
+  end
+
+  def get_print_credit(%{print_credits: %Money{amount: 0, currency: _usd} = _print_credit}) do
+    nil
+  end
+
+  def get_print_credit(%{print_credits: %Money{amount: _amount, currency: _usd} = print_credit}) do
+    print_credit
   end
 
   def package_description_length_long?(nil), do: false
