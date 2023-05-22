@@ -188,7 +188,8 @@ defmodule PicselloWeb.JobLive.Show do
   @impl true
   def handle_info(
         {:gallery_type, opts},
-        %{assigns: %{job: job, current_user: %{organization_id: organization_id} = current_user}} = socket
+        %{assigns: %{job: job, current_user: %{organization_id: organization_id} = current_user}} =
+          socket
       ) do
     {type, parent_id} = split(opts)
 

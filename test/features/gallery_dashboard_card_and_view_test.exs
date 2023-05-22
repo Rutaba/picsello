@@ -47,7 +47,9 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     session: session,
     gallery: gallery
   } do
-    gallery_client = insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+    gallery_client =
+      insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
     insert(:order, gallery_client: gallery_client, gallery: gallery, placed_at: DateTime.utc_now())
 
     visit_homepage(session)

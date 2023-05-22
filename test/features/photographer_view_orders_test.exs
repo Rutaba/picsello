@@ -31,7 +31,8 @@ defmodule Picsello.PhotographerViewOrdersTest do
   setup :authenticated_gallery
 
   feature "photograper view order", %{session: session, gallery: %{job: job} = gallery} do
-    gallery_client = insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+    gallery_client =
+      insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
 
     insert(:order,
       gallery: gallery,

@@ -159,7 +159,10 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   def handle_event("buy-all-digitals", _, socket) do
     socket
-    |> open_modal(PicselloWeb.GalleryLive.ChooseBundle, Map.take(socket.assigns, [:gallery, :gallery_client]))
+    |> open_modal(
+      PicselloWeb.GalleryLive.ChooseBundle,
+      Map.take(socket.assigns, [:gallery, :gallery_client])
+    )
     |> noreply()
   end
 

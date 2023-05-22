@@ -302,7 +302,8 @@ defmodule Picsello.EmailPresetsTest do
 
       gallery = insert(:gallery, %{name: "Test Client Wedding", job: job})
 
-      gallery_client = insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+      gallery_client =
+        insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
 
       order =
         insert(:order,

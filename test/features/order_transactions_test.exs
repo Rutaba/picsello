@@ -8,7 +8,8 @@ defmodule Picsello.OrderTransactionsTest do
   setup :authenticated_gallery
 
   setup %{user: user, gallery: gallery} do
-    gallery_client = insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+    gallery_client =
+      insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
 
     order =
       insert(:order,

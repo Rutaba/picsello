@@ -17,7 +17,9 @@ defmodule Picsello.CartTest do
   end
 
   defp insert_gallery(%{package: package}) do
-    gallery = insert(:gallery, job: insert(:lead, package: package)) |> Map.put(:credits_available, true)
+    gallery =
+      insert(:gallery, job: insert(:lead, package: package)) |> Map.put(:credits_available, true)
+
     gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
     [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
   end
@@ -25,7 +27,9 @@ defmodule Picsello.CartTest do
   defp insert_gallery(ctx), do: ctx |> Map.put(:package, build(:package)) |> insert_gallery()
 
   defp insert_order(%{gallery: gallery}) do
-    gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+    gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
     [order: insert(:order, gallery: gallery, gallery_client: gallery_client)]
   end
 
@@ -66,7 +70,10 @@ defmodule Picsello.CartTest do
 
     test "expires previous stripe session", %{gallery: gallery} do
       product = build(:cart_product)
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       order =
         product
         |> Cart.place_product(gallery, gallery_client)
@@ -91,7 +98,9 @@ defmodule Picsello.CartTest do
     setup :insert_gallery
 
     test "second product also uses print credits", %{gallery: gallery} do
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       for product <- build_list(2, :cart_product) do
         Cart.place_product(product, gallery, gallery_client)
       end
@@ -103,7 +112,9 @@ defmodule Picsello.CartTest do
     end
 
     test "updated product reclaims credits", %{gallery: gallery} do
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       for quantity <- [1, 2] do
         build(:cart_product, quantity: quantity, editor_id: "editor-id")
         |> Cart.place_product(gallery, gallery_client)
@@ -130,14 +141,20 @@ defmodule Picsello.CartTest do
 
     setup :insert_gallery
 
-    test "creates an order and adds the digital", %{gallery: %{id: gallery_id} = gallery, digital: digital} do
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+    test "creates an order and adds the digital", %{
+      gallery: %{id: gallery_id} = gallery,
+      digital: digital
+    } do
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       assert %Order{
                digitals: [cart_digital],
                gallery_id: ^gallery_id
              } =
                order =
-               Cart.place_product(digital, gallery, gallery_client) |> Repo.preload(products: :whcc_product)
+               Cart.place_product(digital, gallery, gallery_client)
+               |> Repo.preload(products: :whcc_product)
 
       assert Order.total_cost(order) == ~M[0]USD
       assert Map.take(cart_digital, [:photo_id, :price]) == Map.take(digital, [:photo_id, :price])
@@ -147,7 +164,9 @@ defmodule Picsello.CartTest do
       gallery: %{id: gallery_id} = gallery,
       digital: digital
     } do
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       %{id: order_id} = insert(:order, gallery: gallery, gallery_client: gallery_client)
 
       assert %Order{
@@ -167,7 +186,10 @@ defmodule Picsello.CartTest do
          } do
       digital_2_photo_id = insert(:photo).id
       digital_2 = %{digital | photo_id: digital_2_photo_id}
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       Cart.place_product(digital, gallery, gallery_client)
 
       assert %Order{
@@ -183,7 +205,9 @@ defmodule Picsello.CartTest do
            gallery: %{id: gallery_id} = gallery,
            digital: digital
          } do
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery_id})
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery_id})
+
       order = Cart.place_product(digital, gallery, gallery_client)
 
       assert ~M[0]USD == order |> Repo.preload(:products) |> Order.total_cost()
@@ -210,7 +234,9 @@ defmodule Picsello.CartTest do
     test "with an editor id and multiple products and print credits reassigns print credits", %{
       gallery: gallery
     } do
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       assert %{print: ~M[10]USD} = Cart.credit_remaining(gallery)
       whcc_product = insert(:product)
 
@@ -243,7 +269,10 @@ defmodule Picsello.CartTest do
 
     setup [:insert_gallery, :insert_order]
 
-    test "with a previous checkout attempt expires previous session", %{order: order, gallery: gallery} do
+    test "with a previous checkout attempt expires previous session", %{
+      order: order,
+      gallery: gallery
+    } do
       order
       |> Repo.preload(:products)
       |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
@@ -260,7 +289,10 @@ defmodule Picsello.CartTest do
       Cart.delete_product(order, gallery, editor_id: "abc")
     end
 
-    test "with an editor id and multiple products removes the product", %{order: order, gallery: gallery} do
+    test "with an editor id and multiple products removes the product", %{
+      order: order,
+      gallery: gallery
+    } do
       order
       |> Repo.preload(:products)
       |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
@@ -277,7 +309,10 @@ defmodule Picsello.CartTest do
       assert Order.total_cost(order) == ~M[1190]USD
     end
 
-    test "with an editor id and some digitals removes the product", %{order: order, gallery: gallery} do
+    test "with an editor id and some digitals removes the product", %{
+      order: order,
+      gallery: gallery
+    } do
       digital = %Digital{
         photo_id: insert(:photo).id,
         price: ~M[100]USD
@@ -313,7 +348,10 @@ defmodule Picsello.CartTest do
       refute Repo.get(Order, order_id)
     end
 
-    test "with a digital id and multiple digitals removes the digital", %{order: order, gallery: gallery} do
+    test "with a digital id and multiple digitals removes the digital", %{
+      order: order,
+      gallery: gallery
+    } do
       %{id: delete_digital_id} = insert(:digital, order: order, price: ~M[200]USD)
       %{id: remaining_digital_id} = insert(:digital, order: order, price: ~M[100]USD)
 
@@ -392,7 +430,9 @@ defmodule Picsello.CartTest do
         |> Repo.update!()
         |> Repo.preload(:products)
 
-      assert {:deleted, %{id: order_id}} = Cart.delete_product(order, gallery, digital_id: digital_id)
+      assert {:deleted, %{id: order_id}} =
+               Cart.delete_product(order, gallery, digital_id: digital_id)
+
       refute Repo.get(Order, order_id)
     end
   end
@@ -401,17 +441,30 @@ defmodule Picsello.CartTest do
     test "preloads products" do
       whcc_product = insert(:product, whcc_id: "abc")
       gallery = insert(:gallery)
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       %{gallery_id: gallery_id} =
-        insert(:order, gallery: gallery, gallery_client: gallery_client, products: build_list(1, :cart_product, whcc_product: whcc_product))
+        insert(:order,
+          gallery: gallery,
+          gallery_client: gallery_client,
+          products: build_list(1, :cart_product, whcc_product: whcc_product)
+        )
 
       assert {:ok, %{products: [%{whcc_product: %{whcc_id: "abc"}}]}} =
-               Cart.get_unconfirmed_order(gallery_id, gallery_client_id: gallery_client.id, preload: [:products])
+               Cart.get_unconfirmed_order(gallery_id,
+                 gallery_client_id: gallery_client.id,
+                 preload: [:products]
+               )
     end
   end
 
   def create_gallery(opts \\ []) do
-    gallery = insert(:gallery, job: insert(:lead, package: insert(:package, opts))) |> Map.put(:credits_available, true)
+    gallery =
+      insert(:gallery, job: insert(:lead, package: insert(:package, opts)))
+      |> Map.put(:credits_available, true)
+
     insert(:gallery_digital_pricing, gallery: gallery)
     gallery |> Repo.preload(:gallery_digital_pricing)
   end
@@ -421,7 +474,10 @@ defmodule Picsello.CartTest do
       {total, opts} = Keyword.pop(opts, :total, ~M[0]USD)
 
       gallery = Keyword.get_lazy(opts, :gallery, fn -> create_gallery(opts) end)
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       Cart.place_product(
         build(:cart_product,
           shipping_base_charge: ~M[0]USD,
@@ -478,10 +534,20 @@ defmodule Picsello.CartTest do
     test "when no money due from client sends complete" do
       Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
       gallery = create_gallery(download_count: 1)
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
-      insert(:order, delivery_info: %{name: "abc", email: "client@example.com"}, gallery: gallery, gallery_client: gallery_client)
 
-      order = Cart.place_product(build(:digital), gallery, gallery_client) |> Repo.preload([:products, :digitals])
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      insert(:order,
+        delivery_info: %{name: "abc", email: "client@example.com"},
+        gallery: gallery,
+        gallery_client: gallery_client
+      )
+
+      order =
+        Cart.place_product(build(:digital), gallery, gallery_client)
+        |> Repo.preload([:products, :digitals])
+
       assert ~M[0]USD = Order.total_cost(order)
       :ok = Cart.checkout(order, helpers: PicselloWeb.Helpers)
 
@@ -494,7 +560,10 @@ defmodule Picsello.CartTest do
   describe "delivery_info_change" do
     test "requires address when order includes products" do
       gallery = insert(:gallery) |> Map.put(:credits_available, true)
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       order = Cart.place_product(build(:cart_product), gallery, gallery_client)
 
       changeset = Cart.delivery_info_change(order)
@@ -506,7 +575,10 @@ defmodule Picsello.CartTest do
 
     test "does not require address when order is only digitals" do
       gallery = insert(:gallery) |> Map.put(:credits_available, true)
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       order = Cart.place_product(build(:digital), gallery, gallery_client)
 
       changeset = Cart.delivery_info_change(order)

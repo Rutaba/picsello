@@ -32,6 +32,7 @@ defmodule Picsello.ClientBuysGreetingCardTest do
           ),
         use_global: %{watermark: true, expiration: true, digital: true, products: true}
       )
+
     insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
     gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)

@@ -36,7 +36,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
       |> build_session_token(password, email)
       |> case do
         {:ok, token} ->
-          update_emails_map(email, gallery.id)
+          update_emails_map(email, gallery)
           assign(socket, submit: true, session_token: token)
 
         _ ->
@@ -78,9 +78,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
     Routes.gallery_session_path(socket, :album_login, album.client_link_hash)
   end
 
-  defp update_emails_map(email, gallery_id) do
-    gallery = Galleries.get_gallery!(gallery_id)
-
+  defp update_emails_map(email, gallery) do
     new_email_map = %{
       "email" => email,
       "viewed_at" => DateTime.utc_now()

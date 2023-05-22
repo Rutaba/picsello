@@ -77,7 +77,12 @@ defmodule Picsello.PackTest do
 
       assert {:error, _} = Pack.upload(gallery)
 
-      insert(:order, gallery: gallery, gallery_client: gallery_client, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
+      insert(:order,
+        gallery: gallery,
+        gallery_client: gallery_client,
+        placed_at: DateTime.utc_now(),
+        bundle_price: ~M[5000]USD
+      )
 
       assert {:ok, _} = Pack.upload(gallery)
     end
@@ -100,8 +105,17 @@ defmodule Picsello.PackTest do
   describe "upload - order" do
     setup do
       gallery = insert(:gallery)
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
-      order = insert(:order, gallery: gallery, gallery_client: gallery_client, placed_at: DateTime.utc_now())
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          gallery_client: gallery_client,
+          placed_at: DateTime.utc_now()
+        )
+
       [order: order]
     end
 

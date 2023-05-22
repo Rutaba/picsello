@@ -7,7 +7,10 @@ defmodule Picsello.OrdersTest do
     def order_with_product(gallery, opts) do
       whcc_id = Keyword.get(opts, :whcc_id)
       placed_at = Keyword.get(opts, :placed_at, DateTime.utc_now())
-      gallery_client = insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
       insert(:order,
         gallery_client: gallery_client,
         gallery: gallery,
@@ -40,7 +43,10 @@ defmodule Picsello.OrdersTest do
       user = insert(:user, email: "photographer@example.com") |> onboard!()
       job = insert(:lead, user: user) |> promote_to_job()
       gallery = insert(:gallery, job: job) |> Map.put(:credits_available, true)
-      gallery_client = insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
       cart_product = build(:cart_product)
 
       order = Cart.place_product(cart_product, gallery, gallery_client)

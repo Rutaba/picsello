@@ -26,7 +26,13 @@ defmodule Picsello.Notifiers.UserNotifierTest do
   end
 
   def insert_order_and_gallery_client(%{gallery: gallery, products: products}) do
-    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, email_list: [gallery.job.client.email], download_count: 0, print_credits: Money.new(0)})
+    gallery_digital_pricing =
+      insert(:gallery_digital_pricing, %{
+        gallery: gallery,
+        email_list: [gallery.job.client.email],
+        download_count: 0,
+        print_credits: Money.new(0)
+      })
 
     gallery =
       Map.put(
@@ -34,7 +40,9 @@ defmodule Picsello.Notifiers.UserNotifierTest do
         :credits_available,
         gallery.job.client.email in gallery_digital_pricing.email_list
       )
-    gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+    gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
     order =
       for product <- products, reduce: nil do

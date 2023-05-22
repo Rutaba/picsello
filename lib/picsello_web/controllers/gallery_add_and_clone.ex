@@ -16,13 +16,15 @@ defmodule PicselloWeb.GalleryAddAndClone do
           "client_email" => client_email
         }
       ) do
-    gallery = Galleries.get_gallery_by_hash!(hash) |> Picsello.Repo.preload(:gallery_digital_pricing)
     gallery =
-    Map.put(
-      gallery,
-      :credits_available,
-      client_email && client_email in gallery.gallery_digital_pricing.email_list
-    )
+      Galleries.get_gallery_by_hash!(hash) |> Picsello.Repo.preload(:gallery_digital_pricing)
+
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        client_email && client_email in gallery.gallery_digital_pricing.email_list
+      )
 
     gallery_account_id = Galleries.account_id(gallery)
     gallery_client = Galleries.get_gallery_client(gallery, client_email)

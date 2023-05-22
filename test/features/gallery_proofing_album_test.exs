@@ -11,7 +11,9 @@ defmodule Picsello.GalleryProofingAlbumTest do
   setup %{gallery: gallery} do
     proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
     photo_ids = insert_photo(%{gallery: gallery, album: proofing_album, total_photos: 5})
-    gallery_client = insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
+    gallery_client =
+      insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
 
     order =
       insert(:order,

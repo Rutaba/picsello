@@ -10,8 +10,15 @@ defmodule Picsello.GalleryOverviewTest do
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
     gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
-    gallery_client = insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
-    [job: gallery.job, gallery_client: gallery_client, gallery_digital_pricing: gallery_digital_pricing]
+
+    gallery_client =
+      insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
+    [
+      job: gallery.job,
+      gallery_client: gallery_client,
+      gallery_digital_pricing: gallery_digital_pricing
+    ]
   end
 
   def insert_order(gallery, gallery_client) do
@@ -173,7 +180,11 @@ defmodule Picsello.GalleryOverviewTest do
     |> assert_url_contains("/galleries")
   end
 
-  feature "Unable to update gallery settings when disabled", %{session: session, gallery: gallery, gallery_client: gallery_client} do
+  feature "Unable to update gallery settings when disabled", %{
+    session: session,
+    gallery: gallery,
+    gallery_client: gallery_client
+  } do
     _order = insert_order(gallery, gallery_client)
     {:ok, gallery} = Galleries.update_gallery(gallery, %{status: :disabled})
 

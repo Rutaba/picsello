@@ -25,7 +25,9 @@ defmodule Picsello.GalleriesTest do
     test "create_gallery/1 with valid data creates a gallery" do
       user = insert(:user, name: "Jane Doe")
       %{id: job_id} = insert(:lead)
-      assert {:ok, %Gallery{}} = Galleries.create_gallery(user, Map.put(@valid_attrs, :job_id, job_id))
+
+      assert {:ok, %Gallery{}} =
+               Galleries.create_gallery(user, Map.put(@valid_attrs, :job_id, job_id))
     end
 
     test "create_gallery/1 with valid data creates a gallery with gallery products" do

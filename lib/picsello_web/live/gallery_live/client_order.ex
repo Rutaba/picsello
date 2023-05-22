@@ -8,15 +8,29 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   alias Picsello.{Orders, Galleries, Cart}
 
   @impl true
-  def mount(_params, _session, %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket) do
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
+      ) do
+    gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
+
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        client_email && client_email in gallery.gallery_digital_pricing.email_list
+      )
     socket
     |> assign(from_checkout: false)
-    |> assign(gallery_client:
+    |> assign(
+      gallery_client:
         Galleries.get_gallery_client(
           gallery,
           if(client_email, do: client_email, else: assigns.current_user.email)
         )
     )
+    |> assign(gallery: gallery)
     |> assign_new(:album, fn -> nil end)
     |> assign_is_proofing()
     |> ok()
@@ -96,14 +110,11 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     |> noreply()
   end
 
-  defp assign_details(socket, order) do
-    gallery = order.gallery
-
+  defp assign_details(%{assigns: %{gallery: gallery}} = socket, order) do
     socket
     |> assign(
-      gallery: gallery,
       order: order,
-      organization_name: gallery.organization.name,
+      organization_name: order.gallery.organization.name,
       shipping_address: order.delivery_info.address,
       shipping_name: order.delivery_info.name
     )
@@ -112,7 +123,10 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   end
 
   defp cart_count(%{assigns: %{gallery_client: gallery_client}}, gallery) do
-    case Cart.get_unconfirmed_order(gallery.id, gallery_client_id: gallery_client.id, preload: [:products, :digitals]) do
+    case Cart.get_unconfirmed_order(gallery.id,
+           gallery_client_id: gallery_client.id,
+           preload: [:products, :digitals]
+         ) do
       {:ok, order} ->
         Cart.item_count(order)
 

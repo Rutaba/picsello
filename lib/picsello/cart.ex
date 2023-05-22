@@ -147,7 +147,11 @@ defmodule Picsello.Cart do
 
   defp contains_digital?(%{id: gallery_id}, gallery_client, photo, album_id) do
     gallery_id
-    |> get_unconfirmed_order([gallery_client_id: gallery_client.id, album_id: album_id, preload: [:digitals]])
+    |> get_unconfirmed_order(
+      gallery_client_id: gallery_client.id,
+      album_id: album_id,
+      preload: [:digitals]
+    )
     |> case do
       {:ok, order} -> contains_digital?(order, photo, album_id)
       _ -> false
@@ -155,7 +159,9 @@ defmodule Picsello.Cart do
   end
 
   defp contains_bundle?(%{id: gallery_id}, gallery_client, album_id) do
-    case(get_unconfirmed_order(gallery_id, [gallery_client_id: gallery_client.id, album_id: album_id])) do
+    case(
+      get_unconfirmed_order(gallery_id, gallery_client_id: gallery_client.id, album_id: album_id)
+    ) do
       {:ok, order} -> order.bundle_price != nil
       _ -> false
     end

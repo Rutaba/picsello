@@ -714,7 +714,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     """
   end
 
-  def credits(%Galleries.Gallery{} = gallery),
+  def credits(gallery),
     do: gallery |> Cart.credit_remaining() |> credits()
 
   def credits(credits) do

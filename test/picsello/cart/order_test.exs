@@ -6,8 +6,10 @@ defmodule Picsello.Cart.OrderTest do
   describe "priced_lines_by_product" do
     test "newest group first, newest change first" do
       gallery = insert(:gallery)
+
       gallery_client =
-      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       %{products: products} =
         order =
         insert(:order,
@@ -32,9 +34,14 @@ defmodule Picsello.Cart.OrderTest do
   describe "update_changeset" do
     setup do
       gallery = insert(:gallery)
+
       gallery_client =
-      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
-      order = insert(:order, gallery_client: gallery_client, gallery: gallery) |> Repo.preload(:products)
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      order =
+        insert(:order, gallery_client: gallery_client, gallery: gallery)
+        |> Repo.preload(:products)
+
       [order: order]
     end
 

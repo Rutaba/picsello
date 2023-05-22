@@ -112,7 +112,9 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       client = insert(:client, organization: organization)
 
       gallery = insert(:gallery, job: insert(:lead, client: client))
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
       order =
         insert(:order,
@@ -324,7 +326,9 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       end)
 
       gallery = insert(:gallery)
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
       order =
         insert(:order,

@@ -126,10 +126,10 @@ defmodule PicselloWeb.LiveAuth do
     token = Map.get(session, "gallery_session_token")
 
     if Galleries.session_exists_with_token?(
-          gallery.id,
-          token,
-          :gallery
-        ) do
+         gallery.id,
+         token,
+         :gallery
+       ) do
       email = Galleries.get_session_token(token).email
       Sentry.Context.set_user_context(client)
       assign(socket, authenticated: true)
@@ -148,10 +148,10 @@ defmodule PicselloWeb.LiveAuth do
     token = Map.get(session, "album_session_token")
 
     if Galleries.session_exists_with_token?(
-          album.id,
-          token,
-          :album
-        ) do
+         album.id,
+         token,
+         :album
+       ) do
       assign(socket, authenticated: true)
       email = Galleries.get_session_token(token).email
       assign(socket, authenticated: true, client_email: email)
