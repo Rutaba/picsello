@@ -563,7 +563,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           <div class="flex flex-col w-4/5 items-center md:items-start">
             <label class="mb-3" for={input_id(@f, :base_price)}>
               <h2 class="mb-1 text-xl font-bold">Creative Session Fee</h2>
-              <span class="text-base-250">Input your base session fee; if your location charges taxes, we’ll calculate those for your client at checkout</span>
+              <span class="text-base-250">Input your base session fee; if your location charges taxes, we’ll calculate those for your client at checkout.</span>
             </label>
 
             <div class="flex flex-row items-center w-auto mt-6">
@@ -589,7 +589,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           <div class="flex flex-col w-full md:w-2/3">
             <div class="mt-9 md:mt-1">
               <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Package Total</h2>
-              <p class="text-base-250 mb-2">Taxes will be calculated at checkout for your client</p>
+              <p class="text-base-250 mb-2">Taxes will be calculated at checkout for your client.</p>
             </div>
             <button class={classes("underline text-blue-planning-300 inline-block w-max", %{"hidden" => @show_discounts})} type="button" phx-target={@myself} phx-click="edit-discounts">Add a discount or surcharge</button>
 
@@ -642,7 +642,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           <div class="grid w-full md:w-1/3 h-fit">
             <.show_discounts>
               <span class="flex w-2/3 mt-4 font-bold">Creative Session Fee</span>
-              <span class="flex w-1/3 mt-4">+ <%= Map.get(changeset, :base_price) %></span>
+              <span class="flex w-1/3 mt-4">+<%= Map.get(changeset, :base_price) %></span>
             </.show_discounts>
             <%= if Map.get(multiplier, :discount_base_price) do %>
               <.show_discounts>
@@ -653,7 +653,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <%= if Map.get(changeset, :print_credits_include_in_total) do %>
               <.show_discounts>
                 <span class="flex w-2/3 mt-2 font-bold">Professional Print Credit</span>
-                <span class="flex w-1/3 mt-2">+ <%= Map.get(changeset, :print_credits) %></span>
+                <span class="flex w-1/3 mt-2">+<%= Map.get(changeset, :print_credits) %></span>
               </.show_discounts>
             <% end %>
             <%= if Map.get(multiplier, :discount_print_credits) do %>
@@ -665,7 +665,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <%= if Map.get(changeset, :digitals_include_in_total) do %>
             <.show_discounts>
                 <span class="flex w-2/3 mt-2 font-bold">Digital Collection</span>
-                <span class="flex w-1/3 mt-2">+ <%= digitals_total(@download_changeset) %></span>
+                <span class="flex w-1/3 mt-2">+<%= digitals_total(@download_changeset) %></span>
               </.show_discounts>
             <% end %>
             <%= if Map.get(multiplier, :discount_digitals) do %>

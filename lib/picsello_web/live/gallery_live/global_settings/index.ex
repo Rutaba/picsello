@@ -913,7 +913,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   def settings_multi(socket, attrs, multi \\ Multi.new())
 
-  def settings_multi(%{assigns: %{global_settings_gallery: nil}}, attrs, multi) do
+  def settings_multi(%{assigns: %{global_settings_gallery: %{id: nil}}}, attrs, multi) do
     Multi.insert(multi, :global_settings, changeset(attrs))
   end
 
