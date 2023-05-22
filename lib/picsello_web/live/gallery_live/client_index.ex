@@ -67,7 +67,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       ) do
     %{job: %{client: %{organization: organization}}} =
       gallery = gallery |> Galleries.populate_organization_user()
-
     socket
     |> assign(
       creator: Galleries.get_gallery_creator(gallery),
@@ -186,7 +185,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
         {:add_bundle_to_cart, bundle_price},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    order = Cart.place_product({:bundle, bundle_price}, gallery.id)
+    order = Cart.place_product({:bundle, bundle_price}, gallery)
     socket |> add_to_cart_assigns(order)
   end
 

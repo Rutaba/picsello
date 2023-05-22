@@ -4,7 +4,11 @@ defmodule Picsello.GalleryAccessForClientsTest do
   setup do
     job = insert(:lead, type: "wedding", user: insert(:user)) |> promote_to_job()
     Mox.stub(Picsello.PhotoStorageMock, :get, fn _ -> {:error, nil} end)
-    [gallery: insert(:gallery, %{name: "Test Client Weeding", job: job})]
+
+    gallery = insert(:gallery, %{name: "Test Client Weeding", job: job})
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
+
+    [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   feature "client views password submit", %{session: session, gallery: gallery} do

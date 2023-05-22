@@ -289,6 +289,7 @@ I look forward to capturing these memories for you!"}
   defp open_compose(
          %{
            assigns: %{
+             current_user: current_user,
              organization: %{name: organization_name},
              job: job
            }
@@ -305,6 +306,7 @@ I look forward to capturing these memories for you!"}
            send_button: "Send",
            client: Job.client(job),
            recipients: %{"from" => job.client.email}
+           current_user: current_user
          })
          |> noreply()
 

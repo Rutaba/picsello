@@ -18,12 +18,14 @@ defmodule Picsello.ClientAlbumTest do
           )
       )
 
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
+
     album = insert(:album, %{gallery_id: gallery.id})
     photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: 5})
 
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
 
-    [gallery: gallery, album: album, photo_ids: photo_ids]
+    [gallery: gallery, album: album, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   setup :authenticated_gallery_client
