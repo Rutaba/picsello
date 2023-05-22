@@ -65,7 +65,9 @@ defmodule Picsello.PackTest do
 
   describe "upload - gallery" do
     test "zips all photos when bundle is purchased", %{} do
-      %{gallery: gallery} = insert_gallery(organization_name: "org name") |> insert_gallery_digital_pricing(Money.new(20))
+      %{gallery: gallery} =
+        insert_gallery(organization_name: "org name")
+        |> insert_gallery_digital_pricing(Money.new(20))
 
       insert_list(3, :photo,
         gallery: gallery,
@@ -81,7 +83,9 @@ defmodule Picsello.PackTest do
     end
 
     test "sends a zip of all photos when package does not charge for downloads", %{} do
-      %{gallery: gallery} = insert_gallery(organization_name: "org name", charge_for_downloads: false) |> insert_gallery_digital_pricing(Money.new(0))
+      %{gallery: gallery} =
+        insert_gallery(organization_name: "org name", charge_for_downloads: false)
+        |> insert_gallery_digital_pricing(Money.new(0))
 
       insert_list(3, :photo,
         gallery: gallery,

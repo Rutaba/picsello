@@ -75,7 +75,9 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
       end
 
     socket
-    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery.id, is_mobile: false))
+    |> push_redirect(
+      to: Routes.gallery_photographer_index_path(socket, :index, gallery.id, is_mobile: false)
+    )
     |> noreply()
   end
 

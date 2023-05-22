@@ -11,7 +11,12 @@ defmodule Picsello.GalleryUnsortedPhotosTest do
     gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 20})
 
-    [album: album, photo_ids: photo_ids, photos_count: length(photo_ids), gallery_digital_pricing: gallery_digital_pricing]
+    [
+      album: album,
+      photo_ids: photo_ids,
+      photos_count: length(photo_ids),
+      gallery_digital_pricing: gallery_digital_pricing
+    ]
   end
 
   test "Unsorted Photos, render unsorted photos", %{

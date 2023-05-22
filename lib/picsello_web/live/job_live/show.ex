@@ -107,7 +107,9 @@ defmodule PicselloWeb.JobLive.Show do
   def handle_event("view-gallery", %{"gallery_id" => gallery_id}, socket),
     do:
       socket
-      |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id, is_mobile: false))
+      |> push_redirect(
+        to: Routes.gallery_photographer_index_path(socket, :index, gallery_id, is_mobile: false)
+      )
       |> noreply()
 
   def handle_event("create-gallery", %{"parent_id" => parent_id}, socket) do
