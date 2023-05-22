@@ -25,7 +25,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         socket |> assign_changeset(%{"dates" => [%{"time_blocks" => [%{}]}]})
 
       socket ->
-        socket |> assign_changeset(%{})
+        socket |> assign_sorted_booking_event() |> assign_changeset(%{})
     end
     |> assign_package_templates()
     |> ok()
@@ -594,6 +594,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   defp assign_package_templates(%{assigns: %{current_user: current_user}} = socket) do
     packages = Packages.templates_with_single_shoot(current_user)
     socket |> assign(package_templates: packages)
+  end
+
+  defp assign_sorted_booking_event(%{assigns: %{booking_event: booking_event}} = socket) do
+    dates = reorder_time_blocks(booking_event.dates)
+    booking_event = Map.put(booking_event, :dates, dates)
+    socket |> assign(booking_event: booking_event)
+  end
+
+  defp reorder_time_blocks(dates) do
+    Enum.map(dates, fn %{time_blocks: time_blocks} = event_date ->
+      sorted_time_blocks = Enum.sort_by(time_blocks, &{&1.start_time, &1.end_time})
+      %{event_date | time_blocks: sorted_time_blocks}
+    end)
   end
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
