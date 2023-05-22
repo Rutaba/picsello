@@ -51,6 +51,11 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
 
       {:ok, _order, :confirmed} ->
         order = get_order!(gallery, order_number, album)
+        order_gallery = Map.put(order.gallery,
+        :credits_available,
+        gallery.credits_available
+      )
+      order = Map.put(order, :gallery, order_gallery)
 
         Picsello.Notifiers.OrderNotifier.deliver_order_confirmation_emails(
           order,

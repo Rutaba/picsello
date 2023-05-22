@@ -13,7 +13,7 @@ defmodule PicselloWeb.GalleryAddAndClone do
           "hash" => hash,
           "accountId" => in_account_id,
           "editorId" => whcc_editor_id,
-          "client_email" => client_email
+          "clientEmail" => client_email
         }
       ) do
     gallery =

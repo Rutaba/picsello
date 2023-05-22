@@ -86,7 +86,7 @@ defmodule Picsello.Cart do
 
   def credit_remaining(%{id: gallery_id} = gallery) do
     {digital_credit, print_credit} =
-      if gallery.credits_available do
+      if Map.get(gallery, :credits_available) do
         {digital_credit_remaining(gallery_id), print_credit_remaining(gallery_id)}
       else
         {%{digital: 0}, %{print: ~M[0]USD}}

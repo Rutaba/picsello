@@ -537,7 +537,7 @@ defmodule Picsello.ClientOrdersTest do
       end)
     end
 
-    feature "with download credit", %{session: session, photo_ids: photo_ids, gallery: gallery} do
+    feature "with download credit", %{session: session, photo_ids: photo_ids} do
       Repo.update_all(Package, set: [download_count: 2])
       Repo.update_all(Picsello.Galleries.GalleryDigitalPricing, set: [download_count: 2])
 
