@@ -9,7 +9,7 @@
           <:crumb to={Routes.job_path(@socket, :jobs, @gallery.job_id)}>
             <%= Job.name @gallery.job %>
           </:crumb>
-          <:crumb to={Routes.gallery_photographer_index_path(@socket, :index, @gallery.id)}>
+          <:crumb to={Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false)}>
             gallery
           </:crumb>
           <:crumb to={Routes.transaction_path(@socket, :transactions, @gallery.id)}> Orders </:crumb>
@@ -69,7 +69,7 @@
           <% end %>
         </div>
 
-        <%= link "View gallery", to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id), id: "view_gallery", class: "text-blue-planning-300 underline text-lg" %>
+        <%= link "View gallery", to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false), id: "view_gallery", class: "text-blue-planning-300 underline text-lg" %>
       </div>
     </div>
   </div>

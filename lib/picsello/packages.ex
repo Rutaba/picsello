@@ -587,17 +587,16 @@ defmodule Picsello.Packages do
         job_type
       )
       when is_integer(years_experience) and is_atom(schedule) and is_binary(state) do
-
     create_templates(user, job_type)
   end
 
   def create_initial(_user, _type), do: []
 
   def get_price(
-         %{base_multiplier: base_multiplier, base_price: base_price},
-         presets_count,
-         index
-       ) do
+        %{base_multiplier: base_multiplier, base_price: base_price},
+        presets_count,
+        index
+      ) do
     base_price = if(base_price, do: base_price, else: 0)
 
     amount =
@@ -633,13 +632,16 @@ defmodule Picsello.Packages do
 
     Ecto.Multi.new()
     |> Ecto.Multi.insert_all(:templates, Package, fn _ -> templates_query end, returning: true)
-    |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn %{templates: {_, templates}} ->
+    |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn %{
+                                                                                      templates:
+                                                                                        {_,
+                                                                                         templates}
+                                                                                    } ->
       make_package_payment_schedule(templates)
     end)
     |> Repo.transaction()
     |> case do
       {:ok, %{templates: {_, templates}}} -> templates
-
       {:error, _} -> []
     end
   end
@@ -648,7 +650,11 @@ defmodule Picsello.Packages do
     current_date = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     default_presets = get_payment_defaults(package.job_type)
     count = length(default_presets)
-    base_price = %{base_multiplier: package.base_multiplier, base_price: package.base_price.amount}
+
+    base_price = %{
+      base_multiplier: package.base_multiplier,
+      base_price: package.base_price.amount
+    }
 
     Enum.with_index(
       default_presets,
@@ -665,7 +671,7 @@ defmodule Picsello.Packages do
         }
       end
     )
-end
+  end
 
   defp minimum_years_query(years_experience),
     do:
