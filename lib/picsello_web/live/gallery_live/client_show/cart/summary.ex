@@ -92,6 +92,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   end
 
 
+  defp summary_block(assigns) do
+    assigns = Enum.into(assigns, %{value: nil, icon: nil, class: nil, event: nil})
+
+    ~H"""
+    <dt class={"hidden toggle lg:block #{@class}"} phx-click={@event}><%= @label %></dt>
+    <dd class="self-center hidden toggle lg:block justify-self-end"><%= @value %></dd>
+    """
+  end
+
   defp discounts_content(assigns) do
     ~H"""
     <dl class={"#{@class} contents"}>
@@ -107,7 +116,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
          %{order: %{products: [_ | _] = products, delivery_info: delivery_info}} = assigns
        ) do
     {added?, description} = shipping_description(delivery_info, products)
-    assigns = Enum.into(assigns, %{description: description, added?: added?})
+    assigns = assign(assigns, %{description: description, added?: added?})
 
     ~H"""
     <.summary_block label={"Shipping #{@description}"} value={Cart.total_shipping(@order)} />
@@ -119,15 +128,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
         event="zipcode"
       />
     <% end %>
-    """
-  end
-
-  defp summary_block(assigns) do
-    assigns = Enum.into(assigns, %{value: nil, icon: nil, class: nil, event: nil})
-
-    ~H"""
-    <dt class={"hidden toggle lg:block #{@class}"} phx-click={@event}><%= @label %></dt>
-    <dd class="self-center hidden toggle lg:block justify-self-end"><%= @value %></dd>
     """
   end
 
