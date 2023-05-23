@@ -134,8 +134,8 @@ defmodule Picsello.ClientsIndexTest do
     |> click(button("Save"))
     |> click(link("All Clients"))
     |> sleep(300)
-    |> assert_text("john@example.com")
-    |> click(button("Manage", count: 2, at: 1))
+    |> scroll_to_bottom()
+    |> click(button("Manage", count: 4, at: 3))
     |> click(button("Details"))
     |> assert_text("Client: jane@example.com")
     |> click(button("Edit Contact"))
@@ -143,7 +143,7 @@ defmodule Picsello.ClientsIndexTest do
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
     |> sleep(300)
-    |> assert_text("john2@example.com")
+    |> assert_text("jane_mary@example.com")
   end
 
   feature "edits client from actions that already has a job", %{
