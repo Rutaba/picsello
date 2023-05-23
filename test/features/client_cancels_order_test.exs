@@ -8,7 +8,8 @@ defmodule Picsello.ClientCancelsOrderTest do
         job: insert(:lead, package: insert(:package, download_each_price: ~M[3500]USD))
       )
 
-    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0})
+    gallery_digital_pricing =
+      insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0})
 
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)

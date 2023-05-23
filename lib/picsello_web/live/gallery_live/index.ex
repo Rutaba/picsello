@@ -189,7 +189,9 @@ defmodule PicselloWeb.GalleryLive.Index do
 
   def handle_info({:success_event, "view-gallery", %{gallery_id: gallery_id}}, socket) do
     socket
-    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id, is_mobile: false))
+    |> push_redirect(
+      to: Routes.gallery_photographer_index_path(socket, :index, gallery_id, is_mobile: false)
+    )
     |> noreply()
   end
 
@@ -368,6 +370,7 @@ defmodule PicselloWeb.GalleryLive.Index do
 
     icon_text_class =
       if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
+
     assigns = assign(assigns, icon_text_class: icon_text_class)
 
     ~H"""

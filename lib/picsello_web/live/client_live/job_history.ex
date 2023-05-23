@@ -80,7 +80,9 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
       end
 
     socket
-    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery.id, is_mobile: false))
+    |> push_redirect(
+      to: Routes.gallery_photographer_index_path(socket, :index, gallery.id, is_mobile: false)
+    )
     |> noreply()
   end
 
@@ -243,6 +245,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
 
     icon_text_class =
       if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
+
     assigns = assign(assigns, icon_text_class: icon_text_class)
 
     ~H"""
