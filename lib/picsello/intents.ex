@@ -21,6 +21,7 @@ defmodule Picsello.Intents do
 
       field :stripe_payment_intent_id, :string
       field :stripe_session_id, :string
+      field :processing_fee, Money.Ecto.Type
 
       belongs_to :order, Order
 
@@ -49,10 +50,23 @@ defmodule Picsello.Intents do
     def changeset(%__MODULE__{} = intent, %Stripe.PaymentIntent{} = params) do
       attrs = ~w[amount amount_received amount_capturable status]a
 
-      cast(intent, Map.from_struct(params), attrs)
+      cast(
+        intent,
+        params |> Map.from_struct() |> Map.put(:processing_fee, processing_fee(params)),
+        [
+          :processing_fee | attrs
+        ]
+      )
       |> validate_required(attrs)
       |> validate_one_uncancelled()
     end
+
+    defp processing_fee(%{charges: %{data: [%{balance_transaction: %{fee_details: fee_details}}]}}) do
+      %{amount: amount} = Enum.find(fee_details, &(&1.type == "stripe_fee"))
+      amount
+    end
+
+    defp processing_fee(_), do: nil
 
     defp validate_one_uncancelled(changeset) do
       unique_constraint(changeset, [:order_id, :status],
@@ -79,6 +93,8 @@ defmodule Picsello.Intents do
   end
 
   def capture(%Intent{stripe_payment_intent_id: stripe_id}, stripe_options) do
+    stripe_options = Keyword.put(stripe_options, :expand, ["charges.data.balance_transaction"])
+
     case Picsello.Payments.capture_payment_intent(stripe_id, stripe_options) do
       {:ok, stripe_intent} -> update(stripe_intent)
       error -> error

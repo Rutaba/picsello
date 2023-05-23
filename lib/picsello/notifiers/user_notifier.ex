@@ -253,7 +253,8 @@ defmodule Picsello.Notifiers.UserNotifier do
         &print_credit/1,
         &print_cost/1,
         &photographer_charge/1,
-        &photographer_payment/1
+        &photographer_payment/1,
+        &stripe_processing_fee/1
       ],
       reduce: %{
         gallery_name: gallery.name,
@@ -315,6 +316,11 @@ defmodule Picsello.Notifiers.UserNotifier do
 
   defp photographer_charge(%{invoice: nil}), do: %{}
   defp photographer_charge(%{invoice: %{amount_due: amount}}), do: %{photographer_charge: amount}
+
+  defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),
+    do: %{processing_fee: processing_fee}
+
+  defp stripe_processing_fee(_), do: %{processing_fee: nil}
 
   defp deliver_transactional_email(params, user) do
     sendgrid_template(:generic_transactional_template, params)
