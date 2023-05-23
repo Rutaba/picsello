@@ -21,6 +21,7 @@ defmodule PicselloWeb.SendgridInboundParseController do
       end
 
     body_text = Map.get(params, "text")
+
     if initail_obj do
       changeset =
         Map.merge(
