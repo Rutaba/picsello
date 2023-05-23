@@ -680,7 +680,8 @@ defmodule Picsello.Factory do
   def whcc_order_created_order_factory do
     %Picsello.WHCC.Order.Created.Order{
       total: ~M[100]USD,
-      sequence_number: sequence(:sequence_number, & &1)
+      sequence_number: sequence(:sequence_number, & &1),
+      api: %{subtotal: ~M[100]USD}
     }
   end
 
