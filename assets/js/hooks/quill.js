@@ -54,6 +54,7 @@ export default {
       enableSize,
       enableImage,
       target,
+      editable,
     } = this.el.dataset;
     const textInput = textFieldName
       ? this.el.querySelector(`input[name="${textFieldName}"]`)
@@ -178,7 +179,40 @@ export default {
     });
 
     quill.clipboard.dangerouslyPasteHTML(htmlInput.value, 'api');
+    const element = document.querySelector('.ql-editor');
+    element.setAttribute("contenteditable", editable);
+    const ol = document.querySelector('.ql-editor > ol');
+    if (ol) {
+      const toolbar_style = document.getElementsByClassName('ql-toolbar ql-snow');
+      
+      if (editable === "false") {
+        ol.classList.add('cursor-default');
+        toolbar_style[0].style.cssText += 'pointer-events: none;';
+      }
+      else{
+        ol.classList.add('cursor-text');
+        toolbar_style[0].style.cssText += 'pointer-events: initial;';
+      }
+    }
   },
+  updated() {
+    const { el } = this;
+    const element = document.querySelector('.ql-editor');
+    element.setAttribute("contenteditable", el.dataset.editable);
+
+    const ol = document.querySelector('.ql-editor > ol');
+    if (ol) {
+      const toolbar_style = document.getElementsByClassName('ql-toolbar ql-snow');
+      if (el.dataset.editable  === "false") {
+        ol.classList.add('cursor-default');
+        toolbar_style[0].style.cssText += 'pointer-events: none;';
+      }
+      else{
+        ol.classList.add('cursor-text');
+        toolbar_style[0].style.cssText += 'pointer-events: initial;';
+      }
+    }
+  }
 };
 
 export const ClearQuillInput = {

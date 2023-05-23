@@ -264,8 +264,8 @@ defmodule PicselloWeb.LiveHelpers do
 
     ~H"""
       <label class={classes(
-        "flex items-center p-2 border rounded-lg hover:#{@bg_light}/60 cursor-pointer font-semibold text-sm leading-tight sm:text-base #{@class}",
-        %{"#{@border_dark} #{@bg_light}" => @checked}
+        "flex items-center p-2 border rounded-lg font-semibold text-sm leading-tight sm:text-base #{@class}",
+        %{"#{@border_dark} #{@bg_light}" => @checked, "cursor-not-allowed pointer-events-none" => @disabled, "hover:#{@bg_light}/60 cursor-pointer" => !@disabled}
       )}>
         <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} disabled={@disabled} />
 
