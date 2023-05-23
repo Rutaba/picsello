@@ -2,10 +2,10 @@ defmodule Picsello.Shipment.DasType do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
   alias Picsello.Shipment.{DasType, Zipcode}
   alias Picsello.Repo
-  import Ecto.Query
 
   schema "shipment_das_types" do
     field :mail_cost, Money.Ecto.Amount.Type
@@ -15,13 +15,15 @@ defmodule Picsello.Shipment.DasType do
     timestamps()
   end
 
-  @fields [:type, :mail_cost, :parcel_cost]
+  @fields [:name, :mail_cost, :parcel_cost]
   @doc false
-  def changeset(das_cost, attrs) do
+  def changeset(das_cost, attrs \\ %{}) do
     das_cost
     |> cast(attrs, @fields)
     |> validate_required(@fields)
   end
+
+  def all(), do: Repo.all(__MODULE__ |> order_by([d], d.inserted_at))
 
   def get_by_zipcode(zipcode) do
     from(dt in DasType,
