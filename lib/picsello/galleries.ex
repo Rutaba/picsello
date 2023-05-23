@@ -746,6 +746,12 @@ defmodule Picsello.Galleries do
     |> Repo.aggregate(:count, [])
   end
 
+  def gallery_album_favorites_count(%Gallery{} = gallery, album_id) do
+    Photo
+    |> where(gallery_id: ^gallery.id, album_id: ^album_id, client_liked: true)
+    |> Repo.aggregate(:count, [])
+  end
+
   @doc """
   Creates a photo.
 
