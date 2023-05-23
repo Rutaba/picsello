@@ -21,48 +21,49 @@ defmodule PicselloWeb.SendgridInboundParseController do
       end
 
     body_text = Map.get(params, "text")
+    if initail_obj do
+      changeset =
+        Map.merge(
+          %{
+            body_text:
+              if(body_text, do: ElixirEmailReplyParser.parse_reply(body_text), else: body_text),
+            body_html: Map.get(params, "html", ""),
+            subject: Map.get(params, "subject", nil),
+            outbound: false
+          },
+          initail_obj
+        )
+        |> ClientMessage.create_inbound_changeset(required_fields)
 
-    changeset =
-      Map.merge(
-        %{
-          body_text:
-            if(body_text, do: ElixirEmailReplyParser.parse_reply(body_text), else: body_text),
-          body_html: Map.get(params, "html", ""),
-          subject: Map.get(params, "subject", nil),
-          outbound: false
-        },
-        initail_obj
-      )
-      |> ClientMessage.create_inbound_changeset(required_fields)
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:message, changeset)
+      |> Ecto.Multi.merge(fn %{message: %{id: message_id}} ->
+        multi = Ecto.Multi.new()
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:message, changeset)
-    |> Ecto.Multi.merge(fn %{message: %{id: message_id}} ->
-      multi = Ecto.Multi.new()
+        case initail_obj do
+          %{client_id: client_id} ->
+            params =
+              ClientMessageRecipient.create_changeset(%{
+                client_id: client_id,
+                client_message_id: message_id,
+                recipient_type: :to
+              })
 
-      case initail_obj do
-        %{client_id: client_id} ->
-          params =
-            ClientMessageRecipient.create_changeset(%{
-              client_id: client_id,
-              client_message_id: message_id,
-              recipient_type: :to
-            })
+            multi |> Ecto.Multi.insert(:message_recipient, params)
 
-          multi |> Ecto.Multi.insert(:message_recipient, params)
+          _ ->
+            multi
+        end
+      end)
+      |> Repo.transaction()
+      |> then(fn
+        {:ok, %{message: message}} ->
+          Messages.notify_inbound_message(message, PicselloWeb.Helpers)
 
-        _ ->
-          multi
-      end
-    end)
-    |> Repo.transaction()
-    |> then(fn
-      {:ok, %{message: message}} ->
-        Messages.notify_inbound_message(message, PicselloWeb.Helpers)
-
-      {:error, reason} ->
-        reason
-    end)
+        {:error, reason} ->
+          reason
+      end)
+    end
 
     conn
     |> put_resp_content_type("text/plain")
