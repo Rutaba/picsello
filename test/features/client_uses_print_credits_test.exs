@@ -45,7 +45,12 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     product = insert(:product, category: category)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
 
-    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, print_credits: ~M[500000]USD, download_each_price: ~M[5500]USD})
+    gallery_digital_pricing =
+      insert(:gallery_digital_pricing, %{
+        gallery: gallery,
+        print_credits: ~M[500000]USD,
+        download_each_price: ~M[5500]USD
+      })
 
     insert(:gallery_product,
       category: category,

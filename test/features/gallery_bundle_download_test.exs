@@ -67,16 +67,23 @@ defmodule Picsello.GalleryBundleDownloadTest do
         use_global: %{watermark: true, expiration: true, digital: true, products: true}
       )
 
-      insert(:order, gallery: gallery, bundle_price: ~M[5000]USD, placed_at: DateTime.utc_now())
-      insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0, print_credits: Money.new(0)})
-      Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "photographer-stripe-customer-id", _ ->
-        {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
-      end)
+    insert(:order, gallery: gallery, bundle_price: ~M[5000]USD, placed_at: DateTime.utc_now())
+
+    insert(:gallery_digital_pricing, %{
+      gallery: gallery,
+      download_count: 0,
+      print_credits: Money.new(0)
+    })
+
+    Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "photographer-stripe-customer-id", _ ->
+      {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
+    end)
 
     [gallery: gallery]
   end
 
   setup :authenticated_gallery_client
+
   test "resets client link when photographer updates gallery", %{
     session: session,
     gallery: gallery
@@ -102,7 +109,6 @@ defmodule Picsello.GalleryBundleDownloadTest do
              %{worker: "Picsello.Workers.PackGallery", state: "completed"}
            ] = run_jobs()
 
-
     assert [
              %{worker: "Picsello.Workers.PackGallery", state: "completed"},
              %{worker: "Picsello.Workers.PackDigitals", state: "completed"}
@@ -124,7 +130,6 @@ defmodule Picsello.GalleryBundleDownloadTest do
              %{worker: "Picsello.Workers.PackDigitals", state: "scheduled"},
              %{worker: "Picsello.Workers.PackGallery", state: "completed"}
            ] = run_jobs() |> Enum.drop(2)
-
 
     assert [
              %{worker: "Picsello.Workers.PackGallery", state: "completed"},
