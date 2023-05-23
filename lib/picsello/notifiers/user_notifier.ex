@@ -253,8 +253,7 @@ defmodule Picsello.Notifiers.UserNotifier do
         &print_credit/1,
         &print_cost/1,
         &photographer_charge/1,
-        &photographer_payment/1,
-        &stripe_processing_fee/1
+        &photographer_payment/1
       ],
       reduce: %{
         gallery_name: gallery.name,
@@ -302,9 +301,16 @@ defmodule Picsello.Notifiers.UserNotifier do
   defp print_cost(%{whcc_order: nil}), do: %{}
 
   defp print_cost(%{whcc_order: whcc_order} = order) do
+    processing_fee = stripe_processing_fee(order)
     shipping_price = Picsello.Cart.total_shipping(order)
 
-    %{print_cost: whcc_order |> WHCCOrder.total() |> Money.add(shipping_price)}
+    %{
+      print_cost:
+        whcc_order
+        |> WHCCOrder.total()
+        |> Money.add(shipping_price)
+        |> Money.add(processing_fee)
+    }
   end
 
   defp photographer_payment(%{intent: nil}), do: %{}
@@ -318,9 +324,9 @@ defmodule Picsello.Notifiers.UserNotifier do
   defp photographer_charge(%{invoice: %{amount_due: amount}}), do: %{photographer_charge: amount}
 
   defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),
-    do: %{processing_fee: processing_fee}
+    do: processing_fee
 
-  defp stripe_processing_fee(_), do: %{processing_fee: nil}
+  defp stripe_processing_fee(_), do: Money.new(0)
 
   defp deliver_transactional_email(params, user) do
     sendgrid_template(:generic_transactional_template, params)
