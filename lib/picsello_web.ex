@@ -46,8 +46,10 @@ defmodule PicselloWeb do
   def live_view(options) do
     options =
       case Keyword.get(options, :layout, "live") do
-        false -> []
-        name -> 
+        false ->
+          []
+
+        name ->
           name = if is_atom(name), do: name, else: String.to_atom(name)
           [layout: {PicselloWeb.LayoutView, name}]
       end

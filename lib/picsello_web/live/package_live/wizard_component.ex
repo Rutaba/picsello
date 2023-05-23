@@ -1301,7 +1301,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           get_price_or_percentage(price, fixed, length(default_presets), &2)
         )
       )
+
     price = if fixed, do: price, else: Money.round(price)
+
     params = %{
       "total_price" => price,
       "remaining_price" => price,

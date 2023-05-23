@@ -632,12 +632,12 @@ defmodule Picsello.Packages do
 
     Ecto.Multi.new()
     |> Ecto.Multi.insert_all(:templates, Package, fn _ -> templates_query end, returning: true)
-    |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn %{
-                                                                                      templates:
-                                                                                        {_,
-                                                                                         templates}
-                                                                                    } ->
-      make_package_payment_schedule(templates)
+    |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, 
+      fn %{
+        templates:
+          {_,
+            templates}
+      } -> make_package_payment_schedule(templates)
     end)
     |> Repo.transaction()
     |> case do
