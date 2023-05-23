@@ -11,6 +11,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     album = insert(:album, %{gallery_id: gallery.id})
     proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
     photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: 20})
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
 
     insert_photo(%{gallery: gallery, album: proofing_album, total_photos: 1})
     insert(:email_preset, type: :gallery, state: :proofs_send_link)
@@ -19,7 +20,8 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
       album: album,
       photo_ids: photo_ids,
       photos_count: length(photo_ids),
-      proofing_album: proofing_album
+      proofing_album: proofing_album,
+      gallery_digital_pricing: gallery_digital_pricing
     ]
   end
 
@@ -113,6 +115,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_text("Overview")
     |> assert_text("Photos")
     |> assert_text("Product previews")
+    |> assert_text("Pricing & Print Credits")
     |> visit("/galleries")
   end
 
@@ -138,6 +141,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> assert_text("Overview")
     |> assert_text("Photos")
     |> assert_text("Product previews")
+    |> assert_text("Pricing & Print Credits")
     |> visit("/galleries")
     |> click(css("#menu-button"))
   end

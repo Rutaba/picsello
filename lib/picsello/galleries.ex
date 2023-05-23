@@ -20,7 +20,8 @@ defmodule Picsello.Galleries do
     Cart.Digital,
     Job,
     Client,
-    WHCC
+    WHCC,
+    Galleries.Gallery.UseGlobal
   }
 
   alias Picsello.Workers.CleanStore
@@ -57,13 +58,11 @@ defmodule Picsello.Galleries do
     |> Repo.all()
   end
 
-  def list_shared_setting_galleries(organization_id) do
+  @setting_types :fields |> UseGlobal.__schema__() |> Enum.map(&to_string/1)
+  def list_shared_setting_galleries(organization_id, type) when type in @setting_types do
     organization_id
     |> list_all_galleries_by_organization_query()
-    |> where([g], fragment("? ->> 'expiration' = 'true'", g.use_global))
-    |> or_where([g], fragment("? ->> 'watermark' = 'true'", g.use_global))
-    |> or_where([g], fragment("? ->> 'products' = 'true'", g.use_global))
-    |> or_where([g], fragment("? ->> 'digital' = 'true'", g.use_global))
+    |> where([g], fragment("? ->> ? = 'true'", g.use_global, ^type))
     |> Repo.all()
   end
 
@@ -498,6 +497,11 @@ defmodule Picsello.Galleries do
     )
     |> Multi.merge(fn %{gallery: gallery} ->
       gallery
+      |> Repo.preload(job: [:client, :package])
+      |> check_digital_pricing()
+    end)
+    |> Multi.merge(fn %{gallery: gallery} ->
+      gallery
       |> Repo.preload(:package)
       |> check_watermark()
     end)
@@ -519,6 +523,62 @@ defmodule Picsello.Galleries do
           )
         end)
     end
+  end
+
+  defp check_digital_pricing(%{job: %{package: package, client: client}} = gallery) do
+    first_gallery = get_first_gallery(gallery)
+
+    case package do
+      nil ->
+        Multi.new()
+
+      package ->
+        Multi.new()
+        |> Multi.update(
+          :gallery_digital_pricing,
+          Gallery.save_digital_pricing_changeset(gallery, %{
+            gallery_digital_pricing: %{
+              buy_all: package.buy_all,
+              print_credits:
+                if(first_gallery.id == gallery.id,
+                  do: package.print_credits,
+                  else: Money.new(0)
+                ),
+              download_count: package.download_count,
+              download_each_price: package.download_each_price,
+              email_list: [client.email]
+            }
+          }),
+          []
+        )
+    end
+  end
+
+  def reset_gallery_pricing(gallery) do
+    first_gallery = get_first_gallery(gallery)
+
+    Gallery.save_digital_pricing_changeset(gallery, %{
+      gallery_digital_pricing: %{
+        buy_all: gallery.package.buy_all,
+        print_credits:
+          if(first_gallery.id == gallery.id,
+            do: gallery.package.print_credits,
+            else: Money.new(0)
+          ),
+        download_count: gallery.package.download_count,
+        download_each_price: gallery.package.download_each_price
+      }
+    })
+    |> Repo.update()
+  end
+
+  def get_first_gallery(%Gallery{job_id: job_id}) do
+    from(g in Gallery,
+      where: g.job_id == ^job_id and g.status == :active,
+      order_by: g.inserted_at,
+      limit: 1
+    )
+    |> Repo.one()
   end
 
   def album_params_for_new("standard"), do: []
@@ -1166,13 +1226,8 @@ defmodule Picsello.Galleries do
   end
 
   def do_not_charge_for_download?(%Gallery{} = gallery) do
-    package = gallery |> get_package()
-
-    if package do
-      package |> Map.get(:download_each_price) |> Money.zero?()
-    else
-      false
-    end
+    gallery = gallery |> Picsello.Repo.preload(:gallery_digital_pricing)
+    Map.get(gallery.gallery_digital_pricing, :download_each_price) |> Money.zero?()
   end
 
   def max_price(%{whcc_id: @area_markup_category} = category, org_id, %{

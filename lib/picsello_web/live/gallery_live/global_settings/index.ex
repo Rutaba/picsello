@@ -355,9 +355,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp galleries_by_setting_type(%{organization_id: org_id}, value) do
-    org_id
-    |> Galleries.list_shared_setting_galleries()
-    |> Enum.filter(&Map.get(&1.use_global, value))
+    Galleries.list_shared_setting_galleries(org_id, to_string(value))
   end
 
   defp assign_options(
