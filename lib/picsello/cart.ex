@@ -480,8 +480,8 @@ defmodule Picsello.Cart do
   defp convert_shipping_type(_whcc_id, _size, "3_days"), do: :three_days
   defp convert_shipping_type(_whcc_id, _size, "1_day"), do: :one_day
 
-  defp upcharge(@whcc_wall_art_id, upcharge), do: upcharge["wallart"]
-  defp upcharge(_category_whcc_id, upcharge), do: upcharge["default"]
+  defp upcharge(@whcc_wall_art_id, upcharge), do: upcharge.wallart
+  defp upcharge(_category_whcc_id, upcharge), do: upcharge.default
 
   def shipping_price(%{
         das_carrier_cost: das_carrier_cost,
