@@ -202,7 +202,7 @@ defmodule Picsello.Packages do
               |> force_change(:digitals_include_in_total, false)
               |> validate_required([:each_price])
               |> validate_inclusion(:is_custom_price, ["true"])
-              |> Picsello.Package.validate_money(:each_price, greater_than: 0),
+              |> Picsello.Package.validate_money(:each_price, greater_than: 201, message: "must be greater than two"),
             else: &1
           )
         )
@@ -255,7 +255,6 @@ defmodule Picsello.Packages do
 
     defp validate_each_price(changeset) do
       buy_all = get_field(changeset, :buy_all) || @zero_price
-
       if Money.zero?(buy_all) do
         changeset
       else

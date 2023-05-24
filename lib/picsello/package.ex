@@ -65,8 +65,8 @@ defmodule Picsello.Package do
     |> validate_required(~w[download_count name download_each_price organization_id shoot_count]a)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> validate_money(:download_each_price,
-      greater_than: 0,
-      message: "must be greater than zero"
+      greater_than: 201,
+      message: "must be greater than two"
     )
     |> validate_money(:print_credits,
       greater_than_or_equal_to: 0,
@@ -165,7 +165,10 @@ defmodule Picsello.Package do
       end
     end)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
-    |> validate_money(:download_each_price)
+    |> validate_money(:download_each_price,
+      greater_than: 201,
+      message: "must be greater than two"
+    )
     |> then(fn changeset ->
       base_price = get_field(changeset, :base_price) || Money.new(0)
 

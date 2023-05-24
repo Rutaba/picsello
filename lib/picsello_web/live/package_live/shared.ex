@@ -436,10 +436,11 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   # digital download fields for package & pricing
   def digital_download_fields(assigns) do
-    assigns =
-      Map.put_new(assigns, :for, nil)
-      |> Map.put_new(:target, nil)
-      |> Map.put_new(:show_digitals, false)
+    assigns = assigns |> Enum.into(%{
+      for: nil,
+      target: nil,
+      show_digitals: false
+    })
 
     ~H"""
       <div class="flex mt-6">
@@ -501,17 +502,6 @@ defmodule PicselloWeb.PackageLive.Shared do
       </div>
     """
   end
-
-  # defp download_fields_heading(assigns) do
-  #   ~H"""
-  #   <div class="mt-9 md:mt-1" {testid("download")}>
-  #     <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap"><%= @title %></h2>
-  #     <%= if @for == :create_gallery || (get_field(@d, :status) == :limited) do %>
-  #       <%= render_slot(@inner_block) %>
-  #     <% end %>
-  #   </div>
-  #   """
-  # end
 
   defp build_download_fields(assigns) do
     ~H"""
@@ -627,10 +617,8 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   def digitals_total(download_changeset) do
     changeset = current(download_changeset)
-
-    if Map.get(changeset, :digitals_include_in_total),
-      do: Money.multiply(Map.get(changeset, :each_price), get_digitals_count(download_changeset)),
-      else: nil
+    each_price = Map.get(changeset, :each_price) || Money.new(0)
+    if Map.get(changeset, :digitals_include_in_total), do: Money.multiply(each_price, get_digitals_count(download_changeset)), else: nil
   end
 
   def assign_turnaround_weeks(package) do

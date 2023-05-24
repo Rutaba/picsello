@@ -43,8 +43,8 @@ defmodule Picsello.GlobalSettings.Gallery do
     |> cast(attrs, [:organization_id, :expiration_days, :buy_all_price, :download_each_price])
     |> validate_required([:download_each_price])
     |> Package.validate_money(:download_each_price,
-      greater_than: 0,
-      message: "must be greater than zero"
+      greater_than: 201,
+      message: "must be greater than two"
     )
     |> then(fn changeset -> 
       each_price = get_field(changeset, :download_each_price) || Money.new(0)
