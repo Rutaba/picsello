@@ -29,6 +29,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     |> is_mobile(params)
     |> assign_new(:pagination, fn -> %Pagination{} end)
     |> update_gallery_listing()
+    |> is_mobile(params)
     |> ok()
   end
 

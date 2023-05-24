@@ -25,7 +25,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @global_watermark_photo ~s(assets/static/images/watermark_preview.png)
 
   @impl true
-  def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
+  def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
     %{organization_id: organization_id} = current_user
     global_settings_gallery = Repo.get_by(GSGallery, organization_id: organization_id) || %GSGallery{}
     
@@ -40,6 +40,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> assign(price_changeset: GSGallery.price_changeset(global_settings_gallery, %{}))
     |> assign_controls()
     |> assign_options()
+    |> assign(is_saved: false)
     |> assign(total_days: 0)
     |> assign(:upload_bucket, @bucket)
     |> assign(:case, :image)
@@ -93,7 +94,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       icon: "warning-orange",
       subtitle:
         "All new galleries will expire #{day_text}#{month_text}#{year_text}after their shoot date. When a gallery expires, a client will not be able to access it again unless you re-enable the individual gallery.",
-      title: "Set Galleries to Never Expire?",
+      title: "Set Galleries to Expire?",
       payload: %{total_days: day_count + month_count * 30 + year_count * 365}
     })
     |> noreply()
@@ -108,7 +109,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     month = to_int(month)
     year = to_int(year)
     total_days = day + month * 30 + year * 365
-    socket |> assign(total_days: total_days, day: day, month: month, year: year) |> noreply()
+
+    socket
+    |> assign(total_days: total_days, day: day, month: month, year: year, is_saved: true)
+    |> noreply()
   end
 
   def handle_event("validate_days", _params, socket), do: noreply(socket)
@@ -405,6 +409,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> update_expired_at(@never_expire_days)
     |> close_modal()
     |> put_flash(:success, "Settings updated")
+    |> assign(is_saved: false)
     |> assign(day: 0, month: 0, year: 0)
     |> noreply()
   end
@@ -449,6 +454,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     socket
     |> update_expired_at(total_days)
     |> assign(is_never_expires: false)
+    |> assign(is_saved: false)
     |> close_modal()
     |> put_flash(:success, "Setting Updated")
     |> noreply()
@@ -689,7 +695,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
                 </div>
                 <button class="btn-primary w-full mt-5 md:mt-0 md:w-32" id="saveGalleryExpiration"
                   phx-disable-with="Saving..." type="submit" phx-submit="save"
-                  disabled= {@total_days == 0 && @is_never_expires == false} >
+                  disabled= {(@total_days == 0 && @is_never_expires == false )  or @is_saved == false} >
                   Save
                 </button>
             </div>
