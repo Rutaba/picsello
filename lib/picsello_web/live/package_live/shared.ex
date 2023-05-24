@@ -434,10 +434,12 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-
   # digital download fields for package & pricing
   def digital_download_fields(assigns) do
-    assigns = Map.put_new(assigns, :for, nil)
+    assigns =
+      Map.put_new(assigns, :for, nil)
+      |> Map.put_new(:target, nil)
+      |> Map.put_new(:show_digitals, false)
 
     ~H"""
       <div class="flex mt-6">
@@ -625,7 +627,10 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   def digitals_total(download_changeset) do
     changeset = current(download_changeset)
-    if Map.get(changeset, :digitals_include_in_total), do: Money.multiply(Map.get(changeset, :each_price), get_digitals_count(download_changeset)), else: nil
+
+    if Map.get(changeset, :digitals_include_in_total),
+      do: Money.multiply(Map.get(changeset, :each_price), get_digitals_count(download_changeset)),
+      else: nil
   end
 
   def assign_turnaround_weeks(package) do
@@ -652,7 +657,9 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   defp make_digital_text(download_changeset) do
     case download_changeset |> current() |> Map.get(:status) do
-      :unlimited -> "all images"
+      :unlimited ->
+        "all images"
+
       _ ->
         ngettext("%{count} image", "%{count} images", get_digitals_count(download_changeset))
     end
