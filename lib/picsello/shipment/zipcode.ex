@@ -1,4 +1,5 @@
 defmodule Picsello.Shipment.Zipcode do
+  @moduledoc "zipcodes for calculating shipping surcharge"
   use Ecto.Schema
   alias Picsello.Repo
 

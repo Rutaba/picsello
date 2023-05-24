@@ -1,4 +1,5 @@
 defmodule Picsello.Shipment.Detail do
+  @moduledoc "schema to store different attributes involved in shipping calculation"
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.Repo
