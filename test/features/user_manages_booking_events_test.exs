@@ -94,41 +94,22 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> find(select("Session Buffer"), &click(&1, option("15 mins")))
     |> scroll_into_view(testid("add-date"))
     |> assert_has(testid("open-slots-count-0", text: "You’ll have 0 open slots"))
-    |> click(css("#booking-event-0"))
-    |> fill_in(css(".numInput.cur-year"), with: "2050")
-    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("October")))
-    |> click(css("[aria-label='October 10, 2050']"))
-    |> click(css("#booking-event-0-start-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "9")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css(".flatpickr-am-pm"))
-    |> click(css("#booking-event-0-end-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "1")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> assert_has(testid("open-slots-count-0", text: "You’ll have 4 open slots"))
+    |> click(css("#form-details_dates_0_date"))
+    |> fill_in(css("#form-details_dates_0_date"), with: "10-10-2050")
+    |> fill_in(css("#form-details_dates_0_time_blocks_0_start_time"), with: "13:00")
+    |> fill_in(css("#form-details_dates_0_time_blocks_0_end_time"), with: "14:00")
+    |> assert_has(testid("open-slots-count-0", text: "You’ll have 1 open slot"))
     |> click(button("Add block"))
-    |> click(css("#booking-event-0-start-time-1"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "3")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css("#booking-event-0-end-time-1"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "5")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> assert_has(testid("open-slots-count-0", text: "You’ll have 6 open slots"))
+    |> fill_in(css("#form-details_dates_0_time_blocks_1_start_time"), with: "15:00")
+    |> fill_in(css("#form-details_dates_0_time_blocks_1_end_time"), with: "17:00")
+    |> assert_has(testid("open-slots-count-0", text: "You’ll have 3 open slots"))
     |> click(button("Add another date"))
     |> assert_has(testid("event-date", count: 2))
     |> scroll_into_view(testid("add-date"))
-    |> click(css("#booking-event-1-start-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "9")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css(".flatpickr-am-pm"))
-    |> click(css("#booking-event-1-end-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "10")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css(".flatpickr-am-pm"))
-    |> click(css("#booking-event-1"))
-    |> fill_in(css(".numInput.cur-year"), with: "2050")
-    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("November")))
-    |> click(css("[aria-label='November 10, 2050']"))
+    |> click(css("#form-details_dates_1_date"))
+    |> fill_in(css("#form-details_dates_1_date"), with: "11-10-2050")
+    |> fill_in(css("#form-details_dates_1_time_blocks_0_start_time"), with: "13:00")
+    |> fill_in(css("#form-details_dates_1_time_blocks_0_end_time"), with: "14:00")
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add booking event: Select package")
@@ -165,8 +146,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
                    date: ~D[2050-10-10],
                    time_blocks: [
                      %{
-                       start_time: ~T[09:00:00],
-                       end_time: ~T[13:00:00],
+                       start_time: ~T[13:00:00],
+                       end_time: ~T[14:00:00],
                        is_hidden: false,
                        is_break: false,
                        is_booked: false,
@@ -183,11 +164,11 @@ defmodule Picsello.UserManagesBookingEventsTest do
                    ]
                  },
                  %{
-                   date: ~D[2050-11-10],
+                   date: ~D[2050-10-11],
                    time_blocks: [
                      %{
-                       end_time: ~T[10:00:00],
-                       start_time: ~T[09:00:00],
+                       end_time: ~T[14:00:00],
+                       start_time: ~T[13:00:00],
                        is_hidden: false,
                        is_break: false,
                        is_booked: false,
@@ -214,34 +195,20 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> fill_in(text_field("Shoot Address"), with: " ")
     |> assert_text("Shoot Address can't be blank")
     |> scroll_into_view(testid("add-date"))
-    |> click(css("#booking-event-0"))
-    |> fill_in(css(".numInput.cur-year"), with: "2050")
-    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("October")))
-    |> click(css("[aria-label='October 10, 2050']"))
-    |> click(css("#booking-event-0-start-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "9")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css(".flatpickr-am-pm"))
-    |> click(css("#booking-event-0-end-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "1")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
+    |> click(css("#form-details_dates_0_date"))
+    |> fill_in(css("#form-details_dates_0_date"), with: "10-10-2050")
+    |> fill_in(css("#form-details_dates_0_time_blocks_0_start_time"), with: "13:00")
+    |> fill_in(css("#form-details_dates_0_time_blocks_0_end_time"), with: "15:00")
     |> scroll_into_view(testid("add-date"))
     |> click(button("Add block"))
-    |> click(css("#booking-event-0-start-time-1"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "11")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css(".flatpickr-am-pm"))
-    |> click(css("#booking-event-0-end-time-1"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "5")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
+    |> fill_in(css("#form-details_dates_0_time_blocks_1_start_time"), with: "13:00")
+    |> fill_in(css("#form-details_dates_0_time_blocks_1_end_time"), with: "15:00")
     |> assert_text("Times can't be overlapping")
     |> scroll_into_view(testid("add-date"))
     |> click(button("Add another date"))
     |> assert_has(testid("event-date", count: 2))
-    |> click(css("#booking-event-1"))
-    |> fill_in(css(".numInput.cur-year"), with: "2050")
-    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("October")))
-    |> click(css("[aria-label='October 10, 2050']"))
+    |> click(css("#form-details_dates_1_date"))
+    |> fill_in(css("#form-details_dates_1_date"), with: "10-10-2050")
     |> assert_text("Dates can't be the same")
   end
 
@@ -253,50 +220,27 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> assert_text("Add booking event: Details")
     |> assert_has(testid("event-date", count: 1))
     |> scroll_into_view(testid("add-date"))
-    |> click(css("#booking-event-0"))
-    |> fill_in(css(".numInput.cur-year"), with: "2050")
-    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("October")))
-    |> click(css("[aria-label='October 10, 2050']"))
-    |> click(css("#booking-event-0-start-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "9")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css(".flatpickr-am-pm"))
-    |> click(css("#booking-event-0-end-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "1")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> assert_has(css("[data-time-picker='true']", count: 2))
+    |> click(css("#form-details_dates_0_date"))
+    |> fill_in(css("#form-details_dates_0_date"), with: "10-10-2050")
+    |> fill_in(css("#form-details_dates_0_time_blocks_0_start_time"), with: "13:00")
+    |> fill_in(css("#form-details_dates_0_time_blocks_0_end_time"), with: "15:00")
     |> scroll_into_view(testid("add-date"))
     |> click(button("Add block"))
-    |> assert_has(css("[data-time-picker='true']", count: 4))
-    |> click(css("#booking-event-0-start-time-1"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "2")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css("#booking-event-0-end-time-1"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "5")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css(".flatpickr-am-pm"))
+    |> fill_in(css("#form-details_dates_0_time_blocks_1_start_time"), with: "13:00")
+    |> fill_in(css("#form-details_dates_0_time_blocks_1_end_time"), with: "15:00")
     |> click(testid("remove-time-1"))
-    |> assert_has(css("[data-time-picker='true']", count: 2))
-    |> click(css("#booking-event-0-start-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "9")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css("#booking-event-0-end-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "1")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> scroll_to_bottom()
+    |> click(button("Add block"))
+    |> fill_in(css("#form-details_dates_0_time_blocks_1_start_time"), with: "13:00")
+    |> fill_in(css("#form-details_dates_0_time_blocks_1_end_time"), with: "15:00")
+    |> scroll_into_view(testid("add-date"))
     |> click(button("Add another date"))
     |> assert_has(testid("event-date", count: 2))
     |> scroll_into_view(testid("add-date"))
-    |> click(css("#booking-event-1"))
-    |> fill_in(css(".numInput.cur-year"), with: "2050")
-    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("December")))
-    |> click(css("[aria-label='December 10, 2050']"))
-    |> click(button("remove date"))
+    |> click(css("#form-details_dates_1_date"))
+    |> fill_in(css("#form-details_dates_1_date"), with: "10-10-2050")
+    |> click(button("Remove"))
     |> assert_has(testid("event-date", count: 1))
-    |> assert_value(
-      css(".flatpickr #form-details_dates_0_date", visible: false),
-      "2050-10-10"
-    )
+    |> assert_has(css("#form-details_dates_0_date", value: "2050-10-10"))
   end
 
   feature "edit not disabled when there's a lead associated to the event", %{
@@ -396,17 +340,10 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> click(button("Duplicate"))
     |> assert_text("Add booking event: Details")
     |> scroll_into_view(testid("add-date"))
-    |> click(css("#booking-event-0"))
-    |> fill_in(css(".numInput.cur-year"), with: "2050")
-    |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("October")))
-    |> click(css("[aria-label='October 10, 2050']"))
-    |> click(css("#booking-event-0-start-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "9")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
-    |> click(css(".flatpickr-am-pm"))
-    |> click(css("#booking-event-0-end-time-0"))
-    |> fill_in(css(".numInput.flatpickr-hour"), with: "1")
-    |> fill_in(css(".numInput.flatpickr-minute"), with: "00")
+    |> click(css("#form-details_dates_0_date"))
+    |> fill_in(css("#form-details_dates_0_date"), with: "10-10-2050")
+    |> fill_in(css("#form-details_dates_0_time_blocks_0_start_time"), with: "13:00")
+    |> fill_in(css("#form-details_dates_0_time_blocks_0_end_time"), with: "15:00")
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Add booking event: Select package")
@@ -429,7 +366,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
                  %{
                    date: ~D[2050-10-10],
                    time_blocks: [
-                     %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]}
+                     %{start_time: ~T[13:00:00], end_time: ~T[15:00:00]}
                    ]
                  }
                ],
