@@ -111,8 +111,8 @@ defmodule Picsello.GalleryProductPreviewTest do
 
       session
       |> visit("/galleries/#{gallery.id}/product-previews")
-      |> assert_has(css("button", text: "Edit product preview", count: 4))
       |> assert_has(css("button:disabled", text: "Coming soon!", count: 4))
+      |> assert_has(css("button", text: "Edit product preview", count: 4))
     end
 
     test "Product Preview, edit product", %{
