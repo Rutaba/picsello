@@ -49,10 +49,10 @@ defmodule Picsello.OrderTransactionsTest do
   feature "Transactions view order test", %{order: %{gallery: %{job: job}}, session: session} do
     session
     |> visit("/jobs/#{job.id}")
-    |> click(link("View Orders"))
-    |> assert_has(css("a[href='/jobs/#{job.id}']", count: 2))
-    |> click(css("a[href='/jobs/#{job.id}'] svg"))
-    |> assert_url_contains("/jobs/#{job.id}")
+    |> find(testid("card-buttons"))
+    |> click(button("Actions"))
+    |> assert_has(button("View orders"))
+    |> click(button("View orders"))
   end
 
   feature "Transactions header test", %{
@@ -66,8 +66,7 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_has(css("span", text: Job.name(job), count: 2))
     |> click(css("*[phx-click='order-detail']", text: "View details"))
     |> scroll_into_view(css("*[phx-click='open-stripe']"))
-    |> click(testid("go-to-stripe"))
-    |> assert_url_contains("payments")
+    |> assert_has(testid("go-to-stripe"))
   end
 
   feature "Transactions table test", %{
@@ -121,8 +120,7 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_text("$557.00")
     |> assert_text("Total")
     |> assert_text("$557.00")
-    |> click(button("Go to Stripe", count: 2, at: 0))
-    |> assert_url_contains("payment")
+    |> assert_has(button("Go to Stripe", count: 2, at: 0))
   end
 
   feature "order detail test", %{

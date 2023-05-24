@@ -42,7 +42,8 @@ defmodule Picsello.Albums do
       on: a.thumbnail_photo_id == thumbnail_photo.id,
       where: a.gallery_id == ^gallery_id,
       order_by: [a.is_finals, a.is_proofing, a.position],
-      select_merge: %{thumbnail_photo: thumbnail_photo}
+      select_merge: %{thumbnail_photo: thumbnail_photo},
+      preload: :orders
     )
     |> Repo.all()
     |> Enum.map(fn

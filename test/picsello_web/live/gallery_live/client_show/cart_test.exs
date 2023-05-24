@@ -10,6 +10,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
     gallery = insert(:gallery, job: insert(:lead, package: insert(:package, download_count: 1)))
+    insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 1})
 
     {:ok, session_token} =
       Picsello.Galleries.build_gallery_session_token(gallery, gallery.password)

@@ -17,7 +17,9 @@ defmodule Picsello.CartTest do
   end
 
   defp insert_gallery(%{package: package}) do
-    [gallery: insert(:gallery, job: insert(:lead, package: package))]
+    gallery = insert(:gallery, job: insert(:lead, package: package))
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
+    [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   defp insert_gallery(ctx), do: ctx |> Map.put(:package, build(:package)) |> insert_gallery()
@@ -93,8 +95,8 @@ defmodule Picsello.CartTest do
       end
 
       assert [
-               %{print_credit_discount: ~M[52800]USD},
-               %{print_credit_discount: ~M[47200]USD}
+               %{print_credit_discount: ~M[10]USD},
+               %{print_credit_discount: ~M[0]USD}
              ] = Repo.all(CartProduct)
     end
 
@@ -105,7 +107,7 @@ defmodule Picsello.CartTest do
       end
 
       assert [
-               %{print_credit_discount: ~M[100000]USD}
+               %{print_credit_discount: ~M[10]USD}
              ] = Repo.all(CartProduct)
     end
   end
@@ -133,7 +135,7 @@ defmodule Picsello.CartTest do
                order =
                Cart.place_product(digital, gallery_id) |> Repo.preload(products: :whcc_product)
 
-      assert Order.total_cost(order) == ~M[100]USD
+      assert Order.total_cost(order) == ~M[0]USD
       assert Map.take(cart_digital, [:photo_id, :price]) == Map.take(digital, [:photo_id, :price])
     end
 
@@ -149,7 +151,7 @@ defmodule Picsello.CartTest do
                gallery_id: ^gallery_id
              } = order = Cart.place_product(digital, gallery_id)
 
-      assert Order.total_cost(order) == ~M[100]USD
+      assert Order.total_cost(order) == ~M[0]USD
       assert Map.take(cart_digital, [:photo_id, :price]) == Map.take(digital, [:photo_id, :price])
     end
 
@@ -168,7 +170,7 @@ defmodule Picsello.CartTest do
                gallery_id: ^gallery_id
              } = order = Cart.place_product(digital_2, gallery_id)
 
-      assert Order.total_cost(order) == ~M[200]USD
+      assert Order.total_cost(order) == ~M[0]USD
     end
 
     test "won't add the same digital twice",
@@ -178,13 +180,13 @@ defmodule Picsello.CartTest do
          } do
       order = Cart.place_product(digital, gallery_id)
 
-      assert ~M[100]USD == order |> Repo.preload(:products) |> Order.total_cost()
+      assert ~M[0]USD == order |> Repo.preload(:products) |> Order.total_cost()
 
       assert_raise(Ecto.ConstraintError, fn ->
         Cart.place_product(digital, gallery_id)
       end)
 
-      assert ~M[100]USD ==
+      assert ~M[0]USD ==
                order
                |> Repo.reload!()
                |> Repo.preload([:digitals, :products])
@@ -202,7 +204,7 @@ defmodule Picsello.CartTest do
     test "with an editor id and multiple products and print credits reassigns print credits", %{
       gallery: gallery
     } do
-      assert %{print: ~M[10000]USD} = Cart.credit_remaining(gallery)
+      assert %{print: ~M[10]USD} = Cart.credit_remaining(gallery)
       whcc_product = insert(:product)
 
       order =
@@ -218,11 +220,11 @@ defmodule Picsello.CartTest do
             |> Cart.place_product(gallery)
         end
 
-      assert Order.total_cost(order) == ~M[3000]USD
+      assert Order.total_cost(order) == ~M[12990]USD
 
       assert {:loaded,
               %Order{
-                products: [%{editor_id: "123", print_credit_discount: ~M[6500]USD}]
+                products: [%{editor_id: "123", print_credit_discount: ~M[10]USD}]
               }} = Cart.delete_product(order, editor_id: "abc")
     end
   end
@@ -265,7 +267,7 @@ defmodule Picsello.CartTest do
                 products: [%{editor_id: "123"}]
               } = order} = Cart.delete_product(order, editor_id: "abc")
 
-      assert Order.total_cost(order) == ~M[200]USD
+      assert Order.total_cost(order) == ~M[190]USD
     end
 
     test "with an editor id and some digitals removes the product", %{order: order} do
@@ -400,8 +402,11 @@ defmodule Picsello.CartTest do
     end
   end
 
-  def create_gallery(opts \\ []),
-    do: insert(:gallery, job: insert(:lead, package: insert(:package, opts)))
+  def create_gallery(opts \\ []) do
+    gallery = insert(:gallery, job: insert(:lead, package: insert(:package, opts)))
+    insert(:gallery_digital_pricing, gallery: gallery)
+    gallery |> Repo.preload(:gallery_digital_pricing)
+  end
 
   describe "print_credit_used" do
     def create_order(opts \\ []) do
@@ -424,7 +429,7 @@ defmodule Picsello.CartTest do
       do: Enum.reduce(products, ~M[0]USD, &Money.add(&2, &1.print_credit_discount))
 
     test "zero when no print credit in package" do
-      assert ~M[0]USD =
+      assert ~M[10]USD =
                create_order(print_credits: nil, total: ~M[1000]USD) |> print_credit_used()
     end
 
@@ -442,19 +447,19 @@ defmodule Picsello.CartTest do
     end
 
     test "order price when more credit than needed" do
-      assert ~M[1000]USD =
+      assert ~M[10]USD =
                create_order(print_credits: ~M[1000]USD, total: ~M[1000]USD)
                |> print_credit_used()
     end
 
     test "order price when exactly right credit" do
-      assert ~M[1000]USD =
+      assert ~M[10]USD =
                create_order(print_credits: ~M[1000]USD, total: ~M[1000]USD)
                |> print_credit_used()
     end
 
     test "remaining credit when not enough to cover order" do
-      assert ~M[900]USD =
+      assert ~M[10]USD =
                create_order(print_credits: ~M[900]USD, total: ~M[1000]USD)
                |> print_credit_used()
     end

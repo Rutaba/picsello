@@ -21,8 +21,9 @@ defmodule Picsello.GalleryShareTest do
     )
 
     insert(:email_preset, type: :gallery, state: :gallery_send_link)
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
 
-    [photo_ids: photo_ids]
+    [photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   feature "test `share gallery` gets delayed till processing completed", %{

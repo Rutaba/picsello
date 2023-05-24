@@ -413,16 +413,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
          %Client{name: name, email: email} <- Repo.get(Client, message.client_id),
          {:ok, _email} <- ClientNotifier.deliver_email(message, email) do
       socket
-      |> close_modal()
       |> put_flash(:success, "Email sent to " <> if(name, do: name, else: email) <> "!")
-      |> noreply()
     else
       _error ->
         socket
         |> put_flash(:error, "Something went wrong")
-        |> close_modal()
-        |> noreply()
     end
+    |> close_modal()
+    |> noreply()
   end
 
   def assign_cart_count(
@@ -849,7 +847,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     [{"Digital Image Credits", "#{remaining} out of #{total_count}"}]
   end
 
-  defp name(%Digital{photo: photo}, true), do: "Select for retouching - #{photo.name}"
+  defp name(%Digital{photo: photo}, true), do: "Selected for retouching - #{photo.name}"
   defp name(%Digital{}, false), do: "Digital download"
   defp name({:bundle, _}, false), do: "All digital downloads"
   defp name(item, false), do: Cart.product_name(item)

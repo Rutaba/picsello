@@ -157,6 +157,7 @@ defmodule PicselloWeb.Router do
       scope "/galleries/:id", GalleryLive do
         live "/", PhotographerIndex, :index
         live "/photos", Photos.Index, :index
+        live "/pricing", Pricing.Index, :index
         live "/product-previews", ProductPreview.Index, :index
         live "/orders", PhotographerOrders, :orders
 

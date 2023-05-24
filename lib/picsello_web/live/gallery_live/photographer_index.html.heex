@@ -83,7 +83,8 @@
                <div class="galleryManagePassword xl:col-start-1 xl:col-end-2 xl:row-start-2 xl:row-end-3">
                   <%= live_component PicselloWeb.GalleryLive.Settings.ManageGalleryAnalyticsComponent,
                      id: "gallery-analytics-#{@gallery.id}",
-                     gallery: @gallery %>
+                     gallery: @gallery,
+                     user: @user %>
                </div>
                <div class="galleryManagePassword xl:col-start-1 xl:col-end-2 xl:row-start-2 xl:row-end-3">
                   <%= live_component PicselloWeb.GalleryLive.Settings.ManagePasswordComponent, id: @gallery.id, gallery: @gallery %>
