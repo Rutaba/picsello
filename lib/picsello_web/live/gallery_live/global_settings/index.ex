@@ -340,9 +340,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
          } = socket
        )
        when not is_nil(expiration_days) do
-    year = trunc(expiration_days / 365)
-    month = trunc((expiration_days - year * 365) / 30)
-    day = trunc(expiration_days - year * 365 - month * 30)
+      {day, month, year} = GSGallery.explode_days(expiration_days)  
     socket |> assign(day: day, month: month, year: year)
   end
 

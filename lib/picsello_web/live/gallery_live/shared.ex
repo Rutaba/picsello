@@ -20,7 +20,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     GlobalSettings,
     Utils
   }
-
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Picsello.Cart.Order
@@ -322,8 +322,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def expired_at(organization_id) do
     case GlobalSettings.get(organization_id) do
       %{expiration_days: exp_days} when not is_nil(exp_days) and exp_days > 0 ->
-        Timex.shift(DateTime.utc_now(), days: exp_days)
-
+        GSGallery.calculate_expiry_date(exp_days)
       _ ->
         nil
     end

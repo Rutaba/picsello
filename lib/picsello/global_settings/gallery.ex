@@ -99,12 +99,26 @@ defmodule Picsello.GlobalSettings.Gallery do
   def default_each_price(), do: @default_each_price
   def default_buy_all_price(), do: @default_buy_all_price
 
-  defp nilify_fields(changeset, fields) do
-    Enum.reduce(fields, changeset, fn key, changeset -> put_change(changeset, key, nil) end)
+  def explode_days(expiration_days) do
+    year = trunc(expiration_days / 365)
+    month = trunc((expiration_days - year * 365) / 30)
+    day = trunc(expiration_days - year * 365 - month * 30)
+    {day, month, year}
+  end
+
+  def calculate_expiry_date(total_days, date \\ DateTime.utc_now()) do
+    {days, months, years} = explode_days(total_days)
+    Timex.shift(date, years: years)
+    |> Timex.shift(months: months)
+    |> Timex.shift(days: days)
   end
 
   def watermarked_path(),
     do: "picsello/temp/watermarked/#{UUID.uuid4()}"
 
   def watermark_path(id), do: "global_settings/#{id}/watermark.png"
+
+  defp nilify_fields(changeset, fields) do
+    Enum.reduce(fields, changeset, fn key, changeset -> put_change(changeset, key, nil) end)
+  end
 end
