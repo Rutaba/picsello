@@ -5,13 +5,14 @@ defmodule PicselloWeb.GalleryLive.Settings.ManageGalleryAnalyticsComponent do
   alias Picsello.Repo
 
   @impl true
-  def update(%{gallery: %{gallery_analytics: gallery_analytics} = gallery}, socket) do
+  def update(%{gallery: %{gallery_analytics: gallery_analytics} = gallery, user: user}, socket) do
     %{email: email} = Repo.preload(gallery, job: :client) |> Map.get(:job) |> Map.get(:client)
 
     socket
     |> assign(
       gallery_analytics: assign_unique_emails_list(gallery_analytics),
-      gallery_client_email: email
+      gallery_client_email: email,
+      time_zone: user.time_zone
     )
     |> ok
   end
@@ -43,7 +44,7 @@ defmodule PicselloWeb.GalleryLive.Settings.ManageGalleryAnalyticsComponent do
                       <%= gallery_analytic["email"] %>
                     <% end %>
                   </p>
-                  <p class="text-base-250 font-normal">Viewed: <%= format_date_string(gallery_analytic["viewed_at"]) %></p>
+                  <p class="text-base-250 font-normal">Viewed: <%= format_date_string(gallery_analytic["viewed_at"], @time_zone) %></p>
                 </div>
               </div>
               <% end %>
@@ -68,9 +69,14 @@ defmodule PicselloWeb.GalleryLive.Settings.ManageGalleryAnalyticsComponent do
     |> Enum.uniq_by(& &1["email"])
   end
 
-  defp format_date_string(date_string) do
+  defp format_date_string(date_string, time_zone) do
+    # convert utc to user time_zone
+    {:ok, datetime, _} = DateTime.from_iso8601(date_string)
+    converted_datetime = DateTime.shift_zone!(datetime, time_zone)
+    date_time_zone = DateTime.to_iso8601(converted_datetime)
+
     [year, month, day] =
-      date_string
+      date_time_zone
       |> String.slice(0..9)
       |> String.split("-")
 
