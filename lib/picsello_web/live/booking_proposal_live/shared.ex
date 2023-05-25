@@ -138,7 +138,6 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         </div>
       <% end %>
 
-
       <hr class="hidden col-span-2 sm:block">
 
       <div class="hidden col-start-2 sm:block">
@@ -164,12 +163,12 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     |> String.pad_trailing(total_length, "0")
   end
 
-  def get_print_credit(%{print_credits: %Money{amount: 0, currency: _usd} = _print_credit}) do
-    nil
-  end
-
-  def get_print_credit(%{print_credits: %Money{amount: _amount, currency: _usd} = print_credit}) do
-    print_credit
+  def get_print_credit(%{print_credits: print_credit}) do
+    if Money.zero?(print_credit) do
+      nil
+    else
+      print_credit
+    end
   end
 
   def package_description_length_long?(nil), do: false

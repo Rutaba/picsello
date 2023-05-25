@@ -61,7 +61,7 @@
               </div>
             </button>
             <div id={"manage-#{gallery.id}"} phx-hook="Select" class="md:w-auto w-full" phx-update="ignore">
-              <button class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id="menu-button" phx-click="show_dropdown" phx-value-show_index={gallery_index}>
+              <button class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id={"menu-button-#{gallery.id}"} phx-click="show_dropdown" phx-value-show_index={gallery_index}>
                 Actions
                 <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
                 <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
