@@ -523,7 +523,7 @@ defmodule PicselloWeb.PackageLive.Shared do
               <span class="ml-2 text-base-250">included in the package</span>
             </div>
           </div>
-          <%= if @for != :create_gallery do %>
+          <%= if @for not in [:create_gallery, :import_job] do %>
             <div class="flex items-center text-base-250 ml-7 mt-2">
               <%= checkbox(@download_changeset, :digitals_include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
               <%= label_for @download_changeset, :digitals_include_in_total, label: "Include in package total calculation", class: "font-normal" %>
