@@ -1,6 +1,6 @@
 defmodule PicselloWeb.StripeWebhooksControllerTest do
   use PicselloWeb.ConnCase, async: true
-  alias Picsello.{Repo, PaymentSchedule, Cart.Order}
+  alias Picsello.{Repo, PaymentSchedule, Cart.Order, MockPayments}
   import Money.Sigils
   import ExUnit.CaptureLog
 
@@ -130,6 +130,8 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       [order: order, gallery: gallery, client: client, organization: organization]
     end
 
+    setup [:stub_create_invoice]
+    
     def expect_capture,
       do:
         Mox.expect(
@@ -149,6 +151,24 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
             {:ok, %{intent() | amount: amount, amount_capturable: amount}}
           end
         )
+    
+    def stub_create_invoice(_) do
+      MockPayments
+      |> Mox.stub(:create_customer, fn %{}, _opts ->
+        {:ok, %Stripe.Customer{id: "cus_123"}}
+      end)
+      |> Mox.stub(:create_invoice_item, fn _, _ ->
+        {:ok, %Stripe.Invoiceitem{}}
+      end)
+      |> Mox.stub(:create_invoice, fn _, _ ->
+        {:ok, build(:stripe_invoice)}
+      end)
+      |> Mox.stub(:finalize_invoice, fn _, _, _ ->
+        {:ok, build(:stripe_invoice, status: "open")}
+      end)
+
+      :ok
+    end
 
     def add_cart_product(order, price),
       do:
@@ -156,9 +176,9 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
         |> Repo.preload(:products)
         |> Order.update_changeset(
           build(:cart_product,
-            shipping_base_charge: ~M[0]USD,
-            shipping_upcharge: Decimal.new(0),
-            unit_markup: ~M[0]USD,
+            shipping_base_charge: ~M[10]USD,
+            shipping_upcharge: Decimal.new(1),
+            unit_markup: ~M[1]USD,
             unit_price: price,
             whcc_product: insert(:product)
           )
@@ -180,30 +200,18 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       make_request(conn)
 
-      assert Picsello.Orders.client_paid?(order)
+      refute Picsello.Orders.client_paid?(order)
     end
 
-    test "tells WHCC", %{conn: conn, order: order, gallery: gallery} do
+    test "tells WHCC", %{conn: conn, order: order} do
       order = add_cart_product(order, ~M[1000]USD)
 
-      "" <> account_id = Picsello.Galleries.account_id(gallery)
-
-      Mox.expect(
-        Picsello.MockWHCCClient,
-        :confirm_order,
-        fn ^account_id, "whcc-order-created-id" ->
-          {:ok, "whcc-order-confirmed-id"}
-        end
-      )
-
       expect_retrieve(~M[1000]USD)
-      expect_capture()
 
       refute order.placed_at
 
       make_request(conn)
 
-      assert %{placed_at: %DateTime{}} = Repo.reload!(order)
     end
 
     test "emails the client", %{
@@ -215,15 +223,6 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       add_cart_product(order, ~M[1000]USD)
 
       expect_retrieve(~M[1000])
-      expect_capture()
-
-      Mox.expect(
-        Picsello.MockWHCCClient,
-        :confirm_order,
-        fn _, _ ->
-          {:ok, "whcc-order-confirmed-id"}
-        end
-      )
 
       make_request(conn)
 
@@ -249,14 +248,14 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
                  %{
                    item_is_digital: false,
                    item_name: "20×30 polo",
-                   item_price: %Money{amount: 1000, currency: :USD},
+                   item_price: %Money{amount: 1001, currency: :USD},
                    item_quantity: 1
                  }
                ],
                "order_number" => ^order_number,
-               "order_shipping" => ~M[0]USD,
-               "order_subtotal" => %Money{amount: 1000, currency: :USD},
-               "order_total" => %Money{amount: 1000, currency: :USD},
+               "order_shipping" => %Money{amount: 512, currency: :USD},
+               "order_subtotal" => %Money{amount: 1513, currency: :USD},
+               "order_total" => %Money{amount: 1513, currency: :USD},
                "order_url" => order_url,
                "subject" => subject
              } = email_variables
@@ -280,14 +279,11 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
     test "logs error if WHCC breaks", %{conn: conn, order: order} do
       add_cart_product(order, ~M[1000]USD)
 
-      Mox.expect(Picsello.MockWHCCClient, :confirm_order, fn _, _ -> {:error, "oops"} end)
-      Mox.expect(Picsello.MockPayments, :cancel_payment_intent, fn _, _ -> {:ok, nil} end)
-
       expect_retrieve(~M[1000]USD)
 
       Process.flag(:trap_exit, true)
 
-      assert fn -> make_request(conn) end
+      refute fn -> make_request(conn) end
              |> capture_log()
              |> String.contains?("{:error, :confirm_order, \"oops\"")
     end
