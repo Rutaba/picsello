@@ -126,7 +126,7 @@ defmodule Picsello.FeatureCase do
         _ ->
           session
           |> sleep(500)
-          |> assert_has(css("button:not(:disabled)[type='submit']", opts))
+          |> find(css("button:not(:disabled)[type='submit']", opts), &assert_has(&1))
       end
     end
 
