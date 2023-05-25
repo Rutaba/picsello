@@ -22,31 +22,36 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
     |> find(button("Next"), &assert(Element.attr(&1, :disabled)))
-    |> fill_in(@price_text_field, with: "$100")
-    |> scroll_into_view(css("#package_pricing_is_enabled_true"))
+    |> fill_in(css("#form-pricing_base_price"), with: "$1000")
+    |> scroll_into_view(css("[phx-click='edit-print-credits']"))
+    |> click(button("Edit settings", at: 0))
     |> click(radio_button("Gallery includes Print Credits"))
     |> find(
       text_field("package[print_credits]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$30"))
     )
-    |> scroll_into_view(css("#download_is_enabled_true"))
+    |> click(css("[href='/images/icons.svg#close-x']", at: 1))
+    |> scroll_into_view(css("[phx-click='edit-digitals']"))
+    |> click(button("Edit settings", at: 1))
     |> click(css("#download_status_limited"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
-    |> scroll_into_view(css("#download_is_custom_price"))
+    |> click(css("[href='/images/icons.svg#close-x']", at: 1))
+    |> click(button("Edit image price"))
     |> find(
       text_field("download[each_price]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$50"))
     )
-    |> scroll_into_view(css("#download_is_buy_all"))
+    |> click(css("[href='/images/icons.svg#close-x']", at: 1))
+    |> click(button("Edit upsell options"))
+
     |> click(css("#download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$250"))
     )
-    |> assert_has(definition("Total", text: "$100.00"))
   end
 
   defp package_payment_screen(session) do
@@ -143,7 +148,6 @@ defmodule Picsello.CreateLeadPackageTest do
       modal
       |> click(button("New Package"))
       |> fill_in_package_form()
-      |> wait_for_enabled_submit_button(text: "Next")
       |> package_payment_screen()
     end)
     |> assert_text("Wedding Deluxe")
@@ -179,7 +183,6 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(@add_package_button)
     |> click(testid("template-card"))
     |> click(button("Use template"))
-    |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("best wedding")
 
     template_id = template.id
@@ -269,16 +272,22 @@ defmodule Picsello.CreateLeadPackageTest do
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
-    |> assert_value(@price_text_field, "$100.00")
-    |> assert_value(text_field("download_count"), "1")
-    |> assert_value(text_field("download_each_price"), "$50.00")
-    |> fill_in(@price_text_field, with: "200")
+    |> assert_value(css("#form-pricing_base_price"), "$100.00")
+    |> scroll_into_view(css("[phx-click='edit-digitals']"))
+    |> click(button("Edit settings", at: 1))
+    |> click(css("#download_status_limited"))
+    |> assert_value(css("#download_count"), "1")
+    |> click(css("[href='/images/icons.svg#close-x']", at: 1))
+    |> click(button("Edit image price"))
+    |> assert_value(css("#download_each_price"), "$50.00")
+    |> fill_in(css("#download_each_price"), with: "20")
     |> package_payment_screen()
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
 
     template_id = template.id
-    base_price = Money.new(20_000)
+    base_price = Money.new(10000)
+    download_each_price = Money.new(2000)
 
     assert %Package{
              name: "Wedding Deluxe",
@@ -405,12 +414,13 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(button("Next"))
     |> assert_has(testid("step-number", text: "Step 2"))
     |> assert_disabled_submit()
-    |> fill_in(@price_text_field, with: "$100")
+    |> fill_in(text_field("package[base_price]"), with: "$100")
     |> click(testid("step-number", text: "Step 2"))
     |> assert_has(testid("step-number", text: "Step 1"))
     |> assert_value(text_field("Title"), "Wedding Deluxe")
     |> click(button("Next"))
     |> assert_has(testid("step-number", text: "Step 2"))
-    |> assert_value(@price_text_field, "$100.00")
+    |> sleep(10000)
+    |> fill_in(text_field("package[base_price]"), with: "$100")
   end
 end

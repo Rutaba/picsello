@@ -76,6 +76,26 @@ defmodule Picsello.ImportJobTest do
     )
   end
 
+  def fill_in_package_form_1(session) do
+    session
+    |> fill_in(text_field("Title"), with: "Wedding Deluxe")
+    |> find(select("# of Shoots"), &click(&1, option("2")))
+    |> fill_in(text_field("Image Turnaround Time"), with: "2")
+    |> find(
+      text_field("The amount you’ve charged for your job"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$1000.00"))
+    )
+    |> find(
+      text_field("How much of the creative session fee is for print credits"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$100.00"))
+    )
+    |> find(
+      text_field("The amount you’ve already collected"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
+    )
+    |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
+  end
+
   def fill_in_payments_form(session) do
     session
     |> assert_text("Balance to collect: $800.00")
@@ -139,7 +159,7 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
     |> assert_text("Client: #{@client_name}")
-    |> fill_in_package_form()
+    |> fill_in_package_form_1()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Custom Invoice")
@@ -172,7 +192,7 @@ defmodule Picsello.ImportJobTest do
     |> assert_has(definition("$500.00 due on Feb 01, 2030", text: "$500.00"))
 
     base_price = Money.new(100_000)
-    download_each_price = Money.new(200)
+    download_each_price = Money.new(5000)
     buy_all = Money.new(1000)
     print_credits = Money.new(10_000)
     collected_price = Money.new(20_000)
@@ -190,8 +210,8 @@ defmodule Picsello.ImportJobTest do
              turnaround_weeks: 2,
              description: nil,
              base_price: ^base_price,
-             download_count: 2,
-             buy_all: ^buy_all,
+             download_count: 0,
+             buy_all: nil,
              print_credits: ^print_credits,
              download_each_price: ^download_each_price,
              collected_price: ^collected_price
@@ -241,7 +261,7 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
     |> assert_text("Client: #{@client_name}")
-    |> fill_in_package_form()
+    |> fill_in_package_form_1()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Custom Invoice")
@@ -296,7 +316,7 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
     |> assert_text("Client: #{@client_name}")
-    |> fill_in_package_form()
+    |> fill_in_package_form_1()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Custom Invoice")
@@ -339,7 +359,7 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
     |> assert_text("Client: #{@client_name}")
-    |> fill_in_package_form()
+    |> fill_in_package_form_1()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Custom Invoice")
@@ -381,7 +401,7 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
     |> assert_text("Client: #{@client_name}")
-    |> fill_in_package_form()
+    |> fill_in_package_form_1()
     |> find(
       text_field("The amount you’ve already collected"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$1000"))
@@ -457,7 +477,7 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Client: #{@client_name}")
     |> fill_in(text_field("Title"), with: " ")
     |> assert_has(css("label", text: "Title can't be blank"))
-    |> fill_in_package_form()
+    |> fill_in_package_form_1()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Custom Invoice")
@@ -479,7 +499,7 @@ defmodule Picsello.ImportJobTest do
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Package & Payment")
     |> assert_text("Client: #{@client_name}")
-    |> fill_in_package_form()
+    |> fill_in_package_form_1()
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Import Existing Job: Custom Invoice")
@@ -504,7 +524,7 @@ defmodule Picsello.ImportJobTest do
   end
 
   feature "client pays invoice from imported job", %{session: session} do
-    import_job(session)
+    import_job_1(session)
 
     %{booking_proposals: [proposal], payment_schedules: [%{id: payment_id} = payment | _]} =
       Repo.one(Job) |> Repo.preload([:booking_proposals, :payment_schedules])
@@ -579,7 +599,7 @@ defmodule Picsello.ImportJobTest do
   end
 
   feature "invoice is disabled when stripe account is not enabled", %{session: session} do
-    import_job(session)
+    import_job_1(session)
     %{booking_proposals: [proposal]} = Repo.one(Job) |> Repo.preload([:booking_proposals])
     url = BookingProposal.url(proposal.id)
 
@@ -589,5 +609,31 @@ defmodule Picsello.ImportJobTest do
     |> visit(url)
     |> assert_disabled(button("Invoice"))
     |> assert_flash(:error, text: "Payment is not enabled yet")
+  end
+
+  def import_job_1(session) do
+    session
+    |> click(button("Jobs"))
+    |> click(link("Import existing job"))
+    |> find(testid("import-job-card"), &click(&1, button("Next")))
+    |> assert_text("Import Existing Job: General Details")
+    |> click(button("Add a new client"))
+    |> fill_in_new_client_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Package & Payment")
+    |> fill_in_package_form_1()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> assert_text("Import Existing Job: Custom Invoice")
+    |> fill_in_payments_form()
+    |> wait_for_enabled_submit_button(text: "Next")
+    |> click(button("Next"))
+    |> click(button("Finish"))
+    |> assert_has(css("#modal-wrapper.hidden", visible: false))
+    |> assert_text("Wedding Deluxe")
+    |> click(css("div[title='Mary Jane']"))
+    |> click(button("Logout"))
+    |> assert_path("/")
   end
 end
