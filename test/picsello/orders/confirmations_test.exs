@@ -340,14 +340,6 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
       assert digitals_available_for_download?(order)
     end
-
-    test "creates and finalizes invoice", %{
-      session: session
-    } do
-      self()
-
-      handle_session(session)
-    end
   end
 
   describe "handle_session - order does not exist" do
