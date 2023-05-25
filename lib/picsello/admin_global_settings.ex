@@ -32,4 +32,3 @@ defmodule Picsello.AdminGlobalSettings do
 
   def delete_setting(setting), do: setting |> Repo.delete()
 end
-  

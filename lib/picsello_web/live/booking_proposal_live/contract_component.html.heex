@@ -37,7 +37,11 @@
     </div>
 
     <div class="mt-4 raw_html">
-      <%= raw @contract_content %>
+      <div class="min-h-[8rem] editor ql-container ql-snow">
+        <div class="ql-editor">
+          <%= raw @contract_content %>
+        </div>
+      </div>
     </div>
 
     <p class="mt-4 font-semibold">I confirm that I have read and understood this contract, and I agree to enter into this contract with <%= @organization.name %></p>

@@ -85,7 +85,13 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
     end)
 
-    [gallery: gallery, organization: organization, package: package, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
+    [
+      gallery: gallery,
+      organization: organization,
+      package: package,
+      photo_ids: photo_ids,
+      gallery_digital_pricing: gallery_digital_pricing
+    ]
   end
 
   setup :authenticated_gallery_client
