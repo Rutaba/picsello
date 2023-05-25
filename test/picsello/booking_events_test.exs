@@ -35,7 +35,8 @@ defmodule Picsello.BookingEventsTest do
                {~T[10:00:00], true, _, _},
                {~T[11:00:00], true, _, _},
                {~T[12:00:00], true, _, _},
-               {~T[14:00:00], true, _, _}
+               {~T[14:00:00], true, _, _},
+               {~T[16:00:00], true, _, _}
              ] = BookingEvents.available_times(event, ~D[2050-12-10])
     end
 
