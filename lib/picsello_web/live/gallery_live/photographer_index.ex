@@ -33,12 +33,13 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     socket
     |> assign(:upload_bucket, @bucket)
     |> assign(:total_progress, 0)
     |> assign(:photos_error_count, 0)
     |> assign(:cover_photo_processing, false)
+    |> assign(:user, user)
     |> allow_upload(:cover_photo, @upload_options)
     |> assign(:password_toggle, false)
     |> ok()

@@ -398,7 +398,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
     |> click(link("Manage booking events"))
     |> scroll_to_bottom()
     |> scroll_into_view(testid("actions"))
-    |> click(button("Manage"))
+    |> click(testid("actions"))
     |> click(button("Duplicate"))
     |> assert_text("Add booking event: Details")
     |> scroll_into_view(testid("add-date"))
