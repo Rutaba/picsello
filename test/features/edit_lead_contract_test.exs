@@ -38,64 +38,77 @@ defmodule Picsello.EditLeadContractTest do
       |> assert_text("Selected contract: Picsello Default Contract")
       |> click(@edit_contract_button)
     end)
-    |> assert_text("Add Custom Wedding Contract")
     |> assert_has(css("*[role='status']", text: "No edits made"))
-    |> assert_selected_option(select("Select a Contract Template"), "Picsello Default Contract")
+    |> assert_selected_option(
+      select("Select template to reset contract language"),
+      "Picsello Default Contract"
+    )
     |> assert_has(css("div.ql-editor[data-placeholder='Paste contract text here']"))
     |> fill_in_quill("this is the content of my new contract")
-    |> fill_in(text_field("Contract Name"), with: "My greatest wedding contract")
     |> within_modal(&wait_for_enabled_submit_button/1)
     |> click(button("Save"))
     |> assert_flash(:success, text: "New contract added successfully")
     |> find(testid("contract"), fn element ->
       element
-      |> assert_text("Selected contract: My greatest wedding contract")
+      |> assert_text("Selected contract: Picsello Default Contract")
       |> click(@edit_contract_button)
     end)
     |> within_modal(fn modal ->
       modal
-      |> assert_text("Add Custom Wedding Contract")
       |> assert_has(css("*[role='status']", text: "No edits made"))
       |> assert_selected_option(
-        select("Select a Contract Template"),
-        "My greatest wedding contract"
+        select("Select template to reset contract language"),
+        "Picsello Default Contract"
       )
       |> assert_text("this is the content of my new contract")
     end)
   end
 
-  feature "user adds new contract", %{session: session, lead: lead, user: user} do
+  feature "user adds new contract and then use it in leads", %{
+    session: session,
+    lead: lead,
+    user: user
+  } do
     insert_package(user, lead)
 
     session
+    |> click(css("#hamburger-menu"))
+    |> click(link("Contracts"))
+    |> assert_text("Meet Contracts")
+    |> click(button("Create contract", count: 2, at: 0))
+    |> within_modal(
+      &(&1
+        |> assert_text("Add Contract")
+        |> fill_in(text_field("Name"), with: "My greatest wedding contract")
+        |> click(css("label", text: "Wedding"))
+        |> find(
+          css("div.ql-editor"),
+          fn e -> e |> Element.clear() end
+        )
+        |> scroll_to_bottom()
+        |> assert_has(css("button:disabled[type='submit']"))
+        |> fill_in_quill("content of my new contract")
+        |> wait_for_enabled_submit_button()
+        |> click(button("Save")))
+    )
+    |> assert_flash(:success, text: "Contract saved")
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> click(@edit_contract_button)
-    |> assert_text("Add Custom Wedding Contract")
-    |> find(select("Select a Contract Template"), &click(&1, option("New Contract")))
-    |> fill_in(text_field("Contract Name"), with: "My greatest wedding contract")
-    |> assert_has(css("div.ql-editor[data-placeholder='Paste contract text here']"))
-    |> fill_in_quill("this is the content of my new contract")
-    |> within_modal(&wait_for_enabled_submit_button/1)
-    |> click(button("Save"))
-    |> assert_flash(:success, text: "New contract added successfully")
     |> find(testid("contract"), fn element ->
       element
-      |> assert_text("My greatest wedding contract")
+      |> assert_text("Selected contract: Picsello Default Contract")
       |> click(@edit_contract_button)
     end)
     |> within_modal(fn modal ->
       modal
-      |> assert_text("Add Custom Wedding Contract")
       |> assert_selected_option(
-        select("Select a Contract Template"),
-        "My greatest wedding contract"
+        select("Select template to reset contract language"),
+        "Picsello Default Contract"
       )
-      |> assert_text("this is the content of my new contract")
       |> find(
-        select("Select a Contract Template"),
-        &click(&1, option("Picsello Default Contract"))
+        select("Select template to reset contract language"),
+        &click(&1, option("My greatest wedding contract"))
       )
-      |> assert_text("Retainer and Payment")
+      |> assert_text("content of my new contract")
     end)
   end
 
@@ -110,8 +123,7 @@ defmodule Picsello.EditLeadContractTest do
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
     |> click(@edit_contract_button)
-    |> assert_text("Add Custom Wedding Contract")
-    |> find(select("Select a Contract Template"), fn element ->
+    |> find(select("Select template to reset contract language"), fn element ->
       element |> click(option("Contract 1"))
     end)
     |> click(button("Save"))
@@ -119,36 +131,6 @@ defmodule Picsello.EditLeadContractTest do
     |> find(testid("contract"), fn element ->
       element
       |> assert_text("Contract 1")
-    end)
-  end
-
-  feature "user selects different contract and edits it", %{
-    session: session,
-    user: user,
-    lead: lead
-  } do
-    insert(:contract_template, user: user, job_type: "wedding", name: "Contract 1")
-    insert_package(user, lead)
-
-    session
-    |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
-    |> click(@edit_contract_button)
-    |> assert_text("Add Custom Wedding Contract")
-    |> find(select("Select a Contract Template"), fn element ->
-      element |> click(option("Contract 1"))
-    end)
-    |> assert_has(css("div.ql-editor[data-placeholder='Paste contract text here']"))
-    |> fill_in_quill("this is the content of my new contract")
-    |> assert_disabled_submit()
-    |> fill_in(text_field("Contract Name"), with: " ")
-    |> assert_text("Contract Name can't be blank")
-    |> fill_in(text_field("Contract Name"), with: "Contract 2")
-    |> within_modal(&wait_for_enabled_submit_button/1)
-    |> click(button("Save"))
-    |> assert_flash(:success, text: "New contract added successfully")
-    |> find(testid("contract"), fn element ->
-      element
-      |> assert_text("Contract 2")
     end)
   end
 
@@ -166,13 +148,10 @@ defmodule Picsello.EditLeadContractTest do
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
     |> click(@edit_contract_button)
-    |> assert_text("Add Custom Wedding Contract")
-    |> find(select("Select a Contract Template"), fn element ->
-      assert ["New Contract", "Contract 1", "Picsello Default Contract"] =
+    |> find(select("Select template to reset contract language"), fn element ->
+      assert ["Contract 1", "Picsello Default Contract"] =
                element |> all(css("option")) |> Enum.map(&Wallaby.Element.text/1)
     end)
-    |> fill_in(text_field("Contract Name"), with: "Contract 1")
-    |> assert_text("Contract Name has already been taken")
   end
 
   defp insert_package(user, lead) do

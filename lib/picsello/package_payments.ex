@@ -201,5 +201,6 @@ defmodule Picsello.PackagePayments do
   end
 
   defp filter_payments(schedule),
-    do: Date.compare(current_datetime(), Map.get(schedule, :schedule_date, schedule.due_at)) == :gt
+    do:
+      Date.compare(current_datetime(), Map.get(schedule, :schedule_date, schedule.due_at)) == :gt
 end

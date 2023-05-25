@@ -234,6 +234,8 @@ defmodule Picsello.GalleryOverviewTest do
   } do
     session
     |> visit("/galleries/#{gallery.id}/")
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
     |> click(css("button", text: "Share gallery"))
     |> assert_has(css("p", text: "Please add photos to the gallery before sharing"))
   end
