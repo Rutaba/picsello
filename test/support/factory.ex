@@ -657,6 +657,7 @@ defmodule Picsello.Factory do
       quantity: 1,
       shipping_base_charge: %Money{amount: 3_800, currency: :USD},
       shipping_upcharge: Decimal.new("0.09"),
+      shipping_type: :economy,
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
       whcc_product: fn -> whcc_product end,
@@ -681,7 +682,7 @@ defmodule Picsello.Factory do
     %Picsello.WHCC.Order.Created.Order{
       total: ~M[100]USD,
       sequence_number: sequence(:sequence_number, & &1),
-      api: %{subtotal: ~M[100]USD}
+      api: %{"subtotal" => "$100.00"}
     }
   end
 
@@ -909,6 +910,7 @@ defmodule Picsello.Factory do
       amount_capturable: ~M[0]USD,
       amount_received: ~M[0]USD,
       application_fee_amount: ~M[0]USD,
+      processing_fee: ~M[0]USD,
       order: fn -> build(:order) end,
       status: :requires_payment_method,
       stripe_payment_intent_id: sequence(:payment_intent, &"payment-intent-#{&1}"),
@@ -934,6 +936,13 @@ defmodule Picsello.Factory do
     %Stripe.PaymentIntent{
       amount: 0,
       amount_received: 0,
+      charges: %{data: 
+                  [%{balance_transaction: 
+                      %{fee_details: 
+                          %{type: "stripe_fee", amount:  ~M[10]USD}
+                        }
+                  }]
+                },
       amount_capturable: 0,
       application_fee_amount: 0,
       status: "requires_payment_method",

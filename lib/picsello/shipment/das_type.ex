@@ -1,5 +1,5 @@
 defmodule Picsello.Shipment.DasType do
-  @moduledoc false
+  @moduledoc "area surcharge types for different zipcodes"
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query

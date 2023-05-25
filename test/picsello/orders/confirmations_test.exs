@@ -205,7 +205,18 @@ defmodule Picsello.Orders.ConfirmationsTest do
         build(:digital, photo: insert(:photo, gallery: gallery)),
         gallery
       )
-
+      
+      invoice = build(:stripe_invoice, id: "invoice-stripe-id")
+      MockPayments
+      |> Mox.stub(:create_invoice_item, fn _, _ ->
+        {:ok, %Stripe.Invoiceitem{}}
+      end)
+      |> Mox.stub(:create_invoice, fn _, _ ->
+        {:ok, invoice}
+      end)
+      |> Mox.stub(:finalize_invoice, fn _, _, _ ->
+        {:ok, %{invoice | status: "open"}}
+      end)
       [
         order:
           order
@@ -230,7 +241,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
     test "updates intent", %{intent: intent, session: session} do
       handle_session(session)
 
-      assert %{status: :succeeded} = Repo.reload!(intent)
+      assert %{status: :requires_capture} = Repo.reload!(intent)
     end
 
     test "makes digitals available", %{

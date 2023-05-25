@@ -15,7 +15,8 @@ defmodule Picsello.ClientViewsOrdersTest do
   setup do
     gallery = insert(:gallery, job: insert(:lead, package: insert(:package)))
 
-    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0})
+    gallery_digital_pricing =
+      insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0})
 
     [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
   end
@@ -61,7 +62,6 @@ defmodule Picsello.ClientViewsOrdersTest do
     )
 
     Mox.stub(Picsello.MockWHCCClient, :webhook_validate, fn _, _ -> %{"isValid" => true} end)
-
     session
     |> click(css("a", text: "View Gallery"))
     |> click(link("My orders"))

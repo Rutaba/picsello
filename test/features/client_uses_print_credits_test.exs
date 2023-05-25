@@ -443,7 +443,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           build(:stripe_invoice,
             id: "stripe-invoice-id",
             description: "stripe invoice!",
-            amount_due: 4510,
+            amount_due: 5000,
             amount_remaining: 5000,
             status: :draft
           ),

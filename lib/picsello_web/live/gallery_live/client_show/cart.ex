@@ -188,7 +188,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
         digital_items
         |> Enum.reduce(Ecto.Multi.new(), fn %{id: id} = digital, multi ->
-          Digital
+          Cart.Digital
           |> Repo.get(id)
           |> Ecto.Changeset.change(is_credit: digital.is_credit)
           |> then(&Ecto.Multi.update(multi, id, &1))

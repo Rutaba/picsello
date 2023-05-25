@@ -100,7 +100,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     <dd class="self-center hidden toggle lg:block justify-self-end"><%= @value %></dd>
     """
   end
-
+  
   defp discounts_content(assigns) do
     ~H"""
     <dl class={"#{@class} contents"}>
