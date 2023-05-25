@@ -39,7 +39,10 @@ defmodule Picsello.EditLeadContractTest do
       |> click(@edit_contract_button)
     end)
     |> assert_has(css("*[role='status']", text: "No edits made"))
-    |> assert_selected_option(select("Select template to reset contract language"), "Picsello Default Contract")
+    |> assert_selected_option(
+      select("Select template to reset contract language"),
+      "Picsello Default Contract"
+    )
     |> assert_has(css("div.ql-editor[data-placeholder='Paste contract text here']"))
     |> fill_in_quill("this is the content of my new contract")
     |> within_modal(&wait_for_enabled_submit_button/1)
@@ -53,12 +56,19 @@ defmodule Picsello.EditLeadContractTest do
     |> within_modal(fn modal ->
       modal
       |> assert_has(css("*[role='status']", text: "No edits made"))
-      |> assert_selected_option(select("Select template to reset contract language"), "Picsello Default Contract")
+      |> assert_selected_option(
+        select("Select template to reset contract language"),
+        "Picsello Default Contract"
+      )
       |> assert_text("this is the content of my new contract")
     end)
   end
 
-  feature "user adds new contract and then use it in leads", %{session: session, lead: lead, user: user} do
+  feature "user adds new contract and then use it in leads", %{
+    session: session,
+    lead: lead,
+    user: user
+  } do
     insert_package(user, lead)
 
     session
@@ -82,7 +92,6 @@ defmodule Picsello.EditLeadContractTest do
         |> click(button("Save")))
     )
     |> assert_flash(:success, text: "Contract saved")
-
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
     |> find(testid("contract"), fn element ->
       element
