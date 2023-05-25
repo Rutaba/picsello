@@ -193,7 +193,6 @@ defmodule Picsello.ImportJobTest do
 
     base_price = Money.new(100_000)
     download_each_price = Money.new(5000)
-    buy_all = Money.new(1000)
     print_credits = Money.new(10_000)
     collected_price = Money.new(20_000)
 
