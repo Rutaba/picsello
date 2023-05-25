@@ -141,6 +141,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
                address: "320 1st St N, Jax Beach, FL",
                duration_minutes: 45,
                buffer_minutes: 15,
+               status: :active,
                dates: [
                  %{
                    date: ~D[2050-10-10],
@@ -164,7 +165,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
                    ]
                  },
                  %{
-                   date: ~D[2050-10-11],
+                  # please don't make it ~D[2050-10-11]. it will stop working on staging
+                   date: ~D[2050-11-10],
                    time_blocks: [
                      %{
                        end_time: ~T[14:00:00],
