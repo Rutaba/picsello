@@ -237,6 +237,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
         %{assigns: %{email_list: email_list, email_input: email, changeset: changeset}} = socket
       ) do
     updated_email_list = email_list ++ [email]
+
     socket
     |> assign(:email_list, updated_email_list)
     |> assign(:changeset, Changeset.put_change(changeset, :email_list, updated_email_list))
@@ -267,9 +268,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
   defp assign_changeset(
          %{
-           assigns:
-             %{gallery: gallery, global_settings: global_settings} =
-               assigns
+           assigns: %{gallery: gallery, global_settings: global_settings} = assigns
          } = socket,
          params,
          action \\ :validate

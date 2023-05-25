@@ -37,14 +37,15 @@ defmodule PicselloWeb.JobLive.Show do
   ]
 
   @impl true
-  def mount(%{"id" => job_id} = assigns, _session, socket) do
+  def mount(%{"id" => job_id} = params, _session, socket) do
     socket
     |> assign_job(job_id)
     |> assign(:type, %{singular: "job", plural: "jobs"})
-    |> assign_new(:anchor, fn -> Map.get(assigns, "anchor", nil) end)
-    |> assign(:request_from, assigns["request_from"])
+    |> assign_new(:anchor, fn -> Map.get(params, "anchor", nil) end)
+    |> assign(:request_from, params["request_from"])
     |> assign(:collapsed_sections, [])
     |> assign(:new_gallery, nil)
+    |> is_mobile(params)
     |> then(fn %{assigns: %{job: job}} = socket ->
       payment_schedules = job |> Repo.preload(:payment_schedules) |> Map.get(:payment_schedules)
 
@@ -97,9 +98,21 @@ defmodule PicselloWeb.JobLive.Show do
       |> noreply()
 
   @impl true
-  def handle_event("edit-digital-pricing", %{"gallery_id" => gallery_id}, socket) do
+  def handle_event(
+        "edit-digital-pricing",
+        %{"gallery_id" => gallery_id},
+        %{assigns: %{is_mobile: is_mobile}} = socket
+      ) do
     socket
-    |> redirect(to: Routes.gallery_pricing_index_path(socket, :index, gallery_id))
+    |> redirect(
+      to:
+        Routes.gallery_pricing_index_path(
+          socket,
+          :index,
+          gallery_id,
+          if(is_mobile, do: [is_mobile: false], else: [])
+        )
+    )
     |> noreply
   end
 
@@ -107,7 +120,9 @@ defmodule PicselloWeb.JobLive.Show do
   def handle_event("view-gallery", %{"gallery_id" => gallery_id}, socket),
     do:
       socket
-      |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery_id, is_mobile: false))
+      |> push_redirect(
+        to: Routes.gallery_photographer_index_path(socket, :index, gallery_id, is_mobile: false)
+      )
       |> noreply()
 
   def handle_event("create-gallery", %{"parent_id" => parent_id}, socket) do
@@ -306,7 +321,7 @@ defmodule PicselloWeb.JobLive.Show do
   defp actions(assigns) do
     ~H"""
     <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-offset-x="-21" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-gallery-#{@gallery.id}"}>
-      <button title="Manage" class="btn-tertiary px-3 py-2 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
+      <button title="Manage" class="btn-tertiary px-3 py-2 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full">
         Actions
         <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
         <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />

@@ -16,7 +16,7 @@ defmodule Picsello.GlobalSettings.Gallery do
 
   @default_each_price ~M[5000]USD
   @default_buy_all_price ~M[75000]USD
-  
+
   schema "global_settings_galleries" do
     field(:expiration_days, :integer)
     field(:watermark_name, :string)
