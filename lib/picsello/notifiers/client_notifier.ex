@@ -67,9 +67,10 @@ defmodule Picsello.Notifiers.ClientNotifier do
   def deliver_paying_by_invoice(proposal) do
     %{job: %{client: %{organization: organization} = client} = job} =
       proposal |> Repo.preload(job: [client: [organization: :user]])
-      booking_event = Map.get(job, :booking_event)
-      name = if booking_event, do: booking_event.name, else: Picsello.Job.name(job)
-  
+
+    booking_event = Map.get(job, :booking_event)
+    name = if booking_event, do: booking_event.name, else: Picsello.Job.name(job)
+
     %{
       subject: "Cash or check payment",
       body: """

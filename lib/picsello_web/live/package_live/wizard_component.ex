@@ -1350,14 +1350,24 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp fixed_switch(socket, fixed, total_price, params) do
+    total_price = if fixed, do: total_price, else: Money.round(total_price)
+
     {presets, _} =
       params
       |> Map.get("payment_schedules")
       |> Map.values()
       |> update_amount(fixed, total_price)
 
+    params =
+      params
+      |> Map.merge(%{
+        "total_price" => total_price,
+        "remaining_price" => total_price,
+        "payment_schedules" => presets
+      })
+
     socket
-    |> maybe_assign_custom(Map.put(params, "payment_schedules", presets))
+    |> maybe_assign_custom(params)
   end
 
   defp update_amount(schedules, fixed, total_price) do
