@@ -145,6 +145,8 @@ defmodule Picsello.Packages do
     use Ecto.Schema
     import Ecto.Changeset
     import Money.Sigils
+    
+    alias Picsello.Package
 
     @default_each_price ~M[5000]USD
     @zero_price ~M[0]USD
@@ -202,7 +204,7 @@ defmodule Picsello.Packages do
               |> force_change(:digitals_include_in_total, false)
               |> validate_required([:each_price])
               |> validate_inclusion(:is_custom_price, ["true"])
-              |> Picsello.Package.validate_money(:each_price, greater_than: 201, message: "must be greater than two"),
+              |> Package.validate_money(:each_price, greater_than: 201, message: "must be greater than two"),
             else: &1
           )
         )
@@ -213,7 +215,8 @@ defmodule Picsello.Packages do
               |> force_change(:count, get_field(&1, :count))
               |> validate_required([:count])
               |> validate_inclusion(:is_custom_price, ["true"])
-              |> validate_number(:count, greater_than: 0),
+              |> validate_number(:count, greater_than: 0)
+              |> Package.validate_money(:each_price, greater_than: 201, message: "must be greater than two"),
             else: force_change(&1, :count, nil)
           )
         )
