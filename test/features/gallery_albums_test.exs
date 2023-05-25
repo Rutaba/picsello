@@ -158,5 +158,6 @@ defmodule Picsello.GalleryAlbumsTest do
     |> click(css("*[phx-click='select_albums_dropdown']"))
     |> click(button(album.name))
     |> assert_text("Test album")
+    |> assert_text("Test Client")
   end
 end
