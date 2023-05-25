@@ -1,15 +1,39 @@
+<%= if @connect_modal do %>
+<div  class="p1 container border-1 border-black mx-auto z-50 isolate w-full max-w-xs" id="connect_calendar_modal">
+  <div class="m1">
+    <h1 class="text-3xl">Connect your calendar</h1>
+    <div class="text-xl">
+      Securely Connect your calendar so we can: </div>
+    <ul class="list-disc">
+      <li>Create new events from Picsello actions (bookings and shoots)</li>
+      <li>Delete Events created by Picsello</li>
+      <li>Read Events from Calendars you've authorized</li>
+    </ul>
+    <br/>
+    <a class="btn bg-black grow rounded-none text-white font-bold py-2 px-4 w-96"
+            id="button-connect" href={@nylas_url}>Connect a Calendar</a>
+    <a class="btn grow hover:bg-blue-500 border-black border-solid font-bold py-2 px-4 border-1 rounded-none hover:text-white-700 text-blue-700 w-96"
+       phx-click="toggle_connect_modal"
+       id="button-close">
+      Close
+    </a>
+  </div>
+</div>
+  
+
+<% else %> 
 <div class="p-6 center-container">
   <div class="flex items-end justify-between mt-4 md:justify-start">
     <div class="flex text-4xl font-bold items-center">
       <.back_button to={Routes.home_path(@socket, :index)} class="mt-2"/>
       Calendar
     </div>
-
+   
     <%= if @show_calendar_setup do %>
-    <.live_link to={Routes.calendar_settings_path(@socket, :settings)} class="btn-tertiary flex items-center md:ml-auto md:mr-3 text-blue-planning-300">
+    <div phx-click="toggle_connect_modal" class="btn-tertiary flex items-center md:ml-auto md:mr-3 text-blue-planning-300" id="button-connect">
       <.icon name="settings" class="inline-block w-6 h-6 mr-2 text-blue-planning-300" />
       <span id="connect">Connect Calendar</span>
-    </.live_link>
+    </div>
     <% else %>
     <span id="connect">Calendar Connected</span>
     <% end %>
@@ -23,3 +47,4 @@
   <hr class="my-4 sm:my-10" />
   <div phx-hook="Calendar" phx-update="replace" class="w-full" id="calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :index)}></div>
 </div>
+<% end %>
