@@ -125,25 +125,21 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_text("Add a Package: Select Documents")
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
-    |> fill_in(text_field("Package Price"), with: "$100")
-    |> click(checkbox("Apply a discount or surcharge"))
+    |> fill_in(css("#form-pricing_base_price"), with: "$100")
+    |> scroll_into_view(testid("add-discount-surcharge"))
+    |> click(button("Add a discount or surcharge"))
+    |> scroll_into_view(css("#multiplier_is_enabled"))
+    |> click(css("#multiplier_is_enabled"))
     |> click(option("30%"))
+    |> scroll_into_view(css("#multiplier_discount_base_price"))
+    |> click(css("#multiplier_discount_base_price"))
     |> assert_text("-$30.00")
     |> click(option("Surcharge"))
     |> assert_text("+$30.00")
-    |> scroll_into_view(testid("download"))
-    |> scroll_into_view(css("#download_status_limited"))
+    |> scroll_into_view(testid("edit-digital-collection"))
+    |> click(testid("edit-digital-collection"))
     |> click(css("#download_status_limited"))
-    |> find(
-      text_field("download_count"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
-    )
-    |> scroll_into_view(css("#download_is_custom_price"))
-    |> find(
-      text_field("download[each_price]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
-    )
-    |> assert_has(definition("Total", text: "$130.00"))
+    |> fill_in(css("#download_count"), with: 2)
     |> wait_for_enabled_submit_button()
     |> payment_screen()
     |> wait_for_enabled_submit_button(text: "Save")
@@ -161,7 +157,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
              description: "<p>My greatest wedding package</p>",
              base_price: %Money{amount: 10_000},
              download_count: 2,
-             download_each_price: %Money{amount: 200},
+             download_each_price: %Money{amount: 5000},
              job_type: "event",
              package_template_id: nil
            } = package
@@ -193,9 +189,9 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
-    |> fill_in(text_field("Package Price"), with: "$130")
-    |> payment_screen()
+    |> fill_in(css("#form-pricing_base_price"), with: "$130")
     |> wait_for_enabled_submit_button()
+    |> payment_screen()
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
@@ -235,8 +231,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
         |> scroll_into_view(testid("download"))
-        |> click(css("#download_status_limited"))
-        |> click(css("#download_status_unlimited"))
         |> Kernel.tap(fn modal ->
           refute Regex.match?(~r/downloads are valued/, Element.text(modal))
         end)

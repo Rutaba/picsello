@@ -308,7 +308,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         <.footer class="pt-10">
           <.step_buttons name={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
-          
+
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
             Cancel
           </button>
@@ -591,7 +591,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Package Total</h2>
               <p class="text-base-250 mb-2">Taxes will be calculated at checkout for your client.</p>
             </div>
-            <button class={classes("underline text-blue-planning-300 inline-block w-max", %{"hidden" => @show_discounts})} type="button" phx-target={@myself} phx-click="edit-discounts">Add a discount or surcharge</button>
+            <button {testid("add-discount-surcharge")} class={classes("underline text-blue-planning-300 inline-block w-max", %{"hidden" => @show_discounts})} type="button" phx-target={@myself} phx-click="edit-discounts">Add a discount or surcharge</button>
 
             <div class={classes("border border-solid mt-6 rounded-lg md:w-3/4 w-full", %{"hidden" => !@show_discounts})}>
               <div class="p-2 font-bold bg-base-200 flex flex-row">
@@ -625,7 +625,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
                   <% print_credits_include_in_total = Map.get(changeset, :print_credits_include_in_total) %>
                   <% digitals_include_in_total = Map.get(changeset, :digitals_include_in_total) %>
-                  
+
                   <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !print_credits_include_in_total})}>
                     <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !print_credits_include_in_total %>
                     <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>

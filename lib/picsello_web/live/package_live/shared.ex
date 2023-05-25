@@ -453,7 +453,7 @@ defmodule PicselloWeb.PackageLive.Shared do
           <div class="flex flex-row md:gap-8 gap-4 my-2">
             <div>
               <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green-finances-300" /><%= make_digital_text(@download_changeset) %> included</span>
-              <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_digitals in ["digitals", "image_price", "buy_all"]})} type="button" phx-target={@target} phx-value-type="digitals" phx-click="edit-digitals">Edit settings</button>
+              <button {testid("edit-digital-collection")} class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_digitals in ["digitals", "image_price", "buy_all"]})} type="button" phx-target={@target} phx-value-type="digitals" phx-click="edit-digitals">Edit settings</button>
             </div>
             <div>
               <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green-finances-300" /><%= current(@download_changeset) |> Map.get(:each_price) %> an image</span>
@@ -478,25 +478,25 @@ defmodule PicselloWeb.PackageLive.Shared do
       </div>
 
       <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "digitals"})}>
-        <div class="p-2 font-bold bg-base-200 flex flex-row">
+        <div class="items-center cursor-pointer p-2 font-bold bg-base-200 flex justify-between">
           Digital Collection Settings
-          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
         <.build_download_fields download_changeset={d} {assigns} />
       </div>
 
       <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "image_price"})}>
-        <div class="p-2 font-bold bg-base-200 flex flex-row">
+        <div class="items-center cursor-pointer p-2 font-bold bg-base-200 flex justify-between">
           Digital Image Price
-          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
         <.include_download_price download_changeset={d} />
       </div>
 
       <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "buy_all"})}>
-        <div class="p-2 font-bold bg-base-200 flex flex-row">
+        <div class="items-center cursor-pointer p-2 font-bold bg-base-200 flex justify-between">
           Upsell Options
-          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
         <.is_buy_all download_changeset={d} />
       </div>

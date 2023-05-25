@@ -51,27 +51,20 @@ defmodule Picsello.EditLeadPackageTest do
     |> assert_value(@price_text_field, "$1.00")
     |> fill_in(@price_text_field, with: "2.00")
     |> scroll_to_bottom()
-    |> scroll_into_view(css("#download_status_limited"))
+    |> scroll_into_view(testid("edit-digital-collection"))
+    |> click(testid("edit-digital-collection"))
     |> click(css("#download_status_limited"))
-    |> find(
-      text_field("download_count"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "1"))
-    )
-    |> scroll_into_view(css("#download_is_custom_price"))
-    |> find(
-      text_field("download[each_price]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$4"))
-    )
+    |> fill_in(css("#download_count"), with: 1)
+    |> click(link("close"))
+    |> click(button("Edit image price"))
+    |> scroll_into_view(css("#download_each_price"))
+    |> fill_in(css("#download_each_price"), with: 4)
+    |> click(link("close"))
+    |> click(button("Edit upsell options"))
     |> scroll_into_view(css("#download_is_buy_all"))
     |> click(css("#download_is_buy_all"))
-    |> find(
-      text_field("download[buy_all]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$4"))
-    )
-    |> find(
-      text_field("download[buy_all]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$5"))
-    )
+    |> scroll_into_view(css("#download_buy_all"))
+    |> fill_in(css("#download_buy_all"), with: 4)
     |> click(button("Next"))
     |> scroll_into_view(testid("select-preset-type"))
     |> find(select("custom_payments_schedule_type"), &click(&1, option("2 split payments")))
