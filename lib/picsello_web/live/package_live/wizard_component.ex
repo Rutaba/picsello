@@ -40,7 +40,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @all_fields Package.__schema__(:fields)
-  
+
   defmodule CustomPayments do
     @moduledoc "For setting payments on last step"
     use Ecto.Schema
@@ -215,7 +215,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       end
     end
 
-    defp get_shoot_date(shoot_date), do: if(shoot_date, do: shoot_date, else: Packages.future_date())
+    defp get_shoot_date(shoot_date),
+      do: if(shoot_date, do: shoot_date, else: Packages.future_date())
   end
 
   @impl true
@@ -1188,7 +1189,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           get_price_or_percentage(price, fixed, length(default_presets), &2)
         )
       )
+
     price = if fixed, do: price, else: Money.round(price)
+
     params = %{
       "total_price" => price,
       "remaining_price" => price,
@@ -1235,14 +1238,24 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp fixed_switch(socket, fixed, total_price, params) do
+    total_price = if fixed, do: total_price, else: Money.round(total_price)
+
     {presets, _} =
       params
       |> Map.get("payment_schedules")
       |> Map.values()
       |> update_amount(fixed, total_price)
 
+    params =
+      params
+      |> Map.merge(%{
+        "total_price" => total_price,
+        "remaining_price" => total_price,
+        "payment_schedules" => presets
+      })
+
     socket
-    |> maybe_assign_custom(Map.put(params, "payment_schedules", presets))
+    |> maybe_assign_custom(params)
   end
 
   defp update_amount(schedules, fixed, total_price) do
@@ -1349,7 +1362,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               |> get_default_price(&1, price, params, &2)
             )
           )
-        
+
         price = if params.fixed, do: price, else: Money.round(price)
 
         %{
@@ -1361,7 +1374,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         }
       else
         default_presets = Packages.get_payment_defaults(job_type)
-        
+
         presets =
           default_presets
           |> Enum.with_index(
@@ -1714,7 +1727,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     end
     |> Map.merge(options)
   end
-
 
   defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
 

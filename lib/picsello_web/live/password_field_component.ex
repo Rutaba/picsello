@@ -5,6 +5,7 @@ defmodule PicselloWeb.PasswordFieldComponent do
   @impl true
   def render(assigns) do
     assigns = assigns |> Enum.into(%{class: nil})
+
     ~H"""
     <div class='flex flex-col mt-4'>
       <%= label_for @f, @name, label: @label %>

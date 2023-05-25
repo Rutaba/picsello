@@ -880,6 +880,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def card_button(%{buttons: [%{link: link} = button]} = assigns) when not is_nil(link) do
     assigns = assign(assigns, link: link, button: button)
+
     ~H"""
     <.custom_link link={@link} class={@button.class} label={@button.label} />
     """
@@ -887,6 +888,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def card_button(%{buttons: [%{action: action} = button]} = assigns) when not is_nil(action) do
     assigns = assign(assigns, action: action, button: button)
+
     ~H"""
     <button type="button" phx-click={@action} phx-click="sss" class={"#{@button.class} text-sm w-full py-2 mt-2"}>
       <%= @button.label %>
@@ -896,6 +898,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   def card_button(%{buttons: [button_1, button_2]} = assigns) do
     assigns = assign(assigns, button_1: button_1, button_2: button_2)
+
     ~H"""
     <div class="flex gap-4">
      <.card_button buttons={[@button_1]} />

@@ -13,6 +13,7 @@ defmodule Picsello.Subscriptions do
 
   import Picsello.Zapier.User, only: [user_subscription_ending_soon_webhook: 1]
   import PicselloWeb.Helpers, only: [days_distance: 1]
+  import PicselloWeb.LiveHelpers, only: [to_integer: 1]
   import Ecto.Query
   require Logger
 
@@ -76,7 +77,7 @@ defmodule Picsello.Subscriptions do
     end
   end
 
-  def subscription_ending_soon_info(nil), do: %{hidden?: true, hidden_30_days?: true}
+  def subscription_ending_soon_info(nil), do: %{hidden?: true, hidden_for_days?: true}
 
   def subscription_ending_soon_info(%User{subscription: %Ecto.Association.NotLoaded{}} = user),
     do: user |> Repo.preload(:subscription) |> subscription_ending_soon_info()
@@ -85,16 +86,17 @@ defmodule Picsello.Subscriptions do
     case subscription do
       %{current_period_end: current_period_end, cancel_at: cancel_at} when cancel_at != nil ->
         days_left = days_distance(current_period_end)
+        setting = Picsello.AdminGlobalSettings.get_settings_by_slug("free_trial")
 
         %{
           hidden?: calculate_days_left_boolean(days_left, 7),
-          hidden_30_days?: calculate_days_left_boolean(days_left, 30),
+          hidden_for_days?: calculate_days_left_boolean(days_left, to_integer(setting.value)),
           days_left: days_left |> Kernel.max(0),
           subscription_end_at: DateTime.to_date(current_period_end)
         }
 
       _ ->
-        %{hidden?: true, hidden_30_days?: true}
+        %{hidden?: true, hidden_for_days?: true}
     end
   end
 
@@ -334,16 +336,20 @@ defmodule Picsello.Subscriptions do
   defp subscription_plan_metadata(),
     do: subscription_plan_metadata_default()
 
-  defp subscription_plan_metadata_default(),
-    do: %Picsello.SubscriptionPlansMetadata{
-      trial_length: 30,
+  defp subscription_plan_metadata_default() do
+    setting = Picsello.AdminGlobalSettings.get_settings_by_slug("free_trial")
+    days = to_integer(setting.value)
+
+    %Picsello.SubscriptionPlansMetadata{
+      trial_length: days,
       onboarding_description:
-        "Your 30-day free trial lets you explore and use all of our amazing features. To get started we’ll ask you to enter your credit card to keep your account secure and for us to focus the team on those who are really interested in Picsello.",
-      onboarding_title: "Start your 30-day free trial",
+        "Your #{days}-day free trial lets you explore and use all of our amazing features. To get started we’ll ask you to enter your credit card to keep your account secure and for us to focus the team on those who are really interested in Picsello.",
+      onboarding_title: "Start your #{days}-day free trial",
       signup_description: "Start your free trial",
-      signup_title: "Get started with your 30-day free trial today",
-      success_title: "Your 30-day free trial has started!"
+      signup_title: "Get started with your #{days}-day free trial today",
+      success_title: "Your #{days}-day free trial has started!"
     }
+  end
 
   defp to_datetime(nil), do: nil
   defp to_datetime(unix_date), do: DateTime.from_unix!(unix_date)

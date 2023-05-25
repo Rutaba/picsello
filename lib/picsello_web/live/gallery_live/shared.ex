@@ -515,7 +515,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
     any_client_liked_photo? =
       Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
-    
+
     assigns = assigns |> Enum.into(%{any_client_liked_photo?: any_client_liked_photo?})
 
     ~H"""
@@ -847,7 +847,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     [{"Digital Image Credits", "#{remaining} out of #{total_count}"}]
   end
 
-  defp name(%Digital{photo: photo}, true), do: "Select for retouching - #{photo.name}"
+  defp name(%Digital{photo: photo}, true), do: "Selected for retouching - #{photo.name}"
   defp name(%Digital{}, false), do: "Digital download"
   defp name({:bundle, _}, false), do: "All digital downloads"
   defp name(item, false), do: Cart.product_name(item)

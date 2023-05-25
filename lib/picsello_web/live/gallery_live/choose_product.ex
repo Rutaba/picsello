@@ -26,6 +26,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   @impl true
   def update(%{gallery: gallery, photo_id: photo_id} = assigns, socket) do
     gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
+
     socket
     |> assign(Map.merge(@defaults, assigns))
     |> assign(assigns)
@@ -108,7 +109,12 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   end
 
   def handle_event("photo_view", %{"photo_id" => photo_id}, %{assigns: assigns} = socket) do
-    assigns = %{photo_id: photo_id, photo_ids: assigns.photo_ids, from: :choose_product}
+    assigns = %{
+      photo_id: photo_id,
+      photo_ids: assigns.photo_ids,
+      from: :choose_product,
+      is_proofing: assigns.is_proofing
+    }
 
     socket
     |> open_modal(PhotoView, %{assigns: assigns})
@@ -184,6 +190,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   defp button_option(%{is_proofing: false} = assigns) do
     opts = [testid: "digital_download", title: "Digital Download"]
     assigns = assign(assigns, :opts, opts)
+
     ~H"""
       <%= case @digital_status do %>
       <% :in_cart -> %>
@@ -221,8 +228,15 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
         "Unselect"
       end
 
+    digital_status =
+      if Galleries.do_not_charge_for_download?(assigns.gallery),
+        do: :available,
+        else: assigns.digital_status
+
     opts = [testid: "digital_download", title: "Select for retouching"]
-    assigns = assign(assigns, opts: opts, button_label: button_label)
+
+    assigns =
+      assign(assigns, opts: opts, button_label: button_label, digital_status: digital_status)
 
     ~H"""
       <%= case @digital_status do %>

@@ -12,7 +12,8 @@ defmodule Picsello.ClientIndexTest do
         job: insert(:lead, package: insert(:package, download_each_price: ~M[3500]USD))
       )
 
-    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0})
+    gallery_digital_pricing =
+      insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0})
 
     [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
   end

@@ -67,7 +67,6 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   @impl true
   defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.Shared
 
-
   @impl true
   def handle_info({:message_composed, message_changeset}, socket) do
     add_message_and_notify(socket, message_changeset, "gallery")

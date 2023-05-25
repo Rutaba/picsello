@@ -3,7 +3,7 @@
       <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
       <.crumbs class="text-sm text-base-250">
         <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
-        <:crumb>Your Contracts</:crumb>
+        <:crumb>Contracts</:crumb>
       </.crumbs>
     </div>
 
@@ -16,7 +16,7 @@
         </div>
 
         <div>
-          <h1 class="text-4xl font-bold">Contracts</h1>
+          <h1 class="text-4xl font-bold">Your Contracts</h1>
           <div class="max-w-4xl mt-2 text-base-250">
             <p>Create and manage all of your global contracts here. We have default contracts for you to start with or go ahead and copy and paste in your own copy. Then you can set a default contract in your packages!</p>
           </div>
@@ -42,7 +42,13 @@
     <%= for contract <- @contracts do %>
     <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("contracts-row")}>
         <div class="sm:col-span-5 flex flex-wrap items-center gap-x-4 col-y-3">
-            <button {if contract.organization_id, do: %{phx_click: "edit-contract", phx_value_contract_id: contract.id}, else: %{phx_click: "view-contract", phx_value_contract_id: contract.id}} class="block text-xl text-left underline text-blue-planning-300 mt-2"><%= contract.name %></button>
+            <button {if contract.organization_id, do: %{phx_click: "edit-contract", phx_value_contract_id: contract.id}, else: %{phx_click: "view-contract", phx_value_contract_id: contract.id}} class="block text-xl text-left underline text-blue-planning-300 mt-2"> 
+              <%= if String.length(contract.name) < 30 do
+                contract.name || "-"
+              else
+                "#{contract.name |> String.slice(0..30)} ..."
+              end %>
+            </button>
             <%= if !contract.organization_id do %>
             <div><.badge color={:gray}>View Only</.badge></div>
           <% else %>

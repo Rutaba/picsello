@@ -148,7 +148,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!"))
+      |> assert_has(
+        css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!")
+      )
       |> assert_disabled(@invoice_button)
       |> click(link("Message Photography LLC"))
       |> within_modal(fn modal ->
@@ -334,7 +336,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!"))
+      |> assert_has(
+        css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!")
+      )
       |> click(button("To-Do Review and accept your proposal"))
       |> click(button("Accept Quote"))
       |> click(button("To-Do Review and sign your contract"))
@@ -386,7 +390,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!"))
+      |> assert_has(
+        css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!")
+      )
       |> click(button("To-Do Review and accept your proposal"))
       |> click(button("Accept Quote"))
       |> click(button("To-Do Review and sign your contract"))
@@ -470,8 +476,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> visit("/leads/#{lead.id}")
     |> click(checkbox("Include questionnaire in proposal?", selected: true))
     |> click(button("Edit or Select New", at: 0, count: 2))
-    |> find(select("Select a Contract Template"), &click(&1, option("Contract 1")))
-    |> fill_in(text_field("Contract Name"), with: "Contract 2")
+    |> find(
+      select("Select template to reset contract language"),
+      &click(&1, option("Contract 1"))
+    )
     |> within_modal(&wait_for_enabled_submit_button/1)
     |> click(button("Save"))
     |> click(@send_proposal_button)
@@ -535,7 +543,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(url)
-    |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!"))
+    |> assert_has(
+      css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!")
+    )
     |> click(button("To-Do Review and accept your proposal"))
     |> click(button("Accept Quote"))
     |> click(button("To-Do Review and sign your contract"))

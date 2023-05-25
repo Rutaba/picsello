@@ -10,7 +10,8 @@ defmodule Picsello.GalleryAlbumsTest do
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
     album = insert(:album, %{gallery_id: gallery.id}) |> Repo.preload([:photos, :thumbnail_photo])
-    [album: album]
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
+    [album: album, gallery_digital_pricing: gallery_digital_pricing]
   end
 
   test "Albums, render albums", %{
@@ -157,5 +158,6 @@ defmodule Picsello.GalleryAlbumsTest do
     |> click(css("*[phx-click='select_albums_dropdown']"))
     |> click(button(album.name))
     |> assert_text("Test album")
+    |> assert_text("Test Client")
   end
 end

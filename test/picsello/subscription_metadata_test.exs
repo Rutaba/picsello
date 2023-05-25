@@ -29,14 +29,14 @@ defmodule Picsello.SubscriptionMetadataTest do
     test "get default subscription content when no trial codes" do
       %Picsello.SubscriptionPlansMetadata{
         code: nil,
-        trial_length: 30,
-        success_title: "Your 30-day free trial has started!"
+        trial_length: 14,
+        success_title: "Your 14-day free trial has started!"
       } = Subscriptions.get_subscription_plan_metadata("99999")
 
       %Picsello.SubscriptionPlansMetadata{
         code: nil,
-        trial_length: 30,
-        onboarding_title: "Start your 30-day free trial"
+        trial_length: 14,
+        onboarding_title: "Start your 14-day free trial"
       } = Subscriptions.get_subscription_plan_metadata()
     end
 
@@ -46,8 +46,8 @@ defmodule Picsello.SubscriptionMetadataTest do
 
       %Picsello.SubscriptionPlansMetadata{
         code: nil,
-        trial_length: 30,
-        success_title: "Your 30-day free trial has started!"
+        trial_length: 14,
+        success_title: "Your 14-day free trial has started!"
       } = Subscriptions.get_subscription_plan_metadata(random_code)
     end
   end
