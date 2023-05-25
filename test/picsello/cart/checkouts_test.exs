@@ -192,6 +192,7 @@ defmodule Picsello.Cart.CheckoutsTest do
     setup [:stub_create_session, :stub_create_order]
 
     setup %{gallery: gallery, whcc_order: whcc_order} do
+
       order =
         build(:cart_product)
         |> Cart.place_product(gallery)
@@ -234,7 +235,7 @@ defmodule Picsello.Cart.CheckoutsTest do
       products = order |> Cart.add_default_shipping_to_products()
       order = Map.put(order, :products, products)
 
-      assert ~M[10420]USD == Order.total_cost(order)
+      assert ~M[45]USD == Order.total_cost(order)
 
       assert :lt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
 

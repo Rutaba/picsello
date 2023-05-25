@@ -62,7 +62,6 @@ defmodule Picsello.ClientViewsOrdersTest do
     )
 
     Mox.stub(Picsello.MockWHCCClient, :webhook_validate, fn _, _ -> %{"isValid" => true} end)
-
     session
     |> click(css("a", text: "View Gallery"))
     |> click(link("My orders"))
