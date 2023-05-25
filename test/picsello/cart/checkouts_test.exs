@@ -192,7 +192,6 @@ defmodule Picsello.Cart.CheckoutsTest do
     setup [:stub_create_session, :stub_create_order]
 
     setup %{gallery: gallery, whcc_order: whcc_order} do
-
       order =
         build(:cart_product)
         |> Cart.place_product(gallery)

@@ -152,6 +152,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
 
   def step(%{step: :package_payment, job_changeset: job_changeset} = assigns) do
     job_type = Changeset.get_field(job_changeset, :type)
+
     Enum.into(assigns, %{job_type: job_type, show_digitals: job_type, myself: self()})
     |> package_payment_step()
   end

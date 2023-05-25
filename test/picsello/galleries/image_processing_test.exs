@@ -19,7 +19,7 @@ defmodule Picsello.Galleries.ImageProcessingTest do
       )
 
     insert(:global_gallery_settings, organization: organization)
-
+    insert(:gallery_digital_pricing, gallery: gallery)
     [
       photo: %Photo{gallery_id: gallery.id, original_url: @original_path, name: "test.jpg"},
       watermark: %Watermark{gallery_id: gallery.id, type: :image},

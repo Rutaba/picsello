@@ -91,7 +91,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     """
   end
 
-
   defp summary_block(assigns) do
     assigns = Enum.into(assigns, %{value: nil, icon: nil, class: nil, event: nil})
 
@@ -100,7 +99,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     <dd class="self-center hidden toggle lg:block justify-self-end"><%= @value %></dd>
     """
   end
-  
+
   defp discounts_content(assigns) do
     ~H"""
     <dl class={"#{@class} contents"}>

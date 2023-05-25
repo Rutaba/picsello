@@ -49,7 +49,12 @@ defmodule Picsello.Packages do
     def changeset(package_pricing \\ %__MODULE__{}, attrs) do
       package_pricing
       |> cast(attrs, [:is_enabled, :print_credits_include_in_total])
-      |> then(&if(get_field(&1, :is_enabled), do: &1, else: force_change(&1, :print_credits_include_in_total, false)))
+      |> then(
+        &if(get_field(&1, :is_enabled),
+          do: &1,
+          else: force_change(&1, :print_credits_include_in_total, false)
+        )
+      )
     end
 
     def handle_package_params(package, params) do
@@ -58,7 +63,9 @@ defmodule Picsello.Packages do
         "false" ->
           Map.put(package, "print_credits", Money.new(0))
           |> Map.put("print_credits_include_in_total", false)
-        _ -> package
+
+        _ ->
+          package
       end
     end
   end
@@ -83,12 +90,18 @@ defmodule Picsello.Packages do
 
     def changeset(multiplier \\ %__MODULE__{}, attrs) do
       multiplier
-      |> cast(attrs, [:percent, :sign, :is_enabled, :discount_base_price, :discount_print_credits, :discount_digitals])
+      |> cast(attrs, [
+        :percent,
+        :sign,
+        :is_enabled,
+        :discount_base_price,
+        :discount_print_credits,
+        :discount_digitals
+      ])
       |> validate_required([:percent, :sign, :is_enabled])
       |> then(
         &if(get_field(&1, :is_enabled) && Map.get(attrs, "step") in [:choose_type, :pricing],
-          do:
-            validate_discounts(&1),
+          do: validate_discounts(&1),
           else:
             &1
             |> force_change(:discount_base_price, false)
@@ -99,7 +112,9 @@ defmodule Picsello.Packages do
     end
 
     defp validate_discounts(changeset) do
-      if get_field(changeset, :discount_base_price) || get_field(changeset, :discount_print_credits) || get_field(changeset, :discount_digitals) do
+      if get_field(changeset, :discount_base_price) ||
+           get_field(changeset, :discount_print_credits) ||
+           get_field(changeset, :discount_digitals) do
         changeset
       else
         changeset
@@ -116,7 +131,7 @@ defmodule Picsello.Packages do
           %__MODULE__{is_enabled: false}
 
         percent when percent < 0 ->
-          %__MODULE__{percent: abs(percent), sign: "-", is_enabled: true, }
+          %__MODULE__{percent: abs(percent), sign: "-", is_enabled: true}
 
         percent when percent > 0 ->
           %__MODULE__{percent: percent, sign: "+", is_enabled: true}
@@ -125,7 +140,7 @@ defmodule Picsello.Packages do
         discount_base_price: Map.get(package, :discount_base_price, false),
         discount_print_credits: Map.get(package, :discount_print_credits, false),
         discount_digitals: Map.get(package, :discount_digitals, false)
-        })
+      })
     end
 
     def to_decimal(%__MODULE__{is_enabled: false}), do: Decimal.new(1)
@@ -145,7 +160,7 @@ defmodule Picsello.Packages do
     use Ecto.Schema
     import Ecto.Changeset
     import Money.Sigils
-    
+
     alias Picsello.Package
 
     @default_each_price ~M[5000]USD
@@ -204,7 +219,10 @@ defmodule Picsello.Packages do
               |> force_change(:digitals_include_in_total, false)
               |> validate_required([:each_price])
               |> validate_inclusion(:is_custom_price, ["true"])
-              |> Package.validate_money(:each_price, greater_than: 201, message: "must be greater than two"),
+              |> Package.validate_money(:each_price,
+                greater_than: 201,
+                message: "must be greater than two"
+              ),
             else: &1
           )
         )
@@ -216,11 +234,16 @@ defmodule Picsello.Packages do
               |> validate_required([:count])
               |> validate_inclusion(:is_custom_price, ["true"])
               |> validate_number(:count, greater_than: 0)
-              |> Package.validate_money(:each_price, greater_than: 201, message: "must be greater than two"),
+              |> Package.validate_money(:each_price,
+                greater_than: 201,
+                message: "must be greater than two"
+              ),
             else: force_change(&1, :count, nil)
           )
         )
-        |> then(&if(get_field(&1, :status) != :unlimited, do: update_buy_all(&1, download), else: &1))
+        |> then(
+          &if(get_field(&1, :status) != :unlimited, do: update_buy_all(&1, download), else: &1)
+        )
         |> validate_buy_all()
         |> validate_each_price()
       else
@@ -233,7 +256,9 @@ defmodule Picsello.Packages do
       buy_all = get_field(changeset, :buy_all)
       is_buy_all = get_field(changeset, :is_buy_all) || (is_nil(buy_all) && download.buy_all)
       updated_buy_all = if is_nil(buy_all), do: download.buy_all, else: buy_all
-      updated_each_price = if each_price && Money.zero?(each_price), do: download.each_price, else: each_price
+
+      updated_each_price =
+        if each_price && Money.zero?(each_price), do: download.each_price, else: each_price
 
       changeset
       |> force_change(:each_price, updated_each_price)
@@ -258,6 +283,7 @@ defmodule Picsello.Packages do
 
     defp validate_each_price(changeset) do
       buy_all = get_field(changeset, :buy_all) || @zero_price
+
       if Money.zero?(buy_all) do
         changeset
       else
@@ -270,7 +296,9 @@ defmodule Picsello.Packages do
     end
 
     def from_package(package, global_settings \\ %{download_each_price: nil, buy_all_price: nil})
-    def from_package(package, nil), do: from_package(package, %{download_each_price: nil, buy_all_price: nil})
+
+    def from_package(package, nil),
+      do: from_package(package, %{download_each_price: nil, buy_all_price: nil})
 
     def from_package(
           %{download_each_price: nil, buy_all: nil, download_count: nil} = package,
@@ -332,7 +360,12 @@ defmodule Picsello.Packages do
         )
         when each_price in [global_settings.download_each_price, @default_each_price, nil] do
       Map.merge(
-        %__MODULE__{status: :limited, is_custom_price: true, is_buy_all: true, digitals_include_in_total: Map.get(package, :digitals_include_in_total, false)},
+        %__MODULE__{
+          status: :limited,
+          is_custom_price: true,
+          is_buy_all: true,
+          digitals_include_in_total: Map.get(package, :digitals_include_in_total, false)
+        },
         set_download_fields(package, global_settings)
       )
       |> set_count_fields(count)
@@ -390,8 +423,12 @@ defmodule Picsello.Packages do
       cond do
         buy_all && Money.zero?(buy_all) && global_settings.buy_all_price ->
           %{buy_all: global_settings.buy_all_price, is_buy_all: true}
-        buy_all -> %{buy_all: buy_all, is_buy_all: true}
-        true -> %{buy_all: global_settings.buy_all_price, is_buy_all: false}
+
+        buy_all ->
+          %{buy_all: buy_all, is_buy_all: true}
+
+        true ->
+          %{buy_all: global_settings.buy_all_price, is_buy_all: false}
       end
     end
 
@@ -634,12 +671,12 @@ defmodule Picsello.Packages do
 
     Ecto.Multi.new()
     |> Ecto.Multi.insert_all(:templates, Package, fn _ -> templates_query end, returning: true)
-    |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, 
-      fn %{
-        templates:
-          {_,
-            templates}
-      } -> make_package_payment_schedule(templates)
+    |> Ecto.Multi.insert_all(:package_payment_schedules, PackagePaymentSchedule, fn %{
+                                                                                      templates:
+                                                                                        {_,
+                                                                                         templates}
+                                                                                    } ->
+      make_package_payment_schedule(templates)
     end)
     |> Repo.transaction()
     |> case do

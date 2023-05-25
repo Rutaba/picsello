@@ -46,16 +46,18 @@ defmodule Picsello.GlobalSettings.Gallery do
       greater_than: 201,
       message: "must be greater than two"
     )
-    |> then(fn changeset -> 
+    |> then(fn changeset ->
       each_price = get_field(changeset, :download_each_price) || Money.new(0)
+
       changeset
       |> Package.validate_money(:buy_all_price,
         greater_than: each_price.amount,
         message: "must be greater than each price"
       )
     end)
-    |> then(fn changeset -> 
+    |> then(fn changeset ->
       buy_all_price = get_field(changeset, :buy_all_price) || Money.new(0)
+
       changeset
       |> Package.validate_money(:download_each_price,
         less_than: buy_all_price.amount,
@@ -108,6 +110,7 @@ defmodule Picsello.GlobalSettings.Gallery do
 
   def calculate_expiry_date(total_days, date \\ DateTime.utc_now()) do
     {days, months, years} = explode_days(total_days)
+
     Timex.shift(date, years: years)
     |> Timex.shift(months: months)
     |> Timex.shift(days: days)

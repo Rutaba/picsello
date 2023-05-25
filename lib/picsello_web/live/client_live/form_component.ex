@@ -211,7 +211,7 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
         "submit",
         %{"client" => %{"type" => type} = params},
         %{assigns: %{step: :add_client, changeset: changeset}} = socket
-      ) do 
+      ) do
     case changeset do
       %{valid?: true} ->
         socket

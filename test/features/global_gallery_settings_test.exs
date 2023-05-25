@@ -15,7 +15,7 @@ defmodule Picsello.GSGalleryTest do
         expiration_days: 50,
         organization_id: gallery.job.client.organization.id
       )
-
+    insert(:gallery_digital_pricing, gallery: gallery)
     [
       gallery: gallery,
       global_gallery_settings: global_gallery_settings

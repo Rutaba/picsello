@@ -12,4 +12,12 @@ defmodule PicselloWeb.Live.Calendar.Shared do
     </.live_link>
     """
   end
+
+  def is_checked(id, package) do
+    if id do
+      id == if(is_binary(id), do: package.id |> Integer.to_string(), else: package.id)
+    else
+      false
+    end
+  end
 end

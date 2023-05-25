@@ -143,7 +143,7 @@ defmodule Picsello.Factory do
       buy_all: nil,
       print_credits: 0,
       download_count: 0,
-      download_each_price: 0,
+      download_each_price: Money.new(300),
       name: "Package name",
       description: "<p>Package description</p>",
       shoot_count: 2,
@@ -936,13 +936,9 @@ defmodule Picsello.Factory do
     %Stripe.PaymentIntent{
       amount: 0,
       amount_received: 0,
-      charges: %{data: 
-                  [%{balance_transaction: 
-                      %{fee_details: 
-                          %{type: "stripe_fee", amount:  ~M[10]USD}
-                        }
-                  }]
-                },
+      charges: %{
+        data: [%{balance_transaction: %{fee_details: %{type: "stripe_fee", amount: ~M[10]USD}}}]
+      },
       amount_capturable: 0,
       application_fee_amount: 0,
       status: "requires_payment_method",

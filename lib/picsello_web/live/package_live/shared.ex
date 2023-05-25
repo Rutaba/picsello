@@ -436,11 +436,13 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   # digital download fields for package & pricing
   def digital_download_fields(assigns) do
-    assigns = assigns |> Enum.into(%{
-      for: nil,
-      target: nil,
-      show_digitals: false
-    })
+    assigns =
+      assigns
+      |> Enum.into(%{
+        for: nil,
+        target: nil,
+        show_digitals: false
+      })
 
     ~H"""
       <div class="flex mt-6">
@@ -618,7 +620,10 @@ defmodule PicselloWeb.PackageLive.Shared do
   def digitals_total(download_changeset) do
     changeset = current(download_changeset)
     each_price = Map.get(changeset, :each_price) || Money.new(0)
-    if Map.get(changeset, :digitals_include_in_total), do: Money.multiply(each_price, get_digitals_count(download_changeset)), else: nil
+
+    if Map.get(changeset, :digitals_include_in_total),
+      do: Money.multiply(each_price, get_digitals_count(download_changeset)),
+      else: nil
   end
 
   def assign_turnaround_weeks(package) do

@@ -17,6 +17,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     GlobalSettings,
     Clients
   }
+
   alias Ecto.Multi
   alias Ecto.Changeset
   alias PicselloWeb.JobLive.GalleryTypeComponent
@@ -219,7 +220,11 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   end
 
   @impl true
-  def handle_event("edit-print-credits", _, %{assigns: %{show_print_credits: show_print_credits}} = socket) do
+  def handle_event(
+        "edit-print-credits",
+        _,
+        %{assigns: %{show_print_credits: show_print_credits}} = socket
+      ) do
     socket
     |> assign(:show_print_credits, !show_print_credits)
     |> noreply()

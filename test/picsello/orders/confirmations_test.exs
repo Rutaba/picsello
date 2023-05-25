@@ -205,8 +205,9 @@ defmodule Picsello.Orders.ConfirmationsTest do
         build(:digital, photo: insert(:photo, gallery: gallery)),
         gallery
       )
-      
+
       invoice = build(:stripe_invoice, id: "invoice-stripe-id")
+
       MockPayments
       |> Mox.stub(:create_invoice_item, fn _, _ ->
         {:ok, %Stripe.Invoiceitem{}}
@@ -217,6 +218,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
       |> Mox.stub(:finalize_invoice, fn _, _, _ ->
         {:ok, %{invoice | status: "open"}}
       end)
+
       [
         order:
           order

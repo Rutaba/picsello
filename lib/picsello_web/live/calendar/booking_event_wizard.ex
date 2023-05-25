@@ -9,6 +9,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
+  import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
   alias Picsello.{BookingEvent, BookingEvents, Packages}
 
   @impl true
@@ -712,14 +713,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         acc
       end
     end)
-  end
-
-  defp is_checked(id, package) do
-    if id do
-      id == if(is_binary(id), do: package.id |> Integer.to_string(), else: package.id)
-    else
-      false
-    end
   end
 
   defp get_is_break!(changeset, date_index, time_block_index) do

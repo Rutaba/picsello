@@ -27,8 +27,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
     %{organization_id: organization_id} = current_user
-    global_settings_gallery = Repo.get_by(GSGallery, organization_id: organization_id) || %GSGallery{}
-    
+
+    global_settings_gallery =
+      Repo.get_by(GSGallery, organization_id: organization_id) || %GSGallery{}
+
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "preview_watermark:#{current_user.id}")
       PubSub.subscribe(Picsello.PubSub, "save_watermark:#{current_user.id}")
@@ -60,13 +62,14 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       |> assign(:show_side_nav, "print_product")
       |> assign_title()
       |> noreply()
-  
-  def handle_params(params, _uri, socket) do 
+
+  def handle_params(params, _uri, socket) do
     show_side_nav = Map.get(params, "section")
+
     socket
     |> assign(:show_side_nav, show_side_nav)
     |> assign_title()
-    |> noreply() 
+    |> noreply()
   end
 
   @impl true
@@ -222,13 +225,14 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> noreply()
   end
 
-  def handle_event("back_to_menu", _, socket), do: assign(socket, :show_side_nav, nil) |> noreply()
+  def handle_event("back_to_menu", _, socket),
+    do: assign(socket, :show_side_nav, nil) |> noreply()
 
   def handle_event("select_component", %{"section" => nil}, socket),
     do: patch(socket)
 
   def handle_event("select_component", %{"section" => section}, socket),
-    do: patch(socket, [section: section])
+    do: patch(socket, section: section)
 
   @impl true
   def handle_event("image_case", _params, socket) do
@@ -286,7 +290,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   @impl true
-  def handle_event("back_to_products", _, socket), do: assign(socket, show_side_nav: "products") |> noreply()
+  def handle_event("back_to_products", _, socket),
+    do: assign(socket, show_side_nav: "products") |> noreply()
 
   def handle_event(
         "validate_price",
@@ -294,13 +299,14 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         %{assigns: %{global_settings_gallery: settings}} = socket
       ) do
     price_changeset = GSGallery.price_changeset(settings, params)
-    
+
     case price_changeset do
       %{valid?: true} ->
         socket
         |> update_galleries_prices(price_changeset)
 
-        _ -> socket
+      _ ->
+        socket
     end
     |> assign(price_changeset: price_changeset)
     |> noreply()
@@ -309,7 +315,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   defp update_galleries_prices(%{assigns: %{current_user: current_user}} = socket, changeset) do
     prices = current(changeset)
     attrs = [buy_all: prices.buy_all_price, download_each_price: prices.download_each_price]
-    
+
     socket
     |> settings_multi(%{organization_id: current_user.organization.id})
     |> Multi.update_all(
@@ -322,7 +328,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     )
     |> Ecto.Multi.insert_or_update(:insert_or_update, changeset)
     |> Repo.transaction()
-    |> then(fn _ -> 
+    |> then(fn _ ->
       socket
       |> put_flash(:success, "Setting Updated")
     end)
@@ -340,7 +346,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
          } = socket
        )
        when not is_nil(expiration_days) do
-      {day, month, year} = GSGallery.explode_days(expiration_days)  
+    {day, month, year} = GSGallery.explode_days(expiration_days)
     socket |> assign(day: day, month: month, year: year)
   end
 
@@ -348,15 +354,16 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     socket |> assign(day: "day", month: "month", year: "year")
   end
 
-  defp assign_title(%{assigns: %{show_side_nav: show_side_nav}} = socket) do 
-    title = case show_side_nav do
-      "expiration_date" -> "Global Expiration Date"
-      "watermark" -> "Watermark"
-      "products" -> "Print Pricing"
-      "print_product" -> "Product Settings & Prices"
-      "digital_pricing" -> "Digital Pricing"
-      _ -> "Gallery Settings"  
-    end
+  defp assign_title(%{assigns: %{show_side_nav: show_side_nav}} = socket) do
+    title =
+      case show_side_nav do
+        "expiration_date" -> "Global Expiration Date"
+        "watermark" -> "Watermark"
+        "products" -> "Print Pricing"
+        "print_product" -> "Product Settings & Prices"
+        "digital_pricing" -> "Digital Pricing"
+        _ -> "Gallery Settings"
+      end
 
     socket |> assign(:title, title)
   end

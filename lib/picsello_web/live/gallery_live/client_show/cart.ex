@@ -51,7 +51,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp assign_das_type(%{assigns: %{order: order}} = socket) do
     case order do
       %{delivery_info: %{address: %{zip: zipcode}}} when not is_nil(zipcode) ->
-
         assign(socket, :das_type, DasType.get_by_zipcode(zipcode))
 
       _ ->
