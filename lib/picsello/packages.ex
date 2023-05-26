@@ -160,6 +160,7 @@ defmodule Picsello.Packages do
     use Ecto.Schema
     import Ecto.Changeset
     import Money.Sigils
+    import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
     alias Picsello.Package
 
@@ -178,7 +179,7 @@ defmodule Picsello.Packages do
       field(:is_buy_all, :boolean)
     end
 
-    def changeset(download \\ %__MODULE__{}, attrs) do
+    def changeset(download \\ %__MODULE__{}, attrs, status_changeset \\ nil) do
       changeset =
         download
         |> cast(attrs, [
@@ -192,7 +193,7 @@ defmodule Picsello.Packages do
           :digitals_include_in_total
         ])
 
-      if Map.get(attrs, "step") in [:choose_type, :pricing] do
+      if Map.get(attrs, "step") in [:choose_type, :pricing, :package_payment] do
         changeset
         |> validate_required([:status])
         |> then(
@@ -218,11 +219,7 @@ defmodule Picsello.Packages do
               &1
               |> force_change(:digitals_include_in_total, false)
               |> validate_required([:each_price])
-              |> validate_inclusion(:is_custom_price, ["true"])
-              |> Package.validate_money(:each_price,
-                greater_than: 201,
-                message: "must be greater than two"
-              ),
+              |> validate_inclusion(:is_custom_price, ["true"]),
             else: &1
           )
         )
@@ -233,16 +230,15 @@ defmodule Picsello.Packages do
               |> force_change(:count, get_field(&1, :count))
               |> validate_required([:count])
               |> validate_inclusion(:is_custom_price, ["true"])
-              |> validate_number(:count, greater_than: 0)
-              |> Package.validate_money(:each_price,
-                greater_than: 201,
-                message: "must be greater than two"
-              ),
+              |> validate_number(:count, greater_than: 0),
             else: force_change(&1, :count, nil)
           )
         )
         |> then(
-          &if(get_field(&1, :status) != :unlimited, do: update_buy_all(&1, download), else: &1)
+          &if(get_field(&1, :status) != :unlimited,
+            do: update_buy_all(&1, download, status_changeset),
+            else: &1
+          )
         )
         |> validate_buy_all()
         |> validate_each_price()
@@ -251,20 +247,32 @@ defmodule Picsello.Packages do
       end
     end
 
-    defp update_buy_all(changeset, download) do
+    defp update_buy_all(changeset, download, status_changeset) do
       each_price = get_field(changeset, :each_price)
       buy_all = get_field(changeset, :buy_all)
       is_buy_all = get_field(changeset, :is_buy_all) || (is_nil(buy_all) && download.buy_all)
       updated_buy_all = if is_nil(buy_all), do: download.buy_all, else: buy_all
 
       updated_each_price =
-        if each_price && Money.zero?(each_price), do: download.each_price, else: each_price
+        with true <- get_status(status_changeset) == :unlimited,
+             true <- each_price && Money.zero?(each_price) do
+          download.each_price
+        else
+          _ -> each_price
+        end
 
       changeset
       |> force_change(:each_price, updated_each_price)
       |> force_change(:buy_all, updated_buy_all)
       |> force_change(:is_buy_all, is_buy_all)
+      |> Package.validate_money(:each_price,
+        greater_than: 200,
+        message: "must be greater than two"
+      )
     end
+
+    defp get_status(status_changeset),
+      do: if(status_changeset, do: current(status_changeset) |> Map.get(:status), else: nil)
 
     defp validate_buy_all(changeset) do
       download_each_price = get_field(changeset, :each_price) || @zero_price

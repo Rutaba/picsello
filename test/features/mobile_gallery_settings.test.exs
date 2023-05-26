@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.MobileGallerySettingsTest do
   setup do
     gallery = insert(:gallery, %{name: "Test Client Wedding"})
     insert(:gallery_digital_pricing, gallery: gallery)
+
     products =
       Enum.map(Picsello.Category.frame_images(), fn frame_image ->
         :category

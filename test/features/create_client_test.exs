@@ -278,7 +278,7 @@ defmodule Picsello.CreateClientTest do
     |> fill_in(css(".numInput.cur-year"), with: "2030")
     |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("January")))
     |> click(css("[aria-label='January 2, 2030']"))
-    
+
     modal
-  end  
+  end
 end

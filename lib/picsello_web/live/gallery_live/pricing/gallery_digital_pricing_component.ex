@@ -278,7 +278,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     download_changeset =
       gallery.gallery_digital_pricing
       |> Download.from_package(global_settings)
-      |> Download.changeset(download_params)
+      |> Download.changeset(download_params, Map.get(assigns, :download_changeset))
       |> Map.put(:action, action)
 
     download = current(download_changeset)
@@ -295,7 +295,8 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       |> Map.merge(%{
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download),
-        "buy_all" => Download.buy_all(download)
+        "buy_all" => Download.buy_all(download),
+        "status" => download.status
       })
 
     digital_pricing_params =

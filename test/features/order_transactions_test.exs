@@ -9,6 +9,7 @@ defmodule Picsello.OrderTransactionsTest do
 
   setup %{user: user, gallery: gallery} do
     insert(:gallery_digital_pricing, gallery: gallery)
+
     order =
       insert(:order,
         gallery: gallery,

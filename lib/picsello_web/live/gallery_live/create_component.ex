@@ -387,13 +387,14 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   def assign_package_changesets(
         %{
-          assigns: %{
-            package: package,
-            package_pricing: package_pricing,
-            current_user: current_user,
-            step: step,
-            global_settings: global_settings
-          }
+          assigns:
+            %{
+              package: package,
+              package_pricing: package_pricing,
+              current_user: current_user,
+              step: step,
+              global_settings: global_settings
+            } = assigns
         } = socket,
         params \\ %{},
         action \\ nil
@@ -403,7 +404,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     download_changeset =
       package
       |> Download.from_package(global_settings)
-      |> Download.changeset(download_params)
+      |> Download.changeset(download_params, Map.get(assigns, :download_changeset))
       |> Map.put(:action, action)
 
     download = current(download_changeset)
@@ -417,7 +418,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         "download_each_price" => Download.each_price(download),
         "buy_all" => Download.buy_all(download),
         "name" => "New package",
-        "organization_id" => current_user.organization_id
+        "organization_id" => current_user.organization_id,
+        "status" => download.status
       })
       |> then(&Package.changeset_for_create_gallery(package, &1))
 

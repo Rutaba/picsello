@@ -42,10 +42,17 @@ defmodule Picsello.GlobalSettings.Gallery do
     global_settings_gallery
     |> cast(attrs, [:organization_id, :expiration_days, :buy_all_price, :download_each_price])
     |> validate_required([:download_each_price])
-    |> Package.validate_money(:download_each_price,
-      greater_than: 201,
-      message: "must be greater than two"
-    )
+    |> then(fn changeset ->
+      if Map.get(attrs, "status") !== :unlimited do
+        changeset
+        |> Package.validate_money(:download_each_price,
+          greater_than: 200,
+          message: "must be greater than two"
+        )
+      else
+        changeset
+      end
+    end)
     |> then(fn changeset ->
       each_price = get_field(changeset, :download_each_price) || Money.new(0)
 

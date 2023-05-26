@@ -64,10 +64,17 @@ defmodule Picsello.Package do
     |> put_change(:base_price, Money.new(0))
     |> validate_required(~w[download_count name download_each_price organization_id shoot_count]a)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
-    |> validate_money(:download_each_price,
-      greater_than: 201,
-      message: "must be greater than two"
-    )
+    |> then(fn changeset ->
+      if Map.get(attrs, "status") !== :unlimited do
+        changeset
+        |> validate_money(:download_each_price,
+          greater_than: 200,
+          message: "must be greater than two"
+        )
+      else
+        changeset
+      end
+    end)
     |> validate_money(:print_credits,
       greater_than_or_equal_to: 0,
       message: "must be equal to or less than total price"
@@ -165,10 +172,17 @@ defmodule Picsello.Package do
       end
     end)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
-    |> validate_money(:download_each_price,
-      greater_than: 201,
-      message: "must be greater than two"
-    )
+    |> then(fn changeset ->
+      if Map.get(attrs, "status") !== :unlimited do
+        changeset
+        |> validate_money(:download_each_price,
+          greater_than: 200,
+          message: "must be greater than two"
+        )
+      else
+        changeset
+      end
+    end)
     |> then(fn changeset ->
       base_price = get_field(changeset, :base_price) || Money.new(0)
 
@@ -238,21 +252,21 @@ defmodule Picsello.Package do
       else
         base_price(package)
       end
-    
+
     updated_price =
       if package.discount_print_credits do
         Money.add(updated_price, print_cridets_adjustment(package))
       else
         updated_price
       end
-    
+
     update_price =
       if package.discount_digitals do
         Money.add(updated_price, digitals_adjustment(package))
       else
         updated_price
       end
-    
+
     Money.add(digitals_price, update_price)
   end
 

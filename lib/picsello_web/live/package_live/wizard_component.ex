@@ -1651,7 +1651,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     download_changeset =
       package
       |> Download.from_package(global_settings)
-      |> Download.changeset(download_params)
+      |> Download.changeset(download_params, Map.get(assigns, :download_changeset))
       |> Map.put(:action, action)
 
     download = current(download_changeset)
@@ -1673,7 +1673,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         "digitals_include_in_total" => Map.get(download, :digitals_include_in_total),
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download),
-        "buy_all" => Download.buy_all(download)
+        "buy_all" => Download.buy_all(download),
+        "status" => download.status
       })
 
     changeset = build_changeset(socket, package_params) |> Map.put(:action, action)
