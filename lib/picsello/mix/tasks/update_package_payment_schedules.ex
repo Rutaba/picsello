@@ -19,7 +19,6 @@ defmodule Mix.Tasks.UpdatePackagePaymentSchedules do
     |> Repo.all()
     |> then(fn packages ->
       packages_ids = Enum.map(packages, & &1.id)
-
       Logger.info("Records updated: #{inspect(packages_ids)}")
 
       if Enum.any?(packages_ids) do

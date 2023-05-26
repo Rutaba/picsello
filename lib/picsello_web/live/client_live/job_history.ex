@@ -57,7 +57,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   def handle_event(
         "create-gallery",
         %{"job_id" => job_id},
-        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+        %{assigns: %{current_user: %{organization_id: organization_id} = current_user}} = socket
       ) do
     job_id = to_integer(job_id)
 
@@ -65,7 +65,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
       case Galleries.get_galleries_by_job_id(job_id) do
         [] ->
           {:ok, gallery} =
-            Galleries.create_gallery(%{
+            Galleries.create_gallery(current_user, %{
               job_id: job_id,
               name: job_id |> Jobs.get_job_by_id() |> Job.name(),
               type: :standard,

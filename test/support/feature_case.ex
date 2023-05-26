@@ -165,6 +165,7 @@ defmodule Picsello.FeatureCase do
       |> fill_in(text_field("Email"), with: email)
       |> fill_in(text_field("Password"), with: password)
       |> wait_for_enabled_submit_button()
+      |> sleep(500)
       |> click(button("Login"))
       |> then(&wait_for_path_to_change_from(&1, @sign_in_path))
     end

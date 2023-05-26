@@ -13,7 +13,8 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     Albums,
     Cart,
     GalleryProducts,
-    Orders
+    Orders,
+    Repo
   }
 
   alias PicselloWeb.GalleryLive.Photos.Photo.ClientPhoto
@@ -25,14 +26,32 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   @blank_image "/images/album_placeholder.png"
 
   @impl true
-  def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
+      ) do
     if connected?(socket), do: Galleries.subscribe(gallery)
+    gallery = Repo.preload(gallery, :gallery_digital_pricing)
+
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        client_email && client_email in gallery.gallery_digital_pricing.email_list
+      )
 
     socket
     |> assign(
+      gallery_client:
+        Galleries.get_gallery_client(
+          gallery,
+          if(client_email, do: client_email, else: assigns.current_user.email)
+        ),
       photo_updates: "false",
       download_all_visible: false,
       active: false,
+      gallery: gallery,
       credits: credits(gallery)
     )
     |> ok()
@@ -140,7 +159,10 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   def handle_event("buy-all-digitals", _, socket) do
     socket
-    |> open_modal(PicselloWeb.GalleryLive.ChooseBundle, Map.take(socket.assigns, [:gallery]))
+    |> open_modal(
+      PicselloWeb.GalleryLive.ChooseBundle,
+      Map.take(socket.assigns, [:gallery, :gallery_client])
+    )
     |> noreply()
   end
 
@@ -176,17 +198,17 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   def handle_info(
         {:add_digital_to_cart, digital, _finals_album_id},
-        %{assigns: %{gallery: gallery}} = socket
+        %{assigns: %{gallery: gallery, gallery_client: gallery_client}} = socket
       ) do
-    order = Cart.place_product(digital, gallery.id)
+    order = Cart.place_product(digital, gallery, gallery_client)
     socket |> add_to_cart_assigns(order)
   end
 
   def handle_info(
         {:add_bundle_to_cart, bundle_price},
-        %{assigns: %{gallery: gallery}} = socket
+        %{assigns: %{gallery: gallery, gallery_client: gallery_client}} = socket
       ) do
-    order = Cart.place_product({:bundle, bundle_price}, gallery)
+    order = Cart.place_product({:bundle, bundle_price}, gallery, gallery_client)
     socket |> add_to_cart_assigns(order)
   end
 

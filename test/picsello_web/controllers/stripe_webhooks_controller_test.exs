@@ -113,8 +113,12 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
       gallery = insert(:gallery, job: insert(:lead, client: client))
 
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       order =
         insert(:order,
+          gallery_client: gallery_client,
           gallery: gallery,
           delivery_info: %{name: "abc", email: "client@example.com"}
         )
@@ -320,8 +324,14 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
         {:ok, :confirmed}
       end)
 
+      gallery = insert(:gallery)
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       order =
         insert(:order,
+          gallery_client: gallery_client,
           delivery_info: %{name: "abc", email: "client@example.com"},
           whcc_order: build(:whcc_order_created),
           placed_at: DateTime.utc_now()

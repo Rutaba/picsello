@@ -23,6 +23,7 @@ defmodule Picsello.Factory do
     Accounts.User,
     Questionnaire,
     Questionnaire.Answer,
+    Galleries.GalleryClient,
     Galleries.Gallery,
     Galleries.Album,
     Galleries.Watermark,
@@ -476,6 +477,12 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def gallery_client_factory(attrs) do
+    %GalleryClient{}
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
   def global_gallery_settings_factory(attrs) do
     %GSGallery{}
     |> GSGallery.expiration_changeset(%{})
@@ -555,7 +562,7 @@ defmodule Picsello.Factory do
       download_count: 10,
       print_credits: Money.new(10),
       buy_all: nil,
-      email_list: ["test@test.com"],
+      email_list: ["testing@picsello.com"],
       gallery: fn ->
         case attrs do
           %{gallery: gallery} -> gallery

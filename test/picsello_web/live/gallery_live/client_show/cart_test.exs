@@ -9,15 +9,26 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
 
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
-    gallery = insert(:gallery, job: insert(:lead, package: insert(:package, download_count: 1)))
+    gallery =
+      insert(:gallery, job: insert(:lead, package: insert(:package, download_count: 1)))
+      |> Map.put(:credits_available, true)
+
     insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 1})
 
+    gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
     {:ok, session_token} =
-      Picsello.Galleries.build_gallery_session_token(gallery, gallery.password)
+      Picsello.Galleries.build_gallery_session_token(
+        gallery,
+        gallery.password,
+        "testing@picsello.com"
+      )
 
     [
       conn: init_test_session(conn, %{"gallery_session_token" => session_token}),
       gallery: gallery,
+      gallery_client: gallery_client,
       cart_path: Routes.gallery_client_show_cart_path(conn, :cart, gallery.client_link_hash)
     ]
   end
@@ -26,9 +37,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
     test "does not go to stripe", %{
       conn: conn,
       cart_path: cart_path,
-      gallery: gallery
+      gallery: gallery,
+      gallery_client: gallery_client
     } do
-      order = Picsello.Cart.place_product(build(:digital), gallery)
+      order = Picsello.Cart.place_product(build(:digital), gallery, gallery_client)
 
       {:ok, view, _html} = live(conn, cart_path)
 
@@ -55,7 +67,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
   end
 
   describe "with multiple products" do
-    setup %{gallery: gallery} do
+    setup %{conn: conn, gallery: gallery} do
+      gallery_client =
+        insert(:gallery_client, %{email: "test@picsello.com", gallery_id: gallery.id})
+
       order =
         for {product, index} <-
               Enum.with_index([insert(:product) | List.duplicate(insert(:product), 2)]),
@@ -67,11 +82,19 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
                 inserted_at:
                   DateTime.utc_now() |> DateTime.add(index) |> DateTime.truncate(:second)
               ),
-              gallery
+              gallery,
+              gallery_client
             )
         end
 
-      [order: order]
+      {:ok, session_token} =
+        Picsello.Galleries.build_gallery_session_token(
+          gallery,
+          gallery.password,
+          "test@picsello.com"
+        )
+
+      [conn: init_test_session(conn, %{"gallery_session_token" => session_token}), order: order]
     end
 
     test "groups by product", %{conn: conn, cart_path: cart_path} do

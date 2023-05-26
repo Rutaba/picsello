@@ -192,7 +192,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         Packages.insert_package_and_update_job(package_changeset, job)
       end)
       |> Multi.merge(fn %{job: %{id: job_id}} ->
-        Galleries.create_gallery_multi(%{
+        Galleries.create_gallery_multi(current_user, %{
           name: client.name <> " " <> type,
           job_id: job_id,
           status: :active,

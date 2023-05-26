@@ -20,7 +20,13 @@ defmodule Picsello.ClientProofingAlbumTest do
       )
 
     gallery_digital_pricing =
-      insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 2})
+      insert(:gallery_digital_pricing, %{
+        gallery: gallery,
+        download_count: 2,
+        email_list: ["testing@picsello.com"]
+      })
+
+    insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
     proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
     insert(:watermark, gallery: gallery)

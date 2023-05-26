@@ -10,13 +10,20 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   import Picsello.Designs, only: [load_occasion: 1, occasion_designs_query: 1, occasions: 0]
 
   import Ecto.Query, only: [from: 2]
-  alias Picsello.{Repo, Designs.Filter}
+  alias Picsello.{Repo, Designs.Filter, Galleries}
 
   @per_page 16
 
   @impl true
-  def mount(_, _, %{assigns: %{gallery: gallery}} = socket) do
+  def mount(_, _, %{assigns: %{gallery: gallery, client_email: client_email}} = socket) do
     socket
+    |> assign(
+      gallery_client:
+        Galleries.get_gallery_client(
+          gallery,
+          if(client_email, do: client_email, else: socket.assigns.current_user.email)
+        )
+    )
     |> assign_cart_count(gallery)
     |> assign(
       update: "init",

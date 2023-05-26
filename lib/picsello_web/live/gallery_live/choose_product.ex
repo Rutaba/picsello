@@ -92,13 +92,13 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   def handle_event(
         "remove_digital_from_cart",
         %{},
-        %{assigns: %{photo: photo}} = socket
+        %{assigns: %{photo: photo, gallery: gallery}} = socket
       ) do
     socket
     |> get_unconfirmed_order(preload: [:products, :digitals])
     |> then(fn {:ok, order} ->
       digital = Enum.find(order.digitals, &(&1.photo_id == photo.id))
-      Cart.delete_product(order, digital_id: digital.id)
+      Cart.delete_product(order, gallery, digital_id: digital.id)
     end)
 
     send(self(), :update_cart_count)
@@ -131,7 +131,9 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     """
   end
 
-  defp add_to_cart(%{assigns: %{is_proofing: true} = assigns} = socket) do
+  defp add_to_cart(
+         %{assigns: %{is_proofing: true, gallery_client: gallery_client} = assigns} = socket
+       ) do
     %{gallery: gallery, photo: photo, download_each_price: price} = assigns
     send(self(), :update_cart_count)
 
@@ -145,6 +147,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
         updated_at: date_time
       },
       gallery,
+      gallery_client,
       photo.album_id
     )
 
@@ -168,14 +171,17 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> assign_details(photo_ids |> CLL.value())
   end
 
-  defp assign_details(%{assigns: %{gallery: gallery, album: album}} = socket, photo_id) do
+  defp assign_details(
+         %{assigns: %{gallery: gallery, album: album, gallery_client: gallery_client}} = socket,
+         photo_id
+       ) do
     %{digital: digital_credit} = credits = Cart.credit_remaining(gallery)
     photo = Galleries.get_photo(photo_id)
     proofing_album_id = get_proofing_album_id(album, photo)
 
     socket
     |> assign(
-      digital_status: Cart.digital_status(gallery, photo, proofing_album_id),
+      digital_status: Cart.digital_status(gallery, gallery_client, photo, proofing_album_id),
       digital_credit: digital_credit,
       photo: photo,
       credits: credits(credits)

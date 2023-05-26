@@ -41,39 +41,24 @@ defmodule Picsello.GalleryBundleDownloadTest do
   setup :authenticated
   setup :authenticated_gallery
 
-  setup do
-    organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
-
-    insert(:user,
-      organization: organization,
-      stripe_customer_id: "photographer-stripe-customer-id"
-    )
-    |> onboard!()
-
-    package =
-      insert(:package,
-        organization: organization,
-        download_each_price: ~M[2500]USD,
-        buy_all: ~M[5000]USD
-      )
-
-    gallery =
-      insert(:gallery,
-        job:
-          insert(:lead,
-            client: insert(:client, organization: organization),
-            package: package
-          ),
-        use_global: %{watermark: true, expiration: true, digital: true, products: true}
-      )
-
-    insert(:order, gallery: gallery, bundle_price: ~M[5000]USD, placed_at: DateTime.utc_now())
-
+  setup %{gallery: gallery, user: user} do
     insert(:gallery_digital_pricing, %{
       gallery: gallery,
       download_count: 0,
       print_credits: Money.new(0)
     })
+
+    insert(:gallery_client, %{email: user.email, gallery_id: gallery.id})
+
+    gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+    insert(:order,
+      gallery: gallery,
+      gallery_client: gallery_client,
+      bundle_price: ~M[5000]USD,
+      placed_at: DateTime.utc_now()
+    )
 
     Mox.stub(Picsello.MockPayments, :retrieve_customer, fn "photographer-stripe-customer-id", _ ->
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
@@ -81,8 +66,6 @@ defmodule Picsello.GalleryBundleDownloadTest do
 
     [gallery: gallery]
   end
-
-  setup :authenticated_gallery_client
 
   test "resets client link when photographer updates gallery", %{
     session: session,

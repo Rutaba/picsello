@@ -9,12 +9,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
 
-    insert(:user,
-      organization: organization,
-      stripe_customer_id: "photographer-stripe-customer-id",
-      email: "photographer@example.com"
-    )
-    |> onboard!()
+    user =
+      insert(:user,
+        organization: organization,
+        stripe_customer_id: "photographer-stripe-customer-id",
+        email: "photographer@example.com"
+      )
+      |> onboard!()
 
     package =
       insert(:package,
@@ -48,9 +49,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     gallery_digital_pricing =
       insert(:gallery_digital_pricing, %{
         gallery: gallery,
+        email_list: ["testing@picsello.com", user.email],
         print_credits: ~M[500000]USD,
         download_each_price: ~M[5500]USD
       })
+
+    insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+    insert(:gallery_client, %{email: user.email, gallery_id: gallery.id})
 
     insert(:gallery_product,
       category: category,

@@ -158,7 +158,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
           assigns:
             %{
               gallery: gallery,
-              favorites_filter: favorites_filter
+              favorites_filter: favorites_filter,
+              gallery_client: gallery_client
             } = assigns
         } = socket,
         photo_id,
@@ -181,6 +182,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         is_proofing: assigns[:is_proofing] || false,
         album: assigns[:album],
         gallery: gallery,
+        gallery_client: gallery_client,
         photo_id: photo_id,
         photo_ids:
           photo_ids
@@ -829,15 +831,23 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def product_name(item, is_proofing), do: name(item, is_proofing)
 
   def get_unconfirmed_order(
-        %{assigns: %{gallery: gallery, album: album}},
+        %{assigns: %{gallery: gallery, album: album, gallery_client: gallery_client}},
         opts
       )
       when album.is_finals or album.is_proofing do
-    opts = Keyword.put(opts, :album_id, album.id)
+    opts =
+      opts
+      |> Keyword.put(:album_id, album.id)
+      |> Keyword.put(:gallery_client_id, gallery_client.id)
+
     Cart.get_unconfirmed_order(gallery.id, opts)
   end
 
-  def get_unconfirmed_order(%{assigns: %{gallery: gallery}}, opts) do
+  def get_unconfirmed_order(%{assigns: %{gallery: gallery, gallery_client: gallery_client}}, opts) do
+    opts =
+      opts
+      |> Keyword.put(:gallery_client_id, gallery_client.id)
+
     Cart.get_unconfirmed_order(gallery.id, opts)
   end
 
@@ -1047,7 +1057,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         %{
           assigns:
             %{
-              gallery: gallery
+              gallery: gallery,
+              gallery_client: gallery_client
             } = assigns
         } = socket,
         whcc_editor_id
@@ -1056,7 +1067,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     album_id = if album, do: Map.get(album, :id), else: nil
 
     cart_product = Cart.new_product(whcc_editor_id, gallery.id)
-    Cart.place_product(cart_product, gallery.id, album_id)
+    Cart.place_product(cart_product, gallery, gallery_client, album_id)
 
     socket
   end

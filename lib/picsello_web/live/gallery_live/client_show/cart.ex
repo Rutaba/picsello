@@ -19,9 +19,30 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @shipping_to_all [@products_config[:whcc_album_id], @products_config[:whcc_books_id]]
 
   @impl true
-  def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
+      ) do
+    gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
+
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        client_email && client_email in gallery.gallery_digital_pricing.email_list
+      )
+
     socket
-    |> assign(gallery: gallery, client_menu_id: "clientMenu")
+    |> assign(
+      gallery: gallery,
+      client_menu_id: "clientMenu",
+      gallery_client:
+        Galleries.get_gallery_client(
+          gallery,
+          if(client_email, do: client_email, else: assigns.current_user.email)
+        )
+    )
     |> assign_is_proofing()
     |> then(
       &(&1
@@ -176,7 +197,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{"bundle" => _} -> [bundle: true]
       end
 
-    case Cart.delete_product(order, item) do
+    case Cart.delete_product(order, gallery, item) do
       {:deleted, _} ->
         socket
         |> assign(order: nil)
@@ -407,7 +428,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     assign(socket, :credits, credits(gallery))
   end
 
-  defp assign_credits(%{assigns: %{is_proofing: false}} = socket, _), do: socket
+  defp assign_credits(%{assigns: %{is_proofing: false}} = socket, _gallery), do: socket
 
   defp checkout_type(true), do: :proofing_album_cart
   defp checkout_type(false), do: :cart

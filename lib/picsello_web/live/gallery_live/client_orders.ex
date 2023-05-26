@@ -19,14 +19,31 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
     ]
 
   @impl true
-  def handle_params(_, _, %{assigns: %{gallery: gallery} = assigns} = socket) do
-    orders = Orders.all(gallery.id) |> maybe_filter(assigns)
+  def handle_params(
+        _,
+        _,
+        %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
+      ) do
+    gallery_client =
+      Galleries.get_gallery_client(
+        gallery,
+        if(client_email, do: client_email, else: assigns.current_user.email)
+      )
+
+    orders = Orders.gallery_client_orders(gallery.id, gallery_client.id) |> maybe_filter(assigns)
     Enum.each(orders, &Orders.subscribe/1)
 
     gallery = Galleries.populate_organization_user(gallery)
 
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        client_email && client_email in gallery.gallery_digital_pricing.email_list
+      )
+
     socket
-    |> assign(gallery: gallery, orders: orders)
+    |> assign(gallery: gallery, orders: orders, gallery_client: gallery_client)
     |> assign_is_proofing()
     |> assign_cart_count(gallery)
     |> assign_checkout_routes()

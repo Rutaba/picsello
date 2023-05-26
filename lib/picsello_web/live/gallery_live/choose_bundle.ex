@@ -4,13 +4,13 @@ defmodule PicselloWeb.GalleryLive.ChooseBundle do
   import PicselloWeb.GalleryLive.Shared, only: [bundle_image: 1, cover_photo_url: 1]
   alias Picsello.Cart
 
-  def update(%{gallery: gallery} = assigns, socket) do
+  def update(%{gallery: gallery, gallery_client: gallery_client} = assigns, socket) do
     gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
 
     socket
     |> assign(assigns)
     |> assign(
-      bundle_status: Cart.bundle_status(gallery),
+      bundle_status: Cart.bundle_status(gallery, gallery_client),
       download_all_price: gallery.gallery_digital_pricing.buy_all,
       gallery: gallery
     )
