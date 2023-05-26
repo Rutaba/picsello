@@ -363,6 +363,19 @@ defmodule Picsello.Accounts do
     User.set_user_nylas_code(user, code)
   end
 
+  @spec clear_user_nylas_code(Picsello.Accounts.User.t()) :: User.t()
+  def clear_user_nylas_code(%User{} = user) do
+    User.clear_user_nylas_code(user)
+  end
+
+  @spec reset_user_password(
+          %{
+            :__struct__ => atom | %{:__changeset__ => map, optional(any) => any},
+            :id => any,
+            optional(atom) => any
+          },
+          :invalid | %{optional(:__struct__) => none, optional(atom | binary) => any}
+        ) :: {:error, any} | {:ok, any}
   @doc """
   Resets the user password.
 

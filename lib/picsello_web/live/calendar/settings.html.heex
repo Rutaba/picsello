@@ -19,13 +19,31 @@
 
 <hr class="my-4 sm:my-10" />
 
-<div class="px-6 center-container">
+<%= if @has_token do %>
+<div class="px-6 center-container" id="syncing">
+  <h1>Syncing Email account <%= @token %> </h1>
+
+</div>
+<div class="px-6 center-container" id="calendar_read"></div>
+<div class="px-6 center-container" id="calendar_read_write"></div>
+<div class="px-6 center-container" id="danger">
+  <p><strong>Danger zone</strong></p>
+  <div>
+    If for whatever reason you need to change calendars or resetup the sync, you can do so here. Let us know if you run into any trouble
+  </div>
+  <div id="disconnect_button" class="" phx-click="disconnect_calendar">Disconnect</div>
+  
+</div>
+<% end %>
+
+
+<div class="px-6 center-container" id="share">
   <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20">
     <div class="grid-col items-center flex-col py-4 lg:mt-0 mt-6 text-xl lg:order-first order-last">
       <p><strong>Subscribe to your Picsello calendar using an external provider:</strong></p>
       <p class="text-base-250">Copy this link if you need to subscribe to your the Picsello calendar from another provider. They need to use the ICAL protocol.</p>
       
-      <div class="flex flex-col my-7">
+      <div class="flex flex-col my-7" id="subscribe-calendar-url">
         <div {testid("url")} class="text-input text-clip overflow-hidden"><%= @url %></div>
       </div>
       

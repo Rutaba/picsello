@@ -81,6 +81,13 @@ defmodule Picsello.Accounts.User do
     |> Repo.update!()
   end
 
+  @spec clear_user_nylas_code(Picsello.Accounts.User.t()) :: User.t()
+  def clear_user_nylas_code(%__MODULE__{} = current_user) do
+    current_user
+    |> Ecto.Changeset.change(%{nylas_oauth_token: nil})
+    |> Repo.update!()
+  end
+
   def is_test_account_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
     user |> cast(attrs, [:is_test_account])
   end
