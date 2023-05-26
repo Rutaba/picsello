@@ -95,6 +95,17 @@ defmodule PicselloWeb.Live.User.Settings do
   defp assign_is_save_settings(
          %{
            assigns: %{
+             email_changeset: nil,
+             password_changeset: nil
+           }
+         } = socket
+       ) do
+    socket |> assign(is_save_settings: "false")
+  end
+
+  defp assign_is_save_settings(
+         %{
+           assigns: %{
              time_zone_changeset: time_zone,
              phone_changeset: phone,
              organization_name_changeset: name,
