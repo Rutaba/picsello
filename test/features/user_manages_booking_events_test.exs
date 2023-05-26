@@ -165,7 +165,7 @@ defmodule Picsello.UserManagesBookingEventsTest do
                    ]
                  },
                  %{
-                  # please don't make it ~D[2050-10-11]. it will stop working on staging
+                   # please don't make it ~D[2050-10-11]. it will stop working on staging
                    date: ~D[2050-11-10],
                    time_blocks: [
                      %{

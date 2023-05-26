@@ -21,6 +21,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Utils
   }
 
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Picsello.Cart.Order
@@ -114,6 +115,16 @@ defmodule PicselloWeb.GalleryLive.Shared do
         socket
         |> put_flash(:error, "Please add photos to the album before sharing")
         |> noreply()
+    end
+  end
+
+  def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
+    with true <- is_nil(client_email),
+    nil <- Map.get(assigns, :current_user) do
+      gallery.job.client
+    else
+      false -> Galleries.get_gallery_client(gallery, client_email)
+      current_user -> Galleries.get_gallery_client(gallery, current_user.email)
     end
   end
 
@@ -324,7 +335,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def expired_at(organization_id) do
     case GlobalSettings.get(organization_id) do
       %{expiration_days: exp_days} when not is_nil(exp_days) and exp_days > 0 ->
-        Timex.shift(DateTime.utc_now(), days: exp_days)
+        GSGallery.calculate_expiry_date(exp_days)
 
       _ ->
         nil

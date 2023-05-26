@@ -37,12 +37,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign(
       gallery: gallery,
       client_menu_id: "clientMenu",
-      gallery_client:
-        Galleries.get_gallery_client(
-          gallery,
-          if(client_email, do: client_email, else: assigns.current_user.email)
-        )
-    )
+      gallery_client: get_client_by_email(assigns))
     |> assign_is_proofing()
     |> then(
       &(&1
@@ -72,7 +67,6 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defp assign_das_type(%{assigns: %{order: order}} = socket) do
     case order do
       %{delivery_info: %{address: %{zip: zipcode}}} when not is_nil(zipcode) ->
-
         assign(socket, :das_type, DasType.get_by_zipcode(zipcode))
 
       _ ->

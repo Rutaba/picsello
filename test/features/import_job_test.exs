@@ -18,7 +18,7 @@ defmodule Picsello.ImportJobTest do
     :ok
   end
 
-  def fill_in_new_client_form(session, opts \\ []) do
+  defp fill_in_new_client_form(session, opts \\ []) do
     phone = Keyword.get(opts, :phone, "(210) 111-1234")
 
     session
@@ -30,7 +30,7 @@ defmodule Picsello.ImportJobTest do
     |> click(css("label", text: "Wedding"))
   end
 
-  def fill_in_existing_client_form(session, _opts \\ []) do
+  defp fill_in_existing_client_form(session, _opts \\ []) do
     session
     |> fill_in(text_field("search_phrase", count: 2, at: 0), with: "tayl")
     |> assert_has(css("#search_results"))
@@ -39,7 +39,7 @@ defmodule Picsello.ImportJobTest do
     |> click(css("label", text: "Wedding"))
   end
 
-  def fill_in_package_form(session) do
+  defp fill_in_package_form(session) do
     session
     |> fill_in(text_field("Title"), with: "Wedding Deluxe")
     |> find(select("# of Shoots"), &click(&1, option("2")))
@@ -57,26 +57,9 @@ defmodule Picsello.ImportJobTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
     )
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
-    |> scroll_into_view(css("#download_status_limited"))
-    |> click(css("#download_status_limited"))
-    |> find(
-      text_field("download_count"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
-    )
-    |> scroll_into_view(css("#download_is_custom_price"))
-    |> find(
-      text_field("download[each_price]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
-    )
-    |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(css("#download_is_buy_all"))
-    |> find(
-      text_field("download[buy_all]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
-    )
   end
 
-  def fill_in_payments_form(session) do
+  defp fill_in_payments_form(session) do
     session
     |> assert_text("Balance to collect: $800.00")
     |> assert_text("Remaining to collect: $800.00")
@@ -88,7 +71,6 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Remaining to collect: $500.00")
     |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "$500"))
     |> click(css("#payment-1"))
-    # please don't make it "01/02/2030"
     |> fill_in(css(".numInput.cur-year"), with: "2030")
     |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("February")))
     |> click(css("[aria-label='February 1, 2030']"))
@@ -172,8 +154,7 @@ defmodule Picsello.ImportJobTest do
     |> assert_has(definition("$500.00 due on Feb 01, 2030", text: "$500.00"))
 
     base_price = Money.new(100_000)
-    download_each_price = Money.new(200)
-    buy_all = Money.new(1000)
+    download_each_price = Money.new(5000)
     print_credits = Money.new(10_000)
     collected_price = Money.new(20_000)
 
@@ -190,8 +171,8 @@ defmodule Picsello.ImportJobTest do
              turnaround_weeks: 2,
              description: nil,
              base_price: ^base_price,
-             download_count: 2,
-             buy_all: ^buy_all,
+             download_count: 0,
+             buy_all: nil,
              print_credits: ^print_credits,
              download_each_price: ^download_each_price,
              collected_price: ^collected_price

@@ -75,6 +75,7 @@ defmodule Picsello.ClientViewsOrdersTest do
       )
 
     Mox.stub(Picsello.MockWHCCClient, :webhook_validate, fn _, _ -> %{"isValid" => true} end)
+
     session
     |> visit(
       Routes.gallery_client_order_path(

@@ -135,7 +135,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
     end
 
     setup [:stub_create_invoice]
-    
+
     def expect_capture,
       do:
         Mox.expect(
@@ -155,7 +155,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
             {:ok, %{intent() | amount: amount, amount_capturable: amount}}
           end
         )
-    
+
     def stub_create_invoice(_) do
       MockPayments
       |> Mox.stub(:create_customer, fn %{}, _opts ->
@@ -215,7 +215,6 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
       refute order.placed_at
 
       make_request(conn)
-
     end
 
     test "emails the client", %{

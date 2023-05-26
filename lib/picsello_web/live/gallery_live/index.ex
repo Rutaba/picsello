@@ -26,6 +26,7 @@ defmodule PicselloWeb.GalleryLive.Index do
         socket
       ) do
     socket
+    |> is_mobile(params)
     |> assign_new(:pagination, fn -> %Pagination{} end)
     |> update_gallery_listing()
     |> is_mobile(params)

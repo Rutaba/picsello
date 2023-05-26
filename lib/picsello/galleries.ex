@@ -23,6 +23,7 @@ defmodule Picsello.Galleries do
     Galleries.Gallery.UseGlobal
   }
 
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, GalleryClient, Album}
@@ -961,9 +962,40 @@ defmodule Picsello.Galleries do
     )
   end
 
-  def update_all(gallery_ids, opts) when is_list(gallery_ids) and is_list(opts) do
-    from(gallery in Gallery, where: gallery.id in ^gallery_ids, update: [set: ^opts])
-    |> Repo.update_all([])
+  def update_all(galleries, total_days) when is_list(galleries) do
+    galleries =
+      if total_days == 0 do
+        galleries
+        |> Enum.map(
+          &[
+            id: &1.id,
+            name: &1.name,
+            updated_at: &1.updated_at,
+            inserted_at: &1.inserted_at,
+            status: &1.status,
+            job_id: &1.job_id,
+            expired_at: nil
+          ]
+        )
+      else
+        galleries
+        |> Enum.map(
+          &[
+            id: &1.id,
+            name: &1.name,
+            updated_at: &1.updated_at,
+            inserted_at: &1.inserted_at,
+            status: &1.status,
+            job_id: &1.job_id,
+            expired_at: GSGallery.calculate_expiry_date(total_days, &1.inserted_at)
+          ]
+        )
+      end
+
+    Repo.insert_all(Gallery, galleries,
+      on_conflict: {:replace, [:expired_at]},
+      conflict_target: :id
+    )
   end
 
   def gallery_current_status(%Gallery{id: nil}), do: :none_created

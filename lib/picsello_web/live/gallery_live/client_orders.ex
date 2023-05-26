@@ -15,7 +15,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
       tracking: 1,
       credits_footer: 1,
       assign_checkout_routes: 1,
-      assign_is_proofing: 1
+      assign_is_proofing: 1,
+      get_client_by_email: 1
     ]
 
   @impl true
@@ -24,11 +25,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
         _,
         %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
       ) do
-    gallery_client =
-      Galleries.get_gallery_client(
-        gallery,
-        if(client_email, do: client_email, else: assigns.current_user.email)
-      )
+    gallery_client = get_client_by_email(assigns)
 
     orders = Orders.gallery_client_orders(gallery.id, gallery_client.id) |> maybe_filter(assigns)
     Enum.each(orders, &Orders.subscribe/1)
