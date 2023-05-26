@@ -43,11 +43,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
     socket
     |> assign(
-      gallery_client:
-        Galleries.get_gallery_client(
-          gallery,
-          if(client_email, do: client_email, else: assigns.current_user.email)
-        ),
+      gallery_client: get_client_by_email(assigns),
       photo_updates: "false",
       download_all_visible: false,
       active: false,

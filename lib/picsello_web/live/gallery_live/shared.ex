@@ -118,6 +118,16 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
+    with true <- is_nil(client_email),
+    nil <- Map.get(assigns, :current_user) do
+      gallery.job.client
+    else
+      false -> Galleries.get_gallery_client(gallery, client_email)
+      current_user -> Galleries.get_gallery_client(gallery, current_user.email)
+    end
+  end
+
   def toggle_favorites(
         %{
           assigns: %{

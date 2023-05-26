@@ -5,25 +5,19 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [assign_cart_count: 2, customize_and_buy_product: 4, assign_checkout_routes: 1]
+    only: [assign_cart_count: 2, customize_and_buy_product: 4, assign_checkout_routes: 1, get_client_by_email: 1]
 
   import Picsello.Designs, only: [load_occasion: 1, occasion_designs_query: 1, occasions: 0]
 
   import Ecto.Query, only: [from: 2]
-  alias Picsello.{Repo, Designs.Filter, Galleries}
+  alias Picsello.{Repo, Designs.Filter}
 
   @per_page 16
 
   @impl true
-  def mount(_, _, %{assigns: %{gallery: gallery, client_email: client_email}} = socket) do
+  def mount(_, _, %{assigns: %{gallery: gallery} = assigns} = socket) do
     socket
-    |> assign(
-      gallery_client:
-        Galleries.get_gallery_client(
-          gallery,
-          if(client_email, do: client_email, else: socket.assigns.current_user.email)
-        )
-    )
+    |> assign(gallery_client: get_client_by_email(assigns))
     |> assign_cart_count(gallery)
     |> assign(
       update: "init",

@@ -23,13 +23,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
       )
     socket
     |> assign(from_checkout: false)
-    |> assign(
-      gallery_client:
-        Galleries.get_gallery_client(
-          gallery,
-          if(client_email, do: client_email, else: assigns.current_user.email)
-        )
-    )
+    |> assign(gallery_client: get_client_by_email(assigns))
     |> assign(gallery: gallery)
     |> assign_new(:album, fn -> nil end)
     |> assign_is_proofing()
