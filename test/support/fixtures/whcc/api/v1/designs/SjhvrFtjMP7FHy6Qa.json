@@ -7162,6 +7162,7 @@
     "shapes": ["no", "a2", "a3", "c13", "d3", "a15", "e16"],
     "hasFoils": true
   },
+  "displayName": "warm joyful wishes",
   "name": "warm joyful wishes",
   "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
   "product": {

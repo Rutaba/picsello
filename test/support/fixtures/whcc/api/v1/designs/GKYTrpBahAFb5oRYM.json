@@ -6655,6 +6655,7 @@
     "shapes": ["no", "a2", "b2", "e16"],
     "hasFoils": false
   },
+  "displayName": "stamped happy holidays",
   "name": "5x7 flat card vertical",
   "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
   "product": {

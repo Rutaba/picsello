@@ -6293,6 +6293,7 @@
     "shapes": ["no", "a2", "b2", "c13", "d3", "a15", "a15_hole", "e16"],
     "hasFoils": true
   },
+  "displayName": "holiday cheer",
   "name": "5x7 flat card horizontal",
   "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
   "product": {
