@@ -1,0 +1,27 @@
+<div class="pt-6 px-6 py-2 center-container">
+    <div class="flex text-4xl items-center">
+      <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
+      <.crumbs class="text-sm text-base-250">
+        <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
+        <:crumb>Automations</:crumb>
+      </.crumbs>
+    </div>
+
+    <hr class="mt-2 border-white" />
+
+    <div class="flex justify-between lg:mt-2 md:justify-start">
+      <div class="flex">
+        <div>
+          <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
+        </div>
+
+        <div>
+          <h1 class="text-4xl font-bold">Your Email Automations</h1>
+          <div class="max-w-4xl mt-2 text-base-250">
+            <p>Email automation sequences scheduled to send globally for all your Leads, Jobs and Galleries. “Set and forget” these sequences globally here to increase your productivity and make sure communications to your client are sent when you want and need them to be.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr class="mt-4 sm:mt-10" />
+</div>
