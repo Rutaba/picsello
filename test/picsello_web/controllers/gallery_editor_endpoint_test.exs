@@ -13,7 +13,9 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
     photographer = insert(:user)
     gallery = insert(:gallery, job: :lead |> insert(user: photographer) |> promote_to_job())
     insert(:gallery_client, %{email: photographer.email, gallery_id: gallery.id})
-    gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+    gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
     insert(:gallery_digital_pricing, %{
       gallery: gallery,
@@ -73,7 +75,10 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
         build(:whcc_order_created, total: ~M[69]USD)
       end)
 
-      assert {:error, _} = Picsello.Cart.get_unconfirmed_order(gallery.id, [gallery_client_id: gallery_client.id])
+      assert {:error, _} =
+               Picsello.Cart.get_unconfirmed_order(gallery.id,
+                 gallery_client_id: gallery_client.id
+               )
 
       conn =
         post(
@@ -88,7 +93,8 @@ defmodule PicselloWeb.GalleryEditorEndpointTest do
       response = json_response(conn, 200)
       assert new_editor_url == response
 
-      {:ok, order} = Picsello.Cart.get_unconfirmed_order(gallery.id, [gallery_client_id: gallery_client.id])
+      {:ok, order} =
+        Picsello.Cart.get_unconfirmed_order(gallery.id, gallery_client_id: gallery_client.id)
 
       assert 1 == order |> Ecto.assoc(:products) |> Picsello.Repo.aggregate(:count)
     end

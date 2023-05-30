@@ -60,7 +60,7 @@ defmodule Picsello.ClientCancelsOrderTest do
 
     # assert [%{errors: []}] = run_jobs()
     # assert_receive {:create_session, %{cancel_url: cancel_url}}
-#
+    #
     # session
     # # |> visit(cancel_url)
     # |> assert_has(css("*[data-testid^='digital-']", count: 2))
@@ -68,9 +68,9 @@ defmodule Picsello.ClientCancelsOrderTest do
     # |> click(link("Continue"))
     # |> wait_for_enabled_submit_button()
     # |> click(button("Check out with Stripe"))
-#
+    #
     # assert [%{errors: []}, %{errors: []}] = run_jobs()
-# 
+    # 
     # assert_receive {:create_session, _params}
   end
 end

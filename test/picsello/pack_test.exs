@@ -68,7 +68,10 @@ defmodule Picsello.PackTest do
       %{gallery: gallery} =
         insert_gallery(organization_name: "org name")
         |> insert_gallery_digital_pricing(Money.new(20))
-      gallery_client = insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       insert_list(3, :photo,
         gallery: gallery,
         original_url: @original_url,

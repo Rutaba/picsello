@@ -1199,8 +1199,8 @@ defmodule Picsello.Galleries do
       ) do
     with true <- gallery_password == password,
          {:ok, %{token: token}} <-
-           insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}) do
-      insert_gallery_client(gallery, email)
+           insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}),
+         {:ok, _} <- insert_gallery_client(gallery, email) do
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -1214,8 +1214,8 @@ defmodule Picsello.Galleries do
       ) do
     with true <- album_password == password,
          {:ok, %{token: token}} <-
-           insert_session_token(%{resource_id: id, resource_type: :album, email: email}) do
-      insert_gallery_client(get_gallery!(gallery_id), email)
+           insert_session_token(%{resource_id: id, resource_type: :album, email: email}),
+         {:ok, _} <- insert_gallery_client(get_gallery!(gallery_id), email) do
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -1226,16 +1226,6 @@ defmodule Picsello.Galleries do
     attrs
     |> SessionToken.changeset()
     |> Repo.insert()
-  end
-
-  def insert_gallery_client(gallery, email) do
-    gallery_client = Galleries.get_gallery_client(gallery, email)
-
-    if gallery_client,
-      do: gallery_client,
-      else:
-        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
-        |> Repo.insert()
   end
 
   @doc """
@@ -1411,6 +1401,17 @@ defmodule Picsello.Galleries do
 
   defp active_disabled_galleries,
     do: from(g in Gallery, where: g.status in [:active, :disabled])
+
+  defp insert_gallery_client(gallery, email) do
+    case Galleries.get_gallery_client(gallery, email) do
+      nil ->
+        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
+        |> Repo.insert()
+
+      gallery_client ->
+        {:ok, gallery_client}
+    end
+  end
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
   defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue
