@@ -23,15 +23,83 @@ defmodule PicselloWeb.Live.Calendar.SettingsTest do
       {:ok, _view, html} = load_page(conn, user)
       refute element_present?(html, "#calendar_read")
     end
+  end
 
-    test "Read Write section", %{conn: conn, user: user} do
+  describe "Read/write section" do
+    test "Element Absent with No token", %{conn: conn, user: user} do
       {:ok, _view, html} = load_page(conn, user)
       refute element_present?(html, "#calendar_read_write")
     end
 
-    test "Google Calendar read", %{conn: conn, user: user} do
+    test "Section present with Token", %{conn: conn, user: user} do
+      {:ok, _view, html} = load_page(conn, user, :token)
+      assert element_present?(html, "#calendar_read_write")
+    end
+
+    test "Section checkboxes present", %{conn: conn, user: user} do
+      {:ok, _view, html} = load_page(conn, user, :token)
+      assert element_present?(html, "#calendar_read_write")
+      elements = find_element(html, "input[type='radio'][name='calendar_read_write']")
+      assert length(elements) == 3
+    end
+
+    test "Section Checkboxes have action", %{conn: conn, user: user} do
+      {:ok, _view, html} = load_page(conn, user, :token)
+
+      assert find_element(html, "input[type='radio'][phx-click='calendar-read-write']") |> length ==
+               3
+
+      assert find_element(html, "input[type='radio'][phx-value-calendar]") |> length ==
+               3
+    end
+
+    test "Section Checkboxes live names", %{conn: conn, user: user} do
+      {:ok, _view, html} = load_page(conn, user, :token)
+      throw(:NYI)
+    end
+
+    test "Click checkbox changes calendar", %{conn: conn, user: user} do
+      {:ok, _view, html} = load_page(conn, user, :token)
+      throw(:NYI)
+    end
+  end
+
+  describe "Read only section" do
+    test "Element absent with no token", %{conn: conn, user: user} do
       {:ok, _view, html} = load_page(conn, user)
       refute element_present?(html, "#syncing")
+    end
+
+    test "Section Present with Token", %{conn: conn, user: user} do
+      {:ok, _view, html} = load_page(conn, user, :token)
+      assert element_present?(html, "#calendar_read")
+    end
+
+    test "radio buttons present with token", %{conn: conn, user: user} do
+      {:ok, _view, html} = load_page(conn, user, :token)
+      assert element_present?(html, "#calendar_read")
+      elements = find_element(html, "input[type='checkbox'][name='calendar_read']")
+      assert length(elements) == 3
+    end
+
+    test "Section Checkboxes have action", %{conn: conn, user: user} do
+      {:ok, _view, html} = load_page(conn, user, :token)
+
+      assert find_element(html, "input[type='checkbox'][phx-click='calendar-read']") |> length ==
+               3
+
+      assert find_element(html, "input[type='checkbox'][phx-value-calendar]") |> length ==
+               3
+    end
+
+    test "Section Checkboxes live names", %{conn: conn, user: user} do
+      {:ok, _view, html} = load_page(conn, user, :token)
+      throw(:NYI)
+    end
+
+    test "CLick checkbox changes calendar", %{conn: conn, user: user} do
+      {:ok, _view, html} = load_page(conn, user, :token)
+      throw(:NYI)
     end
   end
 
@@ -39,16 +107,6 @@ defmodule PicselloWeb.Live.Calendar.SettingsTest do
     test "Google Calendar shows connected to", %{conn: conn, user: user} do
       {:ok, _view, html} = load_page(conn, user, :token)
       assert element_present?(html, "#syncing")
-    end
-
-    test "Read Write section", %{conn: conn, user: user} do
-      {:ok, _view, html} = load_page(conn, user, :token)
-      assert element_present?(html, "#calendar_read_write")
-    end
-
-    test "Google Calendar read", %{conn: conn, user: user} do
-      {:ok, _view, html} = load_page(conn, user, :token)
-      assert element_present?(html, "#calendar_read")
     end
 
     test "Danger Zone/ Disconnect Calendar", %{conn: conn, user: user} do
