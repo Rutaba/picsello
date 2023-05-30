@@ -2,8 +2,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
-  import Picsello.Onboardings, only: [save_intro_state: 3]
-  alias Ecto.Changeset
 
   alias Picsello.{
     Repo,

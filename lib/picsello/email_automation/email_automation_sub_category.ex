@@ -3,8 +3,6 @@ defmodule Picsello.EmailAutomation.EmailAutomationSubCategory do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @types ~w(lead job gallery general)a
-
   schema "email_automation_sub_categories" do
     field :name, :string
     field(:slug, :string)
