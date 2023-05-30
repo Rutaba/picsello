@@ -59,7 +59,12 @@ defmodule Picsello.ClientsIndexTest do
     |> click(css("#download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
+    )
+    |> assert_text("greater than digital image price")
+    |> find(
+      text_field("download[buy_all]"),
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$4"))
     )
   end
 
@@ -195,9 +200,13 @@ defmodule Picsello.ClientsIndexTest do
     |> within_modal(&click(&1, button("Next")))
     |> scroll_into_view(testid("print"))
     |> click(radio_button("Gallery does not include Print Credits"))
+<<<<<<< HEAD
     |> click(button("Edit settings"))
     |> scroll_into_view(css("#download_status_unlimited"))
     |> click(css("#download_status_unlimited"))
+=======
+    |> scroll_into_view(css("#download_is_buy_all"))
+>>>>>>> fb4c8de5c (Fix test cases)
     |> within_modal(&click(&1, button("Save")))
     |> click(button("Great!"))
     |> assert_url_contains("galleries")

@@ -70,7 +70,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     session
     |> visit(profile_url)
     |> assert_text("Mary Jane Photography")
-    |> assert_text("SPECIALIZING IN:")
+    |> assert_text("SPECIALIZING IN")
     |> assert_has(testid("job-type", text: "Wedding"))
     |> assert_has(testid("job-type", text: "Event"))
     |> assert_has(radio_button("Wedding", visible: false))
