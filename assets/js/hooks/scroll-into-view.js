@@ -1,5 +1,6 @@
 export default {
   mounted() {
-    this.el.scrollIntoViewIfNeeded(false);
-  },
+    setTimeout(() => {
+      this.el.scrollIntoViewIfNeeded(false);
+    }, 100);  },
 };
