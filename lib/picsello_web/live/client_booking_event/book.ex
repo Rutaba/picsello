@@ -13,6 +13,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     ]
 
   import PicselloWeb.ClientBookingEventLive.DatePicker, only: [date_picker: 1]
+  require Logger
 
   @impl true
   def mount(%{"organization_slug" => slug, "id" => event_id}, session, socket) do
@@ -153,7 +154,9 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
         |> put_flash(:error, "This time is not available anymore")
         |> noreply()
 
-      _ ->
+      e ->
+        Logger.warning("[save_booking] error: #{inspect(e)}")
+
         socket
         |> put_flash(:error, "Couldn't book this event.")
         |> noreply()

@@ -75,6 +75,8 @@ defmodule Picsello.Packages do
     use Ecto.Schema
     import Ecto.Changeset
 
+    import PicselloWeb.PackageLive.Shared, only: [current: 1]
+
     @percent_options for(amount <- 10..100//10, do: {"#{amount}%", amount})
     @sign_options [{"Discount", "-"}, {"Surcharge", "+"}]
 
@@ -88,7 +90,7 @@ defmodule Picsello.Packages do
       field(:discount_digitals, :boolean, default: false)
     end
 
-    def changeset(multiplier \\ %__MODULE__{}, attrs) do
+    def changeset(multiplier \\ %__MODULE__{}, attrs, print_credits_include_in_total, digitals_include_in_total) do
       multiplier
       |> cast(attrs, [
         :percent,
@@ -101,7 +103,10 @@ defmodule Picsello.Packages do
       |> validate_required([:percent, :sign, :is_enabled])
       |> then(
         &if(get_field(&1, :is_enabled) && Map.get(attrs, "step") in [:choose_type, :pricing],
-          do: validate_discounts(&1),
+          do: 
+          force_change(&1, :discount_print_credits, print_credits_include_in_total && get_field(&1, :discount_print_credits))
+          |> force_change(:discount_digitals, digitals_include_in_total && get_field(&1, :discount_digitals))
+          |> validate_discounts(),
           else:
             &1
             |> force_change(:discount_base_price, false)
@@ -112,9 +117,9 @@ defmodule Picsello.Packages do
     end
 
     defp validate_discounts(changeset) do
-      if get_field(changeset, :discount_base_price) ||
-           get_field(changeset, :discount_print_credits) ||
-           get_field(changeset, :discount_digitals) do
+      discounts = 
+
+      if current(changeset) |> is_discounts_enabled() do
         changeset
       else
         changeset
@@ -122,6 +127,12 @@ defmodule Picsello.Packages do
       end
     end
 
+    def is_discounts_enabled(multiplier) do
+      Map.get(multiplier, :discount_base_price) ||
+      Map.get(multiplier, :discount_print_credits) ||
+      Map.get(multiplier, :discount_digitals)
+    end
+  
     def percent_options(), do: @percent_options
     def sign_options(), do: @sign_options
 

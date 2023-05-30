@@ -585,6 +585,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <hr class="w-full mt-6"/>
         <% changeset = current(@f) %>
         <% multiplier = current(@multiplier) %>
+        <% print_credits_include_in_total = Map.get(changeset, :print_credits_include_in_total) %>
+        <% digitals_include_in_total = Map.get(changeset, :digitals_include_in_total) %>
 
         <div class="flex md:flex-row flex-col">
           <div class="flex flex-col w-full md:w-2/3">
@@ -623,10 +625,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                     <%= checkbox m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox" %>
                     <%= label_for m, :discount_base_price, label: "Apply to creative session", class: "font-normal" %>
                   </div>
-
-                  <% print_credits_include_in_total = Map.get(changeset, :print_credits_include_in_total) %>
-                  <% digitals_include_in_total = Map.get(changeset, :digitals_include_in_total) %>
-
                   <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !print_credits_include_in_total})}>
                     <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !print_credits_include_in_total %>
                     <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
@@ -651,7 +649,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <span class="flex w-1/3 text-base-250 justify-end mr-5"><%= base_adjustment(@f) %></span>
               </.show_discounts>
             <% end %>
-            <%= if Map.get(changeset, :print_credits_include_in_total) do %>
+            <%= if print_credits_include_in_total do %>
               <.show_discounts>
                 <span class="flex w-2/3 mt-2 font-bold">Professional Print Credit</span>
                 <span class="flex w-1/3 mt-2 justify-end mr-5">+<%= Map.get(changeset, :print_credits) %></span>
@@ -663,7 +661,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                 <span class="flex w-1/3 text-base-250 justify-end mr-5"><%= print_cridets_adjustment(@f) %></span>
               </.show_discounts>
             <% end %>
-            <%= if Map.get(changeset, :digitals_include_in_total) do %>
+            <%= if digitals_include_in_total do %>
             <.show_discounts>
                 <span class="flex w-2/3 mt-2 font-bold">Digital Collection</span>
                 <span class="flex w-1/3 mt-2 justify-end mr-5">+<%= digitals_total(@download_changeset) %></span>
@@ -1634,18 +1632,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          params,
          action \\ nil
        ) do
-    package_pricing_changeset =
-      assigns.package_pricing
-      |> PackagePricing.changeset(
-        Map.get(params, "package_pricing", package_pricing_params(package))
-        |> Map.put("step", step)
-      )
-
-    multiplier_changeset =
-      package
-      |> Multiplier.from_decimal()
-      |> Multiplier.changeset(Map.get(params, "multiplier", %{}) |> Map.put("step", step))
-
     download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 
     download_changeset =
@@ -1653,9 +1639,27 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Download.from_package(global_settings)
       |> Download.changeset(download_params, Map.get(assigns, :download_changeset))
       |> Map.put(:action, action)
+  
+    package_pricing_changeset =
+      assigns.package_pricing
+      |> PackagePricing.changeset(
+        Map.get(params, "package_pricing", package_pricing_params(package))
+        |> Map.put("step", step)
+      )
 
-    download = current(download_changeset)
     package_pricing = current(package_pricing_changeset)
+    download = current(download_changeset)
+
+    print_credits_include_in_total = Map.get(package_pricing, :print_credits_include_in_total)
+    digitals_include_in_total = Map.get(download, :digitals_include_in_total)
+
+    multiplier_params = Map.get(params, "multiplier", %{}) |> Map.put("step", step)
+
+    multiplier_changeset =
+      package
+      |> Multiplier.from_decimal()
+      |> Multiplier.changeset(multiplier_params, print_credits_include_in_total, digitals_include_in_total)
+    
     multiplier = current(multiplier_changeset)
 
     package_params =
@@ -2054,10 +2058,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp get_discount_text(multiplier) do
-    if Map.get(multiplier, :is_enabled) &&
-         (Map.get(multiplier, :discount_base_price) ||
-            Map.get(multiplier, :discount_print_credits) ||
-            Map.get(multiplier, :discount_digitals)) do
+    if Map.get(multiplier, :is_enabled) && Multiplier.is_discounts_enabled(multiplier) do
       sign = Map.get(multiplier, :sign)
       sign_text = if sign == "-", do: "discount", else: "surcharge"
 
