@@ -167,6 +167,15 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> noreply()
   end
 
+  def handle_info(:update_client_gallery_state, %{assigns: %{album: album, gallery: gallery}} = socket) do
+    socket
+    |> assign(
+      album_favorites_count: Galleries.gallery_album_favorites_count(gallery, album.id),
+      favorites_count: Galleries.gallery_favorites_count(gallery)
+    )
+    |> noreply()
+  end
+
   defp assigns(%{assigns: %{album: album, gallery: gallery, client_email: client_email}} = socket) do
     album = album |> Repo.preload(:photos)
 
