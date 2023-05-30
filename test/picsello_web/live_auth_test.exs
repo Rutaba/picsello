@@ -183,7 +183,6 @@ defmodule PicselloWeb.LiveAuthTest do
       gallery: gallery,
       show_path: show_path
     } do
-
       Ecto.Adapters.SQL.Sandbox.checkout(Picsello.Repo)
 
       {:ok, token} =

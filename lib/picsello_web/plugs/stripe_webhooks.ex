@@ -23,7 +23,7 @@ defmodule PicselloWeb.Plugs.StripeWebhooks do
 
   defp handle_request(conn, signing_secret) do
     [stripe_signature] = Plug.Conn.get_req_header(conn, "stripe-signature")
-    
+
     {:ok, body, _} = Plug.Conn.read_body(conn)
     {:ok, stripe_event} = Payments.construct_event(body, stripe_signature, signing_secret)
 

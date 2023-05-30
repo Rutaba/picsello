@@ -1198,9 +1198,9 @@ defmodule Picsello.Galleries do
         email \\ nil
       ) do
     with true <- gallery_password == password,
-          {:ok, %{token: token}} <-
+         {:ok, %{token: token}} <-
            insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}),
-          {:ok, _} <- insert_gallery_client(gallery, email) do
+         {:ok, _} <- insert_gallery_client(gallery, email) do
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -1213,9 +1213,9 @@ defmodule Picsello.Galleries do
         email \\ nil
       ) do
     with true <- album_password == password,
-          {:ok, %{token: token}} <-
+         {:ok, %{token: token}} <-
            insert_session_token(%{resource_id: id, resource_type: :album, email: email}),
-          {:ok, _} <- insert_gallery_client(get_gallery!(gallery_id), email) do
+         {:ok, _} <- insert_gallery_client(get_gallery!(gallery_id), email) do
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -1404,11 +1404,15 @@ defmodule Picsello.Galleries do
 
   defp insert_gallery_client(gallery, email) do
     case Galleries.get_gallery_client(gallery, email) do
-      nil -> GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id}) |> Repo.insert()
-      gallery_client -> {:ok, gallery_client}
+      nil ->
+        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
+        |> Repo.insert()
+
+      gallery_client ->
+        {:ok, gallery_client}
     end
   end
-  
+
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
   defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue
 end

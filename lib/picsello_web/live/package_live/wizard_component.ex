@@ -1639,7 +1639,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       |> Download.from_package(global_settings)
       |> Download.changeset(download_params, Map.get(assigns, :download_changeset))
       |> Map.put(:action, action)
-  
+
     package_pricing_changeset =
       assigns.package_pricing
       |> PackagePricing.changeset(
@@ -1658,8 +1658,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     multiplier_changeset =
       package
       |> Multiplier.from_decimal()
-      |> Multiplier.changeset(multiplier_params, print_credits_include_in_total, digitals_include_in_total)
-    
+      |> Multiplier.changeset(
+        multiplier_params,
+        print_credits_include_in_total,
+        digitals_include_in_total
+      )
+
     multiplier = current(multiplier_changeset)
 
     package_params =
