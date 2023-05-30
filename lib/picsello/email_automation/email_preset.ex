@@ -3,6 +3,8 @@ defmodule Picsello.EmailPresets.EmailPreset do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Picsello.EmailAutomation.EmailAutomationSetting
+
   @types ~w(job gallery)a
   @states_by_type %{
     job:
@@ -20,14 +22,18 @@ defmodule Picsello.EmailPresets.EmailPreset do
     field :name, :string
     field :subject_template, :string
     field :position, :integer
+    field :is_default, :boolean, default: true
+    field :private_name, :string
+    
+    belongs_to(:email_automation_setting, EmailAutomationSetting)
 
     timestamps type: :utc_datetime
   end
 
   def changeset(email_preset \\ %__MODULE__{}, attrs) do
     email_preset
-    |> cast(attrs, ~w[type state job_type name position subject_template body_template]a)
-    |> validate_required(~w[type state name position subject_template body_template]a)
+    |> cast(attrs, ~w[email_automation_setting_id is_default private_name type state job_type name position subject_template body_template]a)
+    |> validate_required(~w[email_automation_setting_id type state name position subject_template body_template]a)
     |> validate_states()
     |> foreign_key_constraint(:job_type)
   end
@@ -48,6 +54,9 @@ defmodule Picsello.EmailPresets.EmailPreset do
           name: String.t(),
           subject_template: String.t(),
           position: integer(),
+          is_default: boolean(),
+          private_name: String.t(),
+          email_automation_setting_id: integer(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }
