@@ -78,9 +78,19 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      %{gallery: gallery} = insert_gallery(organization_name: "org name") |> insert_gallery_digital_pricing(Money.new(20))
+      %{gallery: gallery} =
+        insert_gallery(organization_name: "org name")
+        |> insert_gallery_digital_pricing(Money.new(20))
 
-      insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      insert(:order,
+        gallery: gallery,
+        gallery_client: gallery_client,
+        placed_at: DateTime.utc_now(),
+        bundle_price: ~M[5000]USD
+      )
 
       [first_photo | _] =
         insert_list(3, :photo,
@@ -101,7 +111,9 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
       conn: conn,
       original_url: original_url
     } do
-      %{gallery: gallery} = insert_gallery(organization_name: "org name", charge_for_downloads: false) |> insert_gallery_digital_pricing(Money.new(0))
+      %{gallery: gallery} =
+        insert_gallery(organization_name: "org name", charge_for_downloads: false)
+        |> insert_gallery_digital_pricing(Money.new(0))
 
       [first_photo | _] =
         insert_list(3, :photo,
@@ -119,7 +131,12 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
     end
 
     test "photo is in gallery's placed order", %{conn: conn, original_url: original_url} do
-      %{gallery: gallery} = insert_gallery(organization_name: "org name") |> insert_gallery_digital_pricing(Money.new(0))
+      %{gallery: gallery} =
+        insert_gallery(organization_name: "org name")
+        |> insert_gallery_digital_pricing(Money.new(0))
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
       photo =
         insert(:photo,
@@ -128,7 +145,14 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
           name: "original name.jpg"
         )
 
-      add_photos(insert(:order, gallery: gallery, placed_at: DateTime.utc_now()), [photo])
+      add_photos(
+        insert(:order,
+          gallery: gallery,
+          gallery_client: gallery_client,
+          placed_at: DateTime.utc_now()
+        ),
+        [photo]
+      )
 
       conn = get_photo(conn, gallery, photo.id)
 
@@ -144,13 +168,22 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
     } do
       %{gallery: gallery} = insert_gallery() |> insert_gallery_digital_pricing(Money.new(20))
 
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       photo =
         insert(:photo,
           gallery: gallery,
           original_url: original_url
         )
 
-      order = insert(:order, gallery: gallery, placed_at: DateTime.utc_now())
+      order =
+        insert(:order,
+          gallery: gallery,
+          gallery_client: gallery_client,
+          placed_at: DateTime.utc_now()
+        )
+
       insert(:intent, order: order)
       refute Picsello.Orders.client_paid?(order)
       add_photos(order, [photo])
@@ -163,13 +196,23 @@ defmodule PicselloWeb.GalleryDownloadsControllerTest do
     test "no such photo in any gallery's order", %{conn: conn, original_url: original_url} do
       %{gallery: gallery} = insert_gallery() |> insert_gallery_digital_pricing(Money.new(20))
 
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       [photo1, photo2] =
         insert_list(2, :photo,
           gallery: gallery,
           original_url: original_url
         )
 
-      add_photos(insert(:order, gallery: gallery, placed_at: DateTime.utc_now()), [photo1])
+      add_photos(
+        insert(:order,
+          gallery: gallery,
+          gallery_client: gallery_client,
+          placed_at: DateTime.utc_now()
+        ),
+        [photo1]
+      )
 
       assert_raise(Ecto.NoResultsError, fn ->
         get_photo(conn, gallery, photo2.id)

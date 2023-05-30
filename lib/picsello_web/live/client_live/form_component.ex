@@ -176,6 +176,13 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
   def handle_event("back", %{}, socket), do: go_back_event("back", %{}, socket) |> noreply()
 
   @impl true
+  def handle_event("edit-digitals", %{"type" => type}, socket) do
+    socket
+    |> assign(:show_digitals, type)
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("remove-payment", %{}, socket),
     do: remove_payment_event("remove-payment", %{}, socket) |> noreply()
 
@@ -210,7 +217,8 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
         socket
         |> assign(
           step: :package_payment,
-          job_type: type
+          job_type: type,
+          show_digitals: type
         )
         |> assign_job_changeset(params)
 

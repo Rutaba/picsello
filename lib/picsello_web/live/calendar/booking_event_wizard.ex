@@ -9,6 +9,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
+  import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
   alias Picsello.{BookingEvent, BookingEvents, Packages}
 
   @impl true
@@ -25,7 +26,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         socket |> assign_changeset(%{"dates" => [%{"time_blocks" => [%{}]}]})
 
       socket ->
-        socket |> assign_changeset(%{})
+        socket |> assign_sorted_booking_event() |> assign_changeset(%{})
     end
     |> assign_package_templates()
     |> ok()
@@ -304,7 +305,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       <div class={classes("p-4 grid gap-5 lg:grid-cols-3 grid-cols-1", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})} {intro_hints_only("intro_hints_only")}>
         <div class="flex flex-col">
           <h3 class="text-md font-bold">When is your event?</h3>
-          <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}"} form={@f} field={:date} input_placeholder="mm/dd/yyyy" input_label="Select Date" data_min_date={Date.utc_today()} disabled={is_date_booked(@event_form, input_value(@f, :date))} />
+          <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today(), disabled: is_date_booked(@event_form, input_value(@f, :date)) %>
           <%= if is_date_booked(@event_form, input_value(@f, :date)) do %>
             <div class="flex justify-start mt-4 items-center">
               <.icon name="warning-red", class="w-10 h-10 red-sales-300 stroke-[4px]" />
@@ -318,9 +319,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <%= inputs_for @f, :time_blocks, fn t -> %>
             <div class="flex lg:items-center flex-col lg:flex-row mb-4">
               <div class={classes("flex items-center lg:w-auto w-full lg:justify-start justify-between", %{"text-gray-400" => (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))})}>
-                <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}-start-time-#{t.index}"} input_label="Block Start" data_time_only="true" data_custom_display_format="h:i K" data_custom_date_format="H:i" data_time_picker="true" form={t} field={:start_time} input_placeholder="--:-- --" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} />
+              <%= input t, :start_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))%>
                 <p class="mx-2 mt-6">-</p>
-                <.date_picker_field class="sm:w-64 w-full text-lg" id={"booking-event-#{@f.index}-end-time-#{t.index}"} input_label="Block End" data_time_only="true" data_custom_display_format="h:i K" data_custom_date_format="H:i" data_time_picker="true" form={t} field={:end_time} input_placeholder="--:-- --" disabled={(t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break))} />
+                <%= input t, :end_time, type: :time_input, disabled: (t |> current |> Map.get(:is_booked)) and !(t |> current |> Map.get(:is_break)) %>
                 <%= hidden_input t, :is_break%>
                 <%= hidden_input t, :is_valid, value: t |> current |> Map.get(:is_valid) %>
               </div>
@@ -515,12 +516,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   @impl true
   def handle_event("validate", %{"booking_event" => params}, socket) do
+    params = Map.put_new(params, "buffer_minutes", "")
     socket |> assign_changeset(params, :validate) |> noreply()
   end
 
   @impl true
   def handle_event("submit", %{"step" => step, "booking_event" => params}, socket)
       when step in ["details", "package"] do
+    params = Map.put_new(params, "buffer_minutes", "")
+
     case socket |> assign_changeset(params, :validate) do
       %{assigns: %{changeset: %{valid?: true}}} ->
         socket
@@ -536,6 +540,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
 
   @impl true
   def handle_event("submit", %{"step" => "customize", "booking_event" => params}, socket) do
+    params = Map.put_new(params, "buffer_minutes", "")
     %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
 
     case BookingEvents.upsert_booking_event(changeset) do
@@ -592,6 +597,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     socket |> assign(package_templates: packages)
   end
 
+  defp assign_sorted_booking_event(%{assigns: %{booking_event: booking_event}} = socket) do
+    dates = reorder_time_blocks(booking_event.dates)
+    booking_event = Map.put(booking_event, :dates, dates)
+    socket |> assign(booking_event: booking_event)
+  end
+
+  defp reorder_time_blocks(dates) do
+    Enum.map(dates, fn %{time_blocks: time_blocks} = event_date ->
+      sorted_time_blocks = Enum.sort_by(time_blocks, &{&1.start_time, &1.end_time})
+      %{event_date | time_blocks: sorted_time_blocks}
+    end)
+  end
+
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
   defp next_step(%{step: step, steps: steps}) do
@@ -609,7 +627,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     event = current(event_form)
 
     slot_count =
-      event |> BookingEvents.available_times(date, skip_overlapping_shoots: true) |> Enum.count()
+      event
+      |> BookingEvents.available_times(date, skip_overlapping_shoots: true)
+      |> filter_break_blocks()
+      |> Enum.count()
 
     booked_slots_count =
       case can_edit? do
@@ -620,6 +641,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
     {slot_count, calculate_break_blocks(event, date), calculate_hidden_blocks(event, date),
      booked_slots_count}
   end
+
+  defp filter_break_blocks(slots), do: Enum.filter(slots, fn slot -> !elem(slot, 2) end)
 
   defp is_break_block_already_booked(dates) do
     Enum.count(dates, fn %{time_blocks: time_blocks} ->
@@ -690,14 +713,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         acc
       end
     end)
-  end
-
-  defp is_checked(id, package) do
-    if id do
-      id == if(is_binary(id), do: package.id |> Integer.to_string(), else: package.id)
-    else
-      false
-    end
   end
 
   defp get_is_break!(changeset, date_index, time_block_index) do

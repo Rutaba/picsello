@@ -30,7 +30,7 @@ defmodule Picsello.UserManagesMarketingBrandLinksTest do
     |> assert_text("Looks like you don’t have any links")
     # iPhone 8+
     |> resize_window(414, 736)
-    |> assert_text("Add links to your web platforms")
+    |> assert_text("Looks like you don’t have any links")
   end
 
   feature "edit and activate brand link with disabled delete button", %{session: session} do

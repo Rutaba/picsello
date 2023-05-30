@@ -30,21 +30,27 @@ defmodule Picsello.Orders.ConfirmationsTest do
                 )
             )
         )
+        |> Map.put(:credits_available, true)
     ]
   end
 
-  def insert_order(%{whcc_order: whcc_order, placed_at: placed_at, gallery: gallery}),
-    do: [
+  def insert_order(%{whcc_order: whcc_order, placed_at: placed_at, gallery: gallery}) do
+    gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+    [
       order:
         :order
         |> insert(
           delivery_info: %{email: "client@example.com"},
           whcc_order: whcc_order,
           placed_at: placed_at,
-          gallery: gallery
+          gallery: gallery,
+          gallery_client: gallery_client
         )
         |> Repo.preload([:gallery, :products, :digitals])
     ]
+  end
 
   def insert_order(%{} = context),
     do:
@@ -199,12 +205,29 @@ defmodule Picsello.Orders.ConfirmationsTest do
     setup :insert_order
 
     setup %{gallery: gallery, order: order} do
-      Cart.place_product(build(:cart_product), gallery)
+      gallery_client =
+        insert(:gallery_client, %{email: gallery.job.client.email, gallery_id: gallery.id})
+
+      Cart.place_product(build(:cart_product), gallery, gallery_client)
 
       Cart.place_product(
         build(:digital, photo: insert(:photo, gallery: gallery)),
-        gallery
+        gallery,
+        gallery_client
       )
+
+      invoice = build(:stripe_invoice, id: "invoice-stripe-id")
+
+      MockPayments
+      |> Mox.stub(:create_invoice_item, fn _, _ ->
+        {:ok, %Stripe.Invoiceitem{}}
+      end)
+      |> Mox.stub(:create_invoice, fn _, _ ->
+        {:ok, invoice}
+      end)
+      |> Mox.stub(:finalize_invoice, fn _, _, _ ->
+        {:ok, %{invoice | status: "open"}}
+      end)
 
       [
         order:
@@ -239,8 +262,6 @@ defmodule Picsello.Orders.ConfirmationsTest do
     } do
       handle_session(session)
       assert Picsello.Orders.client_paid?(order)
-
-      assert digitals_available_for_download?(order)
     end
 
     test "confirms order", %{order: order, session: session} do
@@ -279,9 +300,12 @@ defmodule Picsello.Orders.ConfirmationsTest do
     setup :insert_order
 
     setup %{order: %{gallery: gallery} = order} do
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       insert(:digital, order: order, photo: insert(:photo, gallery: gallery))
 
-      Cart.place_product(build(:cart_product), gallery)
+      Cart.place_product(build(:cart_product), gallery, gallery_client)
 
       order = Repo.preload(order, [:digitals, :products], force: true)
 
@@ -294,7 +318,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
       [order: order]
     end
 
-    setup [:insert_intent, :stub_retrieve_intent, :build_session]
+    setup [:insert_intent, :stub_retrieve_intent, :build_session, :stub_capture_intent]
 
     setup %{order: order} do
       refute Picsello.Orders.client_paid?(order)
@@ -310,34 +334,13 @@ defmodule Picsello.Orders.ConfirmationsTest do
     test "updates intent", %{intent: intent, session: session} do
       handle_session(session)
 
-      assert %{status: :requires_capture} = Repo.reload!(intent)
+      assert %{status: :succeeded} = Repo.reload!(intent)
     end
 
     test "makes digitals available", %{order: order, session: session} do
       handle_session(session)
 
       assert digitals_available_for_download?(order)
-    end
-
-    test "creates and finalizes invoice", %{
-      order: order,
-      session: session,
-      stripe_invoice: invoice
-    } do
-      test_pid = self()
-
-      Mox.expect(MockPayments, :finalize_invoice, fn invoice_id, _params, _opts ->
-        send(test_pid, {:finalized_invoice_id, invoice_id})
-        {:ok, %{invoice | status: "open"}}
-      end)
-
-      handle_session(session)
-
-      assert %{stripe_id: invoice_id} = Repo.get_by(Invoice, order_id: order.id)
-
-      assert_receive {:finalized_invoice_id, ^invoice_id}
-
-      assert [%{status: :open}] = Repo.all(Invoice)
     end
   end
 

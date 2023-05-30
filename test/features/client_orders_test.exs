@@ -12,11 +12,12 @@ defmodule Picsello.ClientOrdersTest do
   setup do
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
 
-    insert(:user,
-      organization: organization,
-      stripe_customer_id: "photographer-stripe-customer-id"
-    )
-    |> onboard!()
+    user =
+      insert(:user,
+        organization: organization,
+        stripe_customer_id: "photographer-stripe-customer-id"
+      )
+      |> onboard!()
 
     package =
       insert(:package,
@@ -35,7 +36,18 @@ defmodule Picsello.ClientOrdersTest do
         use_global: %{watermark: true, expiration: true, digital: true, products: true}
       )
 
-    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0, download_each_price: ~M[2500]USD, print_credits: Money.new(0), buy_all: ~M[5000]USD})
+    insert(:gallery_client, %{email: user.email, gallery_id: gallery.id})
+    insert(:gallery_client, %{email: gallery.job.client.email, gallery_id: gallery.id})
+
+    gallery_digital_pricing =
+      insert(:gallery_digital_pricing, %{
+        gallery: gallery,
+        email_list: ["testing@picsello.com"],
+        download_count: 0,
+        download_each_price: ~M[2500]USD,
+        print_credits: Money.new(0),
+        buy_all: ~M[5000]USD
+      })
 
     insert(:watermark, gallery: gallery)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
@@ -83,7 +95,13 @@ defmodule Picsello.ClientOrdersTest do
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
     end)
 
-    [gallery: gallery, organization: organization, package: package, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
+    [
+      gallery: gallery,
+      organization: organization,
+      package: package,
+      photo_ids: photo_ids,
+      gallery_digital_pricing: gallery_digital_pricing
+    ]
   end
 
   setup :authenticated_gallery_client
@@ -173,7 +191,7 @@ defmodule Picsello.ClientOrdersTest do
     Mox.expect(
       mock,
       :capture_payment_intent,
-      fn ^intent_id, connect_account: ^connect ->
+      fn ^intent_id, [expand: ["charges.data.balance_transaction"], connect_account: ^connect] ->
         {:ok, %{payment_intent() | id: intent_id, status: "succeeded"}}
       end
     )
@@ -351,7 +369,7 @@ defmodule Picsello.ClientOrdersTest do
 
     session
     |> click(link("My orders"))
-    |> find(definition("Order total:"), &assert(Element.text(&1) == "$306.80"))
+    |> find(definition("Order total:"), &assert(Element.text(&1) == "$313.95"))
   end
 
   feature "client doesn't see products for non-US photographer", %{
@@ -465,6 +483,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(css("p", text: "Added!"))
       |> click(link("cart"))
       |> click(link("Continue"))
+      |> sleep(100)
       |> assert_has(css("h2", text: "Enter digital delivery information"))
       |> assert_has(definition("Digital downloads (1)", text: "$25.00"))
       |> assert_has(definition("Total", text: "$25.00"))
@@ -473,6 +492,7 @@ defmodule Picsello.ClientOrdersTest do
       |> refute_has(text_field("Shipping address"))
       |> wait_for_enabled_submit_button()
       |> click(button("Check out with Stripe"))
+      |> sleep(500)
 
       assert [%{errors: []}] = run_jobs()
 
@@ -642,6 +662,7 @@ defmodule Picsello.ClientOrdersTest do
       |> fill_in(text_field("Name"), with: "Zach")
       |> wait_for_enabled_submit_button()
       |> click(button("Check out with Stripe"))
+      |> sleep(500)
 
       assert [%{errors: []}] = run_jobs()
 

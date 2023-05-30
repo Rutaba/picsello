@@ -1,9 +1,14 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
-  alias Picsello.{Cart, Cart.Order, Cart.Digital, WHCC, Galleries, Repo}
+
+  alias Picsello.{Cart, Cart.Order, WHCC, Galleries}
+  alias Picsello.Shipment.{Detail, DasType}
   alias PicselloWeb.GalleryLive.ClientMenuComponent
   alias PicselloWeb.Endpoint
+  alias Picsello.Cart.DeliveryInfo
+  alias Picsello.Repo
+  alias Ecto.Multi
   import PicselloWeb.GalleryLive.Shared
   import Money.Sigils
 
@@ -14,16 +19,40 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   @shipping_to_all [@products_config[:whcc_album_id], @products_config[:whcc_books_id]]
 
   @impl true
-  def mount(_params, _session, %{assigns: %{gallery: gallery}} = socket) do
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
+      ) do
+    gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
+
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        client_email && client_email in gallery.gallery_digital_pricing.email_list
+      )
+
     socket
-    |> assign(gallery: gallery, client_menu_id: "clientMenu")
+    |> assign(
+      gallery: gallery,
+      client_menu_id: "clientMenu",
+      gallery_client: get_client_by_email(assigns))
     |> assign_is_proofing()
     |> then(
       &(&1
         |> get_unconfirmed_order(preload: [:products, :digitals, :package])
         |> case do
-          {:ok, order} -> &1 |> assign(:order, order) |> assign_products_shipping()
-          {:error, _} -> assign_checkout_routes(&1) |> maybe_redirect()
+          {:ok, order} ->
+            &1
+            |> assign(:order, order)
+            |> assign_das_type()
+            |> assign_products_shipping()
+
+          {:error, _} ->
+            &1
+            |> assign_checkout_routes()
+            |> maybe_redirect()
         end)
     )
     |> assign_cart_count(gallery)
@@ -31,7 +60,18 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign_checkout_routes()
     |> assign(:shipping_to_all, @shipping_to_all)
     |> assign(:default_shipping, @default_shipping)
+    |> assign(:shipment_details, Detail.all())
     |> ok()
+  end
+
+  defp assign_das_type(%{assigns: %{order: order}} = socket) do
+    case order do
+      %{delivery_info: %{address: %{zip: zipcode}}} when not is_nil(zipcode) ->
+        assign(socket, :das_type, DasType.get_by_zipcode(zipcode))
+
+      _ ->
+        socket |> assign(:das_type, nil)
+    end
   end
 
   @impl true
@@ -70,8 +110,24 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
           }
         } = socket
       ) do
-    case Cart.store_order_delivery_info(order, Map.put(delivery_info_changeset, :action, nil)) do
-      {:ok, order} ->
+    Multi.new()
+    |> Multi.run(:order, fn _, _ ->
+      Cart.store_order_delivery_info(order, Map.put(delivery_info_changeset, :action, nil))
+    end)
+    |> Multi.run(:update_shipping, fn _, _ ->
+      {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
+
+      unless Enum.empty?(order.products) do
+        %{delivery_info: %{address: %{zip: zipcode}}} = order
+        das_type = DasType.get_by_zipcode(zipcode)
+        Cart.add_default_shipping_to_products(order, %{das_type: das_type, force_update: true})
+      end
+
+      {:ok, :updated}
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{order: order}} ->
         order
         |> Cart.checkout(
           success_url:
@@ -94,7 +150,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         end
         |> noreply()
 
-      {:error, changeset} ->
+      {:error, :order, changeset, _} ->
         socket
         |> assign(:delivery_info_changeset, changeset)
         |> noreply()
@@ -136,7 +192,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{"bundle" => _} -> [bundle: true]
       end
 
-    case Cart.delete_product(order, item) do
+    case Cart.delete_product(order, gallery, item) do
       {:deleted, _} ->
         socket
         |> assign(order: nil)
@@ -147,7 +203,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
         digital_items
         |> Enum.reduce(Ecto.Multi.new(), fn %{id: id} = digital, multi ->
-          Digital
+          Cart.Digital
           |> Repo.get(id)
           |> Ecto.Changeset.change(is_credit: digital.is_credit)
           |> then(&Ecto.Multi.update(multi, id, &1))
@@ -190,19 +246,37 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   def handle_event(
         "shiping_type",
         %{"shipping" => %{"product_id" => product_id, "type" => type}},
-        %{assigns: %{order: %{products: products}}} = socket
+        %{assigns: %{das_type: das_type, order: %{products: products}}} = socket
       ) do
     products
-    |> Enum.map(&update_product(&1, product_id, type))
+    |> Enum.map(&update_product(&1, product_id, %{shipping_type: type, das_type: das_type}))
     |> assign_products(socket)
+    |> noreply()
+  end
+
+  def handle_event("zipcode", %{}, %{assigns: %{order: %{delivery_info: delivery_info}}} = socket) do
+    PicselloWeb.Shared.InputComponent.open(
+      socket,
+      %{
+        title: "Add your zip code",
+        subtitle: "Zip code",
+        placeholder: "enter zipcode..",
+        save_event: "zipcode",
+        change_event: "zipcode_change",
+        input_value: delivery_info && Map.get(delivery_info.address, :zip)
+      }
+    )
     |> noreply()
   end
 
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
 
-  defp assign_products_shipping(%{assigns: %{order: order}} = socket) do
+  defp assign_products_shipping(
+         %{assigns: %{order: order, das_type: das_type}} = socket,
+         force_update \\ false
+       ) do
     order
-    |> Cart.add_default_shipping_to_products()
+    |> Cart.add_default_shipping_to_products(%{das_type: das_type, force_update: force_update})
     |> assign_products(socket)
   end
 
@@ -212,9 +286,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> then(&assign(socket, :order, &1))
   end
 
-  defp update_product(product, product_id, shipping_type) do
+  defp update_product(product, product_id, details) do
     case to_string(product.id) do
-      ^product_id -> add_shipping_details!(product, shipping_type)
+      ^product_id -> add_shipping_details!(product, details)
       _ -> product
     end
   end
@@ -241,6 +315,25 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> put_flash(:error, "something went wrong")
     |> assign(:checking_out, false)
     |> push_event("scroll:unlock", %{})
+    |> noreply()
+  end
+
+  def handle_info({:save_event, "zipcode", %{"input" => input}}, socket) do
+    %{assigns: %{order: order}} = socket
+
+    Repo.transaction(fn ->
+      changeset = DeliveryInfo.changeset_for_zipcode(%{"address" => %{"zip" => input}})
+
+      {:ok, _order} = Cart.store_order_delivery_info(order, changeset)
+      {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
+
+      socket
+      |> assign(:order, order)
+      |> assign_das_type()
+      |> assign_products_shipping(true)
+    end)
+    |> then(fn {:ok, socket} -> socket end)
+    |> close_modal()
     |> noreply()
   end
 
@@ -330,7 +423,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     assign(socket, :credits, credits(gallery))
   end
 
-  defp assign_credits(%{assigns: %{is_proofing: false}} = socket, _), do: socket
+  defp assign_credits(%{assigns: %{is_proofing: false}} = socket, _gallery), do: socket
 
   defp checkout_type(true), do: :proofing_album_cart
   defp checkout_type(false), do: :cart
@@ -356,4 +449,5 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defdelegate shipping_details(product, shipping_type), to: Picsello.Cart
   defdelegate add_shipping_details!(product, shipping_type), to: Picsello.Cart
   defdelegate shipping_price(product), to: Picsello.Cart
+  defdelegate add_total_markuped_sum(product, products), to: Picsello.Cart
 end

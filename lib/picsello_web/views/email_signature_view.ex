@@ -11,7 +11,11 @@ defmodule PicselloWeb.EmailSignatureView do
       |> Enum.filter(&(&1.use_publicly? && &1.active?))
       |> List.pop_at(0)
 
-    assigns = Enum.into(assigns, %{first_brand_link: first_brand_link, remaining_brand_links: remaining_brand_links})
+    assigns =
+      Enum.into(assigns, %{
+        first_brand_link: first_brand_link,
+        remaining_brand_links: remaining_brand_links
+      })
 
     ~H"""
     <table style="font-family: sans-serif, Arial;line-height:22px;border-collapse: collapse;" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
@@ -33,7 +37,7 @@ defmodule PicselloWeb.EmailSignatureView do
       <%= if @organization.email_signature.show_phone && @user.onboarding.phone do %>
         <tr style="border-collapse:collapse;" border="0" cellpadding="0" cellspacing="0" width="100%">
           <td style={"color:#{@organization.profile.color};padding-top:10px;padding-bottom:10px;border:0px;border-collapse:collapse;font-size:18px;"} border="0" cellpadding="0" cellspacing="0" width="100%">
-            <a href="tel:5097284377" style="text-decoration:none;color:#1F1C1E;"><%= @user.onboarding.phone %></a>
+            <a href={"tel:#{@user.onboarding.phone}"} style="text-decoration:none;color:#1F1C1E;"><%= @user.onboarding.phone %></a>
           </td>
         </tr>
       <% end %>

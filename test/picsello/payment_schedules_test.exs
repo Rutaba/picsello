@@ -33,7 +33,7 @@ defmodule Picsello.PaymentSchedulesTest do
       %{id: lead_id} =
         lead =
         insert(:lead,
-          package: %{shoot_count: 1, base_price: 2000, base_multiplier: 0},
+          package: %{shoot_count: 1, base_price: 0, base_multiplier: 0},
           shoots: [%{starts_at: ~U[2029-09-30 19:00:00Z]}]
         )
 

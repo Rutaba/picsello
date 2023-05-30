@@ -25,6 +25,7 @@ defmodule Picsello.ClientBooksEventTest do
         job_type: "mini",
         name: "My custom package",
         download_count: 3,
+        download_each_price: ~M[5000]USD,
         base_price: ~M[1500]USD
       )
 
@@ -121,7 +122,7 @@ defmodule Picsello.ClientBooksEventTest do
     |> assert_value(css("input:checked[name='booking[date]']", visible: false), "2050-12-11")
     |> assert_inner_text(
       testid("time_picker"),
-      "Sunday, December 11 11:00am 12:00pm 4:00pm"
+      "Sunday, December 11 11:00am 11:45am 4:00pm"
     )
     |> assert_disabled_submit(text: "Next")
     |> click(css("label", text: "11:00am"))
@@ -260,8 +261,8 @@ defmodule Picsello.ClientBooksEventTest do
     |> fill_in(text_field("Your name"), with: "Chad Smith")
     |> fill_in(text_field("Your email"), with: "chad@example.com")
     |> fill_in(text_field("Your phone number"), with: "987 123 4567")
-    |> click(css("#date_picker-wrapper label", text: "11"))
-    |> click(css("label", text: "11:00am"))
+    |> click(css("#date_picker-wrapper label", text: "10"))
+    |> click(css("label", text: "9:00am"))
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text(

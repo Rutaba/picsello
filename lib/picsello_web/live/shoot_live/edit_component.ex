@@ -60,7 +60,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
           <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
             <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. #{dyn_gettext @job.type} Session, etc.", wrapper_class: "sm:col-span-3" %>
-            <.date_picker_field class="sm:col-span-3" id="shoot-time" placeholder="Select shoot time…" form={f} field={:starts_at} input_placeholder="mm/dd/yyyy" input_label="Shoot Date" data_min_date={Date.utc_today()} data_custom_date_format="Y-m-d\\TH:i" data_time_picker="true" data_time_zone={@current_user.time_zone} />
+            <.date_picker_field class="sm:col-span-3" id="shoot-time" placeholder="Select shoot time…" form={f} field={:starts_at} input_placeholder="mm/dd/yyyy" input_label="Shoot Date" data_custom_date_format="Y-m-d\\TH:i" data_time_picker="true" data_time_zone={@current_user.time_zone} />
             <%= labeled_select f, :duration_minutes, duration_options(),
                   label: "Shoot Duration",
                   prompt: "Select below",
@@ -117,9 +117,18 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       |> Multi.insert_or_update(:shoot, changeset)
       |> Multi.merge(fn _ ->
         if job_status.is_lead do
-          {updated_package_payment_schedules, updated_payment_schedules} = get_schedules(socket)
+          {updated_package_payment_schedules, updated_payment_schedules,
+           package_payment_schedule_ids, payment_schedule_ids} = get_schedules(socket)
 
           Multi.new()
+          |> Ecto.Multi.delete_all(
+            :delete_payments,
+            from(p in PackagePaymentSchedule, where: p.id in ^package_payment_schedule_ids)
+          )
+          |> Ecto.Multi.delete_all(
+            :delete_job_payments,
+            from(p in PaymentSchedule, where: p.id in ^payment_schedule_ids)
+          )
           |> Multi.insert_all(
             :package_payment_schedules,
             PackagePaymentSchedule,
@@ -269,6 +278,7 @@ defmodule PicselloWeb.ShootLive.EditComponent do
 
     updated_job_payment_schedules =
       updated_package_payment_schedules
+      |> PackagePayments.merge_payments()
       |> Enum.map(
         &%{
           job_id: job.id,
@@ -281,7 +291,13 @@ defmodule PicselloWeb.ShootLive.EditComponent do
         }
       )
 
-    {updated_package_payment_schedules, updated_job_payment_schedules}
+    package_payment_schedule_ids = Enum.map(updated_package_payment_schedules, & &1.id)
+
+    updated_package_payment_schedules =
+      PackagePayments.merge_payments(updated_package_payment_schedules)
+
+    {updated_package_payment_schedules, updated_job_payment_schedules,
+     package_payment_schedule_ids, []}
   end
 
   defp get_schedules_for_update(
@@ -309,7 +325,16 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       |> List.flatten()
       |> payment_schedules_struct_map()
 
-    {updated_package_payment_schedules, updated_payment_schedules}
+    package_payment_schedule_ids = Enum.map(updated_package_payment_schedules, & &1.id)
+    payment_schedule_ids = Enum.map(updated_payment_schedules, & &1.id)
+
+    updated_package_payment_schedules =
+      PackagePayments.merge_payments(updated_package_payment_schedules)
+
+    updated_payment_schedules = PackagePayments.merge_payments(updated_payment_schedules)
+
+    {updated_package_payment_schedules, updated_payment_schedules, package_payment_schedule_ids,
+     payment_schedule_ids}
   end
 
   defp find_and_map_payment_schedule(payment_schedules, package_schedule) do

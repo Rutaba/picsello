@@ -13,7 +13,8 @@ defmodule PicselloWeb.Plugs.GalleryParamAuth do
     case params do
       %{"pw" => "" <> password} ->
         with nil <- get_session(conn, "gallery_session_token"),
-             {:ok, token} <- Galleries.build_gallery_session_token(hash, password) do
+             {:ok, token} <-
+               Galleries.build_gallery_session_token(hash, password) do
           put_session(conn, "gallery_session_token", token)
         else
           _ -> conn

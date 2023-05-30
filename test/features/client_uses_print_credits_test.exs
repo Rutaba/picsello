@@ -9,12 +9,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
 
-    insert(:user,
-      organization: organization,
-      stripe_customer_id: "photographer-stripe-customer-id",
-      email: "photographer@example.com"
-    )
-    |> onboard!()
+    user =
+      insert(:user,
+        organization: organization,
+        stripe_customer_id: "photographer-stripe-customer-id",
+        email: "photographer@example.com"
+      )
+      |> onboard!()
 
     package =
       insert(:package,
@@ -45,7 +46,16 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     product = insert(:product, category: category)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
 
-    gallery_digital_pricing = insert(:gallery_digital_pricing, %{gallery: gallery, print_credits: ~M[500000]USD, download_each_price: ~M[5500]USD})
+    gallery_digital_pricing =
+      insert(:gallery_digital_pricing, %{
+        gallery: gallery,
+        email_list: ["testing@picsello.com", user.email],
+        print_credits: ~M[500000]USD,
+        download_each_price: ~M[5500]USD
+      })
+
+    insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+    insert(:gallery_client, %{email: user.email, gallery_id: gallery.id})
 
     insert(:gallery_product,
       category: category,
@@ -297,13 +307,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           build(:stripe_invoice,
             id: "stripe-invoice-id",
             description: "stripe invoice!",
-            amount_due: 4510,
+            amount_due: 5000,
             amount_remaining: 5000,
             status: :draft
           ),
         whcc_unit_base_price: ~M[4200]USD,
         whcc_total: ~M[5000]USD,
-        stripe_checkout: %{application_fee_amount: ~M[490]USD, amount: ~M[5500]USD}
+        stripe_checkout: %{application_fee_amount: ~M[1095]USD, amount: ~M[5500]USD}
       ]
     end
 
@@ -324,7 +334,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_text("Cart & Shipping Review")
       |> assert_has(definition("Products (1)", text: "$4,242.00"))
       |> assert_has(definition("Print credits used", text: "$4,242.00"))
-      |> assert_has(definition("Total", text: "$4.90"))
+      |> assert_has(definition("Total", text: "$10.95"))
       |> click(link("Continue"))
       |> fill_in_shipping()
       |> click(button("Check out"))
@@ -334,7 +344,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       session
       |> assert_url_contains("orders")
       |> assert_text("Order details")
-      |> assert_has(definition("Total", text: "$4.90"))
+      |> assert_has(definition("Total", text: "$10.95"))
       |> assert_has(definition("Print credits used", text: "$4,242.00"))
       |> click(link("Home"))
       |> assert_has(definition("Print Credit", text: "$758.00"))
@@ -367,13 +377,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           build(:stripe_invoice,
             id: "stripe-invoice-id",
             description: "stripe invoice!",
-            amount_due: 4510,
+            amount_due: 5000,
             amount_remaining: 5000,
             status: :draft
           ),
         whcc_unit_base_price: ~M[2000]USD,
         whcc_total: ~M[5000]USD,
-        stripe_checkout: %{application_fee_amount: ~M[490]USD, amount: ~M[5500]USD}
+        stripe_checkout: %{application_fee_amount: ~M[1095]USD, amount: ~M[5500]USD}
       ]
     end
 
@@ -394,7 +404,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_text("Cart & Shipping Review")
       |> assert_has(definition("Products (1)", text: "2,020.00"))
       |> assert_has(definition("Print credits used", text: "$2,020.00"))
-      |> assert_has(definition("Total", text: "$4.90"))
+      |> assert_has(definition("Total", text: "$10.95"))
       |> click(link("Continue"))
       |> fill_in_shipping()
       |> click(button("Check out"))
@@ -404,7 +414,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       session
       |> assert_url_contains("orders")
       |> assert_text("Order details")
-      |> assert_has(definition("Total", text: "$4.90"))
+      |> assert_has(definition("Total", text: "$10.95"))
       |> assert_has(definition("Print credits used", text: "$2,020.00"))
       |> click(link("Home"))
       |> assert_has(definition("Print Credit", text: "$2,980.00"))
@@ -438,13 +448,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           build(:stripe_invoice,
             id: "stripe-invoice-id",
             description: "stripe invoice!",
-            amount_due: 4510,
+            amount_due: 5000,
             amount_remaining: 5000,
             status: :draft
           ),
         whcc_unit_base_price: ~M[2000]USD,
         whcc_total: ~M[5000]USD,
-        stripe_checkout: %{application_fee_amount: ~M[490]USD, amount: ~M[5500]USD}
+        stripe_checkout: %{application_fee_amount: ~M[1095]USD, amount: ~M[5500]USD}
       ]
     end
 
@@ -466,7 +476,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_has(definition("Products (1)", text: "2,020.00"))
       |> assert_has(definition("Digital downloads (1)", text: "55.00"))
       |> assert_has(definition("Print credits used", text: "$2,020.00"))
-      |> assert_has(definition("Total", text: "$4.90"))
+      |> assert_has(definition("Total", text: "$10.95"))
       |> click(link("Continue"))
       |> fill_in_shipping()
       |> click(button("Check out with Stripe"))
@@ -476,11 +486,9 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       session
       |> assert_url_contains("orders")
       |> assert_text("Order details")
-      |> assert_has(definition("Total", text: "$4.90"))
+      |> assert_has(definition("Total", text: "$10.95"))
       |> assert_has(definition("Print credits used", text: "$2,020.00"))
       |> click(link("Home"))
-
-      # |> refute_has(definition("Print Credit"))
     end
   end
 
@@ -507,7 +515,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
         stripe_invoice: stripe_invoice,
         whcc_unit_base_price: ~M[5300]USD,
         whcc_total: ~M[5000]USD,
-        stripe_checkout: %{application_fee_amount: ~M[5000]USD, amount: ~M[2000]USD}
+        stripe_checkout: %{application_fee_amount: ~M[6095]USD, amount: ~M[2000]USD}
       ]
     end
 
@@ -524,7 +532,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> assert_text("Cart & Shipping Review")
       |> assert_has(definition("Products (1)", text: "5,353.00"))
       |> assert_has(definition("Print credits used", text: "$5,000.00"))
-      |> assert_has(definition("Total", text: "$357.90"))
+      |> assert_has(definition("Total", text: "$363.95"))
       |> click(link("Continue"))
       |> fill_in_shipping()
       |> click(button("Check out with Stripe"))
@@ -540,9 +548,10 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     }) do
       session
       |> place_order(photo_ids)
+      |> sleep(500)
       |> assert_url_contains("orders")
       |> assert_text("Order details")
-      |> assert_has(definition("Total", text: "$357.90"))
+      |> assert_has(definition("Total", text: "$363.95"))
       |> assert_has(definition("Print credits used", text: "$5,000.00"))
       |> click(link("Home"))
       |> refute_has(definition("Print Credit"))

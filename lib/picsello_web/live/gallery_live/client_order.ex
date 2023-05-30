@@ -8,9 +8,23 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
   alias Picsello.{Orders, Galleries, Cart}
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
+      ) do
+    gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
+
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        client_email && client_email in gallery.gallery_digital_pricing.email_list
+      )
     socket
     |> assign(from_checkout: false)
+    |> assign(gallery_client: get_client_by_email(assigns))
+    |> assign(gallery: gallery)
     |> assign_new(:album, fn -> nil end)
     |> assign_is_proofing()
     |> ok()
@@ -31,6 +45,11 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
 
       {:ok, _order, :confirmed} ->
         order = get_order!(gallery, order_number, album)
+        order_gallery = Map.put(order.gallery,
+        :credits_available,
+        gallery.credits_available
+      )
+      order = Map.put(order, :gallery, order_gallery)
 
         Picsello.Notifiers.OrderNotifier.deliver_order_confirmation_emails(
           order,
@@ -90,23 +109,23 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     |> noreply()
   end
 
-  defp assign_details(socket, order) do
-    gallery = order.gallery
-
+  defp assign_details(%{assigns: %{gallery: gallery}} = socket, order) do
     socket
     |> assign(
-      gallery: gallery,
       order: order,
-      organization_name: gallery.organization.name,
+      organization_name: order.gallery.organization.name,
       shipping_address: order.delivery_info.address,
       shipping_name: order.delivery_info.name
     )
     |> assign_checkout_routes()
-    |> assign(:cart_count, cart_count(gallery))
+    |> assign(:cart_count, cart_count(socket, gallery))
   end
 
-  defp cart_count(gallery) do
-    case Cart.get_unconfirmed_order(gallery.id, preload: [:products, :digitals]) do
+  defp cart_count(%{assigns: %{gallery_client: gallery_client}}, gallery) do
+    case Cart.get_unconfirmed_order(gallery.id,
+           gallery_client_id: gallery_client.id,
+           preload: [:products, :digitals]
+         ) do
       {:ok, order} ->
         Cart.item_count(order)
 

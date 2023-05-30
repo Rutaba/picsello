@@ -19,7 +19,7 @@
         } />
         <div class="flex h-full md:mt-0 mt-6">
           <div id="manage" phx-hook="Select" class="md:w-auto w-full">
-            <button class="btn-tertiary flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id="Manage">
+            <button {testid("actions")} class="btn-tertiary flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full">
               Actions
               <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
               <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
@@ -82,7 +82,7 @@
                 <button class="link mr-4" phx-click="open-compose" phx-value-client_id={@job.client_id}>Send reminder</button>
               <% end %>
               <div id="options" phx-update="ignore" data-offset="0" phx-hook="Select">
-                <button class="btn-tertiary flex flex-shrink-0 text-sm items-center gap-3 ml-2 p-2.5 text-blue-planning-300" id="Manage">
+                <button class="btn-tertiary flex flex-shrink-0 text-sm items-center gap-3 ml-2 p-2.5 text-blue-planning-300">
                   Actions
                   <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
                   <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />

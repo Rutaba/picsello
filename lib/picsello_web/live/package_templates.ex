@@ -726,8 +726,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
   end
 
   @impl true
-  def handle_info({:update, _package}, socket) do
+  def handle_info({:update, %{package: package}}, socket) do
     socket
+    |> assign(
+      package_name: package.job_type,
+      is_mobile: false
+    )
     |> assign_templates()
     |> assign_job_type_packages()
     |> assign_template_counts()

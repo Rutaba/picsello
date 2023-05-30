@@ -32,6 +32,23 @@ defmodule Picsello.Orders do
     |> Repo.all()
   end
 
+  def gallery_client_orders(gallery_id, gallery_client_id) do
+    photo_query = from(photo in Photo, select: %{photo | watermarked: false})
+
+    from(order in orders(),
+      where: order.gallery_id == ^gallery_id and order.gallery_client_id == ^gallery_client_id,
+      preload: [
+        :package,
+        :intent,
+        :canceled_intents,
+        digitals: [photo: ^photo_query],
+        products: :whcc_product
+      ],
+      order_by: [desc: order.placed_at]
+    )
+    |> Repo.all()
+  end
+
   defp topic(order), do: "order:#{Order.number(order)}"
 
   def subscribe(order), do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic(order))

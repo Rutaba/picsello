@@ -114,13 +114,18 @@ defmodule Picsello.GalleryClientFavoritesTest do
   end
 
   describe "Client creates favorites" do
-    setup %{gallery: gallery} do
+    setup %{gallery: gallery, user: user} do
       Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-
       photo_ids = insert_photo(%{gallery: gallery, total_photos: 5})
       gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
+      insert(:gallery_client, %{email: user.email, gallery_id: gallery.id})
 
-      [gallery: gallery, photo_ids: photo_ids, photos_count: length(photo_ids), gallery_digital_pricing: gallery_digital_pricing]
+      [
+        gallery: gallery,
+        photo_ids: photo_ids,
+        photos_count: length(photo_ids),
+        gallery_digital_pricing: gallery_digital_pricing
+      ]
     end
 
     feature "Show Unsorted photos if photo doesn't belongs to album", %{

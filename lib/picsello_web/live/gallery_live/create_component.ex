@@ -68,6 +68,9 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> assign(templates: [], step: :choose_type, steps: @steps)
     |> assign_package_changesets()
     |> assign(:job_types, Profiles.enabled_job_types(organization_job_types))
+    |> assign(:show_print_credits, false)
+    |> assign(:show_discounts, false)
+    |> assign(:show_digitals, "close")
     |> ok()
   end
 
@@ -189,7 +192,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         Packages.insert_package_and_update_job(package_changeset, job)
       end)
       |> Multi.merge(fn %{job: %{id: job_id}} ->
-        Galleries.create_gallery_multi(%{
+        Galleries.create_gallery_multi(current_user, %{
           name: client.name <> " " <> type,
           job_id: job_id,
           status: :active,
@@ -213,6 +216,31 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         send(self(), {:redirect_to_gallery, gallery})
         socket |> assign(:new_gallery, gallery)
     end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "edit-print-credits",
+        _,
+        %{assigns: %{show_print_credits: show_print_credits}} = socket
+      ) do
+    socket
+    |> assign(:show_print_credits, !show_print_credits)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-discounts", _, %{assigns: %{show_discounts: show_discounts}} = socket) do
+    socket
+    |> assign(:show_discounts, !show_discounts)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("edit-digitals", %{"type" => type}, socket) do
+    socket
+    |> assign(:show_digitals, type)
     |> noreply()
   end
 
@@ -289,7 +317,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
         <.print_credit_fields f={package} package_pricing={@package_pricing} />
 
-        <.digital_download_fields for={:create_gallery} package_form={package} download_changeset={@download_changeset} package_pricing={@package_pricing} />
+        <.digital_download_fields for={:create_gallery} package_form={package} download_changeset={@download_changeset} package_pricing={@package_pricing}  target={@myself} show_digitals={@show_digitals} />
         <%= if @new_gallery do %>
           <div id="set-gallery-cookie" data-gallery-type={@new_gallery.type} phx-hook="SetGalleryCookie">
           </div>
@@ -359,28 +387,24 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   def assign_package_changesets(
         %{
-          assigns: %{
-            package: package,
-            package_pricing: package_pricing,
-            current_user: current_user,
-            step: step,
-            global_settings: global_settings
-          }
+          assigns:
+            %{
+              package: package,
+              package_pricing: package_pricing,
+              current_user: current_user,
+              step: step,
+              global_settings: global_settings
+            } = assigns
         } = socket,
         params \\ %{},
         action \\ nil
       ) do
-    global_settings =
-      if global_settings,
-        do: global_settings,
-        else: %{download_each_price: nil, buy_all_price: nil}
-
     download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 
     download_changeset =
       package
       |> Download.from_package(global_settings)
-      |> Download.changeset(download_params)
+      |> Download.changeset(download_params, Map.get(assigns, :download_changeset))
       |> Map.put(:action, action)
 
     download = current(download_changeset)
@@ -394,7 +418,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         "download_each_price" => Download.each_price(download),
         "buy_all" => Download.buy_all(download),
         "name" => "New package",
-        "organization_id" => current_user.organization_id
+        "organization_id" => current_user.organization_id,
+        "status" => download.status
       })
       |> then(&Package.changeset_for_create_gallery(package, &1))
 
@@ -413,8 +438,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   defp package_pricing_params(package) do
     case package |> Map.get(:print_credits) do
-      nil -> %{is_enabled: false}
-      %Money{} = value -> %{is_enabled: Money.positive?(value)}
+      nil -> %{"is_enabled" => false}
+      %Money{} = value -> %{"is_enabled" => Money.positive?(value), "print_credits" => value}
       _ -> %{}
     end
   end

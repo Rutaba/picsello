@@ -5,7 +5,6 @@ defmodule PicselloWeb.PackageLive.Shared do
   use Phoenix.HTML
   use Phoenix.Component
 
-  import PicselloWeb.Gettext, only: [dyn_gettext: 1]
   import PicselloWeb.FormHelpers
   import PicselloWeb.LiveHelpers
   import Phoenix.HTML.Form
@@ -379,110 +378,206 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
-  # digital download fields for package & pricing
-  def digital_download_fields(assigns) do
-    assigns = Map.put_new(assigns, :for, nil)
-
+  def package_print_credit_fields(assigns) do
     ~H"""
-      <div class="border border-solid mt-6 p-6 rounded-lg">
-        <% d = to_form(@download_changeset) %>
-        <.download_fields_heading title="Digital Collection" d={d} for={@for}>
-          <p class="text-base-250">High-Resolution Digital Images available via download.</p>
-        </.download_fields_heading>
-
-        <.build_download_fields download_changeset={d} {assigns} />
+    <div class="flex">
+      <% p = to_form(@package_pricing) %>
+      <% print_credits = current(p) %>
+      <div class="flex flex-col w-4/5">
+        <.print_fields_heading />
+        <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_print_credits})} type="button" phx-target={@target} phx-click="edit-print-credits">Edit settings</button>
       </div>
+      <div class="flex w-1/5 flex-col">
+        <b class="mt-9">
+          <%= if get_total_print_credits(@f, @package_pricing) == nil do%>
+            -
+          <% else %>
+            <%= get_total_print_credits(@f, @package_pricing) %>
+          <% end %>
+        </b>
+        <%= if Map.get(print_credits, :is_enabled) && !Map.get(print_credits, :print_credits_include_in_total) do %>
+          <div class="text-base-250">(not included)</div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class= {classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => !@show_print_credits})}>
+      <div class="p-2 font-bold bg-base-200 flex flex-row">
+        Print Credit Settings
+        <a phx-target={@target} phx-click="edit-print-credits" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+      </div>
+
+      <div class="mt-4 font-normal text-base leading-6 pb-6 px-6">
+        <div class="mt-2">
+          <label class="flex items-center font-bold">
+            <%= radio_button(p, :is_enabled, true, class: "w-5 h-5 mr-2.5 radio") %>
+            Gallery includes Print Credits
+          </label>
+          <div class="flex flex-col gap-4 ml-7">
+            <%= if Map.get(print_credits, :is_enabled) do %>
+              <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
+
+              <div class="flex items-center text-base-250">
+                <%= checkbox(p, :print_credits_include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
+                <%= label_for p, :print_credits_include_in_total, label: "Include in package total calculation", class: "font-normal" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <label class="flex mt-3 font-bold">
+          <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio mt-0.5") %>
+          Gallery does not include Print Credits
+        </label>
+      </div>
+    </div>
     """
   end
 
-  defp download_fields_heading(assigns) do
+  # digital download fields for package & pricing
+  def digital_download_fields(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        for: nil,
+        target: nil,
+        show_digitals: false
+      })
+
     ~H"""
-    <div class="mt-9 md:mt-1" {testid("download")}>
-      <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap"><%= @title %></h2>
-      <%= if @for == :create_gallery || (get_field(@d, :status) == :limited) do %>
-        <%= render_slot(@inner_block) %>
-      <% end %>
-    </div>
+      <div class="flex mt-6">
+        <% d = to_form(@download_changeset) %>
+        <div class="flex-col gap-3 w-4/5">
+          <div class="flex flex-col w-4/5">
+            <h2 class="mb-1 text-xl font-bold">Digital Collection</h2>
+            <span class="text-base-250">High-Resolution Digital Images available via download.</span>
+          </div>
+          <div class="flex flex-row md:gap-8 gap-4 my-2">
+            <div>
+              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green-finances-300" /><%= make_digital_text(@download_changeset) %> included</span>
+              <button {testid("edit-digital-collection")} class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_digitals in ["digitals", "image_price", "buy_all"]})} type="button" phx-target={@target} phx-value-type="digitals" phx-click="edit-digitals">Edit settings</button>
+            </div>
+            <div>
+              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green-finances-300" /><%= current(@download_changeset) |> Map.get(:each_price) %> an image</span>
+              <%= if (@download_changeset |> current |> Map.get(:status)) !=  :unlimited do %>
+                <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_digitals in ["digitals", "image_price", "buy_all"]})} type="button" phx-target={@target} phx-value-type="image_price" phx-click="edit-digitals">Edit image price</button>
+              <% end %>
+            </div>
+            <div>
+              <span class="flex flex-row items-center mb-2"><.icon name="tick" class="w-6 h-5 mr-1 text-green-finances-300" /><%= get_buy_all(@download_changeset) %> buy all</span>
+              <%= if (@download_changeset |> current |> Map.get(:status)) !=  :unlimited do %>
+                <button class={classes("underline text-blue-planning-300 mt-auto inline-block w-max", %{"hidden" => @show_digitals in ["digitals", "image_price", "buy_all"]})} type="button" phx-target={@target} phx-value-type="buy_all" phx-click="edit-digitals">Edit upsell options</button>
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <b class="flex w-1/5"><%= if digitals_total(@download_changeset) == nil do%>
+            -
+          <% else %>
+            <%= digitals_total(@download_changeset) %>
+          <% end %>
+        </b>
+      </div>
+
+      <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "digitals"})}>
+        <div class="items-center cursor-pointer p-2 font-bold bg-base-200 flex justify-between">
+          Digital Collection Settings
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+        </div>
+        <.build_download_fields download_changeset={d} {assigns} />
+      </div>
+
+      <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "image_price"})}>
+        <div class="items-center cursor-pointer p-2 font-bold bg-base-200 flex justify-between">
+          Digital Image Price
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+        </div>
+        <.include_download_price download_changeset={d} />
+      </div>
+
+      <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "buy_all"})}>
+        <div class="items-center cursor-pointer p-2 font-bold bg-base-200 flex justify-between">
+          Upsell Options
+          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+        </div>
+        <.is_buy_all download_changeset={d} />
+      </div>
     """
   end
 
   defp build_download_fields(assigns) do
     ~H"""
-    <div class="flex flex-col md:flex-row w-full mt-3">
+    <div class="flex flex-col md:flex-row w-full mt-4 px-6 pb-6">
       <div class="flex flex-col">
         <label class="flex font-bold">
           <%= radio_button(@download_changeset, :status, :limited, class: "w-5 h-5 mr-2 radio mt-0.5") %>
-          <p>Set number of Digital Images included</p>
+          <p>Clients don’t have to pay for some Digital Images</p>
         </label>
+        <i class="font-normal ml-7 text-base-250">(Charge for some Digital Images)</i>
 
         <%= if get_field(@download_changeset, :status) == :limited do %>
-            <div class="flex flex-col mt-1">
-              <div class="flex flex-row items-center">
-                <%= input(
-                  @download_changeset, :count, type: :number_input, phx_debounce: 200, step: 1,
-                  min: 0, placeholder: "0", class: "mt-3 w-full sm:w-32 text-lg text-center md:ml-7"
-                ) %>
-                <span class="ml-2 text-base-250">included in the package</span>
-              </div>
+          <div class="flex flex-col mt-1">
+            <div class="flex flex-row items-center">
+              <%= input(
+                @download_changeset, :count, type: :number_input, phx_debounce: 200, step: 1,
+                min: 0, placeholder: "0", class: "mt-3 w-full sm:w-32 text-lg text-center md:ml-7"
+              ) %>
+              <span class="ml-2 text-base-250">included in the package</span>
             </div>
+          </div>
+          <%= if @for not in [:create_gallery, :import_job] do %>
+            <div class="flex items-center text-base-250 ml-7 mt-2">
+              <%= checkbox(@download_changeset, :digitals_include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
+              <%= label_for @download_changeset, :digitals_include_in_total, label: "Include in package total calculation", class: "font-normal" %>
+            </div>
+          <% end %>
         <% end %>
 
         <label class="flex mt-3 font-bold">
             <%= radio_button(@download_changeset, :status, :none, class: "w-5 h-5 mr-2 radio mt-0.5") %>
-            <p>Charge for each Digital Image</p>
+            <p>Clients have to pay for all Digital images</p>
         </label>
-        <span class="font-normal ml-7 text-base-250">(no images included)</span>
+        <i class="font-normal ml-7 text-base-250">(Charge for all Digital Images)</i>
         <label class="flex mt-3 font-bold">
           <%= radio_button(@download_changeset, :status, :unlimited, class: "w-5 h-5 mr-2 radio mt-0.5") %>
-          <p>All Digital Images included</p>
+          <p>Clients have Unlimited Digital Images</p>
         </label>
+        <i class="font-normal ml-7 text-base-250">(Do not charge for any Digital Image)</i>
       </div>
-      <div class="my-8 border-t lg:my-0 lg:mx-8 lg:border-t-0 lg:border-l border-base-200"></div>
-      <%= if get_field(@download_changeset, :status) in [:limited, :none] do %>
-        <div class="ml-7 mt-3">
-          <h3 class="font-bold">Pricing Options</h3>
-          <p class="mb-3 text-base-250">The following digital image pricing is set in your Global Gallery Settings</p>
-          <.include_download_price download_changeset={@download_changeset} />
-          <.is_buy_all download_changeset={@download_changeset} />
-        </div>
-      <% end %>
     </div>
     """
   end
 
   defp is_buy_all(assigns) do
     ~H"""
-    <label class="flex items-center mt-3 font-bold">
-      <%= checkbox(@download_changeset, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
-      <span>Offer a <i>Buy Them All</i> price for this package</span>
-    </label>
+    <div class="mt-4 px-6 pb-6 flex flex-col justify-between">
+      <div class="text-base-250">This is optional, but if you’d like to provide your client with the opportunity to buy all images in the gallery, set that here</div>
+      <label class="flex items-center mt-3 font-bold">
+        <%= checkbox(@download_changeset, :is_buy_all, class: "w-5 h-5 mr-2.5 checkbox") %>
+        <span>Set a <i>Buy Them All</i> price</span>
+      </label>
 
-    <%= if check?(@download_changeset, :is_buy_all) do %>
-      <div class="flex flex-row items-center mt-3 lg:ml-7">
-          <%= input(@download_changeset, :buy_all, placeholder: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-          <%= error_tag @download_changeset, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
-          <span class="ml-3 text-base-250"> for all images </span>
-      </div>
-    <% end %>
+      <%= if check?(@download_changeset, :is_buy_all) do %>
+        <div class="flex flex-row items-center mt-3 lg:ml-7">
+            <%= input(@download_changeset, :buy_all, placeholder: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+            <%= error_tag @download_changeset, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
+            <span class="ml-3 text-base-250"> for all images </span>
+        </div>
+      <% end %>
+    </div>
     """
   end
 
   defp include_download_price(assigns) do
     ~H"""
-    <div class="flex flex-col justify-between mt-3 sm:flex-row ">
+    <div class="flex flex-col justify-between mt-4 sm:flex-row px-6 pb-6">
       <div class="w-full sm:w-auto">
-        <label class="flex font-bold items-center">
-          <%= checkbox(@download_changeset, :is_custom_price, class: "w-5 h-5 mr-2.5 checkbox") %>
-          <span>Change my per <i>Digital Image</i> price for this package</span>
-        </label>
-        <span class="font-normal ml-7 text-base-250">(<%= input_value(@download_changeset, :each_price)%>/each)</span>
-        <%= if check?(@download_changeset, :is_custom_price) do %>
-          <div class="flex flex-row items-center mt-3 lg:ml-7">
-            <%= input(@download_changeset, :each_price, placeholder: "$50.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
-            <%= error_tag @download_changeset, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
-            <span class="ml-3 text-base-250"> per image </span>
-          </div>
-        <% end %>
+        <span class="text-base-250">We default to the price you set in global gallery settings, you can override here for this package</span>
+        <div class="flex flex-row items-center mt-3 lg:ml-7">
+          <%= input(@download_changeset, :each_price, placeholder: "$50.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+          <%= error_tag @download_changeset, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
+          <span class="ml-3 text-base-250"> per image </span>
+        </div>
       </div>
     </div>
     """
@@ -506,9 +601,9 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   defp print_fields_heading(assigns) do
     ~H"""
-    <div class="mt-9 md:mt-1" {testid("print")}>
+    <div class="mt-9 md:mt-1 mb-2" {testid("print")}>
       <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
-      <p class="text-base-250">Print Credits allow your clients to order professional prints and products from your gallery.</p>
+      <p class="text-base-250">Print Credits allow your clients to order professional prints and products from your gallery based on the amount you set.</p>
     </div>
     """
   end
@@ -522,8 +617,13 @@ defmodule PicselloWeb.PackageLive.Shared do
   def package_description_length_long?(nil), do: false
   def package_description_length_long?(description), do: byte_size(description) > 100
 
-  defp truncate_package_name(name) do
-    if(String.length(name) > 25, do: String.slice(name, 0..25) <> "...", else: name)
+  def digitals_total(download_changeset) do
+    changeset = current(download_changeset)
+    each_price = Map.get(changeset, :each_price) || Money.new(0)
+
+    if Map.get(changeset, :digitals_include_in_total),
+      do: Money.multiply(each_price, get_digitals_count(download_changeset)),
+      else: nil
   end
 
   def assign_turnaround_weeks(package) do
@@ -536,5 +636,37 @@ defmodule PicselloWeb.PackageLive.Shared do
     text = package.contract.content
     updated_content = Regex.replace(~r/(\d+)\s+(week\b|weeks\b)/, text, weeks)
     Map.put(package.contract, :content, updated_content)
+  end
+
+  defp truncate_package_name(name) do
+    if(String.length(name) > 25, do: String.slice(name, 0..25) <> "...", else: name)
+  end
+
+  defp get_digitals_count(download_changeset) do
+    changeset = current(download_changeset)
+    count = Map.get(changeset, :count)
+    if count, do: count, else: 0
+  end
+
+  defp make_digital_text(download_changeset) do
+    case download_changeset |> current() |> Map.get(:status) do
+      :unlimited ->
+        "all images"
+
+      _ ->
+        ngettext("%{count} image", "%{count} images", get_digitals_count(download_changeset))
+    end
+  end
+
+  defp get_buy_all(download_changeset) do
+    changeset = current(download_changeset)
+    buy_all = Map.get(changeset, :buy_all)
+    if buy_all, do: buy_all, else: Money.new(0)
+  end
+
+  defp get_total_print_credits(changeset, package_pricing) do
+    package_pricing = package_pricing |> current()
+    print_credits = changeset |> current() |> Map.get(:print_credits)
+    if Map.get(package_pricing, :is_enabled), do: print_credits, else: nil
   end
 end

@@ -51,7 +51,6 @@ defmodule Picsello.CreateClientTest do
   } do
     session
     |> simulate_prepicsello_click_scenario()
-    |> sleep(300)
 
     assert Repo.all(Client) |> Enum.count() == 1
     assert Repo.all(Job) |> Enum.count() == 1
@@ -163,8 +162,8 @@ defmodule Picsello.CreateClientTest do
       |> force_simulate_click(css(".checkbox-event"))
       |> wait_for_enabled_submit_button()
       |> click(button("Next"))
-      |> assert_package_and_payment_fields()
       |> fill_package_form()
+      |> assert_package_and_payment_fields()
       |> wait_for_enabled_submit_button()
       |> click(button("Next"))
       |> assert_invoice_fields()
@@ -212,21 +211,19 @@ defmodule Picsello.CreateClientTest do
 
   defp assert_package_and_payment_fields(session) do
     session
-    |> assert_text("Add Client: Package & Payment")
-    |> assert_text("Package Details")
-    |> assert_has(css("#form-package_payment_name"))
-    |> assert_has(css("#form-package_payment_shoot_count"))
-    |> assert_has(css("#form-package_payment_turnaround_weeks"))
-    |> assert_text("Package Price")
-    |> assert_text("The amount you’ve charged for your job")
-    |> assert_text("(including download credits)")
-    |> assert_has(css("#form-package_payment_base_price"))
-    |> assert_text("How much of the creative session fee is for print credits?")
-    |> assert_has(css("#form-package_payment_print_credits"))
-    |> assert_text("The amount you’ve already collected")
-    |> assert_has(css("#form-package_payment_collected_price"))
-    |> assert_text("Remaining balance to collect with Picsello")
-    |> assert_has(css(".checkbox", count: 2))
+    |> scroll_into_view(css("[phx-click='edit-digitals']"))
+    |> click(css("[phx-click='edit-digitals']", at: 0))
+    |> scroll_into_view(css("#download_status_limited"))
+    |> click(css("#download_status_limited"))
+    |> fill_in(css("#download_count"), with: 2)
+    |> click(css("[phx-click='edit-digitals']"))
+    |> click(css("[phx-click='edit-digitals']", at: 1))
+    |> scroll_into_view(css("#download_each_price"))
+    |> fill_in(css("#download_each_price"), with: 2.2)
+    |> assert_has(css("div", text: "greater than two", count: 0))
+    |> click(css("[phx-click='edit-digitals']"))
+    |> click(css("[phx-click='edit-digitals']", at: 2))
+    |> click(css("[phx-click='edit-digitals']"))
     |> assert_has(button("Go back"))
     |> assert_has(button("Next"))
   end

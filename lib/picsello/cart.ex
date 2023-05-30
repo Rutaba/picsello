@@ -20,6 +20,7 @@ defmodule Picsello.Cart do
   alias Ecto.Multi
   alias Ecto.Changeset
   alias Picsello.Cart.Product, as: CartProduct
+  import Money.Sigils
 
   @default_shipping "economy"
   @products_config Application.compile_env!(:picsello, :products)
@@ -32,53 +33,64 @@ defmodule Picsello.Cart do
   @doc """
   Puts the product, digital, or bundle in the cart.
   """
-  @spec place_product(
-          {:bundle, Money.t()} | CartProduct.t() | Digital.t(),
-          Gallery.t() | integer(),
-          integer() | nil
-        ) ::
-          Order.t()
-  def place_product(product, gallery, album_id \\ nil)
+  def place_product(product, gallery, gallery_client, album_id \\ nil)
 
-  def place_product(product, %Gallery{id: id, use_global: use_global} = gallery, album_id) do
+  def place_product(
+        product,
+        %Gallery{id: id, use_global: use_global} = gallery,
+        gallery_client,
+        album_id
+      ) do
     opts = [credits: credit_remaining(gallery), use_global: use_global]
 
     order_opts = [preload: [:products, :digitals]]
 
-    case get_unconfirmed_order(id, Keyword.put(order_opts, :album_id, album_id)) do
+    case get_unconfirmed_order(
+           id,
+           Keyword.put(order_opts, :album_id, album_id)
+           |> Keyword.put(:gallery_client_id, gallery_client.id)
+         ) do
       {:ok, order} ->
         place_product_in_order(order, product, opts)
 
       {:error, _} ->
-        create_order_with_product(product, %{gallery_id: id, album_id: album_id}, opts)
+        create_order_with_product(
+          product,
+          %{gallery_id: id, gallery_client_id: gallery_client.id, album_id: album_id},
+          opts
+        )
     end
   end
 
-  def place_product(product, gallery_id, album_id) when is_integer(gallery_id),
-    do: place_product(product, Galleries.get_gallery!(gallery_id), album_id)
+  def place_product(product, gallery_id, gallery_client, album_id) when is_integer(gallery_id),
+    do: place_product(product, Galleries.get_gallery!(gallery_id), gallery_client, album_id)
 
-  def bundle_status(gallery, album_id \\ nil) do
+  def bundle_status(gallery, gallery_client, album_id \\ nil) do
     cond do
       Orders.bundle_purchased?(gallery) -> :purchased
-      contains_bundle?(gallery, album_id) -> :in_cart
+      contains_bundle?(gallery, gallery_client, album_id) -> :in_cart
       true -> :available
     end
   end
 
-  def digital_status(gallery, photo, album_id \\ nil) do
+  def digital_status(gallery, gallery_client, photo, album_id \\ nil) do
     cond do
       Orders.bundle_purchased?(gallery) -> :purchased
       digital_purchased?(gallery, photo) -> :purchased
       Galleries.do_not_charge_for_download?(gallery) -> :purchased
-      contains_bundle?(gallery, album_id) -> :in_cart
-      contains_digital?(gallery, photo, album_id) -> :in_cart
+      contains_bundle?(gallery, gallery_client, album_id) -> :in_cart
+      contains_digital?(gallery, gallery_client, photo, album_id) -> :in_cart
       true -> :available
     end
   end
 
-  def credit_remaining(%Gallery{id: gallery_id}) do
-    digital_credit = digital_credit_remaining(gallery_id)
-    print_credit = print_credit_remaining(gallery_id)
+  def credit_remaining(%{id: gallery_id} = gallery) do
+    {digital_credit, print_credit} =
+      if Map.get(gallery, :credits_available) do
+        {digital_credit_remaining(gallery_id), print_credit_remaining(gallery_id)}
+      else
+        {%{digital: 0}, %{print: ~M[0]USD}}
+      end
 
     if digital_credit && print_credit do
       Map.merge(digital_credit, print_credit)
@@ -133,17 +145,23 @@ defmodule Picsello.Cart do
              photo_fk == photo_id
          end)
 
-  defp contains_digital?(%{id: gallery_id}, photo, album_id) do
+  defp contains_digital?(%{id: gallery_id}, gallery_client, photo, album_id) do
     gallery_id
-    |> get_unconfirmed_order(album_id: album_id, preload: [:digitals])
+    |> get_unconfirmed_order(
+      gallery_client_id: gallery_client.id,
+      album_id: album_id,
+      preload: [:digitals]
+    )
     |> case do
       {:ok, order} -> contains_digital?(order, photo, album_id)
       _ -> false
     end
   end
 
-  defp contains_bundle?(%{id: gallery_id}, album_id) do
-    case(get_unconfirmed_order(gallery_id, album_id: album_id)) do
+  defp contains_bundle?(%{id: gallery_id}, gallery_client, album_id) do
+    case(
+      get_unconfirmed_order(gallery_id, gallery_client_id: gallery_client.id, album_id: album_id)
+    ) do
       {:ok, order} -> order.bundle_price != nil
       _ -> false
     end
@@ -162,8 +180,8 @@ defmodule Picsello.Cart do
   @doc """
   Deletes the product from order. Deletes order if order has only the one product.
   """
-  def delete_product(%Order{} = order, opts) do
-    %{gallery: %{use_global: use_global} = gallery} =
+  def delete_product(%Order{} = order, gallery, opts) do
+    %{gallery: %{use_global: use_global}} =
       order = Repo.preload(order, [:gallery, :digitals, products: :whcc_product])
 
     opts = Keyword.merge(opts, credits: credit_remaining(gallery), use_global: use_global)
@@ -189,6 +207,7 @@ defmodule Picsello.Cart do
   Gets the current order for gallery.
   """
   @spec get_unconfirmed_order(integer(),
+          gallery_client_id: integer(),
           album_id: integer(),
           preload: [:digitals | :products | :package]
         ) ::
@@ -209,6 +228,15 @@ defmodule Picsello.Cart do
         reduce:
           Order
           |> where([order], order.gallery_id == ^gallery_id and is_nil(order.placed_at))
+          |> then(
+            &case Keyword.get(opts, :gallery_client_id) do
+              nil ->
+                where(&1, [order], is_nil(order.gallery_client_id))
+
+              gallery_client_id ->
+                where(&1, [order], order.gallery_client_id == ^gallery_client_id)
+            end
+          )
           |> then(
             &case Keyword.get(opts, :album_id) do
               nil -> where(&1, [order], is_nil(order.album_id))
@@ -414,88 +442,82 @@ defmodule Picsello.Cart do
     |> Repo.transaction()
   end
 
-  @products Application.compile_env(:picsello, :products)
-  @base_charges @products[:base_charges]
-  @whcc_photo_prints_id @products[:whcc_photo_prints_id]
-  @whcc_album_id @products[:whcc_album_id]
-  @whcc_books_id @products[:whcc_books_id]
-
-  def add_shipping_details!(product, shipping_type) do
+  @whcc_wall_art_id @products_config[:whcc_wall_art_id]
+  @whcc_photo_prints_id @products_config[:whcc_photo_prints_id]
+  def add_shipping_details!(product, %{shipping_type: _} = details) do
     product
-    |> CartProduct.changeset(shipping_details(product, shipping_type))
+    |> CartProduct.changeset(shipping_details(product, details))
     |> Repo.update!()
   end
 
-  def shipping_details(product, shipping_type) do
-    %{
-      selections: selections,
-      whcc_product: %{
-        shipping_upcharge: upcharge
-      }
-    } = product
+  def shipping_details(product, %{shipping_type: shipping_type} = details) do
+    shipments = details[:shipment_details] || []
+    das_type = details[:das_type]
+
+    {upcharge, shipment} = get_shipment!(product, shipping_type, shipments)
 
     %{
+      das_carrier_cost: das_carrier_cost(shipment, das_type),
       shipping_type: shipping_type,
-      shipping_upcharge: upcharge |> upcharge(selections) |> to_string |> Decimal.new(),
-      shipping_base_charge:
-        (get_base_charge(product, shipping_type)[:value] * 100) |> trunc |> Money.new()
+      shipping_upcharge: upcharge |> to_string |> Decimal.new(),
+      shipping_base_charge: shipment.base_charge
     }
   end
 
-  def get_base_charge(product, shipping_type) when is_atom(shipping_type),
-    do: get_base_charge(product, Atom.to_string(shipping_type))
+  defp das_carrier_cost(%{das_carrier: :mail}, %{mail_cost: mail_cost}), do: mail_cost
+  defp das_carrier_cost(%{das_carrier: :parcel}, %{parcel_cost: parcel_cost}), do: parcel_cost
+  defp das_carrier_cost(_, _), do: Money.new(0)
 
-  def get_base_charge(
-        %{
-          selections: selections,
-          whcc_product: %{
-            whcc_id: product_whcc_id,
-            api: %{"category" => %{"id" => category_whcc_id}}
-          }
-        },
-        shipping_type
-      ) do
+  alias Picsello.Shipment.Detail
+
+  def get_shipment!(product, shipping_type, shipments \\ []),
+    do: do_get_shipment!(product, to_string(shipping_type), shipments)
+
+  defp do_get_shipment!(
+         %{
+           selections: selections,
+           whcc_product: %{whcc_id: whcc_id, api: %{"category" => %{"id" => category_whcc_id}}}
+         },
+         shipping_type,
+         shipments
+       ) do
     sizes =
-      if size = get_size(selections) do
+      with %{"size" => size} <- selections do
         size
         |> String.split("x")
         |> Enum.map(&String.to_integer(&1))
       end
 
-    category_whcc_id
-    |> whcc_id_for_base_charge(sizes, product_whcc_id)
-    |> base_charge(shipping_type)
+    shipping_type = convert_shipping_type(whcc_id, sizes, shipping_type)
+    %{upcharge: upcharge} = shipment = do_get_shipment!(shipments, shipping_type)
+
+    {upcharge(category_whcc_id, upcharge), shipment}
   end
 
-  defp base_charge(@whcc_photo_prints_id, "economy"), do: @base_charges[:economy_usps]
-  defp base_charge(@whcc_album_id, "economy"), do: @base_charges[:album_flat_rate]
-  defp base_charge(@whcc_books_id, "economy"), do: @base_charges[:book_flat_rate]
-  defp base_charge(_whcc_id, "economy"), do: @base_charges[:economy_trackable]
-  defp base_charge(_whcc_id, "3_days"), do: @base_charges[:three_days]
-  defp base_charge(_whcc_id, "1_day"), do: @base_charges[:one_day]
-  defp base_charge(_whcc_id, _shipping_type), do: []
-
-  defp whcc_id_for_base_charge(_, [s1, s2], @whcc_photo_prints_id) when s1 < 9 and s2 < 13,
-    do: @whcc_photo_prints_id
-
-  defp whcc_id_for_base_charge(category_whcc_id, _, _), do: category_whcc_id
-
-  defp upcharge(shipping_upcharge, selections) do
-    type = selections["paper"] || selections["surface"]
-    size = get_size(selections)
-
-    shipping_upcharge[type][size] || shipping_upcharge["default"]
+  defp do_get_shipment!(shipments, shipping_type) do
+    Enum.find(shipments, &(&1.type == shipping_type)) ||
+      Repo.get_by!(Detail, type: shipping_type)
   end
 
-  defp get_size(%{"size" => size}), do: size
-  defp get_size(_selections), do: nil
+  defp convert_shipping_type(@whcc_photo_prints_id, [s1, s2], "economy")
+       when s1 < 9 and s2 < 13,
+       do: :economy_usps
+
+  defp convert_shipping_type(_whcc_id, _size, "economy"), do: :economy_trackable
+  defp convert_shipping_type(_whcc_id, _size, "3_days"), do: :three_days
+  defp convert_shipping_type(_whcc_id, _size, "1_day"), do: :one_day
+
+  defp upcharge(@whcc_wall_art_id, upcharge), do: upcharge.wallart
+  defp upcharge(_category_whcc_id, upcharge), do: upcharge.default
 
   def shipping_price(%{
+        das_carrier_cost: das_carrier_cost,
         shipping_upcharge: shipping_upcharge,
         shipping_base_charge: shipping_base_charge,
         total_markuped_price: total_markuped_price
       }) do
     total_markuped_price
+    |> Money.add(das_carrier_cost || Money.new(0))
     |> Money.multiply(Decimal.div(shipping_upcharge, 100))
     |> Money.add(shipping_base_charge)
   end
@@ -519,19 +541,47 @@ defmodule Picsello.Cart do
   @one_day 1
   @three_days 3
   @economy 5
-  defp choose_days(value) when is_atom(value), do: value |> Atom.to_string() |> choose_days()
+  defp choose_days(value) when is_atom(value), do: value |> to_string() |> choose_days()
   defp choose_days("1_day"), do: @one_day
   defp choose_days("3_days"), do: @three_days
   defp choose_days("economy"), do: @economy
 
-  def total_shipping(products) do
-    products
-    |> Enum.filter(& &1.shipping_type)
-    |> Enum.reduce(Money.new(0), &Money.add(&2, shipping_price(&1)))
+  def total_shipping(%{products: [_ | _]} = order) do
+    order
+    |> lines_by_product()
+    |> Enum.reduce(Money.new(0), fn
+      {%{category: %{whcc_id: whcc_id}}, line_items}, acc when whcc_id in @shipping_to_all ->
+        Enum.reduce(line_items, acc, &Money.add(&2, shipping_price(&1)))
+
+      {_whcc_product, line_items}, acc ->
+        product = Enum.find(line_items, &has_shipping?/1)
+        product = add_total_markuped_sum(product, line_items)
+
+        Money.add(acc, shipping_price(product))
+    end)
   end
 
-  def add_default_shipping_to_products(order) do
-    shipping = fn p -> (p.shipping_type && p) || add_shipping_details!(p, @default_shipping) end
+  def total_shipping(_order), do: Money.new(0)
+
+  def has_shipping?(%{shipping_type: nil}), do: false
+  def has_shipping?(_product), do: true
+
+  def add_total_markuped_sum(shipping_product, []), do: shipping_product
+
+  def add_total_markuped_sum(shipping_product, products) do
+    total_markuped = Enum.reduce(products, ~M[0], &Money.add(&2, &1.total_markuped_price))
+
+    %{shipping_product | total_markuped_price: total_markuped}
+  end
+
+  def add_default_shipping_to_products(order, opts \\ %{}) do
+    das_type = opts[:das_type]
+    force_update = opts[:force_update]
+    details = %{shipping_type: @default_shipping, das_type: das_type}
+
+    shipping = fn p ->
+      (!force_update && p.shipping_type && p) || add_shipping_details!(p, details)
+    end
 
     order
     |> lines_by_product()
@@ -541,7 +591,6 @@ defmodule Picsello.Cart do
 
       {_whcc_product, line_items} ->
         [product | products] = Enum.reverse(line_items)
-
         [shipping.(product) | products]
     end)
     |> Enum.concat()

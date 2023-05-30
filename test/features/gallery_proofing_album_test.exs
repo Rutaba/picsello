@@ -12,9 +12,13 @@ defmodule Picsello.GalleryProofingAlbumTest do
     proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
     photo_ids = insert_photo(%{gallery: gallery, album: proofing_album, total_photos: 5})
 
+    gallery_client =
+      insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
     order =
       insert(:order,
         gallery: gallery,
+        gallery_client: gallery_client,
         placed_at: DateTime.utc_now(),
         delivery_info: %DeliveryInfo{
           address: %DeliveryInfo.Address{

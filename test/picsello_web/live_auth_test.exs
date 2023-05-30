@@ -66,13 +66,14 @@ defmodule PicselloWeb.LiveAuthTest do
 
   describe "mount :gallery_client" do
     setup %{conn: conn} do
-      {conn, user, gallery, gallery_digital_pricing} = build_defaults(conn)
+      {conn, user, gallery, gallery_digital_pricing, gallery_client} = build_defaults(conn)
 
       [
         conn: conn,
         gallery: gallery,
         gallery_digital_pricing: gallery_digital_pricing,
         user: user,
+        gallery_client: gallery_client,
         show_path: Routes.gallery_client_index_path(conn, :index, gallery.client_link_hash)
       ]
     end
@@ -141,7 +142,8 @@ defmodule PicselloWeb.LiveAuthTest do
       gallery: gallery,
       show_path: show_path
     } do
-      {:ok, token} = Galleries.build_gallery_session_token(gallery, gallery.password)
+      {:ok, token} =
+        Galleries.build_gallery_session_token(gallery, gallery.password, "testing@picsello.com")
 
       assert {:ok, _view, _html} =
                conn
@@ -152,11 +154,14 @@ defmodule PicselloWeb.LiveAuthTest do
     test "/gallery/:hash authenticated photographer, your gallery", %{
       conn: conn,
       show_path: show_path,
-      user: user
+      gallery: gallery
     } do
+      {:ok, token} =
+        Galleries.build_gallery_session_token(gallery, gallery.password, "testing@picsello.com")
+
       assert {:ok, _view, _html} =
                conn
-               |> log_in_user(onboard!(user))
+               |> Plug.Conn.put_session("gallery_session_token", token)
                |> live(show_path)
     end
 
@@ -165,7 +170,9 @@ defmodule PicselloWeb.LiveAuthTest do
       conn: conn,
       show_path: show_path
     } do
-      {:ok, token} = Galleries.build_gallery_session_token(gallery, gallery.password)
+      {:ok, token} =
+        Galleries.build_gallery_session_token(gallery, gallery.password, "testing@picsello.com")
+
       conn = put_session(conn, "gallery_session_token", token)
 
       assert {:error, {:redirect, %{to: ^show_path}}} = live(conn, show_path <> "?pw=123")
@@ -176,6 +183,14 @@ defmodule PicselloWeb.LiveAuthTest do
       gallery: gallery,
       show_path: show_path
     } do
+
+      Ecto.Adapters.SQL.Sandbox.checkout(Picsello.Repo)
+
+      {:ok, token} =
+        Galleries.build_gallery_session_token(gallery, gallery.password, "testing@picsello.com")
+
+      conn = put_session(conn, "gallery_session_token", token)
+
       conn = get(conn, show_path <> "?pw=#{gallery.password}")
 
       assert Galleries.session_exists_with_token?(
@@ -202,7 +217,7 @@ defmodule PicselloWeb.LiveAuthTest do
 
   describe "mount :proofing_album_client" do
     setup %{conn: conn} do
-      {conn, user, gallery, _} = build_defaults(conn)
+      {conn, user, gallery, _, _} = build_defaults(conn)
       album = insert(:proofing_album, %{gallery_id: gallery.id})
       un_protected_album = insert(:proofing_album, %{gallery_id: gallery.id, set_password: false})
 
@@ -220,7 +235,8 @@ defmodule PicselloWeb.LiveAuthTest do
       album: album,
       show_path: show_path
     } do
-      {:ok, token} = Galleries.build_album_session_token(album, album.password)
+      {:ok, token} =
+        Galleries.build_album_session_token(album, album.password, "testing@picsello.com")
 
       assert {:ok, _view, _html} =
                conn
@@ -243,6 +259,13 @@ defmodule PicselloWeb.LiveAuthTest do
       conn: conn,
       un_protected_album: un_protected_album
     } do
+      {:ok, token} =
+        Galleries.build_album_session_token(
+          un_protected_album,
+          un_protected_album.password,
+          "testing@picsello.com"
+        )
+
       show_path =
         Routes.gallery_client_album_path(
           conn,
@@ -250,17 +273,23 @@ defmodule PicselloWeb.LiveAuthTest do
           un_protected_album.client_link_hash
         )
 
-      assert {:ok, _view, _html} = live(conn, show_path)
+      assert {:ok, _view, _html} =
+               conn
+               |> Plug.Conn.put_session("album_session_token", token)
+               |> live(show_path)
     end
 
     test "/album/:hash authenticated photographer, your album", %{
       conn: conn,
       show_path: show_path,
-      user: user
+      album: album
     } do
+      {:ok, token} =
+        Galleries.build_album_session_token(album, album.password, "testing@picsello.com")
+
       assert {:ok, _view, _html} =
                conn
-               |> log_in_user(onboard!(user))
+               |> Plug.Conn.put_session("album_session_token", token)
                |> live(show_path)
     end
 
@@ -294,8 +323,17 @@ defmodule PicselloWeb.LiveAuthTest do
     user = insert(:user)
     job = insert(:lead, type: "wedding", user: user) |> promote_to_job()
     gallery = insert(:gallery, %{name: "Test Client Weeding", job: job})
-    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
 
-    {conn, user, gallery, gallery_digital_pricing}
+    gallery_digital_pricing =
+      insert(:gallery_digital_pricing, %{
+        gallery: gallery,
+        download_count: 2,
+        email_list: ["testing@picsello.com"]
+      })
+
+    gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+    {conn, user, gallery, gallery_digital_pricing, gallery_client}
   end
 end
