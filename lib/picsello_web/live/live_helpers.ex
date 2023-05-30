@@ -211,7 +211,11 @@ defmodule PicselloWeb.LiveHelpers do
 
   def nav_link(assigns) do
     assigns =
-      assign_new(assigns, :intercom_or_external_link, fn ->
+      assigns
+      |> Enum.into(%{
+        active_class: nil
+      })
+      |> assign_new(:intercom_or_external_link, fn ->
         %{target: "_blank", rel: "noopener noreferrer"}
       end)
 

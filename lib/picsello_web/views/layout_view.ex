@@ -200,7 +200,7 @@ defmodule PicselloWeb.LayoutView do
         items: [
           %{
             title: "Public Profile",
-            icon: "public-profile",
+            icon: "website",
             path: Routes.profile_settings_path(socket, :index)
           },
           %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
@@ -294,7 +294,7 @@ defmodule PicselloWeb.LayoutView do
       },
       %{
         title: "Public Profile",
-        icon: "public-profile",
+        icon: "website",
         path: Routes.profile_settings_path(socket, :index)
       },
       %{
@@ -311,21 +311,21 @@ defmodule PicselloWeb.LayoutView do
         class: "mr-6",
         path: nil,
         sub_nav_items: sub_nav_list(socket, :get_booked),
-        id: "get-booked"
+        id: "get-booked-nav"
       },
       %{
         title: "Clients",
         class: "mr-6",
         path: Routes.clients_path(socket, :index),
         sub_nav_items: nil,
-        id: nil
+        id: "clients-nav"
       },
       %{
         title: "Galleries",
         class: "mr-6",
         path: Routes.gallery_path(socket, :galleries),
         sub_nav_items: nil,
-        id: nil
+        id: "galleries-nav"
       },
       %{title: "Jobs", class: "mr-6", path: Routes.job_path(socket, :jobs), sub_nav_items: nil},
       %{
@@ -333,28 +333,28 @@ defmodule PicselloWeb.LayoutView do
         class: "pl-4 border-l mr-6",
         path: Routes.inbox_path(socket, :index),
         sub_nav_items: nil,
-        id: nil
+        id: "inbox-nav"
       },
       %{
         title: "Calendar",
         class: "mr-6",
         path: Routes.calendar_index_path(socket, :index),
         sub_nav_items: nil,
-        id: nil
+        id: "calendar-nav"
       },
       %{
         title: "Settings",
         class: "mr-6",
         path: nil,
         sub_nav_items: sub_nav_list(socket, :settings),
-        id: "settings"
+        id: "settings-nav"
       },
       %{
         title: "Help",
         class: "mr-0 ml-auto",
         path: "https://support.picsello.com",
         sub_nav_items: nil,
-        id: nil
+        id: "help-nav"
       }
     ]
   end
@@ -466,7 +466,7 @@ defmodule PicselloWeb.LayoutView do
               <%= if sub_nav_items do %>
                 <.sub_nav socket={@socket} live_action={@live_action} current_user={@current_user} sub_nav_list={sub_nav_items} title={title} id={id} />
               <% else %>
-                <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class={"hidden lg:block items-center transition-all font-bold text-blue-planning-300 hover:opacity-70 #{class}"} active_class="">
+                <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class={"hidden lg:block items-center transition-all font-bold text-blue-planning-300 hover:opacity-70 #{class}"}>
                   <%= title %>
                 </.nav_link>
               <% end %>
