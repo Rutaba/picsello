@@ -10,8 +10,14 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationSettings do
       add(:status, :email_automation_setting_status, null: false)
       add(:total_days, :integer)
       add(:condition, :string)
-      add(:email_automation_pipeline_id, references(:email_automation_pipelines, on_delete: :nothing))
-      
+
+      add(
+        :email_automation_pipeline_id,
+        references(:email_automation_pipelines, on_delete: :nothing)
+      )
+
+      add(:organization_id, references(:organizations, on_delete: :nothing))
+
       timestamps()
     end
   end
@@ -20,4 +26,3 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationSettings do
     drop(table(@table))
   end
 end
-
