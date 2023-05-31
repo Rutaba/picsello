@@ -17,6 +17,7 @@ defmodule Picsello.Accounts do
 
   ## Database getters
 
+  @spec get_user_by_email(String.t()) :: User.t()
   @doc """
   Gets a user by email.
 
@@ -366,6 +367,12 @@ defmodule Picsello.Accounts do
   @spec clear_user_nylas_code(Picsello.Accounts.User.t()) :: User.t()
   def clear_user_nylas_code(%User{} = user) do
     User.clear_user_nylas_code(user)
+  end
+
+  def clear_user_nylas_code(user_id) when is_number(user_id) do
+    user_id
+    |> get_user!()
+    |> User.clear_user_nylas_code()
   end
 
   @spec reset_user_password(

@@ -1,7 +1,7 @@
 defmodule NylasCalendarTest do
   use Picsello.DataCase
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
-
+  @token  "P0oLk9HguiOmmgiZcfOOcaSI5sbzCx"
   setup_all do
     ExVCR.Config.filter_request_headers("Authorization")
     ExVCR.Config.filter_request_options("basic_auth")
@@ -39,7 +39,7 @@ defmodule NylasCalendarTest do
       ExVCR.Config.filter_request_headers("Authorization")
 
       use_cassette "#{__MODULE__}_get_calendars" do
-        assert {:ok, calendars} = NylasCalendar.get_calendars()
+        assert {:ok, calendars} = NylasCalendar.get_calendars(@token)
         assert length(calendars) == 21
 
         assert [
@@ -65,8 +65,8 @@ defmodule NylasCalendarTest do
       ExVCR.Config.filter_request_headers("Authorization")
 
       use_cassette "#{__MODULE__}_create_calendar" do
-        NylasCalendar.create_calendar(%{"name" => "My Test Calendar"})
-        assert {:ok, calendars} = NylasCalendar.get_calendars()
+        NylasCalendar.create_calendar(%{"name" => "My Test Calendar"}, @token)
+        assert {:ok, calendars} = NylasCalendar.get_calendars(@token)
         [new_cal | _] = Enum.reverse(calendars)
         assert new_cal["name"] == "My Test Calendar"
       end
@@ -113,7 +113,7 @@ defmodule NylasCalendarTest do
                      "start_time" => "2023-05-18T14:00:00Z",
                      "end_time" => "2023-05-18T15:00:00Z"
                    }
-                 })
+                 }, @token)
       end
     end
 
@@ -121,7 +121,7 @@ defmodule NylasCalendarTest do
       ExVCR.Config.filter_request_headers("Authorization")
 
       use_cassette "#{__MODULE__}_get_events" do
-        {:ok, events} = NylasCalendar.get_events(@calendar_id)
+        {:ok, events} = NylasCalendar.get_events(@calendar_id, @token)
         target_id = "3gcdorp3zvqheegatbzdnjnkd"
 
         assert events |> Enum.map(& &1["id"]) |> Enum.member?(target_id)

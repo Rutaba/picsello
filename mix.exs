@@ -102,7 +102,8 @@ defmodule Picsello.MixProject do
         {:httpoison, "~> 1.8.0"},
         {:wallaby, "~> 0.30.3", runtime: false, only: :test},
         {:csv, "~> 3.0"},
-        {:exvcr, "~> 0.14.1", only: :test}
+        {:exvcr, "~> 0.14.1", only: :test},
+        {:meck, "~> 0.9.2", only: :test}
       ]
     ]
     |> Enum.concat()

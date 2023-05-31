@@ -19,6 +19,9 @@
 
 <hr class="my-4 sm:my-10" />
 
+<%= if @error do %>
+<h1 id="error"><%= @error %></h1>
+<% end %>
 <%= if @has_token do %>
 <div class="px-6 center-container" id="syncing">
   <h1>Syncing Email account <%= @token %> </h1>
@@ -27,30 +30,23 @@
 <div class="px-6 center-container" id="calendar_read"
      >
   <h1>Piscello will see events in the following calendars</h1>
-  <label>Test
-    <input type="checkbox" value="test" name="calendar_read" phx-click="calendar-read" phx-value-calendar="test">
-  </label>
-  <label>Work
-    <input type="checkbox" value="work" name="calendar_read" phx-click="calendar-read" phx-value-calendar="work">
-  </label>
-  <label>Home
-  <input type="checkbox" value="home" name="calendar_read" phx-click="calendar-read" phx-value-calendar="home">
-  </label>
-  
+  <%= for calendar <- @calendars do %>
+      <label><%= calendar["name"] %>
+        <input type="checkbox"
+               value={calendar["id"]}
+               name="calendar_read"
+               phx-click="calendar-read"
+               phx-value-calendar={calendar["id"]}>
+      </label>
+  <% end %>  
 </div>
 <div class="px-6 center-container" id="calendar_read_write">
   <h1>Picsello will add and see events in the following Calendar</h1>
-  <label>Test
-    <input type="radio" value="test" name="calendar_read_write" phx-click="calendar-read-write" phx-value-calendar="test">
-  </label>
-  <label>Work
-    <input type="radio" value="work" name="calendar_read_write" phx-click="calendar-read-write" phx-value-calendar="work">
-  </label>
-  <label>Home
-  <input type="radio" value="home" name="calendar_read_write" phx-click="calendar-read-write" phx-value-calendar="home">
-  </label>
-  
-
+  <%= for calendar <- @calendars do %>
+      <label><%= calendar["name"] %>
+        <input type="radio" value={calendar["id"]} name="calendar_read_write" phx-click="calendar-read-write" phx-value-calendar={calendar["id"]}>
+      </label>
+  <% end %>  
 </div>
 <div class="px-6 center-container" id="danger">
   <p><strong>Danger zone</strong></p>
