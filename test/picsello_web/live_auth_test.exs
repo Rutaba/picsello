@@ -175,7 +175,7 @@ defmodule PicselloWeb.LiveAuthTest do
 
       conn = put_session(conn, "gallery_session_token", token)
 
-      assert {:error, {:redirect, %{to: ^show_path}}} = live(conn, show_path <> "?pw=123")
+      assert {:error, {:redirect, %{to: ^show_path}}} = live(conn, show_path <> "?pw=123&email=testing%40picsello.com")
     end
 
     test "/gallery/:hash?pw=123 correct password stores token in session", %{

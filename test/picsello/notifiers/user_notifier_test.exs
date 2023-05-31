@@ -85,7 +85,8 @@ defmodule Picsello.Notifiers.UserNotifierTest do
           :show,
           order.gallery.client_link_hash,
           Order.number(order),
-          pw: order.gallery.password
+          pw: order.gallery.password,
+          email: "testing@picsello.com"
         ),
       gallery_name: "Test Client Wedding",
       job_name: "Mary Jane Wedding"
