@@ -49,13 +49,13 @@ defmodule Picsello.JobIndexTest do
     |> assert_has(testid("job-row", count: 1))
     |> assert_has(link(Job.name(job)))
     |> click(link(Job.name(job)))
-    |> assert_has(link("Jobs"))
+    |> assert_has(link("Jobs", count: 2))
   end
 
   feature "empty jobs", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Jobs"))
+    |> click(link("Jobs", at: 0, count: 2))
     |> refute_has(link("Go to your leads"))
     |> refute_has(Query.link("Create a lead"))
 
