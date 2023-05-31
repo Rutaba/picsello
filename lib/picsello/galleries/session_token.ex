@@ -3,6 +3,7 @@ defmodule Picsello.Galleries.SessionToken do
   use Ecto.Schema
   import Ecto.Changeset
   alias Picsello.Galleries.SessionToken
+  alias Picsello.Accounts.User
 
   @rand_size 64
   @session_validity_in_days 7
@@ -20,6 +21,7 @@ defmodule Picsello.Galleries.SessionToken do
     %SessionToken{}
     |> cast(attrs, [:resource_id, :resource_type, :email])
     |> validate_required([:resource_id, :resource_type])
+    |> User.validate_email_format()
     |> put_token()
   end
 

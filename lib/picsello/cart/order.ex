@@ -132,13 +132,6 @@ defmodule Picsello.Cart.Order do
 
   def number(%__MODULE__{id: id}), do: OrderNumber.to_number(id)
   def number(id), do: OrderNumber.to_number(id)
-  
-  def client_email(order) do
-    order 
-    |> Repo.preload(:gallery_client) 
-    |> Map.get(:gallery_client) 
-    |> Map.get(:email)
-  end
 
   @spec delete_product_changeset(t(),
           bundle: true,

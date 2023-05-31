@@ -474,20 +474,20 @@ defmodule Picsello.Galleries do
       gallery = gallery |> Repo.preload(job: [client: [organization: :user]])
       now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-      [
-        %{
-          email: gallery.job.client.email,
-          gallery_id: gallery.id,
-          inserted_at: now,
-          updated_at: now
-        },
-        %{
-          email: user.email,
-          gallery_id: gallery.id,
-          inserted_at: now,
-          updated_at: now
-        }
-      ]
+      client_email = gallery.job.client.email
+
+      client_params = %{
+        email: client_email,
+        gallery_id: gallery.id,
+        inserted_at: now,
+        updated_at: now
+      }
+
+      if client_email == user.email do
+        [client_params]
+      else
+        [client_params, Map.put(client_params, :email, user.email)]
+      end
     end)
     |> Multi.insert_all(
       :gallery_products,
@@ -1298,6 +1298,13 @@ defmodule Picsello.Galleries do
 
   def get_package(%Gallery{} = gallery) do
     gallery |> Repo.preload(:package) |> Map.get(:package)
+  end
+
+  def get_gallery_client_email(order) do
+    order
+    |> Repo.preload(:gallery_client)
+    |> Map.get(:gallery_client)
+    |> Map.get(:email)
   end
 
   def do_not_charge_for_download?(%Gallery{} = gallery) do

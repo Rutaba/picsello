@@ -3,6 +3,7 @@ defmodule PicselloWeb.Helpers do
   alias PicselloWeb.Endpoint
   alias PicselloWeb.Router.Helpers, as: Routes
   alias Picsello.Cart.Order
+  alias Picsello.Galleries
 
   def jobs_url(), do: Routes.job_url(Endpoint, :jobs)
 
@@ -18,16 +19,21 @@ defmodule PicselloWeb.Helpers do
   def gallery_url("" <> hash),
     do: Routes.gallery_client_index_url(Endpoint, :index, hash)
 
-  def gallery_url(%{client_link_hash: hash, password: password}),
+  def gallery_url(%{client_link_hash: hash}),
     do: Routes.gallery_client_index_url(Endpoint, :index, hash)
 
   def order_url(%{client_link_hash: hash, password: password}, order),
-    do: Routes.gallery_client_order_url(Endpoint, :show, hash, Order.number(order), pw: password, email: Order.client_email(order))
+    do:
+      Routes.gallery_client_order_url(Endpoint, :show, hash, Order.number(order),
+        pw: password,
+        email: Galleries.get_gallery_client_email(order)
+      )
 
   def proofing_album_selections_url(%{client_link_hash: hash, password: password}, order),
     do:
       Routes.gallery_client_order_url(Endpoint, :proofing_album, hash, Order.number(order),
-        pw: password, email: Order.client_email(order)
+        pw: password,
+        email: Galleries.get_gallery_client_email(order)
       )
 
   def album_url("" <> hash), do: Routes.gallery_client_album_url(Endpoint, :proofing_album, hash)
