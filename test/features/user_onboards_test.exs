@@ -149,8 +149,8 @@ defmodule Picsello.UserOnboardsTest do
              }
            } = user
 
-    assert ["other", "event", "portrait"] =
-             Profiles.enabled_job_types(user.organization.organization_job_types)
+    assert ["event", "other", "portrait"] =
+             Profiles.enabled_job_types(user.organization.organization_job_types) |> Enum.sort()
 
     assert_received {:sendgrid_request, %{body: sendgrid_request_body}}
 

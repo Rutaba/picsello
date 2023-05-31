@@ -21,6 +21,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Utils
   }
 
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Picsello.Cart.Order
@@ -117,6 +118,16 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
+    with true <- is_nil(client_email),
+         nil <- Map.get(assigns, :current_user) do
+      gallery.job.client
+    else
+      false -> Galleries.get_gallery_client(gallery, client_email)
+      current_user -> Galleries.get_gallery_client(gallery, current_user.email)
+    end
+  end
+
   def toggle_favorites(
         %{
           assigns: %{
@@ -157,7 +168,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
           assigns:
             %{
               gallery: gallery,
-              favorites_filter: favorites_filter
+              favorites_filter: favorites_filter,
+              gallery_client: gallery_client
             } = assigns
         } = socket,
         photo_id,
@@ -180,6 +192,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         is_proofing: assigns[:is_proofing] || false,
         album: assigns[:album],
         gallery: gallery,
+        gallery_client: gallery_client,
         photo_id: photo_id,
         photo_ids:
           photo_ids
@@ -322,7 +335,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def expired_at(organization_id) do
     case GlobalSettings.get(organization_id) do
       %{expiration_days: exp_days} when not is_nil(exp_days) and exp_days > 0 ->
-        Timex.shift(DateTime.utc_now(), days: exp_days)
+        GSGallery.calculate_expiry_date(exp_days)
 
       _ ->
         nil
@@ -515,7 +528,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
     any_client_liked_photo? =
       Enum.any?(assigns[:selected_photos], &Galleries.get_photo_by_id(&1).client_liked)
-    
+
     assigns = assigns |> Enum.into(%{any_client_liked_photo?: any_client_liked_photo?})
 
     ~H"""
@@ -828,15 +841,23 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def product_name(item, is_proofing), do: name(item, is_proofing)
 
   def get_unconfirmed_order(
-        %{assigns: %{gallery: gallery, album: album}},
+        %{assigns: %{gallery: gallery, album: album, gallery_client: gallery_client}},
         opts
       )
       when album.is_finals or album.is_proofing do
-    opts = Keyword.put(opts, :album_id, album.id)
+    opts =
+      opts
+      |> Keyword.put(:album_id, album.id)
+      |> Keyword.put(:gallery_client_id, gallery_client.id)
+
     Cart.get_unconfirmed_order(gallery.id, opts)
   end
 
-  def get_unconfirmed_order(%{assigns: %{gallery: gallery}}, opts) do
+  def get_unconfirmed_order(%{assigns: %{gallery: gallery, gallery_client: gallery_client}}, opts) do
+    opts =
+      opts
+      |> Keyword.put(:gallery_client_id, gallery_client.id)
+
     Cart.get_unconfirmed_order(gallery.id, opts)
   end
 
@@ -847,7 +868,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     [{"Digital Image Credits", "#{remaining} out of #{total_count}"}]
   end
 
-  defp name(%Digital{photo: photo}, true), do: "Select for retouching - #{photo.name}"
+  defp name(%Digital{photo: photo}, true), do: "Selected for retouching - #{photo.name}"
   defp name(%Digital{}, false), do: "Digital download"
   defp name({:bundle, _}, false), do: "All digital downloads"
   defp name(item, false), do: Cart.product_name(item)
@@ -1046,7 +1067,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         %{
           assigns:
             %{
-              gallery: gallery
+              gallery: gallery,
+              gallery_client: gallery_client
             } = assigns
         } = socket,
         whcc_editor_id
@@ -1055,7 +1077,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     album_id = if album, do: Map.get(album, :id), else: nil
 
     cart_product = Cart.new_product(whcc_editor_id, gallery.id)
-    Cart.place_product(cart_product, gallery.id, album_id)
+    Cart.place_product(cart_product, gallery, gallery_client, album_id)
 
     socket
   end

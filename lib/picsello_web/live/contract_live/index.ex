@@ -23,15 +23,19 @@ defmodule PicselloWeb.Live.Contracts.Index do
     |> assign_new(:contract, fn ->
       default_contract = Contracts.get_default_template()
 
+      content =
+        Contracts.default_contract_content(default_contract, current_user, PicselloWeb.Helpers)
+
       %Contract{
-        content:
-          Contracts.default_contract_content(default_contract, current_user, PicselloWeb.Helpers),
+        content: content,
         contract_template_id: default_contract.id,
         organization_id: current_user.organization_id
       }
     end)
     |> PicselloWeb.ContractTemplateComponent.open(
-      Map.merge(Map.take(assigns, [:contract, :current_user]), %{state: :create})
+      Map.merge(Map.take(assigns, [:contract, :current_user]), %{
+        state: :create
+      })
     )
     |> noreply()
   end
@@ -56,18 +60,34 @@ defmodule PicselloWeb.Live.Contracts.Index do
   def handle_event(
         "duplicate-contract",
         %{"contract-id" => contract_id},
-        %{assigns: %{current_user: %{organization: %{id: organization_id}}} = assigns} = socket
+        %{
+          assigns:
+            %{current_user: %{organization: %{id: organization_id}} = current_user} = assigns
+        } = socket
       ) do
     id = String.to_integer(contract_id)
+    contract = get_contract(id)
 
-    contract =
-      Contracts.clean_contract_for_changeset(
-        get_contract(id),
-        organization_id
-      )
+    contract_clean =
+      if is_nil(contract.organization_id) do
+        content = Contracts.default_contract_content(contract, current_user, PicselloWeb.Helpers)
+
+        %Picsello.Contract{
+          organization_id: organization_id,
+          content: content,
+          package_id: nil,
+          name: contract.name,
+          job_type: contract.job_type
+        }
+      else
+        Contracts.clean_contract_for_changeset(
+          contract,
+          organization_id
+        )
+      end
       |> Map.put(:name, nil)
 
-    assigns = Map.merge(assigns, %{contract: contract})
+    assigns = Map.merge(assigns, %{contract: contract_clean})
 
     socket
     |> PicselloWeb.ContractTemplateComponent.open(
@@ -78,23 +98,16 @@ defmodule PicselloWeb.Live.Contracts.Index do
 
   @impl true
   def handle_event(
-        "update-contract-status",
-        %{"contract-id" => contract_id, "status" => status},
+        "enable-contract",
+        %{"contract-id" => contract_id},
         socket
       ) do
     id = String.to_integer(contract_id)
-    status = String.to_atom(status)
 
-    message =
-      case status do
-        :archive -> "Contract deleted"
-        _ -> "Contract enabled"
-      end
-
-    case Contracts.update_contract_status(id, status) do
+    case Contracts.update_contract_status(id, :active) do
       {:ok, _} ->
         socket
-        |> put_flash(:success, message)
+        |> put_flash(:success, "Contract enabled")
 
       _ ->
         socket
@@ -105,13 +118,29 @@ defmodule PicselloWeb.Live.Contracts.Index do
   end
 
   @impl true
+  def handle_event("confirm-archive-contract", %{"contract-id" => contract_id}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      title: "Are you sure you want to archive this contract?",
+      confirm_event: "archive-contract_" <> contract_id,
+      confirm_label: "Yes, archive the contract",
+      close_label: "No! Get me out of here",
+      icon: "warning-orange"
+    })
+    |> noreply()
+  end
+
+  @impl true
   def handle_event(
         "view-contract",
         %{"contract-id" => contract_id},
-        %{assigns: assigns} = socket
+        %{assigns: %{current_user: current_user} = assigns} = socket
       ) do
     id = String.to_integer(contract_id)
-    assigns = Map.merge(assigns, %{contract: get_contract(id)})
+    contract = get_contract(id)
+    content = Contracts.default_contract_content(contract, current_user, PicselloWeb.Helpers)
+    contract = Map.put(contract, :content, content)
+    assigns = Map.merge(assigns, %{contract: contract})
 
     socket
     |> PicselloWeb.ContractTemplateComponent.open(
@@ -136,6 +165,24 @@ defmodule PicselloWeb.Live.Contracts.Index do
     socket |> assign_contracts() |> put_flash(:success, "Contract saved") |> noreply()
   end
 
+  @impl true
+  def handle_info({:confirm_event, "archive-contract_" <> id}, socket) do
+    id = String.to_integer(id)
+
+    case Contracts.update_contract_status(id, :archive) do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Contract archived")
+
+      _ ->
+        socket
+        |> put_flash(:error, "An error occurred")
+    end
+    |> assign_contracts()
+    |> close_modal()
+    |> noreply()
+  end
+
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex items-center justify-end gap-3">
@@ -153,7 +200,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
         <% end %>
       <% end %>
       <div data-offset="0" phx-hook="Select" id={"manage-contract-#{@contract.id}"}>
-        <button title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full" id="Manage">
+        <button {testid("actions")} title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full">
           Actions
           <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
           <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
@@ -170,9 +217,9 @@ defmodule PicselloWeb.Live.Contracts.Index do
                 <.icon name="duplicate" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                 Duplicate
               </button>
-              <button title="Trash" type="button" phx-click="update-contract-status" phx-value-contract-id={@contract.id} phx-value-status="archive" class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+              <button title="Trash" type="button" phx-click="confirm-archive-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
                 <.icon name="trash" class="inline-block w-4 h-4 mr-3 fill-current text-red-sales-300" />
-                Delete
+                Archive
               </button>
               <% else %>
               <button title="View" type="button" phx-click="view-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
@@ -185,7 +232,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
               </button>
             <% end %>
           <% else %>
-            <button title="Plus" type="button" phx-click="update-contract-status" phx-value-contract-id={@contract.id} phx-value-status="active" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+            <button title="Plus" type="button" phx-click="enable-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
                 <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                 Unarchive
             </button>
@@ -206,5 +253,5 @@ defmodule PicselloWeb.Live.Contracts.Index do
     )
   end
 
-  defp get_contract(id), do: Contracts.get_contract_by_id(id)
+  def get_contract(id), do: Contracts.get_contract_by_id(id)
 end

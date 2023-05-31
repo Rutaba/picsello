@@ -31,7 +31,17 @@ defmodule Picsello.Galleries.GalleryDigitalPricing do
     |> validate_required(~w[download_count download_each_price email_list gallery_id]a)
     |> foreign_key_constraint(:gallery_id)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
-    |> Package.validate_money(:download_each_price)
+    |> then(fn changeset ->
+      if Map.get(attrs, "status") !== :unlimited do
+        changeset
+        |> Package.validate_money(:download_each_price,
+          greater_than: 200,
+          message: "must be greater than two"
+        )
+      else
+        changeset
+      end
+    end)
     |> Package.validate_money(:print_credits,
       greater_than_or_equal_to: 0,
       message: "must be equal to or less than total price"

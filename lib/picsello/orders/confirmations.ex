@@ -183,19 +183,24 @@ defmodule Picsello.Orders.Confirmations do
 
   defp photographer_owes(_repo, %{
          intent: %{application_fee_amount: nil},
-         order: %{whcc_order: whcc_order}
-       }),
-       do: {:ok, Picsello.WHCC.Order.Created.total(whcc_order)}
+         order: %{whcc_order: whcc_order} = order
+       }) do
+    shipping = Picsello.Cart.total_shipping(order)
+    {:ok, Picsello.WHCC.Order.Created.total(whcc_order) |> Money.add(shipping)}
+  end
 
   defp photographer_owes(_repo, %{
          intent: %{application_fee_amount: application_fee_amount},
-         order: %{whcc_order: whcc_order}
-       }),
-       do:
-         {:ok,
-          whcc_order
-          |> Picsello.WHCC.Order.Created.total()
-          |> Money.subtract(application_fee_amount)}
+         order: %{whcc_order: whcc_order} = order
+       }) do
+    shipping = Picsello.Cart.total_shipping(order)
+
+    {:ok,
+     whcc_order
+     |> Picsello.WHCC.Order.Created.total()
+     |> Money.add(shipping)
+     |> Money.subtract(application_fee_amount)}
+  end
 
   defp place_order(%{order: order}), do: Order.placed_changeset(order)
 

@@ -57,7 +57,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   def handle_event(
         "create-gallery",
         %{"job_id" => job_id},
-        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+        %{assigns: %{current_user: %{organization_id: organization_id} = current_user}} = socket
       ) do
     job_id = to_integer(job_id)
 
@@ -65,7 +65,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
       case Galleries.get_galleries_by_job_id(job_id) do
         [] ->
           {:ok, gallery} =
-            Galleries.create_gallery(%{
+            Galleries.create_gallery(current_user, %{
               job_id: job_id,
               name: job_id |> Jobs.get_job_by_id() |> Job.name(),
               type: :standard,
@@ -80,7 +80,9 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
       end
 
     socket
-    |> push_redirect(to: Routes.gallery_photographer_index_path(socket, :index, gallery.id))
+    |> push_redirect(
+      to: Routes.gallery_photographer_index_path(socket, :index, gallery.id, is_mobile: false)
+    )
     |> noreply()
   end
 
@@ -243,8 +245,9 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
 
     icon_text_class =
       if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
+
     assigns = assign(assigns, icon_text_class: icon_text_class)
-    
+
     ~H"""
     <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 cursor-pointer #{@class} #{@icon}"} role="menuitem" tabindex="-1">
       <.icon name={@icon} class={"w-4 h-4 fill-current #{@icon_text_class} inline mr-1"} />

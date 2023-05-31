@@ -23,12 +23,14 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   }
 
   @impl true
-  def update(%{current_user: current_user} = assigns, socket) do
+  def update(%{current_user: current_user, gallery: gallery} = assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
-    |> assign(:email_error, nil)
+    |> assign(:email_error, [])
     |> assign(:email_input, nil)
+    |> assign(:email_value, nil)
+    |> assign(:email_list, gallery.job.client.email)
     |> assign(
       global_settings:
         Repo.get_by(GlobalSettings.Gallery, organization_id: current_user.organization_id)
@@ -175,28 +177,28 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
         <div class="mt-4 font-normal text-base leading-6">
           <label class="flex mt-3 font-bold">Enter email</label>
           <div class="flex items-center gap-4">
-            <input type="text" class="form-control text-input rounded" id="email_input" name="email" phx-debounce="500" spellcheck="false" placeholder="enter email..." />
-            <button class="btn-primary" type="button" title="Add email" phx-target={@myself} phx-click="add-email" disabled={@email_error || !@email_input }>Add email</button>
+            <input type="text" class="form-control text-input rounded" id="email_input" name="email" value={@email_value} phx-debounce="500" spellcheck="false" placeholder="enter email..." />
+            <button class="btn-primary" type="button" title="Add email" phx-target={@myself} phx-click="add-email" disabled={Enum.any?(@email_error, fn error -> error == "please enter valid email" end) || is_nil(@email_input)}>Add email</button>
           </div>
-          <span {testid("email-error")} class={classes("text-red-sales-300 text-sm", %{"hidden" => !@email_error})}><%= @email_error %></span>
+          <span {testid("email-error")} class={classes("text-red-sales-300 text-sm", %{"hidden" => Enum.empty?(@email_error)})}><%= if length(@email_error) > 0, do: hd(@email_error) %></span>
         </div>
 
-        <div class="mt-4 grid grid-rows-2 grid-flow-col gap-4">
+        <div class="mt-4 grid grid-cols-2 gap-x-10">
           <%= for(email <- @email_list) do %>
             <a class="flex items-center mt-2 hover:cursor-pointer">
               <.icon name="envelope" class="text-blue-planning-300 w-4 h-4" />
-              <span class="text-base-250 ml-2 mr-20"><%= email %> <%= if @gallery.job.client.email == email, do: "(client)" %></span>
-              <button title="Trash" type="button" phx-target={@myself} phx-click="delete-email" phx-value-email={email} class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+              <span class="text-base-250 ml-2"><%= email %> <%= if @gallery.job.client.email == email, do: "(client)" %></span>
+              <button title="Trash" type="button" phx-target={@myself} phx-click="delete-email" phx-value-email={email} class="flex items-center px-2 py-2 bg-gray-100 rounded-lg hover:bg-red-sales-100 hover:font-bold ml-auto">
                 <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
               </button>
             </a>
-            <hr class="block w-full mt-2"/>
           <% end %>
         </div>
+        <hr class="block w-full mt-2"/>
       </div>
 
         <.footer class="pt-10">
-          <button class="btn-primary" title="Save" type="submit" disabled={!@changeset.valid?}>Save</button>
+          <button class="btn-primary" title="Save" type="submit" disabled={!@changeset.valid? || Enum.any?(@email_error, fn error -> error == "atleast one email required" end)}>Save</button>
         </.footer>
       </.form>
     </div>
@@ -204,7 +206,11 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"_target" => ["email"], "email" => email}, socket) do
+  def handle_event(
+        "validate",
+        %{"_target" => ["email"], "email" => email},
+        %{assigns: %{email_error: email_error}} = socket
+      ) do
     email =
       email
       |> String.downcase()
@@ -212,15 +218,17 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
     if String.match?(email, Picsello.Accounts.User.email_regex()) do
       socket
-      |> assign(:email_error, nil)
+      |> assign(:email_error, List.delete(email_error, "please enter valid email"))
+      |> assign(:email_value, email)
       |> assign(:email_input, email)
     else
       socket
       |> assign(
         :email_error,
-        "please enter valid email"
+        ["please enter valid email" | email_error] |> Enum.uniq()
       )
       |> assign(:email_input, nil)
+      |> assign(:email_value, email)
     end
     |> noreply()
   end
@@ -237,8 +245,12 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
         %{assigns: %{email_list: email_list, email_input: email, changeset: changeset}} = socket
       ) do
     updated_email_list = email_list ++ [email]
+
     socket
     |> assign(:email_list, updated_email_list)
+    |> assign(:email_value, nil)
+    |> assign(:email_input, nil)
+    |> assign(:email_error, [])
     |> assign(:changeset, Changeset.put_change(changeset, :email_list, updated_email_list))
     |> noreply()
   end
@@ -247,12 +259,20 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   def handle_event(
         "delete-email",
         %{"email" => email},
-        %{assigns: %{email_list: email_list, changeset: changeset}} = socket
+        %{assigns: %{email_list: email_list, changeset: changeset, email_error: email_error}} =
+          socket
       ) do
     updated_email_list = List.delete(email_list, email)
 
     socket
     |> assign(:email_list, updated_email_list)
+    |> assign(
+      :email_error,
+      if(Enum.empty?(updated_email_list),
+        do: ["atleast one email required" | email_error],
+        else: email_error
+      )
+    )
     |> assign(:changeset, Changeset.put_change(changeset, :email_list, updated_email_list))
     |> noreply()
   end
@@ -267,9 +287,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
   defp assign_changeset(
          %{
-           assigns:
-             %{gallery: gallery, global_settings: global_settings} =
-               assigns
+           assigns: %{gallery: gallery, global_settings: global_settings} = assigns
          } = socket,
          params,
          action \\ :validate
@@ -279,7 +297,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     download_changeset =
       gallery.gallery_digital_pricing
       |> Download.from_package(global_settings)
-      |> Download.changeset(download_params)
+      |> Download.changeset(download_params, Map.get(assigns, :download_changeset))
       |> Map.put(:action, action)
 
     download = current(download_changeset)
@@ -296,7 +314,8 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       |> Map.merge(%{
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download),
-        "buy_all" => Download.buy_all(download)
+        "buy_all" => Download.buy_all(download),
+        "status" => download.status
       })
 
     digital_pricing_params =

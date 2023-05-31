@@ -16,6 +16,7 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   import Phoenix.Component
   import PicselloWeb.Live.Shared
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
+
   import PicselloWeb.JobLive.Shared,
     only: [
       job_form_fields: 1,
@@ -149,10 +150,12 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     """
   end
 
-  def step(%{step: :package_payment, job_changeset: job_changeset} = assigns),
-    do:
-      Enum.into(assigns, %{job_type: Changeset.get_field(job_changeset, :type)})
-      |> package_payment_step()
+  def step(%{step: :package_payment, job_changeset: job_changeset} = assigns) do
+    job_type = Changeset.get_field(job_changeset, :type)
+
+    Enum.into(assigns, %{job_type: job_type, show_digitals: job_type, myself: self()})
+    |> package_payment_step()
+  end
 
   def step(%{step: :invoice} = assigns), do: invoice_step(assigns)
 
@@ -163,6 +166,13 @@ defmodule PicselloWeb.JobLive.ImportWizard do
 
   @impl true
   def handle_event("back", %{}, socket), do: go_back_event("back", %{}, socket) |> noreply()
+
+  @impl true
+  def handle_event("edit-digitals", %{"type" => type}, socket) do
+    socket
+    |> assign(:show_digitals, type)
+    |> noreply()
+  end
 
   @impl true
   def handle_event("remove-payment", %{}, socket),

@@ -44,6 +44,10 @@ defmodule Picsello.PackTest do
     )
   end
 
+  def insert_gallery_digital_pricing(gallery, download_each_price) do
+    insert(:gallery_digital_pricing, %{gallery: gallery, download_each_price: download_each_price})
+  end
+
   setup do
     Mox.verify_on_exit!()
 
@@ -61,7 +65,12 @@ defmodule Picsello.PackTest do
 
   describe "upload - gallery" do
     test "zips all photos when bundle is purchased", %{} do
-      gallery = insert_gallery(organization_name: "org name")
+      %{gallery: gallery} =
+        insert_gallery(organization_name: "org name")
+        |> insert_gallery_digital_pricing(Money.new(20))
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
       insert_list(3, :photo,
         gallery: gallery,
@@ -71,13 +80,20 @@ defmodule Picsello.PackTest do
 
       assert {:error, _} = Pack.upload(gallery)
 
-      insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
+      insert(:order,
+        gallery: gallery,
+        gallery_client: gallery_client,
+        placed_at: DateTime.utc_now(),
+        bundle_price: ~M[5000]USD
+      )
 
       assert {:ok, _} = Pack.upload(gallery)
     end
 
     test "sends a zip of all photos when package does not charge for downloads", %{} do
-      gallery = insert_gallery(organization_name: "org name", charge_for_downloads: false)
+      %{gallery: gallery} =
+        insert_gallery(organization_name: "org name", charge_for_downloads: false)
+        |> insert_gallery_digital_pricing(Money.new(0))
 
       insert_list(3, :photo,
         gallery: gallery,
@@ -91,7 +107,19 @@ defmodule Picsello.PackTest do
 
   describe "upload - order" do
     setup do
-      [order: :order |> insert(placed_at: DateTime.utc_now()) |> Repo.preload(:gallery)]
+      gallery = insert(:gallery)
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          gallery_client: gallery_client,
+          placed_at: DateTime.utc_now()
+        )
+
+      [order: order]
     end
 
     def header(opts, name) do

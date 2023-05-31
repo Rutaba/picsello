@@ -45,19 +45,29 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   end
 
   defp inner_content(%{caller: caller} = assigns)
-       when caller in ~w(order cart proofing_album_order)a do
+       when caller in ~w(order cart proofing_album_order proofing_album_cart)a do
     assigns = Map.put(assigns, :is_proofing, caller == :proofing_album_order)
 
     ~H"""
     <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6 mb-5">
     <dl class="text-lg contents">
+      <%= with [{label, value} | _] <- @product_charge_lines do %>
+        <.summary_block label={label} value={value} />
+      <% end %>
+
+      <%= if Enum.any?(@order.products, & &1.total_markuped_price) do %>
+        <.shipping_block {assigns} />
+      <% else %>
+        <.summary_block label="Shipping & handling" value="Included" />
+      <% end %>
+
       <%= for {label, value} <- @charges do %>
         <dt class="hidden toggle lg:block"><%= label %></dt>
 
         <dd class="self-center hidden toggle lg:block justify-self-end"><%= value %></dd>
       <% end %>
 
-      <dt class={"hidden #{!@is_proofing && 'text-2xl'} toggle lg:block"}>
+      <dt class={"hidden #{!@is_proofing && 'text-2xl'} toggle md:block"}>
         <%= if @is_proofing, do: "Purchased", else: "Subtotal" %>
       </dt>
       <dd class={"self-center hidden #{!@is_proofing && 'text-2xl'} toggle lg:block justify-self-end"}>
@@ -81,20 +91,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     """
   end
 
-  defp inner_content(%{caller: :proofing_album_cart} = assigns) do
+  defp summary_block(assigns) do
+    assigns = Enum.into(assigns, %{value: nil, icon: nil, class: nil, event: nil})
+
     ~H"""
-    <div class="px-5 grid grid-cols-[1fr,max-content] gap-3 mt-6 mb-5">
-      <dl class="text-lg contents">
-        <%= unless @discounts == [] do %>
-        <.discounts_content discounts={@discounts} class="text-base" />
-        <% end %>
-      </dl>
-      <hr class="hidden mt-2 mb-3 col-span-2 border-base-200 toggle lg:block">
-      <dl class="contents">
-        <dt class="text-2xl font-extrabold">Total</dt>
-        <dd class="self-center text-2xl font-extrabold justify-self-end"><%= @total %></dd>
-      </dl>
-    </div>
+    <dt class={"hidden toggle lg:block #{@class}"} phx-click={@event}><%= @label %></dt>
+    <dd class="self-center hidden toggle lg:block justify-self-end"><%= @value %></dd>
     """
   end
 
@@ -109,16 +111,47 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     """
   end
 
+  defp shipping_block(
+         %{order: %{products: [_ | _] = products, delivery_info: delivery_info}} = assigns
+       ) do
+    {added?, description} = shipping_description(delivery_info, products)
+    assigns = assign(assigns, %{description: description, added?: added?})
+
+    ~H"""
+    <.summary_block label={"Shipping #{@description}"} value={Cart.total_shipping(@order)} />
+
+    <%= unless @order.placed_at do %>
+      <.summary_block
+        label={@added? && "#{zip(@order)} Edit" || "Add zipcode for actual"}
+        class="mt-[-4px] text-sm underline cursor-pointer text-blue-planning-300",
+        event="zipcode"
+      />
+    <% end %>
+    """
+  end
+
+  defp zip(%{delivery_info: delivery_info}) do
+    delivery_info && delivery_info |> Map.get(:address, %{}) |> Map.get(:zip)
+  end
+
+  defp shipping_description(%{address: %{zip: zip}}, products) when not is_nil(zip) do
+    {true, "(#{Enum.count(products, &Cart.has_shipping?/1)})"}
+  end
+
+  defp shipping_description(_, _), do: {false, "estimated"}
+
   def details(%{products: products, digitals: digitals} = order, caller)
       when is_list(products) and is_list(digitals) do
     charges = charges(order, caller)
+    product_charge = product_charge_lines(order)
     discounts = discounts(order, caller)
 
     %{
       charges: charges,
-      subtotal: sum_lines(charges),
+      product_charge_lines: product_charge,
+      subtotal: sum_lines(charges ++ product_charge),
       discounts: discounts,
-      total: sum_lines(charges ++ discounts)
+      total: sum_lines(charges ++ product_charge ++ discounts)
     }
   end
 
@@ -151,28 +184,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
       print_credit_lines(order) ++ digital_discount_lines(order, caller)
   end
 
-  defp total_shipping(products) do
-    products
-    |> Enum.filter(&has_shipping?/1)
-    |> Enum.reduce(~M[0]USD, &Money.add(&2, Cart.shipping_price(&1)))
-  end
-
   defp charges(order, caller) do
-    product_charge_lines(order) ++
-      digital_charge_lines(order, caller) ++ bundle_charge_lines(order)
+    digital_charge_lines(order, caller) ++ bundle_charge_lines(order)
   end
 
   defp product_charge_lines(%{products: []}), do: []
 
-  defp product_charge_lines(%{products: products}) do
+  defp product_charge_lines(%{products: products} = order) do
     [
       {"Products (#{length(products)})", sum_prices(products)},
-      if Enum.any?(products, & &1.total_markuped_price) do
-        count = Enum.count(products, &has_shipping?/1)
-        {"Shipping (#{count})", total_shipping(products)}
-      else
-        {"Shipping & handling", "Included"}
-      end
+      Enum.any?(products, & &1.total_markuped_price) && {"", Cart.total_shipping(order)}
     ]
   end
 
@@ -181,7 +202,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   @proofing_album_calls ~w(proofing_album_cart proofing_album_order)a
   defp digital_charge_lines(%{digitals: digitals}, caller)
        when caller in @proofing_album_calls do
-    [{"Digitals (#{length(digitals)})", sum_prices(digitals)}]
+    [{"Selected for retouching (#{length(digitals)})", sum_prices(digitals)}]
   end
 
   defp digital_charge_lines(%{digitals: digitals}, _caller) do
@@ -228,23 +249,15 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   end
 
   defp credit(gallery, credit, caller) do
-    case caller do
-      :proofing_album_order ->
-        remainig_credit = gallery |> credits() |> find_digital() |> elem(1)
+    if caller == :proofing_album_order do
+      remainig_credit = gallery |> credits() |> find_digital() |> elem(1)
 
-        "#{credit} credit used - #{remainig_credit} credits remainig"
-
-      :proofing_album_cart ->
-        "Selected for retouching (#{credit})"
-
-      _ ->
-        "Digital download credit (#{credit})"
+      "#{credit} credit used - #{remainig_credit} credits remainig"
+    else
+      "Digital download credit (#{credit})"
     end
   end
 
   defp find_digital([{:digital, value} | _]), do: {:digital, value}
   defp find_digital(_credits), do: {:digital, 0}
-
-  defp has_shipping?(%{shipping_type: nil}), do: false
-  defp has_shipping?(_product), do: true
 end

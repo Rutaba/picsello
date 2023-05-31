@@ -51,27 +51,21 @@ defmodule Picsello.EditLeadPackageTest do
     |> assert_value(@price_text_field, "$1.00")
     |> fill_in(@price_text_field, with: "2.00")
     |> scroll_to_bottom()
-    |> scroll_into_view(css("#download_status_limited"))
+    |> scroll_into_view(testid("edit-digital-collection"))
+    |> click(testid("edit-digital-collection"))
     |> click(css("#download_status_limited"))
-    |> find(
-      text_field("download_count"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "1"))
-    )
-    |> scroll_into_view(css("#download_is_custom_price"))
-    |> find(
-      text_field("download[each_price]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$4"))
-    )
+    |> fill_in(css("#download_count"), with: 1)
+    |> click(css("[href='/images/icons.svg#close-x']", at: 1))
+    |> click(button("Edit image price"))
+    |> scroll_into_view(css("#download_each_price"))
+    |> fill_in(css("#download_each_price"), with: 4)
+    |> click(css("[href='/images/icons.svg#close-x']", at: 1))
+    |> click(button("Edit upsell options"))
     |> scroll_into_view(css("#download_is_buy_all"))
     |> click(css("#download_is_buy_all"))
-    |> find(
-      text_field("download[buy_all]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$4"))
-    )
-    |> find(
-      text_field("download[buy_all]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$5"))
-    )
+    |> scroll_into_view(css("#download_buy_all"))
+    |> fill_in(css("#download_buy_all"), with: 70)
+    |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> scroll_into_view(testid("select-preset-type"))
     |> find(select("custom_payments_schedule_type"), &click(&1, option("2 split payments")))
@@ -88,6 +82,7 @@ defmodule Picsello.EditLeadPackageTest do
     )
     |> assert_has(testid("remaining-to-collect", text: "$0.00 (0.0%)"))
     |> click(radio_button("Fixed amount", checked: false))
+    |> scroll_into_view(css("#custom_payments_payment_schedules_0_price"))
     |> fill_in(css("#custom_payments_payment_schedules_0_price"), with: "0.50")
     |> fill_in(css("#custom_payments_payment_schedules_1_price"), with: "0.50")
     |> assert_has(testid("remaining-to-collect", text: "$1.00"))
@@ -115,11 +110,11 @@ defmodule Picsello.EditLeadPackageTest do
         package
         | name: "My updated package",
           description: "<p>indescribably great.</p>",
-          base_price: ~M[200]USD,
+          base_price: Money.new(200),
           download_count: 1,
-          download_each_price: ~M[400]USD,
-          buy_all: ~M[500]USD,
-          print_credits: ~M[200]USD,
+          download_each_price: Money.new(400),
+          buy_all: Money.new(7000),
+          print_credits: Money.new(200),
           schedule_type: "splits_2"
       }
       |> Map.take([:id | form_fields])
@@ -133,9 +128,10 @@ defmodule Picsello.EditLeadPackageTest do
     |> click(button("Yes, edit package details"))
     |> click(button("Next"))
     |> scroll_into_view(testid("print"))
+    |> click(button("Edit settings", at: 0))
     |> click(radio_button("Gallery does not include Print Credits"))
-    |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(css("#download_status_unlimited"))
+    # |> scroll_into_view(css("#download_is_buy_all"))
+    # |> click(css("#download_status_unlimited"))
     |> click(button("Next"))
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
@@ -144,10 +140,10 @@ defmodule Picsello.EditLeadPackageTest do
     updated =
       %{
         package
-        | download_each_price: ~M[0]USD,
-          buy_all: nil,
-          download_count: 0,
-          print_credits: ~M[0]USD
+        | download_each_price: Money.new(400),
+          buy_all: Money.new(7000),
+          download_count: 1,
+          print_credits: Money.new(0)
       }
       |> Map.take([:id | form_fields])
 

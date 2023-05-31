@@ -9,13 +9,23 @@ defmodule Picsello.GalleryOverviewTest do
 
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-    [job: gallery.job]
+    gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
+
+    gallery_client =
+      insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
+    [
+      job: gallery.job,
+      gallery_client: gallery_client,
+      gallery_digital_pricing: gallery_digital_pricing
+    ]
   end
 
-  def insert_order(gallery) do
+  def insert_order(gallery, gallery_client) do
     order =
       insert(:order,
         gallery: gallery,
+        gallery_client: gallery_client,
         placed_at: DateTime.utc_now(),
         delivery_info: %Picsello.Cart.DeliveryInfo{}
       )
@@ -78,6 +88,7 @@ defmodule Picsello.GalleryOverviewTest do
 
   feature "Update gallery password", %{session: session, job: job} do
     gallery = insert(:gallery, %{job: job, password: "666666"})
+    insert(:gallery_digital_pricing, gallery: gallery)
 
     session
     |> visit("/galleries/#{gallery.id}/")
@@ -93,6 +104,7 @@ defmodule Picsello.GalleryOverviewTest do
 
   feature "Expiration date, set gallery to never expire", %{session: session, job: job} do
     gallery = insert(:gallery, %{job: job, expired_at: ~U[2021-02-01 12:00:00Z]})
+    insert(:gallery_digital_pricing, gallery: gallery)
 
     session
     |> visit("/galleries/#{gallery.id}/")
@@ -156,8 +168,8 @@ defmodule Picsello.GalleryOverviewTest do
     )
   end
 
-  feature "Disable Gallery", %{session: session, gallery: gallery} do
-    _order = insert_order(gallery)
+  feature "Disable Gallery", %{session: session, gallery: gallery, gallery_client: gallery_client} do
+    _order = insert_order(gallery, gallery_client)
 
     session
     |> visit("/galleries/#{gallery.id}/")
@@ -168,8 +180,12 @@ defmodule Picsello.GalleryOverviewTest do
     |> assert_url_contains("/galleries")
   end
 
-  feature "Unable to update gallery settings when disabled", %{session: session, gallery: gallery} do
-    _order = insert_order(gallery)
+  feature "Unable to update gallery settings when disabled", %{
+    session: session,
+    gallery: gallery,
+    gallery_client: gallery_client
+  } do
+    _order = insert_order(gallery, gallery_client)
     {:ok, gallery} = Galleries.update_gallery(gallery, %{status: :disabled})
 
     session
@@ -182,8 +198,8 @@ defmodule Picsello.GalleryOverviewTest do
     |> assert_disabled(select("date[year]"))
   end
 
-  feature "Enable Gallery", %{session: session, gallery: gallery} do
-    _order = insert_order(gallery)
+  feature "Enable Gallery", %{session: session, gallery: gallery, gallery_client: gallery_client} do
+    _order = insert_order(gallery, gallery_client)
     {:ok, gallery} = Galleries.update_gallery(gallery, %{status: :disabled})
 
     session
@@ -231,7 +247,8 @@ defmodule Picsello.GalleryOverviewTest do
   } do
     session
     |> visit("/galleries/#{gallery.id}/")
-    |> assert_has(css("button", count: 1, text: "Share gallery"))
+    |> resize_window(1280, 800)
+    |> scroll_to_bottom()
     |> click(css("button", text: "Share gallery"))
     |> assert_has(css("p", text: "Please add photos to the gallery before sharing"))
   end

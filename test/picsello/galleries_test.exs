@@ -23,18 +23,22 @@ defmodule Picsello.GalleriesTest do
     end
 
     test "create_gallery/1 with valid data creates a gallery" do
+      user = insert(:user, name: "Jane Doe")
       %{id: job_id} = insert(:lead)
-      assert {:ok, %Gallery{}} = Galleries.create_gallery(Map.put(@valid_attrs, :job_id, job_id))
+
+      assert {:ok, %Gallery{}} =
+               Galleries.create_gallery(user, Map.put(@valid_attrs, :job_id, job_id))
     end
 
     test "create_gallery/1 with valid data creates a gallery with gallery products" do
+      user = insert(:user, name: "Jane Doe")
       %{id: job_id} = insert(:lead)
       insert(:category, deleted_at: DateTime.utc_now())
       insert(:category, hidden: true)
       %{id: active_category_id} = insert(:category)
 
       assert {:ok, %Gallery{} = gallery} =
-               Galleries.create_gallery(Map.put(@valid_attrs, :job_id, job_id))
+               Galleries.create_gallery(user, Map.put(@valid_attrs, :job_id, job_id))
 
       assert %Gallery{
                gallery_products: [%Galleries.GalleryProduct{category_id: ^active_category_id}]
@@ -42,10 +46,11 @@ defmodule Picsello.GalleriesTest do
     end
 
     test "create_gallery/1 with invalid data returns error changeset" do
+      user = insert(:user, name: "Jane Doe")
       %{id: job_id} = insert(:lead)
 
       assert {:error, %Ecto.Changeset{}} =
-               Galleries.create_gallery(Map.put(@invalid_attrs, :job_id, job_id))
+               Galleries.create_gallery(user, Map.put(@invalid_attrs, :job_id, job_id))
     end
 
     test "update_gallery/2 with valid data updates the gallery" do

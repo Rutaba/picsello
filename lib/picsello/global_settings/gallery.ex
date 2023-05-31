@@ -3,7 +3,7 @@ defmodule Picsello.GlobalSettings.Gallery do
   use Ecto.Schema
   import Ecto.Changeset
   import Money.Sigils
-  alias Picsello.Organization
+  alias Picsello.{Organization, Package}
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
   defmodule Photo do
@@ -16,9 +16,9 @@ defmodule Picsello.GlobalSettings.Gallery do
 
   @default_each_price ~M[5000]USD
   @default_buy_all_price ~M[75000]USD
-  
+
   schema "global_settings_galleries" do
-    field(:expiration_days, :integer)
+    field(:expiration_days, :integer, default: 0)
     field(:watermark_name, :string)
     field(:watermark_type, Ecto.Enum, values: [:image, :text])
     field(:watermark_size, :integer)
@@ -36,6 +36,41 @@ defmodule Picsello.GlobalSettings.Gallery do
   def expiration_changeset(global_settings_gallery, attrs) do
     global_settings_gallery
     |> cast(attrs, [:expiration_days])
+  end
+
+  def price_changeset(%__MODULE__{} = global_settings_gallery, attrs) do
+    global_settings_gallery
+    |> cast(attrs, [:organization_id, :expiration_days, :buy_all_price, :download_each_price])
+    |> validate_required([:download_each_price])
+    |> then(fn changeset ->
+      if Map.get(attrs, "status") !== :unlimited do
+        changeset
+        |> Package.validate_money(:download_each_price,
+          greater_than: 200,
+          message: "must be greater than two"
+        )
+      else
+        changeset
+      end
+    end)
+    |> then(fn changeset ->
+      each_price = get_field(changeset, :download_each_price) || Money.new(0)
+
+      changeset
+      |> Package.validate_money(:buy_all_price,
+        greater_than: each_price.amount,
+        message: "must be greater than each price"
+      )
+    end)
+    |> then(fn changeset ->
+      buy_all_price = get_field(changeset, :buy_all_price) || Money.new(0)
+
+      changeset
+      |> Package.validate_money(:download_each_price,
+        less_than: buy_all_price.amount,
+        message: "must be less than buy all price"
+      )
+    end)
   end
 
   def watermark_change(nil), do: change(%GSGallery{})
@@ -70,12 +105,30 @@ defmodule Picsello.GlobalSettings.Gallery do
     |> nilify_fields(@image_attrs)
   end
 
-  defp nilify_fields(changeset, fields) do
-    Enum.reduce(fields, changeset, fn key, changeset -> put_change(changeset, key, nil) end)
+  def default_each_price(), do: @default_each_price
+  def default_buy_all_price(), do: @default_buy_all_price
+
+  def explode_days(expiration_days) do
+    year = trunc(expiration_days / 365)
+    month = trunc((expiration_days - year * 365) / 30)
+    day = trunc(expiration_days - year * 365 - month * 30)
+    {day, month, year}
+  end
+
+  def calculate_expiry_date(total_days, date \\ DateTime.utc_now()) do
+    {days, months, years} = explode_days(total_days)
+
+    Timex.shift(date, years: years)
+    |> Timex.shift(months: months)
+    |> Timex.shift(days: days)
   end
 
   def watermarked_path(),
     do: "picsello/temp/watermarked/#{UUID.uuid4()}"
 
   def watermark_path(id), do: "global_settings/#{id}/watermark.png"
+
+  defp nilify_fields(changeset, fields) do
+    Enum.reduce(fields, changeset, fn key, changeset -> put_change(changeset, key, nil) end)
+  end
 end

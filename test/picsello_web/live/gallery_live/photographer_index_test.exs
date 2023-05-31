@@ -3,7 +3,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndexTest do
   use PicselloWeb.ConnCase, async: true
   import Money.Sigils
   import Phoenix.LiveViewTest
-  alias Picsello.{Repo, Package}
+  alias Picsello.{Repo, Package, Galleries.GalleryDigitalPricing}
 
   setup %{conn: conn} do
     user = insert(:user)
@@ -15,10 +15,12 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndexTest do
 
     package = insert(:package, download_each_price: ~M[2500]USD)
     job = insert(:lead, type: "wedding", user: user, package: package) |> promote_to_job()
+    gallery = insert(:gallery, %{name: "Ukasha Habib Wedding", job: job})
+    insert(:gallery_digital_pricing, %{gallery: gallery, download_each_price: ~M[10]USD})
 
     %{
       conn: conn,
-      gallery: insert(:gallery, %{name: "Ukasha Habib Wedding", job: job})
+      gallery: gallery
     }
   end
 
@@ -38,6 +40,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndexTest do
       gallery: gallery
     } do
       Repo.update_all(Package, set: [download_each_price: ~M[0]USD])
+      Repo.update_all(GalleryDigitalPricing, set: [download_each_price: ~M[0]USD])
       {:ok, _view, html} = live(conn, "/galleries/#{gallery.id}")
       refute html |> Floki.text() =~ "Watermark"
     end
@@ -46,6 +49,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndexTest do
   describe "gallery name update" do
     def render_update_name(attrs) do
       gallery = insert(:gallery, attrs)
+      insert(:gallery_digital_pricing, gallery: gallery)
 
       render_component(PicselloWeb.GalleryLive.Settings.UpdateNameComponent,
         id: :test,

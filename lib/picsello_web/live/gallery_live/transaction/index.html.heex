@@ -11,12 +11,12 @@
         <:crumb to={Routes.job_path(@socket, :jobs, @job.id)}>
           <%= Job.name @job %>
         </:crumb>
-        <:crumb to={Routes.gallery_photographer_index_path(@socket, :index, @gallery.id)}>
+        <:crumb to={Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false)}>
           gallery
         </:crumb>
         <:crumb> <%= String.capitalize(action_name(@live_action, :plural)) %> </:crumb>
       </.crumbs>
-    </div>  
+    </div>
 
     <div class="flex flex-col justify-between md:flex-row">
       <h1 class="flex items-center justify-between mt-4 lg:text-4xl text-2xl font-bold md:justify-start">
@@ -44,7 +44,7 @@
 
   <hr class="md:block border-blue-planning-300 border-2 mt-4 mb-1 hidden"/>
   <%= for order <- @gallery.orders do %>
-    <div {testid("orders")} class="px-6 md:py-0 py-6 md:mt-0 mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">      
+    <div {testid("orders")} class="px-6 md:py-0 py-6 md:mt-0 mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">
       <div class="mb-2">
         <span class="md:hidden grid-row mt-5 px-2 text-blue-planning-300 bg-blue-planning-100 rounded-lg"><%= order_status(order) %></span>
       </div>
@@ -55,8 +55,8 @@
         <div class="md:flex flex-col hidden"><%= order_status(order) %></div>
         <div phx-click="order-detail" phx-value-order_number={order.number} class="md:flex flex-col hidden cursor-pointer text-blue-planning-300">View details</div>
         <hr class="border-base-200 mt-5 col-span-5 md:block hidden"/>
-      </div> 
-    </div> 
+      </div>
+    </div>
   <% end %>
   <div class="flex justify-center md:hidden">
     <button phx-click="open-stripe" class="w-full btn-primary intro-message">Go to Stripe</button>

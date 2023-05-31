@@ -9,6 +9,7 @@ defmodule Picsello.Galleries.Gallery do
     Watermark,
     CoverPhoto,
     GalleryProduct,
+    GalleryClient,
     Album,
     SessionToken,
     GalleryDigitalPricing
@@ -44,6 +45,7 @@ defmodule Picsello.Galleries.Gallery do
     has_many(:photos, Photo)
     has_many(:gallery_products, GalleryProduct)
     has_many(:albums, Album)
+    has_many(:gallery_clients, GalleryClient)
     has_many(:orders, Order)
     has_many(:session_tokens, SessionToken, @session_opts)
     has_one(:watermark, Watermark, on_replace: :update)
@@ -159,6 +161,13 @@ defmodule Picsello.Galleries.Gallery do
     |> Repo.preload(:gallery_digital_pricing)
     |> change(attrs)
     |> cast_assoc(:gallery_digital_pricing, with: &GalleryDigitalPricing.changeset/2)
+  end
+
+  def save_gallery_clients_changeset(gallery, attrs) when is_list(attrs) do
+    gallery
+    |> Repo.preload(:gallery_clients)
+    |> change(attrs)
+    |> cast_assoc(:gallery_clients, with: &GalleryClient.changeset/2)
   end
 
   def generate_password, do: Enum.random(100_000..999_999) |> to_string

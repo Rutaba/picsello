@@ -172,7 +172,9 @@ defmodule Picsello.BookingEvents do
   end
 
   def available_times(%BookingEvent{} = booking_event, date, opts \\ []) do
-    duration =
+    duration = (booking_event.duration_minutes || Picsello.Shoot.durations() |> hd) * 60
+
+    duration_buffer =
       ((booking_event.duration_minutes || Picsello.Shoot.durations() |> hd) +
          (booking_event.buffer_minutes || 0)) * 60
 
@@ -180,20 +182,72 @@ defmodule Picsello.BookingEvents do
 
     case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
-        for(
-          %{start_time: %Time{} = start_time, end_time: %Time{} = end_time} <-
-            time_blocks,
-          available_slots = (Time.diff(end_time, start_time) / duration) |> trunc(),
-          slot <- 0..(available_slots - 1),
-          available_slots > 0
-        ) do
-          start_time |> Time.add(duration * slot)
-        end
+        Enum.map(time_blocks, fn %{start_time: start_time, end_time: end_time} ->
+          get_available_slots_each_block(start_time, end_time, duration, duration_buffer)
+        end)
+        |> List.flatten()
+        |> Enum.uniq()
+        |> Enum.filter(&(!is_nil(&1)))
         |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
         |> filter_is_break_slots(booking_event, date)
 
       _ ->
         []
+    end
+  end
+
+  defp get_available_slots_each_block(start_time, end_time, duration, duration_buffer) do
+    if !is_nil(start_time) and !is_nil(end_time) do
+      available_slots = (Time.diff(end_time, start_time) / duration) |> trunc()
+      slot = 0..(available_slots - 1)
+
+      get_available_slots_each_block(
+        slot,
+        available_slots,
+        duration,
+        duration_buffer,
+        start_time,
+        end_time
+      )
+    end
+  end
+
+  defp get_available_slots_each_block(
+         slot,
+         available_slots,
+         duration,
+         duration_buffer,
+         start_time,
+         end_time
+       ) do
+    if available_slots > 0 do
+      Enum.reduce_while(slot, [], fn x, acc ->
+        %{slot_start: slot_time, slot_end: slot_end} =
+          if x != available_slots - 1 do
+            %{
+              slot_start: start_time |> Time.add(duration_buffer * x),
+              slot_end: start_time |> Time.add(duration_buffer * (x + 1))
+            }
+          else
+            %{
+              slot_start: start_time |> Time.add(duration * x),
+              slot_end: start_time |> Time.add(duration * (x + 1))
+            }
+          end
+
+        slot_trunc = slot_end |> Time.truncate(:second)
+        time = duration * -1
+        end_trunc = end_time |> Time.add(time) |> Time.truncate(:second)
+
+        if slot_trunc > end_trunc do
+          {:halt, [slot_time | acc]}
+        else
+          {:cont, [slot_time | acc]}
+        end
+      end)
+      |> Enum.reverse()
+    else
+      []
     end
   end
 
@@ -262,7 +316,7 @@ defmodule Picsello.BookingEvents do
         ) do
           if is_break do
             Time.compare(slot_time, start_time) in [:gt, :eq] &&
-              Time.compare(slot_time, end_time) in [:lt, :eq]
+              Time.compare(slot_time, end_time) in [:lt]
           end
         end
 
@@ -283,7 +337,7 @@ defmodule Picsello.BookingEvents do
         ) do
           if is_hidden do
             Time.compare(slot_time, start_time) in [:gt, :eq] &&
-              Time.compare(slot_time, end_time) in [:lt, :eq]
+              Time.compare(slot_time, end_time) in [:lt]
           end
         end
 

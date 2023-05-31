@@ -25,11 +25,29 @@ defmodule Picsello.Notifiers.UserNotifierTest do
     insert_gallery(%{package: insert(:package)})
   end
 
-  def insert_order(%{gallery: gallery, products: products}) do
+  def insert_order_and_gallery_client(%{gallery: gallery, products: products}) do
+    gallery_digital_pricing =
+      insert(:gallery_digital_pricing, %{
+        gallery: gallery,
+        email_list: [gallery.job.client.email],
+        download_count: 0,
+        print_credits: Money.new(0)
+      })
+
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        gallery.job.client.email in gallery_digital_pricing.email_list
+      )
+
+    gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
     order =
       for product <- products, reduce: nil do
         _ ->
-          Cart.place_product(product, gallery)
+          Cart.place_product(product, gallery, gallery_client)
       end
       |> Repo.preload(
         [
@@ -82,7 +100,7 @@ defmodule Picsello.Notifiers.UserNotifierTest do
       ]
     end
 
-    setup [:insert_gallery, :insert_order, :add_whcc_order]
+    setup [:insert_gallery, :insert_order_and_gallery_client, :add_whcc_order]
 
     setup %{order: order} do
       insert(:intent,
@@ -100,9 +118,9 @@ defmodule Picsello.Notifiers.UserNotifierTest do
       assert order
              |> shared_fields()
              |> Map.merge(%{
-               client_charge: ~M[63220]USD,
-               photographer_payment: ~M[62720]USD,
-               print_cost: ~M[500]USD
+               client_charge: ~M[56645]USD,
+               photographer_payment: ~M[56145]USD,
+               print_cost: ~M[4345]USD
              }) ==
                template_variables(email)
     end
@@ -116,7 +134,7 @@ defmodule Picsello.Notifiers.UserNotifierTest do
       ]
     end
 
-    setup [:insert_gallery, :insert_order, :add_whcc_order]
+    setup [:insert_gallery, :insert_order_and_gallery_client, :add_whcc_order]
 
     setup %{order: order} do
       insert(:invoice, order: order, amount_due: ~M[500]USD)
@@ -132,7 +150,7 @@ defmodule Picsello.Notifiers.UserNotifierTest do
              |> Map.merge(%{
                client_charge: ~M[0]USD,
                photographer_charge: ~M[500]USD,
-               print_cost: ~M[500]USD
+               print_cost: ~M[4345]USD
              }) ==
                template_variables(email)
     end
@@ -146,7 +164,7 @@ defmodule Picsello.Notifiers.UserNotifierTest do
       ]
     end
 
-    setup [:insert_gallery, :insert_order]
+    setup [:insert_gallery, :insert_order_and_gallery_client]
 
     setup %{order: order} do
       insert(:intent, order: order, amount: Cart.total_cost(order))

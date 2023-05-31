@@ -32,12 +32,13 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     socket
     |> assign(:upload_bucket, @bucket)
     |> assign(:total_progress, 0)
     |> assign(:photos_error_count, 0)
     |> assign(:cover_photo_processing, false)
+    |> assign(:user, user)
     |> allow_upload(:cover_photo, @upload_options)
     |> assign(:password_toggle, false)
     |> ok()
@@ -215,6 +216,11 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   @impl true
+  def handle_info({:message_composed_for_album, message_changeset}, socket) do
+    add_message_and_notify(socket, message_changeset, "album")
+  end
+
+  @impl true
   def handle_info(:open_modal, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> open_modal(CustomWatermarkComponent, %{gallery: gallery})
@@ -293,7 +299,10 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   @impl true
   def handle_info(:expiration_saved, %{assigns: %{gallery: gallery}} = socket) do
-    gallery = Galleries.get_gallery!(gallery.id) |> Galleries.load_watermark_in_gallery() |> Repo.preload(:photographer, job: :client)
+    gallery =
+      Galleries.get_gallery!(gallery.id)
+      |> Galleries.load_watermark_in_gallery()
+      |> Repo.preload(:photographer, job: :client)
 
     socket
     |> assign(:gallery, gallery)
@@ -302,7 +311,10 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
-    gallery = Galleries.get_gallery!(gallery.id) |> Galleries.load_watermark_in_gallery() |> Repo.preload(:photographer, job: :client)
+    gallery =
+      Galleries.get_gallery!(gallery.id)
+      |> Galleries.load_watermark_in_gallery()
+      |> Repo.preload(:photographer, job: :client)
 
     socket
     |> assign(:gallery, gallery)
@@ -325,14 +337,20 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         %{assigns: %{gallery: gallery}} = socket
       ) do
     socket
-    |> assign(:gallery, Galleries.delete_gallery_cover_photo(gallery) |> Repo.preload(:photographer, job: :client))
+    |> assign(
+      :gallery,
+      Galleries.delete_gallery_cover_photo(gallery) |> Repo.preload(:photographer, job: :client)
+    )
     |> close_modal()
     |> noreply()
   end
 
   @impl true
   def handle_info({:update_name, %{gallery: gallery}}, socket) do
-    gallery = gallery |> Galleries.load_watermark_in_gallery() |> Repo.preload(:photographer, job: :client)
+    gallery =
+      gallery
+      |> Galleries.load_watermark_in_gallery()
+      |> Repo.preload(:photographer, job: :client)
 
     socket
     |> assign(:gallery, gallery)
@@ -432,7 +450,10 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   defp preload_watermark(%{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> assign(:gallery, Galleries.load_watermark_in_gallery(gallery) |> Repo.preload(:photographer, job: :client))
+    |> assign(
+      :gallery,
+      Galleries.load_watermark_in_gallery(gallery) |> Repo.preload(:photographer, job: :client)
+    )
   end
 
   defp remove_watermark_button(assigns) do

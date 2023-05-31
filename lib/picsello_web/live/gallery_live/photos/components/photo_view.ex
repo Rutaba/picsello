@@ -102,16 +102,17 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
             <div class="flex flex-col md:items-center justify-center">
               <div class="relative lg:h-[450px] sm:h-screen justify-center">
                 <img src={ @url } class="max-h-full sm:object-contain">
+                <%= if !@is_proofing do %>
+                  <button class="likeBtn absolute" phx-click={js_like_click(@photo.id, @myself)}>
+                    <div id={"photo-#{@photo.id}-liked"} style={!@is_liked && "display: none"}>
+                      <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
+                    </div>
 
-                <button class="likeBtn absolute" phx-click={js_like_click(@photo.id, @myself)}>
-                  <div id={"photo-#{@photo.id}-liked"} style={!@is_liked && "display: none"}>
-                    <.icon name="heart-filled" class="text-gray-200 w-7 h-7"/>
-                  </div>
-
-                  <div id={"photo-#{@photo.id}-to-like"} style={@is_liked && "display: none"}>
-                    <.icon name="heart-white" class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"/>
-                  </div>
-                </button>
+                    <div id={"photo-#{@photo.id}-to-like"} style={@is_liked && "display: none"}>
+                      <.icon name="heart-white" class="text-transparent fill-current w-7 h-7 hover:text-base-200 hover:text-opacity-40"/>
+                    </div>
+                  </button>
+                <% end %>
               </div>
               <div class="flex mt-2 justify-between gap-1">
                 <div phx-click="prev" phx-window-keyup="keydown" phx-target={@myself} class="flex lg:hidden ml-2">

@@ -3,15 +3,18 @@ defmodule PicselloWeb.Plugs.StripeWebhooks do
   @behaviour Plug
 
   alias Picsello.Payments
+  require Logger
 
   def init(config), do: config
 
   def call(%{request_path: "/stripe/connect-webhooks"} = conn, _) do
+    Logger.warning("call-------------")
     signing_secret = Application.get_env(:stripity_stripe, :connect_signing_secret)
     handle_request(conn, signing_secret)
   end
 
   def call(%{request_path: "/stripe/app-webhooks"} = conn, _) do
+    Logger.warning("call-------------")
     signing_secret = Application.get_env(:stripity_stripe, :app_signing_secret)
     handle_request(conn, signing_secret)
   end
@@ -23,6 +26,7 @@ defmodule PicselloWeb.Plugs.StripeWebhooks do
 
     {:ok, body, _} = Plug.Conn.read_body(conn)
     {:ok, stripe_event} = Payments.construct_event(body, stripe_signature, signing_secret)
+
     Plug.Conn.assign(conn, :stripe_event, stripe_event)
   end
 end

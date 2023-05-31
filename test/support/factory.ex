@@ -23,6 +23,7 @@ defmodule Picsello.Factory do
     Accounts.User,
     Questionnaire,
     Questionnaire.Answer,
+    Galleries.GalleryClient,
     Galleries.Gallery,
     Galleries.Album,
     Galleries.Watermark,
@@ -143,7 +144,7 @@ defmodule Picsello.Factory do
       buy_all: nil,
       print_credits: 0,
       download_count: 0,
-      download_each_price: 0,
+      download_each_price: Money.new(300),
       name: "Package name",
       description: "<p>Package description</p>",
       shoot_count: 2,
@@ -476,6 +477,12 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def gallery_client_factory(attrs) do
+    %GalleryClient{}
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+  end
+
   def global_gallery_settings_factory(attrs) do
     %GSGallery{}
     |> GSGallery.expiration_changeset(%{})
@@ -555,7 +562,7 @@ defmodule Picsello.Factory do
       download_count: 10,
       print_credits: Money.new(10),
       buy_all: nil,
-      email_list: ["test@test.com"],
+      email_list: ["testing@picsello.com"],
       gallery: fn ->
         case attrs do
           %{gallery: gallery} -> gallery
@@ -585,7 +592,6 @@ defmodule Picsello.Factory do
       position: sequence(:product_position, & &1),
       attribute_categories: whcc_product.attribute_categories,
       api: whcc_product.api,
-      shipping_upcharge: %{"default" => 20},
       category: fn ->
         %{category: %{id: whcc_id}} = whcc_product
         Repo.get_by(Picsello.Category, whcc_id: whcc_id) || build(:category, whcc_id: whcc_id)
@@ -658,6 +664,7 @@ defmodule Picsello.Factory do
       quantity: 1,
       shipping_base_charge: %Money{amount: 3_800, currency: :USD},
       shipping_upcharge: Decimal.new("0.09"),
+      shipping_type: :economy,
       unit_markup: %Money{amount: 35_200, currency: :USD},
       unit_price: %Money{amount: 17_600, currency: :USD},
       whcc_product: fn -> whcc_product end,
@@ -681,7 +688,8 @@ defmodule Picsello.Factory do
   def whcc_order_created_order_factory do
     %Picsello.WHCC.Order.Created.Order{
       total: ~M[100]USD,
-      sequence_number: sequence(:sequence_number, & &1)
+      sequence_number: sequence(:sequence_number, & &1),
+      api: %{"subtotal" => "$100.00"}
     }
   end
 
@@ -909,6 +917,7 @@ defmodule Picsello.Factory do
       amount_capturable: ~M[0]USD,
       amount_received: ~M[0]USD,
       application_fee_amount: ~M[0]USD,
+      processing_fee: ~M[0]USD,
       order: fn -> build(:order) end,
       status: :requires_payment_method,
       stripe_payment_intent_id: sequence(:payment_intent, &"payment-intent-#{&1}"),
@@ -934,6 +943,9 @@ defmodule Picsello.Factory do
     %Stripe.PaymentIntent{
       amount: 0,
       amount_received: 0,
+      charges: %{
+        data: [%{balance_transaction: %{fee_details: %{type: "stripe_fee", amount: ~M[10]USD}}}]
+      },
       amount_capturable: 0,
       application_fee_amount: 0,
       status: "requires_payment_method",

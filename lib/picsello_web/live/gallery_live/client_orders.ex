@@ -15,18 +15,32 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
       tracking: 1,
       credits_footer: 1,
       assign_checkout_routes: 1,
-      assign_is_proofing: 1
+      assign_is_proofing: 1,
+      get_client_by_email: 1
     ]
 
   @impl true
-  def handle_params(_, _, %{assigns: %{gallery: gallery} = assigns} = socket) do
-    orders = Orders.all(gallery.id) |> maybe_filter(assigns)
+  def handle_params(
+        _,
+        _,
+        %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
+      ) do
+    gallery_client = get_client_by_email(assigns)
+
+    orders = Orders.gallery_client_orders(gallery.id, gallery_client.id) |> maybe_filter(assigns)
     Enum.each(orders, &Orders.subscribe/1)
 
     gallery = Galleries.populate_organization_user(gallery)
 
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        client_email && client_email in gallery.gallery_digital_pricing.email_list
+      )
+
     socket
-    |> assign(gallery: gallery, orders: orders)
+    |> assign(gallery: gallery, orders: orders, gallery_client: gallery_client)
     |> assign_is_proofing()
     |> assign_cart_count(gallery)
     |> assign_checkout_routes()
@@ -114,6 +128,6 @@ defmodule PicselloWeb.GalleryLive.ClientOrders do
   defdelegate item_image_url(item, opts), to: Cart
   defdelegate quantity(item), to: Cart.Product
   defdelegate total_cost(order), to: Cart
-  defdelegate total_shipping(products), to: Cart
+  defdelegate total_shipping(order), to: Cart
   defdelegate download_link(assigns), to: DownloadLinkComponent
 end

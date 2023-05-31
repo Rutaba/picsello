@@ -138,11 +138,11 @@ defmodule Picsello.GalleryPricingTest do
     )
     |> find(
       text_field("download[each_price]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$20"))
     )
     |> click(button("Save"))
     |> assert_flash(:success, text: "Gallery pricing updated")
     |> assert_has(css("p", text: "$30"))
-    |> assert_has(css("p", text: "$2"))
+    |> assert_has(css("p", text: "$20"))
   end
 end
