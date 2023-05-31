@@ -213,11 +213,9 @@ defmodule PicselloWeb.LiveHelpers do
     assigns =
       assigns
       |> Enum.into(%{
-        active_class: nil
+        active_class: nil,
+        intercom_or_external_link: %{target: "_blank", rel: "noopener noreferrer"}
       })
-      |> assign_new(:intercom_or_external_link, fn ->
-        %{target: "_blank", rel: "noopener noreferrer"}
-      end)
 
     ~H"""
       <.is_active socket={@socket} live_action={@live_action} path={@to} :let={active} >
