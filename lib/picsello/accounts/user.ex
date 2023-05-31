@@ -20,6 +20,8 @@ defmodule Picsello.Accounts.User do
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
     field :stripe_customer_id, :string
     field :nylas_oauth_token, :string
+    field :external_calendar_rw_id, :string
+    field :external_calendar_read_list, {:array, :string}
     embeds_one(:onboarding, Onboarding, on_replace: :update)
     has_one(:subscription, Subscription)
     has_one(:subscription_event, SubscriptionEvent)
@@ -52,7 +54,9 @@ defmodule Picsello.Accounts.User do
       :name,
       :password,
       :time_zone,
-      :nylas_oauth_token
+      :nylas_oauth_token,
+      :external_calendar_rw_id,
+      :external_calendar_read_list
     ])
     |> validate_required([:name])
     |> validate_email()
@@ -88,6 +92,19 @@ defmodule Picsello.Accounts.User do
     |> Repo.update!()
   end
 
+  @spec set_nylas_calendars(
+          Picsello.Accounts.User.t(),
+          :invalid | map()
+        ) :: Picsello.Accounts.User.t()
+  def set_nylas_calendars(%__MODULE__{} = user, calendars) do
+    user
+    |> cast(calendars, [
+      :external_calendar_rw_id,
+      :external_calendar_read_list
+    ])
+    |> Repo.update!()
+  end
+
   def is_test_account_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
     user |> cast(attrs, [:is_test_account])
   end
@@ -105,6 +122,7 @@ defmodule Picsello.Accounts.User do
     |> validate_email_format()
   end
 
+  @spec validate_email_format(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   def validate_email_format(changeset) do
     changeset
     |> validate_required([:email])

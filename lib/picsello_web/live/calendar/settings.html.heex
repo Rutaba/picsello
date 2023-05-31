@@ -36,7 +36,9 @@
                value={calendar["id"]}
                name="calendar_read"
                phx-click="calendar-read"
-               phx-value-calendar={calendar["id"]}>
+               phx-value-calendar={calendar["id"]}
+               phx-value-checked={is_member(@read_calendars, calendar["id"])}
+               >
       </label>
   <% end %>  
 </div>

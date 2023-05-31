@@ -76,7 +76,7 @@ defmodule PicselloWeb.Live.Calendar.SettingsTest do
         {"input", attrs, _} = html |>find_element( "input[type='checkbox'][phx-value-calendar]") |> hd()
         val = Map.new(attrs)["value"]
 
-        assert render_change(view, "calendar-read-write", %{"calendar": val})
+        assert render_change(view, "calendar-read-write", %{"calendar" => val})
 
         
       end
@@ -84,8 +84,8 @@ defmodule PicselloWeb.Live.Calendar.SettingsTest do
 
     @tag :skip
     test "Click checkbox changes calendar", %{conn: conn, user: user} do
-      {:ok, _view, html} = load_page(conn, user, :token)
-      throw(:NYI)
+      {:ok, _view, _html} = load_page(conn, user, :token)
+
     end
   end
 
@@ -129,7 +129,7 @@ defmodule PicselloWeb.Live.Calendar.SettingsTest do
         {"input", attrs, _} = html |>find_element( "input[type='checkbox'][phx-value-calendar]") |> hd()
         val = Map.new(attrs)["value"]
 
-        assert render_change(view, "calendar-read", %{"calendar": val})
+        assert render_change(view, "calendar-read", %{"calendar" => val})
 
       end
     end
@@ -139,7 +139,7 @@ defmodule PicselloWeb.Live.Calendar.SettingsTest do
 
       use_cassette "#{__MODULE__}_checkbox_changes_calendar" do
 
-        {:ok, _view, html} = load_page(conn, user, :token)
+        {:ok, _view, _html} = load_page(conn, user, :token)
         
       end
     end
@@ -171,7 +171,7 @@ defmodule PicselloWeb.Live.Calendar.SettingsTest do
           calendar_command
         ]
         
-        html = render_click(view, calendar_command)
+        render_click(view, calendar_command)
         user = Accounts.get_user_by_email(user.email)
         assert is_nil(user.nylas_oauth_token)
         #refute element_present?(html, "#danger")
