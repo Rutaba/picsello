@@ -569,22 +569,26 @@ defmodule PicselloWeb.HomeLive.Index do
         order_by: [desc: message.inserted_at]
       )
 
-    inbox_threads =
-      from(message in subquery(message_query), order_by: [desc: message.inserted_at], limit: 1)
-      |> Repo.all()
+    message =
+      from(message in subquery(message_query), order_by: [desc: message.inserted_at])
+      |> Repo.one()
       |> Repo.preload(job: :client)
-      |> Enum.map(fn message ->
-        %{
-          id: message.job_id,
-          title: message.job.client.name,
-          subtitle: Job.name(message.job),
-          message: message.body_text,
-          date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y")
-        }
-      end)
 
-    socket
-    |> assign(:inbox_threads, inbox_threads)
+    case message do
+      %{job_id: job_id, job: job, body_text: body_text, inserted_at: inserted_at} ->
+        socket
+        |> assign(:inbox_message, %{
+          id: job_id,
+          title: job.client.name,
+          subtitle: Job.name(job),
+          message: body_text,
+          date: strftime(current_user.time_zone, inserted_at, "%-m/%-d/%y")
+        })
+
+      _ ->
+        socket
+        |> assign(:inbox_message, nil)
+    end
   end
 
   defp tabs_list(socket) do

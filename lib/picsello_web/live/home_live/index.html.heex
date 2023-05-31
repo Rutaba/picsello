@@ -31,13 +31,11 @@
   <div class="center-container">
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6">
       <.dashboard_main_card title="Inbox" link_text="View inbox" link_action="redirect" link_value="inbox" inner_block_classes="h-full flex flex-col" notification_count={@inbox_count} redirect_route={Routes.inbox_path(@socket, :index)}>
-        <%= if Enum.empty?(@inbox_threads) do %>
+        <%= if @inbox_message do %>
+          <.thread_card {@inbox_message} unread={true} selected={false} />
+        <% else %>
           <p class="text-base-250">This is where you will see new messages from your clients.</p>
           <img src="/images/inbox-empty.png" class="my-auto block" />
-        <% else %>
-          <%= for thread <- @inbox_threads do %>
-            <.thread_card {thread} unread={true} selected={false} />
-          <% end %>
         <% end %>
       </.dashboard_main_card>
       <.dashboard_main_card title="Calendar" button_text="Create booking event" button_action="create-booking-event" link_text="View calendar" link_action="redirect" link_value="calendar" redirect_route={Routes.calendar_index_path(@socket, :index)}>
