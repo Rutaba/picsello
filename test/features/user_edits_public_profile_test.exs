@@ -28,7 +28,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
 
   feature "clicks to customize profile", %{session: session} do
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
     |> click(link("Public Profile"))
     |> click(button("Customize Profile"))
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
@@ -46,7 +46,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
 
   feature "user edits website", %{session: session} do
     session
-    |> assert_has(link("Settings"))
+    |> assert_has(testid("subnav-Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_text("SPECIALIZING IN:")
     |> assert_has(css("a[href='https://photos.example.com']", text: "See our full portfolio"))
@@ -64,7 +64,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
 
   feature "user edits description", %{session: session} do
     session
-    |> assert_has(link("Settings"))
+    |> assert_has(testid("subnav-Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_text("SPECIALIZING IN:")
     |> scroll_into_view(testid("edit-description-button"))
@@ -77,7 +77,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
 
   feature "user edits job types description", %{session: session} do
     session
-    |> assert_has(link("Settings"))
+    |> assert_has(testid("subnav-Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
     |> assert_text("SPECIALIZING IN:")
     |> scroll_into_view(testid("edit-description-button"))

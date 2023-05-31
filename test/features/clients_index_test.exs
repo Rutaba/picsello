@@ -82,7 +82,7 @@ defmodule Picsello.ClientsIndexTest do
   feature "adds new client and edits it", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> sleep(300)
     |> click(button("Add client"))
     |> fill_in(text_field("Email"), with: " ")
@@ -113,7 +113,7 @@ defmodule Picsello.ClientsIndexTest do
   feature "adds client without name and update its email", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> find(css("#intro_hints_only"), &click(&1, button("Add client")))
     |> fill_in(text_field("Email"), with: "john@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
@@ -139,7 +139,7 @@ defmodule Picsello.ClientsIndexTest do
   } do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> click(button("Manage"))
     |> click(button("Details"))
     |> assert_text("Client: #{client.name}")
@@ -156,7 +156,7 @@ defmodule Picsello.ClientsIndexTest do
   feature "edits client and add private notes", %{session: session, client: client} do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> click(button("Manage"))
     |> click(button("Details"))
     |> assert_text("Client: #{client.name}")
@@ -179,7 +179,7 @@ defmodule Picsello.ClientsIndexTest do
   } do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> click(button("Manage"))
     |> click(button("Create gallery"))
     |> click(button("Next", count: 2, at: 0))
@@ -203,7 +203,7 @@ defmodule Picsello.ClientsIndexTest do
   } do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> click(button("Manage"))
     |> click(button("Import job"))
     |> scroll_into_view(css("label", text: "Wedding"))
@@ -246,7 +246,7 @@ defmodule Picsello.ClientsIndexTest do
   } do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> click(button("Manage"))
     |> click(button("Send email"))
     |> refute_has(select("Select email preset"))
@@ -270,7 +270,7 @@ defmodule Picsello.ClientsIndexTest do
 
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> click(button("Manage", count: 2, at: 0))
     |> click(button("Archive"))
     |> click(button("Yes, archive"))

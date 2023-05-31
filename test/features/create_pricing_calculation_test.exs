@@ -143,8 +143,8 @@ defmodule Picsello.CreatePricingCalculationTest do
 
   feature "user visits from packages", %{session: session} do
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(link("Check out our"))
     |> assert_path("/pricing/calculator")
   end
