@@ -327,7 +327,13 @@ defmodule PicselloWeb.LayoutView do
         sub_nav_items: nil,
         id: "galleries-nav"
       },
-      %{title: "Jobs", class: "mr-6", path: Routes.job_path(socket, :jobs), sub_nav_items: nil},
+      %{
+        title: "Jobs",
+        class: "mr-6",
+        path: Routes.job_path(socket, :jobs),
+        sub_nav_items: nil,
+        id: "jobs-nav"
+      },
       %{
         title: "Inbox",
         class: "pl-4 border-l mr-6",
