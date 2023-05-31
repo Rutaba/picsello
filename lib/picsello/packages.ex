@@ -129,13 +129,12 @@ defmodule Picsello.Packages do
     end
 
     defp validate_discounts(changeset) do
-      discounts =
-        if current(changeset) |> is_discounts_enabled() do
-          changeset
-        else
-          changeset
-          |> validate_acceptance(:discount_base_price, message: "Field must be selected")
-        end
+      if current(changeset) |> is_discounts_enabled() do
+        changeset
+      else
+        changeset
+        |> validate_acceptance(:discount_base_price, message: "Field must be selected")
+      end
     end
 
     def is_discounts_enabled(multiplier) do
