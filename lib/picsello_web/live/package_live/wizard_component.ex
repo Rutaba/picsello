@@ -1274,6 +1274,25 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> noreply()
   end
 
+  def package_pricing_params(nil), do: %{"is_enabled" => false}
+
+  def package_pricing_params(package) do
+    case Map.get(package, :print_credits) do
+      nil ->
+        %{"is_enabled" => false}
+
+      %Money{} = value ->
+        %{
+          "is_enabled" => Money.positive?(value),
+          "print_credits_include_in_total" => Map.get(package, :print_credits_include_in_total),
+          "print_credits" => value
+        }
+
+      _ ->
+        %{}
+    end
+  end
+
   defp update_package_changeset(changeset, payments_changeset) do
     payments_struct = payments_changeset |> current() |> Map.from_struct()
 
@@ -1719,25 +1738,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp next_step(%{step: step, steps: steps}) do
     Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
-  end
-
-  defp package_pricing_params(nil), do: %{}
-
-  defp package_pricing_params(package) do
-    case package |> Map.get(:print_credits) do
-      nil ->
-        %{"is_enabled" => false}
-
-      %Money{} = value ->
-        %{
-          "is_enabled" => Money.positive?(value),
-          "print_credits_include_in_total" => Map.get(package, :print_credits_include_in_total),
-          "print_credits" => value
-        }
-
-      _ ->
-        %{}
-    end
   end
 
   defp assign_contract_changeset(

@@ -77,7 +77,7 @@ config :phoenix, :stacktrace_depth, 20
 config :phoenix, :plug_init_mode, :runtime
 
 config :picsello, Picsello.Mailer,
-  adapter: Bamboo.SendGridAdapter,
+  adapter: Bamboo.SendgridLocalAdapter,
   api_key: System.get_env("SENDGRID_API_KEY"),
   reply_to_domain: System.get_env("SENDGRID_REPLY_TO_DOMAIN", "dev-inbox.picsello.com"),
   download_being_prepared_photog: System.get_env("SENDGRID_DOWNLOAD_BEING_PREPARED_PHOTOG"),
