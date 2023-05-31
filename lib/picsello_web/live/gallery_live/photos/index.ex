@@ -38,6 +38,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> assign(
       albums_length: 0,
+      show_favorite_toggle: false,
       total_progress: 0,
       favorites_filter: false,
       photographer_favorites_filter: false,
@@ -942,6 +943,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
+  def handle_info(:update_photo_gallery_state, socket) do
+    socket
+    |> assign_show_show_favorite_toggle()
+    |> noreply()
+  end
+
   defp assigns(socket, gallery_id, album \\ nil) do
     gallery = get_gallery!(gallery_id)
 
@@ -963,7 +970,23 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign_photos(@per_page)
     |> then(&assign(&1, photo_ids: Enum.map(&1.assigns.photos, fn photo -> photo.id end)))
     |> sorted_photos()
+    |> assign_show_show_favorite_toggle()
     |> noreply()
+  end
+
+  defp assign_show_show_favorite_toggle(%{assigns: %{gallery: %{id: id}} = assigns} = socket) do
+      photo_album_opts =
+        assigns
+        |> Map.get(:album)
+        |> photos_album_opts()
+
+      opts =
+        [
+          photographer_favorites_filter: true
+        ] ++ photo_album_opts
+
+      photos = Galleries.get_gallery_photos(id, opts)
+      assign(socket, show_favorite_toggle: Enum.count(photos) > 0)
   end
 
   defp get_gallery!(gallery_id) do
