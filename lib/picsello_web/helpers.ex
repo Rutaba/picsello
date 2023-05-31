@@ -19,15 +19,15 @@ defmodule PicselloWeb.Helpers do
     do: Routes.gallery_client_index_url(Endpoint, :index, hash)
 
   def gallery_url(%{client_link_hash: hash, password: password}),
-    do: Routes.gallery_client_index_url(Endpoint, :index, hash, pw: password)
+    do: Routes.gallery_client_index_url(Endpoint, :index, hash)
 
   def order_url(%{client_link_hash: hash, password: password}, order),
-    do: Routes.gallery_client_order_url(Endpoint, :show, hash, Order.number(order), pw: password)
+    do: Routes.gallery_client_order_url(Endpoint, :show, hash, Order.number(order), pw: password, email: Order.client_email(order))
 
   def proofing_album_selections_url(%{client_link_hash: hash, password: password}, order),
     do:
       Routes.gallery_client_order_url(Endpoint, :proofing_album, hash, Order.number(order),
-        pw: password
+        pw: password, email: Order.client_email(order)
       )
 
   def album_url("" <> hash), do: Routes.gallery_client_album_url(Endpoint, :proofing_album, hash)

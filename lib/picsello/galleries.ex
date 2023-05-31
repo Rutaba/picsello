@@ -1188,14 +1188,14 @@ defmodule Picsello.Galleries do
   @doc """
   Creates session token for the gallery client.
   """
-  def build_gallery_session_token("" <> hash, password) do
-    hash |> get_gallery_by_hash!() |> build_gallery_session_token(password)
+  def build_gallery_session_token("" <> hash, password, email) do
+    hash |> get_gallery_by_hash!() |> build_gallery_session_token(password, email)
   end
 
   def build_gallery_session_token(
         %Gallery{id: id, password: gallery_password} = gallery,
         password,
-        email \\ nil
+        email
       ) do
     with true <- gallery_password == password,
          {:ok, %{token: token}} <-
