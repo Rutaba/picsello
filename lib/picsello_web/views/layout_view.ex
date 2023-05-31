@@ -113,41 +113,31 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def help_chat_widget(%{assigns: %{current_user: %{email: _, user_id: _}}} = assigns) do
-    assigns = get_intercom_id(assigns)
+  def help_chat_widget(assigns) do
+    assigns = assigns |> Enum.into(%{current_user: nil}) |> get_intercom_id()
 
     ~H"""
-    <%= if @itercom_id do %>
+    <%= if @intercom_id do %>
       <script>
+        <%= if @current_user do %>
         window.intercomSettings = {
           api_base: "https://api-iam.intercom.io",
-          app_id: "<%= @itercom_id %>",
+          app_id: "<%= @intercom_id %>",
           name: "<%= @current_user.name %>",
           email: "<%= @current_user.email %>",
           user_id: "<%= @current_user.id %>",
           created_at: "<%= @current_user.inserted_at %>",
           custom_launcher_selector: '.open-help'
         };
-      </script>
-
-      <.reattach_activator itercom_id={@itercom_id} />
-    <% end %>
-    """
-  end
-
-  def help_chat_widget(assigns) do
-    assigns = get_intercom_id(assigns)
-
-    ~H"""
-    <%= if @itercom_id do %>
-      <script>
+        <% else %>
         window.intercomSettings = {
           api_base: "https://api-iam.intercom.io",
-          app_id: "<%= @itercom_id %>",
+          app_id: "<%= @intercom_id %>",
           custom_launcher_selector: '.open-help'
         };
+        <% end %>
       </script>
-      <.reattach_activator itercom_id={@itercom_id} />
+      <.reattach_activator intercom_id={@intercom_id} />
     <% end %>
     """
   end
@@ -451,7 +441,7 @@ defmodule PicselloWeb.LayoutView do
   defp reattach_activator(assigns) do
     ~H"""
     <script>
-    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/<%= @itercom_id %>';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/<%= @intercom_id %>';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
     </script>
     """
   end
@@ -463,7 +453,7 @@ defmodule PicselloWeb.LayoutView do
   end
 
   defp get_intercom_id(assigns),
-    do: assign(assigns, :itercom_id, Application.get_env(:picsello, :intercom_id))
+    do: assign(assigns, :intercom_id, Application.get_env(:picsello, :intercom_id))
 
   defp extract_organization(%{job: %{client: %{organization: organization}}}), do: organization
 end
