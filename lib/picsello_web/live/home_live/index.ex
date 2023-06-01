@@ -269,6 +269,13 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
+  def handle_event("view-clients", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.clients_path(socket, :index))
+      |> noreply()
+
+  @impl true
   def handle_event("add-package", %{}, socket),
     do:
       socket
@@ -439,35 +446,72 @@ defmodule PicselloWeb.HomeLive.Index do
   def tabs_content(%{assigns: assigns}) do
     ~H"""
     <div>
-      <%= case @attention_items do %>
-        <% [] -> %>
-          <h6 class="flex items-center font-bold text-blue-planning-300"><.icon name="confetti-welcome" class="inline-block w-8 h-8 text-blue-planning-300" /> You're all caught up!</h6>
-        <% items -> %>
-          <ul class={classes("flex overflow-auto intro-next-up", %{"xl:overflow-none" => !@should_attention_items_overflow })}>
-            <%= for {true, %{card: %{title: title, body: body, icon: icon, buttons: buttons, concise_name: concise_name, color: color, class: class}} = org_card} <- items do %>
-              <li {testid("attention-item")} class={classes("attention-item flex-shrink-0 flex flex-col justify-between relative max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"xl:flex-1" => !@should_attention_items_overflow})}>
-                <%= if org_card.status == :viewed and concise_name != "black-friday" do %>
-                  <div class="flex justify-between absolute w-full">
-                    <span></span>
-                    <span class="sm:pr-[30px] pr-[25px]" phx-click="card_status" phx-value-org_card_id={org_card.id} phx-value-status="inactive">
-                      <.icon name="close-x" class="mt-[-7px] w-3 h-3 stroke-current stroke-2 base-250" />
-                    </span>
-                  </div>
-                <% end %>
-
-                <div>
-                  <div class="flex">
-                    <.icon name={icon} width="23" height="20" class={"block mr-2 mt-1 rounded-sm fill-current text-#{color}"} />
-                    <h1 class="text-lg font-bold"><%= title %></h1>
-                  </div>
-
-                  <p class="my-2 text-sm"><%= body %></p>
+      <%= case @tab_active do %>
+        <% "clients" -> %>
+          <.recents_card add_event="add-client" view_event="view-clients" hidden={Clients.get_recent_clients(@current_user) == []} button_title="Create a client" title="Recent clients" class="h-auto" color="blue-planning-300">
+            <hr class="m-1 mb-4" />
+            <%= case Clients.get_recent_clients(@current_user) do %>
+              <% [] -> %>
+                <div class="flex flex-col mt-4 lg:flex-none">
+                  <.empty_state_base tour_embed="https://demo.arcade.software/y2cGEpUW0B2FoO2BAa1b?embed" body="Let's start by adding your clients - whether they are new or if existing, feel free to contact Picsello for help with bulk uploading." third_party_padding="calc(59.916666666666664% + 41px)">
+                    <button type="button" phx-click="add-client" class="link md:w-auto text-center flex-shrink-0 whitespace-nowrap">Bulk upload my contacts</button>
+                  </.empty_state_base>
                 </div>
-
-                <.card_buttons {assigns} current_user={@current_user} socket={@socket} concise_name={concise_name} org_card_id={org_card.id} buttons={buttons} />
-              </li>
+              <% clients -> %>
+              <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
+                <%= for client <- clients do %>
+                  <%= live_redirect to: Routes.client_path(@socket, :show, client.id) do %>
+                    <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
+                      <%= if String.length(client.name) < 20 do
+                          client.name || "-"
+                        else
+                          "#{client.name |> String.slice(0..20)} ..."
+                        end %>
+                    </p>
+                    <p class="text-gray-400 font-normal text-sm">
+                      <%= if String.length(client.email) < 20 do
+                          (client.email) || "-"
+                        else
+                          "#{client.email |> String.slice(0..20)} ..."
+                        end %>
+                    </p>
+                  <% end %>
+                <% end %>
+              </div>
             <% end %>
-          </ul>
+          </.recents_card>
+
+        <% _ -> %>
+          <%= case @attention_items do %>
+            <% [] -> %>
+              <h6 class="flex items-center font-bold text-blue-planning-300"><.icon name="confetti-welcome" class="inline-block w-8 h-8 text-blue-planning-300" /> You're all caught up!</h6>
+            <% items -> %>
+              <ul class={classes("flex overflow-auto intro-next-up", %{"xl:overflow-none" => !@should_attention_items_overflow })}>
+                <%= for {true, %{card: %{title: title, body: body, icon: icon, buttons: buttons, concise_name: concise_name, color: color, class: class}} = org_card} <- items do %>
+                  <li {testid("attention-item")} class={classes("attention-item flex-shrink-0 flex flex-col justify-between relative max-w-sm w-3/4 p-5 cursor-pointer mr-4 border rounded-lg #{class} bg-white border-gray-250", %{"xl:flex-1" => !@should_attention_items_overflow})}>
+                    <%= if org_card.status == :viewed and concise_name != "black-friday" do %>
+                      <div class="flex justify-between absolute w-full">
+                        <span></span>
+                        <span class="sm:pr-[30px] pr-[25px]" phx-click="card_status" phx-value-org_card_id={org_card.id} phx-value-status="inactive">
+                          <.icon name="close-x" class="mt-[-7px] w-3 h-3 stroke-current stroke-2 base-250" />
+                        </span>
+                      </div>
+                    <% end %>
+
+                    <div>
+                      <div class="flex">
+                        <.icon name={icon} width="23" height="20" class={"block mr-2 mt-1 rounded-sm fill-current text-#{color}"} />
+                        <h1 class="text-lg font-bold"><%= title %></h1>
+                      </div>
+
+                      <p class="my-2 text-sm"><%= body %></p>
+                    </div>
+
+                    <.card_buttons {assigns} current_user={@current_user} socket={@socket} concise_name={concise_name} org_card_id={org_card.id} buttons={buttons} />
+                  </li>
+                <% end %>
+              </ul>
+            <% end %>
       <% end %>
     </div>
     """
@@ -609,48 +653,48 @@ defmodule PicselloWeb.HomeLive.Index do
        %{
          name: "Clients",
          concise_name: "clients",
-         action: "redirect",
-         redirect_route: Routes.clients_path(socket, :index),
+         action: "change-tab",
+         redirect_route: nil,
          notification_count: nil
        }},
       {true,
        %{
          name: "Leads",
          concise_name: "leads",
-         action: "redirect",
-         redirect_route: Routes.job_path(socket, :leads),
+         action: "change-tab",
+         redirect_route: nil,
          notification_count: nil
        }},
       {true,
        %{
          name: "Jobs",
          concise_name: "jobs",
-         action: "redirect",
-         redirect_route: Routes.job_path(socket, :jobs),
+         action: "change-tab",
+         redirect_route: nil,
          notification_count: nil
        }},
       {true,
        %{
          name: "Galleries",
          concise_name: "galleries",
-         action: "redirect",
-         redirect_route: Routes.gallery_path(socket, :galleries),
+         action: "change-tab",
+         redirect_route: nil,
          notification_count: nil
        }},
       {true,
        %{
          name: "Booking Events",
          concise_name: "booking-events",
-         action: "redirect",
-         redirect_route: Routes.calendar_booking_events_path(socket, :index),
+         action: "change-tab",
+         redirect_route: nil,
          notification_count: nil
        }},
       {true,
        %{
          name: "Packages",
          concise_name: "packages",
-         action: "redirect",
-         redirect_route: Routes.package_templates_path(socket, :index),
+         action: "change-tab",
+         redirect_route: nil,
          notification_count: nil
        }}
     ]
@@ -949,6 +993,33 @@ defmodule PicselloWeb.HomeLive.Index do
     </li>
     """
   end
+
+  def recents_card(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        class: "",
+        color: "blue-planning-300",
+      })
+
+    ~H"""
+    <div {testid("card-#{@title}")} class={"flex overflow-hidden border border-base-200 rounded-lg #{@class}"}>
+      <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-#{@color}"} />
+      <div class="flex flex-col w-full p-4">
+        <div class="flex flex-row items-center">
+          <h3 class={"mb-2 mr-4 text-xl font-bold text-#{@color}"}><%= @title %></h3>
+          <button type="button" class="link ml-auto" phx-click={@view_event} hidden={@hidden}>
+            View all
+          </button>
+          <button type="button" class="font-bold btn-tertiary ml-auto py-2" phx-click={@add_event}>
+            <%= @button_title %>
+          </button>
+        </div>
+        <%= render_slot(@inner_block) %>
+      </div>
+    </div>
+    """
+  end
+
 
   def subscription_modal(assigns) do
     ~H"""

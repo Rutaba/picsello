@@ -93,6 +93,15 @@ defmodule Picsello.Clients do
     |> Repo.one()
   end
 
+  def get_recent_clients(user) do
+    from(c in Client,
+    where: c.organization_id == ^user.organization_id and is_nil(c.archived_at),
+    order_by: [desc: c.inserted_at],
+    limit: 6
+    )
+    |> Repo.all()
+  end
+
   def client_tags(client) do
     (Enum.map(client.jobs, & &1.type)
      |> Enum.uniq()) ++
