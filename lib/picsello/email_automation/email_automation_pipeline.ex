@@ -18,6 +18,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
 
   schema "email_automation_pipelines" do
     field :name, :string
+    field :description, :string
     field :status, Ecto.Enum, values: @status, default: :active
     # please emails presets
     field :state, Ecto.Enum, values: @states
@@ -31,10 +32,10 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
     email_pipeline
     |> cast(
       attrs,
-      ~w[status state name email_automation_category_id email_automation_sub_category_id]a
+      ~w[status state name description email_automation_category_id email_automation_sub_category_id]a
     )
     |> validate_required(
-      ~w[status state name email_automation_category_id email_automation_sub_category_id]a
+      ~w[status state name description email_automation_category_id email_automation_sub_category_id]a
     )
   end
 end

@@ -6,15 +6,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   import PicselloWeb.LiveHelpers
 
   alias Picsello.{
-    Repo,
-    Profiles
+    EmailAutomation,
+    Repo
   }
 
   @impl true
   def mount(_params, _session, socket) do
     socket
     |> assign(:page_title, "Automations")
-    |> assign(type: "Default")
     |> assign(:collapsed_sections, [])
     |> default_assigns()
     |> ok()
@@ -23,28 +22,46 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   defp default_assigns(socket) do
     socket
     |> assign_job_types()
+    |> assign_automation_pipelines()
   end
 
   defp assign_job_types(%{assigns: %{current_user: current_user}} = socket) do
     current_user =
       current_user |> Repo.preload([organization: :organization_job_types], force: true)
 
+    job_types =
+      current_user.organization.organization_job_types
+      |> Enum.filter(fn job_type -> job_type.show_on_business? end)
+
+    selected_job_type = job_types |> List.first()
+
     socket
     |> assign(:current_user, current_user)
-    |> assign(
-      :job_types,
-      Profiles.enabled_job_types(current_user.organization.organization_job_types)
-    )
+    |> assign(:job_types, job_types)
+    |> assign(:selected_job_type, selected_job_type)
+  end
+
+  def assign_automation_pipelines(
+        %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
+      ) do
+    automation_pipelines =
+      EmailAutomation.get_all_pipelines_emails(current_user.organization_id, selected_job_type.id)
+
+    socket |> assign(:automation_pipelines, automation_pipelines)
   end
 
   @impl true
   def handle_event(
         "assign_templates_by_type",
-        %{"type" => type},
-        socket
+        %{"id" => id},
+        %{assigns: %{job_types: job_types}} = socket
       ) do
+    id = to_integer(id)
+
+    selected_job_type = job_types |> Enum.filter(fn x -> x.id == id end) |> List.first()
+
     socket
-    |> assign(:type, type)
+    |> assign(:selected_job_type, selected_job_type)
     |> noreply()
   end
 
