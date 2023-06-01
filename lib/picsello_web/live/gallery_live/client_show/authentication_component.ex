@@ -1,7 +1,7 @@
 defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Galleries, Albums}
+  alias Picsello.Galleries
 
   def mount(socket) do
     socket
@@ -11,16 +11,16 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
     |> ok()
   end
 
-  def update(%{live_action: live_action} = assigns, socket) do
+  def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign_password_change(live_action)
+    |> assign_password_change()
     |> ok()
   end
 
-  def handle_event("change", %{"login" => params}, %{assigns: assigns} = socket) do
+  def handle_event("change", %{"login" => params}, socket) do
     socket
-    |> assign_password_change(assigns.live_action, params)
+    |> assign_password_change(params)
     |> noreply()
   end
 
@@ -29,11 +29,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
         %{"login" => %{"email" => email, "password" => password}},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    valid_email? = Regex.match?(~r/^[^\s]+@[^\s]+.[^\s]+$/, email)
+    valid_email? = String.length(email) > 0 && Regex.match?(~r/^[^\s]+@[^\s]+.[^\s]+$/, email)
 
-    if String.length(email) > 0 and valid_email? do
-      socket.assigns
-      |> build_session_token(password, email)
+    if valid_email? do
+      gallery
+      |> Galleries.build_gallery_session_token(password, email)
       |> case do
         {:ok, token} ->
           update_emails_map(email, gallery)
@@ -48,34 +48,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
     |> noreply()
   end
 
-  defp assign_password_change(socket, live_action, params \\ %{})
-
-  defp assign_password_change(socket, :gallery_login, params) do
+  defp assign_password_change(socket, params \\ %{}) do
     params
     |> Galleries.gallery_password_change()
     |> then(&assign(socket, :password_changeset, &1))
-  end
-
-  defp assign_password_change(socket, :album_login, params) do
-    params
-    |> Albums.album_password_change()
-    |> then(&assign(socket, :password_changeset, &1))
-  end
-
-  defp build_session_token(%{live_action: :gallery_login, gallery: gallery}, password, email) do
-    Galleries.build_gallery_session_token(gallery, password, email)
-  end
-
-  defp build_session_token(%{live_action: :album_login, album: album}, password, email) do
-    Galleries.build_album_session_token(album, password, email)
-  end
-
-  defp build_login_link(%{live_action: :gallery_login, socket: socket, gallery: gallery}) do
-    Routes.gallery_session_path(socket, :gallery_login, gallery.client_link_hash)
-  end
-
-  defp build_login_link(%{live_action: :album_login, socket: socket, album: album}) do
-    Routes.gallery_session_path(socket, :album_login, album.client_link_hash)
   end
 
   defp update_emails_map(email, gallery) do
