@@ -2,13 +2,19 @@ defmodule PicselloWeb.CalendarFeedController do
   use PicselloWeb, :controller
 
   alias Picsello.{Shoots, Job}
-
+  require Logger
+  @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()
   def index(%{assigns: %{current_user: user}} = conn, params) do
-    feeds = Shoots.get_shoots(user, params) |> map(conn, user)
+    feeds = user |> Shoots.get_shoots(params) |> map(conn, user)
+    read_cals = user.external_calendar_read_list
+    
+    Logger.warning("\e[0;35m TOKEN |#{user.nylas_oauth_token}| \e[0;31m params #{inspect(read_cals)}")
+    events =  NylasCalendar.get_events!(read_cals, user.nylas_oauth_token) 
+    
 
     conn
     |> put_resp_content_type("application/json")
-    |> send_resp(200, Jason.encode!(feeds))
+    |> send_resp(200, Jason.encode!(feeds ++ events))
   end
 
   defp map(feeds, conn, user) do

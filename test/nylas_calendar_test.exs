@@ -1,7 +1,8 @@
 defmodule NylasCalendarTest do
   use Picsello.DataCase
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
-  @token  "P0oLk9HguiOmmgiZcfOOcaSI5sbzCx"
+
+  @token "A77LHd1ubDFRdxU64AwZKIyvN7sDfB"
   setup_all do
     ExVCR.Config.filter_request_headers("Authorization")
     ExVCR.Config.filter_request_options("basic_auth")
@@ -33,6 +34,25 @@ defmodule NylasCalendarTest do
       assert {:ok, link} = NylasCalendar.generate_login_link(client_id, redirect)
 
       assert {:ok, ^link} = NylasCalendar.generate_login_link()
+    end
+
+    test "Get Calendar Events" do
+      calendars = [
+        "79stlqym1yrt4tag6ibh0j7ds",
+        "8ltfag8u6webc2k1rx4ipk1gs",
+
+        "1ad8qjrcsqx3uympagccecqga",
+        "41epn1sk1p21c140jcpnp7avn",
+        "62zs9nfax6wvkhzo7wj8vfzw7",
+        
+      ]
+
+      ExVCR.Config.filter_request_headers("Authorization")
+
+      use_cassette "#{__MODULE__}_get_calendar_events" do
+        assert calendars |> NylasCalendar.get_events!(@token) |> length() == 280
+        assert %Picsello.Shoot{} = calendars |> NylasCalendar.get_events!(@token) |> hd() 
+      end
     end
 
     test "Get Calendars" do
@@ -106,14 +126,18 @@ defmodule NylasCalendarTest do
                     "start_time" => 1_684_418_400
                   }
                 }} =
-                 NylasCalendar.add_event("qulli2ad0f0ikawkdnl534oz", %{
-                   "title" => "Meeting",
-                   "description" => "Discuss project status",
-                   "when" => %{
-                     "start_time" => "2023-05-18T14:00:00Z",
-                     "end_time" => "2023-05-18T15:00:00Z"
-                   }
-                 }, @token)
+                 NylasCalendar.add_event(
+                   "qulli2ad0f0ikawkdnl534oz",
+                   %{
+                     "title" => "Meeting",
+                     "description" => "Discuss project status",
+                     "when" => %{
+                       "start_time" => "2023-05-18T14:00:00Z",
+                       "end_time" => "2023-05-18T15:00:00Z"
+                     }
+                   },
+                   @token
+                 )
       end
     end
 

@@ -8,6 +8,7 @@ defmodule PicselloWeb.NylasControllerTest do
     %{user: insert(:user) |> onboard!, password: valid_user_password()}
   end
 
+
   describe "Nylas OAuth code" do
     test "Redirect without a logged in user", %{conn: conn} do
       assert %Plug.Conn{status: 302, resp_headers: headers} =

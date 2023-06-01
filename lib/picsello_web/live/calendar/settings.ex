@@ -14,6 +14,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
         ) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     url = Routes.i_calendar_url(socket, :index, Phoenix.Token.sign(Endpoint, "USER_ID", user.id))
+    Logger.info("User ID #{user.id}")
 
     socket
     |> assign(%{
@@ -22,11 +23,19 @@ defmodule PicselloWeb.Live.Calendar.Settings do
       calendars: [],
       has_token: false,
       token: "",
-      rw_calendar: nil,
-      read_calendars: MapSet.new()
+      rw_calendar: user.external_calendar_rw_id,
+      read_calendars: to_set(user)
     })
     |> assign_from_token(user)
     |> ok()
+  end
+
+  defp to_set(%{external_calendar_read_list: nil}) do
+    MapSet.new([])
+  end
+
+  defp to_set(%{external_calendar_read_list: list}) do
+    MapSet.new(list)
   end
 
   @impl true
@@ -35,8 +44,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   def handle_event(
         "disconnect_calendar",
         _,
-        %Socket{assigns: %{current_user: %Picsello.Accounts.User{} = user}} =
-          socket
+        %Socket{assigns: %{current_user: %Picsello.Accounts.User{} = user}} = socket
       ) do
     user = %{nylas_oauth_token: nil} = Accounts.clear_user_nylas_code(user)
 
@@ -45,24 +53,17 @@ defmodule PicselloWeb.Live.Calendar.Settings do
 
   def handle_event(
         "calendar-read",
-        %{"calendar" => cal_id, "checked" => "no"},
+        %{"calendar" => cal_id},
         %Socket{assigns: %{read_calendars: read_calendars}} = socket
       ) do
-    Logger.info("Calendar id \e[0;35m#{cal_id} true\e[0;30m")
-    {:noreply, assign(socket, :read_calendars, MapSet.put(read_calendars, cal_id))}
-  end
-
-  def handle_event(
-        "calendar-read",
-        %{"calendar" => cal_id, "checked" => "yes"},
-        %Socket{assigns: %{read_calendars: read_calendars}} = socket
-      ) do
-    Logger.info("Calendar id \e[0;34m#{cal_id} false \e[0;30m")
-    {:noreply, assign(socket, :read_calendars, MapSet.delete(read_calendars, cal_id))}
+    newset = toggle(read_calendars, cal_id)
+    Logger.info("**** Calendar id \e[0;35m#{cal_id} \e[0;31m# --> #{inspect(newset)} \e[0;30m")
+    {:noreply, assign(socket, :read_calendars, newset)}
   end
 
   def handle_event("calendar-read-write", %{"calendar" => cal_id}, socket) do
     Logger.info("Calendar id \e[0;32m#{cal_id}\e[0;30m")
+
     {:noreply, assign(socket, :rw_calendar, cal_id)}
   end
 
@@ -73,12 +74,15 @@ defmodule PicselloWeb.Live.Calendar.Settings do
           assigns: %{read_calendars: read_calendars, rw_calendar: rw_calendar, current_user: user}
         } = socket
       ) do
-    Picsello.Accounts.User.set_nylas_calendars(user, %{
+    attrs = %{
       external_calendar_rw_id: rw_calendar,
       external_calendar_read_list: MapSet.to_list(read_calendars)
-    })
+    }
 
-    {:noreply, socket}
+    Logger.info("Save \e[0;34m#{user.id} \e[0;33m#{inspect(attrs)}")
+    user = Picsello.Accounts.User.set_nylas_calendars(user, attrs)
+
+    {:noreply, assign(socket, :current_user, user)}
   end
 
   def handle_event(
@@ -90,13 +94,18 @@ defmodule PicselloWeb.Live.Calendar.Settings do
     {:noreply, socket}
   end
 
-  @spec is_member(MapSet.t(), any) :: String.t()
-  def is_member(calendars, cal_id) do
-    if MapSet.member?(calendars, cal_id) do
-      "yes"
+  def toggle(calendars, key) do
+    if MapSet.member?(calendars, key) do
+      MapSet.delete(calendars, key)
     else
-      "no"
+      MapSet.put(calendars, key)
     end
+  end
+
+  @spec is_member(MapSet.t(), String.t()) :: boolean()
+  def is_member(calendars, cal_id) do
+    MapSet.member?(calendars, cal_id) 
+    
   end
 
   @spec assign_from_token(Socket.t(), nil | Picsello.Accounts.User.t()) :: Socket.t()
