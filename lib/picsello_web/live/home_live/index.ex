@@ -10,6 +10,7 @@ defmodule PicselloWeb.HomeLive.Index do
     Repo,
     Accounts,
     Shoot,
+    Shoots,
     Accounts.User,
     ClientMessage,
     Subscriptions,
@@ -503,16 +504,47 @@ defmodule PicselloWeb.HomeLive.Index do
             <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
               <%= for lead <- leads do %>
                 <%= live_redirect to: Routes.job_path(@socket, :leads, lead.id) do %>
+                  <div class="flex flex-row">
+                    <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
+                      <%= if String.length(Job.name(lead)) < 20 do
+                          Job.name(lead) || "-"
+                        else
+                          "#{Job.name(lead) |> String.slice(0..20)} ..."
+                        end %>
+                    </p>
+                    <.status_badge class="ml-4 w-fit" job={lead}/>
+                  </div>
+                  <p class="text-gray-400 font-normal text-sm">
+                    Created <%= lead.inserted_at |> format_date_via_type() %>
+                  </p>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </.recents_card>
+
+        <% "jobs" -> %>
+        <.recents_card add_event="import-job" view_event="view-jobs" hidden={Jobs.get_recent_jobs(@current_user) == []} button_title="Import a job" title="Recent jobs" class="h-auto" color="blue-planning-300">
+          <hr class="m-1 mb-4" />
+          <%= case Jobs.get_recent_jobs(@current_user) do %>
+            <% [] -> %>
+              <div class="flex flex-col mt-4 lg:flex-col">
+                <.empty_state_base tour_embed="https://www.youtube.com/watch?v=XWZH_65evuM" body="Booking jobs will get you on your way to making a profit. If you are migrating existing jobs from another platform, user our import job above." third_party_padding="calc(59.916666666666664% + 41px)">
+                </.empty_state_base>
+              </div>
+            <% jobs -> %>
+            <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
+              <%= for job <- jobs do %>
+                <%= live_redirect to: Routes.job_path(@socket, :jobs, job.id) do %>
                   <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
-                    <%= if String.length(Job.name(lead)) < 20 do
-                        Job.name(lead) || "-"
+                    <%= if String.length(Job.name(job)) < 20 do
+                        Job.name(job) || "-"
                       else
-                        "#{Job.name(lead) |> String.slice(0..20)} ..."
+                        "#{Job.name(job) |> String.slice(0..20)} ..."
                       end %>
-                    <.status_badge class="w-fit" job={lead}/>
                   </p>
                   <p class="text-gray-400 font-normal text-sm">
-                    Created <%= lead.inserted_at %>
+                    Next Shoot <%= if Shoots.get_next_shoot(job), do:  Shoots.get_next_shoot(job) |> Map.get(:starts_at) |> format_date_via_type(), else: "(To be decided)" %>
                   </p>
                 <% end %>
               <% end %>
@@ -670,7 +702,7 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign(:inbox_threads, inbox_threads)
   end
 
-  defp tabs_list(socket) do
+  defp tabs_list(_socket) do
     [
       {true,
        %{

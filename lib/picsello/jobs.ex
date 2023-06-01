@@ -27,6 +27,20 @@ defmodule Picsello.Jobs do
     |> Repo.all()
   end
 
+  def get_recent_jobs(user) do
+    query =
+      user
+      |> Job.for_user()
+      |> Job.not_leads()
+
+    from(j in query,
+    preload: :shoots,
+    order_by: [desc: j.inserted_at],
+    limit: 6
+    )
+    |> Repo.all()
+  end
+
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
     shoots =
       from(s in Shoot,
