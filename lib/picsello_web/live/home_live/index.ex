@@ -5,6 +5,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   alias Picsello.{
     Job,
+    Jobs,
     Payments,
     Repo,
     Accounts,
@@ -29,6 +30,7 @@ defmodule PicselloWeb.HomeLive.Index do
     QuestionnaireFormComponent
   }
 
+  import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
   import Ecto.Query
@@ -276,6 +278,13 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
+  def handle_event("view-leads", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.job_path(socket, :leads))
+      |> noreply()
+
+  @impl true
   def handle_event("add-package", %{}, socket),
     do:
       socket
@@ -480,6 +489,36 @@ defmodule PicselloWeb.HomeLive.Index do
               </div>
             <% end %>
           </.recents_card>
+
+        <% "leads" -> %>
+        <.recents_card add_event="create-lead" view_event="view-leads" hidden={Jobs.get_recent_leads(@current_user) == []} button_title="Create a lead" title="Recent leads" class="h-auto" color="blue-planning-300">
+          <hr class="m-1 mb-4" />
+          <%= case Jobs.get_recent_leads(@current_user) do %>
+            <% [] -> %>
+              <div class="flex flex-col mt-4 lg:flex-col">
+                <.empty_state_base tour_embed="https://www.youtube.com/watch?v=V90oycrU45g" body="Generating leads is the pipeline to booked clients. Learn more and create some now." third_party_padding="calc(59.916666666666664% + 41px)">
+                </.empty_state_base>
+              </div>
+            <% leads -> %>
+            <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
+              <%= for lead <- leads do %>
+                <%= live_redirect to: Routes.job_path(@socket, :leads, lead.id) do %>
+                  <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
+                    <%= if String.length(Job.name(lead)) < 20 do
+                        Job.name(lead) || "-"
+                      else
+                        "#{Job.name(lead) |> String.slice(0..20)} ..."
+                      end %>
+                    <.status_badge class="w-fit" job={lead}/>
+                  </p>
+                  <p class="text-gray-400 font-normal text-sm">
+                    Created <%= lead.inserted_at %>
+                  </p>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </.recents_card>
 
         <% _ -> %>
           <%= case @attention_items do %>
