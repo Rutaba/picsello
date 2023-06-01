@@ -635,7 +635,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  @impl true
   def handle_info(
         {:confirm_event, "delete_photo", %{photo_id: id}},
         socket
@@ -760,7 +759,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  @impl true
   def handle_info(
         {:photo_processed, _, photo},
         %{assigns: %{total_progress: total_progress}} = socket
@@ -827,7 +825,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  @impl true
   def handle_info(:clear_photos_error, %{assigns: %{total_progress: total_progress}} = socket) do
     if total_progress == 0 do
       socket
@@ -888,14 +885,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     add_message_and_notify(socket, message_changeset, "gallery")
   end
 
-  @impl true
   def handle_info({:message_composed_for_album, message_changeset}, socket) do
     add_message_and_notify(socket, message_changeset, "album")
   end
 
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
 
-  @impl true
   def handle_info(
         {
           :confirm_event,
