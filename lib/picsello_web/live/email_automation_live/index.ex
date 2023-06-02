@@ -46,8 +46,22 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       ) do
     automation_pipelines =
       EmailAutomation.get_all_pipelines_emails(current_user.organization_id, selected_job_type.id)
+      |> assign_category_pipeline_count()
 
     socket |> assign(:automation_pipelines, automation_pipelines)
+  end
+
+  defp assign_category_pipeline_count(automation_pipelines) do
+    automation_pipelines
+    |> Enum.map(fn %{subcategories: subcategories} = category ->
+      total_pipelines =
+        subcategories
+        |> Enum.reduce(0, fn subcategory, acc ->
+          acc + length(subcategory.pipelines)
+        end)
+
+      Map.put(category, :total_category_pipelines, total_pipelines)
+    end)
   end
 
   @impl true
@@ -62,6 +76,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
     socket
     |> assign(:selected_job_type, selected_job_type)
+    |> assign_automation_pipelines()
     |> noreply()
   end
 
