@@ -21,6 +21,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         :credits_available,
         client_email && client_email in gallery.gallery_digital_pricing.email_list
       )
+
     socket
     |> assign(from_checkout: false)
     |> assign(gallery_client: get_client_by_email(assigns))
@@ -45,11 +46,15 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
 
       {:ok, _order, :confirmed} ->
         order = get_order!(gallery, order_number, album)
-        order_gallery = Map.put(order.gallery,
-        :credits_available,
-        gallery.credits_available
-      )
-      order = Map.put(order, :gallery, order_gallery)
+
+        order_gallery =
+          Map.put(
+            order.gallery,
+            :credits_available,
+            gallery.credits_available
+          )
+
+        order = Map.put(order, :gallery, order_gallery)
 
         Picsello.Notifiers.OrderNotifier.deliver_order_confirmation_emails(
           order,

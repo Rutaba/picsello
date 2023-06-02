@@ -173,7 +173,9 @@ defmodule Picsello.Package do
     end)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> then(fn changeset ->
-      if Map.get(attrs, "status") !== :unlimited do
+      status = Map.get(attrs, "status")
+
+      if status && status !== :unlimited do
         changeset
         |> validate_money(:download_each_price,
           greater_than: 200,

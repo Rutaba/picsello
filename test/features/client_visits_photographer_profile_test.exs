@@ -81,7 +81,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
   feature "404", %{session: session, photographer: user, profile_url: profile_url} do
     session
     |> sign_in(user)
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
     |> click(link("Public Profile"))
     |> assert_has(testid("url", text: profile_url))
     |> click(css("label", text: "Enabled"))

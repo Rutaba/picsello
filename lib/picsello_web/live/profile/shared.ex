@@ -94,7 +94,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
       user: user,
       brand_links: brand_links,
       organization_job_types: organization_job_types
-    } = organization
+    } = organization |> Picsello.Repo.preload([:user, :brand_links, :organization_job_types])
 
     assign(socket,
       organization: organization,

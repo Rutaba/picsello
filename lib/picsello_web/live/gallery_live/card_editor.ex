@@ -5,7 +5,12 @@ defmodule PicselloWeb.GalleryLive.CardEditor do
   use PicselloWeb, live_view: [layout: "live_gallery_client"]
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [assign_cart_count: 2, customize_and_buy_product: 4, assign_checkout_routes: 1, get_client_by_email: 1]
+    only: [
+      assign_cart_count: 2,
+      customize_and_buy_product: 4,
+      assign_checkout_routes: 1,
+      get_client_by_email: 1
+    ]
 
   import Picsello.Designs, only: [load_occasion: 1, occasion_designs_query: 1, occasions: 0]
 

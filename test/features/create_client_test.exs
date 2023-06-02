@@ -180,7 +180,7 @@ defmodule Picsello.CreateClientTest do
     |> set_cookie("show_welcome_modal", "")
     |> visit("/home")
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> click(button("Add client", count: 2, at: 1))
   end
 

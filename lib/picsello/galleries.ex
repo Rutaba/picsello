@@ -474,20 +474,20 @@ defmodule Picsello.Galleries do
       gallery = gallery |> Repo.preload(job: [client: [organization: :user]])
       now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-      [
-        %{
-          email: gallery.job.client.email,
-          gallery_id: gallery.id,
-          inserted_at: now,
-          updated_at: now
-        },
-        %{
-          email: user.email,
-          gallery_id: gallery.id,
-          inserted_at: now,
-          updated_at: now
-        }
-      ]
+      client_email = gallery.job.client.email
+
+      client_params = %{
+        email: client_email,
+        gallery_id: gallery.id,
+        inserted_at: now,
+        updated_at: now
+      }
+
+      if client_email == user.email do
+        [client_params]
+      else
+        [client_params, Map.put(client_params, :email, user.email)]
+      end
     end)
     |> Multi.insert_all(
       :gallery_products,
@@ -1188,19 +1188,19 @@ defmodule Picsello.Galleries do
   @doc """
   Creates session token for the gallery client.
   """
-  def build_gallery_session_token("" <> hash, password) do
-    hash |> get_gallery_by_hash!() |> build_gallery_session_token(password)
+  def build_gallery_session_token("" <> hash, password, email) do
+    hash |> get_gallery_by_hash!() |> build_gallery_session_token(password, email)
   end
 
   def build_gallery_session_token(
         %Gallery{id: id, password: gallery_password} = gallery,
         password,
-        email \\ nil
+        email
       ) do
     with true <- gallery_password == password,
          {:ok, %{token: token}} <-
-           insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}) do
-      insert_gallery_client(gallery, email)
+           insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}),
+         {:ok, _} <- insert_gallery_client(gallery, email) do
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -1214,8 +1214,8 @@ defmodule Picsello.Galleries do
       ) do
     with true <- album_password == password,
          {:ok, %{token: token}} <-
-           insert_session_token(%{resource_id: id, resource_type: :album, email: email}) do
-      insert_gallery_client(get_gallery!(gallery_id), email)
+           insert_session_token(%{resource_id: id, resource_type: :album, email: email}),
+         {:ok, _} <- insert_gallery_client(get_gallery!(gallery_id), email) do
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -1226,16 +1226,6 @@ defmodule Picsello.Galleries do
     attrs
     |> SessionToken.changeset()
     |> Repo.insert()
-  end
-
-  def insert_gallery_client(gallery, email) do
-    gallery_client = Galleries.get_gallery_client(gallery, email)
-
-    if gallery_client,
-      do: gallery_client,
-      else:
-        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
-        |> Repo.insert()
   end
 
   @doc """
@@ -1308,6 +1298,13 @@ defmodule Picsello.Galleries do
 
   def get_package(%Gallery{} = gallery) do
     gallery |> Repo.preload(:package) |> Map.get(:package)
+  end
+
+  def get_gallery_client_email(order) do
+    order
+    |> Repo.preload(:gallery_client)
+    |> Map.get(:gallery_client)
+    |> Map.get(:email)
   end
 
   def do_not_charge_for_download?(%Gallery{} = gallery) do
@@ -1411,6 +1408,17 @@ defmodule Picsello.Galleries do
 
   defp active_disabled_galleries,
     do: from(g in Gallery, where: g.status in [:active, :disabled])
+
+  defp insert_gallery_client(gallery, email) do
+    case Galleries.get_gallery_client(gallery, email) do
+      nil ->
+        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
+        |> Repo.insert()
+
+      gallery_client ->
+        {:ok, gallery_client}
+    end
+  end
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
   defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue

@@ -113,114 +113,273 @@ defmodule PicselloWeb.LayoutView do
     """
   end
 
-  def help_chat_widget(%{assigns: %{current_user: %{email: _, user_id: _}}} = assigns) do
-    assigns = get_intercom_id(assigns)
+  def help_chat_widget(assigns) do
+    assigns = assigns |> Enum.into(%{current_user: nil}) |> get_intercom_id()
 
     ~H"""
-    <%= if @itercom_id do %>
+    <%= if @intercom_id do %>
       <script>
+        <%= if @current_user do %>
         window.intercomSettings = {
           api_base: "https://api-iam.intercom.io",
-          app_id: "<%= @itercom_id %>",
+          app_id: "<%= @intercom_id %>",
           name: "<%= @current_user.name %>",
           email: "<%= @current_user.email %>",
           user_id: "<%= @current_user.id %>",
           created_at: "<%= @current_user.inserted_at %>",
           custom_launcher_selector: '.open-help'
         };
-      </script>
-
-      <.reattach_activator itercom_id={@itercom_id} />
-    <% end %>
-    """
-  end
-
-  def help_chat_widget(assigns) do
-    assigns = get_intercom_id(assigns)
-
-    ~H"""
-    <%= if @itercom_id do %>
-      <script>
+        <% else %>
         window.intercomSettings = {
           api_base: "https://api-iam.intercom.io",
-          app_id: "<%= @itercom_id %>",
+          app_id: "<%= @intercom_id %>",
           custom_launcher_selector: '.open-help'
         };
+        <% end %>
       </script>
-      <.reattach_activator itercom_id={@itercom_id} />
+      <.reattach_activator intercom_id={@intercom_id} />
     <% end %>
     """
   end
 
   def side_nav(socket, _current_user) do
     [
-      %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{
-        title: "Contracts",
-        icon: "package",
-        path: Routes.contracts_index_path(socket, :index)
+        heading: "Get Booked",
+        items: [
+          %{
+            title: "Booking Events",
+            icon: "calendar",
+            path: Routes.calendar_booking_events_path(socket, :index)
+          },
+          %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)}
+        ]
       },
       %{
-        title: "Email Automations",
-        icon: "envelope",
-        path: Routes.email_automations_index_path(socket, :index)
+        heading: "Manage",
+        items: [
+          %{
+            title: "Clients",
+            icon: "client-icon",
+            path: Routes.clients_path(socket, :index)
+          },
+          %{
+            title: "Galleries",
+            icon: "upload",
+            path: Routes.gallery_path(socket, :galleries)
+          },
+          %{
+            title: "Jobs",
+            icon: "camera-check",
+            path: Routes.job_path(socket, :jobs)
+          },
+          %{
+            title: "Email Automations",
+            icon: "envelope",
+            path: Routes.email_automations_index_path(socket, :index)
+          },
+          %{
+            title: "Inbox",
+            icon: "envelope",
+            path: Routes.inbox_path(socket, :index)
+          },
+          %{
+            title: "Calendar",
+            icon: "calendar",
+            path: Routes.calendar_index_path(socket, :index)
+          }
+        ]
       },
-      %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
-      %{title: "Clients", icon: "phone", path: Routes.clients_path(socket, :index)},
       %{
-        title: "Galleries",
-        icon: "proof_notifier",
-        path: Routes.gallery_path(socket, :galleries)
-      },
-      %{title: "Calendar", icon: "calendar", path: Routes.calendar_index_path(socket, :index)},
-      %{title: "Orders", icon: "cart"},
-      %{title: "Inbox", icon: "envelope", path: Routes.inbox_path(socket, :index)},
-      %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)},
-      %{
-        title: "Questionnaires",
-        icon: "package",
-        path: Routes.questionnaires_index_path(socket, :index)
+        heading: "Market",
+        items: [
+          %{
+            title: "Public Profile",
+            icon: "website",
+            path: Routes.profile_settings_path(socket, :index)
+          },
+          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
+        ]
       },
       %{
-        title: "Finances",
-        icon: "money-bags",
-        path: Routes.finance_settings_path(socket, :index)
-      },
-      %{title: "Settings", icon: "gear", path: Routes.user_settings_path(socket, :edit)},
-      %{
-        title: "Public profile",
-        icon: "profile",
-        path: Routes.profile_settings_path(socket, :index)
-      },
-      %{
-        title: "Help",
-        icon: "question-mark",
-        path: "https://support.picsello.com"
+        heading: "Settings",
+        items: [
+          %{
+            title: "Packages",
+            icon: "package",
+            path: Routes.package_templates_path(socket, :index)
+          },
+          %{
+            title: "Contracts",
+            icon: "contract",
+            path: Routes.contracts_index_path(socket, :index)
+          },
+          %{
+            title: "Questionnaires",
+            icon: "questionnaire",
+            path: Routes.questionnaires_index_path(socket, :index)
+          },
+          %{
+            title: "Gallery",
+            icon: "gallery-settings",
+            path: Routes.gallery_global_settings_index_path(socket, :edit)
+          },
+          %{
+            title: "Finances",
+            icon: "money-bags",
+            path: Routes.finance_settings_path(socket, :index)
+          },
+          %{
+            title: "Brand",
+            icon: "brand",
+            path: Routes.brand_settings_path(socket, :index)
+          },
+          %{
+            title: "Account",
+            icon: "settings",
+            path: Routes.user_settings_path(socket, :edit)
+          }
+        ]
       }
     ]
-    |> Enum.filter(&Map.get(&1, :path))
   end
 
-  def sub_nav(socket, _current_user),
+  def sub_nav_list(socket, :get_booked),
     do: [
-      %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
-      %{title: "Jobs", icon: "camera-check", path: Routes.job_path(socket, :jobs)},
       %{
-        title: "Galleries",
-        icon: "proof_notifier",
-        path: Routes.gallery_path(socket, :galleries)
+        title: "Booking Events",
+        icon: "calendar",
+        path: Routes.calendar_booking_events_path(socket, :index)
       },
+      %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
+      %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
+    ]
+
+  def sub_nav_list(socket, :settings),
+    do: [
       %{
         title: "Packages",
         icon: "package",
         path: Routes.package_templates_path(socket, :index)
       },
       %{
-        title: "Booking Events",
-        icon: "calendar",
-        path: Routes.calendar_booking_events_path(socket, :index)
+        title: "Contracts",
+        icon: "contract",
+        path: Routes.contracts_index_path(socket, :index)
+      },
+      %{
+        title: "Questionnaires",
+        icon: "questionnaire",
+        path: Routes.questionnaires_index_path(socket, :index)
+      },
+      %{
+        title: "Gallery",
+        icon: "gallery-settings",
+        path: Routes.gallery_global_settings_index_path(socket, :edit)
+      },
+      %{
+        title: "Finances",
+        icon: "money-bags",
+        path: Routes.finance_settings_path(socket, :index)
+      },
+      %{
+        title: "Brand",
+        icon: "brand",
+        path: Routes.brand_settings_path(socket, :index)
+      },
+      %{
+        title: "Public Profile",
+        icon: "website",
+        path: Routes.profile_settings_path(socket, :index)
+      },
+      %{
+        title: "Account",
+        icon: "settings",
+        path: Routes.user_settings_path(socket, :edit)
       }
     ]
+
+  def main_nav(socket) do
+    [
+      %{
+        title: "Get booked",
+        class: "mr-6",
+        path: nil,
+        sub_nav_items: sub_nav_list(socket, :get_booked),
+        id: "get-booked-nav"
+      },
+      %{
+        title: "Clients",
+        class: "mr-6",
+        path: Routes.clients_path(socket, :index),
+        sub_nav_items: nil,
+        id: "clients-nav"
+      },
+      %{
+        title: "Galleries",
+        class: "mr-6",
+        path: Routes.gallery_path(socket, :galleries),
+        sub_nav_items: nil,
+        id: "galleries-nav"
+      },
+      %{
+        title: "Jobs",
+        class: "mr-6",
+        path: Routes.job_path(socket, :jobs),
+        sub_nav_items: nil,
+        id: "jobs-nav"
+      },
+      %{
+        title: "Inbox",
+        class: "pl-4 border-l mr-6",
+        path: Routes.inbox_path(socket, :index),
+        sub_nav_items: nil,
+        id: "inbox-nav"
+      },
+      %{
+        title: "Calendar",
+        class: "mr-6",
+        path: Routes.calendar_index_path(socket, :index),
+        sub_nav_items: nil,
+        id: "calendar-nav"
+      },
+      %{
+        title: "Settings",
+        class: "mr-6",
+        path: nil,
+        sub_nav_items: sub_nav_list(socket, :settings),
+        id: "settings-nav"
+      },
+      %{
+        title: "Help",
+        class: "mr-0 ml-auto",
+        path: "https://support.picsello.com",
+        sub_nav_items: nil,
+        id: "help-nav"
+      }
+    ]
+  end
+
+  def sub_nav(assigns) do
+    ~H"""
+      <div id={@id} class="relative cursor-pointer" phx-update="ignore" phx-hook="ToggleContent" data-icon="toggle-icon">
+        <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default top-10 toggle-content">
+          <nav class="flex flex-col bg-white rounded-lg shadow">
+            <%= for %{title: title, icon: icon, path: path} <- @sub_nav_list, @current_user do %>
+              <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-2 flex items-center py-2 text-sm whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
+                <.icon name={icon} class="inline-block w-4 h-4 mr-2 text-blue-planning-300 shrink-0" />
+                <%= title %>
+              </.nav_link>
+            <% end %>
+          </nav>
+        </div>
+
+        <div {testid("subnav-#{@title}")} class="group hidden lg:flex items-center mr-4 transition-all font-bold text-blue-planning-300 hover:opacity-70">
+          <%= @title %> <.icon name="down" class="w-3 h-3 stroke-current stroke-3 ml-2 toggle-icon transition-transform group-hover:rotate-180" />
+        </div>
+      </div>
+    """
+  end
 
   def subscription_ending_soon(%{current_user: current_user} = assigns) do
     subscription = current_user |> Picsello.Subscriptions.subscription_ending_soon_info()
@@ -282,11 +441,14 @@ defmodule PicselloWeb.LayoutView do
             </div>
 
             <nav class="flex flex-col bg-white rounded-lg shadow-md">
-              <%= for %{title: title, icon: icon, path: path} <- side_nav(@socket, @current_user), @current_user do %>
-                <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-4 flex items-center py-3 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
-                  <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300 shrink-0" />
-                  <%= title %>
-                </.nav_link>
+              <%= for %{heading: heading, items: items} <- side_nav(@socket, @current_user), @current_user do %>
+                <p class="uppercase font-bold px-4 mt-2 mb-1 tracking-widest text-xs"><%= heading %></p>
+                <%= for %{title: title, icon: icon, path: path} <- items do %>
+                  <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="text-sm px-4 flex items-center py-1.5 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
+                    <.icon name={icon} class="inline-block w-4 h-4 mr-2 text-blue-planning-300 shrink-0" />
+                    <%= title %>
+                  </.nav_link>
+                <% end %>
               <% end %>
             </nav>
           </div>
@@ -300,36 +462,21 @@ defmodule PicselloWeb.LayoutView do
             <.icon name="logo" class="my-4 w-28 h-9 mr-6" />
           <% end %>
 
-          <div class="hidden lg:flex">
-            <div id="sub-menu" class="relative cursor-pointer" phx-update="ignore" phx-hook="ToggleContent" data-icon="toggle-icon">
-              <div class="absolute left-0 z-10 flex flex-col items-start hidden cursor-default top-10 toggle-content">
-                <nav class="flex flex-col bg-white rounded-lg shadow-md">
-                  <%= for %{title: title, icon: icon, path: path} <- sub_nav(@socket, @current_user), @current_user do %>
-                    <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} current_user={@current_user} class="px-4 flex items-center py-3 whitespace-nowrap hover:bg-blue-planning-100 hover:font-bold" active_class="bg-blue-planning-100 font-bold">
-                      <.icon name={icon} class="inline-block w-5 h-5 mr-2 text-blue-planning-300 shrink-0" />
-                      <%= title %>
-                    </.nav_link>
-                  <% end %>
-                </nav>
-              </div>
-
-              <div class="group hidden lg:flex items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70">
-              Your work <.icon name="down" class="w-3 h-3 stroke-current stroke-3 ml-2 toggle-icon transition-transform group-hover:rotate-180" />
-              </div>
-            </div>
-            <.nav_link title="Calendar" to="/calendar" socket={@socket} live_action={@live_action} class="hidden lg:block items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70" active_class="">
-              Calendar
-            </.nav_link>
-            <.nav_link title="Help" to="https://support.picsello.com/" socket={@socket} live_action={@live_action} class="hidden lg:block items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70" active_class="">
-              Help
-            </.nav_link>
-            <.nav_link title="Settings" to="/users/settings" socket={@socket} live_action={@live_action} class="hidden lg:block items-center mr-6 transition-all font-bold text-blue-planning-300 hover:opacity-70" active_class="">
-              Settings
-            </.nav_link>
+          <div class="hidden lg:flex flex-grow">
+            <%= for %{title: title, path: path, class: class, sub_nav_items: sub_nav_items, id: id} <- main_nav(@socket) do %>
+              <%= if sub_nav_items do %>
+                <.sub_nav socket={@socket} live_action={@live_action} current_user={@current_user} sub_nav_list={sub_nav_items} title={title} id={id} />
+              <% else %>
+                <.nav_link title={title} to={path} socket={@socket} live_action={@live_action} class={"hidden lg:block items-center transition-all font-bold text-blue-planning-300 hover:opacity-70 #{class}"}>
+                  <%= title %>
+                </.nav_link>
+              <% end %>
+            <% end %>
           </div>
         </nav>
 
         <.subscription_ending_soon type="header" socket={@socket} current_user={@current_user} />
+
         <div id="initials-menu" class="relative flex flex-row justify-end cursor-pointer" phx-update="ignore" phx-hook="ToggleContent">
           <%= if @current_user do %>
             <div class="absolute top-0 right-0 flex flex-col items-end hidden cursor-default text-base-300 toggle-content">
@@ -456,7 +603,7 @@ defmodule PicselloWeb.LayoutView do
   defp reattach_activator(assigns) do
     ~H"""
     <script>
-    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/<%= @itercom_id %>';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/<%= @intercom_id %>';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
     </script>
     """
   end
@@ -468,7 +615,7 @@ defmodule PicselloWeb.LayoutView do
   end
 
   defp get_intercom_id(assigns),
-    do: assign(assigns, :itercom_id, Application.get_env(:picsello, :intercom_id))
+    do: assign(assigns, :intercom_id, Application.get_env(:picsello, :intercom_id))
 
   defp extract_organization(%{job: %{client: %{organization: organization}}}), do: organization
 end

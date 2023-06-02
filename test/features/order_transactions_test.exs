@@ -65,7 +65,7 @@ defmodule Picsello.OrderTransactionsTest do
   } do
     session
     |> visit("/galleries/#{gallery.id}/transactions")
-    |> assert_has(css("a[href='/jobs']", text: "Jobs"))
+    |> assert_has(css("a[href='/jobs']", text: "Jobs", at: 1, count: 2))
     |> assert_has(css("a[href='/jobs/#{job.id}']", text: Job.name(job)))
     |> assert_has(css("span", text: Job.name(job), count: 2))
     |> click(css("*[phx-click='order-detail']", text: "View details"))

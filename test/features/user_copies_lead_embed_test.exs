@@ -28,7 +28,7 @@ defmodule Picsello.UserCopiesLeadEmbedTest do
 
   feature "clicks to open modal, sees iframe, and copies code", %{session: session} do
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
     |> click(link("Public Profile"))
     |> click(button("Preview form"))
     |> assert_text("Tips & Tricks")

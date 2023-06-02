@@ -37,7 +37,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> assign(
       gallery: gallery,
       client_menu_id: "clientMenu",
-      gallery_client: get_client_by_email(assigns))
+      gallery_client: get_client_by_email(assigns)
+    )
     |> assign_is_proofing()
     |> then(
       &(&1

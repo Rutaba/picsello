@@ -15,7 +15,7 @@ defmodule Picsello.EmailSignatureTest do
 
   feature "user changes email signature", %{session: session} do
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
     |> click(link("Brand"))
     |> assert_inner_text(testid("signature-preview"), "MJCamera User Group(918) 555-1234")
     |> assert_has(testid("marketing-links", count: 1))
