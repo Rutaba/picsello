@@ -82,6 +82,17 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
   @impl true
   def handle_event(
+        "add-email-popup",
+        _,
+        socket
+      ) do
+    socket
+    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailComponent, %{})
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "toggle-section",
         %{"section_id" => section_id},
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
