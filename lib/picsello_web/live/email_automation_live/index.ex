@@ -49,6 +49,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       EmailAutomation.get_all_pipelines_emails(current_user.organization_id, selected_job_type.id)
       |> assign_category_pipeline_count()
 
+    IO.inspect automation_pipelines
     socket |> assign(:automation_pipelines, automation_pipelines)
   end
 
@@ -84,11 +85,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @impl true
   def handle_event(
         "add-email-popup",
-        _,
+        a,
         %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
       ) do
+    IO.inspect a
     socket
-    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailComponent, %{
+    |> open_modal(PicselloWeb.EmailAutomationLive.AddEmailComponent, %{
       current_user: current_user,
       job_type: selected_job_type
     })
@@ -104,7 +106,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     _id = to_integer(id)
 
     socket
-    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailComponent, %{
+    |> open_modal(PicselloWeb.EmailAutomationLive.AddEmailComponent, %{
       current_user: current_user
     })
     |> noreply()
@@ -119,9 +121,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     _id = to_integer(id)
 
     socket
-    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailComponent, %{
-      current_user: current_user
-    })
+    |> open_modal(PicselloWeb.EmailAutomationLive.AddEmailComponent, %{current_user: current_user})
     |> noreply()
   end
 
@@ -214,7 +214,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
           <% end) %>
           <div class="flex flex-row justify-between">
             <div class="flex items-center">
-              <button phx-click="add-email-popup" phx-value-category={@category} phx-value-subcategory={@subcategory}data-popover-target="popover-default" type="button" class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" >
+              <button phx-click="add-email-popup" phx-value-category={@category} phx-value-subcategory={@subcategory} data-popover-target="popover-default" type="button" class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" >
                 <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Add email
               </button>

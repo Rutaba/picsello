@@ -1,4 +1,4 @@
-defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
+defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
@@ -15,10 +15,14 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   @steps [:timing, :edit_email, :preview_email]
 
   @impl true
-  def update(%{current_user: current_user}, socket) do
+  def update(%{current_user: current_user, job_type: job_type} = assigns, socket) do
+    IO.inspect job_type
+    job_types = Jobs.get_job_types_with_label(current_user.organization_id)
+    |> Enum.map(&Map.put(&1, :selected, &1.id == job_type.id))
+
     socket
-    |> assign(job_types: Jobs.get_job_types_with_label(current_user.organization_id))
-    |> assign(organization_id: current_user.organization_id)
+    |> assign(assigns)
+    |> assign(job_types: job_types)
     |> assign(steps: @steps)
     |> assign(step: :timing)
     |>  assign_changeset(%{"total_days" => 0})
@@ -115,8 +119,16 @@ defp step_valid?(assigns),
 
           <.footer class="pt-10">
             <div class="mr-auto md:hidden flex w-full">
-            
-              <%!-- <%= select_field f, :add_to, [{"Add to:", nil}] ++ @job_types, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 w-full" %> --%>
+              <.multi_select
+                id="job_types_mobile"
+                select_class="w-full"
+                hide_tags={true}
+                placeholder="Add to:"
+                search_on={false}
+                form={@job_type_changeset}
+                on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
+                options={make_options(@changeset, @job_types)}
+              />
             </div>
             <.step_buttons step={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
 
@@ -141,7 +153,6 @@ defp step_valid?(assigns),
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
                 options={make_options(@changeset, @job_types)}
               />
-              <%!-- <%= select_field f, :add_to, [{"Add to:", nil}] ++ @job_types, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8" %> --%>
             </div>
           </.footer>
         </.form>
@@ -170,7 +181,6 @@ defp step_valid?(assigns),
   end
 
   def step_buttons(%{step: :preview_email} = assigns) do
-  # def step_buttons(assigns) do
     ~H"""
     <button class="btn-primary" title="Save" disabled={!@is_valid} type="submit" phx-disable-with="Save">
       Save
@@ -325,7 +335,8 @@ defp step_valid?(assigns),
     """
   end
 
-  defp assign_changeset(%{assigns: %{job_types: job_types, step: step, organization_id: organization_id} = assigns} = socket, params, action \\ nil) do
+  defp assign_changeset(%{assigns: %{job_types: job_types, step: step, current_user: current_user} = assigns} = socket, params, action \\ nil) do
+    IO.inspect assigns, label: "assign_changeset----------"
     job_type_params = Map.get(params, "job_type", %{}) |> Map.put("step", step)
 
     job_type_changeset = JobType.changeset(job_type_params)
@@ -352,9 +363,9 @@ defp step_valid?(assigns),
     automation_params =
       params
       |> Map.merge(%{
-        "name" => "abc",
-        "email_automation_pipeline_id" => organization_id,
-        "organization_id" => organization_id
+        "email_automation_pipeline_id" => current_user.organization_id,
+        "organization_id" => current_user.organization_id,
+        "step" => step
       })
 
     changeset = EmailAutomationSetting.changeset(automation_params) |> Map.put(:action, action)

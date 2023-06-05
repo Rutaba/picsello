@@ -31,7 +31,8 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
       attrs,
       ~w[status total_days condition name email_automation_pipeline_id organization_id immediately count calendar sign]a
     )
-    |> validate_required(~w[status name email_automation_pipeline_id organization_id]a)
+    |> validate_required(~w[status email_automation_pipeline_id organization_id]a)
+    # |> then(&if(Map.get(attrs, "step") == :edit_email, do: &1 |> validate_required([:name]) else: &1))
     |> then(&force_change(&1, :total_days, calculate_days(&1)))
     |> then(fn changeset ->
       unless get_field(changeset, :immediately) do
