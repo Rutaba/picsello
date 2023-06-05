@@ -123,6 +123,15 @@ defmodule Picsello.Jobs do
     |> Repo.one()
   end
 
+  def get_job_types_with_label(organization_id) do
+    from(ojt in OrganizationJobType,
+      select: %{id: ojt.id, label: ojt.job_type},
+      where: ojt.organization_id == ^organization_id,
+      order_by: ojt.job_type
+    )
+    |> Repo.all()
+  end
+
   def get_all_job_types(organization_id),
     do:
       from(ojt in OrganizationJobType, where: ojt.organization_id == ^organization_id)

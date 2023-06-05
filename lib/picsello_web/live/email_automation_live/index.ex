@@ -2,7 +2,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
-
   import PicselloWeb.LiveHelpers
 
   alias Picsello.{
@@ -84,10 +83,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   def handle_event(
         "add-email-popup",
         _,
-        socket
+        %{assigns: %{current_user: current_user}} = socket
       ) do
     socket
-    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailComponent, %{})
+    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailComponent, %{current_user: current_user})
     |> noreply()
   end
 
@@ -106,6 +105,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
     socket
     |> assign(:collapsed_sections, collapsed_sections)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:update_automation, _}, socket) do
+    socket
+    |> put_flash(:success, "Email signature saved")
     |> noreply()
   end
 end

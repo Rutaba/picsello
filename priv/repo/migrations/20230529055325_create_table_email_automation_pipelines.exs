@@ -74,8 +74,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
     {:ok, automation_status} =
       insert_email_automation_slug("Order status emails", "order_status_emails", now)
 
-    IO.inspect(email_automation_lead, label: "email_automation_lead==>")
-
     [
       # leads
       %{
