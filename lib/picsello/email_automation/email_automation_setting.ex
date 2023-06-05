@@ -17,10 +17,11 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
     field :count, :integer, virtual: true
     field :calendar, :string, virtual: true
     field :sign, :string, virtual: true
-  
+
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
     belongs_to(:organization, Picsello.Organization)
-
+    # has_one() #email_preset
+    # has_many() #email_automation_types
     timestamps type: :utc_datetime
   end
 
@@ -32,7 +33,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
     )
     |> validate_required(~w[status name email_automation_pipeline_id organization_id]a)
     |> then(&force_change(&1, :total_days, calculate_days(&1)))
-    |> then(fn changeset -> 
+    |> then(fn changeset ->
       unless get_field(changeset, :immediately) do
         changeset
         |> validate_required([:count])

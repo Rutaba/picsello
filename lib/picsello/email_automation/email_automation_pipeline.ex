@@ -25,6 +25,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
     belongs_to(:email_automation_category, EmailAutomationCategory)
     belongs_to(:email_automation_sub_category, EmailAutomationSubCategory)
 
+    # has_many() #email_automation_settings
     timestamps type: :utc_datetime
   end
 

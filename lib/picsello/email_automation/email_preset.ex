@@ -28,6 +28,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
 
     belongs_to(:email_automation_setting, EmailAutomationSetting)
 
+    # has_many() #email_automation_types
     timestamps type: :utc_datetime
   end
 
