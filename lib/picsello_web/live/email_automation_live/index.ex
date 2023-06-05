@@ -89,53 +89,27 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         %{"pipeline_id" => pipeline_id},
         %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
       ) do
-    pipeline = to_integer(pipeline_id) |> EmailAutomation.get_pipeline_by_id()
 
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.AddEmailComponent, %{
       current_user: current_user,
       job_type: selected_job_type,
-      pipeline: pipeline,
-      is_edit: true,
+      pipeline: get_pipline(pipeline_id)
     })
     |> noreply()
   end
 
   @impl true
-  def handle_event(
-        "edit-email-popup",
-        %{"email_id" => email_id, "email_automation_setting_id" => email_automation_setting_id, "pipeline_id" => pipeline_id},
-        %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
-      ) do
-    pipeline = to_integer(pipeline_id) |> EmailAutomation.get_pipeline_by_id()    
+  def handle_event("edit-time-popup", params, socket) do
     socket
-    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailComponent, %{
-      current_user: current_user,
-      job_type: selected_job_type,
-      pipeline: pipeline,
-      email_automation_setting_id: to_integer(email_automation_setting_id),
-      is_edit: true,
-      email: EmailAutomation.get_email_by_id(to_integer(email_id))
-    })
+    |> open_edit_modal(params, PicselloWeb.EmailAutomationLive.EditTimeComponent)    
     |> noreply()
   end
 
   @impl true
-  def handle_event(
-        "edit-email-setting-popup",
-        %{"email_id" => email_id, "email_automation_setting_id" => email_automation_setting_id, "pipeline_id" => pipeline_id},
-        %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
-      ) do
-    pipeline = to_integer(pipeline_id) |> EmailAutomation.get_pipeline_by_id()    
+  def handle_event("edit-email-popup", params, socket) do
     socket
-    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailComponent, %{
-      current_user: current_user,
-      job_type: selected_job_type,
-      pipeline: pipeline,
-      email_automation_setting_id: to_integer(email_automation_setting_id),
-      is_edit: true,
-      email: EmailAutomation.get_email_by_id(to_integer(email_id))
-    })
+    |> open_edit_modal(params, PicselloWeb.EmailAutomationLive.EditEmailComponent)    
     |> noreply()
   end
 
@@ -180,6 +154,25 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
     socket
     |> noreply()
+  end
+
+  defp get_pipline(pipeline_id) do
+    pipeline = to_integer(pipeline_id) 
+    |> EmailAutomation.get_pipeline_by_id() 
+    |> Repo.preload([:email_automation_category, :email_automation_sub_category])
+  end
+
+  defp open_edit_modal(%{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket,
+    %{"email_id" => email_id, "email_automation_setting_id" => email_automation_setting_id, "pipeline_id" => pipeline_id}, 
+    module) do
+    socket
+    |> open_modal(module, %{
+      current_user: current_user,
+      job_type: selected_job_type,
+      pipeline: get_pipline(pipeline_id),
+      email_automation_setting_id: to_integer(email_automation_setting_id),
+      email: EmailAutomation.get_email_by_id(to_integer(email_id)),
+    })
   end
 
   def pipeline_section(assigns) do
@@ -231,7 +224,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                       Can't delete first email; disable the entire sequence if you don't want it to send
                     </span>
                   </button>
-                  <button phx-click="edit-email-popup" phx-value-email_id={email.id} phx-value-email_automation_setting_id={email.email_automation_setting.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
+                  <button phx-click="edit-time-popup" phx-value-email_id={email.id} phx-value-email_automation_setting_id={email.email_automation_setting.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
                     <.icon name="settings" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Edit time
                   </button>
