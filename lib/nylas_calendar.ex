@@ -3,6 +3,7 @@ defmodule NylasCalendar do
   An Elixir module for interacting with the Nylas Calendar API.
   """
   require Logger
+  @base_color "#585DF6"
   @base_url "https://api.nylas.com"
   @calendar_endpoint "/calendars"
   @event_endpoint "/events"
@@ -129,7 +130,7 @@ defmodule NylasCalendar do
       ) do
     {:ok, start_time} = Date.from_iso8601(date)
     end_time = start_time |> Date.add(1) |> Date.to_iso8601()
-    %{title: "#{name}", color: "blue", start: date, end: end_time, url: ""}
+    %{title: "#{name}", color: @base_color, start: date, end: end_time, url: ""}
   end
 
   def to_shoot(%{
@@ -144,7 +145,7 @@ defmodule NylasCalendar do
 
     %{
       title: "#{name}",
-      color: "blue",
+      color: @base_color,
       start: DateTime.to_iso8601(start),
       end: DateTime.to_iso8601(finish),
       url: ""

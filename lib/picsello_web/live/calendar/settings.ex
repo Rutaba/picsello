@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   alias Picsello.Accounts
   alias PicselloWeb.Endpoint
   alias Phoenix.LiveView.Socket
-  import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+  import PicselloWeb.Live.Calendar.Shared
   require Logger
   @impl true
   @spec mount(
@@ -15,6 +15,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     url = Routes.i_calendar_url(socket, :index, Phoenix.Token.sign(Endpoint, "USER_ID", user.id))
     Logger.info("User ID #{user.id}")
+    {:ok, nylas_url} = NylasCalendar.generate_login_link()
 
     socket
     |> assign(%{
@@ -23,6 +24,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
       calendars: [],
       has_token: false,
       token: "",
+      nylas_url: nylas_url,
       rw_calendar: user.external_calendar_rw_id,
       read_calendars: to_set(user)
     })
@@ -48,7 +50,11 @@ defmodule PicselloWeb.Live.Calendar.Settings do
       ) do
     user = %{nylas_oauth_token: nil} = Accounts.clear_user_nylas_code(user)
 
-    {:noreply, socket |> assign_from_token(user)}
+    {:noreply,
+     socket
+     |> assign_from_token(user)
+     |> assign(%{has_token: false, token: ""})
+     |> put_flash(:success, "Calendar disconnected")}
   end
 
   def handle_event(
@@ -82,17 +88,11 @@ defmodule PicselloWeb.Live.Calendar.Settings do
     Logger.info("Save \e[0;34m#{user.id} \e[0;33m#{inspect(attrs)}")
     user = Picsello.Accounts.User.set_nylas_calendars(user, attrs)
 
-    {:noreply, assign(socket, :current_user, user)}
+    {:noreply,
+     assign(socket, :current_user, user) |> put_flash(:success, "Calendar settings saved")}
   end
 
-  def handle_event(
-        cmd,
-        msg,
-        %Socket{assigns: _read_calendars} = socket
-      ) do
-    Logger.info("\e[0;34m#{cmd} -- #{inspect(msg)}\e[0;30m")
-    {:noreply, socket}
-  end
+  defdelegate handle_event(event, params, socket), to: PicselloWeb.Live.Calendar.Shared
 
   def toggle(calendars, key) do
     if MapSet.member?(calendars, key) do
@@ -104,8 +104,8 @@ defmodule PicselloWeb.Live.Calendar.Settings do
 
   @spec is_member(MapSet.t(), String.t()) :: boolean()
   def is_member(calendars, cal_id) do
-    MapSet.member?(calendars, cal_id) 
-    
+    MapSet.member?(calendars, cal_id)
+
   end
 
   @spec assign_from_token(Socket.t(), nil | Picsello.Accounts.User.t()) :: Socket.t()

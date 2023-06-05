@@ -1,4 +1,4 @@
-<div class="pt-6 px-6 py-2 center-container">
+<section class="pt-6 px-6 py-2 center-container">
   <div class="flex text-4xl items-center">
     <.back_button to={Routes.calendar_index_path(@socket, :index)} class="lg:hidden"/>
     <.crumbs class="text-sm text-base-250">
@@ -15,98 +15,126 @@
       Calendar Settings
     </div>
   </div>
-</div>
 
-<hr class="my-4 sm:my-10" />
+  <hr class="my-4 sm:my-10" />
+</section>
 
 <%= if @error do %>
-<h1 id="error"><%= @error %></h1>
+  <h1 id="error"><%= @error %></h1>
 <% end %>
+
 <%= if @has_token do %>
-<div class="px-6 center-container" id="syncing">
-  <h1>Syncing Email account</h1>
-</div>
-<div class="px-6 center-container" id="calendar_read"
-     >
-  <h1>Piscello will see events in the following calendars</h1>
-  <%= for calendar <- @calendars do %>
-      <label class="break-after-auto">
-        <input type="checkbox"
-               value={calendar["id"]}
-               name="calendar_read"
-               checked={is_member(@read_calendars, calendar["id"])}
-               phx-click="calendar-read"               
-               phx-value-calendar={calendar["id"]}               
-               phx-value-checked={is_member(@read_calendars, calendar["id"])}
-               >
-        <%= calendar["name"] %>
-      </label>
-      <br>
-      <% end %>
-</div>
-<div class="px-6 center-container" id="calendar_read_write">
-  <h1>Picsello will add and see events in the following Calendar</h1>
-  <%= for calendar <- @calendars do %>
-     
-      <label>
-        <input type="radio"
-               value = {calendar["id"]}
-               name = "calendar_write"
-               checked = {calendar["id"] == @rw_calendar}
-               phx-click="calendar-read-write"
-               phx-value-calendar={calendar["id"]}>
-        <%= calendar["name"] %>
-      </label>
-      <br/>
-  
-     <% end %>
+  <section class="px-6 center-container" id="calendar_read">
+    <div class="border rounded-lg p-4">
+      <h1 class="text-3xl font-bold mb-6">
+        2-way Calendar Sync
+      </h1>
 
-  <button class="button btn" id="save" phx-click="save">Save</button>
-</div>
+      <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20 mb-6">
+        <div class="grid-col items-center flex-col lg:order-first order-last">
+          <h2 class="text-xl sm:mt-0 mt-4 mb-1">Piscello will see events in the following calendars</h2>
+          <div class="flex flex-col">
+            <%= for calendar <- @calendars do %>
+              <label class="flex items-center mt-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  class="w-5 h-5 mr-2.5 checkbox"
+                  value={calendar["id"]}
+                  name="calendar_read"
+                  checked={is_member(@read_calendars, calendar["id"])}
+                  phx-click="calendar-read"
+                  phx-value-calendar={calendar["id"]}
+                  phx-value-checked={is_member(@read_calendars, calendar["id"])}
+                >
+                <%= calendar["name"] %>
+              </label>
+            <% end %>
+          </div>
+        </div>
+        <div class="grid-col order-first lg:order-last">
+          <img src="/images/calendar-2.svg" alt="Pull events into Picsello" />
+        </div>
+      </div>
 
-<div class="px-6 center-container" id="danger">
-  <p><strong>Danger zone</strong></p>
-  <div>
-    If for whatever reason you need to change calendars or resetup the sync, you can do so here. Let us know if you run into any trouble
-  </div>
-  <div id="disconnect_button" class="" phx-click="disconnect_calendar">Disconnect</div>
+      <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20 mb-6">
+        <div class="grid-col items-center flex-col lg:order-first order-last">
+          <h2 class="text-xl sm:mt-0 mt-4 mb-1">Picsello will send events to the following calendar</h2>
+          <div class="flex flex-col">
+            <%= for calendar <- @calendars do %>
+              <label class="flex items-center mt-3 cursor-pointer">
+                <input
+                  type="radio"
+                  class="w-5 h-5 mr-2.5 radio"
+                  value = {calendar["id"]}
+                  name = "calendar_write"
+                  checked = {calendar["id"] == @rw_calendar}
+                  phx-click="calendar-read-write"
+                  phx-value-calendar={calendar["id"]}
+                >
+                <%= calendar["name"] %>
+              </label>
+            <% end %>
+          </div>
+        </div>
+        <div class="grid-col order-first lg:order-last">
+          <img src="/images/calendar-1.svg" alt="Send events to and from Picsello" />
+        </div>
+      </div>
 
-</div>
+      <button type="button" class="btn-primary" id="save" phx-click="save">Save</button>
 
+      <div id="danger">
+        <hr class="my-4 sm:my-10" />
+        <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20 mb-4">
+          <div class="grid-col items-center flex-col lg:order-first order-last">
+            <h2 class="text-lg font-bold text-red-sales-300 sm:mt-0 mt-4 mb-1">Danger zone</h2>
+            <p class="text-base-250 mb-4">
+              If for whatever reason you need to change calendars or resetup the sync, you can do so here. Let us know if you run into any trouble
+            </p>
+            <button type="button" id="disconnect_button" class="btn-tertiary btn-warning" phx-click="disconnect_calendar">Disconnect</button>
+          </div>
+          <div class="grid-col order-first lg:order-last">
+            <img src="/images/calendar-4.svg" alt="Remove calendar from Picsello" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+<% else %>
+  <section class="px-6 center-container">
+    <div class="border rounded-lg p-4">
+      <h1 class="text-3xl font-bold mb-6">2-way Calendar Sync</h1>
+      <h2 class="text-xl mb-4 text-base-250">You haven’t setup your calendar connection yet</h2>
+      <button type="button" phx-click="toggle_connect_modal" class="btn-primary flex items-center md:mr-3" id="button-connect">
+        <.icon name="plus" class="inline-block w-5 h-5 mr-2 text-white" />
+        <span id="connect">Connect Calendar</span>
+      </button>
+    </div>
+  </section>
 <% end %>
 
+<section class="px-6 center-container mt-8" id="share">
+  <div class="border p-4 rounded-lg">
+    <h1 class="text-3xl font-bold mb-3">1-way Calendar Sync</h1>
+    <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20">
+      <div class="grid-col items-center flex-col text-xl lg:order-first order-last">
 
-<div class="px-6 center-container" id="share">
-  <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20">
-    <div class="grid-col items-center flex-col py-4 lg:mt-0 mt-6 text-xl lg:order-first order-last">
-      <p><strong>Subscribe to your Picsello calendar using an external provider:</strong></p>
-      <p class="text-base-250">Copy this link if you need to subscribe to your the Picsello calendar from another provider. They need to use the ICAL protocol.</p>
+        <p class="text-base-250">Copy this link if you need to subscribe to your the Picsello calendar from another provider.</p>
 
-      <div class="flex flex-col my-7" id="subscribe-calendar-url">
-        <div {testid("url")} class="text-input text-clip overflow-hidden"><%= @url %></div>
+        <div class="flex flex-col my-7" id="subscribe-calendar-url">
+          <div {testid("url")} class="text-input text-clip overflow-hidden"><%= @url %></div>
+        </div>
+
+        <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 transition-colors text-blue-planning-300" id="copy-calendar-link" data-clipboard-text={@url} phx-hook="Clipboard">
+          <span>Copy link</span>
+          <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+            Copied!
+          </div>
+        </.icon_button>
       </div>
-
-      <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 transition-colors text-blue-planning-300" id="copy-calendar-link" data-clipboard-text={@url} phx-hook="Clipboard">
-        <span>Copy link</span>
-        <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
-          Copied!
-        </div>
-      </.icon_button>
-    </div>
-    <div class="mt-4 grid-col order-first lg:order-last">
-      <div class="flex flex-row items-center md:px-20 px-10 bg-base-200 rounded-lg">
-        <div>
-          <.icon name="picsello" class="w-12 h-12 bg-white rounded p-2"/>
-          <div class="absolute ml-[34px] -mt-[25px] md:ml-[42px] md:-mt-[30px] bg-blue-planning-300 rounded-full w-3 h-3"></div>
-        </div>
-        <div class="flex w-full">
-          <.icon name="long-right-arrow" class="text-blue-planning-300 px-2 w-full"/>
-        </div>
-        <div>
-          <.icon name="calendar" class="w-12 h-12 bg-white rounded p-2"/>
-          <div class="absolute -ml-[5px] -mt-[25px] md:-mt-[30px] bg-blue-planning-300 rounded-full w-3 h-3"></div>
-        </div>
+      <div class="grid-col order-first lg:order-last">
+        <img src="/images/calendar-3.svg" alt="Send events from Picsello" />
       </div>
     </div>
   </div>
-</div>
+</section>

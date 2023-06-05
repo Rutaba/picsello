@@ -1,41 +1,31 @@
-<%= if @connect_modal do %>
-<div  class="p1 container border-1 border-black mx-auto z-50 isolate w-full max-w-xs" id="connect_calendar_modal">
-  <div class="m1">
-    <h1 class="text-3xl">Connect your calendar</h1>
-    <div class="text-xl">
-      Securely Connect your calendar so we can: </div>
-    <ul class="list-disc">
-      <li>Create new events from Picsello actions (bookings and shoots)</li>
-      <li>Delete Events created by Picsello</li>
-      <li>Read Events from Calendars you've authorized</li>
-    </ul>
-    <br/>
-    <a class="btn bg-black grow rounded-none text-white font-bold py-2 px-4 w-96"
-            id="button-connect" href={@nylas_url}>Connect a Calendar</a>
-    <a class="btn grow hover:bg-blue-500 border-black border-solid font-bold py-2 px-4 border-1 rounded-none hover:text-white-700 text-blue-700 w-96"
-       phx-click="toggle_connect_modal"
-       id="button-close">
-      Close
-    </a>
-  </div>
-</div>
-  
-
-<% else %> 
 <div class="p-6 center-container">
   <div class="flex items-end justify-between mt-4 md:justify-start">
-    <div class="flex text-4xl font-bold items-center">
+    <div class="flex items-start">
       <.back_button to={Routes.home_path(@socket, :index)} class="mt-2"/>
-      Calendar
+      <div>
+        <h1 class="text-4xl font-bold mb-2">Calendar</h1>
+        <%= if !@show_calendar_setup do %>
+          <span id="connect" class="flex items-center text-base-250">
+            <.icon name="checkcircle" class="inline-block w-4 h-4 mr-2 text-blue-planning-300" />
+            Calendar Sync Connected
+          </span>
+        <% end %>
+      </div>
     </div>
-   
+
     <%= if @show_calendar_setup do %>
-    <div phx-click="toggle_connect_modal" class="btn-tertiary flex items-center md:ml-auto md:mr-3 text-blue-planning-300" id="button-connect">
-      <.icon name="settings" class="inline-block w-6 h-6 mr-2 text-blue-planning-300" />
-      <span id="connect">Connect Calendar</span>
-    </div>
+      <.live_link to={Routes.calendar_settings_path(@socket, :settings)} class="btn-tertiary flex items-center md:mr-3 md:ml-auto text-blue-planning-300">
+        <.icon name="settings" class="inline-block w-6 h-6 text-blue-planning-300" />
+      </.live_link>
+      <button type="button" phx-click="toggle_connect_modal" class="btn-tertiary flex items-center md:mr-3 text-blue-planning-300" id="button-connect">
+        <.icon name="plus" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
+        <span id="connect">Connect Calendar</span>
+      </button>
     <% else %>
-    <span id="connect">Calendar Connected</span>
+      <.live_link to={Routes.calendar_settings_path(@socket, :settings)} class="btn-tertiary flex items-center md:ml-auto md:mr-3 text-blue-planning-300">
+        <.icon name="settings" class="inline-block w-6 h-6 mr-2 text-blue-planning-300" />
+        Settings
+      </.live_link>
     <% end %>
     <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
       <.live_link to={Routes.calendar_booking_events_path(@socket, :index)} class="w-full md:w-auto btn-primary text-center">
@@ -43,14 +33,19 @@
       </.live_link>
     </div>
   </div>
-  
+
   <hr class="my-4 sm:my-10" />
-  <div phx-hook="Calendar"
-       phx-update="replace"
-       class="w-full"
-       id="calendar"
-       data-time-zone={@current_user.time_zone}
-       data-feed-path={Routes.calendar_feed_path(@socket, :index)}>
+
+  <div class="relative">
+    <div id="calendar-loading" class="hidden absolute right-0 z-10  w-full h-full flex items-center justify-center">
+      <span class="px-2 py-1 rounded-md bg-blue-planning-300 flex items-center text-white"><.icon name="loader" class="w-6 h-6 mr-2 text-white animate-spin" /> Syncing events…</span>
+    </div>
+    <div phx-hook="Calendar"
+        phx-update="replace"
+        class="w-full"
+        id="calendar"
+        data-time-zone={@current_user.time_zone}
+        data-feed-path={Routes.calendar_feed_path(@socket, :index)}>
+    </div>
   </div>
 </div>
-<% end %>

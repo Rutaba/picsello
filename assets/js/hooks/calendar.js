@@ -23,6 +23,9 @@ const calendar_render = (el) => {
       center: 'title',
       right: 'dayGridMonth,timeGridWeek',
     },
+    eventBackgroundColor: 'green',
+    eventBorderColor: 'green',
+    eventColor: 'green',
     eventSources: [{ url: feedPath }],
     editable: true,
     selectable: true,
@@ -30,6 +33,16 @@ const calendar_render = (el) => {
       const newView = getView();
       if (view !== newView) {
         calendar.changeView(getView());
+      }
+    },
+    loading: function (isLoading) {
+      const loadingEl = document.querySelector('#calendar-loading');
+      if (isLoading) {
+        el.classList.add('loading');
+        loadingEl.classList.remove('hidden');
+      } else {
+        el.classList.remove('loading');
+        loadingEl.classList.add('hidden');
       }
     },
   });
@@ -45,5 +58,5 @@ export default {
   updated() {
     const { el } = this;
     calendar_render(el);
-  }
+  },
 };
