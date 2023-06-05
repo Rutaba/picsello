@@ -3,7 +3,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Picsello.EmailAutomation.EmailAutomationSetting
+  alias Picsello.EmailAutomation.{EmailAutomationSetting, EmailAutomationType}
 
   @types ~w(lead job gallery)a
   @states_by_type %{
@@ -28,7 +28,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
 
     belongs_to(:email_automation_setting, EmailAutomationSetting)
 
-    # has_many() #email_automation_types
+    has_many(:email_automation_types, EmailAutomationType)
     timestamps type: :utc_datetime
   end
 
