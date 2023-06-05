@@ -19,10 +19,13 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   def update(%{current_user: current_user, job_type: job_type} = assigns, socket) do
     job_types = Jobs.get_job_types_with_label(current_user.organization_id)
     |> Enum.map(&Map.put(&1, :selected, &1.id == job_type.id))
+    
+    email_presets = "abc"
 
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
+    |> assign(email_presets: email_presets)
     |> assign(steps: @steps)
     |> assign(step: :timing)
     |> assign_changeset(%{"total_days" => 0})

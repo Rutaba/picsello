@@ -39,6 +39,11 @@ defmodule Picsello.EmailAutomation do
     |> Repo.all()
   end
 
+  def get_pipeline_by_id(id) do
+    from(eap in EmailAutomationPipeline, where: eap.id == ^id)
+    |> Repo.one()
+  end
+
   def get_each_pipeline_emails(pipeline_id, organization_id, job_type_id) do
     from(
       ep in EmailPreset,

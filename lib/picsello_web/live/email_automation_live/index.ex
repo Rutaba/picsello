@@ -86,22 +86,17 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @impl true
   def handle_event(
         "add-email-popup",
-        %{"category" => category_id, "sub_category" => sub_category_id, "state" => state},
-        %{
-          assigns: %{
-            current_user: current_user,
-            selected_job_type: selected_job_type
-          }
-        } = socket
+        %{"pipeline_id" => pipeline_id},
+        %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
       ) do
+    pipeline = to_integer(pipeline_id) |> EmailAutomation.get_pipeline_by_id()
+
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.AddEmailComponent, %{
       current_user: current_user,
       job_type: selected_job_type,
-      category_id: to_integer(category_id),
-      sub_category_id: to_integer(sub_category_id),
-      state: state,
-      is_edit: false
+      pipeline: pipeline,
+      is_edit: true,
     })
     |> noreply()
   end
@@ -109,22 +104,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @impl true
   def handle_event(
         "edit-email-popup",
-        %{"id" => id, "category" => category_id, "subcategory" => sub_category_id,  "state" => state},
+        %{"email_id" => email_id, "email_automation_setting_id" => email_automation_setting_id, "pipeline_id" => pipeline_id},
         %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
       ) do
-    id = to_integer(id)
-    email = EmailAutomation.get_email_by_id(id)
-
+    pipeline = to_integer(pipeline_id) |> EmailAutomation.get_pipeline_by_id()    
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailComponent, %{
       current_user: current_user,
       job_type: selected_job_type,
-      category_id: to_integer(category_id),
-      sub_category_id: to_integer(sub_category_id),
-      id: id,
-      state: state,
+      pipeline: pipeline,
+      email_automation_setting_id: to_integer(email_automation_setting_id),
       is_edit: true,
-      email: email
+      email: EmailAutomation.get_email_by_id(to_integer(email_id))
     })
     |> noreply()
   end
@@ -132,22 +123,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @impl true
   def handle_event(
         "edit-email-setting-popup",
-        %{"id" => id, "category" => category_id, "subcategory" => sub_category_id, "state" => state},
+        %{"email_id" => email_id, "email_automation_setting_id" => email_automation_setting_id, "pipeline_id" => pipeline_id},
         %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
       ) do
-    id = to_integer(id)
-    email = EmailAutomation.get_email_by_id(id)
-
+    pipeline = to_integer(pipeline_id) |> EmailAutomation.get_pipeline_by_id()    
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailComponent, %{
       current_user: current_user,
       job_type: selected_job_type,
-      category_id: to_integer(category_id),
-      sub_category_id: to_integer(sub_category_id),
-      id: id,
-      state: state,
+      pipeline: pipeline,
+      email_automation_setting_id: to_integer(email_automation_setting_id),
       is_edit: true,
-      email: email
+      email: EmailAutomation.get_email_by_id(to_integer(email_id))
     })
     |> noreply()
   end
@@ -244,11 +231,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                       Can't delete first email; disable the entire sequence if you don't want it to send
                     </span>
                   </button>
-                  <button phx-click="edit-email-popup" phx-value-id={email.id} phx-value-category={@category} phx-value-subcategory={@subcategory} phx-value-state={@pipeline.state} class="flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
+                  <button phx-click="edit-email-popup" phx-value-email_id={email.id} phx-value-email_automation_setting_id={email.email_automation_setting.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
                     <.icon name="settings" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Edit time
                   </button>
-                  <button phx-click="edit-email-popup" phx-value-id={email.email_automation_setting.id} phx-value-category={@category} phx-value-subcategory={@subcategory} phx-value-state={@pipeline.state} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
+                  <button phx-click="edit-email-popup" phx-value-email_id={email.id} phx-value-email_automation_setting_id={email.email_automation_setting.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
                     <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
                     Edit email
                   </button>
@@ -259,7 +246,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
           <% end) %>
           <div class="flex flex-row justify-between">
             <div class="flex items-center">
-              <button phx-click="add-email-popup" phx-value-category={@category} phx-value-sub_category={@subcategory} phx-value-state={@pipeline.state} data-popover-target="popover-default" type="button" class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" >
+              <button phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" type="button" class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" >
                 <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Add email
               </button>
