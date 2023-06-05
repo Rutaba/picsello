@@ -6,7 +6,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
   alias Picsello.{
     EmailAutomation,
-    Repo
+    Repo,
+    Marketing
   }
 
   @impl true
@@ -147,6 +148,24 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   def handle_info({:update_automation, _}, socket) do
     socket
     |> put_flash(:success, "Email signature saved")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:load_template_preview, component, body_html},
+        %{assigns: %{current_user: current_user, modal_pid: modal_pid}} = socket
+      ) do
+    template_preview = Marketing.template_preview(current_user, body_html)
+
+    send_update(
+      modal_pid,
+      component,
+      id: component,
+      template_preview: template_preview
+    )
+
+    socket
     |> noreply()
   end
 

@@ -17,6 +17,10 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
     field :count, :integer, virtual: true
     field :calendar, :string, virtual: true
     field :sign, :string, virtual: true
+    field :subject, :string, virtual: true
+    field :body_html, :string, virtual: true
+    field :body_text, :string, virtual: true
+    field :template_name, :string, virtual: true
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
     belongs_to(:organization, Picsello.Organization)
@@ -29,7 +33,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
     email_setting
     |> cast(
       attrs,
-      ~w[status total_days condition name email_automation_pipeline_id organization_id immediately count calendar sign]a
+      ~w[status total_days condition name email_automation_pipeline_id organization_id immediately count calendar sign subject body_html body_text template_name]a
     )
     |> validate_required(~w[status email_automation_pipeline_id organization_id]a)
     # |> then(&if(Map.get(attrs, "step") == :edit_email, do: &1 |> validate_required([:name]) else: &1))

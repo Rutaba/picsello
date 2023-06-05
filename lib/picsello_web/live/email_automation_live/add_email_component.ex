@@ -10,13 +10,13 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
 
   alias Picsello.{Jobs, JobType, GlobalSettings.Gallery}
   alias Picsello.EmailAutomation.EmailAutomationSetting
+  alias Picsello.Marketing
   alias Ecto.Changeset
 
   @steps [:timing, :edit_email, :preview_email]
 
   @impl true
   def update(%{current_user: current_user, job_type: job_type} = assigns, socket) do
-    IO.inspect job_type
     job_types = Jobs.get_job_types_with_label(current_user.organization_id)
     |> Enum.map(&Map.put(&1, :selected, &1.id == job_type.id))
 
@@ -25,7 +25,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     |> assign(job_types: job_types)
     |> assign(steps: @steps)
     |> assign(step: :timing)
-    |>  assign_changeset(%{"total_days" => 0})
+    |> assign_changeset(%{"total_days" => 0})
+    |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end
 
@@ -35,7 +36,17 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     |> assign(job_types: options)
     |> assign(steps: @steps)
     |> assign(step: :timing)
-    |>  assign_changeset(%{})
+    |> assign_changeset(%{})
+    |> ok()
+  end
+
+  @impl true
+  def update(assigns, socket) do
+    socket
+    |> assign(assigns)
+    |> assign(steps: @steps)
+    |> assign(step: :preview_email)
+    |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end
 
@@ -64,7 +75,7 @@ defp step_valid?(assigns),
     # |> assign_changeset(params)
     |> noreply()
   end
-    
+
   @impl true
   def handle_event("validate", %{"email_automation_setting" => params}, socket) do
     socket
@@ -73,15 +84,19 @@ defp step_valid?(assigns),
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "timing", "email_automation_setting" => params}, %{assigns: assigns} = socket) do
+  def handle_event("submit", %{"step" => "timing"}, %{assigns: assigns} = socket) do
     socket
     |> assign(step: next_step(assigns))
     |> noreply()
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "edit_email", "email_automation_setting" => params}, %{assigns: assigns} = socket) do
+  def handle_event("submit", %{"step" => "edit_email"}, %{assigns: %{changeset: changeset} = assigns} = socket) do
+    body_html = Ecto.Changeset.get_field(changeset, :body_html)
+    Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
+
     socket
+    |> assign(:template_preview, :loading)
     |> assign(step: next_step(assigns))
     |> noreply()
   end
@@ -99,10 +114,10 @@ defp step_valid?(assigns),
   @impl true
   def render(assigns) do
     ~H"""
-      <div class="relative bg-white p-6">
+      <div class="modal">
         <.close_x />
         <.steps step={@step} steps={@steps} target={@myself} />
-      
+
         <h1 class="mt-2 mb-4 text-3xl">
           <span class="font-bold">Add Wedding Email Step:</span>
           <%= case @step do %>
@@ -161,7 +176,7 @@ defp step_valid?(assigns),
   end
 
   defp make_options(changeset, job_types) do
-    job_types |> Enum.map(fn option -> 
+    job_types |> Enum.map(fn option ->
       Map.put(option, :label, String.capitalize(option.label))
     end)
   end
@@ -207,7 +222,7 @@ defp step_valid?(assigns),
         </div>
 
         <% f = to_form(@changeset) %>
-        
+
         <div class="px-14 py-6">
           <b>Automation timing</b>
           <span class="text-base-250">Choose when you’d like your automation to run</span>
@@ -279,7 +294,7 @@ defp step_valid?(assigns),
       </div>
 
       <hr class="my-8" />
-      
+
       <% f = to_form(@changeset) %>
 
       <div class="mr-auto">
@@ -295,7 +310,7 @@ defp step_valid?(assigns),
           </label>
           <label class="flex flex-col">
             <b>Private Name</b>
-            <%= input f, :name, placeholder: "Inquiry Email", class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= input f, :template_name, placeholder: "Inquiry Email", class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
         </div>
 
@@ -306,7 +321,7 @@ defp step_valid?(assigns),
               <p class="text-black">Clear</p>
             </.icon_button>
           </.input_label>
-          <.quill_input f={f} html_field={:content} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} />
+          <.quill_input f={f} html_field={:body_html} text_field={:body_text} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
         </div>
       </div>
     """
@@ -329,14 +344,23 @@ defp step_valid?(assigns),
 
       <hr class="my-4" />
 
-      <div class="bg-base-200 flex items-center justify-center p-4 rounded-lg">
-        <img src="/images/empty-state.png" />
-      </div>
+      <%= case @template_preview do %>
+        <% nil -> %>
+        <% :loading -> %>
+          <div class="flex items-center justify-center w-full mt-10 text-xs">
+            <div class="w-3 h-3 mr-2 rounded-full opacity-75 bg-blue-planning-300 animate-ping"></div>
+            Loading...
+          </div>
+        <% content -> %>
+          <div class="flex justify-center p-2 mt-4 rounded-lg bg-base-200">
+            <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" id="template-preview">
+            </iframe>
+          </div>
+      <% end %>
     """
   end
 
   defp assign_changeset(%{assigns: %{job_types: job_types, step: step, current_user: current_user} = assigns} = socket, params, action \\ nil) do
-    IO.inspect assigns, label: "assign_changeset----------"
     job_type_params = Map.get(params, "job_type", %{}) |> Map.put("step", step)
 
     job_type_changeset = JobType.changeset(job_type_params)
@@ -369,7 +393,7 @@ defp step_valid?(assigns),
       })
 
     changeset = EmailAutomationSetting.changeset(automation_params) |> Map.put(:action, action)
-    
+
     # IO.inspect changeset
     # IO.inspect changeset |> current()
 
@@ -383,8 +407,8 @@ defp step_valid?(assigns),
 
   defp maybe_normalize_params(params) do
     {_, params} = get_and_update_in(
-      params, 
-      ["status"], 
+      params,
+      ["status"],
       &{&1, if(&1 == "true", do: :active, else: :disabled)}
       )
 
