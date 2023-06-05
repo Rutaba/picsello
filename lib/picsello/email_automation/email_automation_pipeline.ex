@@ -3,7 +3,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Picsello.EmailAutomation.{EmailAutomationCategory, EmailAutomationSubCategory}
+  alias Picsello.EmailAutomation.{EmailAutomationCategory, EmailAutomationSubCategory, EmailAutomationSetting}
 
   @status ~w(active disabled archived)a
 
@@ -24,8 +24,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
     field :state, Ecto.Enum, values: @states
     belongs_to(:email_automation_category, EmailAutomationCategory)
     belongs_to(:email_automation_sub_category, EmailAutomationSubCategory)
-
-    # has_many() #email_automation_settings
+    has_many(:email_automation_settings, EmailAutomationSetting)
     timestamps type: :utc_datetime
   end
 

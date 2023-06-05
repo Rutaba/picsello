@@ -4,7 +4,8 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
   import Ecto.Changeset
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Picsello.EmailAutomation.EmailAutomationPipeline
+  alias Picsello.EmailAutomation.{EmailAutomationPipeline, EmailAutomationType}
+  alias Picsello.EmailPresets.EmailPreset
 
   @status ~w(active disabled)a
 
@@ -24,8 +25,8 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
     belongs_to(:organization, Picsello.Organization)
-    # has_one() #email_preset
-    # has_many() #email_automation_types
+    has_one(:email_preset, EmailPreset)
+    has_many(:email_automation_types, EmailAutomationType)
     timestamps type: :utc_datetime
   end
 

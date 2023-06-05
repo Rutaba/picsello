@@ -72,7 +72,7 @@
           <%= Enum.map(automation_pipeline.subcategories, fn subcategory -> %>
             <div class="text-gray-500 tracking-widest uppercase"> <%= subcategory.subcategory_name %></div>
               <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
-                <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={automation_pipeline.category_name} subcategory={subcategory.subcategory_id}/>
+                <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={automation_pipeline.category_id} subcategory={subcategory.subcategory_id}/>
               <% end) %>
           <% end) %>
         <% end) %>

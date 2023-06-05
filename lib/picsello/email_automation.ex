@@ -19,6 +19,7 @@ defmodule Picsello.EmailAutomation do
       select: %{
         category_type: c.type,
         category_name: c.name,
+        category_id: c.id,
         subcategory_slug: s.slug,
         subcategory_name: s.name,
         subcategory_id: s.id,
@@ -32,7 +33,7 @@ defmodule Picsello.EmailAutomation do
             p.description
           )
       },
-      group_by: [c.name, c.type, s.slug, s.name, s.id, p.id],
+      group_by: [c.name, c.type, c.id, s.slug, s.name, s.id, p.id],
       order_by: [asc: p.id, asc: c.type, asc: s.slug]
     )
     |> Repo.all()
@@ -52,6 +53,17 @@ defmodule Picsello.EmailAutomation do
       preload: [:email_automation_setting]
     )
     |> Picsello.Repo.all()
+  end
+
+  def get_email_by_id(id) do
+    from(
+      ep in EmailPreset,
+      join: es in assoc(ep, :email_automation_setting),
+      on: ep.email_automation_setting_id == es.id,
+      where: es.id == ^id,
+      preload: [:email_automation_setting]
+    )
+    |> Repo.one()
   end
 
   def get_all_pipelines_emails(organization_id, job_type_id) do
@@ -78,6 +90,7 @@ defmodule Picsello.EmailAutomation do
       %{
         category_type: List.first(automation_pipelines).category_type,
         category_name: List.first(automation_pipelines).category_name,
+        category_id: List.first(automation_pipelines).category_id,
         subcategory_slug: slug,
         subcategory_name: name,
         subcategory_id: id,
@@ -85,10 +98,10 @@ defmodule Picsello.EmailAutomation do
       }
     end)
     |> Enum.sort_by(& &1.subcategory_id, :asc)
-    |> Enum.group_by(&{&1.category_type, &1.category_name}, & &1)
-    |> Enum.map(fn {{type, name}, pipelines} ->
+    |> Enum.group_by(&{&1.category_type, &1.category_name, &1.category_id}, & &1)
+    |> Enum.map(fn {{type, name, id}, pipelines} ->
       subcategories = remove_categories_from_list(pipelines)
-      %{category_type: type, category_name: name, subcategories: subcategories}
+      %{category_type: type, category_name: name, category_id: id, subcategories: subcategories}
     end)
     |> Enum.sort_by(& &1.category_type, :desc)
   end
