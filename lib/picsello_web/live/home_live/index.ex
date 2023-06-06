@@ -20,7 +20,8 @@ defmodule PicselloWeb.HomeLive.Index do
     Onboardings,
     Clients,
     Subscriptions,
-    Marketing
+    Marketing,
+    Galleries
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -33,7 +34,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
   import PicselloWeb.Gettext, only: [ngettext: 3]
-  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2, clip_board: 2, cover_photo_url: 1, disabled?: 1]
   import Ecto.Query
   import Ecto.Changeset, only: [get_change: 2]
   import Phoenix.LiveView
@@ -63,6 +64,7 @@ defmodule PicselloWeb.HomeLive.Index do
     |> assign_attention_items()
     |> assign(:tabs, tabs_list(socket))
     |> assign(:tab_active, "todo")
+    |> assign(:index, false)
     |> assign_promotion_code_changeset()
     |> subscribe_inbound_messages()
     |> assign_inbox_threads()
@@ -109,6 +111,19 @@ defmodule PicselloWeb.HomeLive.Index do
       PicselloWeb.GalleryLive.CreateComponent,
       %{current_user: current_user}
     )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "show_dropdown",
+        %{"show_index" => show_index},
+        socket
+      ) do
+    show_index = String.to_integer(show_index)
+
+    socket
+    |> assign(index: show_index)
     |> noreply()
   end
 
@@ -283,6 +298,13 @@ defmodule PicselloWeb.HomeLive.Index do
     do:
       socket
       |> push_redirect(to: Routes.job_path(socket, :leads))
+      |> noreply()
+
+  @impl true
+  def handle_event("view-galleries", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.gallery_path(socket, :galleries))
       |> noreply()
 
   @impl true
@@ -547,6 +569,24 @@ defmodule PicselloWeb.HomeLive.Index do
                     Next Shoot <%= if Shoots.get_next_shoot(job), do:  Shoots.get_next_shoot(job) |> Map.get(:starts_at) |> format_date_via_type(), else: "(To be decided)" %>
                   </p>
                 <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </.recents_card>
+
+        <% "galleries" -> %>
+        <.recents_card add_event="create-gallery" view_event="view-galleries" hidden={Galleries.get_recent_galleries(@current_user) == []} button_title="Create   a gallery" title="Recent galleries" class="h-auto" color="blue-planning-300">
+          <hr class="m-1 mb-4" />
+          <%= case Galleries.get_recent_galleries(@current_user) do %>
+            <% [] -> %>
+              <div class="flex flex-col mt-4 lg:flex-col">
+                <.empty_state_base tour_embed="https://www.youtube.com/watch?v=uEY3eS9cDIk" body="With unlimited gallery storage, don't think twice about migrating existing galleries from other platforms and creating new ones." third_party_padding="calc(59.916666666666664% + 41px)">
+                </.empty_state_base>
+              </div>
+            <% galleries -> %>
+            <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
+              <%= for {gallery, gallery_index} <- galleries |> Enum.with_index() do %>
+                <.recent_galleries socket={@socket} gallery={gallery} index={@index} gallery_index={gallery_index} />
               <% end %>
             </div>
           <% end %>
@@ -897,6 +937,95 @@ defmodule PicselloWeb.HomeLive.Index do
           should_attention_items_overflow: Enum.count(&1) > 4
         ))
     )
+  end
+
+  defp recent_galleries(assigns) do
+    ~H"""
+      <div class="flex flex-wrap w-full md:w-auto">
+        <div class="flex flex-col md:flex-row grow">
+          <%= if Galleries.preview_image(@gallery) do %>
+            <div>
+              <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
+              <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{cover_photo_url(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="rounded-lg h-full p-4 items-center flex flex-col w-[200px] h-[130px] mr-4 md:mr-7 bg-base-200">
+              <div class="flex justify-center h-full items-center">
+                <.icon name="photos-2" class="inline-block w-9 h-9 text-base-250"/>
+              </div>
+              <div class="mt-1 text-base-250 text-center h-full">
+                <span>Edit your gallery to upload a cover photo</span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="py-0 md:py-1 mt-4 md:mt-0">
+          <div class={"font-bold w-full"}>
+            <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
+              <span class="w-full text-blue-planning-300 underline">
+                <%= if String.length(@gallery.name) < 30 do
+                  @gallery.name
+                else
+                  "#{@gallery.name |> String.slice(0..29)} ..."
+                end %>
+              </span>
+            <% end %>
+          </div>
+          <div class="text-base-250 font-normal ">
+          <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %> - <%= Enum.count(@gallery.orders) %> <%= if Enum.count(@gallery.orders) == 1, do: "booking", else: "bookings" %> so far
+          </div>
+        </div>
+        <div class="flex gap-3 py-0 md:py-2 mt-4 md:mt-0">
+          <button {testid("copy-link")} id="copy-link" class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => disabled?(@gallery)})} data-clipboard-text={clip_board(@socket, @gallery)} phx-hook="Clipboard">
+            <.icon name="anchor" class={classes("w-4 h-4 fill-current text-blue-planning-300 inline mr-2", %{"text-gray-200" => disabled?(@gallery)})} />
+            Copy link
+            <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+              Copied!
+            </div>
+          </button>
+          <div id={"manage-#{@gallery.id}"} phx-hook="Select" class="md:w-auto w-full" phx-update="ignore">
+            <button class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id={"menu-button-#{@gallery.id}"} phx-click="show_dropdown" phx-value-show_index={@gallery_index}>
+              Actions
+              <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+              <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+            </button>
+            <div class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
+              <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id)]} class={classes(%{"hidden" => disabled?(@gallery)})} />
+              <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, @gallery.job.id)]} class={classes(%{"hidden" => disabled?(@gallery)})} />
+              <.dropdown_item {assigns} id="send_email_link" class={classes("hover:cursor-pointer", %{"hidden" => disabled?(@gallery)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
+              <%= if Enum.any?(@gallery.orders) do %>
+                <%= case disabled?(@gallery) do %>
+                  <% true -> %>
+                    <.dropdown_item {assigns} class="enable-link hover:cursor-pointer" icon="eye" title="Enable" link={[phx_click: "enable_gallery_popup", phx_value_gallery_id: @gallery.id]})} />
+                  <% _ -> %>
+                    <.dropdown_item {assigns} class="disable-link hover:cursor-pointer" icon="closed-eye" title="Disable" link={[phx_click: "disable_gallery_popup", phx_value_gallery_id: @gallery.id]})} />
+                <% end %>
+              <% else %>
+                <.dropdown_item {assigns} class={classes("delete-link hover:cursor-pointer", %{"hidden" => disabled?(@gallery)})} icon="trash" title="Delete" link={[phx_click: "delete_gallery_popup", phx_value_gallery_id: @gallery.id]} />
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    """
+  end
+
+  defp dropdown_item(%{icon: icon} = assigns) do
+    assigns = Enum.into(assigns, %{class: "", id: ""})
+
+    icon_text_class =
+      if icon in ["trash", "closed-eye"], do: "text-red-sales-300", else: "text-blue-planning-300"
+
+    assigns = assign(assigns, icon_text_class: icon_text_class)
+
+    ~H"""
+    <a {@link} class={"text-gray-700 block px-4 py-2 text-sm hover:bg-blue-planning-100 #{@class}"} role="menuitem" tabindex="-1" id={@id} }>
+      <.icon name={@icon} class={"w-4 h-4 fill-current #{@icon_text_class} inline mr-1"} />
+      <%= @title %>
+    </a>
+    """
   end
 
   defp map_card_to_action_logic(

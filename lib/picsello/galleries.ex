@@ -77,6 +77,17 @@ defmodule Picsello.Galleries do
     )
   end
 
+  def get_recent_galleries(user) do
+    query = list_all_galleries_by_organization_query(user.organization_id)
+
+    from(q in query,
+    preload: :orders,
+    order_by: [desc: q.inserted_at],
+    limit: 6
+    )
+    |> Repo.all()
+  end
+
   @doc """
   Returns the list of soon to be expired galleries.
 
