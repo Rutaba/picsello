@@ -3,41 +3,59 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
 
   use PicselloWeb, :live_component
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.Shared.MultiSelect
 
-  alias Picsello.{Jobs, JobType}
+  alias Picsello.{EmailPresets, Jobs, JobType, GlobalSettings.Gallery, EmailPresets.EmailPreset}
   alias Picsello.EmailAutomation.EmailAutomationSetting
   alias Ecto.Changeset
 
   @steps [:timing, :edit_email, :preview_email]
 
   @impl true
-  def update(%{current_user: current_user, job_type: job_type} = assigns, socket) do
+  def update(%{
+    current_user: current_user,
+    job_type: job_type,
+    pipeline: %{email_automation_category: %{type: type}}
+    } = assigns, socket) do
+    IO.inspect assigns
     job_types = Jobs.get_job_types_with_label(current_user.organization_id)
     |> Enum.map(&Map.put(&1, :selected, &1.id == job_type.id))
-
-    email_presets = "abc"
-
+    
+    email_presets = EmailPresets.email_automation_presets(type)
+    
+    # IO.inspect email_presets
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
     |> assign(email_presets: email_presets)
+    |> assign(email_preset: List.first(email_presets))
     |> assign(steps: @steps)
     |> assign(step: :timing)
-    |> assign_changeset(%{"total_days" => 0})
+    |> assign_changeset(%{})
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
+  end
+
+  defp prepare_params(email_preset) do
+    %{
+      "total_days" => 0,
+      "email_preset" => prepare_email_preset_params(email_preset)
+    }
+  end
+
+  defp prepare_email_preset_params(email_preset) do
+    email_preset
+    |> Map.from_struct()
+    |> Map.new(fn {k, v} -> {to_string(k), v} end)
   end
 
   @impl true
   def update(%{options: options}, socket) do
     socket
     |> assign(job_types: options)
-    |> assign(steps: @steps)
-    |> assign(step: :timing)
-    |> assign_changeset(%{})
     |> ok()
   end
 
@@ -52,18 +70,27 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   end
 
 defp step_valid?(%{step: :timing, changeset: changeset, job_types: job_types}) do
-  Enum.any?(job_types, &Map.get(&1, :selected, false))
-  && changeset.valid?
+  changeset.valid?
+  |> validate?(job_types)
 end
+
+defp step_valid?(%{step: :edit_email, email_preset_changeset: changeset, job_types: job_types}), do: changeset.valid? |> validate?(job_types)
 
 defp step_valid?(assigns),
   do:
     Enum.all?(
       [
-        assigns.changeset
+        assigns.changeset,
+        assigns.email_preset_changeset
       ],
       & &1.valid?
     )
+    |> validate?(assigns.job_types)
+
+  defp validate?(false, _), do: false
+  defp validate?(true, job_types) do
+    Enum.any?(job_types, &Map.get(&1, :selected, false))
+  end
 
   @impl true
   def handle_event("back", _, %{assigns: %{step: step, steps: steps}} = socket) do
@@ -76,6 +103,19 @@ defp step_valid?(assigns),
   end
 
   @impl true
+  def handle_event("validate", %{"email_preset" => params}, %{assigns: %{email_preset: email_preset, email_presets: email_presets}} = socket) do
+    template_id = Map.get(params, "template_id", "1") |> to_integer()
+    new_email_preset = Enum.filter(email_presets, & &1.id == template_id) |> List.first()
+    
+    params = if email_preset.id == template_id, do: params, else: nil
+    
+    socket
+    |> assign(email_preset: new_email_preset)
+    |> email_preset_changeset(new_email_preset, params)
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("validate", %{"email_automation_setting" => params}, socket) do
     socket
     |> assign_changeset(maybe_normalize_params(params))
@@ -83,15 +123,40 @@ defp step_valid?(assigns),
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "timing"}, %{assigns: assigns} = socket) do
-    socket
+  def handle_event("submit", %{"step" => "timing"} = params, %{assigns: %{email_preset: email_preset} = assigns} = socket) do
+    if Map.get(assigns, :email_preset_changeset, nil) do
+      socket
+    else
+      socket
+      |> email_preset_changeset(email_preset)
+    end
     |> assign(step: next_step(assigns))
     |> noreply()
   end
 
+  defp email_preset_changeset(socket, email_preset, params \\ nil) do
+    email_preset_changeset = if params do
+      params
+    else
+      email_preset
+      |> Map.put(:template_id, email_preset.id)
+      |> prepare_email_preset_params()   
+    end
+    |> EmailPreset.changeset()
+    
+    body_template = current(email_preset_changeset) |> Map.get(:body_template)
+    if params do
+      socket
+    else
+      socket
+      |> push_event("quill:update", %{"html" => body_template})
+    end
+    |> assign(email_preset_changeset: email_preset_changeset)
+  end
+
   @impl true
-  def handle_event("submit", %{"step" => "edit_email"}, %{assigns: %{changeset: changeset} = assigns} = socket) do
-    body_html = Ecto.Changeset.get_field(changeset, :body_html)
+  def handle_event("submit", %{"step" => "edit_email"}, %{assigns: %{email_preset_changeset: changeset} = assigns} = socket) do
+    body_html = Ecto.Changeset.get_field(changeset, :body_template)
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
     socket
@@ -139,7 +204,7 @@ defp step_valid?(assigns),
                 hide_tags={true}
                 placeholder="Add to:"
                 search_on={false}
-                form={@job_type_changeset}
+                form="job_type"
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
                 options={make_options(@changeset, @job_types)}
               />
@@ -163,7 +228,7 @@ defp step_valid?(assigns),
                 hide_tags={true}
                 placeholder="Add to:"
                 search_on={false}
-                form={@job_type_changeset}
+                form="job_type"
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
                 options={make_options(@changeset, @job_types)}
               />
@@ -294,33 +359,37 @@ defp step_valid?(assigns),
 
       <hr class="my-8" />
 
-      <% f = to_form(@changeset) %>
+      <% f = to_form(@email_preset_changeset) %>
+      <%= hidden_input f, :type %>
+      <%= hidden_input f, :state %>
+      <%= hidden_input f, :name %>
+      <%= hidden_input f, :position %>
 
       <div class="mr-auto">
         <div class="grid grid-cols-3 gap-6">
           <label class="flex flex-col">
             <b>Select email preset</b>
-            <%= select_field f, :name, ["long text", "very long text", "super duper long text"], class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= select_field f, :template_id, make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
 
           <label class="flex flex-col">
             <b>Subject Line</b>
-            <%= input f, :subject, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= input f, :subject_template, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
           <label class="flex flex-col">
             <b>Private Name</b>
-            <%= input f, :template_name, placeholder: "Inquiry Email", class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= input f, :private_name, placeholder: "Inquiry Email", class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
         </div>
 
         <div class="flex flex-col mt-4">
-          <.input_label form={f} class="flex items-end justify-between mb-2 text-sm font-semibold" field={:content}>
+          <.input_label form={f} class="flex items-end justify-between mb-2 text-sm font-semibold" field={:body_template}>
             <b>Email Content</b>
-            <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(f,:body_html)}>
+            <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(f,:body_template)}>
               <p class="text-black">Clear</p>
             </.icon_button>
           </.input_label>
-          <.quill_input f={f} html_field={:body_html} text_field={:body_text} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
+          <.quill_input f={f} id="quill_email_preset_input" html_field={:body_template} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
         </div>
       </div>
     """
@@ -360,9 +429,9 @@ defp step_valid?(assigns),
   end
 
   defp assign_changeset(%{assigns: %{job_types: job_types, step: step, current_user: current_user} = assigns} = socket, params, action \\ nil) do
-    job_type_params = Map.get(params, "job_type", %{}) |> Map.put("step", step)
+    # email_preset_params = params |> Map.put("step", step)
 
-    job_type_changeset = JobType.changeset(job_type_params)
+    # email_preset_changeset = EmailPreset.changeset(email_preset_params)
 
     # package_pricing = current(package_pricing_changeset)
     # download = current(download_changeset)
@@ -393,12 +462,12 @@ defp step_valid?(assigns),
 
     changeset = EmailAutomationSetting.changeset(automation_params) |> Map.put(:action, action)
 
-    # IO.inspect changeset
+    # IO.inspect email_preset_changeset
     # IO.inspect changeset |> current()
 
     assign(socket,
       changeset: changeset,
-      job_type_changeset: job_type_changeset
+      # email_preset_changeset: email_preset_changeset
       # package_pricing: package_pricing_changeset,
       # download_changeset: download_changeset
     )
@@ -412,5 +481,10 @@ defp step_valid?(assigns),
       )
 
     params
+  end
+
+  defp make_email_presets_options(email_presets) do
+    email_presets
+    |> Enum.map(fn %{id: id, name: name} -> {name, id} end)
   end
 end

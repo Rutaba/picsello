@@ -50,7 +50,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       EmailAutomation.get_all_pipelines_emails(current_user.organization_id, selected_job_type.id)
       |> assign_category_pipeline_count()
 
-    IO.inspect automation_pipelines
+    # IO.inspect automation_pipelines
     socket |> assign(:automation_pipelines, automation_pipelines)
   end
 
@@ -165,7 +165,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   defp open_edit_modal(%{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket,
     %{"email_id" => email_id, "email_automation_setting_id" => email_automation_setting_id, "pipeline_id" => pipeline_id},
     module) do
-      IO.inspect(email_id)
     socket
     |> open_modal(module, %{
       current_user: current_user,
