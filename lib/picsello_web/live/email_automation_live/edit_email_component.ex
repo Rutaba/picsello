@@ -1,4 +1,4 @@
-defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
+defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
@@ -11,7 +11,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   alias Picsello.EmailAutomation.EmailAutomationSetting
   alias Ecto.Changeset
 
-  @steps [:timing, :edit_email, :preview_email]
+  @steps [:edit_email, :preview_email]
 
   @impl true
   def update(%{current_user: current_user, job_type: job_type} = assigns, socket) do
@@ -25,8 +25,10 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     |> assign(job_types: job_types)
     |> assign(email_presets: email_presets)
     |> assign(steps: @steps)
-    |> assign(step: :timing)
-    |> assign_changeset(%{"total_days" => 0})
+    |> assign(step: :edit_email)
+    |> assign(show_variables: false)
+    |> assign(variables_list: make_variables())
+    |> assign_changeset(%{})
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end
@@ -36,7 +38,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     socket
     |> assign(job_types: options)
     |> assign(steps: @steps)
-    |> assign(step: :timing)
+    |> assign(step: :edit_email)
     |> assign_changeset(%{})
     |> ok()
   end
@@ -51,7 +53,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     |> ok()
   end
 
-defp step_valid?(%{step: :timing, changeset: changeset, job_types: job_types}) do
+defp step_valid?(%{step: :edit_email, changeset: changeset, job_types: job_types}) do
   Enum.any?(job_types, &Map.get(&1, :selected, false))
   && changeset.valid?
 end
@@ -83,13 +85,6 @@ defp step_valid?(assigns),
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "timing"}, %{assigns: assigns} = socket) do
-    socket
-    |> assign(step: next_step(assigns))
-    |> noreply()
-  end
-
-  @impl true
   def handle_event("submit", %{"step" => "edit_email"}, %{assigns: %{changeset: changeset} = assigns} = socket) do
     body_html = Ecto.Changeset.get_field(changeset, :body_html)
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
@@ -101,12 +96,19 @@ defp step_valid?(assigns),
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "preview_email", "email_automation_setting" => params}, %{assigns: assigns} = socket) do
+  def handle_event("submit", %{"step" => "preview_email"}, %{assigns: assigns} = socket) do
     send(self(), {:update_automation, %{booking_event: "booking_event"}})
 
     socket
     # |> assign(step: next_step(assigns))
     |> close_modal()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("toggle-variables", %{"show-variables" => show_variables}, socket) do
+    socket
+    |> assign(show_variables: !String.to_atom(show_variables))
     |> noreply()
   end
 
@@ -118,12 +120,12 @@ defp step_valid?(assigns),
         <.steps step={@step} steps={@steps} target={@myself} />
 
         <h1 class="mt-2 mb-4 text-3xl">
-          <span class="font-bold">Add <%= String.capitalize(@job_type.job_type)%> Email Step:</span>
+          <span class="font-bold">
           <%= case @step do %>
-            <% :timing -> %> Timing
-            <% :edit_email -> %> Edit Email
-            <% :preview_email -> %> Preview Email
+            <% :edit_email -> %> Edit
+            <% :preview_email -> %> Preview
           <% end %>
+          <%= String.capitalize(@job_type.job_type)%> Email</span>
         </h1>
 
         <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
@@ -141,7 +143,7 @@ defp step_valid?(assigns),
                 search_on={false}
                 form={@job_type_changeset}
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={make_options(@changeset, @job_types)}
+                options={make_options(@job_types)}
               />
             </div>
             <.step_buttons step={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
@@ -165,40 +167,12 @@ defp step_valid?(assigns),
                 search_on={false}
                 form={@job_type_changeset}
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={make_options(@changeset, @job_types)}
+                options={make_options(@job_types)}
               />
             </div>
           </.footer>
         </.form>
       </div>
-    """
-  end
-
-  defp make_options(changeset, job_types) do
-    job_types |> Enum.map(fn option ->
-      Map.put(option, :label, String.capitalize(option.label))
-    end)
-  end
-
-  defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
-
-  defp next_step(%{step: step, steps: steps}) do
-    Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
-  end
-
-  def step_buttons(%{step: step} = assigns) when step in [:timing, :edit_email] do
-    ~H"""
-    <button class="btn-primary" title="Next" disabled={!@is_valid} type="submit" phx-disable-with="Next">
-      Next
-    </button>
-    """
-  end
-
-  def step_buttons(%{step: :preview_email} = assigns) do
-    ~H"""
-    <button class="btn-primary" title="Save" disabled={!@is_valid} type="submit" phx-disable-with="Save">
-      Save
-    </button>
     """
   end
 
@@ -287,7 +261,7 @@ defp step_valid?(assigns),
           </div>
         </div>
         <div class="flex flex-col ml-2">
-          <p><b> Job:</b> Day Before Shoot</p>
+          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
           <p class="text-sm text-base-250">Send email 2 hours before shoot</p>
         </div>
       </div>
@@ -314,13 +288,45 @@ defp step_valid?(assigns),
         </div>
 
         <div class="flex flex-col mt-4">
-          <.input_label form={f} class="flex items-end justify-between mb-2 text-sm font-semibold" field={:content}>
+          <.input_label form={f} class="flex items-end mb-2 text-sm font-semibold" field={:content}>
             <b>Email Content</b>
-            <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(f,:body_html)}>
+            <.icon_button color="red-sales-300" class="ml-auto mr-4" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(f,:body_html)}>
               <p class="text-black">Clear</p>
             </.icon_button>
+            <.icon_button color="blue-planning-300" class={@show_variables && "hidden"} icon="vertical-list" id="view-variables" phx-click="toggle-variables" phx-value-show-variables={"#{@show_variables}"} phx-target={@myself}>
+              <p class="text-blue-planning-300">View email variables</p>
+            </.icon_button>
           </.input_label>
-          <.quill_input f={f} html_field={:body_html} text_field={:body_text} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
+
+          <div class="flex">
+            <div id="quill-wrapper" class={"w-full #{@show_variables && "w-2/3"}"}>
+              <.quill_input f={f} html_field={:body_html} text_field={:body_text} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
+            </div>
+
+            <div class={"flex flex-col w-1/3 ml-5 min-h-[16rem] #{!@show_variables && "hidden"}"}>
+              <div class="flex items-center font-bold bg-gray-100 rounded-t-lg border-gray-200 text-blue-planning-300 p-2.5">
+                <.icon name="vertical-list" class="w-4 h-4 mr-2 text-blue-planning-300" />
+                Email Variables
+
+                <a href="#" phx-click="toggle-variables" phx-value-show-variables={"#{@show_variables}"} title="close" phx-target={@myself} class="ml-auto cursor-pointer">
+                  <.icon name="close-x" class="w-3 h-3 stroke-current text-base-300 stroke-2" />
+                </a>
+              </div>
+              <div class="flex flex-col p-2.5 border border-gray-200 rounded-b-lg">
+                <p class="text-base-250">Copy & paste the variable to use in your email. If you remove a variable, the information won’t be inserted.</p>
+                <hr class="my-3" />
+                <%= for variable <- @variables_list do%>
+                  <div class="flex-col flex mb-3">
+                    <span class="flex">
+                      <%= variable.name %>
+                      <.icon name="trash" class="w-3 h-3 ml-auto text-blue-planning-300"/>
+                    </span>
+                    <span class="text-base-250"><%= variable.description %></span>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     """
@@ -335,7 +341,7 @@ defp step_valid?(assigns),
           </div>
         </div>
         <div class="flex flex-col ml-2">
-          <p><b> Job:</b> Upcoming Shoot Automation</p>
+          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
           <p class="text-sm text-base-250">Send email 7 days before next upcoming shoot</p>
         </div>
       </div>
@@ -356,6 +362,34 @@ defp step_valid?(assigns),
             </iframe>
           </div>
       <% end %>
+    """
+  end
+
+  defp make_options(job_types) do
+    job_types |> Enum.map(fn option ->
+      Map.put(option, :label, String.capitalize(option.label))
+    end)
+  end
+
+  defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
+
+  defp next_step(%{step: step, steps: steps}) do
+    Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
+  end
+
+  def step_buttons(%{step: step} = assigns) when step in [:timing, :edit_email] do
+    ~H"""
+    <button class="btn-primary" title="Next" disabled={!@is_valid} type="submit" phx-disable-with="Next">
+      Next
+    </button>
+    """
+  end
+
+  def step_buttons(%{step: :preview_email} = assigns) do
+    ~H"""
+    <button class="btn-primary" title="Save" disabled={!@is_valid} type="submit" phx-disable-with="Save">
+      Save
+    </button>
     """
   end
 
@@ -412,5 +446,26 @@ defp step_valid?(assigns),
       )
 
     params
+  end
+
+  defp make_variables() do
+    [
+      %{
+        name: "{{client_total}}",
+        description: "Let your client know who you are and what makes your business special"
+      },
+      %{
+        name: "{{invoice_total}}",
+        description: "The total of invoice"
+      },
+      %{
+        name: "{{invoice_name}}",
+        description: "This is the name of invoice"
+      },
+      %{
+        name: "{{order_subtotal}}",
+        description: "this is subtotal"
+      }
+    ]
   end
 end

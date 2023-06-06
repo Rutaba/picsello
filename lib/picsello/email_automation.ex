@@ -65,7 +65,7 @@ defmodule Picsello.EmailAutomation do
       ep in EmailPreset,
       join: es in assoc(ep, :email_automation_setting),
       on: ep.email_automation_setting_id == es.id,
-      where: es.id == ^id,
+      where: ep.id == ^id,
       preload: [:email_automation_setting]
     )
     |> Repo.one()

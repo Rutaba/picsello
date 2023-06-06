@@ -102,14 +102,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @impl true
   def handle_event("edit-time-popup", params, socket) do
     socket
-    |> open_edit_modal(params, PicselloWeb.EmailAutomationLive.EditTimeComponent)    
+    |> open_edit_modal(params, PicselloWeb.EmailAutomationLive.EditTimeComponent)
     |> noreply()
   end
 
   @impl true
   def handle_event("edit-email-popup", params, socket) do
     socket
-    |> open_edit_modal(params, PicselloWeb.EmailAutomationLive.EditEmailComponent)    
+    |> open_edit_modal(params, PicselloWeb.EmailAutomationLive.EditEmailComponent)
     |> noreply()
   end
 
@@ -157,14 +157,15 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   end
 
   defp get_pipline(pipeline_id) do
-    pipeline = to_integer(pipeline_id) 
-    |> EmailAutomation.get_pipeline_by_id() 
+    pipeline = to_integer(pipeline_id)
+    |> EmailAutomation.get_pipeline_by_id()
     |> Repo.preload([:email_automation_category, :email_automation_sub_category])
   end
 
   defp open_edit_modal(%{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket,
-    %{"email_id" => email_id, "email_automation_setting_id" => email_automation_setting_id, "pipeline_id" => pipeline_id}, 
+    %{"email_id" => email_id, "email_automation_setting_id" => email_automation_setting_id, "pipeline_id" => pipeline_id},
     module) do
+      IO.inspect(email_id)
     socket
     |> open_modal(module, %{
       current_user: current_user,
