@@ -6,7 +6,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationSettings do
     execute("CREATE TYPE email_automation_setting_status AS ENUM ('active','disabled')")
 
     create table(@table) do
-      add(:name, :string, null: false)
       add(:status, :email_automation_setting_status, null: false)
       add(:total_days, :integer)
       add(:condition, :string)

@@ -8,8 +8,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.Shared.MultiSelect
 
-  alias Picsello.{EmailPresets, Jobs, JobType, GlobalSettings.Gallery, EmailPresets.EmailPreset}
-  alias Picsello.EmailAutomation.EmailAutomationSetting
+  alias Picsello.{Repo, EmailPresets, Jobs, JobType, GlobalSettings.Gallery, EmailPresets.EmailPreset}
+  alias Picsello.EmailAutomation.{EmailAutomationSetting, EmailAutomationType}
   alias Ecto.Changeset
 
   @steps [:timing, :edit_email, :preview_email]
@@ -166,13 +166,51 @@ defp step_valid?(assigns),
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "preview_email", "email_automation_setting" => params}, %{assigns: assigns} = socket) do
+  def handle_event("submit", %{"step" => "preview_email"}, %{assigns: assigns} = socket) do
     send(self(), {:update_automation, %{booking_event: "booking_event"}})
 
     socket
-    # |> assign(step: next_step(assigns))
+    |> save()
     |> close_modal()
     |> noreply()
+  end
+
+  defp save(%{
+    assigns: %{
+      changeset: changeset,
+      email_preset_changeset: email_preset_changeset,
+      job_types: job_types,
+      pipeline: pipeline
+      }} = socket) do
+    selected_job_types = Enum.filter(job_types, & &1.selected)
+    IO.inspect selected_job_types
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:email_automation_setting, changeset)
+    |> Ecto.Multi.insert(:email_preset, fn %{email_automation_setting: %{id: setting_id}} ->
+      email_preset_changeset
+      |> Ecto.Changeset.put_change(:email_automation_setting_id, setting_id)
+    end)
+    |> Ecto.Multi.insert_all(
+      :email_automation_types,
+      EmailAutomationType, 
+      fn %{email_automation_setting: %{id: setting_id}, email_preset: %{id: email_id}} ->
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
+        selected_job_types
+        |> Enum.map(&%{
+          organization_job_id: &1.id,
+          email_automation_setting_id: setting_id,
+          email_preset_id: email_id,
+          inserted_at: now,
+          updated_at: now
+        })
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, abc} -> IO.inspect abc
+      _ -> :error
+    end
+
+    socket
   end
 
   @impl true
@@ -286,7 +324,8 @@ defp step_valid?(assigns),
         </div>
 
         <% f = to_form(@changeset) %>
-
+        <%= hidden_input f, :email_automation_pipeline_id %>
+        <%= hidden_input f, :organization_id %>
         <div class="px-14 py-6">
           <b>Automation timing</b>
           <span class="text-base-250">Choose when you’d like your automation to run</span>
@@ -360,8 +399,9 @@ defp step_valid?(assigns),
       <hr class="my-8" />
 
       <% f = to_form(@email_preset_changeset) %>
-      <%= hidden_input f, :type %>
-      <%= hidden_input f, :state %>
+      <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
+      <%= hidden_input f, :job_type, value: @job_type.job_type %>
+      <%= hidden_input f, :state, value: @pipeline.state %>
       <%= hidden_input f, :name %>
       <%= hidden_input f, :position %>
 
@@ -428,34 +468,11 @@ defp step_valid?(assigns),
     """
   end
 
-  defp assign_changeset(%{assigns: %{job_types: job_types, step: step, current_user: current_user} = assigns} = socket, params, action \\ nil) do
-    # email_preset_params = params |> Map.put("step", step)
-
-    # email_preset_changeset = EmailPreset.changeset(email_preset_params)
-
-    # package_pricing = current(package_pricing_changeset)
-    # download = current(download_changeset)
-
-    # print_credits_include_in_total = Map.get(package_pricing, :print_credits_include_in_total)
-    # digitals_include_in_total = Map.get(download, :digitals_include_in_total)
-
-    # multiplier_params = Map.get(params, "multiplier", %{}) |> Map.put("step", step)
-
-    # multiplier_changeset =
-    #   package
-    #   |> Multiplier.from_decimal()
-    #   |> Multiplier.changeset(
-    #     multiplier_params,
-    #     print_credits_include_in_total,
-    #     digitals_include_in_total
-    #   )
-
-    # multiplier = current(multiplier_changeset)
-
+  defp assign_changeset(%{assigns: %{job_types: job_types, step: step, current_user: current_user, pipeline: pipeline} = assigns} = socket, params, action \\ nil) do
     automation_params =
       params
       |> Map.merge(%{
-        "email_automation_pipeline_id" => current_user.organization_id,
+        "email_automation_pipeline_id" => pipeline.id,
         "organization_id" => current_user.organization_id,
         "step" => step
       })

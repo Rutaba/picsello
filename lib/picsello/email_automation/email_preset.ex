@@ -45,19 +45,6 @@ defmodule Picsello.EmailPresets.EmailPreset do
     |> foreign_key_constraint(:job_type)
   end
 
-  def create_changeset(email_preset \\ %__MODULE__{}, attrs) do
-    email_preset
-    |> cast(
-      attrs,
-      ~w[email_automation_setting_id template_id private_name type state job_type name position subject_template body_template]a
-    )
-    |> validate_required(
-      ~w[email_automation_setting_id type state name position subject_template body_template]a
-    )
-    |> validate_states()
-    |> foreign_key_constraint(:job_type)
-  end
-
   defp validate_states(changeset) do
     type = get_field(changeset, :type)
     changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))

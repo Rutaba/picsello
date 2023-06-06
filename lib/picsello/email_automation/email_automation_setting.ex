@@ -10,7 +10,6 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
   @status ~w(active disabled)a
 
   schema "email_automation_settings" do
-    field :name, :string
     field :status, Ecto.Enum, values: @status, default: :active
     field :total_days, :integer, default: 0
     field :condition, :string
@@ -18,10 +17,6 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
     field :count, :integer, virtual: true
     field :calendar, :string, virtual: true
     field :sign, :string, virtual: true
-    field :private_name, :string, virtual: true
-    field :body_template, :string, virtual: true
-    field :subject_template, :string, virtual: true
-    field :template_name, :string, virtual: true
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
     belongs_to(:organization, Picsello.Organization)
@@ -34,10 +29,9 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
     email_setting
     |> cast(
       attrs,
-      ~w[status total_days condition name email_automation_pipeline_id organization_id immediately count calendar sign private_name body_template subject_template template_name]a
+      ~w[status total_days condition email_automation_pipeline_id organization_id immediately count calendar sign]a
     )
     |> validate_required(~w[status email_automation_pipeline_id organization_id]a)
-    # |> then(&if(Map.get(attrs, "step") == :edit_email, do: &1 |> validate_required([:name]) else: &1))
     |> then(&force_change(&1, :total_days, calculate_days(&1)))
     |> then(fn changeset ->
       unless get_field(changeset, :immediately) do
