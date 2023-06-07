@@ -21,7 +21,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     job_type: job_type,
     pipeline: %{email_automation_category: %{type: type}}
     } = assigns, socket) do
-  
+
     job_types = Jobs.get_job_types_with_label(current_user.organization_id)
     |> Enum.map(&Map.put(&1, :selected, &1.id == job_type.id))
 
@@ -255,7 +255,7 @@ defp step_valid?(assigns),
               <p class="font-semibold">Send at a certain time</p>
             </label>
             <%= unless input_value(f, :immediately) do %>
-              <div class="flex flex-col ml-8">
+              <div class="flex flex-col ml-8 md:w-1/2">
                 <div class="flex w-full my-2">
                   <div class="w-1/5">
                     <%= input f, :count, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer w-full" %>
@@ -325,7 +325,7 @@ defp step_valid?(assigns),
       <%= hidden_input f, :position %>
 
       <div class="mr-auto">
-        <div class="grid grid-rows-3 md:grid-cols-3 gap-6">
+        <div class="grid grid-row md:grid-cols-3 gap-6">
           <label class="flex flex-col">
             <b>Select email preset</b>
             <%= select_field f, :template_id, Shared.make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
@@ -401,7 +401,7 @@ defp step_valid?(assigns),
       })
 
     changeset = EmailAutomationSetting.changeset(automation_params) |> Map.put(:action, action)
-    
+
     socket
     |> assign(changeset: changeset)
   end
@@ -424,7 +424,7 @@ defp step_valid?(assigns),
       pipeline: pipeline
       }} = socket) do
     selected_job_types = Enum.filter(job_types, & &1.selected)
-    
+
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:email_automation_setting, changeset)
     |> Ecto.Multi.insert(:email_preset, fn %{email_automation_setting: %{id: setting_id}} ->
@@ -447,7 +447,7 @@ defp step_valid?(assigns),
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} -> 
+      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} ->
         send(self(), {:update_automation, %{message: "Successfully created", email_automation_setting: email_automation_setting, email_preset: email_preset}})
         :ok
       _ -> :error

@@ -22,7 +22,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     pipeline: %{email_automation_category: %{type: type}},
     email: email,
     } = assigns, socket) do
-  
+
     job_types = Jobs.get_job_types_with_label(current_user.organization_id)
     |> Enum.map(fn row ->
       selected = email.email_automation_types
@@ -31,8 +31,8 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       Map.put(row, :selected, selected)
     end)
 
-    email_presets = EmailPresets.email_automation_presets(type) 
-    
+    email_presets = EmailPresets.email_automation_presets(type)
+
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
@@ -91,10 +91,10 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   @impl true
   def handle_event("validate", %{"email_preset" => params}, %{assigns: %{email_preset: email_preset, email_presets: email_presets}} = socket) do
     id = Map.get(params, "id", "1") |> to_integer()
-    preset = Enum.filter(email_presets, & &1.id == id) 
+    preset = Enum.filter(email_presets, & &1.id == id)
     |> List.first()
     |> Map.take([:body_template, :subject_template, :id, :name])
-    
+
     new_email_preset = Map.merge(email_preset, preset)
 
     params = if email_preset.id == id, do: params, else: nil
@@ -227,7 +227,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
 
       <div class="mr-auto">
-        <div class="grid grid-cols-3 gap-6">
+        <div class="grid grid-row md:grid-cols-3 gap-6">
           <label class="flex flex-col">
             <b>Select email preset</b>
             <%= select_field f, :id, Shared.make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
@@ -254,12 +254,12 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
             </.icon_button>
           </.input_label>
 
-          <div class="flex">
-            <div id="quill-wrapper" class={"w-full #{@show_variables && "w-2/3"}"}>
-              <.quill_input f={f} id="quill_email_preset_input" html_field={:body_template} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
+          <div class="flex flex-col md:flex-row">
+            <div id="quill-wrapper" class={"w-full #{@show_variables && "md:w-2/3"}"}>
+              <.quill_input f={f} id="quill_email_preset_input" html_field={:body_template} editor_class="min-h-[16rem] h-72" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
             </div>
 
-            <div class={"flex flex-col w-1/3 ml-5 min-h-[16rem] #{!@show_variables && "hidden"}"}>
+            <div class={"flex flex-col w-full md:w-1/3 md:ml-2 min-h-[16rem] md:mt-0 mt-6 #{!@show_variables && "hidden"}"}>
               <div class="flex items-center font-bold bg-gray-100 rounded-t-lg border-gray-200 text-blue-planning-300 p-2.5">
                 <.icon name="vertical-list" class="w-4 h-4 mr-2 text-blue-planning-300" />
                 Email Variables
@@ -268,7 +268,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
                   <.icon name="close-x" class="w-3 h-3 stroke-current text-base-300 stroke-2" />
                 </a>
               </div>
-              <div class="flex flex-col p-2.5 border border-gray-200 rounded-b-lg">
+              <div class="flex flex-col p-2.5 border border-gray-200 rounded-b-lg h-72 overflow-auto">
                 <p class="text-base-250">Copy & paste the variable to use in your email. If you remove a variable, the information won’t be inserted.</p>
                 <hr class="my-3" />
                 <%= for variable <- @variables_list do%>
@@ -389,11 +389,11 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       email: email
       }} = socket) do
     selected_job_types = Enum.filter(job_types, & &1.selected)
-    
-    new_job_types = 
+
+    new_job_types =
     selected_job_types
-    |> Enum.filter(fn type -> 
-        !Enum.any?(email.email_automation_types, 
+    |> Enum.filter(fn type ->
+        !Enum.any?(email.email_automation_types,
         &(type.id == &1.organization_job_id
         and &1.email_automation_setting_id == setting_id
         and &1.email_preset_id == email.id
@@ -401,7 +401,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     end)
 
     changeset = Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
-        
+
     Ecto.Multi.new()
     |> Ecto.Multi.insert(
       :email_preset,
@@ -425,7 +425,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       end)
     |> Repo.transaction()
     |> case do
-      {:ok, %{email_preset: email_preset}} -> 
+      {:ok, %{email_preset: email_preset}} ->
         send(self(), {:update_automation, %{message: "Successfully updated", email_preset: email_preset}})
         :ok
       _ -> :error
