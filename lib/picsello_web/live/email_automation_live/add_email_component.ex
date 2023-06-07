@@ -23,9 +23,9 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     IO.inspect assigns
     job_types = Jobs.get_job_types_with_label(current_user.organization_id)
     |> Enum.map(&Map.put(&1, :selected, &1.id == job_type.id))
-    
+
     email_presets = EmailPresets.email_automation_presets(type)
-    
+
     # IO.inspect email_presets
     socket
     |> assign(assigns)
@@ -106,9 +106,9 @@ defp step_valid?(assigns),
   def handle_event("validate", %{"email_preset" => params}, %{assigns: %{email_preset: email_preset, email_presets: email_presets}} = socket) do
     template_id = Map.get(params, "template_id", "1") |> to_integer()
     new_email_preset = Enum.filter(email_presets, & &1.id == template_id) |> List.first()
-    
+
     params = if email_preset.id == template_id, do: params, else: nil
-    
+
     socket
     |> assign(email_preset: new_email_preset)
     |> email_preset_changeset(new_email_preset, params)
@@ -137,7 +137,7 @@ defp step_valid?(assigns),
   defp email_preset_changeset(socket, email_preset, params \\ nil) do
     email_preset_changeset = build_changeset(email_preset, params)
     body_template = current(email_preset_changeset) |> Map.get(:body_template)
-    
+
     if params do
       socket
     else
@@ -147,13 +147,13 @@ defp step_valid?(assigns),
     |> assign(email_preset_changeset: email_preset_changeset)
   end
 
-  defp build_changeset(email_preset, params) do 
+  defp build_changeset(email_preset, params) do
     if params do
       params
     else
       email_preset
       |> Map.put(:template_id, email_preset.id)
-      |> prepare_email_preset_params()   
+      |> prepare_email_preset_params()
     end
     |> EmailPreset.changeset()
   end
@@ -194,7 +194,7 @@ defp step_valid?(assigns),
     end)
     |> Ecto.Multi.insert_all(
       :email_automation_types,
-      EmailAutomationType, 
+      EmailAutomationType,
       fn %{email_automation_setting: %{id: setting_id}, email_preset: %{id: email_id}} ->
         now = DateTime.utc_now() |> DateTime.truncate(:second)
         selected_job_types
@@ -208,7 +208,7 @@ defp step_valid?(assigns),
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} -> 
+      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} ->
         send(self(), {:update_automation, %{email_automation_setting: email_automation_setting, email_preset: email_preset}})
       _ -> :error
     end
@@ -312,7 +312,7 @@ defp step_valid?(assigns),
     ~H"""
       <div class="rounded-lg border-base-200 border">
         <div class="bg-base-200 p-4 flex rounded-t-lg">
-          <div class="flex flex-row items-center mr-[600px]">
+          <div class="flex flex-row items-center">
             <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center mr-3">
               <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
             </div>
@@ -329,17 +329,17 @@ defp step_valid?(assigns),
         <% f = to_form(@changeset) %>
         <%= hidden_input f, :email_automation_pipeline_id %>
         <%= hidden_input f, :organization_id %>
-        <div class="px-14 py-6">
+        <div class="flex flex-col md:px-14 px-6 py-6">
           <b>Automation timing</b>
           <span class="text-base-250">Choose when you’d like your automation to run</span>
-          <div class="flex gap-4 flex-col my-4 w-1/2">
+          <div class="flex gap-4 flex-col my-4">
             <label class="flex items-center cursor-pointer">
               <%= radio_button(f, :immediately, true, class: "w-5 h-5 mr-4 radio") %>
-              <p>Send immediately when event happens</p>
+              <p class="font-semibold">Send immediately when event happens</p>
             </label>
             <label class="flex items-center cursor-pointer">
               <%= radio_button(f, :immediately, false, class: "w-5 h-5 mr-4 radio") %>
-              <p>Send at a certain time</p>
+              <p class="font-semibold">Send at a certain time</p>
             </label>
             <%= unless input_value(f, :immediately) do %>
               <div class="flex flex-col ml-8">
