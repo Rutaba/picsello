@@ -70,6 +70,11 @@ defmodule Picsello.EmailAutomation do
     |> Repo.one()
   end
 
+  def get_email_setting_by_id(id) do
+    from(eat in EmailAutomationSetting, where: eat.id == ^id)
+    |> Repo.one()
+  end
+
   def update_pipeline_and_settings_status(pipeline_id, active) do
     status = toggle_status(active)
 

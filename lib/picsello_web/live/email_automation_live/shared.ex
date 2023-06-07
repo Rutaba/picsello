@@ -52,4 +52,20 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def validate?(true, job_types) do
     Enum.any?(job_types, &Map.get(&1, :selected, false))
   end
+
+  def explode_hours(hours) do
+    year = 365 * 24
+    month = 30 * 24
+    sign = if hours > 0, do: "+", else: "-"
+    hours = make_positive_number(hours)
+
+    cond do
+      rem(hours, year) == 0 -> %{count: trunc(hours / year), calendar: "Year", sign: sign}
+      rem(hours, month) == 0 -> %{count: trunc(hours / month), calendar: "Month", sign: sign}
+      rem(hours, 24) == 0 -> %{count: trunc(hours / 24), calendar: "Day", sign: sign}
+      true -> %{count: hours, calendar: "Hour", sign: sign}
+    end
+  end
+
+  defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
 end

@@ -11,7 +11,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
 
   schema "email_automation_settings" do
     field :status, Ecto.Enum, values: @status, default: :active
-    field :total_days, :integer, default: 0
+    field :total_hours, :integer, default: 0
     field :condition, :string
     field :immediately, :boolean, default: true, virtual: true
     field :count, :integer, virtual: true
@@ -29,42 +29,47 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
     email_setting
     |> cast(
       attrs,
-      ~w[status total_days condition email_automation_pipeline_id organization_id immediately count calendar sign]a
+      ~w[status total_hours condition email_automation_pipeline_id organization_id immediately count calendar sign]a
     )
     |> validate_required(~w[status email_automation_pipeline_id organization_id]a)
-    |> then(&force_change(&1, :total_days, calculate_days(&1)))
     |> then(fn changeset ->
       unless get_field(changeset, :immediately) do
         changeset
         |> validate_required([:count])
         |> validate_number(:count, greater_than: 0, less_than_or_equal_to: 31)
+        |> put_change(:total_hours, calculate_hours(changeset))
       else
         changeset
+        |> put_change(:count, nil)
+        |> put_change(:calendar, nil)
+        |> put_change(:sign, nil)
+        |> put_change(:total_hours, 0)
       end
     end)
   end
 
-  defp calculate_days(changeset) do
+  defp calculate_hours(changeset) do
     data = changeset |> current()
     count = Map.get(data, :count)
 
     if count do
-      calculate_total_days(count, data)
+      calculate_total_hours(count, data)
     else
       0
     end
   end
-
-  defp calculate_total_days(count, data) do
-    days = case Map.get(data, :calendar) do
-      "Day" -> count
-      "Month" -> count * 30
-      "Year" -> count * 365
+  
+  defp calculate_total_hours(count, data) do
+    hours = case Map.get(data, :calendar) do
+      "Hour" -> count
+      "Day" -> count * 24
+      "Month" -> count * 30  * 24
+      "Year" -> count * 365 * 24
     end
 
     case Map.get(data, :sign) do
-      "+" -> days
-      "-" -> String.to_integer("-#{days}")
+      "+" -> hours
+      "-" -> String.to_integer("-#{hours}")
     end
   end
 end

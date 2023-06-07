@@ -21,13 +21,12 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     job_type: job_type,
     pipeline: %{email_automation_category: %{type: type}}
     } = assigns, socket) do
-    IO.inspect assigns
+  
     job_types = Jobs.get_job_types_with_label(current_user.organization_id)
     |> Enum.map(&Map.put(&1, :selected, &1.id == job_type.id))
 
     email_presets = EmailPresets.email_automation_presets(type)
 
-    # IO.inspect email_presets
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
@@ -91,8 +90,6 @@ defp step_valid?(assigns),
     new_email_preset = Enum.filter(email_presets, & &1.id == template_id) |> List.first()
 
     params = if email_preset.id == template_id, do: params, else: nil
-
-    IO.inspect params, label: "az------------"
 
     socket
     |> assign(email_preset: new_email_preset)
@@ -264,7 +261,7 @@ defp step_valid?(assigns),
                     <%= input f, :count, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer w-full" %>
                   </div>
                     <div class="ml-2 w-3/5">
-                    <%= select f, :calendar, ["Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
+                    <%= select f, :calendar, ["Hour", "Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
                   </div>
                   <div class="ml-2 w-3/5">
                     <%= select f, :sign, [Before: "-", After: "+"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
@@ -367,7 +364,11 @@ defp step_valid?(assigns),
         </div>
         <div class="flex flex-col ml-2">
           <p><b> Job:</b> Upcoming Shoot Automation</p>
-          <p class="text-sm text-base-250">Send email 7 days before next upcoming shoot</p>
+          <% c = to_form(@changeset) %>
+          <%= unless input_value(c, :immediately) do %>
+            <% sign = input_value(c, :sign) %>
+            <p class="text-sm text-base-250">Send email <%= input_value(c, :count) %> <%= String.downcase(input_value(c, :calendar)) %>  <%= if sign == "+", do: "after", else: "before" %> <%= String.downcase(@pipeline.name) %></p>
+          <% end %>
         </div>
       </div>
       <span class="text-base-250">Check out how your client will see your emails. We’ve put in some placeholder data to visualize the variables.</span>
@@ -400,16 +401,9 @@ defp step_valid?(assigns),
       })
 
     changeset = EmailAutomationSetting.changeset(automation_params) |> Map.put(:action, action)
-
-    # IO.inspect email_preset_changeset
-    # IO.inspect changeset |> current()
-
-    assign(socket,
-      changeset: changeset,
-      # email_preset_changeset: email_preset_changeset
-      # package_pricing: package_pricing_changeset,
-      # download_changeset: download_changeset
-    )
+    
+    socket
+    |> assign(changeset: changeset)
   end
 
   defp maybe_normalize_params(params) do
@@ -430,7 +424,7 @@ defp step_valid?(assigns),
       pipeline: pipeline
       }} = socket) do
     selected_job_types = Enum.filter(job_types, & &1.selected)
-    IO.inspect selected_job_types
+    
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:email_automation_setting, changeset)
     |> Ecto.Multi.insert(:email_preset, fn %{email_automation_setting: %{id: setting_id}} ->
@@ -453,8 +447,8 @@ defp step_valid?(assigns),
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} ->
-        send(self(), {:update_automation, %{email_automation_setting: email_automation_setting, email_preset: email_preset}})
+      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} -> 
+        send(self(), {:update_automation, %{message: "Successfully created", email_automation_setting: email_automation_setting, email_preset: email_preset}})
         :ok
       _ -> :error
     end

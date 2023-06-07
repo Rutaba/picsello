@@ -7,7 +7,7 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationSettings do
 
     create table(@table) do
       add(:status, :email_automation_setting_status, null: false)
-      add(:total_days, :integer)
+      add(:total_hours, :integer)
       add(:condition, :string)
 
       add(

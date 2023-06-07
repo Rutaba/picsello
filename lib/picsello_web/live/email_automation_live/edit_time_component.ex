@@ -7,49 +7,32 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
 
   alias Picsello.EmailAutomation.{EmailAutomationSetting, EmailAutomationType}
   alias Ecto.Changeset
-  alias Picsello.{Repo, EmailPresets, Jobs, JobType, GlobalSettings.Gallery, EmailPresets.EmailPreset}
+  alias Picsello.{EmailAutomation, Repo, EmailPresets, Jobs, JobType, GlobalSettings.Gallery, EmailPresets.EmailPreset}
+  alias PicselloWeb.EmailAutomationLive.Shared
 
   @impl true
   def update(%{
     current_user: current_user,
     job_type: job_type,
-    pipeline: %{email_automation_category: %{type: type}}
+    pipeline: %{email_automation_category: %{type: type}},
+    email_automation_setting_id: setting_id
     } = assigns, socket) do
-    IO.inspect assigns
-    job_types = Jobs.get_job_types_with_label(current_user.organization_id)
-    |> Enum.map(&Map.put(&1, :selected, &1.id == job_type.id))
+    email_automation_setting = EmailAutomation.get_email_setting_by_id(to_integer(setting_id))
 
-    email_presets = EmailPresets.email_automation_presets(type)
+    email_automation_setting = if email_automation_setting.total_hours == 0 do
+      email_automation_setting |> Map.put(:immediately, true)
+    else
+      data = Shared.explode_hours(email_automation_setting.total_hours)
+      Map.merge(email_automation_setting, data)
+      |> Map.put(:immediately, false)
+    end
+    changeset = email_automation_setting |> EmailAutomationSetting.changeset(%{})
 
-    # IO.inspect email_presets
     socket
     |> assign(assigns)
-    |> assign(job_types: job_types)
-    |> assign(email_presets: email_presets)
-    |> assign(email_preset: List.first(email_presets))
-    |> assign_changeset(%{})
-    |> assign_new(:template_preview, fn -> nil end)
+    |> assign(email_automation_setting: email_automation_setting)
+    |> assign(changeset: changeset)
     |> ok()
-  end
-
-  @impl true
-  def update(%{options: options}, socket) do
-    socket
-    |> assign(job_types: options)
-    |> ok()
-  end
-
-  defp prepare_params(email_preset) do
-    %{
-      "total_days" => 0,
-      "email_preset" => prepare_email_preset_params(email_preset)
-    }
-  end
-
-  defp prepare_email_preset_params(email_preset) do
-    email_preset
-    |> Map.from_struct()
-    |> Map.new(fn {k, v} -> {to_string(k), v} end)
   end
 
   defp step_valid?(assigns),
@@ -62,62 +45,15 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
     )
 
   @impl true
-  def handle_event("validate", %{"email_preset" => params}, %{assigns: %{email_preset: email_preset, email_presets: email_presets}} = socket) do
-    template_id = Map.get(params, "template_id", "1") |> to_integer()
-    new_email_preset = Enum.filter(email_presets, & &1.id == template_id) |> List.first()
-
-    params = if email_preset.id == template_id, do: params, else: nil
-
+  def handle_event("validate",  %{"email_automation_setting" => params}, %{assigns: %{email_automation_setting: email_automation_setting}} = socket) do
+    changeset = EmailAutomationSetting.changeset(email_automation_setting, maybe_normalize_params(params))
     socket
-    |> assign(email_preset: new_email_preset)
-    |> email_preset_changeset(new_email_preset, params)
+    |> assign(changeset: changeset)
     |> noreply()
   end
 
   @impl true
-  def handle_event("validate", %{"email_automation_setting" => params}, socket) do
-    socket
-    |> assign_changeset(maybe_normalize_params(params))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("submit", %{"step" => "timing"} = params, %{assigns: %{email_preset: email_preset} = assigns} = socket) do
-    if Map.get(assigns, :email_preset_changeset, nil) do
-      socket
-    else
-      socket
-      |> email_preset_changeset(email_preset)
-    end
-    |> noreply()
-  end
-
-  defp email_preset_changeset(socket, email_preset, params \\ nil) do
-    email_preset_changeset = build_changeset(email_preset, params)
-    body_template = current(email_preset_changeset) |> Map.get(:body_template)
-
-    if params do
-      socket
-    else
-      socket
-      |> push_event("quill:update", %{"html" => body_template})
-    end
-    |> assign(email_preset_changeset: email_preset_changeset)
-  end
-
-  defp build_changeset(email_preset, params) do
-    if params do
-      params
-    else
-      email_preset
-      |> Map.put(:template_id, email_preset.id)
-      |> prepare_email_preset_params()
-    end
-    |> EmailPreset.changeset()
-  end
-
-  @impl true
-  def handle_event("submit", %{"step" => "preview_email"}, %{assigns: assigns} = socket) do
+  def handle_event("submit", _, socket) do
     socket
     |> save()
     |> close_modal()
@@ -127,40 +63,16 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
   defp save(%{
     assigns: %{
       changeset: changeset,
-      email_preset_changeset: email_preset_changeset,
-      job_types: job_types,
-      pipeline: pipeline
       }} = socket) do
-    selected_job_types = Enum.filter(job_types, & &1.selected)
-    IO.inspect selected_job_types
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:email_automation_setting, changeset)
-    |> Ecto.Multi.insert(:email_preset, fn %{email_automation_setting: %{id: setting_id}} ->
-      email_preset_changeset
-      |> Ecto.Changeset.put_change(:email_automation_setting_id, setting_id)
-    end)
-    |> Ecto.Multi.insert_all(
-      :email_automation_types,
-      EmailAutomationType,
-      fn %{email_automation_setting: %{id: setting_id}, email_preset: %{id: email_id}} ->
-        now = DateTime.utc_now() |> DateTime.truncate(:second)
-        selected_job_types
-        |> Enum.map(&%{
-          organization_job_id: &1.id,
-          email_automation_setting_id: setting_id,
-          email_preset_id: email_id,
-          inserted_at: now,
-          updated_at: now
-        })
-    end)
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} ->
-        send(self(), {:update_automation, %{email_automation_setting: email_automation_setting, email_preset: email_preset}})
-      _ -> :error
+    
+    case Repo.insert(changeset, on_conflict: :replace_all, conflict_target: :id) do
+      {:ok, email_automation_setting} -> 
+        send(self(), {:update_automation, %{email_automation_setting: email_automation_setting, message: "successfully updated"}})
+        socket
+      {:error, changeset} -> 
+        socket
+        |> assign(changeset: changeset)
     end
-
-    socket
   end
 
   @impl true
@@ -181,7 +93,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                 <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center mr-3">
                   <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
                 </div>
-                <span class="text-blue-planning-300 text-lg"><b>Send email:</b> Shoot Prep # x</span>
+                <span class="text-blue-planning-300 text-lg"><b>Send email:</b> <%= @pipeline.name %></span>
               </div>
               <div class="flex ml-auto items-center">
                 <div class="w-8 h-8 rounded-full bg-blue-planning-300 flex items-center justify-center mr-3">
@@ -208,7 +120,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                     <%= radio_button(f, :immediately, false, class: "w-5 h-5 mr-4 radio") %>
                     <p class="font-semibold">Send at a certain time</p>
                   </label>
-                  <%= unless input_value(f, :immediately) do %>
+                  <%= unless current(@changeset) |> Map.get(:immediately) do %>
                     <div class="flex flex-col ml-8">
                       <div class="flex w-full my-2">
                         <div class="w-1/5">
@@ -251,7 +163,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
 
               <hr class="my-4 md:hidden flex" />
 
-              <div class="flex flex-col w-full md:pl-6 md:border-l md:border-base-200">
+              <div class="flex flex-col w-full md:pl-6 md:border-l md:border-base-200 hidden">
                 <b>Email Automation sequence conditions</b>
                 <span class="text-base-250">Choose to run automatically or when conditions are met</span>
                 <div class="flex gap-4 flex-col my-4">
@@ -284,27 +196,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
         </.form>
       </div>
     """
-  end
-
-  defp assign_changeset(%{assigns: %{job_types: job_types, current_user: current_user, pipeline: pipeline} = assigns} = socket, params, action \\ nil) do
-    automation_params =
-      params
-      |> Map.merge(%{
-        "email_automation_pipeline_id" => pipeline.id,
-        "organization_id" => current_user.organization_id
-      })
-
-    changeset = EmailAutomationSetting.changeset(automation_params) |> Map.put(:action, action)
-
-    # IO.inspect email_preset_changeset
-    # IO.inspect changeset |> current()
-
-    assign(socket,
-      changeset: changeset,
-      # email_preset_changeset: email_preset_changeset
-      # package_pricing: package_pricing_changeset,
-      # download_changeset: download_changeset
-    )
   end
 
   defp maybe_normalize_params(params) do

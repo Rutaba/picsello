@@ -283,6 +283,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
           </div>
         <% end %>
         <div id={"#{@id}-opts"} class={css(:options)}>
+          <div phx-click="select_all_options" phx-target={@myself} class="text-blue-planning-300 underline pb-2 cursor-pointer">Select all</div>
           <%=
             for opt <- @options,
                 id        = "#{@id}[#{opt.id}]",

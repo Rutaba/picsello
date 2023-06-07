@@ -189,10 +189,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   end
 
   @impl true
-  def handle_info({:update_automation, _}, socket) do
+  def handle_info({:update_automation, %{message: message}}, socket) do
     socket
     |> assign_automation_pipelines()
-    |> put_flash(:success, "Successfully created")
+    |> put_flash(:success, message)
     |> noreply()
   end
 
@@ -235,7 +235,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       job_type: selected_job_type,
       pipeline: get_pipline(pipeline_id),
       email_automation_setting_id: to_integer(email_automation_setting_id),
-      email: EmailAutomation.get_email_by_id(to_integer(email_id))
+      email: EmailAutomation.get_email_by_id(to_integer(email_id)) |> Repo.preload(:email_automation_types)
     })
   end
 

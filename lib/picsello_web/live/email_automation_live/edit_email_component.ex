@@ -9,7 +9,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   import PicselloWeb.Shared.MultiSelect
 
   alias Picsello.{Repo, Jobs, JobType, EmailPresets, EmailPresets.EmailPreset}
-  alias Picsello.EmailAutomation.EmailAutomationSetting
+  alias Picsello.EmailAutomation.{EmailAutomationSetting, EmailAutomationType}
   alias PicselloWeb.EmailAutomationLive.Shared
   alias Ecto.Changeset
 
@@ -22,30 +22,34 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     pipeline: %{email_automation_category: %{type: type}},
     email: email,
     } = assigns, socket) do
-    email_preset = email |> Repo.preload(:email_automation_types)
+  
     job_types = Jobs.get_job_types_with_label(current_user.organization_id)
     |> Enum.map(fn row ->
-      selected = email_preset.email_automation_types
+      selected = email.email_automation_types
       |> Enum.any?(& &1.organization_job_id == row.id)
-      IO.inspect selected
+
       Map.put(row, :selected, selected)
     end)
 
-    email_presets = EmailPresets.email_automation_presets(type)
+    email_presets = EmailPresets.email_automation_presets(type) 
     
-    IO.inspect EmailPreset.changeset(email_preset, %{}), label: "aabx----------"
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
-    |> assign(email_presets: email_presets)
-    |> assign(email_preset: email_preset)
+    |> assign(email_presets: remove_duplicate(email_presets, email))
+    |> assign(email_preset: email)
     |> assign(steps: @steps)
     |> assign(step: :edit_email)
     |> assign(show_variables: false)
-    |> assign(email_preset_changeset: EmailPreset.changeset(email_preset, %{}))
+    |> assign(email_preset_changeset: EmailPreset.changeset(email, %{}))
     |> assign(variables_list: make_variables())
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
+  end
+
+  defp remove_duplicate(email_presets, email_preset) do
+    index = Enum.find_index(email_presets, & &1.name == email_preset.name)
+    List.delete_at(email_presets, index) ++ [email_preset]
   end
 
   @impl true
@@ -93,12 +97,8 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     
     new_email_preset = Map.merge(email_preset, preset)
 
-    IO.inspect params, label: "params-----1"
-    # IO.inspect preset, label: "preset"
-    IO.inspect new_email_preset, label: "email_preset"
     params = if email_preset.id == id, do: params, else: nil
-    IO.inspect params, label: "params-----"
-    # EmailPreset.changeset(email, %{})
+
     socket
     |> assign(email_preset: new_email_preset)
     |> Shared.email_preset_changeset(new_email_preset, params)
@@ -125,8 +125,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   @impl true
   def handle_event("submit", %{"step" => "preview_email"}, %{assigns: assigns} = socket) do
-    send(self(), {:update_automation, %{booking_event: "booking_event"}})
-
     socket
     |> save()
     |> close_modal()
@@ -387,50 +385,48 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       email_preset_changeset: email_preset_changeset,
       job_types: job_types,
       pipeline: pipeline,
-      email_automation_setting_id: setting_id
+      email_automation_setting_id: setting_id,
+      email: email
       }} = socket) do
     selected_job_types = Enum.filter(job_types, & &1.selected)
-    IO.inspect email_preset_changeset
-    IO.inspect email_preset_changeset |> current()
-    IO.inspect selected_job_types
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:email_preset, email_preset_changeset)
-    # |> Ecto.Multi.insert_all(
-    #   :email_automation_types,
-    #   EmailAutomationType,
-    #   fn %{email_preset: %{id: email_id}} ->
-    #     now = DateTime.utc_now() |> DateTime.truncate(:second)
-    #     selected_job_types
-    #     |> Enum.map(&%{
-    #       organization_job_id: &1.id,
-    #       email_automation_setting_id: setting_id,
-    #       email_preset_id: email_id,
-    #       inserted_at: now,
-    #       updated_at: now
-    #     })
-    #   end,
-    #   on_conflict: {:replace, [:updated_at]},
-    #   conflict_target: [:email_preset_id, :email_automation_setting_id, :organization_job_id]
-    # )
+    
+    new_job_types = 
+    selected_job_types
+    |> Enum.filter(fn type -> 
+        !Enum.any?(email.email_automation_types, 
+        &(type.id == &1.organization_job_id
+        and &1.email_automation_setting_id == setting_id
+        and &1.email_preset_id == email.id
+        ))
+    end)
 
-    # |> Ecto.Multi.insert_all(
-    #   :email_automation_types,
-    #   EmailAutomationType, 
-    #   fn %{email_automation_setting: %{id: setting_id}, email_preset: %{id: email_id}} ->
-    #     now = DateTime.utc_now() |> DateTime.truncate(:second)
-    #     selected_job_types
-    #     |> Enum.map(&%{
-    #       organization_job_id: &1.id,
-    #       email_automation_setting_id: setting_id,
-    #       email_preset_id: email_id,
-    #       inserted_at: now,
-    #       updated_at: now
-    #     })
-    # end)
+    changeset = Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
+        
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(
+      :email_preset,
+      fn _ -> changeset end,
+      on_conflict: :replace_all,
+      conflict_target: [:id]
+    )
+    |> Ecto.Multi.insert_all(
+      :email_automation_types,
+      EmailAutomationType,
+      fn _ ->
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
+        new_job_types
+        |> Enum.map(&%{
+          organization_job_id: &1.id,
+          email_automation_setting_id: setting_id,
+          email_preset_id: email.id,
+          inserted_at: now,
+          updated_at: now
+        })
+      end)
     |> Repo.transaction()
     |> case do
       {:ok, %{email_preset: email_preset}} -> 
-        send(self(), {:update_automation, %{email_preset: email_preset}})
+        send(self(), {:update_automation, %{message: "Successfully updated", email_preset: email_preset}})
         :ok
       _ -> :error
     end
