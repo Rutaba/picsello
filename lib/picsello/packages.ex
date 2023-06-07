@@ -485,7 +485,7 @@ defmodule Picsello.Packages do
     do: user |> Package.templates_for_user(job_type) |> Repo.all()
 
   def templates_for_organization(%Organization{id: id}),
-    do: id |> Package.templates_for_organization() |> Repo.all()
+    do: id |> Package.templates_for_organization_query() |> Repo.all()
 
   def insert_package_and_update_job(changeset, job, opts \\ %{}) do
     Ecto.Multi.new()
@@ -861,5 +861,11 @@ defmodule Picsello.Packages do
 
   def update_all_query(package_ids, opts) do
     from(p in Package, where: p.id in ^package_ids, update: [set: ^opts])
+  end
+
+  def get_recent_packages(user) do
+    query = Package.templates_for_organization_query(user.organization_id)
+
+    from(q in query, order_by: [desc: q.inserted_at], limit: 6) |> Repo.all()
   end
 end

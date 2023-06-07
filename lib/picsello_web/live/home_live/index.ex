@@ -22,6 +22,8 @@ defmodule PicselloWeb.HomeLive.Index do
     Subscriptions,
     Marketing,
     Galleries,
+    Package,
+    Packages,
     BookingEvents
   }
 
@@ -328,6 +330,13 @@ defmodule PicselloWeb.HomeLive.Index do
     do:
       socket
       |> push_redirect(to: Routes.calendar_booking_events_path(socket, :index))
+      |> noreply()
+
+  @impl true
+  def handle_event("view-packages", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.package_templates_path(socket, :index))
       |> noreply()
 
   @impl true
@@ -715,6 +724,28 @@ defmodule PicselloWeb.HomeLive.Index do
             <% end %>
           </.recents_card>
 
+        <% "packages" -> %>
+          <.recents_card add_event="add-package" view_event="view-packages" hidden={Enum.empty?(@packages)} button_title="Create a package" title="Recent packages" class="h-auto" color="blue-planning-300">
+            <hr class="m-1 mb-4" />
+            <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
+              <%= for package <- @packages do %>
+                <%= live_redirect to: Routes.package_templates_path(@socket, :edit, package.id) do %>
+                  <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
+                    <%= if String.length(package.name) < 30 do
+                        package.name || "-"
+                      else
+                        "#{package.name |> String.slice(0..30)} ..."
+                      end %>
+                  </p>
+                  <p class="text-gray-400 font-normal text-sm">
+                    Package price: <%= package |> Package.price() |> Money.to_string(fractional_unit: false) %>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+                    Digital price: <%= if Money.zero?(package.download_each_price) do %>--<% else %><%= package.download_each_price %> <% end %>
+                  </p>
+                <% end %>
+              <% end %>
+            </div>
+          </.recents_card>
+
         <% _ -> %>
           <%= case @attention_items do %>
             <% [] -> %>
@@ -950,6 +981,9 @@ defmodule PicselloWeb.HomeLive.Index do
 
       "booking-events" ->
         socket |> assign(:booking_events, BookingEvents.get_booking_events(current_user.organization_id, filters: %{sort_by: :inserted_at, sort_direction: :desc}))
+
+      "packages" ->
+        socket |> assign(:packages, Packages.get_recent_packages(current_user))
     end
   end
 
