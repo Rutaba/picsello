@@ -56,15 +56,30 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   defp assign_category_pipeline_count(automation_pipelines) do
     automation_pipelines
     |> Enum.map(fn %{subcategories: subcategories} = category ->
-      total_pipelines =
+      total_emails_count =
         subcategories
         |> Enum.reduce(0, fn subcategory, acc ->
-          acc + length(subcategory.pipelines)
+            email_count =
+              Enum.reduce(subcategory.pipelines, 0, fn pipeline, acc   ->
+                acc + Enum.count(pipeline.emails)
+              end)
+
+            email_count + acc
         end)
 
-      Map.put(category, :total_category_pipelines, total_pipelines)
+      Map.put(category, :total_emails_count, total_emails_count)
     end)
   end
+
+  # category
+  #   subcategory
+  #     pipeline
+  #       email
+  #       email
+  #     pipeline
+  #       email
+  #       email
+  #   subcategory
 
   @impl true
   def handle_event(
@@ -163,11 +178,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     case EmailAutomation.update_pipeline_and_settings_status(id, active) do
       {:ok, _} ->
         socket
-        |> put_flash(:success, "Successfully Pipeline #{message}")
+        |> put_flash(:success, "Pipeline successfully #{message}")
 
       _ ->
         socket
-        |> put_flash(:error, "Failed to Update Pipeline Status")
+        |> put_flash(:error, "Failed to update pipeline s tatus")
     end
     |> assign_automation_pipelines()
     |> noreply()
@@ -249,7 +264,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
         <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
           <%= for {email, index} <- Enum.with_index(@pipeline.emails) do %>
-            <div class="p-6">
+            <div class="px-6 pt-6">
               <div class="flex md:flex-row flex-col justify-between">
                 <div class="flex">
                   <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center mr-3">
@@ -285,10 +300,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                   </button>
                 </div>
               </div>
-              <hr class="my-4 ml-8" />
+              <hr class="mt-6 md:ml-8 ml-6" />
             </div>
           <% end %>
-          <div class="flex flex-row justify-between pr-6 pl-8 sm:pr-7 sm:pl-16 py-2">
+          <div class="flex flex-row justify-between pr-6 pl-8 sm:pl-16 py-6">
             <div class="flex items-center">
               <button phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" type="button" class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" >
                 <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />

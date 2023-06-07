@@ -328,7 +328,7 @@ defp step_valid?(assigns),
       <%= hidden_input f, :position %>
 
       <div class="mr-auto">
-        <div class="grid grid-cols-3 gap-6">
+        <div class="grid grid-rows-3 md:grid-cols-3 gap-6">
           <label class="flex flex-col">
             <b>Select email preset</b>
             <%= select_field f, :template_id, Shared.make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
@@ -439,7 +439,7 @@ defp step_valid?(assigns),
     end)
     |> Ecto.Multi.insert_all(
       :email_automation_types,
-      EmailAutomationType, 
+      EmailAutomationType,
       fn %{email_automation_setting: %{id: setting_id}, email_preset: %{id: email_id}} ->
         now = DateTime.utc_now() |> DateTime.truncate(:second)
         selected_job_types
@@ -453,7 +453,7 @@ defp step_valid?(assigns),
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} -> 
+      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} ->
         send(self(), {:update_automation, %{email_automation_setting: email_automation_setting, email_preset: email_preset}})
         :ok
       _ -> :error

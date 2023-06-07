@@ -68,7 +68,7 @@
         <%= Enum.map(@automation_pipelines, fn automation_pipeline -> %>
           <div class="flex flex-row mb-3 mt-8 items-center">
             <div class="text-2xl font-bold"> <%= automation_pipeline.category_name %></div>
-            <span class="ml-2 rounded-md bg-base-200 px-2 text-sm font-bold h-6"> <%= automation_pipeline.total_category_pipelines %> emails</span>
+            <span class="ml-2 rounded-md bg-base-200 px-2 text-sm font-bold"> <%= automation_pipeline.total_emails_count %> emails</span>
           </div>
           <%= Enum.map(automation_pipeline.subcategories, fn subcategory -> %>
             <div class="text-gray-500 tracking-widest uppercase"> <%= subcategory.subcategory_name %></div>
