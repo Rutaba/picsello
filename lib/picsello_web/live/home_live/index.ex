@@ -21,7 +21,8 @@ defmodule PicselloWeb.HomeLive.Index do
     Clients,
     Subscriptions,
     Marketing,
-    Galleries
+    Galleries,
+    BookingEvents
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -33,6 +34,7 @@ defmodule PicselloWeb.HomeLive.Index do
   }
 
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
+  import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2, clip_board: 2, cover_photo_url: 1, disabled?: 1]
   import Ecto.Query
@@ -280,6 +282,13 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
+  def handle_event("duplicate-event", %{"event-id" => id}, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.calendar_booking_events_path(socket, :new, duplicate: id))
+      |> noreply()
+
+  @impl true
   def handle_event("add-client", _, socket),
     do:
       socket
@@ -301,10 +310,24 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
+  def handle_event("view-jobs", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.job_path(socket, :jobs))
+      |> noreply()
+
+  @impl true
   def handle_event("view-galleries", _, socket),
     do:
       socket
       |> push_redirect(to: Routes.gallery_path(socket, :galleries))
+      |> noreply()
+
+  @impl true
+  def handle_event("view-booking-events", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.calendar_booking_events_path(socket, :index))
       |> noreply()
 
   @impl true
@@ -357,6 +380,7 @@ defmodule PicselloWeb.HomeLive.Index do
   def handle_event("change-tab", %{"tab" => tab}, socket) do
     socket
     |> assign(:tab_active, tab)
+    |> assign_tab_data(tab)
     |> noreply()
   end
 
@@ -373,6 +397,49 @@ defmodule PicselloWeb.HomeLive.Index do
     |> push_redirect(to: to)
     |> noreply()
   end
+
+  @impl true
+  def handle_event(
+        "enable-event",
+        %{"event-id" => id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.enable_booking_event(id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> assign_tab_data("booking-events")
+        |> put_flash(:success, "Event enabled successfully")
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error enabling event")
+        |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "unarchive-event",
+        %{"event-id" => id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.enable_booking_event(id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> assign_tab_data("booking-events")
+        |> put_flash(:success, "Event unarchive successfully")
+        |> noreply()
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error unarchiving event")
+        |> noreply()
+    end
+  end
+
+  @impl true
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.Live.Calendar.BookingEvents
 
   @impl true
   def handle_info(
@@ -463,6 +530,44 @@ defmodule PicselloWeb.HomeLive.Index do
     end
   end
 
+  @impl true
+  def handle_info(
+        {:confirm_event, "disable_event_" <> id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.disable_booking_event(id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> put_flash(:success, "Event disabled successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error disabling event")
+    end
+    |> assign_tab_data("booking-events")
+    |> close_modal()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "archive_event_" <> id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.archive_booking_event(id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> put_flash(:success, "Event archive successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error archiving event")
+    end
+    |> assign_tab_data("booking-events")
+    |> close_modal()
+    |> noreply()
+  end
+
   def tabs_nav(assigns) do
     ~H"""
     <ul class="flex overflow-auto gap-6 mb-6 py-6 md:py-0">
@@ -480,9 +585,9 @@ defmodule PicselloWeb.HomeLive.Index do
     <div>
       <%= case @tab_active do %>
         <% "clients" -> %>
-          <.recents_card add_event="add-client" view_event="view-clients" hidden={Clients.get_recent_clients(@current_user) == []} button_title="Create a client" title="Recent clients" class="h-auto" color="blue-planning-300">
+          <.recents_card add_event="add-client" view_event="view-clients" hidden={Enum.empty?(@clients)} button_title="Create a client" title="Recent clients" class="h-auto" color="blue-planning-300">
             <hr class="m-1 mb-4" />
-            <%= case Clients.get_recent_clients(@current_user) do %>
+            <%= case @clients do %>
               <% [] -> %>
                 <div class="flex flex-col mt-4 lg:flex-none">
                   <.empty_state_base tour_embed="https://demo.arcade.software/y2cGEpUW0B2FoO2BAa1b?embed" body="Let's start by adding your clients - whether they are new or if existing, feel free to contact Picsello for help with bulk uploading." third_party_padding="calc(59.916666666666664% + 41px)">
@@ -514,9 +619,9 @@ defmodule PicselloWeb.HomeLive.Index do
           </.recents_card>
 
         <% "leads" -> %>
-        <.recents_card add_event="create-lead" view_event="view-leads" hidden={Jobs.get_recent_leads(@current_user) == []} button_title="Create a lead" title="Recent leads" class="h-auto" color="blue-planning-300">
+        <.recents_card add_event="create-lead" view_event="view-leads" hidden={Enum.empty?(@leads)} button_title="Create a lead" title="Recent leads" class="h-auto" color="blue-planning-300">
           <hr class="m-1 mb-4" />
-          <%= case Jobs.get_recent_leads(@current_user) do %>
+          <%= case @leads do %>
             <% [] -> %>
               <div class="flex flex-col mt-4 lg:flex-col">
                 <.empty_state_base tour_embed="https://www.youtube.com/watch?v=V90oycrU45g" body="Generating leads is the pipeline to booked clients. Learn more and create some now." third_party_padding="calc(59.916666666666664% + 41px)">
@@ -546,9 +651,9 @@ defmodule PicselloWeb.HomeLive.Index do
         </.recents_card>
 
         <% "jobs" -> %>
-        <.recents_card add_event="import-job" view_event="view-jobs" hidden={Jobs.get_recent_jobs(@current_user) == []} button_title="Import a job" title="Recent jobs" class="h-auto" color="blue-planning-300">
+        <.recents_card add_event="import-job" view_event="view-jobs" hidden={Enum.empty?(@jobs)} button_title="Import a job" title="Recent jobs" class="h-auto" color="blue-planning-300">
           <hr class="m-1 mb-4" />
-          <%= case Jobs.get_recent_jobs(@current_user) do %>
+          <%= case @jobs do %>
             <% [] -> %>
               <div class="flex flex-col mt-4 lg:flex-col">
                 <.empty_state_base tour_embed="https://www.youtube.com/watch?v=XWZH_65evuM" body="Booking jobs will get you on your way to making a profit. If you are migrating existing jobs from another platform, user our import job above." third_party_padding="calc(59.916666666666664% + 41px)">
@@ -575,22 +680,40 @@ defmodule PicselloWeb.HomeLive.Index do
         </.recents_card>
 
         <% "galleries" -> %>
-        <.recents_card add_event="create-gallery" view_event="view-galleries" hidden={Galleries.get_recent_galleries(@current_user) == []} button_title="Create   a gallery" title="Recent galleries" class="h-auto" color="blue-planning-300">
-          <hr class="m-1 mb-4" />
-          <%= case Galleries.get_recent_galleries(@current_user) do %>
-            <% [] -> %>
-              <div class="flex flex-col mt-4 lg:flex-col">
-                <.empty_state_base tour_embed="https://www.youtube.com/watch?v=uEY3eS9cDIk" body="With unlimited gallery storage, don't think twice about migrating existing galleries from other platforms and creating new ones." third_party_padding="calc(59.916666666666664% + 41px)">
-                </.empty_state_base>
+          <.recents_card add_event="create-gallery" view_event="view-galleries" hidden={Enum.empty?(@galleries)} button_title="Create a gallery" title="Recent galleries" class="h-auto" color="blue-planning-300">
+            <hr class="m-1 mb-4" />
+            <%= case @galleries do %>
+              <% [] -> %>
+                <div class="flex flex-col mt-4 lg:flex-col">
+                  <.empty_state_base tour_embed="https://www.youtube.com/watch?v=uEY3eS9cDIk" body="With unlimited gallery storage, don't think twice about migrating existing galleries from other platforms and creating new ones." third_party_padding="calc(59.916666666666664% + 41px)">
+                  </.empty_state_base>
+                </div>
+              <% galleries -> %>
+              <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
+                <%= for {gallery, gallery_index} <- galleries |> Enum.with_index() do %>
+                  <.recent_galleries socket={@socket} gallery={gallery} index={@index} gallery_index={gallery_index} />
+                <% end %>
               </div>
-            <% galleries -> %>
-            <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
-              <%= for {gallery, gallery_index} <- galleries |> Enum.with_index() do %>
-                <.recent_galleries socket={@socket} gallery={gallery} index={@index} gallery_index={gallery_index} />
-              <% end %>
-            </div>
-          <% end %>
-        </.recents_card>
+            <% end %>
+          </.recents_card>
+
+        <% "booking-events" -> %>
+          <.recents_card add_event="create-booking-event" view_event="view-booking-events" hidden={Enum.empty?(@booking_events)} button_title="Create a booking event" title="Recent Booking Events" class="h-auto" color="blue-planning-300">
+            <hr class="m-1 mb-4" />
+            <%= case @booking_events |> Enum.take(6) do %>
+              <% [] -> %>
+                <div class="flex flex-col mt-4 lg:flex-col">
+                  <.empty_state_base tour_embed="https://www.youtube.com/watch?v=aVnPMupMK8Q" body="Booking events are an easy way to get jobs booked, paid and prepped efficiently - for both you and your clients." third_party_padding="calc(59.916666666666664% + 41px)">
+                  </.empty_state_base>
+                </div>
+              <% booking_events -> %>
+              <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
+                <%= for {booking_event, booking_index} <- booking_events |> Enum.with_index() do %>
+                  <.recent_galleries socket={@socket} gallery={booking_event} index={@index} gallery_index={booking_index} />
+                <% end %>
+              </div>
+            <% end %>
+          </.recents_card>
 
         <% _ -> %>
           <%= case @attention_items do %>
@@ -811,6 +934,25 @@ defmodule PicselloWeb.HomeLive.Index do
     ]
   end
 
+  defp assign_tab_data(%{assigns: %{current_user: current_user}} = socket, tab) do
+    case tab do
+      "clients" ->
+        socket |> assign(:clients, Clients.get_recent_clients(current_user))
+
+      "leads" ->
+        socket |> assign(:leads, Jobs.get_recent_leads(current_user))
+
+      "jobs" ->
+        socket |> assign(:jobs, Jobs.get_recent_jobs(current_user))
+
+      "galleries" ->
+        socket |> assign(:galleries, Galleries.get_recent_galleries(current_user))
+
+      "booking-events" ->
+        socket |> assign(:booking_events, BookingEvents.get_booking_events(current_user.organization_id, filters: %{sort_by: :inserted_at, sort_direction: :desc}))
+    end
+  end
+
   def maybe_show_success_subscription(socket, %{
         "session_id" => "" <> session_id
       }) do
@@ -940,71 +1082,95 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   defp recent_galleries(assigns) do
+    count = if Map.has_key?(assigns.gallery, :client_link_hash), do: Enum.count(assigns.gallery.orders), else: Map.get(assigns.gallery, :booking_count, 0)
+    assigns = assign(assigns, count: count)
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col md:flex-row grow">
           <%= if Galleries.preview_image(@gallery) do %>
             <div>
               <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
-              <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{cover_photo_url(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
+              <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{if Map.has_key?(@gallery, :client_link_hash), do: cover_photo_url(@gallery), else: @gallery.thumbnail_url}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
               <% end %>
             </div>
           <% else %>
-            <div class="rounded-lg h-full p-4 items-center flex flex-col w-[200px] h-[130px] mr-4 md:mr-7 bg-base-200">
-              <div class="flex justify-center h-full items-center">
-                <.icon name="photos-2" class="inline-block w-9 h-9 text-base-250"/>
+            <%= if Map.has_key?(@gallery, :thumbnail_url) do %>
+              <.blurred_thumbnail class="h-32 rounded-lg" url={@gallery.thumbnail_url} />
+            <% else %>
+              <div class="rounded-lg h-full p-4 items-center flex flex-col w-[200px] h-[130px] mr-4 md:mr-7 bg-base-200">
+                <div class="flex justify-center h-full items-center">
+                  <.icon name="photos-2" class="inline-block w-9 h-9 text-base-250"/>
+                </div>
+                <div class="mt-1 text-base-250 text-center h-full">
+                  <span>Edit your gallery to upload a cover photo</span>
+                </div>
               </div>
-              <div class="mt-1 text-base-250 text-center h-full">
-                <span>Edit your gallery to upload a cover photo</span>
-              </div>
-            </div>
-          <% end %>
-        </div>
-
-        <div class="py-0 md:py-1 mt-4 md:mt-0">
-          <div class={"font-bold w-full"}>
-            <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
-              <span class="w-full text-blue-planning-300 underline">
-                <%= if String.length(@gallery.name) < 30 do
-                  @gallery.name
-                else
-                  "#{@gallery.name |> String.slice(0..29)} ..."
-                end %>
-              </span>
             <% end %>
-          </div>
-          <div class="text-base-250 font-normal ">
-          <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %> - <%= Enum.count(@gallery.orders) %> <%= if Enum.count(@gallery.orders) == 1, do: "booking", else: "bookings" %> so far
-          </div>
-        </div>
-        <div class="flex gap-3 py-0 md:py-2 mt-4 md:mt-0">
-          <button {testid("copy-link")} id="copy-link" class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => disabled?(@gallery)})} data-clipboard-text={clip_board(@socket, @gallery)} phx-hook="Clipboard">
-            <.icon name="anchor" class={classes("w-4 h-4 fill-current text-blue-planning-300 inline mr-2", %{"text-gray-200" => disabled?(@gallery)})} />
-            Copy link
-            <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
-              Copied!
-            </div>
-          </button>
-          <div id={"manage-#{@gallery.id}"} phx-hook="Select" class="md:w-auto w-full" phx-update="ignore">
-            <button class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id={"menu-button-#{@gallery.id}"} phx-click="show_dropdown" phx-value-show_index={@gallery_index}>
-              Actions
-              <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-              <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
-            </button>
-            <div class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
-              <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id)]} class={classes(%{"hidden" => disabled?(@gallery)})} />
-              <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, @gallery.job.id)]} class={classes(%{"hidden" => disabled?(@gallery)})} />
-              <.dropdown_item {assigns} id="send_email_link" class={classes("hover:cursor-pointer", %{"hidden" => disabled?(@gallery)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
-              <%= if Enum.any?(@gallery.orders) do %>
-                <%= case disabled?(@gallery) do %>
-                  <% true -> %>
-                    <.dropdown_item {assigns} class="enable-link hover:cursor-pointer" icon="eye" title="Enable" link={[phx_click: "enable_gallery_popup", phx_value_gallery_id: @gallery.id]})} />
-                  <% _ -> %>
-                    <.dropdown_item {assigns} class="disable-link hover:cursor-pointer" icon="closed-eye" title="Disable" link={[phx_click: "disable_gallery_popup", phx_value_gallery_id: @gallery.id]})} />
-                <% end %>
-              <% else %>
-                <.dropdown_item {assigns} class={classes("delete-link hover:cursor-pointer", %{"hidden" => disabled?(@gallery)})} icon="trash" title="Delete" link={[phx_click: "delete_gallery_popup", phx_value_gallery_id: @gallery.id]} />
+          <% end %>
+
+          <div class="flex flex-col mt-2">
+            <div class={"font-bold w-full"}>
+              <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
+                <span class="w-full text-blue-planning-300 underline">
+                  <%= if String.length(@gallery.name) < 30 do
+                    @gallery.name
+                  else
+                    "#{@gallery.name |> String.slice(0..29)} ..."
+                  end %>
+                </span>
               <% end %>
+            </div>
+            <div class="text-base-250 font-normal ">
+              <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
+            </div>
+            <div class="flex gap-3 mt-8">
+              <button {testid("copy-link")} id="copy-link" class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => @gallery.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@gallery, :client_link_hash), do: clip_board(@socket, @gallery), else: @gallery.thumbnail_url} phx-hook="Clipboard">
+                <.icon name="anchor" class={classes("w-4 h-4 fill-current text-blue-planning-300 inline mr-2", %{"text-gray-200" => @gallery.status in [:archive, :disabled]})} />
+                Copy link
+                <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+                  Copied!
+                </div>
+              </button>
+              <div id={"manage-#{@gallery.id}"} phx-hook="Select" class="md:w-auto w-full" phx-update="ignore">
+                <button class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id={"menu-button-#{@gallery.id}"} phx-click="show_dropdown" phx-value-show_index={@gallery_index}>
+                  Actions
+                  <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+                  <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+                </button>
+                <div class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
+                  <%= if Map.has_key?(@gallery, :client_link_hash) do %>
+                  <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id)]} class={classes(%{"hidden" => disabled?(@gallery)})} />
+                  <.dropdown_item {assigns} id="send_email_link" class={classes("hover:cursor-pointer", %{"hidden" => disabled?(@gallery)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
+                    <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, @gallery.job.id)]} class={classes(%{"hidden" => disabled?(@gallery)})} />
+                    <%= if Enum.any?(@gallery.orders) do %>
+                      <%= case disabled?(@gallery) do %>
+                        <% true -> %>
+                          <.dropdown_item {assigns} class="enable-link hover:cursor-pointer" icon="eye" title="Enable" link={[phx_click: "enable_gallery_popup", phx_value_gallery_id: @gallery.id]})} />
+                        <% _ -> %>
+                          <.dropdown_item {assigns} class="disable-link hover:cursor-pointer" icon="closed-eye" title="Disable" link={[phx_click: "disable_gallery_popup", phx_value_gallery_id: @gallery.id]})} />
+                      <% end %>
+                    <% else %>
+                        <.dropdown_item {assigns} class={classes("delete-link hover:cursor-pointer", %{"hidden" => disabled?(@gallery)})} icon="trash" title="Delete" link={[phx_click: "delete_gallery_popup", phx_value_gallery_id: @gallery.id]} />
+                    <% end %>
+                  <% else %>
+                    <%= case @gallery.status do %>
+                      <% :archive -> %>
+                        <.button title="Unarchive" icon="plus"  click_event="unarchive-event" id={@gallery.id} color="blue-planning" />
+                      <% status -> %>
+                        <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.calendar_booking_events_path(@socket, :edit, @gallery.id)]} class={classes(%{"hidden" => disabled?(@gallery)})} />
+                        <.button title="Send update" icon="envelope" click_event="send-email" id={@gallery.id} color="blue-planning" />
+                        <.button title="Duplicate" icon="duplicate" click_event="duplicate-event" id={@gallery.id} color="blue-planning" />
+                        <%= case status do %>
+                        <% :active -> %>
+                          <.button title="Disable" icon="eye"  click_event="confirm-disable-event" id={@gallery.id} color="red-sales" />
+                        <% :disabled-> %>
+                          <.button title="Enable" icon="plus"  click_event="enable-event" id={@gallery.id} color="blue-planning" />
+                        <% end %>
+                        <.button title="Archive" icon="trash" click_event="confirm-archive-event" id={@gallery.id} color="red-sales" />
+                      <% end %>
+                  <% end %>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1094,6 +1260,20 @@ defmodule PicselloWeb.HomeLive.Index do
     card = if buttons, do: %{card | buttons: buttons}, else: card
 
     %{org_card | card: %{card | body: body}}
+  end
+
+  defp button(assigns) do
+    assigns =
+      assigns
+      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :id]))
+      |> Enum.into(%{class: "", hidden: "", disabled: false, inner_block: nil})
+
+    ~H"""
+      <button title={@title} type="button" phx-click={@click_event} phx-value-event-id={@id} class={"flex items-center px-3 py-2 rounded-lg hover:bg-#{@color}-100 hover:font-bold #{@hidden}"} disabled={@disabled} {@rest}>
+        <.icon name={@icon} class={"inline-block w-4 h-4 mr-3 fill-current text-#{@color}-300"} />
+        <%= @title %>
+      </button>
+    """
   end
 
   def card_buttons(%{concise_name: _, buttons: _} = assigns) do
@@ -1207,12 +1387,14 @@ defmodule PicselloWeb.HomeLive.Index do
       <div class="flex flex-col w-full p-4">
         <div class="flex flex-row items-center">
           <h3 class={"mb-2 mr-4 text-xl font-bold text-#{@color}"}><%= @title %></h3>
-          <button type="button" class="link ml-auto" phx-click={@view_event} hidden={@hidden}>
-            View all
-          </button>
-          <button type="button" class="font-bold btn-tertiary ml-auto py-2" phx-click={@add_event}>
-            <%= @button_title %>
-          </button>
+          <div class="ml-auto">
+            <button type="button" class="link px-4" phx-click={@view_event} hidden={@hidden}>
+              View all
+            </button>
+            <button type="button" class="font-bold btn-tertiary py-2" phx-click={@add_event}>
+              <%= @button_title %>
+            </button>
+          </div>
         </div>
         <%= render_slot(@inner_block) %>
       </div>
