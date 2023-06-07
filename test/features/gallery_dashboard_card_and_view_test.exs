@@ -97,6 +97,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
   defp visit_view_all_galleries(session) do
     session
     |> click(button("Galleries"))
+    |> click(button("View all"))
     |> assert_url_contains("galleries")
   end
 

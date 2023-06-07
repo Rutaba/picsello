@@ -186,6 +186,8 @@ defmodule Picsello.WelcomePageTest do
       session
       |> sign_in(user)
       |> click(button("Leads"))
+      |> assert_has(testid("card-Recent leads"))
+      |> click(button("View all"))
       |> assert_has(testid("job-row", count: 6))
     end
 
