@@ -50,7 +50,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       EmailAutomation.get_all_pipelines_emails(current_user.organization_id, selected_job_type.id)
       |> assign_category_pipeline_count()
 
-    # IO.inspect automation_pipelines
     socket |> assign(:automation_pipelines, automation_pipelines)
   end
 
@@ -89,7 +88,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         %{"pipeline_id" => pipeline_id},
         %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
       ) do
-
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.AddEmailComponent, %{
       current_user: current_user,
@@ -115,6 +113,29 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
   @impl true
   def handle_event(
+        "delete-email",
+        %{"email-automation-setting-id" => setting_id},
+        socket
+      ) do
+    email_delete =
+      to_integer(setting_id)
+      |> EmailAutomation.delete_email()
+
+    case email_delete do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Successfully created")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Failed to delete email")
+    end
+    |> assign_automation_pipelines()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
         "toggle-section",
         %{"section_id" => section_id},
         %{assigns: %{collapsed_sections: collapsed_sections}} = socket
@@ -128,6 +149,27 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
     socket
     |> assign(:collapsed_sections, collapsed_sections)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "toggle",
+        %{"pipeline-id" => id, "active" => active},
+        socket
+      ) do
+    message = if active == "true", do: "disabled", else: "enabled"
+
+    case EmailAutomation.update_pipeline_and_settings_status(id, active) do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Successfully Pipeline #{message}")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Failed to Update Pipeline Status")
+    end
+    |> assign_automation_pipelines()
     |> noreply()
   end
 
@@ -158,21 +200,27 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   end
 
   defp get_pipline(pipeline_id) do
-    pipeline = to_integer(pipeline_id)
+    to_integer(pipeline_id)
     |> EmailAutomation.get_pipeline_by_id()
     |> Repo.preload([:email_automation_category, :email_automation_sub_category])
   end
 
-  defp open_edit_modal(%{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket,
-    %{"email_id" => email_id, "email_automation_setting_id" => email_automation_setting_id, "pipeline_id" => pipeline_id},
-    module) do
+  defp open_edit_modal(
+         %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket,
+         %{
+           "email_id" => email_id,
+           "email_automation_setting_id" => email_automation_setting_id,
+           "pipeline_id" => pipeline_id
+         },
+         module
+       ) do
     socket
     |> open_modal(module, %{
       current_user: current_user,
       job_type: selected_job_type,
       pipeline: get_pipline(pipeline_id),
       email_automation_setting_id: to_integer(email_automation_setting_id),
-      email: EmailAutomation.get_email_by_id(to_integer(email_id)),
+      email: EmailAutomation.get_email_by_id(to_integer(email_id))
     })
   end
 
@@ -200,7 +248,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         </div>
 
         <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
-          <%= Enum.map(@pipeline.emails, fn email -> %>
+          <%= for {email, index} <- Enum.with_index(@pipeline.emails) do %>
             <div class="p-6">
               <div class="flex md:flex-row flex-col justify-between">
                 <div class="flex">
@@ -219,12 +267,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                 </div>
 
                 <div class="flex items-center md:mt-0 ml-auto mt-4">
-                  <button class="flex items-center px-2 py-2 btn-tertiary text-blue-planning-300 hover:border-blue-planning-300 mr-2 custom-tooltip">
-                    <.icon name="trash" class="inline-block w-4 h-4 fill-current text-red-sales-300" />
+                <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 custom-tooltip" title="remove" phx-click="delete-email" phx-value-email_automation_setting_id={email.email_automation_setting.id} color="red-sales-300" icon="trash">
+                  <%= if index == 0 do %>
                     <span class="text-black font-normal w-64 text-start" style="white-space: normal;">
-                      Can't delete first email; disable the entire sequence if you don't want it to send
+                        Can't delete first email; disable the entire sequence if you don't want it to send
                     </span>
-                  </button>
+                  <% end %>
+                </.icon_button>
                   <button phx-click="edit-time-popup" phx-value-email_id={email.id} phx-value-email_automation_setting_id={email.email_automation_setting.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
                     <.icon name="settings" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Edit time
@@ -237,7 +286,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
               </div>
               <hr class="my-4 ml-8" />
             </div>
-          <% end) %>
+          <% end %>
           <div class="flex flex-row justify-between">
             <div class="flex items-center">
               <button phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" type="button" class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" >
@@ -247,9 +296,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
             </div>
 
             <div class="flex flex-row">
-              <.form :let={_} for={%{}} as={:toggle} phx-change="toggle">
+              <.form :let={_} for={%{}} as={:toggle} phx-click="toggle" phx-value-pipeline_id={@pipeline.id} phx-value-active={is_pipeline_active?(@pipeline.status) |> to_string}>
               <label class="flex">
-                <input type="checkbox" class="peer hidden" checked={}/>
+                <input type="checkbox" class="peer hidden" checked={is_pipeline_active?(@pipeline.status)}/>
                 <div class="hidden peer-checked:flex cursor-pointer">
                   <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
                     <div class="rounded-full h-5 w-5 bg-base-100"></div>
@@ -270,4 +319,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       </section>
     """
   end
+
+  defp is_pipeline_active?("active"), do: true
+  defp is_pipeline_active?(_), do: false
+
+  defp disabled_email?(0), do: true
+  defp disabled_email?(_), do: false
 end
