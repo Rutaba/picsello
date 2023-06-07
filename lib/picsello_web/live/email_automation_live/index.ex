@@ -287,7 +287,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
               <hr class="my-4 ml-8" />
             </div>
           <% end %>
-          <div class="flex flex-row justify-between">
+          <div class="flex flex-row justify-between pr-6 pl-8 sm:pr-7 sm:pl-16 py-2">
             <div class="flex items-center">
               <button phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" type="button" class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" >
                 <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
