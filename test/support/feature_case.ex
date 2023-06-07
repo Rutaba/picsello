@@ -304,10 +304,14 @@ defmodule Picsello.FeatureCase do
       authenticated_gallery_client(%{session: session, gallery: insert(:gallery, job: job)})
     end
 
-    def authenticated_proofing_album_client(%{session: session, proofing_album: proofing_album}) do
-      proofing_album_login(session, proofing_album, proofing_album.password)
+    def authenticated_proofing_album_client(%{
+          session: session,
+          proofing_album: proofing_album,
+          gallery: gallery
+        }) do
+      proofing_album_login(session, proofing_album, gallery.password)
 
-      [session: session, proofing_album: proofing_album]
+      [session: session, proofing_album: proofing_album, gallery: gallery]
     end
 
     def authenticated_proofing_album_client(%{session: session}) do
@@ -326,6 +330,7 @@ defmodule Picsello.FeatureCase do
 
       authenticated_proofing_album_client(%{
         session: session,
+        gallery: gallery,
         proofing_album: insert(:proofing_album, %{gallery_id: gallery.id})
       })
     end

@@ -179,17 +179,14 @@ defmodule Picsello.Cart.Order do
   def placed?(%__MODULE__{}), do: true
 
   @doc "calculate products cost, includes shipping price"
-  def product_total(%__MODULE__{products: products}) when is_list(products) do
-    for %{shipping_type: shipping_type} = product <- products, reduce: Money.new(0) do
+  def product_total(%__MODULE__{products: products} = order) when is_list(products) do
+    for product <- products, reduce: Money.new(0) do
       sum ->
         product
         |> Product.charged_price()
         |> Money.add(sum)
-        |> then(fn
-          price when is_nil(shipping_type) -> price
-          price -> Money.add(price, Cart.shipping_price(product))
-        end)
     end
+    |> Money.add(Cart.total_shipping(order))
   end
 
   def digital_total(%__MODULE__{digitals: digitals, bundle_price: bundle_price})

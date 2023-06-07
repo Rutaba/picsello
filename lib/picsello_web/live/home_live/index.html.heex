@@ -30,42 +30,39 @@
 <section class="px-6">
   <div class="center-container">
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6">
-      <div class="flex flex-col">
-        <.dashboard_main_card title="Inbox" link_text="View inbox" link_action="redirect" link_value="inbox" inner_block_classes="h-full flex flex-col" notification_count={@inbox_count} redirect_route={Routes.inbox_path(@socket, :index)}>
-          <%= if Enum.empty?(@inbox_threads) do %>
-            <p class="text-base-250">This is where you will see new messages from your clients.</p>
-            <img src="/images/inbox-empty.png" class="my-auto block" />
-          <% else %>
-            <%= for thread <- @inbox_threads do %>
-              <.thread_card {thread} unread={true} selected={false} />
-            <% end %>
+      <.dashboard_main_card title="Inbox" link_text="View inbox" link_action="redirect" link_value="inbox" inner_block_classes="h-full flex flex-col" notification_count={@inbox_count} redirect_route={Routes.inbox_path(@socket, :index)}>
+        <%= if Enum.empty?(@inbox_threads) do %>
+          <p class="text-base-250">This is where you will see new messages from your clients.</p>
+          <img src="/images/inbox-empty.png" class="my-auto block" />
+        <% else %>
+          <%= for thread <- @inbox_threads do %>
+            <.thread_card {thread} unread={true} selected={false} />
           <% end %>
-        </.dashboard_main_card>
-      </div>
-      <div class="flex flex-col gap-6">
-        <.dashboard_main_card title="Calendar" button_text="Create booking event" button_action="create-booking-event" link_text="View calendar" link_action="redirect" link_value="calendar" redirect_route={Routes.calendar_index_path(@socket, :index)}>
-          <%= if @job_count === 0 do %>
-            <p class="text-base-250">Get ready for your calendar to start filling up with shoots! Create a client booking event and you will be off to the races.</p>
-          <% else %>
-            <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@job_count} /> <%= ngettext "job", "jobs", @job_count %> upcoming this week</p>
-          <% end %>
-        </.dashboard_main_card>
-        <.dashboard_main_card title="Clients" button_text="Add client" button_action="add-client" link_text="View clients" link_action="redirect" link_value="clients" redirect_route={Routes.clients_path(@socket, :index)}>
-          <%= if @client_count === 0 do %>
-            <p class="text-base-250">Let's start by adding your clients - whether they are new or if existing, feel free to contact Picsello for help with bulk uploading.</p>
-          <% else %>
-            <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@client_count} /> clients</p>
-          <% end %>
-        </.dashboard_main_card>
-      </div>
-      <div class="flex flex-col gap-6">
-        <.dashboard_main_card title="Help & Coaching" button_text="Help" button_action="view-help" link_text="View help center" link_action="view-help">
-          <p class="text-base-250">Get in touch with our Customer Success and team of photographers for questions, feedback and help.</p>
-        </.dashboard_main_card>
-        <.dashboard_main_card title="Galleries" button_text="Create a gallery" button_action="create-gallery" link_text="View galleries" link_action="redirect" link_value="gallery" redirect_route={Routes.gallery_path(@socket, :galleries)}>
-          <p class="text-base-250">Unlimited storage and built-in pressure-free sales tools encourage downloads along with digital and product upsells.</p>
-        </.dashboard_main_card>
-      </div>
+        <% end %>
+      </.dashboard_main_card>
+      <.dashboard_main_card title="Calendar" button_text="Create booking event" button_action="create-booking-event" link_text="View calendar" link_action="redirect" link_value="calendar" redirect_route={Routes.calendar_index_path(@socket, :index)}>
+        <%= if @job_count === 0 do %>
+          <p class="text-base-250">Get ready for your calendar to start filling up with shoots! Create a client booking event and you will be off to the races.</p>
+        <% else %>
+          <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@job_count} /> <%= ngettext "job", "jobs", @job_count %> upcoming this week</p>
+        <% end %>
+      </.dashboard_main_card>
+      <.dashboard_main_card title="Help & Coaching" button_text="Help" button_action="view-help" link_text="View help center" link_action="view-help">
+        <p class="text-base-250">Get in touch with our Customer Success and team of photographers for questions, feedback and help.</p>
+      </.dashboard_main_card>
+      <.dashboard_main_card title="Smart Profit Calculator™" button_text="Get started" button_action="view-calculator" link_text="View calculator" link_action="redirect" link_value="calculator" redirect_route={Routes.calculator_path(@socket, :index)}>
+        <p class="text-base-250">Tired of losing money on sessions? Our proprietary calculator takes the guesswork out of setting your prices.</p>
+      </.dashboard_main_card>
+      <.dashboard_main_card title="Clients" button_text="Add client" button_action="add-client" link_text="View clients" link_action="redirect" link_value="clients" redirect_route={Routes.clients_path(@socket, :index)}>
+        <%= if @client_count === 0 do %>
+          <p class="text-base-250">Let's start by adding your clients - whether they are new or if existing, feel free to contact Picsello for help with bulk uploading.</p>
+        <% else %>
+          <p class="flex items-center gap-1 text-base-250">You have <.notification_bubble notification_count={@client_count} /> clients</p>
+        <% end %>
+      </.dashboard_main_card>
+      <.dashboard_main_card title="Galleries" button_text="Create a gallery" button_action="create-gallery" link_text="View galleries" link_action="redirect" link_value="gallery" redirect_route={Routes.gallery_path(@socket, :galleries)}>
+        <p class="text-base-250">Unlimited storage and built-in pressure-free sales tools encourage downloads along with digital and product upsells.</p>
+      </.dashboard_main_card>
     </div>
   </div>
 </section>

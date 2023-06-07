@@ -442,11 +442,7 @@ defmodule Picsello.Factory do
   end
 
   def album_factory(attrs) do
-    %Album{
-      name: "Test album",
-      set_password: false,
-      password: nil
-    }
+    %Album{name: "Test album"}
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
@@ -455,8 +451,6 @@ defmodule Picsello.Factory do
     %Album{
       name: "Test proof album",
       is_proofing: true,
-      set_password: true,
-      password: Gallery.generate_password(),
       client_link_hash: UUID.uuid4()
     }
     |> merge_attributes(attrs)

@@ -15,8 +15,6 @@ defmodule Picsello.Galleries.Album do
   schema "albums" do
     field :name, :string
     field :position, :float
-    field :password, :string
-    field :set_password, :boolean
     field :client_link_hash, :string
     field :is_proofing, :boolean, default: false
     field :is_finals, :boolean, default: false
@@ -34,14 +32,12 @@ defmodule Picsello.Galleries.Album do
   @attrs [
     :name,
     :position,
-    :set_password,
     :gallery_id,
-    :password,
     :is_proofing,
     :is_finals,
     :client_link_hash
   ]
-  @required_attrs [:name, :set_password, :gallery_id]
+  @required_attrs [:name, :gallery_id]
 
   def create_changeset(attrs) do
     %__MODULE__{}
