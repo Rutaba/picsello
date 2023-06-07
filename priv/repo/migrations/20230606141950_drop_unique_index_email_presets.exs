@@ -3,10 +3,8 @@ defmodule Picsello.Repo.Migrations.DropUniqueIndexEmailPresets do
 
   def up do
     # alter table(:email_presets) do
-      # drop index(:email_presets, [:name])
-      # drop constraint(:email_presets, "job_must_have_job_type")
-      # drop index(:email_presets, [:job_type])
-      # # drop index("foo", [:bar_id], name: :bar_pending_index)
+    #   drop index(:email_presets, [:name])
+    #   drop index(:email_presets, [:job_type], name: :job_must_have_job_type)
     # end
   end
 

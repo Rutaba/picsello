@@ -134,7 +134,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @impl true
   def handle_info({:update_automation, _}, socket) do
     socket
-    |> put_flash(:success, "Email signature saved")
+    |> assign_automation_pipelines()
+    |> put_flash(:success, "Successfully created")
     |> noreply()
   end
 

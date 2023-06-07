@@ -135,16 +135,9 @@ defp step_valid?(assigns),
   end
 
   defp email_preset_changeset(socket, email_preset, params \\ nil) do
-    email_preset_changeset = if params do
-      params
-    else
-      email_preset
-      |> Map.put(:template_id, email_preset.id)
-      |> prepare_email_preset_params()   
-    end
-    |> EmailPreset.changeset()
-    
+    email_preset_changeset = build_changeset(email_preset, params)
     body_template = current(email_preset_changeset) |> Map.get(:body_template)
+    
     if params do
       socket
     else
@@ -152,6 +145,17 @@ defp step_valid?(assigns),
       |> push_event("quill:update", %{"html" => body_template})
     end
     |> assign(email_preset_changeset: email_preset_changeset)
+  end
+
+  defp build_changeset(email_preset, params) do 
+    if params do
+      params
+    else
+      email_preset
+      |> Map.put(:template_id, email_preset.id)
+      |> prepare_email_preset_params()   
+    end
+    |> EmailPreset.changeset()
   end
 
   @impl true
@@ -167,8 +171,6 @@ defp step_valid?(assigns),
 
   @impl true
   def handle_event("submit", %{"step" => "preview_email"}, %{assigns: assigns} = socket) do
-    send(self(), {:update_automation, %{booking_event: "booking_event"}})
-
     socket
     |> save()
     |> close_modal()
@@ -206,7 +208,8 @@ defp step_valid?(assigns),
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, abc} -> IO.inspect abc
+      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} -> 
+        send(self(), {:update_automation, %{email_automation_setting: email_automation_setting, email_preset: email_preset}})
       _ -> :error
     end
 
@@ -400,7 +403,6 @@ defp step_valid?(assigns),
 
       <% f = to_form(@email_preset_changeset) %>
       <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
-      <%= hidden_input f, :job_type, value: @job_type.job_type %>
       <%= hidden_input f, :state, value: @pipeline.state %>
       <%= hidden_input f, :name %>
       <%= hidden_input f, :position %>
