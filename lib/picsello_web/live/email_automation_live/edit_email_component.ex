@@ -5,30 +5,45 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.Shared.MultiSelect
 
-  alias Picsello.{Jobs, JobType}
+  alias Picsello.{Repo, Jobs, JobType, EmailPresets, EmailPresets.EmailPreset}
   alias Picsello.EmailAutomation.EmailAutomationSetting
+  alias PicselloWeb.EmailAutomationLive.Shared
   alias Ecto.Changeset
 
   @steps [:edit_email, :preview_email]
 
   @impl true
-  def update(%{current_user: current_user, job_type: job_type} = assigns, socket) do
+  def update(%{
+    current_user: current_user,
+    job_type: job_type,
+    pipeline: %{email_automation_category: %{type: type}},
+    email: email,
+    } = assigns, socket) do
+    email_preset = email |> Repo.preload(:email_automation_types)
     job_types = Jobs.get_job_types_with_label(current_user.organization_id)
-    |> Enum.map(&Map.put(&1, :selected, &1.id == job_type.id))
+    |> Enum.map(fn row ->
+      selected = email_preset.email_automation_types
+      |> Enum.any?(& &1.organization_job_id == row.id)
+      IO.inspect selected
+      Map.put(row, :selected, selected)
+    end)
 
-    email_presets = "abc"
-
+    email_presets = EmailPresets.email_automation_presets(type)
+    
+    IO.inspect EmailPreset.changeset(email_preset, %{}), label: "aabx----------"
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
     |> assign(email_presets: email_presets)
+    |> assign(email_preset: email_preset)
     |> assign(steps: @steps)
     |> assign(step: :edit_email)
     |> assign(show_variables: false)
+    |> assign(email_preset_changeset: EmailPreset.changeset(email_preset, %{}))
     |> assign(variables_list: make_variables())
-    |> assign_changeset(%{})
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end
@@ -37,9 +52,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   def update(%{options: options}, socket) do
     socket
     |> assign(job_types: options)
-    |> assign(steps: @steps)
-    |> assign(step: :edit_email)
-    |> assign_changeset(%{})
     |> ok()
   end
 
@@ -53,19 +65,15 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     |> ok()
   end
 
-defp step_valid?(%{step: :edit_email, changeset: changeset, job_types: job_types}) do
-  Enum.any?(job_types, &Map.get(&1, :selected, false))
-  && changeset.valid?
-end
-
-defp step_valid?(assigns),
+  defp step_valid?(assigns),
   do:
     Enum.all?(
       [
-        assigns.changeset
+        assigns.email_preset_changeset
       ],
       & &1.valid?
     )
+    |> Shared.validate?(assigns.job_types)
 
   @impl true
   def handle_event("back", _, %{assigns: %{step: step, steps: steps}} = socket) do
@@ -73,19 +81,39 @@ defp step_valid?(assigns),
 
     socket
     |> assign(step: previous_step)
-    # |> assign_changeset(params)
     |> noreply()
   end
 
   @impl true
-  def handle_event("validate", %{"email_automation_setting" => params}, socket) do
+  def handle_event("validate", %{"email_preset" => params}, %{assigns: %{email_preset: email_preset, email_presets: email_presets}} = socket) do
+    id = Map.get(params, "id", "1") |> to_integer()
+    preset = Enum.filter(email_presets, & &1.id == id) 
+    |> List.first()
+    |> Map.take([:body_template, :subject_template, :id, :name])
+    
+    new_email_preset = Map.merge(email_preset, preset)
+
+    IO.inspect params, label: "params-----1"
+    # IO.inspect preset, label: "preset"
+    IO.inspect new_email_preset, label: "email_preset"
+    params = if email_preset.id == id, do: params, else: nil
+    IO.inspect params, label: "params-----"
+    # EmailPreset.changeset(email, %{})
     socket
-    |> assign_changeset(maybe_normalize_params(params))
+    |> assign(email_preset: new_email_preset)
+    |> Shared.email_preset_changeset(new_email_preset, params)
     |> noreply()
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "edit_email"}, %{assigns: %{changeset: changeset} = assigns} = socket) do
+  def handle_event("validate", %{"email_automation_setting" => params}, %{assign: %{email_preset: email_preset}} = socket) do
+    socket
+    |> assign(email_preset_changeset: Shared.build_email_changeset(email_preset, maybe_normalize_params(params)))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("submit", %{"step" => "edit_email"}, %{assigns: %{email_preset_changeset: changeset} = assigns} = socket) do
     body_html = Ecto.Changeset.get_field(changeset, :body_html)
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
@@ -100,7 +128,7 @@ defp step_valid?(assigns),
     send(self(), {:update_automation, %{booking_event: "booking_event"}})
 
     socket
-    # |> assign(step: next_step(assigns))
+    |> save()
     |> close_modal()
     |> noreply()
   end
@@ -128,22 +156,22 @@ defp step_valid?(assigns),
           <%= String.capitalize(@job_type.job_type)%> Email</span>
         </h1>
 
-        <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
+        <.form for={@email_preset_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
           <input type="hidden" name="step" value={@step} />
 
           <.step name={@step} f={f} {assigns} />
 
           <.footer class="pt-10">
             <div class="mr-auto md:hidden flex w-full">
-              <.multi_select
+            <.multi_select
                 id="job_types_mobile"
                 select_class="w-full"
                 hide_tags={true}
                 placeholder="Add to:"
                 search_on={false}
-                form={@job_type_changeset}
+                form="job_type"
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={make_options(@job_types)}
+                options={Shared.make_options(@email_preset_changeset, @job_types)}
               />
             </div>
             <.step_buttons step={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
@@ -165,89 +193,13 @@ defp step_valid?(assigns),
                 hide_tags={true}
                 placeholder="Add to:"
                 search_on={false}
-                form={@job_type_changeset}
+                form="job_type"
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={make_options(@job_types)}
+                options={Shared.make_options(@email_preset_changeset, @job_types)}
               />
             </div>
           </.footer>
         </.form>
-      </div>
-    """
-  end
-
-  def step(%{step: :timing} = assigns) do
-    ~H"""
-      <div class="rounded-lg border-base-200 border">
-        <div class="bg-base-200 p-4 flex rounded-t-lg">
-          <div class="flex flex-row items-center mr-[600px]">
-            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center mr-3">
-              <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
-            </div>
-            <span class="text-blue-planning-300 text-lg"><b>Send email:</b> Day Before Shoot</span>
-          </div>
-          <div class="flex ml-auto items-center">
-            <div class="w-8 h-8 rounded-full bg-blue-planning-300 flex items-center justify-center mr-3">
-              <.icon name="play-icon" class="w-4 h-4 fill-current text-white" />
-            </div>
-            <span>Job Automation</span>
-          </div>
-        </div>
-
-        <% f = to_form(@changeset) %>
-
-        <div class="px-14 py-6">
-          <b>Automation timing</b>
-          <span class="text-base-250">Choose when you’d like your automation to run</span>
-          <div class="flex gap-4 flex-col my-4 w-1/2">
-            <label class="flex items-center cursor-pointer">
-              <%= radio_button(f, :immediately, true, class: "w-5 h-5 mr-4 radio") %>
-              <p>Send immediately when event happens</p>
-            </label>
-            <label class="flex items-center cursor-pointer">
-              <%= radio_button(f, :immediately, false, class: "w-5 h-5 mr-4 radio") %>
-              <p>Send at a certain time</p>
-            </label>
-            <%= unless input_value(f, :immediately) do %>
-              <div class="flex flex-col ml-8">
-                <div class="flex w-full my-2">
-                  <div class="w-1/5">
-                    <%= input f, :count, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer w-full" %>
-                  </div>
-                    <div class="ml-2 w-3/5">
-                    <%= select f, :calendar, ["Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
-                  </div>
-                  <div class="ml-2 w-3/5">
-                    <%= select f, :sign, [Before: "-", After: "+"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
-                  </div>
-                </div>
-                <%= if message = @changeset.errors[:count] do %>
-                  <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
-                <% end %>
-              </div>
-            <% end %>
-          </div>
-          <b>Email Status</b>
-          <span class="text-base-250">Choose is if this email step is enabled or not to send</span>
-
-          <div>
-            <label class="flex pt-4">
-              <%= checkbox f, :status, class: "peer hidden", checked: Changeset.get_field(@changeset, :status) == :active %>
-              <div class="hidden peer-checked:flex cursor-pointer">
-                <div class="rounded-full bg-blue-planning-300 border border-base-100 w-14 p-1 flex justify-end mr-4">
-                  <div class="rounded-full h-5 w-5 bg-base-100"></div>
-                </div>
-                Email enabled
-              </div>
-              <div class="flex peer-checked:hidden cursor-pointer">
-                <div class="rounded-full w-14 p-1 flex mr-4 border border-blue-planning-300">
-                  <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
-                </div>
-                Email disabled
-              </div>
-            </label>
-          </div>
-        </div>
       </div>
     """
   end
@@ -268,29 +220,35 @@ defp step_valid?(assigns),
 
       <hr class="my-8" />
 
-      <% f = to_form(@changeset) %>
+      <% f = to_form(@email_preset_changeset) %>
+      <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
+      <%= hidden_input f, :email_automation_setting_id, value: @email_automation_setting_id %>
+      <%= hidden_input f, :state, value: @pipeline.state %>
+      <%= hidden_input f, :name %>
+      <%= hidden_input f, :position %>
+
 
       <div class="mr-auto">
         <div class="grid grid-cols-3 gap-6">
           <label class="flex flex-col">
             <b>Select email preset</b>
-            <%= select_field f, :name, ["long text", "very long text", "super duper long text"], class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= select_field f, :id, Shared.make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
 
           <label class="flex flex-col">
             <b>Subject Line</b>
-            <%= input f, :subject, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= input f, :subject_template, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
           <label class="flex flex-col">
             <b>Private Name</b>
-            <%= input f, :template_name, placeholder: "Inquiry Email", class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= input f, :private_name, placeholder: "Inquiry Email", class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
         </div>
 
         <div class="flex flex-col mt-4">
-          <.input_label form={f} class="flex items-end mb-2 text-sm font-semibold" field={:content}>
+          <.input_label form={f} class="flex items-end mb-2 text-sm font-semibold" field={:body_template}>
             <b>Email Content</b>
-            <.icon_button color="red-sales-300" class="ml-auto mr-4" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(f,:body_html)}>
+            <.icon_button color="red-sales-300" class="ml-auto mr-4" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(f,:body_template)}>
               <p class="text-black">Clear</p>
             </.icon_button>
             <.icon_button color="blue-planning-300" class={@show_variables && "hidden"} icon="vertical-list" id="view-variables" phx-click="toggle-variables" phx-value-show-variables={"#{@show_variables}"} phx-target={@myself}>
@@ -300,7 +258,7 @@ defp step_valid?(assigns),
 
           <div class="flex">
             <div id="quill-wrapper" class={"w-full #{@show_variables && "w-2/3"}"}>
-              <.quill_input f={f} html_field={:body_html} text_field={:body_text} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
+              <.quill_input f={f} id="quill_email_preset_input" html_field={:body_template} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
             </div>
 
             <div class={"flex flex-col w-1/3 ml-5 min-h-[16rem] #{!@show_variables && "hidden"}"}>
@@ -393,51 +351,6 @@ defp step_valid?(assigns),
     """
   end
 
-  defp assign_changeset(%{assigns: %{job_types: job_types, step: step, current_user: current_user} = assigns} = socket, params, action \\ nil) do
-    job_type_params = Map.get(params, "job_type", %{}) |> Map.put("step", step)
-
-    job_type_changeset = JobType.changeset(job_type_params)
-
-    # package_pricing = current(package_pricing_changeset)
-    # download = current(download_changeset)
-
-    # print_credits_include_in_total = Map.get(package_pricing, :print_credits_include_in_total)
-    # digitals_include_in_total = Map.get(download, :digitals_include_in_total)
-
-    # multiplier_params = Map.get(params, "multiplier", %{}) |> Map.put("step", step)
-
-    # multiplier_changeset =
-    #   package
-    #   |> Multiplier.from_decimal()
-    #   |> Multiplier.changeset(
-    #     multiplier_params,
-    #     print_credits_include_in_total,
-    #     digitals_include_in_total
-    #   )
-
-    # multiplier = current(multiplier_changeset)
-
-    automation_params =
-      params
-      |> Map.merge(%{
-        "email_automation_pipeline_id" => current_user.organization_id,
-        "organization_id" => current_user.organization_id,
-        "step" => step
-      })
-
-    changeset = EmailAutomationSetting.changeset(automation_params) |> Map.put(:action, action)
-
-    # IO.inspect changeset
-    # IO.inspect changeset |> current()
-
-    assign(socket,
-      changeset: changeset,
-      job_type_changeset: job_type_changeset
-      # package_pricing: package_pricing_changeset,
-      # download_changeset: download_changeset
-    )
-  end
-
   defp maybe_normalize_params(params) do
     {_, params} = get_and_update_in(
       params,
@@ -467,5 +380,61 @@ defp step_valid?(assigns),
         description: "this is subtotal"
       }
     ]
+  end
+
+  defp save(%{
+    assigns: %{
+      email_preset_changeset: email_preset_changeset,
+      job_types: job_types,
+      pipeline: pipeline,
+      email_automation_setting_id: setting_id
+      }} = socket) do
+    selected_job_types = Enum.filter(job_types, & &1.selected)
+    IO.inspect email_preset_changeset
+    IO.inspect email_preset_changeset |> current()
+    IO.inspect selected_job_types
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:email_preset, email_preset_changeset)
+    # |> Ecto.Multi.insert_all(
+    #   :email_automation_types,
+    #   EmailAutomationType,
+    #   fn %{email_preset: %{id: email_id}} ->
+    #     now = DateTime.utc_now() |> DateTime.truncate(:second)
+    #     selected_job_types
+    #     |> Enum.map(&%{
+    #       organization_job_id: &1.id,
+    #       email_automation_setting_id: setting_id,
+    #       email_preset_id: email_id,
+    #       inserted_at: now,
+    #       updated_at: now
+    #     })
+    #   end,
+    #   on_conflict: {:replace, [:updated_at]},
+    #   conflict_target: [:email_preset_id, :email_automation_setting_id, :organization_job_id]
+    # )
+
+    # |> Ecto.Multi.insert_all(
+    #   :email_automation_types,
+    #   EmailAutomationType, 
+    #   fn %{email_automation_setting: %{id: setting_id}, email_preset: %{id: email_id}} ->
+    #     now = DateTime.utc_now() |> DateTime.truncate(:second)
+    #     selected_job_types
+    #     |> Enum.map(&%{
+    #       organization_job_id: &1.id,
+    #       email_automation_setting_id: setting_id,
+    #       email_preset_id: email_id,
+    #       inserted_at: now,
+    #       updated_at: now
+    #     })
+    # end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{email_preset: email_preset}} -> 
+        send(self(), {:update_automation, %{email_preset: email_preset}})
+        :ok
+      _ -> :error
+    end
+
+    socket
   end
 end

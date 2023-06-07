@@ -315,7 +315,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
     |> assign(:options, updated_options)
     |> assign(:selected_count, Enum.count(updated_options))
 
-    {:noreply, socket}
+    set_selected(socket, "all", true)
   end
 
   @doc false

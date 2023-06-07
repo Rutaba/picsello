@@ -267,13 +267,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                 </div>
 
                 <div class="flex items-center md:mt-0 ml-auto mt-4">
-                <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 custom-tooltip" title="remove" phx-click="delete-email" phx-value-email_automation_setting_id={email.email_automation_setting.id} color="red-sales-300" icon="trash">
-                  <%= if index == 0 do %>
-                    <span class="text-black font-normal w-64 text-start" style="white-space: normal;">
-                        Can't delete first email; disable the entire sequence if you don't want it to send
-                    </span>
-                  <% end %>
-                </.icon_button>
+                  <div class="custom-tooltip">
+                    <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 mr-2 px-2 py-2" title="remove" phx-click="delete-email" phx-value-email_automation_setting_id={email.email_automation_setting.id} color="red-sales-300" icon="trash"/>
+                    <%= if index == 0 do %>
+                      <span class="text-black font-normal w-64 text-start" style="white-space: normal;">
+                          Can't delete first email; disable the entire sequence if you don't want it to send
+                      </span>
+                    <% end %>
+                  </div>
                   <button phx-click="edit-time-popup" phx-value-email_id={email.id} phx-value-email_automation_setting_id={email.email_automation_setting.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
                     <.icon name="settings" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Edit time

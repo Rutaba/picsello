@@ -33,6 +33,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
   end
 
   def changeset(email_preset \\ %__MODULE__{}, attrs) do
+    IO.inspect email_preset, label: "email_preset--------change"
     email_preset
     |> cast(
       attrs,
