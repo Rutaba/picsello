@@ -608,18 +608,14 @@ defmodule PicselloWeb.HomeLive.Index do
                 <%= for client <- clients do %>
                   <%= live_redirect to: Routes.client_path(@socket, :show, client.id) do %>
                     <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
-                      <%= if String.length(client.name) < 20 do
+                      <%= if String.length(client.name) <= 40 do
                           client.name || "-"
                         else
-                          "#{client.name |> String.slice(0..20)} ..."
+                          "#{client.name |> String.slice(0..40)} ..."
                         end %>
                     </p>
                     <p class="text-gray-400 font-normal text-sm">
-                      <%= if String.length(client.email) < 20 do
-                          (client.email) || "-"
-                        else
-                          "#{client.email |> String.slice(0..20)} ..."
-                        end %>
+                      <%= client.email %>
                     </p>
                   <% end %>
                 <% end %>
@@ -642,10 +638,10 @@ defmodule PicselloWeb.HomeLive.Index do
                 <%= live_redirect to: Routes.job_path(@socket, :leads, lead.id) do %>
                   <div class="flex flex-row">
                     <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
-                      <%= if String.length(Job.name(lead)) < 20 do
+                      <%= if String.length(Job.name(lead)) <= 40 do
                           Job.name(lead) || "-"
                         else
-                          "#{Job.name(lead) |> String.slice(0..20)} ..."
+                          "#{Job.name(lead) |> String.slice(0..40)} ..."
                         end %>
                     </p>
                     <.status_badge class="ml-4 w-fit" job={lead}/>
@@ -673,10 +669,10 @@ defmodule PicselloWeb.HomeLive.Index do
               <%= for job <- jobs do %>
                 <%= live_redirect to: Routes.job_path(@socket, :jobs, job.id) do %>
                   <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
-                    <%= if String.length(Job.name(job)) < 20 do
+                    <%= if String.length(Job.name(job)) <= 40 do
                         Job.name(job) || "-"
                       else
-                        "#{Job.name(job) |> String.slice(0..20)} ..."
+                        "#{Job.name(job) |> String.slice(0..40)} ..."
                       end %>
                   </p>
                   <p class="text-gray-400 font-normal text-sm">
@@ -731,10 +727,10 @@ defmodule PicselloWeb.HomeLive.Index do
               <%= for package <- @packages do %>
                 <%= live_redirect to: Routes.package_templates_path(@socket, :edit, package.id) do %>
                   <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
-                    <%= if String.length(package.name) < 30 do
+                    <%= if String.length(package.name) <= 40 do
                         package.name || "-"
                       else
-                        "#{package.name |> String.slice(0..30)} ..."
+                        "#{package.name |> String.slice(0..40)} ..."
                       end %>
                   </p>
                   <p class="text-gray-400 font-normal text-sm">
