@@ -107,7 +107,6 @@ defmodule Picsello.WHCC.Order.Created do
 
   def total(%__MODULE__{orders: orders})
     do
-      Logger.info("Order object: #{inspect(orders)}")
       (for %{api: %{"Products" => products}} <- orders, reduce: Money.new(0) do
          sum ->
           total_price =
