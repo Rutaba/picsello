@@ -1,6 +1,6 @@
 defmodule Picsello.WHCC.Order.Created do
   @moduledoc "Structure for WHCC order created"
-
+  require Logger
   defmodule Order do
     @moduledoc "stores one item from the orders list in the created response"
 
@@ -104,9 +104,14 @@ defmodule Picsello.WHCC.Order.Created do
     cast(created, attrs, [:confirmed_at])
   end
 
-  def total(%__MODULE__{orders: orders}),
-    do:
-      (for %{total: total} <- orders, reduce: Money.new(0) do
-         sum -> Money.add(sum, total)
+  def total(%__MODULE__{orders: orders})
+    do
+      IO.inspect(orders)
+      Logger.info("Order object: #{inspect(orders)}")
+      (for %{api: %{"SubTotal" => subtotal}} <- orders, reduce: Money.new(0) do
+         sum ->
+          {:ok, subtotal} = Money.parse(subtotal)
+          Money.add(sum, subtotal)
        end)
+    end
 end

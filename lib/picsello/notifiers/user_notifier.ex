@@ -238,7 +238,11 @@ defmodule Picsello.Notifiers.UserNotifier do
           optional(:print_credit_remaining) => Money.t(),
           optional(:print_cost) => Money.t(),
           optional(:photographer_charge) => Money.t(),
-          optional(:photographer_payment) => Money.t()
+          optional(:photographer_payment) => Money.t(),
+          optional(:whcc_subtotal) => Money.t(),
+          optional(:stripe_fee) => Money.t(),
+          optional(:shipping) => Money.t(),
+          optional(:staging) => Boolean.t(),
         }
   def order_confirmation_params(
         %{
@@ -268,6 +272,7 @@ defmodule Picsello.Notifiers.UserNotifier do
     ) do
       params ->
         Map.merge(params, fun.(order))
+        |> Map.merge(%{staging: true, stripe_fee: stripe_processing_fee(order), shipping: Picsello.Cart.total_shipping(order),whcc_subtotal: WHCCOrder.total(order.whcc_order)})
     end
   end
 
