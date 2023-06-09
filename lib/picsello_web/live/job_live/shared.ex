@@ -876,7 +876,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def communications_card(assigns) do
     ~H"""
     <.card color="orange-inbox-300" title="Communications" class="md:col-span-2">
-      <div {testid("inbox")} class="flex flex-col lg:flex-row">
+      <div {testid("inbox")} class="flex flex-col lg:flex-row gap-x-7">
         <div class="flex-1 text-base-250">
           Inbox
           <div class="flex border border-base-200 rounded-lg p-8 mt-4 justify-center">
@@ -896,7 +896,27 @@ defmodule PicselloWeb.JobLive.Shared do
             </button>
           </div>
         </div>
-        <div class="my-8 border-t lg:my-0 lg:mx-8 lg:border-t-0 lg:border-l border-base-200"></div>
+
+        <div class="flex-1 text-base-250">
+          Automation Sequences
+          <div class="flex border border-base-200 rounded-lg p-8 mt-4 justify-center">
+            <span class={classes("w-7 h-7 flex items-center justify-center text-lg font-bold text-white rounded-full mr-2 pb-1", %{"bg-orange-inbox-300" => @inbox_count > 0,"bg-base-250" => @inbox_count <= 0})}>
+              <%= @inbox_count %>
+            </span>
+            <span class={if @inbox_count > 0, do: "text-orange-inbox-300", else: "text-base-250"}>
+              <%= ngettext "automations", "automations", @inbox_count %>
+            </span>
+          </div>
+          <div class="flex flex-col-reverse sm:flex-row justify-end mt-4">
+
+            <button type="button" class="btn-primary intro-message" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+              View all
+            </button>
+          </div>
+        </div>
+
+
+        <div class="my-8 border-t lg:my-0 lg:mx-0 lg:border-t-0 lg:border-l border-base-200"></div>
         <div class="flex flex-col flex-[0.5]">
           <span class="mb-1 font-bold"><%= @job.client.name %></span>
           <%= if @job.client.phone do %>
