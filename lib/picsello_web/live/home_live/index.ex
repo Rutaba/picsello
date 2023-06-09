@@ -663,6 +663,7 @@ defmodule PicselloWeb.HomeLive.Index do
               <div class="flex flex-col mt-4 lg:flex-col">
                 <.empty_state_base tour_embed="https://www.youtube.com/watch?v=XWZH_65evuM" body="Booking jobs will get you on your way to making a profit. If you are migrating existing jobs from another platform, user our import job above." third_party_padding="calc(59.916666666666664% + 41px)">
                 </.empty_state_base>
+
               </div>
             <% jobs -> %>
             <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
@@ -689,9 +690,11 @@ defmodule PicselloWeb.HomeLive.Index do
             <hr class="m-1 mb-4" />
             <%= case @galleries do %>
               <% [] -> %>
-                <div class="flex flex-col mt-4 lg:flex-col">
-                  <.empty_state_base tour_embed="https://www.youtube.com/watch?v=uEY3eS9cDIk" body="With unlimited gallery storage, don't think twice about migrating existing galleries from other platforms and creating new ones." third_party_padding="calc(59.916666666666664% + 41px)">
-                  </.empty_state_base>
+                <div class="flex flex-col mt-4">
+                  <div class="flex flex-row mt-4 p-4 gap-6">
+                    <iframe src="https://www.youtube.com/embed/uEY3eS9cDIk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video mb-24"></iframe>
+                    <p class="text-base-250 text-normal mb-8">With unlimited gallery storage, don't think twice about migrating existing galleries from other platforms and creating new ones.</p>
+                  </div>
                 </div>
               <% galleries -> %>
               <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
@@ -707,10 +710,10 @@ defmodule PicselloWeb.HomeLive.Index do
             <hr class="m-1 mb-4" />
             <%= case @booking_events |> Enum.take(6) do %>
               <% [] -> %>
-                <div class="flex flex-col mt-4 lg:flex-col">
-                  <.empty_state_base tour_embed="https://www.youtube.com/watch?v=aVnPMupMK8Q" body="Booking events are an easy way to get jobs booked, paid and prepped efficiently - for both you and your clients." third_party_padding="calc(59.916666666666664% + 41px)">
-                  </.empty_state_base>
-                </div>
+                  <div class="flex flex-row mt-4 p-4 gap-6">
+                    <iframe src="https://www.youtube.com/embed/aVnPMupMK8Q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video mb-24"></iframe>
+                    <p class="text-base-250 text-normal mb-8">Booking events are an easy way to get jobs booked, paid and prepped efficiently - for both you and your clients.</p>
+                  </div>
               <% booking_events -> %>
               <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
                 <%= for {booking_event, booking_index} <- booking_events |> Enum.with_index() do %>
@@ -743,33 +746,44 @@ defmodule PicselloWeb.HomeLive.Index do
           </.recents_card>
 
         <% "finish-setup" -> %>
-          <div class="grid md:grid-cols-2 grid-cols-1 gap-5">
-            <%= if @stripe_status != :charges_enabled do %>
-              <div {testid("card-finish-setup")} class={"flex border border-base-200 rounded-lg h-auto"}>
-                <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-blue-planning-300"} />
-                <div class="flex flex-col mt-4 p-4">
-                  <h1 class="text-2xl font-bold mb-4">Seamless payment thru Stripe</h1>
-                  <.empty_state_base tour_embed="https://www.youtube.com/watch?v=8OQSazeLgv8" body="Stripe is the platform we use to enable swift and automatic client payments processing for you and your business." third_party_padding="calc(59.916666666666664% + 41px)">
-                    <.card_buttons {assigns} current_user={@current_user} socket={@socket} concise_name={@org_stripe_card.card.concise_name} org_card_id={@org_stripe_card.id} buttons={@org_stripe_card.card.buttons} />
-                  </.empty_state_base>
+          <div class="grid grid-rows-2 gap-5">
+            <div class="grid md:grid-cols-2 grid-cols-1 gap-5">
+              <%= if @stripe_status != :charges_enabled do %>
+                <div {testid("card-finish-setup")} class={"flex border border-base-200 rounded-lg h-auto"}>
+                  <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-blue-planning-300"} />
+                  <div class="flex flex-row mt-4 p-4 gap-6">
+                    <iframe src="https://www.youtube.com/embed/8OQSazeLgv8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video mb-24"></iframe>
+                    <div class="flex flex-col">
+                      <h1 class="text-xl font-bold mb-4">Seamless payment thru Stripe</h1>
+                      <p class="text-base-250 text-normal mb-8">Stripe is the platform we use to enable swift and automatic client payments processing for you and your business.</p>
+                      <.card_buttons {assigns} class="btn-primary" current_user={@current_user} socket={@socket} concise_name={@org_stripe_card.card.concise_name} org_card_id={@org_stripe_card.id} buttons={@org_stripe_card.card.buttons} />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            <% end %>
+              <% end %>
 
-            <div {testid("card-get-started")} class={"flex border border-base-200 rounded-lg h-auto"}>
-              <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-blue-planning-300"} />
-              <div class="flex flex-col mt-4 lg:flex-col">
-                <h1 class="text-2xl font-bold mb-4">Get your packages setup</h1>
-                <.empty_state_base tour_embed="https://www.youtube.com/watch?v=Ji6Es6AEyMQ" body="Packages are core to your business and success! Start with our Smart Profit Calculator™ to calculate pricing and be sure to get your packages set up now." third_party_padding="calc(59.916666666666664% + 41px)">
-                  <button type="button" phx-click="view-packages" class="w-full md:w-auto btn-primary flex-shrink-0 text-center">Get Started</button>
-                </.empty_state_base>
+              <div {testid("card-get-started")} class={"flex border border-base-200 rounded-lg h-auto"}>
+                <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-blue-planning-300"} />
+                <div class="flex flex-row mt-4 p-4 gap-6">
+                  <iframe src="https://www.youtube.com/embed/8OQSazeLgv8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video mb-24"></iframe>
+                  <div class="flex flex-col">
+                    <h1 class="text-xl font-bold mb-4">Get your packages setup</h1>
+                    <p class="text-base-250 text-normal mb-8">Packages are core to your business and success! Start with our Smart Profit Calculator™ to calculate pricing and be sure to get your packages set up now.</p>
+                    <button type="button" phx-click="view-packages" class="w-full md:w-auto btn-primary flex-shrink-0 text-center">Get Started</button>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div {testid("card-finish-setup")} class={"flex border border-base-200 rounded-lg h-auto"}>
               <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-blue-planning-300"} />
-                <h1 class="text-2xl font-bold mb-4">Picsello Account Set-up</h1><.icon name="confetti-welcome" class="inline-block w-8 h-8 text-blue-planning-300" />
-                <p class="text-base-250 text-xl">The classic “Chicken or the Egg” problem. We know it is overwhelming getting started with any software. Here’s what we suggest to do to get familiar and setup:</p>
+                <div class="flex flex-col p-4">
+                  <div class="flex row">
+                    <h1 class="text-xl font-bold mb-4">Picsello Account Set-up</h1>
+                    <.icon name="confetti-welcome" class="inline-block w-7 h-7 text-blue-planning-300" />
+                  </div>
+                  <p class="text-base-250 text-normal">The classic “Chicken or the Egg” problem. We know it is overwhelming getting started with any software. Here’s what we suggest to do to get familiar and setup:</p>
+                </div>
             </div>
           </div>
 
@@ -1013,9 +1027,7 @@ defmodule PicselloWeb.HomeLive.Index do
         socket |> assign(:packages, Packages.get_recent_packages(current_user))
 
       "finish-setup" ->
-        org_stripe_card = OrganizationCard.get_org_stripe_card(current_user.organization_id)
-          |> IO.inspect(label: "Attention card")
-        socket |> assign(:org_stripe_card, org_stripe_card)
+        socket |> assign(:org_stripe_card, OrganizationCard.get_org_stripe_card(current_user.organization_id))
 
       _ ->
         socket
