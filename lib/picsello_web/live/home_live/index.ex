@@ -742,6 +742,37 @@ defmodule PicselloWeb.HomeLive.Index do
             </div>
           </.recents_card>
 
+        <% "finish-setup" -> %>
+          <div class="grid md:grid-cols-2 grid-cols-1 gap-5">
+            <%= if @stripe_status != :charges_enabled do %>
+              <div {testid("card-finish-setup")} class={"flex border border-base-200 rounded-lg h-auto"}>
+                <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-blue-planning-300"} />
+                <div class="flex flex-col mt-4 p-4">
+                  <h1 class="text-2xl font-bold mb-4">Seamless payment thru Stripe</h1>
+                  <.empty_state_base tour_embed="https://www.youtube.com/watch?v=8OQSazeLgv8" body="Stripe is the platform we use to enable swift and automatic client payments processing for you and your business." third_party_padding="calc(59.916666666666664% + 41px)">
+                    <.card_buttons {assigns} current_user={@current_user} socket={@socket} concise_name={@org_stripe_card.card.concise_name} org_card_id={@org_stripe_card.id} buttons={@org_stripe_card.card.buttons} />
+                  </.empty_state_base>
+                </div>
+              </div>
+            <% end %>
+
+            <div {testid("card-get-started")} class={"flex border border-base-200 rounded-lg h-auto"}>
+              <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-blue-planning-300"} />
+              <div class="flex flex-col mt-4 lg:flex-col">
+                <h1 class="text-2xl font-bold mb-4">Get your packages setup</h1>
+                <.empty_state_base tour_embed="https://www.youtube.com/watch?v=Ji6Es6AEyMQ" body="Packages are core to your business and success! Start with our Smart Profit Calculator™ to calculate pricing and be sure to get your packages set up now." third_party_padding="calc(59.916666666666664% + 41px)">
+                  <button type="button" phx-click="view-packages" class="w-full md:w-auto btn-primary flex-shrink-0 text-center">Get Started</button>
+                </.empty_state_base>
+              </div>
+            </div>
+
+            <div {testid("card-finish-setup")} class={"flex border border-base-200 rounded-lg h-auto"}>
+              <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-blue-planning-300"} />
+                <h1 class="text-2xl font-bold mb-4">Picsello Account Set-up</h1><.icon name="confetti-welcome" class="inline-block w-8 h-8 text-blue-planning-300" />
+                <p class="text-base-250 text-xl">The classic “Chicken or the Egg” problem. We know it is overwhelming getting started with any software. Here’s what we suggest to do to get familiar and setup:</p>
+            </div>
+          </div>
+
         <% _ -> %>
           <%= case @attention_items do %>
             <% [] -> %>
@@ -902,7 +933,7 @@ defmodule PicselloWeb.HomeLive.Index do
          redirect_route: nil,
          notification_count: nil
        }},
-      {false,
+      {true,
        %{
          name: "Finish Setup",
          concise_name: "finish-setup",
@@ -980,6 +1011,14 @@ defmodule PicselloWeb.HomeLive.Index do
 
       "packages" ->
         socket |> assign(:packages, Packages.get_recent_packages(current_user))
+
+      "finish-setup" ->
+        org_stripe_card = OrganizationCard.get_org_stripe_card(current_user.organization_id)
+          |> IO.inspect(label: "Attention card")
+        socket |> assign(:org_stripe_card, org_stripe_card)
+
+      _ ->
+        socket
     end
   end
 

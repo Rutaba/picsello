@@ -106,6 +106,15 @@ defmodule Picsello.OrganizationCard do
   def inactive!(organization_card_id) when is_integer(organization_card_id),
     do: update!(organization_card_id, :inactive)
 
+  def get_org_stripe_card(organization_id) do
+    from(org_card in OrganizationCard,
+      join: card in assoc(org_card, :card),
+      where: org_card.organization_id == ^organization_id
+      and card.concise_name == "set-up-stripe",
+      preload: [:card]
+    ) |> Repo.one()
+  end
+
   defp update!(organization_card_id, status) do
     __MODULE__
     |> Repo.get(organization_card_id)
