@@ -630,7 +630,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <% [] -> %>
               <div class="flex flex-row mt-4 p-4 gap-6">
                 <iframe src="https://www.youtube.com/embed/V90oycrU45g" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
-                <p class="md:max-w-md text-base-250 text-normal mb-8">Generating leads is the pipeline to booked clients. Learn more and create some now.</p>
+                <p class="md:max-w-md text-base-250 text-normal mb-8">Generating leads is the pipeline to booked clients. <span class="font-normal text-normal text-blue-planning-300"><a class="underline" target="_blank" rel="noopener noreferrer" href="https://support.picsello.com/article/40-create-a-lead">Learn more</a></span> and create some now.</p>
               </div>
             <% leads -> %>
             <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
