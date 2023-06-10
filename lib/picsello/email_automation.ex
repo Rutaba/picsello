@@ -91,27 +91,34 @@ defmodule Picsello.EmailAutomation do
     end)
   end
 
-  def delete_email(email_setting_id) do
+  def delete_email(email_setting_id, job_id) do
     Repo.transaction(fn ->
       # Delete email_automation_types
       from(t in EmailAutomationType,
-        where: t.email_automation_setting_id == ^email_setting_id
+        where:
+          t.email_automation_setting_id == ^email_setting_id and t.organization_job_id == ^job_id
       )
       |> Repo.delete_all()
 
-      # Delete email_presets
-      from(p in EmailPreset,
-        where: p.email_automation_setting_id == ^email_setting_id
-      )
-      |> Repo.one()
-      |> Repo.delete()
+      email_types =
+        from(t in EmailAutomationType, where: t.email_automation_setting_id == ^email_setting_id)
+        |> Repo.all()
 
-      # Delete email_automation_settings
-      from(s in EmailAutomationSetting,
-        where: s.id == ^email_setting_id
-      )
-      |> Repo.one()
-      |> Repo.delete()
+      if Enum.count(email_types) == 0 do
+        # Delete email_presets
+        from(p in EmailPreset,
+          where: p.email_automation_setting_id == ^email_setting_id
+        )
+        |> Repo.one()
+        |> Repo.delete()
+
+        # Delete email_automation_settings
+        from(s in EmailAutomationSetting,
+          where: s.id == ^email_setting_id
+        )
+        |> Repo.one()
+        |> Repo.delete()
+      end
     end)
   end
 

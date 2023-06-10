@@ -1,0 +1,31 @@
+<div class="pt-6 px-6 py-2 center-container">
+  <div class="flex text-4xl items-center">
+    <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
+    <.crumbs class="text-sm text-base-250">
+      <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
+      <:crumb to={Routes.email_automations_index_path(@socket, :index)}>Automations</:crumb>
+      <:crumb><%= String.capitalize(@type) %></:crumb>
+    </.crumbs>
+  </div>
+
+  <hr class="mt-2 border-white" />
+  <div class="flex justify-between lg:mt-2 md:justify-start">
+    <div class="flex">
+      <div>
+        <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
+      </div>
+    <div>
+        <h1 class="text-4xl font-bold"><%= String.capitalize(@type) %> Automation History</h1>
+      <div class="max-w-4xl mt-2 text-base-250">
+        <p>Email automation sequences are scheduled to send for Leads, Jobs and Galleries. View status, preview email content and, as needed, choose to stop the emails for this specific job. To make global changes (CLICK HERE).</p>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+<div class="p-6 center-container">
+  <%= if show_intro?(@current_user, "intro_contract") === "true" do %>
+    <.empty_state_base wrapper_class="border rounded-lg p-4 mb-8" tour_embed="https://demo.arcade.software/J7LVwwRlcenKLiB7vKf3?embed" headline="Meet Automations" eyebrow_text="" body="Here are the controls to communications that will make managing your clients and running your business - pre and post shoot so much easier! Adjust timing, start, stop, edit and version emails for the photography types you offer. That is right - email automation sequences can be customized for your specific business workflow and client needs!" third_party_padding="calc(66.66666666666666% + 41px)" close_event="intro-close-contract">
+    </.empty_state_base>
+  <% end %>
+  </div>

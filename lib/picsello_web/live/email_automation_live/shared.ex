@@ -5,7 +5,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Picsello.{EmailPresets.EmailPreset}
+  alias Picsello.{EmailPresets.EmailPreset, EmailAutomation}
 
   def make_email_presets_options(email_presets) do
     email_presets
@@ -15,7 +15,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def email_preset_changeset(socket, email_preset, params \\ nil) do
     email_preset_changeset = build_email_changeset(email_preset, params)
     body_template = current(email_preset_changeset) |> Map.get(:body_template)
-    
+
     if params do
       socket
     else
@@ -25,13 +25,41 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> assign(email_preset_changeset: email_preset_changeset)
   end
 
-  def build_email_changeset(email_preset, params) do 
+  def assign_automation_pipelines(
+        %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
+      ) do
+    automation_pipelines =
+      EmailAutomation.get_all_pipelines_emails(current_user.organization_id, selected_job_type.id)
+      |> assign_category_pipeline_count()
+
+    socket |> assign(:automation_pipelines, automation_pipelines)
+  end
+
+  defp assign_category_pipeline_count(automation_pipelines) do
+    automation_pipelines
+    |> Enum.map(fn %{subcategories: subcategories} = category ->
+      total_emails_count =
+        subcategories
+        |> Enum.reduce(0, fn subcategory, acc ->
+          email_count =
+            Enum.reduce(subcategory.pipelines, 0, fn pipeline, acc ->
+              acc + Enum.count(pipeline.emails)
+            end)
+
+          email_count + acc
+        end)
+
+      Map.put(category, :total_emails_count, total_emails_count)
+    end)
+  end
+
+  def build_email_changeset(email_preset, params) do
     if params do
       params
     else
       email_preset
       |> Map.put(:template_id, email_preset.id)
-      |> prepare_email_preset_params()   
+      |> prepare_email_preset_params()
     end
     |> EmailPreset.changeset()
   end
@@ -43,12 +71,14 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def make_options(changeset, job_types) do
-    job_types |> Enum.map(fn option ->
+    job_types
+    |> Enum.map(fn option ->
       Map.put(option, :label, String.capitalize(option.label))
     end)
   end
 
   def validate?(false, _), do: false
+
   def validate?(true, job_types) do
     Enum.any?(job_types, &Map.get(&1, :selected, false))
   end
