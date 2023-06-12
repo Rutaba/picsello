@@ -275,7 +275,7 @@ defmodule Picsello.Notifiers.UserNotifier do
     ) do
       params ->
         digitals_params = if order.digitals do
-          %{contains_digitals: true,
+          %{contains_digital: true,
             digital_quantity: "#{Enum.count(order.digitals)}",
             total_digitals_price: Enum.reduce(order.digitals, ~M[0]USD, fn digital, acc ->
               Money.add(digital.price, acc)

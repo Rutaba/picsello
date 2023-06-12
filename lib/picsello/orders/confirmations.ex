@@ -186,21 +186,26 @@ defmodule Picsello.Orders.Confirmations do
          order: %{whcc_order: whcc_order} = order
        }) do
     shipping = Picsello.Cart.total_shipping(order)
-    {:ok, Picsello.WHCC.Order.Created.total(whcc_order) |> Money.add(shipping)}
+    {:ok, Picsello.WHCC.Order.Created.total(whcc_order) |> Money.add(shipping) |> Money.add(stripe_processing_fee(order))}
   end
 
   defp photographer_owes(_repo, %{
-         intent: %{application_fee_amount: application_fee_amount},
-         order: %{whcc_order: whcc_order} = order
+         intent: %{application_fee_amount: application_fee_amount, amount: amount},
+         order: order
        }) do
-    shipping = Picsello.Cart.total_shipping(order)
+    print_cost = application_fee_amount |> Money.add(stripe_processing_fee(order))
 
-    {:ok,
-     whcc_order
-     |> Picsello.WHCC.Order.Created.total()
-     |> Money.add(shipping)
-     |> Money.subtract(application_fee_amount)}
+    case Money.cmp(amount, print_cost) do
+          :lt -> {:ok, Money.subtract(print_cost, amount)}
+          :gt -> {:ok, ~M[0]USD}
+          _ -> {:ok, ~M[0]USD}
+        end
   end
+
+  defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),
+    do: processing_fee
+
+  defp stripe_processing_fee(_), do: Money.new(0)
 
   defp place_order(%{order: order}), do: Order.placed_changeset(order)
 
@@ -329,18 +334,10 @@ defmodule Picsello.Orders.Confirmations do
          %{gallery: %{organization: %{user: user}}} = invoice_order,
          outstanding
        ) do
-    stripe_processing_fee = stripe_processing_fee(invoice_order)
-    shipping = Picsello.Cart.total_shipping(invoice_order)
-    total_outstanding = Money.add(outstanding, shipping)|> Money.add(stripe_processing_fee)
-    Invoices.invoice_user(user, total_outstanding,
+    Invoices.invoice_user(user, outstanding,
       description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}"
     )
   end
-
-  defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),
-    do: processing_fee
-
-  defp stripe_processing_fee(_), do: Money.new(0)
 
   defp insert_invoice_changeset(%{stripe_invoice: stripe_invoice}, order),
     do: Invoices.changeset(stripe_invoice, order)
