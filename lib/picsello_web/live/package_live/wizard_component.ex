@@ -370,7 +370,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       %{
         details: "Provide Details",
         documents: "Select Documents",
-        pricing: "Set Pricing"
+        pricing: "Set Pricing",
+        payment: "Set Payment Schedule"
       },
       step
     )
