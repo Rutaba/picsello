@@ -477,7 +477,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <label class="flex items-center mt-8" {intro_hints_only("intro_hints_only_1")}>
               <%= checkbox @f, :show_on_public_profile, class: "w-6 h-6 checkbox" %>
               <h1 class="text-xl ml-2 mr-1 font-bold">Show package on my Public Profile</h1>
-              <.intro_hint content="Default Packages are hidden. All currently created packages are public. All new packages are off by default." />
             </label>
             <p class="ml-8 text-gray-500"> Keep this package hidden from potential clients until you're ready to showcase it</p>
           </div>
