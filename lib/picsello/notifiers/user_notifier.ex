@@ -1,6 +1,6 @@
 defmodule Picsello.Notifiers.UserNotifier do
   @moduledoc false
-  alias Picsello.{Repo, Accounts.User, Job}
+  alias Picsello.{Repo, Cart, Accounts.User, Job}
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
   use Picsello.Notifiers
   import Money.Sigils
@@ -233,16 +233,19 @@ defmodule Picsello.Notifiers.UserNotifier do
           :gallery_name => String.t(),
           :job_name => String.t(),
           :client_order_url => String.t(),
+          :products_quantity=> String.t(),
+          :total_products_price => Money.t(),
           :client_charge => Money.t(),
+          optional(:contains_digital)=> Boolean.t(),
+          optional(:digital_quantity)=> String.t(),
+          optional(:total_digitals_price) => Money.t(),
           optional(:print_credit_used) => Money.t(),
           optional(:print_credit_remaining) => Money.t(),
           optional(:print_cost) => Money.t(),
           optional(:photographer_charge) => Money.t(),
           optional(:photographer_payment) => Money.t(),
-          optional(:whcc_subtotal) => Money.t(),
           optional(:stripe_fee) => Money.t(),
-          optional(:shipping) => Money.t(),
-          optional(:staging) => Boolean.t(),
+          optional(:shipping) => Money.t()
         }
   def order_confirmation_params(
         %{
@@ -271,8 +274,40 @@ defmodule Picsello.Notifiers.UserNotifier do
       }
     ) do
       params ->
+        digitals_params = if order.digitals do
+          %{contains_digitals: true,
+            digital_quantity: "#{Enum.count(order.digitals)}",
+            total_digitals_price: Enum.reduce(order.digitals, ~M[0]USD, fn digital, acc ->
+              Money.add(digital.price, acc)
+            end)
+          }
+        else
+          %{}
+        end
+
+        total_products_price =
+          Cart.preload_products(order).products
+          |> Enum.reduce(~M[0]USD, fn product, acc ->
+              Money.add(Cart.Product.charged_price(product), acc)
+            end)
+
+        products_quantity =
+          Cart.preload_products(order).products
+          |> Enum.reduce(0, fn product, acc ->
+              Cart.product_quantity(product) + acc
+            end)
+
+
         Map.merge(params, fun.(order))
-        |> Map.merge(%{staging: true, stripe_fee: stripe_processing_fee(order), shipping: Picsello.Cart.total_shipping(order),whcc_subtotal: WHCCOrder.total(order.whcc_order)})
+        |> Map.merge(digitals_params)
+        |> Map.merge(%{stripe_fee: stripe_processing_fee(order),
+                        shipping: Picsello.Cart.total_shipping(order),
+                        whcc_subtotal: WHCCOrder.total(order.whcc_order),
+                        total_products_price: total_products_price,
+                        products_quantity: products_quantity
+                      }
+                    )
+
     end
   end
 
@@ -305,16 +340,11 @@ defmodule Picsello.Notifiers.UserNotifier do
 
   defp print_cost(%{whcc_order: nil}), do: %{}
 
-  defp print_cost(%{whcc_order: whcc_order} = order) do
-    processing_fee = stripe_processing_fee(order)
-    shipping_price = Picsello.Cart.total_shipping(order)
-
+  defp print_cost(%{whcc_order: whcc_order}) do
     %{
       print_cost:
         whcc_order
         |> WHCCOrder.total()
-        |> Money.add(shipping_price)
-        |> Money.add(processing_fee)
     }
   end
 

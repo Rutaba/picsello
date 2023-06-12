@@ -1,6 +1,7 @@
 defmodule Picsello.WHCC.Order.Created do
   @moduledoc "Structure for WHCC order created"
   require Logger
+  import Money.Sigils
   defmodule Order do
     @moduledoc "stores one item from the orders list in the created response"
 
@@ -106,12 +107,19 @@ defmodule Picsello.WHCC.Order.Created do
 
   def total(%__MODULE__{orders: orders})
     do
-      IO.inspect(orders)
       Logger.info("Order object: #{inspect(orders)}")
-      (for %{api: %{"SubTotal" => subtotal}} <- orders, reduce: Money.new(0) do
+      (for %{api: %{"Products" => products}} <- orders, reduce: Money.new(0) do
          sum ->
-          {:ok, subtotal} = Money.parse(subtotal)
-          Money.add(sum, subtotal)
-       end)
+          total_price =
+          Enum.reduce(products, ~M[0]USD, fn product, acc ->
+            if String.contains?(Map.get(product, "ProductDescription"), "Shipping") || String.contains?(Map.get(product, "ProductDescription"), "Delivery Area Surcharge") do
+              acc
+            else
+              {:ok, price} = Money.parse(Map.get(product, "Price"))
+              Money.add(acc, price)
+            end
+          end)
+          Money.add(sum, total_price)
+      end)
     end
 end
