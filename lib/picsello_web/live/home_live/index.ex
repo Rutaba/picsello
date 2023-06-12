@@ -666,7 +666,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <% [] -> %>
               <div class="flex flex-row mt-4 p-4 gap-6">
                 <iframe src="https://www.youtube.com/embed/XWZH_65evuM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
-                <p class="md:max-w-md text-base-250 text-normal mb-8">Booking jobs will get you on your way to making a profit. If you are migrating existing jobs from another platform, user our import a job button above.</p>
+                <p class="md:max-w-md text-base-250 text-normal mb-8">Booking jobs will get you on your way to making a profit. If you are migrating existing jobs from another platform, use our import a job button above.</p>
               </div>
             <% jobs -> %>
             <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
