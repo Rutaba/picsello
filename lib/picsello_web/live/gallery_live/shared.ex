@@ -342,9 +342,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  defp photos_album_opts(%{id: "client_liked"}), do: []
-  defp photos_album_opts(%{id: id}), do: [album_id: id]
-  defp photos_album_opts(_), do: [exclude_album: true]
+  def photos_album_opts(%{id: "client_liked"}), do: []
+  def photos_album_opts(%{id: id}), do: [album_id: id]
+  def photos_album_opts(_), do: [exclude_album: true]
 
   def assign_photos(
         %{

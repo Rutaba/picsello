@@ -167,6 +167,15 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> noreply()
   end
 
+  def handle_info(:update_client_gallery_state, %{assigns: %{album: album, gallery: gallery}} = socket) do
+    socket
+    |> assign(
+      album_favorites_count: Galleries.gallery_album_favorites_count(gallery, album.id),
+      favorites_count: Galleries.gallery_favorites_count(gallery)
+    )
+    |> noreply()
+  end
+
   defp assigns(%{assigns: %{album: album, gallery: gallery, client_email: client_email}} = socket) do
     album = album |> Repo.preload(:photos)
 
@@ -193,6 +202,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
     socket
     |> assign(
+      album_favorites_count: Galleries.gallery_album_favorites_count(gallery, album.id),
       favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,
       gallery: gallery,
@@ -235,12 +245,12 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
           <.photos_count photos_count={@photos_count} class="ml-4" />
         </div>
-        <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} />
+        <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} album_favorites_count={@album_favorites_count}/>
       </div>
     <% else %>
       <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end">
         <div class="text-lg font-bold lg:text-3xl">Your Photos</div>
-        <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} />
+        <.toggle_filter title="Show favorites only" event="toggle_favorites" applied?={@favorites_filter} album_favorites_count={@album_favorites_count}/>
       </div>
       <.photos_count {assigns} class="mb-8 lg:mb-16" />
     <% end %>
@@ -283,7 +293,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
         <% end %>
         <.photos_count photos_count={@photos_count} class="ml-4" />
       </div>
-      <.toggle_filter title="Show selected only" event="toggle_selected" applied?={@selected_filter} />
+      <.toggle_filter title="Show selected only" event="toggle_selected" applied?={@selected_filter} album_favorites_count={@album_favorites_count}/>
     </div>
     """
   end
@@ -304,18 +314,20 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     assigns = assign(assigns, class_1: class_1, class_2: class_2)
 
     ~H"""
-    <div class="flex mt-4 lg:mt-0">
-      <label id="toggle_favorites" class="flex items-center cursor-pointer">
-        <div class="text-sm lg:text-xl text-base-250"><%= @title %></div>
+    <%= if @album_favorites_count != 0 do %>
+      <div class="flex mt-4 lg:mt-0">
+        <label id="toggle_favorites" class="flex items-center cursor-pointer">
+          <div class="text-sm lg:text-xl text-base-250"><%= @title %></div>
 
-        <div class="relative ml-3">
-          <input type="checkbox" class="sr-only" phx-click={@event}>
+          <div class="relative ml-3">
+            <input type="checkbox" class="sr-only" phx-click={@event}>
 
-          <div class={"block h-8 border rounded-full w-14 border-blue-planning-300 #{@class_1}"}></div>
-          <div class={"absolute w-6 h-6 rounded-full dot top-1 bg-blue-planning-300 transition #{@class_2}"}></div>
-        </div>
-      </label>
-    </div>
+            <div class={"block h-8 border rounded-full w-14 border-blue-planning-300 #{@class_1}"}></div>
+            <div class={"absolute w-6 h-6 rounded-full dot top-1 bg-blue-planning-300 transition #{@class_2}"}></div>
+          </div>
+        </label>
+      </div>
+    <% end %>
     """
   end
 end
