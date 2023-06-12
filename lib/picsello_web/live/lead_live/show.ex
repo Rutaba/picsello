@@ -301,7 +301,7 @@ defmodule PicselloWeb.LeadLive.Show do
             force: true
           )
 
-        ClientNotifier.deliver_email(message, recipients)
+        ClientNotifier.deliver_booking_proposal(message, recipients)
 
         socket
         |> assign_proposal()

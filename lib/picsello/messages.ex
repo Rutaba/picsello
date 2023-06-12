@@ -126,10 +126,13 @@ defmodule Picsello.Messages do
     )
   end
 
-  defp get_recipient_attrs(recipients_list, user),
-    do:
+  defp get_recipient_attrs(recipients_list, user) do
+    IO.inspect recipients_list, label: "list"
       recipients_list
       |> Enum.map(fn {type, recipients} ->
+        IO.inspect "reached------"
+        IO.inspect type
+        IO.inspect recipients
         if is_list(recipients),
           do:
             recipients
@@ -139,10 +142,12 @@ defmodule Picsello.Messages do
           else: get_attrs(recipients, type, user)
       end)
       |> List.flatten()
+  end
 
   defp get_attrs(email, type, user) do
+    IO.inspect "reached------1"
     client = Clients.get_client(user, email: email)
-
+    IO.inspect client, label: "client"
     %{
       client_id: client.id,
       recipient_type: String.to_atom(type),
