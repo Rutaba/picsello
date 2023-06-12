@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.Calendar.IndexTest do
   # alias PicselloWeb.Endpoint
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
   alias Picsello.Accounts
-  @token "A77LHd1ubDFRdxU64AwZKIyvN7sDfB"
+  @token "RoJK07y0nExk1c7i57iXQbgzsZ6mGq"
 
   setup do
     ExVCR.Config.filter_request_headers("Authorization")
@@ -20,32 +20,34 @@ defmodule PicselloWeb.Live.Calendar.IndexTest do
   test "Load Calendar", %{conn: conn, user: user} do
     path = Routes.calendar_feed_path(conn, :index)
 
-    calendars = [
-      "1ad8qjrcsqx3uympagccecqga",
-      "41epn1sk1p21c140jcpnp7avn",
-      "62zs9nfax6wvkhzo7wj8vfzw7",
-      "79stlqym1yrt4tag6ibh0j7ds",
-      "8ltfag8u6webc2k1rx4ipk1gs",
-      "bctr87mnash8uypwwfv20ll4a",
-      "f0d1wsvqhkeoyc96czki44mv9",
-      "l71x8rz1pqrh1qj4pibtjpy5",
-      "o6wzom3li5lk2i72kaia5pmj"
-    ]
+    use_cassette "#{__MODULE__}_load_calendars" do
+      calendars = [
+        "1ad8qjrcsqx3uympagccecqga",
+        "41epn1sk1p21c140jcpnp7avn",
+        "62zs9nfax6wvkhzo7wj8vfzw7",
+        "79stlqym1yrt4tag6ibh0j7ds",
+        "8ltfag8u6webc2k1rx4ipk1gs",
+        "bctr87mnash8uypwwfv20ll4a",
+        "f0d1wsvqhkeoyc96czki44mv9",
+        "l71x8rz1pqrh1qj4pibtjpy5",
+        "o6wzom3li5lk2i72kaia5pmj"
+      ]
 
-    user
-    |> Accounts.set_user_nylas_code(@token)
-    |> Picsello.Accounts.User.set_nylas_calendars(%{external_calendar_read_list: calendars})
+      user
+      |> Accounts.set_user_nylas_code(@token)
+      |> Picsello.Accounts.User.set_nylas_calendars(%{external_calendar_read_list: calendars})
 
-    conn =
-      conn
-      |> log_in_user(user)
-      |> get(path, %{
-        "end" => "2023-07-09T00:00:00",
-        "start" => "2023-05-28T00:00:00",
-        "timeZone" => "America/New_York"
-      })
+      conn =
+        conn
+        |> log_in_user(user)
+        |> get(path, %{
+          "end" => "2023-07-09T00:00:00",
+          "start" => "2023-05-28T00:00:00",
+          "timeZone" => "America/New_York"
+        })
 
-    assert json_response(conn, 200) |> IO.inspect(label: "JSON")
+      assert json_response(conn, 200)
+    end
   end
 
   def element_present?(html, selector) do

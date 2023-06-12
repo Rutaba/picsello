@@ -40,18 +40,54 @@ defmodule NylasCalendarTest do
       calendars = [
         "79stlqym1yrt4tag6ibh0j7ds",
         "8ltfag8u6webc2k1rx4ipk1gs",
-
         "1ad8qjrcsqx3uympagccecqga",
         "41epn1sk1p21c140jcpnp7avn",
-        "62zs9nfax6wvkhzo7wj8vfzw7",
-        
+        "62zs9nfax6wvkhzo7wj8vfzw7"
       ]
 
       ExVCR.Config.filter_request_headers("Authorization")
 
       use_cassette "#{__MODULE__}_get_calendar_events" do
         assert calendars |> NylasCalendar.get_events!(@token) |> length() == 280
-        assert %Picsello.Shoot{} = calendars |> NylasCalendar.get_events!(@token) |> hd() 
+
+        assert %{
+                 color: "#585DF6",
+                 end: "2023-05-15",
+                 start: "2023-05-14",
+                 title: "Mother's Day",
+                 url: ""
+               } = calendars |> NylasCalendar.get_events!(@token) |> hd()
+      end
+    end
+
+    test "Check Event are set to the correct timezone (America/New_York)" do
+      token = "RoJK07y0nExk1c7i57iXQbgzsZ6mGq"
+
+      calendar_id = "62zs9nfax6wvkhzo7wj8vfzw7"
+      ExVCR.Config.filter_request_headers("Authorization")
+
+      use_cassette "#{__MODULE__}_get_calendar_events_timezone" do
+        assert events = NylasCalendar.get_events!([calendar_id], token, "America/New_York")
+        assert length(events) > 0
+
+        event1 = %{
+          color: "#585DF6",
+          end: "2023-06-12T13:00:00-04:00",
+          start: "2023-06-12T12:00:00-04:00",
+          title: "Noon Event - EST",
+          url: ""
+        }
+
+        event2 = %{
+          color: "#585DF6",
+          end: "2023-06-13T07:00:00-04:00",
+          start: "2023-06-13T06:00:00-04:00",
+          title: "1:00 pm Israel time / 6:00 am EST",
+          url: ""
+        }
+
+        assert Enum.member?(events, event1)
+        assert Enum.member?(events, event2)
       end
     end
 

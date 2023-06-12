@@ -92,56 +92,56 @@ defmodule NylasCalendar do
     end
   end
 
+  @type calendar_event():: %{
+          color: String.t(),
+          end: String.t(),
+          start: String.t(),
+          title: String.t(),
+          url: String.t()
+        }
   # def get_events!([],_), do: []
-  def get_events!(nil, _), do: []
-  def get_events!(_, nil), do: []
+  def get_events!(calendars, token), do: get_events!(calendars, token, "America/New_York")
+  
+  @spec get_events!([String.t()], String.t()) :: list(calendar_event())
+  def get_events!(nil, _,_), do: []
+  def get_events!(_, nil,_), do: []
 
-  def get_events!(calendars, token) when is_list(calendars) do
-    IO.inspect(calendars)
-
+  def get_events!(calendars, token, timezone) when is_list(calendars) do
+    Logger.info("timezone #{timezone} +++++++")
     calendars
     |> Enum.flat_map(fn calendar_id ->
+      Logger.info("Get events for #{calendar_id} #{token}")
       {:ok, events} = get_events(calendar_id, token)
-
-      if length(events) > 0 do
-        Logger.debug("Events #{inspect(hd(events), pretty: true)}")
-      end
-
       events
-    end)
-    |> Enum.map(&to_shoot/1)
+    end)    
+    |> Enum.map(&to_shoot(&1, timezone))
   end
 
-  @spec to_shoot(map) :: %{
-          color: <<_::32>>,
-          end: binary,
-          start: binary,
-          title: <<_::24, _::_*8>>,
-          url: <<>>
-        }
+  @spec to_shoot(map, String.t()) :: calendar_event()
   def to_shoot(
         %{
-          "description" => notes,
-          "id" => id,
+          "description" => _notes,
+          "id" => _id,
           "location" => _location,
           "title" => name,
+          
           "when" => %{"date" => date, "object" => "date"}
-        } = json
+        } , _timezone
       ) do
-    {:ok, start_time} = Date.from_iso8601(date)
-    end_time = start_time |> Date.add(1) |> Date.to_iso8601()
+    {:ok, start_time} = Date.from_iso8601(date) 
+    end_time = start_time |> Date.add(1) |> Date.to_iso8601() 
     %{title: "#{name}", color: @base_color, start: date, end: end_time, url: ""}
   end
 
   def to_shoot(%{
-        "description" => notes,
-        "id" => id,
+        "description" => _notes,
+        "id" => _id,
         "location" => _location,
         "title" => name,
         "when" => %{"start_time" => start_time, "end_time" => end_time, "object" => "timespan"}
-      }) do
-    start = DateTime.from_unix!(start_time)
-    finish = DateTime.from_unix!(end_time)
+      }, timezone) do
+    start = DateTime.from_unix!(start_time) |> DateTime.shift_zone!(timezone)
+    finish = DateTime.from_unix!(end_time) |> DateTime.shift_zone!(timezone)
 
     %{
       title: "#{name}",
