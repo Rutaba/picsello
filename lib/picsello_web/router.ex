@@ -90,6 +90,7 @@ defmodule PicselloWeb.Router do
 
     unless Mix.env() in [:dev, :test], do: pipe_through(:admins_only)
     live_dashboard "/dashboard", metrics: Telemetry, ecto_repos: [Repo]
+    live "/shipment_details", Live.Admin.Shippment.Index, :index
     live "/categories", Live.Admin.Categories, :index
     live "/pricing_calculator", Live.Admin.PricingCalculator, :index
     live "/next_up_cards", Live.Admin.NextUpCards, :index
@@ -266,7 +267,6 @@ defmodule PicselloWeb.Router do
       live "/cart", GalleryLive.ClientShow.Cart, :cart
       live "/cart/address", GalleryLive.ClientShow.Cart, :address
       post "/gallery/login", GallerySessionController, :gallery_login
-      post "/album/login", GallerySessionController, :album_login
     end
   end
 

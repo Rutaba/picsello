@@ -130,6 +130,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       end)
 
       insert(:payment_schedule, %{job: lead})
+
       [deposit_payment, remainder_payment] = Picsello.PaymentSchedules.payment_schedules(lead)
 
       Picsello.MockPayments

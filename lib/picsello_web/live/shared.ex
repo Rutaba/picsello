@@ -323,7 +323,7 @@ defmodule PicselloWeb.Live.Shared do
 
       <hr class="mt-4 border-gray-100">
 
-      <.digital_download_fields package_form={f} download_changeset={@download_changeset} package_pricing={@package_pricing_changeset} />
+      <.digital_download_fields for={:import_job} package_form={f} download_changeset={@download_changeset} package_pricing={@package_pricing_changeset} target={@myself} show_digitals={@show_digitals} />
 
       <.footer>
         <button class="px-8 btn-primary" title="Next" type="submit" disabled={Enum.any?([@download_changeset, @package_pricing_changeset, @package_changeset], &(!&1.valid?))} phx-disable-with="Next">
@@ -597,7 +597,7 @@ defmodule PicselloWeb.Live.Shared do
   end
 
   def assign_package_changeset(
-        %{assigns: %{current_user: current_user}} = socket,
+        %{assigns: %{current_user: current_user, step: step} = assigns} = socket,
         params,
         action \\ nil
       ) do
@@ -606,10 +606,15 @@ defmodule PicselloWeb.Live.Shared do
       |> PackagePricing.changeset()
       |> Map.put(:action, action)
 
+    global_settings =
+      Repo.get_by(Picsello.GlobalSettings.Gallery, organization_id: current_user.organization_id)
+
+    download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
+
     download_changeset =
-      socket.assigns.package
-      |> Download.from_package()
-      |> Download.changeset(Map.get(params, "download", %{}))
+      assigns.package
+      |> Download.from_package(global_settings)
+      |> Download.changeset(download_params, Map.get(assigns, :download_changeset))
       |> Map.put(:action, action)
 
     download = current(download_changeset)
@@ -622,7 +627,8 @@ defmodule PicselloWeb.Live.Shared do
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download),
         "organization_id" => current_user.organization_id,
-        "buy_all" => Download.buy_all(download)
+        "buy_all" => Download.buy_all(download),
+        "status" => download.status
       })
       |> Package.import_changeset()
       |> Map.put(:action, action)

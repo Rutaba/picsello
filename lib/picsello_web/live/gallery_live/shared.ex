@@ -20,6 +20,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Utils
   }
 
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
@@ -32,17 +33,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def handle_event(
         "client-link",
         _,
-        %{assigns: %{current_user: current_user, gallery: %{type: :standard} = gallery}} = socket
+        %{assigns: %{current_user: current_user, gallery: %{type: type} = gallery}} = socket
       ) do
     case prepare_gallery(gallery) do
       {:ok, _} ->
-        gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload(job: :client)
+        gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload([:albums, job: :client])
+        preset_state = preset_state(type)
 
         %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_send_link) do
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
             Picsello.EmailPresets.resolve_variables(
               preset,
-              {gallery},
+              schemas(gallery),
               PicselloWeb.Helpers
             )
           end
@@ -53,10 +55,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
         |> PicselloWeb.ClientMessageComponent.open(%{
           body_html: body_html,
           subject: subject,
-          modal_title: "Share gallery",
+          modal_title: modal_title(type),
           presets: [],
           enable_image: true,
           enable_size: true,
+          composed_event: composed_event(type),
           client: Job.client(gallery.job),
           current_user: current_user
         })
@@ -69,51 +72,27 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  def handle_event(
-        "client-link",
-        _,
-        %{assigns: %{current_user: current_user, gallery: gallery}} = socket
-      ) do
-    %{albums: [album]} = gallery = Repo.preload(gallery, :albums)
+  defp schemas(%{type: :standard} = gallery), do: {gallery}
+  defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
 
-    gallery.id
-    |> Galleries.get_album_photo_count(album.id)
-    |> then(&(&1 > 0))
-    |> case do
-      true ->
-        gallery = Repo.preload(gallery, job: :client)
-        album = Albums.set_album_hash(album)
+  defp preset_state(:standard), do: :gallery_send_link
+  defp preset_state(:proofing), do: :proofs_send_link
+  defp preset_state(:finals), do: :album_send_link
 
-        preset_state = if album.is_finals, do: :album_send_link, else: :proofs_send_link
+  defp modal_title(:standard), do: "Share gallery"
+  defp modal_title(:proofing), do: "Share Proofing Album"
+  defp modal_title(:finals), do: "Share Finals Album"
 
-        %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
-            Picsello.EmailPresets.resolve_variables(
-              preset,
-              {gallery, album},
-              PicselloWeb.Helpers
-            )
-          end
+  defp composed_event(:standard), do: :message_composed
+  defp composed_event(_type), do: :message_composed_for_album
 
-        socket
-        |> assign(:job, gallery.job)
-        |> PicselloWeb.ClientMessageComponent.open(%{
-          modal_title: "Share #{if album.is_finals, do: "Finals", else: "Proofing"} Album",
-          subject: subject,
-          body_html: body_html,
-          presets: [],
-          enable_image: true,
-          enable_size: true,
-          composed_event: :message_composed_for_album,
-          client: Job.client(gallery.job),
-          current_user: current_user
-        })
-        |> noreply()
-
-      false ->
-        socket
-        |> put_flash(:error, "Please add photos to the album before sharing")
-        |> noreply()
+  def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
+    with true <- is_nil(client_email),
+         nil <- Map.get(assigns, :current_user) do
+      gallery.job.client
+    else
+      false -> Galleries.get_gallery_client(gallery, client_email)
+      current_user -> Galleries.get_gallery_client(gallery, current_user.email)
     end
   end
 
@@ -157,7 +136,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
           assigns:
             %{
               gallery: gallery,
-              favorites_filter: favorites_filter
+              favorites_filter: favorites_filter,
+              gallery_client: gallery_client
             } = assigns
         } = socket,
         photo_id,
@@ -180,6 +160,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         is_proofing: assigns[:is_proofing] || false,
         album: assigns[:album],
         gallery: gallery,
+        gallery_client: gallery_client,
         photo_id: photo_id,
         photo_ids:
           photo_ids
@@ -322,7 +303,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def expired_at(organization_id) do
     case GlobalSettings.get(organization_id) do
       %{expiration_days: exp_days} when not is_nil(exp_days) and exp_days > 0 ->
-        Timex.shift(DateTime.utc_now(), days: exp_days)
+        GSGallery.calculate_expiry_date(exp_days)
 
       _ ->
         nil
@@ -840,15 +821,23 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def product_name(item, is_proofing), do: name(item, is_proofing)
 
   def get_unconfirmed_order(
-        %{assigns: %{gallery: gallery, album: album}},
+        %{assigns: %{gallery: gallery, album: album, gallery_client: gallery_client}},
         opts
       )
       when album.is_finals or album.is_proofing do
-    opts = Keyword.put(opts, :album_id, album.id)
+    opts =
+      opts
+      |> Keyword.put(:album_id, album.id)
+      |> Keyword.put(:gallery_client_id, gallery_client.id)
+
     Cart.get_unconfirmed_order(gallery.id, opts)
   end
 
-  def get_unconfirmed_order(%{assigns: %{gallery: gallery}}, opts) do
+  def get_unconfirmed_order(%{assigns: %{gallery: gallery, gallery_client: gallery_client}}, opts) do
+    opts =
+      opts
+      |> Keyword.put(:gallery_client_id, gallery_client.id)
+
     Cart.get_unconfirmed_order(gallery.id, opts)
   end
 
@@ -1058,7 +1047,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         %{
           assigns:
             %{
-              gallery: gallery
+              gallery: gallery,
+              gallery_client: gallery_client
             } = assigns
         } = socket,
         whcc_editor_id
@@ -1067,7 +1057,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     album_id = if album, do: Map.get(album, :id), else: nil
 
     cart_product = Cart.new_product(whcc_editor_id, gallery.id)
-    Cart.place_product(cart_product, gallery.id, album_id)
+    Cart.place_product(cart_product, gallery, gallery_client, album_id)
 
     socket
   end

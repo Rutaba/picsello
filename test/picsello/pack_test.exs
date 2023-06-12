@@ -69,6 +69,9 @@ defmodule Picsello.PackTest do
         insert_gallery(organization_name: "org name")
         |> insert_gallery_digital_pricing(Money.new(20))
 
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
       insert_list(3, :photo,
         gallery: gallery,
         original_url: @original_url,
@@ -77,7 +80,12 @@ defmodule Picsello.PackTest do
 
       assert {:error, _} = Pack.upload(gallery)
 
-      insert(:order, gallery: gallery, placed_at: DateTime.utc_now(), bundle_price: ~M[5000]USD)
+      insert(:order,
+        gallery: gallery,
+        gallery_client: gallery_client,
+        placed_at: DateTime.utc_now(),
+        bundle_price: ~M[5000]USD
+      )
 
       assert {:ok, _} = Pack.upload(gallery)
     end
@@ -99,7 +107,19 @@ defmodule Picsello.PackTest do
 
   describe "upload - order" do
     setup do
-      [order: :order |> insert(placed_at: DateTime.utc_now()) |> Repo.preload(:gallery)]
+      gallery = insert(:gallery)
+
+      gallery_client =
+        insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      order =
+        insert(:order,
+          gallery: gallery,
+          gallery_client: gallery_client,
+          placed_at: DateTime.utc_now()
+        )
+
+      [order: order]
     end
 
     def header(opts, name) do

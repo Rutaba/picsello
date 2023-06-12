@@ -124,7 +124,7 @@ defmodule Picsello.FeatureCase do
         session |> assert_has(css("button:not(:disabled)[type='submit']", opts))
       rescue
         _ ->
-          session 
+          session
           |> sleep(500)
           |> scroll_to_bottom()
           |> find(css("button:not(:disabled)[type='submit']", opts), & &1)
@@ -165,6 +165,7 @@ defmodule Picsello.FeatureCase do
       |> fill_in(text_field("Email"), with: email)
       |> fill_in(text_field("Password"), with: password)
       |> wait_for_enabled_submit_button()
+      |> sleep(500)
       |> click(button("Login"))
       |> then(&wait_for_path_to_change_from(&1, @sign_in_path))
     end
@@ -303,10 +304,14 @@ defmodule Picsello.FeatureCase do
       authenticated_gallery_client(%{session: session, gallery: insert(:gallery, job: job)})
     end
 
-    def authenticated_proofing_album_client(%{session: session, proofing_album: proofing_album}) do
-      proofing_album_login(session, proofing_album, proofing_album.password)
+    def authenticated_proofing_album_client(%{
+          session: session,
+          proofing_album: proofing_album,
+          gallery: gallery
+        }) do
+      proofing_album_login(session, proofing_album, gallery.password)
 
-      [session: session, proofing_album: proofing_album]
+      [session: session, proofing_album: proofing_album, gallery: gallery]
     end
 
     def authenticated_proofing_album_client(%{session: session}) do
@@ -325,6 +330,7 @@ defmodule Picsello.FeatureCase do
 
       authenticated_proofing_album_client(%{
         session: session,
+        gallery: gallery,
         proofing_album: insert(:proofing_album, %{gallery_id: gallery.id})
       })
     end

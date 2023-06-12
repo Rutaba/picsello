@@ -9,6 +9,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
+  import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
   alias Picsello.{BookingEvent, BookingEvents, Packages}
 
   @impl true
@@ -337,7 +338,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
                       <.icon name="gear" class="w-4 h-5 m-1 fill-current open-icon text-blue-planning-300" />
                       <.icon name="close-x" class="hidden w-4 h-5 m-1 stroke-current close-icon stroke-2 text-blue-planning-300" />
                     </button>
-                    <div class="hidden bg-white border rounded-lg shadow-lg popover-content p-2">
+                    <div class="hidden bg-white border rounded-lg shadow-lg popover-content p-2 z-10">
                       <h2 class="font-bold"> Block Options </h2>
                       <label class="flex items-center mt-4">
                         <%= input t, :is_hidden, type: :checkbox, checked: t |> current |> Map.get(:is_hidden), class: "w-6 h-6 mt-1 checkbox", id: "check-box-#{@f.index}-#{t.index}"%>
@@ -712,14 +713,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         acc
       end
     end)
-  end
-
-  defp is_checked(id, package) do
-    if id do
-      id == if(is_binary(id), do: package.id |> Integer.to_string(), else: package.id)
-    else
-      false
-    end
   end
 
   defp get_is_break!(changeset, date_index, time_block_index) do

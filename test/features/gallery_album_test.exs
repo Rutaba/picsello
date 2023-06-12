@@ -37,7 +37,7 @@ defmodule Picsello.GalleryAlbumTest do
     |> assert_has(css("#addPhoto-form-#{gallery_id}"))
   end
 
-  test "Album, album settings, update name and password", %{
+  test "Album, album settings, update name", %{
     session: session,
     gallery: %{id: gallery_id},
     album: album
@@ -46,12 +46,8 @@ defmodule Picsello.GalleryAlbumTest do
     |> visit("/galleries/#{gallery_id}/albums/#{album.id}")
     |> click(css("#actions"))
     |> click(testid("edit-album-settings"))
-    |> click(css("span", text: "Off"))
     |> fill_in(css("#album_name"), with: "Test album 2")
-    |> assert_has(css("#password", value: "#{album.password}"))
-    |> click(css("#toggle-visibility"))
-    |> click(button("Re-generate"))
-    |> refute_has(css("#password", value: "#{album.password}"))
+    |> wait_for_enabled_submit_button()
     |> click(button("Save"))
     |> assert_has(css("p", text: "Album settings successfully updated"))
   end

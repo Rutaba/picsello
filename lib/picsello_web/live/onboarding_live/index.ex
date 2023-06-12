@@ -9,6 +9,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
   alias Ecto.Multi
   alias Picsello.{Repo, Onboardings, Onboardings.Onboarding, Subscriptions}
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
   @impl true
   def mount(_params, _session, socket) do
@@ -344,6 +345,9 @@ defmodule PicselloWeb.OnboardingLive.Index do
     Multi.new()
     |> Multi.put(:data, data)
     |> Multi.update(:user, build_changeset(socket, params))
+    |> Multi.insert(:global_gallery_settings, fn %{user: %{organization: organization}} ->
+      GSGallery.price_changeset(%GSGallery{}, %{organization_id: organization.id})
+    end)
     |> Multi.run(:subscription, fn _repo, %{user: user} ->
       with :ok <-
              Subscriptions.subscription_base(user, "month",

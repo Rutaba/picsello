@@ -308,6 +308,13 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
+  def handle_event("view-calculator", _, socket),
+    do:
+      socket
+      |> push_redirect(to: Routes.calculator_path(socket, :index))
+      |> noreply()
+
+  @impl true
   def handle_event("change-tab", %{"tab" => tab}, socket) do
     socket
     |> assign(:tab_active, tab)
@@ -499,7 +506,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
     ~H"""
     <div class="rounded-lg bg-white p-6 grow flex flex-col items-start">
-      <div class="flex justify-between items-center mb-2 w-full gap-6">
+      <div class="flex justify-between items-center mb-2 w-full gap-4">
         <h3 class="text-2xl font-bold flex items-center gap-2">
           <%= @title %>
           <.notification_bubble notification_count={@notification_count} />
@@ -563,7 +570,7 @@ defmodule PicselloWeb.HomeLive.Index do
       )
 
     inbox_threads =
-      from(message in subquery(message_query), order_by: [desc: message.inserted_at], limit: 3)
+      from(message in subquery(message_query), order_by: [desc: message.inserted_at], limit: 1)
       |> Repo.all()
       |> Repo.preload(job: :client)
       |> Enum.map(fn message ->

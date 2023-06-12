@@ -7,7 +7,6 @@ defmodule PicselloWeb.JobLive.Shared do
   use Phoenix.Component
   use Phoenix.HTML
 
-  import Ecto.Query
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import PicselloWeb.FormHelpers
@@ -33,7 +32,6 @@ defmodule PicselloWeb.JobLive.Shared do
   }
 
   alias PicselloWeb.{ConfirmationComponent, ClientMessageComponent}
-  alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @string_length 15
@@ -1473,27 +1471,27 @@ defmodule PicselloWeb.JobLive.Shared do
     """
   end
 
-  def update_gallery(
-        %{gallery: gallery, client: %{organization_id: organization_id}},
-        shoot
-      ) do
-    if gallery && gallery.use_global do
-      settings =
-        from(gss in GSGallery,
-          where: gss.organization_id == ^organization_id
-        )
-        |> Repo.one()
+  # def update_gallery(
+  #       %{gallery: gallery, client: %{organization_id: organization_id}},
+  #       shoot
+  #     ) do
+  #   if gallery && gallery.use_global do
+  #     settings =
+  #       from(gss in GSGallery,
+  #         where: gss.organization_id == ^organization_id
+  #       )
+  #       |> Repo.one()
 
-      expiration_date =
-        if settings && settings.expiration_days && settings.expiration_days > 0 do
-          Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
-        end
+  #     expiration_date =
+  #       if settings && settings.expiration_days && settings.expiration_days > 0 do
+  #         Timex.shift(shoot.starts_at, days: settings.expiration_days) |> Timex.to_datetime()
+  #       end
 
-      Picsello.Galleries.update_gallery(gallery, %{expired_at: expiration_date})
-    else
-      nil
-    end
-  end
+  #     Picsello.Galleries.update_gallery(gallery, %{expired_at: expiration_date})
+  #   else
+  #     nil
+  #   end
+  # end
 
   def assign_existing_uploads(%{} = uploads, %{assigns: assigns} = socket) do
     assigns

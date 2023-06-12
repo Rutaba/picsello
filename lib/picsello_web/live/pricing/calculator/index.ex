@@ -5,19 +5,22 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
 
   alias Picsello.{Repo, JobType, Profiles, PricingCalculations}
 
+  @base_desired_salary Money.new(6_500_000)
+
   @impl true
   def mount(_params, _session, socket) do
     socket
     |> assign_step(1)
+    |> assign_job_types()
     |> then(fn %{assigns: %{current_user: user}} = socket ->
       assign(socket,
         pricing_calculations: %PricingCalculations{
           organization_id: user.organization_id,
           job_types: Profiles.enabled_job_types(user.organization.organization_job_types),
-          average_time_per_week: 40,
+          average_time_per_week: 35,
           take_home: Money.new(0),
           self_employment_tax_percentage: tax_schedule().self_employment_percentage,
-          desired_salary: Money.new(1_500_000),
+          desired_salary: @base_desired_salary,
           business_costs: cost_categories()
         }
       )
@@ -61,6 +64,45 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     socket
     |> assign_step(6)
     |> assign_cost_category_step(category_id, category)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{"pricing_calculations" => params},
+        %{
+          assigns: %{
+            step: 3,
+            pricing_calculations: %{
+              self_employment_tax_percentage: self_employment_tax_percentage
+            }
+          }
+        } = socket
+      ) do
+    desired_salary_change =
+      Ecto.Changeset.get_change(build_changeset(socket, params), :desired_salary)
+
+    desired_salary =
+      if(desired_salary_change == nil, do: @base_desired_salary, else: desired_salary_change)
+
+    tax_bracket = PricingCalculations.get_income_bracket(desired_salary)
+    after_tax_income = PricingCalculations.calculate_after_tax_income(tax_bracket, desired_salary)
+
+    take_home =
+      PricingCalculations.calculate_take_home_income(
+        self_employment_tax_percentage,
+        after_tax_income
+      )
+
+    socket
+    |> assign(
+      desired_salary: desired_salary,
+      tax_bracket: tax_bracket,
+      after_tax_income: after_tax_income,
+      take_home: take_home
+    )
+    |> assign_changeset(params)
     |> noreply()
   end
 
@@ -134,7 +176,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   @impl true
   def render(assigns) do
     ~H"""
-      <.form :let={f} for={@changeset} phx-change={@change} phx-submit="save" id={"calculator-step-#{@step}"}>
+      <.form :let={f} for={@changeset} phx-change={@change} phx-submit="save" id={"calculator-step-#{@step}"} onkeydown="return event.key != 'Enter';">
         <.step {assigns} f={f} />
       </.form>
     """
@@ -154,13 +196,15 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </p>
 
           <div class="mt-2 grid md:grid-cols-3 grid-cols-2 gap-3 sm:gap-5">
-            <%= for(job_type <- job_types(), checked <- [Enum.member?(input_value(@f, :job_types) || [], job_type)]) do %>
+            <%= for(job_type <- @job_types, checked <- [Enum.member?(input_value(@f, :job_types) || [], job_type)]) do %>
               <.job_type_option type="checkbox" name={input_name} job_type={job_type} checked={checked} />
             <% end %>
           </div>
         </div>
 
-        <p class="py-2 font-extrabold mt-4">How much time do you spend on your photography business per week? <br /><span class="italic font-normal text-sm text-base-250">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
+        <p class="font-extrabold mt-4">How much time do you spend on your photography business per week? <br /><span class="italic font-normal text-sm text-base-250">(include all marketing, client communications, prep, travel, shoot time, editing, accounting, admin etc)</span></p>
+        <p class="py-2 bold font-normal text-sm text-base-250 mb-4">Please note if you are part-time but planning to go full-time, use 35 hours for more accurate pricing</p>
+
         <label class="flex flex-col">
           <div class="flex items-center">
             <%= input @f, :average_time_per_week, type: :text_input, phx_debounce: 500, min: 0, placeholder: "40", class: "p-4 w-24 text-center" %>
@@ -177,24 +221,6 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   end
 
   defp step(%{step: 3} = assigns) do
-    desired_salary = input_value(assigns.f, :desired_salary)
-    tax_bracket = PricingCalculations.get_income_bracket(desired_salary)
-    after_tax_income = PricingCalculations.calculate_after_tax_income(tax_bracket, desired_salary)
-
-    take_home =
-      PricingCalculations.calculate_take_home_income(
-        assigns.pricing_calculations.self_employment_tax_percentage,
-        after_tax_income
-      )
-
-    assigns =
-      Enum.into(assigns, %{
-        desired_salary: desired_salary,
-        tax_bracket: tax_bracket,
-        after_tax_income: after_tax_income,
-        take_home: take_home
-      })
-
     ~H"""
       <.container {assigns}>
         <h4 class="text-4xl font-bold">Let us know how much you’d like to make</h4>
@@ -204,7 +230,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <label class="flex flex-wrap md:flex-nowrap items-center justify-between mt-4 bg-blue-planning-100 p-4 rounded-t-lg gap-12">
             <p class="font-extrabold shrink text-xl">Gross Salary Needed <br /> <span class="italic font-normal text-sm">Remember, this isn't your take home pay. Adjust to make sure your take home is what you need.</span></p>
             <div>
-              <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center text-blue-planning-300 font-bold border-blue-planning-300 transition-colors focus:border-white", phx_hook: "PriceMask" %>
+              <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$65,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center text-blue-planning-300 font-bold border-blue-planning-300 transition-colors focus:border-white", phx_hook: "PriceMask" %>
               <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm block" %>
             </div>
           </label>
@@ -227,7 +253,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
           <hr class="hidden mt-4 mb-4 sm:block" />
           <div class="flex flex-wrap items-center justify-between px-4">
-            <p class="py-2 font-extrabold">Approximate After Income Tax & SE Tax <br /><span class="italic font-normal text-sm text-base-250">‘aka your take home pay’</span></p>
+            <p class="py-2 font-extrabold">Approximate ‘Take Home Pay’ <br /><span class="italic font-normal text-sm text-base-250">Approximate income after income tax and SE tax</span></p>
             <%= hidden_input(@f, :take_home, value: @take_home ) %>
             <p class="text-blue-planning-300 font-bold w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= @take_home %></p>
           </div>
@@ -361,7 +387,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <.container {assigns}>
         <div class="items-center hidden w-full border-b-8 lg:grid lg:grid-cols-3 gap-2 border-blue-planning-300 ">
           <div class="pb-4 font-bold col-start-1">Item</div>
-          <div class="pb-4 font-bold text-center col-start-2">Your Cost Monthy</div>
+          <div class="pb-4 font-bold text-center col-start-2">Your Cost Monthly</div>
           <div class="pb-4 font-bold text-center col-start-3">Your Cost Yearly</div>
         </div>
         <%= inputs_for @f, :business_costs, fn fp -> %>
@@ -377,7 +403,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   defp step(assigns) do
     ~H"""
     <div class="relative flex flex-col items-center w-screen min-h-screen p-5 bg-gray-100 sm:justify-center">
-      <div class="absolute circleBtn bottom-12 left-12">
+      <div class="absolute circleBtn bottom-12 left-12 hidden lg:block">
         <ul>
           <li>
             <a phx-click="exit" href="#">
@@ -416,13 +442,34 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     )
   end
 
-  defp assign_step(socket, 3) do
+  defp assign_step(
+         %{
+           assigns: %{
+             pricing_calculations: %{
+               desired_salary: desired_salary,
+               self_employment_tax_percentage: self_employment_tax_percentage
+             }
+           }
+         } = socket,
+         3
+       ) do
+    tax_bracket = PricingCalculations.get_income_bracket(desired_salary)
+    after_tax_income = PricingCalculations.calculate_after_tax_income(tax_bracket, desired_salary)
+
     socket
     |> assign(
       step: 3,
       step_title: "Financial goals",
       page_title: "Smart Profit Calculator—Step 2",
-      change: "validate"
+      change: "validate",
+      desired_salary: desired_salary,
+      tax_bracket: tax_bracket,
+      after_tax_income: after_tax_income,
+      take_home:
+        PricingCalculations.calculate_take_home_income(
+          self_employment_tax_percentage,
+          after_tax_income
+        )
     )
   end
 
@@ -710,13 +757,13 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
     ~H"""
       <div class="relative flex w-screen min-h-screen bg-gray-100">
         <div class="fixed flex flex-col w-full px-8 py-8 bg-white lg:w-1/4 lg:px-12 lg:py-12 lg:h-screen">
-          <div class="flex justify-between lg:block">
-            <.icon name="logo" class="w-32 ml-16 lg:ml-0 h-7 lg:h-11 lg:w-48 lg:mb-4" />
-            <h3 class="text-xl font-bold lg:text-4xl lg:mb-4">Smart Profit Calculator™</h3>
+          <div class="flex justify-between lg:block gap-4 md:gap-0">
+            <.icon name="logo" class="w-32 ml-0 h-7 lg:h-11 lg:w-48 lg:mb-4" />
+            <h3 class="text-sm font-bold lg:text-4xl lg:mb-4">Smart Profit Calculator™</h3>
           </div>
           <p class="hidden text-xl text-base-250 lg:block">Let’s figure out your prices so your business can be a profitable one!</p>
           <.sidebar_nav step={@step} />
-          <div class="absolute bottom-auto circleBtn lg:bottom-8 lg:left-8 lg:top-auto top-5 left-5">
+          <div class="absolute bottom-auto circleBtn lg:bottom-8 lg:left-8 lg:top-auto top-5 left-5 hidden lg:block">
             <ul>
               <li>
                   <a phx-click="exit">
@@ -815,6 +862,11 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       true -> %{phx_click: "step", phx_value_id: step}
       _ -> %{}
     end
+  end
+
+  defp assign_job_types(socket) do
+    socket
+    |> assign(job_types: Enum.filter(job_types(), fn job_type -> job_type !== "other" end))
   end
 
   defdelegate job_types(), to: JobType, as: :all

@@ -20,9 +20,32 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     gallery = insert(:gallery)
 
-    order = insert(:order, delivery_info: %{email: "client@example.com"}, gallery: gallery)
+    gallery_digital_pricing =
+      insert(:gallery_digital_pricing, %{
+        gallery: gallery,
+        email_list: [gallery.job.client.email],
+        download_count: 0,
+        print_credits: Money.new(0)
+      })
 
-    [gallery: gallery, order: order]
+    gallery =
+      Map.put(
+        gallery,
+        :credits_available,
+        gallery.job.client.email in gallery_digital_pricing.email_list
+      )
+
+    gallery_client =
+      insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+    order =
+      insert(:order,
+        delivery_info: %{email: "client@example.com"},
+        gallery: gallery,
+        gallery_client: gallery_client
+      )
+
+    [gallery: gallery, order: order, gallery_client: gallery_client]
   end
 
   def stub_create_order(%{
@@ -122,8 +145,8 @@ defmodule Picsello.Cart.CheckoutsTest do
   describe "check_out - second checkout, first still unpaid by client" do
     setup [:stub_create_session]
 
-    setup %{gallery: gallery} do
-      order = build(:digital) |> Cart.place_product(gallery)
+    setup %{gallery: gallery, gallery_client: gallery_client} do
+      order = build(:digital) |> Cart.place_product(gallery, gallery_client)
 
       refute ~M[0]USD == Order.total_cost(order)
 
@@ -151,8 +174,11 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     setup [:stub_create_session, :stub_create_order, :stub_create_invoice]
 
-    setup %{gallery: gallery, whcc_order: whcc_order} do
-      order = build(:cart_product) |> Cart.place_product(gallery) |> Repo.preload(:digitals)
+    setup %{gallery: gallery, whcc_order: whcc_order, gallery_client: gallery_client} do
+      order =
+        build(:cart_product)
+        |> Cart.place_product(gallery, gallery_client)
+        |> Repo.preload(:digitals)
 
       refute ~M[0]USD == Order.total_cost(order)
 
@@ -171,8 +197,8 @@ defmodule Picsello.Cart.CheckoutsTest do
   describe "check_out - client owes, no products" do
     setup [:stub_create_session]
 
-    setup %{gallery: gallery} do
-      order = build(:digital) |> Cart.place_product(gallery)
+    setup %{gallery: gallery, gallery_client: gallery_client} do
+      order = build(:digital) |> Cart.place_product(gallery, gallery_client)
 
       refute ~M[0]USD == Order.total_cost(order)
 
@@ -191,10 +217,10 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     setup [:stub_create_session, :stub_create_order]
 
-    setup %{gallery: gallery, whcc_order: whcc_order} do
+    setup %{gallery: gallery, whcc_order: whcc_order, gallery_client: gallery_client} do
       order =
         build(:cart_product)
-        |> Cart.place_product(gallery)
+        |> Cart.place_product(gallery, gallery_client)
         |> Repo.preload(:digitals)
 
       products = order |> Cart.add_default_shipping_to_products()
@@ -221,20 +247,20 @@ defmodule Picsello.Cart.CheckoutsTest do
 
     setup [:stub_create_order, :stub_create_invoice]
 
-    setup %{gallery: gallery, whcc_order: whcc_order} do
+    setup %{gallery: gallery, whcc_order: whcc_order, gallery_client: gallery_client} do
       order =
         build(:cart_product,
           shipping_base_charge: ~M[0]USD,
           unit_price: ~M[0]USD,
           unit_markup: ~M[0]USD
         )
-        |> Cart.place_product(gallery)
+        |> Cart.place_product(gallery, gallery_client)
         |> Repo.preload(:digitals)
 
       products = order |> Cart.add_default_shipping_to_products()
       order = Map.put(order, :products, products)
 
-      assert ~M[10420]USD == Order.total_cost(order)
+      assert ~M[45]USD == Order.total_cost(order)
 
       assert :lt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
 
@@ -256,10 +282,10 @@ defmodule Picsello.Cart.CheckoutsTest do
   end
 
   describe "check_out - client does not owe, no products" do
-    setup %{gallery: gallery} do
+    setup %{gallery: gallery, gallery_client: gallery_client} do
       order =
         build(:digital, price: ~M[0]USD)
-        |> Cart.place_product(gallery)
+        |> Cart.place_product(gallery, gallery_client)
 
       products = order |> Cart.add_default_shipping_to_products()
       order = Map.put(order, :products, products)
@@ -277,7 +303,7 @@ defmodule Picsello.Cart.CheckoutsTest do
   describe "stripe session params" do
     setup [:stub_create_order, :stub_create_invoice]
 
-    test "returns correct line items", %{gallery: gallery} do
+    test "returns correct line items", %{gallery: gallery, gallery_client: gallery_client} do
       Mox.expect(Picsello.PhotoStorageMock, :path_to_url, fn "digital.jpg" ->
         "https://example.com/digital.jpg"
       end)
@@ -310,7 +336,7 @@ defmodule Picsello.Cart.CheckoutsTest do
               ],
             reduce: nil do
           _ ->
-            Picsello.Cart.place_product(product, gallery)
+            Picsello.Cart.place_product(product, gallery, gallery_client)
         end
 
       products = order |> Cart.add_default_shipping_to_products()
@@ -357,7 +383,7 @@ defmodule Picsello.Cart.CheckoutsTest do
   end
 
   describe "create_whcc_order" do
-    setup %{gallery: gallery, order: order} do
+    setup %{gallery: gallery, order: order, gallery_client: gallery_client} do
       cart_products =
         for {product, index} <-
               Enum.with_index([insert(:product) | List.duplicate(insert(:product), 2)]) do
@@ -369,7 +395,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
       order =
         for product <- cart_products, reduce: order do
-          _order -> Cart.place_product(product, gallery)
+          _order -> Cart.place_product(product, gallery, gallery_client)
         end
 
       [

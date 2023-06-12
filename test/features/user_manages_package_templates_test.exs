@@ -68,8 +68,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
   feature "navigate", %{session: session} do
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> assert_text("Meet Packages")
   end
 
@@ -81,8 +81,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     )
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> assert_text("Deluxe Template")
   end
 
@@ -96,8 +96,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     )
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("intro-state-close-button"))
     |> find(testid("package-template-card"), &assert_text(&1, "Super Deluxe Template"))
     |> assert_text("$0.20/each")
@@ -107,8 +107,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session: session
   } do
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("intro-state-close-button"))
     |> click(button("Add package"))
     |> assert_text("Add a Package: Provide Details")
@@ -125,25 +125,21 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> assert_text("Add a Package: Select Documents")
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
-    |> fill_in(text_field("Package Price"), with: "$100")
-    |> click(checkbox("Apply a discount or surcharge"))
+    |> fill_in(css("#form-pricing_base_price"), with: "$100")
+    |> scroll_into_view(testid("add-discount-surcharge"))
+    |> click(button("Add a discount or surcharge"))
+    |> scroll_into_view(css("#multiplier_is_enabled"))
+    |> click(css("#multiplier_is_enabled"))
     |> click(option("30%"))
+    |> scroll_into_view(css("#multiplier_discount_base_price"))
+    |> click(css("#multiplier_discount_base_price"))
     |> assert_text("-$30.00")
     |> click(option("Surcharge"))
     |> assert_text("+$30.00")
-    |> scroll_into_view(testid("download"))
-    |> scroll_into_view(css("#download_status_limited"))
+    |> scroll_into_view(testid("edit-digital-collection"))
+    |> click(testid("edit-digital-collection"))
     |> click(css("#download_status_limited"))
-    |> find(
-      text_field("download_count"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
-    )
-    |> scroll_into_view(css("#download_is_custom_price"))
-    |> find(
-      text_field("download[each_price]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
-    )
-    |> assert_has(definition("Total", text: "$130.00"))
+    |> fill_in(css("#download_count"), with: 2)
     |> wait_for_enabled_submit_button()
     |> payment_screen()
     |> wait_for_enabled_submit_button(text: "Save")
@@ -161,7 +157,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
              description: "<p>My greatest wedding package</p>",
              base_price: %Money{amount: 10_000},
              download_count: 2,
-             download_each_price: %Money{amount: 200},
+             download_each_price: %Money{amount: 5000},
              job_type: "event",
              package_template_id: nil
            } = package
@@ -171,8 +167,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
 
   feature "Add a package with default contract", %{session: session} do
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("intro-state-close-button"))
     |> click(button("Add package"))
     |> assert_text("Add a Package: Provide Details")
@@ -193,9 +189,9 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> assert_text("Add a Package: Set Pricing")
-    |> fill_in(text_field("Package Price"), with: "$130")
-    |> payment_screen()
+    |> fill_in(css("#form-pricing_base_price"), with: "$130")
     |> wait_for_enabled_submit_button()
+    |> payment_screen()
     |> click(button("Save"))
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
@@ -218,8 +214,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     template = insert(:package_template, user: user, print_credits: 20)
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("edit-package-#{template.id}"))
 
     session
@@ -235,8 +231,6 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         |> click(button("Next"))
         |> assert_text("Edit Package: Set Pricing")
         |> scroll_into_view(testid("download"))
-        |> click(css("#download_status_limited"))
-        |> click(css("#download_status_unlimited"))
         |> Kernel.tap(fn modal ->
           refute Regex.match?(~r/downloads are valued/, Element.text(modal))
         end)
@@ -254,7 +248,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
         template
         | name: "Wedding Super Deluxe",
           description: "<p>Package description</p>",
-          download_each_price: %Money{amount: 0}
+          download_each_price: %Money{amount: 300}
       }
       |> Map.take([:id | form_fields])
 
@@ -276,8 +270,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     insert(:contract, package_id: template.id, contract_template_id: contract_template.id)
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("edit-package-#{template.id}"))
     |> assert_path(Routes.package_templates_path(PicselloWeb.Endpoint, :edit, template.id))
     |> within_modal(
@@ -356,8 +350,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     package = Repo.all(Package) |> hd()
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> click(testid("intro-state-close-button"))
     |> click(testid("menu-btn-#{package.id}"))
     |> click(button("Archive"))
@@ -426,17 +420,16 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     end
 
     session
-    |> click(link("Settings"))
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> assert_has(button("Next"))
 
     from(pt in Package, where: pt.name in ["deluxe", "lame", "highfive"])
     |> Repo.delete_all()
 
     session
-    |> click(link("Settings"))
-    |> sleep(500)
-    |> click(link("Package Templates"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Packages"))
     |> refute_has(button("Next"))
   end
 end

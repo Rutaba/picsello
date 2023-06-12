@@ -11,6 +11,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   alias Ecto.Changeset
   alias Phoenix.PubSub
   require Logger
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
   @upload_options [
     accept: ~w(.png image/png),
@@ -24,9 +25,11 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @global_watermark_photo ~s(assets/static/images/watermark_preview.png)
 
   @impl true
-  def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
+  def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
     %{organization_id: organization_id} = current_user
-    global_settings_gallery = Repo.get_by(GSGallery, organization_id: organization_id)
+
+    global_settings_gallery =
+      Repo.get_by(GSGallery, organization_id: organization_id) || %GSGallery{}
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "preview_watermark:#{current_user.id}")
@@ -34,9 +37,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     end
 
     socket
-    |> is_mobile(params)
     |> assign(galleries: [])
     |> assign(global_settings_gallery: global_settings_gallery)
+    |> assign(price_changeset: GSGallery.price_changeset(global_settings_gallery, %{}))
     |> assign_controls()
     |> assign_options()
     |> assign(is_saved: false)
@@ -52,23 +55,22 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   @impl true
-  def handle_params(%{"section" => "products"}, _uri, socket),
-    do: new_section(socket, product_section?: true)
-
   def handle_params(%{"section" => "print_product", "product_id" => product_id}, _uri, socket),
     do:
       socket
       |> assign(:product, Picsello.GlobalSettings.gallery_product(product_id))
-      |> new_section(product_section?: true, print_price_section?: true)
+      |> assign(:show_side_nav, "print_product")
+      |> assign_title()
+      |> noreply()
 
-  def handle_params(%{"section" => "watermark"}, _uri, socket),
-    do: new_section(socket, watermark_option: true)
+  def handle_params(params, _uri, socket) do
+    show_side_nav = Map.get(params, "section")
 
-  def handle_params(%{"section" => "digital_pricing"}, _uri, socket),
-    do: new_section(socket, digital_pricing?: true)
-
-  def handle_params(_params, _uri, %{assigns: %{is_mobile: is_mobile}} = socket),
-    do: new_section(socket, expiration_date?: !is_mobile)
+    socket
+    |> assign(:show_side_nav, show_side_nav)
+    |> assign_title()
+    |> noreply()
+  end
 
   @impl true
   def handle_event(
@@ -223,9 +225,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> noreply()
   end
 
-  def handle_event("back_to_menu", _, socket), do: new_section(socket)
+  def handle_event("back_to_menu", _, socket),
+    do: assign(socket, :show_side_nav, nil) |> noreply()
 
-  def handle_event("select_component", %{"section" => ""}, socket),
+  def handle_event("select_component", %{"section" => nil}, socket),
     do: patch(socket)
 
   def handle_event("select_component", %{"section" => section}, socket),
@@ -287,75 +290,48 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   @impl true
-  def handle_event("back_to_products", _, socket), do: new_section(socket, product_section?: true)
+  def handle_event("back_to_products", _, socket),
+    do: assign(socket, show_side_nav: "products") |> noreply()
 
   def handle_event(
-        "validate_each_price",
-        %{"digital_pricing" => %{"each_price" => each_price}},
+        "validate_price",
+        %{"gallery" => params},
         %{assigns: %{global_settings_gallery: settings}} = socket
       ) do
-    {:ok, download_each_price} = Money.parse(each_price, :USD)
+    price_changeset = GSGallery.price_changeset(settings, params)
 
-    update_galleries_prices(
-      socket,
-      download_each_price,
-      buy_all_price(settings),
-      [download_each_price: download_each_price],
-      "Must be less than buy all price"
-    )
-  end
-
-  def handle_event(
-        "validate_buy_all_price",
-        %{"digital_pricing" => %{"buy_all" => buy_all}},
-        %{assigns: %{global_settings_gallery: settings}} = socket
-      ) do
-    {:ok, buy_all} = Money.parse(buy_all, :USD)
-
-    update_galleries_prices(
-      socket,
-      download_price(settings),
-      buy_all,
-      [buy_all: buy_all],
-      "Must be more than single image price"
-    )
-  end
-
-  defp download_price(%{download_each_price: down_price}), do: down_price
-  defp download_price(_), do: %Money{amount: 5_000, currency: :USD}
-
-  defp buy_all_price(%{buy_all_price: buy_all_price}), do: buy_all_price
-  defp buy_all_price(_), do: %Money{amount: 75_000, currency: :USD}
-
-  defp update_galleries_prices(
-         socket,
-         download_each_price,
-         buy_all_price,
-         opts,
-         error_msg
-       ) do
-    %{assigns: %{current_user: current_user}} = socket
-
-    case validate_price(download_each_price, buy_all_price) do
-      true ->
+    case price_changeset do
+      %{valid?: true} ->
         socket
-        |> settings_multi(%{organization_id: current_user.organization.id})
-        |> Multi.update_all(
-          :update_package,
-          current_user
-          |> galleries_by_setting_type(:digital)
-          |> Enum.map(& &1.id)
-          |> Picsello.Packages.update_all_query(opts),
-          []
-        )
-        |> Repo.transaction()
-        |> assign_updated_settings(socket)
-        |> put_flash(:success, "Setting Updated")
-        |> noreply()
+        |> update_galleries_prices(price_changeset)
 
       _ ->
-        put_flash(socket, :error, error_msg) |> noreply()
+        socket
     end
+    |> assign(price_changeset: price_changeset)
+    |> noreply()
+  end
+
+  defp update_galleries_prices(%{assigns: %{current_user: current_user}} = socket, changeset) do
+    prices = current(changeset)
+    attrs = [buy_all: prices.buy_all_price, download_each_price: prices.download_each_price]
+
+    socket
+    |> settings_multi(%{organization_id: current_user.organization.id})
+    |> Multi.update_all(
+      :update_package,
+      current_user
+      |> galleries_by_setting_type(:digital)
+      |> Enum.map(& &1.id)
+      |> Picsello.Packages.update_all_query(attrs),
+      []
+    )
+    |> Ecto.Multi.insert_or_update(:insert_or_update, changeset)
+    |> Repo.transaction()
+    |> then(fn _ ->
+      socket
+      |> put_flash(:success, "Setting Updated")
+    end)
   end
 
   defp galleries_by_setting_type(%{organization_id: org_id}, value) do
@@ -370,9 +346,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
          } = socket
        )
        when not is_nil(expiration_days) do
-    year = trunc(expiration_days / 365)
-    month = trunc((expiration_days - year * 365) / 30)
-    day = trunc(expiration_days - year * 365 - month * 30)
+    {day, month, year} = GSGallery.explode_days(expiration_days)
     socket |> assign(day: day, month: month, year: year)
   end
 
@@ -380,25 +354,22 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     socket |> assign(day: "day", month: "month", year: "year")
   end
 
-  defp assign_title(%{assigns: %{expiration_date?: true}} = socket),
-    do: socket |> assign(:title, "Global Expiration Date")
+  defp assign_title(%{assigns: %{show_side_nav: show_side_nav}} = socket) do
+    title =
+      case show_side_nav do
+        "expiration_date" -> "Global Expiration Date"
+        "watermark" -> "Watermark"
+        "products" -> "Print Pricing"
+        "print_product" -> "Product Settings & Prices"
+        "digital_pricing" -> "Digital Pricing"
+        _ -> "Gallery Settings"
+      end
 
-  defp assign_title(%{assigns: %{watermark_option?: true}} = socket),
-    do: socket |> assign(:title, "Watermark")
-
-  defp assign_title(%{assigns: %{print_price_section?: true}} = socket),
-    do: socket |> assign(:title, "Print Pricing")
-
-  defp assign_title(%{assigns: %{product_section?: true}} = socket),
-    do: socket |> assign(:title, "Product Settings & Prices")
-
-  defp assign_title(%{assigns: %{digital_pricing?: true}} = socket),
-    do: socket |> assign(:title, "Digital Pricing")
-
-  defp assign_title(socket), do: socket |> assign(:title, "Gallery Settings")
+    socket |> assign(:title, title)
+  end
 
   defp to_int(""), do: 0
-  defp to_int(value), do: String.to_integer(value)
+  defp to_int(value), do: to_integer(value)
 
   defp assign_controls(%{assigns: %{global_settings_gallery: gs_g}} = socket)
        when not is_nil(gs_g),
@@ -408,25 +379,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   defp assign_updated_settings({:ok, %{global_settings: ggs}}, socket),
     do: assign(socket, global_settings_gallery: ggs)
-
-  defp validate_price(download_each_price, buy_all_price) do
-    download_each_price = Map.get(download_each_price, :amount)
-    buy_all_price = Map.get(buy_all_price, :amount)
-
-    download_each_price < buy_all_price && download_each_price != 0 && buy_all_price != 0
-  end
-
-  defp new_section(socket, opts \\ []) do
-    socket
-    |> assign(print_price_section?: false)
-    |> assign(product_section?: false)
-    |> assign(expiration_date?: false)
-    |> assign(watermark_option: false)
-    |> assign(digital_pricing?: false)
-    |> assign(opts)
-    |> assign_title()
-    |> noreply()
-  end
 
   @impl true
   def handle_info(
@@ -505,7 +457,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         socket
       ) do
     socket
-    |> update_expired_at(total_days, Timex.shift(DateTime.utc_now(), days: total_days))
+    |> update_expired_at(total_days)
     |> assign(is_never_expires: false)
     |> assign(is_saved: false)
     |> close_modal()
@@ -515,7 +467,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   def handle_info({:select_print_prices, product}, socket) do
     socket
-    |> assign(print_price_section?: true)
+    |> assign(show_side_nav: "print_product")
     |> assign_title()
     |> assign(:product, product)
     |> noreply()
@@ -523,17 +475,12 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   def handle_info({:back_to_products}, socket) do
     socket
-    |> assign(print_price_section?: false)
-    |> assign(product_section?: true)
+    |> assign(show_side_nav: "products")
     |> assign_title()
     |> noreply()
   end
 
-  defp update_expired_at(
-         %{assigns: %{current_user: current_user}} = socket,
-         days,
-         expired_at \\ nil
-       ) do
+  defp update_expired_at(%{assigns: %{current_user: current_user}} = socket, days) do
     socket
     |> settings_multi(%{
       expiration_days: days,
@@ -542,8 +489,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> Multi.run(:update_expired_at, fn _, _ ->
       current_user
       |> galleries_by_setting_type(:expiration)
-      |> Enum.map(& &1.id)
-      |> Galleries.update_all(expired_at: expired_at)
+      |> Galleries.update_all(days)
 
       {:ok, ""}
     end)
@@ -690,42 +636,50 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     """
   end
 
-  defp section(%{digital_pricing?: true} = assigns) do
+  defp section(%{show_side_nav: "digital_pricing"} = assigns) do
     ~H"""
       <h1 class="text-2xl font-bold mt-6 md:block">Digital Pricing</h1>
       <span class="text-base-250">Adjust on a per digital image and a "buy them all" option below. Defaults provided are our base recommendations but you know your clients and business best. And again, you can also adjust on an individual lead, package, or job level.</span>
-      <div class="grid gap-8 lg:grid-cols-2 grid-cols-1 mt-10">
-        <div>
-          <span class="text-xl font-bold">Single Image</span>
-          <div class="flex items-center border p-3 rounded-md border-base-250 mt-4">
-            <div class="flex flex-col md:pr-4">
-              <h1 class="text-xl font-bold">Pricing per image:</h1>
-              <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
+      <.form :let={f} for={@price_changeset} phx-change="validate_price">
+        <div class="grid gap-8 lg:grid-cols-2 grid-cols-1 mt-10">
+          <div>
+            <span class="text-xl font-bold">Single Image</span>
+            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-28 h-32">
+              <div class="flex items-center">
+                <div class="flex flex-col md:pr-4">
+                  <h1 class="text-xl font-bold">Pricing per image:</h1>
+                  <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
+                </div>
+                <%= input(f, :download_each_price, class: "w-full w-24 text-lg text-center border border-blue-planning-300 text-base-300", phx_debounce: 1000, phx_hook: "PriceMask") %>
+              </div>  
+              <%= if message = @price_changeset.errors[:download_each_price] do %>
+                <div class="flex md:py-1 ml-auto text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+              <% end %>
             </div>
-            <.form :let={f} for={%{}} as={:digital_pricing} phx-change="validate_each_price" class="ml-auto">
-              <%= input(f, :each_price, class: "w-full w-24 text-lg text-center border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: if((@global_settings_gallery && @global_settings_gallery.download_each_price), do: Money.to_string(@global_settings_gallery.download_each_price), else: "$50.00")) %>
-            </.form>
+          </div>
+          <div>
+            <span class="text-xl font-bold">Buy them all</span>
+            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-28 h-32">
+              <div class="flex items-center">
+                <div class="flex flex-col md:pr-4">
+                  <h1 class="text-xl font-bold">Pricing for all images:</h1>
+                  <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
+                </div>
+                <%= input(f, :buy_all_price, class: "w-full w-24 text-lg text-center ml-auto border border-blue-planning-300 text-base-300", phx_debounce: 1000, phx_hook: "PriceMask") %>
+              </div>
+              <%= if message = @price_changeset.errors[:buy_all_price] do %>
+                <div class="flex ml-auto md:py-1 text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+              <% end %>
+            </div>
           </div>
         </div>
-        <div>
-          <span class="text-xl font-bold	">Buy them all</span>
-          <div class="flex items-center border p-3 rounded-md border-base-250 mt-4">
-            <div class="flex flex-col md:pr-4">
-              <h1 class="text-xl font-bold">Pricing for all images:</h1>
-              <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
-            </div>
-            <.form :let={f} for={%{}} as={:digital_pricing} phx-change="validate_buy_all_price" class="ml-auto">
-              <%= input(f, :buy_all, class: "w-full w-24 text-lg text-center ml-auto border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: if((@global_settings_gallery && @global_settings_gallery.buy_all_price), do: Money.to_string(@global_settings_gallery.buy_all_price), else: "$750.00")) %>
-            </.form>
-          </div>
-        </div>
-      </div>
+      </.form>
     """
   end
 
-  defp section(%{expiration_date?: true} = assigns) do
+  defp section(%{show_side_nav: "expiration_date"} = assigns) do
     ~H"""
-      <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @expiration_date?})}>Global Expiration Date</h1>
+      <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @show_side_nav == "expiration_date"})}>Global Expiration Date</h1>
       <.card color="blue-planning-300" icon="three-people" title="Expiration Date" badge={0} class="cursor-pointer mt-8" >
           <p class="my-2 text-base-250">
             Add a global expiration date that will be the default setting across all your new galleries.
@@ -755,12 +709,12 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     """
   end
 
-  defp section(%{watermark_option: true, uploads: uploads} = assigns) do
+  defp section(%{show_side_nav: "watermark", uploads: uploads} = assigns) do
     entry = Enum.at(uploads.image.entries, 0)
     assigns = Enum.into(assigns, %{entry: entry})
 
     ~H"""
-    <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @watermark_option})}>Watermark</h1>
+    <h1 class={classes("text-2xl font-bold mt-6 md:block", %{"hidden" => @show_side_nav == "watermark"})}>Watermark</h1>
     <.card color="blue-planning-300" icon="three-people" title="Custom Watermark" badge={0} class="cursor-pointer mt-8" >
       <%= if @case == :image and @show_image_preview do  %>
 
@@ -854,15 +808,15 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     """
   end
 
-  defp section(%{product_section?: true, print_price_section?: false} = assigns) do
+  defp section(%{show_side_nav: "products"} = assigns) do
     ~H"""
       <.live_component id="products" module={ProductComponent} organization_id={@current_user.organization_id} />
     """
   end
 
-  defp section(%{product_section?: true, print_price_section?: true} = assigns) do
+  defp section(%{show_side_nav: "print_product"} = assigns) do
     ~H"""
-      <.live_component id="product_prints" module={PrintProductComponent} product={@product} />
+      <.live_component id="print_product" module={PrintProductComponent} product={@product} />
     """
   end
 
@@ -881,21 +835,21 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   defp nav_item(assigns) do
-    assigns = Enum.into(assigns, %{event_name: nil, print_price_section?: nil})
+    assigns = Enum.into(assigns, %{event_name: nil})
 
     ~H"""
     <div class={"bg-base-250/10 font-bold rounded-lg cursor-pointer grid-item"}>
       <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" phx-value-section={@value} phx-click="select_component">
-        <.nav_title title={@item_title} open?={@open? && !@print_price_section?} />
+        <.nav_title title={@item_title} open?={@open? && @show_side_nav !== "print_product"} />
       </div>
-      <%= if @print_price_section? do %>
-        <div class={"#{@print_price_section? && 'bg-base-200'} flex items-center lg:h-11 pr-4 lg:pl-2 pl-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-b-lg border border-base-220 text-ellipsis hover:text-blue-planning-300"}>
+      <%= if @value == "products" && @show_side_nav == "print_product" do %>
+        <div class={classes("flex items-center lg:h-11 pr-4 lg:pl-2 pl-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-b-lg border border-base-220 text-ellipsis hover:text-blue-planning-300", %{"bg-base-200" => @show_side_nav == "print_product"})}>
           <.nav_title title="Print Pricing" open?={@open?} />
         </div>
       <% end %>
       <%= if(@open?) do %>
         <span class="arrow show lg:block hidden">
-          <svg class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" style="">
+          <svg class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10">
             <use href="/images/icons.svg#arrow-filled"></use>
           </svg>
         </span>
@@ -937,7 +891,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   def settings_multi(socket, attrs, multi \\ Multi.new())
 
-  def settings_multi(%{assigns: %{global_settings_gallery: nil}}, attrs, multi) do
+  def settings_multi(%{assigns: %{global_settings_gallery: %{id: nil}}}, attrs, multi) do
     Multi.insert(multi, :global_settings, changeset(attrs))
   end
 

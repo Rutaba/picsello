@@ -11,6 +11,7 @@ defmodule Picsello.Cart.Checkouts do
     Payments,
     Repo,
     WHCC,
+    Cart,
     OrganizationCard
   }
 
@@ -18,7 +19,12 @@ defmodule Picsello.Cart.Checkouts do
   alias WHCC.Editor.Export.Editor
 
   import Picsello.Cart,
-    only: [product_name: 1, product_quantity: 1, item_image_url: 1, preload_digitals: 1]
+    only: [
+      product_name: 1,
+      product_quantity: 1,
+      item_image_url: 1,
+      preload_digitals: 1
+    ]
 
   import Ecto.Multi, only: [new: 0, run: 3, merge: 2, insert: 3, update: 3, append: 2, put: 3]
 
@@ -157,10 +163,12 @@ defmodule Picsello.Cart.Checkouts do
   end
 
   defp create_whcc_order(%Order{delivery_info: delivery_info, gallery_id: gallery_id} = order) do
+    shipment_details = Picsello.Shipment.Detail.all()
+
     editors =
       order
       |> Picsello.Cart.Order.lines_by_product()
-      |> Enum.reduce([], &editors(&1, &2))
+      |> Enum.reduce([], &editors(&1, &2, shipment_details))
 
     account_id = Galleries.account_id(gallery_id)
 
@@ -177,26 +185,31 @@ defmodule Picsello.Cart.Checkouts do
     |> update(:save_whcc_order, &Order.whcc_order_changeset(order, &1.whcc_order))
   end
 
-  defp editors({_whcc_product, line_items}, acc) do
-    product = Enum.find(line_items, & &1.shipping_upcharge)
-    order_attributes = WHCC.Shipping.attributes(product)
+  defp editors({_whcc_product, line_items}, acc, shipment_details) do
+    product = Enum.find(line_items, & &1.shipping_type)
+    order_attributes = WHCC.Shipping.attributes(product, shipment_details)
 
     acc ++ Enum.map(line_items, &Editor.new(&1.editor_id, order_attributes: order_attributes))
   end
 
-  defp create_session(cart, %{whcc_order: whcc_order, client_total: client_total} = opts),
-    do:
-      create_session(
-        cart,
-        Enum.min_by(
-          [client_total, WHCCOrder.total(whcc_order)],
-          & &1.amount
-        ),
-        opts
-      )
+  defp create_session(cart, %{whcc_order: whcc_order, client_total: client_total} = opts) do
+    shipping_price = Cart.total_shipping(cart)
 
-  defp create_session(cart, opts),
-    do: create_session(cart, ~M[0]USD, opts)
+    create_session(
+      cart,
+      Enum.min_by(
+        [client_total, WHCCOrder.total(whcc_order) |> Money.add(shipping_price)],
+        & &1.amount
+      ),
+      opts
+    )
+  end
+
+  defp create_session(cart, opts) do
+    shipping_price = Cart.total_shipping(cart)
+
+    create_session(cart, shipping_price, opts)
+  end
 
   defp create_session(
          %{gallery: %{organization: %{stripe_account_id: stripe_account_id}}} = order,
@@ -232,11 +245,9 @@ defmodule Picsello.Cart.Checkouts do
     end)
   end
 
-  alias Picsello.Cart
-
-  defp shipping_options(%{products: [_ | _] = products}) do
+  defp shipping_options(%{products: [_ | _] = products} = order) do
     products = Enum.filter(products, & &1.shipping_type)
-    shipping = Cart.total_shipping(products)
+    shipping = Cart.total_shipping(order)
     {min, max} = Cart.shipping_days(products)
 
     [

@@ -28,7 +28,7 @@ defmodule PicselloWeb.Shared.ImageUploadInput do
             <div class="w-3 h-3 m-2 rounded-full opacity-75 bg-blue-planning-300 animate-ping"></div>
             Uploading...
           </div>
-        <% @url -> %>
+        <% @url != "" and not is_nil(@url) -> %>
           <div class="w-full h-full flex items-center justify-center relative">
             <%= if assigns[:image_slot] do %>
               <%= render_slot(@image_slot) %>

@@ -206,7 +206,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
           <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
         </button>
 
-        <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content z-20">
+        <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
           <%= if @contract.status == :active do %>
             <%= if @contract.organization_id do %>
               <button title="Edit" type="button" phx-click="edit-contract" phx-value-contract-id={@contract.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">

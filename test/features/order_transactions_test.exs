@@ -8,9 +8,15 @@ defmodule Picsello.OrderTransactionsTest do
   setup :authenticated_gallery
 
   setup %{user: user, gallery: gallery} do
+    insert(:gallery_digital_pricing, gallery: gallery)
+
+    gallery_client =
+      insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
     order =
       insert(:order,
         gallery: gallery,
+        gallery_client: gallery_client,
         placed_at: DateTime.utc_now(),
         delivery_info: %Picsello.Cart.DeliveryInfo{
           address: %Picsello.Cart.DeliveryInfo.Address{
@@ -61,7 +67,7 @@ defmodule Picsello.OrderTransactionsTest do
   } do
     session
     |> visit("/galleries/#{gallery.id}/transactions")
-    |> assert_has(css("a[href='/jobs']", text: "Jobs"))
+    |> assert_has(css("a[href='/jobs']", text: "Jobs", at: 1, count: 2))
     |> assert_has(css("a[href='/jobs/#{job.id}']", text: Job.name(job)))
     |> assert_has(css("span", text: Job.name(job), count: 2))
     |> click(css("*[phx-click='order-detail']", text: "View details"))
@@ -79,7 +85,7 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_has(testid("orders", count: 1))
     |> assert_has(css("*[phx-click='order-detail']", text: "Product order"))
     |> assert_has(css("*[phx-click='order-detail']", text: "View details"))
-    |> assert_text("$557.00")
+    |> assert_text("$595.45")
     |> assert_text(Calendar.strftime(order.placed_at, "%m/%d/%Y"))
     |> click(css("*[phx-click='order-detail']", text: "View details"))
     |> assert_url_contains(
@@ -113,13 +119,13 @@ defmodule Picsello.OrderTransactionsTest do
     |> assert_text("Use your Stripe dashboard")
     |> assert_text("Products (1)")
     |> assert_text("$555.00")
-    |> assert_text("Shipping (0)")
+    |> assert_text("Shipping (1)")
     |> assert_text("Digital downloads (1)")
     |> assert_text("$2.00")
     |> assert_text("Subtotal")
-    |> assert_text("$557.00")
+    |> assert_text("$595.45")
     |> assert_text("Total")
-    |> assert_text("$557.00")
+    |> assert_text("$595.45")
     |> assert_has(button("Go to Stripe", count: 2, at: 0))
   end
 

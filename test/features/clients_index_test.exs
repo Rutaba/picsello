@@ -52,17 +52,23 @@ defmodule Picsello.ClientsIndexTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
     )
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
+    |> scroll_into_view(testid("edit-digital-collection"))
+    |> click(button("Edit settings"))
     |> scroll_into_view(css("#download_status_limited"))
     |> click(css("#download_status_limited"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
-    |> scroll_into_view(css("#download_is_custom_price"))
+    |> click(testid("close-settings"))
+    |> click(button("Edit image price"))
+    |> scroll_into_view(css("#download_each_price"))
     |> find(
       text_field("download[each_price]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
+      &(&1 |> Element.clear() |> Element.fill_in(with: "$5"))
     )
+    |> click(testid("close-settings"))
+    |> click(button("Edit upsell options"))
     |> scroll_into_view(css("#download_is_buy_all"))
     |> click(css("#download_is_buy_all"))
     |> find(
@@ -96,7 +102,7 @@ defmodule Picsello.ClientsIndexTest do
   feature "adds new client and edits it", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> sleep(300)
     |> click(button("Add client"))
     |> fill_in(text_field("Email"), with: " ")
@@ -127,7 +133,7 @@ defmodule Picsello.ClientsIndexTest do
   feature "adds client without name and update its email", %{session: session} do
     session
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> find(css("#intro_hints_only"), &click(&1, button("Add client")))
     |> fill_in(text_field("Email"), with: "jane@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
@@ -203,7 +209,8 @@ defmodule Picsello.ClientsIndexTest do
     |> within_modal(&click(&1, button("Next")))
     |> scroll_into_view(testid("print"))
     |> click(radio_button("Gallery does not include Print Credits"))
-    |> scroll_into_view(css("#download_is_buy_all"))
+    |> click(button("Edit settings"))
+    |> scroll_into_view(css("#download_status_unlimited"))
     |> click(css("#download_status_unlimited"))
     |> within_modal(&click(&1, button("Save")))
     |> click(button("Great!"))

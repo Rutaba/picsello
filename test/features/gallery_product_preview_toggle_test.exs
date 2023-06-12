@@ -1,6 +1,6 @@
 defmodule Picsello.GalleryProductPreviewToggleTest do
   use Picsello.FeatureCase, async: true
-  import Money.Sigils
+  alias Picsello.{Repo, Accounts.User}
 
   setup :onboarded
   setup :authenticated
@@ -11,36 +11,29 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     Picsello.Test.WHCCCatalog.sync_catalog()
   end
 
-  setup do
-    organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
+  setup %{gallery: gallery, user: user} do
+    user =
+      user
+      |> User.assign_stripe_customer_changeset("photographer-stripe-customer-id")
+      |> Repo.update!()
 
-    insert(:user,
-      organization: organization,
-      stripe_customer_id: "photographer-stripe-customer-id"
-    )
-    |> onboard!()
-
-    package =
-      insert(:package,
-        organization: organization,
-        download_each_price: ~M[2500]USD,
-        buy_all: ~M[5000]USD
-      )
-
-    gallery =
-      insert(:gallery,
-        job:
-          insert(:lead,
-            client: insert(:client, organization: organization),
-            package: package
-          ),
-        use_global: %{watermark: true, expiration: true, digital: true, products: true}
-      )
+    insert(:gallery_client, %{email: user.email, gallery_id: gallery.id})
+    insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
     gallery_digital_pricing = insert(:gallery_digital_pricing, gallery: gallery)
 
-    insert(:watermark, gallery: gallery)
     photo_ids = insert_photo(%{gallery: gallery, total_photos: 3})
+
+    gallery =
+      gallery
+      |> Picsello.Galleries.Gallery.update_changeset()
+      |> Ecto.Changeset.put_change(:use_global, %{
+        watermark: true,
+        expiration: true,
+        digital: true,
+        products: true
+      })
+      |> Picsello.Repo.update!()
 
     for {%{id: category_id} = category, index} <-
           Enum.with_index(Picsello.Repo.all(Picsello.Category)) do
@@ -63,7 +56,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       global_gallery_product =
         insert(:global_gallery_product,
           category: category,
-          organization: organization,
+          organization: gallery.job.client.organization,
           markup: 100
         )
 
@@ -85,16 +78,8 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
     end)
 
-    [
-      gallery: gallery,
-      organization: organization,
-      package: package,
-      photo_ids: photo_ids,
-      gallery_digital_pricing: gallery_digital_pricing
-    ]
+    [gallery: gallery, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
   end
-
-  setup :authenticated_gallery_client
 
   test "Toggle disable product and view in client preview", %{
     session: session,
@@ -170,7 +155,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
                {"Loose Prints", "$50,000.00"},
                {"Press Printed Cards", "$77.77"},
                {"Display Products", "$3,939.00"},
-               {"Digital Download"}
+               {"Digital Download", "$0.10"}
              ] =
                options
                |> Enum.map(fn option ->

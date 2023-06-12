@@ -25,7 +25,8 @@ defmodule Picsello.UserSettingsTest do
 
   feature "updates business name", %{session: session, user: user} do
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_value(text_field("Business name"), "Mary Jane Photography")
     |> fill_in(text_field("Business name"), with: " ")
     |> assert_text("Business name can't be blank")
@@ -51,7 +52,8 @@ defmodule Picsello.UserSettingsTest do
 
   feature "updates timezone", %{session: session, user: user} do
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_value(select("Timezone"), "America/Sao_Paulo")
     |> find(select("Timezone"), &click(&1, option("(GMT-05:00) America/New_York")))
     |> click(button("Change timezone"))
@@ -66,7 +68,8 @@ defmodule Picsello.UserSettingsTest do
 
   feature "updates phone number", %{session: session, user: user} do
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> fill_in(text_field("Phone number"), with: "")
     |> assert_text("Phone number can't be blank")
     |> fill_in(text_field("Phone number"), with: "12232")
@@ -87,7 +90,7 @@ defmodule Picsello.UserSettingsTest do
 
   feature "enables offline payments", %{session: session, user: user} do
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
     |> click(link("Finances"))
     |> scroll_to_bottom()
     |> assert_has(css("label", text: "Disabled"))

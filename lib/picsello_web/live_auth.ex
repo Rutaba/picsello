@@ -33,7 +33,7 @@ defmodule PicselloWeb.LiveAuth do
     |> authenticate_album(params)
     |> then(&authenticate_gallery(&1, %{"gallery_id" => &1.assigns.album.gallery_id}))
     |> authenticate_gallery_expiry()
-    |> authenticate_album_client(session)
+    |> authenticate_gallery_client(session)
     |> authenticate_gallery_for_photographer(session)
     |> maybe_redirect_to_client_login(params)
   end
@@ -123,39 +123,23 @@ defmodule PicselloWeb.LiveAuth do
          %{assigns: %{gallery: %{job: %{client: client}} = gallery}} = socket,
          session
        ) do
+    token = Map.get(session, "gallery_session_token")
+
     if Galleries.session_exists_with_token?(
          gallery.id,
-         Map.get(session, "gallery_session_token"),
+         token,
          :gallery
        ) do
+      email = Galleries.get_session_token(token).email
       Sentry.Context.set_user_context(client)
       assign(socket, authenticated: true)
+      assign(socket, authenticated: true, client_email: email)
     else
       assign(socket, authenticated: false)
     end
   end
 
   defp authenticate_gallery_client(socket, _), do: socket
-
-  defp authenticate_album_client(
-         %{assigns: %{album: %{set_password: true} = album}} = socket,
-         session
-       ) do
-    if Galleries.session_exists_with_token?(
-         album.id,
-         Map.get(session, "album_session_token"),
-         :album
-       ) do
-      assign(socket, authenticated: true)
-    else
-      assign(socket, authenticated: false)
-    end
-  end
-
-  defp authenticate_album_client(%{assigns: _} = socket, _session),
-    do: assign(socket, authenticated: true)
-
-  defp authenticate_album_client(socket, _session), do: socket
 
   defp allow_sandbox(socket) do
     with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox),
@@ -229,12 +213,15 @@ defmodule PicselloWeb.LiveAuth do
     socket
     |> assign_current_user(session)
     |> then(fn
-      %{assigns: %{authenticated: true}} = socket ->
+      %{assigns: %{authenticated: true, client_email: nil}} = socket ->
         socket
 
       %{assigns: %{current_user: current_user}} = socket when not is_nil(current_user) ->
         socket
-        |> assign(authenticated: current_user.id == Galleries.gallery_photographer(gallery).id)
+        |> assign(
+          authenticated: current_user.id == Galleries.gallery_photographer(gallery).id,
+          client_email: nil
+        )
 
       socket ->
         socket

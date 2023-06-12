@@ -66,7 +66,7 @@ defmodule Picsello.Designs do
       select: %{
         id: designs.id,
         whcc_id: designs.whcc_id,
-        name: designs.api ~> "family" ~>> "name",
+        name: designs.api ~> "displayName",
         photo_slots: photo_slots.slots,
         preview_url: fragment("?", preview),
         product: struct(product, [:whcc_id])
@@ -101,7 +101,7 @@ defmodule Picsello.Designs do
       select: %{
         id: designs.id,
         whcc_id: designs.whcc_id,
-        name: designs.api ~> "family" ~>> "name",
+        name: designs.api ~> "displayName",
         photo_slots: photo_slots.slots,
         preview_url: fragment("?", preview),
         product: struct(product, [:whcc_id])
@@ -137,7 +137,7 @@ defmodule Picsello.Designs do
       select: %{
         id: designs.id,
         whcc_id: designs.whcc_id,
-        name: designs.api ~> "family" ~>> "name",
+        name: designs.api ~> "displayName",
         photo_slots: photo_slots.slots,
         preview_url: fragment("?", preview),
         product: struct(product, [:whcc_id])

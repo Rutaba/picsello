@@ -84,10 +84,6 @@ defmodule Picsello.EmailPresets.GalleryResolver do
           %Album{client_link_hash: "" <> client_link_hash} <- album(&1),
           do: helpers(&1).album_url(client_link_hash)
         ),
-      "album_password" =>
-        &with(
-          %Album{set_password: set_password, password: password} <- album(&1),
-          do: if(set_password, do: password)
-        )
+      "album_password" => &(&1 |> gallery() |> Map.get(:password))
     }
 end

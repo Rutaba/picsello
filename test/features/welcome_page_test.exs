@@ -17,7 +17,7 @@ defmodule Picsello.WelcomePageTest do
 
     feature "user navigates to leads from navbar", %{session: session} do
       session
-      |> click(css("#sub-menu", text: "Your work"))
+      |> click(css("#hamburger-menu"))
       |> click(css("nav a", text: "Leads"))
       |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
     end
@@ -78,12 +78,18 @@ defmodule Picsello.WelcomePageTest do
     end
 
     feature "user open billing portal from invoices card", %{session: session, user: user} do
+      gallery =
+        insert(:gallery,
+          job: insert(:lead, user: user) |> promote_to_job()
+        )
+
+      gallery_client =
+        insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
       order =
         insert(:order,
-          gallery:
-            insert(:gallery,
-              job: insert(:lead, user: user) |> promote_to_job()
-            )
+          gallery: gallery,
+          gallery_client: gallery_client
         )
 
       insert(:invoice,

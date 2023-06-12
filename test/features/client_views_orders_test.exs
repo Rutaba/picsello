@@ -15,10 +15,17 @@ defmodule Picsello.ClientViewsOrdersTest do
   setup do
     gallery = insert(:gallery, job: insert(:lead, package: insert(:package)))
 
+    gallery_client =
+      insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
+
     gallery_digital_pricing =
       insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 0})
 
-    [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing]
+    [
+      gallery: gallery,
+      gallery_digital_pricing: gallery_digital_pricing,
+      gallery_client: gallery_client
+    ]
   end
 
   setup :authenticated_gallery_client
@@ -32,41 +39,52 @@ defmodule Picsello.ClientViewsOrdersTest do
     |> assert_text("ordered anything")
   end
 
-  feature "an order - shows delivery details", %{session: session, gallery: gallery} do
-    insert(:order,
-      gallery: gallery,
-      placed_at: DateTime.utc_now(),
-      delivery_info: %Picsello.Cart.DeliveryInfo{
-        address: %Picsello.Cart.DeliveryInfo.Address{
-          addr1: "661 w lake st",
-          city: "Chicago",
-          state: "IL",
-          zip: "60661"
-        }
-      },
-      products:
-        build_list(1, :cart_product,
-          whcc_product: insert(:product),
-          editor_id: "editor_id"
-        ),
-      whcc_order:
-        build(:whcc_order_created,
-          entry_id: "123",
-          orders:
-            build_list(1, :whcc_order_created_order,
-              sequence_number: 69,
-              editor_ids: ["editor_id"],
-              total: ~M[500]USD
-            )
-        )
-    )
+  feature "an order - shows delivery details", %{
+    session: session,
+    gallery: gallery,
+    gallery_client: gallery_client
+  } do
+    order =
+      insert(:order,
+        gallery: gallery,
+        gallery_client: gallery_client,
+        placed_at: DateTime.utc_now(),
+        delivery_info: %Picsello.Cart.DeliveryInfo{
+          address: %Picsello.Cart.DeliveryInfo.Address{
+            addr1: "661 w lake st",
+            city: "Chicago",
+            state: "IL",
+            zip: "60661"
+          }
+        },
+        products:
+          build_list(1, :cart_product,
+            whcc_product: insert(:product),
+            editor_id: "editor_id"
+          ),
+        whcc_order:
+          build(:whcc_order_created,
+            entry_id: "123",
+            orders:
+              build_list(1, :whcc_order_created_order,
+                sequence_number: 69,
+                editor_ids: ["editor_id"],
+                total: ~M[500]USD
+              )
+          )
+      )
 
     Mox.stub(Picsello.MockWHCCClient, :webhook_validate, fn _, _ -> %{"isValid" => true} end)
 
     session
-    |> click(css("a", text: "View Gallery"))
-    |> click(link("My orders"))
-    |> click(link("View details"))
+    |> visit(
+      Routes.gallery_client_order_path(
+        PicselloWeb.Endpoint,
+        :show,
+        gallery.client_link_hash,
+        Orders.number(order)
+      )
+    )
     |> assert_text("We’ll provide tracking info once your item ships")
     |> post(
       PicselloWeb.Router.Helpers.whcc_webhook_path(PicselloWeb.Endpoint, :webhook),
@@ -100,10 +118,11 @@ defmodule Picsello.ClientViewsOrdersTest do
     end)
   end
 
-  def insert_order(gallery) do
+  def insert_order(gallery, gallery_client) do
     order =
       insert(:order,
         gallery: gallery,
+        gallery_client: gallery_client,
         placed_at: DateTime.utc_now(),
         delivery_info: %Picsello.Cart.DeliveryInfo{}
       )
@@ -116,13 +135,23 @@ defmodule Picsello.ClientViewsOrdersTest do
     order
   end
 
-  feature "order list - shows download status", %{session: session, gallery: gallery} do
-    insert_order(gallery)
+  feature "order list - shows download status", %{
+    session: session,
+    gallery: gallery,
+    gallery_client: gallery_client
+  } do
+    order = insert_order(gallery, gallery_client)
     stub_storage()
 
     session
-    |> click(css("a", text: "View Gallery"))
-    |> click(link("My orders"))
+    |> visit(
+      Routes.gallery_client_order_path(
+        PicselloWeb.Endpoint,
+        :show,
+        gallery.client_link_hash,
+        Orders.number(order)
+      )
+    )
     |> assert_text("Preparing Download")
 
     assert_enqueued(worker: Picsello.Workers.PackDigitals)
@@ -133,8 +162,12 @@ defmodule Picsello.ClientViewsOrdersTest do
     |> assert_has(link("Download photos"))
   end
 
-  feature "order details - shows download status", %{session: session, gallery: gallery} do
-    order = insert_order(gallery)
+  feature "order details - shows download status", %{
+    session: session,
+    gallery: gallery,
+    gallery_client: gallery_client
+  } do
+    order = insert_order(gallery, gallery_client)
     stub_storage()
 
     session
