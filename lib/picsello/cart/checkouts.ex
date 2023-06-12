@@ -78,6 +78,8 @@ defmodule Picsello.Cart.Checkouts do
         %{client_total: client_total, cart: %{products: [_ | _]} = cart} ->
           new()
           |> append(create_whcc_order(cart))
+          |> run(:stripe_invoice, &create_stripe_invoice/2)
+          |> insert(:invoice, &insert_invoice/1)
           |> merge(
             &create_session(
               cart,
@@ -280,7 +282,10 @@ defmodule Picsello.Cart.Checkouts do
          %{gallery: %{organization: %{user: user}}} = invoice_order,
          outstanding
        ) do
-    Invoices.invoice_user(user, outstanding,
+    stripe_processing_fee = stripe_processing_fee(invoice_order)
+    shipping = Cart.total_shipping(invoice_order)
+    total_outstanding = Money.add(outstanding, shipping)|> Money.add(stripe_processing_fee)
+    Invoices.invoice_user(user, total_outstanding,
       description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}"
     )
   end
@@ -290,6 +295,11 @@ defmodule Picsello.Cart.Checkouts do
 
   defp place_order(cart), do: Order.placed_changeset(cart)
   defp client_total(_repo, %{cart: cart}), do: {:ok, Order.total_cost(cart)}
+
+  defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),
+    do: processing_fee
+
+  defp stripe_processing_fee(_), do: Money.new(0)
 
   defp fetch_previous_stripe_intent(
          _repo,
