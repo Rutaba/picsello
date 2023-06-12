@@ -1204,14 +1204,14 @@ defmodule PicselloWeb.HomeLive.Index do
               <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
             </div>
             <div class="flex gap-3 mt-8">
-              <button {testid("copy-link")} id="copy-link" class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-200 border-gray-200" => @gallery.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@gallery, :client_link_hash), do: clip_board(@socket, @gallery), else: @gallery.thumbnail_url} phx-hook="Clipboard">
-                <.icon name="anchor" class={classes("w-4 h-4 fill-current text-blue-planning-300 inline mr-2", %{"text-gray-200" => @gallery.status in [:archive, :disabled]})} />
+              <button {testid("copy-link")} id="copy-link" class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @gallery.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@gallery, :client_link_hash), do: clip_board(@socket, @gallery), else: @gallery.thumbnail_url} phx-hook="Clipboard">
+                <.icon name="anchor" class={classes("w-4 h-4 fill-current text-blue-planning-300 inline mr-2", %{"text-gray-300" => @gallery.status in [:archive, :disabled]})} />
                 Copy link
                 <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
                   Copied!
                 </div>
               </button>
-              <div id={"manage-#{@gallery.id}"} phx-hook="Select" class="md:w-auto w-full" phx-update="ignore">
+              <div id={"manage-#{@gallery.id}"} phx-hook="Select" class="md:w-auto w-full">
                 <button class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id={"menu-button-#{@gallery.id}"} phx-click="show_dropdown" phx-value-show_index={@gallery_index}>
                   Actions
                   <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
