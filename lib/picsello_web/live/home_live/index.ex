@@ -608,11 +608,15 @@ defmodule PicselloWeb.HomeLive.Index do
                 <%= for client <- clients do %>
                   <%= live_redirect to: Routes.client_path(@socket, :show, client.id) do %>
                     <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
-                      <%= if String.length(client.name) <= 40 do
-                          client.name || "-"
+                      <%= if client.name do
+                        if String.length(client.name) <= 40 do
+                          client.name
                         else
                           "#{client.name |> String.slice(0..40)} ..."
-                        end %>
+                        end
+                      else
+                        "-"
+                      end %>
                     </p>
                     <p class="text-gray-400 font-normal text-sm">
                       <%= client.email %>
