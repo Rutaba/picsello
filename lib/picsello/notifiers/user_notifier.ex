@@ -244,10 +244,8 @@ defmodule Picsello.Notifiers.UserNotifier do
           optional(:print_cost) => Money.t(),
           optional(:photographer_charge) => Money.t(),
           optional(:photographer_payment) => Money.t(),
-          optional(:whcc_subtotal) => Money.t(),
           optional(:stripe_fee) => Money.t(),
-          optional(:shipping) => Money.t(),
-          optional(:staging) => Boolean.t(),
+          optional(:shipping) => Money.t()
         }
   def order_confirmation_params(
         %{
