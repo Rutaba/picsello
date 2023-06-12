@@ -140,7 +140,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         
     user = Map.get(assigns, :current_user)
     user = if user, do: user, else: Map.get(assigns, :photographer)
-    IO.inspect user, label: "user----"
+
     flash =
       changeset
       |> Ecto.Changeset.change(job_id: job_id, outbound: false, read_at: nil)
