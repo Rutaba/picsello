@@ -302,7 +302,6 @@ defmodule Picsello.Notifiers.UserNotifier do
         |> Map.merge(digitals_params)
         |> Map.merge(%{stripe_fee: stripe_processing_fee(order),
                         shipping: Picsello.Cart.total_shipping(order),
-                        whcc_subtotal: WHCCOrder.total(order.whcc_order),
                         total_products_price: total_products_price,
                         products_quantity: products_quantity
                       }

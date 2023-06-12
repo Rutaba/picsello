@@ -329,10 +329,18 @@ defmodule Picsello.Orders.Confirmations do
          %{gallery: %{organization: %{user: user}}} = invoice_order,
          outstanding
        ) do
-    Invoices.invoice_user(user, outstanding,
+    stripe_processing_fee = stripe_processing_fee(invoice_order)
+    shipping = Picsello.Cart.total_shipping(invoice_order)
+    total_outstanding = Money.add(outstanding, shipping)|> Money.add(stripe_processing_fee)
+    Invoices.invoice_user(user, total_outstanding,
       description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}"
     )
   end
+
+  defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),
+    do: processing_fee
+
+  defp stripe_processing_fee(_), do: Money.new(0)
 
   defp insert_invoice_changeset(%{stripe_invoice: stripe_invoice}, order),
     do: Invoices.changeset(stripe_invoice, order)
