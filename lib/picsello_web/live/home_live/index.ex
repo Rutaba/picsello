@@ -595,7 +595,7 @@ defmodule PicselloWeb.HomeLive.Index do
       <%= case @tab_active do %>
         <% "clients" -> %>
           <.recents_card add_event="add-client" view_event="view-clients" hidden={Enum.empty?(@clients)} button_title="Create a client" title="Recent clients" class="h-auto" color="blue-planning-300">
-            <hr class="m-1 mb-4" />
+          <hr class="mb-4 mt-4" />
             <%= case @clients do %>
               <% [] -> %>
                 <div class="flex flex-col mt-4 lg:flex-none">
@@ -629,7 +629,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
         <% "leads" -> %>
         <.recents_card add_event="create-lead" view_event="view-leads" hidden={Enum.empty?(@leads)} button_title="Create a lead" title="Recent leads" class="h-auto" color="blue-planning-300">
-          <hr class="m-1 mb-4" />
+          <hr class="mb-4 mt-4" />
           <%= case @leads do %>
             <% [] -> %>
               <div class="flex flex-row mt-4 p-4 gap-6">
@@ -651,7 +651,7 @@ defmodule PicselloWeb.HomeLive.Index do
                     <.status_badge class="ml-4 w-fit" job={lead}/>
                   </div>
                   <p class="text-gray-400 font-normal text-sm">
-                    Created <%= lead.inserted_at |> format_date_via_type() %>
+                    Created <%= lead.inserted_at |> format_date_via_type("MM/DD/YY") %>
                   </p>
                 <% end %>
               <% end %>
@@ -660,13 +660,13 @@ defmodule PicselloWeb.HomeLive.Index do
         </.recents_card>
 
         <% "jobs" -> %>
-        <.recents_card add_event="import-job" view_event="view-jobs" hidden={Enum.empty?(@jobs)} button_title="Import a job" title="Recent jobs" class="h-auto" color="blue-planning-300">
-          <hr class="m-1 mb-4" />
+        <.recents_card add_event="import-job" view_event="view-jobs" hidden={Enum.empty?(@jobs)} button_title="Import a job" title="Upcoming jobs" class="h-auto">
+          <hr class="mt-4 mb-4" />
           <%= case @jobs do %>
             <% [] -> %>
               <div class="flex flex-row mt-4 p-4 gap-6">
                 <iframe src="https://www.youtube.com/embed/XWZH_65evuM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
-                <p class="md:max-w-md text-base-250 text-normal mb-8">Booking jobs will get you on your way to making a profit. If you are migrating existing jobs from another platform, user our import job above.</p>
+                <p class="md:max-w-md text-base-250 text-normal mb-8">Booking jobs will get you on your way to making a profit. If you are migrating existing jobs from another platform, user our import a job button above.</p>
               </div>
             <% jobs -> %>
             <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
@@ -680,7 +680,7 @@ defmodule PicselloWeb.HomeLive.Index do
                       end %>
                   </p>
                   <p class="text-gray-400 font-normal text-sm">
-                    Next Shoot <%= if Shoots.get_next_shoot(job), do:  Shoots.get_next_shoot(job) |> Map.get(:starts_at) |> format_date_via_type(), else: "(To be decided)" %>
+                    Next Shoot <%= if Shoots.get_next_shoot(job), do:  Shoots.get_next_shoot(job) |> Map.get(:starts_at) |> format_date_via_type("MM/DD/YY"), else: "(To be decided)" %>
                   </p>
                 <% end %>
               <% end %>
@@ -690,7 +690,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
         <% "galleries" -> %>
           <.recents_card add_event="create-gallery" view_event="view-galleries" hidden={Enum.empty?(@galleries)} button_title="Create a gallery" title="Recent galleries" class="h-auto" color="blue-planning-300">
-            <hr class="m-1 mb-4" />
+            <hr class="mt-4 mb-4" />
             <%= case @galleries do %>
               <% [] -> %>
                 <div class="flex flex-col mt-4">
@@ -710,7 +710,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
         <% "booking-events" -> %>
           <.recents_card add_event="create-booking-event" view_event="view-booking-events" hidden={Enum.empty?(@booking_events)} button_title="Create a booking event" title="Recent Booking Events" class="h-auto" color="blue-planning-300">
-            <hr class="m-1 mb-4" />
+            <hr class="mt-4 mb-4" />
             <%= case @booking_events |> Enum.take(6) do %>
               <% [] -> %>
                   <div class="flex flex-row mt-4 p-4 gap-6">
@@ -728,7 +728,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
         <% "packages" -> %>
           <.recents_card add_event="add-package" view_event="view-packages" hidden={Enum.empty?(@packages)} button_title="Create a package" title="Recent packages" class="h-auto" color="blue-planning-300">
-            <hr class="m-1 mb-4" />
+            <hr class="mt-4 mb-4" />
             <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
               <%= for package <- @packages do %>
                 <%= live_redirect to: Routes.package_templates_path(@socket, :edit, package.id) do %>
@@ -1470,7 +1470,7 @@ defmodule PicselloWeb.HomeLive.Index do
       <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-#{@color}"} />
       <div class="flex flex-col w-full p-4">
         <div class="flex flex-row items-center">
-          <h3 class={"mb-2 mr-4 text-xl font-bold text-#{@color}"}><%= @title %></h3>
+          <h3 class={"mb-2 mr-4 text-xl font-bold text-black"}><%= @title %></h3>
           <div class="ml-auto">
             <button type="button" class="link px-4" phx-click={@view_event} hidden={@hidden}>
               View all
