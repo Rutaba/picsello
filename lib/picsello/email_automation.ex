@@ -65,6 +65,28 @@ defmodule Picsello.EmailAutomation do
     )
   end
 
+  def get_emails_for_schedule(organization_id, job_type_id) do
+    get_pipelines(organization_id, job_type_id)
+    |> Enum.flat_map(fn pipeline ->
+      pipeline.email_automation_settings
+      |> Enum.map(
+        &[
+          state: pipeline.state,
+          type: pipeline.email_automation_category.type,
+          email_automation_category_id: pipeline.email_automation_category_id,
+          email_automation_sub_category_id: pipeline.email_automation_sub_category_id,
+          email_automation_pipeline_id: pipeline.id,
+          organization_id: &1.organization_id,
+          total_hours: &1.total_hours,
+          condition: &1.condition,
+          body_template: &1.email_preset.body_template,
+          subject_template: &1.email_preset.subject_template,
+          name: &1.email_preset.name
+        ]
+      )
+    end)
+  end
+
   def get_pipeline_by_id(id) do
     from(eap in EmailAutomationPipeline, where: eap.id == ^id)
     |> Repo.one()
@@ -79,9 +101,9 @@ defmodule Picsello.EmailAutomation do
     status = toggle_status(active)
 
     Repo.transaction(fn ->
-      get_pipeline_by_id(pipeline_id)
-      |> EmailAutomationPipeline.changeset(%{status: status})
-      |> Repo.update()
+      # get_pipeline_by_id(pipeline_id)
+      # |> EmailAutomationPipeline.changeset(%{status: status})
+      # |> Repo.update()
 
       from(es in EmailAutomationSetting,
         where: es.email_automation_pipeline_id == ^pipeline_id,
@@ -199,5 +221,3 @@ defmodule Picsello.EmailAutomation do
   defp toggle_status("true"), do: "disabled"
   defp toggle_status("false"), do: "active"
 end
-
-# Picsello.EmailAutomation.get_all_pipelines_emails(1,1)

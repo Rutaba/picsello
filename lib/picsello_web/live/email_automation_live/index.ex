@@ -144,7 +144,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   def handle_event(
         "toggle",
         %{"pipeline-id" => id, "active" => active},
-        socket
+        %{assigns: %{selected_job_type: _selected_job_type}} = socket
       ) do
     message = if active == "true", do: "disabled", else: "enabled"
 
