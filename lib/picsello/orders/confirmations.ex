@@ -191,12 +191,9 @@ defmodule Picsello.Orders.Confirmations do
 
   defp photographer_owes(_repo, %{
          intent: %{application_fee_amount: application_fee_amount, amount: amount},
-         order: %{products: products} = order
+         order: order
        }) do
-
-    print_credits = products |> Enum.reduce(~M[0]USD, &Money.add(&2, &1.print_credit_discount))
-    print_cost = application_fee_amount |> Money.add(stripe_processing_fee(order)) |> Money.add(print_credits)
-
+    print_cost = application_fee_amount |> Money.add(stripe_processing_fee(order))
 
     case Money.cmp(amount, print_cost) do
           :lt -> {:ok, Money.subtract(print_cost, amount)}
