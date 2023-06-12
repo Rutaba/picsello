@@ -10,7 +10,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Job,
     Repo,
     Galleries,
-    Client,
     GalleryProducts,
     Messages,
     Cart,
@@ -24,6 +23,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Ecto.Multi
   alias Cart.{Order, Digital}
+  alias Galleries.{GalleryProduct, Photo}
   alias Picsello.Cart.Order
   alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -374,10 +374,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp opts(), do: [limit: 1, valid: true]
 
-  def add_message_and_notify(%{assigns: %{job: job}} = socket, message_changeset, shared_item)
+  def add_message_and_notify(
+        %{assigns: %{job: job, current_user: user}} = socket,
+        message_changeset,
+        recipients,
+        shared_item
+      )
       when shared_item in ~w(gallery album) do
-    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
+    with {:ok, %{client_message: message, client_message_recipients: _}} <-
+           Messages.add_message_to_job(message_changeset, job, recipients, user)
+           |> Repo.transaction(),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> put_flash(:success, "#{String.capitalize(shared_item)} shared!")
     else
@@ -389,12 +396,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply()
   end
 
-  def add_message_and_notify(socket, message_changeset) do
-    with {:ok, message} <- Messages.add_message_to_client(message_changeset),
-         %Client{name: name, email: email} <- Repo.get(Client, message.client_id),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, email) do
+  def add_message_and_notify(
+        %{assigns: %{current_user: user}} = socket,
+        message_changeset,
+        recipients
+      ) do
+    with {:ok, %{client_message: message, client_message_recipients: _}} <-
+           Messages.add_message_to_client(message_changeset, recipients, user)
+           |> Repo.transaction(),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
-      |> put_flash(:success, "Email sent to " <> if(name, do: name, else: email) <> "!")
+      |> put_flash(:success, "Email sent!")
     else
       _error ->
         socket

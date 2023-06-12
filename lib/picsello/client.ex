@@ -2,7 +2,7 @@ defmodule Picsello.Client do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Accounts.User, Organization, Job, ClientTag, Repo, ClientMessage}
+  alias Picsello.{Accounts.User, Organization, Job, ClientTag, Repo, ClientMessageRecipient}
 
   schema "clients" do
     field :email, :string
@@ -15,7 +15,8 @@ defmodule Picsello.Client do
     belongs_to(:organization, Organization)
     has_many(:jobs, Job)
     has_many(:tags, ClientTag)
-    has_many(:client_messages, ClientMessage)
+    has_many(:client_message_recipients, ClientMessageRecipient)
+    has_many(:client_messages, through: [:client_message_recipients, :client_message])
 
     timestamps(type: :utc_datetime)
   end

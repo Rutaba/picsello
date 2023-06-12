@@ -10,7 +10,8 @@ defmodule PicselloWeb.LeadLive.Show do
     BookingProposal,
     Notifiers.ClientNotifier,
     Questionnaire,
-    Contracts
+    Contracts,
+    Messages
   }
 
   alias PicselloWeb.JobLive
@@ -283,28 +284,24 @@ defmodule PicselloWeb.LeadLive.Show do
 
   @impl true
   def handle_info(
-        {:proposal_message_composed, message_changeset},
-        %{assigns: %{job: job}} = socket
+        {:proposal_message_composed, message_changeset, recipients},
+        %{assigns: %{current_user: current_user, job: job}} = socket
       ) do
-    result =
-      socket
-      |> upsert_booking_proposal(true)
-      |> Ecto.Multi.insert(
-        :message,
-        Ecto.Changeset.put_change(message_changeset, :job_id, job.id)
-      )
-      |> Repo.transaction()
-
-    case result do
-      {:ok, %{message: message}} ->
-        %{client: client} =
-          job =
+    socket
+    |> upsert_booking_proposal(true)
+    |> Ecto.Multi.merge(fn _ ->
+      Messages.add_message_to_job(message_changeset, job, recipients, current_user)
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{client_message: message, client_message_recipients: _}} ->
+        job =
           job
           |> Repo.preload([:client, :job_status, package: [:contract, :questionnaire_template]],
             force: true
           )
 
-        ClientNotifier.deliver_booking_proposal(message, client.email)
+        ClientNotifier.deliver_booking_proposal(message, recipients)
 
         socket
         |> assign_proposal()
