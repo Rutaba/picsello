@@ -115,7 +115,7 @@ defmodule Picsello.WHCC.Order.Created do
               acc
             else
               {:ok, price} = Money.parse(Map.get(product, "Price"))
-              Money.add(acc, price)
+              Money.add(acc, Money.multiply(price, Map.get(product, "Quantity", 0)))
             end
           end)
           Money.add(sum, total_price)
