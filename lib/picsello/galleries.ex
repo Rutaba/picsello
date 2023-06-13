@@ -522,13 +522,15 @@ defmodule Picsello.Galleries do
     |> Multi.merge(fn %{gallery: gallery} ->
       gallery
       |> Repo.preload(:package)
-      |> check_watermark()
+      |> check_watermark(user)
     end)
   end
 
-  defp check_watermark(%{package: %{download_each_price: %Money{amount: 0}}}), do: Multi.new()
+  alias Picsello.GlobalSettings.Gallery, as: GSGallery
+  alias Picsello.Workers.UploadExistingFile
+  defp check_watermark(%{package: %{download_each_price: %Money{amount: 0}}}, _), do: Multi.new()
 
-  defp check_watermark(gallery) do
+  defp check_watermark(gallery, %{organization_id: org_id}) do
     case Gallery.global_gallery_watermark(gallery) do
       nil ->
         Multi.new()
@@ -541,6 +543,13 @@ defmodule Picsello.Galleries do
             watermark
           )
         end)
+        |> Oban.insert(
+          :waterk_file,
+          UploadExistingFile.new(%{
+            ex_path: GSGallery.watermark_path(org_id),
+            new_path: Watermark.watermark_path(gallery.id)
+          })
+        )
     end
   end
 
