@@ -7,6 +7,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
   import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
+  alias Ecto.Changeset
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
   alias PicselloWeb.Shared.ConfirmationComponent
 
@@ -184,11 +185,12 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   def handle_info(
-        {:message_composed, message_changeset},
+        {:message_composed, message_changeset, recipients},
         %{
           assigns: %{
             job: job,
-            gallery: gallery
+            gallery: gallery,
+            current_user: user
           }
         } = socket
       ) do
@@ -197,16 +199,28 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       |> :erlang.term_to_binary()
       |> Base.encode64()
 
-    %{id: oban_job_id} =
-      %{message: serialized_message, email: job.client.email, job_id: job.id}
+    changeset =
+      %{message: serialized_message, job_id: job.id, recipients: recipients, user: user}
       |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
+
+    updated_args =
+      changeset
+      |> Changeset.fetch_change!(:args)
+      |> Map.drop([:user, :recipients])
+
+    %{id: oban_job_id} =
+      changeset
+      |> Changeset.put_change(:args, updated_args)
       |> Oban.insert!()
 
     Waiter.postpone(gallery.id, fn ->
       Oban.cancel_job(oban_job_id)
 
-      {:ok, message} = Messages.add_message_to_job(message_changeset, job)
-      ClientNotifier.deliver_email(message, job.client.email)
+      {:ok, %{client_message: message, client_message_recipients: _}} =
+        Messages.add_message_to_job(message_changeset, job, recipients, user)
+        |> Repo.transaction()
+
+      ClientNotifier.deliver_email(message, recipients)
     end)
 
     socket
@@ -216,8 +230,8 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   @impl true
-  def handle_info({:message_composed_for_album, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset, "album")
+  def handle_info({:message_composed_for_album, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "album")
   end
 
   @impl true

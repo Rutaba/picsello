@@ -1,31 +1,38 @@
 defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
-  alias Picsello.{BookingProposal, Job, Client, Repo, Cart, Messages, Galleries.Gallery}
+  import Picsello.Messages, only: [get_emails: 2]
+
+  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery}
   alias Cart.Order
   require Logger
 
   @doc """
   Deliver booking proposal email.
   """
-  def deliver_booking_proposal(message, to_email) do
+  def deliver_booking_proposal(message, recipients) do
     proposal = BookingProposal.last_for_job(message.job_id)
 
-    deliver_email(message, to_email, %{
+    deliver_email(message, recipients, %{
       button: %{url: BookingProposal.url(proposal.id), text: "View booking proposal"}
     })
   end
 
-  def deliver_email(message, to_email, params \\ %{}) do
-    message = message |> Repo.preload([:job, :client])
+  @doc """
+  recipients data structure can be:
+  %{
+    "to" => [example@gmail.com, example2@gmail.com],
+    "cc" => [cc@gmail.com, cc@gmail.com],
+    "bcc" => [bcc@gmail.com, bcc@gmail.com],
+  }
+  """
+  def deliver_email(message, recipients, params \\ %{}) do
+    message = message |> Repo.preload([:clients, job: :client], force: true)
 
     message
     |> message_params()
     |> Map.merge(params)
-    |> deliver_transactional_email(
-      to_email,
-      if(message.job, do: message.job, else: message.client)
-    )
+    |> deliver_transactional_email(recipients, message)
   end
 
   def deliver_payment_made(proposal) do
@@ -43,7 +50,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
       <p>CTA: <a href="#{BookingProposal.url(proposal.id)}">View Booking </a></p>
       """
     }
-    |> deliver_transactional_email(client)
+    |> deliver_transactional_email(%{"to" => client.email})
   end
 
   def deliver_payment_due(proposal) do
@@ -61,7 +68,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
       <p>CTA: <a href="#{BookingProposal.url(proposal.id)}"> View Booking </a></p>
       """
     }
-    |> deliver_transactional_email(client)
+    |> deliver_transactional_email(%{"to" => client.email})
   end
 
   def deliver_paying_by_invoice(proposal) do
@@ -80,43 +87,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
       <p>CTA: <a href="#{PicselloWeb.Helpers.invoice_url(job.id, proposal.id)}"> Download PDF </a></p>
       """
     }
-    |> deliver_transactional_email(client)
-  end
-
-  defp deliver_transactional_email(params, client) do
-    sendgrid_template(:generic_transactional_template, params)
-    |> to(client.email)
-    |> from("noreply@picsello.com")
-    |> deliver_later()
-  end
-
-  def deliver_balance_due_email(job, helpers) do
-    with client <- job |> Repo.preload(:client) |> Map.get(:client),
-         proposal <- BookingProposal.last_for_job(job.id),
-         false <- is_nil(proposal),
-         [preset | _] <- Picsello.EmailPresets.for(job, :balance_due),
-         %{body_template: body, subject_template: subject} <-
-           Picsello.EmailPresets.resolve_variables(preset, {job}, helpers) do
-      Logger.warn("job: #{inspect(job.id)}")
-      Logger.warn("Proposal: #{inspect(proposal)}")
-
-      %{subject: subject, body_text: HtmlSanitizeEx.strip_tags(body)}
-      |> Picsello.Messages.insert_scheduled_message!(job)
-      |> deliver_email(
-        client.email,
-        %{
-          button: %{
-            text: "Open invoice",
-            url: BookingProposal.url(proposal.id)
-          }
-        }
-      )
-    else
-      error ->
-        Logger.warn("job: #{inspect(job.id)}")
-        Logger.warn("something went wrong: #{inspect(error)}")
-        error
-    end
+    |> deliver_transactional_email(%{"to" => client.email})
   end
 
   def deliver_shipping_notification(event, order, helpers) do
@@ -135,7 +106,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
             url: tracking_url
           }
         },
-        order.delivery_info.email,
+        %{"to" => order.delivery_info.email},
         gallery.job
       )
     end
@@ -148,9 +119,38 @@ defmodule Picsello.Notifiers.ClientNotifier do
            Picsello.EmailPresets.resolve_variables(preset, {job, payment_schedule}, helpers) do
       deliver_transactional_email(
         %{subject: subject, headline: subject, body: body},
-        client.email,
+        %{"to" => client.email},
         job
       )
+    end
+  end
+
+  def deliver_balance_due_email(job, helpers) do
+    with client <- job |> Repo.preload(:client) |> Map.get(:client),
+         proposal <- BookingProposal.last_for_job(job.id),
+         false <- is_nil(proposal),
+         [preset | _] <- Picsello.EmailPresets.for(job, :balance_due),
+         %{body_template: body, subject_template: subject} <-
+           Picsello.EmailPresets.resolve_variables(preset, {job}, helpers) do
+      Logger.warn("job: #{inspect(job.id)}")
+      Logger.warn("Proposal: #{inspect(proposal)}")
+
+      %{subject: subject, body_text: HtmlSanitizeEx.strip_tags(body)}
+      |> Picsello.Messages.insert_scheduled_message!(job)
+      |> deliver_email(
+        %{"to" => client.email},
+        %{
+          button: %{
+            text: "Open invoice",
+            url: BookingProposal.url(proposal.id)
+          }
+        }
+      )
+    else
+      error ->
+        Logger.warn("job: #{inspect(job.id)}")
+        Logger.warn("something went wrong: #{inspect(error)}")
+        error
     end
   end
 
@@ -319,18 +319,22 @@ defmodule Picsello.Notifiers.ClientNotifier do
         do: "<p>#{line}</p>"
       )
 
-  defp deliver_transactional_email(params, to_email, %Job{} = job) do
+  defp deliver_transactional_email(params, recipients, %Job{} = job) do
     client = job |> Repo.preload(:client) |> Map.get(:client)
     reply_to = Messages.email_address(job)
-    deliver_transactional_email(params, to_email, reply_to, client)
+    deliver_transactional_email(params, recipients, reply_to, client)
   end
 
-  defp deliver_transactional_email(params, to_email, %Client{} = client) do
-    reply_to = Messages.email_address(client)
-    deliver_transactional_email(params, to_email, reply_to, client)
+  defp deliver_transactional_email(params, recipients, %ClientMessage{} = message) do
+    if message.job do
+      reply_to = Messages.email_address(message.job)
+      deliver_transactional_email(params, recipients, reply_to, message.job.client)
+    else
+      deliver_transactional_email(params, recipients)
+    end
   end
 
-  defp deliver_transactional_email(params, to_email, reply_to, client) do
+  defp deliver_transactional_email(params, recipients, reply_to, client) do
     client = client |> Repo.preload(organization: [:user])
     %{organization: organization} = client
 
@@ -350,7 +354,18 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> sendgrid_template(params)
     |> put_header("reply-to", "#{from_display} <#{reply_to}>")
     |> from({from_display, "noreply@picsello.com"})
-    |> to(to_email)
+    |> to(get_emails(recipients, "to"))
+    |> cc(get_emails(recipients, "cc"))
+    |> bcc(get_emails(recipients, "bcc"))
+    |> deliver_later()
+  end
+
+  defp deliver_transactional_email(params, recipients) do
+    sendgrid_template(:generic_transactional_template, params)
+    |> to(get_emails(recipients, "to"))
+    |> cc(get_emails(recipients, "cc"))
+    |> bcc(get_emails(recipients, "bcc"))
+    |> from("noreply@picsello.com")
     |> deliver_later()
   end
 

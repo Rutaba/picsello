@@ -83,19 +83,19 @@ defmodule PicselloWeb.Live.Profile do
 
       <div class="flex flex-col justify-center max-w-screen-lg px-6 mx-auto mt-10 md:px-16">
         <.main_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :main_image)} edit={@edit} uploads={@uploads} image={@organization.profile.main_image} />
-        <h1 class="mt-12 text-2xl text-center lg:text-3xl md:text-left">About <%= @organization.name %>.</h1>
+        <h1 class="font-bold mt-12 text-2xl text-center lg:text-3xl md:text-left">About <%= @organization.name %>.</h1>
 
         <%= if Enum.any?(@job_types) do %>
-          <.job_types_details edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
+          <.job_types_details socket={@socket} edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
         <% end %>
 
         <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
         <%= if @website || @edit do %>
           <div class="flex items-center py-6">
-            <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">See our full portfolio</a>
+            <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1 font-bold">See our full portfolio</a>
             <%= if @edit do %>
-              <.icon_button {testid("edit-link-button")} class="ml-5 shadow-lg" title="edit link" phx-click="edit-website" color="blue-planning-300" icon="pencil">
+              <.icon_button {testid("edit-link-button")} class="ml-5 bg-blue-planning-300 hover:bg-blue-planning-300/75" title="edit link" phx-click="edit-website" color="white" icon="pencil">
                 Edit Link
               </.icon_button>
             <% end %>
@@ -170,14 +170,22 @@ defmodule PicselloWeb.Live.Profile do
   def job_types_details(assigns) do
     ~H"""
     <div class="flex items-center mt-8">
-      <h3 class="uppercase font-bold">Specializing In:</h3>
+      <h3 class="uppercase font-black">Specializing In</h3>
     </div>
-
-    <div class="w-auto mt-4">
-      <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
-        <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
-        <span {testid("job-type")} class="text-xl whitespace-nowrap"><%= dyn_gettext job_type %></span>
-      <% end) %>
+    <div class="flex items-center">
+      <span class="w-auto mt-1">
+        <span class="font-semibold mr-5">
+          <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
+            <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
+            <span {testid("job-type")} class="text-xl whitespace-nowrap"><%= dyn_gettext job_type %></span>
+          <% end) %>
+        </span>
+        <span class="inline-block">
+          <.icon_button {testid("edit-link-button")} class="ml-0 bg-blue-planning-300 hover:bg-blue-planning-300/75" title="edit photography types" phx-click="edit-website" color="white" href={Routes.package_templates_path(@socket, :index)} target="_blank" icon="external-link-gear">
+                Edit Photography Types
+          </.icon_button>
+        </span>
+      </span>
     </div>
     """
   end
@@ -460,7 +468,7 @@ defmodule PicselloWeb.Live.Profile do
             <rect y="128" width="445" height="21" fill="#F6F6F6"/>
           </svg>
         <% end %>
-        <.icon_button {testid("edit-#{@field_name}-button")} class="mt-4 shadow-lg" title="edit description" phx-click="edit-text-field-description" phx-value-field-name={@field_name} color="blue-planning-300" icon="pencil">
+        <.icon_button {testid("edit-#{@field_name}-button")} class="mt-4 shadow-lg bg-blue-planning-300 hover:bg-blue-planning-300/75" title="edit description" phx-click="edit-text-field-description" phx-value-field-name={@field_name} color="white" icon="pencil">
           Edit Description
         </.icon_button>
       <% end %>

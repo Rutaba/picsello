@@ -30,4 +30,7 @@ defmodule PicselloWeb.Live.RestartTourComponent do
     socket
     |> noreply()
   end
+
+  @impl true
+  def handle_event("restart_tour", _, socket), do: socket |> noreply()
 end

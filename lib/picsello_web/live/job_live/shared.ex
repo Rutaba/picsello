@@ -170,45 +170,14 @@ defmodule PicselloWeb.JobLive.Shared do
     socket |> open_modal(PicselloWeb.Live.Profile.EditNameSharedComponent, params) |> noreply()
   end
 
-  def handle_event(
-        "search",
-        %{"search_phrase" => search_phrase},
-        %{assigns: %{changeset: changeset}} = socket
-      ) do
-    socket =
+  def handle_event("search", %{"search_phrase" => search_phrase}, socket) do
+    if blank?(search_phrase) do
+      socket
+      |> assign(:search_phrase, nil)
+    else
       socket
       |> assign(search_results: search(search_phrase, socket))
       |> assign(search_phrase: search_phrase)
-
-    if search_phrase == "" || is_nil(search_phrase) do
-      socket
-      |> search_assigns()
-      |> assign(:changeset, Job.new_job_changeset(Map.delete(changeset.changes, :client_id)))
-    else
-      socket
-    end
-    |> noreply()
-  end
-
-  def handle_event(
-        "search",
-        %{"search_phrase" => search_phrase},
-        %{assigns: %{job_changeset: job_changeset}} = socket
-      ) do
-    socket =
-      socket
-      |> assign(search_results: search(search_phrase, socket))
-      |> assign(search_phrase: search_phrase)
-
-    if search_phrase == "" || is_nil(search_phrase) do
-      socket
-      |> search_assigns()
-      |> assign(
-        :job_changeset,
-        Job.new_job_changeset(Map.delete(job_changeset.changes, :client_id))
-      )
-    else
-      socket
     end
     |> noreply()
   end
@@ -571,13 +540,13 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def handle_info(
-        {:message_composed, message_changeset},
-        %{assigns: %{job: job}} = socket
+        {:message_composed, message_changeset, recipients},
+        %{assigns: %{current_user: user, job: job}} = socket
       ) do
-    job = job |> Repo.preload(:client)
-
-    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
+    with {:ok, %{client_message: message, client_message_recipients: _}} <-
+           Messages.add_message_to_job(message_changeset, job, recipients, user)
+           |> Repo.transaction(),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> ConfirmationComponent.open(%{
         title: "Email sent",
@@ -657,23 +626,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign(:inbox_count, count)
     |> noreply()
   end
-
-  def assign_shoots(
-        %{assigns: %{package: %{shoot_count: shoot_count}, job: %{id: job_id}}} = socket
-      ) do
-    shoots = Shoot.for_job(job_id) |> Repo.all()
-
-    socket
-    |> assign(
-      shoots:
-        for(
-          shoot_number <- 1..shoot_count,
-          do: {shoot_number, Enum.at(shoots, shoot_number - 1)}
-        )
-    )
-  end
-
-  def assign_shoots(socket), do: socket |> assign(shoots: [])
 
   def assign_proposal(%{assigns: %{job: %{id: job_id}}} = socket) do
     proposal = BookingProposal.last_for_job(job_id) |> Repo.preload(:answer)
@@ -1262,7 +1214,7 @@ defmodule PicselloWeb.JobLive.Shared do
         <div class="flex flex-col justify-between items-center px-1.5 md:flex-row">
           <div class="relative flex md:w-2/3 w-full">
             <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
-              <%= if Enum.any?(@search_results) || @searched_client do %>
+              <%= if (Enum.any?(@search_results) && @search_phrase) || @searched_client do %>
                 <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
                   <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
                 </span>
@@ -1271,7 +1223,7 @@ defmodule PicselloWeb.JobLive.Shared do
               <% end %>
             </a>
             <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={if !is_nil(@selected_client), do: @selected_client.name, else: "#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients by email or first and last names..." />
-            <%= if Enum.any?(@search_results) do %>
+            <%= if Enum.any?(@search_results) && @search_phrase do %>
               <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
                 <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white w-full overflow-auto max-h-48 h-fit">
                   <%= for {search_result, idx} <- Enum.with_index(@search_results) do %>
@@ -1635,6 +1587,23 @@ defmodule PicselloWeb.JobLive.Shared do
 
   defdelegate path_to_url(path), to: PhotoStorage
 
+  defp assign_shoots(
+         %{assigns: %{package: %{shoot_count: shoot_count}, job: %{id: job_id}}} = socket
+       ) do
+    shoots = Shoot.for_job(job_id) |> Repo.all()
+
+    socket
+    |> assign(
+      shoots:
+        for(
+          shoot_number <- 1..shoot_count,
+          do: {shoot_number, Enum.at(shoots, shoot_number - 1)}
+        )
+    )
+  end
+
+  defp assign_shoots(socket), do: socket |> assign(shoots: [])
+
   defp assign_documents(%{assigns: %{uploads: uploads}} = socket, entries) do
     %{documents: documents} = uploads
 
@@ -1740,13 +1709,13 @@ defmodule PicselloWeb.JobLive.Shared do
     do:
       socket
       |> ClientMessageComponent.open(%{
+        current_user: current_user,
         modal_title: "Send an email",
         show_client_email: true,
         show_subject: true,
         presets: [],
         send_button: "Send",
-        client: Job.client(job),
-        current_user: current_user
+        client: Job.client(job)
       })
       |> noreply()
 

@@ -35,7 +35,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   @impl true
   def handle_event("like", %{"id" => id}, socket) do
     {:ok, _} = Photos.toggle_photographer_liked(id)
-
+    send(self(), :update_photo_gallery_state)
     socket |> noreply()
   end
 

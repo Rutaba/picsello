@@ -171,9 +171,11 @@
                 <%= unless @client_liked_album do %>
                   <%= if @album && @album.is_proofing do %>
                     <.toggle id="toggle_selections" filter={@selection_filter} action="toggle_selections" title="Show client selection only" class={classes(%{"pointer-events-none opacity-50" => Enum.empty?(@orders)})}/>
-                  <% else %>  
-                    <.toggle id="toggle_favorites" filter={@photographer_favorites_filter} action="toggle_favorites" title="Show favorites only" class="flex"/>
-                  <% end %>
+                  <% else %>
+                    <%= if @show_favorite_toggle do %>
+                      <.toggle id="toggle_favorites" filter={@photographer_favorites_filter} action="toggle_favorites" title="Show favorites only" class="flex"/>
+                    <% end %>
+                <% end %>
                 <% end %>
               </div>
             </div>
