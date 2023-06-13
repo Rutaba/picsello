@@ -40,43 +40,6 @@ defmodule PicselloWeb.ShootLive.EditComponent do
     |> ok()
   end
 
-  @impl true
-  def render(assigns) do
-    assigns = assign(assigns, message: get_messgae(assigns))
-
-    ~H"""
-      <div class="flex flex-col modal">
-        <div class="flex items-start justify-between flex-shrink-0">
-          <h1 class="mb-4 text-3xl font-bold">Edit Shoot Details</h1>
-
-          <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
-            <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
-          </button>
-        </div>
-
-        <.error message={@message} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => is_nil(@shoot) || is_nil(@message)})}/>
-
-        <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-
-          <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
-            <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. #{dyn_gettext @job.type} Session, etc.", wrapper_class: "sm:col-span-3" %>
-            <.date_picker_field class="sm:col-span-3" id="shoot-time" placeholder="Select shoot time…" form={f} field={:starts_at} input_placeholder="mm/dd/yyyy" input_label="Shoot Date" data_custom_date_format="Y-m-d\\TH:i" data_time_picker="true" data_time_zone={@current_user.time_zone} />
-            <%= labeled_select f, :duration_minutes, duration_options(),
-                  label: "Shoot Duration",
-                  prompt: "Select below",
-                  wrapper_class: classes(%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
-            %>
-
-            <.location f={f} address_field={@address_field} myself={@myself} />
-
-            <%= labeled_input f, :notes, type: :textarea, label: "Shoot Notes", placeholder: "e.g. Anything you'd like to remember", wrapper_class: "sm:col-span-6" %>
-          </div>
-
-          <PicselloWeb.LiveModal.footer disabled={!@changeset.valid?} />
-        </.form>
-      </div>
-    """
-  end
 
   @impl true
   def handle_event("address", %{"action" => "add-field"}, socket) do
@@ -410,4 +373,43 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       _ -> false
     end
   end
+
+  @impl true
+  def render(assigns) do
+    assigns = assign(assigns, message: get_messgae(assigns))
+
+    ~H"""
+      <div class="flex flex-col modal">
+        <div class="flex items-start justify-between flex-shrink-0">
+          <h1 class="mb-4 text-3xl font-bold">Edit Shoot Details</h1>
+
+          <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
+            <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
+          </button>
+        </div>
+
+        <.error message={@message} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => is_nil(@shoot) || is_nil(@message)})}/>
+
+        <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+
+          <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
+            <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. #{dyn_gettext @job.type} Session, etc.", wrapper_class: "sm:col-span-3" %>
+            <.date_picker_field class="sm:col-span-3" id="shoot-time" placeholder="Select shoot time…" form={f} field={:starts_at} input_placeholder="mm/dd/yyyy" input_label="Shoot Date" data_custom_date_format="Y-m-d\\TH:i" data_time_picker="true" data_time_zone={@current_user.time_zone} />
+            <%= labeled_select f, :duration_minutes, duration_options(),
+                  label: "Shoot Duration",
+                  prompt: "Select below",
+                  wrapper_class: classes(%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
+            %>
+
+            <.location f={f} address_field={@address_field} myself={@myself} />
+
+            <%= labeled_input f, :notes, type: :textarea, label: "Shoot Notes", placeholder: "e.g. Anything you'd like to remember", wrapper_class: "sm:col-span-6" %>
+          </div>
+
+          <PicselloWeb.LiveModal.footer disabled={!@changeset.valid?} />
+        </.form>
+      </div>
+    """
+  end
+
 end

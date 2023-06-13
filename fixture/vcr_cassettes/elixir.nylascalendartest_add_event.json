@@ -9,7 +9,7 @@
       "method": "post",
       "options": [],
       "request_body": "",
-      "url": "https://api.nylas.com//events"
+      "url": "https://api.nylas.com/events"
     },
     "response": {
       "binary": false,

@@ -3,53 +3,46 @@ defmodule PicselloWeb.NylasControllerTest do
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
   import Phoenix.LiveViewTest
   alias Picsello.Accounts
+  alias :meck, as: Meck
   @modal_command "toggle_connect_modal"
+  @token "HfHP3lDgBQIQRWRQLWBZLOiOwOQ5ls"
   setup do
     %{user: insert(:user) |> onboard!, password: valid_user_password()}
   end
 
   describe "Nylas OAuth code" do
+
+
     test "Redirect without a logged in user", %{conn: conn} do
       assert %Plug.Conn{status: 302, resp_headers: headers} =
                conn
                |> get("/nylas/callback", %{
-                 "code" => "HfHP3lDgBQIQRWRQLWBZLOiOwOQ5ls"
+                 "code" => @token
                })
 
       assert Enum.member?(headers, {"location", "/users/log_in"})
     end
 
-    @tag :skip
     test "puts session token and redirects to gallery", %{conn: conn, user: user} do
-      ExVCR.Config.filter_request_headers("Authorization")
+      Meck.new(NylasCalendar)
 
-      use_cassette "#{__MODULE__}_put_session_token" do
-        assert %Plug.Conn{status: 302, resp_headers: headers} =
-                 conn
-                 |> log_in_user(user)
-                 |> get("/nylas/callback", %{
-                   "code" => "HfHP3lDgBQIQRWRQLWBZLOiOwOQ5ls"
-                 })
+      Meck.expect(NylasCalendar, :fetch_token, fn code ->
+        assert code == @token
+        {:ok, @token}
+      end)
 
-        assert Enum.member?(headers, {"location", "/calendar"})
-      end
-    end
+      assert %Plug.Conn{status: 302, resp_headers: headers} =
+               conn
+               |> log_in_user(user)
+               |> get("/nylas/callback", %{
+                 "code" => @token
+               })
 
-    @tag :skip
-    test "Add Nylas code to user object", %{conn: conn, user: user} do
-      assert is_nil(user.nylas_oauth_token)
-      ExVCR.Config.filter_request_headers("Authorization")
-
-      use_cassette "#{__MODULE__}_add_to_user_object" do
-        conn
-        |> log_in_user(user)
-        |> get("/nylas/callback", %{
-          "code" => "HfHP3lDgBQIQRWRQLWBZLOiOwOQ5ls"
-        })
-
-        user = Accounts.get_user_by_email(user.email)
-        assert user.nylas_oauth_token == "HfHP3lDgBQIQRWRQLWBZLOiOwOQ5ls"
-      end
+      assert Enum.member?(headers, {"location", "/calendar"})
+      assert Meck.validate(NylasCalendar)
+      Meck.unload(NylasCalendar)
+      user = Accounts.get_user_by_email(user.email)
+      assert user.nylas_oauth_token == @token
     end
 
     test "Show button when there is no nylas oauth token", %{conn: conn, user: user} do
@@ -83,7 +76,8 @@ defmodule PicselloWeb.NylasControllerTest do
       assert view
              |> render()
              |> Floki.parse_document!()
-             |> Floki.find("#connect_calendar_modal")             
+             #    |> IO.inspect()
+             |> Floki.find("#connect_calendar_modal")
              |> Floki.find("h1")
              |> Floki.text() =~ "Connect your calendar"
 
@@ -130,6 +124,7 @@ defmodule PicselloWeb.NylasControllerTest do
              |> Floki.attribute("href") == [link]
     end
 
+
     def get_state(%Phoenix.LiveViewTest.View{pid: pid}) do
       :sys.get_state(pid)
     end
@@ -145,19 +140,5 @@ defmodule PicselloWeb.NylasControllerTest do
       live(conn)
     end
 
-    @tag :skip
-    test "Sync calendar event from google to picsello via nylas", %{conn: _conn, user: _user} do
-      throw(:not_yet_implemented)
-    end
-
-    @tag :skip
-    test "Sync calendar event from picsello to google via nylas", %{conn: _conn, user: _user} do
-      throw(:not_yet_implemented)
-    end
-
-    @tag :skip
-    test "Show calendar event on picsello", %{conn: _conn, user: _user} do
-      throw(:not_yet_implemented)
-    end
   end
 end

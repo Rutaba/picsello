@@ -1,6 +1,9 @@
 defmodule Picsello.Shoot do
   @moduledoc false
   use Ecto.Schema
+  alias Picsello.Jobs
+  alias Picsello.Repo
+  alias Picsello.Accounts.User
   import Ecto.{Changeset, Query}
 
   @locations ~w[studio on_location home]a
@@ -26,7 +29,31 @@ defmodule Picsello.Shoot do
     720
   ]
 
+  @spec locations :: [:home | :on_location | :studio]
   def locations(), do: @locations
+
+  @spec durations() ::
+          [
+            5
+            | 10
+            | 15
+            | 20
+            | 30
+            | 45
+            | 60
+            | 90
+            | 120
+            | 180
+            | 240
+            | 300
+            | 360
+            | 420
+            | 480
+            | 540
+            | 600
+            | 660
+            | 720
+          ]
   def durations(), do: @durations
 
   schema "shoots" do
@@ -43,6 +70,82 @@ defmodule Picsello.Shoot do
     timestamps()
   end
 
+  # ********************************************************************************
+
+  @spec push_changes_to_nylas(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  def push_changes_to_nylas(%{valid?: false} = changeset) do
+    changeset
+  end
+
+  def push_changes_to_nylas(%{valid?: true, action: action} = changeset) do
+    values = Ecto.Changeset.apply_changes(changeset)
+    values |> get_token_from_shoot() |> push_changes(values, action)
+    changeset
+  end
+
+  @spec push_changes(Picsello.Accounts.User.t(), map(), Ecto.Changeset.action()) ::
+          :ok
+  def push_changes(%User{nylas_oauth_token: nil}, _values, _) do
+    :ok
+  end
+
+  def push_changes(%User{external_calendar_rw_id: nil}, _values, _) do
+    :ok
+  end
+
+  def push_changes(
+        %User{nylas_oauth_token: token, external_calendar_rw_id: calendar_id},
+        values,
+        :insert
+      ) do
+    NylasCalendar.add_event(calendar_id, values, token)
+    :ok
+  end
+
+  def push_changes(
+        %User{nylas_oauth_token: token, external_calendar_rw_id: calendar_id},
+        values,
+        :update
+      ) do
+    NylasCalendar.update_event(values, token)
+    :ok
+  end
+
+  def push_changes(
+        %User{nylas_oauth_token: token, external_calendar_rw_id: calendar_id},
+        values,
+        :replace
+      ) do
+    NylasCalendar.update_event(values, token)
+    :ok
+  end
+
+  def push_changes(
+        %User{nylas_oauth_token: token, external_calendar_rw_id: calendar_id},
+        values,
+        :delete
+      ) do
+    NylasCalendar.delete_event(values, token)
+    :ok
+  end
+
+  def push_changes(%User{}, _values, _action) do
+    :ok
+  end
+
+  @spec get_token_from_shoot(Picsello.Shoot.t()) :: Picsello.Accounts.User.t()
+  def get_token_from_shoot(%__MODULE__{id: shoot_id} = _shoot) do
+    query =
+      from __MODULE__,
+        where: [id: ^shoot_id],
+        preload: [job: [client: [organization: :user]]]
+
+    result = Repo.one(query)
+    result.job.client.organization.user
+  end
+
+  # ********************************************************************************
+
   def changeset_for_create_gallery(%__MODULE__{} = shoot, attrs \\ %{}) do
     shoot
     |> cast(attrs, [:starts_at, :job_id])
@@ -55,6 +158,7 @@ defmodule Picsello.Shoot do
     |> validate_required([:starts_at, :duration_minutes, :name, :location, :job_id])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)
+    |> prepare_changes(&__MODULE__.push_changes_to_nylas/1)
   end
 
   def update_changeset(%__MODULE__{} = shoot, attrs) do
@@ -63,6 +167,7 @@ defmodule Picsello.Shoot do
     |> validate_required([:starts_at, :duration_minutes, :name, :location])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)
+    |> prepare_changes(&__MODULE__.push_changes_to_nylas/1)
   end
 
   def reminded_at_changeset(%__MODULE__{} = shoot) do

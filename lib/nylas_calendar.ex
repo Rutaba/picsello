@@ -2,11 +2,11 @@ defmodule NylasCalendar do
   @moduledoc """
   An Elixir module for interacting with the Nylas Calendar API.
   """
-  require Logger
+
+ require Logger
   @base_color "#585DF6"
-  @base_url "https://api.nylas.com"
   @calendar_endpoint "/calendars"
-  @event_endpoint "/events"
+  @event_endpoint "events"
   @base_url "https://api.nylas.com"
   @auth_endpoint "/oauth/authorize"
   @type token() :: String.t()
@@ -72,6 +72,21 @@ defmodule NylasCalendar do
     end
   end
 
+  def get_event_details(job_id, token) do
+    Logger.info("TOKEN #{token} *******")
+    headers = build_headers(token)
+    url = "#{@base_url}/events/#{job_id}"
+
+    case HTTPoison.get!(url, headers) do
+      %{status_code: 200, body: body} ->
+        
+        body|>Jason.decode!() |> convert_remote_to_calendar()
+
+
+      %{status_code: code} ->
+        {:error, "Failed to retrieve events. Status code: #{code}"}
+    end
+  end
   @spec add_event(any, any, token()) :: result(any)
   @doc """
   Adds an event to the specified calendar.
@@ -79,7 +94,7 @@ defmodule NylasCalendar do
   def add_event(calendar_id, params, token) do
     headers = build_headers(token)
     url = "#{@base_url}/#{@event_endpoint}"
-
+    IO.puts("URL " <> url)
     params = Map.put(params, "calendar_id", calendar_id)
     response = HTTPoison.post!(url, Jason.encode!(params), headers)
 
@@ -92,6 +107,35 @@ defmodule NylasCalendar do
     end
   end
 
+  def update_event( %{"id" => id} = params, token) do
+#    headers = build_headers(token)
+    url = "#{@base_url}/#{@event_endpoint}"
+    
+    "https://#{token}:@api.nylas.com/events/#{id}?notify_participants=true"
+    response = HTTPoison.put!(url, Jason.encode(params))
+
+    case response.status_code do
+      200 ->
+        {:ok, Jason.decode!(response.body)}
+
+      code ->
+        {:error, "Failed to add event. Status code: #{code}"}
+    end
+  end
+  
+  def delete_event(%{"id" => id}, token) do
+    url =  "https://#{token}:@api.nylas.com/events/#{id}?notify_participants=true  "
+    response = HTTPoison.delete!(url)
+
+    case response.status_code do
+      200 ->
+        {:ok, Jason.decode!(response.body)}
+
+      code ->
+        {:error, "Failed to delete event. Status code: #{code}"}
+    end
+  end
+  
   @type calendar_event() :: %{
           color: String.t(),
           end: String.t(),
@@ -107,8 +151,6 @@ defmodule NylasCalendar do
   def get_events!(_, nil, _), do: []
 
   def get_events!(calendars, token, timezone) when is_list(calendars) do
-    Logger.info("timezone #{timezone} +++++++")
-
     calendars
     |> Enum.flat_map(fn calendar_id ->
       Logger.info("Get events for #{calendar_id} #{token}")
@@ -122,7 +164,8 @@ defmodule NylasCalendar do
   def to_shoot(
         %{
           "description" => _notes,
-          "id" => _id,
+          "id" => id,
+          "calendar_id" => calendar_id,
           "location" => _location,
           "title" => name,
           "when" => %{"date" => date, "object" => "date"}
@@ -131,7 +174,17 @@ defmodule NylasCalendar do
       ) do
     {:ok, start_time} = Date.from_iso8601(date)
     end_time = start_time |> Date.add(1) |> Date.to_iso8601()
-    %{title: "#{name}", color: @base_color, start: date, end: end_time, url: ""}
+
+    %{
+      title: "#{name}",
+      color: @base_color,
+      start: date,
+      end: end_time,
+      url:
+        PicselloWeb.Router.Helpers.remote_path(PicselloWeb.Endpoint, :remote, calendar_id, id, %{
+          "request_from" => "calendar"
+        })
+    }
   end
 
   def to_shoot(
@@ -145,7 +198,7 @@ defmodule NylasCalendar do
         } = _c,
         timezone
       ) do
-    start = start_time|>DateTime.from_unix!() |> DateTime.shift_zone!(timezone)
+    start = start_time |> DateTime.from_unix!() |> DateTime.shift_zone!(timezone)
     finish = end_time |> DateTime.from_unix!() |> DateTime.shift_zone!(timezone)
 
     %{
@@ -167,7 +220,7 @@ defmodule NylasCalendar do
   def get_events(calendar_id, token) do
     headers = build_headers(token)
 
-    url = "#{@base_url}#{@event_endpoint}?calendar_id=#{calendar_id}"
+    url = "#{@base_url}/#{@event_endpoint}?calendar_id=#{calendar_id}"
 
     response = HTTPoison.get!(url, headers)
 
@@ -180,14 +233,9 @@ defmodule NylasCalendar do
     end
   end
 
-  def get_event_details(job_id, token) do
-    Logger.info("TOKEN #{token} *******")
-    headers = build_headers(token)
-    url = "#{@base_url}/events/#{job_id}"
 
-    case HTTPoison.get!(url, headers) do
-      %{status_code: 200, body: body} ->
-        %{
+
+  def convert_remote_to_calendar(%{
           "busy" => busy,
           "description" => description,
           "object" => object_type,
@@ -199,9 +247,7 @@ defmodule NylasCalendar do
           "when" => %{
             "end_time" => end_time,
             "start_time" => start_time
-          }
-        } = Jason.decode!(body)
-
+          }}) do
         {:ok,
          %{
            busy: busy,
@@ -211,14 +257,64 @@ defmodule NylasCalendar do
            participants: participants,
            status: status,
            title: title,
-           updated_at: updated_at,
-           start_time: start_time,
-           end_time: end_time
+           updated_at: DateTime.from_unix!(updated_at),
+           start_time: DateTime.from_unix!(start_time),
+           end_time: DateTime.from_unix!(end_time),
+           type: :time
          }}
 
-      %{status_code: code} ->
-        {:error, "Failed to retrieve events. Status code: #{code}"}
-    end
+  end
+      # %{
+  #   "account_id" => "92kk7fha5ii4aiy4swl74kdeb",
+  #   "busy" => false,
+  #   "calendar_id" => "62zs9nfax6wvkhzo7wj8vfzw7",
+  #   "customer_event_id" => nil,
+  #   "description" => nil,
+  #   "hide_participants" => false,
+  #   "ical_uid" => "4mnj7dom4v6nohlhuftivkqaq4@google.com",
+  #   "id" => "ehrdw9c0kbgr9z1avxzdsp1da",
+  #   "location" => nil,
+  #   "message_id" => nil,
+  #   "object" => "event",
+  #   "organizer_email" => "zkessin@gmail.com",
+  #   "organizer_name" => "Zachary Kessin",
+  #   "owner" => "Zachary Kessin <zkessin@gmail.com>",
+  #   "participants" => [],
+  #   "read_only" => false,
+  #   "reminders" => nil,
+  #   "status" => "confirmed",
+  #   "title" => "Renew Israeli passport",
+  #   "updated_at" => 1_684_505_898,
+  #   "visibility" => nil,
+  #   "when" => %{"date" => "2024-01-01", "object" => "date"}
+  # }
+    def convert_remote_to_calendar(%{
+          "busy" => busy,
+          "description" => description,
+          "object" => object_type,
+          "organizer_email" => owner_email,
+          "participants" => participants,
+          "status" => status,
+          "title" => title,
+          "updated_at" => updated_at,
+          "when" => %{
+            "date" => date,
+            "object" => "date"
+          }}) do
+        {:ok,
+         %{
+           busy: busy,
+           description: description,
+           object: object_type,
+           owner_email: owner_email,
+           participants: participants,
+           status: status,
+           title: title,
+           updated_at: DateTime.from_unix!(updated_at),
+           date: date,
+           type: :date
+         }}
+
   end
 
   @spec fetch_token(token()) :: result(token())

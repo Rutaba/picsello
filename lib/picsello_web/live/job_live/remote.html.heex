@@ -1,15 +1,39 @@
-<header>
-  <div class="center-container p-6 pt-10">
-    <div id="busy"><%= @busy%></div>
-    <div id="description"><%= @description%></div>
-    <div id="object"><%= @object%></div>
-    <div id="owner_email"><%= @owner_email%></div>
-    <div id="participants"><%= @participants%></div>
-    <div id="status"><%= @status%></div>
-    <div id="title"><%= @title%></div>
-    <div id="updated_at"><%= convert_time(@updated_at, @time_zone) %></div>
-    <div id="start_time"><%= convert_time(@start_time, @time_zone) %></div>
-    <div id="end_time"><%= convert_time(@end_time, @time_zone)     %></div>
+<section>
+  <div class="center-container p-6 pt-10" style="background-color: #1df098">
+    <div> Title: 
+      <span id="title"><%= @title%></span>
+    </div>
+    <div> Description
+      <span id="description"><%= @description%></span>
+    </div>
+    <div> Owner: 
+      <span id="owner_email"><%= @owner_email%></span>
+    </div>
+    <div> Type
+      <span id="object"><%= @object%></span>
+    </div>
+    <div>Participants
+      <span id="participants"><%= @participants%></span>
+    </div>
+    <div>Status
+      <span id="status"><%= @status%></span>
+    </div>
+    <div> Busy: 
+      <span id="busy"><%= @busy%></span>
+    </div>
+    <%= if @type == :time do %>
+    <div>Time 
+      <span id="start_time"><%= convert_time(@start_time, @time_zone) %></span> -
+      <span id="end_time"><%= convert_time(@end_time, @time_zone) %></span>
+      </div>
+    <% else %>
+    <div> Date
+      <span id="date"><%= @date %></span>
+    </div>
+    <% end %>
+    <div>Updated At
+      <span id="updated_at"><%= convert_time(@updated_at, @time_zone) %></span>
+    </div>
   </div>
-</header>
-   
+</section>
+

@@ -14,9 +14,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
         ) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     url = Routes.i_calendar_url(socket, :index, Phoenix.Token.sign(Endpoint, "USER_ID", user.id))
-    Logger.info("User ID #{user.id}")
     {:ok, nylas_url} = NylasCalendar.generate_login_link()
-    IO.puts("URL "<> nylas_url)
     socket
     |> assign(%{
       url: url,
@@ -63,7 +61,6 @@ defmodule PicselloWeb.Live.Calendar.Settings do
         %Socket{assigns: %{read_calendars: read_calendars}} = socket
       ) do
     newset = toggle(read_calendars, cal_id)
-    Logger.info("**** Calendar id \e[0;35m#{cal_id} \e[0;31m# --> #{inspect(newset)} \e[0;30m")
     {:noreply, assign(socket, :read_calendars, newset)}
   end
 

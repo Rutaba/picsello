@@ -30,6 +30,15 @@ defmodule Picsello.Accounts.User do
     timestamps()
   end
 
+  @spec registration_changeset(
+          {map, map}
+          | %{
+              :__struct__ => atom | %{:__changeset__ => map, optional(any) => any},
+              optional(atom) => any
+            },
+          map,
+          keyword
+        ) :: map
   @doc """
   A user changeset for registration.
 

@@ -2,7 +2,7 @@ defmodule NylasCalendarTest do
   use Picsello.DataCase
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
-  @token "A77LHd1ubDFRdxU64AwZKIyvN7sDfB"
+  @token "RoJK07y0nExk1c7i57iXQbgzsZ6mGq"
   setup_all do
     ExVCR.Config.filter_request_headers("Authorization")
     ExVCR.Config.filter_request_options("basic_auth")
@@ -11,6 +11,10 @@ defmodule NylasCalendarTest do
 
   @calendar_id "qulli2ad0f0ikawkdnl534oz"
   describe "Basic Calendar tests" do
+    test "Three day Calendar Event" do
+      throw(:not_yet_implemented)
+    end
+
     test "Login Link/2" do
       %{client_id: client_id, redirect_uri: redirect} = Application.get_env(:picsello, :nylas)
 
@@ -55,7 +59,8 @@ defmodule NylasCalendarTest do
                  end: "2023-05-15",
                  start: "2023-05-14",
                  title: "Mother's Day",
-                 url: ""
+                 url:
+                   "/remote/79stlqym1yrt4tag6ibh0j7ds/bs3bz4j7sa1gt8l8fk7aebqrn?request_from=calendar"
                } = calendars |> NylasCalendar.get_events!(@token) |> hd()
       end
     end
@@ -91,7 +96,6 @@ defmodule NylasCalendarTest do
       end
     end
 
-    
     test "Get Calendars" do
       ExVCR.Config.filter_request_headers("Authorization")
 
@@ -174,6 +178,43 @@ defmodule NylasCalendarTest do
                    @token
                  )
       end
+    end
+
+    test "Event CRUD" do
+      assert {:ok, %{"id" => id}} =
+               NylasCalendar.add_event(
+                 "qulli2ad0f0ikawkdnl534oz",
+                 %{
+                   "title" => "Meeting",
+                   "description" => "Discuss project status",
+                   "when" => %{
+                     "start_time" => "2023-05-18T14:00:00Z",
+                     "end_time" => "2023-05-18T15:00:00Z"
+                   }
+                 },
+                 @token
+               )
+
+      event = NylasCalendar.get_event_details(id, @token)
+      IO.inspect(event)
+
+      assert {:ok, _} =
+               NylasCalendar.update_event(
+                 %{
+                   "id" => id,
+                   "title" => "Meeting version 2",
+                   "description" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+                 },
+                 @token
+               )
+
+      assert {:ok, %{"description" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit"}} =
+               NylasCalendar.get_event_details(id, @token)
+
+      assert {:ok, _} = NylasCalendar.delete_event(%{"id" => id}, @token)
+    end
+
+    test "Delete Event" do
     end
 
     test "Get Events" do
