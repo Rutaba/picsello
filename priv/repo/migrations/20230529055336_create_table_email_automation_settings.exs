@@ -23,5 +23,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationSettings do
 
   def down do
     drop(table(@table))
+    execute("DROP TYPE email_automation_setting_status")
   end
 end

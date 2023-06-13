@@ -3,9 +3,11 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Picsello.EmailAutomation.{EmailAutomationCategory, EmailAutomationSubCategory, EmailAutomationSetting}
-
-  @status ~w(active disabled archived)a
+  alias Picsello.EmailAutomation.{
+    EmailAutomationCategory,
+    EmailAutomationSubCategory,
+    EmailAutomationSetting
+  }
 
   @states_by_type %{
     lead: ~w(client_contact booking_proposal_sent lead)a,
@@ -19,7 +21,6 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
   schema "email_automation_pipelines" do
     field :name, :string
     field :description, :string
-    field :status, Ecto.Enum, values: @status, default: :active
     # please emails presets
     field :state, Ecto.Enum, values: @states
     belongs_to(:email_automation_category, EmailAutomationCategory)

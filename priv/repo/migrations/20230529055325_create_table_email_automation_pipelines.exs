@@ -9,13 +9,8 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
 
   @table "email_automation_pipelines"
   def up do
-    execute(
-      "CREATE TYPE email_automation_pipeline_status AS ENUM ('active','disabled','archived')"
-    )
-
     create table(@table) do
       add(:name, :string, null: false)
-      add(:status, :email_automation_pipeline_status, null: false)
       add(:state, :string, null: false)
       add(:description, :text, null: false)
 
@@ -28,8 +23,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
         :email_automation_category_id,
         references(:email_automation_categories, on_delete: :nothing)
       )
-
-      add(:organization_id, references(:organizations, on_delete: :nothing))
 
       timestamps()
     end
@@ -78,7 +71,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       # leads
       %{
         name: "Client contacts you",
-        status: "active",
         state: "client_contact",
         description: "Runs after a contact/lead form submission",
         email_automation_sub_category_id: automation_inquiry.id,
@@ -86,7 +78,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Proposal Sent/Initiated",
-        status: "active",
         state: "booking_proposal_sent",
         description: "Runs after finishing and sending the proposal",
         email_automation_sub_category_id: automation_proposal.id,
@@ -95,7 +86,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       # jobs
       %{
         name: "Client Pays Retainer",
-        status: "active",
         state: "pays_retainer",
         description: "Runs after a contact/lead form submission",
         email_automation_sub_category_id: automation_response.id,
@@ -103,7 +93,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Proposal Sent/Initiated",
-        status: "active",
         state: "booking_event",
         description: "Runs after finishing and sending the proposal",
         email_automation_sub_category_id: automation_response.id,
@@ -111,7 +100,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Day Before Shoot",
-        status: "active",
         state: "before_shoot",
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_prep.id,
@@ -119,7 +107,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Balance Due",
-        status: "active",
         state: "balance_due",
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_reminder.id,
@@ -127,7 +114,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Paid in Full",
-        status: "active",
         state: "paid_full",
         description: "Starts when client completes a booking event",
         email_automation_sub_category_id: automation_reminder.id,
@@ -135,7 +121,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Offline Payment Selected",
-        status: "active",
         state: "offline_payment",
         description: "Starts when client completes a booking event",
         email_automation_sub_category_id: automation_reminder.id,
@@ -143,7 +128,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Thank You",
-        status: "active",
         state: "shoot_thanks",
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_post.id,
@@ -151,7 +135,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Post Shoot Follow Up",
-        status: "active",
         state: "post_shoot",
         description: "Starts when client completes a booking event",
         email_automation_sub_category_id: automation_post.id,
@@ -160,7 +143,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       # gallery
       %{
         name: "Send Gallery Link",
-        status: "active",
         state: "gallery_send_link",
         description: "Runs after a contact/lead form submission",
         email_automation_sub_category_id: automation_notification.id,
@@ -168,7 +150,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Cart Abandoned",
-        status: "active",
         state: "cart_abandoned",
         description: "Runs after a contact/lead form submission",
         email_automation_sub_category_id: automation_notification.id,
@@ -176,7 +157,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Gallery Expiring Soon",
-        status: "active",
         state: "gallery_expiration_soon",
         description: "Runs after a contact/lead form submission",
         email_automation_sub_category_id: automation_notification.id,
@@ -184,7 +164,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Gallery Password Changed",
-        status: "active",
         state: "gallery_password_changed",
         description: "Runs after a contact/lead form submission",
         email_automation_sub_category_id: automation_notification.id,
@@ -192,7 +171,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Order Confirmation (Physical Products Only)",
-        status: "active",
         state: "order_confirmation_physical",
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_confirmation.id,
@@ -200,7 +178,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Order Confirmation (Digital Products Only)",
-        status: "active",
         state: "order_confirmation_digital",
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_confirmation.id,
@@ -208,7 +185,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Order Confirmation (Physical/Digital Products)",
-        status: "active",
         state: "order_confirmation_digital_physical",
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_confirmation.id,
@@ -216,7 +192,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Digitals Ready For Download",
-        status: "active",
         state: "digitals_ready_download",
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_confirmation.id,
@@ -224,7 +199,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Order Has Shipped",
-        status: "active",
         state: "order_shipped",
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_status.id,
@@ -232,7 +206,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Order Is Delayed",
-        status: "active",
         state: "order_delayed",
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_status.id,
@@ -240,7 +213,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       },
       %{
         name: "Order Has Arrived",
-        status: "active",
         state: "order_arrived",
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_status.id,

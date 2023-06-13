@@ -17,5 +17,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationsCategory do
 
   def down do
     drop(table(@table))
+    execute("DROP TYPE email_automation_type")
   end
 end

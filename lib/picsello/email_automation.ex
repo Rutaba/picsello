@@ -26,10 +26,9 @@ defmodule Picsello.EmailAutomation do
         subcategory_id: s.id,
         pipelines:
           fragment(
-            "array_agg(to_jsonb(json_build_object('id', ?, 'name', ?, 'status', ?, 'state', ?, 'description', ?)))",
+            "array_agg(to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?)))",
             p.id,
             p.name,
-            p.status,
             p.state,
             p.description
           )
@@ -71,10 +70,6 @@ defmodule Picsello.EmailAutomation do
       pipeline.email_automation_settings
       |> Enum.map(
         &[
-          state: pipeline.state,
-          type: pipeline.email_automation_category.type,
-          email_automation_category_id: pipeline.email_automation_category_id,
-          email_automation_sub_category_id: pipeline.email_automation_sub_category_id,
           email_automation_pipeline_id: pipeline.id,
           organization_id: &1.organization_id,
           total_hours: &1.total_hours,
