@@ -163,14 +163,12 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
             <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
               <%= for jt <- inputs_for(o, :organization_job_types) |> Enum.sort_by(&(&1.data.job_type)) do %>
+                <% input_name = input_name(jt, :job_type) %>
+                <%= hidden_inputs_for(jt) %>
                 <%= if jt.data.job_type != "other" do %>
-                  <% input_name = input_name(jt, :job_type) %>
-                  <%= hidden_inputs_for(jt) %>
                   <% checked = jt |> current() |> Map.get(:show_on_business?) %>
                   <.job_type_option type="checkbox" name={input_name} form={jt} job_type={jt |> current() |> Map.get(:job_type)} checked={checked} />
                 <% else %>
-                  <%= hidden_inputs_for(jt) %>
-                  <% input_name = input_name(jt, :job_type) %>
                   <input class="hidden" type="checkbox" name={input_name} value={jt |> current() |> Map.get(:job_type)} checked={true} />
                 <% end %>
               <% end %>
