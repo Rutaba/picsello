@@ -12,9 +12,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   }
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket
     |> assign(:page_title, "Automations")
+    |> is_mobile(params)
     |> assign(:collapsed_sections, [])
     |> default_assigns()
     |> ok()
