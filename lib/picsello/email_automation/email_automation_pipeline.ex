@@ -38,4 +38,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
       ~w[status state name description email_automation_category_id email_automation_sub_category_id]a
     )
   end
+
+  def states(), do: @states
+  def states_by_type(), do: @states_by_type
 end

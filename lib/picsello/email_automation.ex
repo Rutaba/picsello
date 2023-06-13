@@ -65,6 +65,28 @@ defmodule Picsello.EmailAutomation do
     )
   end
 
+  def get_emails_for_schedule(organization_id, job_type_id) do
+    get_pipelines(organization_id, job_type_id)
+    |> Enum.flat_map(fn pipeline ->
+      pipeline.email_automation_settings
+      |> Enum.map(
+        &[
+          state: pipeline.state,
+          type: pipeline.email_automation_category.type,
+          email_automation_category_id: pipeline.email_automation_category_id,
+          email_automation_sub_category_id: pipeline.email_automation_sub_category_id,
+          email_automation_pipeline_id: pipeline.id,
+          organization_id: &1.organization_id,
+          total_hours: &1.total_hours,
+          condition: &1.condition,
+          body_template: &1.email_preset.body_template,
+          subject_template: &1.email_preset.subject_template,
+          name: &1.email_preset.name
+        ]
+      )
+    end)
+  end
+
   def get_pipeline_by_id(id) do
     from(eap in EmailAutomationPipeline, where: eap.id == ^id)
     |> Repo.one()
@@ -79,9 +101,9 @@ defmodule Picsello.EmailAutomation do
     status = toggle_status(active)
 
     Repo.transaction(fn ->
-      get_pipeline_by_id(pipeline_id)
-      |> EmailAutomationPipeline.changeset(%{status: status})
-      |> Repo.update()
+      # get_pipeline_by_id(pipeline_id)
+      # |> EmailAutomationPipeline.changeset(%{status: status})
+      # |> Repo.update()
 
       from(es in EmailAutomationSetting,
         where: es.email_automation_pipeline_id == ^pipeline_id,
@@ -91,27 +113,34 @@ defmodule Picsello.EmailAutomation do
     end)
   end
 
-  def delete_email(email_setting_id) do
+  def delete_email(email_setting_id, job_id) do
     Repo.transaction(fn ->
       # Delete email_automation_types
       from(t in EmailAutomationType,
-        where: t.email_automation_setting_id == ^email_setting_id
+        where:
+          t.email_automation_setting_id == ^email_setting_id and t.organization_job_id == ^job_id
       )
       |> Repo.delete_all()
 
-      # Delete email_presets
-      from(p in EmailPreset,
-        where: p.email_automation_setting_id == ^email_setting_id
-      )
-      |> Repo.one()
-      |> Repo.delete()
+      email_types =
+        from(t in EmailAutomationType, where: t.email_automation_setting_id == ^email_setting_id)
+        |> Repo.all()
 
-      # Delete email_automation_settings
-      from(s in EmailAutomationSetting,
-        where: s.id == ^email_setting_id
-      )
-      |> Repo.one()
-      |> Repo.delete()
+      if Enum.count(email_types) == 0 do
+        # Delete email_presets
+        from(p in EmailPreset,
+          where: p.email_automation_setting_id == ^email_setting_id
+        )
+        |> Repo.one()
+        |> Repo.delete()
+
+        # Delete email_automation_settings
+        from(s in EmailAutomationSetting,
+          where: s.id == ^email_setting_id
+        )
+        |> Repo.one()
+        |> Repo.delete()
+      end
     end)
   end
 
@@ -192,5 +221,3 @@ defmodule Picsello.EmailAutomation do
   defp toggle_status("true"), do: "disabled"
   defp toggle_status("false"), do: "active"
 end
-
-# Picsello.EmailAutomation.get_all_pipelines_emails(1,1)

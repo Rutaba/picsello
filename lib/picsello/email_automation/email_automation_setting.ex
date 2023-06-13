@@ -48,7 +48,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
     end)
   end
 
-  defp calculate_hours(changeset) do
+  def calculate_hours(changeset) do
     data = changeset |> current()
     count = Map.get(data, :count)
 
@@ -58,7 +58,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
       0
     end
   end
-  
+
   defp calculate_total_hours(count, data) do
     hours = case Map.get(data, :calendar) do
       "Hour" -> count
@@ -73,3 +73,5 @@ defmodule Picsello.EmailAutomation.EmailAutomationSetting do
     end
   end
 end
+# 12 date 13
+# booking event setting

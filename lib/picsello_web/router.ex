@@ -202,6 +202,7 @@ defmodule PicselloWeb.Router do
 
       live "/contracts", Live.Contracts.Index, :index
       live "/email-automations", Live.EmailAutomations.Index, :index
+      live "/email-automations/:type", Live.EmailAutomations.Show, :show
 
       live "/onboarding", OnboardingLive.Index, :index, as: :onboarding
     end

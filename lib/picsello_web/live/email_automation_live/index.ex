@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.EmailAutomationLive.Shared, only: [assign_automation_pipelines: 1]
 
   alias Picsello.{
     EmailAutomation,
@@ -41,34 +42,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     |> assign(:current_user, current_user)
     |> assign(:job_types, job_types)
     |> assign(:selected_job_type, selected_job_type)
-  end
-
-  def assign_automation_pipelines(
-        %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
-      ) do
-    automation_pipelines =
-      EmailAutomation.get_all_pipelines_emails(current_user.organization_id, selected_job_type.id)
-      |> assign_category_pipeline_count()
-
-    socket |> assign(:automation_pipelines, automation_pipelines)
-  end
-
-  defp assign_category_pipeline_count(automation_pipelines) do
-    automation_pipelines
-    |> Enum.map(fn %{subcategories: subcategories} = category ->
-      total_emails_count =
-        subcategories
-        |> Enum.reduce(0, fn subcategory, acc ->
-            email_count =
-              Enum.reduce(subcategory.pipelines, 0, fn pipeline, acc   ->
-                acc + Enum.count(pipeline.emails)
-              end)
-
-            email_count + acc
-        end)
-
-      Map.put(category, :total_emails_count, total_emails_count)
-    end)
   end
 
   # category
@@ -130,11 +103,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   def handle_event(
         "delete-email",
         %{"email-automation-setting-id" => setting_id},
-        socket
+        %{assigns: %{selected_job_type: selected_job_type}} = socket
       ) do
     email_delete =
       to_integer(setting_id)
-      |> EmailAutomation.delete_email()
+      |> EmailAutomation.delete_email(selected_job_type.id)
 
     case email_delete do
       {:ok, _} ->
@@ -171,7 +144,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   def handle_event(
         "toggle",
         %{"pipeline-id" => id, "active" => active},
-        socket
+        %{assigns: %{selected_job_type: _selected_job_type}} = socket
       ) do
     message = if active == "true", do: "disabled", else: "enabled"
 
@@ -235,7 +208,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       job_type: selected_job_type,
       pipeline: get_pipline(pipeline_id),
       email_automation_setting_id: to_integer(email_automation_setting_id),
-      email: EmailAutomation.get_email_by_id(to_integer(email_id)) |> Repo.preload(:email_automation_types)
+      email:
+        EmailAutomation.get_email_by_id(to_integer(email_id))
+        |> Repo.preload(:email_automation_types)
     })
   end
 
