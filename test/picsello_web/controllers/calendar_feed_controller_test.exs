@@ -1,9 +1,7 @@
 defmodule PicselloWeb.CalendarFeedControllerTest do
   use PicselloWeb.ConnCase, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
-  #  alias Picsello.Accounts
   alias PicselloWeb.UserAuth
-  #  @token "A77LHd1ubDFRdxU64AwZKIyvN7sDfB"
 
   setup do
     ExVCR.Config.filter_request_headers("Authorization")

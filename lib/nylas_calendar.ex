@@ -92,7 +92,7 @@ defmodule NylasCalendar do
     end
   end
 
-  @type calendar_event():: %{
+  @type calendar_event() :: %{
           color: String.t(),
           end: String.t(),
           start: String.t(),
@@ -101,19 +101,20 @@ defmodule NylasCalendar do
         }
   # def get_events!([],_), do: []
   def get_events!(calendars, token), do: get_events!(calendars, token, "America/New_York")
-  
+
   @spec get_events!([String.t()], String.t()) :: list(calendar_event())
-  def get_events!(nil, _,_), do: []
-  def get_events!(_, nil,_), do: []
+  def get_events!(nil, _, _), do: []
+  def get_events!(_, nil, _), do: []
 
   def get_events!(calendars, token, timezone) when is_list(calendars) do
     Logger.info("timezone #{timezone} +++++++")
+
     calendars
     |> Enum.flat_map(fn calendar_id ->
       Logger.info("Get events for #{calendar_id} #{token}")
       {:ok, events} = get_events(calendar_id, token)
       events
-    end)    
+    end)
     |> Enum.map(&to_shoot(&1, timezone))
   end
 
@@ -124,31 +125,38 @@ defmodule NylasCalendar do
           "id" => _id,
           "location" => _location,
           "title" => name,
-          
           "when" => %{"date" => date, "object" => "date"}
-        } , _timezone
+        },
+        _timezone
       ) do
-    {:ok, start_time} = Date.from_iso8601(date) 
-    end_time = start_time |> Date.add(1) |> Date.to_iso8601() 
+    {:ok, start_time} = Date.from_iso8601(date)
+    end_time = start_time |> Date.add(1) |> Date.to_iso8601()
     %{title: "#{name}", color: @base_color, start: date, end: end_time, url: ""}
   end
 
-  def to_shoot(%{
-        "description" => _notes,
-        "id" => _id,
-        "location" => _location,
-        "title" => name,
-        "when" => %{"start_time" => start_time, "end_time" => end_time, "object" => "timespan"}
-      }, timezone) do
-    start = DateTime.from_unix!(start_time) |> DateTime.shift_zone!(timezone)
-    finish = DateTime.from_unix!(end_time) |> DateTime.shift_zone!(timezone)
+  def to_shoot(
+        %{
+          "description" => _notes,
+          "id" => id,
+          "calendar_id" => calendar_id,
+          "location" => _location,
+          "title" => name,
+          "when" => %{"start_time" => start_time, "end_time" => end_time, "object" => "timespan"}
+        } = _c,
+        timezone
+      ) do
+    start = start_time|>DateTime.from_unix!() |> DateTime.shift_zone!(timezone)
+    finish = end_time |> DateTime.from_unix!() |> DateTime.shift_zone!(timezone)
 
     %{
       title: "#{name}",
       color: @base_color,
       start: DateTime.to_iso8601(start),
       end: DateTime.to_iso8601(finish),
-      url: ""
+      url:
+        PicselloWeb.Router.Helpers.remote_path(PicselloWeb.Endpoint, :remote, calendar_id, id, %{
+          "request_from" => "calendar"
+        })
     }
   end
 
@@ -168,6 +176,47 @@ defmodule NylasCalendar do
         {:ok, Jason.decode!(response.body)}
 
       code ->
+        {:error, "Failed to retrieve events. Status code: #{code}"}
+    end
+  end
+
+  def get_event_details(job_id, token) do
+    Logger.info("TOKEN #{token} *******")
+    headers = build_headers(token)
+    url = "#{@base_url}/events/#{job_id}"
+
+    case HTTPoison.get!(url, headers) do
+      %{status_code: 200, body: body} ->
+        %{
+          "busy" => busy,
+          "description" => description,
+          "object" => object_type,
+          "organizer_email" => owner_email,
+          "participants" => participants,
+          "status" => status,
+          "title" => title,
+          "updated_at" => updated_at,
+          "when" => %{
+            "end_time" => end_time,
+            "start_time" => start_time
+          }
+        } = Jason.decode!(body)
+
+        {:ok,
+         %{
+           busy: busy,
+           description: description,
+           object: object_type,
+           owner_email: owner_email,
+           participants: participants,
+           status: status,
+           title: title,
+           updated_at: updated_at,
+           start_time: start_time,
+           end_time: end_time
+         }}
+
+      %{status_code: code} ->
         {:error, "Failed to retrieve events. Status code: #{code}"}
     end
   end
@@ -206,33 +255,5 @@ defmodule NylasCalendar do
       {"Authorization", "Bearer #{token}"},
       {"Content-Type", "application/json"}
     ]
-  end
-
-  # %{
-  #   "account_id" => "92kk7fha5ii4aiy4swl74kdeb",
-  #   "busy" => false,
-  #   "calendar_id" => "o6wzom3li5lk2i72kaia5pmj",
-  #   "customer_event_id" => nil,
-  #   "description" => nil,
-  #   "hide_participants" => false,
-  #   "ical_uid" => "20230519_hju6bvukllsfb6gl70sfih689c@google.com",
-  #   "id" => "7u5oh1xxj62s0hghf8j2i5f7s",
-  #   "location" => nil,
-  #   "message_id" => nil,
-  #   "object" => "event",
-  #   "organizer_email" => "en.judaism#holiday@group.v.calendar.google.com",
-  #   "organizer_name" => "Jewish Holidays",
-  #   "owner" => "Jewish Holidays <en.judaism#holiday@group.v.calendar.google.com>",
-  #   "participants" => [],
-  #   "read_only" => true,
-  #   "reminders" => nil,
-  #   "status" => "confirmed",
-  #   "title" => "Jerusalem Day",
-  #   "updated_at" => 1684505908,
-  #   "visibility" => "public",
-  #   "when" => %{"date" => "2023-05-19", "object" => "date"}
-  # }
-
-  def map_data_to_internal_format(_) do
   end
 end

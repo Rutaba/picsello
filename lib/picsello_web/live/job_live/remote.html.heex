@@ -1,0 +1,15 @@
+<header>
+  <div class="center-container p-6 pt-10">
+    <div id="busy"><%= @busy%></div>
+    <div id="description"><%= @description%></div>
+    <div id="object"><%= @object%></div>
+    <div id="owner_email"><%= @owner_email%></div>
+    <div id="participants"><%= @participants%></div>
+    <div id="status"><%= @status%></div>
+    <div id="title"><%= @title%></div>
+    <div id="updated_at"><%= convert_time(@updated_at, @time_zone) %></div>
+    <div id="start_time"><%= convert_time(@start_time, @time_zone) %></div>
+    <div id="end_time"><%= convert_time(@end_time, @time_zone)     %></div>
+  </div>
+</header>
+   

@@ -189,7 +189,7 @@ defmodule PicselloWeb.Router do
       live "/leads/:id", LeadLive.Show, :leads, as: :job
       live "/leads", JobLive.Index, :leads, as: :job
       live "/jobs/:id", JobLive.Show, :jobs, as: :job
-
+      live "/remote/:calendar_id/:id", JobLive.Remote, :remote, as: :remote
       live "/jobs", JobLive.Index, :jobs, as: :job
       live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :jobs, as: :shoot
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot

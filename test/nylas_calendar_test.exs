@@ -61,7 +61,7 @@ defmodule NylasCalendarTest do
     end
 
     test "Check Event are set to the correct timezone (America/New_York)" do
-      token = "RoJK07y0nExk1c7i57iXQbgzsZ6mGq"
+      token = "RoJK0*************************"
 
       calendar_id = "62zs9nfax6wvkhzo7wj8vfzw7"
       ExVCR.Config.filter_request_headers("Authorization")
@@ -75,7 +75,7 @@ defmodule NylasCalendarTest do
           end: "2023-06-12T13:00:00-04:00",
           start: "2023-06-12T12:00:00-04:00",
           title: "Noon Event - EST",
-          url: ""
+          url: "/remote/#{calendar_id}/e08nxn67y9rdj5wxmh4la3dwc?request_from=calendar"
         }
 
         event2 = %{
@@ -83,7 +83,7 @@ defmodule NylasCalendarTest do
           end: "2023-06-13T07:00:00-04:00",
           start: "2023-06-13T06:00:00-04:00",
           title: "1:00 pm Israel time / 6:00 am EST",
-          url: ""
+          url: "/remote/#{calendar_id}/571k7vwh2nljfwhvou5vire9m?request_from=calendar"
         }
 
         assert Enum.member?(events, event1)
@@ -91,6 +91,7 @@ defmodule NylasCalendarTest do
       end
     end
 
+    
     test "Get Calendars" do
       ExVCR.Config.filter_request_headers("Authorization")
 
@@ -113,8 +114,6 @@ defmodule NylasCalendarTest do
                  | _
                ] = calendars
       end
-
-      #      NylasCalendar.create_calendar(%{"name" => "My Calendar"})
     end
 
     test "Create Calendar" do
