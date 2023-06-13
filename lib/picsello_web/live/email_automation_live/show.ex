@@ -12,9 +12,40 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def mount(%{"type" => type} = _params, _session, socket) do
     socket
     |> assign(:type, String.downcase(type))
+    |> assign(:collapsed_sections, [])
     |> assign_job_types()
     |> assign_automation_pipelines()
     |> ok()
+  end
+
+  def handle_event(
+        "toggle-section",
+        %{"section_id" => section_id},
+        %{assigns: %{collapsed_sections: collapsed_sections}} = socket
+      ) do
+    collapsed_sections =
+      if Enum.member?(collapsed_sections, section_id) do
+        Enum.filter(collapsed_sections, &(&1 != section_id))
+      else
+        collapsed_sections ++ [section_id]
+      end
+
+    socket
+    |> assign(:collapsed_sections, collapsed_sections)
+    |> noreply()
+  end
+
+  def handle_event("confirm-stop-email", %{}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      title: "Are you sure you want to {stop/send} this email?",
+      subtitle: "Stop this email and your client will get the next email in the sequence. To stop the full automation sequence from sending, you will need to Stop each email individually.",
+      confirm_event: "",
+      confirm_label: "Yes, stop email",
+      close_label: "Cancel",
+      icon: "warning-orange"
+    })
+    |> noreply()
   end
 
   defp assign_job_types(%{assigns: %{current_user: current_user, type: type}} = socket) do

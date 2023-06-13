@@ -3,14 +3,16 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Picsello.EmailAutomation.{EmailAutomationPipeline, EmailAutomationCategory, EmailAutomationSubCategory, EmailAutomationSetting}
+  alias Picsello.EmailAutomation.{
+    EmailAutomationPipeline,
+    EmailAutomationCategory,
+    EmailAutomationSubCategory,
+    EmailAutomationSetting
+  }
+
   alias Picsello.{Job, Gallery}
 
-  @types ~w(lead job gallery general)a
-
   schema "email_schedules" do
-    field :state, Ecto.Enum, values: EmailAutomationPipeline.states()
-    field :type, Ecto.Enum, values: @types
     field :total_hours, :integer, default: 0
     field :condition, :string
     field :immediately, :boolean, default: true, virtual: true
@@ -21,12 +23,10 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     field :name, :string
     field :subject_template, :string
     field :private_name, :string
-    field :is_stop, :boolean, default: false
+    field :is_stopped, :boolean, default: false
     field :reminded_at, :utc_datetime, default: nil
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
-    belongs_to(:email_automation_category, EmailAutomationCategory)
-    belongs_to(:email_automation_sub_category, EmailAutomationSubCategory)
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:job, Job)
     belongs_to(:gallery, Gallery)
@@ -38,9 +38,11 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     email_preset
     |> cast(
       attrs,
-      ~w[email_automation_pipeline_id email_automation_category_id email_automation_sub_category_id name private_name subject_template body_template total_hours condition state type immediately count calendar sign is_stop reminded_at job_id gallery_id]a
+      ~w[email_automation_pipeline_id name private_name subject_template body_template total_hours condition immediately count calendar sign is_stopped reminded_at job_id gallery_id]a
     )
-    |> validate_required(~w[email_automation_pipeline_id email_automation_category_id email_automation_sub_category_id organization_id subject_template body_template state type]a)
+    |> validate_required(
+      ~w[email_automation_pipeline_id organization_id subject_template body_template]a
+    )
     |> then(fn changeset ->
       unless get_field(changeset, :immediately) do
         changeset
@@ -55,5 +57,6 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
         |> put_change(:total_hours, 0)
       end
     end)
+    |> check_constraint(:job_id, name: :job_gallery_constraint)
   end
 end

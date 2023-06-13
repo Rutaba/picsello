@@ -9,17 +9,18 @@
   </div>
 
   <hr class="mt-2 border-white" />
+
   <div class="flex justify-between lg:mt-2 md:justify-start">
     <div class="flex">
       <div>
         <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
       </div>
-    <div>
+      <div>
         <h1 class="text-4xl font-bold"><%= String.capitalize(@type) %> Automation History</h1>
-      <div class="max-w-4xl mt-2 text-base-250">
-        <p>Email automation sequences are scheduled to send for Leads, Jobs and Galleries. View status, preview email content and, as needed, choose to stop the emails for this specific job. To make global changes (CLICK HERE).</p>
+        <div class="max-w-4xl mt-2 text-base-250">
+          <p>Email automation sequences are scheduled to send for Leads, Jobs and Galleries. View status, preview email content and, as needed, choose to stop the emails for this specific job. To make global changes (CLICK HERE).</p>
+        </div>
       </div>
-    </div>
     </div>
   </div>
 </div>
@@ -28,4 +29,85 @@
     <.empty_state_base wrapper_class="border rounded-lg p-4 mb-8" tour_embed="https://demo.arcade.software/J7LVwwRlcenKLiB7vKf3?embed" headline="Meet Automations" eyebrow_text="" body="Here are the controls to communications that will make managing your clients and running your business - pre and post shoot so much easier! Adjust timing, start, stop, edit and version emails for the photography types you offer. That is right - email automation sequences can be customized for your specific business workflow and client needs!" third_party_padding="calc(66.66666666666666% + 41px)" close_event="intro-close-contract">
     </.empty_state_base>
   <% end %>
+</div>
+
+<div class="px-6 py-6 xl:px-40 2xl:px-64 center-container">
+
+  <div class="flex flex-row mb-5">
+    <span class="flex flex-row w-8 h-8 rounded-full bg-base-200 items-center justify-center mr-2">
+      <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300"/>
+    </span>
+    <span class="text-2xl font-bold"> Leads </span>
   </div>
+
+  <div class="md:my-5 md:mx-12 border border-base-200 rounded-lg">
+    <div class="flex justify-between">
+      <span class="pl-3 text-blue-planning-300 font-bold"> Next email 10/24/23
+      </span>
+      <span class="text-blue-planning-300 pr-6 underline">Preview</span>
+    </div>
+
+    <div class="flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id="Hi">
+
+      <div class="flex flex-col">
+        <div class=" flex flex-row items-center">
+          <div class="flex flex-row w-8 h-8 rounded-full bg-white flex items-center justify-center">
+            <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
+          </div>
+          <span class="text-blue-planning-300 text-xl font-bold ml-2">
+          Client contacts you
+            <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap">4 steps</span>
+          </span>
+        </div>
+        <p class="text:xs text-gray-400 lg:text-base ml-10">
+          Runs after a contract/lead form submission
+        </p>
+      </div>
+
+      <div class="ml-auto">
+        <%= if Enum.member?(@collapsed_sections, "Hi") do %>
+          <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+        <% else %>
+          <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+        <% end %>
+      </div>
+    </div>
+
+
+    <%= if !Enum.member?(@collapsed_sections, "Hi") do %>
+    <div class="flex flex-col md:flex-row pl-2 pr-7 py-3 md:items-center justify-between">
+
+      <div class="flex flex-row ml-2 mb-2">
+        <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 mr-2">
+          <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
+        </div>
+        <span class="text-blue-planning-300 text-sm font-bold ml-2">
+          Completed 10/28/13
+          <p class="text-black text-xl">
+            Thank you for contacting me
+          </p>
+          <div class="flex items-center bg-white">
+          <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300 mr-2" />
+            <p class="text-gray-400 text-sm">
+            Send email immediately
+            </p>
+          </div>
+        </span>
+      </div>
+
+      <div class="flex justify-end mr-2">
+        <button class="flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl" phx-click="confirm-stop-email">
+          <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
+        </button>
+        <button class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
+          Send now
+        </button>
+        <button class="h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
+          <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
+          Edit email
+        </button>
+      </div>
+    </div>
+    <% end %>
+  </div>
+</div>
