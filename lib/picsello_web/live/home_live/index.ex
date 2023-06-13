@@ -632,7 +632,7 @@ defmodule PicselloWeb.HomeLive.Index do
           <hr class="mb-4 mt-4" />
           <%= case @leads do %>
             <% [] -> %>
-              <div class="flex flex-row mt-4 p-4 gap-6">
+              <div class="flex md:flex-row flex-col mt-4 p-4 gap-6">
                 <iframe src="https://www.youtube.com/embed/V90oycrU45g" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
                 <p class="md:max-w-md text-base-250 text-normal mb-8">Generating leads is the pipeline to booked clients. <span class="font-normal text-normal text-blue-planning-300"><a class="underline" target="_blank" rel="noopener noreferrer" href="https://support.picsello.com/article/40-create-a-lead">Learn more</a></span> and create some now.</p>
               </div>
@@ -664,7 +664,7 @@ defmodule PicselloWeb.HomeLive.Index do
           <hr class="mt-4 mb-4" />
           <%= case @jobs do %>
             <% [] -> %>
-              <div class="flex flex-row mt-4 p-4 gap-6">
+              <div class="flex md:flex-row flex-col mt-4 p-4 gap-6">
                 <iframe src="https://www.youtube.com/embed/XWZH_65evuM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
                 <p class="md:max-w-md text-base-250 text-normal mb-8">Booking jobs will get you on your way to making a profit. If you are migrating existing jobs from another platform, use our import a job button above.</p>
               </div>
@@ -694,7 +694,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <%= case @galleries do %>
               <% [] -> %>
                 <div class="flex flex-col mt-4">
-                  <div class="flex flex-row mt-4 p-4 gap-6">
+                  <div class="flex md:flex-row flex-col mt-4 p-4 gap-6">
                     <iframe src="https://www.youtube.com/embed/uEY3eS9cDIk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
                     <p class="md:max-w-md text-base-250 text-normal mb-8">With unlimited gallery storage, don't think twice about migrating existing galleries from other platforms and creating new ones.</p>
                   </div>
@@ -713,7 +713,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <hr class="mt-4 mb-4" />
             <%= case @booking_events |> Enum.take(6) do %>
               <% [] -> %>
-                  <div class="flex flex-row mt-4 p-4 gap-6">
+                  <div class="flex md:flex-row flex-col mt-4 p-4 gap-6">
                     <iframe src="https://www.youtube.com/embed/aVnPMupMK8Q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
                     <p class="md:max-w-md text-base-250 text-normal mb-8">Booking events are an easy way to get jobs booked, paid and prepped efficiently - for both you and your clients.</p>
                   </div>
@@ -754,7 +754,7 @@ defmodule PicselloWeb.HomeLive.Index do
               <%= if @stripe_status != :charges_enabled do %>
                 <div {testid("card-finish-setup")} class={"flex border border-base-200 rounded-lg h-auto"}>
                   <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-blue-planning-300"} />
-                  <div class="flex flex-row mt-4 p-4 gap-6">
+                  <div class="flex md:flex-row flex-col mt-4 p-4 gap-6">
                     <iframe src="https://www.youtube.com/embed/8OQSazeLgv8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video mb-24"></iframe>
                     <div class="flex flex-col">
                       <h1 class="text-xl font-bold mb-4">Seamless payment thru Stripe</h1>
@@ -767,7 +767,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
               <div {testid("card-get-started")} class={"flex border border-base-200 rounded-lg h-auto"}>
                 <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-blue-planning-300"} />
-                <div class="flex flex-row mt-4 p-4 gap-6">
+                <div class="flex md:flex-row flex-col mt-4 p-4 gap-6">
                   <iframe src="https://www.youtube.com/embed/8OQSazeLgv8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video mb-24"></iframe>
                   <div class="flex flex-col">
                     <h1 class="text-xl font-bold mb-4">Get your packages setup</h1>
