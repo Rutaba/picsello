@@ -6,7 +6,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
 
   alias Picsello.Albums
   alias Picsello.Galleries.Album
-  alias Picsello.Galleries.Gallery
 
   @impl true
   def update(%{gallery_id: gallery_id} = assigns, socket) do
@@ -31,17 +30,11 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
       if album do
         socket
         |> assign(:title, "Album Settings")
-        |> assign(:set_password, album.set_password)
-        |> assign(:album_password, album.password)
         |> assign(:action, "Save")
       else
         socket
         |> assign(:title, "Add Album")
         |> assign(:action, "Create new album")
-        |> assign(
-          set_password: false,
-          album_password: nil
-        )
       end
     end)
     |> ok()
@@ -76,33 +69,10 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
   def handle_event(
         "validate",
         %{"album" => params},
-        %{
-          assigns: %{
-            album_password: album_password
-          }
-        } = socket
+        socket
       ) do
-    set_password = String.to_existing_atom(params["set_password"])
-    password = generate_password(set_password, album_password)
-
     socket
     |> assign_album_changeset(params)
-    |> assign(:set_password, set_password)
-    |> assign(:album_password, password)
-    |> noreply
-  end
-
-  @impl true
-  def handle_event("toggle_visibility", _, %{assigns: %{visibility: visibility}} = socket) do
-    socket
-    |> assign(:visibility, !visibility)
-    |> noreply
-  end
-
-  @impl true
-  def handle_event("regenerate", _params, socket) do
-    socket
-    |> assign(:album_password, Gallery.generate_password())
     |> noreply
   end
 
@@ -131,14 +101,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
     |> make_popup(opts)
   end
 
-  defp generate_password(set_password, album_password) do
-    if set_password && is_nil(album_password) do
-      Gallery.generate_password()
-    else
-      album_password
-    end
-  end
-
   defp assign_album_changeset(
          %{assigns: %{album: album, gallery_id: gallery_id}} = socket,
          attrs \\ %{}
@@ -146,7 +108,7 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
     changeset =
       if(album,
         do: Albums.change_album(album, attrs),
-        else: Albums.change_album(%Album{set_password: false, gallery_id: gallery_id}, attrs)
+        else: Albums.change_album(%Album{gallery_id: gallery_id}, attrs)
       )
 
     socket
@@ -167,57 +129,6 @@ defmodule PicselloWeb.GalleryLive.Albums.AlbumSettings do
         <%= labeled_input f, :name, label: "Album Name", placeholder: @album && @album.name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500"%>
         <%= hidden_input f, :gallery_id%>
 
-        <div class="flex flex-col mt-3">
-          <h3 class="font-bold input-label">Password protection</h3>
-          <label id="setPassword" class="flex text-1xl font-bold">
-            <%= checkbox f, :set_password, class: "hidden peer", phx_debounce: 200 %>
-            <div class="hidden peer-checked:flex">
-              <div class="flex font-sans cursor-pointer justify-end items-center w-12 h-6 p-1 mr-4 border rounded-full bg-blue-planning-300 border-base-100">
-                  <div class="w-4 h-4 rounded-full bg-base-100"></div>
-              </div>
-              <span>On</span>
-            </div>
-            <div class="flex peer-checked:hidden" >
-              <div class="flex w-12 h-6 cursor-pointer items-center p-1 mr-4 border rounded-full border-blue-planning-300">
-                  <div class="w-4 h-4 rounded-full bg-blue-planning-300"></div>
-              </div>
-              <span>Off</span>
-            </div>
-          </label>
-          <%= if @set_password do %>
-            <div class="relative mt-2">
-              <%= if @visibility do %>
-                <%= text_input f, :password, readonly: "readonly", value: @album_password, id: "visible-password",
-                class: "gallerySettingsInput" %>
-              <% else %>
-                <%= password_input f, :password, readonly: "readonly", value: @album_password, id: "password",
-                class: "gallerySettingsInput" %>
-              <% end %>
-
-              <div class="absolute flex h-full -translate-y-1/2 right-1 top-1/2">
-                <a phx-click="toggle_visibility" phx-target={@myself} class="mr-4" id="toggle-visibility">
-                  <%= if @visibility do %>
-                    <.icon name="eye" class="w-5 cursor-pointer h-full ml-1 text-base-250"/>
-                  <% else %>
-                    <.icon name="closed-eye" class="w-5 h-full ml-1 text-base-250 cursor-pointer"/>
-                  <% end %>
-                </a>
-                <button type="button" id="CopyToClipboardButton" phx-hook="Clipboard" data-clipboard-text={@album_password}
-                  class="h-12 py-2 mt-1 border rounded-lg bg-base-100 border-blue-planning-300 text-blue-planning-300 w-36">
-                  <div class="hidden p-1 text-sm rounded bg-white font-sans shadow" role="tooltip">
-                      Copied!
-                  </div>
-                    Copy password
-                </button>
-              </div>
-            </div>
-            <div class="flex items-center justify-between w-full mt-2 lg:items-start">
-              <button type="button" phx-click="regenerate" phx-target={@myself} class="p-4 font-bold cursor-pointer text-blue-planning-300 lg:pt-0" id="regenerate">
-                  Re-generate
-              </button>
-            </div>
-          <% end %>
-        </div>
         <div class="flex flex-row items-center justify-end w-full mt-5 lg:items-start">
           <%= if @album && !@has_order? && !@album.is_finals && !@album.is_proofing do %>
           <div class="flex flex-row items-center justify-start w-full lg:items-start">

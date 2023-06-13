@@ -10,7 +10,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Job,
     Repo,
     Galleries,
-    Client,
     GalleryProducts,
     Messages,
     Cart,
@@ -24,6 +23,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Ecto.Multi
   alias Cart.{Order, Digital}
+  alias Galleries.{GalleryProduct, Photo}
   alias Picsello.Cart.Order
   alias Galleries.{GalleryProduct, Photo}
   alias PicselloWeb.Router.Helpers, as: Routes
@@ -33,17 +33,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def handle_event(
         "client-link",
         _,
-        %{assigns: %{current_user: current_user, gallery: %{type: :standard} = gallery}} = socket
+        %{assigns: %{current_user: current_user, gallery: %{type: type} = gallery}} = socket
       ) do
     case prepare_gallery(gallery) do
       {:ok, _} ->
-        gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload(job: :client)
+        gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload([:albums, job: :client])
+        preset_state = preset_state(type)
 
         %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, :gallery_send_link) do
+          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
             Picsello.EmailPresets.resolve_variables(
               preset,
-              {gallery},
+              schemas(gallery),
               PicselloWeb.Helpers
             )
           end
@@ -54,10 +55,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
         |> PicselloWeb.ClientMessageComponent.open(%{
           body_html: body_html,
           subject: subject,
-          modal_title: "Share gallery",
+          modal_title: modal_title(type),
           presets: [],
           enable_image: true,
           enable_size: true,
+          composed_event: composed_event(type),
           client: Job.client(gallery.job),
           current_user: current_user
         })
@@ -70,53 +72,19 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  def handle_event(
-        "client-link",
-        _,
-        %{assigns: %{current_user: current_user, gallery: gallery}} = socket
-      ) do
-    %{albums: [album]} = gallery = Repo.preload(gallery, :albums)
+  defp schemas(%{type: :standard} = gallery), do: {gallery}
+  defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
 
-    gallery.id
-    |> Galleries.get_album_photo_count(album.id)
-    |> then(&(&1 > 0))
-    |> case do
-      true ->
-        gallery = Repo.preload(gallery, job: :client)
-        album = Albums.set_album_hash(album)
+  defp preset_state(:standard), do: :gallery_send_link
+  defp preset_state(:proofing), do: :proofs_send_link
+  defp preset_state(:finals), do: :album_send_link
 
-        preset_state = if album.is_finals, do: :album_send_link, else: :proofs_send_link
+  defp modal_title(:standard), do: "Share gallery"
+  defp modal_title(:proofing), do: "Share Proofing Album"
+  defp modal_title(:finals), do: "Share Finals Album"
 
-        %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
-            Picsello.EmailPresets.resolve_variables(
-              preset,
-              {gallery, album},
-              PicselloWeb.Helpers
-            )
-          end
-
-        socket
-        |> assign(:job, gallery.job)
-        |> PicselloWeb.ClientMessageComponent.open(%{
-          modal_title: "Share #{if album.is_finals, do: "Finals", else: "Proofing"} Album",
-          subject: subject,
-          body_html: body_html,
-          presets: [],
-          enable_image: true,
-          enable_size: true,
-          composed_event: :message_composed_for_album,
-          client: Job.client(gallery.job),
-          current_user: current_user
-        })
-        |> noreply()
-
-      false ->
-        socket
-        |> put_flash(:error, "Please add photos to the album before sharing")
-        |> noreply()
-    end
-  end
+  defp composed_event(:standard), do: :message_composed
+  defp composed_event(_type), do: :message_composed_for_album
 
   def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
     with true <- is_nil(client_email),
@@ -374,9 +342,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  defp photos_album_opts(%{id: "client_liked"}), do: []
-  defp photos_album_opts(%{id: id}), do: [album_id: id]
-  defp photos_album_opts(_), do: [exclude_album: true]
+  def photos_album_opts(%{id: "client_liked"}), do: []
+  def photos_album_opts(%{id: id}), do: [album_id: id]
+  def photos_album_opts(_), do: [exclude_album: true]
 
   def assign_photos(
         %{
@@ -406,10 +374,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp opts(), do: [limit: 1, valid: true]
 
-  def add_message_and_notify(%{assigns: %{job: job}} = socket, message_changeset, shared_item)
+  def add_message_and_notify(
+        %{assigns: %{job: job, current_user: user}} = socket,
+        message_changeset,
+        recipients,
+        shared_item
+      )
       when shared_item in ~w(gallery album) do
-    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, job.client.email) do
+    with {:ok, %{client_message: message, client_message_recipients: _}} <-
+           Messages.add_message_to_job(message_changeset, job, recipients, user)
+           |> Repo.transaction(),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> put_flash(:success, "#{String.capitalize(shared_item)} shared!")
     else
@@ -421,12 +396,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> noreply()
   end
 
-  def add_message_and_notify(socket, message_changeset) do
-    with {:ok, message} <- Messages.add_message_to_client(message_changeset),
-         %Client{name: name, email: email} <- Repo.get(Client, message.client_id),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, email) do
+  def add_message_and_notify(
+        %{assigns: %{current_user: user}} = socket,
+        message_changeset,
+        recipients
+      ) do
+    with {:ok, %{client_message: message, client_message_recipients: _}} <-
+           Messages.add_message_to_client(message_changeset, recipients, user)
+           |> Repo.transaction(),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
-      |> put_flash(:success, "Email sent to " <> if(name, do: name, else: email) <> "!")
+      |> put_flash(:success, "Email sent!")
     else
       _error ->
         socket

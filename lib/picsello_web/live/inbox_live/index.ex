@@ -350,13 +350,13 @@ defmodule PicselloWeb.InboxLive.Index do
   end
 
   def handle_info(
-        {:message_composed, message_changeset},
-        %{assigns: %{job: job}} = socket
+        {:message_composed, message_changeset, recipients},
+        %{assigns: %{job: job, current_user: user}} = socket
       ) do
-    client = job |> Repo.preload(:client) |> Map.get(:client)
-
-    with {:ok, message} <- Messages.add_message_to_job(message_changeset, job),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, client.email) do
+    with {:ok, %{client_message: message, client_message_recipients: _}} <-
+           Messages.add_message_to_job(message_changeset, job, recipients, user)
+           |> Repo.transaction(),
+         {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> close_modal()
       |> assign_threads()

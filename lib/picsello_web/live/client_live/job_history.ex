@@ -9,12 +9,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   import PicselloWeb.Live.ClientLive.Shared
 
   alias Ecto.Query
-
-  alias PicselloWeb.{
-    JobLive.ImportWizard,
-    JobLive
-  }
-
+  alias PicselloWeb.{JobLive.ImportWizard, JobLive}
   alias Picsello.{Jobs, Job, Repo, Clients, Galleries}
 
   defmodule Pagination do
@@ -168,7 +163,7 @@ defmodule PicselloWeb.Live.ClientLive.JobHistory do
   defdelegate handle_info(message, socket), to: JobLive.Shared
 
   defp get_client(%{assigns: %{current_user: user}} = socket, id) do
-    case Clients.get_client(id, user) do
+    case Clients.get_client(user, id: id) do
       nil ->
         socket |> redirect(to: "/clients")
 

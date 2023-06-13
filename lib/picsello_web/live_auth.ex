@@ -33,7 +33,7 @@ defmodule PicselloWeb.LiveAuth do
     |> authenticate_album(params)
     |> then(&authenticate_gallery(&1, %{"gallery_id" => &1.assigns.album.gallery_id}))
     |> authenticate_gallery_expiry()
-    |> authenticate_album_client(session)
+    |> authenticate_gallery_client(session)
     |> authenticate_gallery_for_photographer(session)
     |> maybe_redirect_to_client_login(params)
   end
@@ -140,42 +140,6 @@ defmodule PicselloWeb.LiveAuth do
   end
 
   defp authenticate_gallery_client(socket, _), do: socket
-
-  defp authenticate_album_client(
-         %{assigns: %{album: %{set_password: true} = album}} = socket,
-         session
-       ) do
-    token = Map.get(session, "album_session_token")
-
-    if Galleries.session_exists_with_token?(
-         album.id,
-         token,
-         :album
-       ) do
-      assign(socket, authenticated: true)
-      email = Galleries.get_session_token(token).email
-      assign(socket, authenticated: true, client_email: email)
-    else
-      assign(socket, authenticated: false)
-    end
-  end
-
-  defp authenticate_album_client(%{assigns: %{album: album}} = socket, session) do
-    token = Map.get(session, "album_session_token")
-
-    if Galleries.session_exists_with_token?(
-         album.id,
-         token,
-         :album
-       ) do
-      email = Galleries.get_session_token(token).email
-      assign(socket, authenticated: true, client_email: email)
-    else
-      assign(socket, authenticated: true, client_email: nil)
-    end
-  end
-
-  defp authenticate_album_client(socket, _session), do: assign(socket, client_email: nil)
 
   defp allow_sandbox(socket) do
     with sandbox when sandbox != nil <- Application.get_env(:picsello, :sandbox),

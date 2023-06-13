@@ -174,11 +174,11 @@ export default {
     quill.on('text-change', textChange);
 
     this.handleEvent('quill:update', ({ html }) => {
-      quill.clipboard.dangerouslyPasteHTML(html, 'api');
+      quill.clipboard.dangerouslyPasteHTML(html, '');
       textChange();
     });
 
-    quill.clipboard.dangerouslyPasteHTML(htmlInput.value, 'api');
+    quill.clipboard.dangerouslyPasteHTML(htmlInput.value, '');
     const element = document.querySelector('.ql-editor');
     element.setAttribute("contenteditable", editable);
     const ol = document.querySelector('.ql-editor > ol');
@@ -214,7 +214,7 @@ export default {
     }
   }
 };
-
+  
 export const ClearQuillInput = {
   mounted() {
     this.el.addEventListener('click', () => {

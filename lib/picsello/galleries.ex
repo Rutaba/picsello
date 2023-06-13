@@ -26,7 +26,7 @@ defmodule Picsello.Galleries do
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
-  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, GalleryClient, Album}
+  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, GalleryClient}
   import Repo.CustomMacros
 
   @area_markup_category Picsello.Category.print_category()
@@ -746,6 +746,12 @@ defmodule Picsello.Galleries do
     |> Repo.aggregate(:count, [])
   end
 
+  def gallery_album_favorites_count(%Gallery{} = gallery, album_id) do
+    Photo
+    |> where(gallery_id: ^gallery.id, album_id: ^album_id, client_liked: true)
+    |> Repo.aggregate(:count, [])
+  end
+
   @doc """
   Creates a photo.
 
@@ -1201,21 +1207,6 @@ defmodule Picsello.Galleries do
          {:ok, %{token: token}} <-
            insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}),
          {:ok, _} <- insert_gallery_client(gallery, email) do
-      {:ok, token}
-    else
-      _ -> {:error, "cannot log in with that password"}
-    end
-  end
-
-  def build_album_session_token(
-        %Album{id: id, password: album_password, gallery_id: gallery_id},
-        password,
-        email \\ nil
-      ) do
-    with true <- album_password == password,
-         {:ok, %{token: token}} <-
-           insert_session_token(%{resource_id: id, resource_type: :album, email: email}),
-         {:ok, _} <- insert_gallery_client(get_gallery!(gallery_id), email) do
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}

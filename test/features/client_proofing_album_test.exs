@@ -12,6 +12,7 @@ defmodule Picsello.ClientProofingAlbumTest do
 
     gallery =
       insert(:gallery,
+        type: :proofing,
         job:
           insert(:lead,
             client: insert(:client, organization: organization),

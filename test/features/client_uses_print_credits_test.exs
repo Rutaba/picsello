@@ -548,7 +548,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     }) do
       session
       |> place_order(photo_ids)
-      |> sleep(500)
+      |> sleep(1000)
       |> assert_url_contains("orders")
       |> assert_text("Order details")
       |> assert_has(definition("Total", text: "$363.95"))

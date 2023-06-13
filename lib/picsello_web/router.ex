@@ -269,7 +269,6 @@ defmodule PicselloWeb.Router do
       live "/cart", GalleryLive.ClientShow.Cart, :cart
       live "/cart/address", GalleryLive.ClientShow.Cart, :address
       post "/gallery/login", GallerySessionController, :gallery_login
-      post "/album/login", GallerySessionController, :album_login
     end
   end
 
