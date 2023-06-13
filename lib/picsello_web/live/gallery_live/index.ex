@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
+  require Ecto.Query
 
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Live.Shared, only: [make_popup: 2]
