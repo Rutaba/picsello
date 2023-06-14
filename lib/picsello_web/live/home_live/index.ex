@@ -700,7 +700,7 @@ defmodule PicselloWeb.HomeLive.Index do
                   </div>
                 </div>
               <% galleries -> %>
-              <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
+              <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 md:gap-4 gap-6">
                 <%= for {gallery, gallery_index} <- galleries |> Enum.with_index() do %>
                   <.recent_galleries socket={@socket} gallery={gallery} index={@index} gallery_index={gallery_index} />
                 <% end %>
@@ -713,7 +713,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <hr class="mt-4 mb-4" />
             <%= case @booking_events |> Enum.take(6) do %>
               <% [] -> %>
-                  <div class="flex md:flex-row flex-col mt-4 p-4 gap-6">
+                  <div class="flex md:flex-row flex-col mt-4 p-4 md:gap-4 gap-6">
                     <iframe src="https://www.youtube.com/embed/aVnPMupMK8Q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
                     <p class="md:max-w-md text-base-250 text-normal mb-8">Booking events are an easy way to get jobs booked, paid and prepped efficiently - for both you and your clients.</p>
                   </div>
@@ -1170,36 +1170,38 @@ defmodule PicselloWeb.HomeLive.Index do
     assigns = assign(assigns, count: count)
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
-        <div class="flex flex-col md:flex-row grow">
+        <div class="flex flex-col gap-2 md:gap-4 w-full md:flex-row grow">
           <%= if Galleries.preview_image(@gallery) do %>
-            <div>
+            <div class="w-1/3">
               <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
-              <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{if Map.has_key?(@gallery, :client_link_hash), do: cover_photo_url(@gallery), else: @gallery.thumbnail_url}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
+              <div class="rounded-lg float-left w-[100px] min-h-[65px]" style={"background-image: url('#{if Map.has_key?(@gallery, :client_link_hash), do: cover_photo_url(@gallery), else: @gallery.thumbnail_url}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
               <% end %>
             </div>
           <% else %>
             <%= if Map.has_key?(@gallery, :thumbnail_url) do %>
               <.blurred_thumbnail class="h-32 rounded-lg" url={@gallery.thumbnail_url} />
             <% else %>
-              <div class="rounded-lg h-full p-4 items-center flex flex-col w-[200px] h-[130px] mr-4 md:mr-7 bg-base-200">
-                <div class="flex justify-center h-full items-center">
-                  <.icon name="photos-2" class="inline-block w-9 h-9 text-base-250"/>
-                </div>
-                <div class="mt-1 text-base-250 text-center h-full">
-                  <span>Edit your gallery to upload a cover photo</span>
+              <div class="w-1/3">
+                <div class="rounded-lg h-full p-2 items-center flex flex-col w-[100px] h-[65px] bg-base-200">
+                  <div class="flex justify-center h-full items-center">
+                    <.icon name="photos-2" class="inline-block w-3 h-3 text-base-250"/>
+                  </div>
+                  <div class="mt-1 text-[8px] text-base-250 text-center h-full">
+                    <span>Edit your gallery to upload a cover photo</span>
+                  </div>
                 </div>
               </div>
             <% end %>
           <% end %>
 
-          <div class="flex flex-col mt-2">
+          <div class="flex flex-col w-2/3 text-sm">
             <div class={"font-bold w-full"}>
               <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
                 <span class="w-full text-blue-planning-300 underline">
                   <%= if String.length(@gallery.name) < 30 do
                     @gallery.name
                   else
-                    "#{@gallery.name |> String.slice(0..29)} ..."
+                    "#{@gallery.name |> String.slice(0..18)} ..."
                   end %>
                 </span>
               <% end %>
@@ -1207,19 +1209,19 @@ defmodule PicselloWeb.HomeLive.Index do
             <div class="text-base-250 font-normal ">
               <%= Calendar.strftime(@gallery.inserted_at, "%m/%d/%y") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
             </div>
-            <div class="flex gap-3 mt-8">
-              <button {testid("copy-link")} id="copy-link" class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @gallery.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@gallery, :client_link_hash), do: clip_board(@socket, @gallery), else: @gallery.thumbnail_url} phx-hook="Clipboard">
-                <.icon name="anchor" class={classes("w-4 h-4 fill-current text-blue-planning-300 inline mr-2", %{"text-gray-300" => @gallery.status in [:archive, :disabled]})} />
+            <div class="flex md:gap-2 gap-3">
+              <button {testid("copy-link")} id="copy-link" class={classes("flex  w-full md:w-auto items-center justify-center text-center px-1 py-0.5 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @gallery.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@gallery, :client_link_hash), do: clip_board(@socket, @gallery), else: @gallery.thumbnail_url} phx-hook="Clipboard">
+                <.icon name="anchor" class={classes("w-2 h-2 fill-current text-blue-planning-300 inline mr-2", %{"text-gray-300" => @gallery.status in [:archive, :disabled]})} />
                 Copy link
                 <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
                   Copied!
                 </div>
               </button>
               <div id={"manage-#{@gallery.id}"} phx-hook="Select" class="md:w-auto w-full">
-                <button class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id={"menu-button-#{@gallery.id}"} phx-click="show_dropdown" phx-value-show_index={@gallery_index}>
+                <button class="btn-tertiary px-1 py-0.5 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id={"menu-button-#{@gallery.id}"} phx-click="show_dropdown" phx-value-show_index={@gallery_index}>
                   Actions
-                  <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-                  <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+                  <.icon name="down" class="w-2 h-2 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+                  <.icon name="up" class="hidden w-2 h-2 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
                 </button>
                 <div class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
                   <%= if Map.has_key?(@gallery, :client_link_hash) do %>
