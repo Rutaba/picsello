@@ -266,7 +266,9 @@ defmodule Picsello.JobIndexTest do
 
   feature "searches the leads/jobs, sends email", %{
     session: session,
-    user: user
+    user: user,
+    lead: lead,
+    job: job
   } do
     preload_some_leads(user)
     preload_some_jobs(user)
@@ -275,10 +277,10 @@ defmodule Picsello.JobIndexTest do
     |> click(button("Leads"))
     |> assert_has(testid("card-Recent leads"))
     |> click(button("View all"))
-    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(testid("job-row", count: 4))
     |> assert_has(link(lead.client.name))
     |> assert_has(link(Job.name(lead)))
-    |> click(button("Manage"))
+    |> click(button("Manage", count: 4, at: 0))
     |> click(button("Send email"))
     |> refute_has(select("Select email preset"))
     |> fill_in(text_field("Subject line"), with: "Here is what I propose")
@@ -290,10 +292,10 @@ defmodule Picsello.JobIndexTest do
     |> click(link("Picsello"))
     |> click(button("Jobs"))
     |> click(button("View all"))
-    |> assert_has(testid("job-row", count: 1))
+    |> assert_has(testid("job-row", count: 4))
     |> assert_has(link(job.client.name))
     |> assert_has(link(Job.name(job)))
-    |> click(button("Manage"))
+    |> click(button("Manage", count: 4, at: 0))
     |> click(button("Send email"))
     |> within_modal(fn modal ->
       modal
