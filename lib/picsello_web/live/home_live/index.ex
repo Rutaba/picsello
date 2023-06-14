@@ -716,7 +716,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <hr class="mt-4 mb-4" />
             <%= case @booking_events |> Enum.take(6) do %>
               <% [] -> %>
-                  <div class="flex md:flex-row flex-col items-center  mt-4 p-4 md:gap-4 gap-6">
+                  <div class="flex md:flex-row flex-col items-center mt-4 p-4 md:gap-4 gap-6">
                     <iframe src="https://www.youtube.com/embed/aVnPMupMK8Q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
                     <p class="md:max-w-md text-base-250 text-normal mb-8">Booking events are an easy way to get jobs booked, paid and prepped efficiently - for both you and your clients.</p>
                   </div>
@@ -1184,20 +1184,22 @@ defmodule PicselloWeb.HomeLive.Index do
         do: Enum.count(assigns.data.orders),
         else: Map.get(assigns.data, :booking_count, 0)
 
-    assigns = assign(assigns, count: count)
+    assigns = assign(assigns, count: count) |> IO.inspect
 
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col gap-2 md:gap-4 w-full md:flex-row grow">
           <%= if Galleries.preview_image(@data) do %>
             <div class="w-1/3">
-              <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false) do %>
+              <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_path(@socket, :edit, @data.id)) do %>
               <div class="rounded-lg float-left w-[100px] min-h-[65px]" style={"background-image: url('#{if Map.has_key?(@data, :client_link_hash), do: cover_photo_url(@data), else: @data.thumbnail_url}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
               <% end %>
             </div>
           <% else %>
             <%= if Map.has_key?(@data, :thumbnail_url) do %>
-              <.blurred_thumbnail class="h-32 rounded-lg" url={@data.thumbnail_url} />
+              <%= live_redirect to: Routes.calendar_booking_events_path(@socket, :edit, @data.id) do %>
+                <.blurred_thumbnail class="h-32 rounded-lg" url={@data.thumbnail_url} />
+              <% end %>
             <% else %>
               <div class="w-1/3">
                 <div class="rounded-lg h-full p-2 items-center flex flex-col w-[100px] h-[65px] bg-base-200">
@@ -1214,7 +1216,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
           <div class="flex flex-col w-2/3 text-sm">
             <div class={"font-bold w-full"}>
-              <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false) do %>
+              <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_path(@socket, :edit, @data.id)) do %>
                 <span class="w-full text-blue-planning-300 underline">
                   <%= if String.length(@data.name) < 30 do
                     @data.name
