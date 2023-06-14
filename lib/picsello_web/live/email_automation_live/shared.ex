@@ -29,7 +29,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
       ) do
     automation_pipelines =
-      EmailAutomation.get_all_pipelines_emails(current_user.organization_id, selected_job_type.id)
+      EmailAutomation.get_all_pipelines_emails(current_user.organization_id, selected_job_type.job_type)
       |> assign_category_pipeline_count()
       |> assign_pipeline_status()
 
@@ -66,7 +66,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   defp get_pipeline_status(subcategory) do
     updated_pipelines = Enum.map(subcategory.pipelines, fn pipeline ->
-      if Enum.any?(pipeline.emails, &(&1.email_automation_setting.status == :active)) do
+      if Enum.any?(pipeline.emails, &(&1.status == :active)) do
         Map.put(pipeline, :status, "active")
       else
         Map.put(pipeline, :status, "disabled")

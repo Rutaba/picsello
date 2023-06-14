@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   @moduledoc false
 
   use PicselloWeb, :live_component
+  alias PicselloWeb.Live.Shared
 
   alias Picsello.{
     Job,
@@ -213,6 +214,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         assign(socket, :package_changeset, changeset)
 
       {:ok, %{gallery: gallery}} ->
+        Shared.insert_gallery_emails(gallery)
         send(self(), {:redirect_to_gallery, gallery})
         socket |> assign(:new_gallery, gallery)
     end

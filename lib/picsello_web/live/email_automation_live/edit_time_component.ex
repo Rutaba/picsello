@@ -15,9 +15,10 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
     current_user: current_user,
     job_type: job_type,
     pipeline: %{email_automation_category: %{type: type}},
-    email_automation_setting_id: setting_id
+    email_id: email_id,
+    email: email
     } = assigns, socket) do
-    email_automation_setting = EmailAutomation.get_email_setting_by_id(to_integer(setting_id))
+    email_automation_setting = email
 
     email_automation_setting = if email_automation_setting.total_hours == 0 do
       email_automation_setting |> Map.put(:immediately, true)
@@ -64,12 +65,12 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
     assigns: %{
       changeset: changeset,
       }} = socket) do
-    
+
     case Repo.insert(changeset, on_conflict: :replace_all, conflict_target: :id) do
-      {:ok, email_automation_setting} -> 
+      {:ok, email_automation_setting} ->
         send(self(), {:update_automation, %{email_automation_setting: email_automation_setting, message: "successfully updated"}})
         socket
-      {:error, changeset} -> 
+      {:error, changeset} ->
         socket
         |> assign(changeset: changeset)
     end
