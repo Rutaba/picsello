@@ -1184,7 +1184,7 @@ defmodule PicselloWeb.HomeLive.Index do
         do: Enum.count(assigns.data.orders),
         else: Map.get(assigns.data, :booking_count, 0)
 
-    assigns = assign(assigns, count: count) |> IO.inspect
+    assigns = assign(assigns, count: count)
 
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
