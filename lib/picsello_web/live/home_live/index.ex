@@ -716,7 +716,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <hr class="mt-4 mb-4" />
             <%= case @booking_events |> Enum.take(6) do %>
               <% [] -> %>
-                  <div class="flex md:flex-row flex-col items-center mt-4 p-4 md:gap-4 gap-6">
+                  <div class="flex md:flex-row flex-col items-center  mt-4 p-4 md:gap-4 gap-6">
                     <iframe src="https://www.youtube.com/embed/aVnPMupMK8Q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
                     <p class="md:max-w-md text-base-250 text-normal mb-8">Booking events are an easy way to get jobs booked, paid and prepped efficiently - for both you and your clients.</p>
                   </div>
