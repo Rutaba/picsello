@@ -23,8 +23,8 @@ defmodule Picsello.Galleries do
     Galleries.Gallery.UseGlobal
   }
 
+  alias Picsello.Workers.{UploadExistingFile, CleanStore}
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
-  alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
   alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, GalleryClient}
   import Repo.CustomMacros
@@ -526,8 +526,6 @@ defmodule Picsello.Galleries do
     end)
   end
 
-  alias Picsello.GlobalSettings.Gallery, as: GSGallery
-  alias Picsello.Workers.UploadExistingFile
   defp check_watermark(%{package: %{download_each_price: %Money{amount: 0}}}, _), do: Multi.new()
 
   defp check_watermark(gallery, %{organization_id: org_id}) do
