@@ -743,7 +743,7 @@ defmodule PicselloWeb.HomeLive.Index do
                       end %>
                   </p>
                   <p class="text-gray-400 font-normal text-sm">
-                    Package price: <%= package |> Package.price() |> Money.to_string(fractional_unit: false) %>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+                    Package price: <%= package |> Package.price() %>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
                     Digital price: <%= if Money.zero?(package.download_each_price) do %>--<% else %><%= package.download_each_price %> <% end %>
                   </p>
                 <% end %>
