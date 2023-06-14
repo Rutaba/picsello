@@ -20,9 +20,9 @@ defmodule Picsello.Jobs do
       |> Job.not_booking()
 
     from(j in query,
-    preload: :job_status,
-    order_by: [desc: j.inserted_at],
-    limit: 6
+      preload: :job_status,
+      order_by: [desc: j.inserted_at],
+      limit: 6
     )
     |> Repo.all()
   end
@@ -34,9 +34,9 @@ defmodule Picsello.Jobs do
       |> Job.not_leads()
 
     from(j in query,
-    preload: :shoots,
-    order_by: [desc: j.inserted_at],
-    limit: 6
+      preload: :shoots,
+      order_by: [desc: j.inserted_at],
+      limit: 6
     )
     |> Repo.all()
   end

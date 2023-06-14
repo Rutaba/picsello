@@ -109,10 +109,12 @@ defmodule Picsello.OrganizationCard do
   def get_org_stripe_card(organization_id) do
     from(org_card in OrganizationCard,
       join: card in assoc(org_card, :card),
-      where: org_card.organization_id == ^organization_id
-      and card.concise_name == "set-up-stripe",
+      where:
+        org_card.organization_id == ^organization_id and
+          card.concise_name == "set-up-stripe",
       preload: [:card]
-    ) |> Repo.one()
+    )
+    |> Repo.one()
   end
 
   defp update!(organization_card_id, status) do

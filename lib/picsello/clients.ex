@@ -95,9 +95,9 @@ defmodule Picsello.Clients do
 
   def get_recent_clients(user) do
     from(c in Client,
-    where: c.organization_id == ^user.organization_id and is_nil(c.archived_at),
-    order_by: [desc: c.inserted_at],
-    limit: 6
+      where: c.organization_id == ^user.organization_id and is_nil(c.archived_at),
+      order_by: [desc: c.inserted_at],
+      limit: 6
     )
     |> Repo.all()
   end
