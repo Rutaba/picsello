@@ -1189,14 +1189,14 @@ defmodule PicselloWeb.HomeLive.Index do
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col gap-2 md:gap-4 w-full md:flex-row grow">
-          <%= if Galleries.preview_image(@data) do %>
-            <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_path(@socket, :edit, @data.id)) do %>
-            <div class="rounded-lg float-left w-[100px] min-h-[65px]" style={"background-image: url('#{if Map.has_key?(@data, :client_link_hash), do: cover_photo_url(@data), else: @data.thumbnail_url}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
+          <%= if Map.has_key?(@data, :thumbnail_url) do %>
+            <%= live_redirect to: Routes.calendar_booking_events_path(@socket, :edit, @data.id) do %>
+              <.blurred_thumbnail class="h-32 rounded-lg" url={@data.thumbnail_url} />
             <% end %>
           <% else %>
-            <%= if Map.has_key?(@data, :thumbnail_url) do %>
-              <%= live_redirect to: Routes.calendar_booking_events_path(@socket, :edit, @data.id) do %>
-                <.blurred_thumbnail class="h-32 rounded-lg" url={@data.thumbnail_url} />
+              <%= if Galleries.preview_image(@data) do %>
+                <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_path(@socket, :edit, @data.id)) do %>
+                <div class="rounded-lg float-left w-[100px] min-h-[65px]" style={"background-image: url('#{if Map.has_key?(@data, :client_link_hash), do: cover_photo_url(@data), else: @data.thumbnail_url}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
               <% end %>
             <% else %>
               <div class="rounded-lg h-full p-2 items-center flex flex-col w-[100px] h-[65px] bg-base-200">
@@ -1226,7 +1226,7 @@ defmodule PicselloWeb.HomeLive.Index do
               <%= Calendar.strftime(@data.inserted_at, "%m/%d/%y") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
             </div>
             <div class="flex md:gap-2 gap-3">
-              <button {testid("copy-link")} id="copy-link" class={classes("flex  w-full md:w-auto items-center justify-center text-center px-1 py-0.5 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @data.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@data, :client_link_hash), do: clip_board(@socket, @data), else: @data.thumbnail_url} phx-hook="Clipboard">
+              <button {testid("copy-link")} id={"copy-link-#{@data.id}"} class={classes("flex  w-full md:w-auto items-center justify-center text-center px-1 py-0.5 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @data.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@data, :client_link_hash), do: clip_board(@socket, @data), else: @data.thumbnail_url} phx-hook="Clipboard">
                 <.icon name="anchor" class={classes("w-2 h-2 fill-current text-blue-planning-300 inline mr-2", %{"text-gray-300" => @data.status in [:archive, :disabled]})} />
                 Copy link
                 <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
@@ -1241,9 +1241,9 @@ defmodule PicselloWeb.HomeLive.Index do
                 </button>
                 <div class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
                   <%= if Map.has_key?(@data, :client_link_hash) do %>
-                  <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, @data.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
-                  <.dropdown_item {assigns} id="send_email_link" class={classes("hover:cursor-pointer", %{"hidden" => disabled?(@data)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
-                    <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, @data.job.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
+                  <.dropdown_item {assigns} id={"edit_link_#{@data.id}"} icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, @data.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
+                  <.dropdown_item {assigns} id={"send_email_link_#{@data.id}"} class={classes("hover:cursor-pointer", %{"hidden" => disabled?(@data)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
+                    <.dropdown_item {assigns} id={"go_to_job_link_#{@data.id}"} icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, @data.job.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
                     <%= if Enum.any?(@data.orders) do %>
                       <%= case disabled?(@data) do %>
                         <% true -> %>
@@ -1257,18 +1257,18 @@ defmodule PicselloWeb.HomeLive.Index do
                   <% else %>
                     <%= case @data.status do %>
                       <% :archive -> %>
-                        <.button title="Unarchive" icon="plus"  click_event="unarchive-event" id={@data.id} color="blue-planning" />
+                        <.button title="Unarchive" icon="plus"  click_event="unarchive-event" id={"unarchive_#{@data.id}"} color="blue-planning" />
                       <% status -> %>
-                        <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.calendar_booking_events_path(@socket, :edit, @data.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
-                        <.button title="Send update" icon="envelope" click_event="send-email" id={@data.id} color="blue-planning" />
-                        <.button title="Duplicate" icon="duplicate" click_event="duplicate-event" id={@data.id} color="blue-planning" />
+                        <.dropdown_item {assigns} id={"edit_link_#{@data.id}"} icon="pencil" title="Edit" link={[href: Routes.calendar_booking_events_path(@socket, :edit, @data.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
+                        <.button title="Send update" icon="envelope" click_event="send-email" id={"send_update_#{@data.id}"} color="blue-planning" />
+                        <.button title="Duplicate" icon="duplicate" click_event="duplicate-event" id={"duplicate_#{@data.id}"} color="blue-planning" />
                         <%= case status do %>
                         <% :active -> %>
-                          <.button title="Disable" icon="eye"  click_event="confirm-disable-event" id={@data.id} color="red-sales" />
+                          <.button title="Disable" icon="eye"  click_event="confirm-disable-event" id={"disable_#{@data.id}"} color="red-sales" />
                         <% :disabled-> %>
-                          <.button title="Enable" icon="plus"  click_event="enable-event" id={@data.id} color="blue-planning" />
+                          <.button title="Enable" icon="plus"  click_event="enable-event" id={"enable_#{@data.id}"} color="blue-planning" />
                         <% end %>
-                        <.button title="Archive" icon="trash" click_event="confirm-archive-event" id={@data.id} color="red-sales" />
+                        <.button title="Archive" icon="trash" click_event="confirm-archive-event" id={"archive_#{@data.id}"} color="red-sales" />
                       <% end %>
                   <% end %>
                 </div>
