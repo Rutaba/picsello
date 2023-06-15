@@ -35,7 +35,7 @@ defmodule PicselloWeb.HomeLive.Index do
     QuestionnaireFormComponent
   }
 
-  import PicselloWeb.JobLive.Shared, only: [status_badge: 1]
+  import PicselloWeb.JobLive.Shared, only: [status_badge: 1, open_email_compose: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.Gettext, only: [ngettext: 3]
 
@@ -448,6 +448,19 @@ defmodule PicselloWeb.HomeLive.Index do
         |> put_flash(:success, "Error unarchiving event")
         |> noreply()
     end
+  end
+
+  @impl true
+  def handle_event(
+        "open_compose",
+        %{"index" => index},
+        %{assigns: %{galleries: galleries}} = socket
+      ) do
+    gallery = Enum.at(galleries, to_integer(index))
+
+    socket
+    |> assign(:job, gallery.job)
+    |> open_email_compose()
   end
 
   @impl true
@@ -1234,22 +1247,22 @@ defmodule PicselloWeb.HomeLive.Index do
                 </div>
               </button>
               <div id={"manage-#{@data.id}"} phx-hook="Select" class="md:w-auto w-full">
-                <button class="btn-tertiary px-1 py-0.5 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id={"menu-button-#{@data.id}"} phx-click="show_dropdown" phx-value-show_index={@data_index}>
+                <button class="btn-tertiary px-1 py-0.5 flex items-center gap-3 mr-2 text-blue-planning-300 md:w-auto w-full" id={"menu-button-#{@data.id}"}>
                   Actions
                   <.icon name="down" class="w-2 h-2 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
                   <.icon name="up" class="hidden w-2 h-2 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
                 </button>
                 <div class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
                   <%= if Map.has_key?(@data, :client_link_hash) do %>
-                  <.dropdown_item {assigns} id={"edit_link_#{@data.id}"} icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, @data.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
-                  <.dropdown_item {assigns} id={"send_email_link_#{@data.id}"} class={classes("hover:cursor-pointer", %{"hidden" => disabled?(@data)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
+                  <.dropdown_item {assigns} id={"edit_gallery_#{@data.id}"} icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, @data.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
+                  <.dropdown_item {assigns} id={"send_email_link_#{@data.id}"} class={classes("hover:cursor-pointer", %{"hidden" => disabled?(@data)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose", phx_value_index: @data_index]} />
                     <.dropdown_item {assigns} id={"go_to_job_link_#{@data.id}"} icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, @data.job.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
                     <%= if Enum.any?(@data.orders) do %>
                       <%= case disabled?(@data) do %>
                         <% true -> %>
-                          <.dropdown_item {assigns} class="enable-link hover:cursor-pointer" icon="eye" title="Enable" link={[phx_click: "enable_gallery_popup", phx_value_gallery_id: @data.id]})} />
+                          <.dropdown_item {assigns} class="enable-link hover:cursor-pointer" icon="eye" title="Enable" link={[phx_click: "enable_gallery_popup", phx_value_gallery_id: @data.id]} />
                         <% _ -> %>
-                          <.dropdown_item {assigns} class="disable-link hover:cursor-pointer" icon="closed-eye" title="Disable" link={[phx_click: "disable_gallery_popup", phx_value_gallery_id: @data.id]})} />
+                          <.dropdown_item {assigns} class="disable-link hover:cursor-pointer" icon="closed-eye" title="Disable" link={[phx_click: "disable_gallery_popup", phx_value_gallery_id: @data.id]} />
                       <% end %>
                     <% else %>
                         <.dropdown_item {assigns} class={classes("delete-link hover:cursor-pointer", %{"hidden" => disabled?(@data)})} icon="trash" title="Delete" link={[phx_click: "delete_gallery_popup", phx_value_gallery_id: @data.id]} />
@@ -1259,16 +1272,17 @@ defmodule PicselloWeb.HomeLive.Index do
                       <% :archive -> %>
                         <.button title="Unarchive" icon="plus"  click_event="unarchive-event" id={"unarchive_#{@data.id}"} color="blue-planning" />
                       <% status -> %>
-                        <.dropdown_item {assigns} id={"edit_link_#{@data.id}"} icon="pencil" title="Edit" link={[href: Routes.calendar_booking_events_path(@socket, :edit, @data.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
-                        <.button title="Send update" icon="envelope" click_event="send-email" id={"send_update_#{@data.id}"} color="blue-planning" />
-                        <.button title="Duplicate" icon="duplicate" click_event="duplicate-event" id={"duplicate_#{@data.id}"} color="blue-planning" />
+                        <.dropdown_item {assigns} id={"edit_event_#{@data.id}"} icon="pencil" title="Edit" link={[href: Routes.calendar_booking_events_path(@socket, :edit, @data.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
+                        <.dropdown_item {assigns} class="disable-link hover:cursor-pointer" icon="envelope" title="Send update" link={[phx_click: "send-email", phx_value_id: @data.id]} />
+                        <.dropdown_item {assigns} class="disable-link hover:cursor-pointer" icon="duplicate" title="Duplicate" link={[phx_click: "duplicate-event", phx_value_id: @data.id]} />
+
                         <%= case status do %>
-                        <% :active -> %>
-                          <.button title="Disable" icon="eye"  click_event="confirm-disable-event" id={"disable_#{@data.id}"} color="red-sales" />
-                        <% :disabled-> %>
-                          <.button title="Enable" icon="plus"  click_event="enable-event" id={"enable_#{@data.id}"} color="blue-planning" />
+                          <% :active -> %>
+                            <.dropdown_item {assigns} class="disable-link hover:cursor-pointer red-sales" icon="eye" title="Disable" link={[phx_click: "confirm-disable-event", phx_value_id: @data.id]} />
+                          <% :disabled-> %>
+                            <.dropdown_item {assigns} class="disable-link hover:cursor-pointer blue-planning" icon="plus" title="Enable" link={[phx_click: "enable-event", phx_value_id: @data.id]} />
                         <% end %>
-                        <.button title="Archive" icon="trash" click_event="confirm-archive-event" id={"archive_#{@data.id}"} color="red-sales" />
+                        <.dropdown_item {assigns} class="disable-link hover:cursor-pointer blue-planning red-sales" icon="trash" title="Archive" link={[phx_click: "confirm-archive-event", phx_value_id: @data.id]} />
                       <% end %>
                   <% end %>
                 </div>

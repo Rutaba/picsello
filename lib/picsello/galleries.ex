@@ -81,7 +81,7 @@ defmodule Picsello.Galleries do
     query = list_all_galleries_by_organization_query(user.organization_id)
 
     from(q in query,
-      preload: :orders,
+      preload: [:orders, :job],
       order_by: [desc: q.inserted_at],
       limit: 6
     )

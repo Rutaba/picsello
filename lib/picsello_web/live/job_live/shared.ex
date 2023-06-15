@@ -1685,7 +1685,7 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_inbox_count()
   end
 
-  defp open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
+  def open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
     do:
       socket
       |> ClientMessageComponent.open(%{
@@ -1699,7 +1699,7 @@ defmodule PicselloWeb.JobLive.Shared do
       })
       |> noreply()
 
-  defp open_email_compose(%{assigns: %{current_user: current_user}} = socket, client_id) do
+  def open_email_compose(%{assigns: %{current_user: current_user}} = socket, client_id) do
     client = Repo.get(Client, client_id)
 
     socket
