@@ -21,41 +21,52 @@ defmodule Picsello.ClientsIndexTest do
   end
 
   def fill_in_package_form(session) do
-    session
-    |> fill_in(text_field("Title"), with: "Wedding Deluxe")
-    |> find(select("# of Shoots"), &click(&1, option("2")))
-    |> fill_in(text_field("Image Turnaround Time"), with: "2")
-    |> find(
-      text_field("The amount you’ve charged for your job"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$1000.00"))
-    )
-    |> find(
-      text_field("How much of the creative session fee is for print credits"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$100.00"))
-    )
-    |> find(
-      text_field("The amount you’ve already collected"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
-    )
-    |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
-    |> scroll_into_view(css("#download_status_limited"))
-    |> click(css("#download_status_limited"))
-    |> find(
-      text_field("download_count"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
-    )
-    |> scroll_into_view(css("#download_is_custom_price"))
-    |> find(
-      text_field("download[each_price]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
-    )
-    |> scroll_into_view(css("#download_is_buy_all"))
-    |> click(css("#download_is_buy_all"))
-    |> find(
-      text_field("download[buy_all]"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
-    )
-  end
+   session
+   |> fill_in(text_field("Title"), with: "Wedding Deluxe")
+   |> find(select("# of Shoots"), &click(&1, option("2")))
+   |> fill_in(text_field("Image Turnaround Time"), with: "2")
+   |> find(
+     text_field("The amount you’ve charged for your job"),
+     &(&1 |> Element.clear() |> Element.fill_in(with: "$1000.00"))
+   )
+   |> find(
+     text_field("How much of the creative session fee is for print credits"),
+     &(&1 |> Element.clear() |> Element.fill_in(with: "$100.00"))
+   )
+   |> find(
+     text_field("The amount you’ve already collected"),
+     &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
+   )
+   |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
+   |> scroll_into_view(testid("edit-digital-collection"))
+   |> click(button("Edit settings"))
+   |> scroll_into_view(css("#download_status_limited"))
+   |> click(css("#download_status_limited"))
+   |> find(
+     text_field("download_count"),
+     &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
+   )
+   |> click(testid("close-settings"))
+   |> click(button("Edit image price"))
+   |> scroll_into_view(css("#download_each_price"))
+   |> find(
+     text_field("download[each_price]"),
+     &(&1 |> Element.clear() |> Element.fill_in(with: "$5"))
+   )
+   |> click(testid("close-settings"))
+   |> click(button("Edit upsell options"))
+   |> scroll_into_view(css("#download_is_buy_all"))
+   |> click(css("#download_is_buy_all"))
+   |> find(
+     text_field("download[buy_all]"),
+     &(&1 |> Element.clear() |> Element.fill_in(with: "$2"))
+   )
+   |> assert_text("greater than digital image price")
+   |> find(
+     text_field("download[buy_all]"),
+     &(&1 |> Element.clear() |> Element.fill_in(with: "$10"))
+   )
+ end
 
   def fill_in_payments_form(session) do
     session
