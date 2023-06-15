@@ -231,6 +231,7 @@ defmodule Picsello.Notifiers.UserNotifier do
 
   @spec order_confirmation_params(Picsello.Cart.Order.t(), module()) :: %{
           :gallery_name => String.t(),
+          :client_email => String.t(),
           :job_name => String.t(),
           :client_order_url => String.t(),
           :products_quantity=> String.t(),
@@ -249,7 +250,7 @@ defmodule Picsello.Notifiers.UserNotifier do
         }
   def order_confirmation_params(
         %{
-          gallery: %{job: job} = gallery,
+          gallery: %{job: %{client: client} = job} = gallery,
           intent: intent,
           album_id: nil
         } = order,
