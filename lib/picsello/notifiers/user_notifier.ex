@@ -297,7 +297,6 @@ defmodule Picsello.Notifiers.UserNotifier do
               Cart.product_quantity(product) + acc
             end)
 
-
         Map.merge(params, fun.(order))
         |> Map.merge(digitals_params)
         |> Map.merge(%{stripe_fee: stripe_processing_fee(order),
@@ -354,11 +353,8 @@ defmodule Picsello.Notifiers.UserNotifier do
            application_fee_amount: application_fee_amount,
            processing_fee: processing_fee
          }
-       }),
-       do: %{
-         photographer_payment:
-           Money.subtract(amount, application_fee_amount |> Money.add(processing_fee))
-       }
+       }) do
+    costs_and_fees = application_fee_amount |> Money.add(processing_fee)
 
   defp photographer_charge(%{invoice: nil}), do: %{}
   defp photographer_charge(%{invoice: %{amount_due: amount}}), do: %{photographer_charge: amount}
