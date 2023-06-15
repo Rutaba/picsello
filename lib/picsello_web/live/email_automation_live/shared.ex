@@ -5,7 +5,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Picsello.{EmailPresets.EmailPreset, EmailAutomation}
+  alias Picsello.{EmailPresets.EmailPreset, EmailAutomation, Repo}
 
   def make_email_presets_options(email_presets) do
     email_presets
@@ -29,11 +29,20 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
       ) do
     automation_pipelines =
-      EmailAutomation.get_all_pipelines_emails(current_user.organization_id, selected_job_type.job_type)
+      EmailAutomation.get_all_pipelines_emails(
+        current_user.organization_id,
+        selected_job_type.job_type
+      )
       |> assign_category_pipeline_count()
       |> assign_pipeline_status()
 
     socket |> assign(:automation_pipelines, automation_pipelines)
+  end
+
+  def get_pipline(pipeline_id) do
+    to_integer(pipeline_id)
+    |> EmailAutomation.get_pipeline_by_id()
+    |> Repo.preload([:email_automation_category, :email_automation_sub_category])
   end
 
   defp assign_category_pipeline_count(automation_pipelines) do
@@ -45,7 +54,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
           email_count =
             Enum.map(subcategory.pipelines, fn pipeline ->
               length(pipeline.emails)
-            end) |> Enum.sum()
+            end)
+            |> Enum.sum()
 
           email_count + acc
         end)
@@ -57,21 +67,25 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   defp assign_pipeline_status(pipelines) do
     pipelines
     |> Enum.map(fn %{subcategories: subcategories} = category ->
-      updated_sub_categories = Enum.map(subcategories, fn subcategory ->
+      updated_sub_categories =
+        Enum.map(subcategories, fn subcategory ->
           get_pipeline_status(subcategory)
         end)
+
       Map.put(category, :subcategories, updated_sub_categories)
     end)
   end
 
   defp get_pipeline_status(subcategory) do
-    updated_pipelines = Enum.map(subcategory.pipelines, fn pipeline ->
-      if Enum.any?(pipeline.emails, &(&1.status == :active)) do
-        Map.put(pipeline, :status, "active")
-      else
-        Map.put(pipeline, :status, "disabled")
-      end
-    end)
+    updated_pipelines =
+      Enum.map(subcategory.pipelines, fn pipeline ->
+        if Enum.any?(pipeline.emails, &(&1.status == :active)) do
+          Map.put(pipeline, :status, "active")
+        else
+          Map.put(pipeline, :status, "disabled")
+        end
+      end)
+
     Map.put(subcategory, :pipelines, updated_pipelines)
   end
 

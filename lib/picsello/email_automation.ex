@@ -225,6 +225,17 @@ defmodule Picsello.EmailAutomation do
     |> Repo.one()
   end
 
+  def get_email_schedule_by_id(id) do
+    from(es in EmailSchedule, where: es.id == ^id)
+    |> Repo.one()
+  end
+
+  def update_email_schedule(id, params) do
+    get_email_schedule_by_id(id)
+    |> EmailSchedule.changeset(params)
+    |> Repo.update()
+  end
+
   def get_all_pipelines_emails(organization_id, job_type) do
     get_all_pipelines()
     |> Enum.map(fn %{pipelines: pipelines} = automation ->

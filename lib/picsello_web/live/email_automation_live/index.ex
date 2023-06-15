@@ -3,7 +3,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.LiveHelpers
-  import PicselloWeb.EmailAutomationLive.Shared, only: [assign_automation_pipelines: 1]
+
+  import PicselloWeb.EmailAutomationLive.Shared,
+    only: [assign_automation_pipelines: 1, get_pipline: 1]
 
   alias Picsello.{
     EmailAutomation,
@@ -175,12 +177,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
     socket
     |> noreply()
-  end
-
-  defp get_pipline(pipeline_id) do
-    to_integer(pipeline_id)
-    |> EmailAutomation.get_pipeline_by_id()
-    |> Repo.preload([:email_automation_category, :email_automation_sub_category])
   end
 
   defp open_edit_modal(
