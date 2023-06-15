@@ -193,7 +193,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   defp product_charge_lines(%{products: products} = order) do
     [
       {"Products (#{length(products)})", sum_prices(products)},
-      Enum.any?(products, & &1.total_markuped_price) && {"", Cart.total_shipping(order)}
+      Enum.any?(products, & &1.shipping_type) && {"", Cart.total_shipping(order)}
     ]
   end
 

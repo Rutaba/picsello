@@ -218,10 +218,16 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     noreply(socket)
   end
 
+  def handle_info(:update_client_gallery_state, %{assigns: %{gallery: gallery}} = socket) do
+    socket
+    |> assign(favorites_count: Galleries.gallery_favorites_count(gallery))
+    |> noreply()
+  end
+
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
   def handle_info({:upload_success_message, _}, socket), do: noreply(socket)
   def handle_info({:photo_processed, _, _}, socket), do: noreply(socket)
-  def handle_info({:cover_photo_processed, _}, socket), do: noreply(socket)
+  def handle_info({:cover_photo_processed, _, _}, socket), do: noreply(socket)
 
   defp cover_photo(%{cover_photo: nil}), do: %{style: "background-image: url('#{@blank_image}')"}
   defp cover_photo(gallery), do: display_cover_photo(gallery)

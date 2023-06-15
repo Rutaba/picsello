@@ -109,7 +109,7 @@ defmodule Picsello.CreateClientTest do
       |> click(css(".action"))
       |> click(css(".envelope"))
     end)
-    |> assert_text("Send an email")
+    |> assert_text("Send email")
     |> fill_in(css("#client_message_subject"), with: "Test subject")
     |> fill_in(css(".ql-editor"), with: "Test message")
     |> wait_for_enabled_submit_button()
@@ -180,7 +180,7 @@ defmodule Picsello.CreateClientTest do
     |> set_cookie("show_welcome_modal", "")
     |> visit("/home")
     |> click(css("#hamburger-menu"))
-    |> click(link("Clients"))
+    |> click(link("Clients", count: 2, at: 1))
     |> click(button("Add client", count: 2, at: 1))
   end
 

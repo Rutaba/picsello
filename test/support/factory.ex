@@ -31,7 +31,8 @@ defmodule Picsello.Factory do
     Profiles.Profile,
     BrandLink,
     Questionnaire,
-    PackagePaymentSchedule
+    PackagePaymentSchedule,
+    ClientMessageRecipient
   }
 
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
@@ -343,6 +344,8 @@ defmodule Picsello.Factory do
     |> evaluate_lazy_attributes()
   end
 
+  def client_message_recipient_factory(), do: %ClientMessageRecipient{}
+
   def promote_to_job(%Job{package_id: nil, client: %{organization: organization}} = job)
       when not is_nil(organization) do
     job
@@ -442,11 +445,7 @@ defmodule Picsello.Factory do
   end
 
   def album_factory(attrs) do
-    %Album{
-      name: "Test album",
-      set_password: false,
-      password: nil
-    }
+    %Album{name: "Test album"}
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
   end
@@ -455,8 +454,6 @@ defmodule Picsello.Factory do
     %Album{
       name: "Test proof album",
       is_proofing: true,
-      set_password: true,
-      password: Gallery.generate_password(),
       client_link_hash: UUID.uuid4()
     }
     |> merge_attributes(attrs)

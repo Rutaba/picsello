@@ -256,6 +256,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
+    |> scroll_to_bottom()
+    |> scroll_into_view(testid("actions"))
     |> click(button("Manage"))
     |> click(button("Edit"))
     |> assert_text("Edit booking event: Details")
@@ -271,6 +273,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
+    |> scroll_to_bottom()
+    |> scroll_into_view(testid("actions"))
     |> click(button("Manage"))
     |> click(button("Disable"))
     |> assert_text("Disable this event?")
@@ -288,6 +292,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
+    |> scroll_to_bottom()
+    |> scroll_into_view(testid("actions"))
     |> click(button("Manage"))
     |> click(button("Edit"))
     |> assert_text("Edit booking event: Details")
@@ -386,6 +392,8 @@ defmodule Picsello.UserManagesBookingEventsTest do
     session
     |> visit("/calendar")
     |> click(link("Manage booking events"))
+    |> scroll_to_bottom()
+    |> scroll_into_view(testid("actions"))
     |> click(button("Manage"))
     |> click(button("Disable"))
     |> assert_text("Disable this event?")

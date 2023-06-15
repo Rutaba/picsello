@@ -175,7 +175,8 @@ defmodule PicselloWeb.LiveAuthTest do
 
       conn = put_session(conn, "gallery_session_token", token)
 
-      assert {:error, {:redirect, %{to: ^show_path}}} = live(conn, show_path <> "?pw=123")
+      assert {:error, {:redirect, %{to: ^show_path}}} =
+               live(conn, show_path <> "?pw=123&email=testing%40picsello.com")
     end
 
     test "/gallery/:hash?pw=123 correct password stores token in session", %{
@@ -218,28 +219,27 @@ defmodule PicselloWeb.LiveAuthTest do
     setup %{conn: conn} do
       {conn, user, gallery, _, _} = build_defaults(conn)
       album = insert(:proofing_album, %{gallery_id: gallery.id})
-      un_protected_album = insert(:proofing_album, %{gallery_id: gallery.id, set_password: false})
 
       [
         conn: conn,
         user: user,
-        un_protected_album: un_protected_album,
         album: album,
+        gallery: gallery,
         show_path: Routes.gallery_client_album_path(conn, :proofing_album, album.client_link_hash)
       ]
     end
 
     test "/album/:hash authenticated client for protected album", %{
       conn: conn,
-      album: album,
+      gallery: gallery,
       show_path: show_path
     } do
       {:ok, token} =
-        Galleries.build_album_session_token(album, album.password, "testing@picsello.com")
+        Galleries.build_gallery_session_token(gallery, gallery.password, "testing@picsello.com")
 
       assert {:ok, _view, _html} =
                conn
-               |> Plug.Conn.put_session("album_session_token", token)
+               |> Plug.Conn.put_session("gallery_session_token", token)
                |> live(show_path)
     end
 
@@ -254,41 +254,17 @@ defmodule PicselloWeb.LiveAuthTest do
       assert {:error, {:live_redirect, %{to: ^album_login_path}}} = live(conn, show_path)
     end
 
-    test "/album/:hash, show unprotected album without client authentication", %{
-      conn: conn,
-      un_protected_album: un_protected_album
-    } do
-      {:ok, token} =
-        Galleries.build_album_session_token(
-          un_protected_album,
-          un_protected_album.password,
-          "testing@picsello.com"
-        )
-
-      show_path =
-        Routes.gallery_client_album_path(
-          conn,
-          :proofing_album,
-          un_protected_album.client_link_hash
-        )
-
-      assert {:ok, _view, _html} =
-               conn
-               |> Plug.Conn.put_session("album_session_token", token)
-               |> live(show_path)
-    end
-
     test "/album/:hash authenticated photographer, your album", %{
       conn: conn,
       show_path: show_path,
-      album: album
+      gallery: gallery
     } do
       {:ok, token} =
-        Galleries.build_album_session_token(album, album.password, "testing@picsello.com")
+        Galleries.build_gallery_session_token(gallery, gallery.password, "testing@picsello.com")
 
       assert {:ok, _view, _html} =
                conn
-               |> Plug.Conn.put_session("album_session_token", token)
+               |> Plug.Conn.put_session("gallery_session_token", token)
                |> live(show_path)
     end
 

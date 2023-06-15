@@ -1,7 +1,6 @@
 defmodule Picsello.EditLeadPackageTest do
   use Picsello.FeatureCase, async: true
   alias Picsello.Repo
-  import Money.Sigils
 
   setup :onboarded
   setup :authenticated

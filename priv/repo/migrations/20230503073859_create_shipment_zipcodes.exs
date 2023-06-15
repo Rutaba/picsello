@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.CreateShipmentZipcodes do
   alias Picsello.Repo
   import Ecto.Query
 
-  @csv_file "./priv/repo/zipcodes.csv"
+  @csv_file "./priv/repo/csv/zipcodes.csv"
 
   def up do
     create table(:shipment_zipcodes) do

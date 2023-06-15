@@ -8,6 +8,8 @@ defmodule Picsello.OrderTransactionsTest do
   setup :authenticated_gallery
 
   setup %{user: user, gallery: gallery} do
+    insert(:gallery_digital_pricing, gallery: gallery)
+
     gallery_client =
       insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
 
@@ -65,7 +67,7 @@ defmodule Picsello.OrderTransactionsTest do
   } do
     session
     |> visit("/galleries/#{gallery.id}/transactions")
-    |> assert_has(css("a[href='/jobs']", text: "Jobs"))
+    |> assert_has(css("a[href='/jobs']", text: "Jobs", at: 1, count: 2))
     |> assert_has(css("a[href='/jobs/#{job.id}']", text: Job.name(job)))
     |> assert_has(css("span", text: Job.name(job), count: 2))
     |> click(css("*[phx-click='order-detail']", text: "View details"))

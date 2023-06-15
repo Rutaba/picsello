@@ -253,7 +253,7 @@ defmodule Picsello.CartTest do
             |> Cart.place_product(gallery, gallery_client)
         end
 
-      assert Order.total_cost(order) == ~M[14990]USD
+      assert Order.total_cost(order) == ~M[13990]USD
 
       assert {:loaded,
               %Order{

@@ -308,7 +308,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
              gallery: gallery,
              inprogress_photos: inprogress_photos
            }
-         },
+         } = socket,
          total_progress
        ) do
     if total_progress != overall_progress do
@@ -325,6 +325,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
          %{total_progress: total_progress, gallery_id: gallery.id, entries: inprogress_photos}}
       )
     end
+
+    socket
   end
 
   defp uploading_broadcast(socket, gallery_id, entries \\ [], uploading \\ false) do

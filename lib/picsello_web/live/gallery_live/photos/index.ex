@@ -38,6 +38,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     socket
     |> assign(
       albums_length: 0,
+      show_favorite_toggle: false,
       total_progress: 0,
       favorites_filter: false,
       photographer_favorites_filter: false,
@@ -635,7 +636,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  @impl true
   def handle_info(
         {:confirm_event, "delete_photo", %{photo_id: id}},
         socket
@@ -760,7 +760,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  @impl true
   def handle_info(
         {:photo_processed, _, photo},
         %{assigns: %{total_progress: total_progress}} = socket
@@ -827,7 +826,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  @impl true
   def handle_info(:clear_photos_error, %{assigns: %{total_progress: total_progress}} = socket) do
     if total_progress == 0 do
       socket
@@ -884,18 +882,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
-  def handle_info({:message_composed, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset, "gallery")
+  def handle_info({:message_composed, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "gallery")
   end
 
   @impl true
-  def handle_info({:message_composed_for_album, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset, "album")
+  def handle_info({:message_composed_for_album, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "album")
   end
 
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
 
-  @impl true
   def handle_info(
         {
           :confirm_event,
@@ -947,6 +944,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> noreply()
   end
 
+  def handle_info(:update_photo_gallery_state, socket) do
+    socket
+    |> assign_show_favorite_toggle()
+    |> noreply()
+  end
+
   defp assigns(socket, gallery_id, album \\ nil) do
     gallery = get_gallery!(gallery_id)
 
@@ -968,7 +971,20 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> assign_photos(@per_page)
     |> then(&assign(&1, photo_ids: Enum.map(&1.assigns.photos, fn photo -> photo.id end)))
     |> sorted_photos()
+    |> assign_show_favorite_toggle()
     |> noreply()
+  end
+
+  defp assign_show_favorite_toggle(%{assigns: %{gallery: %{id: id}} = assigns} = socket) do
+    opts =
+      assigns
+      |> Map.get(:album)
+      |> photos_album_opts()
+      |> Keyword.put(:photographer_favorites_filter, true)
+
+    show_favorite_toggle = Galleries.get_gallery_photos(id, opts) |> Enum.count() > 0
+
+    assign(socket, show_favorite_toggle: show_favorite_toggle)
   end
 
   defp get_gallery!(gallery_id) do

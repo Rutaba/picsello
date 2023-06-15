@@ -32,7 +32,8 @@ defmodule Picsello.SubscriptionChangesTest do
     )
 
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> find(
       testid("subscription-top-banner"),
       &assert_text(&1, "1 day left before your subscription ends")
@@ -69,7 +70,8 @@ defmodule Picsello.SubscriptionChangesTest do
     )
 
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_has(testid("subscription-top-banner", text: "left in your trial", count: 0))
     |> assert_has(testid("subscription-footer", text: "left in your trial", count: 0))
     |> assert_has(css("*[role='status']", text: "8 days left until your subscription ends"))
@@ -92,7 +94,8 @@ defmodule Picsello.SubscriptionChangesTest do
     )
 
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_has(testid("subscription-top-banner", text: "left in your trial", count: 0))
     |> assert_has(testid("subscription-footer", text: "left in your trial", count: 0))
     |> assert_has(css("*[role='status']", text: "1 day left in your trial"))
@@ -109,7 +112,8 @@ defmodule Picsello.SubscriptionChangesTest do
     )
 
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_text("Current Plan")
     |> assert_text("1 day left in your trial")
     |> assert_text("$20/month")
@@ -124,7 +128,8 @@ defmodule Picsello.SubscriptionChangesTest do
     )
 
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_text("Subscribe now")
     |> assert_text("1 day left until your subscription ends")
     |> assert_text("$20/month")
@@ -134,7 +139,8 @@ defmodule Picsello.SubscriptionChangesTest do
     insert(:subscription_event, user: user, subscription_plan: plan, status: "active")
 
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_text("Current Plan")
     |> assert_text("$20/month")
   end
@@ -177,7 +183,8 @@ defmodule Picsello.SubscriptionChangesTest do
     end)
 
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_path("/home")
     |> assert_text("Your subscription has expired")
     |> click(button("Select plan", count: 2, at: 1))
@@ -188,7 +195,8 @@ defmodule Picsello.SubscriptionChangesTest do
     |> visit(stripe_success_url)
     |> assert_text("You have subscribed to Picsello")
     |> click(button("Close"))
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_text("Current Plan")
     |> assert_text("$500/year")
   end
@@ -241,7 +249,8 @@ defmodule Picsello.SubscriptionChangesTest do
     end)
 
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_path("/home")
     |> assert_text("Your subscription has expired")
     |> click(testid("promo-code"))
@@ -261,7 +270,8 @@ defmodule Picsello.SubscriptionChangesTest do
     |> visit(stripe_success_url)
     |> assert_text("You have subscribed to Picsello")
     |> click(button("Close"))
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_text("Current Plan")
     |> assert_text("$500/year")
     |> assert_text("20OFF")
@@ -288,8 +298,8 @@ defmodule Picsello.SubscriptionChangesTest do
     end)
 
     session
-    |> click(link("Settings"))
-    |> sleep(500)
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> click(button("Open Billing Portal"))
     |> assert_url_contains("stripe-billing-portal")
 
@@ -322,7 +332,8 @@ defmodule Picsello.SubscriptionChangesTest do
     end)
 
     session
-    |> click(link("Settings"))
+    |> click(testid("subnav-Settings"))
+    |> click(link("Account"))
     |> assert_text("Add promo code")
     |> click(testid("promo-code"))
     |> within_modal(fn modal ->

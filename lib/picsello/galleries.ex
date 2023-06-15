@@ -26,7 +26,7 @@ defmodule Picsello.Galleries do
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
-  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, GalleryClient, Album}
+  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, GalleryClient}
   import Repo.CustomMacros
 
   @area_markup_category Picsello.Category.print_category()
@@ -474,20 +474,20 @@ defmodule Picsello.Galleries do
       gallery = gallery |> Repo.preload(job: [client: [organization: :user]])
       now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-      [
-        %{
-          email: gallery.job.client.email,
-          gallery_id: gallery.id,
-          inserted_at: now,
-          updated_at: now
-        },
-        %{
-          email: user.email,
-          gallery_id: gallery.id,
-          inserted_at: now,
-          updated_at: now
-        }
-      ]
+      client_email = gallery.job.client.email
+
+      client_params = %{
+        email: client_email,
+        gallery_id: gallery.id,
+        inserted_at: now,
+        updated_at: now
+      }
+
+      if client_email == user.email do
+        [client_params]
+      else
+        [client_params, Map.put(client_params, :email, user.email)]
+      end
     end)
     |> Multi.insert_all(
       :gallery_products,
@@ -743,6 +743,12 @@ defmodule Picsello.Galleries do
   def gallery_favorites_count(%Gallery{} = gallery) do
     Photo
     |> where(gallery_id: ^gallery.id, client_liked: true)
+    |> Repo.aggregate(:count, [])
+  end
+
+  def gallery_album_favorites_count(%Gallery{} = gallery, album_id) do
+    Photo
+    |> where(gallery_id: ^gallery.id, album_id: ^album_id, client_liked: true)
     |> Repo.aggregate(:count, [])
   end
 
@@ -1188,34 +1194,19 @@ defmodule Picsello.Galleries do
   @doc """
   Creates session token for the gallery client.
   """
-  def build_gallery_session_token("" <> hash, password) do
-    hash |> get_gallery_by_hash!() |> build_gallery_session_token(password)
+  def build_gallery_session_token("" <> hash, password, email) do
+    hash |> get_gallery_by_hash!() |> build_gallery_session_token(password, email)
   end
 
   def build_gallery_session_token(
         %Gallery{id: id, password: gallery_password} = gallery,
         password,
-        email \\ nil
+        email
       ) do
     with true <- gallery_password == password,
          {:ok, %{token: token}} <-
            insert_session_token(%{resource_id: id, resource_type: :gallery, email: email}),
          {:ok, _} <- insert_gallery_client(gallery, email) do
-      {:ok, token}
-    else
-      _ -> {:error, "cannot log in with that password"}
-    end
-  end
-
-  def build_album_session_token(
-        %Album{id: id, password: album_password, gallery_id: gallery_id},
-        password,
-        email \\ nil
-      ) do
-    with true <- album_password == password,
-         {:ok, %{token: token}} <-
-           insert_session_token(%{resource_id: id, resource_type: :album, email: email}),
-         {:ok, _} <- insert_gallery_client(get_gallery!(gallery_id), email) do
       {:ok, token}
     else
       _ -> {:error, "cannot log in with that password"}
@@ -1298,6 +1289,13 @@ defmodule Picsello.Galleries do
 
   def get_package(%Gallery{} = gallery) do
     gallery |> Repo.preload(:package) |> Map.get(:package)
+  end
+
+  def get_gallery_client_email(order) do
+    order
+    |> Repo.preload(:gallery_client)
+    |> Map.get(:gallery_client)
+    |> Map.get(:email)
   end
 
   def do_not_charge_for_download?(%Gallery{} = gallery) do

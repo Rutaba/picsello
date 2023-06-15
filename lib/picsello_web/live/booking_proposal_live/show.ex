@@ -129,21 +129,25 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   @impl true
   def handle_info(
-        {:message_composed, changeset},
+        {:message_composed, changeset, recipients},
         %{
           assigns: %{
             organization: %{name: organization_name},
-            job: %{id: job_id}
-          }
+            job: %{id: job_id} = job
+          } = assigns
         } = socket
       ) do
+        
+    user = Map.get(assigns, :current_user)
+    user = if user, do: user, else: Map.get(assigns, :photographer)
+
     flash =
       changeset
       |> Ecto.Changeset.change(job_id: job_id, outbound: false, read_at: nil)
-      |> Ecto.Changeset.apply_changes()
-      |> Repo.insert()
+      |> Messages.add_message_to_job(job, recipients, user)
+      |> Repo.transaction()
       |> case do
-        {:ok, message} ->
+        {:ok, %{client_message: message, client_message_recipients: _}} ->
           Messages.notify_inbound_message(message, PicselloWeb.Helpers)
 
           &PicselloWeb.ConfirmationComponent.open(&1, %{
@@ -304,6 +308,7 @@ I look forward to capturing these memories for you!"}
            presets: [],
            send_button: "Send",
            client: Job.client(job),
+           recipients: %{"from" => job.client.email},
            current_user: current_user
          })
          |> noreply()

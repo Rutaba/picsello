@@ -404,7 +404,7 @@ defmodule PicselloWeb.PackageLive.Shared do
     <div class= {classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => !@show_print_credits})}>
       <div class="p-2 font-bold bg-base-200 flex flex-row">
         Print Credit Settings
-        <a phx-target={@target} phx-click="edit-print-credits" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+        <a {testid("close-settings")} phx-target={@target} phx-click="edit-print-credits" class="flex items-center cursor-pointer ml-auto"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
       </div>
 
       <div class="mt-4 font-normal text-base leading-6 pb-6 px-6">
@@ -482,7 +482,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "digitals"})}>
         <div class="items-center cursor-pointer p-2 font-bold bg-base-200 flex justify-between">
           Digital Collection Settings
-          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+          <a {testid("close-settings")} phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
         <.build_download_fields download_changeset={d} {assigns} />
       </div>
@@ -490,7 +490,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "image_price"})}>
         <div class="items-center cursor-pointer p-2 font-bold bg-base-200 flex justify-between">
           Digital Image Price
-          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+          <a {testid("close-settings")} phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
         <.include_download_price download_changeset={d} />
       </div>
@@ -498,7 +498,7 @@ defmodule PicselloWeb.PackageLive.Shared do
       <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "buy_all"})}>
         <div class="items-center cursor-pointer p-2 font-bold bg-base-200 flex justify-between">
           Upsell Options
-          <a phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
+          <a {testid("close-settings")} phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
         <.is_buy_all download_changeset={d} />
       </div>
@@ -591,10 +591,10 @@ defmodule PicselloWeb.PackageLive.Shared do
         <% @download_count == 0 -> %>
           <dt class="text-gray-500">No digital images included</dt>
         <% true -> %>
-          <dt class="text-gray-500">Digital images included</dt>
+        <dt class="text-gray-500">Digital images included</dt>
           <dd class="flex items-center justify-center w-8 h-8 mr-2 text-xs font-bold bg-gray-200 rounded-full group-hover:bg-white">
             <%= @download_count %>
-          </dd>
+        </dd>
       <% end %>
     """
   end

@@ -6428,6 +6428,7 @@
     "shapes": ["no", "a2", "b2", "c13", "d3", "e16"],
     "hasFoils": true
   },
+  "displayName": "believe sparkles",
   "name": "5x7 flat card vertical",
   "occasion": { "_id": "2xSNk4YaKPtzPpCur", "name": "holiday" },
   "product": {

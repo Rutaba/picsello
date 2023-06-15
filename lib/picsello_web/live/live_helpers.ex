@@ -211,9 +211,11 @@ defmodule PicselloWeb.LiveHelpers do
 
   def nav_link(assigns) do
     assigns =
-      assign_new(assigns, :intercom_or_external_link, fn ->
-        %{target: "_blank", rel: "noopener noreferrer"}
-      end)
+      assigns
+      |> Enum.into(%{
+        active_class: nil,
+        intercom_or_external_link: %{target: "_blank", rel: "noopener noreferrer"}
+      })
 
     ~H"""
       <.is_active socket={@socket} live_action={@live_action} path={@to} :let={active} >
@@ -320,6 +322,12 @@ defmodule PicselloWeb.LiveHelpers do
     do: if(String.length(bin) > 0, do: String.to_integer(bin), else: nil)
 
   def to_integer(_), do: nil
+
+  def blank?(""), do: true
+
+  def blank?(nil), do: true
+
+  def blank?(str), do: if(String.trim(str) == "", do: true, else: false)
 
   def display_cover_photo(%{cover_photo: %{id: photo_id}}),
     do: %{

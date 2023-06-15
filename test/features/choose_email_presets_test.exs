@@ -71,7 +71,7 @@ defmodule Picsello.ChooseEmailPresetsTest do
     )
     |> assert_has(css(".editor strong", text: user.onboarding.phone))
     |> assert_value(text_field("Subject line"), "You owe me $50.00, Elizab&th.")
-    |> within_modal(&wait_for_enabled_submit_button/1)
+    |> sleep(1000)
     |> take_screenshot()
     |> click(button("Send Email"))
     |> assert_text("Email sent")

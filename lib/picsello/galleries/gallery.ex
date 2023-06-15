@@ -163,13 +163,6 @@ defmodule Picsello.Galleries.Gallery do
     |> cast_assoc(:gallery_digital_pricing, with: &GalleryDigitalPricing.changeset/2)
   end
 
-  def save_gallery_clients_changeset(gallery, attrs) when is_list(attrs) do
-    gallery
-    |> Repo.preload(:gallery_clients)
-    |> change(attrs)
-    |> cast_assoc(:gallery_clients, with: &GalleryClient.changeset/2)
-  end
-
   def generate_password, do: Enum.random(100_000..999_999) |> to_string
 
   defp cast_password(changeset),

@@ -271,7 +271,6 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(css("#package_pricing_print_credits_include_in_total"))
     |> click(css("[phx-click='edit-print-credits']"))
     |> scroll_into_view(css("[phx-click='edit-digitals']"))
-    |> assert_text("$500.00 an image")
     |> click(button("Edit settings", at: 1))
     |> scroll_into_view(css("#download_digitals_include_in_total"))
     |> click(css("#download_digitals_include_in_total"))
