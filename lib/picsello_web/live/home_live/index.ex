@@ -1191,7 +1191,7 @@ defmodule PicselloWeb.HomeLive.Index do
         <div class="flex flex-col gap-2 md:gap-4 w-full md:flex-row grow">
           <%= if Map.has_key?(@data, :thumbnail_url) do %>
             <%= live_redirect to: Routes.calendar_booking_events_path(@socket, :edit, @data.id) do %>
-              <.blurred_thumbnail class="h-32 rounded-lg" url={@data.thumbnail_url} />
+              <.blurred_thumbnail class="rounded-lg h-full items-center flex flex-col w-[100px] h-[65px] bg-base-200" url={@data.thumbnail_url} />
             <% end %>
           <% else %>
               <%= if Galleries.preview_image(@data) do %>
