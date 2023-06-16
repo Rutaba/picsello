@@ -91,6 +91,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
 
   defdelegate handle_event(event, params, socket), to: PicselloWeb.Live.Calendar.Shared
 
+  @spec toggle(MapSet.t(String.t()), String.t()) :: MapSet.t(String.t())
   def toggle(calendars, key) do
     if MapSet.member?(calendars, key) do
       MapSet.delete(calendars, key)
