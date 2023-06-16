@@ -1,0 +1,147 @@
+[
+  {
+    "request": {
+      "body": "{\"calendar_id\":\"62zs9nfax6wvkhzo7wj8vfzw7\",\"description\":\"Discuss project status\",\"title\":\"Meeting\",\"when\":{\"end_time\":\"2023-05-18T15:00:00Z\",\"start_time\":\"2023-05-18T14:00:00Z\"}}",
+      "headers": {
+        "Authorization": "***",
+        "Content-Type": "application/json"
+      },
+      "method": "post",
+      "options": [],
+      "request_body": "",
+      "url": "https://api.nylas.com/events"
+    },
+    "response": {
+      "binary": false,
+      "body": "{\n    \"account_id\": \"92kk7fha5ii4aiy4swl74kdeb\",\n    \"busy\": true,\n    \"calendar_id\": \"62zs9nfax6wvkhzo7wj8vfzw7\",\n    \"customer_event_id\": null,\n    \"description\": \"Discuss project status\",\n    \"hide_participants\": false,\n    \"ical_uid\": null,\n    \"id\": \"973mc09vd93euziwlrh4e4zkw\",\n    \"job_status_id\": \"2yhcvlbco07mwbqk2j9zxjpkw\",\n    \"location\": null,\n    \"message_id\": null,\n    \"object\": \"event\",\n    \"organizer_email\": \"zkessin@gmail.com\",\n    \"organizer_name\": \"Zachary Kessin\",\n    \"owner\": \"Zachary Kessin <zkessin@gmail.com>\",\n    \"participants\": [],\n    \"read_only\": false,\n    \"reminders\": null,\n    \"status\": \"confirmed\",\n    \"title\": \"Meeting\",\n    \"updated_at\": 1686924673,\n    \"visibility\": null,\n    \"when\": {\n        \"end_time\": 1684422000,\n        \"object\": \"timespan\",\n        \"start_time\": 1684418400\n    }\n}",
+      "headers": {
+        "Date": "Fri, 16 Jun 2023 14:11:13 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "830",
+        "Connection": "keep-alive",
+        "Access-Control-Allow-Headers": "Authorization,Accept,Cache-Control,X-Requested-With,Content-Type,User-Agent,Nylas-SDK-API-Version,X-Nylas-Client-Id",
+        "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,OPTIONS",
+        "Access-Control-Allow-Credentials": "true",
+        "Nylas-API-Version": "2.7",
+        "X-Unique-Id": "5a910cd9-fd28-4dd2-bd4b-ac3e686a5aa5",
+        "X-Kong-Upstream-Latency": "533",
+        "X-Kong-Proxy-Latency": "6",
+        "Via": "kong/3.2.2.1-enterprise-edition",
+        "CF-Cache-Status": "DYNAMIC",
+        "Set-Cookie": "__cf_bm=lWVrjKSzoAxrtfmeoZp8nt1IJ_RH5E18jIJe.m6kKP4-1686924673-0-AZid03Hcm1xkyRE20Zdcnl4+sQPBnLrLPKnKpw23ob2fsPSxcEOvmKKScCwpoB1EPaoQgTtZMGb5lb3OpqEU9jE=; path=/; expires=Fri, 16-Jun-23 14:41:13 GMT; domain=.nylas.com; HttpOnly; Secure; SameSite=None",
+        "Server": "cloudflare",
+        "CF-RAY": "7d83a404fbfb0f42-EWR"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  },
+  {
+    "request": {
+      "body": "",
+      "headers": {
+        "Authorization": "***",
+        "Content-Type": "application/json"
+      },
+      "method": "get",
+      "options": [],
+      "request_body": "",
+      "url": "https://api.nylas.com/events/973mc09vd93euziwlrh4e4zkw"
+    },
+    "response": {
+      "binary": false,
+      "body": "{\n    \"account_id\": \"92kk7fha5ii4aiy4swl74kdeb\",\n    \"busy\": true,\n    \"calendar_id\": \"62zs9nfax6wvkhzo7wj8vfzw7\",\n    \"customer_event_id\": null,\n    \"description\": \"Discuss project status\",\n    \"hide_participants\": false,\n    \"ical_uid\": null,\n    \"id\": \"973mc09vd93euziwlrh4e4zkw\",\n    \"location\": null,\n    \"message_id\": null,\n    \"object\": \"event\",\n    \"organizer_email\": \"zkessin@gmail.com\",\n    \"organizer_name\": \"Zachary Kessin\",\n    \"owner\": \"Zachary Kessin <zkessin@gmail.com>\",\n    \"participants\": [],\n    \"read_only\": false,\n    \"reminders\": null,\n    \"status\": \"confirmed\",\n    \"title\": \"Meeting\",\n    \"updated_at\": 1686924673,\n    \"visibility\": null,\n    \"when\": {\n        \"end_time\": 1684422000,\n        \"object\": \"timespan\",\n        \"start_time\": 1684418400\n    }\n}",
+      "headers": {
+        "Date": "Fri, 16 Jun 2023 14:11:14 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "780",
+        "Connection": "keep-alive",
+        "Access-Control-Allow-Headers": "Authorization,Accept,Cache-Control,X-Requested-With,Content-Type,User-Agent,Nylas-SDK-API-Version,X-Nylas-Client-Id",
+        "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,OPTIONS",
+        "Access-Control-Allow-Credentials": "true",
+        "Nylas-API-Version": "2.7",
+        "X-Unique-Id": "68a514eb-9f00-43a7-8b49-ab41ac27e916",
+        "X-Kong-Upstream-Latency": "212",
+        "X-Kong-Proxy-Latency": "5",
+        "Via": "kong/3.2.2.1-enterprise-edition",
+        "CF-Cache-Status": "DYNAMIC",
+        "Set-Cookie": "__cf_bm=7_PCgKlvvexjDziw2du4zEj3MwPdyIq0IwsgV0Gb1mY-1686924674-0-ATARy6t7TGT5WL5zT+Ze31zwH9QGGmEvkrGEIVT1egHxRjnVsu0iCH0RmWVa5FQme27M/St2zEbSgh76FckbWTE=; path=/; expires=Fri, 16-Jun-23 14:41:14 GMT; domain=.nylas.com; HttpOnly; Secure; SameSite=None",
+        "Server": "cloudflare",
+        "CF-RAY": "7d83a40a79fa0f42-EWR"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  },
+  {
+    "request": {
+      "body": "{\"description\":\"Lorem ipsum dolor sit amet, consectetur adipiscing elit\",\"id\":\"973mc09vd93euziwlrh4e4zkw\",\"title\":\"Meeting version 2\"}",
+      "headers": {
+        "Authorization": "***",
+        "Content-Type": "application/json"
+      },
+      "method": "put",
+      "options": [],
+      "request_body": "",
+      "url": "https://RoJK07y0nExk1c7i57iXQbgzsZ6mGq:@api.nylas.com/events/973mc09vd93euziwlrh4e4zkw?notify_participants=true"
+    },
+    "response": {
+      "binary": false,
+      "body": "{\n    \"account_id\": \"92kk7fha5ii4aiy4swl74kdeb\",\n    \"busy\": true,\n    \"calendar_id\": \"62zs9nfax6wvkhzo7wj8vfzw7\",\n    \"customer_event_id\": null,\n    \"description\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit\",\n    \"hide_participants\": false,\n    \"ical_uid\": null,\n    \"id\": \"973mc09vd93euziwlrh4e4zkw\",\n    \"job_status_id\": \"830gczll0oqbjax60z09leccn\",\n    \"location\": null,\n    \"message_id\": null,\n    \"object\": \"event\",\n    \"organizer_email\": \"zkessin@gmail.com\",\n    \"organizer_name\": \"Zachary Kessin\",\n    \"owner\": \"Zachary Kessin <zkessin@gmail.com>\",\n    \"participants\": [],\n    \"read_only\": false,\n    \"reminders\": null,\n    \"status\": \"confirmed\",\n    \"title\": \"Meeting version 2\",\n    \"updated_at\": 1686924674,\n    \"visibility\": null,\n    \"when\": {\n        \"end_time\": 1684422000,\n        \"object\": \"timespan\",\n        \"start_time\": 1684418400\n    }\n}",
+      "headers": {
+        "Date": "Fri, 16 Jun 2023 14:11:14 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "873",
+        "Connection": "keep-alive",
+        "Access-Control-Allow-Headers": "Authorization,Accept,Cache-Control,X-Requested-With,Content-Type,User-Agent,Nylas-SDK-API-Version,X-Nylas-Client-Id",
+        "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,OPTIONS",
+        "Access-Control-Allow-Credentials": "true",
+        "Nylas-API-Version": "2.7",
+        "X-Unique-Id": "9db9b9fc-89e3-4399-8ab2-0bb111c699f2",
+        "X-Kong-Upstream-Latency": "619",
+        "X-Kong-Proxy-Latency": "7",
+        "Via": "kong/3.2.2.1-enterprise-edition",
+        "CF-Cache-Status": "DYNAMIC",
+        "Set-Cookie": "__cf_bm=6_YexsQY4n2uDtKK0o9cweqjHTA.lP7MIda7A4vkYR0-1686924674-0-AWv++6W17C8+Zi3jJCkElc/ckiAeGa3imwMhMKAz0b8hOMEN1xbL/fVnz7an6w45/dQC8g0DcFk9+hjPmfVMuq8=; path=/; expires=Fri, 16-Jun-23 14:41:14 GMT; domain=.nylas.com; HttpOnly; Secure; SameSite=None",
+        "Server": "cloudflare",
+        "CF-RAY": "7d83a40ccc6c0f42-EWR"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  },
+  {
+    "request": {
+      "body": "",
+      "headers": [],
+      "method": "delete",
+      "options": [],
+      "request_body": "",
+      "url": "https://RoJK07y0nExk1c7i57iXQbgzsZ6mGq:@api.nylas.com/events/973mc09vd93euziwlrh4e4zkw?notify_participants=true  "
+    },
+    "response": {
+      "binary": false,
+      "body": "{\n    \"job_status_id\": \"7uf8nro7w57vk6fe61f8le22z\"\n}",
+      "headers": {
+        "Date": "Fri, 16 Jun 2023 14:11:15 GMT",
+        "Content-Type": "application/json",
+        "Content-Length": "52",
+        "Connection": "keep-alive",
+        "Access-Control-Allow-Headers": "Authorization,Accept,Cache-Control,X-Requested-With,Content-Type,User-Agent,Nylas-SDK-API-Version,X-Nylas-Client-Id",
+        "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,OPTIONS",
+        "Access-Control-Allow-Credentials": "true",
+        "Nylas-API-Version": "2.7",
+        "X-Unique-Id": "8d36f57a-9021-49a4-96d4-b1d407e78cab",
+        "X-Kong-Upstream-Latency": "279",
+        "X-Kong-Proxy-Latency": "6",
+        "Via": "kong/3.2.2.1-enterprise-edition",
+        "CF-Cache-Status": "DYNAMIC",
+        "Set-Cookie": "__cf_bm=qij7RF6vMXYfnNsgptmXI7Os25jjuZyF3.W4RXRrnyU-1686924675-0-AVVupYywjGEt3UWGIeJ6Iu99osNV0w6Vfb0761vgi3XKi+NdI2AD7bApQaVQEcZ21uVmVtC65lfPxgbe9wlYZSw=; path=/; expires=Fri, 16-Jun-23 14:41:15 GMT; domain=.nylas.com; HttpOnly; Secure; SameSite=None",
+        "Server": "cloudflare",
+        "CF-RAY": "7d83a41179260f42-EWR"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]

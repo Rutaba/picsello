@@ -1,7 +1,6 @@
 defmodule Picsello.Shoot do
   @moduledoc false
   use Ecto.Schema
-  alias Picsello.Jobs
   alias Picsello.Repo
   alias Picsello.Accounts.User
   import Ecto.{Changeset, Query}
@@ -103,7 +102,7 @@ defmodule Picsello.Shoot do
   end
 
   def push_changes(
-        %User{nylas_oauth_token: token, external_calendar_rw_id: calendar_id},
+        %User{nylas_oauth_token: token, external_calendar_rw_id: _calendar_id},
         values,
         :update
       ) do
@@ -112,7 +111,7 @@ defmodule Picsello.Shoot do
   end
 
   def push_changes(
-        %User{nylas_oauth_token: token, external_calendar_rw_id: calendar_id},
+        %User{nylas_oauth_token: token, external_calendar_rw_id: _calendar_id},
         values,
         :replace
       ) do
@@ -121,7 +120,7 @@ defmodule Picsello.Shoot do
   end
 
   def push_changes(
-        %User{nylas_oauth_token: token, external_calendar_rw_id: calendar_id},
+        %User{nylas_oauth_token: token, external_calendar_rw_id: _calendar_id},
         values,
         :delete
       ) do
