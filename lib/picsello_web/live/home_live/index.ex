@@ -1044,8 +1044,19 @@ defmodule PicselloWeb.HomeLive.Index do
         |> assign(
           :booking_events,
           BookingEvents.get_booking_events(current_user.organization_id,
-            filters: %{sort_by: :inserted_at, sort_direction: :desc}
-          )
+            filters: %{sort_by: :inserted_at, sort_direction: :desc})
+          |> Enum.map(fn booking_event ->
+            booking_event
+            |> Map.put(
+              :url,
+              Routes.client_booking_event_url(
+                socket,
+                :show,
+                current_user.organization.slug,
+                booking_event.id
+              )
+            )
+          end)
         )
 
       "packages" ->
@@ -1239,7 +1250,7 @@ defmodule PicselloWeb.HomeLive.Index do
               <%= Calendar.strftime(@data.inserted_at, "%m/%d/%y") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
             </div>
             <div class="flex md:gap-2 gap-3">
-              <button {testid("copy-link")} id={"copy-link-#{@data.id}"} class={classes("flex  w-full md:w-auto items-center justify-center text-center px-1 py-0.5 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @data.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@data, :client_link_hash), do: clip_board(@socket, @data), else: @data.thumbnail_url} phx-hook="Clipboard">
+              <button {testid("copy-link")} id={"copy-link-#{@data.id}"} class={classes("flex  w-full md:w-auto items-center justify-center text-center px-1 py-0.5 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @data.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@data, :client_link_hash), do: clip_board(@socket, @data), else: @data.url} phx-hook="Clipboard">
                 <.icon name="anchor" class={classes("w-2 h-2 fill-current text-blue-planning-300 inline mr-2", %{"text-gray-300" => @data.status in [:archive, :disabled]})} />
                 Copy link
                 <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
