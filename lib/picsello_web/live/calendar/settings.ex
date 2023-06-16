@@ -105,7 +105,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
 
   end
 
-  @spec assign_from_token(Socket.t(), nil | Picsello.Accounts.User.t()) :: Socket.t()
+  @spec assign_from_token(Socket.t(), Picsello.Accounts.User.t()) :: Socket.t()
   def assign_from_token(socket, %Picsello.Accounts.User{nylas_oauth_token: token})
       when is_binary(token) do
     case NylasCalendar.get_calendars(token) do
