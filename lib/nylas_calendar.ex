@@ -123,7 +123,7 @@ defmodule NylasCalendar do
     end
   end
 
-  @spec update_event(map, String.t()) :: result(map())
+#  @spec update_event(map, String.t()) :: result(map())
   def update_event(%{"id" => id} = params, token) do
     headers = build_headers(token)
     # url = "#{@base_url}/#{@event_endpoint}"

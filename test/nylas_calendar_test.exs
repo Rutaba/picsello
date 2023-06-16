@@ -20,7 +20,7 @@ defmodule NylasCalendarTest do
       %{client_id: client_id, redirect_uri: redirect} = Application.get_env(:picsello, :nylas)
 
       query =
-         URI.encode_query(%{
+        URI.encode_query(%{
           client_id: client_id,
           response_type: "code",
           scopes: "calendar",
@@ -199,8 +199,6 @@ defmodule NylasCalendarTest do
                    @token
                  )
 
-
-
         assert {:ok,
                 %{
                   "account_id" => "92kk7fha5ii4aiy4swl74kdeb",
@@ -240,8 +238,8 @@ defmodule NylasCalendarTest do
                    @token
                  )
 
-
-        assert {:ok, _} = NylasCalendar.delete_event(%{"id" => id}, @token)
+        assert {:ok, %{"job_status_id" => "7uf8nro7w57vk6fe61f8le22z"}} =
+                 NylasCalendar.delete_event(%{"id" => id}, @token)
       end
     end
 

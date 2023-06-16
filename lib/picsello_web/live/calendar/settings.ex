@@ -46,7 +46,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
         _,
         %Socket{assigns: %{current_user: %Picsello.Accounts.User{} = user}} = socket
       ) do
-    user = %{nylas_oauth_token: nil} = Accounts.clear_user_nylas_code(user)
+    user = Accounts.clear_user_nylas_code(user)
 
     {:noreply,
      socket

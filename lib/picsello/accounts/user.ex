@@ -87,14 +87,14 @@ defmodule Picsello.Accounts.User do
     |> Repo.update!()
   end
 
-  @spec set_user_nylas_code(Picsello.Accounts.User.t(), String.t()) :: User.t()
+  @spec set_user_nylas_code(Picsello.Accounts.User.t(), String.t()) :: t()
   def set_user_nylas_code(%__MODULE__{} = current_user, nylas_code) do
     current_user
     |> Ecto.Changeset.change(%{nylas_oauth_token: nylas_code})
     |> Repo.update!()
   end
 
-  @spec clear_user_nylas_code(Picsello.Accounts.User.t()) :: User.t()
+  @spec clear_user_nylas_code(Picsello.Accounts.User.t()) :: t()
   def clear_user_nylas_code(%__MODULE__{} = current_user) do
     current_user
     |> Ecto.Changeset.change(%{nylas_oauth_token: nil})
