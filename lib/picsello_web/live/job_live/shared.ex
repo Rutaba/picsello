@@ -851,7 +851,7 @@ defmodule PicselloWeb.JobLive.Shared do
             </span>
           </div>
 
-          <div class="flex flex-col-reverse sm:flex-row justify-end mt-8 items-center">
+          <div class="flex flex-row justify-end mt-8 items-center">
             <button type="button" class="link mx-5" phx-click="open-inbox">
               View inbox
             </button>

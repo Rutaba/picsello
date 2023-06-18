@@ -5,9 +5,10 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
 
   alias Picsello.EmailAutomation.{
     EmailAutomationCategory,
-    EmailAutomationSubCategory,
-    EmailAutomationSetting
+    EmailAutomationSubCategory
   }
+
+  alias Picsello.EmailPresets.EmailPreset
 
   @states_by_type %{
     lead: ~w(client_contact booking_proposal_sent lead)a,
@@ -25,7 +26,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
     field :state, Ecto.Enum, values: @states
     belongs_to(:email_automation_category, EmailAutomationCategory)
     belongs_to(:email_automation_sub_category, EmailAutomationSubCategory)
-    has_many(:email_automation_settings, EmailAutomationSetting)
+    has_many(:email_presets, EmailPreset)
     timestamps type: :utc_datetime
   end
 

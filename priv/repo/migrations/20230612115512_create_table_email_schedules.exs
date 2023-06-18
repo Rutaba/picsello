@@ -20,7 +20,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailSchedules do
         references(:email_automation_pipelines, on_delete: :nothing)
       )
 
-      add(:organization_id, references(:organizations, on_delete: :nothing))
       timestamps()
     end
 

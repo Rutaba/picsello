@@ -3,7 +3,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.LiveHelpers
-  import PicselloWeb.EmailAutomationLive.Shared, only: [assign_automation_pipelines: 1]
+
+  import PicselloWeb.EmailAutomationLive.Shared,
+    only: [assign_automation_pipelines: 1, get_pipline: 1]
 
   alias Picsello.{
     EmailAutomation,
@@ -24,7 +26,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   defp default_assigns(socket) do
     socket
     |> assign_job_types()
-    # |> assign(:selected_pipeline, "")
     |> assign_automation_pipelines()
   end
 
@@ -44,16 +45,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     |> assign(:job_types, job_types)
     |> assign(:selected_job_type, selected_job_type)
   end
-
-  # category
-  #   subcategory
-  #     pipeline
-  #       email
-  #       email
-  #     pipeline
-  #       email
-  #       email
-  #   subcategory
 
   @impl true
   def handle_event(
@@ -103,12 +94,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   @impl true
   def handle_event(
         "delete-email",
-        %{"email-automation-setting-id" => setting_id},
-        %{assigns: %{selected_job_type: selected_job_type}} = socket
+        %{"email-id" => email_id},
+        socket
       ) do
     email_delete =
-      to_integer(setting_id)
-      |> EmailAutomation.delete_email(selected_job_type.id)
+      to_integer(email_id)
+      |> EmailAutomation.delete_email()
 
     case email_delete do
       {:ok, _} ->
@@ -188,17 +179,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     |> noreply()
   end
 
-  defp get_pipline(pipeline_id) do
-    to_integer(pipeline_id)
-    |> EmailAutomation.get_pipeline_by_id()
-    |> Repo.preload([:email_automation_category, :email_automation_sub_category])
-  end
-
   defp open_edit_modal(
          %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket,
          %{
            "email_id" => email_id,
-           "email_automation_setting_id" => email_automation_setting_id,
            "pipeline_id" => pipeline_id
          },
          module
@@ -208,10 +192,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       current_user: current_user,
       job_type: selected_job_type,
       pipeline: get_pipline(pipeline_id),
-      email_automation_setting_id: to_integer(email_automation_setting_id),
-      email:
-        EmailAutomation.get_email_by_id(to_integer(email_id))
-        |> Repo.preload(:email_automation_types)
+      email_id: to_integer(email_id),
+      email: EmailAutomation.get_email_by_id(to_integer(email_id))
     })
   end
 
@@ -259,18 +241,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
                 <div class="flex items-center md:mt-0 ml-auto mt-4">
                   <div class="custom-tooltip">
-                    <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 mr-2 px-2 py-2" title="remove" phx-click="delete-email" phx-value-email_automation_setting_id={email.email_automation_setting.id} color="red-sales-300" icon="trash"/>
+                    <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 mr-2 px-2 py-2" title="remove" phx-click="delete-email" phx-value-email_id={email.id} color="red-sales-300" icon="trash"/>
                     <%= if index == 0 do %>
                       <span class="text-black font-normal w-64 text-start" style="white-space: normal;">
                           Can't delete first email; disable the entire sequence if you don't want it to send
                       </span>
                     <% end %>
                   </div>
-                  <button phx-click="edit-time-popup" phx-value-email_id={email.id} phx-value-email_automation_setting_id={email.email_automation_setting.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
+                  <button phx-click="edit-time-popup" phx-value-email_id={email.id}  phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
                     <.icon name="settings" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Edit time
                   </button>
-                  <button phx-click="edit-email-popup" phx-value-email_id={email.id} phx-value-email_automation_setting_id={email.email_automation_setting.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
+                  <button phx-click="edit-email-popup" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
                     <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
                     Edit email
                   </button>

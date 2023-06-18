@@ -2,10 +2,10 @@ defmodule Picsello.EmailPresets.EmailPreset do
   @moduledoc "options for pre-written emails"
   use Ecto.Schema
   import Ecto.Changeset
-
-  alias Picsello.EmailAutomation.{EmailAutomationSetting, EmailAutomationType}
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
   @types ~w(lead job gallery)a
+  @status ~w(active disabled)a
   @states_by_type %{
     lead: ~w(client_contact booking_proposal_sent lead)a,
     job:
@@ -16,6 +16,13 @@ defmodule Picsello.EmailPresets.EmailPreset do
   @states @states_by_type |> Map.values() |> List.flatten()
 
   schema "email_presets" do
+    field :status, Ecto.Enum, values: @status, default: :active
+    field :total_hours, :integer, default: 0
+    field :condition, :string
+    field :immediately, :boolean, default: true, virtual: true
+    field :count, :integer, virtual: true
+    field :calendar, :string, virtual: true
+    field :sign, :string, virtual: true
     field :body_template, :string
     field :type, Ecto.Enum, values: @types
     field :state, Ecto.Enum, values: @states
@@ -26,9 +33,9 @@ defmodule Picsello.EmailPresets.EmailPreset do
     field :template_id, :integer, virtual: true
     field :private_name, :string
 
-    belongs_to(:email_automation_setting, EmailAutomationSetting)
+    belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
+    belongs_to(:organization, Picsello.Organization)
 
-    has_many(:email_automation_types, EmailAutomationType)
     timestamps type: :utc_datetime
   end
 
@@ -36,13 +43,27 @@ defmodule Picsello.EmailPresets.EmailPreset do
     email_preset
     |> cast(
       attrs,
-      ~w[email_automation_setting_id template_id private_name type state job_type name position subject_template body_template]a
+      ~w[status total_hours condition email_automation_pipeline_id organization_id immediately count calendar sign template_id private_name type state job_type name position subject_template body_template]a
     )
     |> validate_required(
-      ~w[type state name position subject_template body_template]a
+      ~w[status email_automation_pipeline_id organization_id type state name position subject_template body_template]a
     )
     |> validate_states()
     |> foreign_key_constraint(:job_type)
+    |> then(fn changeset ->
+      unless get_field(changeset, :immediately) do
+        changeset
+        |> validate_required([:count])
+        |> validate_number(:count, greater_than: 0, less_than_or_equal_to: 31)
+        |> put_change(:total_hours, calculate_hours(changeset))
+      else
+        changeset
+        |> put_change(:count, nil)
+        |> put_change(:calendar, nil)
+        |> put_change(:sign, nil)
+        |> put_change(:total_hours, 0)
+      end
+    end)
   end
 
   defp validate_states(changeset) do
@@ -50,10 +71,43 @@ defmodule Picsello.EmailPresets.EmailPreset do
     changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))
   end
 
+  def calculate_hours(changeset) do
+    data = changeset |> current()
+    count = Map.get(data, :count)
+
+    if count do
+      calculate_total_hours(count, data)
+    else
+      0
+    end
+  end
+
+  defp calculate_total_hours(count, data) do
+    hours =
+      case Map.get(data, :calendar) do
+        "Hour" -> count
+        "Day" -> count * 24
+        "Month" -> count * 30 * 24
+        "Year" -> count * 365 * 24
+      end
+
+    case Map.get(data, :sign) do
+      "+" -> hours
+      "-" -> String.to_integer("-#{hours}")
+    end
+  end
+
   def states(), do: @states
 
   @type t :: %__MODULE__{
           id: integer(),
+          status: String.t(),
+          total_hours: integer(),
+          condition: String.t(),
+          immediately: boolean(),
+          count: integer(),
+          calendar: String.t(),
+          sign: String.t(),
           body_template: String.t(),
           type: String.t(),
           state: String.t(),
@@ -63,7 +117,8 @@ defmodule Picsello.EmailPresets.EmailPreset do
           position: integer(),
           template_id: integer(),
           private_name: String.t(),
-          email_automation_setting_id: integer(),
+          email_automation_pipeline_id: integer(),
+          organization_id: integer(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }

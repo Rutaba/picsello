@@ -8,8 +8,7 @@ defmodule Picsello.EmailAutomation do
 
   alias Picsello.EmailAutomation.{
     EmailAutomationPipeline,
-    EmailAutomationType,
-    EmailAutomationSetting
+    EmailSchedule
   }
 
   def get_all_pipelines() do
@@ -39,46 +38,148 @@ defmodule Picsello.EmailAutomation do
     |> Repo.all()
   end
 
-  def get_pipelines(organization_id, job_type_id) do
-    email_query = subquery_email(organization_id, job_type_id)
+  def get_pipelines(organization_id, job_type) do
+    email_query = subquery_email(organization_id, job_type)
 
     from(eap in EmailAutomationPipeline)
     |> preload([
       :email_automation_category,
       :email_automation_sub_category,
-      {:email_automation_settings, ^email_query}
+      {:email_presets, ^email_query}
     ])
     |> Repo.all()
   end
 
-  def subquery_email(organization_id, job_id) do
+  def get_emails_schedules_galleries(galleries) do
     from(
-      es in EmailAutomationSetting,
-      join: ep in EmailPreset,
-      on: ep.email_automation_setting_id == es.id,
-      join: type in EmailAutomationType,
-      on: type.email_preset_id == ep.id,
-      where: es.organization_id == ^organization_id,
-      where: type.organization_job_id == ^job_id,
-      preload: [:email_preset]
+      es in EmailSchedule,
+      join: p in assoc(es, :email_automation_pipeline),
+      join: c in assoc(p, :email_automation_category),
+      join: g in assoc(es, :gallery),
+      on: es.gallery_id == g.id,
+      where: es.gallery_id in ^galleries,
+      select: %{
+        category_type: c.type,
+        category_name: fragment("concat(?, ':', ?)", c.name, g.name),
+        category_id: c.id,
+        pipeline:
+          fragment(
+            "to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?, 'email', ?))",
+            p.id,
+            p.name,
+            p.state,
+            p.description,
+            fragment(
+              "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?))",
+              es.id,
+              es.name,
+              es.total_hours,
+              es.condition,
+              es.body_template,
+              es.private_name,
+              es.private_name,
+              es.is_stopped,
+              es.reminded_at
+            )
+          )
+      },
+      group_by: [c.name, g.name, c.type, c.id, p.id, es.id]
+    )
+    |> Repo.all()
+    |> email_schedules_group_by_categories()
+  end
+
+  def get_emails_schedules_jobs(job_id) do
+    from(
+      es in EmailSchedule,
+      join: p in assoc(es, :email_automation_pipeline),
+      join: c in assoc(p, :email_automation_category),
+      where: es.job_id == ^job_id,
+      select: %{
+        category_type: c.type,
+        category_name: c.name,
+        category_id: c.id,
+        pipeline:
+          fragment(
+            "to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?, 'email', ?))",
+            p.id,
+            p.name,
+            p.state,
+            p.description,
+            fragment(
+              "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?))",
+              es.id,
+              es.name,
+              es.total_hours,
+              es.condition,
+              es.body_template,
+              es.private_name,
+              es.private_name,
+              es.is_stopped,
+              es.reminded_at
+            )
+          )
+      },
+      group_by: [c.name, c.type, c.id, p.id, es.id]
+    )
+    |> Repo.all()
+    |> email_schedules_group_by_categories()
+  end
+
+  defp email_schedules_group_by_categories(emails_schedules) do
+    emails_schedules
+    |> Enum.group_by(&{&1.category_id, &1.category_name, &1.category_type})
+    |> Enum.map(fn {{category_id, category_name, category_type}, group} ->
+      pipelines =
+        group
+        |> Enum.group_by(& &1.pipeline["id"])
+        |> Enum.map(fn {pipeline_id, pipelines} ->
+          emails =
+            pipelines
+            |> Enum.map(& &1.pipeline["email"])
+
+          map = Map.delete(List.first(pipelines).pipeline, "email")
+          Map.put(map, "emails", emails)
+        end)
+
+      pipeline_morphied = pipelines |> Enum.map(&(&1 |> Morphix.atomorphiform!()))
+
+      %{
+        category_id: category_id,
+        category_name: category_name,
+        category_type: category_type,
+        pipelines: pipeline_morphied
+      }
+    end)
+    |> Enum.sort_by(&{&1.category_id, &1.category_name}, :asc)
+  end
+
+  def subquery_email(organization_id, job_type) do
+    from(
+      ep in EmailPreset,
+      where: ep.organization_id == ^organization_id,
+      where: ep.job_type == ^job_type
     )
   end
 
-  def get_emails_for_schedule(organization_id, job_type_id) do
-    get_pipelines(organization_id, job_type_id)
+  def get_emails_for_schedule(organization_id, job_type, types \\ [:lead]) do
+    get_pipelines(organization_id, job_type)
     |> Enum.flat_map(fn pipeline ->
-      pipeline.email_automation_settings
-      |> Enum.map(
-        &[
-          email_automation_pipeline_id: pipeline.id,
-          organization_id: &1.organization_id,
-          total_hours: &1.total_hours,
-          condition: &1.condition,
-          body_template: &1.email_preset.body_template,
-          subject_template: &1.email_preset.subject_template,
-          name: &1.email_preset.name
-        ]
-      )
+      if pipeline.email_automation_category.type in types do
+        pipeline.email_presets
+        |> Enum.map(
+          &[
+            email_automation_pipeline_id: pipeline.id,
+            total_hours: &1.total_hours,
+            condition: &1.condition,
+            body_template: &1.body_template,
+            subject_template: &1.subject_template,
+            name: &1.name
+          ]
+        )
+      else
+        []
+      end
     end)
   end
 
@@ -87,70 +188,31 @@ defmodule Picsello.EmailAutomation do
     |> Repo.one()
   end
 
-  def get_email_setting_by_id(id) do
-    from(eat in EmailAutomationSetting, where: eat.id == ^id)
-    |> Repo.one()
-  end
-
   def update_pipeline_and_settings_status(pipeline_id, active) do
     status = toggle_status(active)
 
-    Repo.transaction(fn ->
-      # get_pipeline_by_id(pipeline_id)
-      # |> EmailAutomationPipeline.changeset(%{status: status})
-      # |> Repo.update()
-
-      from(es in EmailAutomationSetting,
-        where: es.email_automation_pipeline_id == ^pipeline_id,
-        update: [set: [status: ^status]]
-      )
-      |> Repo.update_all([])
-    end)
+    from(es in EmailPreset,
+      where: es.email_automation_pipeline_id == ^pipeline_id,
+      update: [set: [status: ^status]]
+    )
+    |> Repo.update_all([])
   end
 
-  def delete_email(email_setting_id, job_id) do
-    Repo.transaction(fn ->
-      # Delete email_automation_types
-      from(t in EmailAutomationType,
-        where:
-          t.email_automation_setting_id == ^email_setting_id and t.organization_job_id == ^job_id
-      )
-      |> Repo.delete_all()
-
-      email_types =
-        from(t in EmailAutomationType, where: t.email_automation_setting_id == ^email_setting_id)
-        |> Repo.all()
-
-      if Enum.count(email_types) == 0 do
-        # Delete email_presets
-        from(p in EmailPreset,
-          where: p.email_automation_setting_id == ^email_setting_id
-        )
-        |> Repo.one()
-        |> Repo.delete()
-
-        # Delete email_automation_settings
-        from(s in EmailAutomationSetting,
-          where: s.id == ^email_setting_id
-        )
-        |> Repo.one()
-        |> Repo.delete()
-      end
-    end)
+  def delete_email(email_preset_id) do
+    from(p in EmailPreset,
+      where: p.id == ^email_preset_id
+    )
+    |> Repo.one()
+    |> Repo.delete()
   end
 
-  def get_each_pipeline_emails(pipeline_id, organization_id, job_type_id) do
+  def get_each_pipeline_emails(pipeline_id, organization_id, job_type) do
     from(
       ep in EmailPreset,
-      join: es in assoc(ep, :email_automation_setting),
-      on: ep.email_automation_setting_id == es.id,
-      left_join: type in EmailAutomationType,
-      on: type.email_preset_id == ep.id,
       where:
-        es.email_automation_pipeline_id == ^pipeline_id and es.organization_id == ^organization_id,
-      where: type.organization_job_id == ^job_type_id,
-      order_by: [asc: ep.id, asc: es.id],
-      preload: [:email_automation_setting]
+        ep.email_automation_pipeline_id == ^pipeline_id and ep.organization_id == ^organization_id,
+      where: ep.job_type == ^job_type,
+      order_by: [asc: ep.id]
     )
     |> Picsello.Repo.all()
   end
@@ -158,22 +220,30 @@ defmodule Picsello.EmailAutomation do
   def get_email_by_id(id) do
     from(
       ep in EmailPreset,
-      join: es in assoc(ep, :email_automation_setting),
-      on: ep.email_automation_setting_id == es.id,
-      where: ep.id == ^id,
-      preload: [:email_automation_setting]
+      where: ep.id == ^id
     )
     |> Repo.one()
   end
 
-  def get_all_pipelines_emails(organization_id, job_type_id) do
+  def get_email_schedule_by_id(id) do
+    from(es in EmailSchedule, where: es.id == ^id)
+    |> Repo.one()
+  end
+
+  def update_email_schedule(id, params) do
+    get_email_schedule_by_id(id)
+    |> EmailSchedule.changeset(params)
+    |> Repo.update()
+  end
+
+  def get_all_pipelines_emails(organization_id, job_type) do
     get_all_pipelines()
     |> Enum.map(fn %{pipelines: pipelines} = automation ->
       updated_pipelines =
         Enum.map(pipelines, fn pipeline ->
           pipeline_morphed = pipeline |> Morphix.atomorphiform!()
           pipeline_id = Map.get(pipeline_morphed, :id)
-          emails_data = get_each_pipeline_emails(pipeline_id, organization_id, job_type_id)
+          emails_data = get_each_pipeline_emails(pipeline_id, organization_id, job_type)
           # Update pipeline struct with email data
           Map.put(pipeline_morphed, :emails, emails_data)
         end)

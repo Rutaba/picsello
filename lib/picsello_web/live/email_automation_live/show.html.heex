@@ -32,82 +32,23 @@
 </div>
 
 <div class="px-6 py-6 xl:px-40 2xl:px-64 center-container">
-
-  <div class="flex flex-row mb-5">
-    <span class="flex flex-row w-8 h-8 rounded-full bg-base-200 items-center justify-center mr-2">
-      <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300"/>
-    </span>
-    <span class="text-2xl font-bold"> Leads </span>
-  </div>
-
-  <div class="md:my-5 md:mx-12 border border-base-200 rounded-lg">
-    <div class="flex justify-between">
-      <span class="pl-3 text-blue-planning-300 font-bold"> Next email 10/24/23
+  <%= Enum.map(@email_schedules, fn email_schedule -> %>
+    <div class="flex flex-row mb-5">
+      <span class="flex flex-row w-8 h-8 rounded-full bg-base-200 items-center justify-center mr-2">
+        <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300"/>
       </span>
-      <span class="text-blue-planning-300 pr-6 underline">Preview</span>
+      <span class="text-2xl font-bold"> <%= email_schedule.category_name %> </span>
     </div>
 
-    <div class="flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id="Hi">
-
-      <div class="flex flex-col">
-        <div class=" flex flex-row items-center">
-          <div class="flex flex-row w-8 h-8 rounded-full bg-white flex items-center justify-center">
-            <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
-          </div>
-          <span class="text-blue-planning-300 text-xl font-bold ml-2">
-          Client contacts you
-            <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap">4 steps</span>
-          </span>
-        </div>
-        <p class="text:xs text-gray-400 lg:text-base ml-10">
-          Runs after a contract/lead form submission
-        </p>
-      </div>
-
-      <div class="ml-auto">
-        <%= if Enum.member?(@collapsed_sections, "Hi") do %>
-          <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
-        <% else %>
-          <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
-        <% end %>
-      </div>
-    </div>
-
-
-    <%= if !Enum.member?(@collapsed_sections, "Hi") do %>
-    <div class="flex flex-col md:flex-row pl-2 pr-7 py-3 md:items-center justify-between">
-
-      <div class="flex flex-row ml-2 mb-2">
-        <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 mr-2">
-          <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
-        </div>
-        <span class="text-blue-planning-300 text-sm font-bold ml-2">
-          Completed 10/28/13
-          <p class="text-black text-xl">
-            Thank you for contacting me
-          </p>
-          <div class="flex items-center bg-white">
-          <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300 mr-2" />
-            <p class="text-gray-400 text-sm">
-            Send email immediately
-            </p>
-          </div>
+    <div class="md:my-5 md:mx-12 border border-base-200 rounded-lg">
+      <div class="flex justify-between">
+        <span class="pl-3 text-blue-planning-300 font-bold"> Next email 10/24/23
         </span>
+        <span class="text-blue-planning-300 pr-6 underline">Preview</span>
       </div>
-
-      <div class="flex justify-end mr-2">
-        <button class="flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl" phx-click="confirm-stop-email">
-          <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
-        </button>
-        <button class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
-          Send now
-        </button>
-        <button class="h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" >
-          <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
-          Edit email
-        </button>
-      </div>
+      <%= Enum.map(email_schedule.pipelines, fn pipeline -> %>
+      <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={email_schedule.category_id} />
+    <% end) %>
     </div>
-    <% end %>
-  </div>
+  <% end) %>
 </div>
