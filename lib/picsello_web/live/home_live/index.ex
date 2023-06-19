@@ -1247,7 +1247,7 @@ defmodule PicselloWeb.HomeLive.Index do
               <% end %>
             </div>
             <div class="text-base-250 font-normal ">
-              <%= Calendar.strftime(@data.inserted_at, "%m/%d/%y") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
+              <%= if Map.has_key?(assigns.data, :client_link_hash), do: @data.inserted_at, else: @data.dates |> hd() |> Map.get(:date) |> Calendar.strftime("%m/%d/%y") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
             </div>
             <div class="flex md:gap-2 gap-3">
               <button {testid("copy-link")} id={"copy-link-#{@data.id}"} class={classes("flex  w-full md:w-auto items-center justify-center text-center px-1 py-0.5 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @data.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@data, :client_link_hash), do: clip_board(@socket, @data), else: @data.url} phx-hook="Clipboard">
