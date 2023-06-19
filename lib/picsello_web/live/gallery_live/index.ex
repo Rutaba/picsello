@@ -227,7 +227,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col md:flex-row grow">
-          <%= if Galleries.preview_image(@gallery) do %>
+          <%= if @gallery.cover_photo do %>
             <div>
               <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
               <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{cover_photo_url(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>

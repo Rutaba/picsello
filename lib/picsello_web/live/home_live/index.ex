@@ -1218,7 +1218,7 @@ defmodule PicselloWeb.HomeLive.Index do
               <.blurred_thumbnail class="rounded-lg h-full items-center flex flex-col w-[100px] h-[65px] bg-base-200" url={@data.thumbnail_url} />
             <% end %>
           <% else %>
-              <%= if Galleries.preview_image(@data) do %>
+              <%= if @data.cover_photo do %>
                 <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_path(@socket, :edit, @data.id)) do %>
                 <div class="rounded-lg float-left w-[100px] min-h-[65px]" style={"background-image: url('#{if Map.has_key?(@data, :client_link_hash), do: cover_photo_url(@data), else: @data.thumbnail_url}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
               <% end %>
