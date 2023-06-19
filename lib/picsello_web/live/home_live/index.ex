@@ -1512,9 +1512,9 @@ defmodule PicselloWeb.HomeLive.Index do
     <div {testid("card-#{@title}")} class={"flex overflow-hidden border border-base-200 rounded-lg #{@class}"}>
       <div class={"w-3 flex-shrink-0 border-r rounded-l-lg bg-#{@color}"} />
       <div class="flex flex-col w-full p-4">
-        <div class="flex flex-row items-center">
+        <div class="flex justify-between items-center mb-2 w-full gap-10">
           <h3 class={"mb-2 mr-4 text-xl font-bold text-black"}><%= @title %></h3>
-          <div class="ml-auto">
+          <div>
             <button type="button" class="link px-4" phx-click={@view_event} hidden={@hidden}>
               View all
             </button>
