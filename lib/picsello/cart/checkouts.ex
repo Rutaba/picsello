@@ -1,5 +1,6 @@
 defmodule Picsello.Cart.Checkouts do
   @moduledoc "context module for checking out a cart"
+  require Logger
 
   alias Picsello.{
     Cart.Digital,
@@ -78,7 +79,9 @@ defmodule Picsello.Cart.Checkouts do
         %{client_total: client_total, cart: %{products: [_ | _]} = cart} ->
           new()
           |> append(create_whcc_order(cart))
-          |> maybe_create_invoice(cart)
+          |> merge(fn order ->
+              maybe_create_invoice(order)
+            end)
           |> merge(
             &create_session(
               cart,
@@ -195,7 +198,7 @@ defmodule Picsello.Cart.Checkouts do
 
   defp create_session(cart, %{whcc_order: whcc_order, client_total: client_total} = opts) do
     shipping_price = Cart.total_shipping(cart)
-
+Logger.info(" create session ___________________")
     create_session(
       cart,
       Enum.min_by(
@@ -271,26 +274,31 @@ defmodule Picsello.Cart.Checkouts do
 
   defp shipping_options(%{products: []}), do: []
 
-  defp maybe_create_invoice(multi, %{whcc_order: whcc_order} = order) do
+  defp maybe_create_invoice(%{save_whcc_order: %{whcc_order: whcc_order} = order} = invoice_order) do
+    Logger.info("maybe_create_invoice ------------------")
     #print_cost is shipping plus whcc cost"
     #client_total is what client paid after all the credits applied"
-
     print_cost = WHCCOrder.total(whcc_order) |> Money.add(Cart.total_shipping(order))
     client_total = Order.total_cost(order)
 
     case Money.cmp(print_cost, client_total) do
       :gt ->
-        Ecto.Multi.run(multi, :stripe_invoice, create_stripe_invoice(order, Money.subtract(print_cost, client_total)))
+        new()
+        |> run(:stripe_invoice, create_stripe_invoice(Picsello.Repo, invoice_order))
         |> insert(:invoice, &insert_invoice/1)
-      _ -> multi
+      _ -> new()
     end
   end
 
   defp create_stripe_invoice(
          _repo,
          %{save_whcc_order: %{whcc_order: whcc_order} = order}
-       ),
-       do: create_stripe_invoice(order, WHCCOrder.total(whcc_order))
+       )
+       do
+        print_cost = WHCCOrder.total(whcc_order) |> Money.add(Cart.total_shipping(order))
+        client_total = Order.total_cost(order)
+        create_stripe_invoice(order, Money.subtract(print_cost, client_total))
+      end
 
   defp create_stripe_invoice(
          %{gallery: %{organization: %{user: user}}} = invoice_order,
