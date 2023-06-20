@@ -591,7 +591,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
           phx-hook="MasonryGrid"
           phx-update="append"
           id="muuri-grid"
-          class="grid muuri"
+          class="mb-6 grid muuri"
           data-page={@page}
           data-id="muuri-grid"
           data-uploading="0"
