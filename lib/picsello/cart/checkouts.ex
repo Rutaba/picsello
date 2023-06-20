@@ -78,6 +78,7 @@ defmodule Picsello.Cart.Checkouts do
         %{client_total: client_total, cart: %{products: [_ | _]} = cart} ->
           new()
           |> append(create_whcc_order(cart))
+          |> maybe_create_invoice(cart)
           |> merge(
             &create_session(
               cart,
@@ -269,6 +270,21 @@ defmodule Picsello.Cart.Checkouts do
   end
 
   defp shipping_options(%{products: []}), do: []
+
+  defp maybe_create_invoice(multi, %{whcc_order: whcc_order} = order) do
+    #print_cost is shipping plus whcc cost"
+    #client_total is what client paid after all the credits applied"
+
+    print_cost = WHCCOrder.total(whcc_order) |> Money.add(Cart.total_shipping(order))
+    client_total = Order.total_cost(order)
+
+    case Money.cmp(print_cost, client_total) do
+      :gt ->
+        Ecto.Multi.run(multi, :stripe_invoice, create_stripe_invoice(order, Money.subtract(print_cost, client_total)))
+        |> insert(:invoice, &insert_invoice/1)
+      _ -> multi
+    end
+  end
 
   defp create_stripe_invoice(
          _repo,
