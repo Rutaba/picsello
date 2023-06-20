@@ -11,11 +11,6 @@ defmodule NylasCalendarTest do
 
   @calendar_id "qulli2ad0f0ikawkdnl534oz"
   describe "Basic Calendar tests" do
-    @tag :skip
-    test "Three day Calendar Event" do
-      throw(:not_yet_implemented)
-    end
-
     test "Login Link/2" do
       %{client_id: client_id, redirect_uri: redirect} = Application.get_env(:picsello, :nylas)
 

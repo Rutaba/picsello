@@ -2,7 +2,7 @@ defmodule PicselloWeb.CalendarFeedControllerTest do
   use PicselloWeb.ConnCase, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
   alias Picsello.Accounts
-  @token "RoJ***************************"
+  @token "RoJK07y0nExk1c7i57iXQbgzsZ6mGq"
   @params %{
     "end" => "2023-07-09T00:00:00",
     "start" => "2023-05-28T00:00:00",
@@ -43,6 +43,38 @@ defmodule PicselloWeb.CalendarFeedControllerTest do
       end
     end
 
+    test "Multi Day Event", %{
+      conn: conn,
+      user: user
+    } do
+      path = Routes.calendar_feed_path(conn, :index)
+
+      ExVCR.Config.filter_request_headers("Authorization")
+      Accounts.set_user_nylas_code(user, @token)
+
+      Accounts.User.set_nylas_calendars(user, %{
+        external_calendar_read_list: [
+          "62zs9nfax6wvkhzo7wj8vfzw7"
+        ]
+      })
+
+      use_cassette "#{__MODULE__}_multiday_event_date_range_one_cal" do
+        assert %{
+                 "color" => "#585DF6",
+                 "end" => "2023-06-23",
+                 "start" => "2023-06-20",
+                 "title" => "Test Event - XYZZY",
+                 "url" =>
+                   "/remote/62zs9nfax6wvkhzo7wj8vfzw7/2gk1mnm2a71d4ep22epaniail?request_from=calendar"
+               } ==
+                 conn
+                 |> log_in_user(user)
+                 |> get(path, @params)
+                 |> json_response(200)
+                 |> Enum.find(&(&1["title"] =~ "XYZZY"))
+      end
+    end
+
     test "renders calendar feed with calendars shows correct number of items", %{
       conn: conn,
       user: user
@@ -51,6 +83,7 @@ defmodule PicselloWeb.CalendarFeedControllerTest do
 
       ExVCR.Config.filter_request_headers("Authorization")
       Accounts.set_user_nylas_code(user, @token)
+
       Accounts.User.set_nylas_calendars(user, %{external_calendar_read_list: @calendars})
 
       use_cassette "#{__MODULE__}_feed_external_calendar" do

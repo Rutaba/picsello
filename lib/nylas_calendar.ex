@@ -203,6 +203,29 @@ defmodule NylasCalendar do
         })
     }
   end
+  def to_shoot(
+        %{
+          "description" => _notes,
+          "id" => id,
+          "calendar_id" => calendar_id,
+          "location" => _location,
+          "title" => name,
+          "when" => %{"start_date" => start_date,"end_date"=> end_date, "object" => "datespan"}
+        },
+        _timezone
+      ) do
+
+    %{
+      title: "#{name}",
+      color: @base_color,
+      start: start_date,
+      end: end_date,
+      url:
+        PicselloWeb.Router.Helpers.remote_path(PicselloWeb.Endpoint, :remote, calendar_id, id, %{
+          "request_from" => "calendar"
+        })
+    }
+  end
 
   def to_shoot(
         %{
