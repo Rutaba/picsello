@@ -28,11 +28,6 @@ defmodule PicselloWeb.Live.Calendar.SettingsTest do
       refute element_present?(html, "#calendar_read")
     end
 
-    @tag :skip
-    test "Settings page with token error", %{conn: conn, user: user} do
-      {:ok, _view, html} = load_page(conn, user)
-      assert element_present?(html, "#error")
-    end
   end
 
   describe "Read/write section" do

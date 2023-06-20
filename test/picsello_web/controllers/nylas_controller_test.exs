@@ -5,7 +5,7 @@ defmodule PicselloWeb.NylasControllerTest do
   alias Picsello.Accounts
   alias :meck, as: Meck
   @modal_command "toggle_connect_modal"
-  @token "HfHP3lDgBQIQRWRQLWBZLOiOwOQ5ls"
+  @token "HfH******************************"
   setup do
     %{user: insert(:user) |> onboard!, password: valid_user_password()}
   end
@@ -68,26 +68,6 @@ defmodule PicselloWeb.NylasControllerTest do
              |> String.trim() == "Calendar Sync Connected"
     end
 
-    @tag :skip
-    test "Open & Close  Modal Connect your calendar dialog", %{conn: conn, user: user} do
-      {:ok, view, _html} = load_page(conn, user)
-      assert render_click(view, @modal_command)
-
-      assert view
-             |> render()
-             |> Floki.parse_document!()
-             #    |> IO.inspect()
-             |> Floki.find("#connect_calendar_modal")
-             |> Floki.find("h1")
-             |> Floki.text() =~ "Connect your calendar"
-
-      assert render_click(view, @modal_command)
-
-      assert view
-             |> render()
-             |> Floki.parse_document!()
-             |> Floki.find("div##{@modal_command}") == []
-    end
 
     test "Open Modal has correct action", %{conn: conn, user: user} do
       {:ok, _view, html} = load_page(conn, user)
@@ -99,17 +79,6 @@ defmodule PicselloWeb.NylasControllerTest do
              |> Enum.member?(@modal_command)
     end
 
-    @tag :skip
-    test "Close has correct action", %{conn: conn, user: user} do
-      {:ok, view, _html} = load_page(conn, user)
-
-      assert view
-             |> render_click(@modal_command)
-             |> Floki.parse_document!()
-             |> Floki.find("#button-close")
-             |> Floki.attribute("phx-click")
-             |> Enum.member?(@modal_command)
-    end
 
     test "Open & Check link", %{conn: conn, user: user} do
       {:ok, view, _html} = load_page(conn, user)
