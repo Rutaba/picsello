@@ -4,7 +4,13 @@ defmodule Picsello.EmailAutomation do
   """
   import Ecto.Query
 
-  alias Picsello.{Repo, EmailPresets.EmailPreset}
+  alias Picsello.{
+    Repo,
+    EmailPresets.EmailPreset,
+    Utils,
+    BookingProposal,
+    Notifiers.ClientNotifier
+  }
 
   alias Picsello.EmailAutomation.{
     EmailAutomationPipeline,
@@ -275,6 +281,44 @@ defmodule Picsello.EmailAutomation do
     end)
     |> Enum.sort_by(& &1.category_type, :desc)
   end
+
+  def resolve_variables(%EmailSchedule{} = preset, schemas, helpers) do
+    resolver_module =
+      case preset.email_automation_pipeline.email_automation_category.type do
+        :gallery -> Picsello.EmailPresets.GalleryResolver
+        _ -> Picsello.EmailPresets.JobResolver
+      end
+
+    resolver = schemas |> resolver_module.new(helpers)
+
+    data =
+      for {key, func} <- resolver_module.vars(), into: %{} do
+        {key, func.(resolver)}
+      end
+
+    %{
+      preset
+      | body_template: Utils.render(preset.body_template, data),
+        subject_template: Utils.render(preset.subject_template, data)
+    }
+  end
+
+  def send_now_email(:lead = type, email, job, state) when type in [:lead, :job] do
+    result =
+      ClientNotifier.deliver_automation_email_job(email, job, {job}, state, PicselloWeb.Helpers)
+
+    case result do
+      {:ok, _} ->
+        update_email_schedule(email.id, %{
+          reminded_at: DateTime.truncate(DateTime.utc_now(), :second)
+        })
+
+      error ->
+        error
+    end
+  end
+
+  def send_now_email(:gallery, _email, _job, _state), do: {:ok, nil}
 
   defp remove_categories_from_list(sub_categories) do
     Enum.map(sub_categories, fn sub_category ->

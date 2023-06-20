@@ -3,7 +3,8 @@ defmodule Picsello.Notifiers.ClientNotifier do
   use Picsello.Notifiers
   import Picsello.Messages, only: [get_emails: 2]
 
-  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery}
+  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery, EmailAutomation.EmailSchedule}
+
   alias Cart.Order
   require Logger
 
@@ -294,6 +295,29 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> from("noreply@picsello.com")
     |> subject("Download Ready")
     |> deliver_later()
+  end
+
+  @doc """
+    emails handle lead & job
+  """
+  def deliver_automation_email_job(email_preset, job, schema, _state, helpers) do
+    with client <- job |> Repo.preload(:client) |> Map.get(:client),
+         %{body_template: body, subject_template: subject} <-
+           Picsello.EmailAutomation.resolve_variables(email_preset, schema, helpers) do
+      deliver_transactional_email(
+        %{subject: subject, headline: subject, body: body},
+        %{"to" => client.email},
+        job
+      )
+    end
+  end
+
+  def deliver_automation_email_gallery(email_preset, gallery, _schema, _state, helpers) do
+    :ok
+  end
+
+  def deliver_automation_email_order(job, _, helpers) do
+    :ok
   end
 
   defp message_params(message) do

@@ -11,6 +11,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     Jobs,
     EmailAutomation,
     EmailAutomation.EmailSchedule,
+    Notifiers.ClientNotifier,
+    Orders,
+    Galleries,
     Repo
   }
 
@@ -57,18 +60,19 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
-  def handle_event("send-email-now", %{"email_id" => id, "pipeline_id" => pipeline_id}, socket) do
-    _id = to_integer(id)
-    _pipeline_id = to_integer(pipeline_id)
+  def handle_event("send-email-now", %{"email_id" => id, "pipeline_id" => pipeline_id},  %{assigns: %{job_id: job_id}} = socket) do
+    id = to_integer(id)
+    pipeline_id = to_integer(pipeline_id)
 
-    _param = %{
-      pipeline: get_pipline(pipeline_id),
-      email_id: id,
-      email: EmailAutomation.get_email_schedule_by_id(id)
-    }
+    email = EmailAutomation.get_email_schedule_by_id(id) |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+    pipeline = get_pipline(pipeline_id)
 
-    socket
-    |> put_flash(:success, "Email Sent")
+    job = Jobs.get_job_by_id(job_id) |> Repo.preload([:payment_schedules, :job_status, client: :organization])
+
+    case EmailAutomation.send_now_email(pipeline.email_automation_category.type, email, job, pipeline.state) do
+      {:ok, _} ->  socket |> put_flash(:success, "Email Sent Successfully")
+      _ -> socket |> put_flash(:success, "Error in Sending Email")
+    end
     |> assign_email_schedules()
     |> noreply()
   end
@@ -156,7 +160,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
               <button class="flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl" phx-click="confirm-stop-email" phx-value-email_id={email.id}>
                 <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
               </button>
-              <button class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
+              <button disabled={!is_nil(email.reminded_at)} class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
                 Send now
               </button>
               <button class="h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" phx-click="edit-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
