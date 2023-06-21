@@ -111,8 +111,8 @@ defmodule NylasCalendar do
     headers = build_headers(token)
     url = "#{@base_url}/#{@event_endpoint}"
 
-    params = Map.put(params, "calendar_id", calendar_id)
-    response = HTTPoison.post!(url, Jason.encode!(params), headers)
+
+    response = HTTPoison.post!(url, Jason.encode!(params,%{calendar_id: calendar_id}), headers)
 
     case response.status_code do
       200 ->
@@ -124,7 +124,7 @@ defmodule NylasCalendar do
   end
 
   @spec update_event(map, String.t()) :: result(map())
-  def update_event(%{"id" => id} = params, token) do
+  def update_event(%{id: id} = params, token) do
     headers = build_headers(token)
 
     url = "https://api.nylas.com/events/#{id}?notify_participants=true"
@@ -174,9 +174,16 @@ defmodule NylasCalendar do
       {:ok, events} = get_events(calendar_id, token)
       events
     end)
+    |> Enum.filter(&remove_from_picsello/1)
     |> Enum.map(&to_shoot(&1, timezone))
   end
 
+  @spec remove_from_picsello(map) :: boolean
+  def remove_from_picsello(%{"description" => nil}), do: true
+  def remove_from_picsello(%{"description" => description}) do
+    not(description =~ "[From Picsello]")
+  end
+  
   @spec to_shoot(map, String.t()) :: calendar_event()
   def to_shoot(
         %{
@@ -186,9 +193,10 @@ defmodule NylasCalendar do
           "location" => _location,
           "title" => name,
           "when" => %{"date" => date, "object" => "date"}
-        },
+        } ,
         _timezone
-      ) do
+  ) do
+
     {:ok, start_time} = Date.from_iso8601(date)
     end_time = start_time |> Date.add(1) |> Date.to_iso8601()
 

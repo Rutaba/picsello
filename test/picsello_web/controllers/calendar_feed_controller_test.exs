@@ -96,6 +96,25 @@ defmodule PicselloWeb.CalendarFeedControllerTest do
       end
     end
 
+    test "Do not show our events on pull ", %{conn: conn, user: user} do
+      path = Routes.calendar_feed_path(conn, :index)
+
+      ExVCR.Config.filter_request_headers("Authorization")
+      Accounts.set_user_nylas_code(user, @token)
+
+      Accounts.User.set_nylas_calendars(user, %{external_calendar_read_list: @calendars})
+      key = "Picsello Test Event"
+
+      use_cassette "#{__MODULE__}_do_no_show_our_events" do
+        refute conn
+               |> log_in_user(user)
+               |> get(path, @params)
+               |> json_response(200)
+               |> Enum.map(& &1["title"])
+               |> Enum.member?(key)
+      end
+    end
+
     test "renders calendar feed with calendars shows data", %{conn: conn, user: user} do
       path = Routes.calendar_feed_path(conn, :index)
 

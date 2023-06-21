@@ -69,6 +69,72 @@ defmodule Picsello.Shoot do
     timestamps()
   end
 
+  # {
+  #     "title": "Party at the Ritz!",
+  #     "when": {
+  #         "start_time": 1577829600,
+  #         "end_time": 1577844000
+  #     },
+  #     "calendar_id": "<CALENDAR_ID>",
+  #     "location": "Ritz Ballroom",
+  #     "participants": [         
+  #         {
+  #             "email": "ballroom@theritz.com"
+  #         }
+  #     ]
+  # }  
+
+  defimpl Jason.Encoder, for: [__MODULE__] do
+    def encode(
+          %Picsello.Shoot{
+            duration_minutes: duration_minutes,
+            name: name,
+            notes: notes,
+            starts_at: starts_at,
+            address: address
+          },
+          %{calendar_id: calendar_id} = opts
+        ) do
+      end_time = DateTime.add(starts_at, duration_minutes * 60) |> DateTime.to_unix()
+
+      Jason.Encode.map(
+        %{
+          when: %{start_time: DateTime.to_unix(starts_at), end_time: end_time},
+          calendar_id: calendar_id,
+          location: address,
+          title: name,
+          description: notes <> "\n[from picsello]\n"
+        },
+        opts
+      )
+    end
+
+    def encode(
+          %Picsello.Shoot{
+            duration_minutes: duration_minutes,
+            name: name,
+            notes: notes,
+            starts_at: starts_at,
+            address: address
+          },
+          _
+        ) do
+      end_time = DateTime.add(starts_at, duration_minutes * 60) |> DateTime.to_unix()
+
+      Jason.Encode.map(
+        %{
+          when: %{start_time: DateTime.to_unix(starts_at), end_time: end_time},
+          location: address,
+          title: name,
+          description: notes <> "\n[from picsello]\n"
+        },
+        %{}
+      )
+    end
+  end
+
+  @derive {Jason.Encoder,
+           only: [:duration_minutes, :location, :name, :notes, :starts_at, :address]}
   # ********************************************************************************
 
   @spec push_changes_to_nylas(Ecto.Changeset.t()) :: Ecto.Changeset.t()
@@ -85,8 +151,7 @@ defmodule Picsello.Shoot do
   @spec push_changes(Picsello.Accounts.User.t(), map(), Ecto.Changeset.action()) ::
           :ok
   def push_changes(%User{nylas_oauth_token: nil}, _values, _verb) do
-           
-            :ok
+    :ok
   end
 
   def push_changes(%User{external_calendar_rw_id: nil}, _values, _) do
@@ -95,8 +160,8 @@ defmodule Picsello.Shoot do
 
   def push_changes(
         %User{nylas_oauth_token: token, external_calendar_rw_id: calendar_id},
-        values,
-        :insert
+        %{id: nil} = values,
+        _
       ) do
     NylasCalendar.add_event(calendar_id, values, token)
     :ok
@@ -105,16 +170,7 @@ defmodule Picsello.Shoot do
   def push_changes(
         %User{nylas_oauth_token: token, external_calendar_rw_id: _calendar_id},
         values,
-        :update
-      ) do
-    NylasCalendar.update_event(values, token)
-    :ok
-  end
-
-  def push_changes(
-        %User{nylas_oauth_token: token, external_calendar_rw_id: _calendar_id},
-        values,
-        :replace
+        _
       ) do
     NylasCalendar.update_event(values, token)
     :ok
@@ -124,8 +180,7 @@ defmodule Picsello.Shoot do
         %User{nylas_oauth_token: token, external_calendar_rw_id: _calendar_id},
         values,
         :delete
-  ) do
-
+      ) do
     NylasCalendar.delete_event(values, token)
     :ok
   end
