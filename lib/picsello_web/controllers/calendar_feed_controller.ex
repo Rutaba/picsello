@@ -7,7 +7,7 @@ defmodule PicselloWeb.CalendarFeedController do
   def index(%{assigns: %{current_user: user}} = conn, params) do
     feeds = user |> Shoots.get_shoots(params) |> map(conn, user)
     read_cals = user.external_calendar_read_list
-    Logger.info(" User Token #{user.nylas_oauth_token}")
+  
     events =  NylasCalendar.get_events!(read_cals, user.nylas_oauth_token, user.time_zone) 
 
     conn

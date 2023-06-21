@@ -13,7 +13,7 @@ defmodule NylasCalendar do
   @type token() :: String.t()
   @type result(x) :: {:ok, x} | {:error, String.t()}
 
-  @spec generate_login_link(any, any) :: {:ok, <<_::64, _::_*8>>}
+  @spec generate_login_link(String.t(), String.t()) :: {:ok, String.t()}
   @doc """
   Generates a login link for the Nylas API.
   """
@@ -31,6 +31,7 @@ defmodule NylasCalendar do
     {:ok, url}
   end
 
+  @spec generate_login_link() :: {:ok, String.t()}
   def generate_login_link() do
     %{client_id: client_id, redirect_uri: redirect} = Application.get_env(:picsello, :nylas)
     generate_login_link(client_id, redirect)
@@ -55,7 +56,7 @@ defmodule NylasCalendar do
     end
   end
 
-  @spec create_calendar(any, token()) :: result(any)
+  @spec create_calendar(map(), token()) :: result(map())
   @doc """
   Creates a new calendar with the given parameters.
   """
@@ -88,9 +89,8 @@ defmodule NylasCalendar do
           optional(:end_time) => DateTime.t(),
           optional(:start_time) => DateTime.t()
         }
-  @spec get_event_details(String.t(), String.t()) ::result(calendar())
+  @spec get_event_details(String.t(), String.t()) :: result(calendar())
   def get_event_details(job_id, token) do
-    Logger.info("TOKEN #{token} *******")
     headers = build_headers(token)
     url = "#{@base_url}/events/#{job_id}"
 
@@ -123,10 +123,10 @@ defmodule NylasCalendar do
     end
   end
 
-#  @spec update_event(map, String.t()) :: result(map())
+  @spec update_event(map, String.t()) :: result(map())
   def update_event(%{"id" => id} = params, token) do
     headers = build_headers(token)
-    # url = "#{@base_url}/#{@event_endpoint}"
+
 
     url = "https://api.nylas.com/events/#{id}?notify_participants=true"
     response = HTTPoison.put!(url, Jason.encode!(params), headers)
@@ -139,6 +139,7 @@ defmodule NylasCalendar do
         {:error, "Failed to add event. Status code: #{code}"}
     end
   end
+
   @spec update_event(map, String.t()) :: result(map())
   def delete_event(%{"id" => id}, token) do
     url = "https://api.nylas.com/events/#{id}?notify_participants=true  "
@@ -159,18 +160,18 @@ defmodule NylasCalendar do
           start: String.t(),
           title: String.t(),
           url: String.t()
-        }
-  # def get_events!([],_), do: []
+  }
+  
+  @spec get_events!([String.t()], String.t()) :: list(calendar_event()) 
   def get_events!(calendars, token), do: get_events!(calendars, token, "America/New_York")
 
-  @spec get_events!([String.t()], String.t()) :: list(calendar_event())
   def get_events!(nil, _, _), do: []
   def get_events!(_, nil, _), do: []
 
   def get_events!(calendars, token, timezone) when is_list(calendars) do
     calendars
     |> Enum.flat_map(fn calendar_id ->
-      Logger.info("Get events for #{calendar_id} #{token}")
+      Logger.debug("Get events for #{calendar_id} #{token}")
       {:ok, events} = get_events(calendar_id, token)
       events
     end)
@@ -203,6 +204,7 @@ defmodule NylasCalendar do
         })
     }
   end
+
   def to_shoot(
         %{
           "description" => _notes,
@@ -210,11 +212,10 @@ defmodule NylasCalendar do
           "calendar_id" => calendar_id,
           "location" => _location,
           "title" => name,
-          "when" => %{"start_date" => start_date,"end_date"=> end_date, "object" => "datespan"}
+          "when" => %{"start_date" => start_date, "end_date" => end_date, "object" => "datespan"}
         },
         _timezone
       ) do
-
     %{
       title: "#{name}",
       color: @base_color,
@@ -235,7 +236,7 @@ defmodule NylasCalendar do
           "location" => _location,
           "title" => name,
           "when" => %{"start_time" => start_time, "end_time" => end_time, "object" => "timespan"}
-        } = _c,
+        },
         timezone
       ) do
     start = start_time |> DateTime.from_unix!() |> DateTime.shift_zone!(timezone)
@@ -253,7 +254,7 @@ defmodule NylasCalendar do
     }
   end
 
-  @spec get_events(String.t(), token()) :: {:error, <<_::64, _::_*8>>} | {:ok, any}
+  @spec get_events(String.t(), token()) :: {:error, String.t()} | {:ok, any}
   @doc """
   Retrieves a list of events on the specified calendar.
   """

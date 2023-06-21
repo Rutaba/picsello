@@ -65,7 +65,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   end
 
   def handle_event("calendar-read-write", %{"calendar" => cal_id}, socket) do
-    Logger.info("Calendar id \e[0;32m#{cal_id}\e[0;30m")
+    Logger.debug("Calendar id \e[0;32m#{cal_id}\e[0;30m")
 
     {:noreply, assign(socket, :rw_calendar, cal_id)}
   end
@@ -82,7 +82,6 @@ defmodule PicselloWeb.Live.Calendar.Settings do
       external_calendar_read_list: MapSet.to_list(read_calendars)
     }
 
-    Logger.info("Save \e[0;34m#{user.id} \e[0;33m#{inspect(attrs)}")
     user = Picsello.Accounts.User.set_nylas_calendars(user, attrs)
 
     {:noreply,

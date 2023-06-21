@@ -7,7 +7,6 @@ defmodule PicselloWeb.NylasController do
   def callback(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"code" => code}) do
     case NylasCalendar.fetch_token(code) do
       {:ok, token} ->
-        Logger.info("Set token #{token}")
         Accounts.set_user_nylas_code(user, token)
 
         conn
@@ -17,6 +16,7 @@ defmodule PicselloWeb.NylasController do
 
       {:error, e} ->
         Logger.info("Token Error #{e}")
+
         conn
         |> put_status(404)
         |> Plug.Conn.halt()

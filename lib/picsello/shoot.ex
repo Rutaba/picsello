@@ -133,14 +133,14 @@ defmodule Picsello.Shoot do
   end
 
   @spec get_token_from_shoot(Picsello.Shoot.t()) :: Picsello.Accounts.User.t()
-  def get_token_from_shoot(%__MODULE__{id: shoot_id} = _shoot) do
+  def get_token_from_shoot(%__MODULE__{job_id: job_id} = _shoot) do
     query =
-      from __MODULE__,
-        where: [id: ^shoot_id],
-        preload: [job: [client: [organization: :user]]]
+      from Picsello.Job,
+        where: [id: ^job_id],
+        preload: [client: [organization: :user]]
 
     result = Repo.one(query)
-    result.job.client.organization.user
+    result.client.organization.user
   end
 
   # ********************************************************************************
