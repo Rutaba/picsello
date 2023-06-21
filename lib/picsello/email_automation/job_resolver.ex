@@ -67,6 +67,7 @@ defmodule Picsello.EmailPresets.JobResolver do
     do: %{
       "brand_sentence" => &noop/1,
       "client_first_name" => &(&1 |> client() |> Map.get(:name) |> String.split() |> hd),
+      "client_full_name" => &(&1 |> client() |> Map.get(:name)),
       "delivery_expectations_sentence" => &noop/1,
       "delivery_time" =>
         &with(
@@ -142,6 +143,15 @@ defmodule Picsello.EmailPresets.JobResolver do
           """
         ),
       "wardrobe_guide_link" => &noop/1,
-      "wedding_questionnaire_2_link" => &noop/1
+      "wedding_questionnaire_2_link" => &noop/1,
+      "retainer_amount" => &noop/1,
+      "faq_page_link" => &noop/1,
+      "delivery_expectations_sentence" => &noop/1,
+      "scheduling_page_link" => &noop/1,
+      "photographer_first_name" =>
+        &case photographer(&1) do
+          %Picsello.Accounts.User{name: name} -> name |> String.split() |> hd
+          _ -> nil
+        end
     }
 end
