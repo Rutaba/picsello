@@ -9,6 +9,7 @@ defmodule Picsello.EmailAutomation do
     EmailPresets.EmailPreset,
     Utils,
     BookingProposal,
+    Jobs,
     Notifiers.ClientNotifier
   }
 
@@ -56,80 +57,57 @@ defmodule Picsello.EmailAutomation do
     |> Repo.all()
   end
 
-  def get_emails_schedules_galleries(galleries) do
-    from(
-      es in EmailSchedule,
-      join: p in assoc(es, :email_automation_pipeline),
-      join: c in assoc(p, :email_automation_category),
-      join: g in assoc(es, :gallery),
-      on: es.gallery_id == g.id,
-      where: es.gallery_id in ^galleries,
-      select: %{
-        category_type: c.type,
-        category_name: fragment("concat(?, ':', ?)", c.name, g.name),
-        category_id: c.id,
-        pipeline:
-          fragment(
-            "to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?, 'email', ?))",
-            p.id,
-            p.name,
-            p.state,
-            p.description,
+  def get_emails_schedules_by_ids(ids, type) do
+    query =
+      from(
+        es in EmailSchedule,
+        join: p in assoc(es, :email_automation_pipeline),
+        join: c in assoc(p, :email_automation_category),
+        select: %{
+          category_type: c.type,
+          category_id: c.id,
+          pipeline:
             fragment(
-              "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?))",
-              es.id,
-              es.name,
-              es.total_hours,
-              es.condition,
-              es.body_template,
-              es.private_name,
-              es.private_name,
-              es.is_stopped,
-              es.reminded_at
+              "to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?, 'email', ?))",
+              p.id,
+              p.name,
+              p.state,
+              p.description,
+              fragment(
+                "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?))",
+                es.id,
+                es.name,
+                es.total_hours,
+                es.condition,
+                es.body_template,
+                es.private_name,
+                es.private_name,
+                es.is_stopped,
+                es.reminded_at
+              )
             )
-          )
-      },
-      group_by: [c.name, g.name, c.type, c.id, p.id, es.id]
-    )
+        }
+      )
+
+    query
+    |> filter_email_schedule(ids, type)
     |> Repo.all()
     |> email_schedules_group_by_categories()
   end
 
-  def get_emails_schedules_jobs(job_id) do
-    from(
-      es in EmailSchedule,
-      join: p in assoc(es, :email_automation_pipeline),
-      join: c in assoc(p, :email_automation_category),
-      where: es.job_id == ^job_id,
-      select: %{
-        category_type: c.type,
-        category_name: c.name,
-        category_id: c.id,
-        pipeline:
-          fragment(
-            "to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?, 'email', ?))",
-            p.id,
-            p.name,
-            p.state,
-            p.description,
-            fragment(
-              "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?))",
-              es.id,
-              es.name,
-              es.total_hours,
-              es.condition,
-              es.body_template,
-              es.private_name,
-              es.private_name,
-              es.is_stopped,
-              es.reminded_at
-            )
-          )
-      },
-      group_by: [c.name, c.type, c.id, p.id, es.id]
-    )
-    |> Repo.all()
-    |> email_schedules_group_by_categories()
+  defp filter_email_schedule(query, galleries, :gallery) do
+    query
+    |> join(:inner, [es, _, _], g in assoc(es, :gallery))
+    |> where([es, _, _, _], es.gallery_id in ^galleries)
+    |> select_merge([_, _, c, g], %{category_name: fragment("concat(?, ':', ?)", c.name, g.name)})
+    |> group_by([es, p, c, g], [c.name, g.name, c.type, c.id, p.id, es.id])
+  end
+
+  defp filter_email_schedule(query, job_id, _type) do
+    query
+    |> where([es, _, _], es.job_id == ^job_id)
+    |> select_merge([_, _, c], %{category_name: c.name})
+    |> group_by([es, p, c], [c.name, c.type, c.id, p.id, es.id])
   end
 
   defp email_schedules_group_by_categories(emails_schedules) do
@@ -158,6 +136,127 @@ defmodule Picsello.EmailAutomation do
       }
     end)
     |> Enum.sort_by(&{&1.category_id, &1.category_name}, :asc)
+  end
+
+  def query_get_emails_schedules() do
+    from(es in EmailSchedule)
+    |> preload(email_automation_pipeline: [:email_automation_category])
+  end
+
+  def get_emails_schedules() do
+    query_get_emails_schedules()
+    |> Repo.all()
+  end
+
+  @doc """
+   Fetch all emails from email_schedules which are ready to send
+   fetch_date_for_state() -> get date for each actions
+  """
+  def filter_emails_on_time_schedule(job_id) do
+    get_emails_schedules()
+    |> Enum.filter(fn schedule ->
+      state = schedule.email_automation_pipeline.state
+      job = get_job(schedule.job_id)
+      job_date_time = fetch_date_for_state(state, job)
+      is_email_send_time(job_date_time, schedule.total_hours)
+    end)
+
+    # state== client_contact -> 1, 3, 4 fetch inserted at date
+    # proposal sent fetch datetime for job 2
+    #  5, 6, 9 client pays first payment or reatainer that job get datetime job get payment_schedules
+    # 7, 8, 10 completes a booking event -> job prelaod booking_event get inserted at
+
+    job =
+      Jobs.get_job_by_id(job_id)
+      |> Repo.preload([
+        :booking_proposals,
+        :booking_event,
+        :payment_schedules,
+        :job_status,
+        client: :organization
+      ])
+  end
+
+  defp get_job(nil), do: nil
+
+  defp get_job(id),
+    do:
+      Jobs.get_job_by_id(id)
+      |> Repo.preload([
+        :booking_proposals,
+        :booking_event,
+        :payment_schedules,
+        :job_status,
+        client: :organization
+      ])
+
+  defp fetch_date_for_state(_, nil), do: nil
+
+  @doc """
+    Runs after a contact/lead form submission
+    Get job submitted date
+  """
+  defp fetch_date_for_state(state, job)
+       when state in [:client_contact, :pays_retainer, :booking_event] do
+    job_submit_date = job |> Map.get(:inserted_at)
+  end
+
+  @doc """
+    Starts when client pays their first payment or retainer
+    Get first payment submitted date which is paid
+  """
+  defp fetch_date_for_state(state, job)
+       when state in [:before_shoot, :balance_due, :shoot_thanks] do
+    job
+    |> Map.get(:payment_schedules)
+    |> Enum.sort_by(& &1.id)
+    |> Enum.filter(fn schedule -> schedule.paid_at != nil end)
+    |> List.first()
+    |> case do
+      nil -> nil
+      payment_schedule -> payment_schedule |> Map.get(:inserted_at)
+    end
+  end
+
+  @doc """
+    Starts when client completes a booking event
+    Get booking event submitted date
+  """
+  defp fetch_date_for_state(state, job)
+       when state in [:paid_full, :offline_payment, :post_shoot] do
+    job
+    |> Map.get(:booking_event)
+    |> case do
+      nil -> nil
+      booking_event -> booking_event |> Map.get(:inserted_at)
+    end
+  end
+
+  @doc """
+    Runs after finishing and sending the proposal
+    Get first booking_proposal send date
+  """
+  defp fetch_date_for_state(state, job) when state == :booking_proposal_sent do
+    job
+    |> Map.get(:booking_proposals)
+    |> Enum.sort_by(& &1.id)
+    |> Enum.filter(fn proposal -> proposal.sent_to_client == true end)
+    |> List.first()
+    |> case do
+      nil -> nil
+      proposal -> proposal |> Map.get(:inserted_at)
+    end
+  end
+
+  defp fetch_date_for_state(_state, _job), do: nil
+
+  defp is_email_send_time(nil, _total_hours), do: false
+
+  defp is_email_send_time(submit_time, total_hours) do
+    {:ok, current_time} = DateTime.now("Etc/UTC")
+    diff_seconds = DateTime.diff(current_time, submit_time, :second)
+    hours = div(diff_seconds, 3600)
+    if hours >= total_hours, do: true, else: false
   end
 
   def subquery_email(organization_id, job_type) do
@@ -330,3 +429,6 @@ defmodule Picsello.EmailAutomation do
   defp toggle_status("true"), do: "disabled"
   defp toggle_status("false"), do: "active"
 end
+
+# Picsello.EmailAutomation.get_emails_schedules(119, :job)
+# Picsello.EmailAutomation.filter_emails_on_time_schedule(86)

@@ -92,7 +92,7 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
         email_automation_category_id: email_automation_job.id
       },
       %{
-        name: "Proposal Sent/Initiated",
+        name: "Client Books a Booking Event",
         state: "booking_event",
         description: "Runs after finishing and sending the proposal",
         email_automation_sub_category_id: automation_response.id,

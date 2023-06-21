@@ -197,8 +197,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     IO.inspect(galleries, charlists: :as_lists)
     job = job_id |> Jobs.get_job_by_id()
 
-    gallery_emails = EmailAutomation.get_emails_schedules_galleries(galleries)
-    jobs_emails = EmailAutomation.get_emails_schedules_jobs(job_id)
+    gallery_emails = EmailAutomation.get_emails_schedules_by_ids(galleries, :gallery)
+    jobs_emails = EmailAutomation.get_emails_schedules_by_ids(job_id, :job)
     email_schedules = jobs_emails ++ gallery_emails
 
     socket
