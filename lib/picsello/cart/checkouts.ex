@@ -274,7 +274,7 @@ Logger.info(" create session ___________________")
 
   defp shipping_options(%{products: []}), do: []
 
-  defp maybe_create_invoice(%{save_whcc_order: %{whcc_order: whcc_order} = order} = invoice_order) do
+  defp maybe_create_invoice(%{save_whcc_order: %{whcc_order: whcc_order} = order}) do
     Logger.info("maybe_create_invoice ------------------")
     #print_cost is shipping plus whcc cost"
     #client_total is what client paid after all the credits applied"
@@ -284,8 +284,12 @@ Logger.info(" create session ___________________")
     case Money.cmp(print_cost, client_total) do
       :gt ->
         new()
-        |> run(:stripe_invoice, create_stripe_invoice(Picsello.Repo, invoice_order))
-        |> insert(:invoice, &insert_invoice/1)
+        |> run(:stripe_invoice, fn _, _ ->
+          create_stripe_invoice(order, Money.subtract(print_cost, client_total))
+        end)
+        |> insert(:invoice, fn invoice ->
+          insert_invoice(order, invoice)
+        end)
       _ -> new()
     end
   end
@@ -310,6 +314,9 @@ Logger.info(" create session ___________________")
   end
 
   defp insert_invoice(%{save_whcc_order: order, stripe_invoice: stripe_invoice}),
+    do: Invoices.changeset(stripe_invoice, order)
+
+  defp insert_invoice(order, %{stripe_invoice: stripe_invoice}),
     do: Invoices.changeset(stripe_invoice, order)
 
   defp place_order(cart), do: Order.placed_changeset(cart)
