@@ -2,7 +2,7 @@ defmodule NylasCalendarTest do
   use Picsello.DataCase
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
   @calendar "62zs9nfax6wvkhzo7wj8vfzw7"
-  @token "RoJK07y0nExk1c7i57iXQbgzsZ6mGq"
+  @token "RoJK07y0nEx*k1c7i57iXQbgzsZ6mGq"
   setup_all do
     ExVCR.Config.filter_request_headers("Authorization")
     ExVCR.Config.filter_request_options("basic_auth")

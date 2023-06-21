@@ -128,7 +128,7 @@ defmodule NylasCalendar do
     headers = build_headers(token)
     # url = "#{@base_url}/#{@event_endpoint}"
 
-    url = "https://#{token}:@api.nylas.com/events/#{id}?notify_participants=true"
+    url = "https://api.nylas.com/events/#{id}?notify_participants=true"
     response = HTTPoison.put!(url, Jason.encode!(params), headers)
 
     case response.status_code do
@@ -141,7 +141,7 @@ defmodule NylasCalendar do
   end
   @spec update_event(map, String.t()) :: result(map())
   def delete_event(%{"id" => id}, token) do
-    url = "https://#{token}:@api.nylas.com/events/#{id}?notify_participants=true  "
+    url = "https://api.nylas.com/events/#{id}?notify_participants=true  "
     response = HTTPoison.delete!(url)
 
     case response.status_code do

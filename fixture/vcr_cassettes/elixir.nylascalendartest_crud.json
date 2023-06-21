@@ -83,7 +83,7 @@
       "method": "put",
       "options": [],
       "request_body": "",
-      "url": "https://RoJK07y0nExk1c7i57iXQbgzsZ6mGq:@api.nylas.com/events/973mc09vd93euziwlrh4e4zkw?notify_participants=true"
+      "url": "https://api.nylas.com/events/973mc09vd93euziwlrh4e4zkw?notify_participants=true"
     },
     "response": {
       "binary": false,
@@ -117,7 +117,7 @@
       "method": "delete",
       "options": [],
       "request_body": "",
-      "url": "https://RoJK07y0nExk1c7i57iXQbgzsZ6mGq:@api.nylas.com/events/973mc09vd93euziwlrh4e4zkw?notify_participants=true  "
+      "url": "https://api.nylas.com/events/973mc09vd93euziwlrh4e4zkw?notify_participants=true  "
     },
     "response": {
       "binary": false,
