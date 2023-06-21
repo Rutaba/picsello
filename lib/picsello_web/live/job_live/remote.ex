@@ -15,10 +15,10 @@ defmodule PicselloWeb.JobLive.Remote do
     Logger.info("TOKEN #{token}")
     time_zone = socket.assigns.current_user.time_zone
     {:ok, event} = NylasCalendar.get_event_details(job_id, token)
-    socket |> assign(event)|> assign(:time_zone, time_zone) |> ok()
+    socket |> assign(event) |> assign(:time_zone, time_zone) |> ok()
   end
 
   def convert_time(time, time_zone) do
-    time |>  DateTime.shift_zone!(time_zone)|> Calendar.strftime("%I:%M:%S %p %B %-d, %Y")
+    time |> DateTime.shift_zone!(time_zone) |> Calendar.strftime("%I:%M:%S %p %B %-d, %Y")
   end
 end

@@ -49,7 +49,7 @@ defmodule PicselloWeb.Live.Calendar.IndexTest do
       assert json_response(conn, 200)
     end
   end
-  
+
   def element_present?(html, selector) do
     html
     |> Floki.parse_document!()

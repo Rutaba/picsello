@@ -40,7 +40,6 @@ defmodule PicselloWeb.ShootLive.EditComponent do
     |> ok()
   end
 
-
   @impl true
   def handle_event("address", %{"action" => "add-field"}, socket) do
     socket |> assign(address_field: true) |> noreply()
@@ -411,5 +410,4 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       </div>
     """
   end
-
 end

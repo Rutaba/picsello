@@ -1,9 +1,9 @@
 defmodule PicselloWeb.JobLive.Shared.RemoteLiveTest do
   use PicselloWeb.ConnCase, async: true
   import Phoenix.LiveViewTest
-  use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney  
+  use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
   alias Picsello.Accounts
-  
+
   @token "RoJK07y0nExk1c7i57iXQbgzsZ6mGq"
   describe "render" do
     setup do

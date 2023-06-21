@@ -11,8 +11,6 @@ defmodule PicselloWeb.NylasControllerTest do
   end
 
   describe "Nylas OAuth code" do
-
-
     test "Redirect without a logged in user", %{conn: conn} do
       assert %Plug.Conn{status: 302, resp_headers: headers} =
                conn
@@ -68,7 +66,6 @@ defmodule PicselloWeb.NylasControllerTest do
              |> String.trim() == "Calendar Sync Connected"
     end
 
-
     test "Open Modal has correct action", %{conn: conn, user: user} do
       {:ok, _view, html} = load_page(conn, user)
 
@@ -78,7 +75,6 @@ defmodule PicselloWeb.NylasControllerTest do
              |> Floki.attribute("phx-click")
              |> Enum.member?(@modal_command)
     end
-
 
     test "Open & Check link", %{conn: conn, user: user} do
       {:ok, view, _html} = load_page(conn, user)
@@ -92,7 +88,6 @@ defmodule PicselloWeb.NylasControllerTest do
              |> Floki.find("#button-connect")
              |> Floki.attribute("href") == [link]
     end
-
 
     def get_state(%Phoenix.LiveViewTest.View{pid: pid}) do
       :sys.get_state(pid)
@@ -108,6 +103,5 @@ defmodule PicselloWeb.NylasControllerTest do
 
       live(conn)
     end
-
   end
 end

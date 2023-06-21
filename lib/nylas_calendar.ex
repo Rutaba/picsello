@@ -127,7 +127,6 @@ defmodule NylasCalendar do
   def update_event(%{"id" => id} = params, token) do
     headers = build_headers(token)
 
-
     url = "https://api.nylas.com/events/#{id}?notify_participants=true"
     response = HTTPoison.put!(url, Jason.encode!(params), headers)
 
@@ -160,9 +159,9 @@ defmodule NylasCalendar do
           start: String.t(),
           title: String.t(),
           url: String.t()
-  }
-  
-  @spec get_events!([String.t()], String.t()) :: list(calendar_event()) 
+        }
+
+  @spec get_events!([String.t()], String.t()) :: list(calendar_event())
   def get_events!(calendars, token), do: get_events!(calendars, token, "America/New_York")
 
   def get_events!(nil, _, _), do: []

@@ -344,7 +344,7 @@ defmodule Picsello.Accounts.User do
           updated_at: DateTime.t(),
           onboarding: Picsello.Onboardings.Onboarding.t(),
           nylas_oauth_token: String.t(),
-          external_calendar_read_list: [String.t()]|nil,
-          external_calendar_rw_id: String.t()|nil
+          external_calendar_read_list: [String.t()] | nil,
+          external_calendar_rw_id: String.t() | nil
         }
 end

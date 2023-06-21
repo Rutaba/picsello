@@ -27,7 +27,6 @@ defmodule PicselloWeb.Live.Calendar.SettingsTest do
       {:ok, _view, html} = load_page(conn, user)
       refute element_present?(html, "#calendar_read")
     end
-
   end
 
   describe "Read/write section" do
@@ -202,11 +201,12 @@ defmodule PicselloWeb.Live.Calendar.SettingsTest do
   describe "Settings Page with connected calendars" do
     test "Google Calendar shows connected to", %{conn: conn, user: user} do
       ExVCR.Config.filter_request_headers("Authorization")
+
       use_cassette "#{__MODULE__}_calendar_connected" do
         {:ok, view, html} = load_page(conn, user, :token)
         assert %{socket: %{assigns: assigns}} = :sys.get_state(view.pid)
         assert assigns.has_token
-        
+
         assert element_present?(html, "#calendar_read")
       end
     end

@@ -84,8 +84,9 @@ defmodule Picsello.Shoot do
 
   @spec push_changes(Picsello.Accounts.User.t(), map(), Ecto.Changeset.action()) ::
           :ok
-  def push_changes(%User{nylas_oauth_token: nil}, _values, _) do
-    :ok
+  def push_changes(%User{nylas_oauth_token: nil}, _values, _verb) do
+           
+            :ok
   end
 
   def push_changes(%User{external_calendar_rw_id: nil}, _values, _) do
@@ -123,7 +124,8 @@ defmodule Picsello.Shoot do
         %User{nylas_oauth_token: token, external_calendar_rw_id: _calendar_id},
         values,
         :delete
-      ) do
+  ) do
+
     NylasCalendar.delete_event(values, token)
     :ok
   end

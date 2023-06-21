@@ -15,6 +15,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     url = Routes.i_calendar_url(socket, :index, Phoenix.Token.sign(Endpoint, "USER_ID", user.id))
     {:ok, nylas_url} = NylasCalendar.generate_login_link()
+
     socket
     |> assign(%{
       url: url,
