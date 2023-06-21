@@ -19,6 +19,7 @@ defmodule Picsello.Orders.Confirmations do
     WHCC,
     OrganizationCard
   }
+
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
 
   import Ecto.Query, only: [from: 2]
@@ -194,11 +195,11 @@ defmodule Picsello.Orders.Confirmations do
          intent: %{application_fee_amount: _application_fee_amount, amount: amount},
          order: %{whcc_order: whcc_order} = order
        }) do
-      costs_and_fees =
-        whcc_order
-        |> WHCCOrder.total()
-        |> Money.add(stripe_processing_fee(order))
-        |> Money.add(Picsello.Cart.total_shipping(order))
+    costs_and_fees =
+      whcc_order
+      |> WHCCOrder.total()
+      |> Money.add(stripe_processing_fee(order))
+      |> Money.add(Picsello.Cart.total_shipping(order))
 
     case Money.cmp(amount, costs_and_fees) do
       :lt -> {:ok, Money.subtract(costs_and_fees, amount)}

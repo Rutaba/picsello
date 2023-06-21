@@ -348,18 +348,20 @@ defmodule Picsello.Notifiers.UserNotifier do
 
   defp photographer_payment(%{intent: nil}), do: %{}
 
-  defp photographer_payment(%{
-         whcc_order: whcc_order,
-         intent: %{
-           amount: amount,
-           processing_fee: processing_fee
-         }
-       } = order) do
-      costs_and_fees =
-        whcc_order
-        |> WHCCOrder.total()
-        |> Money.add(processing_fee)
-        |> Money.add(Picsello.Cart.total_shipping(order))
+  defp photographer_payment(
+         %{
+           whcc_order: whcc_order,
+           intent: %{
+             amount: amount,
+             processing_fee: processing_fee
+           }
+         } = order
+       ) do
+    costs_and_fees =
+      whcc_order
+      |> WHCCOrder.total()
+      |> Money.add(processing_fee)
+      |> Money.add(Picsello.Cart.total_shipping(order))
 
   defp photographer_charge(%{invoice: nil}), do: %{}
   defp photographer_charge(%{invoice: %{amount_due: amount}}), do: %{photographer_charge: amount}

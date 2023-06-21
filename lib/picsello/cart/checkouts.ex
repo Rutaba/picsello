@@ -273,12 +273,11 @@ defmodule Picsello.Cart.Checkouts do
   defp create_stripe_invoice(
          _repo,
          %{save_whcc_order: %{whcc_order: whcc_order} = order}
-       )
-       do
-        print_cost = WHCCOrder.total(whcc_order) |> Money.add(Cart.total_shipping(order))
-        client_total = Order.total_cost(order)
-        create_stripe_invoice(order, Money.subtract(print_cost, client_total))
-      end
+       ) do
+    print_cost = WHCCOrder.total(whcc_order) |> Money.add(Cart.total_shipping(order))
+    client_total = Order.total_cost(order)
+    create_stripe_invoice(order, Money.subtract(print_cost, client_total))
+  end
 
   defp create_stripe_invoice(
          %{gallery: %{organization: %{user: user}}} = invoice_order,
