@@ -19,6 +19,7 @@ defmodule Picsello.Orders.Confirmations do
     WHCC,
     OrganizationCard
   }
+  alias Picsello.WHCC.Order.Created, as: WHCCOrder
 
   import Ecto.Query, only: [from: 2]
   import Money.Sigils
@@ -190,16 +191,20 @@ defmodule Picsello.Orders.Confirmations do
   end
 
   defp photographer_owes(_repo, %{
-         intent: %{application_fee_amount: application_fee_amount, amount: amount},
-         order: order
+         intent: %{application_fee_amount: _application_fee_amount, amount: amount},
+         order: %{whcc_order: whcc_order} = order
        }) do
-    print_cost = application_fee_amount |> Money.add(stripe_processing_fee(order))
+      costs_and_fees =
+        whcc_order
+        |> WHCCOrder.total()
+        |> Money.add(stripe_processing_fee(order))
+        |> Money.add(Picsello.Cart.total_shipping(order))
 
-    case Money.cmp(amount, print_cost) do
-          :lt -> {:ok, Money.subtract(print_cost, amount)}
-          :gt -> {:ok, ~M[0]USD}
-          _ -> {:ok, ~M[0]USD}
-        end
+    case Money.cmp(amount, costs_and_fees) do
+      :lt -> {:ok, Money.subtract(costs_and_fees, amount)}
+      :gt -> {:ok, ~M[0]USD}
+      _ -> {:ok, ~M[0]USD}
+    end
   end
 
   defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),

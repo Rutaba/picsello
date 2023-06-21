@@ -231,7 +231,7 @@ defmodule Picsello.Notifiers.UserNotifier do
 
   @spec order_confirmation_params(Picsello.Cart.Order.t(), module()) :: %{
           :gallery_name => String.t(),
-          :client_email => String.t(),
+          :client_name => String.t(),
           :job_name => String.t(),
           :client_order_url => String.t(),
           :products_quantity=> String.t(),
@@ -349,13 +349,17 @@ defmodule Picsello.Notifiers.UserNotifier do
   defp photographer_payment(%{intent: nil}), do: %{}
 
   defp photographer_payment(%{
+         whcc_order: whcc_order,
          intent: %{
            amount: amount,
-           application_fee_amount: application_fee_amount,
            processing_fee: processing_fee
          }
-       }) do
-    costs_and_fees = application_fee_amount |> Money.add(processing_fee)
+       } = order) do
+      costs_and_fees =
+        whcc_order
+        |> WHCCOrder.total()
+        |> Money.add(processing_fee)
+        |> Money.add(Picsello.Cart.total_shipping(order))
 
   defp photographer_charge(%{invoice: nil}), do: %{}
   defp photographer_charge(%{invoice: %{amount_due: amount}}), do: %{photographer_charge: amount}

@@ -1,6 +1,5 @@
 defmodule Picsello.Cart.Checkouts do
   @moduledoc "context module for checking out a cart"
-  require Logger
 
   alias Picsello.{
     Cart.Digital,
@@ -79,9 +78,6 @@ defmodule Picsello.Cart.Checkouts do
         %{client_total: client_total, cart: %{products: [_ | _]} = cart} ->
           new()
           |> append(create_whcc_order(cart))
-          |> merge(fn order ->
-              maybe_create_invoice(order)
-            end)
           |> merge(
             &create_session(
               cart,
@@ -198,7 +194,7 @@ defmodule Picsello.Cart.Checkouts do
 
   defp create_session(cart, %{whcc_order: whcc_order, client_total: client_total} = opts) do
     shipping_price = Cart.total_shipping(cart)
-Logger.info(" create session ___________________")
+
     create_session(
       cart,
       Enum.min_by(
@@ -274,26 +270,6 @@ Logger.info(" create session ___________________")
 
   defp shipping_options(%{products: []}), do: []
 
-  defp maybe_create_invoice(%{save_whcc_order: %{whcc_order: whcc_order} = order}) do
-    Logger.info("maybe_create_invoice ------------------")
-    #print_cost is shipping plus whcc cost"
-    #client_total is what client paid after all the credits applied"
-    print_cost = WHCCOrder.total(whcc_order) |> Money.add(Cart.total_shipping(order))
-    client_total = Order.total_cost(order)
-
-    case Money.cmp(print_cost, client_total) do
-      :gt ->
-        new()
-        |> run(:stripe_invoice, fn _, _ ->
-          create_stripe_invoice(order, Money.subtract(print_cost, client_total))
-        end)
-        |> insert(:invoice, fn invoice ->
-          insert_invoice(order, invoice)
-        end)
-      _ -> new()
-    end
-  end
-
   defp create_stripe_invoice(
          _repo,
          %{save_whcc_order: %{whcc_order: whcc_order} = order}
@@ -314,9 +290,6 @@ Logger.info(" create session ___________________")
   end
 
   defp insert_invoice(%{save_whcc_order: order, stripe_invoice: stripe_invoice}),
-    do: Invoices.changeset(stripe_invoice, order)
-
-  defp insert_invoice(order, %{stripe_invoice: stripe_invoice}),
     do: Invoices.changeset(stripe_invoice, order)
 
   defp place_order(cart), do: Order.placed_changeset(cart)
