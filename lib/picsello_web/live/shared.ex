@@ -711,7 +711,6 @@ defmodule PicselloWeb.Live.Shared do
     |> Repo.transaction()
     |> then(fn
       {:ok, %{job: job}} ->
-        IO.inspect(job, label: "import job created")
         insert_job_emails(current_user.organization_id, job)
         if(another_import,
           do:

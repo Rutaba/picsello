@@ -7,9 +7,9 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.Shared.MultiSelect
-
+  import Ecto.Query
+  
   alias Picsello.{Repo, Jobs, JobType, EmailPresets, EmailPresets.EmailPreset}
-  alias Picsello.EmailAutomation.{EmailAutomationSetting, EmailAutomationType}
   alias PicselloWeb.EmailAutomationLive.Shared
   alias Ecto.Changeset
 
@@ -19,18 +19,14 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   def update(%{
     current_user: current_user,
     job_type: job_type,
-    pipeline: %{email_automation_category: %{type: type}},
+    pipeline: %{email_automation_category: %{type: type}, email_presets: email_presets},
     email: email,
     } = assigns, socket) do
-
     job_types = Jobs.get_job_types_with_label(current_user.organization_id)
     |> Enum.map(fn row ->
-      selected = email.email_automation_types
-      |> Enum.any?(& &1.organization_job_id == row.id)
-
+      selected = email.organization_job_id == row.id
       Map.put(row, :selected, selected)
     end)
-
     email_presets = EmailPresets.email_automation_presets(type)
 
     socket
@@ -114,7 +110,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   @impl true
   def handle_event("submit", %{"step" => "edit_email"}, %{assigns: %{email_preset_changeset: changeset} = assigns} = socket) do
-    body_html = Ecto.Changeset.get_field(changeset, :body_html)
+    body_html = Ecto.Changeset.get_field(changeset, :body_template)
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
     socket
@@ -160,7 +156,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
           <.step name={@step} f={f} {assigns} />
 
           <.footer class="pt-10">
-            <div class="mr-auto md:hidden flex w-full">
+            <div class="mr-auto md:hidden flex w-full pointer-events-none opacity-40">
             <.multi_select
                 id="job_types_mobile"
                 select_class="w-full"
@@ -184,7 +180,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
               </button>
             <% end %>
 
-            <div class="mr-auto hidden md:flex">
+            <div class="mr-auto hidden md:flex pointer-events-none opacity-40">
               <.multi_select
                 id="job_types"
                 select_class="w-52"
@@ -220,7 +216,9 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
       <% f = to_form(@email_preset_changeset) %>
       <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
-      <%= hidden_input f, :email_automation_setting_id, value: @email_automation_setting_id %>
+      <%= hidden_input f, :email_automation_pipeline_id %>
+      <%= hidden_input f, :organization_job_id %>
+      <%= hidden_input f, :organization_id %>
       <%= hidden_input f, :state, value: @pipeline.state %>
       <%= hidden_input f, :name %>
       <%= hidden_input f, :position %>
@@ -385,44 +383,25 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       email_preset_changeset: email_preset_changeset,
       job_types: job_types,
       pipeline: pipeline,
-      email_automation_setting_id: setting_id,
       email: email
       }} = socket) do
-    selected_job_types = Enum.filter(job_types, & &1.selected)
+    # selected_job_types = Enum.filter(job_types, & &1.selected)
 
-    new_job_types =
-    selected_job_types
-    |> Enum.filter(fn type ->
-        !Enum.any?(email.email_automation_types,
-        &(type.id == &1.organization_job_id
-        and &1.email_automation_setting_id == setting_id
-        and &1.email_preset_id == email.id
-        ))
-    end)
+    # new_job_types =
+    # selected_job_types
+    # |> Enum.filter(fn type -> 
+    #   !Enum.any?(email_presets, &(type.id == &1.organization_job_id))
+    # end)
 
     changeset = Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
-
+    
     Ecto.Multi.new()
     |> Ecto.Multi.insert(
       :email_preset,
       fn _ -> changeset end,
-      on_conflict: :replace_all,
+      on_conflict: {:replace, [:name, :subject_template, :body_template, :private_name]},
       conflict_target: [:id]
     )
-    |> Ecto.Multi.insert_all(
-      :email_automation_types,
-      EmailAutomationType,
-      fn _ ->
-        now = DateTime.utc_now() |> DateTime.truncate(:second)
-        new_job_types
-        |> Enum.map(&%{
-          organization_job_id: &1.id,
-          email_automation_setting_id: setting_id,
-          email_preset_id: email.id,
-          inserted_at: now,
-          updated_at: now
-        })
-      end)
     |> Repo.transaction()
     |> case do
       {:ok, %{email_preset: email_preset}} ->

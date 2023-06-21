@@ -19,10 +19,6 @@ defmodule Picsello.EmailPresets.EmailPreset do
     field :status, Ecto.Enum, values: @status, default: :active
     field :total_hours, :integer, default: 0
     field :condition, :string
-    field :immediately, :boolean, default: true, virtual: true
-    field :count, :integer, virtual: true
-    field :calendar, :string, virtual: true
-    field :sign, :string, virtual: true
     field :body_template, :string
     field :type, Ecto.Enum, values: @types
     field :state, Ecto.Enum, values: @states
@@ -30,20 +26,36 @@ defmodule Picsello.EmailPresets.EmailPreset do
     field :name, :string
     field :subject_template, :string
     field :position, :integer
-    field :template_id, :integer, virtual: true
     field :private_name, :string
+    field :immediately, :boolean, default: true, virtual: true
+    field :count, :integer, virtual: true
+    field :calendar, :string, virtual: true
+    field :sign, :string, virtual: true
+    field :template_id, :integer, virtual: true
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
+    belongs_to(:organization_job_type, Picsello.OrganizationJobType, foreign_key: :organization_job_id)
     belongs_to(:organization, Picsello.Organization)
 
     timestamps type: :utc_datetime
+  end
+
+  def default_presets_changeset(email_preset \\ %__MODULE__{}, attrs) do
+    email_preset
+    |> cast(
+      attrs,
+      ~w[count calendar sign template_id private_name type state job_type name position subject_template body_template]a
+    )
+    |> validate_required(
+      ~w[status type state name position subject_template body_template]a
+    )
   end
 
   def changeset(email_preset \\ %__MODULE__{}, attrs) do
     email_preset
     |> cast(
       attrs,
-      ~w[status total_hours condition email_automation_pipeline_id organization_id immediately count calendar sign template_id private_name type state job_type name position subject_template body_template]a
+      ~w[status total_hours condition organization_job_id email_automation_pipeline_id organization_id immediately count calendar sign template_id private_name type state job_type name position subject_template body_template]a
     )
     |> validate_required(
       ~w[status email_automation_pipeline_id organization_id type state name position subject_template body_template]a
@@ -119,6 +131,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
           private_name: String.t(),
           email_automation_pipeline_id: integer(),
           organization_id: integer(),
+          organization_job_id: integer(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }

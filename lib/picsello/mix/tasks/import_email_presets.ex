@@ -9,6 +9,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
   def run(_) do
     load_app()
 
+    insert_emails()
+  end
+
+  def insert_emails() do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
     [
@@ -82,9 +86,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
       email_preset = Repo.get_by(EmailPreset, type: attrs.type, state: attrs.state)
 
       if email_preset do
-        email_preset |> EmailPreset.changeset(attrs) |> Repo.update!()
+        email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
       else
-        attrs |> EmailPreset.changeset() |> Repo.insert!()
+        attrs |> EmailPreset.default_presets_changeset() |> Repo.insert!()
       end
     end)
   end

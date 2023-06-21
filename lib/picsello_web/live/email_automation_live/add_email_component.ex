@@ -7,9 +7,9 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.Shared.MultiSelect
-
+  import Ecto.Query
+  
   alias Picsello.{Repo, EmailPresets, Jobs, JobType, GlobalSettings.Gallery, EmailPresets.EmailPreset}
-  alias Picsello.EmailAutomation.{EmailAutomationSetting, EmailAutomationType}
   alias PicselloWeb.EmailAutomationLive.Shared
   alias Ecto.Changeset
 
@@ -34,7 +34,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     |> assign(email_preset: List.first(email_presets))
     |> assign(steps: @steps)
     |> assign(step: :timing)
-    |> assign_changeset(%{})
+    |> assign_changeset(nil)
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end
@@ -56,18 +56,10 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     |> ok()
   end
 
-defp step_valid?(%{step: :timing, changeset: changeset, job_types: job_types}) do
-  changeset.valid?
-  |> Shared.validate?(job_types)
-end
-
-defp step_valid?(%{step: :edit_email, email_preset_changeset: changeset, job_types: job_types}), do: changeset.valid? |> Shared.validate?(job_types)
-
 defp step_valid?(assigns),
   do:
     Enum.all?(
       [
-        assigns.changeset,
         assigns.email_preset_changeset
       ],
       & &1.valid?
@@ -80,15 +72,19 @@ defp step_valid?(assigns),
 
     socket
     |> assign(step: previous_step)
-    # |> assign_changeset(params)
     |> noreply()
   end
 
   @impl true
-  def handle_event("validate", %{"email_preset" => params}, %{assigns: %{email_preset: email_preset, email_presets: email_presets}} = socket) do
+  def handle_event("validate", %{"email_preset" => params}, %{assigns: %{email_preset: email_preset, email_presets: email_presets, current_user: current_user, pipeline: pipeline}} = socket) do
     template_id = Map.get(params, "template_id", "1") |> to_integer()
-    new_email_preset = Enum.filter(email_presets, & &1.id == template_id) |> List.first()
-
+    new_email_preset = Enum.filter(email_presets, & &1.id == template_id) 
+    |> List.first()
+    |> Map.merge(%{
+      email_automation_pipeline_id: pipeline.id,
+      organization_id: current_user.organization_id
+    })
+    
     params = if email_preset.id == template_id, do: params, else: nil
 
     socket
@@ -151,7 +147,7 @@ defp step_valid?(assigns),
           <% end %>
         </h1>
 
-        <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
+        <.form for={@email_preset_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
           <input type="hidden" name="step" value={@step} />
 
           <.step name={@step} f={f} {assigns} />
@@ -166,7 +162,7 @@ defp step_valid?(assigns),
                 search_on={false}
                 form="job_type"
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={Shared.make_options(@changeset, @job_types)}
+                options={Shared.make_options(@email_preset_changeset, @job_types)}
               />
             </div>
             <.step_buttons step={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
@@ -190,7 +186,7 @@ defp step_valid?(assigns),
                 search_on={false}
                 form="job_type"
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={Shared.make_options(@changeset, @job_types)}
+                options={Shared.make_options(@email_preset_changeset, @job_types)}
               />
             </div>
           </.footer>
@@ -239,7 +235,7 @@ defp step_valid?(assigns),
           </div>
         </div>
 
-        <% f = to_form(@changeset) %>
+        <% f = to_form(@email_preset_changeset) %>
         <%= hidden_input f, :email_automation_pipeline_id %>
         <%= hidden_input f, :organization_id %>
         <div class="flex flex-col md:px-14 px-6 py-6">
@@ -267,7 +263,7 @@ defp step_valid?(assigns),
                     <%= select f, :sign, [Before: "-", After: "+"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
                   </div>
                 </div>
-                <%= if message = @changeset.errors[:count] do %>
+                <%= if message = @email_preset_changeset.errors[:count] do %>
                   <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
                 <% end %>
               </div>
@@ -278,7 +274,7 @@ defp step_valid?(assigns),
 
           <div>
             <label class="flex pt-4">
-              <%= checkbox f, :status, class: "peer hidden", checked: Changeset.get_field(@changeset, :status) == :active %>
+              <%= checkbox f, :status, class: "peer hidden", checked: Changeset.get_field(@email_preset_changeset, :status) == :active %>
               <div class="hidden peer-checked:flex cursor-pointer">
                 <div class="rounded-full bg-blue-planning-300 border border-base-100 w-14 p-1 flex justify-end mr-4">
                   <div class="rounded-full h-5 w-5 bg-base-100"></div>
@@ -308,7 +304,7 @@ defp step_valid?(assigns),
         </div>
         <div class="flex flex-col ml-2">
           <p><b> <%= @pipeline.email_automation_category.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
-          <% c = to_form(@changeset) %>
+          <% c = to_form(@email_preset_changeset) %>
           <%= unless input_value(c, :immediately) do %>
             <% sign = input_value(c, :sign) %>
             <p class="text-sm text-base-250">Send email <%= input_value(c, :count) %> <%= String.downcase(input_value(c, :calendar)) %>  <%= if sign == "+", do: "after", else: "before" %> <%= String.downcase(@pipeline.name) %></p>
@@ -319,6 +315,8 @@ defp step_valid?(assigns),
       <hr class="my-8" />
 
       <% f = to_form(@email_preset_changeset) %>
+      <%= hidden_input f, :email_automation_pipeline_id %>
+      <%= hidden_input f, :organization_id %>
       <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
       <%= hidden_input f, :state, value: @pipeline.state %>
       <%= hidden_input f, :name %>
@@ -364,7 +362,7 @@ defp step_valid?(assigns),
         </div>
         <div class="flex flex-col ml-2">
           <p><b> Job:</b> Upcoming Shoot Automation</p>
-          <% c = to_form(@changeset) %>
+          <% c = to_form(@email_preset_changeset) %>
           <%= unless input_value(c, :immediately) do %>
             <% sign = input_value(c, :sign) %>
             <p class="text-sm text-base-250">Send email <%= input_value(c, :count) %> <%= String.downcase(input_value(c, :calendar)) %>  <%= if sign == "+", do: "after", else: "before" %> <%= String.downcase(@pipeline.name) %></p>
@@ -391,19 +389,22 @@ defp step_valid?(assigns),
     """
   end
 
-  defp assign_changeset(%{assigns: %{job_types: job_types, step: step, current_user: current_user, pipeline: pipeline} = assigns} = socket, params, action \\ nil) do
-    automation_params =
+  defp assign_changeset(%{assigns: %{job_types: job_types, email_preset: email_preset, step: step, current_user: current_user, pipeline: pipeline} = assigns} = socket, params, action \\ nil) do
+    automation_params = if params do
       params
-      |> Map.merge(%{
-        "email_automation_pipeline_id" => pipeline.id,
-        "organization_id" => current_user.organization_id,
-        "step" => step
-      })
-
-    changeset = EmailAutomationSetting.changeset(automation_params) |> Map.put(:action, action)
-
+    else
+      email_preset
+      |> Map.put(:template_id, email_preset.id)
+      |> Shared.prepare_email_preset_params()
+    end
+    |> Map.merge(%{
+      "email_automation_pipeline_id" => pipeline.id,
+      "organization_id" => current_user.organization_id,
+      "step" => step
+    })
+    
     socket
-    |> assign(changeset: changeset)
+    |> Shared.email_preset_changeset(email_preset, automation_params)
   end
 
   defp maybe_normalize_params(params) do
@@ -418,37 +419,47 @@ defp step_valid?(assigns),
 
   defp save(%{
     assigns: %{
-      changeset: changeset,
       email_preset_changeset: email_preset_changeset,
       job_types: job_types,
       pipeline: pipeline
       }} = socket) do
+    email_preset =  email_preset_changeset |> current()
     selected_job_types = Enum.filter(job_types, & &1.selected)
-
+    preset_ids = Enum.map(selected_job_types, & &1.id)
+    
     Ecto.Multi.new()
-    |> Ecto.Multi.insert(:email_automation_setting, changeset)
-    |> Ecto.Multi.insert(:email_preset, fn %{email_automation_setting: %{id: setting_id}} ->
-      email_preset_changeset
-      |> Ecto.Changeset.put_change(:email_automation_setting_id, setting_id)
-    end)
-    |> Ecto.Multi.insert_all(
-      :email_automation_types,
-      EmailAutomationType,
-      fn %{email_automation_setting: %{id: setting_id}, email_preset: %{id: email_id}} ->
-        now = DateTime.utc_now() |> DateTime.truncate(:second)
-        selected_job_types
-        |> Enum.map(&%{
-          organization_job_id: &1.id,
-          email_automation_setting_id: setting_id,
-          email_preset_id: email_id,
-          inserted_at: now,
-          updated_at: now
-        })
+    |> Ecto.Multi.delete_all(
+      :delete_presets,
+      from(ep in EmailPreset, where: ep.organization_job_id in ^preset_ids
+      and ep.organization_id == ^email_preset.organization_id
+      and ep.email_automation_pipeline_id == ^email_preset.email_automation_pipeline_id)
+    )
+    |> Ecto.Multi.insert_all(:email_preset, EmailPreset, fn _ ->
+      now = DateTime.utc_now() |> DateTime.truncate(:second)
+      selected_job_types
+      |> Enum.map(&%{
+        status: email_preset.status,
+        total_hours: email_preset.total_hours,
+        condition: email_preset.condition,
+        body_template: email_preset.body_template,
+        type: email_preset.type,
+        state: email_preset.state,
+        job_type: email_preset.job_type,
+        name: email_preset.name,
+        subject_template: email_preset.subject_template,
+        position: email_preset.position,
+        private_name: email_preset.private_name,
+        email_automation_pipeline_id: email_preset.email_automation_pipeline_id,
+        organization_id: email_preset.organization_id,
+        organization_job_id: &1.id,
+        inserted_at: now,
+        updated_at: now
+      })
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, %{email_automation_setting: email_automation_setting, email_preset: email_preset}} ->
-        send(self(), {:update_automation, %{message: "Successfully created", email_automation_setting: email_automation_setting, email_preset: email_preset}})
+      {:ok, %{email_preset: email_preset}} ->
+        send(self(), {:update_automation, %{message: "Successfully created", email_preset: email_preset}})
         :ok
       _ -> :error
     end

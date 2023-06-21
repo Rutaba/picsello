@@ -100,7 +100,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> EmailPreset.changeset()
   end
 
-  defp prepare_email_preset_params(email_preset) do
+  def prepare_email_preset_params(email_preset) do
     email_preset
     |> Map.from_struct()
     |> Map.new(fn {k, v} -> {to_string(k), v} end)
