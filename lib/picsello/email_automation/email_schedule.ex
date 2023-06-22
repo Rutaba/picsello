@@ -4,10 +4,9 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
   import Ecto.Changeset
 
   alias Picsello.EmailAutomation.{
-    EmailAutomationPipeline,
-    EmailAutomationCategory,
-    EmailAutomationSubCategory
+    EmailAutomationPipeline
   }
+
   alias Picsello.EmailPresets.EmailPreset
 
   alias Picsello.{Job, Galleries.Gallery}
@@ -39,9 +38,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
       attrs,
       ~w[email_automation_pipeline_id name private_name subject_template body_template total_hours condition immediately count calendar sign is_stopped reminded_at job_id gallery_id]a
     )
-    |> validate_required(
-      ~w[email_automation_pipeline_id subject_template body_template]a
-    )
+    |> validate_required(~w[email_automation_pipeline_id subject_template body_template]a)
     |> then(fn changeset ->
       unless get_field(changeset, :immediately) do
         changeset

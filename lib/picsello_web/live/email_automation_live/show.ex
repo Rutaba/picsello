@@ -10,13 +10,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     Galleries,
     Jobs,
     EmailAutomation,
-    EmailAutomation.EmailSchedule,
-    Notifiers.ClientNotifier,
-    Orders,
     Galleries,
     Repo
   }
 
+  @impl true
   def mount(%{"id" => id} = _params, _session, socket) do
     socket
     |> assign(:job_id, to_integer(id))
@@ -60,17 +58,31 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
-  def handle_event("send-email-now", %{"email_id" => id, "pipeline_id" => pipeline_id},  %{assigns: %{job_id: job_id}} = socket) do
+  def handle_event(
+        "send-email-now",
+        %{"email_id" => id, "pipeline_id" => pipeline_id},
+        %{assigns: %{job_id: job_id}} = socket
+      ) do
     id = to_integer(id)
     pipeline_id = to_integer(pipeline_id)
 
-    email = EmailAutomation.get_email_schedule_by_id(id) |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+    email =
+      EmailAutomation.get_email_schedule_by_id(id)
+      |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+
     pipeline = get_pipline(pipeline_id)
 
-    job = Jobs.get_job_by_id(job_id) |> Repo.preload([:payment_schedules, :job_status, client: :organization])
+    job =
+      Jobs.get_job_by_id(job_id)
+      |> Repo.preload([:payment_schedules, :job_status, client: :organization])
 
-    case EmailAutomation.send_now_email(pipeline.email_automation_category.type, email, job, pipeline.state) do
-      {:ok, _} ->  socket |> put_flash(:success, "Email Sent Successfully")
+    case EmailAutomation.send_now_email(
+           pipeline.email_automation_category.type,
+           email,
+           job,
+           pipeline.state
+         ) do
+      {:ok, _} -> socket |> put_flash(:success, "Email Sent Successfully")
       _ -> socket |> put_flash(:success, "Error in Sending Email")
     end
     |> assign_email_schedules()
@@ -97,7 +109,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
     id = String.to_integer(id)
 
-    case EmailSchedule.update_email_schedule(id, %{is_stopped: true}) do
+    case EmailAutomation.update_email_schedule(id, %{is_stopped: true}) do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end
@@ -224,6 +236,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     converted_date |> Calendar.strftime("%m/%d/%Y")
   end
 
-  defp valid_type?(%{assigns: %{selected_job_type: nil}}), do: false
-  defp valid_type?(%{assigns: %{selected_job_type: _type}}), do: true
+  # defp valid_type?(%{assigns: %{selected_job_type: nil}}), do: false
+  # defp valid_type?(%{assigns: %{selected_job_type: _type}}), do: true
 end

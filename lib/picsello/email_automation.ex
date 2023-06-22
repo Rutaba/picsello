@@ -8,7 +8,6 @@ defmodule Picsello.EmailAutomation do
     Repo,
     EmailPresets.EmailPreset,
     Utils,
-    BookingProposal,
     Jobs,
     Notifiers.ClientNotifier
   }
@@ -117,7 +116,7 @@ defmodule Picsello.EmailAutomation do
       pipelines =
         group
         |> Enum.group_by(& &1.pipeline["id"])
-        |> Enum.map(fn {pipeline_id, pipelines} ->
+        |> Enum.map(fn {_pipeline_id, pipelines} ->
           emails =
             pipelines
             |> Enum.map(& &1.pipeline["email"])
@@ -152,34 +151,19 @@ defmodule Picsello.EmailAutomation do
    Fetch all emails from email_schedules which are ready to send
    fetch_date_for_state() -> get date for each actions
   """
-  def filter_emails_on_time_schedule(job_id) do
+  def filter_emails_on_time_schedule() do
     get_emails_schedules()
     |> Enum.filter(fn schedule ->
       state = schedule.email_automation_pipeline.state
       job = get_job(schedule.job_id)
       job_date_time = fetch_date_for_state(state, job)
-      is_email_send_time(job_date_time, schedule.total_hours)
+      is_email_send_time(job_date_time, schedule.total_hours) and is_nil(schedule.reminded_at)
     end)
-
-    # state== client_contact -> 1, 3, 4 fetch inserted at date
-    # proposal sent fetch datetime for job 2
-    #  5, 6, 9 client pays first payment or reatainer that job get datetime job get payment_schedules
-    # 7, 8, 10 completes a booking event -> job prelaod booking_event get inserted at
-
-    job =
-      Jobs.get_job_by_id(job_id)
-      |> Repo.preload([
-        :booking_proposals,
-        :booking_event,
-        :payment_schedules,
-        :job_status,
-        client: :organization
-      ])
   end
 
-  defp get_job(nil), do: nil
+  def get_job(nil), do: nil
 
-  defp get_job(id),
+  def get_job(id),
     do:
       Jobs.get_job_by_id(id)
       |> Repo.preload([
@@ -190,23 +174,23 @@ defmodule Picsello.EmailAutomation do
         client: :organization
       ])
 
-  defp fetch_date_for_state(_, nil), do: nil
+  def fetch_date_for_state(_, nil), do: nil
 
   @doc """
     Runs after a contact/lead form submission
     Get job submitted date
   """
-  defp fetch_date_for_state(state, job)
-       when state in [:client_contact, :pays_retainer, :booking_event] do
-    job_submit_date = job |> Map.get(:inserted_at)
+  def fetch_date_for_state(state, job)
+      when state in [:client_contact, :pays_retainer, :booking_event] do
+    job |> Map.get(:inserted_at)
   end
 
   @doc """
     Starts when client pays their first payment or retainer
     Get first payment submitted date which is paid
   """
-  defp fetch_date_for_state(state, job)
-       when state in [:before_shoot, :balance_due, :shoot_thanks] do
+  def fetch_date_for_state(state, job)
+      when state in [:before_shoot, :balance_due, :shoot_thanks] do
     job
     |> Map.get(:payment_schedules)
     |> Enum.sort_by(& &1.id)
@@ -222,8 +206,8 @@ defmodule Picsello.EmailAutomation do
     Starts when client completes a booking event
     Get booking event submitted date
   """
-  defp fetch_date_for_state(state, job)
-       when state in [:paid_full, :offline_payment, :post_shoot] do
+  def fetch_date_for_state(state, job)
+      when state in [:paid_full, :offline_payment, :post_shoot] do
     job
     |> Map.get(:booking_event)
     |> case do
@@ -236,7 +220,7 @@ defmodule Picsello.EmailAutomation do
     Runs after finishing and sending the proposal
     Get first booking_proposal send date
   """
-  defp fetch_date_for_state(state, job) when state == :booking_proposal_sent do
+  def fetch_date_for_state(state, job) when state == :booking_proposal_sent do
     job
     |> Map.get(:booking_proposals)
     |> Enum.sort_by(& &1.id)
@@ -248,11 +232,14 @@ defmodule Picsello.EmailAutomation do
     end
   end
 
-  defp fetch_date_for_state(_state, _job), do: nil
+  @doc """
+  Catch-all clause to handle any other input patterns
+  """
+  def fetch_date_for_state(_state, _job), do: nil
 
-  defp is_email_send_time(nil, _total_hours), do: false
+  def is_email_send_time(nil, _total_hours), do: false
 
-  defp is_email_send_time(submit_time, total_hours) do
+  def is_email_send_time(submit_time, total_hours) do
     {:ok, current_time} = DateTime.now("Etc/UTC")
     diff_seconds = DateTime.diff(current_time, submit_time, :second)
     hours = div(diff_seconds, 3600)
