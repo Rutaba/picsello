@@ -155,10 +155,11 @@ defmodule Picsello.Orders.Confirmations do
       %{order: %{products: []}} = multi ->
         run(new(), :capture, fn _, _ -> capture(multi) end)
 
-      %{order: order, photographer_owes: photographer_owes} ->
+      %{order: order, photographer_owes: photographer_owes} = multi ->
         new()
         |> run(:stripe_invoice, fn _, _ -> create_stripe_invoice(order, photographer_owes) end)
         |> insert(:invoice, &insert_invoice_changeset(&1, order))
+        |> run(:capture, fn _, _ -> capture(multi) end)
     end)
     |> run(:insert_card, fn _repo, %{order: order} ->
       OrganizationCard.insert_for_proofing_order(order)

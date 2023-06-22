@@ -246,7 +246,8 @@ defmodule Picsello.Notifiers.UserNotifier do
           optional(:photographer_charge) => Money.t(),
           optional(:photographer_payment) => Money.t(),
           optional(:stripe_fee) => Money.t(),
-          optional(:shipping) => Money.t()
+          optional(:shipping) => Money.t(),
+          optional(:positive_shipping) => Money.t(),
         }
   def order_confirmation_params(
         %{
@@ -330,7 +331,7 @@ defmodule Picsello.Notifiers.UserNotifier do
 
       credit ->
         %{
-          print_credit_used: credit,
+          print_credit_used: credit |> Money.neg(),
           print_credit_remaining: Picsello.Cart.credit_remaining(gallery).print
         }
     end
@@ -343,6 +344,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       print_cost:
         whcc_order
         |> WHCCOrder.total()
+        |> Money.neg
     }
   end
 
@@ -357,17 +359,17 @@ defmodule Picsello.Notifiers.UserNotifier do
            }
          } = order
        ) do
+    costs_and_fees = if is_nil(whcc_order), do: ~M[0]USD, else: WHCCOrder.total(whcc_order)
     costs_and_fees =
-      whcc_order
-      |> WHCCOrder.total()
-      |> Money.add(processing_fee)
-      |> Money.add(Picsello.Cart.total_shipping(order))
+        costs_and_fees
+        |> Money.add(Picsello.Cart.total_shipping(order))
+        |> Money.add(processing_fee)
 
   defp photographer_charge(%{invoice: nil}), do: %{}
   defp photographer_charge(%{invoice: %{amount_due: amount}}), do: %{photographer_charge: amount}
 
   defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),
-    do: processing_fee
+    do: processing_fee |> Money.neg
 
   defp stripe_processing_fee(_), do: Money.new(0)
 
