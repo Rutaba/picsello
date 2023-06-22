@@ -194,7 +194,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   defp assign_email_schedules(%{assigns: %{job_id: job_id}} = socket) do
     galleries = Galleries.get_galleries_by_job_id(job_id) |> Enum.map(& &1.id)
 
-    IO.inspect(galleries, charlists: :as_lists)
     job = job_id |> Jobs.get_job_by_id()
 
     gallery_emails = EmailAutomation.get_emails_schedules_by_ids(galleries, :gallery)

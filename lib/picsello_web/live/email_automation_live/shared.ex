@@ -106,13 +106,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> Map.new(fn {k, v} -> {to_string(k), v} end)
   end
 
-  def make_options(changeset, job_types) do
-    job_types
-    |> Enum.map(fn option ->
-      Map.put(option, :label, String.capitalize(option.label))
-    end)
-  end
-
   def validate?(false, _), do: false
 
   def validate?(true, job_types) do

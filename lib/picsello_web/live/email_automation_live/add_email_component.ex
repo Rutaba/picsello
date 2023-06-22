@@ -21,9 +21,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     job_type: job_type,
     pipeline: %{email_automation_category: %{type: type}}
     } = assigns, socket) do
-
-    job_types = Jobs.get_job_types_with_label(current_user.organization_id)
-    |> Enum.map(&Map.put(&1, :selected, &1.id == job_type.id))
+    job_types = Picsello.JobType.all()
+    |> Enum.map(&%{id: &1, label: &1, selected: &1 == job_type.name})
 
     email_presets = EmailPresets.email_automation_presets(type)
 
@@ -139,7 +138,7 @@ defp step_valid?(assigns),
         <.steps step={@step} steps={@steps} target={@myself} />
 
         <h1 class="mt-2 mb-4 text-3xl">
-          <span class="font-bold">Add <%= String.capitalize(@job_type.job_type)%> Email Step:</span>
+          <span class="font-bold">Add <%= String.capitalize(@job_type.name)%> Email Step:</span>
           <%= case @step do %>
             <% :timing -> %> Timing
             <% :edit_email -> %> Edit Email
@@ -162,7 +161,7 @@ defp step_valid?(assigns),
                 search_on={false}
                 form="job_type"
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={Shared.make_options(@email_preset_changeset, @job_types)}
+                options={@job_types}
               />
             </div>
             <.step_buttons step={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
@@ -186,7 +185,7 @@ defp step_valid?(assigns),
                 search_on={false}
                 form="job_type"
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={Shared.make_options(@email_preset_changeset, @job_types)}
+                options={@job_types}
               />
             </div>
           </.footer>
@@ -430,7 +429,7 @@ defp step_valid?(assigns),
     Ecto.Multi.new()
     |> Ecto.Multi.delete_all(
       :delete_presets,
-      from(ep in EmailPreset, where: ep.organization_job_id in ^preset_ids
+      from(ep in EmailPreset, where: ep.job_type in ^preset_ids
       and ep.organization_id == ^email_preset.organization_id
       and ep.email_automation_pipeline_id == ^email_preset.email_automation_pipeline_id)
     )
@@ -444,14 +443,13 @@ defp step_valid?(assigns),
         body_template: email_preset.body_template,
         type: email_preset.type,
         state: email_preset.state,
-        job_type: email_preset.job_type,
+        job_type: &1.id,
         name: email_preset.name,
         subject_template: email_preset.subject_template,
         position: email_preset.position,
         private_name: email_preset.private_name,
         email_automation_pipeline_id: email_preset.email_automation_pipeline_id,
         organization_id: email_preset.organization_id,
-        organization_job_id: &1.id,
         inserted_at: now,
         updated_at: now
       })

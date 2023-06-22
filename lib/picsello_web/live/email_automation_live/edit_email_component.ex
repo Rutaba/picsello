@@ -22,11 +22,10 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     pipeline: %{email_automation_category: %{type: type}, email_presets: email_presets},
     email: email,
     } = assigns, socket) do
-    job_types = Jobs.get_job_types_with_label(current_user.organization_id)
-    |> Enum.map(fn row ->
-      selected = email.organization_job_id == row.id
-      Map.put(row, :selected, selected)
-    end)
+
+    job_types = Picsello.JobType.all()
+    |> Enum.map(&%{id: &1, label: &1, selected: &1 == job_type.name})
+
     email_presets = EmailPresets.email_automation_presets(type)
 
     socket
@@ -147,7 +146,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
             <% :edit_email -> %> Edit
             <% :preview_email -> %> Preview
           <% end %>
-          <%= String.capitalize(@job_type.job_type)%> Email</span>
+          <%= String.capitalize(@job_type.name)%> Email</span>
         </h1>
 
         <.form for={@email_preset_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
@@ -165,7 +164,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
                 search_on={false}
                 form="job_type"
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={Shared.make_options(@email_preset_changeset, @job_types)}
+                options={@job_types}
               />
             </div>
             <.step_buttons step={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
@@ -189,7 +188,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
                 search_on={false}
                 form="job_type"
                 on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={Shared.make_options(@email_preset_changeset, @job_types)}
+                options={@job_types}
               />
             </div>
           </.footer>
@@ -217,7 +216,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       <% f = to_form(@email_preset_changeset) %>
       <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
       <%= hidden_input f, :email_automation_pipeline_id %>
-      <%= hidden_input f, :organization_job_id %>
       <%= hidden_input f, :organization_id %>
       <%= hidden_input f, :state, value: @pipeline.state %>
       <%= hidden_input f, :name %>
@@ -317,12 +315,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
           </div>
       <% end %>
     """
-  end
-
-  defp make_options(job_types) do
-    job_types |> Enum.map(fn option ->
-      Map.put(option, :label, String.capitalize(option.label))
-    end)
   end
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1

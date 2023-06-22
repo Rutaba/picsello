@@ -392,7 +392,13 @@ defmodule PicselloWeb.Shared.MultiSelect do
     set_selected2(socket, Enum.reverse(options), count, sel_count)
   end
   defp set_selected(%{assigns: assigns} = socket, idx, selected?) do
-    index   = String.to_integer(idx)
+    index =
+    try do
+      String.to_integer(idx)
+    rescue
+      _ -> idx
+    end
+ 
     sel_inc = selected? && 1 || 0
 
     {count, sel_count, options} =

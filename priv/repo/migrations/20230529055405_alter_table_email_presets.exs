@@ -11,7 +11,6 @@ defmodule Picsello.Repo.Migrations.AlterTableEmailPresets do
       add(:condition, :string)
       add(:private_name, :string)
 
-      add(:organization_job_id, references(:organization_job_types, on_delete: :nothing))
       add(
         :email_automation_pipeline_id,
         references(:email_automation_pipelines, on_delete: :nothing)
@@ -28,7 +27,7 @@ defmodule Picsello.Repo.Migrations.AlterTableEmailPresets do
   end
   def down do
     execute("""
-    alter table email_presets drop column status, drop column total_hours, drop column condition, drop column organization_job_id, drop column private_name, drop column email_automation_pipeline_id, drop column organization_id
+    alter table email_presets drop column status, drop column total_hours, drop column condition, drop column private_name, drop column email_automation_pipeline_id, drop column organization_id
   """)
   execute("DROP TYPE email_preset_status")
   end

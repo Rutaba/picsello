@@ -103,7 +103,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
 
             <% f = to_form(@changeset) %>
             <%= hidden_input f, :email_automation_pipeline_id %>
-            <%= hidden_input f, :organization_job_id %>
+            <%= hidden_input f, :job_type %>
             <%= hidden_input f, :organization_id %>
             <div class="flex md:flex-row flex-col w-full md:px-14 px-6 py-6">
 

@@ -71,7 +71,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.AddEmailComponent, %{
       current_user: current_user,
-      job_type: selected_job_type,
+      job_type: selected_job_type.jobtype,
       pipeline: get_pipline(pipeline_id)
     })
     |> noreply()
@@ -190,7 +190,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     socket
     |> open_modal(module, %{
       current_user: current_user,
-      job_type: selected_job_type,
+      job_type: selected_job_type.jobtype,
       pipeline: get_pipline(pipeline_id),
       email_id: to_integer(email_id),
       email: EmailAutomation.get_email_by_id(to_integer(email_id))
