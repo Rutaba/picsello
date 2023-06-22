@@ -229,6 +229,10 @@ defmodule Picsello.Onboardings do
     current_user
     |> cast(attr, [])
     |> cast_embed(:onboarding, with: &Onboarding.phone_changeset(&1, &2), required: true)
+    |> case do
+      %{changes: %{onboarding: _}} = changeset -> changeset
+      %{} = changeset -> add_error(changeset, :phone, "did not change")
+    end
   end
 
   def user_update_promotion_code_changeset(current_user, attrs) do
