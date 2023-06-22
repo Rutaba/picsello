@@ -1512,8 +1512,8 @@ defmodule PicselloWeb.HomeLive.Index do
       <div class="flex flex-col w-full p-4">
         <div class="flex justify-between items-center mb-2 w-full gap-10">
           <h3 class={"mb-2 mr-4 text-xl font-bold text-black"}><%= @title %></h3>
-          <div>
-            <button type="button" class="link px-4" phx-click={@view_event} hidden={@hidden}>
+          <div class="flex flex-col md:flex-row items-center">
+            <button type="button" class="link px-4 mb-2 md:mb-0" phx-click={@view_event} hidden={@hidden}>
               View all
             </button>
             <button type="button" class="font-bold btn-tertiary py-2" phx-click={@add_event}>
