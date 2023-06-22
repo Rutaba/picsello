@@ -1,39 +1,90 @@
-<section>
-  <div class="center-container p-6 pt-10" style="background-color: #1df098">
-    <div> Title: 
+<%!-- Note: this container div shouldn't go in the modal --%>
+<div class="center-container p-6 pt-10">
+  <div class="dialog">
+    <h1 class="flex justify-between mb-4 text-2xl font-bold">
       <span id="title"><%= @title%></span>
+      <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
+        <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2"/>
+      </button>
+    </h1>
+    <div class="bg-base-200 px-4 py-6 my-6 rounded-lg">
+      <%= if @type == :time do %>
+        <div class="flex flex-col gap-2"> 
+          <span class="flex gap-2">
+            <span class="font-bold flex gap-2 items-center">
+              <.icon name="clock" class="w-6 h-6 text-blue-planning-300 flex-shrink-0"/>
+              Start
+            </span>
+            <span id="start_time" class="text-base-250"><%= convert_time(@start_time, @time_zone) %></span>
+          </span>
+          <span class="flex gap-2">
+            <span class="font-bold flex gap-2 items-center">
+              <.icon name="clock" class="w-6 h-6 text-blue-planning-300 flex-shrink-0"/>
+              End
+            </span>
+             <span id="end_time" class="text-base-250"><%= convert_time(@end_time, @time_zone) %></span>
+          </span>
+        </div>
+      <% else %>
+        <div> Date
+          <span id="date"><%= @date %></span>
+        </div>
+      <% end %>
     </div>
-    <div> Description
-      <span id="description"><%= @description%></span>
+    <div class="flex gap-2 mt-4">
+      <.icon name="description" class="w-6 h-6 text-blue-planning-300 flex-shrink-0"/>
+      <span class="flex flex-col">
+        <span class="text-lg font-bold">Description</span>
+        <span id="description" class="raw_html text-base-250 text-sm">
+          <%= raw @description %>
+        </span>
+      </span>
     </div>
-    <div> Owner: 
-      <span id="owner_email"><%= @owner_email%></span>
+    <div class="flex gap-2 mt-4">
+      <.icon name="calendar" class="w-6 h-6 text-blue-planning-300 flex-shrink-0"/>
+      <span class="flex flex-col">
+        <span class="text-lg font-bold">Event Owner</span>
+        <span id="owner_email" class="text-base-250 text-sm"><%= @owner_email %></span>
+      </span>
     </div>
-    <div> Type
-      <span id="object"><%= @object%></span>
-    </div>
-    <div>Participants
-      <span id="participants"><%= @participants%></span>
-    </div>
-    <div>Status
-      <span id="status"><%= @status%></span>
-    </div>
-    <div> Busy: 
-      <span id="busy"><%= @busy%></span>
-    </div>
-    <%= if @type == :time do %>
-    <div>Time 
-      <span id="start_time"><%= convert_time(@start_time, @time_zone) %></span> -
-      <span id="end_time"><%= convert_time(@end_time, @time_zone) %></span>
-      </div>
-    <% else %>
-    <div> Date
-      <span id="date"><%= @date %></span>
+    <%= if !Enum.empty?(@participants) do %>
+    <div class="flex gap-2 mt-4">
+      <.icon name="client-icon" class="w-6 h-6 text-blue-planning-300 flex-shrink-0"/>
+      <span class="flex flex-col">
+        <span class="text-lg font-bold">Participants</span>
+        <span id="participants" class="text-base-250 text-sm">
+          <%= for %{"email" => email} <- @participants do %>
+            <%= email %>
+          <% end %>
+        </span>
+      </span>
     </div>
     <% end %>
-    <div>Updated At
-      <span id="updated_at"><%= convert_time(@updated_at, @time_zone) %></span>
+    <div class="flex gap-2 mt-4">
+      <.icon name="checkcircle" class="w-6 h-6 text-blue-planning-300 flex-shrink-0"/>
+      <span class="flex flex-col">
+        <span class="text-lg font-bold">Status</span>
+        <span id="owner_email" class="text-base-250 text-sm sentence capitalize"><%= @status %></span>
+      </span>
     </div>
+    <div class="flex gap-2 mt-4">
+      <.icon name="question-mark" class="w-6 h-6 text-blue-planning-300 flex-shrink-0"/>
+      <span class="flex flex-col">
+        <span class="text-lg font-bold">Busy</span>
+        <span id="owner_email" class="text-base-250 text-sm sentence">
+        <%= if @busy do %>
+          Yes
+        <% else %>
+          No
+        <% end %>
+        </span>
+      </span>
+    </div>
+    <PicselloWeb.LiveModal.footer class="pt-8">
+      <button class="btn-secondary w-full" title="cancel" type="button" phx-click="modal" phx-value-action="close">
+        Close
+      </button>
+    </PicselloWeb.LiveModal.footer>
   </div>
-</section>
+</div>
 
