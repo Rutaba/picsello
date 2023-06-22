@@ -26,7 +26,17 @@ defmodule Picsello.Galleries do
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
-  alias Galleries.{Gallery, Photo, CoverPhoto, Watermark, SessionToken, GalleryProduct, GalleryClient}
+
+  alias Galleries.{
+    Gallery,
+    Photo,
+    CoverPhoto,
+    Watermark,
+    SessionToken,
+    GalleryProduct,
+    GalleryClient
+  }
+
   import Repo.CustomMacros
 
   @area_markup_category Picsello.Category.print_category()
@@ -832,7 +842,7 @@ defmodule Picsello.Galleries do
   end
 
   def maybe_set_product_previews(%{cover_photo: cover_photo} = gallery, photo) do
-    case cover_photo |> IO.inspect() do
+    case cover_photo do
       %CoverPhoto{} ->
         {:ok, cover_photo}
 

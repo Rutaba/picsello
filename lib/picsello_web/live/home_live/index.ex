@@ -1077,7 +1077,8 @@ defmodule PicselloWeb.HomeLive.Index do
         |> assign(
           :booking_events,
           BookingEvents.get_booking_events(current_user.organization_id,
-            filters: %{sort_by: :inserted_at, sort_direction: :desc})
+            filters: %{sort_by: :inserted_at, sort_direction: :desc}
+          )
           |> Enum.map(fn booking_event ->
             booking_event
             |> Map.put(
@@ -1420,20 +1421,6 @@ defmodule PicselloWeb.HomeLive.Index do
     card = if buttons, do: %{card | buttons: buttons}, else: card
 
     %{org_card | card: %{card | body: body}}
-  end
-
-  defp button(assigns) do
-    assigns =
-      assigns
-      |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :id]))
-      |> Enum.into(%{class: "", hidden: "", disabled: false, inner_block: nil})
-
-    ~H"""
-      <button title={@title} type="button" phx-click={@click_event} phx-value-event-id={@id} class={"flex items-center px-3 py-2 rounded-lg hover:bg-#{@color}-100 hover:font-bold #{@hidden}"} disabled={@disabled} {@rest}>
-        <.icon name={@icon} class={"inline-block w-4 h-4 mr-3 fill-current text-#{@color}-300"} />
-        <%= @title %>
-      </button>
-    """
   end
 
   def card_buttons(%{concise_name: _, buttons: _} = assigns) do
