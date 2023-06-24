@@ -3,7 +3,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
   use Picsello.Notifiers
   import Picsello.Messages, only: [get_emails: 2]
 
-  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery, EmailAutomation.EmailSchedule}
+  alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery}
 
   alias Cart.Order
   require Logger
@@ -312,13 +312,9 @@ defmodule Picsello.Notifiers.ClientNotifier do
     end
   end
 
-  def deliver_automation_email_gallery(email_preset, gallery, _schema, _state, helpers) do
-    :ok
-  end
+  def deliver_automation_email_gallery(_email_preset, _gallery, _schema, _state, _helpers), do: :ok
 
-  def deliver_automation_email_order(job, _, helpers) do
-    :ok
-  end
+  def deliver_automation_email_order(_job, _, _helpers), do: :ok
 
   defp message_params(message) do
     %{

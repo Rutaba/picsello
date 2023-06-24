@@ -9,6 +9,7 @@ defmodule Picsello.EmailAutomation do
     EmailPresets.EmailPreset,
     Utils,
     Jobs,
+    ClientMessage,
     Notifiers.ClientNotifier
   }
 
@@ -137,28 +138,15 @@ defmodule Picsello.EmailAutomation do
     |> Enum.sort_by(&{&1.category_id, &1.category_name}, :asc)
   end
 
-  def query_get_emails_schedules() do
+  def get_all_emails_schedules() do
     from(es in EmailSchedule)
     |> preload(email_automation_pipeline: [:email_automation_category])
-  end
-
-  def get_emails_schedules() do
-    query_get_emails_schedules()
     |> Repo.all()
   end
 
-  @doc """
-   Fetch all emails from email_schedules which are ready to send
-   fetch_date_for_state() -> get date for each actions
-  """
-  def filter_emails_on_time_schedule() do
-    get_emails_schedules()
-    |> Enum.filter(fn schedule ->
-      state = schedule.email_automation_pipeline.state
-      job = get_job(schedule.job_id)
-      job_date_time = fetch_date_for_state(state, job)
-      is_email_send_time(job_date_time, schedule.total_hours) and is_nil(schedule.reminded_at)
-    end)
+  def get_subjects_for_job_pipeline(emails) do
+    emails
+    |> Enum.map(& &1.subject_template)
   end
 
   def get_job(nil), do: nil
@@ -389,6 +377,32 @@ defmodule Picsello.EmailAutomation do
     }
   end
 
+  def resolve_all_subjects(nil, _type, _subjects), do: []
+
+  def resolve_all_subjects(job, type, subjects) do
+    Enum.map(subjects, fn subject ->
+      resolve_variables_for_subject(job, type, subject)
+    end)
+  end
+
+  defp resolve_variables_for_subject(job, type, subject) do
+    schemas = {job}
+    resolver_module =
+      case type do
+        :gallery -> Picsello.EmailPresets.GalleryResolver
+        _ -> Picsello.EmailPresets.JobResolver
+      end
+
+    resolver = schemas |> resolver_module.new(PicselloWeb.Helpers)
+
+    data =
+      for {key, func} <- resolver_module.vars(), into: %{} do
+        {key, func.(resolver)}
+      end
+
+    Utils.render(subject, data)
+  end
+
   def send_now_email(:lead = type, email, job, state) when type in [:lead, :job] do
     result =
       ClientNotifier.deliver_automation_email_job(email, job, {job}, state, PicselloWeb.Helpers)
@@ -406,6 +420,23 @@ defmodule Picsello.EmailAutomation do
 
   def send_now_email(:gallery, _email, _job, _state), do: {:ok, nil}
 
+  def is_reply_receive!(job, subjects) do
+    get_client_messages(job, subjects)
+    |> Enum.count() > 0
+  end
+
+  def get_client_messages(nil, _subjects), do: []
+  def get_client_messages(job, subjects) do
+    from(
+      c in ClientMessage,
+      join: r in assoc(c, :client_message_recipients),
+      on: c.id == r.client_message_id,
+      where: c.subject in ^subjects and c.job_id == ^job.id and c.outbound == false,
+      where: r.client_id == ^job.client.id and r.recipient_type == :to
+    )
+    |> Repo.all()
+  end
+
   defp remove_categories_from_list(sub_categories) do
     Enum.map(sub_categories, fn sub_category ->
       sub_category
@@ -418,4 +449,6 @@ defmodule Picsello.EmailAutomation do
 end
 
 # Picsello.EmailAutomation.get_emails_schedules(119, :job)
-# Picsello.EmailAutomation.filter_emails_on_time_schedule(86)
+# Picsello.EmailAutomation.filter_emails_on_time_schedule()
+# # Picsello.EmailAutomation.get_emails_schedules_for_job_pipeline(119, nil, 1)
+# Picsello.EmailAutomation.get_client_messages(88)
