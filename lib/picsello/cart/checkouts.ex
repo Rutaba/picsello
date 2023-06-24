@@ -219,6 +219,9 @@ defmodule Picsello.Cart.Checkouts do
     order_number = Order.number(order)
 
     params = %{
+      shipping_address_collection: %{
+        allowed_countries: ["US", "CA"]
+      },
       line_items: build_line_items(order),
       customer_email: order.delivery_info.email,
       client_reference_id: "order_number_#{order_number}",

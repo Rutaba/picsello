@@ -2,13 +2,18 @@ defmodule PicselloWeb.Live.FinanceSettings do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
-  alias Picsello.{Payments, Accounts.User}
+  alias Picsello.{Payments, Accounts.User, Organization, Repo}
 
   @impl true
-  def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
     socket
     |> assign(:page_title, "Settings")
     |> assign_stripe_status()
+    |> assign_payment_options_changeset(%{})
     |> assign(current_user: current_user)
     |> ok()
   end
@@ -52,37 +57,64 @@ defmodule PicselloWeb.Live.FinanceSettings do
             stripe_status: @stripe_status %>
           </div>
         </.card>
-        <.card title="Accepted payment types" class="intro-payments">
-          <p class="mt-2 text-base-250">Here you can enable if you’d like to accept offline payments. Be careful, you are opening yourself up to more manual work!</p>
-          <p class="font-bold mt-4">I would like to accept:</p>
-          <div class="flex items-center mt-2 justify-between">
-            <div class="flex flex-col">
-              <p class="font-semibold">Cash/check payments</p>
-              <p class="font-normal flex text-base-250">Accept offline payments</p>
-            </div>
-            <div class="flex justify-end items-center">
-              <.form :let={_} for={%{}} as={:toggle} phx-change="toggle">
-                <label class="mt-4 text-lg flex">
-                  <input type="checkbox" class="peer hidden" checked={User.enabled?(@current_user)}/>
-                  <div class="hidden peer-checked:flex cursor-pointer">
-                    <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
-                      <div class="rounded-full h-5 w-5 bg-base-100"></div>
-                    </div>
-                    Enabled
-                  </div>
-                  <div class="flex peer-checked:hidden cursor-pointer">
-                    <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
-                      <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
-                    </div>
-                    Disabled
-                  </div>
-                </label>
-              </.form>
-            </div>
-            </div>
+        <.card title="Payment options" class="intro-payments">
+          <.form :let={f} for={@payment_options_changeset} phx-change="validate-payment-options">
+            <%= inputs_for f, :payment_options, fn fp -> %>
+              <%= hidden_inputs_for(fp) %>
+              <div>
+                <hr class="my-4" />
+                <h3 class="text-lg font-bold">Accept payments outside of Stripe</h3>
+                <.toggle current_user={@current_user} heading="Cash/check payments" description="Accept offline payments" input_name={:allow_cash} f={fp} />
+              </div>
+              <div>
+                <hr  class="my-4"/>
+                <h3 class="text-lg font-bold">
+                  <%= if( Enum.member?([:charges_enabled, :loading], @stripe_status), do: "Accept other payments through Stripe", else: "Looks like you still need Stripe setup to use these!") %>
+                </h3>
+                <p class="text-sm">(Note: card is always enabled)</p>
+                <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Affirm payments" description="Accept Affirm Payments" input_name={:allow_affirm} f={fp} />
+                <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Afterpay payments" description="Accept afterpay payments" input_name={:allow_afterpay_clearpay} f={fp} />
+                <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Klarna payments" description="Accept klarna payments" input_name={:allow_klarna} f={fp} />
+                <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Cashapp payments" description="Accept cashapp payments" input_name={:allow_cashapp} f={fp} />
+              </div>
+            <% end %>
+          </.form>
         </.card>
       </div>
     </.settings_nav>
+    """
+  end
+
+  def toggle(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        stripe_status: :charges_enabled
+      })
+
+    ~H"""
+    <div class={classes("flex items-center mt-2 justify-between" , %{"opacity-50 pointer-events-none" => !Enum.member?([:charges_enabled, :loading], @stripe_status)})}>
+      <div class="flex flex-col">
+        <p class="font-semibold"><%= @heading %></p>
+        <p class="font-normal flex text-base-250"><%= @description %></p>
+      </div>
+      <div class="flex justify-end items-center">
+        <label class="mt-4 text-lg flex">
+          <%= checkbox(@f, @input_name, class: "peer hidden", disabled: !Enum.member?([:charges_enabled, :loading], @stripe_status)) %>
+          <div class="hidden peer-checked:flex cursor-pointer">
+            <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
+              <div class="rounded-full h-5 w-5 bg-base-100"></div>
+            </div>
+            Enabled
+          </div>
+          <div class="flex peer-checked:hidden cursor-pointer">
+            <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
+              <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+            </div>
+            Disabled
+          </div>
+        </label>
+      </div>
+    </div>
     """
   end
 
@@ -91,31 +123,26 @@ defmodule PicselloWeb.Live.FinanceSettings do
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   def handle_event(
-        "toggle",
-        %{},
-        %{assigns: %{current_user: %{allow_cash_payment: false}}} = socket
+        "validate-payment-options",
+        %{"organization" => %{"payment_options" => payment_options}},
+        socket
       ) do
-    PicselloWeb.ConfirmationComponent.open(socket, %{
-      close_event: "toggle_close_event",
-      close_label: "No, go back",
-      confirm_event: "allow-cash",
-      confirm_label: "Yes, allow cash/check",
-      icon: "warning-orange",
-      title: "Are you sure?",
-      subtitle:
-        "Are you sure you want to allow cash and checks as a payment option? \n\nYou will need to communicate directly with your client to capture payment and manually enter those into your job payment details."
-    })
-    |> noreply()
-  end
+    changeset =
+      build_payment_options_changeset(
+        socket,
+        %{
+          payment_options: payment_options
+        },
+        nil
+      )
 
-  def handle_event(
-        "toggle",
-        %{},
-        %{assigns: %{current_user: %{allow_cash_payment: true} = current_user}} = socket
-      ) do
-    socket
-    |> assign(current_user: User.toggle(current_user))
-    |> noreply()
+    case Repo.update(changeset) do
+      {:ok, _organization} ->
+        {:noreply, socket}
+
+      {:error, changeset} ->
+        {:reply, {:error, changeset}, socket}
+    end
   end
 
   def handle_info(
@@ -143,7 +170,29 @@ defmodule PicselloWeb.Live.FinanceSettings do
     socket |> assign(stripe_status: status) |> noreply()
   end
 
+  defp build_payment_options_changeset(
+         %{assigns: %{current_user: %{organization: organization}}},
+         params,
+         action
+       ) do
+    organization
+    |> Organization.payment_options_changeset(params)
+    |> Map.put(:action, action)
+  end
+
+  defp assign_payment_options_changeset(
+         socket,
+         params,
+         action \\ nil
+       ) do
+    changeset = build_payment_options_changeset(socket, params, action)
+
+    socket
+    |> assign(payment_options_changeset: changeset)
+  end
+
   defp assign_stripe_status(%{assigns: %{current_user: current_user}} = socket) do
-    socket |> assign(stripe_status: Payments.status(current_user))
+    socket
+    |> assign(stripe_status: Payments.status(current_user) |> IO.inspect())
   end
 end

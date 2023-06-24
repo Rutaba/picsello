@@ -32,6 +32,31 @@ defmodule Picsello.Organization do
     end
   end
 
+  defmodule PaymentOptions do
+    @moduledoc false
+    use Ecto.Schema
+    @primary_key false
+
+    embedded_schema do
+      field(:allow_cash, :boolean, default: false)
+      field(:allow_affirm, :boolean, default: false)
+      field(:allow_afterpay_clearpay, :boolean, default: false)
+      field(:allow_klarna, :boolean, default: false)
+      field(:allow_cashapp, :boolean, default: false)
+    end
+
+    def changeset(payment_options, attrs) do
+      payment_options
+      |> cast(attrs, [
+        :allow_cash,
+        :allow_affirm,
+        :allow_afterpay_clearpay,
+        :allow_klarna,
+        :allow_cashapp
+      ])
+    end
+  end
+
   schema "organizations" do
     field(:name, :string)
     field(:stripe_account_id, :string)
@@ -39,6 +64,7 @@ defmodule Picsello.Organization do
     field(:previous_slug, :string)
     embeds_one(:profile, Profile, on_replace: :update)
     embeds_one(:email_signature, EmailSignature, on_replace: :update)
+    embeds_one(:payment_options, PaymentOptions, on_replace: :update)
 
     has_many(:package_templates, Package, where: [package_template_id: nil])
     has_many(:campaigns, Campaign)
@@ -107,6 +133,12 @@ defmodule Picsello.Organization do
     organization
     |> cast(attrs, [])
     |> cast_embed(:profile)
+  end
+
+  def payment_options_changeset(organization, attrs) do
+    organization
+    |> cast(attrs, [])
+    |> cast_embed(:payment_options)
   end
 
   def assign_stripe_account_changeset(%__MODULE__{} = organization, "" <> stripe_account_id),

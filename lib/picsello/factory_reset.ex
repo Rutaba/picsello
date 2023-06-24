@@ -23,7 +23,6 @@ defmodule Picsello.FactoryReset do
     :email,
     :hashed_password,
     :name,
-    :allow_cash_payment,
     :time_zone,
     :sign_up_auth_provider,
     :stripe_customer_id
@@ -112,6 +111,7 @@ defmodule Picsello.FactoryReset do
     changeset
     |> cast(attrs, @org_fields)
     |> cast_embed(:profile, with: &Profile.changeset_for_factory_reset/2)
+    |> cast_embed(:payment_options, with: &Organization.PaymentOptions.changeset/2)
     |> cast_assoc(:organization_cards, with: &OrganizationCard.changeset/2)
     |> cast_assoc(:gs_gallery_products, with: &GalleryProduct.changeset/2)
   end

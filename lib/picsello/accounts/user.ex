@@ -15,7 +15,6 @@ defmodule Picsello.Accounts.User do
     field :email, :string
     field :hashed_password, :string
     field :name, :string
-    field :allow_cash_payment, :boolean, default: false
     field :is_test_account, :boolean, default: false
     field :password, :string, virtual: true
     field :time_zone, :string

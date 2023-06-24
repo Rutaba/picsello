@@ -325,6 +325,9 @@ defmodule Picsello.PaymentSchedules do
       proposal |> Repo.preload(job: [client: :organization])
 
     stripe_params = %{
+      shipping_address_collection: %{
+        allowed_countries: ["US", "CA"]
+      },
       client_reference_id: "proposal_#{proposal.id}",
       cancel_url: Keyword.get(opts, :cancel_url),
       success_url: Keyword.get(opts, :success_url),
@@ -347,7 +350,7 @@ defmodule Picsello.PaymentSchedules do
           quantity: 1
         }
       ],
-      payment_intent_data: %{setup_future_usage: "off_session"},
+      # payment_intent_data: %{setup_future_usage: "off_session"},
       metadata: Keyword.get(opts, :metadata, %{})
     }
 

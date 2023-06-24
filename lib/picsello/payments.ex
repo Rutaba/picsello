@@ -184,7 +184,13 @@ defmodule Picsello.Payments do
   def create_session(params, opts) do
     params =
       Enum.into(params, %{
-        payment_method_types: ["card"],
+        payment_method_types: [
+          "card",
+          "affirm",
+          "afterpay_clearpay",
+          "klarna",
+          "cashapp"
+        ],
         mode: "payment",
         automatic_tax: %{enabled: true}
       })
