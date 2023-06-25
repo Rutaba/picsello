@@ -217,7 +217,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
       <%= hidden_input f, :email_automation_pipeline_id %>
       <%= hidden_input f, :organization_id %>
-      <%= hidden_input f, :state, value: @pipeline.state %>
       <%= hidden_input f, :name %>
       <%= hidden_input f, :position %>
 

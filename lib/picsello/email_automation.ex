@@ -138,6 +138,14 @@ defmodule Picsello.EmailAutomation do
     |> Enum.sort_by(&{&1.category_id, &1.category_name}, :asc)
   end
 
+  def get_pipeline_states_type(type) do
+    from(p in EmailAutomationPipeline,
+    join: c in assoc(p, :email_automation_category),
+    where: c.type == ^type,
+    select: p.state
+    )
+  end
+
   def get_all_emails_schedules() do
     from(es in EmailSchedule)
     |> preload(email_automation_pipeline: [:email_automation_category])

@@ -317,7 +317,6 @@ defp step_valid?(assigns),
       <%= hidden_input f, :email_automation_pipeline_id %>
       <%= hidden_input f, :organization_id %>
       <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
-      <%= hidden_input f, :state, value: @pipeline.state %>
       <%= hidden_input f, :name %>
       <%= hidden_input f, :position %>
 
@@ -427,12 +426,12 @@ defp step_valid?(assigns),
     preset_ids = Enum.map(selected_job_types, & &1.id)
     
     Ecto.Multi.new()
-    |> Ecto.Multi.delete_all(
-      :delete_presets,
-      from(ep in EmailPreset, where: ep.job_type in ^preset_ids
-      and ep.organization_id == ^email_preset.organization_id
-      and ep.email_automation_pipeline_id == ^email_preset.email_automation_pipeline_id)
-    )
+    # |> Ecto.Multi.delete_all(
+    #   :delete_presets,
+    #   from(ep in EmailPreset, where: ep.job_type in ^preset_ids
+    #   and ep.organization_id == ^email_preset.organization_id
+    #   and ep.email_automation_pipeline_id == ^email_preset.email_automation_pipeline_id)
+    # )
     |> Ecto.Multi.insert_all(:email_preset, EmailPreset, fn _ ->
       now = DateTime.utc_now() |> DateTime.truncate(:second)
       selected_job_types
@@ -442,7 +441,6 @@ defp step_valid?(assigns),
         condition: email_preset.condition,
         body_template: email_preset.body_template,
         type: email_preset.type,
-        state: email_preset.state,
         job_type: &1.id,
         name: email_preset.name,
         subject_template: email_preset.subject_template,

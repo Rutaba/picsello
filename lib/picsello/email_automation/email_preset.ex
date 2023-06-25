@@ -21,7 +21,6 @@ defmodule Picsello.EmailPresets.EmailPreset do
     field :condition, :string
     field :body_template, :string
     field :type, Ecto.Enum, values: @types
-    field :state, Ecto.Enum, values: @states
     field :job_type, :string
     field :name, :string
     field :subject_template, :string
@@ -43,10 +42,10 @@ defmodule Picsello.EmailPresets.EmailPreset do
     email_preset
     |> cast(
       attrs,
-      ~w[count calendar sign template_id private_name type state job_type name position subject_template body_template]a
+      ~w[count calendar sign template_id private_name type job_type name position subject_template body_template]a
     )
     |> validate_required(
-      ~w[status type state name position subject_template body_template]a
+      ~w[status type name position subject_template body_template]a
     )
   end
 
@@ -54,12 +53,12 @@ defmodule Picsello.EmailPresets.EmailPreset do
     email_preset
     |> cast(
       attrs,
-      ~w[status total_hours condition email_automation_pipeline_id organization_id immediately count calendar sign template_id private_name type state job_type name position subject_template body_template]a
+      ~w[status total_hours condition email_automation_pipeline_id organization_id immediately count calendar sign template_id private_name type job_type name position subject_template body_template]a
     )
     |> validate_required(
-      ~w[status email_automation_pipeline_id organization_id type state name position subject_template body_template]a
+      ~w[status email_automation_pipeline_id organization_id type name position subject_template body_template]a
     )
-    |> validate_states()
+    # |> validate_states()
     |> foreign_key_constraint(:job_type)
     |> then(fn changeset ->
       unless get_field(changeset, :immediately) do
@@ -77,10 +76,10 @@ defmodule Picsello.EmailPresets.EmailPreset do
     end)
   end
 
-  defp validate_states(changeset) do
-    type = get_field(changeset, :type)
-    changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))
-  end
+  # defp validate_states(changeset) do
+  #   type = get_field(changeset, :type)
+  #   changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))
+  # end
 
   def calculate_hours(changeset) do
     data = changeset |> current()
@@ -121,7 +120,6 @@ defmodule Picsello.EmailPresets.EmailPreset do
           sign: String.t(),
           body_template: String.t(),
           type: String.t(),
-          state: String.t(),
           job_type: String.t(),
           name: String.t(),
           subject_template: String.t(),
