@@ -1115,4 +1115,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> Multi.delete(:delete_watermark, gallery.watermark)
     |> Galleries.save_use_global(gallery, %{watermark: false})
   end
+
+  def is_photographer_view(assigns) do
+    case Map.get(assigns, :current_user) do
+      nil -> false
+      _ -> true
+    end
+  end
 end
