@@ -947,7 +947,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def handle_info(:update_photo_gallery_state, socket) do
     socket
     |> assign_show_favorite_toggle()
-    |> noreply()
+    |> process_favorites(@per_page)
   end
 
   defp assigns(socket, gallery_id, album \\ nil) do

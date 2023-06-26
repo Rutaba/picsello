@@ -126,7 +126,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> process_favorites(per_page)
   end
 
-  defp process_favorites(socket, per_page) do
+  def process_favorites(socket, per_page) do
     socket
     |> assign(:page, 0)
     |> assign(:update_mode, "replace")
