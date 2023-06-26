@@ -1,4 +1,14 @@
 defmodule PicselloWeb.NylasController do
+  @moduledoc """
+  Elixir code to set the token from nylas. The user will be directed
+  via a link in the `live/calendar/index.html.ex` module to Nylas
+  which will do its oauth magic. Assuming that everything goes
+  correctly the user will be redirected to this page. We will fetch
+  the token with the code `NylasCalendar.fetch_token/1` and save it
+  with `Picsello.Accounts.set_user_nylas_code/2` and then redirect the
+  user back to the calendar.
+  """
+
   use PicselloWeb, :controller
   alias Picsello.Accounts
   require Logger
