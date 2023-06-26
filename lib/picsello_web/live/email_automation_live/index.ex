@@ -222,13 +222,16 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
         <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
           <%= for {email, index} <- Enum.with_index(@pipeline.emails) do %>
-            <div class="px-6 pt-6">
+            <% last_index = Enum.count(@pipeline.emails) - 1 %>
+            <div class="px-6">
               <div class="flex md:flex-row flex-col justify-between">
-                <div class="flex">
-                  <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center mr-3">
-                    <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+                <div class="flex h-max">
+                <div class={"h-auto pt-6 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
+                    <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center">
+                      <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+                    </div>
                   </div>
-                  <div>
+                  <div class="ml-3 py-6">
                     <div class="text-xl font-bold">
                       <%= email.name %>
                     </div>
@@ -239,7 +242,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                   </div>
                 </div>
 
-                <div class="flex items-center md:mt-0 ml-auto mt-4">
+                <div class="flex items-center md:mt-0 ml-auto md:pb-0 pb-6 md:pt-6">
                   <div class="custom-tooltip">
                     <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 mr-2 px-2 py-2" title="remove" phx-click="delete-email" phx-value-email_id={email.id} color="red-sales-300" icon="trash"/>
                     <%= if index == 0 do %>
@@ -258,7 +261,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                   </button>
                 </div>
               </div>
-              <hr class="mt-6 md:ml-8 ml-6" />
+              <hr class="md:ml-8 ml-6" />
             </div>
           <% end %>
           <div class="flex flex-row justify-between pr-6 pl-8 sm:pl-16 py-6">
