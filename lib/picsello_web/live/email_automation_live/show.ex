@@ -90,18 +90,17 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
-  def handle_event("edit-email", %{"email_id" => id, "pipeline_id" => pipeline_id}, socket) do
-    id = to_integer(id)
+  def handle_event("edit-email", %{"email_id" => id, "pipeline_id" => pipeline_id}, %{assigns: %{current_user: current_user}} = socket) do
+    email_id = to_integer(id)
     pipeline_id = to_integer(pipeline_id)
 
-    _param = %{
-      pipeline: get_pipline(pipeline_id),
-      email_id: id,
-      email: EmailAutomation.get_email_schedule_by_id(id)
-    }
-
     socket
-    |> put_flash(:success, "Email Edited")
+    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent, %{
+      current_user: current_user,
+      pipeline: get_pipline(pipeline_id),
+      email: EmailAutomation.get_email_by_id(to_integer(email_id))
+    })
+    # |> put_flash(:success, "Email Edited")
     |> noreply()
   end
 
