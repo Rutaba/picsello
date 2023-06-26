@@ -18,6 +18,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     field :count, :integer, virtual: true
     field :calendar, :string, virtual: true
     field :sign, :string, virtual: true
+    # field :template_id, :integer, virtual: true
     field :body_template, :string
     field :name, :string
     field :subject_template, :string

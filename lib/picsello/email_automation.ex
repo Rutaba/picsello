@@ -57,6 +57,11 @@ defmodule Picsello.EmailAutomation do
     |> Repo.all()
   end
 
+  def get_schedule_by_id(id) do
+    from(es in EmailSchedule, where: es.id == ^id)
+    |> Repo.one()
+  end
+
   def get_emails_schedules_by_ids(ids, type) do
     query =
       from(

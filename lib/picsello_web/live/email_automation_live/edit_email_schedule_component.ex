@@ -10,6 +10,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   import Ecto.Query
   
   alias Picsello.{Repo, Jobs, JobType, EmailPresets, EmailPresets.EmailPreset}
+  alias Picsello.EmailAutomation.EmailSchedule
   alias PicselloWeb.EmailAutomationLive.Shared
   alias Ecto.Changeset
 
@@ -17,13 +18,13 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
 
   @impl true
   def update(%{
-    current_user: current_user,
+    job_type: job_type,
     pipeline: %{email_automation_category: %{type: type}, email_presets: email_presets},
     email: email,
     } = assigns, socket) do
 
     job_types = Picsello.JobType.all()
-    |> Enum.map(&%{id: &1, label: &1, selected: &1 == email.job_type})
+    |> Enum.map(&%{id: &1, label: &1, selected: &1 == job_type})
 
     email_presets = EmailPresets.email_automation_presets(type)
 
@@ -35,7 +36,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     |> assign(steps: @steps)
     |> assign(step: :edit_email)
     |> assign(show_variables: false)
-    |> assign(email_preset_changeset: EmailPreset.changeset(email, %{}))
+    |> assign(email_preset_changeset: EmailSchedule.changeset(email, %{}))
     |> assign(variables_list: make_variables())
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
@@ -43,10 +44,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
 
   defp remove_duplicate(email_presets, email_preset) do
     index = Enum.find_index(email_presets, & &1.name == email_preset.name)
-    IO.inspect index
-    IO.inspect email_presets
-    IO.inspect email_preset
-    List.delete_at(email_presets, index) ++ [email_preset]
+    if(index, do: List.delete_at(email_presets, index), else: email_presets) ++ [email_preset]
   end
 
   @impl true
@@ -86,16 +84,15 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"email_preset" => params}, %{assigns: %{email_preset: email_preset, email_presets: email_presets}} = socket) do
-    id = Map.get(params, "id", "1") |> to_integer()
-    preset = Enum.filter(email_presets, & &1.id == id)
+  def handle_event("validate", %{"email_schedule" => params}, %{assigns: %{email_preset: email_preset, email_presets: email_presets}} = socket) do
+    name = Map.get(params, "name", "1")
+    preset = Enum.filter(email_presets, & &1.name == name)
     |> List.first()
-    |> Map.take([:body_template, :subject_template, :id, :name])
+    |> Map.take([:body_template, :subject_template, :name])
 
     new_email_preset = Map.merge(email_preset, preset)
 
-    params = if email_preset.id == id, do: params, else: nil
-
+    params = if email_preset.name == name, do: params, else: nil
     socket
     |> assign(email_preset: new_email_preset)
     |> Shared.email_preset_changeset(new_email_preset, params)
@@ -148,7 +145,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
             <% :edit_email -> %> Edit
             <% :preview_email -> %> Preview
           <% end %>
-          <%= String.capitalize(@job_type.name)%> Email</span>
+          <%= String.capitalize(@job_type)%> Email</span>
         </h1>
 
         <.form for={@email_preset_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
@@ -157,18 +154,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
           <.step name={@step} f={f} {assigns} />
 
           <.footer class="pt-10">
-            <div class="mr-auto md:hidden flex w-full pointer-events-none opacity-40">
-            <.multi_select
-                id="job_types_mobile"
-                select_class="w-full"
-                hide_tags={true}
-                placeholder="Add to:"
-                search_on={false}
-                form="job_type"
-                on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={@job_types}
-              />
-            </div>
             <.step_buttons step={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
 
             <%= if step_number(@step, @steps) == 1 do %>
@@ -180,19 +165,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
                 Go back
               </button>
             <% end %>
-
-            <div class="mr-auto hidden md:flex pointer-events-none opacity-40">
-              <.multi_select
-                id="job_types"
-                select_class="w-52"
-                hide_tags={true}
-                placeholder="Add to:"
-                search_on={false}
-                form="job_type"
-                on_change={fn options -> send_update(__MODULE__, id: __MODULE__, options: options) end}
-                options={@job_types}
-              />
-            </div>
           </.footer>
         </.form>
       </div>
@@ -208,7 +180,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
           </div>
         </div>
         <div class="flex flex-col ml-2">
-          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
+          <p><b> <%= @job_type |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
           <p class="text-sm text-base-250">Send email 2 hours before shoot</p>
         </div>
       </div>
@@ -218,16 +190,14 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
       <% f = to_form(@email_preset_changeset) %>
       <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
       <%= hidden_input f, :email_automation_pipeline_id %>
-      <%= hidden_input f, :organization_id %>
-      <%= hidden_input f, :name %>
+      <%= hidden_input f, :job_id %>
       <%= hidden_input f, :position %>
-
 
       <div class="mr-auto">
         <div class="grid grid-row md:grid-cols-3 gap-6">
           <label class="flex flex-col">
             <b>Select email preset</b>
-            <%= select_field f, :id, Shared.make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= select_field f, :name, Enum.map(@email_presets, &{&1.name, &1.name}), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
 
           <label class="flex flex-col">
@@ -294,7 +264,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
           </div>
         </div>
         <div class="flex flex-col ml-2">
-          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
+          <p><b> <%= @job_type |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
           <p class="text-sm text-base-250">Send email 7 days before next upcoming shoot</p>
         </div>
       </div>
@@ -378,14 +348,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
       pipeline: pipeline,
       email: email
       }} = socket) do
-    # selected_job_types = Enum.filter(job_types, & &1.selected)
-
-    # new_job_types =
-    # selected_job_types
-    # |> Enum.filter(fn type -> 
-    #   !Enum.any?(email_presets, &(type.id == &1.organization_job_id))
-    # end)
-
     changeset = Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
     
     Ecto.Multi.new()
@@ -400,7 +362,8 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
       {:ok, %{email_preset: email_preset}} ->
         send(self(), {:update_automation, %{message: "Successfully updated", email_preset: email_preset}})
         :ok
-      _ -> :error
+      _ -> 
+        :error
     end
 
     socket

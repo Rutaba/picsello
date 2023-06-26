@@ -85,10 +85,10 @@ defp step_valid?(assigns),
     })
     
     params = if email_preset.id == template_id, do: params, else: nil
-
+    
     socket
     |> assign(email_preset: new_email_preset)
-    |> Shared.email_preset_changeset(new_email_preset, params)
+    |> Shared.email_preset_changeset(new_email_preset, maybe_normalize_params(params))
     |> noreply()
   end
 
@@ -147,6 +147,12 @@ defp step_valid?(assigns),
         </h1>
 
         <.form for={@email_preset_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
+        <%= hidden_input f, :email_automation_pipeline_id %>
+        <%= hidden_input f, :organization_id %>
+        <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
+        <%= hidden_input f, :name %>
+        <%= hidden_input f, :position %>
+
           <input type="hidden" name="step" value={@step} />
 
           <.step name={@step} f={f} {assigns} />
@@ -235,8 +241,9 @@ defp step_valid?(assigns),
         </div>
 
         <% f = to_form(@email_preset_changeset) %>
-        <%= hidden_input f, :email_automation_pipeline_id %>
-        <%= hidden_input f, :organization_id %>
+        <%= hidden_input f, :subject_template %>
+        <%= hidden_input f, :body_template %>
+        
         <div class="flex flex-col md:px-14 px-6 py-6">
           <b>Automation timing</b>
           <span class="text-base-250">Choose when you’d like your automation to run</span>
@@ -287,6 +294,9 @@ defp step_valid?(assigns),
                 Email disabled
               </div>
             </label>
+            <%= if message = @email_preset_changeset.errors[:status] do %>
+              <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+            <% end %>
           </div>
         </div>
       </div>
@@ -314,11 +324,6 @@ defp step_valid?(assigns),
       <hr class="my-8" />
 
       <% f = to_form(@email_preset_changeset) %>
-      <%= hidden_input f, :email_automation_pipeline_id %>
-      <%= hidden_input f, :organization_id %>
-      <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
-      <%= hidden_input f, :name %>
-      <%= hidden_input f, :position %>
 
       <div class="mr-auto">
         <div class="grid grid-row md:grid-cols-3 gap-6">
@@ -405,6 +410,7 @@ defp step_valid?(assigns),
     |> Shared.email_preset_changeset(email_preset, automation_params)
   end
 
+  defp maybe_normalize_params(nil), do: nil
   defp maybe_normalize_params(params) do
     {_, params} = get_and_update_in(
       params,

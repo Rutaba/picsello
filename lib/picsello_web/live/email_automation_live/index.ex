@@ -154,30 +154,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   end
 
   @impl true
-  def handle_info({:update_automation, %{message: message}}, socket) do
-    socket
-    |> assign_automation_pipelines()
-    |> put_flash(:success, message)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:load_template_preview, component, body_html},
-        %{assigns: %{current_user: current_user, modal_pid: modal_pid}} = socket
-      ) do
-    template_preview = Marketing.template_preview(current_user, body_html)
-
-    send_update(
-      modal_pid,
-      component,
-      id: component,
-      template_preview: template_preview
-    )
-
-    socket
-    |> noreply()
-  end
+  defdelegate handle_info(message, socket), to: PicselloWeb.EmailAutomationLive.Shared
 
   defp open_edit_modal(
          %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket,

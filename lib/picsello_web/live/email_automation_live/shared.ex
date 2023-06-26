@@ -5,7 +5,34 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Picsello.{EmailPresets.EmailPreset, EmailAutomation, Repo}
+  alias Picsello.{Marketing, EmailPresets.EmailPreset, EmailAutomation, Repo}
+  alias Picsello.EmailAutomation.EmailSchedule
+
+  @impl true
+  def handle_info({:update_automation, %{message: message}}, socket) do
+    socket
+    |> assign_automation_pipelines()
+    |> put_flash(:success, message)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:load_template_preview, component, body_html},
+        %{assigns: %{current_user: current_user, modal_pid: modal_pid}} = socket
+      ) do
+    template_preview = Marketing.template_preview(current_user, body_html)
+
+    send_update(
+      modal_pid,
+      component,
+      id: component,
+      template_preview: template_preview
+    )
+
+    socket
+    |> noreply()
+  end
 
   def make_email_presets_options(email_presets) do
     email_presets
@@ -15,7 +42,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def email_preset_changeset(socket, email_preset, params \\ nil) do
     email_preset_changeset = build_email_changeset(email_preset, params)
     body_template = current(email_preset_changeset) |> Map.get(:body_template)
-
+    
     if params do
       socket
     else
@@ -90,14 +117,19 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def build_email_changeset(email_preset, params) do
-    if params do
+    params = if params do
       params
     else
       email_preset
       |> Map.put(:template_id, email_preset.id)
       |> prepare_email_preset_params()
     end
-    |> EmailPreset.changeset()
+
+    case email_preset do
+      %EmailPreset{} -> 
+        EmailPreset.changeset(params)
+      _ -> EmailSchedule.changeset(params)
+    end
   end
 
   def prepare_email_preset_params(email_preset) do

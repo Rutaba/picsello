@@ -102,17 +102,20 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
-  def handle_event("edit-email", %{"email_id" => id, "pipeline_id" => pipeline_id}, %{assigns: %{current_user: current_user}} = socket) do
-    email_id = to_integer(id)
+  def handle_event("edit-email", 
+    %{"email_id" => id, "pipeline_id" => pipeline_id},
+    %{assigns: %{current_user: current_user, type: type}} = socket
+  ) do
+    schedule_id = to_integer(id)
     pipeline_id = to_integer(pipeline_id)
-
+     
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent, %{
       current_user: current_user,
+      job_type: type,
       pipeline: get_pipline(pipeline_id),
-      email: EmailAutomation.get_email_by_id(to_integer(email_id))
+      email: EmailAutomation.get_schedule_by_id(schedule_id)
     })
-    # |> put_flash(:success, "Email Edited")
     |> noreply()
   end
 
@@ -128,6 +131,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     |> assign_email_schedules()
     |> noreply()
   end
+
+  @impl true
+  defdelegate handle_info(message, socket), to: PicselloWeb.EmailAutomationLive.Shared
 
   defp pipeline_section(assigns) do
     ~H"""
