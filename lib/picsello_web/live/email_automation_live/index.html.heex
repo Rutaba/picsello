@@ -60,9 +60,9 @@
           </div>
           <div>
             <div class="text-3xl font-bold">
-              <h2>Type <%= @selected_job_type.job_type %> Automations</h2>
+              <h2><%= @selected_job_type.job_type |> String.capitalize() %> Automations</h2>
             </div>
-            <div class="text-gray-500">Lorem Ipsum</div>
+            <div class="text-gray-500"></div>
           </div>
         </div>
         <%= Enum.map(@automation_pipelines, fn automation_pipeline -> %>
