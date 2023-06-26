@@ -165,7 +165,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
             <div class="flex flex-row ml-2 h-max">
               <div class={"h-auto pt-3 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
                 <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 z-40">
+                <%= if not is_nil(email.reminded_at) do %>
                   <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
+                <%= else %>
+                  <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+                <% end %>
                 </div>
               </div>
               <span class="text-blue-planning-300 text-sm font-bold ml-4 py-3 ">
