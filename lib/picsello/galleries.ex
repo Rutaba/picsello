@@ -821,10 +821,7 @@ defmodule Picsello.Galleries do
 
   def maybe_set_product_previews(%{cover_photo: cover_photo} = gallery, photo) do
     case cover_photo do
-      %Photo{} ->
-        {:ok, cover_photo}
-
-      _ ->
+      nil ->
         save_gallery_cover_photo(
           gallery,
           %{
@@ -834,6 +831,8 @@ defmodule Picsello.Galleries do
               |> Map.put(:id, photo.original_url)
           }
         )
+      cover_photo ->
+        {:ok, cover_photo}
     end
   end
 
