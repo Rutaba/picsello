@@ -60,7 +60,7 @@ defmodule PicselloWeb.ContractTemplateComponent do
               <.badge color={:gray}>No edits made</.badge>
           <% end %>
         </div>
-        <.quill_input f={f} id="quill_contract_input" html_field={:content} enable_size={true} track_quill_source={true} editable= {editable(is_nil(@state))}placeholder="Paste contract text here" />
+        <.quill_input f={f} id="quill_contract_input" html_field={:content} enable_size={true} track_quill_source={true} editable={editable(is_nil(@state))} placeholder="Paste contract text here" />
 
         <.footer>
           <%= if !is_nil(@state)do %>

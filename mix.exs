@@ -110,7 +110,8 @@ defmodule Picsello.MixProject do
         {:icalendar, "~> 1.1.0"},
         # {:con_cache, "~> 0.13"}, changelog, major
         {:con_cache, "~> 1.0"},
-        {:pdf_generator, ">=0.6.0"}
+        {:pdf_generator, ">=0.6.0"},
+        {:morphix, "~> 0.8.0"}
       ],
       [
         # {:dialyxir, "~> 1.1.0", only: [:dev, :test], runtime: false}, changelog

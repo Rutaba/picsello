@@ -3,7 +3,9 @@ defmodule PicselloWeb.JobLive.NewComponent do
   use PicselloWeb, :live_component
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Clients, Profiles, Repo}
+  alias Picsello.{Job, Jobs, Clients, Profiles, EmailAutomation, Repo}
+  alias Picsello.EmailAutomation.EmailSchedule
+
   import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1, search_clients: 1]
 
   @impl true
@@ -109,11 +111,23 @@ defmodule PicselloWeb.JobLive.NewComponent do
          )
          |> Repo.transaction() do
       {:ok, %{lead: %Job{id: job_id}}} ->
+        insert_job_emails(job.type, current_user.organization_id, job_id)
         socket |> push_redirect(to: Routes.job_path(socket, :leads, job_id)) |> noreply()
 
       {:error, changeset} ->
         socket |> assign(changeset: changeset) |> noreply()
     end
+  end
+
+  defp insert_job_emails(type, organization_id, job_id) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    email_schedules =
+      EmailAutomation.get_emails_for_schedule(organization_id, type, [:lead, :job])
+      |> Enum.map(fn item ->
+        item ++ [inserted_at: now, updated_at: now, job_id: job_id, gallery_id: nil]
+      end)
+
+    Repo.insert_all(EmailSchedule, email_schedules)
   end
 
   @impl true

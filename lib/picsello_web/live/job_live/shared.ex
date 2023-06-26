@@ -828,39 +828,101 @@ defmodule PicselloWeb.JobLive.Shared do
   def communications_card(assigns) do
     ~H"""
     <.card color="orange-inbox-300" title="Communications" class="md:col-span-2">
-      <div {testid("inbox")} class="flex flex-col lg:flex-row">
-        <div class="flex-1 text-base-250">
-          Inbox
-          <div class="flex border border-base-200 rounded-lg p-8 mt-4 justify-center">
+      <div {testid("inbox")} class="flex flex-col lg:flex-row gap-x-4">
+
+        <div class="flex-1 border border-base-200 rounded-lg p-3">
+
+          <div class="flex flex-row items-center mb-4">
+            <span class="flex w-8 h-8 justify-center items-center">
+            <.icon name="envelope" class="text-orange-inbox-300 mr-2 w-6 h-6" />
+            </span>
+            <span class="text-black font-black">Inbox</span>
+          </div>
+
+          <div class="flex">
             <span class={classes("w-7 h-7 flex items-center justify-center text-lg font-bold text-white rounded-full mr-2 pb-1", %{"bg-orange-inbox-300" => @inbox_count > 0,"bg-base-250" => @inbox_count <= 0})}>
               <%= @inbox_count %>
             </span>
-            <span class={if @inbox_count > 0, do: "text-orange-inbox-300", else: "text-base-250"}>
+            <%!-- <span class={if @inbox_count > 0, do: "text-orange-inbox-300", else: "text-base-250"}>
+              <%= ngettext "new message", "new messages", @inbox_count %>
+            </span> --%>
+            <span class="text-base-250">
               <%= ngettext "new message", "new messages", @inbox_count %>
             </span>
           </div>
-          <div class="flex flex-col-reverse sm:flex-row justify-end mt-4">
-            <button type="button" class="link mx-8 my-4" phx-click="open-inbox">
-              Go to inbox
+
+          <div class="flex flex-row justify-end mt-8 items-center">
+            <button type="button" class="link mx-5" phx-click="open-inbox">
+              View inbox
             </button>
-            <button type="button" class="btn-primary intro-message" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+            <button class="h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+              <span class="flex w-8 h-8 justify-center items-center">
+              <.icon name="envelope" class="text-blue-planning-300 mr-2 w-6 h-6" />
+              </span>
               Send message
             </button>
           </div>
         </div>
-        <div class="my-8 border-t lg:my-0 lg:mx-8 lg:border-t-0 lg:border-l border-base-200"></div>
-        <div class="flex flex-col flex-[0.5]">
-          <span class="mb-1 font-bold"><%= @job.client.name %></span>
-          <%= if @job.client.phone do %>
-            <a href={"tel:#{@job.client.phone}"} class="flex items-center text-xs">
-              <.icon name="phone" class="text-blue-planning-300 mr-2 w-4 h-4" />
-              <span class="text-base-250"><%= @job.client.phone %></span>
+
+        <div class="flex-1 border border-base-200 rounded-lg p-3">
+
+          <div class="flex flex-row items-center mb-4">
+            <span class="flex w-8 h-8 justify-center items-center">
+            <.icon name="automation-card" class="text-orange-inbox-300 mr-2 w-6 h-6" />
+            </span>
+            <span class="text-black font-black text-base-250">Automation Sequences</span>
+          </div>
+
+          <div class="flex">
+            <span class={classes("w-7 h-7 flex items-center justify-center text-lg font-bold text-white rounded-full mr-2 pb-1", %{"bg-orange-inbox-300" => @inbox_count > 0,"bg-base-250" => @inbox_count <= 0})}>
+              <%= @inbox_count %>
+            </span>
+            <span class="text-base-250">
+              <%= ngettext "automations", "automations", @inbox_count %>
+            </span>
+          </div>
+
+          <button class="h-8 mt-8 ml-auto flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+            <span class="flex w-8 h-8 justify-center items-center">
+            <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
+            </span>
+            View all
+          </button>
+        </div>
+
+        <div class="flex-1 border border-base-200 rounded-lg p-3">
+
+          <div class="flex flex-row items-center mb-1">
+            <span class="flex w-8 h-8 justify-center items-center">
+            <.icon name="client-icon" class="text-orange-inbox-300 mr-2 w-6 h-6" />
+            </span>
+            <span class="text-black font-black text-base-250">Client</span>
+          </div>
+
+          <div class="flex flex-col">
+            <span class="font-bold text-base-250"><%= @job.client.name %></span>
+            <%= if @job.client.phone do %>
+              <a href={"tel:#{@job.client.phone}"} class="flex items-center">
+                <span class="text-base-250"><%= @job.client.phone %></span>
+              </a>
+            <% end %>
+            <a phx-click="open-compose" phx-value-client_id={@job.client_id} class="flex items-center hover:cursor-pointer">
+              <span class="text-base-250"><%= @job.client.email %></span>
             </a>
-          <% end %>
-          <a phx-click="open-compose" phx-value-client_id={@job.client_id} class="flex items-center text-xs mt-2 hover:cursor-pointer">
-            <.icon name="envelope" class="text-blue-planning-300 mr-2 w-4 h-4" />
-            <span class="text-base-250"><%= @job.client.email %></span>
-          </a>
+            <%= if !@job.client.phone do %>
+              <a href="" class="flex items-center">
+                <span class="text-white">ABC</span>
+              </a>
+            <% end %>
+          </div>
+
+          <button class="ml-auto h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+            <span class="flex w-8 h-8 justify-center items-center">
+            <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
+            </span>
+            View client
+          </button>
+
         </div>
       </div>
     </.card>

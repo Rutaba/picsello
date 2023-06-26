@@ -1,0 +1,83 @@
+<div class="pt-6 px-6 py-2 center-container">
+  <div class="flex text-4xl items-center">
+    <.back_button to={Routes.home_path(@socket, :index)} class="lg:hidden"/>
+    <.crumbs class="text-sm text-base-250">
+      <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
+      <:crumb>Automations</:crumb>
+    </.crumbs>
+  </div>
+
+  <hr class="mt-2 border-white" />
+  <div class="flex justify-between lg:mt-2 md:justify-start">
+    <div class="flex">
+      <div>
+        <.back_button to={Routes.home_path(@socket, :index)} class="hidden lg:flex mt-2"/>
+      </div>
+      <div>
+        <h1 class="text-4xl font-bold">Your Email Automations</h1>
+      <div class="max-w-4xl mt-2 text-base-250">
+        <p>Email automation sequences scheduled to send globally for all your Leads, Jobs and Galleries. “Set and forget” these sequences globally here to increase your productivity and make sure communications to your client are sent when you want and need them to be.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<hr class="mt-4 sm:mt-10" />
+
+<div class="lg:mt-10">
+  <div class="flex flex-col lg:flex-row lg:mt-8">
+    <div class="lg:block hidden">
+      <div class="h-auto">
+        <div id={"replace-"} phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
+          <%= Enum.map(@job_types, fn type -> %>
+            <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @selected_job_type.job_type == type.job_type})}
+            phx-click="assign_templates_by_type" phx-value-id={type.id}>
+              <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
+                <a class="flex w-full">
+                  <div class="flex items-center justify-start">
+                    <div class="justify-start ml-3">
+                      <span class="capitalize"><%= type.job_type%> </span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <%= if @selected_job_type.job_type == type.job_type do %>
+              <span class="arrow show lg:block hidden">
+                <.icon name="arrow-filled" class="text-base-200 float-right w-8 h-8 -mt-10 -mr-10" />
+              </span>
+              <% end %>
+            </div>
+          <% end) %>
+          </div>
+        </div>
+      </div>
+
+      <div class="md:px-6 py-2 center-container">
+        <div class="flex items-center lg:mt-6 flex-row">
+          <div>
+            <div class="flex lg:hidden w-10 h-10 mr-4 items-center justify-center rounded-full bg-blue-planning-300" phx-click="">
+                <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
+            </div>
+          </div>
+          <div>
+            <div class="text-3xl font-bold">
+              <h2>Type <%= @selected_job_type.job_type %> Automations</h2>
+            </div>
+            <div class="text-gray-500">Lorem Ipsum</div>
+          </div>
+        </div>
+        <%= Enum.map(@automation_pipelines, fn automation_pipeline -> %>
+          <div class="flex flex-row mb-3 mt-8 items-center">
+            <div class="text-2xl font-bold"> <%= automation_pipeline.category_name %></div>
+            <span class="ml-2 rounded-md bg-base-200 px-2 text-sm font-bold"> <%= automation_pipeline.total_emails_count %> emails</span>
+          </div>
+          <%= Enum.map(automation_pipeline.subcategories, fn subcategory -> %>
+            <div class="text-gray-500 tracking-widest uppercase"> <%= subcategory.subcategory_name %></div>
+              <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
+                <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={automation_pipeline.category_id} subcategory={subcategory.subcategory_id}/>
+              <% end) %>
+          <% end) %>
+        <% end) %>
+      </div>
+    </div>
+  </div>
+</div>
