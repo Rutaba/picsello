@@ -197,7 +197,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     })
   end
 
-  def pipeline_section(assigns) do
+  defp pipeline_section(assigns) do
     ~H"""
       <section class="mx-auto border border-base-200 rounded-lg mt-2 overflow-hidden">
         <div class="flex justify-between bg-base-200 pl-4 pr-7 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}"}>

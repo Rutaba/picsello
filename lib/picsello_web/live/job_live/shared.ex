@@ -397,6 +397,12 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  def handle_event("email-automation", _, %{assigns: %{job: job}} = socket) do
+    socket
+    |> push_redirect(to: Routes.email_automations_show_path(socket, :show, job.id))
+    |> noreply()
+  end
+
   def handle_info({:confirm_event, "send_another"}, socket), do: open_email_compose(socket)
 
   def handle_info({:action_event, "open_email_compose"}, socket),
@@ -882,7 +888,7 @@ defmodule PicselloWeb.JobLive.Shared do
             </span>
           </div>
 
-          <button class="h-8 mt-8 ml-auto flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+          <button class="h-8 mt-8 ml-auto flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="email-automation">
             <span class="flex w-8 h-8 justify-center items-center">
             <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
             </span>

@@ -7,6 +7,7 @@ defmodule Picsello.EmailPresets do
 
   alias Picsello.{Repo, Job, Shoot, EmailPresets.EmailPreset, Utils}
   alias Picsello.Galleries.Gallery
+  alias Picsello.EmailAutomation.{EmailAutomationPipeline}
 
   def email_automation_presets(type) do
     from(p in presets(type), where: is_nil(p.email_automation_pipeline_id) and is_nil(p.job_type))
@@ -43,7 +44,9 @@ defmodule Picsello.EmailPresets do
     from(preset in query,
       join: job in Job,
       on: job.type == preset.job_type and job.id == ^job_id,
-      where: preset.state == ^state
+      join: p in EmailAutomationPipeline,
+      on: preset.email_automation_pipeline_id == p.id,
+      where: p.state == ^state
     )
   end
 
@@ -51,6 +54,8 @@ defmodule Picsello.EmailPresets do
     from(preset in query,
       join: job in Job,
       on: job.type == preset.job_type and job.id == ^job_id,
+      join: p in EmailAutomationPipeline,
+      on: preset.email_automation_pipeline_id == p.id,
       join:
         shoot in subquery(
           from(shoot in Shoot,
@@ -60,8 +65,8 @@ defmodule Picsello.EmailPresets do
         ),
       on: true,
       where:
-        (preset.state == :job and shoot.past_count == 0) or
-          (preset.state == :post_shoot and shoot.past_count > 0)
+        (p.state == :job and shoot.past_count == 0) or
+          (p.state == :post_shoot and shoot.past_count > 0)
     )
   end
 
