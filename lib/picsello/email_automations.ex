@@ -260,16 +260,18 @@ defmodule Picsello.EmailAutomations do
     |> Enum.flat_map(fn pipeline ->
       if pipeline.email_automation_category.type in types do
         pipeline.email_presets
-        |> Enum.map(
-          &[
-            email_automation_pipeline_id: pipeline.id,
-            total_hours: &1.total_hours,
-            condition: &1.condition,
-            body_template: &1.body_template,
-            subject_template: &1.subject_template,
-            name: &1.name
-          ]
-        )
+        |> Enum.map(fn email ->
+          if email.status == :active do
+            [
+              email_automation_pipeline_id: pipeline.id,
+              total_hours: email.total_hours,
+              condition: email.condition,
+              body_template: email.body_template,
+              subject_template: email.subject_template,
+              name: email.name
+            ]
+          end
+        end)
       else
         []
       end
@@ -452,15 +454,12 @@ defmodule Picsello.EmailAutomations do
     |> Repo.all()
   end
 
-  def get_email_schedule(job_id, piepline_id) do
+  def query_get_email_schedule(job_id, piepline_id) do
     from(es in EmailSchedule,
       where: es.job_id == ^job_id,
       where: es.email_automation_pipeline_id == ^piepline_id,
-      where: is_nil(es.reminded_at),
-      order_by: [asc: es.id],
       limit: 1
     )
-    |> Repo.one()
   end
 
   defp remove_categories_from_list(sub_categories) do

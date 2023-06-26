@@ -9,6 +9,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     only: [get_pipline: 1, get_email_schedule_text: 1, explode_hours: 1]
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
+  import Ecto.Query
 
   alias Picsello.{
     Galleries,
@@ -124,6 +125,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
+  def handle_event("email-preview", %{"email_preview_id" => id}, socket) do
+    _email_preview = EmailAutomations.get_schedule_by_id(id)
+    socket |> noreply()
+  end
+
+  @impl true
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
     id = String.to_integer(id)
 
@@ -142,10 +149,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   defp pipeline_section(assigns) do
     ~H"""
       <div class="md:my-5 md:mx-12 border border-base-200 rounded-lg">
+        <% next_email = get_next_email_schdule_date(@job_id, @pipeline.id, @pipeline.state) %>
         <div class="flex justify-between p-2">
-          <span class="pl-1 text-blue-planning-300 font-bold"> <%= get_next_email_schdule_date(@job_id, @pipeline.id, @pipeline.state) %>
+          <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text <> " " <> next_email.date %>
           </span>
-        <span class="text-blue-planning-300 pr-4 underline">Preview</span>
+        <%= if not is_nil(next_email.email_preview_id) do %>
+          <span class="text-blue-planning-300 pr-4 underline" phx-click="email-preview" phx-value-email_preview_id={next_email.email_preview_id} >Preview</span>
+        <% end %>
         </div>
 
         <div class="flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}"}>
@@ -255,11 +265,22 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
   # In progress
   defp get_next_email_schdule_date(job_id, pipeline_id, state) do
-    email_schedule = EmailAutomations.get_email_schedule(job_id, pipeline_id)
+    email_schedule =
+      EmailAutomations.query_get_email_schedule(job_id, pipeline_id)
+      |> where([es], is_nil(es.reminded_at))
+      |> order_by([es], asc: es.id)
+      |> Repo.one()
 
     case email_schedule do
       nil ->
-        "11/24/23"
+        last_completed_email = get_last_completed_email(job_id, pipeline_id)
+
+        %{
+          text: "Completed",
+          date: last_completed_email.reminded_at |> Calendar.strftime("%m/%d/%Y"),
+          email_preview_id: nil,
+          is_completed: true
+        }
 
       _ ->
         %{sign: sign} = explode_hours(email_schedule.total_hours)
@@ -267,21 +288,34 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         date = EmailAutomations.fetch_date_for_state(state, job)
 
         case date do
-          nil -> ""
-          date -> next_schedule_format(date, sign, email_schedule.total_hours)
+          nil ->
+            %{text: "Transactional", date: "", email_preview_id: nil, is_completed: false}
+
+          date ->
+            %{
+              text: "Next Email",
+              date: next_schedule_format(date, sign, email_schedule.total_hours),
+              email_preview_id: email_schedule.id,
+              is_completed: false
+            }
         end
     end
   end
 
-  defp next_schedule_format(date, sign, hours) do
-    date =
-      if sign == "+" do
-        DateTime.add(date, hours * 60 * 60)
-      else
-        DateTime.add(date, -1 * (hours * 60 * 60))
-      end
+  def get_last_completed_email(job_id, pipeline_id) do
+    EmailAutomations.query_get_email_schedule(job_id, pipeline_id)
+    |> where([es], not is_nil(es.reminded_at))
+    |> order_by([es], desc: es.id)
+    |> Repo.one()
+  end
 
-    "Next email #{date}"
+  defp next_schedule_format(date, sign, hours) do
+    if sign == "+" do
+      DateTime.add(date, hours * 60 * 60)
+    else
+      DateTime.add(date, -1 * (hours * 60 * 60))
+    end
+    |> Calendar.strftime("%m/%d/%Y")
   end
 
   defp get_completed_date(date) do

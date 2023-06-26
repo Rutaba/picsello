@@ -751,7 +751,6 @@ defmodule PicselloWeb.Live.Shared do
     gallery =
       gallery
       |> Repo.preload([:job, organization: [organization_job_types: :jobtype]], force: true)
-      |> IO.inspect(label: "gallery==>")
 
     type = gallery.job.type
 

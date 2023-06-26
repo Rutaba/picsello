@@ -77,7 +77,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
       is_send_time = EmailAutomations.is_email_send_time(job_date_time, schedule.total_hours)
       Logger.info("Time to send email #{is_send_time}")
 
-      if is_send_time and is_nil(schedule.reminded_at) do
+      if is_send_time and is_nil(schedule.reminded_at) and !schedule.is_stopped do
         send_email_task =
           Task.async(fn -> EmailAutomations.send_now_email(type, schedule, job, state) end)
 
