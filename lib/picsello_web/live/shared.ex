@@ -31,7 +31,7 @@ defmodule PicselloWeb.Live.Shared do
     Client,
     Package,
     Repo,
-    EmailAutomation,
+    EmailAutomations,
     BookingProposal,
     Workers.CleanStore,
     Packages.Download,
@@ -712,6 +712,7 @@ defmodule PicselloWeb.Live.Shared do
     |> then(fn
       {:ok, %{job: job}} ->
         insert_job_emails(current_user.organization_id, job)
+
         if(another_import,
           do:
             socket
@@ -738,7 +739,7 @@ defmodule PicselloWeb.Live.Shared do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     email_schedules =
-      EmailAutomation.get_emails_for_schedule(organization_id, job.type, [:job])
+      EmailAutomations.get_emails_for_schedule(organization_id, job.type, [:job])
       |> Enum.map(fn item ->
         item ++ [inserted_at: now, updated_at: now, job_id: job.id, gallery_id: nil]
       end)
@@ -747,18 +748,22 @@ defmodule PicselloWeb.Live.Shared do
   end
 
   def insert_gallery_emails(gallery) do
-    gallery = gallery |> Repo.preload([:job ,organization: [organization_job_types: :jobtype]], force: true) |> IO.inspect(label: "gallery==>")
+    gallery =
+      gallery
+      |> Repo.preload([:job, organization: [organization_job_types: :jobtype]], force: true)
+      |> IO.inspect(label: "gallery==>")
+
     type = gallery.job.type
 
     now = DateTime.utc_now() |> DateTime.truncate(:second)
+
     email_schedules =
-      EmailAutomation.get_emails_for_schedule(gallery.organization.id, type, [:gallery])
+      EmailAutomations.get_emails_for_schedule(gallery.organization.id, type, [:gallery])
       |> Enum.map(fn item ->
         item ++ [inserted_at: now, updated_at: now, job_id: nil, gallery_id: gallery.id]
       end)
 
     Repo.insert_all(EmailSchedule, email_schedules)
-
   end
 
   defp get_client(selected_client, searched_client, client) do

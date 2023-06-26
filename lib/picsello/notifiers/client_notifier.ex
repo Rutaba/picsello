@@ -303,7 +303,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
   def deliver_automation_email_job(email_preset, job, schema, _state, helpers) do
     with client <- job |> Repo.preload(:client) |> Map.get(:client),
          %{body_template: body, subject_template: subject} <-
-           Picsello.EmailAutomation.resolve_variables(email_preset, schema, helpers) do
+           Picsello.EmailAutomations.resolve_variables(email_preset, schema, helpers) do
       deliver_transactional_email(
         %{subject: subject, headline: subject, body: body},
         %{"to" => client.email},
@@ -312,7 +312,8 @@ defmodule Picsello.Notifiers.ClientNotifier do
     end
   end
 
-  def deliver_automation_email_gallery(_email_preset, _gallery, _schema, _state, _helpers), do: :ok
+  def deliver_automation_email_gallery(_email_preset, _gallery, _schema, _state, _helpers),
+    do: :ok
 
   def deliver_automation_email_order(_job, _, _helpers), do: :ok
 

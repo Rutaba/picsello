@@ -5,7 +5,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Picsello.{Marketing, EmailPresets.EmailPreset, EmailAutomation, Repo}
+  alias Picsello.{Marketing, EmailPresets.EmailPreset, EmailAutomations, Repo}
   alias Picsello.EmailAutomation.EmailSchedule
 
   @impl true
@@ -42,7 +42,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def email_preset_changeset(socket, email_preset, params \\ nil) do
     email_preset_changeset = build_email_changeset(email_preset, params)
     body_template = current(email_preset_changeset) |> Map.get(:body_template)
-    
+
     if params do
       socket
     else
@@ -56,7 +56,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
       ) do
     automation_pipelines =
-      EmailAutomation.get_all_pipelines_emails(
+      EmailAutomations.get_all_pipelines_emails(
         current_user.organization_id,
         selected_job_type.job_type
       )
@@ -68,7 +68,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def get_pipline(pipeline_id) do
     to_integer(pipeline_id)
-    |> EmailAutomation.get_pipeline_by_id()
+    |> EmailAutomations.get_pipeline_by_id()
     |> Repo.preload([:email_automation_category, :email_automation_sub_category])
   end
 
@@ -117,18 +117,21 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def build_email_changeset(email_preset, params) do
-    params = if params do
-      params
-    else
-      email_preset
-      |> Map.put(:template_id, email_preset.id)
-      |> prepare_email_preset_params()
-    end
+    params =
+      if params do
+        params
+      else
+        email_preset
+        |> Map.put(:template_id, email_preset.id)
+        |> prepare_email_preset_params()
+      end
 
     case email_preset do
-      %EmailPreset{} -> 
+      %EmailPreset{} ->
         EmailPreset.changeset(params)
-      _ -> EmailSchedule.changeset(params)
+
+      _ ->
+        EmailSchedule.changeset(params)
     end
   end
 
@@ -143,6 +146,20 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def validate?(true, job_types) do
     Enum.any?(job_types, &Map.get(&1, :selected, false))
   end
+
+  def get_email_schedule_text(0), do: "Send email immediately"
+
+  def get_email_schedule_text(hours) do
+    %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
+    sign = if sign == "+", do: "Later", else: "Earlier"
+    calendar = calendar_text(calendar, count)
+    "Send #{count} #{calendar} #{sign}"
+  end
+
+  defp calendar_text("Hour", count), do: ngettext("Hour", "Hours", count)
+  defp calendar_text("Day", count), do: ngettext("Day", "Days", count)
+  defp calendar_text("Month", count), do: ngettext("Month", "Months", count)
+  defp calendar_text("Year", count), do: ngettext("Year", "Years", count)
 
   def explode_hours(hours) do
     year = 365 * 24

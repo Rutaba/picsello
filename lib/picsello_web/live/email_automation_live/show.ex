@@ -4,13 +4,16 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
   import PicselloWeb.LiveHelpers
-  import PicselloWeb.EmailAutomationLive.Shared, only: [get_pipline: 1, explode_hours: 1]
+
+  import PicselloWeb.EmailAutomationLive.Shared,
+    only: [get_pipline: 1, get_email_schedule_text: 1, explode_hours: 1]
+
   import PicselloWeb.Gettext, only: [ngettext: 3]
 
   alias Picsello.{
     Galleries,
     Jobs,
-    EmailAutomation,
+    EmailAutomations,
     Galleries,
     Repo
   }
@@ -79,7 +82,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     pipeline_id = to_integer(pipeline_id)
 
     email =
-      EmailAutomation.get_email_schedule_by_id(id)
+      EmailAutomations.get_email_schedule_by_id(id)
       |> Repo.preload(email_automation_pipeline: [:email_automation_category])
 
     pipeline = get_pipline(pipeline_id)
@@ -88,7 +91,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       Jobs.get_job_by_id(job_id)
       |> Repo.preload([:payment_schedules, :job_status, client: :organization])
 
-    case EmailAutomation.send_now_email(
+    case EmailAutomations.send_now_email(
            pipeline.email_automation_category.type,
            email,
            job,
@@ -102,19 +105,20 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
-  def handle_event("edit-email", 
-    %{"email_id" => id, "pipeline_id" => pipeline_id},
-    %{assigns: %{current_user: current_user, type: type}} = socket
-  ) do
+  def handle_event(
+        "edit-email",
+        %{"email_id" => id, "pipeline_id" => pipeline_id},
+        %{assigns: %{current_user: current_user, type: type}} = socket
+      ) do
     schedule_id = to_integer(id)
     pipeline_id = to_integer(pipeline_id)
-     
+
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent, %{
       current_user: current_user,
       job_type: type,
       pipeline: get_pipline(pipeline_id),
-      email: EmailAutomation.get_schedule_by_id(schedule_id)
+      email: EmailAutomations.get_schedule_by_id(schedule_id)
     })
     |> noreply()
   end
@@ -123,7 +127,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
     id = String.to_integer(id)
 
-    case EmailAutomation.update_email_schedule(id, %{is_stopped: true}) do
+    case EmailAutomations.update_email_schedule(id, %{is_stopped: true}) do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end
@@ -137,76 +141,84 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
   defp pipeline_section(assigns) do
     ~H"""
-      <div class="flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}"}>
-
-        <div class="flex flex-col">
-          <div class=" flex flex-row items-center">
-            <div class="flex flex-row w-8 h-8 rounded-full bg-white flex items-center justify-center">
-              <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
-            </div>
-            <span class="flex items-center text-blue-planning-300 text-xl font-bold ml-2">
-              <%= @pipeline.name %>
-              <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(@pipeline.emails) %> <%=ngettext("email", "emails", Enum.count(@pipeline.emails)) %></span>
-            </span>
-          </div>
-          <p class="text:xs text-base-250 lg:text-base ml-10">
-            <%= @pipeline.description %>
-          </p>
+      <div class="md:my-5 md:mx-12 border border-base-200 rounded-lg">
+        <div class="flex justify-between p-2">
+          <span class="pl-1 text-blue-planning-300 font-bold"> <%= get_next_email_schdule_date(@job_id, @pipeline.id, @pipeline.state) %>
+          </span>
+        <span class="text-blue-planning-300 pr-4 underline">Preview</span>
         </div>
 
-        <div class="ml-auto">
-          <%= if !Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
-              <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
-            <% else %>
-              <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
-            <% end %>
-          </div>
-      </div>
+        <div class="flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}"}>
 
-
-      <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
-        <%= Enum.with_index(@pipeline.emails, fn email, index -> %>
-            <% last_index = Enum.count(@pipeline.emails) - 1 %>
-          <div class="flex flex-col md:flex-row pl-2 pr-7 md:items-center justify-between">
-            <div class="flex flex-row ml-2 h-max">
-              <div class={"h-auto pt-3 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
-                <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 z-40">
-                <%= if not is_nil(email.reminded_at) do %>
-                  <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
-                <%= else %>
-                  <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
-                <% end %>
-                </div>
+          <div class="flex flex-col">
+            <div class=" flex flex-row items-center">
+              <div class="flex flex-row w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
               </div>
-              <span class="text-blue-planning-300 text-sm font-bold ml-4 py-3 ">
-                <%= if not is_nil(email.reminded_at) do %>
-                  Completed <%= get_completed_date(email.reminded_at) %>
-                <% end %>
-                <p class="text-black text-xl">
-                  <%= email.name %>
-                </p>
-                <div class="flex items-center bg-white">
-                <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300 mr-2" />
-                  <p class="font-normal text-base-250 text-sm"> <%= get_email_schedule_text(email.total_hours) %></p>
-                </div>
+              <span class="flex items-center text-blue-planning-300 text-xl font-bold ml-2">
+                <%= @pipeline.name %>
+                <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(@pipeline.emails) %> <%=ngettext("email", "emails", Enum.count(@pipeline.emails)) %></span>
               </span>
             </div>
-
-            <div class="flex justify-end mr-2">
-              <button class="flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl" phx-click="confirm-stop-email" phx-value-email_id={email.id}>
-                <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
-              </button>
-              <button disabled={!is_nil(email.reminded_at)} class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
-                Send now
-              </button>
-              <button class="h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" phx-click="edit-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
-                <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
-                Edit email
-              </button>
-            </div>
+            <p class="text:xs text-base-250 lg:text-base ml-10">
+              <%= @pipeline.description %>
+            </p>
           </div>
-        <% end) %>
-    <% end %>
+
+          <div class="ml-auto">
+            <%= if !Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
+                <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+              <% else %>
+                <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+              <% end %>
+            </div>
+        </div>
+
+
+        <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
+          <%= Enum.with_index(@pipeline.emails, fn email, index -> %>
+              <% last_index = Enum.count(@pipeline.emails) - 1 %>
+            <div class="flex flex-col md:flex-row pl-2 pr-7 md:items-center justify-between">
+              <div class="flex flex-row ml-2 h-max">
+                <div class={"h-auto pt-3 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
+                  <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 z-40">
+                  <%= if not is_nil(email.reminded_at) do %>
+                    <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
+                  <% else %>
+                    <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+                  <% end %>
+                  </div>
+                </div>
+                <span class="text-blue-planning-300 text-sm font-bold ml-4 py-3 ">
+                  <%= if not is_nil(email.reminded_at) do %>
+                    Completed <%= get_completed_date(email.reminded_at) %>
+                  <% end %>
+                  <p class="text-black text-xl">
+                    <%= email.name %>
+                  </p>
+                  <div class="flex items-center bg-white">
+                  <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300 mr-2" />
+                    <p class="font-normal text-base-250 text-sm"> <%= get_email_schedule_text(email.total_hours) %></p>
+                  </div>
+                </span>
+              </div>
+
+              <div class="flex justify-end mr-2">
+                <button disabled={!is_nil(email.reminded_at)} class="flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl" phx-click="confirm-stop-email" phx-value-email_id={email.id}>
+                  <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
+                </button>
+                <button disabled={!is_nil(email.reminded_at)} class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
+                  Send now
+                </button>
+                <button disabled={!is_nil(email.reminded_at)} class="h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" phx-click="edit-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
+                  <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
+                  Edit email
+                </button>
+              </div>
+            </div>
+          <% end) %>
+      <% end %>
+      </div>
     """
   end
 
@@ -232,8 +244,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
     job = job_id |> Jobs.get_job_by_id()
 
-    gallery_emails = EmailAutomation.get_emails_schedules_by_ids(galleries, :gallery)
-    jobs_emails = EmailAutomation.get_emails_schedules_by_ids(job_id, :job)
+    gallery_emails = EmailAutomations.get_emails_schedules_by_ids(galleries, :gallery)
+    jobs_emails = EmailAutomations.get_emails_schedules_by_ids(job_id, :job)
     email_schedules = jobs_emails ++ gallery_emails
 
     socket
@@ -241,19 +253,36 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     |> assign(email_schedules: email_schedules)
   end
 
-  defp get_email_schedule_text(0), do: "Send email immediately"
+  # In progress
+  defp get_next_email_schdule_date(job_id, pipeline_id, state) do
+    email_schedule = EmailAutomations.get_email_schedule(job_id, pipeline_id)
 
-  defp get_email_schedule_text(hours) do
-    %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
-    sign = if sign == "+", do: "Later", else: "Earlier"
-    calendar = calendar_text(calendar, count)
-    "Send #{count} #{calendar} #{sign}"
+    case email_schedule do
+      nil ->
+        "11/24/23"
+
+      _ ->
+        %{sign: sign} = explode_hours(email_schedule.total_hours)
+        job = EmailAutomations.get_job(job_id)
+        date = EmailAutomations.fetch_date_for_state(state, job)
+
+        case date do
+          nil -> ""
+          date -> next_schedule_format(date, sign, email_schedule.total_hours)
+        end
+    end
   end
 
-  defp calendar_text("Hour", count), do: ngettext("Hour", "Hours", count)
-  defp calendar_text("Day", count), do: ngettext("Day", "Days", count)
-  defp calendar_text("Month", count), do: ngettext("Month", "Months", count)
-  defp calendar_text("Year", count), do: ngettext("Year", "Years", count)
+  defp next_schedule_format(date, sign, hours) do
+    date =
+      if sign == "+" do
+        DateTime.add(date, hours * 60 * 60)
+      else
+        DateTime.add(date, -1 * (hours * 60 * 60))
+      end
+
+    "Next email #{date}"
+  end
 
   defp get_completed_date(date) do
     {:ok, converted_date} = NaiveDateTime.from_iso8601(date)

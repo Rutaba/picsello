@@ -1,4 +1,4 @@
-defmodule Picsello.EmailAutomation do
+defmodule Picsello.EmailAutomations do
   @moduledoc """
     context module for email automation
   """
@@ -145,9 +145,9 @@ defmodule Picsello.EmailAutomation do
 
   def get_pipeline_states_type(type) do
     from(p in EmailAutomationPipeline,
-    join: c in assoc(p, :email_automation_category),
-    where: c.type == ^type,
-    select: p.state
+      join: c in assoc(p, :email_automation_category),
+      where: c.type == ^type,
+      select: p.state
     )
   end
 
@@ -400,6 +400,7 @@ defmodule Picsello.EmailAutomation do
 
   defp resolve_variables_for_subject(job, type, subject) do
     schemas = {job}
+
     resolver_module =
       case type do
         :gallery -> Picsello.EmailPresets.GalleryResolver
@@ -439,6 +440,7 @@ defmodule Picsello.EmailAutomation do
   end
 
   def get_client_messages(nil, _subjects), do: []
+
   def get_client_messages(job, subjects) do
     from(
       c in ClientMessage,
@@ -448,6 +450,17 @@ defmodule Picsello.EmailAutomation do
       where: r.client_id == ^job.client.id and r.recipient_type == :to
     )
     |> Repo.all()
+  end
+
+  def get_email_schedule(job_id, piepline_id) do
+    from(es in EmailSchedule,
+      where: es.job_id == ^job_id,
+      where: es.email_automation_pipeline_id == ^piepline_id,
+      where: is_nil(es.reminded_at),
+      order_by: [asc: es.id],
+      limit: 1
+    )
+    |> Repo.one()
   end
 
   defp remove_categories_from_list(sub_categories) do
@@ -461,7 +474,7 @@ defmodule Picsello.EmailAutomation do
   defp toggle_status("false"), do: "active"
 end
 
-# Picsello.EmailAutomation.get_emails_schedules(119, :job)
-# Picsello.EmailAutomation.filter_emails_on_time_schedule()
-# # Picsello.EmailAutomation.get_emails_schedules_for_job_pipeline(119, nil, 1)
-# Picsello.EmailAutomation.get_client_messages(88)
+# Picsello.EmailAutomations.get_emails_schedules(119, :job)
+# Picsello.EmailAutomations.filter_emails_on_time_schedule()
+# # Picsello.EmailAutomations.get_emails_schedules_for_job_pipeline(119, nil, 1)
+# Picsello.EmailAutomations.get_client_messages(88)

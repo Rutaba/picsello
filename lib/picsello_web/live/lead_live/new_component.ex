@@ -3,7 +3,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
   use PicselloWeb, :live_component
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Clients, Profiles, EmailAutomation, Repo}
+  alias Picsello.{Job, Jobs, Clients, Profiles, EmailAutomations, Repo}
   alias Picsello.EmailAutomation.EmailSchedule
 
   import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1, search_clients: 1]
@@ -121,8 +121,9 @@ defmodule PicselloWeb.JobLive.NewComponent do
 
   defp insert_job_emails(type, organization_id, job_id) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
+
     email_schedules =
-      EmailAutomation.get_emails_for_schedule(organization_id, type, [:lead, :job])
+      EmailAutomations.get_emails_for_schedule(organization_id, type, [:lead, :job])
       |> Enum.map(fn item ->
         item ++ [inserted_at: now, updated_at: now, job_id: job_id, gallery_id: nil]
       end)

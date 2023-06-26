@@ -5,12 +5,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
-    only: [assign_automation_pipelines: 1, get_pipline: 1]
+    only: [assign_automation_pipelines: 1, get_pipline: 1, get_email_schedule_text: 1]
 
   alias Picsello.{
-    EmailAutomation,
-    Repo,
-    Marketing
+    EmailAutomations,
+    Repo
   }
 
   @impl true
@@ -99,7 +98,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       ) do
     email_delete =
       to_integer(email_id)
-      |> EmailAutomation.delete_email()
+      |> EmailAutomations.delete_email()
 
     case email_delete do
       {:ok, _} ->
@@ -140,12 +139,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       ) do
     message = if active == "true", do: "disabled", else: "enabled"
 
-    case EmailAutomation.update_pipeline_and_settings_status(id, active) do
-      {:ok, _} ->
+    case EmailAutomations.update_pipeline_and_settings_status(id, active) do
+      {_count, nil} ->
         socket
         |> put_flash(:success, "Pipeline successfully #{message}")
 
-      _ ->
+      _error ->
         socket
         |> put_flash(:error, "Failed to update pipeline s tatus")
     end
@@ -170,7 +169,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       job_type: selected_job_type.jobtype,
       pipeline: get_pipline(pipeline_id),
       email_id: to_integer(email_id),
-      email: EmailAutomation.get_email_by_id(to_integer(email_id))
+      email: EmailAutomations.get_email_by_id(to_integer(email_id))
     })
   end
 
@@ -214,7 +213,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                     </div>
                     <div class="flex flex-row items-center text-base-250">
                       <.icon name="play-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                      <span>Send email immediately</span>
+                      <span><%= get_email_schedule_text(email.total_hours) %> </span>
                     </div>
                   </div>
                 </div>

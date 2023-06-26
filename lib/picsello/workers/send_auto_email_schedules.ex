@@ -1,12 +1,58 @@
-defmodule Picsello.Workers.ScheduleEmail1 do
+defmodule Picsello.Workers.ScheduleAutomationEmail do
   @moduledoc "Background job to send scheduled emails"
+  require Logger
+
   use Oban.Worker,
     unique: [period: :infinity, states: ~w[available scheduled executing retryable]a]
 
-  alias Picsello.EmailAutomation
+  alias Picsello.EmailAutomations
 
   def perform(_) do
-    EmailAutomation.get_all_emails_schedules()
+    get_all_emails()
+    |> Enum.map(fn job_pipeline ->
+      job_id = job_pipeline.job_id
+      job_task = Task.async(fn -> EmailAutomations.get_job(job_id) end)
+
+      type =
+        job_pipeline.emails
+        |> List.first()
+        |> Map.get(:email_automation_pipeline)
+        |> Map.get(:email_automation_category)
+        |> Map.get(:type)
+
+      Logger.info("[email category] #{type}")
+      _gallery_id = job_pipeline.gallery_id
+
+      subjects_task =
+        Task.async(fn -> EmailAutomations.get_subjects_for_job_pipeline(job_pipeline.emails) end)
+
+      job = Task.await(job_task)
+
+      subjects = Task.await(subjects_task)
+      Logger.info("Email Subjects #{subjects}")
+
+      # Each pipeline emails subjects resolve variables
+      subjects_resolve = EmailAutomations.resolve_all_subjects(job, type, subjects)
+      Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
+
+      # Check client reply for any email of current pipeline
+      is_reply = EmailAutomations.is_reply_receive!(job, subjects_resolve)
+
+      Logger.info(
+        "Reply of any email from client for job #{job_id} and pipeline_id #{job_pipeline.pipeline_id}"
+      )
+
+      # This condition only run when no reply recieve from any email for that job & pipeline
+      if !is_reply do
+        send_email_each_pipeline(job_pipeline, job)
+      end
+    end)
+
+    :ok
+  end
+
+  def get_all_emails() do
+    EmailAutomations.get_all_emails_schedules()
     |> Enum.group_by(&group_key/1)
     |> Enum.map(fn {{job_id, gallery_id, pipeline_id}, emails} ->
       %{
@@ -16,32 +62,36 @@ defmodule Picsello.Workers.ScheduleEmail1 do
         emails: emails
       }
     end)
-    |> Enum.map(fn job_pipeline ->
-      job_id = job_pipeline.job_id
-      job_task = Task.async(fn -> EmailAutomation.get_job(job_id) end)
-      type = job_pipeline.emails |> List.first() |> Map.get(:email_automation_pipeline) |> Map.get(:email_automation_category) |> Map.get(:type)
-      _gallery_id = job_pipeline.gallery_id
-      subjects_task = Task.async(fn -> EmailAutomation.get_subjects_for_job_pipeline(job_pipeline.emails) end)
-      job = Task.await(job_task)
-      subjects = Task.await(subjects_task)
-      # Each pipeline emails subjects resolve variables
-      subjects_resolve = EmailAutomation.resolve_all_subjects(job, type, subjects)
-      # Check client reply for any email of current pipeline
-      is_reply = EmailAutomation.is_reply_receive!(job, subjects_resolve)
-      # This condition only run when no reply recieve from any email for that job & pipeline
-      if !is_reply do
-        Enum.map(job_pipeline.emails, fn schedule ->
-          state = schedule.email_automation_pipeline.state
-          type = schedule.email_automation_pipeline.email_automation_category.type
-          job_date_time = EmailAutomation.fetch_date_for_state(state, job)
-          is_send_time = EmailAutomation.is_email_send_time(job_date_time, schedule.total_hours)
-          if is_send_time and is_nil(schedule.reminded_at) do
-            Task.async(fn -> EmailAutomation.send_now_email(type, schedule, job, state) end)
-          end
-        end)
+  end
+
+  # ToDo: Gallery scenario -> When job id nil means email is related gallery
+  defp send_email_each_pipeline(_job_pipeline, nil), do: {:ok, nil}
+
+  defp send_email_each_pipeline(job_pipeline, job) do
+    Enum.map(job_pipeline.emails, fn schedule ->
+      state = schedule.email_automation_pipeline.state
+      type = schedule.email_automation_pipeline.email_automation_category.type
+      job_date_time = EmailAutomations.fetch_date_for_state(state, job)
+      Logger.info("Job date time for state #{state} #{job_date_time}")
+
+      is_send_time = EmailAutomations.is_email_send_time(job_date_time, schedule.total_hours)
+      Logger.info("Time to send email #{is_send_time}")
+
+      if is_send_time and is_nil(schedule.reminded_at) do
+        send_email_task =
+          Task.async(fn -> EmailAutomations.send_now_email(type, schedule, job, state) end)
+
+        case Task.await(send_email_task) do
+          {:ok, _result} ->
+            Logger.info(
+              "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+            )
+
+          error ->
+            Logger.error("Email #{schedule.name} #{error}")
+        end
       end
     end)
-    :ok
   end
 
   defp group_key(email_schedule) do
