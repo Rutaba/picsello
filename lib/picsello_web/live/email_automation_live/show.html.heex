@@ -18,7 +18,7 @@
       <div>
         <h1 class="text-4xl font-bold"><%= String.capitalize(@type) %> Automation History</h1>
         <div class="max-w-4xl mt-2 text-base-250">
-          <p>Email automation sequences are scheduled to send for Leads, Jobs and Galleries. View status, preview email content and, as needed, choose to stop the emails for this specific job. To make global changes (CLICK HERE).</p>
+          <p>Email automation sequences are scheduled to send for Leads, Jobs and Galleries. View status, preview email content and, as needed, choose to stop the emails for this specific job. To make global changes <.live_link class="link" to={Routes.email_automations_index_path(@socket, :index)}>CLICK HERE</.live_link></p>
         </div>
       </div>
     </div>

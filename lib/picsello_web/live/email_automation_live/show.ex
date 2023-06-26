@@ -204,13 +204,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
               </div>
 
               <div class="flex justify-end mr-2">
-                <button disabled={!is_nil(email.reminded_at)} class="flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl" phx-click="confirm-stop-email" phx-value-email_id={email.id}>
+                <button disabled={!is_nil(email.reminded_at)} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => email.is_stopped || !is_nil(email.reminded_at)})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
                   <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
                 </button>
-                <button disabled={!is_nil(email.reminded_at)} class="h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
+                <button disabled={!is_nil(email.reminded_at)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at)})} phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
                   Send now
                 </button>
-                <button disabled={!is_nil(email.reminded_at)} class="h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap" phx-click="edit-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
+                <button disabled={!is_nil(email.reminded_at)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at)})} phx-click="edit-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
                   <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
                   Edit email
                 </button>
