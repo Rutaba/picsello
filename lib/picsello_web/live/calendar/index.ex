@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.Calendar.Index do
   use PicselloWeb, :live_view
   alias Picsello.Accounts
   import PicselloWeb.Live.Calendar.Shared
+
   @impl true
   @spec mount(any, map, Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(_params, %{"user_token" => token}, socket) do

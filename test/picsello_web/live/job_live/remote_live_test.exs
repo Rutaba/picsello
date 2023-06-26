@@ -38,16 +38,12 @@ defmodule PicselloWeb.JobLive.Shared.RemoteLiveTest do
         {:ok, _live, html} = live(conn)
 
         values = %{
-          busy: true,
           description: nil,
           end_time: "11:00:00 AM June 13, 2023",
-          object: "event",
           owner_email: "zkessin@gmail.com",
           participants: [],
           start_time: "10:00:00 AM June 13, 2023",
-          status: "confirmed",
           title: "1:00 pm Israel time / 6:00 am EST",
-          updated_at: "12:40:29 PM June 12, 2023"
         }
 
         values

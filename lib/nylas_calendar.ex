@@ -1,6 +1,9 @@
 defmodule NylasCalendar do
   @moduledoc """
   An Elixir module for interacting with the Nylas Calendar API.
+  
+
+  
   """
 
   require Logger
@@ -141,8 +144,9 @@ defmodule NylasCalendar do
 
   @spec update_event(map, String.t()) :: result(map())
   def delete_event(%{"id" => id}, token) do
+    headers = build_headers(token)
     url = "https://api.nylas.com/events/#{id}?notify_participants=true  "
-    response = HTTPoison.delete!(url)
+    response = HTTPoison.delete!(url, headers)
 
     case response.status_code do
       200 ->

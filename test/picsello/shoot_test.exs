@@ -53,24 +53,24 @@ defmodule Picsello.ShootTest do
   describe "push_changes_to_nylas/1" do
     test "NoOp", %{attrs: attrs} do
       changeset = create_changeset(attrs)
-      assert changeset == Picsello.Shoot.push_changes_to_nylas(changeset)
+      assert changeset == Picsello.Shoot.push_changes_to_nylas(changeset, :insert)
     end
 
     test "Create Changeset calls push_changes_to_nylas/1", %{attrs: attrs} do
       Meck.new(Picsello.Shoot, [:passthrough])
 
-      Meck.expect(Picsello.Shoot, :push_changes_to_nylas, &fake/1)
+      Meck.expect(Picsello.Shoot, :push_changes_to_nylas, &fake/2)
 
       Shoot.create_changeset(attrs) |> Repo.insert!()
       assert Meck.validate(Picsello.Shoot)
-      assert Meck.called(Picsello.Shoot, :push_changes_to_nylas, 1)
+      assert Meck.called(Picsello.Shoot, :push_changes_to_nylas, 2)
     end
 
     test "Update Changeset calls push_changes_to_nylas/1", %{attrs: _attrs, gallery: gallery} do
       [shoot, _] = gallery.job.shoots
       Meck.new(Picsello.Shoot, [:passthrough])
 
-      Meck.expect(Picsello.Shoot, :push_changes_to_nylas, &fake/1)
+      Meck.expect(Picsello.Shoot, :push_changes_to_nylas, &fake/2)
 
       Shoot.update_changeset(shoot, %{
         starts_at: ~U[2023-11-01 10:00:00Z],
@@ -80,9 +80,9 @@ defmodule Picsello.ShootTest do
       })
       |> Repo.update!()
 
-      assert Meck.called(Picsello.Shoot, :push_changes_to_nylas, 1)
+      assert Meck.called(Picsello.Shoot, :push_changes_to_nylas, 2)
 
-      assert Meck.validate(Picsello.Shoot)b
+      assert Meck.validate(Picsello.Shoot)
     end
 
     test "push to new event to nylas and map data", %{attrs: attrs} do
@@ -90,19 +90,31 @@ defmodule Picsello.ShootTest do
 
       Meck.expect(NylasCalendar, :add_event, &fake/3)
 
-      assert %Ecto.Changeset{action: :insert} =
+      assert %Ecto.Changeset{} =
                attrs
                |> create_changeset()
-               |> IO.inspect(label: "Changeset")
-               |> Shoot.push_changes_to_nylas()
+               |> Shoot.push_changes_to_nylas(:insert)
 
       assert Meck.called(NylasCalendar, :add_event, 3)
     end
 
-    test "Push Existing event to Nylas on update", %{gallery: gallery} do
+    test "Push Existing event to Nylas on update", %{gallery: gallery, user: _user} do
       [shoot, _] = gallery.job.shoots
+      Meck.new(NylasCalendar, [:passthrough])
 
-      assert %Ecto.Changeset{action: :update} =
+      Meck.expect(NylasCalendar, :update_event, &fake/2)
+
+
+      assert %Ecto.Changeset{
+               action: nil,
+               changes: %{
+                 duration_minutes: 90,
+                 location: :studio,
+                 name: "FAKE Event",
+                 starts_at: ~U[2023-11-01 10:00:00Z]
+               },
+               valid?: true
+             } =
                shoot
                |> cast(
                  %{
@@ -113,7 +125,8 @@ defmodule Picsello.ShootTest do
                  },
                  @fields
                )
-               |> Shoot.push_changes_to_nylas()
+               |> Shoot.push_changes_to_nylas(:update)
+      assert Meck.called(NylasCalendar, :update_event, 2)
     end
 
     test "Get token from shoot", %{gallery: gallery} do
@@ -135,24 +148,12 @@ defmodule Picsello.ShootTest do
       refute Meck.called(NylasCalendar, :add_event, 3)
     end
 
-    test "Delete Event from Shoot table ", %{user: user, attrs: attrs} do
-      Meck.new(NylasCalendar, [:passthrough])
-      Meck.expect(NylasCalendar, :add_event, &fake/3)
-      Meck.expect(NylasCalendar, :delete_event, &fake/2)
-      user = %User{user | external_calendar_rw_id: "FAKE CALENDAR ID"}
-      assert !is_nil(user.nylas_oauth_token)
-      assert %Picsello.Shoot{} = event = create_changeset(attrs) |> Repo.insert!()
-
-      Shoot.push_changes(user, event, :delete)
-      assert Meck.called(NylasCalendar, :delete_event, 2)
-    end
-
     def fake(a) do
       a
     end
 
-    def fake(_a, _b) do
-      :ok
+    def fake(a, _b) do
+      a
     end
 
     def fake(_a, _b, _c) do

@@ -6,7 +6,9 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   alias Phoenix.LiveView.Socket
   import PicselloWeb.Live.Calendar.Shared
   require Logger
+
   @impl true
+
   @spec mount(
           map(),
           map(),

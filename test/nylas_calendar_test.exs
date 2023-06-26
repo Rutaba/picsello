@@ -226,9 +226,9 @@ defmodule NylasCalendarTest do
                 }} =
                  NylasCalendar.update_event(
                    %{
-                     "id" => id,
-                     "title" => "Meeting version 2",
-                     "description" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+                     id: id,
+                     title: "Meeting version 2",
+                     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
                    },
                    @token
                  )

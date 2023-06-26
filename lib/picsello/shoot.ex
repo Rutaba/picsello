@@ -69,22 +69,20 @@ defmodule Picsello.Shoot do
     timestamps()
   end
 
-  # {
-  #     "title": "Party at the Ritz!",
-  #     "when": {
-  #         "start_time": 1577829600,
-  #         "end_time": 1577844000
-  #     },
-  #     "calendar_id": "<CALENDAR_ID>",
-  #     "location": "Ritz Ballroom",
-  #     "participants": [         
-  #         {
-  #             "email": "ballroom@theritz.com"
-  #         }
-  #     ]
-  # }  
-
   defimpl Jason.Encoder, for: [__MODULE__] do
+    ### map the notes fields (internal) to description (external) but
+    ### add [from picsello] to the description so that people know
+    ### where it came from we know to filter them out when we pull
+    ### calendars from external.
+    
+    defp set_notes(nil) do
+      "\n[from picsello]\n"
+    end
+
+    defp set_notes(notes) do
+      notes <> "\n[from picsello]\n"
+    end
+
     def encode(
           %Picsello.Shoot{
             duration_minutes: duration_minutes,
@@ -97,13 +95,13 @@ defmodule Picsello.Shoot do
         ) do
       end_time = DateTime.add(starts_at, duration_minutes * 60) |> DateTime.to_unix()
 
-      Jason.Encode.map(
+      Jason.encode!(
         %{
           when: %{start_time: DateTime.to_unix(starts_at), end_time: end_time},
           calendar_id: calendar_id,
           location: address,
           title: name,
-          description: notes <> "\n[from picsello]\n"
+          description: set_notes(notes)
         },
         opts
       )
@@ -121,28 +119,24 @@ defmodule Picsello.Shoot do
         ) do
       end_time = DateTime.add(starts_at, duration_minutes * 60) |> DateTime.to_unix()
 
-      Jason.Encode.map(
+      Jason.encode!(
         %{
           when: %{start_time: DateTime.to_unix(starts_at), end_time: end_time},
           location: address,
           title: name,
-          description: notes <> "\n[from picsello]\n"
+          description: set_notes(notes)
         },
         %{}
       )
     end
   end
 
-  @derive {Jason.Encoder,
-           only: [:duration_minutes, :location, :name, :notes, :starts_at, :address]}
-  # ********************************************************************************
-
-  @spec push_changes_to_nylas(Ecto.Changeset.t()) :: Ecto.Changeset.t()
-  def push_changes_to_nylas(%{valid?: false} = changeset) do
+  @spec push_changes_to_nylas(Ecto.Changeset.t(), :insert|:update|:delete) :: Ecto.Changeset.t()
+  def push_changes_to_nylas(%{valid?: false} = changeset, _action) do
     changeset
   end
 
-  def push_changes_to_nylas(%{valid?: true, action: action} = changeset) do
+  def push_changes_to_nylas(%{valid?: true} = changeset, action) do
     values = Ecto.Changeset.apply_changes(changeset)
     values |> get_token_from_shoot() |> push_changes(values, action)
     changeset
@@ -176,14 +170,6 @@ defmodule Picsello.Shoot do
     :ok
   end
 
-  def push_changes(
-        %User{nylas_oauth_token: token, external_calendar_rw_id: _calendar_id},
-        values,
-        :delete
-      ) do
-    NylasCalendar.delete_event(values, token)
-    :ok
-  end
 
   def push_changes(%User{}, _values, _action) do
     :ok
@@ -214,7 +200,7 @@ defmodule Picsello.Shoot do
     |> validate_required([:starts_at, :duration_minutes, :name, :location, :job_id])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)
-    |> prepare_changes(&__MODULE__.push_changes_to_nylas/1)
+    |> prepare_changes(&__MODULE__.push_changes_to_nylas(&1, :insert))
   end
 
   def update_changeset(%__MODULE__{} = shoot, attrs) do
@@ -223,7 +209,7 @@ defmodule Picsello.Shoot do
     |> validate_required([:starts_at, :duration_minutes, :name, :location])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)
-    |> prepare_changes(&__MODULE__.push_changes_to_nylas/1)
+    |> prepare_changes(&__MODULE__.push_changes_to_nylas(&1, :update))
   end
 
   def reminded_at_changeset(%__MODULE__{} = shoot) do
