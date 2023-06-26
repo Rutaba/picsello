@@ -417,7 +417,7 @@ defmodule Picsello.EmailAutomations do
     Utils.render(subject, data)
   end
 
-  def send_now_email(:lead = type, email, job, state) when type in [:lead, :job] do
+  def send_now_email(type, email, job, state) when type in [:lead, :job] do
     result =
       ClientNotifier.deliver_automation_email_job(email, job, {job}, state, PicselloWeb.Helpers)
 
