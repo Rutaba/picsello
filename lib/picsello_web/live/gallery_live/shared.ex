@@ -683,28 +683,28 @@ defmodule PicselloWeb.GalleryLive.Shared do
           is_fixed: false
         }
       )
-
+      
     ~H"""
-      <div class={classes("relative", %{"hidden" => @for == :proofing_album_order})}>
+      <div class={classes("relative", %{"hidden" => @for == :proofing_album_order || Enum.empty?(build_credits(@for, @credits, @total_count))})}>
           <div class={classes("bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 pointer-events-none", %{"fixed shadow-top" => @is_fixed and @for != :proofing_album, "absolute border-t border-base-225" => !@is_fixed or @for == :proofing_album })}>
           <div class="center-container gallery__container flex items-center justify-between h-full mx-auto px-7 sm:px-16">
-              <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
-                <%= for {label, value} <- build_credits(@for, @credits, @total_count) do %>
-                  <div>
-                    <dl class="flex items-center sm:mr-5" >
-                      <dt class="mr-2 font-extrabold">
-                        <%= label %><span class="hidden sm:inline"> available</span>:
-                      </dt>
+            <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
+              <%= for {label, value} <- build_credits(@for, @credits, @total_count) do %>
+                <div>
+                  <dl class="flex items-center sm:mr-5" >
+                    <dt class="mr-2 font-extrabold">
+                      <%= label %><span class="hidden sm:inline"> available</span>:
+                    </dt>
 
-                      <dd class="font-semibold"><%= value %></dd>
-                    </dl>
-                    <div {testid("selections")} class={!@for && "hidden"}>Selections <%= @cart_count %></div>
-                  </div>
-                <% end %>
-              </div>
-              <.icon name="gallery-info" class="fill-current hidden text-base-300 w-7 h-7" />
+                    <dd class="font-semibold"><%= value %></dd>
+                  </dl>
+                  <div {testid("selections")} class={!@for && "hidden"}>Selections <%= @cart_count %></div>
+                </div>
+              <% end %>
             </div>
+            <.icon name="gallery-info" class="fill-current hidden text-base-300 w-7 h-7" />
           </div>
+        </div>
       </div>
     """
   end
