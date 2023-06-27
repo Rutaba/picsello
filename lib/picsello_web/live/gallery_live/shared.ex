@@ -25,7 +25,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
   alias Picsello.Cart.Order
-  alias Galleries.{GalleryProduct, Photo}
+  alias Galleries.{GalleryProduct, Photo, GalleryClient}
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @card_blank "/images/card_gray.png"
@@ -86,13 +86,18 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp composed_event(:standard), do: :message_composed
   defp composed_event(_type), do: :message_composed_for_album
 
+  defp maybe_insert_gallery_client(gallery, email) do
+    {:ok, gallery_client} = Galleries.insert_gallery_client(gallery, email)
+    gallery_client
+  end
+
   def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
     with true <- is_nil(client_email),
          nil <- Map.get(assigns, :current_user) do
-      gallery.job.client
+      %GalleryClient{email: gallery.job.client.email, gallery_id: gallery.id}
     else
-      false -> Galleries.get_gallery_client(gallery, client_email)
-      current_user -> Galleries.get_gallery_client(gallery, current_user.email)
+      false -> maybe_insert_gallery_client(gallery, client_email)
+      current_user -> maybe_insert_gallery_client(gallery, current_user.email)
     end
   end
 
