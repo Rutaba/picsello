@@ -21,10 +21,7 @@ defmodule Picsello.BookingEvents do
       %__MODULE__{}
       |> cast(attrs, [:name, :email, :phone, :date, :time])
       |> validate_required([:name, :email, :phone, :date, :time])
-      |> validate_change(:phone, &valid_phone/2)
     end
-
-    defdelegate valid_phone(field, value), to: Picsello.Client
   end
 
   def upsert_booking_event(changeset) do
