@@ -150,7 +150,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     ~H"""
       <div class="md:my-5 md:mx-12 border border-base-200 rounded-lg">
         <% next_email = get_next_email_schdule_date(@job_id, @pipeline.id, @pipeline.state) %>
-        <div class={classes("flex justify-between p-2", %{"opacity-60 hover:cursor-not-allowed" => next_email.is_completed})}>
+        <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
           <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text <> " " <> next_email.date %>
           </span>
         <%= if not is_nil(next_email.email_preview_id) do %>
@@ -158,7 +158,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         <% end %>
         </div>
 
-        <div class={classes("flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer", %{"opacity-60 hover:cursor-not-allowed" => next_email.is_completed})} phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}"}>
+        <div class={classes("flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer", %{"opacity-60" => next_email.is_completed})} phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}"}>
 
           <div class="flex flex-col">
             <div class=" flex flex-row items-center">
@@ -184,11 +184,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
             </div>
         </div>
 
-
         <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
           <%= Enum.with_index(@pipeline.emails, fn email, index -> %>
               <% last_index = Enum.count(@pipeline.emails) - 1 %>
-            <div class="flex flex-col md:flex-row pl-2 pr-7 md:items-center justify-between">
+            <div class={classes("flex flex-col md:flex-row pl-2 pr-7 md:items-center justify-between", %{"opacity-60" => next_email.is_completed})}>
               <div class="flex flex-row ml-2 h-max">
                 <div class={"h-auto pt-3 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
                   <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 z-40">
