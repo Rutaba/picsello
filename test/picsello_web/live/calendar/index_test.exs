@@ -4,7 +4,7 @@ defmodule PicselloWeb.Live.Calendar.IndexTest do
   # alias PicselloWeb.Endpoint
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
   alias Picsello.Accounts
-  @token "RoJK07y0nExk1c7i57iXQbgzsZ6mGq"
+  @token "RoJ******************************"
 
   setup do
     ExVCR.Config.filter_request_headers("Authorization")

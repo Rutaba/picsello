@@ -1,10 +1,9 @@
 defmodule PicselloWeb.Live.Calendar.SettingsTest do
   use PicselloWeb.ConnCase, async: true
   import Phoenix.LiveViewTest
-  # alias PicselloWeb.Endpoint
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
   alias Picsello.Accounts
-  @token "A77LHd1ubDFRdxU64AwZKIyvN7sDfB"
+  @token "A77***************************"
 
   setup do
     ExVCR.Config.filter_request_headers("Authorization")

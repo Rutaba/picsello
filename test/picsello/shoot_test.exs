@@ -7,7 +7,7 @@ defmodule Picsello.ShootTest do
   alias :meck, as: Meck
   alias Picsello.Accounts.User
   import Ecto.Changeset
-  @token "HfHP3lDgBQIQRWRQLWBZLOiOwOQ5ls"
+  @token "HfH********************"
   @calendar_id "abcdefg"
   @fields [
     :starts_at,

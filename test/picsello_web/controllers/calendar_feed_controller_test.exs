@@ -2,7 +2,7 @@ defmodule PicselloWeb.CalendarFeedControllerTest do
   use PicselloWeb.ConnCase, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
   alias Picsello.Accounts
-  @token "RoJK07y0nExk1c7i57iXQbgzsZ6mGq"
+  @token "RoJ******************************"
   @params %{
     "end" => "2023-07-09T00:00:00",
     "start" => "2023-05-28T00:00:00",

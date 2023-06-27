@@ -75,19 +75,8 @@ config :logger, :console,
   metadata: [:request_id, :mfa, :pid, :file, :line]
 
 config :logger,
-  backends: [{LoggerFileBackend, :info_log}, {LoggerFileBackend, :debug_log}, :console]
+  backends: [:console]
 
-config :logger, :info_log,
-  format: format,
-  metadata: [:pid, :mfa, :file, :line],
-  path: "/Users/zkessin/logs/picsello_info.log",
-  level: :info
-
-config :logger, :debug_log,
-  format: format,
-  metadata: [:pid, :mfa, :file, :line],
-  path: "/Users/zkessin/logs/picsello_error.log",
-  level: :debug
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
@@ -112,3 +101,4 @@ config :picsello, :render_test_ids, true
 config :picsello,
        :feature_flags,
        ~w[sync_whcc_design_details show_pricing_tab automated_proposal_emails balance_due_emails]a
+

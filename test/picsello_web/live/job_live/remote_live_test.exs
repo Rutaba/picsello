@@ -4,7 +4,7 @@ defmodule PicselloWeb.JobLive.Shared.RemoteLiveTest do
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
   alias Picsello.Accounts
 
-  @token "RoJK07y0nExk1c7i57iXQbgzsZ6mGq"
+  @token "RoJ***************************"
   describe "render" do
     setup do
       ExVCR.Config.filter_request_headers("Authorization")
