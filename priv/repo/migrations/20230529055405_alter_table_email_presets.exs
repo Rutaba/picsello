@@ -18,14 +18,24 @@ defmodule Picsello.Repo.Migrations.AlterTableEmailPresets do
       add(:organization_id, references(:organizations, on_delete: :nothing))
     end
     
-    flush()
-    Mix.Tasks.ImportEmailPresets.insert_emails()
-
     execute("""
       update #{@table} set status='active' where organization_id is NULL;
     """)
   end
   def down do
+    alter table(@table) do
+      remove(:status, :email_preset_status)
+      remove(:total_hours, :integer)
+      remove(:condition, :string)
+      remove(:private_name, :string)
+
+      remove(
+        :email_automation_pipeline_id,
+        references(:email_automation_pipelines, on_delete: :nothing)
+      )
+      remove(:organization_id, references(:organizations, on_delete: :nothing))
+    end
+
     execute("""
     alter table email_presets drop column status, drop column total_hours, drop column condition, drop column private_name, drop column email_automation_pipeline_id, drop column organization_id
   """)

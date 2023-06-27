@@ -18,7 +18,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
     [
       %{
         type: "gallery",
-        state: "gallery_send_link",
+        # state: "gallery_send_link",
         position: 0,
         name: "Send gallery link",
         subject_template: "Your Gallery is ready!",
@@ -32,7 +32,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         type: "gallery",
-        state: "gallery_shipping_to_client",
+        # state: "gallery_shipping_to_client",
         position: 0,
         name: "Your order has shipped - client",
         subject_template: "Your order from {{photography_company_s_name}} has shipped!",
@@ -44,7 +44,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         type: "gallery",
-        state: "gallery_shipping_to_photographer",
+        # state: "gallery_shipping_to_photographer",
         position: 0,
         name: "Your order has shipped - photographer",
         subject_template: "New shipping info for {{order_first_name}} order.",
@@ -56,7 +56,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         type: "gallery",
-        state: "proofs_send_link",
+        # state: "proofs_send_link",
         position: 0,
         name: "Share Proofing Album",
         subject_template: "Your Proofing Album is Ready!",
@@ -69,7 +69,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         type: "gallery",
-        state: "album_send_link",
+        # state: "album_send_link",
         position: 0,
         name: "Share Finals Album",
         subject_template: "Your Finals Album is Ready!",
@@ -83,7 +83,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
     ]
     |> Enum.each(fn attrs ->
       attrs = Map.merge(attrs, %{inserted_at: now, updated_at: now})
-      email_preset = Repo.get_by(EmailPreset, type: attrs.type, state: attrs.state)
+      email_preset = Repo.get_by(EmailPreset, type: attrs.type, name: attrs.name)
 
       if email_preset do
         email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
