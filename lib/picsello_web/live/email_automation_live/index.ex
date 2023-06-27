@@ -45,6 +45,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     |> assign(:selected_job_type, selected_job_type)
   end
 
+  def handle_event("back_to_navbar", _, %{assigns: %{is_mobile: is_mobile}} = socket) do
+    socket
+    |> assign(:is_mobile, !is_mobile)
+    |> noreply()
+  end
+
   @impl true
   def handle_event(
         "assign_templates_by_type",
@@ -57,6 +63,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
     socket
     |> assign(:selected_job_type, selected_job_type)
+    |> assign(is_mobile: false)
     |> assign_automation_pipelines()
     |> noreply()
   end
