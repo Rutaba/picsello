@@ -10,6 +10,7 @@ defmodule Picsello.EmailAutomations do
     Utils,
     Jobs,
     ClientMessage,
+    Galleries,
     Notifiers.ClientNotifier
   }
 
@@ -104,21 +105,24 @@ defmodule Picsello.EmailAutomations do
     query
     |> join(:inner, [es, _, _], g in assoc(es, :gallery))
     |> where([es, _, _, _], es.gallery_id in ^galleries)
-    |> select_merge([_, _, c, g], %{category_name: fragment("concat(?, ':', ?)", c.name, g.name)})
-    |> group_by([es, p, c, g], [c.name, g.name, c.type, c.id, p.id, es.id])
+    |> select_merge([_, _, c, g], %{
+      category_name: fragment("concat(?, ':', ?)", c.name, g.name),
+      gallery_id: g.id
+    })
+    |> group_by([es, p, c, g], [c.name, g.name, c.type, c.id, p.id, es.id, g.id])
   end
 
   defp filter_email_schedule(query, job_id, _type) do
     query
     |> where([es, _, _], es.job_id == ^job_id)
-    |> select_merge([_, _, c], %{category_name: c.name})
+    |> select_merge([_, _, c], %{category_name: c.name, gallery_id: nil})
     |> group_by([es, p, c], [c.name, c.type, c.id, p.id, es.id])
   end
 
   defp email_schedules_group_by_categories(emails_schedules) do
     emails_schedules
-    |> Enum.group_by(&{&1.category_id, &1.category_name, &1.category_type})
-    |> Enum.map(fn {{category_id, category_name, category_type}, group} ->
+    |> Enum.group_by(&{&1.category_id, &1.category_name, &1.category_type, &1.gallery_id})
+    |> Enum.map(fn {{category_id, category_name, category_type, gallery_id}, group} ->
       pipelines =
         group
         |> Enum.group_by(& &1.pipeline["id"])
@@ -137,6 +141,7 @@ defmodule Picsello.EmailAutomations do
         category_id: category_id,
         category_name: category_name,
         category_type: category_type,
+        gallery_id: gallery_id,
         pipelines: pipeline_morphied
       }
     end)
@@ -175,14 +180,22 @@ defmodule Picsello.EmailAutomations do
         client: :organization
       ])
 
-  def fetch_date_for_state(_, nil), do: nil
+  def fetch_date_for_state(state, nil), do: nil
 
   @doc """
     Runs after a contact/lead form submission
     Get job submitted date
   """
   def fetch_date_for_state(state, job)
-      when state in [:client_contact, :pays_retainer, :booking_event] do
+      when state in [
+             :client_contact,
+             :pays_retainer,
+             :booking_event,
+             :gallery_send_link,
+             :cart_abandoned,
+             :gallery_expiration_soon,
+             :gallery_password_changed
+           ] do
     job |> Map.get(:inserted_at)
   end
 
@@ -392,11 +405,11 @@ defmodule Picsello.EmailAutomations do
     }
   end
 
-  def resolve_all_subjects(nil, _type, _subjects), do: []
+  def resolve_all_subjects(job, gallery, type, subjects) do
+    schema = if is_nil(gallery), do: job, else: gallery
 
-  def resolve_all_subjects(job, type, subjects) do
     Enum.map(subjects, fn subject ->
-      resolve_variables_for_subject(job, type, subject)
+      resolve_variables_for_subject(schema, type, subject)
     end)
   end
 
@@ -419,13 +432,40 @@ defmodule Picsello.EmailAutomations do
     Utils.render(subject, data)
   end
 
-  def send_now_email(type, email, job, state) when type in [:lead, :job] do
-    result =
-      ClientNotifier.deliver_automation_email_job(email, job, {job}, state, PicselloWeb.Helpers)
+  def send_now_email(:gallery, email, gallery, state)
+      when state in [
+             :gallery_send_link,
+             :cart_abandoned,
+             :gallery_expiration_soon,
+             :gallery_password_changed
+           ] do
+    gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload([:albums, job: :client])
 
+    schema_gallery = schemas(gallery)
+
+    ClientNotifier.deliver_automation_email_gallery(
+      email,
+      gallery,
+      schema_gallery,
+      state,
+      PicselloWeb.Helpers
+    )
+    |> update_schedule(email.id)
+  end
+
+  def send_now_email(type, email, job, state) when type in [:lead, :job] do
+    ClientNotifier.deliver_automation_email_job(email, job, {job}, state, PicselloWeb.Helpers)
+    |> update_schedule(email.id)
+  end
+
+  def send_now_email(_type, _email, _order, _state) do
+    {:ok, nil}
+  end
+
+  def update_schedule(result, id) do
     case result do
       {:ok, _} ->
-        update_email_schedule(email.id, %{
+        update_email_schedule(id, %{
           reminded_at: DateTime.truncate(DateTime.utc_now(), :second)
         })
 
@@ -434,7 +474,8 @@ defmodule Picsello.EmailAutomations do
     end
   end
 
-  def send_now_email(:gallery, _email, _job, _state), do: {:ok, nil}
+  defp schemas(%{type: :standard} = gallery), do: {gallery}
+  defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
 
   def is_reply_receive!(job, subjects) do
     get_client_messages(job, subjects)
@@ -454,12 +495,17 @@ defmodule Picsello.EmailAutomations do
     |> Repo.all()
   end
 
-  def query_get_email_schedule(job_id, piepline_id) do
-    from(es in EmailSchedule,
-      where: es.job_id == ^job_id,
-      where: es.email_automation_pipeline_id == ^piepline_id,
-      limit: 1
-    )
+  def query_get_email_schedule(category_type, gallery_id, job_id, piepline_id) do
+    query =
+      from(es in EmailSchedule,
+        where: es.email_automation_pipeline_id == ^piepline_id,
+        limit: 1
+      )
+
+    case category_type do
+      :gallery -> query |> where([es], es.gallery_id == ^gallery_id)
+      _ -> query |> where([es], es.job_id == ^job_id)
+    end
   end
 
   defp remove_categories_from_list(sub_categories) do
