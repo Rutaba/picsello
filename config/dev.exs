@@ -66,7 +66,7 @@ config :picsello, PicselloWeb.Endpoint,
     ]
   ]
 
-format = {LogFormatter, :format}
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console,
   format: format,
