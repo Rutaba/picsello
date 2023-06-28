@@ -24,7 +24,6 @@ defmodule NylasCalendarTest do
 
       link = "https://api.nylas.com/oauth/authorize?#{query}"
 
-      # System.cmd("open", [link])
       assert {:ok, ^link} = NylasCalendar.generate_login_link(client_id, redirect)
     end
 

@@ -1,8 +1,10 @@
 defmodule NylasCalendar do
   @moduledoc """
-  An Elixir module for interacting with the Nylas Calendar API.
   
-
+  An Elixir module for interacting with the Nylas Calendar
+  API. Contains code to get a list of calendars, get events, add
+  events to remote calendars etc
+ 
   
   """
 

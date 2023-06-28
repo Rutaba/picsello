@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Calendar.SettingsTest do
   use PicselloWeb.ConnCase, async: true
-  import Phoenix.LiveViewTest
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
+  import Phoenix.LiveViewTest
   alias Picsello.Accounts
   @token "A77***************************"
 
