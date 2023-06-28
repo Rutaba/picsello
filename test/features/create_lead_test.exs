@@ -33,7 +33,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(testid("card-Communications", text: "(210) 111-1234"))
     |> click(link("Picsello"))
     |> click(button("Leads"))
-    |> assert_has(testid("card-Recent leads"))
+    |> assert_has(testid("card-Recent Leads"))
     |> click(button("View all"))
     |> assert_has(testid("job-row", count: 1))
   end
@@ -56,7 +56,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(testid("card-Communications", text: "(210) 111-1234"))
     |> click(link("Picsello"))
     |> click(button("Leads"))
-    |> assert_has(testid("card-Recent leads"))
+    |> assert_has(testid("card-Recent Leads"))
     |> click(button("View all"))
     |> assert_has(testid("job-row", count: 1))
   end
@@ -117,7 +117,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("h1", text: "Elizabeth Taylor Other"))
     |> click(link("Picsello"))
     |> click(button("Leads"))
-    |> assert_has(testid("card-Recent leads"))
+    |> assert_has(testid("card-Recent Leads"))
     |> click(button("View all"))
     |> assert_has(testid("job-row", count: 1))
   end

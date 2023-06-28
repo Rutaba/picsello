@@ -115,7 +115,7 @@ defmodule Picsello.JobIndexTest do
   feature "user with jobs looks at them", %{session: session, job: job, lead: lead} do
     session
     |> click(button("Leads"))
-    |> assert_has(testid("card-Recent leads"))
+    |> assert_has(testid("card-Recent Leads"))
     |> click(button("View all"))
     |> assert_has(testid("job-row", count: 1))
     |> assert_has(link(Job.name(lead)))
@@ -178,7 +178,7 @@ defmodule Picsello.JobIndexTest do
 
     session
     |> click(button("Leads"))
-    |> assert_has(testid("card-Recent leads"))
+    |> assert_has(testid("card-Recent Leads"))
     |> click(button("View all"))
     |> assert_path(Routes.job_path(PicselloWeb.Endpoint, :leads))
     |> assert_has(link(Job.name(archived_lead), text: "Archived"))
@@ -192,7 +192,7 @@ defmodule Picsello.JobIndexTest do
   } do
     session
     |> click(button("Leads"))
-    |> assert_has(testid("card-Recent leads"))
+    |> assert_has(testid("card-Recent Leads"))
     |> click(button("View all"))
     |> assert_has(testid("job-row", count: 1))
     |> assert_has(link(lead.client.name))
@@ -218,7 +218,7 @@ defmodule Picsello.JobIndexTest do
   } do
     session
     |> click(button("Leads"))
-    |> assert_has(testid("card-Recent leads"))
+    |> assert_has(testid("card-Recent Leads"))
     |> click(button("View all"))
     |> assert_has(testid("job-row", count: 1))
     |> assert_has(link(lead.client.name))
@@ -246,7 +246,7 @@ defmodule Picsello.JobIndexTest do
   } do
     session
     |> click(button("Leads"))
-    |> assert_has(testid("card-Recent leads"))
+    |> assert_has(testid("card-Recent Leads"))
     |> click(button("View all"))
     |> assert_has(testid("job-row", count: 1))
     |> assert_has(link(lead.client.name))
@@ -275,7 +275,7 @@ defmodule Picsello.JobIndexTest do
 
     session
     |> click(button("Leads"))
-    |> assert_has(testid("card-Recent leads"))
+    |> assert_has(testid("card-Recent Leads"))
     |> click(button("View all"))
     |> assert_has(testid("job-row", count: 4))
     |> assert_has(link(lead.client.name))
@@ -330,7 +330,7 @@ defmodule Picsello.JobIndexTest do
 
     session
     |> click(button("Leads"))
-    |> assert_has(testid("card-Recent leads"))
+    |> assert_has(testid("card-Recent Leads"))
     |> click(button("View all"))
     |> assert_has(testid("search_filter_and_sort_bar", count: 1))
     |> assert_has(testid("job-row", count: 4))
