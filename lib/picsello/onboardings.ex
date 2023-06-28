@@ -103,14 +103,12 @@ defmodule Picsello.Onboardings do
       ])
       |> validate_required([:state, :photographer_years, :schedule])
       |> validate_change(:promotion_code, &valid_promotion_codes/2)
-      |> validate_change(:phone, &valid_phone/2)
     end
 
     def phone_changeset(%__MODULE__{} = onboarding, attrs) do
       onboarding
       |> cast(attrs, [:phone])
       |> validate_required([:phone])
-      |> validate_change(:phone, &valid_phone/2)
     end
 
     def promotion_code_changeset(%__MODULE__{} = onboarding, attrs) do
@@ -127,7 +125,6 @@ defmodule Picsello.Onboardings do
 
     def completed?(%__MODULE__{completed_at: nil}), do: false
     def completed?(%__MODULE__{}), do: true
-    defdelegate valid_phone(field, value), to: Picsello.Client
 
     def software_options(), do: @software_options
 
@@ -229,6 +226,10 @@ defmodule Picsello.Onboardings do
     current_user
     |> cast(attr, [])
     |> cast_embed(:onboarding, with: &Onboarding.phone_changeset(&1, &2), required: true)
+    |> case do
+      %{changes: %{onboarding: _}} = changeset -> changeset
+      %{} = changeset -> add_error(changeset, :phone, "did not change")
+    end
   end
 
   def user_update_promotion_code_changeset(current_user, attrs) do

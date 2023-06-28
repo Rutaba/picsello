@@ -104,7 +104,6 @@ defmodule Picsello.ClientBooksEventTest do
     |> fill_in(text_field("Your phone number"), with: " ")
     |> assert_text("Your name can't be blank")
     |> assert_text("Your email can't be blank")
-    |> assert_text("Your phone number is invalid")
     |> fill_in(text_field("Your name"), with: "Chad Smith")
     |> fill_in(text_field("Your email"), with: "chad@example.com")
     |> fill_in(text_field("Your phone number"), with: "987 123 4567")

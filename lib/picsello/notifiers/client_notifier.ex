@@ -204,7 +204,7 @@ defmodule Picsello.Notifiers.ClientNotifier do
       order_total: Order.total_cost(order),
       order_url:
         if(order.album_id,
-          do: helpers.proofing_album_selections_url(album, order),
+          do: helpers.proofing_album_selections_url(album, gallery, order),
           else: helpers.order_url(gallery, order)
         ),
       subject: "#{organization.name} - order ##{Picsello.Cart.Order.number(order)}"

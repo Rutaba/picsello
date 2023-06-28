@@ -279,7 +279,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       job_url: helpers.job_url(job.id),
       gallery_name: gallery.name,
       job_name: Job.name(job),
-      order_url: helpers.proofing_album_selections_url(album, order)
+      order_url: helpers.proofing_album_selections_url(album, gallery, order)
     }
   end
 

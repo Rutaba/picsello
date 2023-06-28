@@ -30,7 +30,6 @@ defmodule Picsello.Galleries do
   alias Galleries.{
     Gallery,
     Photo,
-    CoverPhoto,
     Watermark,
     SessionToken,
     GalleryProduct,
@@ -843,10 +842,7 @@ defmodule Picsello.Galleries do
 
   def maybe_set_product_previews(%{cover_photo: cover_photo} = gallery, photo) do
     case cover_photo do
-      %CoverPhoto{} ->
-        {:ok, cover_photo}
-
-      _ ->
+      nil ->
         save_gallery_cover_photo(
           gallery,
           %{
@@ -856,6 +852,8 @@ defmodule Picsello.Galleries do
               |> Map.put(:id, photo.original_url)
           }
         )
+      cover_photo ->
+        {:ok, cover_photo}
     end
   end
 
@@ -1341,15 +1339,15 @@ defmodule Picsello.Galleries do
     |> evaluate_price()
   end
 
-  defp print_product_sizes(category_id, organization_id) do
-    from(print_product in Picsello.GlobalSettings.PrintProduct,
-      join: gs_gallery_product in assoc(print_product, :global_settings_gallery_product),
-      where: gs_gallery_product.organization_id == ^organization_id,
-      where: gs_gallery_product.category_id == ^category_id,
-      select: print_product.sizes
-    )
-    |> Repo.all()
-    |> Enum.concat()
+  def insert_gallery_client(gallery, email) do
+    case Galleries.get_gallery_client(gallery, email) do
+      nil ->
+        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
+        |> Repo.insert()
+
+      gallery_client ->
+        {:ok, gallery_client}
+    end
   end
 
   def min_price(%{whcc_id: @area_markup_category} = category, org_id, %{
@@ -1368,6 +1366,32 @@ defmodule Picsello.Galleries do
     |> evaluate_price()
   end
 
+  def preview_image(gallery) do
+    photo_query = Photos.watermarked_query()
+
+    photo =
+      from(p in photo_query, where: p.gallery_id == ^gallery.id, order_by: p.position, limit: 1)
+      |> Repo.one()
+
+    if photo, do: Photos.preview_url(photo, [])
+  end
+
+  def broadcast(gallery, message),
+    do: Phoenix.PubSub.broadcast(Picsello.PubSub, topic(gallery), message)
+
+  def subscribe(gallery), do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic(gallery))
+
+  defp print_product_sizes(category_id, organization_id) do
+    from(print_product in Picsello.GlobalSettings.PrintProduct,
+      join: gs_gallery_product in assoc(print_product, :global_settings_gallery_product),
+      where: gs_gallery_product.organization_id == ^organization_id,
+      where: gs_gallery_product.category_id == ^category_id,
+      select: print_product.sizes
+    )
+    |> Repo.all()
+    |> Enum.concat()
+  end
+
   defp update_markup(%{gs_gallery_products: [%{markup: markup}]} = category, %{
          products: products?
        }) do
@@ -1382,16 +1406,6 @@ defmodule Picsello.Galleries do
     details
     |> Picsello.Cart.Product.new()
     |> Picsello.Cart.Product.example_price()
-  end
-
-  def preview_image(gallery) do
-    photo_query = Photos.watermarked_query()
-
-    photo =
-      from(p in photo_query, where: p.gallery_id == ^gallery.id, order_by: p.position, limit: 1)
-      |> Repo.one()
-
-    if photo, do: Photos.preview_url(photo, [])
   end
 
   defp selected_photo_query(query) do
@@ -1410,28 +1424,12 @@ defmodule Picsello.Galleries do
     |> if(do: :upload_in_progress, else: :ready)
   end
 
-  def broadcast(gallery, message),
-    do: Phoenix.PubSub.broadcast(Picsello.PubSub, topic(gallery), message)
-
-  def subscribe(gallery), do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic(gallery))
-
   defp topic(gallery), do: "gallery:#{gallery.id}"
 
   defp active_galleries, do: from(g in Gallery, where: g.status == :active)
 
   defp active_disabled_galleries,
     do: from(g in Gallery, where: g.status in [:active, :disabled])
-
-  defp insert_gallery_client(gallery, email) do
-    case Galleries.get_gallery_client(gallery, email) do
-      nil ->
-        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
-        |> Repo.insert()
-
-      gallery_client ->
-        {:ok, gallery_client}
-    end
-  end
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
   defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue

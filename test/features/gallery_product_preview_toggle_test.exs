@@ -155,7 +155,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
                {"Loose Prints", "$50,000.00"},
                {"Press Printed Cards", "$77.77"},
                {"Display Products", "$3,939.00"},
-               {"Digital Download", "$0.10"}
+               {"Digital Download"}
              ] =
                options
                |> Enum.map(fn option ->

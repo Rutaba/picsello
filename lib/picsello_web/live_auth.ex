@@ -130,9 +130,8 @@ defmodule PicselloWeb.LiveAuth do
          token,
          :gallery
        ) do
-      email = Galleries.get_session_token(token).email
+      %{email: email} = Galleries.get_session_token(token)
       Sentry.Context.set_user_context(client)
-      assign(socket, authenticated: true)
       assign(socket, authenticated: true, client_email: email)
     else
       assign(socket, authenticated: false)
@@ -231,9 +230,14 @@ defmodule PicselloWeb.LiveAuth do
   defp authenticate_gallery_for_photographer(socket, _), do: socket
 
   defp build_login_link(socket) do
-    socket
-    |> get_connect_info(:uri)
+    uri_map = get_connect_info(socket, :uri) || %{}
+
+    uri_map
     |> Map.get(:path)
+    |> case do
+      nil -> get_uri(socket)
+      uri -> uri
+    end
     |> String.split("/", trim: true)
     |> case do
       ["gallery", hash | _] ->
@@ -244,6 +248,10 @@ defmodule PicselloWeb.LiveAuth do
     end
   end
 
+  defp get_uri(%{private: %{connect_info: %{request_path: request_path}}}), do: request_path
+  defp get_uri(%{private: %{connect_info: %{adapter: {_, %{path: path}}}}}), do: path
+  defp get_uri(_), do: raise("Couldn't find URI, Got nil")
+  
   defp cont(socket), do: {:cont, socket}
   defp halt(socket), do: {:halt, socket}
 end
