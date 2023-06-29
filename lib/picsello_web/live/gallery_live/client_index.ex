@@ -38,7 +38,8 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       Map.put(
         gallery,
         :credits_available,
-        (client_email && client_email in gallery.gallery_digital_pricing.email_list) || is_photographer_view(assigns)
+        (client_email && client_email in gallery.gallery_digital_pricing.email_list) ||
+          is_photographer_view(assigns)
       )
 
     socket

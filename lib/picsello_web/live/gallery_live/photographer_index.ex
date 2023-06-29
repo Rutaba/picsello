@@ -197,12 +197,17 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       message_changeset
       |> :erlang.term_to_binary()
       |> Base.encode64()
-    
+
     %{id: oban_job_id} =
-      %{message: serialized_message, job_id: job.id, recipients: recipients, user: %{organization_id: user.organization_id}}
+      %{
+        message: serialized_message,
+        job_id: job.id,
+        recipients: recipients,
+        user: %{organization_id: user.organization_id}
+      }
       |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
       |> Oban.insert!()
-    
+
     Waiter.postpone(gallery.id, fn ->
       Oban.cancel_job(oban_job_id)
 
