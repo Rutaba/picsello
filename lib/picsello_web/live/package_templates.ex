@@ -42,20 +42,22 @@ defmodule PicselloWeb.Live.PackageTemplates do
         _,
         %{assigns: %{live_action: :new}} = socket
       ) do
-    package = Repo.get(Package, package_id) |> Repo.preload([
-      :organization,
-      :job,
-      :contract,
-      :package_template,
-      :package_payment_schedules,
-      :questionnaire_template
-    ])
+    package =
+      Repo.get(Package, package_id)
+      |> Repo.preload([
+        :organization,
+        :job,
+        :contract,
+        :package_template,
+        :package_payment_schedules,
+        :questionnaire_template
+      ])
 
-  duplicate_package = create_duplicate_package(package)
+    duplicate_package = create_duplicate_package(package)
 
-  socket
-  |> open_wizard(%{package: duplicate_package})
-  |> noreply()
+    socket
+    |> open_wizard(%{package: duplicate_package})
+    |> noreply()
   end
 
   @impl true

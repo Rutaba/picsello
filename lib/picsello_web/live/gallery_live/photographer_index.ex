@@ -7,7 +7,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
   import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
-  alias Ecto.Changeset
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
   alias PicselloWeb.Shared.ConfirmationComponent
 
@@ -199,18 +198,14 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
       |> :erlang.term_to_binary()
       |> Base.encode64()
 
-    changeset =
-      %{message: serialized_message, job_id: job.id, recipients: recipients, user: user}
-      |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
-
-    updated_args =
-      changeset
-      |> Changeset.fetch_change!(:args)
-      |> Map.drop([:user, :recipients])
-
     %{id: oban_job_id} =
-      changeset
-      |> Changeset.put_change(:args, updated_args)
+      %{
+        message: serialized_message,
+        job_id: job.id,
+        recipients: recipients,
+        user: %{organization_id: user.organization_id}
+      }
+      |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
       |> Oban.insert!()
 
     Waiter.postpone(gallery.id, fn ->

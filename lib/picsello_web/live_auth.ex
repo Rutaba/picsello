@@ -251,7 +251,7 @@ defmodule PicselloWeb.LiveAuth do
   defp get_uri(%{private: %{connect_info: %{request_path: request_path}}}), do: request_path
   defp get_uri(%{private: %{connect_info: %{adapter: {_, %{path: path}}}}}), do: path
   defp get_uri(_), do: raise("Couldn't find URI, Got nil")
-  
+
   defp cont(socket), do: {:cont, socket}
   defp halt(socket), do: {:halt, socket}
 end

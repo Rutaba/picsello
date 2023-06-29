@@ -852,6 +852,7 @@ defmodule Picsello.Galleries do
               |> Map.put(:id, photo.original_url)
           }
         )
+
       cover_photo ->
         {:ok, cover_photo}
     end
