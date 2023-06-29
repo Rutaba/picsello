@@ -281,11 +281,11 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   def client_email(%Job{client: %{email: email}}), do: email
 
-  defp remove_duplicate_recipients(recipients) do
-    to = Map.get(recipients, "to") |> List.wrap()
-    cc = Map.get(recipients, "cc", []) -- to
-    bcc = (Map.get(recipients, "bcc", []) -- to) -- cc
-
+  def remove_duplicate_recipients(recipients) do
+    to = Map.get(recipients, "to") |> List.wrap() |> Enum.uniq()
+    cc = (Map.get(recipients, "cc", []) |> Enum.uniq()) -- to
+    bcc = ((Map.get(recipients, "bcc", []) |> Enum.uniq()) -- to) -- cc
+    
     %{"to" => to}
     |> update_recipients_map("cc", cc)
     |> update_recipients_map("bcc", bcc)
