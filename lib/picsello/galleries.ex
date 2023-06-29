@@ -26,7 +26,16 @@ defmodule Picsello.Galleries do
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
-  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, GalleryClient}
+
+  alias Galleries.{
+    Gallery,
+    Photo,
+    Watermark,
+    SessionToken,
+    GalleryProduct,
+    GalleryClient
+  }
+
   import Repo.CustomMacros
 
   @area_markup_category Picsello.Category.print_category()
@@ -75,6 +84,18 @@ defmodule Picsello.Galleries do
       preload: [:albums, [job: :client]],
       where: c.organization_id == ^organization_id
     )
+  end
+
+  def get_recent_galleries(user) do
+    query = list_all_galleries_by_organization_query(user.organization_id)
+
+    from(q in query,
+      where: q.status not in [:disabled],
+      preload: [:orders, :job],
+      order_by: [desc: q.inserted_at],
+      limit: 6
+    )
+    |> Repo.all()
   end
 
   @doc """

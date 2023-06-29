@@ -60,7 +60,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     |> click(button("Yes, disable orders"))
 
     visit_homepage(session)
-    |> visit_view_all_galleries()
+    |> visit("/galleries")
     |> click(css("#menu-button-#{gallery.id}"))
     |> assert_text("Enable")
     |> click(css(".enable-link"))
@@ -97,6 +97,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
   defp visit_view_all_galleries(session) do
     session
     |> click(button("Galleries"))
+    |> click(button("View all"))
     |> assert_url_contains("galleries")
   end
 

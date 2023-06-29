@@ -131,13 +131,13 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_info(
         {:message_composed, changeset, recipients},
         %{
-          assigns: %{
-            organization: %{name: organization_name},
-            job: %{id: job_id} = job
-          } = assigns
+          assigns:
+            %{
+              organization: %{name: organization_name},
+              job: %{id: job_id} = job
+            } = assigns
         } = socket
       ) do
-        
     user = Map.get(assigns, :current_user)
     user = if user, do: user, else: Map.get(assigns, :photographer)
 

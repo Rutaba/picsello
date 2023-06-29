@@ -1,7 +1,7 @@
 defmodule Picsello.Shoots do
   @moduledoc false
 
-  alias Picsello.{Repo, Shoot}
+  alias Picsello.{Repo, Shoot, Job}
   import Ecto.Query
 
   def get_shoots(user, %{"start" => start_date, "end" => end_date}) do
@@ -18,6 +18,15 @@ defmodule Picsello.Shoots do
       order_by: shoot.starts_at
     )
     |> Repo.all()
+  end
+
+  def get_next_shoot(%Job{shoots: shoots}) when is_nil(shoots), do: nil
+
+  def get_next_shoot(%Job{shoots: shoots}) do
+    shoots
+    |> Enum.filter(&(&1.starts_at >= DateTime.utc_now()))
+    |> Enum.sort_by(& &1.starts_at)
+    |> List.first()
   end
 
   def broadcast_shoot_change(%Shoot{} = shoot) do

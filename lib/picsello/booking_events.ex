@@ -69,7 +69,8 @@ defmodule Picsello.BookingEvents do
         thumbnail_url: event.thumbnail_url,
         status: event.status,
         duration_minutes: event.duration_minutes,
-        dates: event.dates
+        dates: event.dates,
+        inserted_at: event.inserted_at
       },
       group_by: [event.id, package.name],
       order_by: ^filter_order_by(sort_by, sort_direction)

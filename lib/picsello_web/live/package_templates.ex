@@ -917,7 +917,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       archived_templates_count:
         Package.archived_templates_for_organization(org_id) |> Repo.all() |> Enum.count(),
       all_templates_count:
-        Package.all_templates_for_organization(org_id) |> Repo.all() |> Enum.count()
+        Package.templates_for_organization_query(org_id) |> Repo.all() |> Enum.count()
     )
   end
 
