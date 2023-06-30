@@ -28,7 +28,8 @@ defmodule PicselloWeb.JobLive.Shared do
     Package,
     PaymentSchedules,
     Galleries.Workers.PhotoStorage,
-    Utils
+    Utils,
+    EmailAutomations
   }
 
   alias PicselloWeb.{ConfirmationComponent, ClientMessageComponent}
@@ -878,13 +879,13 @@ defmodule PicselloWeb.JobLive.Shared do
             </span>
             <span class="text-black font-black text-base-250">Automation Sequences</span>
           </div>
-
+          <% emails_count = EmailAutomations.get_active_email_schedule_count(@job.id) %>
           <div class="flex">
-            <span class={classes("w-7 h-7 flex items-center justify-center text-lg font-bold text-white rounded-full mr-2 pb-1", %{"bg-orange-inbox-300" => @inbox_count > 0,"bg-base-250" => @inbox_count <= 0})}>
-              <%= @inbox_count %>
+            <span class={classes("w-7 h-7 flex items-center justify-center text-lg font-bold text-white rounded-full mr-2 pb-1", %{"bg-orange-inbox-300" => emails_count > 0,"bg-base-250" => emails_count <= 0})}>
+              <%= emails_count %>
             </span>
             <span class="text-base-250">
-              <%= ngettext "automations", "automations", @inbox_count %>
+              <%= ngettext "automations", "automations", emails_count %>
             </span>
           </div>
 

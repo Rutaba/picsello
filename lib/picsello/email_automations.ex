@@ -51,6 +51,11 @@ defmodule Picsello.EmailAutomations do
     |> Repo.one()
   end
 
+  def get_active_email_schedule_count(job_id) do
+    from(es in EmailSchedule, where: not es.is_stopped and is_nil(es.reminded_at) and es.job_id == ^job_id)
+    |> Repo.aggregate(:count)
+  end
+
   def get_emails_schedules_by_ids(ids, type) do
     query =
       from(
