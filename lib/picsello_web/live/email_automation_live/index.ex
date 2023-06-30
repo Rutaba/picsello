@@ -216,7 +216,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                   </div>
                   <div class="ml-3 py-6">
                     <div class="text-xl font-bold">
-                      <%= email.name %>
+                      <%= if email.private_name, do: email.private_name, else: email.name %>
                     </div>
                     <div class="flex flex-row items-center text-base-250">
                       <.icon name="play-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />

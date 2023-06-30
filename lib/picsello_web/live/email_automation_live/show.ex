@@ -203,7 +203,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                     Completed <%= get_completed_date(email.reminded_at) %>
                   <% end %>
                   <p class="text-black text-xl">
-                    <%= email.name %>
+                    <%= if email.private_name, do: email.private_name, else: email.name %>
                   </p>
                   <div class="flex items-center bg-white">
                   <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300 mr-2" />

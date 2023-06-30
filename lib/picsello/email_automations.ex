@@ -45,18 +45,6 @@ defmodule Picsello.EmailAutomations do
     |> Repo.all()
   end
 
-  def get_pipelines(organization_id, job_type) do
-    email_query = subquery_email(organization_id, job_type)
-
-    from(eap in EmailAutomationPipeline)
-    |> preload([
-      :email_automation_category,
-      :email_automation_sub_category,
-      {:email_presets, ^email_query}
-    ])
-    |> Repo.all()
-  end
-
   def get_schedule_by_id(id) do
     from(es in EmailSchedule, where: es.id == ^id)
     |> Repo.one()
@@ -247,35 +235,18 @@ defmodule Picsello.EmailAutomations do
     if hours >= total_hours, do: true, else: false
   end
 
-  def subquery_email(organization_id, job_type) do
+  def get_emails_for_schedule(organization_id, job_type, types \\ [:lead]) do
     from(
       ep in EmailPreset,
-      where: ep.organization_id == ^organization_id,
-      where: ep.job_type == ^job_type
+      join: eap in EmailAutomationPipeline,
+      on: eap.id == ep.email_automation_pipeline_id,
+      join: eac in assoc(eap, :email_automation_category),
+      where: ep.organization_id == ^organization_id
+      and ep.job_type == ^job_type
+      and ep.status == :active
+      and eac.type in ^types
     )
-  end
-
-  def get_emails_for_schedule(organization_id, job_type, types \\ [:lead]) do
-    get_pipelines(organization_id, job_type)
-    |> Enum.flat_map(fn pipeline ->
-      if pipeline.email_automation_category.type in types do
-        pipeline.email_presets
-        |> Enum.map(fn email ->
-          if email.status == :active do
-            [
-              email_automation_pipeline_id: pipeline.id,
-              total_hours: email.total_hours,
-              condition: email.condition,
-              body_template: email.body_template,
-              subject_template: email.subject_template,
-              name: email.name
-            ]
-          end
-        end)
-      else
-        []
-      end
-    end)
+    |> Repo.all()
   end
 
   def get_pipeline_by_id(id) do
