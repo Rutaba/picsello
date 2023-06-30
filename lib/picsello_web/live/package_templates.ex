@@ -14,6 +14,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     Packages,
     Repo,
     Profiles,
+    Package,
     PackagePaymentSchedule,
     Contract,
     Jobs,
@@ -36,11 +37,28 @@ defmodule PicselloWeb.Live.PackageTemplates do
   end
 
   @impl true
-  def handle_params(_, _, %{assigns: %{live_action: :new}} = socket),
-    do:
-      socket
-      |> open_wizard()
-      |> noreply()
+  def handle_params(
+        %{"duplicate" => package_id},
+        _,
+        %{assigns: %{live_action: :new}} = socket
+      ) do
+    package =
+      Repo.get(Package, package_id)
+      |> Repo.preload([
+        :organization,
+        :job,
+        :contract,
+        :package_template,
+        :package_payment_schedules,
+        :questionnaire_template
+      ])
+
+    duplicate_package = create_duplicate_package(package)
+
+    socket
+    |> open_wizard(%{package: duplicate_package})
+    |> noreply()
+  end
 
   @impl true
   def handle_params(
@@ -59,6 +77,13 @@ defmodule PicselloWeb.Live.PackageTemplates do
     end
     |> noreply()
   end
+
+  @impl true
+  def handle_params(_, _, %{assigns: %{live_action: :new}} = socket),
+    do:
+      socket
+      |> open_wizard()
+      |> noreply()
 
   @impl true
   def handle_params(_, _, %{assigns: %{live_action: :index}} = socket),
@@ -319,7 +344,6 @@ defmodule PicselloWeb.Live.PackageTemplates do
   def handle_event("add-package", %{}, socket),
     do:
       socket
-      # |> assign_job_types()
       |> push_patch(to: Routes.package_templates_path(socket, :new))
       |> noreply()
 
@@ -331,8 +355,18 @@ defmodule PicselloWeb.Live.PackageTemplates do
       ),
       do:
         socket
-        # |> assign_job_types()
         |> push_patch(to: Routes.package_templates_path(socket, :edit, package_id))
+        |> noreply()
+
+  @impl true
+  def handle_event(
+        "duplicate-package",
+        %{"package-id" => package_id},
+        socket
+      ),
+      do:
+        socket
+        |> push_patch(to: Routes.package_templates_path(socket, :new, duplicate: package_id))
         |> noreply()
 
   @impl true
@@ -364,41 +398,6 @@ defmodule PicselloWeb.Live.PackageTemplates do
       ) do
     socket
     |> assign(current_user: save_intro_state(current_user, "intro_packages", :dismissed))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "duplicate-package",
-        %{"package-id" => package_id},
-        socket
-      ) do
-    package =
-      Repo.get(Package, package_id)
-      |> Repo.preload([
-        :organization,
-        :job,
-        :contract,
-        :package_template,
-        :package_payment_schedules,
-        :questionnaire_template
-      ])
-
-    duplicate_package_attrs = create_duplicate_package(package)
-
-    case Repo.insert(duplicate_package_attrs) do
-      {:ok, _duplicated_package} ->
-        socket
-        |> put_flash(:success, "The package: #{package.name} has been duplicated")
-        |> close_modal()
-
-      _ ->
-        socket
-        |> put_flash(:error, "Failed to duplicate package: #{package.name}")
-    end
-    |> assign_template_counts()
-    |> assign_templates()
-    |> assign_job_type_packages()
     |> noreply()
   end
 
@@ -920,7 +919,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       archived_templates_count:
         Package.archived_templates_for_organization(org_id) |> Repo.all() |> Enum.count(),
       all_templates_count:
-        Package.all_templates_for_organization(org_id) |> Repo.all() |> Enum.count()
+        Package.templates_for_organization_query(org_id) |> Repo.all() |> Enum.count()
     )
   end
 
@@ -972,11 +971,12 @@ defmodule PicselloWeb.Live.PackageTemplates do
     end
     |> Map.merge(%{
       id: nil,
-      name: "Duplicate - #{package.name}",
+      name: nil,
       package_payment_schedules: package_payment_schedules,
       inserted_at: timestamp,
       updated_at: timestamp
     })
+    |> Map.put(:__meta__, %Picsello.Package{} |> Map.get(:__meta__))
     |> Repo.preload([:questionnaire_template])
   end
 

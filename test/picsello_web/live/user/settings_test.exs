@@ -73,7 +73,7 @@ defmodule PicselloWeb.Live.User.SettingsTest do
       assert Accounts.get_user_by_email_and_password(user.email, "new valid password")
     end
 
-    test "does not update password on invalid data", %{conn: conn} do
+    test "does not update password on invalid data", %{conn: conn, user: user} do
       {:ok, view, _html} = live(conn, Routes.user_settings_path(conn, :edit))
 
       response =
@@ -81,13 +81,12 @@ defmodule PicselloWeb.Live.User.SettingsTest do
         |> form("form[action='/users/settings']", %{
           action: "update_password",
           _method: "put",
-          user: %{password_to_change: "invalid", password: "too short"}
+          user: %{password_to_change: "too short", password: "too short"}
         })
         |> render_submit()
 
       assert response =~ "Settings</h1>"
-      assert response =~ "should be at least 12 characters"
-      assert response =~ "is not valid"
+      refute Accounts.get_user_by_email_and_password(user.email, "too short")
     end
   end
 

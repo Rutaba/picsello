@@ -133,7 +133,6 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
     |> fill_in(text_field("Your message"), with: " ")
     |> assert_text("Your name can't be blank")
     |> assert_text("Your email can't be blank")
-    |> assert_text("Your phone number is invalid")
     |> assert_text("Your message can't be blank")
     |> fill_in(text_field("Your name"), with: "Chad Smith")
     |> fill_in(text_field("Your email"), with: "chad@example.com")
@@ -150,7 +149,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
              client: %{
                name: "Chad Smith",
                email: "chad@example.com",
-               phone: "(987) 123-4567",
+               phone: "987 123 4567",
                id: client_id
              },
              client_messages: [
@@ -158,7 +157,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
                  body_text: """
                      name: Chad Smith
                     email: chad@example.com
-                    phone: (987) 123-4567
+                    phone: 987 123 4567
                  job type: Wedding
                   message: May you take some pictures of our family?
                  """
@@ -187,7 +186,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
              client: %{
                name: "Chad Smith",
                email: "chad@example.com",
-               phone: "(987) 123-4567",
+               phone: "987 123 4567",
                id: ^client_id
              },
              client_messages: [
@@ -195,7 +194,7 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
                  body_text: """
                      name: Not Chad
                     email: chad@example.com
-                    phone: (918) 123-4567
+                    phone: 918 123 4567
                  job type: Event
                   message: May you take some pictures of our party?
                  """

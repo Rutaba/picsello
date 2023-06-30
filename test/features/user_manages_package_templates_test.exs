@@ -330,7 +330,28 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> find(testid("package-template-card"), &assert_text(&1, "Wedding Super Deluxe"))
     |> click(testid("menu-btn-#{package.id}"))
     |> click(button("Duplicate"))
-    |> assert_flash(:success, text: "The package: #{package.name} has been duplicated")
+    |> within_modal(
+      &(&1
+        |> assert_text("Add a Package: Provide Details")
+        |> fill_in(text_field("Title"), with: "Wedding Super Deluxe")
+        |> wait_for_enabled_submit_button()
+        |> click(button("Next"))
+        |> assert_text("Add a Package: Select Documents")
+        |> assert_has(link("Manage contracts"))
+        |> assert_has(link("Manage questionnaires"))
+        |> assert_has(testid("contracts-row", count: 2))
+        |> assert_has(css("h3", text: "Contract 1"))
+        |> assert_has(css("h3", text: "Picsello Default Contract"))
+        |> click(radio_button("Contract 1"))
+        |> click(radio_button("Picsello Default Contract"))
+        |> click(button("Questionnaire"))
+        |> click(radio_button("wedding"))
+        |> click(button("Contract"))
+        |> click(button("Next"))
+        |> assert_text("Add a Package: Set Pricing")
+        |> edit_package_screen())
+    )
+    |> assert_flash(:success, text: "The package has been successfully saved")
 
     assert Repo.all(Package) |> Enum.count() == 2
   end

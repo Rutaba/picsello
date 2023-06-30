@@ -228,13 +228,25 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
-  def handle_event("save", %{"client_message" => _params}, socket) do
-    %{assigns: %{changeset: changeset, composed_event: composed_event, recipients: recipients}} =
-      socket
+  def handle_event(
+        "save",
+        %{"client_message" => _params},
+        %{
+          assigns: %{
+            changeset: changeset,
+            composed_event: composed_event,
+            recipients: recipients
+          }
+        } = socket
+      ) do
+    updated_recipients = remove_duplicate_recipients(recipients)
 
     if changeset.valid?,
       do:
-        send(socket.parent_pid, {composed_event, changeset |> Map.put(:action, nil), recipients})
+        send(
+          socket.parent_pid,
+          {composed_event, changeset |> Map.put(:action, nil), updated_recipients}
+        )
 
     socket |> noreply()
   end
@@ -268,6 +280,19 @@ defmodule PicselloWeb.ClientMessageComponent do
       )
 
   def client_email(%Job{client: %{email: email}}), do: email
+
+  def remove_duplicate_recipients(recipients) do
+    to = Map.get(recipients, "to") |> List.wrap() |> Enum.uniq()
+    cc = (Map.get(recipients, "cc", []) |> Enum.uniq()) -- to
+    bcc = ((Map.get(recipients, "bcc", []) |> Enum.uniq()) -- to) -- cc
+    
+    %{"to" => to}
+    |> update_recipients_map("cc", cc)
+    |> update_recipients_map("bcc", bcc)
+  end
+
+  defp update_recipients_map(map, _, []), do: map
+  defp update_recipients_map(map, key, value), do: Map.put(map, key, value)
 
   defp assign_changeset(
          socket,

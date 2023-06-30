@@ -215,7 +215,7 @@ defmodule PicselloWeb.PackageLive.Shared do
             <div class="flex items-center text-base-250">
               <span class="">Package price:&nbsp;</span>
               <div class="">
-                <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
+                <%= @package |> Package.price() %>
               </div>
             </div>
             <div class="flex items-center text-base-250">
@@ -330,12 +330,7 @@ defmodule PicselloWeb.PackageLive.Shared do
         <%= labeled_select @form, :shoot_count, Enum.to_list(1..10), label: "# of Shoots", wrapper_class: "mt-4", class: "py-3", phx_update: "ignore" %>
 
         <div class="mt-4 flex flex-col">
-          <div class="flex flex-row">
-            <%= label_for @form, :turnaround_weeks, label: "Image Turnaround Time" %>
-            <.intro_hint content="A general rule of thumb is you need to create your deadline not based on how soon you can deliver under ideal circumstances,
-            but how long it could take you if you are extremely busy or had a major disruption to your workflow.
-            You can deliver sooner than the turnaround time to surprise and delight your client." class="ml-1" />
-          </div>
+          <%= label_for @form, :turnaround_weeks, label: "Image Turnaround Time" %>
           <div>
             <%= input @form, :turnaround_weeks, type: :number_input, phx_debounce: "500", class: "w-1/3 text-center pl-6 mr-4", min: 1, max: 52 %>
 
