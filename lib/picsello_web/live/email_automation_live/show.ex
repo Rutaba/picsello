@@ -15,7 +15,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     Galleries,
     Jobs,
     EmailAutomations,
-    Galleries,
     Repo
   }
 
@@ -88,16 +87,26 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
     pipeline = get_pipline(pipeline_id)
 
-    job =
-      Jobs.get_job_by_id(job_id)
-      |> Repo.preload([:payment_schedules, :job_status, client: :organization])
+    case email.gallery_id do
+      nil ->
+        job =
+          Jobs.get_job_by_id(job_id)
+          |> Repo.preload([:payment_schedules, :job_status, client: :organization])
 
-    case EmailAutomations.send_now_email(
-           pipeline.email_automation_category.type,
-           email,
-           job,
-           pipeline.state
-         ) do
+        send_email(:job, pipeline.email_automation_category.type, email, job, pipeline.state)
+
+      id ->
+        gallery = Galleries.get_gallery!(id)
+
+        send_email(
+          :gallery,
+          pipeline.email_automation_category.type,
+          email,
+          gallery,
+          pipeline.state
+        )
+    end
+    |> case do
       {:ok, _} -> socket |> put_flash(:success, "Email Sent Successfully")
       _ -> socket |> put_flash(:success, "Error in Sending Email")
     end
@@ -149,7 +158,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   defp pipeline_section(assigns) do
     ~H"""
       <div class="md:my-5 md:mx-12 border border-base-200 rounded-lg">
-        <% next_email = get_next_email_schdule_date(@job_id, @pipeline.id, @pipeline.state) %>
+        <% next_email = get_next_email_schdule_date(@category_type, @gallery_id, @job_id, @pipeline.id, @pipeline.state) %>
         <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
           <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text <> " " <> next_email.date %>
           </span>
@@ -262,17 +271,17 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     |> assign(email_schedules: email_schedules)
   end
 
-  # In progress
-  defp get_next_email_schdule_date(job_id, pipeline_id, state) do
+  defp get_next_email_schdule_date(category_type, gallery_id, job_id, pipeline_id, state) do
     email_schedule =
-      EmailAutomations.query_get_email_schedule(job_id, pipeline_id)
+      EmailAutomations.query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id)
       |> where([es], is_nil(es.reminded_at))
       |> order_by([es], asc: es.id)
       |> Repo.one()
 
     case email_schedule do
       nil ->
-        last_completed_email = get_last_completed_email(job_id, pipeline_id)
+        last_completed_email =
+          get_last_completed_email(category_type, gallery_id, job_id, pipeline_id)
 
         %{
           text: "Completed",
@@ -301,8 +310,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     end
   end
 
-  def get_last_completed_email(job_id, pipeline_id) do
-    EmailAutomations.query_get_email_schedule(job_id, pipeline_id)
+  defp get_last_completed_email(category_type, gallery_id, job_id, pipeline_id) do
+    EmailAutomations.query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id)
     |> where([es], not is_nil(es.reminded_at))
     |> order_by([es], desc: es.id)
     |> Repo.one()
@@ -320,6 +329,24 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   defp get_completed_date(date) do
     {:ok, converted_date} = NaiveDateTime.from_iso8601(date)
     converted_date |> Calendar.strftime("%m/%d/%Y")
+  end
+
+  defp send_email(:job, category_type, email, job, state) do
+    EmailAutomations.send_now_email(
+      category_type,
+      email,
+      job,
+      state
+    )
+  end
+
+  defp send_email(:gallery, _category_type, email, gallery, state) do
+    EmailAutomations.send_now_email(:gallery, email, gallery, state)
+  end
+
+  defp send_email(:orders, _category_type, _email, _gallery, _state) do
+    # gallery has many orders
+    {:ok, nil}
   end
 
   # defp valid_type?(%{assigns: %{selected_job_type: nil}}), do: false
