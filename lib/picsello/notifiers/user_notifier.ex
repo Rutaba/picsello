@@ -371,7 +371,7 @@ defmodule Picsello.Notifiers.UserNotifier do
   defp stripe_processing_fee(cost) do
     cost
     |> Money.multiply(2.9/100)
-    |> Money.add(Money.new(7))
+    |> Money.add(Money.new(70))
   end
 
   defp deliver_transactional_email(params, user) do

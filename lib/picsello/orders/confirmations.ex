@@ -219,7 +219,7 @@ defmodule Picsello.Orders.Confirmations do
     do
       cost
       |> Money.multiply(2.9/100)
-      |> Money.add(Money.new(7))
+      |> Money.add(Money.new(70))
     end
 
   defp place_order(%{order: order}), do: Order.placed_changeset(order)
