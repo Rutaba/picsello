@@ -355,7 +355,7 @@ defmodule Picsello.Notifiers.UserNotifier do
            whcc_order: whcc_order,
            intent: %{
              amount: amount,
-             processing_fee: processing_fee
+             application_fee_amount: _application_fee_amount
            }
          } = order
        ) do
@@ -368,10 +368,11 @@ defmodule Picsello.Notifiers.UserNotifier do
   defp photographer_charge(%{invoice: nil}), do: %{}
   defp photographer_charge(%{invoice: %{amount_due: amount}}), do: %{photographer_charge: amount}
 
-  defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),
-    do: processing_fee |> Money.neg
-
-  defp stripe_processing_fee(_), do: Money.new(0)
+  defp stripe_processing_fee(cost) do
+    cost
+    |> Money.multiply(2.9/100)
+    |> Money.add(Money.new(7))
+  end
 
   defp deliver_transactional_email(params, user) do
     sendgrid_template(:generic_transactional_template, params)

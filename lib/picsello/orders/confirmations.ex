@@ -186,7 +186,7 @@ defmodule Picsello.Orders.Confirmations do
 
   defp photographer_owes(_repo, %{
          intent: %{application_fee_amount: nil},
-         order: %{whcc_order: whcc_order} = order
+         order: order
        }) do
     shipping = Picsello.Cart.total_shipping(order)
     {:ok, Picsello.WHCC.Order.Created.total(whcc_order) |> Money.add(shipping) |> Money.add(stripe_processing_fee(order))}
@@ -194,14 +194,9 @@ defmodule Picsello.Orders.Confirmations do
 
   defp photographer_owes(_repo, %{
          intent: %{application_fee_amount: _application_fee_amount, amount: amount},
-         order: %{whcc_order: whcc_order} = order
+         order: order
        }) do
-    costs_and_fees =
-      whcc_order
-      |> WHCCOrder.total()
-      |> Money.add(stripe_processing_fee(order))
-      |> Money.add(Picsello.Cart.total_shipping(order))
-
+    costs_and_fees = calculate_total_costs(order)
     case Money.cmp(amount, costs_and_fees) do
       :lt -> {:ok, Money.subtract(costs_and_fees, amount)}
       :gt -> {:ok, ~M[0]USD}
@@ -209,10 +204,23 @@ defmodule Picsello.Orders.Confirmations do
     end
   end
 
-  defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),
-    do: processing_fee
+  defp calculate_total_costs(%{whcc_order: whcc_order} = order) do
+    whcc_order
+    |> WHCCOrder.total()
+    |> Money.add(Picsello.Cart.total_shipping(order))
+    |> then(fn cost ->
+      cost
+      |> stripe_fee(order)
+      |> Money.add(cost)
+    end)
+  end
 
-  defp stripe_processing_fee(_), do: Money.new(0)
+  defp stripe_fee(cost, _order)
+    do
+      cost
+      |> Money.multiply(2.9/100)
+      |> Money.add(Money.new(7))
+    end
 
   defp place_order(%{order: order}), do: Order.placed_changeset(order)
 
