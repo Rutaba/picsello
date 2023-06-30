@@ -27,7 +27,6 @@ defmodule Picsello.Client do
     |> validate_required([:name, :email, :organization_id])
     |> downcase_email()
     |> User.validate_email_format()
-    |> validate_change(:phone, &valid_phone/2)
     |> unique_constraint([:email, :organization_id])
   end
 
@@ -37,7 +36,6 @@ defmodule Picsello.Client do
     |> validate_required([:email, :name, :organization_id])
     |> downcase_email()
     |> User.validate_email_format()
-    |> validate_change(:phone, &valid_phone/2)
     |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
     |> unique_constraint([:email, :organization_id])
   end
@@ -73,15 +71,6 @@ defmodule Picsello.Client do
 
   def notes_changeset(client \\ %__MODULE__{}, attrs) do
     client |> cast(attrs, [:notes])
-  end
-
-  @doc "just make sure there are 10 digits in there somewhere"
-  def valid_phone(field, value) do
-    if Regex.scan(~r/\d/, value) |> Enum.count() == 10 do
-      []
-    else
-      [{field, "is invalid"}]
-    end
   end
 
   def validate_required_name(changeset) do

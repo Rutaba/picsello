@@ -95,7 +95,7 @@ defmodule Picsello.Photos do
 
     photo_query =
       from(photo in photo_query,
-        left_join: digital in Digital,
+        left_join: digital in subquery(digital),
         on: digital.photo_id == photo.id,
         select_merge: %{
           is_selected: digital.photo_id == photo.id

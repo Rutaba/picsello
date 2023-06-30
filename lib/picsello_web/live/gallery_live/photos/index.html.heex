@@ -10,7 +10,7 @@
           <div class="flex flex-col px-10 lg:hidden lg:mt-0 mt-6 py-4 bg-white">
             <.mobile_banner albums={@album} title="Photos" class="items-center">
               <%= if Enum.any?(@gallery.albums) || @client_liked_album do %>
-                <div class="flex bg-white">                
+                <div class="flex bg-white">
                   <.crumbs class="mt-2 font-sans text-xs text-base-250">
                     <:crumb to={Routes.gallery_albums_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))}>Photos</:crumb>
                     <:crumb><span class="font-sans font-bold"><%= extract_album(@album, :name, "Unsorted photos") %></span></:crumb>
@@ -43,7 +43,7 @@
                   <a href={proofing_album_hash(@album, @socket)} target="_blank" class="flex justify-center items-center">
                     <button type="button" class="flex items-center px-2 py-2 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-sm ml-2.5 bg-white shadow-lg lg:my-0 mt-2">
                       <.icon name="eye" class="w-4 h-4 fill-current text-blue-planning-300 mr-1" />
-                      Preview 
+                      Preview
                     </button>
                   </a>
                 <% end %>
@@ -55,13 +55,13 @@
                 <div {testid("selection-complete")} class={"flex bg-green-finances-100 text-green-finances-300 px-2 font-bold items-center rounded rounded-lg ml-auto h-7 lg:mr-0 mr-10 #{Enum.empty?(@orders) && 'hidden'}"}>Client selection complete</div>
               <% end %>
             </div>
-            <div class={"flex lg:ml-0 ml-10 mt-2 shrink-0 #{@client_liked_album && 'hidden'}"}>                        
+            <div class={"flex lg:ml-0 ml-10 mt-2 shrink-0 #{@client_liked_album && 'hidden'}"}>
               <div class="lg:flex hidden">
                <%= live_render(@socket, PicselloWeb.GalleryLive.Photos.Upload, id: "upload-button-#{@gallery.id}", session: %{"gallery_id" => @gallery.id, "album_id" => extract_album(@album, :id, nil), "view" => "add_button"}, sticky: true) %>
               </div>
               <%= unless @album do %>
 
-                <.add_album_button disabled={disabled?(@gallery)} class="lg:ml-2.5 lg:py-2 py-1.5"/>
+                <.add_album_button disabled={disabled?(@gallery)} class="pt-2 pb-2 lg:my-0 my-2 ml-2"/>
 
                 <.icon_button phx-hook="FolderUpload" id="folder-upload" data-upload-el-id={"upload-button-#{@gallery.id}"} disabled={disabled?(@gallery)} class="text-sm pt-2 pb-2 bg-white shadow-lg lg:my-0 my-2 lg:ml-auto ml-2" color="blue-planning-300" icon="plus">
                   Upload folders
@@ -77,8 +77,8 @@
               <.icon name="warning-orange", class="w-10 h-10 stroke-[4px]" />
             </div>
             <p class="p-4">
-              <b>Note:</b> None of the photos in your finals album will be watermarked, and 
-              <b>all photos will be free to download.</b> Please ensure you only add photos to 
+              <b>Note:</b> None of the photos in your finals album will be watermarked, and
+              <b>all photos will be free to download.</b> Please ensure you only add photos to
               this album that you’ve already been financially compensated for.
             </p>
           </div>
@@ -150,7 +150,7 @@
                         %>
                       </li>
                     <% end %>
-                    <%= if @album && @album.is_proofing && @selection_filter || !@album || @client_liked_album do %>
+                    <%= if !@album || @client_liked_album do %>
                       <li class="relative py-1.5 hover:bg-blue-planning-100">
                         <button class="album-actions" phx-click="add_album_popup">Create album with selected</button>
                       </li>

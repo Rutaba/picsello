@@ -286,15 +286,6 @@ defmodule Picsello.Package do
     )
   end
 
-  def all_templates_for_organization(organization_id) do
-    from(package in __MODULE__,
-      where:
-        not is_nil(package.job_type) and package.organization_id == ^organization_id and
-          is_nil(package.archived_at),
-      order_by: [desc: package.base_price]
-    )
-  end
-
   def archived_templates_for_organization(organization_id) do
     from(package in __MODULE__,
       where:

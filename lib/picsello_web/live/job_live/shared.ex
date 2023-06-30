@@ -1320,7 +1320,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <%= inputs_for @form, :client, fn client_form -> %>
               <%= labeled_input client_form, :email, type: :email_input, label: "Client Email", placeholder: "email@example.com", phx_debounce: "500" %>
               <%= labeled_input client_form, :name, label: "Client Name", placeholder: "First and last name", autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", phx_debounce: "500" %>
-              <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", optional: true, placeholder: "(555) 555-5555", phx_hook: "Phone", phx_debounce: "500" %>
+              <%= labeled_input client_form, :phone, type: :telephone_input, label: "Client Phone", optional: true, placeholder: "(555) 555-5555", phx_debounce: "500" %>
             <% end %>
           </div>
           <div class="flex px-5 py-5 ml-auto">
@@ -1753,7 +1753,7 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_inbox_count()
   end
 
-  defp open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
+  def open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
     do:
       socket
       |> ClientMessageComponent.open(%{
@@ -1767,7 +1767,7 @@ defmodule PicselloWeb.JobLive.Shared do
       })
       |> noreply()
 
-  defp open_email_compose(%{assigns: %{current_user: current_user}} = socket, client_id) do
+  def open_email_compose(%{assigns: %{current_user: current_user}} = socket, client_id) do
     client = Repo.get(Client, client_id)
 
     socket
