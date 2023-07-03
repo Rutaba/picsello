@@ -6,6 +6,7 @@ defmodule Picsello.GlobalSettings do
   alias Picsello.{Repo, Category}
   alias Ecto.Multi
   alias Picsello.Galleries.GalleryProduct
+  alias Ecto.Changeset
   import Ecto.Query
 
   @whcc_print_category Category.print_category()
@@ -135,4 +136,17 @@ defmodule Picsello.GlobalSettings do
   end
 
   def get(organization_id), do: Repo.get_by(GSGallery, organization_id: organization_id)
+
+  def get_or_add(organization_id) do
+    case get(organization_id) do
+      nil ->
+        {:ok, gs} = save(%GSGallery{}, %{organization_id: organization_id})
+        gs
+
+      gs_gallery ->
+        gs_gallery
+    end
+  end
+
+  def save(%GSGallery{} = gs, attrs), do: Changeset.change(gs, attrs) |> Repo.insert_or_update()
 end
