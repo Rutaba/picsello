@@ -52,7 +52,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
       Enum.at(dates, -1)
     ]
     |> Enum.uniq()
-    |> Enum.join(" - ")
+    |> Enum.join(" , ")
   end
 
   defp formatted_subtitle(booking_event, package) do
