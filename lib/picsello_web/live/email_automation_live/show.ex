@@ -14,6 +14,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   alias Picsello.{
     Galleries,
     Jobs,
+    Orders,
     EmailAutomations,
     Repo
   }
@@ -103,12 +104,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           pipeline.email_automation_category.type,
           email,
           gallery,
-          pipeline.state
+          :hello
+          # pipeline.state
         )
     end
     |> case do
       {:ok, _} -> socket |> put_flash(:success, "Email Sent Successfully")
-      _ -> socket |> put_flash(:success, "Error in Sending Email")
+      _ -> socket |> put_flash(:error, "Error in Sending Email")
     end
     |> assign_email_schedules()
     |> noreply()
@@ -340,15 +342,33 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     )
   end
 
-  defp send_email(:gallery, _category_type, email, gallery, state) do
+  defp send_email(:gallery, _category_type, email, gallery, state)
+       when state in [
+              :gallery_send_link,
+              :cart_abandoned,
+              :gallery_expiration_soon,
+              :gallery_password_changed
+            ] do
     EmailAutomations.send_now_email(:gallery, email, gallery, state)
   end
 
-  defp send_email(:orders, _category_type, _email, _gallery, _state) do
-    # gallery has many orders
-    {:ok, nil}
-  end
+  defp send_email(:gallery, _category_type, email, gallery, state) do
+    result =
+      gallery.id
+      |> Orders.all()
+      |> Enum.reduce({:ok, []}, fn order, {:ok, successful} ->
+        case EmailAutomations.send_now_email(:order, email, order, state) do
+          {:ok, _} -> {:ok, [order | successful]}
+          {:error, error} -> {:error, error}
+        end
+      end)
 
-  # defp valid_type?(%{assigns: %{selected_job_type: nil}}), do: false
-  # defp valid_type?(%{assigns: %{selected_job_type: _type}}), do: true
+    case result do
+      {:ok, _} ->
+        {:ok, "All emails sent successfully."}
+
+      {:error, _} ->
+        {:error, "One or more emails failed to send."}
+    end
+  end
 end
