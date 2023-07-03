@@ -94,7 +94,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
             <% else %>
               <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete, class: "flex-grow sm:flex-grow-0 underline mr-auto text-left") %>
             <% end %>
-            <button type="submit" phx-disable-with="Saving" disabled={!@changeset.valid? || @loading_stripe || @should_select_job_types?} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
+            <button type="submit" phx-disable-with="Saving" disabled={!@changeset.valid? || @loading_stripe} class="flex-grow px-6 ml-4 sm:flex-grow-0 btn-primary sm:px-8">
               <%= if @step == 3, do: "Start Trial", else: "Next" %>
             </button>
           </div>
@@ -162,12 +162,29 @@ defmodule PicselloWeb.OnboardingLive.Index do
             <div data-rewardful-email={@current_user.email} id="rewardful-email"></div>
 
             <div class="mt-2 grid grid-cols-2 gap-3 sm:gap-5">
-              <%= for jt <- inputs_for(o, :organization_job_types) do %>
+              <%= for jt <- inputs_for(o, :organization_job_types) |> Enum.sort_by(&(&1.data.job_type)) do %>
                 <% input_name = input_name(jt, :job_type) %>
                 <%= hidden_inputs_for(jt) %>
-                <% checked = jt |> current() |> Map.get(:show_on_business?) %>
-                <.job_type_option type="checkbox" name={input_name} form={jt} job_type={jt |> current() |> Map.get(:job_type)} checked={checked} />
+                <%= if jt.data.job_type != "other" do %>
+                  <% checked = jt |> current() |> Map.get(:show_on_business?) %>
+                  <.job_type_option type="checkbox" name={input_name} form={jt} job_type={jt |> current() |> Map.get(:job_type)} checked={checked} />
+                <% else %>
+                  <input class="hidden" type="checkbox" name={input_name} value={jt |> current() |> Map.get(:job_type)} checked={true} />
+                <% end %>
               <% end %>
+            </div>
+            <div class="flex flex-row">
+              <div class="flex items-center justify-center w-7 h-7 ml-1 mr-3 mt-2 rounded-full flex-shrink-0 bg-blue-planning-300 text-white">
+                <.icon name="other" class="fill-current" width="14" height="14" />
+              </div>
+              <div class="flex flex-col">
+                <p class="pt-2 font-bold">
+                  Not seeing yours here?
+                </p>
+                <p class="text-gray-400 font-normal">
+                  All Picsello accounts include an <strong>Other</strong> photography speciality in case yours isn’t listed here.
+                </p>
+              </div>
             </div>
           </div>
       <% end %>
@@ -228,7 +245,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
   defp assign_changeset(socket, params \\ %{}) do
     socket
     |> assign(changeset: build_changeset(socket, params, :validate))
-    |> job_types_selected?()
   end
 
   def optimized_container(assigns) do
@@ -374,23 +390,6 @@ defmodule PicselloWeb.OnboardingLive.Index do
         socket |> assign(changeset: reason)
     end)
     |> noreply()
-  end
-
-  defp job_types_selected?(%{assigns: %{changeset: changeset, step: step}} = socket) do
-    case changeset.changes do
-      %{organization: %{changes: %{organization_job_types: job_types_changeset_list}}} ->
-        enabled_job_types =
-          job_types_changeset_list
-          |> Enum.filter(fn changeset ->
-            Map.has_key?(changeset.changes, :show_on_business?)
-          end)
-
-        socket
-        |> assign(should_select_job_types?: Enum.empty?(enabled_job_types))
-
-      %{} ->
-        socket |> assign(should_select_job_types?: step == 3)
-    end
   end
 
   defdelegate states(), to: Onboardings, as: :state_options
