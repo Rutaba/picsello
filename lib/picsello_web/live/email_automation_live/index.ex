@@ -35,6 +35,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
     job_types =
       current_user.organization.organization_job_types
+      |> Enum.filter(fn job_type -> job_type.show_on_business? end)
       |> Enum.sort_by(& &1.jobtype.position)
 
     selected_job_type = job_types |> List.first()
