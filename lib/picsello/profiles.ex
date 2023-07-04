@@ -97,7 +97,8 @@ defmodule Picsello.Profiles do
     import Picsello.Accounts.User, only: [validate_email_format: 1]
     import PicselloWeb.Gettext
 
-    @fields ~w[name email phone job_type message]a
+    @fields ~w[name email phone referred_by referral_name job_type message]a
+    @required_fields ~w[name email phone job_type message]a
 
     embedded_schema do
       for field <- @fields do
@@ -109,7 +110,7 @@ defmodule Picsello.Profiles do
       contact
       |> cast(attrs, @fields)
       |> validate_email_format()
-      |> validate_required(@fields)
+      |> validate_required(@required_fields)
     end
 
     def to_string(%__MODULE__{} = contact) do
@@ -169,7 +170,7 @@ defmodule Picsello.Profiles do
           |> Ecto.Multi.insert(
             :client,
             contact
-            |> Map.take([:name, :email, :phone])
+            |> Map.take([:name, :email, :phone, :referred_by, :referral_name])
             |> Map.put(:organization_id, organization_id)
             |> Client.create_changeset(),
             on_conflict: {:replace, [:email, :archived_at]},

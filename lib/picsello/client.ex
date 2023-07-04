@@ -18,6 +18,8 @@ defmodule Picsello.Client do
     field :name, :string
     field :phone, :string
     field :address, :string
+    field :referred_by, :string
+    field :referral_name, :string
     field :notes, :string
     field :stripe_customer_id, :string
     field :archived_at, :utc_datetime
@@ -35,7 +37,7 @@ defmodule Picsello.Client do
   """
   def create_changeset(client \\ %__MODULE__{}, attrs) do
     client
-    |> cast(attrs, [:name, :email, :organization_id, :phone, :address, :notes])
+    |> cast(attrs, [:name, :email, :organization_id, :phone, :address, :notes, :referred_by, :referral_name])
     |> validate_required([:name, :email, :organization_id])
     |> downcase_email()
     |> User.validate_email_format()
