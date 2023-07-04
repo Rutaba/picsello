@@ -5,7 +5,6 @@ defmodule PicselloWeb.JobLive.Show do
   alias Picsello.{Job, Repo, PaymentSchedules}
   alias Picsello.{Galleries, Galleries.Gallery}
   alias PicselloWeb.JobLive.GalleryTypeComponent
-  alias PicselloWeb.Live.Shared
 
   import PicselloWeb.JobLive.Shared,
     only: [
@@ -205,7 +204,6 @@ defmodule PicselloWeb.JobLive.Show do
         albums: Galleries.album_params_for_new(type)
       })
 
-    Shared.insert_gallery_emails(gallery)
     send(self(), {:redirect_to_gallery, gallery})
 
     socket
