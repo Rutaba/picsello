@@ -540,7 +540,7 @@ defmodule PicselloWeb.LayoutView do
   def main_footer(assigns) do
     ~H"""
     <div class="mt-12"></div>
-    <footer class="mt-auto hidden sm:block bg-base-300 text-white">
+    <footer class={"mt-auto #{@footer_class} sm:block bg-base-300 text-white"}>
       <div class="px-6 center-container py-10">
         <div class="flex justify-between gap-8">
           <nav class="flex text-lg font-bold mt-4 w-full items-center">
