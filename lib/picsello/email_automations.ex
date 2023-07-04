@@ -9,8 +9,8 @@ defmodule Picsello.EmailAutomations do
     EmailPresets.EmailPreset,
     Utils,
     Jobs,
-    ClientMessage,
     Galleries,
+    EmailAutomationSchedules,
     Notifiers.ClientNotifier
   }
 
@@ -19,161 +19,7 @@ defmodule Picsello.EmailAutomations do
     EmailSchedule
   }
 
-  def get_schedule_by_id(id) do
-    from(es in EmailSchedule, where: es.id == ^id)
-    |> Repo.one()
-  end
-
-  def get_active_email_schedule_count(job_id) do
-    from(es in EmailSchedule,
-      where: not es.is_stopped and is_nil(es.reminded_at) and es.job_id == ^job_id
-    )
-    |> Repo.aggregate(:count)
-  end
-
-  def get_emails_schedules_by_ids(ids, type) do
-    query =
-      from(
-        es in EmailSchedule,
-        join: p in assoc(es, :email_automation_pipeline),
-        join: c in assoc(p, :email_automation_category),
-        select: %{
-          category_type: c.type,
-          category_id: c.id,
-          pipeline:
-            fragment(
-              "to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?, 'email', ?))",
-              p.id,
-              p.name,
-              p.state,
-              p.description,
-              fragment(
-                "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?))",
-                es.id,
-                es.name,
-                es.total_hours,
-                es.condition,
-                es.body_template,
-                es.private_name,
-                es.private_name,
-                es.is_stopped,
-                es.reminded_at
-              )
-            )
-        }
-      )
-
-    query
-    |> filter_email_schedule(ids, type)
-    |> Repo.all()
-    |> email_schedules_group_by_categories()
-  end
-
-  def get_all_emails_schedules() do
-    from(es in EmailSchedule)
-    |> preload(email_automation_pipeline: [:email_automation_category])
-    |> Repo.all()
-  end
-
-  def get_subjects_for_job_pipeline(emails) do
-    emails
-    |> Enum.map(& &1.subject_template)
-  end
-
-  def get_job(nil), do: nil
-
-  def get_job(id),
-    do:
-      Jobs.get_job_by_id(id)
-      |> Repo.preload([
-        :booking_proposals,
-        :booking_event,
-        :payment_schedules,
-        :job_status,
-        client: :organization
-      ])
-
-  def fetch_date_for_state(_state, nil), do: nil
-
-  @doc """
-    Runs after a contact/lead form submission
-    Get job submitted date
-  """
-  def fetch_date_for_state(state, job)
-      when state in [
-             :client_contact,
-             :pays_retainer,
-             :booking_event,
-             :gallery_send_link,
-             :cart_abandoned,
-             :gallery_expiration_soon,
-             :gallery_password_changed
-           ] do
-    job |> Map.get(:inserted_at)
-  end
-
-  @doc """
-    Starts when client pays their first payment or retainer
-    Get first payment submitted date which is paid
-  """
-  def fetch_date_for_state(state, job)
-      when state in [:before_shoot, :balance_due, :shoot_thanks] do
-    job
-    |> Map.get(:payment_schedules)
-    |> Enum.sort_by(& &1.id)
-    |> Enum.filter(fn schedule -> schedule.paid_at != nil end)
-    |> List.first()
-    |> case do
-      nil -> nil
-      payment_schedule -> payment_schedule |> Map.get(:inserted_at)
-    end
-  end
-
-  @doc """
-    Starts when client completes a booking event
-    Get booking event submitted date
-  """
-  def fetch_date_for_state(state, job)
-      when state in [:paid_full, :offline_payment, :post_shoot] do
-    job
-    |> Map.get(:booking_event)
-    |> case do
-      nil -> nil
-      booking_event -> booking_event |> Map.get(:inserted_at)
-    end
-  end
-
-  @doc """
-    Runs after finishing and sending the proposal
-    Get first booking_proposal send date
-  """
-  def fetch_date_for_state(state, job) when state == :booking_proposal_sent do
-    job
-    |> Map.get(:booking_proposals)
-    |> Enum.sort_by(& &1.id)
-    |> Enum.filter(fn proposal -> proposal.sent_to_client == true end)
-    |> List.first()
-    |> case do
-      nil -> nil
-      proposal -> proposal |> Map.get(:inserted_at)
-    end
-  end
-
-  @doc """
-  Catch-all clause to handle any other input patterns
-  """
-  def fetch_date_for_state(_state, _job), do: nil
-
-  def is_email_send_time(nil, _total_hours), do: false
-
-  def is_email_send_time(submit_time, total_hours) do
-    {:ok, current_time} = DateTime.now("Etc/UTC")
-    diff_seconds = DateTime.diff(current_time, submit_time, :second)
-    hours = div(diff_seconds, 3600)
-    if hours >= total_hours, do: true, else: false
-  end
-
-  def get_emails_for_schedule(organization_id, job_type, types \\ [:lead]) do
+  def get_emails_for_schedule(organization_id, job_type, types) do
     from(
       ep in EmailPreset,
       join: eap in EmailAutomationPipeline,
@@ -219,17 +65,6 @@ defmodule Picsello.EmailAutomations do
     |> Repo.one()
   end
 
-  def get_email_schedule_by_id(id) do
-    from(es in EmailSchedule, where: es.id == ^id)
-    |> Repo.one()
-  end
-
-  def update_email_schedule(id, params) do
-    get_email_schedule_by_id(id)
-    |> EmailSchedule.changeset(params)
-    |> Repo.update()
-  end
-
   def get_all_pipelines_emails(organization_id, job_type) do
     get_all_pipelines()
     |> Enum.map(fn %{pipelines: pipelines} = automation ->
@@ -247,6 +82,20 @@ defmodule Picsello.EmailAutomations do
     |> group_by_sub_category()
   end
 
+  def get_job(nil), do: nil
+
+  def get_job(id),
+    do:
+      Jobs.get_job_by_id(id)
+      |> Repo.preload([
+        :shoots,
+        :booking_proposals,
+        :booking_event,
+        :payment_schedules,
+        :job_status,
+        client: :organization
+      ])
+
   def resolve_variables(%EmailSchedule{} = preset, schemas, helpers) do
     resolver_module =
       case preset.email_automation_pipeline.email_automation_category.type do
@@ -254,7 +103,7 @@ defmodule Picsello.EmailAutomations do
         _ -> Picsello.EmailPresets.JobResolver
       end
 
-    resolver = schemas |> IO.inspect(label: "schemas====> ")|> resolver_module.new(helpers)
+    resolver = schemas |> resolver_module.new(helpers)
 
     data =
       for {key, func} <- resolver_module.vars(), into: %{} do
@@ -305,13 +154,14 @@ defmodule Picsello.EmailAutomations do
   def send_now_email(:order, email, order, state) do
     order = order |> Repo.preload(gallery: :job)
 
-    ClientNotifier.deliver_automation_email_order(email, order, {order, order.gallery}, state, PicselloWeb.Helpers)
+    ClientNotifier.deliver_automation_email_order(
+      email,
+      order,
+      {order, order.gallery},
+      state,
+      PicselloWeb.Helpers
+    )
     |> update_schedule(email.id)
-  end
-
-  def is_reply_receive!(job, subjects) do
-    get_client_messages(job, subjects)
-    |> Enum.count() > 0
   end
 
   def query_get_email_schedule(category_type, gallery_id, job_id, piepline_id) do
@@ -377,57 +227,10 @@ defmodule Picsello.EmailAutomations do
     |> Enum.sort_by(& &1.category_type, :desc)
   end
 
-  defp filter_email_schedule(query, galleries, :gallery) do
-    query
-    |> join(:inner, [es, _, _], g in assoc(es, :gallery))
-    |> where([es, _, _, _], es.gallery_id in ^galleries)
-    |> select_merge([_, _, c, g], %{
-      category_name: fragment("concat(?, ':', ?)", c.name, g.name),
-      gallery_id: g.id
-    })
-    |> group_by([es, p, c, g], [c.name, g.name, c.type, c.id, p.id, es.id, g.id])
-  end
-
-  defp filter_email_schedule(query, job_id, _type) do
-    query
-    |> where([es, _, _], es.job_id == ^job_id)
-    |> select_merge([_, _, c], %{category_name: c.name, gallery_id: nil})
-    |> group_by([es, p, c], [c.name, c.type, c.id, p.id, es.id])
-  end
-
-  defp email_schedules_group_by_categories(emails_schedules) do
-    emails_schedules
-    |> Enum.group_by(&{&1.category_id, &1.category_name, &1.category_type, &1.gallery_id})
-    |> Enum.map(fn {{category_id, category_name, category_type, gallery_id}, group} ->
-      pipelines =
-        group
-        |> Enum.group_by(& &1.pipeline["id"])
-        |> Enum.map(fn {_pipeline_id, pipelines} ->
-          emails =
-            pipelines
-            |> Enum.map(& &1.pipeline["email"])
-
-          map = Map.delete(List.first(pipelines).pipeline, "email")
-          Map.put(map, "emails", emails)
-        end)
-
-      pipeline_morphied = pipelines |> Enum.map(&(&1 |> Morphix.atomorphiform!()))
-
-      %{
-        category_id: category_id,
-        category_name: category_name,
-        category_type: category_type,
-        gallery_id: gallery_id,
-        pipelines: pipeline_morphied
-      }
-    end)
-    |> Enum.sort_by(&{&1.category_id, &1.category_name}, :asc)
-  end
-
   defp update_schedule(result, id) do
     case result do
       {:ok, _} ->
-        update_email_schedule(id, %{
+        EmailAutomationSchedules.update_email_schedule(id, %{
           reminded_at: DateTime.truncate(DateTime.utc_now(), :second)
         })
 
@@ -445,19 +248,6 @@ defmodule Picsello.EmailAutomations do
 
   defp toggle_status("true"), do: "disabled"
   defp toggle_status("false"), do: "active"
-
-  defp get_client_messages(nil, _subjects), do: []
-
-  defp get_client_messages(job, subjects) do
-    from(
-      c in ClientMessage,
-      join: r in assoc(c, :client_message_recipients),
-      on: c.id == r.client_message_id,
-      where: c.subject in ^subjects and c.job_id == ^job.id and c.outbound == false,
-      where: r.client_id == ^job.client.id and r.recipient_type == :to
-    )
-    |> Repo.all()
-  end
 
   defp resolve_variables_for_subject(job, type, subject) do
     schemas = {job}

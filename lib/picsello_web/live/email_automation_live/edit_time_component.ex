@@ -6,24 +6,27 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
   alias Ecto.Changeset
-  alias Picsello.{EmailAutomation, Repo, EmailPresets, Jobs, JobType, GlobalSettings.Gallery, EmailPresets.EmailPreset}
+  alias Picsello.{Repo, EmailPresets.EmailPreset}
   alias PicselloWeb.EmailAutomationLive.Shared
 
   @impl true
-  def update(%{
-    current_user: current_user,
-    job_type: job_type,
-    pipeline: %{email_automation_category: %{type: type}},
-    email_id: email_id,
-    email: email
-    } = assigns, socket) do
-    email_automation_setting = if email.total_hours == 0 do
-      email |> Map.put(:immediately, true)
-    else
-      data = Shared.explode_hours(email.total_hours)
-      Map.merge(email, data)
-      |> Map.put(:immediately, false)
-    end
+  def update(
+        %{
+          current_user: _current_user,
+          email: email
+        } = assigns,
+        socket
+      ) do
+    email_automation_setting =
+      if email.total_hours == 0 do
+        email |> Map.put(:immediately, true)
+      else
+        data = Shared.explode_hours(email.total_hours)
+
+        Map.merge(email, data)
+        |> Map.put(:immediately, false)
+      end
+
     changeset = email_automation_setting |> EmailPreset.changeset(%{})
 
     socket
@@ -34,17 +37,22 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
   end
 
   defp step_valid?(assigns),
-  do:
-    Enum.all?(
-      [
-        assigns.changeset
-      ],
-      & &1.valid?
-    )
+    do:
+      Enum.all?(
+        [
+          assigns.changeset
+        ],
+        & &1.valid?
+      )
 
   @impl true
-  def handle_event("validate",  %{"email_preset" => params}, %{assigns: %{email_automation_setting: email_automation_setting}} = socket) do
+  def handle_event(
+        "validate",
+        %{"email_preset" => params},
+        %{assigns: %{email_automation_setting: email_automation_setting}} = socket
+      ) do
     changeset = EmailPreset.changeset(email_automation_setting, maybe_normalize_params(params))
+
     socket
     |> assign(changeset: changeset)
     |> noreply()
@@ -58,15 +66,26 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
     |> noreply()
   end
 
-  defp save(%{
-    assigns: %{
-      changeset: changeset,
-      }} = socket) do
-
-    case Repo.insert(changeset, on_conflict: {:replace, [:total_hours, :condition, :status]}, conflict_target: :id) do
+  defp save(
+         %{
+           assigns: %{
+             changeset: changeset
+           }
+         } = socket
+       ) do
+    case Repo.insert(changeset,
+           on_conflict: {:replace, [:total_hours, :condition, :status]},
+           conflict_target: :id
+         ) do
       {:ok, email_automation_setting} ->
-        send(self(), {:update_automation, %{email_automation_setting: email_automation_setting, message: "successfully updated"}})
+        send(
+          self(),
+          {:update_automation,
+           %{email_automation_setting: email_automation_setting, message: "successfully updated"}}
+        )
+
         socket
+
       {:error, changeset} ->
         socket
         |> assign(changeset: changeset)
@@ -198,13 +217,13 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
   end
 
   defp maybe_normalize_params(params) do
-    {_, params} = get_and_update_in(
-      params,
-      ["status"],
-      &{&1, if(&1 == "true", do: :active, else: :disabled)}
+    {_, params} =
+      get_and_update_in(
+        params,
+        ["status"],
+        &{&1, if(&1 == "true", do: :active, else: :disabled)}
       )
 
     params
   end
-
 end

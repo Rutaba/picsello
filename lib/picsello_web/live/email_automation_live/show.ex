@@ -6,7 +6,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
-    only: [get_pipline: 1, get_email_schedule_text: 1, explode_hours: 1]
+    only: [get_pipline: 1, get_email_schedule_text: 1, explode_hours: 1, fetch_date_for_state: 2]
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import Ecto.Query
@@ -16,6 +16,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     Jobs,
     Orders,
     EmailAutomations,
+    EmailAutomationSchedules,
     Repo
   }
 
@@ -83,7 +84,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     pipeline_id = to_integer(pipeline_id)
 
     email =
-      EmailAutomations.get_email_schedule_by_id(id)
+      EmailAutomationSchedules.get_email_schedule_by_id(id)
       |> Repo.preload(email_automation_pipeline: [:email_automation_category])
 
     pipeline = get_pipline(pipeline_id)
@@ -130,14 +131,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       current_user: current_user,
       job_type: type,
       pipeline: get_pipline(pipeline_id),
-      email: EmailAutomations.get_schedule_by_id(schedule_id)
+      email: EmailAutomationSchedules.get_schedule_by_id(schedule_id)
     })
     |> noreply()
   end
 
   @impl true
   def handle_event("email-preview", %{"email_preview_id" => id}, socket) do
-    _email_preview = EmailAutomations.get_schedule_by_id(id)
+    _email_preview = EmailAutomationSchedules.get_schedule_by_id(id)
     socket |> noreply()
   end
 
@@ -145,7 +146,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
     id = String.to_integer(id)
 
-    case EmailAutomations.update_email_schedule(id, %{is_stopped: true}) do
+    case EmailAutomationSchedules.update_email_schedule(id, %{is_stopped: true}) do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end
@@ -264,8 +265,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
     job = job_id |> Jobs.get_job_by_id()
 
-    gallery_emails = EmailAutomations.get_emails_schedules_by_ids(galleries, :gallery)
-    jobs_emails = EmailAutomations.get_emails_schedules_by_ids(job_id, :job)
+    gallery_emails = EmailAutomationSchedules.get_emails_schedules_by_ids(galleries, :gallery)
+    jobs_emails = EmailAutomationSchedules.get_emails_schedules_by_ids(job_id, :job)
     email_schedules = jobs_emails ++ gallery_emails
 
     socket
@@ -295,7 +296,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       _ ->
         %{sign: sign} = explode_hours(email_schedule.total_hours)
         job = EmailAutomations.get_job(job_id)
-        date = EmailAutomations.fetch_date_for_state(state, job)
+        date = fetch_date_for_state(state, job)
 
         case date do
           nil ->
