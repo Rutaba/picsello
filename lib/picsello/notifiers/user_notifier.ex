@@ -285,10 +285,9 @@ defmodule Picsello.Notifiers.UserNotifier do
       params ->
         Map.merge(params, fun.(order))
     end
-    %{
-      stripe_fee: stripe_fee,
-      shipping: shipping
-    } = temp_params
+
+    stripe_fee = Map.get(temp_params, :stripe_fee, ~M[0]USD)
+    shipping = Map.get(temp_params, :shipping, ~M[0]USD)
 
     total_costs =
       stripe_fee
@@ -402,40 +401,51 @@ defmodule Picsello.Notifiers.UserNotifier do
            }
          } = order
        ) do
-        cost = if is_nil(whcc_order) do
+      cost = if is_nil(whcc_order) do
           ~M[0]USD
         else
           WHCCOrder.total(whcc_order)
         end
         |> Money.add(Picsello.Cart.total_shipping(order))
-  stripe_fee = cost |> stripe_processing_fee()
-  costs_and_fees = stripe_fee |> Money.add(cost)
-  case Money.cmp(amount, costs_and_fees) do
+
+  actual_costs_and_fees = actual_stripe_fee(amount) |> Money.add(cost)
+  costs_and_fees = cost |> stripe_fee() |> Money.add(cost)
+
+  case Money.cmp(amount, actual_costs_and_fees) do
     :gt ->
       %{
-        photographer_payment: Money.subtract(amount, costs_and_fees),
+        photographer_payment: Money.subtract(amount, actual_costs_and_fees),
         photographer_charge: ~M[0]USD,
-        stripe_fee: stripe_fee |> Money.neg
+        stripe_fee: actual_stripe_fee(amount) |> Money.neg
       }
 
     :lt ->
       %{
         photographer_payment: ~M[0]USD,
         photographer_charge: Money.subtract(costs_and_fees, amount) |> Money.neg,
-        stripe_fee: stripe_fee |> Money.neg
+        stripe_fee: stripe_fee(cost) |> Money.neg
       }
 
     _ ->
       %{
         photographer_payment: ~M[0]USD,
         photographer_charge: ~M[0]USD,
-        stripe_fee: stripe_fee |> Money.neg
+        stripe_fee: actual_stripe_fee(amount) |> Money.neg
       }
     end
   end
 
-  defp stripe_processing_fee(cost) do
-    cost
+  #stripe's actual formula to calculate fee
+  defp actual_stripe_fee(amount)
+    do
+      amount
+      |> Money.multiply(2.9/100)
+      |> Money.add(Money.new(30))
+    end
+
+  #our formula to calculate fee to be on safe side
+  defp stripe_fee(amount) do
+    amount
     |> Money.multiply(2.9/100)
     |> Money.add(Money.new(70))
   end

@@ -185,18 +185,20 @@ defmodule Picsello.Orders.Confirmations do
   defp photographer_owes(_repo, %{order: %{whcc_order: nil}}), do: {:ok, ~M[0]USD}
 
   defp photographer_owes(_repo, %{
-         intent: %{application_fee_amount: nil},
+         intent: %{application_fee_amount: nil, amount: amount},
          order: order
        }) do
-    {:ok, calculate_total_costs(order)}
+    {:ok, calculate_total_costs(order) |> Money.add(stripe_fee(amount))}
   end
 
   defp photographer_owes(_repo, %{
          intent: %{application_fee_amount: _application_fee_amount, amount: amount},
          order: order
        }) do
-    costs_and_fees = calculate_total_costs(order)
-    case Money.cmp(amount, costs_and_fees) do
+    actual_costs_and_fees = calculate_total_costs(order) |> Money.add(actual_stripe_fee(amount))
+    costs_and_fees = calculate_total_costs(order) |> stripe_fee() |> Money.add(calculate_total_costs(order))
+
+    case Money.cmp(amount, actual_costs_and_fees) do
       :lt -> {:ok, Money.subtract(costs_and_fees, amount)}
       :gt -> {:ok, ~M[0]USD}
       _ -> {:ok, ~M[0]USD}
@@ -207,19 +209,24 @@ defmodule Picsello.Orders.Confirmations do
     whcc_order
     |> WHCCOrder.total()
     |> Money.add(Picsello.Cart.total_shipping(order))
-    |> then(fn cost ->
-      cost
-      |> stripe_fee(order)
-      |> Money.add(cost)
-    end)
   end
 
-  defp stripe_fee(cost, _order)
+  #stripe's actual formula to calculate fee
+  #After transactions of $1million, stripe processing fee is discounted,
+  #and we will need to tweak this formula in future.
+  defp actual_stripe_fee(amount)
     do
-      cost
+      amount
       |> Money.multiply(2.9/100)
-      |> Money.add(Money.new(70))
+      |> Money.add(Money.new(30))
     end
+
+  #our formula to calculate fee to be on safe side
+  defp stripe_fee(amount) do
+    amount
+    |> Money.multiply(2.9/100)
+    |> Money.add(Money.new(70))
+  end
 
   defp place_order(%{order: order}), do: Order.placed_changeset(order)
 

@@ -309,7 +309,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
       order = Repo.preload(order, [:digitals, :products], force: true)
 
-      assert :lt ==
+      assert :gt ==
                Money.cmp(
                  Order.total_cost(order),
                  Picsello.WHCC.Order.Created.total(order.whcc_order)
