@@ -1349,8 +1349,10 @@ defmodule Picsello.Galleries do
   defp print_product_sizes(category_id, organization_id) do
     from(print_product in Picsello.GlobalSettings.PrintProduct,
       join: gs_gallery_product in assoc(print_product, :global_settings_gallery_product),
+      join: product in assoc(print_product, :product),
       where: gs_gallery_product.organization_id == ^organization_id,
       where: gs_gallery_product.category_id == ^category_id,
+      where: is_nil(product.deleted_at),
       select: print_product.sizes
     )
     |> Repo.all()
