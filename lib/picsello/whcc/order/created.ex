@@ -104,20 +104,24 @@ defmodule Picsello.WHCC.Order.Created do
     cast(created, attrs, [:confirmed_at])
   end
 
-  def total(%__MODULE__{orders: orders})
-    do
-      (for %{api: %{"Products" => products}} <- orders, reduce: Money.new(0) do
-         sum ->
-          total_price =
+  def total(%__MODULE__{orders: orders}) do
+    for %{api: %{"Products" => products}} <- orders, reduce: Money.new(0) do
+      sum ->
+        total_price =
           Enum.reduce(products, ~M[0]USD, fn product, acc ->
-            if String.contains?(Map.get(product, "ProductDescription"), "Shipping") || String.contains?(Map.get(product, "ProductDescription"), "Delivery Area Surcharge") do
+            if String.contains?(Map.get(product, "ProductDescription"), "Shipping") ||
+                 String.contains?(
+                   Map.get(product, "ProductDescription"),
+                   "Delivery Area Surcharge"
+                 ) do
               acc
             else
               {:ok, price} = Money.parse(Map.get(product, "Price"))
               Money.add(acc, Money.multiply(price, Map.get(product, "Quantity", 0)))
             end
           end)
-          Money.add(sum, total_price)
-      end)
+
+        Money.add(sum, total_price)
     end
+  end
 end

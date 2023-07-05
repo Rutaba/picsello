@@ -237,7 +237,11 @@ defmodule Picsello.Notifiers.UserNotifier do
           :products_quantity=> String.t(),
           :total_products_price => Money.t(),
           :client_charge => Money.t(),
-          optional(:contains_digital)=> Boolean.t(),
+          :total_costs => Money.t(),
+          optional(:digital_credit_used) => Money.t(),
+          optional(:digital_credit_remaining) => integer(),
+          optional(:contains_digital)=> boolean(),
+          optional(:contains_product) => boolean(),
           optional(:digital_quantity)=> String.t(),
           optional(:total_digitals_price) => Money.t(),
           optional(:print_credit_used) => Money.t(),
@@ -257,16 +261,19 @@ defmodule Picsello.Notifiers.UserNotifier do
         } = order,
         helpers
       ) do
+    temp_params =
     for(
       fun <- [
         &print_credit/1,
         &print_cost/1,
-        &photographer_charge/1,
-        &photographer_payment/1
+        &photographer_payment/1,
+        &digital_params/1,
+        &products_params/1
       ],
       reduce: %{
         gallery_name: gallery.name,
         job_name: Job.name(job),
+        client_name: client.name,
         client_charge:
           case intent do
             %{amount: amount} -> amount
@@ -276,38 +283,19 @@ defmodule Picsello.Notifiers.UserNotifier do
       }
     ) do
       params ->
-        digitals_params = if order.digitals do
-          %{contains_digital: true,
-            digital_quantity: "#{Enum.count(order.digitals)}",
-            total_digitals_price: Enum.reduce(order.digitals, ~M[0]USD, fn digital, acc ->
-              Money.add(digital.price, acc)
-            end)
-          }
-        else
-          %{}
-        end
-
-        total_products_price =
-          Cart.preload_products(order).products
-          |> Enum.reduce(~M[0]USD, fn product, acc ->
-              Money.add(Cart.Product.charged_price(product), acc)
-            end)
-
-        products_quantity =
-          Cart.preload_products(order).products
-          |> Enum.reduce(0, fn product, acc ->
-              Cart.product_quantity(product) + acc
-            end)
-
         Map.merge(params, fun.(order))
-        |> Map.merge(digitals_params)
-        |> Map.merge(%{stripe_fee: stripe_processing_fee(order),
-                        shipping: Picsello.Cart.total_shipping(order),
-                        total_products_price: total_products_price,
-                        products_quantity: products_quantity
-                      }
-                    )
     end
+    %{
+      stripe_fee: stripe_fee,
+      shipping: shipping
+    } = temp_params
+
+    total_costs =
+      stripe_fee
+      |> Money.add(Map.get(temp_params, :print_cost, ~M[0]USD))
+      |> Money.add(shipping)
+
+    Map.merge(temp_params, %{total_costs: total_costs, positive_shipping: Money.neg(shipping)})
   end
 
   def order_confirmation_params(
@@ -319,6 +307,61 @@ defmodule Picsello.Notifiers.UserNotifier do
       gallery_name: gallery.name,
       job_name: Job.name(job),
       order_url: helpers.proofing_album_selections_url(album, gallery, order)
+    }
+  end
+
+  defp digital_params(%{gallery: gallery} = order) do
+    case Map.get(order, :digitals) do
+      [] ->
+        %{}
+
+      [_ | _] ->
+        %{
+          contains_digital: true,
+          digital_quantity: "#{Enum.count(order.digitals)}",
+          total_digitals_price:
+            Enum.reduce(order.digitals, ~M[0]USD, fn digital, acc ->
+              Money.add(digital.price, acc)
+            end),
+          digital_credit_remaining: Map.get(Cart.credit_remaining(gallery), :digital, 0),
+          digital_credit_used:
+            Enum.reduce(order.digitals, ~M[0]USD, fn digital, acc ->
+              if digital.is_credit do
+                Money.add(digital.price, acc)
+              else
+                acc
+              end
+            end)
+            |> case do
+              ~M[0]USD -> %{}
+              credit -> credit |> Money.neg()
+            end
+        }
+
+      _ ->
+        %{}
+    end
+  end
+
+  defp products_params(order) do
+    products = Cart.preload_products(order).products
+
+    total_products_price =
+      products
+      |> Enum.reduce(~M[0]USD, fn product, acc ->
+        Money.add(product.price, acc)
+      end)
+
+    products_quantity =
+      products
+      |> Enum.reduce(0, fn product, acc ->
+        Cart.product_quantity(product) + acc
+      end)
+    %{
+      shipping: Picsello.Cart.total_shipping(order) |> Money.neg(),
+      total_products_price: total_products_price,
+      products_quantity: products_quantity,
+      contains_product: Enum.any?(products)
     }
   end
 
@@ -359,14 +402,37 @@ defmodule Picsello.Notifiers.UserNotifier do
            }
          } = order
        ) do
-    costs_and_fees = if is_nil(whcc_order), do: ~M[0]USD, else: WHCCOrder.total(whcc_order)
-    costs_and_fees =
-        costs_and_fees
+        cost = if is_nil(whcc_order) do
+          ~M[0]USD
+        else
+          WHCCOrder.total(whcc_order)
+        end
         |> Money.add(Picsello.Cart.total_shipping(order))
-        |> Money.add(processing_fee)
+  stripe_fee = cost |> stripe_processing_fee()
+  costs_and_fees = stripe_fee |> Money.add(cost)
+  case Money.cmp(amount, costs_and_fees) do
+    :gt ->
+      %{
+        photographer_payment: Money.subtract(amount, costs_and_fees),
+        photographer_charge: ~M[0]USD,
+        stripe_fee: stripe_fee |> Money.neg
+      }
 
-  defp photographer_charge(%{invoice: nil}), do: %{}
-  defp photographer_charge(%{invoice: %{amount_due: amount}}), do: %{photographer_charge: amount}
+    :lt ->
+      %{
+        photographer_payment: ~M[0]USD,
+        photographer_charge: Money.subtract(costs_and_fees, amount) |> Money.neg,
+        stripe_fee: stripe_fee |> Money.neg
+      }
+
+    _ ->
+      %{
+        photographer_payment: ~M[0]USD,
+        photographer_charge: ~M[0]USD,
+        stripe_fee: stripe_fee |> Money.neg
+      }
+    end
+  end
 
   defp stripe_processing_fee(cost) do
     cost

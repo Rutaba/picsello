@@ -188,8 +188,7 @@ defmodule Picsello.Orders.Confirmations do
          intent: %{application_fee_amount: nil},
          order: order
        }) do
-    shipping = Picsello.Cart.total_shipping(order)
-    {:ok, Picsello.WHCC.Order.Created.total(whcc_order) |> Money.add(shipping) |> Money.add(stripe_processing_fee(order))}
+    {:ok, calculate_total_costs(order)}
   end
 
   defp photographer_owes(_repo, %{
