@@ -9,8 +9,6 @@ defmodule Picsello.GlobalSettings do
   alias Ecto.Changeset
   import Ecto.Query
   alias Ecto.Changeset
-  alias Picsello.Galleries
-  alias Picsello.Workers.CleanStore
 
   @whcc_print_category Category.print_category()
 
@@ -151,107 +149,11 @@ defmodule Picsello.GlobalSettings do
     end
   end
 
-  def save(%GSGallery{} = gs, attrs), do: Changeset.change(gs, attrs) |> Repo.insert_or_update()
-  def save_watermark(gs_gallery, changes) do
-    gs_gallery
-    |> save_with_galleries_multi(changes, :watermark)
-    |> Multi.run(:multiple_watermarks, fn _, %{gs_gallery: gs_gallery, galleries: galleries} ->
-      watermark_change = build_watermark_change(gs_gallery)
-
-      Galleries.save_multiple_watermarks(galleries, watermark_change)
-    end)
-    |> Repo.transaction()
-    |> tap(fn
-      {:ok, %{galleries: galleries}} ->
-        galleries
-        |> Repo.preload(:watermark, force: true)
-        |> Enum.each(&Galleries.apply_watermark_on_photos(&1))
-
-      x ->
-        x
-    end)
-  end
+  def save(%GSGallery{} = gs, attrs), do: Changeset.change(gs, attrs) |> save()
+  def save(%Changeset{} = changeset), do: Repo.insert_or_update(changeset)
 
   @watermark_fields GSGallery.watermark_fields()
-  def delete_watermark(%{global_watermark_path: path} = gs_gallery) do
-    gs_gallery
-    |> save_with_galleries_multi(Enum.into(@watermark_fields, %{}, &{&1, nil}), :watermark)
-    |> Multi.run(:delete_watermarks, fn _, %{galleries: galleries} ->
-      galleries
-      |> Enum.map(& &1.id)
-      |> Galleries.delete_and_clear_multiple_watermarks()
-    end)
-    |> Oban.insert(:delete_preview, CleanStore.new(%{path: path}))
-    |> Repo.transaction()
-    |> tap(fn
-      {:ok, %{galleries: galleries} = records} ->
-        galleries
-        |> Repo.preload([:package, job: [client: :organization]])
-        |> Enum.each(
-          &(records
-            |> get_in([:delete_watermarks, &1.id, :proofing_photos])
-            |> Galleries.apply_watermark_to_photos(&1))
-        )
-
-      x ->
-        x
-    end)
-  end
-
-  def update_prices(gs_gallery, opts) do
-    gs_gallery
-    |> save_with_galleries_multi(build_price(opts), :digital)
-    |> Multi.update_all(
-      :update_package,
-      fn %{galleries: galleries} ->
-        galleries
-        |> Enum.map(& &1.id)
-        |> Picsello.Packages.update_all_query(opts)
-      end,
-      []
-    )
-    |> Repo.transaction()
-  end
-
-  defp build_price(buy_all: buy_all), do: [buy_all_price: buy_all]
-  defp build_price(opts), do: opts
-
-  def update_expired_at(gs_gallery, changes, opts) do
-    gs_gallery
-    |> save_with_galleries_multi(changes, :expiration)
-    |> Multi.run(:update_expired_at, fn _, %{galleries: galleries} ->
-      galleries
-      |> Enum.map(& &1.id)
-      |> Galleries.update_all(opts)
-
-      {:ok, ""}
-    end)
-    |> Repo.transaction()
-  end
-
-  def save_with_galleries_multi(gs_gallery, attrs, setting_type) do
-    Multi.new()
-    |> Multi.update(:gs_gallery, changeset(gs_gallery, attrs))
-    |> Multi.run(:galleries, fn _, %{gs_gallery: %{organization_id: org_id}} ->
-      {:ok,
-       org_id
-       |> Galleries.list_shared_setting_galleries(to_string(setting_type))}
-    end)
-  end
-
-  def changeset(gs \\ nil, attrs), do: Changeset.change(gs || %GSGallery{}, attrs)
-
-  defp build_watermark_change(%{watermark_type: watermark_type} = global_settings) do
-    case watermark_type do
-      :image ->
-        %{
-          name: global_settings.watermark_name,
-          size: global_settings.watermark_size,
-          type: :image
-        }
-
-      :text ->
-        %{text: global_settings.watermark_text, type: :text}
-    end
+  def delete_watermark(%GSGallery{} = gs_gallery) do
+    save(gs_gallery, Enum.into(@watermark_fields, %{}, &{&1, nil}))
   end
 end

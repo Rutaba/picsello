@@ -39,8 +39,11 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     |> assign_options()
     |> assign(total_days: 0)
     |> assign(:case, :image)
-    |> then(fn %{assigns: %{gs_gallery: %{expiration_days: expiration_days}}} = socket ->
-      assign(socket, is_never_expires: expiration_days == 0)
+    |> assign(is_saved: false)
+    |> then(fn %{assigns: %{gs_gallery: gs_gallery}} = socket ->
+      socket
+      |> assign(is_never_expires: gs_gallery.expiration_days == 0)
+      |> assign(price_changeset: GSGallery.price_changeset(gs_gallery))
     end)
     |> assign_default_changeset()
     |> allow_upload(:image, @upload_options)
@@ -54,7 +57,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   def handle_params(%{"section" => "print_product", "product_id" => product_id}, _uri, socket),
     do:
       socket
-      |> assign(:product, Picsello.GlobalSettings.gallery_product(product_id))
+      |> assign(:product, GlobalSettings.gallery_product(product_id))
       |> new_section(product_section?: true, print_price_section?: true)
 
   def handle_params(%{"section" => "watermark"}, _uri, socket),
@@ -152,9 +155,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     changes = Map.merge(changes, %{organization_id: organization_id, global_watermark_path: nil})
 
     gs_gallery
-    |> GlobalSettings.save_watermark(changes)
+    |> GlobalSettings.save(changes)
     |> case do
-      {:ok, %{gs_gallery: gs_gallery}} ->
+      {:ok, gs_gallery} ->
         process_watermark_preview(
           current_user,
           gs_gallery.watermark_type,
@@ -233,7 +236,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         socket
       ) do
     {total_days, {d, m, y}} = total_days(day, month, year)
-    socket |> assign(total_days: total_days, day: d, month: m, year: y) |> noreply()
+
+    socket
+    |> assign(total_days: total_days, day: d, month: m, year: y, is_saved: true)
+    |> noreply()
   end
 
   def handle_event("validate_days", _params, socket), do: noreply(socket)
@@ -247,35 +253,24 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   end
 
   def handle_event(
-        "validate_each_price",
-        %{"digital_pricing" => %{"each_price" => each_price}},
-        %{assigns: %{gs_gallery: settings}} = socket
+        "validate_price",
+        %{"gallery" => params},
+        %{assigns: %{gs_gallery: gs_gallery}} = socket
       ) do
-    {:ok, download_each_price} = Money.parse(each_price, :USD)
+    price_changeset = GSGallery.price_changeset(gs_gallery, params)
 
-    update_galleries_prices(
-      socket,
-      download_each_price,
-      buy_all_price(settings),
-      [download_each_price: download_each_price],
-      "Must be less than buy all price"
-    )
-  end
+    price_changeset
+    |> case do
+      %{valid?: true} = price_changeset ->
+        {:ok, _} = GlobalSettings.save(price_changeset)
 
-  def handle_event(
-        "validate_buy_all_price",
-        %{"digital_pricing" => %{"buy_all" => buy_all}},
-        %{assigns: %{gs_gallery: settings}} = socket
-      ) do
-    {:ok, buy_all} = Money.parse(buy_all, :USD)
+        put_flash(socket, :success, "Setting Updated")
 
-    update_galleries_prices(
-      socket,
-      download_price(settings),
-      buy_all,
-      [buy_all: buy_all],
-      "Must be more than single image price"
-    )
+      _ ->
+        socket
+    end
+    |> assign(price_changeset: price_changeset)
+    |> noreply()
   end
 
   @impl true
@@ -298,6 +293,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     socket
     |> update_expired_at(@never_expire_days)
     |> assign(day: 0, month: 0, year: 0)
+    |> assign(is_saved: false)
     |> process_defaults
   end
 
@@ -306,8 +302,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         socket
       ) do
     socket
-    |> update_expired_at(total_days, Timex.shift(DateTime.utc_now(), days: total_days))
+    |> update_expired_at(total_days)
     |> assign(is_never_expires: false)
+    |> assign(is_saved: false)
     |> process_defaults
   end
 
@@ -393,11 +390,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   defp update_expired_at(
          %{assigns: %{gs_gallery: gs_gallery}} = socket,
-         days,
-         expired_at \\ nil
+         days
        ) do
     gs_gallery
-    |> GlobalSettings.update_expired_at(%{expiration_days: days}, expired_at: expired_at)
+    |> GlobalSettings.save(%{expiration_days: days})
     |> assign_updated_settings(socket)
   end
 
@@ -412,39 +408,6 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     {d + m * 30 + y * 365, date_parts}
   end
 
-  defp download_price(%{download_each_price: down_price}), do: down_price
-  defp download_price(_), do: %Money{amount: 5_000, currency: :USD}
-
-  defp buy_all_price(%{buy_all_price: buy_all_price}), do: buy_all_price
-  defp buy_all_price(_), do: %Money{amount: 75_000, currency: :USD}
-
-  defp update_galleries_prices(
-         %{assigns: %{gs_gallery: gs_gallery}} = socket,
-         download_each_price,
-         buy_all_price,
-         opts,
-         error_msg
-       ) do
-    case validate_price(download_each_price, buy_all_price) do
-      true ->
-        gs_gallery
-        |> GlobalSettings.update_prices(opts)
-        |> assign_updated_settings(socket)
-        |> put_flash(:success, "Setting Updated")
-        |> noreply()
-
-      _ ->
-        put_flash(socket, :error, error_msg) |> noreply()
-    end
-  end
-
-  defp validate_price(download_each_price, buy_all_price) do
-    download_each_price = Map.get(download_each_price, :amount)
-    buy_all_price = Map.get(buy_all_price, :amount)
-
-    download_each_price < buy_all_price && download_each_price != 0 && buy_all_price != 0
-  end
-
   defp assign_options(
          %{
            assigns: %{
@@ -453,16 +416,14 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
          } = socket
        )
        when not is_nil(expiration_days) do
-    year = trunc(expiration_days / 365)
-    month = trunc((expiration_days - year * 365) / 30)
-    day = trunc(expiration_days - year * 365 - month * 30)
+    {day, month, year} = GSGallery.explode_days(expiration_days)
 
     socket |> assign(day: day, month: month, year: year)
   end
 
   defp assign_options(socket), do: assign(socket, day: "day", month: "month", year: "year")
 
-  defp assign_updated_settings({:ok, %{gs_gallery: gs_gallery}}, socket),
+  defp assign_updated_settings({:ok, %GSGallery{} = gs_gallery}, socket),
     do: assign(socket, gs_gallery: gs_gallery)
 
   defp assign_global_settings(%{assigns: assigns} = socket) do
@@ -566,32 +527,40 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     ~H"""
       <h1 class="text-2xl font-bold mt-6 md:block">Digital Pricing</h1>
       <span class="text-base-250">Adjust on a per digital image and a "buy them all" option below. Defaults provided are our base recommendations but you know your clients and business best. And again, you can also adjust on an individual lead, package, or job level.</span>
-      <div class="grid gap-8 lg:grid-cols-2 grid-cols-1 mt-10">
-        <div>
-          <span class="text-xl font-bold">Single Image</span>
-          <div class="flex items-center border p-3 rounded-md border-base-250 mt-4">
-            <div class="flex flex-col md:pr-4">
-              <h1 class="text-xl font-bold">Pricing per image:</h1>
-              <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
+      <.form :let={f} for={@price_changeset} phx-change="validate_price">
+        <div class="grid gap-8 lg:grid-cols-2 grid-cols-1 mt-10">
+          <div>
+            <span class="text-xl font-bold">Single Image</span>
+            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-28 h-32">
+              <div class="flex items-center">
+                <div class="flex flex-col md:pr-4">
+                  <h1 class="text-xl font-bold">Pricing per image:</h1>
+                  <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
+                </div>
+                <%= input(f, :download_each_price, class: "w-full w-24 text-lg text-center border border-blue-planning-300 text-base-300", phx_debounce: 1000, phx_hook: "PriceMask") %>
+              </div>
+              <%= if message = @price_changeset.errors[:download_each_price] do %>
+                <div class="flex md:py-1 ml-auto text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+              <% end %>
             </div>
-            <.form :let={f} for={%{}} as={:digital_pricing} phx-change="validate_each_price" class="ml-auto">
-              <%= input(f, :each_price, class: "w-full w-24 text-lg text-center border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: Money.to_string(@gs_gallery.download_each_price)) %>
-            </.form>
+          </div>
+          <div>
+            <span class="text-xl font-bold">Buy them all</span>
+            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-28 h-32">
+              <div class="flex items-center">
+                <div class="flex flex-col md:pr-4">
+                  <h1 class="text-xl font-bold">Pricing for all images:</h1>
+                  <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
+                </div>
+                <%= input(f, :buy_all_price, class: "w-full w-24 text-lg text-center ml-auto border border-blue-planning-300 text-base-300", phx_debounce: 1000, phx_hook: "PriceMask") %>
+              </div>
+              <%= if message = @price_changeset.errors[:buy_all_price] do %>
+                <div class="flex ml-auto md:py-1 text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+              <% end %>
+            </div>
           </div>
         </div>
-        <div>
-          <span class="text-xl font-bold	">Buy them all</span>
-          <div class="flex items-center border p-3 rounded-md border-base-250 mt-4">
-            <div class="flex flex-col md:pr-4">
-              <h1 class="text-xl font-bold">Pricing for all images:</h1>
-              <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
-            </div>
-            <.form :let={f} for={%{}} as={:digital_pricing} phx-change="validate_buy_all_price" class="ml-auto">
-              <%= input(f, :buy_all, class: "w-full w-24 text-lg text-center ml-auto border border-blue-planning-300 text-base-300", onkeydown: "return event.key != 'Enter';", phx_hook: "PriceMask", value: Money.to_string(@gs_gallery.buy_all_price)) %>
-            </.form>
-          </div>
-        </div>
-      </div>
+      </.form>
     """
   end
 
@@ -622,7 +591,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
                 </div>
                 <button class="btn-primary w-full mt-5 md:mt-0 md:w-32" id="saveGalleryExpiration"
                   phx-disable-with="Saving..." type="submit" phx-submit="save"
-                  disabled= {@total_days == 0 && @is_never_expires == false} >
+                  disabled= {(@total_days == 0 && @is_never_expires == false) || @is_saved == false} >
                   Save
                 </button>
             </div>

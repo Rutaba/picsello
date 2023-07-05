@@ -39,7 +39,7 @@ defmodule Picsello.GlobalSettings.Gallery do
     cast(global_settings_gallery, attrs, [:expiration_days])
   end
 
-  def price_changeset(%__MODULE__{} = global_settings_gallery, attrs) do
+  def price_changeset(%__MODULE__{} = global_settings_gallery, attrs \\ %{}) do
     global_settings_gallery
     |> cast(attrs, [:organization_id, :expiration_days, :buy_all_price, :download_each_price])
     |> validate_required([:download_each_price])

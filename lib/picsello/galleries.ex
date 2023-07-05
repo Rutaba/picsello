@@ -997,42 +997,6 @@ defmodule Picsello.Galleries do
     )
   end
 
-  def update_all(galleries, total_days) when is_list(galleries) do
-    galleries =
-      if total_days == 0 do
-        galleries
-        |> Enum.map(
-          &[
-            id: &1.id,
-            name: &1.name,
-            updated_at: &1.updated_at,
-            inserted_at: &1.inserted_at,
-            status: &1.status,
-            job_id: &1.job_id,
-            expired_at: nil
-          ]
-        )
-      else
-        galleries
-        |> Enum.map(
-          &[
-            id: &1.id,
-            name: &1.name,
-            updated_at: &1.updated_at,
-            inserted_at: &1.inserted_at,
-            status: &1.status,
-            job_id: &1.job_id,
-            expired_at: GSGallery.calculate_expiry_date(total_days, &1.inserted_at)
-          ]
-        )
-      end
-
-    Repo.insert_all(Gallery, galleries,
-      on_conflict: {:replace, [:expired_at]},
-      conflict_target: :id
-    )
-  end
-
   def gallery_current_status(%Gallery{id: nil}), do: :none_created
 
   def gallery_current_status(%Gallery{status: :expired}), do: :deactivated
@@ -1043,17 +1007,6 @@ defmodule Picsello.Galleries do
     gallery
     |> Orders.has_proofing_album_orders?()
     |> if(do: :selections_available, else: uploading_status(gallery))
-  end
-
-  def save_multiple_watermarks(galleries, watermark_change) do
-    Enum.reduce(galleries, Multi.new(), fn %{id: id} = gallery, multi ->
-      Multi.update(
-        multi,
-        id,
-        gallery_watermark_change(gallery, watermark_change)
-      )
-    end)
-    |> Repo.transaction()
   end
 
   @doc """
@@ -1089,22 +1042,6 @@ defmodule Picsello.Galleries do
   """
   def load_watermark_in_gallery(%Gallery{} = gallery) do
     Repo.preload(gallery, :watermark, force: true)
-  end
-
-  def delete_and_clear_multiple_watermarks(gallery_ids) do
-    Multi.new()
-    |> Multi.delete_all(
-      :delete_all_watermarks,
-      from(w in Watermark, where: w.gallery_id in ^gallery_ids)
-    )
-    |> then(fn multi ->
-      Enum.reduce(
-        gallery_ids,
-        multi,
-        &Multi.run(&2, &1, fn _, _ -> clear_watermarks(&1, :no) end)
-      )
-    end)
-    |> Repo.transaction()
   end
 
   @doc """
