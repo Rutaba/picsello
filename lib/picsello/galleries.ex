@@ -4,7 +4,6 @@ defmodule Picsello.Galleries do
   """
 
   import Ecto.Query, warn: false
-  alias PicselloWeb.Live.Shared
   import PicselloWeb.GalleryLive.Shared, only: [prepare_gallery: 1]
 
   alias Ecto.Multi
@@ -21,8 +20,7 @@ defmodule Picsello.Galleries do
     Job,
     Client,
     WHCC,
-    Galleries.Gallery.UseGlobal,
-    EmailAutomation.EmailSchedule
+    Galleries.Gallery.UseGlobal
   }
 
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
@@ -547,9 +545,6 @@ defmodule Picsello.Galleries do
       |> Repo.preload(:package)
       |> check_watermark()
     end)
-    |> Multi.insert_all(:email_automation, EmailSchedule, fn %{gallery: gallery} ->
-      Shared.gallery_emails(gallery)
-     end)
   end
 
   defp check_watermark(%{package: %{download_each_price: %Money{amount: 0}}}), do: Multi.new()
@@ -697,7 +692,11 @@ defmodule Picsello.Galleries do
   Generates new password for the gallery.
   """
   def regenerate_gallery_password(%Gallery{} = gallery) do
-    changeset = Gallery.update_changeset(gallery, %{password: Gallery.generate_password()})
+    changeset =
+      Gallery.update_changeset(gallery, %{
+        password: Gallery.generate_password(),
+        password_regenerated_at: DateTime.utc_now()
+      })
 
     Multi.new()
     |> Multi.update(:gallery, changeset)

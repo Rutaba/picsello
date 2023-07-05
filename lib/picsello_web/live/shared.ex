@@ -708,9 +708,14 @@ defmodule PicselloWeb.Live.Shared do
       BookingProposal.create_changeset(%{job_id: changes.job.id})
     end)
     |> maybe_insert_payment_schedules(socket)
-    |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, fn %{job: %Job{id: job_id, type: type}} ->
+    |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, fn %{
+                                                                    job: %Job{
+                                                                      id: job_id,
+                                                                      type: type
+                                                                    }
+                                                                  } ->
       job_emails(type, current_user.organization_id, job_id, [:job])
-     end)
+    end)
     |> Repo.transaction()
     |> then(fn
       {:ok, %{job: job}} ->
@@ -743,18 +748,20 @@ defmodule PicselloWeb.Live.Shared do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     EmailAutomations.get_emails_for_schedule(organization_id, type, types)
-    |> Enum.map(&[
-      job_id: job_id,
-      total_hours: &1.total_hours,
-      condition: &1.condition,
-      body_template: &1.body_template,
-      name: &1.name,
-      subject_template: &1.subject_template,
-      private_name: &1.private_name,
-      email_automation_pipeline_id: &1.email_automation_pipeline_id,
-      inserted_at: now,
-      updated_at: now,
-    ])
+    |> Enum.map(
+      &[
+        job_id: job_id,
+        total_hours: &1.total_hours,
+        condition: &1.condition,
+        body_template: &1.body_template,
+        name: &1.name,
+        subject_template: &1.subject_template,
+        private_name: &1.private_name,
+        email_automation_pipeline_id: &1.email_automation_pipeline_id,
+        inserted_at: now,
+        updated_at: now
+      ]
+    )
   end
 
   @doc """
@@ -770,19 +777,24 @@ defmodule PicselloWeb.Live.Shared do
 
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    EmailAutomations.get_emails_for_schedule(gallery.organization.id, type, [:gallery])
-    |> Enum.map(&[
-      gallery_id: gallery.id,
-      total_hours: &1.total_hours,
-      condition: &1.condition,
-      body_template: &1.body_template,
-      name: &1.name,
-      subject_template: &1.subject_template,
-      private_name: &1.private_name,
-      email_automation_pipeline_id: &1.email_automation_pipeline_id,
-      inserted_at: now,
-      updated_at: now,
-    ])
+    emails =
+      EmailAutomations.get_emails_for_schedule(gallery.organization.id, type, [:gallery])
+      |> Enum.map(
+        &[
+          gallery_id: gallery.id,
+          total_hours: &1.total_hours,
+          condition: &1.condition,
+          body_template: &1.body_template,
+          name: &1.name,
+          subject_template: &1.subject_template,
+          private_name: &1.private_name,
+          email_automation_pipeline_id: &1.email_automation_pipeline_id,
+          inserted_at: now,
+          updated_at: now
+        ]
+      )
+
+    Repo.insert_all(EmailSchedule, emails, on_conflict: :nothing, conflict_target: :gallery_id)
   end
 
   defp get_client(selected_client, searched_client, client) do

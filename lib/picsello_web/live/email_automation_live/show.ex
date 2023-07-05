@@ -6,7 +6,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
-    only: [get_pipline: 1, get_email_schedule_text: 1, explode_hours: 1, fetch_date_for_state: 2]
+    only: [get_pipline: 1, get_email_schedule_text: 1, explode_hours: 1, fetch_date_for_state: 4]
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import Ecto.Query
@@ -296,7 +296,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       _ ->
         %{sign: sign} = explode_hours(email_schedule.total_hours)
         job = EmailAutomations.get_job(job_id)
-        date = fetch_date_for_state(state, job)
+        gallery = if is_nil(gallery_id), do: nil, else: Galleries.get_gallery!(gallery_id)
+
+        date = get_conditional_date(state, job, gallery)
 
         case date do
           nil ->
@@ -372,4 +374,19 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         {:error, "One or more emails failed to send."}
     end
   end
+
+  defp get_conditional_date(state, _job, _gallery)
+       when state in [
+              :order_arrived,
+              :order_delayed,
+              :order_shipped,
+              :digitals_ready_download,
+              :order_confirmation_digital_physical,
+              :order_confirmation_digital,
+              :order_confirmation_physical
+            ],
+       do: nil
+
+  defp get_conditional_date(state, job, gallery),
+    do: fetch_date_for_state(state, job, gallery, nil)
 end
