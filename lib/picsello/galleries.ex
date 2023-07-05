@@ -1047,7 +1047,8 @@ defmodule Picsello.Galleries do
   @doc """
   Removes the watermark.
   """
-  def delete_gallery_watermark(watermark) do
+  def delete_gallery_watermark(%Gallery{} = gallery) do
+    %{watermark: watermark} = load_watermark_in_gallery(gallery)
     Repo.delete(watermark)
   end
 

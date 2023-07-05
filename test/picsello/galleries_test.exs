@@ -130,9 +130,9 @@ defmodule Picsello.GalleriesTest do
 
     test "deletes watermark", %{gallery: gallery} do
       watermark_change = Galleries.gallery_text_watermark_change(nil, %{text: "007 Agency"})
-      {:ok, %{watermark: watermark}} = Galleries.save_gallery_watermark(gallery, watermark_change)
+      {:ok, gallery} = Galleries.save_gallery_watermark(gallery, watermark_change)
 
-      Galleries.delete_gallery_watermark(watermark)
+      Galleries.delete_gallery_watermark(gallery)
       gallery = Galleries.load_watermark_in_gallery(gallery)
 
       assert nil == gallery.watermark

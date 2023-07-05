@@ -5,9 +5,6 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
   alias Picsello.Galleries
   alias Picsello.Galleries.Workers.PhotoStorage
   alias Picsello.Galleries.Watermark
-  alias Ecto.Multi
-
-  import PicselloWeb.GalleryLive.Shared, only: [delete_watermark: 1]
 
   @upload_options [
     accept: ~w(.png image/png),
@@ -77,11 +74,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
         _,
         %{assigns: %{gallery: gallery, changeset: changeset}} = socket
       ) do
-    Multi.new()
-    |> Multi.run(:save_watermark, fn _, _ ->
-      Galleries.save_gallery_watermark(gallery, changeset)
-    end)
-    |> Galleries.save_use_global(gallery, %{watermark: false})
+    Galleries.save_gallery_watermark(gallery, changeset)
 
     send(self(), :close_watermark_popup)
     send(self(), :preload_watermark)
@@ -165,7 +158,7 @@ defmodule PicselloWeb.GalleryLive.Settings.CustomWatermarkComponent do
   end
 
   defp clear_watermarks(%{assigns: %{gallery: gallery}} = socket) do
-    delete_watermark(gallery)
+    {:ok, _} = Galleries.delete_gallery_watermark(gallery)
     send(self(), :clear_watermarks)
     send(self(), :preload_watermark)
 
