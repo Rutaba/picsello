@@ -7,7 +7,6 @@ defmodule Picsello.Cart.Checkouts do
     Cart.Product,
     Galleries,
     Intents,
-    Invoices,
     Payments,
     Repo,
     WHCC,
@@ -67,13 +66,6 @@ defmodule Picsello.Cart.Checkouts do
 
         %{cart: %{products: []} = cart} ->
           create_session(cart, opts)
-
-        # %{client_total: ~M[0]USD, cart: %{products: [_ | _]} = cart} ->
-        #   new()
-        #   |> append(create_whcc_order(cart))
-        #   |> run(:stripe_invoice, &create_stripe_invoice/2)
-        #   |> insert(:invoice, &insert_invoice/1)
-        #   |> update(:order, place_order(cart))
 
         %{client_total: _client_total, cart: %{products: [_ | _]} = cart} ->
           new()
@@ -266,27 +258,6 @@ defmodule Picsello.Cart.Checkouts do
   end
 
   defp shipping_options(%{products: []}), do: []
-
-  # defp create_stripe_invoice(
-  #        _repo,
-  #        %{save_whcc_order: %{whcc_order: whcc_order} = order}
-  #      ) do
-  #   print_cost = WHCCOrder.total(whcc_order) |> Money.add(Cart.total_shipping(order))
-  #   client_total = Order.total_cost(order)
-  #   create_stripe_invoice(order, Money.subtract(print_cost, client_total))
-  # end
-
-  # defp create_stripe_invoice(
-  #        %{gallery: %{organization: %{user: user}}} = invoice_order,
-  #        outstanding
-  #      ) do
-  #   Invoices.invoice_user(user, outstanding,
-  #     description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}"
-  #   )
-  # end
-
-  # defp insert_invoice(%{save_whcc_order: order, stripe_invoice: stripe_invoice}),
-  #   do: Invoices.changeset(stripe_invoice, order)
 
   defp place_order(cart), do: Order.placed_changeset(cart)
   defp client_total(_repo, %{cart: cart}), do: {:ok, Order.total_cost(cart)}

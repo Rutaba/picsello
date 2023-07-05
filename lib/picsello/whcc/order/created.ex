@@ -1,6 +1,5 @@
 defmodule Picsello.WHCC.Order.Created do
   @moduledoc "Structure for WHCC order created"
-  require Logger
   import Money.Sigils
   defmodule Order do
     @moduledoc "stores one item from the orders list in the created response"
