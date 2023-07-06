@@ -30,6 +30,18 @@ defmodule PicselloWeb.LeadContactIframeView do
           </div>
         </div>
 
+        <div class="flex flex-col mt-3">
+            <%= labeled_select f, :referred_by, referred_by_options(), label: "How did you hear about #{@organization.name}?", prompt: "select one...", phx_debounce: 300, phx_update: "ignore" %>
+            <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
+        </div>
+
+        <div id="referralNameDiv" class="flex flex-col mt-3 hidden">
+            <%= label_for f, :referral_name, label: "Would you mind sharing their name?", class: "py-2 font-bold" %>
+
+            <%= input f, :referral_name, placeholder: "Type name...", phx_debounce: 300 %>
+            <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
+        </div>
+
         <%= if Enum.any?(@job_types) do %>
           <div class="mt-4">
             <%= label_for f, :job_type, label: "What type of session are you looking for?", class: "font-light" %>
@@ -44,11 +56,26 @@ defmodule PicselloWeb.LeadContactIframeView do
         <div class="flex flex-col mt-7">
           <%= label_for f, :message, label: "Your message", class: "py-2 font-light" %>
 
-          <%= input f, :message, type: :textarea, placeholder: "e.g. Date(s), what you're looking for, any relevant information, etc.", rows: 5, required: true %>
+          <%= input f, :message, type: :textarea, placeholder: "Type your message...", rows: 5, required: true %>
         </div>
 
         <div class="mt-8 text-right"><button type="submit" class="w-full lg:w-auto btn-primary">Submit</button></div>
       </.form>
+      <script>
+        const referredBySelect = document.querySelector("#client-form_referred_by")
+        const referralNameDiv = document.getElementById('referralNameDiv');
+        const referralNameLabel = document.querySelector('#referralNameDiv label');
+        const referralNameInput = document.querySelector('#referralNameDiv input');
+
+        referredBySelect.addEventListener('change', function() {
+          const selectedOption = this.value;
+          if (selectedOption === 'Other') {
+            referralNameLabel.textContent = "Would you mind sharing where?";
+            referralNameInput.placeholder = "Type where?";
+          }
+          referralNameDiv.classList.toggle('hidden', selectedOption !== 'Friend' && selectedOption !== 'Other');
+        });
+      </script>
       <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/js/leadForm.js")}></script>
     </.container>
     """
@@ -74,5 +101,18 @@ defmodule PicselloWeb.LeadContactIframeView do
       <%= render_slot(@inner_block) %>
     </div>
     """
+  end
+
+  defp referred_by_options() do
+    [
+      "Friend",
+      "Google",
+      "Facebook",
+      "Instagram",
+      "Tiktok",
+      "Pinterest",
+      "Event / Tradeshow",
+      "Other"
+    ]
   end
 end

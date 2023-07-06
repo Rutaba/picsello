@@ -44,15 +44,17 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
           </div>
 
           <div class="flex flex-col mt-3">
-            <%= labeled_select f, :referred_by, referred_by_options(), label: "How did you hear about #{@organization.name}?", prompt: "select one...", optional: true, phx_debounce: 300, phx_update: "ignore" %>
+            <%= labeled_select f, :referred_by, referred_by_options(), label: "How did you hear about #{@organization.name}?", prompt: "select one...", phx_debounce: 300, phx_update: "ignore" %>
+            <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
           </div>
 
             <%= if @additional_field do %>
             <% info = referral_info(f.params) %>
               <div class="flex flex-col mt-3">
-                 <%= label_for f, :referral_name, label: info.label, class: "py-2 font-bold", optional: true %>
+                 <%= label_for f, :referral_name, label: info.label, class: "py-2 font-bold" %>
 
                  <%= input f, :referral_name, placeholder: info.placeholder, phx_debounce: 300 %>
+                 <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
               </div>
             <% end %>
           <%= if Enum.any?(@job_types) do %>
