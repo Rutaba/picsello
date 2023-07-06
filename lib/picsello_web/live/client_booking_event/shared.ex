@@ -40,17 +40,11 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
   end
 
   def formatted_date(booking_event) do
-    dates =
-      booking_event
-      |> Map.get(:dates)
-      |> Enum.sort_by(& &1.date, Date)
-      |> Enum.map(& &1.date)
-      |> Enum.map(&Calendar.strftime(&1, "%b %d, %Y"))
-
-    [
-      Enum.at(dates, 0),
-      Enum.at(dates, -1)
-    ]
+    booking_event
+    |> Map.get(:dates)
+    |> Enum.sort_by(& &1.date, Date)
+    |> Enum.map(& &1.date)
+    |> Enum.map(&Calendar.strftime(&1, "%b %d, %Y"))
     |> Enum.uniq()
     |> Enum.join(" , ")
   end
