@@ -708,14 +708,10 @@ defmodule PicselloWeb.Live.Shared do
       BookingProposal.create_changeset(%{job_id: changes.job.id})
     end)
     |> maybe_insert_payment_schedules(socket)
-    |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, fn %{
-                                                                    job: %Job{
-                                                                      id: job_id,
-                                                                      type: type
-                                                                    }
-                                                                  } ->
-      job_emails(type, current_user.organization_id, job_id, [:job])
-    end)
+    |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, 
+      fn %{job: %Job{id: job_id, type: type}} -> 
+        job_emails(type, current_user.organization_id, job_id, [:job])
+      end)
     |> Repo.transaction()
     |> then(fn
       {:ok, %{job: job}} ->

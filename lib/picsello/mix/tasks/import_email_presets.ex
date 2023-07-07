@@ -18,7 +18,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
     [
       %{
         type: "gallery",
-        # state: "gallery_send_link",
+        state: "gallery_send_link",
         position: 0,
         name: "Send gallery link",
         subject_template: "Your Gallery is ready!",
@@ -32,7 +32,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         type: "gallery",
-        # state: "gallery_shipping_to_client",
+        state: "gallery_shipping_to_client",
         position: 0,
         name: "Your order has shipped - client",
         subject_template: "Your order from {{photography_company_s_name}} has shipped!",
@@ -44,7 +44,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         type: "gallery",
-        # state: "gallery_shipping_to_photographer",
+        state: "gallery_shipping_to_photographer",
         position: 0,
         name: "Your order has shipped - photographer",
         subject_template: "New shipping info for {{order_first_name}} order.",
@@ -56,7 +56,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         type: "gallery",
-        # state: "proofs_send_link",
+        state: "proofs_send_link",
         position: 0,
         name: "Share Proofing Album",
         subject_template: "Your Proofing Album is Ready!",
@@ -69,7 +69,20 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         type: "gallery",
-        # state: "album_send_link",
+        state: "album_send_link",
+        position: 0,
+        name: "Share Finals Album",
+        subject_template: "Your Finals Album is Ready!",
+        body_template: """
+        <p>Hi {{client_first_name}},</p>
+        <p>Your Finals are ready to view! You can view your Finals album here: <a href="{{album_link}}">{{album_link}}</a></p>
+        {{#album_password}}<p>Your photos are password-protected, so you will need to use this password to view: <b>{{album_password}}</b></p>{{/album_password}}
+        <p>These photos have all been retouched, and you can download them all at the touch of a button.</p>
+        """
+      },
+      %{
+        type: "gallery",
+        state: "album_send_link",
         position: 0,
         name: "Share Finals Album",
         subject_template: "Your Finals Album is Ready!",

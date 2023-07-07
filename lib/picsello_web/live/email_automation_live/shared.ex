@@ -72,6 +72,11 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> Repo.preload([:email_automation_category, :email_automation_sub_category])
   end
 
+  def get_selected_job_types(job_types, job_type) do
+    job_types
+    |> Enum.map(&%{id: &1.job_type, label: &1.job_type, selected: &1.job_type == job_type.name})
+  end
+
   defp assign_category_pipeline_count(automation_pipelines) do
     automation_pipelines
     |> Enum.map(fn %{subcategories: subcategories} = category ->

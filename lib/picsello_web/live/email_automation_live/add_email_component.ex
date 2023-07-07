@@ -18,14 +18,13 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   def update(
         %{
           job_type: job_type,
+          job_types: job_types,
           pipeline: %{email_automation_category: %{type: type}}
         } = assigns,
         socket
       ) do
-    job_types =
-      Picsello.JobType.all()
-      |> Enum.map(&%{id: &1, label: &1, selected: &1 == job_type.name})
-
+    job_types = Shared.get_selected_job_types(job_types, job_type)
+    
     email_presets = EmailPresets.email_automation_presets(type)
 
     socket
@@ -460,6 +459,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   defp save(
          %{
            assigns: %{
+            pipeline: pipeline,
              email_preset_changeset: email_preset_changeset,
              job_types: job_types
            }
@@ -467,21 +467,15 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
        ) do
     email_preset = email_preset_changeset |> current()
     selected_job_types = Enum.filter(job_types, & &1.selected)
-    _preset_ids = Enum.map(selected_job_types, & &1.id)
-
+    
     Ecto.Multi.new()
-    # |> Ecto.Multi.delete_all(
-    #   :delete_presets,
-    #   from(ep in EmailPreset, where: ep.job_type in ^preset_ids
-    #   and ep.organization_id == ^email_preset.organization_id
-    #   and ep.email_automation_pipeline_id == ^email_preset.email_automation_pipeline_id)
-    # )
     |> Ecto.Multi.insert_all(:email_preset, EmailPreset, fn _ ->
       now = DateTime.utc_now() |> DateTime.truncate(:second)
 
       selected_job_types
       |> Enum.map(
         &%{
+          state: pipeline.state,
           status: email_preset.status,
           total_hours: email_preset.total_hours,
           condition: email_preset.condition,

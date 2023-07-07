@@ -15,16 +15,14 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   @impl true
   def update(
         %{
+          job_types: job_types,
           job_type: job_type,
           pipeline: %{email_automation_category: %{type: type}, email_presets: _email_presets},
           email: email
         } = assigns,
         socket
       ) do
-    job_types =
-      Picsello.JobType.all()
-      |> Enum.map(&%{id: &1, label: &1, selected: &1 == job_type})
-
+    job_types = Shared.get_selected_job_types(job_types, job_type)
     email_presets = EmailPresets.email_automation_presets(type)
 
     socket
