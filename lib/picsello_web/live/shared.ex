@@ -708,11 +708,17 @@ defmodule PicselloWeb.Live.Shared do
       BookingProposal.create_changeset(%{job_id: changes.job.id})
     end)
     |> maybe_insert_payment_schedules(socket)
+    |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, fn %{
+                                                                    job: %Job{
+                                                                      id: job_id,
+                                                                      type: type
+                                                                    }
+                                                                  } ->
+      job_emails(type, current_user.organization_id, job_id, [:job])
+    end)
     |> Repo.transaction()
     |> then(fn
       {:ok, %{job: job}} ->
-        insert_job_emails(current_user.organization_id, job)
-
         if(another_import,
           do:
             socket
@@ -735,19 +741,34 @@ defmodule PicselloWeb.Live.Shared do
     end)
   end
 
-  defp insert_job_emails(organization_id, job) do
+  @doc """
+    Insert all emails templates for jobs & leads in email schedules
+  """
+  def job_emails(type, organization_id, job_id, types) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    email_schedules =
-      EmailAutomations.get_emails_for_schedule(organization_id, job.type, [:job])
-      |> Enum.map(fn item ->
-        item ++ [inserted_at: now, updated_at: now, job_id: job.id, gallery_id: nil]
-      end)
-
-    Repo.insert_all(EmailSchedule, email_schedules)
+    EmailAutomations.get_emails_for_schedule(organization_id, type, types)
+    |> Enum.map(
+      &[
+        job_id: job_id,
+        total_hours: &1.total_hours,
+        condition: &1.condition,
+        body_template: &1.body_template,
+        name: &1.name,
+        subject_template: &1.subject_template,
+        private_name: &1.private_name,
+        email_automation_pipeline_id: &1.email_automation_pipeline_id,
+        inserted_at: now,
+        updated_at: now
+      ]
+    )
   end
 
-  def insert_gallery_emails(gallery) do
+  @doc """
+    Insert all emails templates for galleries, When gallery created it fetch
+    all email templates for gallery category and insert in email schedules
+  """
+  def gallery_emails(gallery) do
     gallery =
       gallery
       |> Repo.preload([:job, organization: [organization_job_types: :jobtype]], force: true)
@@ -756,13 +777,24 @@ defmodule PicselloWeb.Live.Shared do
 
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    email_schedules =
+    emails =
       EmailAutomations.get_emails_for_schedule(gallery.organization.id, type, [:gallery])
-      |> Enum.map(fn item ->
-        item ++ [inserted_at: now, updated_at: now, job_id: nil, gallery_id: gallery.id]
-      end)
+      |> Enum.map(
+        &[
+          gallery_id: gallery.id,
+          total_hours: &1.total_hours,
+          condition: &1.condition,
+          body_template: &1.body_template,
+          name: &1.name,
+          subject_template: &1.subject_template,
+          private_name: &1.private_name,
+          email_automation_pipeline_id: &1.email_automation_pipeline_id,
+          inserted_at: now,
+          updated_at: now
+        ]
+      )
 
-    Repo.insert_all(EmailSchedule, email_schedules)
+    Repo.insert_all(EmailSchedule, emails, on_conflict: :nothing, conflict_target: :gallery_id)
   end
 
   defp get_client(selected_client, searched_client, client) do

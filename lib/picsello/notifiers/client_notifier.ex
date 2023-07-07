@@ -10,7 +10,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
     Cart,
     Messages,
     ClientMessage,
-    Galleries,
     Galleries.Gallery
   }
 
@@ -338,7 +337,23 @@ defmodule Picsello.Notifiers.ClientNotifier do
     )
   end
 
-  def deliver_automation_email_order(_job, _, _helpers), do: :ok
+  def deliver_automation_email_order(email_preset, order, _schema, _state, helpers) do
+    with %{body_template: body, subject_template: subject} <-
+           Picsello.EmailAutomations.resolve_variables(
+             email_preset,
+             {order.gallery, order},
+             helpers
+           ) do
+      deliver_transactional_email(
+        %{
+          subject: subject,
+          body: body
+        },
+        %{"to" => order.delivery_info.email},
+        order.gallery.job
+      )
+    end
+  end
 
   defp message_params(message) do
     %{

@@ -3,8 +3,9 @@ defmodule PicselloWeb.JobLive.NewComponent do
   use PicselloWeb, :live_component
 
   alias Ecto.Changeset
-  alias Picsello.{Job, Jobs, Clients, Profiles, EmailAutomations, Repo}
+  alias Picsello.{Job, Jobs, Clients, Profiles, Repo}
   alias Picsello.EmailAutomation.EmailSchedule
+  alias PicselloWeb.Live.Shared
 
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.JobLive.Shared, only: [job_form_fields: 1, search_clients: 1]
@@ -91,7 +92,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
         } = socket
       ) do
     job = current(changeset)
-    
+
     client =
       cond do
         selected_client ->
@@ -111,11 +112,10 @@ defmodule PicselloWeb.JobLive.NewComponent do
            &Job.create_job_changeset(%{type: job.type, notes: job.notes, client_id: &1.client.id})
          )
          |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, fn %{lead: %Job{id: job_id}} ->
-          job_emails(job.type, current_user.organization_id, job_id)
+          Shared.job_emails(job.type, current_user.organization_id, job_id, [:lead, :job])
          end)
          |> Repo.transaction() do
       {:ok, %{lead: %Job{id: job_id}}} ->
-        # insert_job_emails(job.type, current_user.organization_id, job_id)
         socket |> push_redirect(to: Routes.job_path(socket, :leads, job_id)) |> noreply()
 
       {:error, changeset} ->
@@ -125,24 +125,6 @@ defmodule PicselloWeb.JobLive.NewComponent do
 
   @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
-
-  defp job_emails(type, organization_id, job_id) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-    
-    EmailAutomations.get_emails_for_schedule(organization_id, type, [:lead, :job])
-    |> Enum.map(&[
-      job_id: job_id,
-      total_hours: &1.total_hours,
-      condition: &1.condition,
-      body_template: &1.body_template,
-      name: &1.name,
-      subject_template: &1.subject_template,
-      private_name: &1.private_name,
-      email_automation_pipeline_id: &1.email_automation_pipeline_id,
-      inserted_at: now,
-      updated_at: now,
-    ])
-  end
 
   defp build_changeset(
          %{assigns: %{current_user: current_user}},

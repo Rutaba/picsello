@@ -41,11 +41,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     |> ok()
   end
 
-  defp remove_duplicate(email_presets, email_preset) do
-    index = Enum.find_index(email_presets, &(&1.name == email_preset.name))
-    List.delete_at(email_presets, index) ++ [email_preset]
-  end
-
   @impl true
   def update(%{options: options}, socket) do
     socket
@@ -61,6 +56,11 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     |> assign(step: :preview_email)
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
+  end
+
+  defp remove_duplicate(email_presets, email_preset) do
+    index = Enum.find_index(email_presets, &(&1.name == email_preset.name))
+    List.delete_at(email_presets, index) ++ [email_preset]
   end
 
   defp step_valid?(assigns),

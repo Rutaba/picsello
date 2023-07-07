@@ -699,7 +699,11 @@ defmodule Picsello.Galleries do
   Generates new password for the gallery.
   """
   def regenerate_gallery_password(%Gallery{} = gallery) do
-    changeset = Gallery.update_changeset(gallery, %{password: Gallery.generate_password()})
+    changeset =
+      Gallery.update_changeset(gallery, %{
+        password: Gallery.generate_password(),
+        password_regenerated_at: DateTime.utc_now()
+      })
 
     Multi.new()
     |> Multi.update(:gallery, changeset)

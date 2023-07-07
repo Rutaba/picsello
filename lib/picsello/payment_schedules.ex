@@ -193,6 +193,10 @@ defmodule Picsello.PaymentSchedules do
     |> Money.add(Map.get(job.package, :collected_price) || Money.new(0))
   end
 
+  def get_is_with_cash(job) do
+    job |> payment_schedules() |> Enum.filter(& &1.is_with_cash)
+  end
+
   def paid_amount(%Job{} = job) do
     paid_price(job) |> Map.get(:amount)
   end

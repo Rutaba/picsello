@@ -6,7 +6,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
-    only: [get_pipline: 1, get_email_schedule_text: 1, explode_hours: 1]
+    only: [get_pipline: 1, get_email_schedule_text: 1, explode_hours: 1, fetch_date_for_state: 4]
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import Ecto.Query
@@ -14,7 +14,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   alias Picsello.{
     Galleries,
     Jobs,
+    Orders,
     EmailAutomations,
+    EmailAutomationSchedules,
     Repo
   }
 
@@ -82,7 +84,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     pipeline_id = to_integer(pipeline_id)
 
     email =
-      EmailAutomations.get_email_schedule_by_id(id)
+      EmailAutomationSchedules.get_email_schedule_by_id(id)
       |> Repo.preload(email_automation_pipeline: [:email_automation_category])
 
     pipeline = get_pipline(pipeline_id)
@@ -103,12 +105,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           pipeline.email_automation_category.type,
           email,
           gallery,
-          pipeline.state
+          :hello
+          # pipeline.state
         )
     end
     |> case do
       {:ok, _} -> socket |> put_flash(:success, "Email Sent Successfully")
-      _ -> socket |> put_flash(:success, "Error in Sending Email")
+      _ -> socket |> put_flash(:error, "Error in Sending Email")
     end
     |> assign_email_schedules()
     |> noreply()
@@ -128,14 +131,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       current_user: current_user,
       job_type: type,
       pipeline: get_pipline(pipeline_id),
-      email: EmailAutomations.get_schedule_by_id(schedule_id)
+      email: EmailAutomationSchedules.get_schedule_by_id(schedule_id)
     })
     |> noreply()
   end
 
   @impl true
   def handle_event("email-preview", %{"email_preview_id" => id}, socket) do
-    _email_preview = EmailAutomations.get_schedule_by_id(id)
+    _email_preview = EmailAutomationSchedules.get_schedule_by_id(id)
     socket |> noreply()
   end
 
@@ -143,7 +146,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_info({:confirm_event, "stop-email-schedule-" <> id}, socket) do
     id = String.to_integer(id)
 
-    case EmailAutomations.update_email_schedule(id, %{is_stopped: true}) do
+    case EmailAutomationSchedules.update_email_schedule(id, %{is_stopped: true}) do
       {:ok, _} -> socket |> put_flash(:success, "Email Stopped Successfully")
       _ -> socket |> put_flash(:error, "Error in Updating Email")
     end
@@ -262,8 +265,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
     job = job_id |> Jobs.get_job_by_id()
 
-    gallery_emails = EmailAutomations.get_emails_schedules_by_ids(galleries, :gallery)
-    jobs_emails = EmailAutomations.get_emails_schedules_by_ids(job_id, :job)
+    gallery_emails = EmailAutomationSchedules.get_emails_schedules_by_ids(galleries, :gallery)
+    jobs_emails = EmailAutomationSchedules.get_emails_schedules_by_ids(job_id, :job)
     email_schedules = jobs_emails ++ gallery_emails
 
     socket
@@ -293,7 +296,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       _ ->
         %{sign: sign} = explode_hours(email_schedule.total_hours)
         job = EmailAutomations.get_job(job_id)
-        date = EmailAutomations.fetch_date_for_state(state, job)
+        gallery = if is_nil(gallery_id), do: nil, else: Galleries.get_gallery!(gallery_id)
+
+        date = get_conditional_date(state, job, gallery)
 
         case date do
           nil ->
@@ -340,15 +345,48 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     )
   end
 
-  defp send_email(:gallery, _category_type, email, gallery, state) do
+  defp send_email(:gallery, _category_type, email, gallery, state)
+       when state in [
+              :gallery_send_link,
+              :cart_abandoned,
+              :gallery_expiration_soon,
+              :gallery_password_changed
+            ] do
     EmailAutomations.send_now_email(:gallery, email, gallery, state)
   end
 
-  defp send_email(:orders, _category_type, _email, _gallery, _state) do
-    # gallery has many orders
-    {:ok, nil}
+  defp send_email(:gallery, _category_type, email, gallery, state) do
+    result =
+      gallery.id
+      |> Orders.all()
+      |> Enum.reduce({:ok, []}, fn order, {:ok, successful} ->
+        case EmailAutomations.send_now_email(:order, email, order, state) do
+          {:ok, _} -> {:ok, [order | successful]}
+          {:error, error} -> {:error, error}
+        end
+      end)
+
+    case result do
+      {:ok, _} ->
+        {:ok, "All emails sent successfully."}
+
+      {:error, _} ->
+        {:error, "One or more emails failed to send."}
+    end
   end
 
-  # defp valid_type?(%{assigns: %{selected_job_type: nil}}), do: false
-  # defp valid_type?(%{assigns: %{selected_job_type: _type}}), do: true
+  defp get_conditional_date(state, _job, _gallery)
+       when state in [
+              :order_arrived,
+              :order_delayed,
+              :order_shipped,
+              :digitals_ready_download,
+              :order_confirmation_digital_physical,
+              :order_confirmation_digital,
+              :order_confirmation_physical
+            ],
+       do: nil
+
+  defp get_conditional_date(state, job, gallery),
+    do: fetch_date_for_state(state, job, gallery, nil)
 end

@@ -3,6 +3,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
   use Ecto.Schema
   import Ecto.Changeset
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
+  alias Picsello.{EmailAutomation.EmailAutomationPipeline, Organization}
 
   @types ~w(lead job gallery)a
   @status ~w(active disabled)a
@@ -21,6 +22,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     field :condition, :string
     field :body_template, :string
     field :type, Ecto.Enum, values: @types
+    field :state, Ecto.Enum, values: @states
     field :job_type, :string
     field :name, :string
     field :subject_template, :string
@@ -33,7 +35,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     field :template_id, :integer, virtual: true
 
     belongs_to(:email_automation_pipeline, EmailAutomationPipeline)
-    belongs_to(:organization, Picsello.Organization)
+    belongs_to(:organization, Organization)
 
     timestamps type: :utc_datetime
   end
@@ -44,21 +46,19 @@ defmodule Picsello.EmailPresets.EmailPreset do
       attrs,
       ~w[count calendar sign template_id private_name type job_type name position subject_template body_template]a
     )
-    |> validate_required(
-      ~w[status type name position subject_template body_template]a
-    )
+    |> validate_required(~w[status type name position subject_template body_template]a)
   end
 
   def changeset(email_preset \\ %__MODULE__{}, attrs) do
     email_preset
     |> cast(
       attrs,
-      ~w[status total_hours condition email_automation_pipeline_id organization_id immediately count calendar sign template_id private_name type job_type name position subject_template body_template]a
+      ~w[status total_hours state condition email_automation_pipeline_id organization_id immediately count calendar sign template_id private_name type job_type name position subject_template body_template]a
     )
     |> validate_required(
       ~w[status email_automation_pipeline_id organization_id type name position subject_template body_template]a
     )
-    # |> validate_states()
+    |> validate_states()
     |> foreign_key_constraint(:job_type)
     |> then(fn changeset ->
       unless get_field(changeset, :immediately) do
@@ -76,10 +76,10 @@ defmodule Picsello.EmailPresets.EmailPreset do
     end)
   end
 
-  # defp validate_states(changeset) do
-  #   type = get_field(changeset, :type)
-  #   changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))
-  # end
+  defp validate_states(changeset) do
+    type = get_field(changeset, :type)
+    changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))
+  end
 
   def calculate_hours(changeset) do
     data = changeset |> current()

@@ -36,6 +36,8 @@ defmodule Picsello.Galleries.Gallery do
     field :password, :string
     field :client_link_hash, :string
     field :expired_at, :utc_datetime
+    field :password_regenerated_at, :utc_datetime
+    field :gallery_send_at, :utc_datetime
     field :total_count, :integer, default: 0
     field :type, Ecto.Enum, @type_opts
     field :gallery_analytics, {:array, :map}
@@ -85,6 +87,7 @@ defmodule Picsello.Galleries.Gallery do
     :job_id,
     :status,
     :expired_at,
+    :password_regenerated_at,
     :client_link_hash,
     :total_count,
     :type,
@@ -94,6 +97,8 @@ defmodule Picsello.Galleries.Gallery do
     :name,
     :status,
     :expired_at,
+    :password_regenerated_at,
+    :gallery_send_at,
     :password,
     :type,
     :client_link_hash,

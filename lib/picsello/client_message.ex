@@ -2,7 +2,7 @@ defmodule Picsello.ClientMessage do
   @moduledoc false
   use Ecto.Schema
   import Ecto.{Changeset, Query}
-  alias Picsello.{Job, ClientMessageRecipient}
+  alias Picsello.{Repo, Job, ClientMessageRecipient}
 
   schema "client_messages" do
     belongs_to(:job, Job)
@@ -51,6 +51,18 @@ defmodule Picsello.ClientMessage do
       on: jobs.id == message.job_id,
       where: is_nil(message.read_at) and is_nil(message.deleted_at)
     )
+  end
+
+  def get_client_messages(job, subjects) do
+    from(
+      mesage in __MODULE__,
+      join: recipient in assoc(mesage, :client_message_recipients),
+      on: mesage.id == recipient.client_message_id,
+      where:
+        mesage.subject in ^subjects and mesage.job_id == ^job.id and mesage.outbound == false,
+      where: recipient.client_id == ^job.client.id and recipient.recipient_type == :to
+    )
+    |> Repo.all()
   end
 
   @type t :: %__MODULE__{

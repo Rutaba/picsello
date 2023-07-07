@@ -5,7 +5,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Picsello.{Marketing, EmailPresets.EmailPreset, EmailAutomations, Repo}
+  alias Picsello.{Marketing, PaymentSchedules, EmailPresets.EmailPreset, EmailAutomations, Repo}
   alias Picsello.EmailAutomation.EmailSchedule
 
   @impl true
@@ -176,4 +176,154 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
+
+  def fetch_date_for_state(_state, nil, nil, nil), do: nil
+
+  def fetch_date_for_state(:gallery_send_link, nil, gallery, _order) do
+    if not is_nil(gallery.gallery_send_at), do: gallery.gallery_send_at, else: nil
+  end
+
+  def fetch_date_for_state(:cart_abandoned, nil, gallery, _order) do
+    card_abandoned? =
+      Enum.any?(gallery.orders, fn order ->
+        is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals)
+      end)
+
+    if card_abandoned?, do: gallery.inserted_at, else: nil
+  end
+
+  def fetch_date_for_state(:gallery_expiration_soon, nil, gallery, _order) do
+    next_date = Timex.shift(Timex.now(), days: 7)
+
+    cond do
+      not is_nil(gallery.expired_at) and Timex.after?(gallery.expired_at, next_date) ->
+        gallery.expired_at
+
+      true ->
+        nil
+    end
+  end
+
+  def fetch_date_for_state(:gallery_password_changed, nil, gallery, _order) do
+    if not is_nil(gallery.password_regenerated_at), do: gallery.password_regenerated_at, else: nil
+  end
+
+  def fetch_date_for_state(:order_confirmation_physical, nil, _gallery, order) do
+    if not is_nil(order.whcc_order), do: order.placed_at, else: nil
+  end
+
+  def fetch_date_for_state(:order_confirmation_digital, nil, _gallery, order) do
+    if(Enum.any?(order.digital_line_items), do: order.placed_at, else: nil)
+  end
+
+  def fetch_date_for_state(:order_confirmation_digital_physical, nil, _gallery, order) do
+    if(Enum.any?(order.digital_line_items) and not is_nil(order.whcc_order),
+      do: order.placed_at,
+      else: nil
+    )
+  end
+
+  def fetch_date_for_state(:client_contact, job, _gallery, _order) do
+    job |> Map.get(:inserted_at)
+  end
+
+  def fetch_date_for_state(state, job, _gallery, _order)
+      when state in [:pays_retainer, :booking_proposal_sent] do
+    job
+    |> Map.get(:booking_proposals)
+    |> Enum.sort_by(& &1.id)
+    |> Enum.filter(fn proposal -> proposal.sent_to_client == true end)
+    |> List.first()
+    |> case do
+      nil -> nil
+      proposal -> proposal |> Map.get(:inserted_at)
+    end
+  end
+
+  def fetch_date_for_state(:booking_event, job, _gallery, _order) do
+    job
+    |> Map.get(:booking_event)
+    |> case do
+      nil -> nil
+      booking_event -> booking_event |> Map.get(:inserted_at)
+    end
+  end
+
+  def fetch_date_for_state(:before_shoot, job, _gallery, _order) do
+    today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+
+    job.shoots
+    |> Enum.filter(fn item ->
+      Timex.compare(today, item.starts_at, :days) <= 1
+    end)
+    |> (fn filtered_list ->
+          if Enum.count(filtered_list) == 0,
+            do: nil,
+            else: List.first(filtered_list) |> Map.get(:starts_at)
+        end).()
+  end
+
+  def fetch_date_for_state(:balance_due, job, _gallery, _order) do
+    if PaymentSchedules.free?(job) do
+      nil
+    else
+      job
+      |> PaymentSchedules.next_due_payment()
+      |> Map.get(:due_at)
+    end
+  end
+
+  def fetch_date_for_state(:paid_full, job, _gallery, _order) do
+    if PaymentSchedules.all_paid?(job) do
+      job.payment_schedules
+      |> PaymentSchedules.set_payment_schedules_order()
+      |> List.first()
+      |> Map.get(:paid_at)
+    else
+      nil
+    end
+  end
+
+  def fetch_date_for_state(:offline_payment, job, _gallery, _order) do
+    if PaymentSchedules.is_with_cash?(job) do
+      PaymentSchedules.get_is_with_cash(job) |> List.first() |> Map.get(:inserted_at)
+    else
+      nil
+    end
+  end
+
+  def fetch_date_for_state(:shoot_thanks, job, _gallery, _order) do
+    today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+
+    job.shoots
+    |> Enum.filter(fn item ->
+      Timex.compare(today, item.starts_at, :minute) >= 0
+    end)
+    |> (fn filtered_list ->
+          if Enum.count(filtered_list) == 0,
+            do: nil,
+            else: List.first(filtered_list) |> Map.get(:starts_at)
+        end).()
+  end
+
+  def fetch_date_for_state(:post_shoot, job, _gallery, _order) do
+    today = NaiveDateTime.utc_now() |> Timex.end_of_day()
+
+    filter_shoots_count =
+      job.shoots
+      |> Enum.filter(fn item ->
+        Timex.compare(today, item.starts_at, :minute) >= 0
+      end)
+      |> Enum.count()
+
+    shoots_count = Enum.count(job.shoots)
+
+    if shoots_count == filter_shoots_count and shoots_count >= 1 do
+      job.shoots |> List.first() |> Map.get(:starts_at)
+    else
+      nil
+    end
+  end
+
+  def fetch_date_for_state(_state, _job, _gallery, _order), do: nil
 end

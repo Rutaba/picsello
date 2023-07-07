@@ -5,26 +5,25 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
-  import PicselloWeb.PackageLive.Shared, only: [current: 1]
-  import PicselloWeb.Shared.MultiSelect
-  import Ecto.Query
-  
-  alias Picsello.{Repo, Jobs, JobType, EmailPresets, EmailPresets.EmailPreset}
+
+  alias Picsello.{Repo, EmailPresets}
   alias Picsello.EmailAutomation.EmailSchedule
   alias PicselloWeb.EmailAutomationLive.Shared
-  alias Ecto.Changeset
 
   @steps [:edit_email, :preview_email]
 
   @impl true
-  def update(%{
-    job_type: job_type,
-    pipeline: %{email_automation_category: %{type: type}, email_presets: email_presets},
-    email: email,
-    } = assigns, socket) do
-
-    job_types = Picsello.JobType.all()
-    |> Enum.map(&%{id: &1, label: &1, selected: &1 == job_type})
+  def update(
+        %{
+          job_type: job_type,
+          pipeline: %{email_automation_category: %{type: type}, email_presets: _email_presets},
+          email: email
+        } = assigns,
+        socket
+      ) do
+    job_types =
+      Picsello.JobType.all()
+      |> Enum.map(&%{id: &1, label: &1, selected: &1 == job_type})
 
     email_presets = EmailPresets.email_automation_presets(type)
 
@@ -40,11 +39,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     |> assign(variables_list: make_variables())
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
-  end
-
-  defp remove_duplicate(email_presets, email_preset) do
-    index = Enum.find_index(email_presets, & &1.name == email_preset.name)
-    if(index, do: List.delete_at(email_presets, index), else: email_presets) ++ [email_preset]
   end
 
   @impl true
@@ -64,15 +58,20 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     |> ok()
   end
 
+  defp remove_duplicate(email_presets, email_preset) do
+    index = Enum.find_index(email_presets, &(&1.name == email_preset.name))
+    if(index, do: List.delete_at(email_presets, index), else: email_presets) ++ [email_preset]
+  end
+
   defp step_valid?(assigns),
-  do:
-    Enum.all?(
-      [
-        assigns.email_preset_changeset
-      ],
-      & &1.valid?
-    )
-    |> Shared.validate?(assigns.job_types)
+    do:
+      Enum.all?(
+        [
+          assigns.email_preset_changeset
+        ],
+        & &1.valid?
+      )
+      |> Shared.validate?(assigns.job_types)
 
   @impl true
   def handle_event("back", _, %{assigns: %{step: step, steps: steps}} = socket) do
@@ -84,15 +83,22 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"email_schedule" => params}, %{assigns: %{email_preset: email_preset, email_presets: email_presets}} = socket) do
+  def handle_event(
+        "validate",
+        %{"email_schedule" => params},
+        %{assigns: %{email_preset: email_preset, email_presets: email_presets}} = socket
+      ) do
     name = Map.get(params, "name", "1")
-    preset = Enum.filter(email_presets, & &1.name == name)
-    |> List.first()
-    |> Map.take([:body_template, :subject_template, :name])
+
+    preset =
+      Enum.filter(email_presets, &(&1.name == name))
+      |> List.first()
+      |> Map.take([:body_template, :subject_template, :name])
 
     new_email_preset = Map.merge(email_preset, preset)
 
     params = if email_preset.name == name, do: params, else: nil
+
     socket
     |> assign(email_preset: new_email_preset)
     |> Shared.email_preset_changeset(new_email_preset, params)
@@ -100,14 +106,25 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"email_automation_setting" => params}, %{assign: %{email_preset: email_preset}} = socket) do
+  def handle_event(
+        "validate",
+        %{"email_automation_setting" => params},
+        %{assign: %{email_preset: email_preset}} = socket
+      ) do
     socket
-    |> assign(email_preset_changeset: Shared.build_email_changeset(email_preset, maybe_normalize_params(params)))
+    |> assign(
+      email_preset_changeset:
+        Shared.build_email_changeset(email_preset, maybe_normalize_params(params))
+    )
     |> noreply()
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "edit_email"}, %{assigns: %{email_preset_changeset: changeset} = assigns} = socket) do
+  def handle_event(
+        "submit",
+        %{"step" => "edit_email"},
+        %{assigns: %{email_preset_changeset: changeset} = assigns} = socket
+      ) do
     body_html = Ecto.Changeset.get_field(changeset, :body_template)
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
@@ -118,7 +135,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "preview_email"}, %{assigns: assigns} = socket) do
+  def handle_event("submit", %{"step" => "preview_email"}, socket) do
     socket
     |> save()
     |> close_modal()
@@ -311,10 +328,11 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   end
 
   defp maybe_normalize_params(params) do
-    {_, params} = get_and_update_in(
-      params,
-      ["status"],
-      &{&1, if(&1 == "true", do: :active, else: :disabled)}
+    {_, params} =
+      get_and_update_in(
+        params,
+        ["status"],
+        &{&1, if(&1 == "true", do: :active, else: :disabled)}
       )
 
     params
@@ -341,15 +359,16 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     ]
   end
 
-  defp save(%{
-    assigns: %{
-      email_preset_changeset: email_preset_changeset,
-      job_types: job_types,
-      pipeline: pipeline,
-      email: email
-      }} = socket) do
+  defp save(
+         %{
+           assigns: %{
+             email_preset_changeset: email_preset_changeset,
+             email: email
+           }
+         } = socket
+       ) do
     changeset = Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
-    
+
     Ecto.Multi.new()
     |> Ecto.Multi.insert(
       :email_preset,
@@ -360,9 +379,14 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     |> Repo.transaction()
     |> case do
       {:ok, %{email_preset: email_preset}} ->
-        send(self(), {:update_automation, %{message: "Successfully updated", email_preset: email_preset}})
+        send(
+          self(),
+          {:update_automation, %{message: "Successfully updated", email_preset: email_preset}}
+        )
+
         :ok
-      _ -> 
+
+      _ ->
         :error
     end
 

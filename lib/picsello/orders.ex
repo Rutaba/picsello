@@ -22,6 +22,7 @@ defmodule Picsello.Orders do
       where: order.gallery_id == ^gallery_id,
       preload: [
         :package,
+        :album,
         :intent,
         :canceled_intents,
         digitals: [photo: ^photo_query],
