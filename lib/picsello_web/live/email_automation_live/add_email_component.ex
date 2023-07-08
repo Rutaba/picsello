@@ -88,18 +88,25 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
           }
         } = socket
       ) do
-    template_id = Map.get(params, "template_id", "1") |> to_integer()
-
+    template_id = Map.get(params, "template_id", "90") |> to_integer()
+    selected_preset = Enum.filter(email_presets, &(&1.id == template_id))
+    
     new_email_preset =
-      Enum.filter(email_presets, &(&1.id == template_id))
-      |> List.first()
-      |> Map.merge(%{
-        email_automation_pipeline_id: pipeline.id,
-        organization_id: current_user.organization_id
-      })
-
+    if Enum.any?(selected_preset) do
+      selected_preset
+    else
+      email_presets
+    end
+    |> List.first()
+    |> Map.merge(%{
+      email_automation_pipeline_id: pipeline.id,
+      organization_id: current_user.organization_id
+    })
+      
     params = if email_preset.id == template_id, do: params, else: nil
-
+    IO.inspect template_id
+    IO.inspect email_preset
+    IO.inspect params
     socket
     |> assign(email_preset: new_email_preset)
     |> Shared.email_preset_changeset(new_email_preset, maybe_normalize_params(params))
@@ -108,6 +115,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
 
   @impl true
   def handle_event("validate", %{"email_automation_setting" => params}, socket) do
+    IO.inspect maybe_normalize_params(params), label: "params"
     socket
     |> assign_changeset(maybe_normalize_params(params))
     |> noreply()
@@ -336,6 +344,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         <div class="flex flex-col ml-2">
           <p><b> <%= @pipeline.email_automation_category.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
           <% c = to_form(@email_preset_changeset) %>
+          <%= IO.inspect input_value(c, :immediately) %>
           <%= unless input_value(c, :immediately) do %>
             <% sign = input_value(c, :sign) %>
             <p class="text-sm text-base-250">Send email <%= input_value(c, :count) %> <%= String.downcase(input_value(c, :calendar)) %>  <%= if sign == "+", do: "after", else: "before" %> <%= String.downcase(@pipeline.name) %></p>
@@ -346,6 +355,11 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
       <hr class="my-8" />
 
       <% f = to_form(@email_preset_changeset) %>
+      <%= hidden_input f, :immediately %>
+      <%= hidden_input f, :count %>
+      <%= hidden_input f, :calendar %>
+      <%= hidden_input f, :sign %>
+      <%= hidden_input f, :status %>
 
       <div class="mr-auto">
         <div class="grid grid-row md:grid-cols-3 gap-6">

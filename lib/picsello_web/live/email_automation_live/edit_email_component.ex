@@ -58,7 +58,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   defp remove_duplicate(email_presets, email_preset) do
     index = Enum.find_index(email_presets, &(&1.name == email_preset.name))
-    List.delete_at(email_presets, index) ++ [email_preset]
+    if(index, do: List.delete_at(email_presets, index), else: email_presets) ++ [email_preset]
   end
 
   defp step_valid?(assigns),

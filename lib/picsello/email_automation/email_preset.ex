@@ -44,7 +44,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     email_preset
     |> cast(
       attrs,
-      ~w[state count calendar sign template_id private_name type job_type name position subject_template body_template]a
+      ~w[email_automation_pipeline_id total_hours state count calendar sign template_id private_name type job_type name position subject_template body_template]a
     )
     |> validate_required(~w[state status type name position subject_template body_template]a)
   end
@@ -92,7 +92,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     end
   end
 
-  defp calculate_total_hours(count, data) do
+  def calculate_total_hours(count, data) do
     hours =
       case Map.get(data, :calendar) do
         "Hour" -> count
