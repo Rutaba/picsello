@@ -287,7 +287,7 @@ defmodule Picsello.BookingEvents do
       ) do
     Enum.count(slots, fn {slot_time, is_available, _is_break, _is_hide} ->
       !is_available && Time.compare(slot_time, start_time) in [:gt, :eq] &&
-        Time.compare(slot_time, end_time) in [:lt, :eq]
+        Time.compare(slot_time, end_time) in [:lt]
     end) > 0
   end
 
