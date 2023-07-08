@@ -199,7 +199,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         message: serialize(message_changeset),
         job_id: job.id,
         recipients: recipients,
-        user: serialize(%{organization_id: 1})
+        user: serialize(%{organization_id: user.organization_id})
       }
       |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
       |> Oban.insert!()
