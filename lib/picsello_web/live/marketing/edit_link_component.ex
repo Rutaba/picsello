@@ -58,10 +58,10 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
             <.link_field form={f} class="mt-5 pb-5" custom?={is_custom_brand_link(@brand_link.link_id)} link_id={@brand_link.link_id} placeholder="Add your link url…"/>
           </.form>
           <%= if !is_custom_brand_link(@brand_link.link_id) do %>
-            <.check_box target={@myself} field="active?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@changeset.valid?})} label="Enable this link" content="You can only enable or disable prepoulated links"/>
+            <.check_box target={@myself} field="active?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@changeset.valid?})} label="Enable this link"/>
           <% end %>
-          <.check_box target={@myself} field="use_publicly?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@brand_link.active?})} label="Use link publicly?" content="If you mark your link as private, you won’t be able to use this link in email. For example, you are using this as a way to login to your social platform"/>
-          <.check_box target={@myself} field="show_on_profile?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@brand_link.active?})} label="Show link in your Public Profile?" content="This link will appear in the footer of your public profile if you turn this on"/>
+          <.check_box target={@myself} field="use_publicly?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@brand_link.active?})} label="Use link publicly?"/>
+          <.check_box target={@myself} field="show_on_profile?" brand_link={@brand_link} class={classes(%{"pointer-events-none opacity-50 cursor-not-allowed" => !@brand_link.active?})} label="Show link in your Public Profile?"/>
           <div class={classes(%{"hidden" => !is_custom_brand_link(@brand_link.link_id)})}>
             <div class="text-red-sales-300 mt-11 font-extrabold">
               Delete link
@@ -157,7 +157,6 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
     <label {testid(@field)} class={"flex items-center lg:order-2 order-1 mt-7 cursor-pointer #{@class}"}>
       <div class="font-sans font-extrabold" {intro_hints_only("intro_hints_only")}>
         <%= @label %>
-        <.intro_hint class="ml-1" content={@content}/>
       </div>
       <div class="relative ml-auto">
         <input type="checkbox" class="sr-only" phx-value-field={@field} phx-click="toggle" phx-target={@target}>

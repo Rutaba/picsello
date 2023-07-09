@@ -15,16 +15,14 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   @impl true
   def update(
         %{
+          job_types: job_types,
           job_type: job_type,
           pipeline: %{email_automation_category: %{type: type}},
           email: email
         } = assigns,
         socket
       ) do
-    job_types =
-      Picsello.JobType.all()
-      |> Enum.map(&%{id: &1, label: &1, selected: &1 == job_type.name})
-
+    job_types = Shared.get_selected_job_types(job_types, job_type)
     email_presets = EmailPresets.email_automation_presets(type)
 
     socket
@@ -60,7 +58,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   defp remove_duplicate(email_presets, email_preset) do
     index = Enum.find_index(email_presets, &(&1.name == email_preset.name))
-    List.delete_at(email_presets, index) ++ [email_preset]
+    if(index, do: List.delete_at(email_presets, index), else: email_presets) ++ [email_preset]
   end
 
   defp step_valid?(assigns),
@@ -389,6 +387,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   defp save(
          %{
            assigns: %{
+            pipeline: pipeline,
              email_preset_changeset: email_preset_changeset,
              email: email
            }
@@ -402,7 +401,9 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     #   !Enum.any?(email_presets, &(type.id == &1.organization_job_id))
     # end)
 
-    changeset = Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
+    changeset = 
+    Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
+    |> Ecto.Changeset.put_change(:state, pipeline.state)
 
     Ecto.Multi.new()
     |> Ecto.Multi.insert(

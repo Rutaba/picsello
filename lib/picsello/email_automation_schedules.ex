@@ -21,7 +21,7 @@ defmodule Picsello.EmailAutomationSchedules do
     |> Repo.aggregate(:count)
   end
 
-  def get_emails_schedules_by_ids(ids, type) do
+  def get_email_schedules_by_ids(ids, type) do
     query =
       from(
         es in EmailSchedule,
@@ -30,6 +30,7 @@ defmodule Picsello.EmailAutomationSchedules do
         select: %{
           category_type: c.type,
           category_id: c.id,
+          job_id: es.job_id,
           pipeline:
             fragment(
               "to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?, 'email', ?))",
@@ -96,8 +97,8 @@ defmodule Picsello.EmailAutomationSchedules do
 
   defp email_schedules_group_by_categories(emails_schedules) do
     emails_schedules
-    |> Enum.group_by(&{&1.category_id, &1.category_name, &1.category_type, &1.gallery_id})
-    |> Enum.map(fn {{category_id, category_name, category_type, gallery_id}, group} ->
+    |> Enum.group_by(&{&1.category_id, &1.category_name, &1.category_type, &1.gallery_id, &1.job_id})
+    |> Enum.map(fn {{category_id, category_name, category_type, gallery_id, job_id}, group} ->
       pipelines =
         group
         |> Enum.group_by(& &1.pipeline["id"])
@@ -117,6 +118,7 @@ defmodule Picsello.EmailAutomationSchedules do
         category_name: category_name,
         category_type: category_type,
         gallery_id: gallery_id,
+        job_id: job_id,
         pipelines: pipeline_morphied
       }
     end)

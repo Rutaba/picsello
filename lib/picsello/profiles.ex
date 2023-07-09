@@ -416,17 +416,21 @@ defmodule Picsello.Profiles do
     end
   end
 
-  def enabled_job_types(organization_job_types) do
+  def get_active_organization_job_types(organization_job_types) do
     organization_job_types
     |> Enum.filter(fn job_type -> job_type.show_on_business? end)
+    |> Enum.sort_by(& &1.jobtype.position)
+  end
+
+  def enabled_job_types(organization_job_types) do
+    Repo.preload(organization_job_types, [:jobtype])
+    |> get_active_organization_job_types()
     |> Enum.map(& &1.job_type)
   end
 
   def public_job_types(organization_job_types) do
-    organization_job_types
-    |> Enum.filter(fn job_type ->
-      job_type.show_on_business? and job_type.show_on_profile?
-    end)
+    Repo.preload(organization_job_types, [:jobtype])
+    |> get_active_organization_job_types()
     |> Enum.map(& &1.job_type)
   end
 

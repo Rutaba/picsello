@@ -33,11 +33,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       current_user
       |> Repo.preload([organization: [organization_job_types: :jobtype]], force: true)
 
-    job_types =
-      current_user.organization.organization_job_types
-      |> Enum.filter(fn job_type -> job_type.show_on_business? end)
-      |> Enum.sort_by(& &1.jobtype.position)
-
+    job_types = current_user.organization.organization_job_types
+    |> Picsello.Profiles.get_active_organization_job_types()
+    
     selected_job_type = job_types |> List.first()
 
     socket
@@ -73,13 +71,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   def handle_event(
         "add-email-popup",
         %{"pipeline_id" => pipeline_id},
-        %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket
+        %{assigns: %{current_user: current_user, job_types: job_types, selected_job_type: selected_job_type}} = socket
       ) do
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.AddEmailComponent, %{
       current_user: current_user,
       job_type: selected_job_type.jobtype,
-      pipeline: get_pipline(pipeline_id)
+      pipeline: get_pipline(pipeline_id),
+      job_types: job_types
     })
     |> noreply()
   end
@@ -164,7 +163,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   defdelegate handle_info(message, socket), to: PicselloWeb.EmailAutomationLive.Shared
 
   defp open_edit_modal(
-         %{assigns: %{current_user: current_user, selected_job_type: selected_job_type}} = socket,
+         %{assigns: %{job_types: job_types, current_user: current_user, selected_job_type: selected_job_type}} = socket,
          %{
            "email_id" => email_id,
            "pipeline_id" => pipeline_id
@@ -174,6 +173,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     socket
     |> open_modal(module, %{
       current_user: current_user,
+      job_types: job_types,
       job_type: selected_job_type.jobtype,
       pipeline: get_pipline(pipeline_id),
       email_id: to_integer(email_id),
