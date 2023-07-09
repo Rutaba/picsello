@@ -40,6 +40,7 @@ defmodule Picsello.EmailAutomationsTest do
     |> visit("/email-automations")
     |> click(css("span", text: "Send Gallery Link"))
     |> assert_has(css(".modal-container", count: 0))
+    |> assert_has(css("span", text: "1 emails", count: 0))
     |> click(button("Add email"))
     |> assert_has(css(".modal-container"))
     |> assert_text("Add Wedding Email Step: Timing")
@@ -56,7 +57,7 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(button("Edit email"))
   end
 
-  feature "Adding two emails to Galleries catefory and deletion testing", %{session: session} do
+  feature "Adding two emails to Galleries catefory and delete button testing", %{session: session} do
     session
     |> visit("/email-automations")
     |> click(css("span", text: "Send Gallery Link"))
@@ -96,6 +97,9 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(button("Edit time"))
     |> assert_has(button("Edit email"))
     |> assert_has(css("button[title='remove']"))
+    |> assert_has(css("span", text: "Can't delete first email; disable the entire sequence if you don't want it to send", count: 0))
+    |> hover(css("button[phx-click='delete-email']"))
+    |> assert_has(css("span", text: "Can't delete first email; disable the entire sequence if you don't want it to send"))
   end
 
   feature "Enable/disable toggle button of the pipeline", %{session: session} do
