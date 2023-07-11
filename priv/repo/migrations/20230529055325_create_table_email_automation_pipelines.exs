@@ -217,6 +217,14 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
         description: "Starts when client pays their first payment or retainer",
         email_automation_sub_category_id: automation_status.id,
         email_automation_category_id: email_automation_gallery.id
+      },
+      # leads
+      %{
+        name: "Thank you for contacting me",
+        state: "manual_thank_you_lead",
+        description: "Manually triggered automation",
+        email_automation_sub_category_id: automation_inquiry.id,
+        email_automation_category_id: email_automation_lead.id
       }
     ]
     |> Enum.map(&Map.merge(&1, %{inserted_at: now, updated_at: now}))
