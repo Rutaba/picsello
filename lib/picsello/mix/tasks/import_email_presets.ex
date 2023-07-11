@@ -1548,6 +1548,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       email_preset = from(ep in EmailPreset, where:
       ep.type == ^attrs.type
       and ep.name == ^attrs.name
+      and ep.job_type == ^attrs.job_type
       and ep.email_automation_pipeline_id == ^attrs.email_automation_pipeline_id
       and is_nil(ep.organization_id)
       )
