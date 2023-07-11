@@ -23,9 +23,10 @@ defmodule Picsello.Galleries.GalleryClient do
     |> foreign_key_constraint(:gallery_id)
   end
 
-  defp validate_email_format(changeset, field) do
+  defp validate_email_format(changeset, email) do
     changeset
-    |> validate_format(field, Picsello.Accounts.User.email_regex(), message: "is invalid")
-    |> validate_length(field, max: 160)
+    |> validate_format(email, Picsello.Accounts.User.email_regex(), message: "is invalid")
+    |> validate_length(email, max: 160)
+    |> update_change(:email, &String.downcase/1)
   end
 end
