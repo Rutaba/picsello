@@ -13,20 +13,20 @@ defmodule PicselloWeb.LeadContactIframeView do
         <div class="flex flex-col mt-3">
           <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-light" %>
 
-          <%= input f, :name, placeholder: "First and last name", required: true %>
+          <%= input f, :name, placeholder: "Type your first and last name...", required: true %>
         </div>
 
         <div class="flex flex-col lg:flex-row">
           <div class="flex flex-col flex-1 mt-3 mr-0 lg:mr-4">
             <%= label_for f, :email, label: "Your email", class: "py-2 font-light" %>
 
-            <%= input f, :email, type: :email_input, placeholder: "email@example.com", required: true %>
+            <%= input f, :email, type: :email_input, placeholder: "Type email...", required: true %>
           </div>
 
           <div class="flex flex-col flex-1 mt-3">
             <%= label_for f, :phone, label: "Your phone number", class: "py-2 font-light" %>
 
-            <%= input f, :phone, type: :telephone_input, placeholder: "(555) 555-5555", required: true, id: "phone" %>
+            <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", required: true, id: "phone" %>
           </div>
         </div>
 
