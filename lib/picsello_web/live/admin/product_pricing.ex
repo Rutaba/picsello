@@ -2,14 +2,12 @@ defmodule PicselloWeb.Live.Admin.ProductPricing do
   @moduledoc false
   use PicselloWeb, live_view: [layout: false]
 
-  import Ecto.Query, only: [from: 2]
+  import Ecto.Query, only: [order_by: 2]
   alias Picsello.{Category, Product, Repo}
 
   def mount(_, _, socket) do
     socket
-    |> assign(
-      categories: from(category in Category, preload: :products, order_by: :name) |> Repo.all()
-    )
+    |> assign(categories: Category.all_query() |> order_by(:name) |> Repo.all())
     |> ok()
   end
 

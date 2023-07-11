@@ -6,7 +6,9 @@ defmodule Picsello.GlobalSettings do
   alias Picsello.{Repo, Category}
   alias Ecto.Multi
   alias Picsello.Galleries.GalleryProduct
+  alias Ecto.Changeset
   import Ecto.Query
+  alias Ecto.Changeset
 
   @whcc_print_category Category.print_category()
 
@@ -56,7 +58,11 @@ defmodule Picsello.GlobalSettings do
   defp gallery_product_query() do
     GSGalleryProduct
     |> join(:inner, [gs_gp], category in assoc(gs_gp, :category))
-    |> preload([gs_gp, category], category: {category, [:products, gs_gallery_products: gs_gp]})
+    |> join(:left, [_, category], product in assoc(category, :products))
+    |> where([_, _, product], is_nil(product.deleted_at))
+    |> preload([gs_gp, category, product],
+      category: {category, [products: product, gs_gallery_products: gs_gp]}
+    )
   end
 
   def gallery_products_params() do
@@ -65,8 +71,8 @@ defmodule Picsello.GlobalSettings do
     categories
     |> Enum.find(%{}, &(&1.whcc_id == @whcc_print_category))
     |> Map.get(:products, [])
+    |> Repo.preload(:category)
     |> Enum.map(fn product ->
-      product = Picsello.Repo.preload(product, :category)
       {categories, selections} = Picsello.Product.selections_with_prices(product)
 
       selections
@@ -122,9 +128,10 @@ defmodule Picsello.GlobalSettings do
   defp print_products(_whcc_print_categroy, _print_category), do: []
 
   def list_print_products(gs_gallery_product_id) do
-    from(gs_print_product in GSPrintProduct,
-      where: gs_print_product.global_settings_gallery_product_id == ^gs_gallery_product_id
-    )
+    GSPrintProduct
+    |> join(:inner, [gs_pp], product in assoc(gs_pp, :product))
+    |> where([gs_pp], gs_pp.global_settings_gallery_product_id == ^gs_gallery_product_id)
+    |> where([_, product], is_nil(product.deleted_at))
     |> Repo.all()
   end
 
@@ -135,4 +142,23 @@ defmodule Picsello.GlobalSettings do
   end
 
   def get(organization_id), do: Repo.get_by(GSGallery, organization_id: organization_id)
+
+  def get_or_add(organization_id) do
+    case get(organization_id) do
+      nil ->
+        {:ok, gs} = save(%GSGallery{}, %{organization_id: organization_id})
+        gs
+
+      gs_gallery ->
+        gs_gallery
+    end
+  end
+
+  def save(%GSGallery{} = gs, attrs), do: Changeset.change(gs, attrs) |> save()
+  def save(%Changeset{} = changeset), do: Repo.insert_or_update(changeset)
+
+  @watermark_fields GSGallery.watermark_fields()
+  def delete_watermark(%GSGallery{} = gs_gallery) do
+    save(gs_gallery, Enum.into(@watermark_fields, %{}, &{&1, nil}))
+  end
 end

@@ -200,11 +200,11 @@ defmodule Picsello.Notifiers.ClientNotifier do
       order_items: products ++ digitals,
       order_number: Picsello.Cart.Order.number(order),
       order_shipping: order |> Cart.preload_products() |> Cart.total_shipping(),
-      order_subtotal: Order.total_cost(order),
+      order_subtotal: Money.subtract(Order.total_cost(order), Cart.preload_products(order) |> Cart.total_shipping()),
       order_total: Order.total_cost(order),
       order_url:
         if(order.album_id,
-          do: helpers.proofing_album_selections_url(album, order),
+          do: helpers.proofing_album_selections_url(album, gallery, order),
           else: helpers.order_url(gallery, order)
         ),
       subject: "#{organization.name} - order ##{Picsello.Cart.Order.number(order)}"

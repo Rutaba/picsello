@@ -215,7 +215,7 @@ defmodule PicselloWeb.PackageLive.Shared do
             <div class="flex items-center text-base-250">
               <span class="">Package price:&nbsp;</span>
               <div class="">
-                <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
+                <%= @package |> Package.price() %>
               </div>
             </div>
             <div class="flex items-center text-base-250">

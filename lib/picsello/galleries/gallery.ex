@@ -68,10 +68,7 @@ defmodule Picsello.Galleries.Gallery do
 
     @primary_key false
     embedded_schema do
-      field :expiration, :boolean
-      field :watermark, :boolean
       field :products, :boolean
-      field :digital, :boolean
     end
   end
 

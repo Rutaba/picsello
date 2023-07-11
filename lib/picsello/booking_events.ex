@@ -21,10 +21,7 @@ defmodule Picsello.BookingEvents do
       %__MODULE__{}
       |> cast(attrs, [:name, :email, :phone, :date, :time])
       |> validate_required([:name, :email, :phone, :date, :time])
-      |> validate_change(:phone, &valid_phone/2)
     end
-
-    defdelegate valid_phone(field, value), to: Picsello.Client
   end
 
   def upsert_booking_event(changeset) do
@@ -72,7 +69,8 @@ defmodule Picsello.BookingEvents do
         thumbnail_url: event.thumbnail_url,
         status: event.status,
         duration_minutes: event.duration_minutes,
-        dates: event.dates
+        dates: event.dates,
+        inserted_at: event.inserted_at
       },
       group_by: [event.id, package.name],
       order_by: ^filter_order_by(sort_by, sort_direction)
@@ -289,7 +287,7 @@ defmodule Picsello.BookingEvents do
       ) do
     Enum.count(slots, fn {slot_time, is_available, _is_break, _is_hide} ->
       !is_available && Time.compare(slot_time, start_time) in [:gt, :eq] &&
-        Time.compare(slot_time, end_time) in [:lt, :eq]
+        Time.compare(slot_time, end_time) in [:lt]
     end) > 0
   end
 

@@ -1,6 +1,6 @@
 defmodule Picsello.Notifiers.UserNotifier do
   @moduledoc false
-  alias Picsello.{Repo, Accounts.User, Job}
+  alias Picsello.{Repo, Cart, Accounts.User, Job}
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
   use Picsello.Notifiers
   import Money.Sigils
@@ -231,33 +231,49 @@ defmodule Picsello.Notifiers.UserNotifier do
 
   @spec order_confirmation_params(Picsello.Cart.Order.t(), module()) :: %{
           :gallery_name => String.t(),
+          :client_name => String.t(),
           :job_name => String.t(),
           :client_order_url => String.t(),
+          :products_quantity=> String.t(),
+          :total_products_price => Money.t(),
           :client_charge => Money.t(),
+          :total_costs => Money.t(),
+          optional(:digital_credit_used) => Money.t(),
+          optional(:digital_credit_remaining) => integer(),
+          optional(:contains_digital)=> boolean(),
+          optional(:contains_product) => boolean(),
+          optional(:digital_quantity)=> String.t(),
+          optional(:total_digitals_price) => Money.t(),
           optional(:print_credit_used) => Money.t(),
           optional(:print_credit_remaining) => Money.t(),
           optional(:print_cost) => Money.t(),
           optional(:photographer_charge) => Money.t(),
-          optional(:photographer_payment) => Money.t()
+          optional(:photographer_payment) => Money.t(),
+          optional(:stripe_fee) => Money.t(),
+          optional(:shipping) => Money.t(),
+          optional(:positive_shipping) => Money.t(),
         }
   def order_confirmation_params(
         %{
-          gallery: %{job: job} = gallery,
+          gallery: %{job: %{client: client} = job} = gallery,
           intent: intent,
           album_id: nil
         } = order,
         helpers
       ) do
+    temp_params =
     for(
       fun <- [
         &print_credit/1,
         &print_cost/1,
-        &photographer_charge/1,
-        &photographer_payment/1
+        &photographer_payment/1,
+        &digital_params/1,
+        &products_params/1
       ],
       reduce: %{
         gallery_name: gallery.name,
         job_name: Job.name(job),
+        client_name: client.name,
         client_charge:
           case intent do
             %{amount: amount} -> amount
@@ -269,6 +285,16 @@ defmodule Picsello.Notifiers.UserNotifier do
       params ->
         Map.merge(params, fun.(order))
     end
+
+    stripe_fee = Map.get(temp_params, :stripe_fee, ~M[0]USD)
+    shipping = Map.get(temp_params, :shipping, ~M[0]USD)
+
+    total_costs =
+      stripe_fee
+      |> Money.add(Map.get(temp_params, :print_cost, ~M[0]USD))
+      |> Money.add(shipping)
+
+    Map.merge(temp_params, %{total_costs: total_costs, positive_shipping: Money.neg(shipping)})
   end
 
   def order_confirmation_params(
@@ -279,7 +305,62 @@ defmodule Picsello.Notifiers.UserNotifier do
       job_url: helpers.job_url(job.id),
       gallery_name: gallery.name,
       job_name: Job.name(job),
-      order_url: helpers.proofing_album_selections_url(album, order)
+      order_url: helpers.proofing_album_selections_url(album, gallery, order)
+    }
+  end
+
+  defp digital_params(%{gallery: gallery} = order) do
+    case Map.get(order, :digitals) do
+      [] ->
+        %{}
+
+      [_ | _] ->
+        %{
+          contains_digital: true,
+          digital_quantity: "#{Enum.count(order.digitals)}",
+          total_digitals_price:
+            Enum.reduce(order.digitals, ~M[0]USD, fn digital, acc ->
+              Money.add(digital.price, acc)
+            end),
+          digital_credit_remaining: Map.get(Cart.credit_remaining(gallery), :digital, 0),
+          digital_credit_used:
+            Enum.reduce(order.digitals, ~M[0]USD, fn digital, acc ->
+              if digital.is_credit do
+                Money.add(digital.price, acc)
+              else
+                acc
+              end
+            end)
+            |> case do
+              ~M[0]USD -> %{}
+              credit -> credit |> Money.neg()
+            end
+        }
+
+      _ ->
+        %{}
+    end
+  end
+
+  defp products_params(order) do
+    products = Cart.preload_products(order).products
+
+    total_products_price =
+      products
+      |> Enum.reduce(~M[0]USD, fn product, acc ->
+        Money.add(product.price, acc)
+      end)
+
+    products_quantity =
+      products
+      |> Enum.reduce(0, fn product, acc ->
+        Cart.product_quantity(product) + acc
+      end)
+    %{
+      shipping: Picsello.Cart.total_shipping(order) |> Money.neg(),
+      total_products_price: total_products_price,
+      products_quantity: products_quantity,
+      contains_product: Enum.any?(products)
     }
   end
 
@@ -292,7 +373,7 @@ defmodule Picsello.Notifiers.UserNotifier do
 
       credit ->
         %{
-          print_credit_used: credit,
+          print_credit_used: credit |> Money.neg(),
           print_credit_remaining: Picsello.Cart.credit_remaining(gallery).print
         }
     end
@@ -300,40 +381,74 @@ defmodule Picsello.Notifiers.UserNotifier do
 
   defp print_cost(%{whcc_order: nil}), do: %{}
 
-  defp print_cost(%{whcc_order: whcc_order} = order) do
-    processing_fee = stripe_processing_fee(order)
-    shipping_price = Picsello.Cart.total_shipping(order)
-
+  defp print_cost(%{whcc_order: whcc_order}) do
     %{
       print_cost:
         whcc_order
         |> WHCCOrder.total()
-        |> Money.add(shipping_price)
-        |> Money.add(processing_fee)
+        |> Money.neg
     }
   end
 
   defp photographer_payment(%{intent: nil}), do: %{}
 
-  defp photographer_payment(%{
-         intent: %{
-           amount: amount,
-           application_fee_amount: application_fee_amount,
-           processing_fee: processing_fee
-         }
-       }),
-       do: %{
-         photographer_payment:
-           Money.subtract(amount, application_fee_amount |> Money.add(processing_fee))
-       }
+  defp photographer_payment(
+         %{
+           whcc_order: whcc_order,
+           intent: %{
+             amount: amount,
+             application_fee_amount: _application_fee_amount
+           }
+         } = order
+       ) do
+      cost = if is_nil(whcc_order) do
+          ~M[0]USD
+        else
+          WHCCOrder.total(whcc_order)
+        end
+        |> Money.add(Picsello.Cart.total_shipping(order))
 
-  defp photographer_charge(%{invoice: nil}), do: %{}
-  defp photographer_charge(%{invoice: %{amount_due: amount}}), do: %{photographer_charge: amount}
+  actual_costs_and_fees = actual_stripe_fee(amount) |> Money.add(cost)
+  costs_and_fees = cost |> stripe_fee() |> Money.add(cost)
 
-  defp stripe_processing_fee(%{intent: %{processing_fee: processing_fee}}),
-    do: processing_fee
+  case Money.cmp(amount, actual_costs_and_fees) do
+    :gt ->
+      %{
+        photographer_payment: Money.subtract(amount, actual_costs_and_fees),
+        photographer_charge: ~M[0]USD,
+        stripe_fee: actual_stripe_fee(amount) |> Money.neg
+      }
 
-  defp stripe_processing_fee(_), do: Money.new(0)
+    :lt ->
+      %{
+        photographer_payment: ~M[0]USD,
+        photographer_charge: Money.subtract(costs_and_fees, amount) |> Money.neg,
+        stripe_fee: stripe_fee(cost) |> Money.neg
+      }
+
+    _ ->
+      %{
+        photographer_payment: ~M[0]USD,
+        photographer_charge: ~M[0]USD,
+        stripe_fee: actual_stripe_fee(amount) |> Money.neg
+      }
+    end
+  end
+
+  #stripe's actual formula to calculate fee
+  defp actual_stripe_fee(amount)
+    do
+      amount
+      |> Money.multiply(2.9/100)
+      |> Money.add(Money.new(30))
+    end
+
+  #our formula to calculate fee to be on safe side
+  defp stripe_fee(amount) do
+    amount
+    |> Money.multiply(2.9/100)
+    |> Money.add(Money.new(70))
+  end
 
   defp deliver_transactional_email(params, user) do
     sendgrid_template(:generic_transactional_template, params)

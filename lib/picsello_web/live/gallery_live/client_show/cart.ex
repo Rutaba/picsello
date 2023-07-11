@@ -30,7 +30,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       Map.put(
         gallery,
         :credits_available,
-        client_email && client_email in gallery.gallery_digital_pricing.email_list
+        (client_email && client_email in gallery.gallery_digital_pricing.email_list) ||
+          is_photographer_view(assigns)
       )
 
     socket
@@ -451,4 +452,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defdelegate add_shipping_details!(product, shipping_type), to: Picsello.Cart
   defdelegate shipping_price(product), to: Picsello.Cart
   defdelegate add_total_markuped_sum(product, products), to: Picsello.Cart
+
+  def abc(line_item, shipment_details, das_type, shipping_type) do
+    shipping_details(line_item, %{shipment_details: shipment_details, das_type: das_type, shipping_type: shipping_type})
+  end
 end

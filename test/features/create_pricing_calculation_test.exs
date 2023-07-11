@@ -33,7 +33,8 @@ defmodule Picsello.CreatePricingCalculationTest do
     user: %{name: user_name, email: user_email}
   } do
     session
-    |> click(button("Packages"))
+    |> click(testid("subnav-Settings"))
+    |> click(css("a", text: "Packages"))
     |> click(link("helpful calculator"))
     |> click(button("Get started"))
     |> assert_path("/pricing/calculator")
@@ -109,7 +110,8 @@ defmodule Picsello.CreatePricingCalculationTest do
 
   feature "user see validation error when calculating price", %{session: session} do
     session
-    |> click(button("Packages"))
+    |> click(testid("subnav-Settings"))
+    |> click(css("a", text: "Packages"))
     |> click(link("helpful calculator"))
     |> click(button("Get started"))
     |> assert_path("/pricing/calculator")
@@ -123,7 +125,8 @@ defmodule Picsello.CreatePricingCalculationTest do
 
   feature "user exits calculator from home screen", %{session: session} do
     session
-    |> click(button("Packages"))
+    |> click(testid("subnav-Settings"))
+    |> click(css("a", text: "Packages"))
     |> click(link("helpful calculator"))
     |> click(link("Exit calculator"))
     |> assert_path("/home")
@@ -131,7 +134,8 @@ defmodule Picsello.CreatePricingCalculationTest do
 
   feature "user clicks go back from home screen", %{session: session} do
     session
-    |> click(button("Packages"))
+    |> click(testid("subnav-Settings"))
+    |> click(css("a", text: "Packages"))
     |> click(link("helpful calculator"))
     |> click(link("Go back"))
     |> assert_path("/home")
@@ -139,7 +143,8 @@ defmodule Picsello.CreatePricingCalculationTest do
 
   feature "user exits calculator from a step screen", %{session: session} do
     session
-    |> click(button("Packages"))
+    |> click(testid("subnav-Settings"))
+    |> click(css("a", text: "Packages"))
     |> click(link("helpful calculator"))
     |> click(button("Get started"))
     |> click(css(".circleBtn a"))

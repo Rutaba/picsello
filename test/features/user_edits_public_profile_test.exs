@@ -78,7 +78,10 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_has(testid("description", text: "my description"))
   end
 
-  feature "user edits job types description", %{session: session, user: %{organization: organization}} do
+  feature "user edits job types description", %{
+    session: session,
+    user: %{organization: organization}
+  } do
     session
     |> assert_has(testid("subnav-Settings"))
     |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))

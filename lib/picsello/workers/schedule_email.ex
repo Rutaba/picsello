@@ -2,6 +2,7 @@ defmodule Picsello.Workers.ScheduleEmail do
   @moduledoc "Background job to send scheduled emails"
   use Oban.Worker, queue: :default
 
+  import PicselloWeb.Live.Shared, only: [deserialize: 1]
   alias Picsello.{Job, Messages, Repo, Notifiers.ClientNotifier}
 
   def perform(%Oban.Job{
@@ -9,14 +10,11 @@ defmodule Picsello.Workers.ScheduleEmail do
           "message" => message_serialized,
           "recipients" => recipients,
           "job_id" => job_id,
-          "user" => user
+          "user" => user_serialized
         }
       }) do
-    message_changeset =
-      message_serialized
-      |> Base.decode64!()
-      |> :erlang.binary_to_term()
-
+    message_changeset = deserialize(message_serialized)
+    user = deserialize(user_serialized)
     job = Job.by_id(job_id) |> Repo.one!()
 
     {:ok, %{client_message: message, client_message_recipients: _}} =

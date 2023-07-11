@@ -23,10 +23,19 @@ defmodule Picsello.Galleries do
     Galleries.Gallery.UseGlobal
   }
 
+  alias Picsello.Workers.{UploadExistingFile, CleanStore}
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
-  alias Picsello.Workers.CleanStore
   alias Galleries.PhotoProcessing.ProcessingManager
-  alias Galleries.{Gallery, Photo, Watermark, SessionToken, GalleryProduct, GalleryClient}
+
+  alias Galleries.{
+    Gallery,
+    Photo,
+    Watermark,
+    SessionToken,
+    GalleryProduct,
+    GalleryClient
+  }
+
   import Repo.CustomMacros
 
   @area_markup_category Picsello.Category.print_category()
@@ -71,10 +80,23 @@ defmodule Picsello.Galleries do
       join: j in Job,
       on: j.id == g.job_id,
       join: c in Client,
+      as: :c,
       on: c.id == j.client_id,
       preload: [:albums, [job: :client]],
       where: c.organization_id == ^organization_id
     )
+  end
+
+  def get_recent_galleries(user) do
+    query = list_all_galleries_by_organization_query(user.organization_id)
+
+    from(q in query,
+      where: q.status not in [:disabled],
+      preload: [:orders, :job],
+      order_by: [desc: q.inserted_at],
+      limit: 6
+    )
+    |> Repo.all()
   end
 
   @doc """
@@ -522,13 +544,13 @@ defmodule Picsello.Galleries do
     |> Multi.merge(fn %{gallery: gallery} ->
       gallery
       |> Repo.preload(:package)
-      |> check_watermark()
+      |> check_watermark(user)
     end)
   end
 
-  defp check_watermark(%{package: %{download_each_price: %Money{amount: 0}}}), do: Multi.new()
+  defp check_watermark(%{package: %{download_each_price: %Money{amount: 0}}}, _), do: Multi.new()
 
-  defp check_watermark(gallery) do
+  defp check_watermark(gallery, %{organization_id: org_id}) do
     case Gallery.global_gallery_watermark(gallery) do
       nil ->
         Multi.new()
@@ -541,6 +563,13 @@ defmodule Picsello.Galleries do
             watermark
           )
         end)
+        |> Oban.insert(
+          :waterk_file,
+          UploadExistingFile.new(%{
+            ex_path: GSGallery.watermark_path(org_id),
+            new_path: Watermark.watermark_path(gallery.id)
+          })
+        )
     end
   end
 
@@ -821,10 +850,7 @@ defmodule Picsello.Galleries do
 
   def maybe_set_product_previews(%{cover_photo: cover_photo} = gallery, photo) do
     case cover_photo do
-      %Photo{} ->
-        {:ok, cover_photo}
-
-      _ ->
+      nil ->
         save_gallery_cover_photo(
           gallery,
           %{
@@ -834,6 +860,9 @@ defmodule Picsello.Galleries do
               |> Map.put(:id, photo.original_url)
           }
         )
+
+      cover_photo ->
+        {:ok, cover_photo}
     end
   end
 
@@ -968,42 +997,6 @@ defmodule Picsello.Galleries do
     )
   end
 
-  def update_all(galleries, total_days) when is_list(galleries) do
-    galleries =
-      if total_days == 0 do
-        galleries
-        |> Enum.map(
-          &[
-            id: &1.id,
-            name: &1.name,
-            updated_at: &1.updated_at,
-            inserted_at: &1.inserted_at,
-            status: &1.status,
-            job_id: &1.job_id,
-            expired_at: nil
-          ]
-        )
-      else
-        galleries
-        |> Enum.map(
-          &[
-            id: &1.id,
-            name: &1.name,
-            updated_at: &1.updated_at,
-            inserted_at: &1.inserted_at,
-            status: &1.status,
-            job_id: &1.job_id,
-            expired_at: GSGallery.calculate_expiry_date(total_days, &1.inserted_at)
-          ]
-        )
-      end
-
-    Repo.insert_all(Gallery, galleries,
-      on_conflict: {:replace, [:expired_at]},
-      conflict_target: :id
-    )
-  end
-
   def gallery_current_status(%Gallery{id: nil}), do: :none_created
 
   def gallery_current_status(%Gallery{status: :expired}), do: :deactivated
@@ -1016,41 +1009,32 @@ defmodule Picsello.Galleries do
     |> if(do: :selections_available, else: uploading_status(gallery))
   end
 
-  def save_galleries_watermark(galleries, watermark_change) do
-    galleries
-    |> Enum.reduce(Multi.new(), fn %{id: id} = gallery, multi ->
-      Multi.run(multi, id, fn _, _ ->
-        save_gallery_watermark(gallery, watermark_change)
-      end)
-    end)
-    |> Repo.transaction()
-  end
-
   @doc """
   Creates or updates watermark of the gallery.
   And triggers photo watermarking
   """
   def save_gallery_watermark(gallery, watermark_change) do
     gallery
-    |> save_watermark(watermark_change)
+    |> gallery_watermark_change(watermark_change)
+    |> Repo.update()
     |> tap(fn
       {:ok, gallery} -> apply_watermark_on_photos(gallery)
       x -> x
     end)
   end
 
-  def save_watermark(gallery, watermark_change) do
+  defp gallery_watermark_change(gallery, watermark_change) do
     gallery
     |> Repo.preload(:watermark)
     |> Gallery.save_watermark(watermark_change)
-    |> Repo.update()
   end
 
-  def apply_watermark_on_photos(gallery) do
-    gallery = gallery |> Repo.preload([:watermark])
+  def apply_watermark_on_photos(%{id: id} = gallery) do
+    %{watermark: watermark} = Repo.preload(gallery, [:watermark])
 
-    get_gallery_photos(gallery.id)
-    |> Enum.each(&ProcessingManager.update_watermark(&1, gallery.watermark))
+    id
+    |> get_gallery_photos()
+    |> Enum.each(&ProcessingManager.update_watermark(&1, watermark))
   end
 
   @doc """
@@ -1060,44 +1044,30 @@ defmodule Picsello.Galleries do
     Repo.preload(gallery, :watermark, force: true)
   end
 
-  def delete_multiple_watermarks(gallery_ids) do
-    clear_watermarks = fn multi, gallery_id ->
-      Multi.run(multi, gallery_id, fn _, _ -> clear_watermarks(gallery_id) end)
-    end
-
-    Multi.new()
-    |> Multi.delete_all(
-      :delete_watermarks,
-      from(w in Watermark, where: w.gallery_id in ^gallery_ids)
-    )
-    |> then(fn m -> Enum.reduce(gallery_ids, m, &clear_watermarks.(&2, &1)) end)
-    |> Repo.transaction()
-  end
-
   @doc """
   Removes the watermark.
   """
-  def delete_gallery_watermark(watermark) do
+  def delete_gallery_watermark(%Gallery{} = gallery) do
+    %{watermark: watermark} = load_watermark_in_gallery(gallery)
     Repo.delete(watermark)
   end
 
   @doc """
   Clears watermarks of photos and triggers watermarked versions removal
   """
-  def clear_watermarks(gallery_id) do
-    %{job: %{client: %{organization: %{name: name}}}} =
-      gallery = get_gallery!(gallery_id) |> populate_organization()
+  def clear_watermarks(gallery_id, apply_watermark_to_proofing? \\ :yes) do
+    gallery = get_gallery!(gallery_id)
 
-    gallery
-    |> Repo.preload(photos: [:album])
-    |> Map.get(:photos)
-    |> Enum.reduce({[], []}, fn
-      %{album: %{is_proofing: true}} = photo, acc ->
-        ProcessingManager.start(photo, Watermark.build(name, gallery))
-        acc
+    gallery_id
+    |> get_gallery_photos()
+    |> Repo.preload(:album)
+    |> Enum.reduce({[], [], []}, fn
+      %{album: %{is_proofing: true}} = photo, {proofing_photos, photo_ids, oban_jobs} ->
+        {[photo | proofing_photos], photo_ids, oban_jobs}
 
-      photo, {photo_ids, oban_jobs} ->
+      photo, {proofing_photos, photo_ids, oban_jobs} ->
         {
+          proofing_photos,
           [photo.id | photo_ids],
           [photo.watermarked_preview_url, photo.watermarked_url]
           |> Enum.map(fn path -> CleanStore.new(%{path: path}) end)
@@ -1105,10 +1075,7 @@ defmodule Picsello.Galleries do
         }
     end)
     |> then(fn
-      {[], []} ->
-        {:ok, %{}}
-
-      {photo_ids, oban_jobs} ->
+      {proofing_photos, photo_ids, oban_jobs} ->
         Multi.new()
         |> Multi.update_all(
           :photos,
@@ -1121,8 +1088,26 @@ defmodule Picsello.Galleries do
           []
         )
         |> Oban.insert_all(:clean_store, oban_jobs)
+        |> Multi.put(:proofing_photos, proofing_photos)
         |> Repo.transaction()
     end)
+    |> tap(fn
+      {:ok, %{proofing_photos: proofing_photos}} = result
+      when apply_watermark_to_proofing? == :yes ->
+        apply_watermark_to_photos(proofing_photos, gallery)
+
+        result
+
+      result ->
+        result
+    end)
+  end
+
+  def apply_watermark_to_photos(photos, gallery) do
+    %{job: %{client: %{organization: %{name: name}}}} = populate_organization(gallery)
+    watermark = Watermark.build(name, gallery)
+
+    Enum.each(photos, &ProcessingManager.start(&1, watermark))
   end
 
   def gallery_password_change(attrs \\ %{}) do
@@ -1319,15 +1304,15 @@ defmodule Picsello.Galleries do
     |> evaluate_price()
   end
 
-  defp print_product_sizes(category_id, organization_id) do
-    from(print_product in Picsello.GlobalSettings.PrintProduct,
-      join: gs_gallery_product in assoc(print_product, :global_settings_gallery_product),
-      where: gs_gallery_product.organization_id == ^organization_id,
-      where: gs_gallery_product.category_id == ^category_id,
-      select: print_product.sizes
-    )
-    |> Repo.all()
-    |> Enum.concat()
+  def insert_gallery_client(gallery, email) do
+    case Galleries.get_gallery_client(gallery, email) do
+      nil ->
+        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
+        |> Repo.insert()
+
+      gallery_client ->
+        {:ok, gallery_client}
+    end
   end
 
   def min_price(%{whcc_id: @area_markup_category} = category, org_id, %{
@@ -1346,6 +1331,34 @@ defmodule Picsello.Galleries do
     |> evaluate_price()
   end
 
+  def preview_image(gallery) do
+    photo_query = Photos.watermarked_query()
+
+    photo =
+      from(p in photo_query, where: p.gallery_id == ^gallery.id, order_by: p.position, limit: 1)
+      |> Repo.one()
+
+    if photo, do: Photos.preview_url(photo, [])
+  end
+
+  def broadcast(gallery, message),
+    do: Phoenix.PubSub.broadcast(Picsello.PubSub, topic(gallery), message)
+
+  def subscribe(gallery), do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic(gallery))
+
+  defp print_product_sizes(category_id, organization_id) do
+    from(print_product in Picsello.GlobalSettings.PrintProduct,
+      join: gs_gallery_product in assoc(print_product, :global_settings_gallery_product),
+      join: product in assoc(print_product, :product),
+      where: gs_gallery_product.organization_id == ^organization_id,
+      where: gs_gallery_product.category_id == ^category_id,
+      where: is_nil(product.deleted_at),
+      select: print_product.sizes
+    )
+    |> Repo.all()
+    |> Enum.concat()
+  end
+
   defp update_markup(%{gs_gallery_products: [%{markup: markup}]} = category, %{
          products: products?
        }) do
@@ -1360,16 +1373,6 @@ defmodule Picsello.Galleries do
     details
     |> Picsello.Cart.Product.new()
     |> Picsello.Cart.Product.example_price()
-  end
-
-  def preview_image(gallery) do
-    photo_query = Photos.watermarked_query()
-
-    photo =
-      from(p in photo_query, where: p.gallery_id == ^gallery.id, order_by: p.position, limit: 1)
-      |> Repo.one()
-
-    if photo, do: Photos.preview_url(photo, [])
   end
 
   defp selected_photo_query(query) do
@@ -1388,28 +1391,12 @@ defmodule Picsello.Galleries do
     |> if(do: :upload_in_progress, else: :ready)
   end
 
-  def broadcast(gallery, message),
-    do: Phoenix.PubSub.broadcast(Picsello.PubSub, topic(gallery), message)
-
-  def subscribe(gallery), do: Phoenix.PubSub.subscribe(Picsello.PubSub, topic(gallery))
-
   defp topic(gallery), do: "gallery:#{gallery.id}"
 
   defp active_galleries, do: from(g in Gallery, where: g.status == :active)
 
   defp active_disabled_galleries,
     do: from(g in Gallery, where: g.status in [:active, :disabled])
-
-  defp insert_gallery_client(gallery, email) do
-    case Galleries.get_gallery_client(gallery, email) do
-      nil ->
-        GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
-        |> Repo.insert()
-
-      gallery_client ->
-        {:ok, gallery_client}
-    end
-  end
 
   defdelegate get_photo(id), to: Picsello.Photos, as: :get
   defdelegate refresh_bundle(gallery), to: Picsello.Workers.PackGallery, as: :enqueue

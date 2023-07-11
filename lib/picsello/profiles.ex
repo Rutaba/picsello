@@ -94,7 +94,6 @@ defmodule Picsello.Profiles do
     @moduledoc "container for the contact form data"
     use Ecto.Schema
     import Ecto.Changeset
-    import Picsello.Client, only: [valid_phone: 2]
     import Picsello.Accounts.User, only: [validate_email_format: 1]
     import PicselloWeb.Gettext
 
@@ -111,7 +110,6 @@ defmodule Picsello.Profiles do
       |> cast(attrs, @fields)
       |> validate_email_format()
       |> validate_required(@fields)
-      |> validate_change(:phone, &valid_phone/2)
     end
 
     def to_string(%__MODULE__{} = contact) do
