@@ -210,14 +210,21 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
             <div class="px-6">
               <div class="flex md:flex-row flex-col justify-between">
                 <div class="flex h-max">
-                <div class={"h-auto pt-6 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
+                  <div class={"h-auto pt-6 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
                     <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center">
-                      <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+                      <%= if email.status == :active do %>
+                        <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />  
+                      <% else %>
+                        <.icon name="close-x" class="w-4 h-4 stroke-current stroke-3 text-blue-planning-300" />
+                      <% end %>
                     </div>
                   </div>
                   <div class="ml-3 py-6">
                     <div class="text-xl font-bold">
                       <%= get_email_name(email) %>
+                      <%= if email.status == :disabled do %> 
+                        <span class="ml-2 rounded-md bg-red-sales-100 text-red-sales-300 px-2 text-sm font-bold whitespace-nowrap">Disabled</span>
+                      <% end %>
                     </div>
                     <div class="flex flex-row items-center text-base-250">
                       <.icon name="play-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />

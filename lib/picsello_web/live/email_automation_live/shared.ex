@@ -1,6 +1,8 @@
 defmodule PicselloWeb.EmailAutomationLive.Shared do
   @moduledoc false
-  use PicselloWeb, :live_component
+  use Phoenix.Component
+  import Phoenix.LiveView
+  import PicselloWeb.Gettext, only: [ngettext: 3]
 
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
@@ -8,7 +10,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   alias Picsello.{Marketing, PaymentSchedules, EmailPresets.EmailPreset, EmailAutomations, Repo}
   alias Picsello.EmailAutomation.EmailSchedule
 
-  @impl true
+  # @impl true
   def handle_info({:update_automation, %{message: message}}, socket) do
     socket
     |> assign_automation_pipelines()
@@ -16,7 +18,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> noreply()
   end
 
-  @impl true
+  # @impl true
   def handle_info(
         {:load_template_preview, component, body_html},
         %{assigns: %{current_user: current_user, modal_pid: modal_pid}} = socket

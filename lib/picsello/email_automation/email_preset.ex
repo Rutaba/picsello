@@ -76,10 +76,10 @@ defmodule Picsello.EmailPresets.EmailPreset do
     end)
   end
 
-  defp validate_states(changeset) do
-    type = get_field(changeset, :type)
-    changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))
-  end
+  # defp validate_states(changeset) do
+  #   type = get_field(changeset, :type)
+  #   changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))
+  # end
 
   def calculate_hours(changeset) do
     data = changeset |> current()

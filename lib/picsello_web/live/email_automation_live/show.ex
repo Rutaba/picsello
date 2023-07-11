@@ -120,15 +120,17 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_event(
         "edit-email",
         %{"email_id" => id, "pipeline_id" => pipeline_id},
-        %{assigns: %{current_user: current_user, type: type}} = socket
+        %{assigns: %{current_user: current_user, type: type, job_types: job_types}} = socket
       ) do
+    selected_job_type = job_types |> Enum.filter(fn x -> x.job_type == type end) |> List.first()    
     schedule_id = to_integer(id)
     pipeline_id = to_integer(pipeline_id)
 
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent, %{
       current_user: current_user,
-      job_type: type,
+      job_type: selected_job_type.jobtype,
+      job_types: job_types,
       pipeline: get_pipline(pipeline_id),
       email: EmailAutomationSchedules.get_schedule_by_id(schedule_id)
     })
