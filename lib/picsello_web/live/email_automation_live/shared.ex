@@ -164,18 +164,27 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     sub_text = cond do
       state in ["client_contact", "booking_proposal_sent"] ->
-        "the prior email \"#{get_email_name(email)}\" has been sent if no response from the client"
+        "the prior email \"#{get_email_name(email, index)}\" has been sent if no response from the client"
       state in ["before_shoot", "shoot_thanks", "post_shoot"] -> "the shoot date"
       state == "cart_abandoned" and index == 0 -> "client abandons cart"
-      state == "cart_abandoned" -> "sending \"#{get_email_name(email)}\" and no reply from the client"
+      state == "cart_abandoned" -> "sending \"#{get_email_name(email, index)}\" and no reply from the client"
       state == "gallery_expiration_soon" -> "gallery expiration date"
+      state == "manual_thank_you_lead" -> "sending \"#{get_email_name(email, index)}\""
       true -> ""
     end
 
     "Send #{count} #{calendar} #{sign} #{sub_text}"
   end
 
-  def get_email_name(email), do: if(email.private_name, do: email.private_name, else: email.name)
+  def get_email_name(email, index) do
+    type = String.capitalize(email.job_type)
+    
+    cond do
+      email.private_name -> email.private_name
+      is_nil(email.organization_id) -> "#{type} - " <> email.name
+      true -> "#{type} - " <> email.name <> "-#{index + 1}"
+    end
+  end
 
   defp get_preceding_email(emails, index) do
     {email, _} = List.pop_at(emails, index - 1)

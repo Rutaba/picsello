@@ -25,7 +25,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -42,7 +42,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Lead - Initial Inquiry - follow up 1",
+        name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -61,7 +61,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Lead - Initial Inquiry - follow up 2",
+        name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -79,13 +79,36 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Lead - Initial Inquiry - follow up 3",
+        name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>I haven’t yet heard back from you, so I have assumed you've gone in a different direction or your priorities have changed.</p>
         <p>If that is not the case, simply let me know as I understand life gets busy!</p>
         <p>Cheers!</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: 22,
+        total_hours: 0,
+        status: "active",
+        job_type: "wedding",
+        type: "lead",
+        state: "gallery_send_link",
+        position: 0,
+        name: "Lead - Initial Inquiry email",
+        subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
+        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing weddings.</p>
+        <p style="color: red;">Try to preempt any questions you think they might have:</p>
+        <p style="color: red;">1. What is your process? Do you want to schedule a call with them? Meet in person?</p>
+        <p style="color: red;">2. Try to answer any frequently asked questions that often come up</p>
+        <p style="color: red;">3. If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
+        <p>When is your wedding date? Please reply to this email so we can check our availability for that date!</p>
+        <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
         """
       },
@@ -97,7 +120,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Booking Proposal email",
+        name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -122,7 +145,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Booking Proposal Email - follow up 1",
+        name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -146,7 +169,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Booking Proposal Email - follow up 2",
+        name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -171,7 +194,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Booking Proposal Email - follow up 3",
+        name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -188,7 +211,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Pre-Shoot - retainer paid email",
+        name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -209,7 +232,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
         subject_template: "Receipt from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -230,7 +253,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -249,7 +272,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Pre-Shoot - week before email",
+        name: "Pre-Shoot - week before email",
         subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -269,7 +292,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Pre-Shoot - day before email",
+        name: "Pre-Shoot - day before email",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -291,7 +314,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Payments - balance due email",
+        name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -312,7 +335,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Payments - Client paid in full email",
+        name: "Payments - Client paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -330,7 +353,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Payments - Balance due - Offline payment email",
+        name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -351,7 +374,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Payments - Client paid offline payment email",
+        name: "Payments - Client paid offline payment email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -369,7 +392,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Post Shoot - Thank you for a great shoot email",
+        name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -387,7 +410,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Post Shoot - Follow up & request for reviews email",
+        name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "Checking in! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -406,7 +429,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Post Shoot - Next Shoot email",
+        name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -427,7 +450,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -448,7 +471,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -469,7 +492,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -488,7 +511,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -507,7 +530,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -526,7 +549,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template: "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -545,7 +568,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -564,7 +587,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -583,7 +606,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template: "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -602,7 +625,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Gallery - Gallery Password Changed Email",
+        name: "Gallery - Gallery Password Changed Email",
         subject_template: "Your password has been successfully changed | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -618,7 +641,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - (Digital) Order Received",
+        name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -639,7 +662,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - (Products) Order Received",
+        name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -656,7 +679,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - (BOTH - Digitals and Products) Order Received",
+        name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -678,7 +701,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - (Digital) Order Being Prepared",
+        name: "(Digital) Order Being Prepared",
         subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -695,7 +718,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - (Digital and Products) Images now available",
+        name: "(Digital and Products) Images now available",
         subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -716,7 +739,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Order has shipped email",
+        name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -732,7 +755,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Order is delayed email",
+        name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -748,7 +771,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Order has arrived email",
+        name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{order_first_name}},</p>
