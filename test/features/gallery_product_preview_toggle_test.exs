@@ -28,9 +28,6 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       gallery
       |> Picsello.Galleries.Gallery.update_changeset()
       |> Ecto.Changeset.put_change(:use_global, %{
-        watermark: true,
-        expiration: true,
-        digital: true,
         products: true
       })
       |> Picsello.Repo.update!()

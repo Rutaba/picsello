@@ -281,6 +281,7 @@ defmodule Picsello.ClientOrdersTest do
     |> Mox.stub(:confirm_order, fn _account_id, _confirmation ->
       {:ok, :confirmed}
     end)
+    invoice = build(:stripe_invoice, id: "invoice-stripe-id")
 
     %{stripe_account_id: connect_account_id} = organization
 
@@ -305,8 +306,18 @@ defmodule Picsello.ClientOrdersTest do
       payment_intent: "payment-intent-id",
       connect_account: connect_account_id
     })
+    |> Mox.stub(:create_invoice_item, fn _, _ ->
+      {:ok, %Stripe.Invoiceitem{}}
+    end)
+    |> Mox.stub(:create_invoice, fn _, _ ->
+      {:ok, invoice}
+    end)
+    |> Mox.stub(:finalize_invoice, fn _, _, _ ->
+      {:ok, %{invoice | status: "open"}}
+    end)
 
     Picsello.PhotoStorageMock |> Mox.stub(:path_to_url, & &1)
+
 
     session
     |> assert_text(gallery.name)

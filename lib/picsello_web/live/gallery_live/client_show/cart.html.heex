@@ -73,7 +73,7 @@
                                     <span><%= label %></span>
                                   </label>
                                   <div> <%= Map.merge(line_item, line_item |> shipping_details(%{shipment_details: @shipment_details, das_type: @das_type, shipping_type: shipping_type})) |> add_total_markuped_sum(whcc_id in @shipping_to_all && [] || product_lines) |> shipping_price() %></div>
-                                </div>
+                                </div>                            
                               <% end %>
                             </.form>
                           </div>

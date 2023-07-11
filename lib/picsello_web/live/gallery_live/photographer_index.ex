@@ -237,7 +237,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         {:confirm_event, "delete_watermark", _},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    delete_watermark(gallery)
+    {:ok, _} = Galleries.delete_gallery_watermark(gallery)
     send(self(), :clear_watermarks)
 
     socket

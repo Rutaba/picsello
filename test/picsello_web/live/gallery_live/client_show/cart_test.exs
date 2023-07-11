@@ -10,10 +10,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
     Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
     gallery =
-      insert(:gallery, job: insert(:lead, package: insert(:package, download_count: 1)))
+      insert(:gallery, job: insert(:lead, package: insert(:package, download_count: 2)))
       |> Map.put(:credits_available, true)
 
-    insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 1})
+    insert(:gallery_digital_pricing, %{gallery: gallery, download_count: 2})
 
     gallery_client =
       insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})

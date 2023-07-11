@@ -317,7 +317,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       ]
     end
 
-    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc, :expect_stripe_checkout]
+    setup [:stub_whcc, :expect_stripe_checkout]
 
     feature "only charges photographer", %{
       session: session,
@@ -349,7 +349,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> click(link("Home"))
       |> assert_has(definition("Print Credit", text: "$758.00"))
 
-      refute_receive({:order_confirmed, _order})
+      assert_receive({:order_confirmed, _order})
 
       trigger_stripe_webhook(session, :app, "invoice.payment_succeeded", %{
         invoice
@@ -359,7 +359,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           status: :paid
       })
 
-      assert_receive({:order_confirmed, _order})
+      assert_receive({:delivered_email, _order})
     end
   end
 
@@ -387,7 +387,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       ]
     end
 
-    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc, :expect_stripe_checkout]
+    setup [:stub_whcc, :expect_stripe_checkout]
 
     feature("only charges photographer", %{
       session: session,
@@ -419,7 +419,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> click(link("Home"))
       |> assert_has(definition("Print Credit", text: "$2,980.00"))
 
-      refute_receive({:order_confirmed, _order})
+      assert_receive({:order_confirmed, _order})
 
       trigger_stripe_webhook(session, :app, "invoice.payment_succeeded", %{
         invoice
@@ -429,7 +429,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           status: :paid
       })
 
-      assert_receive({:order_confirmed, _order})
+      assert_receive({:delivered_email, _order})
     end
   end
 
@@ -458,7 +458,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       ]
     end
 
-    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc, :expect_stripe_checkout]
+    setup [:stub_whcc, :expect_stripe_checkout]
 
     feature("only charges client", %{session: session, photo_ids: photo_ids}) do
       session
@@ -515,7 +515,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
         stripe_invoice: stripe_invoice,
         whcc_unit_base_price: ~M[5300]USD,
         whcc_total: ~M[5000]USD,
-        stripe_checkout: %{application_fee_amount: ~M[6095]USD, amount: ~M[2000]USD}
+        stripe_checkout: %{application_fee_amount: ~M[1095]USD, amount: ~M[2000]USD}
       ]
     end
 
@@ -548,7 +548,6 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     }) do
       session
       |> place_order(photo_ids)
-      |> sleep(1000)
       |> assert_url_contains("orders")
       |> assert_text("Order details")
       |> assert_has(definition("Total", text: "$363.95"))

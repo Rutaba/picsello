@@ -13,7 +13,8 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
   alias Picsello.Galleries
   alias Picsello.Galleries.CoverPhoto
   alias Picsello.Galleries.Photo
-  alias Picsello.GlobalSettings.Gallery, as: GSGallery
+  alias Picsello.GlobalSettings
+  alias GlobalSettings.Gallery, as: GSGallery
   alias Picsello.Galleries.Watermark
 
   @bucket Application.compile_env(:picsello, :photo_storage_bucket)
@@ -46,24 +47,22 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
     }
   end
 
-  def watermark_photo_task_by_global_photo(
-        %GSGallery.Photo{} = photo,
-        organization_id
-      ) do
-    watermark_path = "galleries/#{organization_id}/watermark.png"
+  def watermark_task_by_global_settings(%GSGallery.Photo{} = photo) do
+    watermark_path = GSGallery.watermark_path(photo.organization_id)
 
     %{
-      "is_image" => true,
+      "globalWatermarkPreview" => true,
+      "isSavePreview" => photo.is_save_preview,
       "photoId" => photo.id,
-      "user_id" => photo.user_id,
+      "organizationId" => photo.organization_id,
       "bucket" => @bucket,
       "pubSubTopic" => @output_topic,
       "originalPath" => photo.original_url,
       "previewPath" => nil,
       "watermarkedPreviewPath" => GSGallery.watermarked_path(),
       "watermarkedOriginalPath" => GSGallery.watermarked_path(),
-      "watermarkPath" => watermark_path,
-      "watermarkText" => nil
+      "watermarkPath" => photo.watermark_type == :image && watermark_path,
+      "watermarkText" => photo.watermark_type == :text && photo.text
     }
   end
 
@@ -71,22 +70,6 @@ defmodule Picsello.Galleries.PhotoProcessing.Context do
     photo
     |> full_task_by_photo(watermark)
     |> Map.drop(["previewPath"])
-  end
-
-  def watermark_task_by_global_photo(%GSGallery.Photo{} = photo) do
-    %{
-      "is_global" => true,
-      "photoId" => photo.id,
-      "user_id" => photo.user_id,
-      "bucket" => @bucket,
-      "pubSubTopic" => @output_topic,
-      "originalPath" => photo.original_url,
-      "previewPath" => nil,
-      "watermarkedPreviewPath" => GSGallery.watermarked_path(),
-      "watermarkedOriginalPath" => GSGallery.watermarked_path(),
-      "watermarkPath" => nil,
-      "watermarkText" => photo.text
-    }
   end
 
   def task_by_cover_photo(path) do
