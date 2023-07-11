@@ -14,6 +14,13 @@ defmodule Picsello.Payments do
     shipping: "txcd_92010001"
   }
 
+  @payment_options %{
+    allow_affirm: "affirm",
+    allow_afterpay_clearpay: "afterpay_clearpay",
+    allow_klarna: "klarna",
+    allow_cashapp: "cashapp"
+  }
+
   @moduledoc "behavior of (stripe) payout processor"
 
   @type product_data() :: %{
@@ -185,11 +192,7 @@ defmodule Picsello.Payments do
     params =
       Enum.into(params, %{
         payment_method_types: [
-          "card",
-          "affirm",
-          "afterpay_clearpay",
-          "klarna",
-          "cashapp"
+          "card"
         ],
         mode: "payment",
         automatic_tax: %{enabled: true}
@@ -302,6 +305,24 @@ defmodule Picsello.Payments do
   end
 
   def tax_code(key), do: Map.get(@tax_codes, key)
+
+  def map_payment_opts_to_stripe_opts(%{payment_options: payment_options} = _organization) do
+    options =
+      payment_options
+      |> Map.from_struct()
+      |> Map.delete(:allow_cash)
+      |> Enum.reduce([], fn {key, value}, acc ->
+        case value do
+          true -> [payment_option(key) | acc]
+          _ -> acc
+        end
+      end)
+
+    # always allow card payments
+    options ++ ["card"]
+  end
+
+  def payment_option(key), do: Map.get(@payment_options, key)
 
   defp impl, do: Application.get_env(:picsello, :payments)
 end

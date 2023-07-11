@@ -62,10 +62,6 @@ defmodule Picsello.Accounts.User do
     )
   end
 
-  def enabled?(%{allow_cash_payment: allow_cash_payment}), do: allow_cash_payment
-
-  def enabled?(_), do: false
-
   def is_test_account_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
     user |> cast(attrs, [:is_test_account])
   end

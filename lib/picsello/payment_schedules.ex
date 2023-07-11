@@ -324,10 +324,14 @@ defmodule Picsello.PaymentSchedules do
     %{job: %{client: %{organization: organization} = client} = job} =
       proposal |> Repo.preload(job: [client: :organization])
 
+    payment_method_types =
+      Picsello.Payments.map_payment_opts_to_stripe_opts(organization) |> IO.inspect()
+
     stripe_params = %{
       shipping_address_collection: %{
         allowed_countries: ["US", "CA"]
       },
+      payment_method_types: payment_method_types,
       client_reference_id: "proposal_#{proposal.id}",
       cancel_url: Keyword.get(opts, :cancel_url),
       success_url: Keyword.get(opts, :success_url),

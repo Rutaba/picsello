@@ -51,20 +51,52 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
                 Finish booking
               </button>
             <% !PaymentSchedules.free?(@job) -> %>
-              <button type="submit" class="btn-primary" style="background-color: black; color: white;" phx-disabled-with="Pay with card">
-                Pay with card  <br /> Fast easy and secure
+              <button type="submit" class="btn-tertiary flex gap-10 text-left" phx-disabled-with="Pay with card">
+                <span class="flex flex-col">
+                  <strong>Pay online</strong> Fast, easy and secure
+                </span>
+                <span class="ml-auto">
+                  <.icon name="forth" class="stroke-2 stroke-current h-4 w-4 mt-2" />
+                </span>
               </button>
-              <%= if(@organization.user.allow_cash_payment) do %>
-              <button class="btn-primary" phx-click="pay_offline" phx-target={@myself} type="button">
-                Pay with cash/check <br /> We will send you an invoice
-              </button>
+              <%= if(@organization.payment_options.allow_cash) do %>
+                <button class="btn-secondary flex gap-10 text-left" phx-click="pay_offline" phx-target={@myself} type="button">
+                  <span class="flex flex-col">
+                    <strong>Pay with cash/check</strong> We'll send an invoice
+                  </span>
+                  <span class="ml-auto">
+                    <.icon name="forth" class="stroke-2 stroke-current h-4 w-4 mt-2" />
+                  </span>
+                </button>
               <% end %>
+              <div class="mr-auto flex flex-wrap items-center gap-4">
+                <h3 class="text-sm font-bold">Online payment options:</h3>
+                <.payment_icon icon="credit-card" option="Card" />
+                <%= if(@organization.payment_options.allow_afterpay_clearpay) do %>
+                  <.payment_icon icon="payment-afterpay" option="Afterpay" />
+                <% end %>
+                <%= if(@organization.payment_options.allow_affirm) do %>
+                  <.payment_icon icon="payment-affirm" option="Affirm" />
+                <% end %>
+                <%= if(@organization.payment_options.allow_klarna) do %>
+                  <.payment_icon icon="payment-klarna" option="Klarna" />
+                <% end %>
+                <%= if(@organization.payment_options.allow_cashapp) do %>
+                  <.payment_icon icon="payment-cashapp" option="Cashapp Pay" />
+                <% end %>
+              </div>
           <% end %>
-              <button class="btn-secondary" phx-click="modal" phx-value-action="close" type="button">
-                Close
-              </button>
         </.footer>
       </form>
+    </div>
+    """
+  end
+
+  def payment_icon(assigns) do
+    ~H"""
+    <div class="flex gap-1 items-center text-sm">
+      <.icon name={@icon} class="w-4 h-4" />
+      <%= @option %>
     </div>
     """
   end

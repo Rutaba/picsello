@@ -53,7 +53,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     assigns = Enum.into(assigns, %{inner_block: nil, print_credit: get_print_credit(package)})
 
     ~H"""
-    <div class="mt-4 grid grid-cols-3 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
+    <div class="mt-4 grid grid-cols-1 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
       <dl class="flex flex-col">
         <dt class="inline-block font-bold">Dated:</dt>
         <dd class="inline"><%= strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>

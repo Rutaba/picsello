@@ -76,7 +76,7 @@
   }
 
   .btn-primary {
-    @apply py-2 px-6 font-medium font-client text-base-300 bg-white border border-base-300 rounded-none hover:border-base-250 hover:text-base-300 disabled:opacity-50 disabled:cursor-not-allowed min-w-[12rem];
+    @apply py-2 px-6 font-medium font-client text-base-300 bg-white border border-base-300 rounded-none hover:border-base-250 hover:text-base-300 disabled:opacity-50 disabled:cursor-not-allowed min-w-[12rem] transition-all;
 
     &:after {
       @apply ml-2 pt-0.5;
@@ -85,7 +85,11 @@
   }
 
   .btn-secondary {
-    @apply py-2 px-6 font-medium font-client text-base-300 bg-white border border-base-200 text-sm rounded-none hover:border-base-250 hover:text-base-250 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply py-2 px-6 font-medium font-client text-base-300 bg-white border border-base-200 rounded-none hover:border-base-250 hover:text-base-250 disabled:opacity-50 disabled:cursor-not-allowed transition-all;
+  }
+
+  .btn-tertiary {
+    @apply py-2 px-6 font-medium font-client text-white bg-black border border-base-300 rounded-none hover:border-black hover:text-white hover:opacity-75 disabled:opacity-50 disabled:cursor-not-allowed min-w-[12rem] transition-all;
   }
 
   .btn-row {
