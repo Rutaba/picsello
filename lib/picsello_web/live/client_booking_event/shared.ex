@@ -46,7 +46,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
     |> Enum.map(& &1.date)
     |> Enum.map(&Calendar.strftime(&1, "%b %d, %Y"))
     |> Enum.uniq()
-    |> Enum.join(" , ")
+    |> Enum.join(", ")
   end
 
   defp formatted_subtitle(booking_event, package) do
