@@ -4,6 +4,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
   use Mix.Task
 
   alias Picsello.{Repo, EmailPresets.EmailPreset}
+  import Ecto.Query
 
   @shortdoc "import email presets"
   def run(_) do
@@ -34,10 +35,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        # email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: 1,
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
-        # job_type: "wedding",
+        job_type: "wedding",
         type: "lead",
         state: "gallery_send_link",
         position: 0,
@@ -208,7 +209,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Pre-Shoot - <b>retainer marked for OFFLINE Payment</b>",
+        name: "Wedding - Pre-Shoot - retainer marked for OFFLINE Payment",
         subject_template: "Receipt from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -329,7 +330,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Payments - Balance due - <b>Offline payment email</b>",
+        name: "Wedding - Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -350,7 +351,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Payments - Client paid  <b>offline payment</b> email",
+        name: "Wedding - Payments - Client paid offline payment email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -405,7 +406,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         state: "gallery_send_link",
         position: 0,
-        name: "Wedding - Post Shoot - Next Shoot emailWedding - Post Shoot - Next Shoot email",
+        name: "Wedding - Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -670,6 +671,44 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
+        email_automation_pipeline_id: 18,
+        total_hours: 0,
+        status: "active",
+        job_type: "wedding",
+        type: "gallery",
+        state: "gallery_send_link",
+        position: 0,
+        name: "Wedding - (Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The download for your high-quality digital images is currently being packaged as those are large files and take some time to prepare. Look for another email with your digital image files in the next 30 minutes.{{client_gallery_order_page}}.</p>
+        <p>Thank you for your purchase.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: 18,
+        total_hours: 0,
+        status: "active",
+        job_type: "wedding",
+        type: "gallery",
+        state: "gallery_send_link",
+        position: 0,
+        name: "Wedding - (Digital and Products) Images now available",
+        subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>Your digital image download files are ready:</p>
+        <p>1. Click the download link below to download your files now (computer highly recommended for the download) {{download_photos}}</p>
+        <p>2. Once downloaded, simply unzip the file to access your digital image files to save onto your computer.  We also recommend backing up your files to another location as soon as possible.</p>
+        <p>3. Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer!</p>
+        <p>You can review your order via your {{client_gallery_order_page}}.</p>
+        <p>If you have any questions, please let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
         email_automation_pipeline_id: 19,
         total_hours: 0,
         status: "active",
@@ -716,25 +755,17 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>The photography products you ordered from {{photography_company_s_name}} have arrived! I can't wait for you to see your products. I would love to see them in your home so please send me images when you have them!</p>
         {{email_signature}}
         """
-      },
-      %{
-        type: "lead",
-        total_hours: 0,
-        state: "album_send_link",
-        position: 0,
-        name: "Share Finals Album",
-        subject_template: "Your Finals Album is Ready!",
-        body_template: """
-        <p>Hi {{client_first_name}},</p>
-        <p>Your Finals are ready to view! You can view your Finals album here: <a href="{{album_link}}">{{album_link}}</a></p>
-        {{#album_password}}<p>Your photos are password-protected, so you will need to use this password to view: <b>{{album_password}}</b></p>{{/album_password}}
-        <p>These photos have all been retouched, and you can download them all at the touch of a button.</p>
-        """
       }
     ]
     |> Enum.each(fn attrs ->
       attrs = Map.merge(attrs, %{inserted_at: now, updated_at: now})
-      email_preset = Repo.get_by(EmailPreset, type: attrs.type, name: attrs.name)
+      email_preset = from(ep in EmailPreset, where: 
+      ep.type == ^attrs.type
+      and ep.name == ^attrs.name
+      and ep.email_automation_pipeline_id == ^attrs.email_automation_pipeline_id
+      and is_nil(ep.organization_id)
+      )
+      |> Repo.one()
 
       if email_preset do
         email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()

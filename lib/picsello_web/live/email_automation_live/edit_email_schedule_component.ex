@@ -17,13 +17,13 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
         %{
           job_types: job_types,
           job_type: job_type,
-          pipeline: %{email_automation_category: %{type: type}, email_presets: _email_presets},
+          pipeline: %{email_automation_category: %{type: type}, id: pipeline_id},
           email: email
         } = assigns,
         socket
       ) do
     job_types = Shared.get_selected_job_types(job_types, job_type)
-    email_presets = EmailPresets.email_automation_presets(type)
+    email_presets = EmailPresets.email_automation_presets(type, pipeline_id)
 
     socket
     |> assign(assigns)

@@ -152,19 +152,38 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     Enum.any?(job_types, &Map.get(&1, :selected, false))
   end
 
-  def get_email_schedule_text(0), do: "Send email immediately"
+  def get_email_schedule_text(0, _, _, _), do: "Send email immediately"
 
-  def get_email_schedule_text(hours) do
+  def get_email_schedule_text(hours, state, emails, index) do
     %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
-    sign = if sign == "+", do: "Later", else: "Earlier"
+    sign = if sign == "+", do: "after", else: "before"
     calendar = calendar_text(calendar, count)
-    "Send #{count} #{calendar} #{sign}"
+    email = get_preceding_email(emails, index)
+
+    sub_text = cond do
+      state in ["client_contact", "booking_proposal_sent"] ->
+        "the prior email \"#{get_email_name(email)}\" has been sent if no response from the client"
+      state in ["before_shoot", "shoot_thanks", "post_shoot"] -> "the shoot date"
+      state == "cart_abandoned" and index == 0 -> "client abandons cart"
+      state == "cart_abandoned" -> "sending \"#{get_email_name(email)}\" and no reply from the client"
+      state == "gallery_expiration_soon" -> "gallery expiration date"
+      true -> ""
+    end
+
+    "Send #{count} #{calendar} #{sign} #{sub_text}"
   end
 
-  defp calendar_text("Hour", count), do: ngettext("Hour", "Hours", count)
-  defp calendar_text("Day", count), do: ngettext("Day", "Days", count)
-  defp calendar_text("Month", count), do: ngettext("Month", "Months", count)
-  defp calendar_text("Year", count), do: ngettext("Year", "Years", count)
+  def get_email_name(email), do: if(email.private_name, do: email.private_name, else: email.name)
+
+  defp get_preceding_email(emails, index) do
+    {email, _} = List.pop_at(emails, index - 1)
+    if email, do: email, else: List.last(emails)
+  end
+
+  defp calendar_text("Hour", count), do: ngettext("hour", "hours", count)
+  defp calendar_text("Day", count), do: ngettext("day", "days", count)
+  defp calendar_text("Month", count), do: ngettext("month", "months", count)
+  defp calendar_text("Year", count), do: ngettext("year", "years", count)
 
   def explode_hours(hours) do
     year = 365 * 24

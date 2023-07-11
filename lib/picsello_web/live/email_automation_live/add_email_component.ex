@@ -19,13 +19,13 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         %{
           job_type: job_type,
           job_types: job_types,
-          pipeline: %{email_automation_category: %{type: type}}
+          pipeline: %{email_automation_category: %{type: type}, id: pipeline_id}
         } = assigns,
         socket
       ) do
     job_types = Shared.get_selected_job_types(job_types, job_type)
     
-    email_presets = EmailPresets.email_automation_presets(type)
+    email_presets = EmailPresets.email_automation_presets(type, pipeline_id)
 
     socket
     |> assign(assigns)
@@ -104,9 +104,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     })
       
     params = if email_preset.id == template_id, do: params, else: nil
-    IO.inspect template_id
-    IO.inspect email_preset
-    IO.inspect params
+
     socket
     |> assign(email_preset: new_email_preset)
     |> Shared.email_preset_changeset(new_email_preset, maybe_normalize_params(params))
@@ -115,7 +113,6 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
 
   @impl true
   def handle_event("validate", %{"email_automation_setting" => params}, socket) do
-    IO.inspect maybe_normalize_params(params), label: "params"
     socket
     |> assign_changeset(maybe_normalize_params(params))
     |> noreply()
@@ -344,7 +341,6 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         <div class="flex flex-col ml-2">
           <p><b> <%= @pipeline.email_automation_category.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
           <% c = to_form(@email_preset_changeset) %>
-          <%= IO.inspect input_value(c, :immediately) %>
           <%= unless input_value(c, :immediately) do %>
             <% sign = input_value(c, :sign) %>
             <p class="text-sm text-base-250">Send email <%= input_value(c, :count) %> <%= String.downcase(input_value(c, :calendar)) %>  <%= if sign == "+", do: "after", else: "before" %> <%= String.downcase(@pipeline.name) %></p>
