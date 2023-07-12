@@ -33,6 +33,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> assign_new(:pagination, fn -> PaginationLive.changeset() |> Changeset.apply_changes() end)
     |> assign_new(:pagination_changeset, fn -> PaginationLive.changeset() end)
     |> default_assigns()
+    |> assign(:footer_class, nil)
     |> ok()
   end
 
@@ -102,7 +103,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
           </p>
         </div>
 
-        <div class="fixed bottom-0 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
+        <div class="fixed top-12 left-0 right-0 z-20 flex flex-shrink-0 w-full p-6 mt-auto bg-white sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
           <button type="button" phx-click="add-package" class="w-full px-8 text-center btn-primary">Add package</button>
         </div>
       </div>

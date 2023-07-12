@@ -31,6 +31,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def mount(_params, _session, socket) do
     socket
     |> assign(:page_title, "Clients")
+    |> assign(:footer_class, nil)
     |> assign_pagination(@default_pagination_limit)
     |> assign_clients()
     |> ok()

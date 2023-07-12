@@ -12,6 +12,7 @@ defmodule PicselloWeb.Live.Questionnaires.Index do
     socket
     |> assign(:page_title, "Questionnaires")
     |> assign_questionnaires()
+    |> assign(:footer_class, nil)
     |> ok()
   end
 

@@ -24,6 +24,7 @@ defmodule PicselloWeb.JobLive.Index do
     socket
     |> assign_defaults()
     |> assign_stripe_status()
+    |> assign(:footer_class, nil)
     |> ok()
   end
 

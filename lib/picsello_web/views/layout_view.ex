@@ -553,19 +553,16 @@ defmodule PicselloWeb.LayoutView do
             </ul>
             <.subscription_ending_soon type="footer" socket={@socket} current_user={@current_user} class="flex ml-auto bg-white text-black rounded px-4 py-2 items-center text-sm"/>
           </nav>
-          <div>
-            <%= live_redirect to: (apply Routes, (if @current_user, do: :home_path, else: :page_path), [@socket, :index]), title: "Footer" do %>
-              <.icon name="logo-shoot-higher" class="h-12 sm:h-16 w-32 sm:w-36" />
-            <% end %>
-          </div>
         </div>
         <hr class="my-8 opacity-30" />
-        <div class="flex">
+        <div class="flex flex-col lg:flex-row">
           <div class="text-base-250 text-xs">Copyright © <%= DateTime.utc_now.year %> Picsello</div>
-          <ul class="flex ml-auto">
+          <ul class="flex lg:ml-auto items-center	">
             <li class="text-base-250 text-xs"><a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer">Terms</a></li>
-            <li class="text-base-250 text-xs"><a href="https://www.picsello.com/privacy-policy" class="ml-10" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
-            <li class="text-base-250 text-xs"><a href="https://www.picsello.com/privacy-policy#ccpa" class="ml-10" target="_blank" rel="noopener noreferrer">California Privacy</a></li>
+            <li class="text-base-250 mx-3.5">|</li>
+            <li class="text-base-250 text-xs"><a href="https://www.picsello.com/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
+            <li class="text-base-250 mx-3.5">|</li>
+            <li class="text-base-250 text-xs"><a href="https://www.picsello.com/privacy-policy#ccpa" target="_blank" rel="noopener noreferrer">California Privacy</a></li>
           </ul>
         </div>
       </div>
