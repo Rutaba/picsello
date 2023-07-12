@@ -38,7 +38,7 @@
     <div class="h-full py-0 mx-auto center-container gallery__container my-0 px-7 sm:px-16">
       <div class="pt-8 lg:pt-14">
         <div class="text-base font-bold lg:text-3xl">
-          Order custom products with <%= @creator.name %>
+          Order custom products with <%= @current_user.organization.name%>
         </div>
 
         <ul {testid("products")} class="pt-2 pb-5 mx-auto grid gap-6 sm:gap-8 grid-cols-2 xl:grid-cols-4 lg:pb-4 lg:pt-6 productPreview__client">
