@@ -8,7 +8,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
   @types ~w(lead job gallery)a
   @status ~w(active disabled)a
   @states_by_type %{
-    lead: ~w(client_contact booking_proposal_sent lead)a,
+    lead: ~w(manual_thank_you_lead client_contact booking_proposal_sent lead)a,
     job:
       ~w(job post_shoot shoot_thanks offline_payment paid_full balance_due before_shoot booking_event pays_retainer booking_proposal payment_confirmation_client shoot_reminder)a,
     gallery:
@@ -76,10 +76,10 @@ defmodule Picsello.EmailPresets.EmailPreset do
     end)
   end
 
-  defp validate_states(changeset) do
-    type = get_field(changeset, :type)
-    changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))
-  end
+  # defp validate_states(changeset) do
+  #   type = get_field(changeset, :type)
+  #   changeset |> validate_inclusion(:state, Map.get(@states_by_type, type))
+  # end
 
   def calculate_hours(changeset) do
     data = changeset |> current()

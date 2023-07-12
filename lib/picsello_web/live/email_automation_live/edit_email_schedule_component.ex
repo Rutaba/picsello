@@ -17,13 +17,13 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
         %{
           job_types: job_types,
           job_type: job_type,
-          pipeline: %{email_automation_category: %{type: type}, email_presets: _email_presets},
+          pipeline: %{email_automation_category: %{type: type}, id: pipeline_id},
           email: email
         } = assigns,
         socket
       ) do
     job_types = Shared.get_selected_job_types(job_types, job_type)
-    email_presets = EmailPresets.email_automation_presets(type)
+    email_presets = EmailPresets.email_automation_presets(type, pipeline_id)
 
     socket
     |> assign(assigns)
@@ -160,7 +160,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
             <% :edit_email -> %> Edit
             <% :preview_email -> %> Preview
           <% end %>
-          <%= String.capitalize(@job_type)%> Email</span>
+          <%= String.capitalize(@job_type.name)%> Email</span>
         </h1>
 
         <.form for={@email_preset_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
@@ -195,7 +195,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
           </div>
         </div>
         <div class="flex flex-col ml-2">
-          <p><b> <%= @job_type |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
+          <p><b> <%= @job_type.name |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
           <p class="text-sm text-base-250">Send email 2 hours before shoot</p>
         </div>
       </div>
@@ -279,7 +279,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
           </div>
         </div>
         <div class="flex flex-col ml-2">
-          <p><b> <%= @job_type |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
+          <p><b> <%= @job_type.name |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
           <p class="text-sm text-base-250">Send email 7 days before next upcoming shoot</p>
         </div>
       </div>

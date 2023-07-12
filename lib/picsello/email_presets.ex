@@ -9,8 +9,8 @@ defmodule Picsello.EmailPresets do
   alias Picsello.Galleries.Gallery
   alias Picsello.EmailAutomation.{EmailAutomationPipeline}
 
-  def email_automation_presets(type) do
-    from(p in presets(type), where: is_nil(p.email_automation_pipeline_id) and is_nil(p.job_type))
+  def email_automation_presets(type, pipeline_id) do
+    from(p in presets(type), where: is_nil(p.organization_id) and p.email_automation_pipeline_id == ^pipeline_id)
     |> Repo.all()
   end
 

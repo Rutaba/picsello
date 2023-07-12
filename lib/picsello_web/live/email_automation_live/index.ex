@@ -5,7 +5,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
-    only: [assign_automation_pipelines: 1, get_pipline: 1, get_email_schedule_text: 1]
+    only: [assign_automation_pipelines: 1, get_pipline: 1, get_email_schedule_text: 4, get_email_name: 2]
 
   alias Picsello.{
     EmailAutomations,
@@ -185,14 +185,19 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     ~H"""
       <section class="mx-auto border border-base-200 rounded-lg mt-2 overflow-hidden">
         <div class="flex justify-between bg-base-200 pl-4 pr-7 py-3 items-center cursor-pointer" phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}"}>
-          <div class="flex-row flex items-center">
+          <div class="flex flex-row items-center">
             <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
               <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
             </div>
-            <span class="text-blue-planning-300 text-xl font-bold ml-3">
-              <%= @pipeline.name %>
-              <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(@pipeline.emails)%> emails</span>
-            </span>
+            <div class="flex flex-col">
+              <span class="text-blue-planning-300 text-xl font-bold ml-3">
+                <%= @pipeline.name %>
+                <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(@pipeline.emails)%> emails</span>
+              </span>
+              <div class="text-base-250 text-sm ml-3">
+                <%= @pipeline.description %>
+              </div>
+            </div>
           </div>
 
           <div class="flex">
@@ -210,18 +215,25 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
             <div class="px-6">
               <div class="flex md:flex-row flex-col justify-between">
                 <div class="flex h-max">
-                <div class={"h-auto pt-6 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
+                  <div class={"h-auto pt-6 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
                     <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center">
-                      <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+                      <%= if email.status == :active do %>
+                        <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />  
+                      <% else %>
+                        <.icon name="close-x" class="w-4 h-4 stroke-current stroke-3 text-blue-planning-300" />
+                      <% end %>
                     </div>
                   </div>
                   <div class="ml-3 py-6">
                     <div class="text-xl font-bold">
-                      <%= if email.private_name, do: email.private_name, else: email.name %>
+                      <%= get_email_name(email, index) %>
+                      <%= if email.status == :disabled do %> 
+                        <span class="ml-2 rounded-md bg-red-sales-100 text-red-sales-300 px-2 text-sm font-bold whitespace-nowrap">Disabled</span>
+                      <% end %>
                     </div>
                     <div class="flex flex-row items-center text-base-250">
                       <.icon name="play-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                      <span><%= get_email_schedule_text(email.total_hours) %> </span>
+                      <span class="text-sm"><%= get_email_schedule_text(email.total_hours, @pipeline.state, @pipeline.emails, index) %> </span>
                     </div>
                   </div>
                 </div>

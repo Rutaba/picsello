@@ -5,8 +5,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   import Picsello.Onboardings, only: [save_intro_state: 3]
   import PicselloWeb.LiveHelpers
 
-  import PicselloWeb.EmailAutomationLive.Shared,
-    only: [get_pipline: 1, get_email_schedule_text: 1, explode_hours: 1, fetch_date_for_state: 4]
+  import PicselloWeb.EmailAutomationLive.Shared
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import Ecto.Query
@@ -121,15 +120,17 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_event(
         "edit-email",
         %{"email_id" => id, "pipeline_id" => pipeline_id},
-        %{assigns: %{current_user: current_user, type: type}} = socket
+        %{assigns: %{current_user: current_user, type: type, job_types: job_types}} = socket
       ) do
+    selected_job_type = job_types |> Enum.filter(fn x -> x.job_type == type end) |> List.first()    
     schedule_id = to_integer(id)
     pipeline_id = to_integer(pipeline_id)
 
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent, %{
       current_user: current_user,
-      job_type: type,
+      job_type: selected_job_type.jobtype,
+      job_types: job_types,
       pipeline: get_pipline(pipeline_id),
       email: EmailAutomationSchedules.get_schedule_by_id(schedule_id)
     })
@@ -215,11 +216,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                     Completed <%= get_completed_date(email.reminded_at) %>
                   <% end %>
                   <p class="text-black text-xl">
-                    <%= if email.private_name, do: email.private_name, else: email.name %>
+                    <%= get_email_name(email, index) %>
                   </p>
                   <div class="flex items-center bg-white">
                   <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300 mr-2" />
-                    <p class="font-normal text-base-250 text-sm"> <%= get_email_schedule_text(email.total_hours) %></p>
+                    <p class="font-normal text-base-250 text-sm"> 
+                      <%= get_email_schedule_text(email.total_hours, @pipeline.state, @pipeline.emails, index) %>
+                    </p>
                   </div>
                 </span>
               </div>

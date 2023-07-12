@@ -11,7 +11,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
   alias Picsello.EmailPresets.EmailPreset
 
   @states_by_type %{
-    lead: ~w(client_contact booking_proposal_sent lead)a,
+    lead: ~w(manual_thank_you_lead client_contact booking_proposal_sent lead)a,
     job:
       ~w(job post_shoot shoot_thanks offline_payment paid_full balance_due before_shoot booking_event pays_retainer booking_proposal payment_confirmation_client shoot_reminder)a,
     gallery:

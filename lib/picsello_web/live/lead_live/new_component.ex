@@ -2,7 +2,6 @@ defmodule PicselloWeb.JobLive.NewComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  alias Ecto.Changeset
   alias Picsello.{Job, Jobs, Clients, Profiles, Repo}
   alias Picsello.EmailAutomation.EmailSchedule
   alias PicselloWeb.Live.Shared

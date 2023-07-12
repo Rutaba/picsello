@@ -25,11 +25,10 @@ defmodule Picsello.EmailAutomations do
       join: eap in EmailAutomationPipeline,
       on: eap.id == ep.email_automation_pipeline_id,
       join: eac in assoc(eap, :email_automation_category),
-      where:
-        ep.organization_id == ^organization_id and
-          ep.job_type == ^job_type and
-          ep.status == :active and
-          eac.type in ^types
+      where: (ep.organization_id == ^organization_id or is_nil(ep.organization_id))
+        and ep.job_type == ^job_type
+        and ep.status == :active
+        and eac.type in ^types
     )
     |> Repo.all()
   end
@@ -271,9 +270,9 @@ defmodule Picsello.EmailAutomations do
   defp get_each_pipeline_emails(pipeline_id, organization_id, job_type) do
     from(
       ep in EmailPreset,
-      where:
-        ep.email_automation_pipeline_id == ^pipeline_id and ep.organization_id == ^organization_id,
-      where: ep.job_type == ^job_type,
+      where: ep.email_automation_pipeline_id == ^pipeline_id
+      and (ep.organization_id == ^organization_id or is_nil(ep.organization_id))
+      and ep.job_type == ^job_type,
       order_by: [asc: ep.id]
     )
     |> Picsello.Repo.all()
