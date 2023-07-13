@@ -1873,7 +1873,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> Map.merge(options)
   end
 
-  defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
+  defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 12
 
   defp get_tags(form), do: make_tags(form) |> Enum.join(", ")
 
