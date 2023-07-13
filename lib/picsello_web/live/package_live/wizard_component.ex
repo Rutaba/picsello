@@ -909,7 +909,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       if params["fixed"] do
         %{"price" => nil, "due_interval" => "Day Before Shoot"}
       else
-        %{"percentage" => 34, "due_interval" => "34% Day Before"}
+        %{"percentage" => 8, "due_interval" => "8% Day Before"}
       end
       |> Map.merge(%{
         "shoot_date" => get_first_shoot(job),
