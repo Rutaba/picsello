@@ -118,10 +118,28 @@ defmodule Picsello.Profiles do
           name: #{contact.name}
          email: #{contact.email}
          phone: #{contact.phone}
+         #{referred_by?(contact.referred_by)}
+         #{referral_name?(contact.referral_name)}
       job type: #{dyn_gettext(contact.job_type)}
        message: #{contact.message}
       """
     end
+
+    defp referred_by?(referred_by) when not is_nil(referred_by) do
+      """
+      referred by: #{referred_by}
+      """
+    end
+
+    defp referred_by?(referred_by) when is_nil(referred_by), do: ""
+
+    defp referral_name?(referral_name) when not is_nil(referral_name) do
+      """
+      referral name: #{referral_name}
+      """
+    end
+
+    defp referral_name?(referral_name) when is_nil(referral_name), do: ""
   end
 
   def contact_changeset(contact, attrs) do
