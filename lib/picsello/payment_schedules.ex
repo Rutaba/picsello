@@ -324,8 +324,7 @@ defmodule Picsello.PaymentSchedules do
     %{job: %{client: %{organization: organization} = client} = job} =
       proposal |> Repo.preload(job: [client: :organization])
 
-    payment_method_types =
-      Picsello.Payments.map_payment_opts_to_stripe_opts(organization) |> IO.inspect()
+    payment_method_types = Payments.map_payment_opts_to_stripe_opts(organization)
 
     stripe_params = %{
       shipping_address_collection: %{
@@ -347,14 +346,13 @@ defmodule Picsello.PaymentSchedules do
             unit_amount: payment.price.amount,
             product_data: %{
               name: "#{Job.name(job)} #{payment.description}",
-              tax_code: Picsello.Payments.tax_code(:services)
+              tax_code: Payments.tax_code(:services)
             },
             tax_behavior: "exclusive"
           },
           quantity: 1
         }
       ],
-      # payment_intent_data: %{setup_future_usage: "off_session"},
       metadata: Keyword.get(opts, :metadata, %{})
     }
 
