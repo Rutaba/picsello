@@ -43,10 +43,34 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
     booking_event
     |> Map.get(:dates)
     |> Enum.sort_by(& &1.date, Date)
-    |> Enum.map(& &1.date)
-    |> Enum.map(&Calendar.strftime(&1, "%b %d, %Y"))
+    |> group_consecutive_dates()
+    |> Enum.map(fn chunk ->
+      if Enum.count(chunk) > 1 do
+        "#{format_date(List.first(chunk).date)} - #{format_date(List.last(chunk).date)}"
+      else
+        format_date(List.first(chunk).date)
+      end
+    end)
     |> Enum.uniq()
     |> Enum.join(", ")
+  end
+
+  defp format_date(date), do: "#{capitalize_month(Calendar.strftime(date, "%b"))} #{Calendar.strftime(date, "%d, %Y")}"
+
+  defp capitalize_month(month), do: String.capitalize(to_string(month))
+
+  defp group_consecutive_dates(dates) do
+    Enum.reduce(dates, [], fn date, acc ->
+      case acc do
+        [] -> [[date]]
+        [prev_chunk | rest] ->
+          case Date.add(List.last(prev_chunk).date, 1) == date.date do
+            true -> [prev_chunk ++ [date] | rest]
+            false -> [[date] | acc]
+          end
+      end
+    end)
+    |> Enum.reverse()
   end
 
   defp formatted_subtitle(booking_event, package) do
