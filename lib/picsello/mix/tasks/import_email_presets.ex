@@ -226,7 +226,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 23,
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -247,7 +247,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 4,
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -368,7 +368,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: 24,
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -990,7 +990,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 23,
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1011,7 +1011,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 4,
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1755,7 +1755,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 23,
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -1776,7 +1776,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 4,
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -2491,7 +2491,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 23,
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2512,7 +2512,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 4,
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -3228,7 +3228,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 23,
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3249,7 +3249,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 4,
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3953,7 +3953,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 23,
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -3974,7 +3974,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 4,
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4678,7 +4678,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 23,
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -4699,7 +4699,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 4,
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -5405,7 +5405,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 23,
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5426,7 +5426,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 4,
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -6132,7 +6132,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 23,
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6153,7 +6153,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 4,
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6857,7 +6857,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 23,
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -6878,7 +6878,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: 4,
         total_hours: 0,
         status: "active",
         job_type: "event",
