@@ -903,7 +903,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{assigns: %{job: job, payments_changeset: payments_changeset}} = socket
       ) do
     params = payments_changeset |> current() |> map_keys()
-    payment_schedules = params |> Map.get("payment_schedules") |> map_keys()
+
+    payment_schedules =
+      params
+      |> Map.get("payment_schedules")
+      |> map_keys()
+      |> Enum.with_index(fn %{"payment_field_index" => field_index} = payment, count ->
+        Map.put(payment, "payment_field_index", if(field_index, do: field_index, else: count))
+      end)
 
     new_payment =
       if params["fixed"] do
