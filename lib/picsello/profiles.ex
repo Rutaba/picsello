@@ -125,21 +125,11 @@ defmodule Picsello.Profiles do
       """
     end
 
-    defp referred_by?(referred_by) when not is_nil(referred_by) do
-      """
-      referred by: #{referred_by}
-      """
-    end
+    defp referred_by?(nil), do: ""
+    defp referred_by?(referred_by), do: "referred by: #{referred_by}"
 
-    defp referred_by?(referred_by) when is_nil(referred_by), do: ""
-
-    defp referral_name?(referral_name) when not is_nil(referral_name) do
-      """
-      referral name: #{referral_name}
-      """
-    end
-
-    defp referral_name?(referral_name) when is_nil(referral_name), do: ""
+    defp referral_name?(nil), do: ""
+    defp referral_name?(referral_name), do: "referral name: #{referral_name}"
   end
 
   def contact_changeset(contact, attrs) do

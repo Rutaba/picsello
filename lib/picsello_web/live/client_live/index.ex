@@ -726,8 +726,9 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     ]
   end
 
+  @referrals ["Friend", "Other"]
   def referred_by_name(nil, nil), do: "-"
-  def referred_by_name(referred_by, referral_name) when referred_by in ["Friend", "Other"] and not is_nil(referral_name), do: "#{referred_by} - #{referral_name}"
-  def referred_by_name(referred_by, _referral_name) when referred_by in ["Friend", "Other"], do: "#{referred_by}"
+  def referred_by_name(referred_by, referral_name) when referred_by in @referrals and not is_nil(referral_name), do: "#{referred_by} - #{referral_name}"
+  def referred_by_name(referred_by, _referral_name) when referred_by in @referrals, do: "#{referred_by}"
   def referred_by_name(referred_by, _referral_name), do: "#{referred_by}"
 end
