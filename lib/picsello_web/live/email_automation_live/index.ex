@@ -5,7 +5,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
-    only: [assign_automation_pipelines: 1, get_pipline: 1, get_email_schedule_text: 4, get_email_name: 2]
+    only: [assign_automation_pipelines: 1, get_pipline: 1, get_email_schedule_text: 6, get_email_name: 4]
 
   alias Picsello.{
     EmailAutomations,
@@ -35,7 +35,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
     job_types = current_user.organization.organization_job_types
     |> Picsello.Profiles.get_active_organization_job_types()
-    
+
     selected_job_type = job_types |> List.first()
 
     socket
@@ -218,7 +218,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                   <div class={"h-auto pt-6 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
                     <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center">
                       <%= if email.status == :active do %>
-                        <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />  
+                        <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
                       <% else %>
                         <.icon name="close-x" class="w-4 h-4 stroke-current stroke-3 text-blue-planning-300" />
                       <% end %>
@@ -226,14 +226,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                   </div>
                   <div class="ml-3 py-6">
                     <div class="text-xl font-bold">
-                      <%= get_email_name(email, index) %>
-                      <%= if email.status == :disabled do %> 
+                      <%= get_email_name(email, index, nil, nil) %>
+                      <%= if email.status == :disabled do %>
                         <span class="ml-2 rounded-md bg-red-sales-100 text-red-sales-300 px-2 text-sm font-bold whitespace-nowrap">Disabled</span>
                       <% end %>
                     </div>
                     <div class="flex flex-row items-center text-base-250">
                       <.icon name="play-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                      <span class="text-sm"><%= get_email_schedule_text(email.total_hours, @pipeline.state, @pipeline.emails, index) %> </span>
+                      <span class="text-sm"><%= get_email_schedule_text(email.total_hours, @pipeline.state, @pipeline.emails, index, nil, nil) %> </span>
                     </div>
                   </div>
                 </div>

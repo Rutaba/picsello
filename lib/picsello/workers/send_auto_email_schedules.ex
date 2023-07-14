@@ -78,10 +78,12 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   end
 
   defp send_email_each_pipeline(job_pipeline, job, gallery) do
-    Enum.map(job_pipeline.emails, fn schedule ->
-      state = schedule.email_automation_pipeline.state
-      send_email_by_state(state, schedule, job, gallery, nil)
-    end)
+    # Get first email from pipeline which is not sent
+    email_schedule = job_pipeline.emails |> Enum.find(fn %{reminded_at: nil} -> true end)
+    if email_schedule do
+      state = email_schedule.email_automation_pipeline.state
+      send_email_by_state(state, email_schedule, job, gallery, nil)
+    end
   end
 
   defp send_email_by_state(state, schedule, job, gallery, _order)

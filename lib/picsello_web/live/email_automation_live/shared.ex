@@ -154,9 +154,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     Enum.any?(job_types, &Map.get(&1, :selected, false))
   end
 
-  def get_email_schedule_text(0, _, _, _), do: "Send email immediately"
+  def get_email_schedule_text(0, _, _, _, _job_type, _organization_id), do: "Send email immediately"
 
-  def get_email_schedule_text(hours, state, emails, index) do
+  def get_email_schedule_text(hours, state, emails, index, job_type, organization_id) do
     %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
     sign = if sign == "+", do: "after", else: "before"
     calendar = calendar_text(calendar, count)
@@ -164,29 +164,29 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     sub_text = cond do
       state in ["client_contact", "booking_proposal_sent"] ->
-        "the prior email \"#{get_email_name(email, index)}\" has been sent if no response from the client"
+        "the prior email \"#{get_email_name(email, index, job_type, organization_id)}\" has been sent if no response from the client"
       state in ["before_shoot", "shoot_thanks", "post_shoot"] -> "the shoot date"
       state == "cart_abandoned" and index == 0 -> "client abandons cart"
-      state == "cart_abandoned" -> "sending \"#{get_email_name(email, index)}\" and no reply from the client"
+      state == "cart_abandoned" -> "sending \"#{get_email_name(email, index, job_type, organization_id)}\" and no reply from the client"
       state == "gallery_expiration_soon" -> "gallery expiration date"
-      state == "manual_thank_you_lead" -> "sending \"#{get_email_name(email, index)}\""
+      state == "manual_thank_you_lead" -> "sending \"#{get_email_name(email, index, job_type, organization_id)}\""
       true -> ""
     end
 
     "Send #{count} #{calendar} #{sign} #{sub_text}"
   end
 
-  def get_email_name(email, index) do
-    type = String.capitalize(email.job_type)
-    
+  def get_email_name(email, index, job_type, organization_id) do
+    type = if job_type, do: job_type, else: String.capitalize(email.job_type)
+    organization_id = if organization_id, do: organization_id, else: email.organization_id
     cond do
       email.private_name -> email.private_name
-      is_nil(email.organization_id) -> "#{type} - " <> email.name
+      is_nil(organization_id) -> "#{type} - " <> email.name
       true -> "#{type} - " <> email.name <> "-#{index + 1}"
     end
   end
 
-  defp get_preceding_email(emails, index) do
+  def get_preceding_email(emails, index) do
     {email, _} = List.pop_at(emails, index - 1)
     if email, do: email, else: List.last(emails)
   end
