@@ -596,7 +596,7 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   defp print_fields_heading(assigns) do
     ~H"""
-    <div class="mt-9 md:mt-1 mb-2" {testid("print")}>
+    <div class="mt-9 md:mt-1 mb-2 pr-2" {testid("print")}>
       <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
       <p class="text-base-250">Print Credits allow your clients to order professional prints and products from your gallery based on the amount you set.</p>
     </div>
