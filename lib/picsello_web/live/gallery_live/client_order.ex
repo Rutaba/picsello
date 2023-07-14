@@ -120,6 +120,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     |> assign(
       order: order,
       organization_name: order.gallery.organization.name,
+      shipping_email: order.delivery_info.email,
       shipping_address: order.delivery_info.address,
       shipping_name: order.delivery_info.name
     )
