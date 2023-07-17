@@ -25,16 +25,22 @@ defmodule Picsello.EmailAutomations do
       join: eap in EmailAutomationPipeline,
       on: eap.id == ep.email_automation_pipeline_id,
       join: eac in assoc(eap, :email_automation_category),
-      where: (ep.organization_id == ^organization_id or is_nil(ep.organization_id))
-        and ep.job_type == ^job_type
-        and ep.status == :active
-        and eac.type in ^types
+      where:
+        (ep.organization_id == ^organization_id or is_nil(ep.organization_id)) and
+          ep.job_type == ^job_type and
+          ep.status == :active and
+          eac.type in ^types
     )
     |> Repo.all()
   end
 
   def get_pipeline_by_id(id) do
     from(eap in EmailAutomationPipeline, where: eap.id == ^id)
+    |> Repo.one()
+  end
+
+  def get_pipeline_by_state(state) do
+    from(eap in EmailAutomationPipeline, where: eap.state == ^state)
     |> Repo.one()
   end
 
@@ -126,7 +132,9 @@ defmodule Picsello.EmailAutomations do
 
   def send_now_email(:gallery, email, gallery, state)
       when state in [
-             :gallery_send_link,
+             :manual_gallery_send_link,
+             :manual_send_proofing_gallery,
+             :manual_send_proofing_gallery_finals,
              :cart_abandoned,
              :gallery_expiration_soon,
              :gallery_password_changed
@@ -161,19 +169,6 @@ defmodule Picsello.EmailAutomations do
       PicselloWeb.Helpers
     )
     |> update_schedule(email.id)
-  end
-
-  def query_get_email_schedule(category_type, gallery_id, job_id, piepline_id) do
-    query =
-      from(es in EmailSchedule,
-        where: es.email_automation_pipeline_id == ^piepline_id,
-        limit: 1
-      )
-
-    case category_type do
-      :gallery -> query |> where([es], es.gallery_id == ^gallery_id)
-      _ -> query |> where([es], es.job_id == ^job_id)
-    end
   end
 
   defp get_all_pipelines() do
@@ -270,9 +265,10 @@ defmodule Picsello.EmailAutomations do
   defp get_each_pipeline_emails(pipeline_id, organization_id, job_type) do
     from(
       ep in EmailPreset,
-      where: ep.email_automation_pipeline_id == ^pipeline_id
-      and (ep.organization_id == ^organization_id or is_nil(ep.organization_id))
-      and ep.job_type == ^job_type,
+      where:
+        ep.email_automation_pipeline_id == ^pipeline_id and
+          (ep.organization_id == ^organization_id or is_nil(ep.organization_id)) and
+          ep.job_type == ^job_type,
       order_by: [asc: ep.id]
     )
     |> Picsello.Repo.all()
@@ -281,8 +277,3 @@ defmodule Picsello.EmailAutomations do
   defp schemas(%{type: :standard} = gallery), do: {gallery}
   defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
 end
-
-# Picsello.EmailAutomations.get_emails_schedules(119, :job)
-# Picsello.EmailAutomations.filter_emails_on_time_schedule()
-# # Picsello.EmailAutomations.get_emails_schedules_for_job_pipeline(119, nil, 1)
-# Picsello.EmailAutomations.get_client_messages(88)

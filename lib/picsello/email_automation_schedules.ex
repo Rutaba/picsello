@@ -14,6 +14,11 @@ defmodule Picsello.EmailAutomationSchedules do
     |> Repo.one()
   end
 
+  def get_schedules_by_gallery(gallery_id) do
+    from(es in EmailSchedule, where: es.gallery_id == ^gallery_id)
+    |> Repo.one()
+  end
+
   def get_active_email_schedule_count(job_id) do
     from(es in EmailSchedule,
       where: not es.is_stopped and is_nil(es.reminded_at) and es.job_id == ^job_id
@@ -66,13 +71,8 @@ defmodule Picsello.EmailAutomationSchedules do
     |> Repo.all()
   end
 
-  def get_email_schedule_by_id(id) do
-    from(es in EmailSchedule, where: es.id == ^id)
-    |> Repo.one()
-  end
-
   def update_email_schedule(id, params) do
-    get_email_schedule_by_id(id)
+    get_schedule_by_id(id)
     |> EmailSchedule.changeset(params)
     |> Repo.update()
   end
@@ -97,7 +97,9 @@ defmodule Picsello.EmailAutomationSchedules do
 
   defp email_schedules_group_by_categories(emails_schedules) do
     emails_schedules
-    |> Enum.group_by(&{&1.category_id, &1.category_name, &1.category_type, &1.gallery_id, &1.job_id})
+    |> Enum.group_by(
+      &{&1.category_id, &1.category_name, &1.category_type, &1.gallery_id, &1.job_id}
+    )
     |> Enum.map(fn {{category_id, category_name, category_type, gallery_id, job_id}, group} ->
       pipelines =
         group
@@ -123,5 +125,25 @@ defmodule Picsello.EmailAutomationSchedules do
       }
     end)
     |> Enum.sort_by(&{&1.category_id, &1.category_name}, :asc)
+  end
+
+  def query_get_email_schedule(category_type, gallery_id, job_id, piepline_id) do
+    query =
+      from(es in EmailSchedule,
+        where: es.email_automation_pipeline_id == ^piepline_id,
+        limit: 1
+      )
+
+    case category_type do
+      :gallery -> query |> where([es], es.gallery_id == ^gallery_id)
+      _ -> query |> where([es], es.job_id == ^job_id)
+    end
+  end
+
+  def get_last_completed_email(category_type, gallery_id, job_id, pipeline_id) do
+    query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id)
+    |> where([es], not is_nil(es.reminded_at))
+    |> order_by([es], desc: es.id)
+    |> Repo.one()
   end
 end

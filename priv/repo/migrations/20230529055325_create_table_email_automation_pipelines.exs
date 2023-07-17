@@ -129,7 +129,8 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       %{
         name: "Thank You",
         state: "shoot_thanks",
-        description: "Triggered after a shoot with emails 1 day & 1–9 months later to encourage reviews/bookings",
+        description:
+          "Triggered after a shoot with emails 1 day & 1–9 months later to encourage reviews/bookings",
         email_automation_sub_category_id: automation_post.id,
         email_automation_category_id: email_automation_job.id
       },
@@ -143,7 +144,7 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       # gallery
       %{
         name: "Send Gallery Link",
-        state: "gallery_send_link",
+        state: "manual_gallery_send_link",
         description: "Manually triggered automation",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id
@@ -230,7 +231,8 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       %{
         name: "Client Pays Retainer (Offline)",
         state: "pays_retainer_offline",
-        description: "Runs after client clicks they will pay you offline (if you have this enabled)",
+        description:
+          "Runs after client clicks they will pay you offline (if you have this enabled)",
         email_automation_sub_category_id: automation_inquiry.id,
         email_automation_category_id: email_automation_lead.id
       },
@@ -244,14 +246,14 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       # gallery
       %{
         name: "Send Proofing Gallery For Selection",
-        state: "send_proofing_gallery",
+        state: "manual_send_proofing_gallery",
         description: "Manually triggered automation",
         email_automation_sub_category_id: automation_inquiry.id,
         email_automation_category_id: email_automation_lead.id
       },
       %{
         name: "Send Proofing Gallery Finals",
-        state: "send_proofing_gallery_finals",
+        state: "manual_send_proofing_gallery_finals",
         description: "Manually triggered automation",
         email_automation_sub_category_id: automation_inquiry.id,
         email_automation_category_id: email_automation_lead.id
