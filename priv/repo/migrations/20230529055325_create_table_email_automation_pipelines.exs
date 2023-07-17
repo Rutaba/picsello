@@ -87,49 +87,49 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       %{
         name: "Client Pays Retainer",
         state: "pays_retainer",
-        description: "Runs after a contact/lead form submission",
+        description: "Runs after client has paid their retainer online",
         email_automation_sub_category_id: automation_response.id,
         email_automation_category_id: email_automation_job.id
       },
       %{
-        name: "Client Books a Booking Event",
+        name: "Thank You for Booking",
         state: "booking_event",
-        description: "Runs after finishing and sending the proposal",
+        description: "Sent when the questionnaire, contract is signed and retainer is paid",
         email_automation_sub_category_id: automation_response.id,
         email_automation_category_id: email_automation_job.id
       },
       %{
-        name: "Day Before Shoot",
+        name: "Before the Shoot",
         state: "before_shoot",
-        description: "Starts when client pays their first payment or retainer",
+        description: "Starts a week before the shoot and sends another day before the shoot",
         email_automation_sub_category_id: automation_prep.id,
         email_automation_category_id: email_automation_job.id
       },
       %{
         name: "Balance Due",
         state: "balance_due",
-        description: "Starts when client pays their first payment or retainer",
+        description: "Triggered when a payment is due within a payment schedule",
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id
       },
       %{
         name: "Paid in Full",
         state: "paid_full",
-        description: "Starts when client completes a booking event",
+        description: "Triggered when a payment schedule is completed",
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id
       },
       %{
-        name: "Offline Payment Selected",
+        name: "Balance Due (Offline)",
         state: "offline_payment",
-        description: "Starts when client completes a booking event",
+        description: "Triggered when a payment is due within a payment schedule that is offline",
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id
       },
       %{
         name: "Thank You",
         state: "shoot_thanks",
-        description: "Starts when client pays their first payment or retainer",
+        description: "Triggered after a shoot with emails 1 day & 1–9 months later to encourage reviews/bookings",
         email_automation_sub_category_id: automation_post.id,
         email_automation_category_id: email_automation_job.id
       },
@@ -144,77 +144,77 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       %{
         name: "Send Gallery Link",
         state: "gallery_send_link",
-        description: "Runs after a contact/lead form submission",
+        description: "Manually triggered automation",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id
       },
       %{
         name: "Cart Abandoned",
         state: "cart_abandoned",
-        description: "Runs after a contact/lead form submission",
+        description: "This will trigger when your client leaves product in their cart",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id
       },
       %{
         name: "Gallery Expiring Soon",
         state: "gallery_expiration_soon",
-        description: "Runs after a contact/lead form submission",
+        description: "This will trigger when a gallery is close to expiring",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id
       },
       %{
         name: "Gallery Password Changed",
         state: "gallery_password_changed",
-        description: "Runs after a contact/lead form submission",
+        description: "This will trigger when a gallery password has changed",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id
       },
       %{
-        name: "Order Confirmation (Physical Products Only)",
+        name: "Order Received (Physical Products Only)",
         state: "order_confirmation_physical",
-        description: "Starts when client pays their first payment or retainer",
+        description: "This will trigger when an order has been completed",
         email_automation_sub_category_id: automation_confirmation.id,
         email_automation_category_id: email_automation_gallery.id
       },
       %{
-        name: "Order Confirmation (Digital Products Only)",
+        name: "Order Received (Digital Products Only)",
         state: "order_confirmation_digital",
-        description: "Starts when client pays their first payment or retainer",
+        description: "This will trigger when an order has been completed",
         email_automation_sub_category_id: automation_confirmation.id,
         email_automation_category_id: email_automation_gallery.id
       },
       %{
-        name: "Order Confirmation (Physical/Digital Products)",
+        name: "Order Received (Physical/Digital Products)",
         state: "order_confirmation_digital_physical",
-        description: "Starts when client pays their first payment or retainer",
+        description: "This will trigger when an order has been completed",
         email_automation_sub_category_id: automation_confirmation.id,
         email_automation_category_id: email_automation_gallery.id
       },
       %{
         name: "Digitals Ready For Download",
         state: "digitals_ready_download",
-        description: "Starts when client pays their first payment or retainer",
+        description: "This will trigger when digitals are packed and ready for download",
         email_automation_sub_category_id: automation_confirmation.id,
         email_automation_category_id: email_automation_gallery.id
       },
       %{
         name: "Order Has Shipped",
         state: "order_shipped",
-        description: "Starts when client pays their first payment or retainer",
+        description: "This will trigger when digitals are packed and ready for download",
         email_automation_sub_category_id: automation_status.id,
         email_automation_category_id: email_automation_gallery.id
       },
       %{
         name: "Order Is Delayed",
         state: "order_delayed",
-        description: "Starts when client pays their first payment or retainer",
+        description: "This will trigger when an order is delayed",
         email_automation_sub_category_id: automation_status.id,
         email_automation_category_id: email_automation_gallery.id
       },
       %{
         name: "Order Has Arrived",
         state: "order_arrived",
-        description: "Starts when client pays their first payment or retainer",
+        description: "This will trigger when an order has arrived",
         email_automation_sub_category_id: automation_status.id,
         email_automation_category_id: email_automation_gallery.id
       },
@@ -222,6 +222,36 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
       %{
         name: "Thank you for contacting me",
         state: "manual_thank_you_lead",
+        description: "Manually triggered automation",
+        email_automation_sub_category_id: automation_inquiry.id,
+        email_automation_category_id: email_automation_lead.id
+      },
+      # jobs
+      %{
+        name: "Client Pays Retainer (Offline)",
+        state: "pays_retainer_offline",
+        description: "Runs after client clicks they will pay you offline (if you have this enabled)",
+        email_automation_sub_category_id: automation_inquiry.id,
+        email_automation_category_id: email_automation_lead.id
+      },
+      %{
+        name: "Paid in Full (Offline)",
+        state: "paid_offline_full",
+        description: "Triggered when a payment schedule is completed from offline payments",
+        email_automation_sub_category_id: automation_inquiry.id,
+        email_automation_category_id: email_automation_lead.id
+      },
+      # gallery
+      %{
+        name: "Send Proofing Gallery For Selection",
+        state: "send_proofing_gallery",
+        description: "Manually triggered automation",
+        email_automation_sub_category_id: automation_inquiry.id,
+        email_automation_category_id: email_automation_lead.id
+      },
+      %{
+        name: "Send Proofing Gallery Finals",
+        state: "send_proofing_gallery_finals",
         description: "Manually triggered automation",
         email_automation_sub_category_id: automation_inquiry.id,
         email_automation_category_id: email_automation_lead.id
