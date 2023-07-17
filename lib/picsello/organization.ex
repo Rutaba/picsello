@@ -114,22 +114,29 @@ defmodule Picsello.Organization do
     do: organization |> change(stripe_account_id: stripe_account_id)
 
   def build_slug(name) do
-    slug = name |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
-    slug_like = "#{slug}%"
+    converted_name =
+      String.downcase(name) |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
 
-    highest_slug_index =
-      from(organization in __MODULE__,
-        where: like(organization.slug, ^slug_like),
-        select:
-          "(coalesce(regexp_match(?, '\\d+$'), ARRAY['1']))[1]::int"
-          |> fragment(organization.slug)
-          |> max()
-      )
-      |> Repo.one()
+    find_unique_name(converted_name)
+  end
 
-    case highest_slug_index do
-      nil -> slug
-      n -> "#{slug}-#{n + 1}"
+  defp find_unique_name(name, count \\ 0) do
+    updated_name =
+      if count > 0 do
+        "#{name}-#{count}"
+      else
+        name
+      end
+
+    names = Repo.all(from o in __MODULE__, select: o.slug)
+    existing_names = Enum.map(names, &String.downcase/1)
+
+    case Enum.member?(existing_names, updated_name) do
+      true ->
+        find_unique_name(name, count + 1)
+
+      false ->
+        updated_name
     end
   end
 
