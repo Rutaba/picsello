@@ -113,23 +113,34 @@ defmodule Picsello.Profiles do
       |> validate_required(@required_fields)
     end
 
-    def to_string(%__MODULE__{} = contact) do
-      """
+    def to_msg_string(%__MODULE__{} = contact) do
+      msg =
+        """
           name: #{contact.name}
-         email: #{contact.email}
-         phone: #{contact.phone}
-         #{referred_by?(contact.referred_by)}
-         #{referral_name?(contact.referral_name)}
-      job type: #{dyn_gettext(contact.job_type)}
-       message: #{contact.message}
+          email: #{contact.email}
+          phone: #{contact.phone}
+        """
+      msg = if contact.referred_by, do: msg <> referred_by?(contact.referred_by), else: msg
+      msg = if contact.referred_by, do: msg <> referral_name?(contact.referral_name), else: msg
+
+      msg <>
+      """
+        job type: #{dyn_gettext(contact.job_type)}
+        message: #{contact.message}
       """
     end
 
     defp referred_by?(nil), do: ""
-    defp referred_by?(referred_by), do: "referred by: #{referred_by}"
+    defp referred_by?(referred_by),
+    do: """
+      referred by: #{referred_by}
+      """
 
     defp referral_name?(nil), do: ""
-    defp referral_name?(referral_name), do: "referral name: #{referral_name}"
+    defp referral_name?(referral_name),
+    do: """
+      referral name: #{referral_name}
+      """
   end
 
   def contact_changeset(contact, attrs) do
@@ -195,7 +206,7 @@ defmodule Picsello.Profiles do
               %{
                 job_id: &1.lead.id,
                 subject: "New lead from profile",
-                body_text: Contact.to_string(contact)
+                body_text: Contact.to_msg_string(contact)
               },
               [:job_id]
             )
