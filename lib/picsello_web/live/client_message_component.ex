@@ -92,6 +92,45 @@ defmodule PicselloWeb.ClientMessageComponent do
         <hr class="my-4"/>
       <% end %>
 
+      <div class="p-5 flex flex-col rounded-lg bg-gray-100 lg:w-1/2">
+        <div class="flex flex-row mb-5 items-center">
+          <div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
+            <.icon name="play-icon" class="inline-block w-5 h-5 fill-current text-blue-planning-300" />
+          </div>
+          <div class="ml-3">
+            <p class="text-sm uppercase font-bold text-base-250">Email Sequences</p>
+            <p class="text-blue-planning-300 text-2xl font-bold">Thank you for contacting me</p>
+          </div>
+        </div>
+        <div class="flex flex-row ml-10 sm:ml-auto">
+          <.form :let={_} for={%{}} as={:toggle} phx-click="toggle" phx-value-pipeline_id={} phx-value-active={}>
+          <label class="flex">
+            <input type="checkbox" class="peer hidden" checked={}/>
+            <div class="hidden peer-checked:flex cursor-pointer">
+              <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 h-8 p-1 flex items-center justify-end mr-4">
+                <div class="rounded-full h-5 w-5 bg-base-100"></div>
+              </div>
+              <div>
+                <p class="font-bold">Allow automation to send sequence</p>
+                <p>(Disable to send a one-off)</p>
+                <p class="text-blue-planning-300 underline"><a>Review emails</a></p>
+              </div>
+            </div>
+            <div class="flex peer-checked:hidden cursor-pointer">
+              <div class="rounded-full w-16 h-8 p-1 flex items-center mr-4 border border-blue-planning-300">
+                <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+              </div>
+              <div>
+                <p class="font-bold">Allow automation to send sequence</p>
+                <p>(Disable to send a one-off)</p>
+                <p class="text-blue-planning-300 underline"><a>Review emails</a></p>
+              </div>
+            </div>
+          </label>
+          </.form>
+        </div>
+      </div>
+
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <div class="grid grid-flow-row md:grid-flow-col md:auto-cols-fr md:gap-4 mt-2">
           <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
@@ -285,7 +324,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     to = Map.get(recipients, "to") |> List.wrap() |> Enum.uniq()
     cc = (Map.get(recipients, "cc", []) |> Enum.uniq()) -- to
     bcc = ((Map.get(recipients, "bcc", []) |> Enum.uniq()) -- to) -- cc
-    
+
     %{"to" => to}
     |> update_recipients_map("cc", cc)
     |> update_recipients_map("bcc", bcc)
