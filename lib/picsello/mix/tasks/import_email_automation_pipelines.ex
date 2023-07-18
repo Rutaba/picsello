@@ -3,7 +3,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
 
   use Mix.Task
 
-  import Ecto.Query
+
   alias Picsello.Repo
   alias Picsello.EmailAutomation.{
     EmailAutomationCategory,
@@ -55,7 +55,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
 
     {:ok, automation_status} =
       insert_email_automation_slug("Order status emails", "order_status_emails", now)
-    
+
     [
       # leads
       %{

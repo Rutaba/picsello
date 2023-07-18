@@ -20,6 +20,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     GlobalSettings,
     Utils,
     EmailAutomations,
+    EmailAutomation.EmailSchedule,
     EmailAutomationSchedules
   }
 
@@ -45,9 +46,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
         preset_state = preset_state(type)
         state = automation_state(type)
         pipeline = EmailAutomations.get_pipeline_by_state(state)
+        email_by_state = get_gallery_email_by_pipeline(gallery.id, pipeline)
+
+        manual_toggle = is_manual_toggle?(email_by_state)
 
         %{body_template: body_html, subject_template: subject} =
-          get_email_body_subject(pipeline, gallery, preset_state)
+          get_email_body_subject(email_by_state, gallery, preset_state)
 
         socket
         |> assign(:job, gallery.job)
@@ -61,7 +65,9 @@ defmodule PicselloWeb.GalleryLive.Shared do
           enable_size: true,
           composed_event: composed_event(type),
           client: Job.client(gallery.job),
-          current_user: current_user
+          current_user: current_user,
+          manual_toggle: manual_toggle,
+          email_schedule: email_by_state
         })
         |> noreply()
 
@@ -82,24 +88,26 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  defp get_email_body_subject(pipeline, gallery, preset_state) do
-    email_by_state =
-      EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery.id, nil, pipeline.id)
-      |> order_by([es], asc: es.id)
-      |> Repo.one()
-
-    case email_by_state do
-      nil ->
-        get_email_body_subject(nil, gallery, preset_state)
-
-      schedule ->
-        EmailAutomations.resolve_variables(
-          schedule,
-          schemas(gallery),
-          PicselloWeb.Helpers
-        )
-    end
+  defp get_email_body_subject(email_by_state, gallery, _preset_state) do
+    EmailAutomations.resolve_variables(
+      email_by_state,
+      schemas(gallery),
+      PicselloWeb.Helpers
+    )
   end
+
+  defp get_gallery_email_by_pipeline(_gallery_id, nil), do: nil
+
+  defp get_gallery_email_by_pipeline(gallery_id, pipeline) do
+    EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery_id, nil, pipeline.id)
+    |> order_by([es], asc: es.id)
+    |> Repo.one()
+    |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+  end
+
+  defp is_manual_toggle?(nil), do: false
+  defp is_manual_toggle?(%EmailSchedule{reminded_at: nil}), do: true
+  defp is_manual_toggle?(_email), do: false
 
   defp schemas(%{type: :standard} = gallery), do: {gallery}
   defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
