@@ -233,7 +233,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> assign(
       step: 3,
       color_class: "bg-blue-gallery-200",
-      step_title: "Customize your account",
+      step_title: "Customize your business",
       subtitle: "",
       page_title: "Onboarding Step 3"
     )
