@@ -78,13 +78,16 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   end
 
   defp send_email_each_pipeline(job_pipeline, job, gallery) do
-    Enum.map(job_pipeline.emails, fn schedule ->
-      state = schedule.email_automation_pipeline.state
-      send_email_by_state(state, schedule, job, gallery, nil)
-    end)
+    # Get first email from pipeline which is not sent
+    email_schedule = job_pipeline.emails |> Enum.find(fn %{reminded_at: nil} -> true end)
+
+    if email_schedule do
+      state = email_schedule.email_automation_pipeline.state
+      send_email_by_state(state, job_pipeline.pipeline_id, email_schedule, job, gallery, nil)
+    end
   end
 
-  defp send_email_by_state(state, schedule, job, gallery, _order)
+  defp send_email_by_state(state, pipeline_id, schedule, job, gallery, _order)
        when state in [
               :order_arrived,
               :order_delayed,
@@ -98,17 +101,20 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     |> Orders.all()
     |> Enum.map(fn order ->
       order |> Repo.preload(:digital_line_items, gallery: :job)
-      send_email(state, schedule, job, gallery, order)
+      send_email(state, pipeline_id, schedule, job, gallery, order)
     end)
   end
 
-  defp send_email_by_state(state, schedule, job, gallery, order) do
-    send_email(state, schedule, job, gallery, order)
+  defp send_email_by_state(state, pipeline_id, schedule, job, gallery, order) do
+    send_email(state, pipeline_id, schedule, job, gallery, order)
   end
 
-  defp send_email(state, schedule, job, gallery, order) do
+  defp send_email(state, pipeline_id, schedule, job, gallery, order) do
     type = schedule.email_automation_pipeline.email_automation_category.type
-    job_date_time = Shared.fetch_date_for_state(state, job, gallery, order)
+
+    job_date_time =
+      Shared.fetch_date_for_state_maybe_manual(state, pipeline_id, job, gallery, order)
+
     Logger.info("Job date time for state #{state} #{job_date_time}")
 
     is_send_time = is_email_send_time(job_date_time, schedule.total_hours)

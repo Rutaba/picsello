@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import Money.Sigils
+  import Ecto.Query
 
   alias Picsello.{
     Job,
@@ -17,9 +18,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Albums,
     Notifiers.ClientNotifier,
     GlobalSettings,
-    Utils
+    Utils,
+    EmailAutomations,
+    EmailAutomationSchedules
   }
 
+  alias PicselloWeb.Live.Shared
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Ecto.Multi
   alias Cart.{Order, Digital}
@@ -39,15 +43,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
       {:ok, _} ->
         gallery = gallery |> Galleries.set_gallery_hash() |> Repo.preload([:albums, job: :client])
         preset_state = preset_state(type)
+        state = automation_state(type)
+        pipeline = EmailAutomations.get_pipeline_by_state(state)
 
         %{body_template: body_html, subject_template: subject} =
-          with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
-            Picsello.EmailPresets.resolve_variables(
-              preset,
-              schemas(gallery),
-              PicselloWeb.Helpers
-            )
-          end
+          get_email_body_subject(pipeline, gallery, preset_state)
 
         socket
         |> assign(:job, gallery.job)
@@ -72,13 +72,47 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  defp get_email_body_subject(nil, gallery, preset_state) do
+    with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
+      Picsello.EmailPresets.resolve_variables(
+        preset,
+        schemas(gallery),
+        PicselloWeb.Helpers
+      )
+    end
+  end
+
+  defp get_email_body_subject(pipeline, gallery, preset_state) do
+    email_by_state =
+      EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery.id, nil, pipeline.id)
+      |> order_by([es], asc: es.id)
+      |> Repo.one()
+
+    case email_by_state do
+      nil ->
+        get_email_body_subject(nil, gallery, preset_state)
+
+      schedule ->
+        EmailAutomations.resolve_variables(
+          schedule,
+          schemas(gallery),
+          PicselloWeb.Helpers
+        )
+    end
+  end
+
   defp schemas(%{type: :standard} = gallery), do: {gallery}
   defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
+
+  defp automation_state(:standard), do: :manual_gallery_send_link
+  defp automation_state(:proofing), do: :manual_send_proofing_gallery
+  defp automation_state(:finals), do: :manual_send_proofing_gallery_finals
 
   defp preset_state(:standard), do: :gallery_send_link
   defp preset_state(:proofing), do: :proofs_send_link
   defp preset_state(:finals), do: :album_send_link
 
+  #
   defp modal_title(:standard), do: "Share gallery"
   defp modal_title(:proofing), do: "Share Proofing Album"
   defp modal_title(:finals), do: "Share Finals Album"
@@ -380,7 +414,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp opts(), do: [limit: 1, valid: true]
 
   def add_message_and_notify(
-        %{assigns: %{job: job, current_user: user}} = socket,
+        %{assigns: %{job: job, current_user: user, gallery: gallery}} = socket,
         message_changeset,
         recipients,
         shared_item
@@ -389,7 +423,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
     with {:ok, %{client_message: message, client_message_recipients: _}} <-
            Messages.add_message_to_job(message_changeset, job, recipients, user)
            |> Repo.transaction(),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
+         {:ok, _email} <- ClientNotifier.deliver_email(message, recipients),
+         {_count, _records} <- Shared.gallery_emails(gallery) do
       socket
       |> put_flash(:success, "#{String.capitalize(shared_item)} shared!")
     else

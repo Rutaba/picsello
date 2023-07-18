@@ -32,6 +32,7 @@ defmodule PicselloWeb.Live.Shared do
     Package,
     Repo,
     EmailAutomations,
+    EmailAutomationSchedules,
     BookingProposal,
     Workers.CleanStore,
     Packages.Download,
@@ -708,10 +709,14 @@ defmodule PicselloWeb.Live.Shared do
       BookingProposal.create_changeset(%{job_id: changes.job.id})
     end)
     |> maybe_insert_payment_schedules(socket)
-    |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, 
-      fn %{job: %Job{id: job_id, type: type}} -> 
-        job_emails(type, current_user.organization_id, job_id, [:job])
-      end)
+    |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, fn %{
+                                                                    job: %Job{
+                                                                      id: job_id,
+                                                                      type: type
+                                                                    }
+                                                                  } ->
+      job_emails(type, current_user.organization_id, job_id, [:job])
+    end)
     |> Repo.transaction()
     |> then(fn
       {:ok, %{job: job}} ->
@@ -790,7 +795,11 @@ defmodule PicselloWeb.Live.Shared do
         ]
       )
 
-    Repo.insert_all(EmailSchedule, emails, on_conflict: :nothing, conflict_target: :gallery_id)
+    if is_nil(EmailAutomationSchedules.get_schedules_by_gallery(gallery.id)) do
+      Repo.insert_all(EmailSchedule, emails)
+    else
+      {0, nil}
+    end
   end
 
   defp get_client(selected_client, searched_client, client) do

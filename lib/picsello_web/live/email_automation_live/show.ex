@@ -83,7 +83,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     pipeline_id = to_integer(pipeline_id)
 
     email =
-      EmailAutomationSchedules.get_email_schedule_by_id(id)
+      EmailAutomationSchedules.get_schedule_by_id(id)
       |> Repo.preload(email_automation_pipeline: [:email_automation_category])
 
     pipeline = get_pipline(pipeline_id)
@@ -122,7 +122,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         %{"email_id" => id, "pipeline_id" => pipeline_id},
         %{assigns: %{current_user: current_user, type: type, job_types: job_types}} = socket
       ) do
-    selected_job_type = job_types |> Enum.filter(fn x -> x.job_type == type end) |> List.first()    
+    selected_job_type = job_types |> Enum.filter(fn x -> x.job_type == type end) |> List.first()
     schedule_id = to_integer(id)
     pipeline_id = to_integer(pipeline_id)
 
@@ -204,11 +204,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
               <div class="flex flex-row ml-2 h-max">
                 <div class={"h-auto pt-3 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
                   <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 z-40">
-                  <%= if not is_nil(email.reminded_at) do %>
-                    <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
-                  <% else %>
-                    <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
-                  <% end %>
+                    <%= cond do %>
+                      <% not is_nil(email.reminded_at) -> %> <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
+                      <% is_state_manually_trigger(@pipeline.state) and index == 0-> %> <.icon name="flag" class="w-5 h-5 text-blue-planning-300" />
+                      <% true -> %>  <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+                    <% end %>
                   </div>
                 </div>
                 <span class="text-blue-planning-300 text-sm font-bold ml-4 py-3 ">
@@ -216,23 +216,29 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                     Completed <%= get_completed_date(email.reminded_at) %>
                   <% end %>
                   <p class="text-black text-xl">
-                    <%= get_email_name(email, index) %>
+                    <%= get_email_name(email, index, @type, @current_user.organization_id) %>
                   </p>
                   <div class="flex items-center bg-white">
                   <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300 mr-2" />
-                    <p class="font-normal text-base-250 text-sm"> 
-                      <%= get_email_schedule_text(email.total_hours, @pipeline.state, @pipeline.emails, index) %>
+                    <p class="font-normal text-base-250 text-sm">
+                      <%= get_email_schedule_text(email.total_hours, @pipeline.state, @pipeline.emails, index, @type, @current_user.organization_id) %>
                     </p>
                   </div>
                 </span>
               </div>
 
               <div class="flex justify-end mr-2">
-                <button disabled={!is_nil(email.reminded_at)} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => email.is_stopped || !is_nil(email.reminded_at)})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
-                  <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
-                </button>
-                <button disabled={!is_nil(email.reminded_at)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at)})} phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
-                  Send now
+                <%= if not (is_state_manually_trigger(@pipeline.state) and index == 0) do %>
+                  <button disabled={!is_nil(email.reminded_at)} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => email.is_stopped || !is_nil(email.reminded_at) || disable_pipeline?(@pipeline.emails, @pipeline.state, index)})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
+                    <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
+                  </button>
+                <% end %>
+                <button disabled={!is_nil(email.reminded_at || disable_pipeline?(@pipeline.emails, @pipeline.state, index))} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at) || disable_pipeline?(@pipeline.emails, @pipeline.state, index)})} phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
+                  <%= if is_state_manually_trigger(@pipeline.state) and index == 0 do %>
+                      Start Sequence
+                    <% else %>
+                      Send now
+                  <% end %>
                 </button>
                 <button disabled={!is_nil(email.reminded_at)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at)})} phx-click="edit-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
                   <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-current text-white" />
@@ -279,7 +285,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
   defp get_next_email_schdule_date(category_type, gallery_id, job_id, pipeline_id, state) do
     email_schedule =
-      EmailAutomations.query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id)
+      EmailAutomationSchedules.query_get_email_schedule(
+        category_type,
+        gallery_id,
+        job_id,
+        pipeline_id
+      )
       |> where([es], is_nil(es.reminded_at))
       |> order_by([es], asc: es.id)
       |> Repo.one()
@@ -287,7 +298,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     case email_schedule do
       nil ->
         last_completed_email =
-          get_last_completed_email(category_type, gallery_id, job_id, pipeline_id)
+          EmailAutomationSchedules.get_last_completed_email(
+            category_type,
+            gallery_id,
+            job_id,
+            pipeline_id
+          )
 
         %{
           text: "Completed",
@@ -301,7 +317,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         job = EmailAutomations.get_job(job_id)
         gallery = if is_nil(gallery_id), do: nil, else: Galleries.get_gallery!(gallery_id)
 
-        date = get_conditional_date(state, job, gallery)
+        date = get_conditional_date(state, pipeline_id, job, gallery)
 
         case date do
           nil ->
@@ -318,12 +334,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     end
   end
 
-  defp get_last_completed_email(category_type, gallery_id, job_id, pipeline_id) do
-    EmailAutomations.query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id)
-    |> where([es], not is_nil(es.reminded_at))
-    |> order_by([es], desc: es.id)
-    |> Repo.one()
-  end
+  # defp get_last_completed_email(category_type, gallery_id, job_id, pipeline_id) do
+  #   EmailAutomationSchedules.query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id)
+  #   |> where([es], not is_nil(es.reminded_at))
+  #   |> order_by([es], desc: es.id)
+  #   |> Repo.one()
+  # end
 
   defp next_schedule_format(date, sign, hours) do
     if sign == "+" do
@@ -378,7 +394,15 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     end
   end
 
-  defp get_conditional_date(state, _job, _gallery)
+  defp disable_pipeline?(_emails, _state, 0), do: false
+
+  defp disable_pipeline?(emails, state, _index) do
+    is_manual_trigger = is_state_manually_trigger(state)
+    intial_email = get_preceding_email(emails, 1)
+    if is_manual_trigger and is_nil(intial_email.reminded_at), do: true, else: false
+  end
+
+  defp get_conditional_date(state, _pipeline_id, _job, _gallery)
        when state in [
               :order_arrived,
               :order_delayed,
@@ -390,6 +414,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
             ],
        do: nil
 
-  defp get_conditional_date(state, job, gallery),
-    do: fetch_date_for_state(state, job, gallery, nil)
+  defp get_conditional_date(state, pipeline_id, job, gallery),
+    do: fetch_date_for_state_maybe_manual(state, pipeline_id, job, gallery, nil)
 end

@@ -7,7 +7,15 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-  alias Picsello.{Marketing, PaymentSchedules, EmailPresets.EmailPreset, EmailAutomations, Repo}
+  alias Picsello.{
+    Marketing,
+    PaymentSchedules,
+    EmailPresets.EmailPreset,
+    EmailAutomations,
+    EmailAutomationSchedules,
+    Repo
+  }
+
   alias Picsello.EmailAutomation.EmailSchedule
 
   # @impl true
@@ -154,39 +162,54 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     Enum.any?(job_types, &Map.get(&1, :selected, false))
   end
 
-  def get_email_schedule_text(0, _, _, _), do: "Send email immediately"
+  def get_email_schedule_text(0, _, _, _, _job_type, _organization_id),
+    do: "Send email immediately"
 
-  def get_email_schedule_text(hours, state, emails, index) do
+  def get_email_schedule_text(hours, state, emails, index, job_type, organization_id) do
     %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
     sign = if sign == "+", do: "after", else: "before"
     calendar = calendar_text(calendar, count)
     email = get_preceding_email(emails, index)
 
-    sub_text = cond do
-      state in ["client_contact", "booking_proposal_sent"] ->
-        "the prior email \"#{get_email_name(email, index)}\" has been sent if no response from the client"
-      state in ["before_shoot", "shoot_thanks", "post_shoot"] -> "the shoot date"
-      state == "cart_abandoned" and index == 0 -> "client abandons cart"
-      state == "cart_abandoned" -> "sending \"#{get_email_name(email, index)}\" and no reply from the client"
-      state == "gallery_expiration_soon" -> "gallery expiration date"
-      state == "manual_thank_you_lead" -> "sending \"#{get_email_name(email, index)}\""
-      true -> ""
-    end
+    sub_text =
+      cond do
+        state in ["client_contact", "booking_proposal_sent"] ->
+          "the prior email \"#{get_email_name(email, index, job_type, organization_id)}\" has been sent if no response from the client"
+
+        state in ["before_shoot", "shoot_thanks", "post_shoot"] ->
+          "the shoot date"
+
+        state == "cart_abandoned" and index == 0 ->
+          "client abandons cart"
+
+        state == "cart_abandoned" ->
+          "sending \"#{get_email_name(email, index, job_type, organization_id)}\" and no reply from the client"
+
+        state == "gallery_expiration_soon" ->
+          "gallery expiration date"
+
+        state == "manual_thank_you_lead" ->
+          "sending \"#{get_email_name(email, index, job_type, organization_id)}\""
+
+        true ->
+          ""
+      end
 
     "Send #{count} #{calendar} #{sign} #{sub_text}"
   end
 
-  def get_email_name(email, index) do
-    type = String.capitalize(email.job_type)
-    
+  def get_email_name(email, index, job_type, organization_id) do
+    type = if job_type, do: job_type, else: String.capitalize(email.job_type)
+    organization_id = if organization_id, do: organization_id, else: email.organization_id
+
     cond do
       email.private_name -> email.private_name
-      is_nil(email.organization_id) -> "#{type} - " <> email.name
+      is_nil(organization_id) -> "#{type} - " <> email.name
       true -> "#{type} - " <> email.name <> "-#{index + 1}"
     end
   end
 
-  defp get_preceding_email(emails, index) do
+  def get_preceding_email(emails, index) do
     {email, _} = List.pop_at(emails, index - 1)
     if email, do: email, else: List.last(emails)
   end
@@ -212,13 +235,41 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   defp make_positive_number(no), do: if(no > 0, do: no, else: -1 * no)
 
-  def fetch_date_for_state(_state, nil, nil, nil), do: nil
+  def is_state_manually_trigger(state) do
+    String.starts_with?(to_string(state), "manual")
+  end
 
-  def fetch_date_for_state(:gallery_send_link, nil, gallery, _order) do
+  @doc """
+    if state is manual then fetch reminded_at of last email which is sent
+    else fetch_date_for_state to handle all other states
+  """
+  def fetch_date_for_state_maybe_manual(state, pipeline_id, job, gallery, order) do
+    if is_state_manually_trigger(state) do
+      job_id = get_job_id(job)
+      gallery_id = get_gallery_id(gallery, order)
+      type = if job_id, do: :job, else: :gallery
+
+      case EmailAutomationSchedules.get_last_completed_email(
+             type,
+             gallery_id,
+             job_id,
+             pipeline_id
+           ) do
+        nil -> nil
+        schedule -> schedule.reminded_at
+      end
+    else
+      fetch_date_for_state(state, pipeline_id, job, gallery, order)
+    end
+  end
+
+  def fetch_date_for_state(_state, _pipeline_id, nil, nil, nil), do: nil
+
+  def fetch_date_for_state(:gallery_send_link, _pipeline_id, nil, gallery, _order) do
     if not is_nil(gallery.gallery_send_at), do: gallery.gallery_send_at, else: nil
   end
 
-  def fetch_date_for_state(:cart_abandoned, nil, gallery, _order) do
+  def fetch_date_for_state(:cart_abandoned, _pipeline_id, nil, gallery, _order) do
     card_abandoned? =
       Enum.any?(gallery.orders, fn order ->
         is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals)
@@ -227,7 +278,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     if card_abandoned?, do: gallery.inserted_at, else: nil
   end
 
-  def fetch_date_for_state(:gallery_expiration_soon, nil, gallery, _order) do
+  def fetch_date_for_state(:gallery_expiration_soon, _pipeline_id, nil, gallery, _order) do
     next_date = Timex.shift(Timex.now(), days: 7)
 
     cond do
@@ -239,31 +290,36 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end
   end
 
-  def fetch_date_for_state(:gallery_password_changed, nil, gallery, _order) do
+  def fetch_date_for_state(:gallery_password_changed, _pipeline_id, nil, gallery, _order) do
     if not is_nil(gallery.password_regenerated_at), do: gallery.password_regenerated_at, else: nil
   end
 
-  def fetch_date_for_state(:order_confirmation_physical, nil, _gallery, order) do
+  def fetch_date_for_state(:order_confirmation_physical, _pipeline_id, nil, _gallery, order) do
     if not is_nil(order.whcc_order), do: order.placed_at, else: nil
   end
 
-  def fetch_date_for_state(:order_confirmation_digital, nil, _gallery, order) do
+  def fetch_date_for_state(:order_confirmation_digital, _pipeline_id, nil, _gallery, order) do
     if(Enum.any?(order.digital_line_items), do: order.placed_at, else: nil)
   end
 
-  def fetch_date_for_state(:order_confirmation_digital_physical, nil, _gallery, order) do
+  def fetch_date_for_state(
+        :order_confirmation_digital_physical,
+        _pipeline_id,
+        nil,
+        _gallery,
+        order
+      ) do
     if(Enum.any?(order.digital_line_items) and not is_nil(order.whcc_order),
       do: order.placed_at,
       else: nil
     )
   end
 
-  def fetch_date_for_state(:client_contact, job, _gallery, _order) do
+  def fetch_date_for_state(:client_contact, _pipeline_id, job, _gallery, _order) do
     job |> Map.get(:inserted_at)
   end
 
-  def fetch_date_for_state(state, job, _gallery, _order)
-      when state in [:pays_retainer, :booking_proposal_sent] do
+  def fetch_date_for_state(:booking_proposal_sent, _pipeline_id, job, _gallery, _order) do
     job
     |> Map.get(:booking_proposals)
     |> Enum.sort_by(& &1.id)
@@ -275,7 +331,26 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end
   end
 
-  def fetch_date_for_state(:booking_event, job, _gallery, _order) do
+  def fetch_date_for_state(:pays_retainer, _pipeline_id, job, _gallery, _order) do
+    if PaymentSchedules.is_with_cash?(job) do
+      nil
+    else
+      job.payment_schedules
+      |> PaymentSchedules.set_payment_schedules_order()
+      |> List.first()
+      |> Map.get(:inserted_at)
+    end
+  end
+
+  def fetch_date_for_state(:pays_retainer_offline, _pipeline_id, job, _gallery, _order) do
+    if PaymentSchedules.is_with_cash?(job) do
+      PaymentSchedules.get_is_with_cash(job) |> List.first() |> Map.get(:inserted_at)
+    else
+      nil
+    end
+  end
+
+  def fetch_date_for_state(:booking_event, _pipeline_id, job, _gallery, _order) do
     job
     |> Map.get(:booking_event)
     |> case do
@@ -284,12 +359,12 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end
   end
 
-  def fetch_date_for_state(:before_shoot, job, _gallery, _order) do
+  def fetch_date_for_state(:before_shoot, _pipeline_id, job, _gallery, _order) do
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
 
     job.shoots
     |> Enum.filter(fn item ->
-      Timex.compare(today, item.starts_at, :days) <= 1
+      Timex.compare(today, item.starts_at, :days) < 7
     end)
     |> (fn filtered_list ->
           if Enum.count(filtered_list) == 0,
@@ -298,7 +373,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         end).()
   end
 
-  def fetch_date_for_state(:balance_due, job, _gallery, _order) do
+  def fetch_date_for_state(:balance_due, _pipeline_id, job, _gallery, _order) do
     if PaymentSchedules.free?(job) do
       nil
     else
@@ -308,31 +383,47 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end
   end
 
-  def fetch_date_for_state(:paid_full, job, _gallery, _order) do
+  def fetch_date_for_state(:offline_payment, _pipeline_id, job, _gallery, _order) do
+    offline_dues =
+      PaymentSchedules.payment_schedules(job)
+      |> Enum.filter(&is_nil(&1.paid_at))
+      |> Enum.sort_by(& &1.due_at, :asc)
+
+    if Enum.count(offline_dues) == 0, do: nil, else: List.first(offline_dues) |> Map.get(:due_at)
+  end
+
+  def fetch_date_for_state(:paid_full, _pipeline_id, job, _gallery, _order) do
     if PaymentSchedules.all_paid?(job) do
       job.payment_schedules
       |> PaymentSchedules.set_payment_schedules_order()
-      |> List.first()
+      |> List.last()
       |> Map.get(:paid_at)
     else
       nil
     end
   end
 
-  def fetch_date_for_state(:offline_payment, job, _gallery, _order) do
-    if PaymentSchedules.is_with_cash?(job) do
-      PaymentSchedules.get_is_with_cash(job) |> List.first() |> Map.get(:inserted_at)
+  def fetch_date_for_state(:paid_offline_full, _pipeline_id, job, _gallery, _order) do
+    all_paid_offline =
+      PaymentSchedules.payment_schedules(job)
+      |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type in ["check", "cash"] end)
+
+    if all_paid_offline do
+      job.payment_schedules
+      |> PaymentSchedules.set_payment_schedules_order()
+      |> List.last()
+      |> Map.get(:paid_at)
     else
       nil
     end
   end
 
-  def fetch_date_for_state(:shoot_thanks, job, _gallery, _order) do
+  def fetch_date_for_state(:shoot_thanks, _pipeline_id, job, _gallery, _order) do
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
 
     job.shoots
     |> Enum.filter(fn item ->
-      Timex.compare(today, item.starts_at, :minute) >= 0
+      Timex.compare(today, item.starts_at, :months) >= 1
     end)
     |> (fn filtered_list ->
           if Enum.count(filtered_list) == 0,
@@ -341,7 +432,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         end).()
   end
 
-  def fetch_date_for_state(:post_shoot, job, _gallery, _order) do
+  def fetch_date_for_state(:post_shoot, _pipeline_id, job, _gallery, _order) do
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
 
     filter_shoots_count =
@@ -360,5 +451,11 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end
   end
 
-  def fetch_date_for_state(_state, _job, _gallery, _order), do: nil
+  def fetch_date_for_state(_state, _pipeline_id, _job, _gallery, _order), do: nil
+
+  defp get_job_id(job) when is_map(job), do: job.id
+  defp get_job_id(_), do: nil
+  defp get_gallery_id(gallery, _order) when is_map(gallery), do: gallery.id
+  defp get_gallery_id(_gallery, order) when is_map(order), do: order.gallery.id
+  defp get_gallery_id(_gallery, _order), do: nil
 end
