@@ -513,14 +513,11 @@ defmodule PicselloWeb.HomeLive.Index do
 
   @impl true
   def handle_info(
-        {:close_event, %{event_name: "toggle_welcome_event", link: link}},
+        {:close_event, %{event_name: "toggle_welcome_event"}},
         socket
       ) do
-    if link === "demo" do
-      socket
-    else
-      socket |> welcome_modal_state() |> push_redirect(to: link)
-    end
+    socket
+    |> welcome_modal_state()
     |> noreply()
   end
 
