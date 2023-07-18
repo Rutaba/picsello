@@ -181,8 +181,8 @@ defmodule PicselloWeb.Live.Profile do
           <% end) %>
         </span>
         <span class="inline-block">
-          <.icon_button {testid("edit-link-button")} class="ml-0 bg-blue-planning-300 hover:bg-blue-planning-300/75" title="edit photography types" phx-click="edit-website" color="white" href={Routes.package_templates_path(@socket, :index)} target="_blank" icon="external-link-gear">
-                Edit Photography Types
+          <.icon_button {testid("edit-link-button")} class="ml-0 bg-blue-planning-300 hover:bg-blue-planning-300/75" title="edit photography types" color="white" href={Routes.package_templates_path(@socket, :index)} target="_blank" icon="external-link-gear">
+            Edit Photography Types
           </.icon_button>
         </span>
       </span>
