@@ -114,7 +114,7 @@ defmodule Picsello.Pack do
       "#{string_tokenizer(gallery_name)}.zip"
     ])
   end
-  
+
   @spec upload(Gallery.t() | Order.t()) :: {:ok, String.t()} | {:error, any()}
   @spec upload(Gallery.t() | Order.t(), Keyword.t()) :: {:ok, String.t()} | {:error, any()}
   def upload(packable, opts \\ [])
@@ -256,5 +256,5 @@ defmodule Picsello.Pack do
     end
   end
 
-  defp string_tokenizer(name), do: Regex.replace( ~r/[^a-zA-Z0-9 -]/, name, "")
+  defp string_tokenizer(name), do: Regex.replace(~r/[^a-zA-Z0-9 -]/, name, "")
 end
