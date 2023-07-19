@@ -6,6 +6,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.Shared.MultiSelect
+  import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
 
   alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset}
   alias PicselloWeb.EmailAutomationLive.Shared
@@ -34,7 +35,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     |> assign(step: :edit_email)
     |> assign(show_variables: false)
     |> assign(email_preset_changeset: EmailPreset.changeset(email, %{}))
-    |> assign(variables_list: make_variables())
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
   end
@@ -269,30 +269,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
             </div>
 
             <div class={"flex flex-col w-full md:w-1/3 md:ml-2 min-h-[16rem] md:mt-0 mt-6 #{!@show_variables && "hidden"}"}>
-              <div class="flex items-center font-bold bg-gray-100 rounded-t-lg border-gray-200 text-blue-planning-300 p-2.5">
-                <.icon name="vertical-list" class="w-4 h-4 mr-2 text-blue-planning-300" />
-                Email Variables
-
-                <a href="#" phx-click="toggle-variables" phx-value-show-variables={"#{@show_variables}"} title="close" phx-target={@myself} class="ml-auto cursor-pointer">
-                  <.icon name="close-x" class="w-3 h-3 stroke-current text-base-300 stroke-2" />
-                </a>
-              </div>
-              <div class="flex flex-col p-2.5 border border-gray-200 rounded-b-lg h-72 overflow-auto">
-                <p class="text-base-250">Copy & paste the variable to use in your email. If you remove a variable, the information won’t be inserted.</p>
-                <hr class="my-3" />
-                <%= for variable <- @variables_list do%>
-                  <div class="flex-col flex mb-3">
-                    <div class="flex">
-                      <p><%= variable.name %></p>
-                      <div class="ml-auto flex flex-row items-center justify-center">
-                        <.icon name="clip-board" class="w-4 h-4 text-blue-planning-300"/>
-                        <.icon name="trash" class="w-3 h-3 ml-2 text-blue-planning-300"/>
-                      </div>
-                    </div>
-                    <span class="text-base-250"><%= variable.description %></span>
-                  </div>
-                <% end %>
-              </div>
+              <.short_codes_select id="short-codes" target={@myself}/>
             </div>
           </div>
         </div>
@@ -364,27 +341,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       )
 
     params
-  end
-
-  defp make_variables() do
-    [
-      %{
-        name: "{{client_total}}",
-        description: "Let your client know who you are and what makes your business special"
-      },
-      %{
-        name: "{{invoice_total}}",
-        description: "The total of invoice"
-      },
-      %{
-        name: "{{invoice_name}}",
-        description: "This is the name of invoice"
-      },
-      %{
-        name: "{{order_subtotal}}",
-        description: "this is subtotal"
-      }
-    ]
   end
 
   defp save(
