@@ -282,10 +282,13 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
                 <hr class="my-3" />
                 <%= for variable <- @variables_list do%>
                   <div class="flex-col flex mb-3">
-                    <span class="flex">
-                      <%= variable.name %>
-                      <.icon name="trash" class="w-3 h-3 ml-auto text-blue-planning-300"/>
-                    </span>
+                    <div class="flex">
+                      <p><%= variable.name %></p>
+                      <div class="ml-auto flex flex-row items-center justify-center">
+                        <.icon name="clip-board" class="w-4 h-4 text-blue-planning-300"/>
+                        <.icon name="trash" class="w-3 h-3 ml-2 text-blue-planning-300"/>
+                      </div>
+                    </div>
                     <span class="text-base-250"><%= variable.description %></span>
                   </div>
                 <% end %>
@@ -401,7 +404,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     #   !Enum.any?(email_presets, &(type.id == &1.organization_job_id))
     # end)
 
-    changeset = 
+    changeset =
     Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
     |> Ecto.Changeset.put_change(:state, pipeline.state)
 

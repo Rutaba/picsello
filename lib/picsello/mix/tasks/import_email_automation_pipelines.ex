@@ -23,7 +23,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     categories = from(sc in EmailAutomationCategory) |> Repo.all()
     sub_categories = from(sc in EmailAutomationSubCategory) |> Repo.all()
-    
+
     {:ok, email_automation_lead} = maybe_insert_email_automation(categories, "Leads", "lead")
     {:ok, email_automation_job} = maybe_insert_email_automation(categories, "Jobs", "job")
     {:ok, email_automation_gallery} = maybe_insert_email_automation(categories, "Galleries", "gallery")
@@ -58,7 +58,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
 
     {:ok, automation_status} =
     maybe_insert_email_automation_slug(sub_categories, "Order status emails", "order_status_emails")
-    
+
     [
       # leads
       %{
@@ -248,10 +248,10 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         email_automation_category_id: email_automation_gallery.id
       }
     ]
-    |> Enum.each(fn attrs ->      
+    |> Enum.each(fn attrs ->
       attrs = Map.merge(attrs, %{inserted_at: now, updated_at: now})
       pipeline = from(ep in EmailAutomationPipeline, where: ep.state == ^attrs.state) |> Repo.one()
-      
+
       if pipeline do
         pipeline |> EmailAutomationPipeline.changeset(attrs) |> Repo.update!()
       else
@@ -262,12 +262,12 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
 
   defp maybe_insert_email_automation(categories, name, type) do
     category = Enum.filter(categories, & &1.type == String.to_atom(type)) |> List.first()
-  
+
     if category do
       category
       |> EmailAutomationCategory.changeset(%{name: name})
       |> Repo.update()
-  
+
     else
       %EmailAutomationCategory{}
       |> EmailAutomationCategory.changeset(%{

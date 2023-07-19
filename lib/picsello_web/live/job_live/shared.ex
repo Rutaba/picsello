@@ -2,7 +2,9 @@ defmodule PicselloWeb.JobLive.Shared do
   @moduledoc """
   handlers used by both leads and jobs
   """
-  require Ecto.Query
+
+  import Ecto.Query
+  require Logger
 
   use Phoenix.Component
   use Phoenix.HTML
@@ -29,7 +31,9 @@ defmodule PicselloWeb.JobLive.Shared do
     PaymentSchedules,
     Galleries.Workers.PhotoStorage,
     Utils,
-    EmailAutomationSchedules
+    EmailAutomations,
+    EmailAutomationSchedules,
+    EmailAutomation.EmailSchedule
   }
 
   alias PicselloWeb.{ConfirmationComponent, ClientMessageComponent}
@@ -107,10 +111,23 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_event(
         "open-compose",
+        %{"client_id" => client_id, "is_thanks" => _thanks},
+        socket
+      ),
+      do:
+        socket
+        |> assign(:is_thanks, true)
+        |> open_email_compose(client_id)
+
+  def handle_event(
+        "open-compose",
         %{"client_id" => client_id},
         socket
       ),
-      do: open_email_compose(socket, client_id)
+      do:
+        socket
+        |> assign(:is_thanks, false)
+        |> open_email_compose(client_id)
 
   def handle_event(
         "open-compose",
@@ -1754,6 +1771,7 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_inbox_count()
   end
 
+
   def open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
     do:
       socket
@@ -1767,6 +1785,38 @@ defmodule PicselloWeb.JobLive.Shared do
         client: Job.client(job)
       })
       |> noreply()
+
+  def open_email_compose(
+        %{assigns: %{current_user: current_user, job: job, is_thanks: true}} = socket,
+        client_id
+      ) do
+    client = Repo.get(Client, client_id)
+    pipeline = EmailAutomations.get_pipeline_by_state(:manual_thank_you_lead)
+    email_by_state = get_job_email_by_pipeline(job.id, pipeline)
+
+    manual_toggle = is_manual_toggle?(email_by_state)
+
+    %{body_template: body_html, subject_template: subject} =
+      get_email_body_subject(email_by_state, job, :manual_thank_you_lead)
+
+    %{body_template: body_html, subject_template: subject} =
+      if manual_toggle,
+        do: %{body_template: body_html, subject_template: subject},
+        else: %{body_template: "", subject_template: ""}
+
+    socket
+    |> ClientMessageComponent.open(%{
+      body_html: body_html,
+      subject: subject,
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true,
+      client: client,
+      manual_toggle: manual_toggle,
+      email_schedule: email_by_state
+    })
+    |> noreply()
+  end
 
   def open_email_compose(%{assigns: %{current_user: current_user}} = socket, client_id) do
     client = Repo.get(Client, client_id)
@@ -1811,4 +1861,40 @@ defmodule PicselloWeb.JobLive.Shared do
 
   defp retryable?(err) when err in ~w(too_large not_accepted)a, do: false
   defp retryable?(_err), do: true
+
+  def get_job_email_by_pipeline(_job_id, nil), do: nil
+
+  def get_job_email_by_pipeline(job_id, pipeline) do
+    EmailAutomationSchedules.query_get_email_schedule(:lead, nil, job_id, pipeline.id)
+    |> order_by([es], asc: es.id)
+    |> Repo.one()
+    |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+  end
+
+  def get_email_body_subject(nil, job, state) do
+    case Picsello.EmailPresets.for(job, state) do
+      [preset | _] ->
+        Picsello.EmailPresets.resolve_variables(
+          preset,
+          {job},
+          PicselloWeb.Helpers
+        )
+
+      _ ->
+        Logger.warn("No booking proposal email preset for #{job.type}")
+        %{body_template: "", subject_template: ""}
+    end
+  end
+
+  def get_email_body_subject(email_by_state, job, _state) do
+    EmailAutomations.resolve_variables(
+      email_by_state,
+      {job},
+      PicselloWeb.Helpers
+    )
+  end
+
+  def is_manual_toggle?(nil), do: false
+  def is_manual_toggle?(%EmailSchedule{reminded_at: nil}), do: true
+  def is_manual_toggle?(_email), do: false
 end
