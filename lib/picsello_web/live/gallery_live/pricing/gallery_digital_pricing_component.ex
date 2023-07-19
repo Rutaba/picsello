@@ -15,26 +15,27 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   alias Ecto.Changeset
 
   alias Picsello.{
-    Repo,
     GlobalSettings,
     Galleries.GalleryDigitalPricing,
     Packages.Download,
-    Packages.PackagePricing
+    Packages.PackagePricing,
+    Currency
   }
 
   @impl true
   def update(%{current_user: current_user, gallery: gallery} = assigns, socket) do
+    currency = Currency.for_gallery(gallery)
+
     socket
     |> assign(assigns)
+    |> assign(:currency, currency)
+    |> assign(:currency_symbol, Money.Currency.symbol!(currency))
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign(:email_error, [])
     |> assign(:email_input, nil)
     |> assign(:email_value, nil)
     |> assign(:email_list, gallery.job.client.email)
-    |> assign(
-      global_settings:
-        Repo.get_by(GlobalSettings.Gallery, organization_id: current_user.organization_id)
-    )
+    |> assign(global_settings: GlobalSettings.get(current_user.organization_id))
     |> assign_changeset(%{}, nil)
     |> ok()
   end
@@ -73,9 +74,14 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
             <%= radio_button(p, :is_enabled, true, class: "w-5 h-5 mr-2.5 radio") %>
               Gallery includes Print Credits
             </label>
-            <div class="flex items-center gap-4 ml-7">
+            <div class="flex items-center mt-2 gap-4 ml-7">
               <%= if p |> current() |> Map.get(:is_enabled) do %>
-                <%= input(f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
+                <div class="flex flex-col">
+                  <div class="flex flex-row items-center w-auto border border-blue-planning-300 rounded-lg relative">
+                    <%= input(f, :print_credits, placeholder: "#{@currency_symbol}0.00", class: "sm:w-32 w-full bg-white px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_debounce: 1000, phx_hook: "PriceMask", data_currency: @currency_symbol) %>
+                  </div>
+                  <%= text_input f, :currency, value: @currency, class: "sm:w-32 form-control text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
+                </div>
                 <div class="flex items-center text-base-250">
                   <%= label_for f, :print_credits, label: "pulled from your package revenue", class: "font-normal" %>
                 </div>
@@ -141,10 +147,13 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
                   <span class="font-normal ml-7 text-base-250">(<%= input_value(d, :each_price)%>/each)</span>
                   <%= if check?(d, :is_custom_price) do %>
                     <div class="flex flex-row items-center mt-3 lg:ml-7">
-                      <%= input(d, :each_price, placeholder: "$50.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+                      <div class="flex flex-row items-center w-auto border border-blue-planning-300 rounded-lg relative">
+                        <%= input(d, :each_price, placeholder: "#{@currency_symbol}50.00", class: "sm:w-32 w-full px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_hook: "PriceMask", data_currency: @currency_symbol) %>
+                      </div>
                       <%= error_tag d, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
                       <span class="ml-3 text-base-250"> per image </span>
                     </div>
+                    <%= text_input d, :currency, value: @currency, class: "form-control border-none text-base-250 lg:ml-7", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
                   <% end %>
                 </div>
               </div>
@@ -156,10 +165,13 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
               <%= if check?(d, :is_buy_all) do %>
                 <div class="flex flex-row items-center mt-3 lg:ml-7">
-                    <%= input(d, :buy_all, placeholder: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+                    <div class="flex flex-row items-center w-auto border border-blue-planning-300 rounded-lg relative">
+                      <%= input(d, :buy_all, placeholder: "#{@currency_symbol}750.00", class: "sm:w-32 w-full border-none text-lg sm:mt-0 font-normal text-center", phx_hook: "PriceMask", data_currency: @currency_symbol) %>
+                    </div>
                     <%= error_tag d, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
                     <span class="ml-3 text-base-250"> for all images </span>
                 </div>
+                <%= text_input d, :currency, value: @currency, class: "form-control border-none lg:ml-7 text-base-250", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
               <% end %>
             </div>
           <% end %>
@@ -203,6 +215,23 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       </.form>
     </div>
     """
+  end
+
+  @impl true
+  def handle_event(
+        event,
+        params,
+        %{assigns: %{currency: currency, currency_symbol: currency_symbol}} = socket
+      )
+      when event in ~w(validate submit) and not is_map_key(params, "parsed?") do
+    __MODULE__.handle_event(
+      event,
+      Picsello.Currency.parse_params_for_currency(
+        params,
+        {currency_symbol, currency}
+      ),
+      socket
+    )
   end
 
   @impl true
@@ -287,7 +316,8 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
   defp assign_changeset(
          %{
-           assigns: %{gallery: gallery, global_settings: global_settings} = assigns
+           assigns:
+             %{gallery: gallery, global_settings: global_settings, currency: currency} = assigns
          } = socket,
          params,
          action \\ :validate
@@ -296,6 +326,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
     download_changeset =
       gallery.gallery_digital_pricing
+      |> Map.put(:currency, currency)
       |> Download.from_package(global_settings)
       |> Download.changeset(download_params, Map.get(assigns, :download_changeset))
       |> Map.put(:action, action)
@@ -313,7 +344,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       |> Map.get("gallery_digital_pricing", %{})
       |> Map.merge(%{
         "download_count" => Download.count(download),
-        "download_each_price" => Download.each_price(download),
+        "download_each_price" => Download.each_price(download, currency),
         "buy_all" => Download.buy_all(download),
         "status" => download.status
       })

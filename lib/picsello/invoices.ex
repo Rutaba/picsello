@@ -12,9 +12,9 @@ defmodule Picsello.Invoices do
     @statuses ~w[draft open paid void uncollectable]a
 
     schema "gallery_order_invoices" do
-      field :amount_due, Money.Ecto.Type
-      field :amount_paid, Money.Ecto.Type
-      field :amount_remaining, Money.Ecto.Type
+      field :amount_due, Money.Ecto.Map.Type
+      field :amount_paid, Money.Ecto.Map.Type
+      field :amount_remaining, Money.Ecto.Map.Type
       field :description, :string
       field :status, Ecto.Enum, values: @statuses
       field :stripe_id, :string

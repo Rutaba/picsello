@@ -14,7 +14,8 @@ defmodule Picsello.Cart do
     Galleries.Gallery,
     Orders,
     Repo,
-    WHCC
+    WHCC,
+    Currency
   }
 
   alias Ecto.Multi
@@ -56,7 +57,12 @@ defmodule Picsello.Cart do
       {:error, _} ->
         create_order_with_product(
           product,
-          %{gallery_id: id, gallery_client_id: gallery_client.id, album_id: album_id},
+          %{
+            gallery_id: id,
+            gallery_client_id: gallery_client.id,
+            album_id: album_id,
+            currency: Picsello.Currency.for_gallery(gallery)
+          },
           opts
         )
     end
@@ -115,7 +121,7 @@ defmodule Picsello.Cart do
     |> Repo.one()
   end
 
-  defp print_credit_remaining(gallery_id) do
+  def print_credit_remaining(gallery_id) do
     from(gallery in Gallery,
       join: digital_pricing in assoc(gallery, :gallery_digital_pricing),
       left_join: orders in assoc(gallery, :orders),
@@ -124,9 +130,16 @@ defmodule Picsello.Cart do
       select: %{
         print:
           type(
-            coalesce(digital_pricing.print_credits, 0) -
-              coalesce(sum(products.print_credit_discount), 0),
-            Money.Ecto.Amount.Type
+            fragment(
+              "jsonb_build_object('amount', (?::numeric)::integer, 'currency', (?::text))",
+              coalesce(
+                type(fragment("(? ->> 'amount')::text", digital_pricing.print_credits), :integer),
+                0
+              ) -
+                coalesce(sum(products.print_credit_discount), 0),
+              fragment("? ->> 'currency'", digital_pricing.print_credits)
+            ),
+            Money.Ecto.Map.Type
           )
       },
       group_by: digital_pricing.print_credits
@@ -561,7 +574,7 @@ defmodule Picsello.Cart do
     end)
   end
 
-  def total_shipping(_order), do: Money.new(0)
+  def total_shipping(order), do: Money.new(0, Currency.for_order(order))
 
   def has_shipping?(%{shipping_type: nil}), do: false
   def has_shipping?(_product), do: true

@@ -1,19 +1,24 @@
-import IMask from 'imask';
+import Cleave from 'cleave.js';
 
 export default {
-  mounted() {
-    IMask(this.el, {
-      mask: '$num',
-      blocks: {
-        num: {
-          mask: Number,
-          thousandsSeparator: ',',
-          scale: 2,
-          padFractionalZeros: true,
-          radix: '.'
-        }
-      }
-    });
-  },
+  mounted() { applyPrefix(this) },
+  updated() { applyPrefix(this) }
 };
+
+function applyPrefix(currentObj) {
+  const { currency } = currentObj.el.dataset
+
+  if (currency == 'undefind' || currency == null || currency == "") {
+    currency = "$"
+  }
+
+  new Cleave(currentObj.el, {
+    numeral: true,
+    prefix: currency,
+    numeralDecimalScale: 2,
+    numeralDecimalMark: ".",
+    noImmediatePrefix: true,
+    numeralThousandsGroupStyle: 'thousand'
+  });
+}
 

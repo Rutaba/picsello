@@ -37,6 +37,7 @@ defmodule Picsello.Organization do
     field(:stripe_account_id, :string)
     field(:slug, :string)
     field(:previous_slug, :string)
+
     embeds_one(:profile, Profile, on_replace: :update)
     embeds_one(:email_signature, EmailSignature, on_replace: :update)
 

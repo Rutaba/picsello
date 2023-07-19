@@ -16,7 +16,8 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
     Job,
     Clients,
     Package,
-    Profiles
+    Profiles,
+    UserCurrencies
   }
 
   alias Ecto.Changeset
@@ -31,7 +32,9 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
   ]
 
   @impl true
-  def update(assigns, socket) do
+  def update(%{current_user: %{organization: organization}} = assigns, socket) do
+    %{currency: currency} = UserCurrencies.get_user_currency(organization.id)
+
     socket
     |> assign(assigns)
     |> assign_job_types()
@@ -43,9 +46,11 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
     |> assign(:pre_picsello_client, false)
     |> assign_new(:job, fn -> nil end)
     |> assign_new(:new_client, fn -> false end)
-    |> assign_new(:package, fn -> %Package{shoot_count: 1} end)
+    |> assign_new(:package, fn -> %Package{shoot_count: 1, currency: currency} end)
     |> assign_uploads(@upload_options)
     |> assign(:ex_documents, [])
+    |> assign(:currency, currency)
+    |> assign(:currency_symbol, Money.Currency.symbol!(currency))
     |> assign_job_changeset(%{})
     |> assign_package_changeset(%{})
     |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]})

@@ -2,12 +2,17 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
   @moduledoc "no doc"
 
   use PicselloWeb, :live_component
-  alias Picsello.GalleryProducts
+  alias Picsello.{GalleryProducts, UserCurrencies}
   import PicselloWeb.GalleryLive.Shared, only: [toggle_preview: 1]
 
-  def update(%{product: product} = assigns, socket) do
+  @products_currency ["USD", "CAD"]
+  def update(%{product: product, current_user: current_user} = assigns, socket) do
+    user_currency = UserCurrencies.get_user_currency(current_user.organization.id)
+
     socket
     |> assign(assigns)
+    |> assign(currency: user_currency.currency)
+    |> assign(products_currency: @products_currency)
     |> assign(category: product.category, photo: product.preview_photo, product_id: product.id)
     |> ok()
   end
@@ -33,13 +38,23 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
             <%= @category.name %>
           </div>
           <div class=" mx-4 pt-4 flex flex-col justify-between" >
-            <.toggle_preview disabled={@disabled} click="sell_product_enabled" checked={@product.sell_product_enabled} text="Product enabled to sell" myself={@myself} />
+            <.toggle_preview
+            disabled={@disabled || @currency not in @products_currency}
+            click="sell_product_enabled"
+            checked={@product.sell_product_enabled}
+            text="Product enabled to sell"
+            myself={@myself} />
           </div>
 
           <div class={classes("mt-4 pb-4 bg-gray-200", %{"bg-gray-200/20" => @category.coming_soon})}>
             <div class=" mx-4 pt-4 flex flex-col justify-between" >
               <%= if @product.sell_product_enabled do %>
-                <.toggle_preview disabled={@disabled} click="product_preview_enabled" checked={@product.product_preview_enabled} text="Show product preview in gallery" myself={@myself} />
+                <.toggle_preview
+                disabled={@disabled}
+                click="product_preview_enabled"
+                checked={@product.product_preview_enabled}
+                text="Show product preview in gallery"
+                myself={@myself} />
               <% end %>
             </div>
 

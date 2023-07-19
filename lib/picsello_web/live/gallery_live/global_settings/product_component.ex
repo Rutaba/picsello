@@ -2,13 +2,18 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  alias Picsello.{GlobalSettings, Category, Galleries}
+  alias Picsello.{GlobalSettings, Category, Galleries, UserCurrencies}
   import PicselloWeb.GalleryLive.Shared, only: [toggle_preview: 1]
 
+  @products_currency ["USD", "CAD"]
   @impl true
-  def update(%{organization_id: _} = assigns, socket) do
+  def update(%{organization_id: organization_id} = assigns, socket) do
+    user_currency = UserCurrencies.get_user_currency(organization_id)
+
     socket
     |> assign(assigns)
+    |> assign(currency: user_currency.currency)
+    |> assign(products_currency: @products_currency)
     |> assign_products()
     |> ok()
   end
@@ -35,6 +40,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.ProductComponent do
               text="Product enabled to sell"
               product_id={@product.id}
               myself={@myself}
+              disabled={@currency not in @products_currency}
               />
             </div>
 

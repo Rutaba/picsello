@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.{Galleries, GlobalSettings}
+  alias Picsello.{Repo, Galleries, GlobalSettings, Currency, UserCurrencies}
 
   alias Galleries.{PhotoProcessing.ProcessingManager, Workers.PhotoStorage}
   alias PicselloWeb.GalleryLive.GlobalSettings.{ProductComponent, PrintProductComponent}
@@ -25,8 +25,10 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @global_watermarked_path Application.compile_env!(:picsello, :global_watermarked_path)
 
   @impl true
-  def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
+  def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
     %{organization_id: organization_id} = current_user
+    user_currency = UserCurrencies.get_user_currency(organization_id)
+    global_settings_gallery = GlobalSettings.get_or_add!(user_currency)
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "preview_watermark:#{organization_id}")
@@ -46,6 +48,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
       |> assign(price_changeset: GSGallery.price_changeset(gs_gallery))
     end)
     |> assign_default_changeset()
+    |> assign(:currency, user_currency.currency)
     |> allow_upload(:image, @upload_options)
     |> ok()
   end
@@ -255,8 +258,11 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   def handle_event(
         "validate_price",
         %{"gallery" => params},
-        %{assigns: %{gs_gallery: gs_gallery}} = socket
+        %{assigns: %{gs_gallery: gs_gallery, currency: currency}} = socket
       ) do
+    params =
+      Currency.parse_params_for_currency(params, {Money.Currency.symbol(currency), currency})
+
     price_changeset = GSGallery.price_changeset(gs_gallery, params)
 
     price_changeset
@@ -531,13 +537,18 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         <div class="grid gap-8 lg:grid-cols-2 grid-cols-1 mt-10">
           <div>
             <span class="text-xl font-bold">Single Image</span>
-            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-28 h-32">
+            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-32 h-36">
               <div class="flex items-center">
                 <div class="flex flex-col md:pr-4">
                   <h1 class="text-xl font-bold">Pricing per image:</h1>
                   <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
                 </div>
-                <%= input(f, :download_each_price, class: "w-full w-24 text-lg text-center border border-blue-planning-300 text-base-300", phx_debounce: 1000, phx_hook: "PriceMask") %>
+                <div class="flex flex-col ml-auto">
+                  <div class="flex flex-row items-center w-32 mt-6 border border-blue-planning-300 rounded-lg relative">
+                    <%= input(f, :download_each_price, class: "sm:w-24 w-32 bg-white px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_debounce: 1000, phx_hook: "PriceMask", data_currency: Money.Currency.symbol!(@currency)) %>
+                  </div>
+                  <%= text_input f, :currency, value: @currency, class: "flex w-32 items-center form-control text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
+                </div>
               </div>
               <%= if message = @price_changeset.errors[:download_each_price] do %>
                 <div class="flex md:py-1 ml-auto text-red-sales-300 text-sm"><%= translate_error(message) %></div>
@@ -546,13 +557,18 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           </div>
           <div>
             <span class="text-xl font-bold">Buy them all</span>
-            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-28 h-32">
+            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-32 h-36">
               <div class="flex items-center">
                 <div class="flex flex-col md:pr-4">
                   <h1 class="text-xl font-bold">Pricing for all images:</h1>
                   <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
                 </div>
-                <%= input(f, :buy_all_price, class: "w-full w-24 text-lg text-center ml-auto border border-blue-planning-300 text-base-300", phx_debounce: 1000, phx_hook: "PriceMask") %>
+                <div class="flex flex-col ml-auto">
+                  <div class="flex flex-row items-center w-32 mt-6 border border-blue-planning-300 rounded-lg relative">
+                    <%= input(f, :buy_all_price, class: "sm:w-24 w-full bg-white px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_debounce: 1000, phx_hook: "PriceMask", data_currency: Money.Currency.symbol!(@currency)) %>
+                  </div>
+                  <%= text_input f, :currency, value: @currency, class: "flex w-32 items-center form-control text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
+                </div>
               </div>
               <%= if message = @price_changeset.errors[:buy_all_price] do %>
                 <div class="flex ml-auto md:py-1 text-red-sales-300 text-sm"><%= translate_error(message) %></div>

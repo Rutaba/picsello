@@ -107,14 +107,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{
           assigns: %{
             delivery_info_changeset: delivery_info_changeset,
-            order: order,
-            checkout_routes: checkout_routes
+            order: order
           }
         } = socket
       ) do
     Multi.new()
     |> Multi.run(:order, fn _, _ ->
-      Cart.store_order_delivery_info(order, Map.put(delivery_info_changeset, :action, nil))
+      delivery_info_changeset = Map.put(delivery_info_changeset, :action, nil)
+      Cart.store_order_delivery_info(order, delivery_info_changeset)
     end)
     |> Multi.run(:update_shipping, fn _, _ ->
       {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
@@ -130,26 +130,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> Repo.transaction()
     |> case do
       {:ok, %{order: order}} ->
-        order
-        |> Cart.checkout(
-          success_url:
-            Enum.join(
-              [
-                Endpoint.url() <> checkout_routes.order_paid,
-                "session_id={CHECKOUT_SESSION_ID}"
-              ],
-              "?"
-            ),
-          cancel_url: Endpoint.url() <> checkout_routes.cart,
-          helpers: PicselloWeb.Helpers
-        )
-        |> case do
-          :ok ->
-            socket |> assign(:checking_out, true) |> push_event("scroll:lock", %{})
-
-          _error ->
-            socket |> put_flash(:error, "Something went wrong")
-        end
+        socket
+        |> cart_checkout(order)
         |> noreply()
 
       {:error, :order, changeset, _} ->
@@ -269,6 +251,29 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       }
     )
     |> noreply()
+  end
+
+  defp cart_checkout(%{assigns: %{checkout_routes: checkout_routes}} = socket, order) do
+    order
+    |> Cart.checkout(
+      success_url:
+        Enum.join(
+          [
+            Endpoint.url() <> checkout_routes.order_paid,
+            "session_id={CHECKOUT_SESSION_ID}"
+          ],
+          "?"
+        ),
+      cancel_url: Endpoint.url() <> checkout_routes.cart,
+      helpers: PicselloWeb.Helpers
+    )
+    |> case do
+      :ok ->
+        socket |> assign(:checking_out, true) |> push_event("scroll:lock", %{})
+
+      _error ->
+        socket |> put_flash(:error, "Something went wrong")
+    end
   end
 
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket

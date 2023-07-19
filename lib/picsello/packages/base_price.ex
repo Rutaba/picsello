@@ -3,9 +3,9 @@ defmodule Picsello.Packages.BasePrice do
   use Ecto.Schema
 
   schema "package_base_prices" do
-    field :base_price, Money.Ecto.Amount.Type
-    field :print_credits, Money.Ecto.Amount.Type
-    field :buy_all, Money.Ecto.Amount.Type
+    field :base_price, Money.Ecto.Map.Type
+    field :print_credits, Money.Ecto.Map.Type
+    field :buy_all, Money.Ecto.Map.Type
     field :description, :string
     field :download_count, :integer
     field :full_time, :boolean

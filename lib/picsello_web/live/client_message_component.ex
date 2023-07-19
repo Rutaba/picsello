@@ -285,7 +285,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     to = Map.get(recipients, "to") |> List.wrap() |> Enum.uniq()
     cc = (Map.get(recipients, "cc", []) |> Enum.uniq()) -- to
     bcc = ((Map.get(recipients, "bcc", []) |> Enum.uniq()) -- to) -- cc
-    
+
     %{"to" => to}
     |> update_recipients_map("cc", cc)
     |> update_recipients_map("bcc", bcc)

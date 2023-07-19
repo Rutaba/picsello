@@ -12,14 +12,16 @@ defmodule Picsello.Cart.Order do
     Galleries.Gallery,
     Galleries.GalleryClient,
     Galleries.Album,
-    Intents.Intent
+    Intents.Intent,
+    Currency
   }
 
   schema "gallery_orders" do
-    field :bundle_price, Money.Ecto.Amount.Type
+    field :bundle_price, Money.Ecto.Map.Type
     field :number, :integer, default: Enum.random(100_000..999_999)
     field :placed_at, :utc_datetime
     field :total_credits_amount, :integer, default: 0
+    field :currency, :string, virtual: true
 
     belongs_to(:gallery_client, GalleryClient)
     belongs_to(:gallery, Gallery)
@@ -179,8 +181,9 @@ defmodule Picsello.Cart.Order do
   def placed?(%__MODULE__{}), do: true
 
   @doc "calculate products cost, includes shipping price"
-  def product_total(%__MODULE__{products: products} = order) when is_list(products) do
-    for product <- products, reduce: Money.new(0) do
+  def product_total(%__MODULE__{products: products, currency: currency} = order)
+      when is_list(products) do
+    for product <- products, reduce: Money.new(0, currency) do
       sum ->
         product
         |> Product.charged_price()
@@ -189,15 +192,23 @@ defmodule Picsello.Cart.Order do
     |> Money.add(Cart.total_shipping(order))
   end
 
-  def digital_total(%__MODULE__{digitals: digitals, bundle_price: bundle_price})
+  def digital_total(%__MODULE__{
+        digitals: digitals,
+        bundle_price: bundle_price,
+        currency: currency
+      })
       when is_list(digitals) do
-    for digital <- digitals, reduce: bundle_price || Money.new(0) do
+    for digital <- digitals,
+        digital = Map.put(digital, :currency, currency),
+        reduce: bundle_price || Money.new(0, currency) do
       sum -> digital |> Digital.charged_price() |> Money.add(sum)
     end
   end
 
   @doc "calculate total cost, includes shipping price"
   def total_cost(%__MODULE__{} = order) do
+    order = Map.put(order, :currency, Currency.for_order(order))
+
     Money.add(digital_total(order), product_total(order))
   end
 
