@@ -307,18 +307,6 @@ defmodule Picsello.Profiles do
     Phoenix.PubSub.subscribe(Picsello.PubSub, topic)
   end
 
-  defp delete_image_from_storage(url) do
-    Task.start(fn ->
-      url
-      |> URI.parse()
-      |> Map.get(:path)
-      |> Path.split()
-      |> Enum.drop(2)
-      |> Path.join()
-      |> Picsello.Galleries.Workers.PhotoStorage.delete(bucket())
-    end)
-  end
-
   def handle_photo_processed_message(path, id) do
     image_field = if String.contains?(path, "main_image"), do: "main_image", else: "logo"
 
@@ -379,7 +367,7 @@ defmodule Picsello.Profiles do
       Picsello.Galleries.Workers.PhotoStorage.params_for_upload(
         expires_in: 600,
         bucket: bucket(),
-        key: to_filename(organization, image, "original"),
+        key: to_filename(organization, image, remove_file_extension(image.client_name)),
         fields:
           %{
             "resize" => Jason.encode!(%{height: resize_height, withoutEnlargement: true}),
@@ -445,14 +433,6 @@ defmodule Picsello.Profiles do
      |> make_meta()}
   end
 
-  defp remove_file_extension(filename) do
-    String.replace(filename, [".svg", ".png", ".jpeg", ".jpg", ".pdf", ".docx", ".txt"], "")
-  end
-
-  defp make_meta(params) do
-    params |> Map.take([:url, :key, :fields]) |> Map.put(:uploader, "GCS")
-  end
-
   def logo_url(organization) do
     case organization do
       %{profile: %{logo: %{url: "" <> url}}} -> url
@@ -472,6 +452,26 @@ defmodule Picsello.Profiles do
       job_type.show_on_business? and job_type.show_on_profile?
     end)
     |> Enum.map(& &1.job_type)
+  end
+
+  defp delete_image_from_storage(url) do
+    Task.start(fn ->
+      url
+      |> URI.parse()
+      |> Map.get(:path)
+      |> Path.split()
+      |> Enum.drop(2)
+      |> Path.join()
+      |> Picsello.Galleries.Workers.PhotoStorage.delete(bucket())
+    end)
+  end
+
+  defp remove_file_extension(filename) do
+    String.replace(filename, [".svg", ".png", ".jpeg", ".jpg", ".pdf", ".docx", ".txt"], "")
+  end
+
+  defp make_meta(params) do
+    params |> Map.take([:url, :key, :fields]) |> Map.put(:uploader, "GCS")
   end
 
   defp to_filename(organization, %{client_type: content_type} = image, name),
