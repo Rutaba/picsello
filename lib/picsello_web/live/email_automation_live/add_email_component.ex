@@ -7,6 +7,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.Shared.MultiSelect
+  import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
 
   alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset}
   alias PicselloWeb.EmailAutomationLive.Shared
@@ -24,7 +25,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         socket
       ) do
     job_types = Shared.get_selected_job_types(job_types, job_type)
-    
+
     email_presets = EmailPresets.email_automation_presets(type, job_type.name, pipeline_id)
 
     socket
@@ -34,6 +35,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     |> assign(email_preset: List.first(email_presets))
     |> assign(steps: @steps)
     |> assign(step: :timing)
+    |> assign(show_variables: false)
     |> assign_changeset(nil)
     |> assign_new(:template_preview, fn -> nil end)
     |> ok()
@@ -76,6 +78,13 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   end
 
   @impl true
+  def handle_event("toggle-variables", %{"show-variables" => show_variables}, socket) do
+    socket
+    |> assign(show_variables: !String.to_atom(show_variables))
+    |> noreply()
+  end
+
+  @impl true
   def handle_event(
         "validate",
         %{"email_preset" => params},
@@ -90,7 +99,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
       ) do
     template_id = Map.get(params, "template_id", "90") |> to_integer()
     selected_preset = Enum.filter(email_presets, &(&1.id == template_id))
-    
+
     new_email_preset =
     if Enum.any?(selected_preset) do
       selected_preset
@@ -102,7 +111,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
       email_automation_pipeline_id: pipeline.id,
       organization_id: current_user.organization_id
     })
-      
+
     params = if email_preset.id == template_id, do: params, else: nil
 
     socket
@@ -380,8 +389,20 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
             <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(f,:body_template)}>
               <p class="text-black">Clear</p>
             </.icon_button>
+            <.icon_button color="blue-planning-300" class={@show_variables && "hidden"} icon="vertical-list" id="view-variables" phx-click="toggle-variables" phx-value-show-variables={"#{@show_variables}"} phx-target={@myself}>
+              <p class="text-blue-planning-300">View email variables</p>
+            </.icon_button>
           </.input_label>
-          <.quill_input f={f} id="quill_email_preset_input" html_field={:body_template} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
+
+          <div class="flex flex-col md:flex-row">
+            <div id="quill-wrapper" class={"w-full #{@show_variables && "md:w-2/3"}"}>
+            <.quill_input f={f} id="quill_email_preset_input" html_field={:body_template} editor_class="min-h-[16rem]" placeholder={"Write your email content here"} enable_size={true} enable_image={true} current_user={@current_user}/>
+            </div>
+
+            <div class={"flex flex-col w-full md:w-1/3 md:ml-2 min-h-[16rem] md:mt-0 mt-6 #{!@show_variables && "hidden"}"}>
+              <.short_codes_select id="short-codes"/>
+            </div>
+          </div>
         </div>
       </div>
     """
@@ -477,7 +498,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
        ) do
     email_preset = email_preset_changeset |> current()
     selected_job_types = Enum.filter(job_types, & &1.selected)
-    
+
     Ecto.Multi.new()
     |> Ecto.Multi.insert_all(:email_preset, EmailPreset, fn _ ->
       now = DateTime.utc_now() |> DateTime.truncate(:second)
