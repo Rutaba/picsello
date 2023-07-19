@@ -3,7 +3,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
 
   use Mix.Task
 
-
+  import Ecto.Query
   alias Picsello.Repo
   alias Picsello.EmailAutomation.{
     EmailAutomationCategory,
