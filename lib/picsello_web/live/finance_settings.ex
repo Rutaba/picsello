@@ -291,10 +291,10 @@ defmodule PicselloWeb.Live.FinanceSettings do
     gallery_products = GlobalSettings.list_gallery_products(organization_id)
 
     for gallery_product <- gallery_products do
-      if currency not in @products_currency do
-        GlobalSettings.update_gallery_product(gallery_product, %{sell_product_enabled: false})
-      else
+      if currency in @products_currency do
         GlobalSettings.update_gallery_product(gallery_product, %{sell_product_enabled: true})
+      else
+        GlobalSettings.update_gallery_product(gallery_product, %{sell_product_enabled: false})
       end
     end
   end
