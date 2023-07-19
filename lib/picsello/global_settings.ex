@@ -172,9 +172,8 @@ defmodule Picsello.GlobalSettings do
   def save(%GSGallery{} = gs, attrs), do: Changeset.change(gs, attrs) |> save()
   def save(%Changeset{} = changeset), do: Repo.insert_or_update(changeset)
 
-  @watermark_fields GSGallery.watermark_fields()
   def delete_watermark(%GSGallery{} = gs_gallery) do
-    save(gs_gallery, Enum.into(@watermark_fields, %{}, &{&1, nil}))
+    save(gs_gallery, Enum.into(GSGallery.watermark_fields(), %{}, &{&1, nil}))
   end
 
   defp build_digital_prices(each_price, buy_all_price, currency, rate) do

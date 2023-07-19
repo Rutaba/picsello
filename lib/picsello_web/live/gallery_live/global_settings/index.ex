@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  alias Picsello.{Repo, Galleries, GlobalSettings, Currency, UserCurrencies}
+  alias Picsello.{Galleries, GlobalSettings, Currency, UserCurrencies}
 
   alias Galleries.{PhotoProcessing.ProcessingManager, Workers.PhotoStorage}
   alias PicselloWeb.GalleryLive.GlobalSettings.{ProductComponent, PrintProductComponent}
@@ -25,10 +25,9 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   @global_watermarked_path Application.compile_env!(:picsello, :global_watermarked_path)
 
   @impl true
-  def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
+  def mount(params, _session, %{assigns: %{current_user: current_user}} = socket) do
     %{organization_id: organization_id} = current_user
     user_currency = UserCurrencies.get_user_currency(organization_id)
-    global_settings_gallery = GlobalSettings.get_or_add!(user_currency)
 
     if connected?(socket) do
       PubSub.subscribe(Picsello.PubSub, "preview_watermark:#{organization_id}")
@@ -434,7 +433,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
 
   defp assign_global_settings(%{assigns: assigns} = socket) do
     %{current_user: %{organization_id: organization_id}} = assigns
-    assign(socket, :gs_gallery, GlobalSettings.get_or_add(organization_id))
+    assign(socket, :gs_gallery, GlobalSettings.get_or_add!(organization_id))
   end
 
   defp assign_watermark_preview(
