@@ -45,7 +45,7 @@ defmodule Picsello.EmailPresetsTest do
     test "lead without proposal" do
       lead = insert(:lead, type: "wedding")
       %{id: expected_id} = insert(:email_preset, state: :lead, job_type: "wedding")
-      insert(:email_preset, state: :booking_proposal_sent, job_type: "wedding")
+      insert(:email_preset, state: :maual_booking_proposal_sent, job_type: "wedding")
       insert(:email_preset, state: :job, job_type: "wedding")
       insert(:email_preset, state: :lead, job_type: "event")
 
@@ -58,7 +58,7 @@ defmodule Picsello.EmailPresetsTest do
       insert(:email_preset, state: :lead, job_type: "wedding")
 
       %{id: expected_id} =
-        insert(:email_preset, state: :booking_proposal_sent, job_type: "wedding")
+        insert(:email_preset, state: :maual_booking_proposal_sent, job_type: "wedding")
 
       insert(:email_preset, state: :job, job_type: "wedding")
       insert(:email_preset, state: :lead, job_type: "event")

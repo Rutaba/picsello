@@ -7,6 +7,7 @@ defmodule Picsello.Repo.Migrations.DropUniqueIndexEmailPresets do
     #   remove(:state, :string)
     # end
     drop(constraint(@table, "job_must_have_job_type"))
+    execute("drop index email_presets_job_type_job_state_name_index")
 
     if System.get_env("MIX_ENV") != "prod" do
       flush()

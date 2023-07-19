@@ -9,7 +9,6 @@ defmodule Picsello.EmailAutomation.EmailAutomationCategory do
     field :name, :string
     field :type, Ecto.Enum, values: @types
     has_many(:email_automation_pipleines, EmailAutomationPipeline)
-    timestamps type: :utc_datetime
   end
 
   def changeset(email_category \\ %__MODULE__{}, attrs) do

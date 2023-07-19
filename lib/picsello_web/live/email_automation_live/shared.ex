@@ -173,7 +173,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     sub_text =
       cond do
-        state in ["client_contact", "booking_proposal_sent"] ->
+        state in ["client_contact", "maual_booking_proposal_sent"] ->
           "the prior email \"#{get_email_name(email, index, job_type, organization_id)}\" has been sent if no response from the client"
 
         state in ["before_shoot", "shoot_thanks", "post_shoot"] ->
@@ -198,14 +198,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     "Send #{count} #{calendar} #{sign} #{sub_text}"
   end
 
-  def get_email_name(email, index, job_type, organization_id) do
+  def get_email_name(email, _index, job_type, _organization_id) do
     type = if job_type, do: job_type, else: String.capitalize(email.job_type)
-    organization_id = if organization_id, do: organization_id, else: email.organization_id
+    # organization_id = if organization_id, do: organization_id, else: email.organization_id
 
     cond do
       email.private_name -> email.private_name
-      is_nil(organization_id) -> "#{type} - " <> email.name
-      true -> "#{type} - " <> email.name <> "-#{index + 1}"
+      true -> "#{type} - " <> email.name
     end
   end
 
@@ -319,7 +318,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     job |> Map.get(:inserted_at)
   end
 
-  def fetch_date_for_state(:booking_proposal_sent, _pipeline_id, job, _gallery, _order) do
+  def fetch_date_for_state(:maual_booking_proposal_sent, _pipeline_id, job, _gallery, _order) do
     job
     |> Map.get(:booking_proposals)
     |> Enum.sort_by(& &1.id)

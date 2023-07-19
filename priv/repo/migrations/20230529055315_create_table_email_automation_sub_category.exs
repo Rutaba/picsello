@@ -6,8 +6,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationSlug do
     create table(@table) do
       add(:name, :string, null: false)
       add(:slug, :string, null: false)
-
-      timestamps()
     end
 
     create(unique_index(@table, [:slug, :name]))
