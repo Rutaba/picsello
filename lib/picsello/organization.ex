@@ -9,6 +9,7 @@ defmodule Picsello.Organization do
     OrganizationJobType,
     OrganizationCard,
     Package,
+    Utils,
     Campaign,
     Client,
     Accounts.User,
@@ -67,7 +68,12 @@ defmodule Picsello.Organization do
     do:
       registration_changeset(
         organization,
-        Map.put_new(attrs, :name, "#{user_name} Photography")
+        Map.put_new(
+          attrs,
+          :name,
+          build_organization_name("#{user_name} Photography")
+          |> Utils.capitalize_all_words()
+        )
       )
 
   def registration_changeset(organization, attrs, _user_name),
@@ -80,6 +86,7 @@ defmodule Picsello.Organization do
     |> cast_assoc(:gs_gallery_products, with: &GalleryProduct.changeset/2)
     |> cast_assoc(:organization_job_types, with: &OrganizationJobType.changeset/2)
     |> validate_required([:name])
+    |> validate_org_name()
     |> prepare_changes(fn changeset ->
       case get_change(changeset, :slug) do
         nil ->
@@ -92,10 +99,31 @@ defmodule Picsello.Organization do
     |> unique_constraint(:slug)
   end
 
+  defp validate_org_name(changeset) do
+    case get_field(changeset, :name) do
+      nil ->
+        changeset
+
+      name ->
+        updated_name = name |> String.trim() |> String.downcase()
+        names = Repo.all(from o in __MODULE__, select: o.name)
+        existing_names = Enum.map(names, &String.downcase/1)
+
+        case Enum.member?(existing_names, updated_name) do
+          true ->
+            changeset |> add_error(:name, "already exists")
+
+          false ->
+            changeset
+        end
+    end
+  end
+
   def name_changeset(organization, attrs) do
     organization
     |> cast(attrs, [:name])
     |> validate_required([:name])
+    |> validate_org_name()
     |> prepare_changes(&change_slug/1)
     |> unique_constraint(:slug)
     |> case do
@@ -113,31 +141,39 @@ defmodule Picsello.Organization do
   def assign_stripe_account_changeset(%__MODULE__{} = organization, "" <> stripe_account_id),
     do: organization |> change(stripe_account_id: stripe_account_id)
 
-  def build_slug(name) do
+  def build_organization_name(name) do
     converted_name =
-      String.downcase(name) |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
+      String.downcase(name)
+      |> String.replace(~r/[^a-z0-9]+/, " ")
+      |> String.trim("-")
 
-    find_unique_name(converted_name)
+    find_unique_organization_name(converted_name)
   end
 
-  defp find_unique_name(name, count \\ 0) do
+  defp find_unique_organization_name(name, count \\ 0) do
     updated_name =
       if count > 0 do
-        "#{name}-#{count}"
+        "#{name} #{count}"
       else
         name
       end
 
-    names = Repo.all(from o in __MODULE__, select: o.slug)
+    names =
+      Repo.all(from o in __MODULE__, select: o.name)
+
     existing_names = Enum.map(names, &String.downcase/1)
 
     case Enum.member?(existing_names, updated_name) do
       true ->
-        find_unique_name(name, count + 1)
+        find_unique_organization_name(name, count + 1)
 
       false ->
         updated_name
     end
+  end
+
+  def build_slug(name) do
+    String.downcase(name) |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
   end
 
   defp change_slug(changeset),
