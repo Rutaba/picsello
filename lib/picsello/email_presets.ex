@@ -9,8 +9,8 @@ defmodule Picsello.EmailPresets do
   alias Picsello.Galleries.Gallery
   alias Picsello.EmailAutomation.{EmailAutomationPipeline}
 
-  def email_automation_presets(type, pipeline_id) do
-    from(p in presets(type), where: is_nil(p.organization_id) and p.email_automation_pipeline_id == ^pipeline_id)
+  def email_automation_presets(type, job_type, pipeline_id) do
+    from(p in presets(type), where: p.job_type == ^job_type and is_nil(p.organization_id) and p.email_automation_pipeline_id == ^pipeline_id)
     |> Repo.all()
   end
 
@@ -39,7 +39,7 @@ defmodule Picsello.EmailPresets do
          job_status: %{is_lead: true, current_status: current_status},
          id: job_id
        }) do
-    state = if current_status == :not_sent, do: :lead, else: :booking_proposal_sent
+    state = if current_status == :not_sent, do: :lead, else: :maual_booking_proposal_sent
 
     from(preset in query,
       join: job in Job,

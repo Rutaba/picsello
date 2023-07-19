@@ -3,7 +3,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
 
   use Mix.Task
 
-  alias Picsello.{Repo, EmailPresets.EmailPreset}
+  alias Picsello.{Organization, Repo, EmailPresets.EmailPreset, EmailAutomation.EmailAutomationPipeline}
   import Ecto.Query
 
   @shortdoc "import email presets"
@@ -15,16 +15,18 @@ defmodule Mix.Tasks.ImportEmailPresets do
 
   def insert_emails() do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    pipelines = from(p in EmailAutomationPipeline) |> Repo.all()
+    organizations = from(o in Organization) |> Repo.all()
 
     [
       # wedding
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "lead",
-        state: "gallery_send_link",
+        state: "client_contact",
         position: 0,
         name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
@@ -36,12 +38,12 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "lead",
-        state: "gallery_send_link",
+        state: "client_contact",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -55,12 +57,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -73,12 +74,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
@@ -91,12 +91,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 22,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry email",
         subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
@@ -114,12 +113,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
@@ -139,12 +137,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -163,12 +160,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -188,12 +184,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
@@ -205,12 +200,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
@@ -226,15 +220,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 23,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer marked for OFFLINE Payment",
-        subject_template: "Receipt from {{photography_company_s_name}}",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>You are tenatively booked for your wedding photography with me {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}. Your date will be officially booked once I receive your offline payment, and while I am currently holding this time for you I cannot do so indefinitely.</p>
@@ -247,12 +240,46 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 4,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_full"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "job",
-        state: "gallery_send_link",
+        position: 0,
+        name: "Payments - paid in full email",
+        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
+        <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
+        <p>Thank you for choosing {{photography_company_s_name}}, I can't wait to work with you!</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_offline_full"),
+        total_hours: 0,
+        status: "active",
+        job_type: "wedding",
+        type: "job",
+        position: 0,
+        name: "Payments - paid in full OFFLINE",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>I’m really looking forward to working with you!</p>
+        <p>Upon receipt of payment, you will be officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.Thanks again for choosing {{photography_company_s_name}}.</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        total_hours: 0,
+        status: "active",
+        job_type: "wedding",
+        type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
@@ -266,12 +293,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - week before email",
         subject_template: "One week reminder from {{photography_company_s_name}}",
@@ -286,12 +312,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "wedding",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - day before email",
         subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
@@ -308,12 +333,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 6,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -329,30 +353,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your wedding photography with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 8,
-        total_hours: 0,
-        status: "active",
-        job_type: "wedding",
-        type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -368,30 +373,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 24,
-        total_hours: 0,
-        status: "active",
-        job_type: "wedding",
-        type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid offline payment email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your wedding photography with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
@@ -404,12 +390,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "Checking in! | {{photography_company_s_name}}",
@@ -423,12 +408,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
@@ -444,12 +428,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
@@ -465,12 +448,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
@@ -486,12 +468,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
@@ -505,12 +486,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
@@ -524,12 +504,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
@@ -543,12 +522,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template:
@@ -563,12 +541,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
@@ -582,12 +559,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
@@ -601,12 +577,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template:
@@ -621,12 +596,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 14,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Password Changed Email",
         subject_template:
@@ -638,12 +612,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 16,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
@@ -659,12 +632,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 15,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -676,12 +648,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 17,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -698,12 +669,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 18,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Being Prepared",
         subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
@@ -715,12 +685,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 18,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital and Products) Images now available",
         subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
@@ -736,12 +705,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 19,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
@@ -752,12 +720,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 20,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
@@ -768,12 +735,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 21,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
@@ -785,12 +751,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       # newborn
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
@@ -802,12 +767,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -821,12 +785,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -839,12 +802,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
@@ -856,12 +818,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 22,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry email",
         subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
@@ -880,12 +841,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
@@ -905,12 +865,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -929,12 +888,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -953,12 +911,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
@@ -969,12 +926,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
@@ -990,15 +946,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 23,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer marked for OFFLINE Payment",
-        subject_template: "Receipt from {{photography_company_s_name}}",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>You are tenatively booked for your newborn photoshoot with me {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}. Your date will be officially booked once I receive your offline payment, and while I am currently holding this time for you I cannot do so indefinitely.</p>
@@ -1011,12 +966,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 4,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_full"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
+        position: 0,
+        name: "Payments - paid in full email",
+        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        body_template: """
+        
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
+        <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
+        <p>Thank you for choosing {{photography_company_s_name}}, I can't wait to work with you!</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_offline_full"),
+        total_hours: 0,
+        status: "active",
+        job_type: "newborn",
+        type: "job",
+        position: 0,
+        name: "Payments - paid in full OFFLINE",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>I’m really looking forward to working with you!</p>
+        <p>Upon receipt of payment, you will be officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.Thanks again for choosing {{photography_company_s_name}}.</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        total_hours: 0,
+        status: "active",
+        job_type: "newborn",
+        type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
@@ -1030,12 +1020,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - week before email",
         subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
@@ -1058,12 +1047,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - day before email",
         subject_template: "Our Shoot Tomorrow|{{photography_company_s_name}}",
@@ -1090,12 +1078,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 6,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -1111,30 +1098,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your newborn photography with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 8,
-        total_hours: 0,
-        status: "active",
-        job_type: "newborn",
-        type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - Client selected offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -1150,30 +1118,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
-        total_hours: 0,
-        status: "active",
-        job_type: "newborn",
-        type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid offline payment email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your newborn photography with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
@@ -1186,12 +1135,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email ",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -1205,12 +1153,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "How are you?|{{photography_company_s_name}}",
@@ -1227,12 +1174,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again!|{{photography_company_s_name}}",
@@ -1249,12 +1195,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
@@ -1270,12 +1215,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
@@ -1291,12 +1235,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
@@ -1310,12 +1253,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
@@ -1328,12 +1270,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
@@ -1346,12 +1287,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template:
@@ -1366,12 +1306,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
@@ -1385,12 +1324,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery!",
@@ -1404,12 +1342,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template:
@@ -1424,12 +1361,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 14,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Password Changed Email",
         subject_template:
@@ -1441,12 +1377,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 16,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
@@ -1462,12 +1397,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 15,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -1479,12 +1413,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 17,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -1501,12 +1434,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 19,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The download for your high-quality digital images is currently being packaged as those are large files and take some time to prepare. Look for another email with your digital image files in the next 30 minutes.{{client_gallery_order_page}}.</p>
+        <p>Thank you for your purchase.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "newborn",
+        type: "gallery",
+        position: 0,
+        name: "(Digital and Products) Images now available",
+        subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>Your digital image download files are ready:</p>
+        <p>1. Click the download link below to download your files now (computer highly recommended for the download) {{download_photos}}</p>
+        <p>2. Once downloaded, simply unzip the file to access your digital image files to save onto your computer.  We also recommend backing up your files to another location as soon as possible.</p>
+        <p>3. Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer!</p>
+        <p>You can review your order via your {{client_gallery_order_page}}.</p>
+        <p>If you have any questions, please let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
+        total_hours: 0,
+        status: "active",
+        job_type: "newborn",
+        type: "gallery",
         position: 0,
         name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
@@ -1517,12 +1485,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 20,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
@@ -1533,12 +1500,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 21,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
@@ -1550,12 +1516,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       # family
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
@@ -1567,12 +1532,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -1586,12 +1550,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -1604,12 +1567,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
@@ -1621,12 +1583,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 22,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry email",
         subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
@@ -1645,12 +1606,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
@@ -1670,12 +1630,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -1694,12 +1653,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -1718,12 +1676,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
@@ -1734,12 +1691,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
@@ -1755,15 +1711,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 23,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer marked for OFFLINE Payment",
-        subject_template: "Receipt from {{photography_company_s_name}}",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>You are tenatively booked for your family photoshoot with me {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}. Your date will be officially booked once I receive your offline payment, and while I am currently holding this time for you I cannot do so indefinitely.</p>
@@ -1776,12 +1731,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 4,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_full"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "job",
-        state: "gallery_send_link",
+        position: 0,
+        name: "Payments - paid in full email",
+        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        body_template: """
+        
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
+        <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
+        <p>Thank you for choosing {{photography_company_s_name}}, I can't wait to work with you!</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_offline_full"),
+        total_hours: 0,
+        status: "active",
+        job_type: "family",
+        type: "job",
+        position: 0,
+        name: "Payments - paid in full OFFLINE",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>I’m really looking forward to working with you!</p>
+        <p>Upon receipt of payment, you will be officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.Thanks again for choosing {{photography_company_s_name}}.</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        total_hours: 0,
+        status: "active",
+        job_type: "family",
+        type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
@@ -1794,12 +1784,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "family",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - week before email",
         subject_template: "One week reminder from {{photography_company_s_name}}",
@@ -1821,12 +1810,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "family",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - day before email",
         subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
@@ -1848,12 +1836,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 6,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -1869,30 +1856,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your family photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 8,
-        total_hours: 0,
-        status: "active",
-        job_type: "family",
-        type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - Client selected offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -1908,30 +1876,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
-        total_hours: 0,
-        status: "active",
-        job_type: "family",
-        type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid offline payment email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your family photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
@@ -1944,12 +1893,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "Checking in! | {{photography_company_s_name}}",
@@ -1963,12 +1911,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
@@ -1984,12 +1931,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
@@ -2005,12 +1951,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
@@ -2026,12 +1971,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
@@ -2045,12 +1989,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
@@ -2063,12 +2006,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
@@ -2081,12 +2023,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template:
@@ -2101,12 +2042,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
@@ -2120,12 +2060,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
@@ -2139,12 +2078,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template:
@@ -2159,12 +2097,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 14,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Password Changed Email",
         subject_template:
@@ -2176,12 +2113,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 16,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
@@ -2197,12 +2133,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 15,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -2214,12 +2149,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 17,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -2236,12 +2170,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 19,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The download for your high-quality digital images is currently being packaged as those are large files and take some time to prepare. Look for another email with your digital image files in the next 30 minutes.{{client_gallery_order_page}}.</p>
+        <p>Thank you for your purchase.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "family",
+        type: "gallery",
+        position: 0,
+        name: "(Digital and Products) Images now available",
+        subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>Your digital image download files are ready:</p>
+        <p>1. Click the download link below to download your files now (computer highly recommended for the download) {{download_photos}}</p>
+        <p>2. Once downloaded, simply unzip the file to access your digital image files to save onto your computer.  We also recommend backing up your files to another location as soon as possible.</p>
+        <p>3. Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer!</p>
+        <p>You can review your order via your {{client_gallery_order_page}}.</p>
+        <p>If you have any questions, please let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
+        total_hours: 0,
+        status: "active",
+        job_type: "family",
+        type: "gallery",
         position: 0,
         name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
@@ -2252,12 +2221,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 20,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
@@ -2268,12 +2236,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 21,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
         status: "active",
         job_type: "family",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
@@ -2285,12 +2252,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       # mini-session
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
@@ -2302,12 +2268,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -2321,12 +2286,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -2339,12 +2303,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
@@ -2357,12 +2320,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 22,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry email",
         subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
@@ -2381,12 +2343,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
@@ -2406,12 +2367,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -2430,12 +2390,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -2454,12 +2413,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
@@ -2470,12 +2428,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
@@ -2491,15 +2448,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 23,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer marked for OFFLINE Payment",
-        subject_template: "Receipt from {{photography_company_s_name}}",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>You are tenatively booked for your mini photoshoot with me {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}. Your date will be officially booked once I receive your offline payment, and while I am currently holding this time for you I cannot do so indefinitely.</p>
@@ -2512,12 +2468,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 4,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_full"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "job",
-        state: "gallery_send_link",
+        position: 0,
+        name: "Payments - paid in full email",
+        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        body_template: """
+        
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
+        <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
+        <p>Thank you for choosing {{photography_company_s_name}}, I can't wait to work with you!</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_offline_full"),
+        total_hours: 0,
+        status: "active",
+        job_type: "mini",
+        type: "job",
+        position: 0,
+        name: "Payments - paid in full OFFLINE",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>I’m really looking forward to working with you!</p>
+        <p>Upon receipt of payment, you will be officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.Thanks again for choosing {{photography_company_s_name}}.</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        total_hours: 0,
+        status: "active",
+        job_type: "mini",
+        type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
@@ -2530,12 +2521,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "mini",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - week before email",
         subject_template: "One week reminder from {{photography_company_s_name}}",
@@ -2557,12 +2547,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "mini",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - day before email",
         subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
@@ -2584,12 +2573,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 6,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -2605,30 +2593,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 8,
-        total_hours: 0,
-        status: "active",
-        job_type: "mini",
-        type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - Client selected offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -2644,30 +2613,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
-        total_hours: 0,
-        status: "active",
-        job_type: "mini",
-        type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid offline payment email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
@@ -2680,12 +2630,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "Checking in! | {{photography_company_s_name}}",
@@ -2699,12 +2648,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
@@ -2721,12 +2669,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
@@ -2742,12 +2689,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
@@ -2763,12 +2709,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
@@ -2782,12 +2727,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
@@ -2800,12 +2744,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
@@ -2818,12 +2761,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template:
@@ -2838,12 +2780,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
@@ -2857,12 +2798,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
@@ -2876,12 +2816,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template:
@@ -2896,12 +2835,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 14,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Password Changed Email",
         subject_template:
@@ -2913,12 +2851,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 16,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
@@ -2934,12 +2871,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 15,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -2951,12 +2887,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 17,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -2973,12 +2908,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 19,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The download for your high-quality digital images is currently being packaged as those are large files and take some time to prepare. Look for another email with your digital image files in the next 30 minutes.{{client_gallery_order_page}}.</p>
+        <p>Thank you for your purchase.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "mini",
+        type: "gallery",
+        position: 0,
+        name: "(Digital and Products) Images now available",
+        subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>Your digital image download files are ready:</p>
+        <p>1. Click the download link below to download your files now (computer highly recommended for the download) {{download_photos}}</p>
+        <p>2. Once downloaded, simply unzip the file to access your digital image files to save onto your computer.  We also recommend backing up your files to another location as soon as possible.</p>
+        <p>3. Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer!</p>
+        <p>You can review your order via your {{client_gallery_order_page}}.</p>
+        <p>If you have any questions, please let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
+        total_hours: 0,
+        status: "active",
+        job_type: "mini",
+        type: "gallery",
         position: 0,
         name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
@@ -2989,12 +2959,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 20,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
@@ -3005,12 +2974,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 21,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
@@ -3022,12 +2990,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       # headshot
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
@@ -3039,12 +3006,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -3058,12 +3024,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -3076,12 +3041,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
@@ -3094,12 +3058,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 22,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry email",
         subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
@@ -3118,12 +3081,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
@@ -3143,12 +3105,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -3167,12 +3128,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -3191,12 +3151,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
@@ -3207,12 +3166,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
@@ -3228,15 +3186,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 23,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer marked for OFFLINE Payment",
-        subject_template: "Receipt from {{photography_company_s_name}}",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>You are tenatively booked for your headshot photoshoot with me {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}. Your date will be officially booked once I receive your offline payment, and while I am currently holding this time for you I cannot do so indefinitely.</p>
@@ -3249,12 +3206,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 4,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_full"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "job",
-        state: "gallery_send_link",
+        position: 0,
+        name: "Payments - paid in full email",
+        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        body_template: """
+        
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
+        <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
+        <p>Thank you for choosing {{photography_company_s_name}}, I can't wait to work with you!</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_offline_full"),
+        total_hours: 0,
+        status: "active",
+        job_type: "headshot",
+        type: "job",
+        position: 0,
+        name: "Payments - paid in full OFFLINE",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>I’m really looking forward to working with you!</p>
+        <p>Upon receipt of payment, you will be officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.Thanks again for choosing {{photography_company_s_name}}.</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        total_hours: 0,
+        status: "active",
+        job_type: "headshot",
+        type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
@@ -3267,12 +3259,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "headshot",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - week before email",
         subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
@@ -3288,12 +3279,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "headshot",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - day before email",
         subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
@@ -3310,12 +3300,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 6,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -3331,30 +3320,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 8,
-        total_hours: 0,
-        status: "active",
-        job_type: "headshot",
-        type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - Client selected offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -3370,30 +3340,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
-        total_hours: 0,
-        status: "active",
-        job_type: "headshot",
-        type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid offline payment email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
@@ -3406,12 +3357,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "Checking in! | {{photography_company_s_name}}",
@@ -3425,12 +3375,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
@@ -3446,12 +3395,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
@@ -3467,12 +3415,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
@@ -3488,12 +3435,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
@@ -3507,12 +3453,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
@@ -3525,12 +3470,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
@@ -3543,12 +3487,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template:
@@ -3563,12 +3506,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
@@ -3582,12 +3524,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
@@ -3601,12 +3542,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template:
@@ -3621,12 +3561,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 14,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Password Changed Email",
         subject_template:
@@ -3638,12 +3577,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 16,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
@@ -3659,12 +3597,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 15,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -3676,12 +3613,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 17,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -3698,12 +3634,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 19,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The download for your high-quality digital images is currently being packaged as those are large files and take some time to prepare. Look for another email with your digital image files in the next 30 minutes.{{client_gallery_order_page}}.</p>
+        <p>Thank you for your purchase.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "headshot",
+        type: "gallery",
+        position: 0,
+        name: "(Digital and Products) Images now available",
+        subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>Your digital image download files are ready:</p>
+        <p>1. Click the download link below to download your files now (computer highly recommended for the download) {{download_photos}}</p>
+        <p>2. Once downloaded, simply unzip the file to access your digital image files to save onto your computer.  We also recommend backing up your files to another location as soon as possible.</p>
+        <p>3. Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer!</p>
+        <p>You can review your order via your {{client_gallery_order_page}}.</p>
+        <p>If you have any questions, please let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
+        total_hours: 0,
+        status: "active",
+        job_type: "headshot",
+        type: "gallery",
         position: 0,
         name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
@@ -3714,12 +3685,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 20,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
@@ -3730,12 +3700,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 21,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
@@ -3747,12 +3716,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       # portrait
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
@@ -3764,12 +3732,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -3783,12 +3750,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -3801,12 +3767,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
@@ -3819,12 +3784,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 22,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry email",
         subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
@@ -3843,12 +3807,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
@@ -3868,12 +3831,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -3892,12 +3854,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -3916,12 +3877,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
@@ -3932,12 +3892,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
@@ -3953,15 +3912,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 23,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer marked for OFFLINE Payment",
-        subject_template: "Receipt from {{photography_company_s_name}}",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>You are tenatively booked for your portrait photoshoot with me {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}. Your date will be officially booked once I receive your offline payment, and while I am currently holding this time for you I cannot do so indefinitely.</p>
@@ -3974,12 +3932,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 4,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_full"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "job",
-        state: "gallery_send_link",
+        position: 0,
+        name: "Payments - paid in full email",
+        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        body_template: """
+        
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
+        <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
+        <p>Thank you for choosing {{photography_company_s_name}}, I can't wait to work with you!</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_offline_full"),
+        total_hours: 0,
+        status: "active",
+        job_type: "portrait",
+        type: "job",
+        position: 0,
+        name: "Payments - paid in full OFFLINE",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>I’m really looking forward to working with you!</p>
+        <p>Upon receipt of payment, you will be officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.Thanks again for choosing {{photography_company_s_name}}.</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        total_hours: 0,
+        status: "active",
+        job_type: "portrait",
+        type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
@@ -3992,12 +3985,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "portrait",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - week before email",
         subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
@@ -4013,12 +4005,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "portrait",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - day before email",
         subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
@@ -4035,12 +4026,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 6,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -4056,30 +4046,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 8,
-        total_hours: 0,
-        status: "active",
-        job_type: "portrait",
-        type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - Client selected offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -4095,30 +4066,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
-        total_hours: 0,
-        status: "active",
-        job_type: "portrait",
-        type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid offline payment email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
@@ -4131,12 +4083,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "Checking in! | {{photography_company_s_name}}",
@@ -4150,12 +4101,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
@@ -4171,12 +4121,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
@@ -4192,12 +4141,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
@@ -4213,12 +4161,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
@@ -4232,12 +4179,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
@@ -4250,12 +4196,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
@@ -4268,12 +4213,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template:
@@ -4288,12 +4232,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
@@ -4307,12 +4250,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
@@ -4326,12 +4268,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template:
@@ -4346,12 +4287,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 14,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Password Changed Email",
         subject_template:
@@ -4363,12 +4303,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 16,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
@@ -4384,12 +4323,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 15,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -4401,12 +4339,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 17,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -4423,12 +4360,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 19,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The download for your high-quality digital images is currently being packaged as those are large files and take some time to prepare. Look for another email with your digital image files in the next 30 minutes.{{client_gallery_order_page}}.</p>
+        <p>Thank you for your purchase.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "portrait",
+        type: "gallery",
+        position: 0,
+        name: "(Digital and Products) Images now available",
+        subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>Your digital image download files are ready:</p>
+        <p>1. Click the download link below to download your files now (computer highly recommended for the download) {{download_photos}}</p>
+        <p>2. Once downloaded, simply unzip the file to access your digital image files to save onto your computer.  We also recommend backing up your files to another location as soon as possible.</p>
+        <p>3. Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer!</p>
+        <p>You can review your order via your {{client_gallery_order_page}}.</p>
+        <p>If you have any questions, please let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
+        total_hours: 0,
+        status: "active",
+        job_type: "portrait",
+        type: "gallery",
         position: 0,
         name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
@@ -4439,12 +4411,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 20,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
@@ -4455,12 +4426,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 21,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
@@ -4472,12 +4442,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       # boudoir
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
@@ -4489,12 +4458,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -4508,12 +4476,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -4526,12 +4493,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
@@ -4544,12 +4510,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 22,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry email",
         subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
@@ -4568,12 +4533,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
@@ -4593,12 +4557,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -4617,12 +4580,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -4641,12 +4603,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
@@ -4657,12 +4618,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
@@ -4678,15 +4638,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 23,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer marked for OFFLINE Payment",
-        subject_template: "Receipt from {{photography_company_s_name}}",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>You are tenatively booked for your photoshoot with me {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}. Your date will be officially booked once I receive your offline payment, and while I am currently holding this time for you I cannot do so indefinitely.</p>
@@ -4699,12 +4658,46 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 4,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_full"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "job",
-        state: "gallery_send_link",
+        position: 0,
+        name: "Payments - paid in full email",
+        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
+        <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
+        <p>Thank you for choosing {{photography_company_s_name}}, I can't wait to work with you!</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_offline_full"),
+        total_hours: 0,
+        status: "active",
+        job_type: "boudoir",
+        type: "job",
+        position: 0,
+        name: "Payments - paid in full OFFLINE",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>I’m really looking forward to working with you!</p>
+        <p>Upon receipt of payment, you will be officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.Thanks again for choosing {{photography_company_s_name}}.</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        total_hours: 0,
+        status: "active",
+        job_type: "boudoir",
+        type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
@@ -4717,12 +4710,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "boudoir",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - week before email",
         subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
@@ -4739,12 +4731,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "boudoir",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - day before email",
         subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
@@ -4761,12 +4752,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 6,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -4782,30 +4772,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 8,
-        total_hours: 0,
-        status: "active",
-        job_type: "boudoir",
-        type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - Client selected offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -4821,30 +4792,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
-        total_hours: 0,
-        status: "active",
-        job_type: "boudoir",
-        type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid offline payment email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
@@ -4857,12 +4809,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "Checking in! | {{photography_company_s_name}}",
@@ -4876,12 +4827,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
@@ -4898,12 +4848,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
@@ -4919,12 +4868,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
@@ -4940,12 +4888,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
@@ -4959,12 +4906,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
@@ -4977,12 +4923,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
@@ -4995,12 +4940,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template:
@@ -5015,12 +4959,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
@@ -5034,12 +4977,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
@@ -5053,12 +4995,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template:
@@ -5073,12 +5014,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 14,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Password Changed Email",
         subject_template:
@@ -5090,12 +5030,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 16,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
@@ -5111,12 +5050,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 15,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -5128,12 +5066,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 17,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -5150,12 +5087,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 19,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The download for your high-quality digital images is currently being packaged as those are large files and take some time to prepare. Look for another email with your digital image files in the next 30 minutes.{{client_gallery_order_page}}.</p>
+        <p>Thank you for your purchase.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "boudoir",
+        type: "gallery",
+        position: 0,
+        name: "(Digital and Products) Images now available",
+        subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>Your digital image download files are ready:</p>
+        <p>1. Click the download link below to download your files now (computer highly recommended for the download) {{download_photos}}</p>
+        <p>2. Once downloaded, simply unzip the file to access your digital image files to save onto your computer.  We also recommend backing up your files to another location as soon as possible.</p>
+        <p>3. Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer!</p>
+        <p>You can review your order via your {{client_gallery_order_page}}.</p>
+        <p>If you have any questions, please let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
+        total_hours: 0,
+        status: "active",
+        job_type: "boudoir",
+        type: "gallery",
         position: 0,
         name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
@@ -5166,12 +5138,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 20,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
@@ -5182,12 +5153,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 21,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
@@ -5199,12 +5169,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       # other
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
@@ -5216,12 +5185,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -5235,12 +5203,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -5253,12 +5220,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
@@ -5271,12 +5237,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 22,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry email",
         subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
@@ -5295,12 +5260,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
@@ -5320,12 +5284,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -5344,12 +5307,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -5368,12 +5330,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
@@ -5384,12 +5345,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
@@ -5405,15 +5365,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 23,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer marked for OFFLINE Payment",
-        subject_template: "Receipt from {{photography_company_s_name}}",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>You are tenatively booked for your photoshoot with me {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}. Your date will be officially booked once I receive your offline payment, and while I am currently holding this time for you I cannot do so indefinitely.</p>
@@ -5426,12 +5385,46 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 4,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_full"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "job",
-        state: "gallery_send_link",
+        position: 0,
+        name: "Payments - paid in full email",
+        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
+        <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
+        <p>Thank you for choosing {{photography_company_s_name}}, I can't wait to work with you!</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_offline_full"),
+        total_hours: 0,
+        status: "active",
+        job_type: "other",
+        type: "job",
+        position: 0,
+        name: "Payments - paid in full OFFLINE",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>I’m really looking forward to working with you!</p>
+        <p>Upon receipt of payment, you will be officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.Thanks again for choosing {{photography_company_s_name}}.</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        total_hours: 0,
+        status: "active",
+        job_type: "other",
+        type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
@@ -5444,12 +5437,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "other",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - week before email",
         subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
@@ -5465,12 +5457,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "other",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - day before email",
         subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
@@ -5488,12 +5479,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 6,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -5509,30 +5499,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 8,
-        total_hours: 0,
-        status: "active",
-        job_type: "other",
-        type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - Client selected offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -5548,30 +5519,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
-        total_hours: 0,
-        status: "active",
-        job_type: "other",
-        type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid offline payment email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
@@ -5584,12 +5536,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "Checking in! | {{photography_company_s_name}}",
@@ -5603,12 +5554,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
@@ -5625,12 +5575,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
@@ -5646,12 +5595,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
@@ -5667,12 +5615,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
@@ -5686,12 +5633,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
@@ -5704,12 +5650,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
@@ -5722,12 +5667,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template:
@@ -5742,12 +5686,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
@@ -5761,12 +5704,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
@@ -5780,12 +5722,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template:
@@ -5800,12 +5741,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 14,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Password Changed Email",
         subject_template:
@@ -5817,12 +5757,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 16,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
@@ -5838,12 +5777,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 15,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -5855,12 +5793,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 17,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -5877,12 +5814,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 19,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The download for your high-quality digital images is currently being packaged as those are large files and take some time to prepare. Look for another email with your digital image files in the next 30 minutes.{{client_gallery_order_page}}.</p>
+        <p>Thank you for your purchase.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "other",
+        type: "gallery",
+        position: 0,
+        name: "(Digital and Products) Images now available",
+        subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>Your digital image download files are ready:</p>
+        <p>1. Click the download link below to download your files now (computer highly recommended for the download) {{download_photos}}</p>
+        <p>2. Once downloaded, simply unzip the file to access your digital image files to save onto your computer.  We also recommend backing up your files to another location as soon as possible.</p>
+        <p>3. Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer!</p>
+        <p>You can review your order via your {{client_gallery_order_page}}.</p>
+        <p>If you have any questions, please let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
+        total_hours: 0,
+        status: "active",
+        job_type: "other",
+        type: "gallery",
         position: 0,
         name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
@@ -5893,12 +5865,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 20,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
@@ -5909,12 +5880,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 21,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
         status: "active",
         job_type: "other",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
@@ -5926,12 +5896,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       # maternity
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
@@ -5943,12 +5912,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -5962,12 +5930,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -5980,12 +5947,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
@@ -5998,12 +5964,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 22,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry email",
         subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
@@ -6022,12 +5987,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
@@ -6047,12 +6011,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -6071,12 +6034,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -6095,12 +6057,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
@@ -6111,12 +6072,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
@@ -6132,15 +6092,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 23,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer marked for OFFLINE Payment",
-        subject_template: "Receipt from {{photography_company_s_name}}",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>You are tenatively booked for your photoshoot with me {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}. Your date will be officially booked once I receive your offline payment, and while I am currently holding this time for you I cannot do so indefinitely.</p>
@@ -6153,12 +6112,46 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 4,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_full"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "job",
-        state: "gallery_send_link",
+        position: 0,
+        name: "Payments - paid in full email",
+        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
+        <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
+        <p>Thank you for choosing {{photography_company_s_name}}, I can't wait to work with you!</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_offline_full"),
+        total_hours: 0,
+        status: "active",
+        job_type: "maternity",
+        type: "job",
+        position: 0,
+        name: "Payments - paid in full OFFLINE",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>I’m really looking forward to working with you!</p>
+        <p>Upon receipt of payment, you will be officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.Thanks again for choosing {{photography_company_s_name}}.</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        total_hours: 0,
+        status: "active",
+        job_type: "maternity",
+        type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
@@ -6171,12 +6164,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "maternity",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - week before email",
         subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
@@ -6193,12 +6185,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "maternity",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - day before email",
         subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
@@ -6214,12 +6205,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 6,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -6235,30 +6225,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 8,
-        total_hours: 0,
-        status: "active",
-        job_type: "maternity",
-        type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - Client selected offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -6274,30 +6245,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
-        total_hours: 0,
-        status: "active",
-        job_type: "maternity",
-        type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid offline payment email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
@@ -6310,12 +6262,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "Checking in! | {{photography_company_s_name}}",
@@ -6329,12 +6280,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
@@ -6350,12 +6300,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
@@ -6371,12 +6320,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
@@ -6392,12 +6340,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
@@ -6411,12 +6358,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
@@ -6429,12 +6375,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
@@ -6447,12 +6392,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template:
@@ -6467,12 +6411,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
@@ -6486,12 +6429,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
@@ -6505,12 +6447,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template:
@@ -6525,12 +6466,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 14,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Password Changed Email",
         subject_template:
@@ -6542,12 +6482,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 16,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
@@ -6563,12 +6502,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 15,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -6580,12 +6518,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 17,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -6602,12 +6539,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 19,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The download for your high-quality digital images is currently being packaged as those are large files and take some time to prepare. Look for another email with your digital image files in the next 30 minutes.{{client_gallery_order_page}}.</p>
+        <p>Thank you for your purchase.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "maternity",
+        type: "gallery",
+        position: 0,
+        name: "(Digital and Products) Images now available",
+        subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>Your digital image download files are ready:</p>
+        <p>1. Click the download link below to download your files now (computer highly recommended for the download) {{download_photos}}</p>
+        <p>2. Once downloaded, simply unzip the file to access your digital image files to save onto your computer.  We also recommend backing up your files to another location as soon as possible.</p>
+        <p>3. Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer!</p>
+        <p>You can review your order via your {{client_gallery_order_page}}.</p>
+        <p>If you have any questions, please let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
+        total_hours: 0,
+        status: "active",
+        job_type: "maternity",
+        type: "gallery",
         position: 0,
         name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
@@ -6618,12 +6590,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 20,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
@@ -6634,12 +6605,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 21,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
@@ -6651,12 +6621,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       # event
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Auto reply to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
@@ -6668,12 +6637,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -6687,12 +6655,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -6705,12 +6672,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 1,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 3",
         subject_template: "One last check-in | {{photography_company_s_name}}",
@@ -6723,12 +6689,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 22,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Lead - Initial Inquiry email",
         subject_template: "Thank you for inquiring with {{photography_company_s_name}}",
@@ -6747,12 +6712,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal email",
         subject_template: "Booking your shoot with {{photography_company_s_name}}",
@@ -6772,12 +6736,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 1",
         subject_template: "Checking in!|{{photography_company_s_name}}",
@@ -6796,12 +6759,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 2",
         subject_template: "It's me again!|{{photography_company_s_name}}",
@@ -6820,12 +6782,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 2,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "lead",
-        state: "gallery_send_link",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
         subject_template: "Change of plans?| {{photography_company_s_name}}",
@@ -6836,12 +6797,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 3,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer paid email",
         subject_template: "Receipt from {{photography_company_s_name}}",
@@ -6857,15 +6817,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 23,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - retainer marked for OFFLINE Payment",
-        subject_template: "Receipt from {{photography_company_s_name}}",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>You are tenatively booked for your photoshoot with me {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}. Your date will be officially booked once I receive your offline payment, and while I am currently holding this time for you I cannot do so indefinitely.</p>
@@ -6878,12 +6837,46 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 4,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_full"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "job",
-        state: "gallery_send_link",
+        position: 0,
+        name: "Payments - paid in full email",
+        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
+        <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
+        <p>Thank you for choosing {{photography_company_s_name}}, I can't wait to work with you!</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "paid_offline_full"),
+        total_hours: 0,
+        status: "active",
+        job_type: "event",
+        type: "job",
+        position: 0,
+        name: "Payments - paid in full OFFLINE",
+        subject_template: "Next Steps from {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{client_first_name}},</p>
+        <p>I’m really looking forward to working with you!</p>
+        <p>Upon receipt of payment, you will be officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.Thanks again for choosing {{photography_company_s_name}}.</p>
+        <p>If you have any questions, please don’t hesitate to let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        total_hours: 0,
+        status: "active",
+        job_type: "event",
+        type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
@@ -6896,12 +6889,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "event",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - week before email",
         subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
@@ -6915,12 +6907,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 5,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "event",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Pre-Shoot - day before email",
         subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
@@ -6935,12 +6926,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 6,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "balance_due"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - balance due email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -6956,30 +6946,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "offline_payment"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 8,
-        total_hours: 0,
-        status: "active",
-        job_type: "event",
-        type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Payments - Client selected offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
@@ -6995,30 +6966,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 7,
-        total_hours: 0,
-        status: "active",
-        job_type: "event",
-        type: "job",
-        state: "gallery_send_link",
-        position: 0,
-        name: "Payments - Client paid offline payment email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
-        body_template: """
-        <p>Hello {{client_first_name}},</p>
-        <p>Your account has been paid in full for your photoshoot with me on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p>I am looking forward to capturing this time for you.</p>
-        <p>Thank you for choosing {{photography_company_s_name}}.</p>
-        {{email_signature}}
-        """
-      },
-      %{
-        email_automation_pipeline_id: 9,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "shoot_thanks"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Thank you for a great shoot email",
         subject_template: "Thank you for a great shoot! | {{photography_company_s_name}}",
@@ -7031,12 +6983,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Follow up & request for reviews email",
         subject_template: "Checking in! | {{photography_company_s_name}}",
@@ -7050,12 +7001,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 10,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "job",
-        state: "gallery_send_link",
         position: 0,
         name: "Post Shoot - Next Shoot email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
@@ -7071,12 +7021,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Release Email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
@@ -7092,12 +7041,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery For Selects Email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
@@ -7113,12 +7061,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 11,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Proofing Gallery Finals Email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
@@ -7132,12 +7079,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Hour", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
@@ -7150,12 +7096,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
@@ -7168,12 +7113,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 12,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "cart_abandoned"),
         total_hours: EmailPreset.calculate_total_hours(2, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Abandoned Cart Email - follow up 2",
         subject_template:
@@ -7188,12 +7132,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
@@ -7207,12 +7150,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
@@ -7226,12 +7168,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 13,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Expiring Soon Email - follow up 2",
         subject_template:
@@ -7246,12 +7187,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 14,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Gallery - Gallery Password Changed Email",
         subject_template:
@@ -7263,12 +7203,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 16,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Digital) Order Received",
         subject_template: "Your photos are here! | {{photography_company_s_name}}",
@@ -7284,12 +7223,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 15,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -7301,12 +7239,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 17,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "(BOTH - Digitals and Products) Order Received",
         subject_template: "Your order has been received! | {{photography_company_s_name}}",
@@ -7323,12 +7260,47 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 19,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
+        position: 0,
+        name: "(Digital) Order Being Prepared",
+        subject_template: "Your order is being prepared. | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>The download for your high-quality digital images is currently being packaged as those are large files and take some time to prepare. Look for another email with your digital image files in the next 30 minutes.{{client_gallery_order_page}}.</p>
+        <p>Thank you for your purchase.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        total_hours: 0,
+        status: "active",
+        job_type: "event",
+        type: "gallery",
+        position: 0,
+        name: "(Digital and Products) Images now available",
+        subject_template: "Your digital images are ready! | {{photography_company_s_name}}",
+        body_template: """
+        <p>Hello {{order_first_name}},</p>
+        <p>Your digital image download files are ready:</p>
+        <p>1. Click the download link below to download your files now (computer highly recommended for the download) {{download_photos}}</p>
+        <p>2. Once downloaded, simply unzip the file to access your digital image files to save onto your computer.  We also recommend backing up your files to another location as soon as possible.</p>
+        <p>3. Please note that if you save directly to your phone, the resolution will not be of the highest quality so please save to your computer!</p>
+        <p>You can review your order via your {{client_gallery_order_page}}.</p>
+        <p>If you have any questions, please let me know.</p>
+        {{email_signature}}
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_shipped"),
+        total_hours: 0,
+        status: "active",
+        job_type: "event",
+        type: "gallery",
         position: 0,
         name: "Order has shipped email",
         subject_template: "Your products have shipped! | {{photography_company_s_name}}",
@@ -7339,12 +7311,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 20,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_delayed"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order is delayed email",
         subject_template: "Your order is delayed | {{photography_company_s_name}}",
@@ -7355,12 +7326,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: 21,
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_arrived"),
         total_hours: 0,
         status: "active",
         job_type: "event",
         type: "gallery",
-        state: "gallery_send_link",
         position: 0,
         name: "Order has arrived email",
         subject_template: "Your products have arrived! | {{photography_company_s_name}}",
@@ -7372,25 +7342,49 @@ defmodule Mix.Tasks.ImportEmailPresets do
       }
     ]
     |> Enum.each(fn attrs ->
-      attrs = Map.merge(attrs, %{inserted_at: now, updated_at: now})
+      state = get_state_by_pipeline_id(pipelines, attrs.email_automation_pipeline_id)
+      
+      attrs = Map.merge(attrs, %{state: Atom.to_string(state), inserted_at: now, updated_at: now})
 
-      email_preset =
-        from(ep in EmailPreset,
-          where:
-            ep.type == ^attrs.type and
-              ep.name == ^attrs.name and
-              ep.job_type == ^attrs.job_type and
-              ep.email_automation_pipeline_id == ^attrs.email_automation_pipeline_id and
-              is_nil(ep.organization_id)
-        )
-        |> Repo.one()
+      email_preset = from(e in email_preset_query(attrs), where: is_nil(e.organization_id)) |> Repo.one()
 
       if email_preset do
         email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
       else
         attrs |> EmailPreset.default_presets_changeset() |> Repo.insert!()
+        
+        Enum.map(organizations, fn %{id: org_id} -> 
+          Map.merge(attrs, %{organization_id: org_id})
+        end)
+        |> then(&Repo.insert_all("email_presets", &1))  
       end
     end)
+  end
+
+  defp email_preset_query(attrs) do
+    from(ep in EmailPreset,
+          where:
+            ep.type == ^attrs.type and
+              ep.name == ^attrs.name and
+              ep.job_type == ^attrs.job_type and
+              ep.email_automation_pipeline_id == ^attrs.email_automation_pipeline_id
+        )
+  end
+
+  defp get_pipeline_id_by_state(pipelines, state) do
+    pipeline = pipelines
+    |> Enum.filter(& &1.state == String.to_atom(state))
+    |> List.first()
+
+    pipeline.id
+  end
+
+  defp get_state_by_pipeline_id(pipelines, id) do
+    pipeline = pipelines
+    |> Enum.filter(& &1.id == id)
+    |> List.first()
+
+    pipeline.state
   end
 
   defp load_app do

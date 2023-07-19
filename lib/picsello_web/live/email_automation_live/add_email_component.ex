@@ -25,7 +25,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
       ) do
     job_types = Shared.get_selected_job_types(job_types, job_type)
     
-    email_presets = EmailPresets.email_automation_presets(type, pipeline_id)
+    email_presets = EmailPresets.email_automation_presets(type, job_type.name, pipeline_id)
 
     socket
     |> assign(assigns)

@@ -8,7 +8,6 @@ defmodule Picsello.EmailAutomation.EmailAutomationSubCategory do
     field :name, :string
     field(:slug, :string)
     has_many(:email_automation_pipleines, EmailAutomationPipeline)
-    timestamps type: :utc_datetime
   end
 
   def changeset(email_sub_category \\ %__MODULE__{}, attrs) do

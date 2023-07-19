@@ -34,10 +34,10 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
     email_pipeline
     |> cast(
       attrs,
-      ~w[status state name description email_automation_category_id email_automation_sub_category_id]a
+      ~w[state name description email_automation_category_id email_automation_sub_category_id]a
     )
     |> validate_required(
-      ~w[status state name description email_automation_category_id email_automation_sub_category_id]a
+      ~w[state name description email_automation_category_id email_automation_sub_category_id]a
     )
   end
 

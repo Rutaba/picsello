@@ -8,8 +8,6 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationsCategory do
     create table(@table) do
       add(:name, :string, null: false)
       add(:type, :email_automation_type, null: false)
-
-      timestamps()
     end
 
     create(unique_index(@table, [:type, :name]))

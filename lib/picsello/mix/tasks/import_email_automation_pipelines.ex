@@ -7,7 +7,8 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
   alias Picsello.Repo
   alias Picsello.EmailAutomation.{
     EmailAutomationCategory,
-    EmailAutomationSubCategory
+    EmailAutomationSubCategory,
+    EmailAutomationPipeline
   }
 
 
@@ -20,41 +21,43 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
 
   def insert_email_pipelines() do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    categories = from(sc in EmailAutomationCategory) |> Repo.all()
+    sub_categories = from(sc in EmailAutomationSubCategory) |> Repo.all()
 
-    {:ok, email_automation_lead} = insert_email_automation("Leads", "lead", now)
-    {:ok, email_automation_job} = insert_email_automation("Jobs", "job", now)
-    {:ok, email_automation_gallery} = insert_email_automation("Galleries", "gallery", now)
+    {:ok, email_automation_lead} = maybe_insert_email_automation(categories, "Leads", "lead")
+    {:ok, email_automation_job} = maybe_insert_email_automation(categories, "Jobs", "job")
+    {:ok, email_automation_gallery} = maybe_insert_email_automation(categories, "Galleries", "gallery")
 
     {:ok, automation_inquiry} =
-      insert_email_automation_slug("Inquiry emails", "inquiry_emails", now)
+    maybe_insert_email_automation_slug(sub_categories, "Inquiry emails", "inquiry_emails")
 
     {:ok, automation_proposal} =
-      insert_email_automation_slug("Booking proposal", "booking_proposal", now)
+    maybe_insert_email_automation_slug(sub_categories, "Booking proposal", "booking_proposal")
 
     {:ok, automation_response} =
-      insert_email_automation_slug("Booking response emails", "booking_response_emails", now)
+    maybe_insert_email_automation_slug(sub_categories, "Booking response emails", "booking_response_emails")
 
     {:ok, automation_prep} =
-      insert_email_automation_slug("Shoot prep emails", "shoot_prep_emails", now)
+    maybe_insert_email_automation_slug(sub_categories, "Shoot prep emails", "shoot_prep_emails")
 
     {:ok, automation_reminder} =
-      insert_email_automation_slug("Payment reminder emails", "payment_reminder_emails", now)
+    maybe_insert_email_automation_slug(sub_categories, "Payment reminder emails", "payment_reminder_emails")
 
     {:ok, automation_post} =
-      insert_email_automation_slug("Post shoot emails", "post_shoot_emails", now)
+    maybe_insert_email_automation_slug(sub_categories, "Post shoot emails", "post_shoot_emails")
 
     {:ok, automation_notification} =
-      insert_email_automation_slug(
-        "Gallery notification emails",
-        "gallery_notification_emails",
-        now
-      )
+    maybe_insert_email_automation_slug(
+      sub_categories,
+      "Gallery notification emails",
+      "gallery_notification_emails"
+    )
 
     {:ok, automation_confirmation} =
-      insert_email_automation_slug("Order Confirmation emails", "order_confirmation_emails", now)
+    maybe_insert_email_automation_slug(sub_categories, "Order Confirmation emails", "order_confirmation_emails")
 
     {:ok, automation_status} =
-      insert_email_automation_slug("Order status emails", "order_status_emails", now)
+    maybe_insert_email_automation_slug(sub_categories, "Order status emails", "order_status_emails")
 
     [
       # leads
@@ -88,6 +91,14 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         email_automation_category_id: email_automation_job.id
       },
       %{
+        name: "Client Pays Retainer (Offline)",
+        state: "pays_retainer_offline",
+        description:
+          "Runs after client clicks they will pay you offline (if you have this enabled)",
+        email_automation_sub_category_id: automation_reminder.id,
+        email_automation_category_id: email_automation_job.id
+      },
+      %{
         name: "Thank You for Booking",
         state: "booking_event",
         description: "Sent when the questionnaire, contract is signed and retainer is paid",
@@ -115,14 +126,6 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id
       },
-      # %{
-      #   name: "Client Pays Retainer (Offline)",
-      #   state: "pays_retainer_offline",
-      #   description:
-      #     "Runs after client clicks they will pay you offline (if you have this enabled)",
-      #   email_automation_sub_category_id: automation_reminder.id,
-      #   email_automation_category_id: email_automation_job.id
-      # },
       %{
         name: "Paid in Full (Offline)",
         state: "paid_offline_full",
@@ -245,30 +248,51 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         email_automation_category_id: email_automation_gallery.id
       }
     ]
-    |> Enum.map(&Map.merge(&1, %{inserted_at: now, updated_at: now}))
-    |> then(&Picsello.Repo.insert_all("email_automation_pipelines", &1))
+    |> Enum.each(fn attrs ->
+      attrs = Map.merge(attrs, %{inserted_at: now, updated_at: now})
+      pipeline = from(ep in EmailAutomationPipeline, where: ep.state == ^attrs.state) |> Repo.one()
+
+      if pipeline do
+        pipeline |> EmailAutomationPipeline.changeset(attrs) |> Repo.update!()
+      else
+        attrs |> EmailAutomationPipeline.changeset() |> Repo.insert!()
+      end
+    end)
   end
 
-  defp insert_email_automation(name, type, now) do
-    %EmailAutomationCategory{}
-    |> EmailAutomationCategory.changeset(%{
-      name: name,
-      type: type,
-      inserted_at: now,
-      updated_at: now
-    })
-    |> Repo.insert()
+  defp maybe_insert_email_automation(categories, name, type) do
+    category = Enum.filter(categories, & &1.type == String.to_atom(type)) |> List.first()
+
+    if category do
+      category
+      |> EmailAutomationCategory.changeset(%{name: name})
+      |> Repo.update()
+
+    else
+      %EmailAutomationCategory{}
+      |> EmailAutomationCategory.changeset(%{
+        name: name,
+        type: type
+      })
+      |> Repo.insert()
+    end
   end
 
-  defp insert_email_automation_slug(name, slug, now) do
-    %EmailAutomationSubCategory{}
-    |> EmailAutomationSubCategory.changeset(%{
-      name: name,
-      slug: slug,
-      inserted_at: now,
-      updated_at: now
-    })
-    |> Repo.insert()
+  defp maybe_insert_email_automation_slug(sub_categories, name, slug) do
+    sub_category = Enum.filter(sub_categories, & &1.slug == slug) |> List.first()
+
+    if sub_category do
+      sub_category
+      |> EmailAutomationSubCategory.changeset(%{name: name})
+      |> Repo.update()
+    else
+      %EmailAutomationSubCategory{}
+      |> EmailAutomationSubCategory.changeset(%{
+        name: name,
+        slug: slug
+      })
+      |> Repo.insert()
+    end
   end
 
   defp load_app do
