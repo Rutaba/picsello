@@ -7,7 +7,6 @@ defmodule Picsello.Cart.Checkouts do
     Cart.Product,
     Galleries,
     Intents,
-    Invoices,
     Payments,
     Repo,
     WHCC,
@@ -68,20 +67,13 @@ defmodule Picsello.Cart.Checkouts do
         %{cart: %{products: []} = cart} ->
           create_session(cart, opts)
 
-        %{client_total: ~M[0]USD, cart: %{products: [_ | _]} = cart} ->
-          new()
-          |> append(create_whcc_order(cart))
-          |> run(:stripe_invoice, &create_stripe_invoice/2)
-          |> insert(:invoice, &insert_invoice/1)
-          |> update(:order, place_order(cart))
-
-        %{client_total: client_total, cart: %{products: [_ | _]} = cart} ->
+        %{client_total: _client_total, cart: %{products: [_ | _]} = cart} ->
           new()
           |> append(create_whcc_order(cart))
           |> merge(
             &create_session(
               cart,
-              opts |> Map.merge(&1) |> Map.put(:client_total, client_total)
+              opts |> Map.merge(&1)
             )
           )
       end)
@@ -192,15 +184,12 @@ defmodule Picsello.Cart.Checkouts do
     acc ++ Enum.map(line_items, &Editor.new(&1.editor_id, order_attributes: order_attributes))
   end
 
-  defp create_session(cart, %{whcc_order: whcc_order, client_total: client_total} = opts) do
+  defp create_session(cart, %{whcc_order: whcc_order} = opts) do
     shipping_price = Cart.total_shipping(cart)
 
     create_session(
       cart,
-      Enum.min_by(
-        [client_total, WHCCOrder.total(whcc_order) |> Money.add(shipping_price)],
-        & &1.amount
-      ),
+      WHCCOrder.total(whcc_order) |> Money.add(shipping_price),
       opts
     )
   end
@@ -269,24 +258,6 @@ defmodule Picsello.Cart.Checkouts do
   end
 
   defp shipping_options(%{products: []}), do: []
-
-  defp create_stripe_invoice(
-         _repo,
-         %{save_whcc_order: %{whcc_order: whcc_order} = order}
-       ),
-       do: create_stripe_invoice(order, WHCCOrder.total(whcc_order))
-
-  defp create_stripe_invoice(
-         %{gallery: %{organization: %{user: user}}} = invoice_order,
-         outstanding
-       ) do
-    Invoices.invoice_user(user, outstanding,
-      description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}"
-    )
-  end
-
-  defp insert_invoice(%{save_whcc_order: order, stripe_invoice: stripe_invoice}),
-    do: Invoices.changeset(stripe_invoice, order)
 
   defp place_order(cart), do: Order.placed_changeset(cart)
   defp client_total(_repo, %{cart: cart}), do: {:ok, Order.total_cost(cart)}

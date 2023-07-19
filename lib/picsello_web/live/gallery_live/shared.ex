@@ -25,7 +25,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   alias PicselloWeb.Live.Shared
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
-  alias Ecto.Multi
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
   alias Picsello.Cart.Order
@@ -1183,12 +1182,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp proofing_and_final_album_url(socket, album) do
     album = Albums.set_album_hash(album)
     Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
-  end
-
-  def delete_watermark(gallery) do
-    Multi.new()
-    |> Multi.delete(:delete_watermark, gallery.watermark)
-    |> Galleries.save_use_global(gallery, %{watermark: false})
   end
 
   def is_photographer_view(assigns) do

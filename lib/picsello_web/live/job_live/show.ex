@@ -330,7 +330,7 @@ defmodule PicselloWeb.JobLive.Show do
 
       <div class="z-10 flex flex-col hidden w-68 bg-white border rounded-lg shadow-lg popover-content">
         <%= for %{title: title, action: action, icon: icon} <- actions() do %>
-          <button title={title} type="button" phx-click={action} phx-value-gallery_id={@gallery.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+          <button title={title} type="button" disabled={!@disabled} phx-click={action} phx-value-gallery_id={@gallery.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold disabled:opacity-75 disabled:cursor-not-allowed">
             <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
             <%= title %>
           </button>
@@ -435,7 +435,7 @@ defmodule PicselloWeb.JobLive.Show do
         </p>
         <div {testid("card-buttons")} class={"flex self-end items-center gap-4 #{@btn_section_class}"} >
           <button class={"btn-primary intro-gallery font-normal rounded-lg py-2 #{@btn_class}"} phx-click={button_click} phx-value-gallery_id={@gallery.id} phx-value-parent_id={@parent_id} disabled={button_disabled}><%= button_text %></button>
-          <.actions gallery={@gallery}/>
+          <.actions gallery={@gallery} disabled={@parent_has_orders?}/>
         </div>
     <% end %>
     """

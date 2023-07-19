@@ -224,6 +224,9 @@ defmodule PicselloWeb.Live.Shared do
     end
   end
 
+  def serialize(data), do: data |> :erlang.term_to_binary() |> Base.encode64()
+  def deserialize(data), do: data |> Base.decode64!() |> :erlang.binary_to_term()
+
   defp make_payment_schedule(multi_changes, changes) do
     multi_changes
     |> Enum.map(fn {payment_schedule, i} ->

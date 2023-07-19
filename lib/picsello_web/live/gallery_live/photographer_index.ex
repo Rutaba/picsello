@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
-  import PicselloWeb.Live.Shared, only: [make_popup: 2, gallery_emails: 1]
+  import PicselloWeb.Live.Shared, only: [make_popup: 2, serialize: 1, gallery_emails: 1]
 
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
   alias PicselloWeb.Shared.ConfirmationComponent
@@ -194,17 +194,13 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
           }
         } = socket
       ) do
-    serialized_message =
-      message_changeset
-      |> :erlang.term_to_binary()
-      |> Base.encode64()
-
+      
     %{id: oban_job_id} =
       %{
-        message: serialized_message,
+        message: serialize(message_changeset),
         job_id: job.id,
         recipients: recipients,
-        user: %{organization_id: user.organization_id}
+        user: serialize(%{organization_id: user.organization_id})
       }
       |> Picsello.Workers.ScheduleEmail.new(schedule_in: 900)
       |> Oban.insert!()
@@ -244,7 +240,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         {:confirm_event, "delete_watermark", _},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    delete_watermark(gallery)
+    {:ok, _} = Galleries.delete_gallery_watermark(gallery)
     send(self(), :clear_watermarks)
 
     socket

@@ -182,7 +182,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
       refute ~M[0]USD == Order.total_cost(order)
 
-      assert :lt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
+      assert :gt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
 
       [order: order]
     end
@@ -262,7 +262,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
       assert ~M[45]USD == Order.total_cost(order)
 
-      assert :lt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
+      assert :gt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
 
       [order: order]
     end

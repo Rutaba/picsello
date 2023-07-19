@@ -103,7 +103,7 @@ defmodule Picsello.Pack do
       "galleries",
       to_string(order.gallery_id),
       "orders",
-      "#{gallery_name} - #{Order.number(order)}.zip"
+      "#{string_tokenizer(gallery_name)} - #{Order.number(order)}.zip"
     ])
   end
 
@@ -111,7 +111,7 @@ defmodule Picsello.Pack do
     Path.join([
       "galleries",
       to_string(id),
-      "#{gallery_name}.zip"
+      "#{string_tokenizer(gallery_name)}.zip"
     ])
   end
 
@@ -255,4 +255,6 @@ defmodule Picsello.Pack do
       [source: {:url, source}, path: path]
     end
   end
+
+  defp string_tokenizer(name), do: Regex.replace(~r/[^a-zA-Z0-9 -]/, name, "")
 end

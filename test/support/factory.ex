@@ -468,7 +468,7 @@ defmodule Picsello.Factory do
       job: fn -> insert(:lead, lead_attrs) |> promote_to_job() end,
       password: valid_gallery_password(),
       client_link_hash: UUID.uuid4(),
-      use_global: %{watermark: false, expiration: false, digital: false, products: false}
+      use_global: %{products: false}
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

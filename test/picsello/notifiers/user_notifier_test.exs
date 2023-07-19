@@ -89,7 +89,10 @@ defmodule Picsello.Notifiers.UserNotifierTest do
           email: "testing@picsello.com"
         ),
       gallery_name: "Test Client Wedding",
-      job_name: "Mary Jane Wedding"
+      job_name: "Mary Jane Wedding",
+      client_name: "Mary Jane",
+      contains_product: true,
+      products_quantity: 1
     }
   end
 
@@ -120,8 +123,14 @@ defmodule Picsello.Notifiers.UserNotifierTest do
              |> shared_fields()
              |> Map.merge(%{
                client_charge: ~M[56645]USD,
-               photographer_payment: ~M[56145]USD,
-               print_cost: ~M[4345]USD
+               photographer_payment: %Money{amount: 51_127, currency: :USD},
+               print_cost: ~M[0]USD,
+               total_costs: %Money{amount: -5518, currency: :USD},
+               photographer_charge: %Money{amount: 0, currency: :USD},
+               stripe_fee: %Money{amount: -1673, currency: :USD},
+               positive_shipping: %Money{amount: 3845, currency: :USD},
+               shipping: %Money{amount: -3845, currency: :USD},
+               total_products_price: %Money{amount: 52_800, currency: :USD}
              }) ==
                template_variables(email)
     end
@@ -138,7 +147,7 @@ defmodule Picsello.Notifiers.UserNotifierTest do
     setup [:insert_gallery, :insert_order_and_gallery_client, :add_whcc_order]
 
     setup %{order: order} do
-      insert(:invoice, order: order, amount_due: ~M[500]USD)
+      insert(:invoice, order: order, amount_due: ~M[20000]USD)
 
       [order: Repo.preload(order, :invoice, force: true)]
     end
@@ -150,8 +159,11 @@ defmodule Picsello.Notifiers.UserNotifierTest do
              |> shared_fields()
              |> Map.merge(%{
                client_charge: ~M[0]USD,
-               photographer_charge: ~M[500]USD,
-               print_cost: ~M[4345]USD
+               print_cost: %Money{amount: 0, currency: :USD},
+               shipping: %Money{amount: -3845, currency: :USD},
+               positive_shipping: %Money{amount: 3845, currency: :USD},
+               total_costs: %Money{amount: -3845, currency: :USD},
+               total_products_price: %Money{amount: 52_800, currency: :USD}
              }) ==
                template_variables(email)
     end
@@ -180,7 +192,20 @@ defmodule Picsello.Notifiers.UserNotifierTest do
              |> shared_fields()
              |> Map.merge(%{
                client_charge: ~M[1000]USD,
-               photographer_payment: ~M[1000]USD
+               photographer_payment: ~M[941]USD,
+               contains_digital: true,
+               digital_credit_remaining: 0,
+               digital_credit_used: %{},
+               digital_quantity: "1",
+               contains_product: false,
+               photographer_charge: %Money{amount: 0, currency: :USD},
+               positive_shipping: %Money{amount: 0, currency: :USD},
+               shipping: %Money{amount: 0, currency: :USD},
+               stripe_fee: %Money{amount: -59, currency: :USD},
+               total_costs: %Money{amount: -59, currency: :USD},
+               total_digitals_price: %Money{amount: 1000, currency: :USD},
+               total_products_price: %Money{amount: 0, currency: :USD},
+               products_quantity: 0
              }) ==
                template_variables(email)
     end
