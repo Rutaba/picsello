@@ -72,11 +72,6 @@ defmodule Picsello.Currency do
       currency: (is_binary(currency) && String.to_existing_atom(currency)) || currency
     }
 
-  def for_order(order) do
-    %{package: %{currency: currency}} = Repo.preload(order, gallery: :package)
-    currency
-  end
-
   def for_job(job) do
     %{package: %{currency: currency}} = Repo.preload(job, :package)
     currency

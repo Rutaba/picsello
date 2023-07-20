@@ -68,7 +68,7 @@ defmodule Picsello.Invoices do
            Payments.create_invoice_item(%{
              customer: customer,
              amount: outstanding_cents,
-             currency: "USD"
+             currency: Keyword.get(opts, :currency)
            }),
          {:ok, %{id: invoice_id}} <-
            Payments.create_invoice(%{

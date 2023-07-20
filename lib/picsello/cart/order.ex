@@ -21,11 +21,15 @@ defmodule Picsello.Cart.Order do
     field :number, :integer, default: Enum.random(100_000..999_999)
     field :placed_at, :utc_datetime
     field :total_credits_amount, :integer, default: 0
-    field :currency, :string, virtual: true
 
     belongs_to(:gallery_client, GalleryClient)
     belongs_to(:gallery, Gallery)
     belongs_to(:album, Album)
+    belongs_to(:order_currency, Picsello.Currency,
+      references: :code,
+      type: :string,
+      foreign_key: :currency
+    )
 
     has_one :package, through: [:gallery, :package]
     has_one :invoice, Picsello.Invoices.Invoice
@@ -80,7 +84,7 @@ defmodule Picsello.Cart.Order do
 
   defp do_create_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:gallery_id, :gallery_client_id, :album_id])
+    |> cast(attrs, [:gallery_id, :gallery_client_id, :album_id, :currency])
     |> validate_required([:gallery_id, :gallery_client_id])
     |> foreign_key_constraint(:gallery_id)
     |> foreign_key_constraint(:gallery_client_id)
@@ -207,8 +211,6 @@ defmodule Picsello.Cart.Order do
 
   @doc "calculate total cost, includes shipping price"
   def total_cost(%__MODULE__{} = order) do
-    order = Map.put(order, :currency, Currency.for_order(order))
-
     Money.add(digital_total(order), product_total(order))
   end
 

@@ -274,11 +274,9 @@ defmodule Picsello.Cart.Checkouts do
        do: Payments.retrieve_payment_intent(id, connect_account: stripe_account_id)
 
   defp build_line_items(%Order{digitals: digitals, products: products} = order) do
-    currency = Currency.for_order(order)
-
     for item <- Enum.concat([products, digitals, [order]]), reduce: [] do
       line_items ->
-        case item |> Map.put(:currency, currency) |> to_line_item() do
+        case item |> Map.put(:currency, order.currency) |> to_line_item() do
           %{
             image: image,
             name: name,

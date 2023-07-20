@@ -352,7 +352,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
     digital_pricing_params =
       if Changeset.get_field(package_pricing_changeset, :is_enabled),
         do: digital_pricing_params,
-        else: digital_pricing_params |> Map.put("print_credits", Money.new(0))
+        else: digital_pricing_params |> Map.put("print_credits", Money.new(0, currency))
 
     changeset =
       GalleryDigitalPricing.changeset(

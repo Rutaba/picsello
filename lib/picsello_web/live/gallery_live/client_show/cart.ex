@@ -407,7 +407,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     <div class="col-span-1 text-lg">
       <div class="flex flex-col items-center justify-center border border-base-225 flex p-8 border-t">
         <span class="flex mb-4">
-          Total: <b>$0.00</b>
+          Total: <b>0.00</b>
         </span>
         <button disabled class="flex items-center justify-center border border-base-225 text-base-225 w-full py-2">
           Send to my photographer

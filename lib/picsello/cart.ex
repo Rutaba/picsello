@@ -417,7 +417,11 @@ defmodule Picsello.Cart do
     |> Repo.update!()
   end
 
-  def price_display(%Digital{is_credit: true}), do: "1 credit - $0.00"
+  def price_display(%Digital{is_credit: true} = digital) do
+    digital = digital |> Repo.preload(:order)
+    currency_symbol = Money.Currency.symbol!(digital.order.currency)
+    "1 credit - #{currency_symbol}0.00"
+  end
   def price_display(%Digital{price: price}), do: price
 
   def price_display({:bundle, %Order{bundle_price: price}}), do: price
@@ -574,7 +578,7 @@ defmodule Picsello.Cart do
     end)
   end
 
-  def total_shipping(order), do: Money.new(0, Currency.for_order(order))
+  def total_shipping(order), do: Money.new(0, order.currency)
 
   def has_shipping?(%{shipping_type: nil}), do: false
   def has_shipping?(_product), do: true

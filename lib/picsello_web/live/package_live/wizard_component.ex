@@ -810,7 +810,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <div class="flex my-2">
               <div class="flex flex-col ml-auto">
                 <div class="flex flex-row items-center w-auto mt-6 border rounded-lg relative border-blue-planning-300">
-                  <%= input p, :price, placeholder: "$0.00", class: classes("w-32 bg-white p-3 border-none text-lg sm:mt-0 font-normal text-center", %{"hidden" => !input_value(pc, :fixed)}), phx_hook: "PriceMask", data_currency: @currency_symbol %>
+                  <%= input p, :price, placeholder: "#{@currency_symbol}0.00", class: classes("w-32 bg-white p-3 border-none text-lg sm:mt-0 font-normal text-center", %{"hidden" => !input_value(pc, :fixed)}), phx_hook: "PriceMask", data_currency: @currency_symbol %>
                 </div>
                 <%= text_input p, :currency, value: @currency, class: classes("w-32 form-control text-base-250 border-none", %{"hidden" => !input_value(pc, :fixed)}), phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
               </div>
