@@ -1,7 +1,9 @@
 defmodule Picsello.Contracts do
   @moduledoc "context module for contracts"
-  alias Picsello.{Repo, Package, Contract}
   import Ecto.Query
+
+  alias Picsello.{Repo, Package, Contract}
+  alias Ecto.{Query, Multi}
 
   def for_package(%Package{} = package) do
     package
@@ -17,12 +19,12 @@ defmodule Picsello.Contracts do
     contract = package |> Ecto.assoc(:contract) |> Repo.one()
 
     if contract do
-      Ecto.Multi.new()
+      Multi.new()
     else
       default_contract = default_contract(package)
 
-      Ecto.Multi.new()
-      |> Ecto.Multi.insert(
+      Multi.new()
+      |> Multi.insert(
         :default_contract,
         default_contract
         |> Map.take([:content, :name])
@@ -44,15 +46,15 @@ defmodule Picsello.Contracts do
   def insert_template_and_contract_multi(package, params) do
     %{organization_id: organization_id} = package
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(
+    Multi.new()
+    |> Multi.insert(
       :contract_template,
       params
       |> Map.put("organization_id", organization_id)
       |> Map.put("job_type", job_type(package))
       |> Contract.template_changeset()
     )
-    |> Ecto.Multi.insert(
+    |> Multi.insert(
       :contract,
       fn changes ->
         params
@@ -74,15 +76,15 @@ defmodule Picsello.Contracts do
   end
 
   def insert_contract_multi(package, %{"contract_template_id" => template_id} = params) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.put(
+    Multi.new()
+    |> Multi.put(
       :contract_template,
       package
       |> for_package_query()
       |> where([contract], contract.id == ^template_id)
       |> Repo.one!()
     )
-    |> Ecto.Multi.insert(
+    |> Multi.insert(
       :contract,
       fn changes ->
         params
@@ -148,8 +150,10 @@ defmodule Picsello.Contracts do
     |> Repo.one!()
   end
 
-  def for_organization(organization_id, opts) do
+  def for_organization(organization_id, %{pagination: %{limit: limit, offset: offset}} = opts) do
     get_organization_contracts(organization_id, opts)
+    |> Query.limit(^limit)
+    |> Query.offset(^offset)
     |> Repo.all()
   end
 
@@ -184,7 +188,7 @@ defmodule Picsello.Contracts do
   defp get_contract(contract_id),
     do: from(c in Contract, where: c.id == ^contract_id)
 
-  defp get_organization_contracts(organization_id, opts) do
+  def get_organization_contracts(organization_id, opts) do
     Contract
     |> where([c], c.organization_id == ^organization_id)
     |> or_where([c], is_nil(c.organization_id) and is_nil(c.package_id))

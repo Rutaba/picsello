@@ -1,9 +1,23 @@
 defmodule PicselloWeb.Live.Contracts.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Contract, Contracts, Utils}
+
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
+
+  import PicselloWeb.Shared.CustomPagination,
+    only: [
+      pagination_component: 1,
+      assign_pagination: 2,
+      update_pagination: 2,
+      reset_pagination: 2,
+      pagination_index: 2
+    ]
+
+  alias Ecto.Changeset
+  alias Picsello.{Contract, Contracts, Utils, Repo}
+
+  @default_pagination_limit 4
 
   @impl true
   def mount(_params, _session, socket) do
@@ -11,6 +25,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
     |> assign(:page_title, "Contracts")
     |> assign(:contract_status, "current")
     |> assign(:job_type, "all")
+    |> assign_pagination(@default_pagination_limit)
     |> assign_contracts()
     |> ok()
   end
@@ -23,7 +38,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
       ) do
     socket
     |> assign(:contract_status, status)
-    |> assign_contracts()
+    |> reassign_pagination_and_contracts()
     |> noreply()
   end
 
@@ -35,9 +50,36 @@ defmodule PicselloWeb.Live.Contracts.Index do
       ) do
     socket
     |> assign(:job_type, type)
+    |> reassign_pagination_and_contracts()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "page",
+        %{"direction" => _direction} = params,
+        socket
+      ) do
+    socket
+    |> update_pagination(params)
     |> assign_contracts()
     |> noreply()
   end
+
+  @impl true
+  def handle_event(
+        "page",
+        %{"custom_pagination" => %{"limit" => _limit}} = params,
+        socket
+      ) do
+    socket
+    |> update_pagination(params)
+    |> assign_contracts()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("page", %{}, socket), do: socket |> noreply()
 
   @impl true
   def handle_event(
@@ -63,6 +105,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
         state: :create
       })
     )
+    |> reassign_pagination_and_contracts()
     |> noreply()
   end
 
@@ -119,6 +162,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
     |> PicselloWeb.ContractTemplateComponent.open(
       Map.merge(Map.take(assigns, [:contract, :current_user]), %{state: :edit})
     )
+    |> reassign_pagination_and_contracts()
     |> noreply()
   end
 
@@ -318,12 +362,64 @@ defmodule PicselloWeb.Live.Contracts.Index do
     ]
   end
 
-  defp assign_contracts(%{assigns: %{job_type: job_type, contract_status: contract_status, current_user: %{organization_id: organization_id}}} = socket) do
+  defp assign_contracts(
+         %{
+           assigns: %{
+             pagination_changeset: pagination_changeset,
+             job_type: job_type,
+             contract_status: contract_status,
+             current_user: %{organization_id: organization_id}
+           }
+         } = socket
+       ) do
+    pagination = pagination_changeset |> Changeset.apply_changes()
+
+    contracts =
+      Contracts.for_organization(organization_id, %{
+        status: contract_status,
+        type: job_type,
+        pagination: pagination
+      })
+
     socket
     |> assign(
       :contracts,
-      Contracts.for_organization(organization_id, %{status: contract_status, type: job_type})
+      contracts
     )
+    |> update_pagination(%{
+      total_count:
+        if(pagination.total_count == 0,
+          do: contracts_count(socket),
+          else: pagination.total_count
+        ),
+      last_index: pagination.first_index + Enum.count(contracts) - 1
+    })
+  end
+
+  defp reassign_pagination_and_contracts(%{assigns: %{pagination_changeset: changeset}} = socket) do
+    limit = pagination_index(changeset, :limit)
+
+    socket
+    |> reset_pagination(%{limit: limit, last_index: limit, total_count: contracts_count(socket)})
+    |> assign_contracts()
+  end
+
+  defp contracts_count(%{
+         assigns: %{
+           pagination_changeset: pagination_changeset,
+           job_type: job_type,
+           contract_status: contract_status,
+           current_user: %{organization_id: organization_id}
+         }
+       }) do
+    pagination = pagination_changeset |> Changeset.apply_changes()
+
+    Contracts.get_organization_contracts(organization_id, %{
+      status: contract_status,
+      type: job_type,
+      pagination: pagination
+    })
+    |> Repo.aggregate(:count)
   end
 
   def get_contract(id), do: Contracts.get_contract_by_id(id)
