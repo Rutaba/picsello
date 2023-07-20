@@ -174,7 +174,7 @@ defmodule PicselloWeb.Live.Profile do
     </div>
     <div class="flex items-center">
       <span class="w-auto mt-1">
-        <span class="font-semibold mr-5">
+        <span class="mr-5">
           <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
             <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
             <span {testid("job-type")} class="text-xl whitespace-nowrap font-light"><%= dyn_gettext job_type %></span>

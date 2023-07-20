@@ -36,7 +36,7 @@ defmodule PicselloWeb.LeadContactIframeView do
         </div>
 
         <div id="referralNameDiv" class="flex flex-col mt-3 hidden">
-            <%= label_for f, :referral_name, label: "Would you mind sharing their name?", class: "py-2 font-bold" %>
+            <%= label_for f, :referral_name, label: "Would you mind sharing their name?", class: "py-2" %>
 
             <%= input f, :referral_name, placeholder: "Type name...", phx_debounce: 300 %>
             <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
