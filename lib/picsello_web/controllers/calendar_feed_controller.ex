@@ -34,7 +34,11 @@ defmodule PicselloWeb.CalendarFeedController do
       %{
         title: "#{Job.name(Map.put(job, :client, client))} - #{shoot.name}",
         color: color,
-        url: Routes.job_path(conn, type, job.id, %{"request_from" => "calendar"}),
+        other: %{
+          url: Routes.job_path(conn, type, job.id, %{"request_from" => "calendar"}),
+          job_id: job.id,
+          calendar: "internal"
+        },
         start: start_date,
         end: end_date
       }

@@ -9,7 +9,7 @@ const getView = () => {
   return isMobile() ? 'listWeek' : 'dayGridMonth';
 };
 
-const calendar_render = (el) => {
+const calendar_render = (component, el) => {
   const { timeZone, feedPath } = el.dataset;
 
   const calendar = new Calendar(el, {
@@ -27,6 +27,9 @@ const calendar_render = (el) => {
     eventBorderColor: 'green',
     eventColor: 'green',
     eventSources: [{ url: feedPath }],
+    eventClick: function (info) {
+      component.pushEvent('event-detail', { event: info.event })
+    },
     editable: true,
     selectable: true,
     windowResize: function (view) {
@@ -53,10 +56,10 @@ const calendar_render = (el) => {
 export default {
   mounted() {
     const { el } = this;
-    calendar_render(el);
+    calendar_render(this, el);
   },
   updated() {
     const { el } = this;
-    calendar_render(el);
+    calendar_render(this, el);
   },
 };

@@ -1,11 +1,11 @@
 defmodule NylasCalendar do
   @moduledoc """
-  
+
   An Elixir module for interacting with the Nylas Calendar
   API. Contains code to get a list of calendars, get events, add
   events to remote calendars etc
- 
-  
+
+
   """
 
   require Logger
@@ -116,8 +116,7 @@ defmodule NylasCalendar do
     headers = build_headers(token)
     url = "#{@base_url}/#{@event_endpoint}"
 
-
-    response = HTTPoison.post!(url, Jason.encode!(params,%{calendar_id: calendar_id}), headers)
+    response = HTTPoison.post!(url, Jason.encode!(params, %{calendar_id: calendar_id}), headers)
 
     case response.status_code do
       200 ->
@@ -164,7 +163,7 @@ defmodule NylasCalendar do
           end: String.t(),
           start: String.t(),
           title: String.t(),
-          url: String.t()
+          other: map()
         }
 
   @spec get_events!([String.t()], String.t()) :: list(calendar_event())
@@ -186,85 +185,77 @@ defmodule NylasCalendar do
 
   @spec remove_from_picsello(map) :: boolean
   def remove_from_picsello(%{"description" => nil}), do: true
+
   def remove_from_picsello(%{"description" => description}) do
-    not(description =~ "[From Picsello]")
+    not (description =~ "[From Picsello]")
   end
-  
+
   @spec to_shoot(map, String.t()) :: calendar_event()
   def to_shoot(
         %{
-          "description" => _notes,
+          "description" => description,
           "id" => id,
           "calendar_id" => calendar_id,
-          "location" => _location,
-          "title" => name,
-          "when" => %{"date" => date, "object" => "date"}
-        } ,
-        _timezone
-  ) do
-
-    {:ok, start_time} = Date.from_iso8601(date)
-    end_time = start_time |> Date.add(1) |> Date.to_iso8601()
-
-    %{
-      title: "#{name}",
-      color: @base_color,
-      start: date,
-      end: end_time,
-      url:
-        PicselloWeb.Router.Helpers.remote_path(PicselloWeb.Endpoint, :remote, calendar_id, id, %{
-          "request_from" => "calendar"
-        })
-    }
-  end
-
-  def to_shoot(
-        %{
-          "description" => _notes,
-          "id" => id,
-          "calendar_id" => calendar_id,
-          "location" => _location,
-          "title" => name,
-          "when" => %{"start_date" => start_date, "end_date" => end_date, "object" => "datespan"}
-        },
-        _timezone
+          "location" => location,
+          "organizer_email" => organizer_email,
+          "organizer_name" => organizer_name,
+          "status" => status,
+          "title" => title,
+          "when" => date_obj
+        } = event,
+        timezone
       ) do
+    {start_date, end_date} = build_dates(date_obj, timezone)
+
     %{
-      title: "#{name}",
+      title: "#{title}",
       color: @base_color,
       start: start_date,
       end: end_date,
-      url:
-        PicselloWeb.Router.Helpers.remote_path(PicselloWeb.Endpoint, :remote, calendar_id, id, %{
-          "request_from" => "calendar"
-        })
+      other: %{
+        description: description,
+        location: location,
+        organizer_email: organizer_email,
+        organizer_name: organizer_name,
+        conferencing: event["conferencing"],
+        status: status,
+        calendar: "external",
+        url:
+          PicselloWeb.Router.Helpers.remote_path(
+            PicselloWeb.Endpoint,
+            :remote,
+            calendar_id,
+            id,
+            %{"request_from" => "calendar"}
+          )
+      }
     }
   end
 
-  def to_shoot(
-        %{
-          "description" => _notes,
-          "id" => id,
-          "calendar_id" => calendar_id,
-          "location" => _location,
-          "title" => name,
-          "when" => %{"start_time" => start_time, "end_time" => end_time, "object" => "timespan"}
-        },
-        timezone
-      ) do
-    start = start_time |> DateTime.from_unix!() |> DateTime.shift_zone!(timezone)
-    finish = end_time |> DateTime.from_unix!() |> DateTime.shift_zone!(timezone)
+  defp build_dates(%{"date" => date, "object" => "date"}, _timezone) do
+    {:ok, start_date} = Date.from_iso8601(date)
 
-    %{
-      title: "#{name}",
-      color: @base_color,
-      start: DateTime.to_iso8601(start),
-      end: DateTime.to_iso8601(finish),
-      url:
-        PicselloWeb.Router.Helpers.remote_path(PicselloWeb.Endpoint, :remote, calendar_id, id, %{
-          "request_from" => "calendar"
-        })
-    }
+    {start_date, start_date |> Date.add(1) |> Date.to_iso8601()}
+  end
+
+  defp build_dates(
+         %{"start_date" => start_date, "end_date" => end_date, "object" => "datespan"},
+         _timezone
+       ),
+       do: {start_date, end_date}
+
+  defp build_dates(
+         %{"start_time" => start_time, "end_time" => end_time, "object" => "timespan"},
+         timezone
+       ) do
+    build = fn time ->
+      time
+      |> DateTime.from_unix!()
+      |> DateTime.shift_zone!(timezone)
+      |> DateTime.to_iso8601()
+    end
+
+    {build.(start_time), build.(end_time)}
   end
 
   @spec get_events(String.t(), token()) :: {:error, String.t()} | {:ok, any}

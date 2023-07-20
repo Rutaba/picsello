@@ -29,6 +29,14 @@ defmodule Picsello.Shoots do
     |> List.first()
   end
 
+  def get_latest_shoot(job_id) do
+    Shoot
+    |> where([s], s.job_id == ^job_id)
+    |> order_by(desc: :inserted_at)
+    |> limit(1)
+    |> Repo.one()
+  end
+
   def broadcast_shoot_change(%Shoot{} = shoot) do
     job = shoot |> Repo.preload(job: :client) |> Map.get(:job)
 
