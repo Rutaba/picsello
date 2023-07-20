@@ -94,7 +94,7 @@ defmodule PicselloWeb.ClientMessageComponent do
         </div>
         <hr class="my-4"/>
       <% end %>
-      <%= IO.inspect(@manual_toggle, label: "manual_toggle====>") %>
+
       <%= if @manual_toggle do %>
         <.manual_state_show email_schedule={@email_schedule} toggle_value={@toggle_value} myself={@myself}/>
       <% end %>

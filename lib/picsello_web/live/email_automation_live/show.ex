@@ -104,8 +104,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           pipeline.email_automation_category.type,
           email,
           gallery,
-          :hello
-          # pipeline.state
+          pipeline.state
         )
     end
     |> case do
