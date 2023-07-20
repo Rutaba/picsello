@@ -148,8 +148,8 @@ defmodule Picsello.Contracts do
     |> Repo.one!()
   end
 
-  def for_organization(organization_id) do
-    get_organization_contracts(organization_id)
+  def for_organization(organization_id, opts) do
+    get_organization_contracts(organization_id, opts)
     |> Repo.all()
   end
 
@@ -184,11 +184,61 @@ defmodule Picsello.Contracts do
   defp get_contract(contract_id),
     do: from(c in Contract, where: c.id == ^contract_id)
 
-  defp get_organization_contracts(organization_id) do
+  defp get_organization_contracts(organization_id, opts) do
     Contract
     |> where([c], c.organization_id == ^organization_id)
     |> or_where([c], is_nil(c.organization_id) and is_nil(c.package_id))
+    |> where(^filters_where(opts))
+    |> where(^filters_status(opts))
     |> order_by([c], asc: c.job_type, asc: c.name)
+  end
+
+  defp filters_where(opts) do
+    Enum.reduce(opts, dynamic(true), fn
+      {:type, "all"}, dynamic ->
+        dynamic
+
+      {:type, value}, dynamic ->
+        dynamic([c], ^dynamic and c.job_type == ^value)
+
+      {_, _}, dynamic ->
+        # Not a where parameter
+        dynamic
+    end)
+  end
+
+  defp filters_status(opts) do
+    Enum.reduce(opts, dynamic(true), fn
+      {:status, value}, dynamic ->
+        case value do
+          "current" ->
+            filter_current_contracts(dynamic)
+
+          "archived" ->
+            filter_archived_contracts(dynamic)
+
+          _ ->
+            dynamic
+        end
+
+      _any, dynamic ->
+        # Not a where parameter
+        dynamic
+    end)
+  end
+
+  defp filter_current_contracts(dynamic) do
+    dynamic(
+      [c],
+      ^dynamic and c.status == :active
+    )
+  end
+
+  defp filter_archived_contracts(dynamic) do
+    dynamic(
+      [c],
+      ^dynamic and c.status == :archive
+    )
   end
 
   defp job_type(%Package{job_type: "" <> job_type}), do: job_type

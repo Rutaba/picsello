@@ -35,35 +35,43 @@
       <button type="button" title="create Contract" href="#" class="w-full md:w-auto btn-tertiary flex-shrink-0 text-center" phx-click="create-contract">Create contract</button>
     </.empty_state_base>
   <% end %>
+    <div {testid("filter_and_sort_bar")} class="flex flex-col px-5 center-container px-1.5 lg:flex-row-reverse mb-0 md:mb-10"> 
+      <.select_dropdown class="w-full md:w-60" title="Contract Status" id="status" selected_option={@contract_status} options_list={contract_status_options()}/>
+      <.select_dropdown class="w-full" title="Job Type" id="type" selected_option={@job_type} options_list={job_type_options()}/>
+    </div>
     <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
         <div class="sm:col-span-5">Name</div>
         <div class="sm:col-span-2">Job Type</div>
     </div>
-    <%= for contract <- @contracts do %>
-    <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("contracts-row")}>
-        <div class="sm:col-span-5 flex flex-wrap items-center gap-x-4 col-y-3">
-            <button {if contract.organization_id, do: %{phx_click: "edit-contract", phx_value_contract_id: contract.id}, else: %{phx_click: "view-contract", phx_value_contract_id: contract.id}} class="block text-xl text-left underline text-blue-planning-300 mt-2"> 
-              <%= if String.length(contract.name) < 30 do
-                contract.name || "-"
-              else
-                "#{contract.name |> String.slice(0..30)} ..."
-              end %>
-            </button>
-            <%= if !contract.organization_id do %>
-            <div><.badge color={:gray}>View Only</.badge></div>
-          <% else %>
-            <p class="w-full text-sm text-base-250">Created <%= contract.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
-          <% end %>
-          <%= if contract.status == :archive do %>
-            <div {testid("archived-badge")}><.badge color={:gray}>Archived</.badge></div>
-          <% end %>
-        </div>
-        <div class="sm:col-span-2">
-            <span class="sm:hidden font-bold">Job type: </span> <%= contract.job_type %>
-        </div>
-        <div class="sm:col-span-3 flex justify-end">
-            <.actions_cell contract={contract} />
+    <%= if Enum.empty?(@contracts) && (@job_type !== "all" || @contract_status !== "all") do %>
+          <p class="text-center mt-8 text-lg lg:text-2xl text-base-250">No contracts match your filters</p>
+    <% else %>
+      <%= for contract <- @contracts do %>
+        <div class="grid sm:grid-cols-12 gap-2 border p-3 sm:pt-0 sm:px-0 sm:pb-4 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-4" {testid("contracts-row")}>
+          <div class="sm:col-span-5 flex flex-wrap items-center gap-x-4 col-y-3">
+              <button {if contract.organization_id, do: %{phx_click: "edit-contract", phx_value_contract_id: contract.id}, else: %{phx_click: "view-contract", phx_value_contract_id: contract.id}} class="block text-xl text-left underline text-blue-planning-300 mt-2"> 
+                <%= if String.length(contract.name) < 30 do
+                  contract.name || "-"
+                else
+                  "#{contract.name |> String.slice(0..30)} ..."
+                end %>
+              </button>
+              <%= if !contract.organization_id do %>
+              <div><.badge color={:gray}>View Only</.badge></div>
+            <% else %>
+              <p class="w-full text-sm text-base-250">Created <%= contract.inserted_at |> Calendar.strftime("%m/%d/%Y") %></p>
+            <% end %>
+            <%= if contract.status == :archive do %>
+              <div {testid("archived-badge")}><.badge color={:gray}>Archived</.badge></div>
+            <% end %>
           </div>
-    </div>
-  <% end %>
+          <div class="sm:col-span-2">
+              <span class="sm:hidden font-bold">Job type: </span> <%= contract.job_type %>
+          </div>
+          <div class="sm:col-span-3 flex justify-end">
+              <.actions_cell contract={contract} />
+            </div>
+        </div>
+      <% end %>
+    <% end %>
 </div>

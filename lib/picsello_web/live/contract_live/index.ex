@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Contracts.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Contract, Contracts}
+  alias Picsello.{Contract, Contracts, Utils}
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
 
@@ -9,8 +9,34 @@ defmodule PicselloWeb.Live.Contracts.Index do
   def mount(_params, _session, socket) do
     socket
     |> assign(:page_title, "Contracts")
+    |> assign(:contract_status, "current")
+    |> assign(:job_type, "all")
     |> assign_contracts()
     |> ok()
+  end
+
+  @impl true
+  def handle_event(
+        "apply-filter-status",
+        %{"option" => status},
+        socket
+      ) do
+    socket
+    |> assign(:contract_status, status)
+    |> assign_contracts()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "apply-filter-type",
+        %{"option" => type},
+        socket
+      ) do
+    socket
+    |> assign(:job_type, type)
+    |> assign_contracts()
+    |> noreply()
   end
 
   @impl true
@@ -243,13 +269,60 @@ defmodule PicselloWeb.Live.Contracts.Index do
     """
   end
 
-  defp assign_contracts(%{assigns: %{current_user: %{organization_id: organization_id}}} = socket) do
-    contracts = Contracts.for_organization(organization_id)
+  defp select_dropdown(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{class: ""})
 
+    ~H"""
+      <div class="flex flex-col w-full lg:w-auto mr-2 mb-3 lg:mb-0">
+        <h1 class="font-extrabold text-sm flex flex-col whitespace-nowrap"><%= @title %></h1>
+        <div class="flex">
+          <div id={@id} class={classes("relative rounded-lg w-full lg:w-48 border-grey border p-2 cursor-pointer", %{"lg:w-64" => @id == "status"})} data-offset-y="5" phx-hook="Select">
+            <div {testid("dropdown_#{@id}")} class="flex flex-row items-center border-gray-700">
+                <%= Utils.capitalize_all_words(String.replace(@selected_option, "_", " ")) %>
+                <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
+                <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
+            </div>
+            <ul class={"absolute z-30 hidden mt-2 bg-white toggle rounded-md popover-content border border-base-200 #{@class}"}>
+              <%= for option <- @options_list do %>
+                <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
+                class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
+
+                  <button id={"btn-#{option.id}"} class={classes("album-select", %{"w-64" => @id == "status", "w-40" => @id != "status"})} phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
+                  <%= if option.id == @selected_option do %>
+                    <.icon name="tick" class="w-6 h-5 ml-auto mr-1 toggle-it text-green" />
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </div>
+    """
+  end
+
+  defp job_type_options do
+    types =
+      Picsello.JobType.all()
+      |> Enum.map(fn type -> %{title: String.capitalize(type), id: type} end)
+
+    [%{title: "All", id: "all"} | types]
+  end
+
+  defp contract_status_options do
+    [
+      %{title: "All", id: "all"},
+      %{title: "Current", id: "current"},
+      %{title: "Archived", id: "archived"}
+    ]
+  end
+
+  defp assign_contracts(%{assigns: %{job_type: job_type, contract_status: contract_status, current_user: %{organization_id: organization_id}}} = socket) do
     socket
     |> assign(
       :contracts,
-      contracts
+      Contracts.for_organization(organization_id, %{status: contract_status, type: job_type})
     )
   end
 
