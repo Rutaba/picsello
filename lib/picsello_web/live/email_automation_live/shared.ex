@@ -6,7 +6,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
-
+  
+  alias PicselloWeb.Shared.ShortCodeComponent
   alias Picsello.{
     Marketing,
     PaymentSchedules,
@@ -85,6 +86,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def get_selected_job_types(job_types, job_type) do
     job_types
     |> Enum.map(&%{id: &1.job_type, label: &1.job_type, selected: &1.job_type == job_type.name})
+  end
+
+  def get_sample_values() do
+    variables = ShortCodeComponent.variables_codes(:gallery)
+    |> Enum.map(&Enum.map(&1.variables, fn variable -> {variable.name, variable.sample} end))
+    |> List.flatten()
+    |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
   end
 
   defp assign_category_pipeline_count(automation_pipelines) do

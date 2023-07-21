@@ -78,7 +78,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   end
 
   @impl true
-  def handle_event("toggle-variables", %{"show-variables" => show_variables}, socket) do
+  def handle_event("toggle-variables", %{"show-variables" => show_variables}, %{assigns: %{show_variables: a}} = socket) do
     socket
     |> assign(show_variables: !String.to_atom(show_variables))
     |> noreply()
@@ -150,6 +150,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         %{assigns: %{email_preset_changeset: changeset} = assigns} = socket
       ) do
     body_html = Ecto.Changeset.get_field(changeset, :body_template)
+    |> :bbmustache.render(Shared.get_sample_values(), key_type: :atom)
+    
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
     socket
@@ -384,9 +386,9 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         </div>
 
         <div class="flex flex-col mt-4">
-          <.input_label form={f} class="flex items-end justify-between mb-2 text-sm font-semibold" field={:body_template}>
+          <.input_label form={f} class="flex items-end mb-2 text-sm font-semibold" field={:body_template}>
             <b>Email Content</b>
-            <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(f,:body_template)}>
+            <.icon_button color="red-sales-300" class="ml-auto mr-4" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(f,:body_template)}>
               <p class="text-black">Clear</p>
             </.icon_button>
             <.icon_button color="blue-planning-300" class={@show_variables && "hidden"} icon="vertical-list" id="view-variables" phx-click="toggle-variables" phx-value-show-variables={"#{@show_variables}"} phx-target={@myself}>
@@ -400,7 +402,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
             </div>
 
             <div class={"flex flex-col w-full md:w-1/3 md:ml-2 min-h-[16rem] md:mt-0 mt-6 #{!@show_variables && "hidden"}"}>
-              <.short_codes_select id="short-codes" target={@myself}/>
+              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} />
             </div>
           </div>
         </div>

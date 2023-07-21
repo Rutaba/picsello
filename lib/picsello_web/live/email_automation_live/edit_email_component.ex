@@ -124,6 +124,8 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
         %{assigns: %{email_preset_changeset: changeset} = assigns} = socket
       ) do
     body_html = Ecto.Changeset.get_field(changeset, :body_template)
+    |> :bbmustache.render(Shared.get_sample_values(), key_type: :atom)
+
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
     socket
@@ -270,7 +272,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
             </div>
 
             <div class={"flex flex-col w-full md:w-1/3 md:ml-2 min-h-[16rem] md:mt-0 mt-6 #{!@show_variables && "hidden"}"}>
-              <.short_codes_select id="short-codes" target={@myself}/>
+              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} />
             </div>
           </div>
         </div>

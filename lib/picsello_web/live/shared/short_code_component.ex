@@ -9,8 +9,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   assigns =
     assigns
     |> Enum.into(%{
-      show_variables: false,
-      variables_list: variables_codes()
+      variables_list: variables_codes(assigns.job_type)
     })
     ~H"""
       <div>
@@ -26,13 +25,14 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           <p class="text-base-250">Copy & paste the variable to use in your email. If you remove a variable, the information won’t be inserted.</p>
           <hr class="my-3" />
           <%= for code <- @variables_list do%>
-            <p class="text-blue-planning-300 capitalize"><%= code.type %> variables</p>
+            <p class="text-blue-planning-300 capitalize mb-3"><%= code.type %> variables</p>
             <%= for variable <- code.variables do%>
-              <div class="flex-col flex mb-3">
+            <% name = "{{" <> variable.name <> "}}" %>
+              <div class="flex-col flex mb-2">
                   <div class="flex">
-                    <p><%= variable.name %></p>
+                    <p><%= name %></p>
                     <div class="ml-auto flex flex-row items-center justify-center">
-                    <a href="#" id={"copy-code-#{code.type}-#{variable.id}"} data-clipboard-text={variable.name} phx-hook="Clipboard" title="copy" class="ml-auto cursor-pointer">
+                    <a href="#" id={"copy-code-#{code.type}-#{variable.id}"} data-clipboard-text={name} phx-hook="Clipboard" title="copy" class="ml-auto cursor-pointer">
                       <.icon name="clip-board" class="w-4 h-4 text-blue-planning-300" />
                       <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
                         Copied!
@@ -40,7 +40,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
                     </a>
                     </div>
                   </div>
-                <span class="text-base-250"><%= variable.description %></span>
+                <span class="text-base-250 text-sm"><%= variable.description %></span>
               </div>
             <% end %>
           <% end %>
@@ -55,14 +55,14 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     """
   end
 
-  def variables_codes() do
+  def variables_codes(job_type) do
     leads = [
       %{
         type: "lead",
         variables: [
           %{
             id: 1,
-            name: "{{delivery_time}}",
+            name: "delivery_time",
             sample: "two weeks",
             description:
               "Image turnaround time in number of weeks; image turnaround time is _ weeks"
@@ -70,7 +70,13 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         ]
       }
     ]
-    client_variables() ++ photograopher_variables() ++ leads ++ job_variables() ++ gallery_variables()
+    other = case job_type do
+      :job -> job_variables()
+      :gallery -> job_variables() ++ gallery_variables()
+      _ -> []
+    end
+
+    client_variables() ++ photograopher_variables() ++ leads ++ other
   end
 
   defp gallery_variables() do
@@ -80,43 +86,43 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         variables: [
           %{
             id: 1,
-            name: "{{password}}",
+            name: "password",
             sample: "81234",
             description: "Password that has been generated for a client gallery"
           },
           %{
             id: 2,
-            name: "{{gallery_link}}",
+            name: "gallery_link",
             sample: "https://gallerylinkhere.com",
             description: "Link to the client gallery"
           },
           %{
             id: 3,
-            name: "{{album_password}}",
+            name: "album_password",
             sample: "75642",
             description: "Password that has been generaged for a gallery album"
           },
           %{
             id: 4,
-            name: "{{gallery_expiration_date}}",
+            name: "gallery_expiration_date",
             sample: "August 15, 2023",
             description: "Expiration date of the specific gallery formatted as Month DD, YYYY"
           },
           %{
             id: 5,
-            name: "{{order_first_name}}",
+            name: "order_first_name",
             sample: "Jane",
             description: "First name to personalize gallery order emails"
           },
           %{
             id: 6,
-            name: "{{album_link}}",
+            name: "album_link",
             sample: "https://albumlinkhere.com",
             description: "Link to individual album, such as proofing, within client gallery"
           },
           %{
             id: 7,
-            name: "{{client_gallery_order_page}}",
+            name: "client_gallery_order_page",
             sample: "https://clientgalleryorderpage.com",
             description: "Link for client to view their completed gallery order"
           }
@@ -131,19 +137,19 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         variables: [
           %{
             id: 1,
-            name: "{{client_first_name}}",
+            name: "client_first_name",
             sample: "Jane",
             description: "Client first name to personalize emails"
           },
           %{
             id: 2,
-            name: "{{email_signature}}",
+            name: "email_signature",
             sample: "Jane Goodrich",
             description: "Included on every email sent from your Picsello account"
           },
           %{
             id: 3,
-            name: "{{client_full_name}}",
+            name: "client_full_name",
             sample: "Jane Goodrich",
             description: "Client full name to personalize emails"
           }
@@ -159,13 +165,13 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         variables: [
           %{
             id: 1,
-            name: "{{photography_company_s_name}}",
+            name: "photography_company_s_name",
             sample: "John lee",
             description: "photohrapher company"
           },
           %{
             id: 2,
-            name: "{{photographer_cell}}",
+            name: "photographer_cell",
             sample: "(123) 456-7891",
             description:
               "Your cellphone so clients can communicate with you on the day of the shoot"
@@ -181,57 +187,57 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         variables: [
           %{
             id: 1,
-            name: "{{delivery_time}}",
+            name: "delivery_time",
             sample: "two weeks",
             description:
               "Image turnaround time in number of weeks; image turnaround time is _ weeks"
           },
           %{
             id: 2,
-            name: "{{invoice_due_date}}",
+            name: "invoice_due_date",
             sample: "August 15, 2023",
             description: "Invoice due date to reinforce timely client payments"
           },
           %{
             id: 3,
-            name: "{{invoice_amount}}",
+            name: "invoice_amount",
             sample: "450",
             description: "Invoice amount; use in context with payments and balances due"
           },
           %{
             id: 4,
-            name: "{{payment_amount}}",
+            name: "payment_amount",
             sample: "775",
             description: "Current payment being made"
           },
           %{
             id: 5,
-            name: "{{remaining_amount}}",
+            name: "remaining_amount",
             sample: "650",
             description: "Outstanding balance due; use in context with payments, invoices"
           },
           %{
             id: 6,
-            name: "{{session_date}}",
+            name: "session_date",
             sample: "August 15, 2023",
             description: "Shoot/Session date formatted as Month DD, YYYY"
           },
           %{
             id: 7,
-            name: "{{session_location}}",
+            name: "session_location",
             sample: "123 Main Street, Anytown, NY 12345",
             description:
               "Name and address of where the shoot will be held including street, town, state and zipcode"
           },
           %{
             id: 8,
-            name: "{{session_time}}",
+            name: "session_time",
             sample: "1:00:00 PM",
             description: "Start time for the photoshoot shoot/session; formatted as 10:00 pm"
           },
           %{
             id: 9,
-            name: "{{view_proposal_button}}",
+            name: "view_proposal_button",
             sample: "https://bookingproposalhere.com ",
             description:
               "Link for clients to access their secure portal to make payments and keep in touch"
