@@ -25,6 +25,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     Currency
   }
 
+  import Picsello.Utils, only: [products_currency: 0]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
@@ -583,10 +584,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         </div>
 
         <hr class="w-full mt-6"/>
+        <%= if @currency in products_currency() do %>
+          <.package_print_credit_fields f={@f} package_pricing={@package_pricing} target={@myself} show_print_credits={@show_print_credits} currency_symbol={@currency_symbol} currency={@currency}/>
 
-        <.package_print_credit_fields f={@f} package_pricing={@package_pricing} target={@myself} show_print_credits={@show_print_credits} currency_symbol={@currency_symbol} currency={@currency}/>
-
-        <hr class="w-full mt-6"/>
+          <hr class="w-full mt-6"/>
+        <% end %>
 
         <.digital_download_fields package_form={@f} download_changeset={@download_changeset} package_pricing={@package_pricing} target={@myself} show_digitals={@show_digitals} currency_symbol={@currency_symbol} currency={@currency}/>
 
@@ -633,10 +635,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                     <%= checkbox m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox" %>
                     <%= label_for m, :discount_base_price, label: "Apply to creative session", class: "font-normal" %>
                   </div>
-                  <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !print_credits_include_in_total})}>
-                    <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !print_credits_include_in_total %>
-                    <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
-                  </div>
+                  <%= if @currency in products_currency() do%>
+                    <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !print_credits_include_in_total})}>
+                      <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !print_credits_include_in_total %>
+                      <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
+                    </div>
+                  <% end %>
                   <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !digitals_include_in_total})}>
                     <%= checkbox m, :discount_digitals, class: "w-5 h-5 mr-2.5 checkbox", disabled: !digitals_include_in_total %>
                     <%= label_for m, :discount_digitals, label: "Apply to digitals", class: "font-normal" %>

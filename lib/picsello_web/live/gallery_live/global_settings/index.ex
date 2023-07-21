@@ -12,6 +12,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   require Logger
 
   import PicselloWeb.JobLive.Shared, only: [assign_existing_uploads: 2]
+  import Picsello.Utils, only: [products_currency: 0]
 
   @upload_options [
     accept: ~w(.png image/png),
@@ -36,6 +37,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
     socket
     |> is_mobile(params)
     |> assign(galleries: [])
+    |> assign(user_currency: user_currency)
     |> assign_global_settings()
     |> assign_options()
     |> assign(total_days: 0)
@@ -431,9 +433,8 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   defp assign_updated_settings({:ok, %GSGallery{} = gs_gallery}, socket),
     do: assign(socket, gs_gallery: gs_gallery)
 
-  defp assign_global_settings(%{assigns: assigns} = socket) do
-    %{current_user: %{organization_id: organization_id}} = assigns
-    assign(socket, :gs_gallery, GlobalSettings.get_or_add!(organization_id))
+  defp assign_global_settings(%{assigns: %{user_currency: user_currency}} = socket) do
+    assign(socket, :gs_gallery, GlobalSettings.get_or_add!(user_currency))
   end
 
   defp assign_watermark_preview(

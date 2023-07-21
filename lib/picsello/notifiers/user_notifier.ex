@@ -233,15 +233,15 @@ defmodule Picsello.Notifiers.UserNotifier do
           :client_name => String.t(),
           :job_name => String.t(),
           :client_order_url => String.t(),
-          :products_quantity=> String.t(),
+          :products_quantity => String.t(),
           :total_products_price => Money.t(),
           :client_charge => Money.t(),
           :total_costs => Money.t(),
           optional(:digital_credit_used) => Money.t(),
           optional(:digital_credit_remaining) => integer(),
-          optional(:contains_digital)=> boolean(),
+          optional(:contains_digital) => boolean(),
           optional(:contains_product) => boolean(),
-          optional(:digital_quantity)=> String.t(),
+          optional(:digital_quantity) => String.t(),
           optional(:total_digitals_price) => Money.t(),
           optional(:print_credit_used) => Money.t(),
           optional(:print_credit_remaining) => Money.t(),
@@ -250,7 +250,7 @@ defmodule Picsello.Notifiers.UserNotifier do
           optional(:photographer_payment) => Money.t(),
           optional(:stripe_fee) => Money.t(),
           optional(:shipping) => Money.t(),
-          optional(:positive_shipping) => Money.t(),
+          optional(:positive_shipping) => Money.t()
         }
   def order_confirmation_params(
         %{
@@ -262,30 +262,31 @@ defmodule Picsello.Notifiers.UserNotifier do
         helpers
       ) do
     zero_price = Money.new(0, currency)
+
     temp_params =
-    for(
-      fun <- [
-        &print_credit/1,
-        &print_cost/1,
-        &photographer_payment/1,
-        &digital_params/1,
-        &products_params/1
-      ],
-      reduce: %{
-        gallery_name: gallery.name,
-        job_name: Job.name(job),
-        client_name: client.name,
-        client_charge:
-          case intent do
-            %{amount: amount} -> amount
-            nil -> zero_price
-          end,
-        client_order_url: helpers.order_url(gallery, order)
-      }
-    ) do
-      params ->
-        Map.merge(params, fun.(order))
-    end
+      for(
+        fun <- [
+          &print_credit/1,
+          &print_cost/1,
+          &photographer_payment/1,
+          &digital_params/1,
+          &products_params/1
+        ],
+        reduce: %{
+          gallery_name: gallery.name,
+          job_name: Job.name(job),
+          client_name: client.name,
+          client_charge:
+            case intent do
+              %{amount: amount} -> amount
+              nil -> zero_price
+            end,
+          client_order_url: helpers.order_url(gallery, order)
+        }
+      ) do
+        params ->
+          Map.merge(params, fun.(order))
+      end
 
     stripe_fee = Map.get(temp_params, :stripe_fee, zero_price)
     shipping = Map.get(temp_params, :shipping, zero_price)
@@ -357,6 +358,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       |> Enum.reduce(0, fn product, acc ->
         Cart.product_quantity(product) + acc
       end)
+
     %{
       shipping: Picsello.Cart.total_shipping(order) |> Money.neg(),
       total_products_price: total_products_price,
@@ -387,7 +389,7 @@ defmodule Picsello.Notifiers.UserNotifier do
       print_cost:
         whcc_order
         |> WHCCOrder.total()
-        |> Money.neg
+        |> Money.neg()
     }
   end
 
@@ -403,53 +405,54 @@ defmodule Picsello.Notifiers.UserNotifier do
            }
          } = order
        ) do
-      zero_price = Money.new(0, currency)
-      cost = if is_nil(whcc_order) do
+    zero_price = Money.new(0, currency)
+
+    cost =
+      if is_nil(whcc_order) do
         zero_price
-        else
-          WHCCOrder.total(whcc_order)
-        end
-        |> Money.add(Picsello.Cart.total_shipping(order))
+      else
+        WHCCOrder.total(whcc_order)
+      end
+      |> Money.add(Picsello.Cart.total_shipping(order))
 
-  actual_costs_and_fees = actual_stripe_fee(amount, currency) |> Money.add(cost)
-  costs_and_fees = cost |> stripe_fee(currency) |> Money.add(cost)
+    actual_costs_and_fees = actual_stripe_fee(amount, currency) |> Money.add(cost)
+    costs_and_fees = cost |> stripe_fee(currency) |> Money.add(cost)
 
-  case Money.cmp(amount, actual_costs_and_fees) do
-    :gt ->
-      %{
-        photographer_payment: Money.subtract(amount, actual_costs_and_fees),
-        photographer_charge: zero_price,
-        stripe_fee: actual_stripe_fee(amount, currency) |> Money.neg
-      }
+    case Money.cmp(amount, actual_costs_and_fees) do
+      :gt ->
+        %{
+          photographer_payment: Money.subtract(amount, actual_costs_and_fees),
+          photographer_charge: zero_price,
+          stripe_fee: actual_stripe_fee(amount, currency) |> Money.neg()
+        }
 
-    :lt ->
-      %{
-        photographer_payment: zero_price,
-        photographer_charge: Money.subtract(costs_and_fees, amount) |> Money.neg,
-        stripe_fee: stripe_fee(cost, currency) |> Money.neg
-      }
+      :lt ->
+        %{
+          photographer_payment: zero_price,
+          photographer_charge: Money.subtract(costs_and_fees, amount) |> Money.neg(),
+          stripe_fee: stripe_fee(cost, currency) |> Money.neg()
+        }
 
-    _ ->
-      %{
-        photographer_payment: zero_price,
-        photographer_charge: zero_price,
-        stripe_fee: actual_stripe_fee(amount, currency) |> Money.neg
-      }
+      _ ->
+        %{
+          photographer_payment: zero_price,
+          photographer_charge: zero_price,
+          stripe_fee: actual_stripe_fee(amount, currency) |> Money.neg()
+        }
     end
   end
 
-  #stripe's actual formula to calculate fee
-  defp actual_stripe_fee(amount, currency)
-    do
-      amount
-      |> Money.multiply(2.9/100)
-      |> Money.add(Money.new(30, currency))
-    end
+  # stripe's actual formula to calculate fee
+  defp actual_stripe_fee(amount, currency) do
+    amount
+    |> Money.multiply(2.9 / 100)
+    |> Money.add(Money.new(30, currency))
+  end
 
-  #our formula to calculate fee to be on safe side
+  # our formula to calculate fee to be on safe side
   defp stripe_fee(amount, currency) do
     amount
-    |> Money.multiply(2.9/100)
+    |> Money.multiply(2.9 / 100)
     |> Money.add(Money.new(70, currency))
   end
 

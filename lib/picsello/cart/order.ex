@@ -12,8 +12,7 @@ defmodule Picsello.Cart.Order do
     Galleries.Gallery,
     Galleries.GalleryClient,
     Galleries.Album,
-    Intents.Intent,
-    Currency
+    Intents.Intent
   }
 
   schema "gallery_orders" do
@@ -25,6 +24,7 @@ defmodule Picsello.Cart.Order do
     belongs_to(:gallery_client, GalleryClient)
     belongs_to(:gallery, Gallery)
     belongs_to(:album, Album)
+
     belongs_to(:order_currency, Picsello.Currency,
       references: :code,
       type: :string,

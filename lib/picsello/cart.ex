@@ -14,8 +14,7 @@ defmodule Picsello.Cart do
     Galleries.Gallery,
     Orders,
     Repo,
-    WHCC,
-    Currency
+    WHCC
   }
 
   alias Ecto.Multi
@@ -91,17 +90,20 @@ defmodule Picsello.Cart do
   end
 
   def credit_remaining(%{id: gallery_id} = gallery) do
+    currency = Picsello.Currency.for_gallery(gallery)
+    zero_price = Money.new(0, currency)
+
     {digital_credit, print_credit} =
       if Map.get(gallery, :credits_available) do
         {digital_credit_remaining(gallery_id), print_credit_remaining(gallery_id)}
       else
-        {%{digital: 0}, %{print: ~M[0]USD}}
+        {%{digital: 0}, %{print: zero_price}}
       end
 
     if digital_credit && print_credit do
       Map.merge(digital_credit, print_credit)
     else
-      %{digital: 0, print: ~M[0]USD}
+      %{digital: 0, print: zero_price}
     end
   end
 
@@ -422,6 +424,7 @@ defmodule Picsello.Cart do
     currency_symbol = Money.Currency.symbol!(digital.order.currency)
     "1 credit - #{currency_symbol}0.00"
   end
+
   def price_display(%Digital{price: price}), do: price
 
   def price_display({:bundle, %Order{bundle_price: price}}), do: price

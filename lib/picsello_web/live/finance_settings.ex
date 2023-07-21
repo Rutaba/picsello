@@ -12,6 +12,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
     GlobalSettings,
     Currency,
     UserCurrencies,
+    Utils,
     ExchangeRatesApi
   }
 
@@ -262,16 +263,21 @@ defmodule PicselloWeb.Live.FinanceSettings do
       |> Repo.preload(:package_payment_schedules, force: true)
       |> Map.get(:package_payment_schedules)
       |> Enum.reduce(multi, fn payment_schedule, multi ->
-          if payment_schedule.price do
-            payment_schedule_params =
-            %{
-              price: payment_schedule.price |> convert_currency(currency, rate),
-              description: "#{currency}#{payment_schedule.price} to #{payment_schedule.due_interval}"
-            }
-            Multi.update(multi, "update_payment_schedule_#{payment_schedule.id}", Ecto.Changeset.change(payment_schedule, payment_schedule_params))
-          else
-            multi
-          end
+        if payment_schedule.price do
+          payment_schedule_params = %{
+            price: payment_schedule.price |> convert_currency(currency, rate),
+            description:
+              "#{currency}#{payment_schedule.price} to #{payment_schedule.due_interval}"
+          }
+
+          Multi.update(
+            multi,
+            "update_payment_schedule_#{payment_schedule.id}",
+            Ecto.Changeset.change(payment_schedule, payment_schedule_params)
+          )
+        else
+          multi
+        end
       end)
       |> Multi.update("update_package_#{package_template.id}", changeset)
     end)
@@ -286,12 +292,11 @@ defmodule PicselloWeb.Live.FinanceSettings do
     socket |> assign(stripe_status: Payments.status(current_user))
   end
 
-  @products_currency ["USD", "CAD"]
   defp maybe_disable_sell_global_products(currency, organization_id) do
     gallery_products = GlobalSettings.list_gallery_products(organization_id)
 
     for gallery_product <- gallery_products do
-      if currency in @products_currency do
+      if currency in Utils.products_currency() do
         GlobalSettings.update_gallery_product(gallery_product, %{sell_product_enabled: true})
       else
         GlobalSettings.update_gallery_product(gallery_product, %{sell_product_enabled: false})

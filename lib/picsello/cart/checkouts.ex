@@ -11,8 +11,7 @@ defmodule Picsello.Cart.Checkouts do
     Repo,
     WHCC,
     Cart,
-    OrganizationCard,
-    Currency
+    OrganizationCard
   }
 
   alias Picsello.WHCC.Order.Created, as: WHCCOrder

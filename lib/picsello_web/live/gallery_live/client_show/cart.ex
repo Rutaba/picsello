@@ -459,6 +459,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defdelegate add_total_markuped_sum(product, products), to: Picsello.Cart
 
   def abc(line_item, shipment_details, das_type, shipping_type) do
-    shipping_details(line_item, %{shipment_details: shipment_details, das_type: das_type, shipping_type: shipping_type})
+    shipping_details(line_item, %{
+      shipment_details: shipment_details,
+      das_type: das_type,
+      shipping_type: shipping_type
+    })
   end
 end

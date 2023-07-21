@@ -129,7 +129,8 @@
           <% end %>
         </div>
         <div class="font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item">
-          <.bar class="block" route={Routes.gallery_pricing_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title="Pricing & Print Credits" icon="money-bag.png" arrow_show={@arrow_show == "pricing"}>
+          <% title = if @currency in products_currency(), do: "Pricing & Print Credits", else: "Digital Pricing & Credits"%>
+          <.bar class="block" route={Routes.gallery_pricing_index_path(@socket, :index, @gallery, if(@is_mobile, do: [is_mobile: false], else: []))} gallery={@gallery} title={title} icon="money-bag.png" arrow_show={@arrow_show == "pricing"}>
             <%= if expire_soon(@gallery) do %>
               <.icon name="warning-orange-dark" class="inline-block w-4 h-4"/>
             <% end %>

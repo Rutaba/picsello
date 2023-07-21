@@ -182,7 +182,8 @@ defmodule Picsello.Orders.Confirmations do
     end
   end
 
-  defp photographer_owes(_repo, %{order: %{whcc_order: nil} = order}), do: {:ok, Money.new(0, order.currency)}
+  defp photographer_owes(_repo, %{order: %{whcc_order: nil} = order}),
+    do: {:ok, Money.new(0, order.currency)}
 
   defp photographer_owes(_repo, %{
          intent: %{application_fee_amount: nil, amount: amount},
@@ -195,8 +196,13 @@ defmodule Picsello.Orders.Confirmations do
          intent: %{application_fee_amount: _application_fee_amount, amount: amount},
          order: %{currency: currency} = order
        }) do
-    actual_costs_and_fees = calculate_total_costs(order) |> Money.add(actual_stripe_fee(amount, currency))
-    costs_and_fees = calculate_total_costs(order) |> stripe_fee(currency) |> Money.add(calculate_total_costs(order))
+    actual_costs_and_fees =
+      calculate_total_costs(order) |> Money.add(actual_stripe_fee(amount, currency))
+
+    costs_and_fees =
+      calculate_total_costs(order)
+      |> stripe_fee(currency)
+      |> Money.add(calculate_total_costs(order))
 
     case Money.cmp(amount, actual_costs_and_fees) do
       :lt -> {:ok, Money.subtract(costs_and_fees, amount)}
@@ -211,20 +217,19 @@ defmodule Picsello.Orders.Confirmations do
     |> Money.add(Picsello.Cart.total_shipping(order))
   end
 
-  #stripe's actual formula to calculate fee
-  #After transactions of $1million, stripe processing fee is discounted,
-  #and we will need to tweak this formula in future.
-  defp actual_stripe_fee(amount, currency)
-    do
-      amount
-      |> Money.multiply(2.9/100)
-      |> Money.add(Money.new(30, currency))
-    end
+  # stripe's actual formula to calculate fee
+  # After transactions of $1million, stripe processing fee is discounted,
+  # and we will need to tweak this formula in future.
+  defp actual_stripe_fee(amount, currency) do
+    amount
+    |> Money.multiply(2.9 / 100)
+    |> Money.add(Money.new(30, currency))
+  end
 
-  #our formula to calculate fee to be on safe side
+  # our formula to calculate fee to be on safe side
   defp stripe_fee(amount, currency) do
     amount
-    |> Money.multiply(2.9/100)
+    |> Money.multiply(2.9 / 100)
     |> Money.add(Money.new(70, currency))
   end
 
@@ -356,7 +361,8 @@ defmodule Picsello.Orders.Confirmations do
          outstanding
        ) do
     Invoices.invoice_user(user, outstanding,
-      description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}", currency: currency
+      description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}",
+      currency: currency
     )
   end
 

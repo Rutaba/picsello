@@ -2,17 +2,16 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
   @moduledoc "no doc"
 
   use PicselloWeb, :live_component
-  alias Picsello.{GalleryProducts, UserCurrencies}
+  alias Picsello.{GalleryProducts, UserCurrencies, Utils}
   import PicselloWeb.GalleryLive.Shared, only: [toggle_preview: 1]
 
-  @products_currency ["USD", "CAD"]
   def update(%{product: product, current_user: current_user} = assigns, socket) do
     user_currency = UserCurrencies.get_user_currency(current_user.organization.id)
 
     socket
     |> assign(assigns)
     |> assign(currency: user_currency.currency)
-    |> assign(products_currency: @products_currency)
+    |> assign(products_currency: Utils.products_currency())
     |> assign(category: product.category, photo: product.preview_photo, product_id: product.id)
     |> ok()
   end
@@ -39,7 +38,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
           </div>
           <div class=" mx-4 pt-4 flex flex-col justify-between" >
             <.toggle_preview
-            disabled={@disabled || @currency not in @products_currency}
+            disabled={@disabled || @currency not in Utils.products_currency()}
             click="sell_product_enabled"
             checked={@product.sell_product_enabled}
             text="Product enabled to sell"

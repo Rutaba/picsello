@@ -121,16 +121,18 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         %{assigns: %{current_user: current_user, currency: currency}} = socket
       ) do
     paid_at = date_to_datetime(paid_at, current_user.time_zone)
+
     params =
       params
       |> Currency.parse_params_for_currency({Money.Currency.symbol(currency), currency})
       |> Map.put("paid_at", paid_at)
+
     socket = assign_changeset(socket, params)
 
     owed = PaymentSchedules.owed_offline_price(socket.assigns.job)
 
     price =
-      Ecto.Changeset.get_field(socket.assigns.changeset, "price") ||
+      Ecto.Changeset.get_field(socket.assigns.changeset, :price) ||
         Money.new(0, currency)
 
     case Money.cmp(price, owed) do
@@ -256,6 +258,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
 
   defp assign_currency(%{assigns: %{job: job}} = socket) do
     currency = Currency.for_job(job)
+
     socket
     |> assign(:currency_symbol, Money.Currency.symbol!(currency))
     |> assign(:currency, currency)

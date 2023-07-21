@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
   use PicselloWeb, :live_component
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
+  import Picsello.Utils, only: [products_currency: 0]
 
   import PicselloWeb.PackageLive.Shared,
     only: [
@@ -59,45 +60,45 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
       </div>
 
       <.form :let={f} for={@changeset} phx-change={:validate} phx-submit={:submit} phx-target={@myself} id={"form-digital-pricing-gallery-#{@gallery.id}"}>
-
-      <div class="border border-solid mt-6 p-6 rounded-lg">
-        <% p = to_form(@package_pricing) %>
-        <div class="mt-9 md:mt-1" {testid("print")}>
-          <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
-          <p class="text-base-250">Print Credits allow your clients to order professional prints and products from your gallery.</p>
-        </div>
-
-
-        <div class="mt-4 font-normal text-base leading-6">
-          <div class="mt-2">
-            <label class="flex items-center font-bold">
-            <%= radio_button(p, :is_enabled, true, class: "w-5 h-5 mr-2.5 radio") %>
-              Gallery includes Print Credits
-            </label>
-            <div class="flex items-center mt-2 gap-4 ml-7">
-              <%= if p |> current() |> Map.get(:is_enabled) do %>
-                <div class="flex flex-col">
-                  <div class="flex flex-row items-center w-auto border border-blue-planning-300 rounded-lg relative">
-                    <%= input(f, :print_credits, placeholder: "#{@currency_symbol}0.00", class: "sm:w-32 w-full bg-white px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_debounce: 1000, phx_hook: "PriceMask", data_currency: @currency_symbol) %>
-                  </div>
-                  <%= text_input f, :currency, value: @currency, class: "sm:w-32 form-control text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
-                </div>
-                <div class="flex items-center text-base-250">
-                  <%= label_for f, :print_credits, label: "pulled from your package revenue", class: "font-normal" %>
-                </div>
-              <% end %>
-            </div>
+      <%= if @currency in products_currency() do %>
+        <div class="border border-solid mt-6 p-6 rounded-lg">
+          <% p = to_form(@package_pricing) %>
+          <div class="mt-9 md:mt-1" {testid("print")}>
+            <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
+            <p class="text-base-250">Print Credits allow your clients to order professional prints and products from your gallery.</p>
           </div>
 
-          <label class="flex mt-3 font-bold">
-            <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio mt-0.5") %>
-            Gallery does not include Print Credits
-          </label>
+
+          <div class="mt-4 font-normal text-base leading-6">
+            <div class="mt-2">
+              <label class="flex items-center font-bold">
+              <%= radio_button(p, :is_enabled, true, class: "w-5 h-5 mr-2.5 radio") %>
+                Gallery includes Print Credits
+              </label>
+              <div class="flex items-center mt-2 gap-4 ml-7">
+                <%= if p |> current() |> Map.get(:is_enabled) do %>
+                  <div class="flex flex-col">
+                    <div class="flex flex-row items-center w-auto border border-blue-planning-300 rounded-lg relative">
+                      <%= input(f, :print_credits, placeholder: "#{@currency_symbol}0.00", class: "sm:w-32 w-full bg-white px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_debounce: 1000, phx_hook: "PriceMask", data_currency: @currency_symbol) %>
+                    </div>
+                    <%= text_input f, :currency, value: @currency, class: "sm:w-32 form-control text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
+                  </div>
+                  <div class="flex items-center text-base-250">
+                    <%= label_for f, :print_credits, label: "pulled from your package revenue", class: "font-normal" %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+
+            <label class="flex mt-3 font-bold">
+              <%= radio_button(p, :is_enabled, false, class: "w-5 h-5 mr-2.5 radio mt-0.5") %>
+              Gallery does not include Print Credits
+            </label>
+          </div>
         </div>
-      </div>
 
-      <hr class="block w-full mt-6 sm:hidden"/>
-
+        <hr class="block w-full mt-6 sm:hidden"/>
+      <% end %>
       <div class="border border-solid mt-6 p-6 rounded-lg">
         <% d = to_form(@download_changeset) %>
         <div class="mt-9 md:mt-1" {testid("download")}>
@@ -182,8 +183,8 @@ defmodule PicselloWeb.GalleryLive.Pricing.GalleryDigitalPricingComponent do
 
       <div class="border border-solid mt-6 p-6 rounded-lg">
         <div class="mt-9 md:mt-1" {testid("email_list")}>
-          <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Restrict Print & Digital Image Credits</h2>
-          <p class="text-base-250">Set who can use the print and digital image credits here via their email. Your client will be added automatically.</p>
+          <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Restrict <%= if @currency in products_currency(), do: "Print & "%>Digital Image Credits</h2>
+          <p class="text-base-250">Set who can use the <%= if @currency in products_currency(), do: "print and "%>digital image credits here via their email. Your client will be added automatically.</p>
         </div>
 
         <div class="mt-4 font-normal text-base leading-6">

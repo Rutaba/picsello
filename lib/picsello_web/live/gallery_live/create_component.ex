@@ -25,6 +25,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   import Phoenix.Component
   import PicselloWeb.JobLive.Shared, only: [search_clients: 1, job_form_fields: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1, expired_at: 1]
+  import Picsello.Utils, only: [products_currency: 0]
 
   import PicselloWeb.PackageLive.Shared,
     only: [digital_download_fields: 1, print_credit_fields: 1, current: 1]
@@ -335,9 +336,9 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         <% package = to_form(@package_changeset) %>
 
         <%= hidden_input package, :turnaround_weeks, value: 1 %>
-
-        <.print_credit_fields f={package} package_pricing={@package_pricing} currency_symbol={@currency_symbol} currency={@currency} />
-
+        <%= if @currency in products_currency() do%>
+          <.print_credit_fields f={package} package_pricing={@package_pricing} currency_symbol={@currency_symbol} currency={@currency} />
+        <% end %>
         <.digital_download_fields for={:create_gallery} package_form={package} currency_symbol={@currency_symbol} currency={@currency} download_changeset={@download_changeset} package_pricing={@package_pricing}  target={@myself} show_digitals={@show_digitals} />
         <%= if @new_gallery do %>
           <div id="set-gallery-cookie" data-gallery-type={@new_gallery.type} phx-hook="SetGalleryCookie">

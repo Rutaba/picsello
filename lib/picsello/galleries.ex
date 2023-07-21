@@ -20,6 +20,7 @@ defmodule Picsello.Galleries do
     Cart.Digital,
     Job,
     Client,
+    Utils,
     WHCC,
     Galleries.Gallery.UseGlobal
   }
@@ -490,7 +491,7 @@ defmodule Picsello.Galleries do
     end
   end
 
-  @products_currency ["USD", "CAD"]
+  @products_currency Utils.products_currency()
   def create_gallery_multi(user, attrs) do
     Multi.new()
     |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))

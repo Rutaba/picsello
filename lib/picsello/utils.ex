@@ -9,4 +9,8 @@ defmodule Picsello.Utils do
     |> String.split()
     |> Enum.map_join(" ", &String.capitalize(&1))
   end
+
+  def products_currency() do
+    ["USD", "CAD"]
+  end
 end
