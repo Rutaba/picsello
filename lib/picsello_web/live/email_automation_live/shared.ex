@@ -95,6 +95,21 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
   end
 
+  def sort_emails(emails) do
+    emails = Enum.reverse(emails)
+    |> Enum.sort_by(&{:asc, Map.fetch(&1, :inserted_at)})
+    
+    email_with_immediate_status = Enum.filter(emails, &(&1.total_hours == 0))
+    
+    if Enum.any?(email_with_immediate_status) do
+      {first_email, unsorted_emails} = email_with_immediate_status |> List.pop_at(0)
+      pending_emails = unsorted_emails ++ Enum.filter(emails, &(&1.total_hours != 0))
+      [first_email | Enum.sort_by(pending_emails, &Map.fetch(&1, :total_hours))]
+    else
+      Enum.sort_by(emails, &Map.fetch(&1, :total_hours))
+    end
+  end
+
   defp assign_category_pipeline_count(automation_pipelines) do
     automation_pipelines
     |> Enum.map(fn %{subcategories: subcategories} = category ->

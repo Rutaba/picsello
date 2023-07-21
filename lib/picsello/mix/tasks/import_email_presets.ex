@@ -294,7 +294,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
-        total_hours: 0,
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "wedding",
         type: "job",
@@ -1021,7 +1021,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "before_shoot"),
-        total_hours: 0,
+        total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "newborn",
         type: "job",
@@ -1104,7 +1104,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "job",
         position: 0,
-        name: "Payments - Client selected offline payment email",
+        name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1862,7 +1862,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "job",
         position: 0,
-        name: "Payments - Client selected offline payment email",
+        name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2599,7 +2599,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "job",
         position: 0,
-        name: "Payments - Client selected offline payment email",
+        name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -3326,7 +3326,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "job",
         position: 0,
-        name: "Payments - Client selected offline payment email",
+        name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4052,7 +4052,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "job",
         position: 0,
-        name: "Payments - Client selected offline payment email",
+        name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4778,7 +4778,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "job",
         position: 0,
-        name: "Payments - Client selected offline payment email",
+        name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5505,7 +5505,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "job",
         position: 0,
-        name: "Payments - Client selected offline payment email",
+        name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -6231,7 +6231,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "job",
         position: 0,
-        name: "Payments - Client selected offline payment email",
+        name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -6952,7 +6952,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "job",
         position: 0,
-        name: "Payments - Client selected offline payment email",
+        name: "Payments - Balance due - Offline payment email",
         subject_template: "Payment due for your shoot with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>

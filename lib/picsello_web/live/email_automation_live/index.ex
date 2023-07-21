@@ -5,7 +5,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
-    only: [assign_automation_pipelines: 1, get_pipline: 1, get_email_schedule_text: 6, get_email_name: 4]
+    only: [sort_emails: 1, assign_automation_pipelines: 1, get_pipline: 1, get_email_schedule_text: 6, get_email_name: 4]
 
   alias Picsello.{
     EmailAutomations,
@@ -210,7 +210,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         </div>
 
         <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
-          <%= for {email, index} <- Enum.with_index(@pipeline.emails) do %>
+          <% emails = sort_emails(@pipeline.emails) %>
+          <%= for {email, index} <- Enum.with_index(emails) do %>
             <% last_index = Enum.count(@pipeline.emails) - 1 %>
             <div class="px-6">
               <div class="flex md:flex-row flex-col justify-between">
@@ -233,7 +234,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                     </div>
                     <div class="flex flex-row items-center text-base-250">
                       <.icon name="play-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                      <span class="text-sm"><%= get_email_schedule_text(email.total_hours, @pipeline.state, @pipeline.emails, index, nil, nil) %> </span>
+                      <span class="text-sm"><%= get_email_schedule_text(email.total_hours, @pipeline.state, emails, index, nil, nil) %> </span>
                     </div>
                   </div>
                 </div>
