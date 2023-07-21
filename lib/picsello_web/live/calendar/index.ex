@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Calendar.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Accounts, Jobs, Shoots, Repo}
+  alias Picsello.{Accounts, Jobs, Shoots, NylasCalendar, Repo}
   import PicselloWeb.Live.Calendar.Shared
   alias PicselloWeb.Shared.PopupComponent
   alias PicselloWeb.Calendar.Shared.DetailComponent

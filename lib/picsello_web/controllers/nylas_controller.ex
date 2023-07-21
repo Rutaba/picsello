@@ -10,7 +10,7 @@ defmodule PicselloWeb.NylasController do
   """
 
   use PicselloWeb, :controller
-  alias Picsello.Accounts
+  alias Picsello.{Accounts, NylasCalendar}
   require Logger
 
   @spec callback(Plug.Conn.t(), any) :: Plug.Conn.t()

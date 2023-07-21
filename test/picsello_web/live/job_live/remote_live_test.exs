@@ -2,7 +2,7 @@ defmodule PicselloWeb.JobLive.Shared.RemoteLiveTest do
   use PicselloWeb.ConnCase, async: true
   import Phoenix.LiveViewTest
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
-  alias Picsello.Accounts
+  alias Picsello.{Accounts, NylasCalendar}
 
   @token "RoJ***************************"
   describe "render" do
@@ -43,7 +43,7 @@ defmodule PicselloWeb.JobLive.Shared.RemoteLiveTest do
           owner_email: "zkessin@gmail.com",
           participants: [],
           start_time: "10:00:00 AM June 13, 2023",
-          title: "1:00 pm Israel time / 6:00 am EST",
+          title: "1:00 pm Israel time / 6:00 am EST"
         }
 
         values

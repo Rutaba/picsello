@@ -1,6 +1,8 @@
 defmodule NylasCalendarTest do
   use Picsello.DataCase
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
+  alias Picsello.NylasCalendar
+
   @calendar "62zs9nfax6wvkhzo7wj8vfzw7"
   @token "Ro********************************"
   setup_all do

@@ -2,6 +2,7 @@ defmodule PicselloWeb.JobLive.Remote do
   @moduledoc false
   use PicselloWeb, :live_view
   alias Phoenix.LiveView.Socket
+  alias Picsello.NylasCalendar
 
   require Logger
   @impl true

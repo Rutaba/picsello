@@ -1,7 +1,7 @@
 defmodule PicselloWeb.CalendarFeedController do
   use PicselloWeb, :controller
 
-  alias Picsello.{Shoots, Job}
+  alias Picsello.{Shoots, Job, NylasCalendar}
   require Logger
   @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()
   def index(%{assigns: %{current_user: user}} = conn, params) do

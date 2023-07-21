@@ -3,6 +3,7 @@ defmodule Picsello.Shoot do
   use Ecto.Schema
   alias Picsello.Repo
   alias Picsello.Accounts.User
+  alias Picsello.NylasCalendar
   import Ecto.{Changeset, Query}
 
   @locations ~w[studio on_location home]a
@@ -74,7 +75,7 @@ defmodule Picsello.Shoot do
     ### add [from picsello] to the description so that people know
     ### where it came from we know to filter them out when we pull
     ### calendars from external.
-    
+
     defp set_notes(nil) do
       "\n[from picsello]\n"
     end
@@ -131,7 +132,8 @@ defmodule Picsello.Shoot do
     end
   end
 
-  @spec push_changes_to_nylas(Ecto.Changeset.t(), :insert|:update|:delete) :: Ecto.Changeset.t()
+  @spec push_changes_to_nylas(Ecto.Changeset.t(), :insert | :update | :delete) ::
+          Ecto.Changeset.t()
   def push_changes_to_nylas(%{valid?: false} = changeset, _action) do
     changeset
   end
@@ -169,7 +171,6 @@ defmodule Picsello.Shoot do
     NylasCalendar.update_event(values, token)
     :ok
   end
-
 
   def push_changes(%User{}, _values, _action) do
     :ok

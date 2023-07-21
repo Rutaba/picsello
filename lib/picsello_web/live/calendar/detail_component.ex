@@ -15,10 +15,11 @@ defmodule PicselloWeb.Calendar.Shared.DetailComponent do
         <.event_item icon="phone" item_title={@opts.client_name} item_desc={@opts.client_phone} />
         <.event_item icon="calendar" icon_class="mt-1" item_title="Picsello Calendar" item_desc="Created by: Picsello" />
       </div>
+
       <%= live_redirect to: @opts.url do %>
-      <button class={"w-full mt-6 " <> @confirm_class} type="button" phx-disable-with="Saving&hellip;">
-        View Job
-      </button>
+        <button class={"w-full mt-6 " <> @confirm_class} type="button" phx-disable-with="Saving&hellip;">
+          View Job
+        </button>
       <% end %>
     """
   end
@@ -50,12 +51,13 @@ defmodule PicselloWeb.Calendar.Shared.DetailComponent do
 
         <.event_item icon="calendar" item_title="Home Calendar" item_desc={"Created by: #{@opts.organizer_email}"} />
       </div>
+
       <.link href={@opts.url} target="_blank">
         <button class={"w-full mt-6 flex justify-center " <> @confirm_class} type="button">
           Open in calendar
           <.icon name="new-window" class="ml-2 mt-1.5 w-3 h-4" />
         </button>
-        </.link>
+      </.link>
     """
   end
 

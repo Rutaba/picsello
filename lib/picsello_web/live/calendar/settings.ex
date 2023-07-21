@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Calendar.Settings do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.Accounts
+  alias Picsello.{Accounts, NylasCalendar}
   alias PicselloWeb.Endpoint
   alias Phoenix.LiveView.Socket
   import PicselloWeb.Live.Calendar.Shared
@@ -105,7 +105,6 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   @spec is_member(MapSet.t(), String.t()) :: boolean()
   def is_member(calendars, cal_id) do
     MapSet.member?(calendars, cal_id)
-
   end
 
   @spec assign_from_token(Socket.t(), Picsello.Accounts.User.t()) :: Socket.t()

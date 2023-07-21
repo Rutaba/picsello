@@ -2,8 +2,9 @@ defmodule PicselloWeb.NylasControllerTest do
   use PicselloWeb.ConnCase, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
   import Phoenix.LiveViewTest
-  alias Picsello.Accounts
+  alias Picsello.{Accounts, NylasCalendar}
   alias :meck, as: Meck
+
   @modal_command "toggle_connect_modal"
   @token "HfH******************************"
   setup do

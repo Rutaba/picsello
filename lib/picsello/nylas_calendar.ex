@@ -1,4 +1,4 @@
-defmodule NylasCalendar do
+defmodule Picsello.NylasCalendar do
   @moduledoc """
 
   An Elixir module for interacting with the Nylas Calendar
@@ -101,7 +101,7 @@ defmodule NylasCalendar do
 
     case HTTPoison.get!(url, headers) do
       %{status_code: 200, body: body} ->
-        body |> Jason.decode!() |> convert_remote_to_calendar()
+        body |> Jason.decode!() |> IO.inspect() |> convert_remote_to_calendar()
 
       %{status_code: code} ->
         {:error, "Failed to retrieve events. Status code: #{code}"}
@@ -116,18 +116,19 @@ defmodule NylasCalendar do
     headers = build_headers(token)
     url = "#{@base_url}/#{@event_endpoint}"
 
-    response = HTTPoison.post!(url, Jason.encode!(params, %{calendar_id: calendar_id}), headers)
+    params
+    |> Map.put("calendar_id", calendar_id)
+    |> Jason.encode!()
+    |> then(&HTTPoison.post!(url, &1, headers))
+    |> case do
+      %{status_code: 200, body: body} ->
+        {:ok, Jason.decode!(body)}
 
-    case response.status_code do
-      200 ->
-        {:ok, Jason.decode!(response.body)}
-
-      code ->
+      %{status_code: code} ->
         {:error, "Failed to add event. Status code: #{code}"}
     end
   end
 
-  @spec update_event(map, String.t()) :: result(map())
   def update_event(%{id: id} = params, token) do
     headers = build_headers(token)
 

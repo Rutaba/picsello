@@ -1,12 +1,11 @@
 defmodule Picsello.ShootTest do
   use Picsello.DataCase, async: true
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
-  alias Picsello.Accounts
-  alias Picsello.Shoot
-  alias Picsello.Shoot
+  alias Picsello.{Accounts, Shoot, NylasCalendar}
   alias :meck, as: Meck
-  alias Picsello.Accounts.User
+  alias Accounts.User
   import Ecto.Changeset
+
   @token "HfH********************"
   @calendar_id "abcdefg"
   @fields [
@@ -104,7 +103,6 @@ defmodule Picsello.ShootTest do
 
       Meck.expect(NylasCalendar, :update_event, &fake/2)
 
-
       assert %Ecto.Changeset{
                action: nil,
                changes: %{
@@ -126,6 +124,7 @@ defmodule Picsello.ShootTest do
                  @fields
                )
                |> Shoot.push_changes_to_nylas(:update)
+
       assert Meck.called(NylasCalendar, :update_event, 2)
     end
 
