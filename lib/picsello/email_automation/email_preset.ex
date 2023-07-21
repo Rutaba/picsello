@@ -56,7 +56,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
       ~w[status total_hours state condition email_automation_pipeline_id organization_id immediately count calendar sign template_id private_name type job_type name position subject_template body_template]a
     )
     |> validate_required(
-      ~w[status email_automation_pipeline_id organization_id type name position subject_template body_template]a
+      ~w[status email_automation_pipeline_id type name position subject_template body_template]a
     )
     # |> validate_states()
     |> foreign_key_constraint(:job_type)

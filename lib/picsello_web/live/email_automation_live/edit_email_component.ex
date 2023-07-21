@@ -25,7 +25,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       ) do
     job_types = Shared.get_selected_job_types(job_types, job_type)
     email_presets = EmailPresets.email_automation_presets(type, job_type.name, pipeline_id)
-
+    
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
@@ -232,6 +232,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       <%= hidden_input f, :email_automation_pipeline_id %>
       <%= hidden_input f, :organization_id %>
       <%= hidden_input f, :name %>
+      <%= hidden_input f, :job_type %>
       <%= hidden_input f, :position %>
 
 
@@ -348,7 +349,8 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
            assigns: %{
             pipeline: pipeline,
              email_preset_changeset: email_preset_changeset,
-             email: email
+             email: email,
+             current_user: %{organization_id: organization_id}
            }
          } = socket
        ) do
@@ -361,7 +363,15 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     # end)
 
     changeset =
-    Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
+    if is_nil(email.organization_id) do
+      email_preset_changeset
+      |> Ecto.Changeset.put_change(:organization_id, organization_id)
+      |> Ecto.Changeset.put_change(:total_hours, email.total_hours)
+      |> Ecto.Changeset.put_change(:inserted_at, email.inserted_at)
+      |> Ecto.Changeset.put_change(:updated_at, email.updated_at)
+    else
+      Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
+    end
     |> Ecto.Changeset.put_change(:state, pipeline.state)
 
     Ecto.Multi.new()

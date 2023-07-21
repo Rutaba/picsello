@@ -492,7 +492,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
            assigns: %{
             pipeline: pipeline,
              email_preset_changeset: email_preset_changeset,
-             job_types: job_types
+             job_types: job_types,
+             current_user: %{organization_id: organization_id}
            }
          } = socket
        ) do
@@ -518,7 +519,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
           position: email_preset.position,
           private_name: email_preset.private_name,
           email_automation_pipeline_id: email_preset.email_automation_pipeline_id,
-          organization_id: email_preset.organization_id,
+          organization_id: organization_id,
           inserted_at: now,
           updated_at: now
         }
