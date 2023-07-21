@@ -24,6 +24,7 @@ defmodule PicselloWeb.Live.Shared do
 
   alias Ecto.{Changeset, Multi, Query}
   alias PicselloWeb.Shared.ConfirmationComponent
+  alias PicselloWeb.EmailAutomationLive.Shared
 
   alias Picsello.{
     Job,
@@ -31,8 +32,6 @@ defmodule PicselloWeb.Live.Shared do
     Client,
     Package,
     Repo,
-    EmailAutomations,
-    EmailAutomationSchedules,
     BookingProposal,
     Workers.CleanStore,
     Packages.Download,
@@ -718,7 +717,7 @@ defmodule PicselloWeb.Live.Shared do
                                                                       type: type
                                                                     }
                                                                   } ->
-      job_emails(type, current_user.organization_id, job_id, [:job])
+      Shared.job_emails(type, current_user.organization_id, job_id, [:job])
     end)
     |> Repo.transaction()
     |> then(fn
@@ -743,66 +742,6 @@ defmodule PicselloWeb.Live.Shared do
       {:error, _} ->
         socket
     end)
-  end
-
-  @doc """
-    Insert all emails templates for jobs & leads in email schedules
-  """
-  def job_emails(type, organization_id, job_id, types) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-
-    EmailAutomations.get_emails_for_schedule(organization_id, type, types)
-    |> Enum.map(
-      &[
-        job_id: job_id,
-        total_hours: &1.total_hours,
-        condition: &1.condition,
-        body_template: &1.body_template,
-        name: &1.name,
-        subject_template: &1.subject_template,
-        private_name: &1.private_name,
-        email_automation_pipeline_id: &1.email_automation_pipeline_id,
-        inserted_at: now,
-        updated_at: now
-      ]
-    )
-  end
-
-  @doc """
-    Insert all emails templates for galleries, When gallery created it fetch
-    all email templates for gallery category and insert in email schedules
-  """
-  def gallery_emails(gallery) do
-    gallery =
-      gallery
-      |> Repo.preload([:job, organization: [organization_job_types: :jobtype]], force: true)
-
-    type = gallery.job.type
-
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-
-    emails =
-      EmailAutomations.get_emails_for_schedule(gallery.organization.id, type, [:gallery])
-      |> Enum.map(
-        &[
-          gallery_id: gallery.id,
-          total_hours: &1.total_hours,
-          condition: &1.condition,
-          body_template: &1.body_template,
-          name: &1.name,
-          subject_template: &1.subject_template,
-          private_name: &1.private_name,
-          email_automation_pipeline_id: &1.email_automation_pipeline_id,
-          inserted_at: now,
-          updated_at: now
-        ]
-      )
-
-    if is_nil(EmailAutomationSchedules.get_schedules_by_gallery(gallery.id)) do
-      Repo.insert_all(EmailSchedule, emails)
-    else
-      {0, nil}
-    end
   end
 
   defp get_client(selected_client, searched_client, client) do

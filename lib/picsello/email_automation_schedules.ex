@@ -6,6 +6,7 @@ defmodule Picsello.EmailAutomationSchedules do
 
   alias Picsello.{
     Repo,
+    EmailAutomations,
     EmailAutomation.EmailSchedule
   }
 
@@ -16,6 +17,11 @@ defmodule Picsello.EmailAutomationSchedules do
 
   def get_schedules_by_gallery(gallery_id) do
     from(es in EmailSchedule, where: es.gallery_id == ^gallery_id)
+    |> Repo.one()
+  end
+
+  def get_schedules_by_order(order_id) do
+    from(es in EmailSchedule, where: es.order_id == ^order_id)
     |> Repo.one()
   end
 
@@ -32,9 +38,12 @@ defmodule Picsello.EmailAutomationSchedules do
         es in EmailSchedule,
         join: p in assoc(es, :email_automation_pipeline),
         join: c in assoc(p, :email_automation_category),
+        join: s in assoc(p, :email_automation_sub_category),
         select: %{
           category_type: c.type,
           category_id: c.id,
+          subcategory_slug: s.slug,
+          subcategory_id: s.id,
           job_id: es.job_id,
           pipeline:
             fragment(
@@ -44,7 +53,7 @@ defmodule Picsello.EmailAutomationSchedules do
               p.state,
               p.description,
               fragment(
-                "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?))",
+                "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
                 es.id,
                 es.name,
                 es.total_hours,
@@ -53,7 +62,10 @@ defmodule Picsello.EmailAutomationSchedules do
                 es.private_name,
                 es.private_name,
                 es.is_stopped,
-                es.reminded_at
+                es.reminded_at,
+                es.order_id,
+                es.gallery_id,
+                es.job_id
               )
             )
         }
@@ -79,30 +91,55 @@ defmodule Picsello.EmailAutomationSchedules do
 
   defp filter_email_schedule(query, galleries, :gallery) do
     query
-    |> join(:inner, [es, _, _], g in assoc(es, :gallery))
-    |> where([es, _, _, _], es.gallery_id in ^galleries)
-    |> select_merge([_, _, c, g], %{
-      category_name: fragment("concat(?, ':', ?)", c.name, g.name),
-      gallery_id: g.id
+    |> join(:inner, [es, _, _, _], gallery in assoc(es, :gallery))
+    |> join(:left, [es, _, _, _, gallery], order in assoc(es, :order))
+    |> where([es, _, _, _, _, _], es.gallery_id in ^galleries)
+    |> select_merge([es, _, c, s, gallery, order], %{
+      category_name: fragment("concat(?, ':', ?)", c.name, gallery.name),
+      gallery_id: gallery.id,
+      order_id: es.order_id,
+      order_number: order.number,
+      subcategory_name: fragment("concat(?, ':', ?)", s.name, order.number)
     })
-    |> group_by([es, p, c, g], [c.name, g.name, c.type, c.id, p.id, es.id, g.id])
+    |> group_by([es, p, c, s, gallery, order], [
+      c.name,
+      gallery.name,
+      c.type,
+      c.id,
+      p.id,
+      es.id,
+      es.order_id,
+      gallery.id,
+      s.id,
+      s.slug,
+      s.name,
+      order.number
+    ])
   end
 
   defp filter_email_schedule(query, job_id, _type) do
     query
-    |> where([es, _, _], es.job_id == ^job_id)
-    |> select_merge([_, _, c], %{category_name: c.name, gallery_id: nil})
-    |> group_by([es, p, c], [c.name, c.type, c.id, p.id, es.id])
+    |> where([es, _, _, _], es.job_id == ^job_id)
+    |> select_merge([_, _, c, s], %{
+      category_name: c.name,
+      subcategory_name: s.name,
+      gallery_id: nil,
+      order_id: nil,
+      order_number: ""
+    })
+    |> group_by([es, p, c, s], [c.name, c.type, c.id, p.id, es.id, s.id, s.slug, s.name])
   end
 
   defp email_schedules_group_by_categories(emails_schedules) do
     emails_schedules
     |> Enum.group_by(
-      &{&1.category_id, &1.category_name, &1.category_type, &1.gallery_id, &1.job_id}
+      &{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id, &1.gallery_id, &1.job_id,
+       &1.order_id, &1.order_number}
     )
-    |> Enum.map(fn {{category_id, category_name, category_type, gallery_id, job_id}, group} ->
+    |> Enum.map(fn {{slug, name, id, gallery_id, job_id, order_id, order_number},
+                    automation_pipelines} ->
       pipelines =
-        group
+        automation_pipelines
         |> Enum.group_by(& &1.pipeline["id"])
         |> Enum.map(fn {_pipeline_id, pipelines} ->
           emails =
@@ -116,12 +153,33 @@ defmodule Picsello.EmailAutomationSchedules do
       pipeline_morphied = pipelines |> Enum.map(&(&1 |> Morphix.atomorphiform!()))
 
       %{
-        category_id: category_id,
-        category_name: category_name,
-        category_type: category_type,
+        category_type: List.first(automation_pipelines).category_type,
+        category_name: List.first(automation_pipelines).category_name,
+        category_id: List.first(automation_pipelines).category_id,
+        subcategory_slug: slug,
+        subcategory_name: name,
+        subcategory_id: id,
         gallery_id: gallery_id,
         job_id: job_id,
+        order_id: order_id,
+        order_number: order_number,
         pipelines: pipeline_morphied
+      }
+    end)
+    |> Enum.sort_by(&{&1.subcategory_id, &1.subcategory_name}, :asc)
+    |> Enum.group_by(
+      &{&1.category_id, &1.category_name, &1.category_type, &1.gallery_id, &1.job_id}
+    )
+    |> Enum.map(fn {{id, name, type, gallery_id, job_id}, pipelines} ->
+      subcategories = EmailAutomations.remove_categories_from_list(pipelines)
+
+      %{
+        category_type: type,
+        category_name: name,
+        category_id: id,
+        gallery_id: gallery_id,
+        job_id: job_id,
+        subcategories: subcategories
       }
     end)
     |> Enum.sort_by(&{&1.category_id, &1.category_name}, :asc)

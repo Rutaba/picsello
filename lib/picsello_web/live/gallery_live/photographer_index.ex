@@ -6,7 +6,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
-  import PicselloWeb.Live.Shared, only: [make_popup: 2, serialize: 1, gallery_emails: 1]
+  import PicselloWeb.Live.Shared, only: [make_popup: 2, serialize: 1]
 
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
   alias PicselloWeb.Shared.ConfirmationComponent
@@ -194,7 +194,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
           }
         } = socket
       ) do
-      
     %{id: oban_job_id} =
       %{
         message: serialize(message_changeset),
@@ -214,7 +213,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
       ClientNotifier.deliver_email(message, recipients)
       Galleries.update_gallery(gallery, %{gallery_send_at: DateTime.utc_now()})
-      gallery_emails(gallery)
     end)
 
     socket
