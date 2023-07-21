@@ -452,6 +452,96 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def fetch_date_for_state(_state, _pipeline_id, _job, _gallery, _order), do: nil
 
+  @doc """
+    Insert all emails templates for jobs & leads in email schedules
+  """
+  def job_emails(type, organization_id, job_id, types) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    EmailAutomations.get_emails_for_schedule(organization_id, type, types)
+    |> Enum.map(
+      &[
+        job_id: job_id,
+        total_hours: &1.total_hours,
+        condition: &1.condition,
+        body_template: &1.body_template,
+        name: &1.name,
+        subject_template: &1.subject_template,
+        private_name: &1.private_name,
+        email_automation_pipeline_id: &1.email_automation_pipeline_id,
+        inserted_at: now,
+        updated_at: now
+      ]
+    )
+  end
+
+  @doc """
+    Insert all emails templates for galleries, When gallery created it fetch
+    all email templates for gallery category and insert in email schedules
+  """
+  def gallery_order_emails(gallery, order \\ nil) do
+    gallery =
+      if order, do: order |> Repo.preload(gallery: :job) |> Map.get(:gallery), else: gallery
+
+    gallery =
+      gallery
+      |> Repo.preload([:job, organization: [organization_job_types: :jobtype]], force: true)
+
+    type = gallery.job.type
+
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    skip_sub_categories =
+      if order,
+        do: ["gallery_notification_emails"],
+        else: ["order_confirmation_emails", "order_status_emails"]
+
+    order_id = if order, do: order.id, else: nil
+
+    emails =
+      EmailAutomations.get_emails_for_schedule(
+        gallery.organization.id,
+        type,
+        [:gallery],
+        skip_sub_categories
+      )
+      |> Enum.map(
+        &[
+          gallery_id: gallery.id,
+          order_id: order_id,
+          total_hours: &1.total_hours,
+          condition: &1.condition,
+          body_template: &1.body_template,
+          name: &1.name,
+          subject_template: &1.subject_template,
+          private_name: &1.private_name,
+          email_automation_pipeline_id: &1.email_automation_pipeline_id,
+          inserted_at: now,
+          updated_at: now
+        ]
+      )
+
+    previous_emails =
+      if order,
+        do: EmailAutomationSchedules.get_schedules_by_order(order.id),
+        else: EmailAutomationSchedules.get_schedules_by_gallery(gallery.id)
+
+    if is_nil(previous_emails) do
+      emails
+    else
+      []
+    end
+  end
+
+  def insert_order_emails(gallery, order) do
+    emails = gallery_order_emails(gallery, order)
+
+    case Repo.insert_all(EmailSchedule, emails) do
+      {count, nil} -> {:ok, count}
+      _ -> {:error, "error insertion"}
+    end
+  end
+
   defp get_job_id(job) when is_map(job), do: job.id
   defp get_job_id(_), do: nil
   defp get_gallery_id(gallery, _order) when is_map(gallery), do: gallery.id

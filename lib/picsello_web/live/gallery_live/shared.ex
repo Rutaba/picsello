@@ -24,7 +24,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     EmailAutomationSchedules
   }
 
-  alias PicselloWeb.Live.Shared
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
@@ -421,7 +420,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   defp opts(), do: [limit: 1, valid: true]
 
   def add_message_and_notify(
-        %{assigns: %{job: job, current_user: user, gallery: gallery}} = socket,
+        %{assigns: %{job: job, current_user: user}} = socket,
         message_changeset,
         recipients,
         shared_item
@@ -430,8 +429,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     with {:ok, %{client_message: message, client_message_recipients: _}} <-
            Messages.add_message_to_job(message_changeset, job, recipients, user)
            |> Repo.transaction(),
-         {:ok, _email} <- ClientNotifier.deliver_email(message, recipients),
-         {_count, _records} <- Shared.gallery_emails(gallery) do
+         {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> put_flash(:success, "#{String.capitalize(shared_item)} shared!")
     else

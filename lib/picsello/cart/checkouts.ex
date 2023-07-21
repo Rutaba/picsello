@@ -14,6 +14,7 @@ defmodule Picsello.Cart.Checkouts do
     OrganizationCard
   }
 
+  alias PicselloWeb.EmailAutomationLive.Shared
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
   alias WHCC.Editor.Export.Editor
 
@@ -62,6 +63,9 @@ defmodule Picsello.Cart.Checkouts do
           |> update(:order, place_order(cart))
           |> run(:insert_card, fn _repo, %{order: order} ->
             OrganizationCard.insert_for_proofing_order(order)
+          end)
+          |> run(:insert_orders_emails, fn _repo, %{order: order} ->
+            Shared.insert_order_emails(nil, order)
           end)
 
         %{cart: %{products: []} = cart} ->

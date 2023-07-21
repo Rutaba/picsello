@@ -94,7 +94,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           Jobs.get_job_by_id(job_id)
           |> Repo.preload([:payment_schedules, :job_status, client: :organization])
 
-        send_email(:job, pipeline.email_automation_category.type, email, job, pipeline.state)
+        send_email(:job, pipeline.email_automation_category.type, email, job, pipeline.state, nil)
 
       id ->
         gallery = Galleries.get_gallery!(id)
@@ -104,7 +104,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           pipeline.email_automation_category.type,
           email,
           gallery,
-          pipeline.state
+          pipeline.state,
+          email.order_id
         )
     end
     |> case do
@@ -170,7 +171,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         <% end %>
         </div>
 
-        <div class={classes("flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer", %{"opacity-60" => next_email.is_completed})} phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}"}>
+        <div class={classes("flex bg-base-200 pl-2 pr-7 py-3 items-center cursor-pointer", %{"opacity-60" => next_email.is_completed})} phx-click="toggle-section" phx-value-section_id={"pipeline-#{@pipeline.id}-#{@subcategory}"}>
 
           <div class="flex flex-col">
             <div class=" flex flex-row items-center">
@@ -188,7 +189,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           </div>
 
           <div class="ml-auto">
-            <%= if !Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
+            <%= if !Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}-#{@subcategory}") do %>
                 <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
               <% else %>
                 <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
@@ -196,7 +197,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
             </div>
         </div>
 
-        <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
+        <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}-#{@subcategory}") do %>
           <%= Enum.with_index(@pipeline.emails, fn email, index -> %>
               <% last_index = Enum.count(@pipeline.emails) - 1 %>
             <div class={classes("flex flex-col md:flex-row pl-2 pr-7 md:items-center justify-between", %{"opacity-60" => next_email.is_completed})}>
@@ -355,7 +356,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     converted_date |> Calendar.strftime("%m/%d/%Y")
   end
 
-  defp send_email(:job, category_type, email, job, state) do
+  defp send_email(:job, category_type, email, job, state, _order_id) do
     EmailAutomations.send_now_email(
       category_type,
       email,
@@ -364,9 +365,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     )
   end
 
-  defp send_email(:gallery, _category_type, email, gallery, state)
+  defp send_email(:gallery, _category_type, email, gallery, state, _order_id)
        when state in [
-              :gallery_send_link,
+              :manual_gallery_send_link,
+              :manual_send_proofing_gallery,
+              :manual_send_proofing_gallery_finals,
               :cart_abandoned,
               :gallery_expiration_soon,
               :gallery_password_changed
@@ -374,24 +377,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     EmailAutomations.send_now_email(:gallery, email, gallery, state)
   end
 
-  defp send_email(:gallery, _category_type, email, gallery, state) do
-    result =
-      gallery.id
-      |> Orders.all()
-      |> Enum.reduce({:ok, []}, fn order, {:ok, successful} ->
-        case EmailAutomations.send_now_email(:order, email, order, state) do
-          {:ok, _} -> {:ok, [order | successful]}
-          {:error, error} -> {:error, error}
-        end
-      end)
-
-    case result do
-      {:ok, _} ->
-        {:ok, "All emails sent successfully."}
-
-      {:error, _} ->
-        {:error, "One or more emails failed to send."}
-    end
+  defp send_email(:gallery, _category_type, email, _gallery, state, order_id) do
+    order = Orders.get_order(order_id)
+    EmailAutomations.send_now_email(:order, email, order, state)
   end
 
   defp disable_pipeline?(_emails, _state, 0), do: false

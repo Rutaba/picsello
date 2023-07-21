@@ -21,6 +21,7 @@ defmodule Picsello.Orders.Confirmations do
   }
 
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
+  alias PicselloWeb.EmailAutomationLive.Shared
 
   import Ecto.Query, only: [from: 2]
   import Money.Sigils
@@ -136,6 +137,8 @@ defmodule Picsello.Orders.Confirmations do
   end
 
   defp do_confirm_order(order_number, session_fn) do
+    IO.inspect("do_confirm_order================>")
+
     new()
     |> put(:order_number, order_number)
     |> run(:order, &load_order/2)
@@ -163,6 +166,9 @@ defmodule Picsello.Orders.Confirmations do
     end)
     |> run(:insert_card, fn _repo, %{order: order} ->
       OrganizationCard.insert_for_proofing_order(order)
+    end)
+    |> run(:insert_orders_emails, fn _repo, %{order: order} ->
+      Shared.insert_order_emails(nil, order)
     end)
     |> Repo.transaction()
     |> case do
@@ -196,7 +202,9 @@ defmodule Picsello.Orders.Confirmations do
          order: order
        }) do
     actual_costs_and_fees = calculate_total_costs(order) |> Money.add(actual_stripe_fee(amount))
-    costs_and_fees = calculate_total_costs(order) |> stripe_fee() |> Money.add(calculate_total_costs(order))
+
+    costs_and_fees =
+      calculate_total_costs(order) |> stripe_fee() |> Money.add(calculate_total_costs(order))
 
     case Money.cmp(amount, actual_costs_and_fees) do
       :lt -> {:ok, Money.subtract(costs_and_fees, amount)}
@@ -211,20 +219,19 @@ defmodule Picsello.Orders.Confirmations do
     |> Money.add(Picsello.Cart.total_shipping(order))
   end
 
-  #stripe's actual formula to calculate fee
-  #After transactions of $1million, stripe processing fee is discounted,
-  #and we will need to tweak this formula in future.
-  defp actual_stripe_fee(amount)
-    do
-      amount
-      |> Money.multiply(2.9/100)
-      |> Money.add(Money.new(30))
-    end
+  # stripe's actual formula to calculate fee
+  # After transactions of $1million, stripe processing fee is discounted,
+  # and we will need to tweak this formula in future.
+  defp actual_stripe_fee(amount) do
+    amount
+    |> Money.multiply(2.9 / 100)
+    |> Money.add(Money.new(30))
+  end
 
-  #our formula to calculate fee to be on safe side
+  # our formula to calculate fee to be on safe side
   defp stripe_fee(amount) do
     amount
-    |> Money.multiply(2.9/100)
+    |> Money.multiply(2.9 / 100)
     |> Money.add(Money.new(70))
   end
 
