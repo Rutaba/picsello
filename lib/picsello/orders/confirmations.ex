@@ -137,8 +137,6 @@ defmodule Picsello.Orders.Confirmations do
   end
 
   defp do_confirm_order(order_number, session_fn) do
-    IO.inspect("do_confirm_order================>")
-
     new()
     |> put(:order_number, order_number)
     |> run(:order, &load_order/2)

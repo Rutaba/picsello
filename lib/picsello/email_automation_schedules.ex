@@ -77,8 +77,8 @@ defmodule Picsello.EmailAutomationSchedules do
     |> email_schedules_group_by_categories()
   end
 
-  def get_all_emails_schedules() do
-    from(es in EmailSchedule)
+  def get_all_emails_schedules(organizations) do
+    from(es in EmailSchedule, where: es.organization_id in ^organizations)
     |> preload(email_automation_pipeline: [:email_automation_category])
     |> Repo.all()
   end

@@ -9,7 +9,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
 
   alias Picsello.EmailPresets.EmailPreset
 
-  alias Picsello.{Job, Galleries.Gallery, Cart.Order}
+  alias Picsello.{Job, Galleries.Gallery, Cart.Order, Organization}
 
   schema "email_schedules" do
     field :total_hours, :integer, default: 0
@@ -30,6 +30,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     belongs_to(:job, Job)
     belongs_to(:gallery, Gallery)
     belongs_to(:order, Order)
+    belongs_to(:organization, Organization)
 
     timestamps type: :utc_datetime
   end
@@ -38,7 +39,7 @@ defmodule Picsello.EmailAutomation.EmailSchedule do
     email_preset
     |> cast(
       attrs,
-      ~w[email_automation_pipeline_id name private_name subject_template body_template total_hours condition immediately count calendar sign is_stopped reminded_at job_id gallery_id order_id]a
+      ~w[email_automation_pipeline_id name private_name subject_template body_template total_hours condition immediately count calendar sign is_stopped reminded_at job_id gallery_id order_id organization_id]a
     )
     |> validate_required(~w[email_automation_pipeline_id subject_template body_template]a)
     |> then(fn changeset ->

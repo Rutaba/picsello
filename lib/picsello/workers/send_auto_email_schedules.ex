@@ -11,75 +11,80 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     Orders,
     Galleries,
     ClientMessage,
+    Organization,
     Repo
   }
 
   alias PicselloWeb.EmailAutomationLive.Shared
 
   def perform(_) do
-    get_all_emails()
-    |> Enum.map(fn job_pipeline ->
-      job_id = job_pipeline.job_id
-      gallery_id = job_pipeline.gallery_id
+    get_all_organizations()
+    |> Enum.chunk_every(2)
+    |> Enum.map(fn organizations ->
+      get_all_emails(organizations)
+      |> Enum.map(fn job_pipeline ->
+        job_id = job_pipeline.job_id
+        gallery_id = job_pipeline.gallery_id
 
-      gallery_task = Task.async(fn -> get_gallery(gallery_id) end)
-      gallery = Task.await(gallery_task)
+        gallery_task = Task.async(fn -> get_gallery(gallery_id) end)
+        gallery = Task.await(gallery_task)
 
-      job_task = Task.async(fn -> EmailAutomations.get_job(job_id) end)
+        job_task = Task.async(fn -> EmailAutomations.get_job(job_id) end)
 
-      type =
-        job_pipeline.emails
-        |> List.first()
-        |> Map.get(:email_automation_pipeline)
-        |> Map.get(:email_automation_category)
-        |> Map.get(:type)
+        type =
+          job_pipeline.emails
+          |> List.first()
+          |> Map.get(:email_automation_pipeline)
+          |> Map.get(:email_automation_category)
+          |> Map.get(:type)
 
-      Logger.info("[email category] #{type}")
+        Logger.info("[email category] #{type}")
 
-      subjects_task = Task.async(fn -> get_subjects_for_job_pipeline(job_pipeline.emails) end)
+        subjects_task = Task.async(fn -> get_subjects_for_job_pipeline(job_pipeline.emails) end)
 
-      job = Task.await(job_task)
-      job = if is_nil(gallery_id), do: job, else: gallery.job
+        job = Task.await(job_task)
+        job = if is_nil(gallery_id), do: job, else: gallery.job
 
-      subjects = Task.await(subjects_task)
-      Logger.info("Email Subjects #{subjects}")
+        subjects = Task.await(subjects_task)
+        Logger.info("Email Subjects #{subjects}")
 
-      # Each pipeline emails subjects resolve variables
-      subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
-      Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
+        # Each pipeline emails subjects resolve variables
+        subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
+        Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
 
-      # Check client reply for any email of current pipeline
-      is_reply = is_reply_receive!(job, subjects_resolve)
+        # Check client reply for any email of current pipeline
+        is_reply = is_reply_receive!(job, subjects_resolve)
 
-      Logger.info(
-        "Reply of any email from client for job #{job_id} and pipeline_id #{job_pipeline.pipeline_id}"
-      )
+        Logger.info(
+          "Reply of any email from client for job #{job_id} and pipeline_id #{job_pipeline.pipeline_id}"
+        )
 
-      # This condition only run when no reply recieve from any email for that job & pipeline
-      if !is_reply and is_nil(job.archived_at) do
-        send_email_each_pipeline(job_pipeline, job, gallery)
-      end
+        # This condition only run when no reply recieve from any email for that job & pipeline
+        if !is_reply and is_nil(job.archived_at) do
+          send_email_each_pipeline(job_pipeline, job, gallery)
+        end
+      end)
     end)
 
     :ok
   end
 
-  def get_all_emails() do
-    EmailAutomationSchedules.get_all_emails_schedules()
+  def get_all_emails(organizations) do
+    EmailAutomationSchedules.get_all_emails_schedules(organizations)
     |> Enum.group_by(&group_key/1)
     |> Enum.map(fn {{job_id, gallery_id, pipeline_id}, emails} ->
       %{
         job_id: job_id,
         gallery_id: gallery_id,
         pipeline_id: pipeline_id,
-        emails: emails
+        emails: Shared.sort_emails(emails)
       }
     end)
   end
 
   defp send_email_each_pipeline(job_pipeline, job, gallery) do
     # Get first email from pipeline which is not sent
-    email_schedule = job_pipeline.emails |> Enum.find(fn %{reminded_at: nil} -> true end)
+    email_schedule = job_pipeline.emails |> Enum.find(fn email -> is_nil(email.reminded_at) end)
 
     if email_schedule do
       state = email_schedule.email_automation_pipeline.state
@@ -97,12 +102,11 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
               :order_confirmation_digital,
               :order_confirmation_physical
             ] do
-    gallery.id
-    |> Orders.all()
-    |> Enum.map(fn order ->
-      order |> Repo.preload(:digital_line_items, gallery: :job)
-      send_email(state, pipeline_id, schedule, job, gallery, order)
-    end)
+    order =
+      Orders.get_order(schedule.order_id)
+      |> Repo.preload(gallery: :job)
+
+    send_email(state, pipeline_id, schedule, job, gallery, order)
   end
 
   defp send_email_by_state(state, pipeline_id, schedule, job, gallery, order) do
@@ -172,5 +176,9 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   defp is_reply_receive!(job, subjects) do
     ClientMessage.get_client_messages(job, subjects)
     |> Enum.count() > 0
+  end
+
+  defp get_all_organizations() do
+    Repo.all(Organization) |> Enum.map(& &1.id)
   end
 end

@@ -78,7 +78,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   end
 
   @impl true
-  def handle_event("toggle-variables", %{"show-variables" => show_variables}, %{assigns: %{show_variables: a}} = socket) do
+  def handle_event("toggle-variables", %{"show-variables" => show_variables}, socket) do
     socket
     |> assign(show_variables: !String.to_atom(show_variables))
     |> noreply()
@@ -101,16 +101,16 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     selected_preset = Enum.filter(email_presets, &(&1.id == template_id))
 
     new_email_preset =
-    if Enum.any?(selected_preset) do
-      selected_preset
-    else
-      email_presets
-    end
-    |> List.first()
-    |> Map.merge(%{
-      email_automation_pipeline_id: pipeline.id,
-      organization_id: current_user.organization_id
-    })
+      if Enum.any?(selected_preset) do
+        selected_preset
+      else
+        email_presets
+      end
+      |> List.first()
+      |> Map.merge(%{
+        email_automation_pipeline_id: pipeline.id,
+        organization_id: current_user.organization_id
+      })
 
     params = if email_preset.id == template_id, do: params, else: nil
 
@@ -149,9 +149,10 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         %{"step" => "edit_email"},
         %{assigns: %{email_preset_changeset: changeset} = assigns} = socket
       ) do
-    body_html = Ecto.Changeset.get_field(changeset, :body_template)
-    |> :bbmustache.render(Shared.get_sample_values(), key_type: :atom)
-    
+    body_html =
+      Ecto.Changeset.get_field(changeset, :body_template)
+      |> :bbmustache.render(Shared.get_sample_values(), key_type: :atom)
+
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
     socket
@@ -492,7 +493,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   defp save(
          %{
            assigns: %{
-            pipeline: pipeline,
+             pipeline: pipeline,
              email_preset_changeset: email_preset_changeset,
              job_types: job_types,
              current_user: %{organization_id: organization_id}

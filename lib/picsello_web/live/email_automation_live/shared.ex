@@ -6,8 +6,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   import PicselloWeb.LiveHelpers
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
-  
+
   alias PicselloWeb.Shared.ShortCodeComponent
+
   alias Picsello.{
     Marketing,
     PaymentSchedules,
@@ -89,18 +90,19 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def get_sample_values() do
-    variables = ShortCodeComponent.variables_codes(:gallery)
+    ShortCodeComponent.variables_codes(:gallery)
     |> Enum.map(&Enum.map(&1.variables, fn variable -> {variable.name, variable.sample} end))
     |> List.flatten()
     |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
   end
 
   def sort_emails(emails) do
-    emails = Enum.reverse(emails)
-    |> Enum.sort_by(&{:asc, Map.fetch(&1, :inserted_at)})
-    
+    emails =
+      Enum.reverse(emails)
+      |> Enum.sort_by(&{:asc, Map.fetch(&1, :inserted_at)})
+
     email_with_immediate_status = Enum.filter(emails, &(&1.total_hours == 0))
-    
+
     if Enum.any?(email_with_immediate_status) do
       {first_email, unsorted_emails} = email_with_immediate_status |> List.pop_at(0)
       pending_emails = unsorted_emails ++ Enum.filter(emails, &(&1.total_hours != 0))
@@ -492,6 +494,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         subject_template: &1.subject_template,
         private_name: &1.private_name,
         email_automation_pipeline_id: &1.email_automation_pipeline_id,
+        organization_id: organization_id,
         inserted_at: now,
         updated_at: now
       ]
@@ -539,6 +542,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
           subject_template: &1.subject_template,
           private_name: &1.private_name,
           email_automation_pipeline_id: &1.email_automation_pipeline_id,
+          organization_id: gallery.organization.id,
           inserted_at: now,
           updated_at: now
         ]
