@@ -334,10 +334,12 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     ~H"""
       <div class="">
         <% package = to_form(@package_changeset) %>
-
         <%= hidden_input package, :turnaround_weeks, value: 1 %>
         <%= if @currency in products_currency() do%>
           <.print_credit_fields f={package} package_pricing={@package_pricing} currency_symbol={@currency_symbol} currency={@currency} />
+        <% else %>
+          <% p = to_form(@package_pricing) %>
+          <%= hidden_input p, :is_enabled, value: false %>
         <% end %>
         <.digital_download_fields for={:create_gallery} package_form={package} currency_symbol={@currency_symbol} currency={@currency} download_changeset={@download_changeset} package_pricing={@package_pricing}  target={@myself} show_digitals={@show_digitals} />
         <%= if @new_gallery do %>

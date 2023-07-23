@@ -5,12 +5,12 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
   alias Picsello.{GalleryProducts, UserCurrencies, Utils}
   import PicselloWeb.GalleryLive.Shared, only: [toggle_preview: 1]
 
-  def update(%{product: product, current_user: current_user} = assigns, socket) do
-    user_currency = UserCurrencies.get_user_currency(current_user.organization.id)
+  def update(%{product: product, gallery: gallery} = assigns, socket) do
+    currency = Picsello.Currency.for_gallery(gallery)
 
     socket
     |> assign(assigns)
-    |> assign(currency: user_currency.currency)
+    |> assign(currency: currency)
     |> assign(products_currency: Utils.products_currency())
     |> assign(category: product.category, photo: product.preview_photo, product_id: product.id)
     |> ok()

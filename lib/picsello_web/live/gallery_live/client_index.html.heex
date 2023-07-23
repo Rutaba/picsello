@@ -50,6 +50,9 @@
         </ul>
       </div>
     </div>
+    <div class={classes("center-container gallery__container", %{"hidden" => disabled?(@gallery)})}>
+      <hr class="mt-8 opacity-30 border-base-300" />
+    </div>
   <% end %>
 
   <%= if @gallery.gallery_digital_pricing.buy_all && !@download_all_visible && !disabled?(@gallery) do %>
@@ -67,10 +70,6 @@
   <% end %>
 
   <!-- Content -->
-  <div class={classes("center-container gallery__container", %{"hidden" => disabled?(@gallery)})}>
-    <hr class="mt-8 opacity-30 border-base-300" />
-  </div>
-
   <div class="h-full pt-0 mx-auto center-container gallery__container my-0 pb-28 sm:pb-24 px-7 sm:px-16">
     <div class="pt-5 lg:pt-16" id="gallery">
       <div class="flex flex-col mb-8 sm:flex-row sm:justify-between sm:items-end lg:mb-16">
