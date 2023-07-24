@@ -549,7 +549,7 @@ defmodule Picsello.Galleries do
       |> check_watermark(user)
     end)
     |> Multi.insert_all(:email_automation, EmailSchedule, fn %{gallery: gallery} ->
-      Shared.insert_order_emails(gallery, nil)
+      Shared.gallery_order_emails(gallery, nil)
     end)
   end
 
