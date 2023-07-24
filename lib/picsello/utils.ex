@@ -10,7 +10,8 @@ defmodule Picsello.Utils do
     |> Enum.map_join(" ", &String.capitalize(&1))
   end
 
+  #it is a list because when we have shipping to canada figured out, we will add "CAD" to this list.
   def products_currency() do
-    ["USD", "CAD"]
+    ["USD"]
   end
 end

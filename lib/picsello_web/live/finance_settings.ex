@@ -1,6 +1,7 @@
 defmodule PicselloWeb.Live.FinanceSettings do
   @moduledoc false
   use PicselloWeb, :live_view
+  require Logger
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
 
   alias Ecto.Multi
@@ -21,6 +22,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
+    Logger.info("#{current_user.organization.id} is the org_id")
     user_currency = UserCurrencies.get_user_currency(current_user.organization.id)
 
     socket
@@ -194,6 +196,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
         {:search_event, :submit_currency, %{name: new_currency}},
         %{assigns: %{user_currency: user_currency, current_user: current_user}} = socket
       ) do
+    Logger.info("#{user_currency.currency} is the currency")
     rate = ExchangeRatesApi.get_latest_rate(user_currency.currency, new_currency)
 
     {:ok, %{update_user_currency: user_currency}} =

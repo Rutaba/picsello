@@ -2,7 +2,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Preview do
   @moduledoc "no doc"
 
   use PicselloWeb, :live_component
-  alias Picsello.{GalleryProducts, UserCurrencies, Utils}
+  alias Picsello.{GalleryProducts, Utils}
   import PicselloWeb.GalleryLive.Shared, only: [toggle_preview: 1]
 
   def update(%{product: product, gallery: gallery} = assigns, socket) do
