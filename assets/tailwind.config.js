@@ -40,6 +40,9 @@ module.exports = {
   ],
   safelist,
   theme: {
+    letterSpacing: {
+      widestplus: '.3em',
+    },
     extend: {
       colors: {
         current: 'currentColor',

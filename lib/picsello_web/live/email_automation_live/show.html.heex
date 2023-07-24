@@ -40,7 +40,7 @@
       <span class="text-2xl font-bold"> <%= email_schedule.category_name %> </span>
     </div>
       <%= Enum.map(email_schedule.subcategories, fn subcategory -> %>
-        <div class="text mb-3 flex text-gray-400 uppercase font-bold tracking-widest ml-10 mr-16 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
+        <div class="mb-3 flex text-base-250 uppercase font-bold tracking-widestplus ml-10 mr-16 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
           <div class="ml-auto">
             <%= if !Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
               <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
