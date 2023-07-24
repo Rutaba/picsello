@@ -20,7 +20,7 @@
 
   <div class="flex flex-col justify-between items-center px-1.5 md:flex-row mb-10 gap-6">
     <div class="relative flex md:w-2/3 w-full md:mt-6">
-      <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+      <a class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
         <%= if @search_phrase do %>
           <span phx-click="clear-search" class="cursor-pointer">
             <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />

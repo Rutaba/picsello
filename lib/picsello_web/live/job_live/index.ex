@@ -279,7 +279,7 @@ defmodule PicselloWeb.JobLive.Index do
     ~H"""
       <div {testid("search_filter_and_sort_bar")} class="flex flex-col px-5 center-container justify-between items-end px-1.5 lg:flex-row mb-0 md:mb-10">
         <div class="relative flex w-full lg:w-2/3 mr-2 mb-3 md:mb-0">
-          <a {testid("close_search")} href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+          <a {testid("close_search")} class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
             <%= if @search_phrase do %>
               <span phx-click="clear-search" class="cursor-pointer">
                 <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />

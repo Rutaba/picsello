@@ -406,7 +406,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
       <div class="absolute circleBtn bottom-12 left-12 hidden lg:block">
         <ul>
           <li>
-            <a phx-click="exit" href="#">
+            <a phx-click="exit">
               <.icon name="back" class="rounded-full stroke-current w-14 h-14 text-blue-planning-300" />
               <span class="overflow-hidden">Exit calculator</span>
             </a>

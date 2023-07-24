@@ -281,7 +281,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
         <div class="flex items-end justify-between sm:items-center">
           <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
 
-          <a title="previous" href="#" phx-click="previous" class="cursor-pointer sm:py-2">
+          <a title="previous" phx-click="previous" class="cursor-pointer sm:py-2">
             <ul class="flex items-center">
               <%= for step <- 1..3 do %>
                 <li class={classes(

@@ -22,7 +22,7 @@ defmodule PicselloWeb.ShootLive.Shared do
         <%= label_for @f, :location, label: "Shoot Location" %>
 
         <%= if @allow_address_toggle && !@address_field do %>
-          <a class="text-xs link" href="#" phx-target={@myself} phx-click="address" phx-value-action="add-field">Add an address</a>
+          <a class="text-xs link" phx-target={@myself} phx-click="address" phx-value-action="add-field">Add an address</a>
         <% end %>
       </div>
 
@@ -35,7 +35,7 @@ defmodule PicselloWeb.ShootLive.Shared do
           <%= label_for @f, :address, label: "Shoot Address" %>
 
           <%= if @allow_address_toggle do %>
-            <a class="text-xs link" href="#" phx-target={@myself} phx-click="address" phx-value-action="remove">Remove address</a>
+            <a class="text-xs link" phx-target={@myself} phx-click="address" phx-value-action="remove">Remove address</a>
           <% end %>
         </div>
 

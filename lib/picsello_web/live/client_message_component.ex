@@ -285,7 +285,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     to = Map.get(recipients, "to") |> List.wrap() |> Enum.uniq()
     cc = (Map.get(recipients, "cc", []) |> Enum.uniq()) -- to
     bcc = ((Map.get(recipients, "bcc", []) |> Enum.uniq()) -- to) -- cc
-    
+
     %{"to" => to}
     |> update_recipients_map("cc", cc)
     |> update_recipients_map("bcc", bcc)
@@ -410,7 +410,7 @@ defmodule PicselloWeb.ClientMessageComponent do
       <div class="w-full md:w-1/3 md:ml-6">
         <%= form_tag("#", [phx_change: :search, phx_target: @myself]) do %>
           <div class="relative flex flex-col w-full md:flex-row">
-            <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+            <a class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
               <%= if (Enum.any?(@search_results) && @search_phrase) do %>
                 <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
                   <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
