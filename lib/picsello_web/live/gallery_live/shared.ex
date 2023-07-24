@@ -683,7 +683,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
           is_fixed: false
         }
       )
-      
+
     ~H"""
       <div class={classes("relative", %{"hidden" => @for == :proofing_album_order || Enum.empty?(build_credits(@for, @credits, @total_count))})}>
           <div class={classes("bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 pointer-events-none", %{"fixed shadow-top" => @is_fixed and @for != :proofing_album, "absolute border-t border-base-225" => !@is_fixed or @for == :proofing_album })}>
@@ -1099,6 +1099,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def new_gallery_path(socket, %{albums: [%{id: album_id}]} = gallery) do
     Routes.gallery_photos_index_path(socket, :index, gallery.id, album_id, is_mobile: false)
   end
+
+  def assign_count(socket, true, gallery),
+    do: assign(socket, photos_count: Galleries.gallery_favorites_count(gallery))
+
+  def assign_count(socket, false, _gallery), do: socket
 
   def standard?(%{type: type}), do: type == :standard
   def disabled?(%{status: status}), do: status == :disabled

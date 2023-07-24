@@ -234,9 +234,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   def handle_info({:photo_processed, _, _}, socket), do: noreply(socket)
   def handle_info({:cover_photo_processed, _, _}, socket), do: noreply(socket)
 
-  defp assign_count(socket, true, gallery), do: assign(socket, photos_count: Galleries.gallery_favorites_count(gallery))
-  defp assign_count(socket, false, _gallery), do: socket
-
   defp cover_photo(%{cover_photo: nil}), do: %{style: "background-image: url('#{@blank_image}')"}
   defp cover_photo(gallery), do: display_cover_photo(gallery)
 

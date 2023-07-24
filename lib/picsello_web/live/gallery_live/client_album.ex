@@ -169,13 +169,17 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_info(
         :update_client_gallery_state,
-        %{assigns: %{album: album, gallery: gallery}} = socket
+        %{assigns: %{album: album, gallery: gallery, favorites_filter: favorites_filter}} = socket
       ) do
     socket
+    |> assign_count(favorites_filter, gallery)
     |> assign(
       album_favorites_count: Galleries.gallery_album_favorites_count(gallery, album.id),
       favorites_count: Galleries.gallery_favorites_count(gallery)
     )
+    |> assign(:update_mode, "replace")
+    |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
