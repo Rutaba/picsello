@@ -524,7 +524,7 @@ defmodule PicselloWeb.ClientMessageComponent do
             <p class="text-blue-planning-300 text-2xl font-bold"><%= @email_schedule.name %></p>
           </div>
         </div>
-        <div class="flex flex-row ml-10 sm:ml-auto">
+        <div class="flex flex-row ml-12">
           <.form :let={_} for={%{}} as={:toggle} phx-target={@myself} phx-click="toggle"  phx-value-active={@toggle_value |> to_string}>
           <label class="flex">
             <input id="pipeline-toggle" type="checkbox" class="peer hidden" checked={@toggle_value}/>
