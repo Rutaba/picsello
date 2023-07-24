@@ -161,6 +161,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
   defp pipeline_section(assigns) do
     ~H"""
+
+    <%= if Enum.member?(@collapsed_sections, @subcategory) do %>
       <div class="md:my-5 md:mx-12 border border-base-200 rounded-lg">
         <% next_email = get_next_email_schdule_date(@category_type, @gallery_id, @job_id, @pipeline.id, @pipeline.state) %>
         <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
@@ -250,6 +252,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           <% end) %>
       <% end %>
       </div>
+    <% end %>
     """
   end
 
