@@ -5,7 +5,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
   require Logger
   import Ecto.Query
 
-  alias Picsello.{Repo, EmailPresets.EmailPreset, EmailAutomation.EmailAutomationPipeline}
+  alias Picsello.{Accounts.User, Repo, EmailPresets.EmailPreset, EmailAutomation.EmailAutomationPipeline}
 
   @shortdoc "import email presets"
   def run(_) do
@@ -17,6 +17,23 @@ defmodule Mix.Tasks.ImportEmailPresets do
   def insert_emails() do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     pipelines = from(p in EmailAutomationPipeline) |> Repo.all()
+    
+    organizations = from(u in User, 
+    select: %{id: u.organization_id},
+    where: u.email in [
+      "ops+demo@picsello.com",
+      "aatanasio.dempsey@gmail.com",
+      "kyle+22@picsello.com",
+      "kyle+laine@picsello.com",
+      "kyle+marketing@picsello.com",
+      "kyle+jane@picsello.com",
+      "gallerytest@gallerytest.com"
+    ])
+    |> Repo.all()
+
+    # organizations = from(o in Picsello.Organization) |> Repo.all()
+    Logger.warn("[orgs count] #{Enum.count(organizations)}")
+    
 
     [
       # wedding
@@ -7352,7 +7369,12 @@ defmodule Mix.Tasks.ImportEmailPresets do
         email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
       else
         attrs |> EmailPreset.default_presets_changeset() |> Repo.insert!()
-        Logger.warn("[insert email preset for] #{attrs.job_type}")
+        Logger.warn("[for current org] #{Enum.count(organizations) + 1} for #{attrs.job_type}")
+        Enum.map(organizations, fn %{id: org_id} -> 
+          Logger.warn("[record inserted] #{org_id} for #{attrs.job_type}")
+          Map.merge(attrs, %{organization_id: org_id})
+        end)
+        |> then(&Repo.insert_all("email_presets", &1))
       end
     end)
   end

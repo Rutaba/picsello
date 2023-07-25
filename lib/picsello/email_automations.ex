@@ -22,14 +22,14 @@ defmodule Picsello.EmailAutomations do
   def get_emails_for_schedule(organization_id, job_type, types, skip_sub_categories \\ [""]) do
     from(
       ep in EmailPreset,
-      distinct: ep.name,
+      # distinct: ep.name,
       join: eap in EmailAutomationPipeline,
       on: eap.id == ep.email_automation_pipeline_id,
       join: eac in assoc(eap, :email_automation_category),
       join: eas in assoc(eap, :email_automation_sub_category),
-      order_by: [desc: ep.id],
+      # order_by: [desc: ep.id],
       where:
-        (ep.organization_id == ^organization_id or is_nil(ep.organization_id)) and
+        (ep.organization_id == ^organization_id) and
           ep.job_type == ^job_type and
           ep.status == :active and
           eac.type in ^types and
@@ -269,11 +269,11 @@ defmodule Picsello.EmailAutomations do
   defp get_each_pipeline_emails(pipeline_id, organization_id, job_type) do
     from(
       ep in EmailPreset,
-      distinct: ep.name,
-      order_by: [desc: ep.id],
+      # distinct: ep.name,
+      # order_by: [desc: ep.id],
       where:
         ep.email_automation_pipeline_id == ^pipeline_id and
-          (ep.organization_id == ^organization_id or is_nil(ep.organization_id)) and
+          (ep.organization_id == ^organization_id) and
           ep.job_type == ^job_type
     )
     |> Picsello.Repo.all()

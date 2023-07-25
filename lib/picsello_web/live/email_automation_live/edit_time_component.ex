@@ -70,42 +70,24 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
          %{
            assigns: %{
              changeset: email_preset_changeset,
-             email: email,
-             current_user: %{organization_id: organization_id}
            }
          } = socket
        ) do
     
-    changeset = if is_nil(email.organization_id) do
-      email_preset_changeset
-      |> current()
-      |> Map.merge(%{
-        id: nil,
-        organization_id: organization_id,
-        inserted_at: email.inserted_at,
-        updated_at: email.updated_at
-      })
-      |> EmailPreset.changeset(%{})
-    else
-      Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
-    end
-
-    case Repo.insert(changeset,
-    on_conflict: {:replace, [:total_hours, :condition, :status]},
-    conflict_target: :id
-  ) do
+    case Repo.insert(email_preset_changeset,
+      on_conflict: {:replace, [:total_hours, :condition, :status]},
+      conflict_target: :id
+    ) do
     {:ok, email_automation_setting} ->
-    send(
-      self(),
-      {:update_automation,
+     send(
+       self(),
+       {:update_automation,
         %{email_automation_setting: email_automation_setting, message: "successfully updated"}}
-    )
-
-    socket
-
+     )
+     socket
     {:error, changeset} ->
-    socket
-    |> assign(changeset: changeset)
+      socket
+      |> assign(changeset: changeset) 
     end
   end
 
@@ -139,14 +121,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
 
             <% f = to_form(@changeset) %>
             <%= hidden_input f, :email_automation_pipeline_id %>
-            <%= hidden_input f, :type %>
             <%= hidden_input f, :job_type %>
-            <%= hidden_input f, :name %>
-            <%= hidden_input f, :state %>
-            <%= hidden_input f, :body_template %>
-            <%= hidden_input f, :subject_template %>
-            <%= hidden_input f, :position %>
-            <%= hidden_input f, :private_name %>
             <%= hidden_input f, :organization_id %>
 
             <div class="flex md:flex-row flex-col w-full md:px-14 px-6 py-6">

@@ -352,7 +352,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
             pipeline: pipeline,
              email_preset_changeset: email_preset_changeset,
              email: email,
-             current_user: %{organization_id: organization_id}
+            #  current_user: %{organization_id: organization_id}
            }
          } = socket
        ) do
@@ -365,15 +365,16 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     # end)
 
     changeset =
-    if is_nil(email.organization_id) do
-      email_preset_changeset
-      |> Ecto.Changeset.put_change(:organization_id, organization_id)
-      |> Ecto.Changeset.put_change(:total_hours, email.total_hours)
-      |> Ecto.Changeset.put_change(:inserted_at, email.inserted_at)
-      |> Ecto.Changeset.put_change(:updated_at, email.updated_at)
-    else
-      Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
-    end
+    # if is_nil(email.organization_id) do
+    #   email_preset_changeset
+    #   |> Ecto.Changeset.put_change(:organization_id, organization_id)
+    #   |> Ecto.Changeset.put_change(:total_hours, email.total_hours)
+    #   |> Ecto.Changeset.put_change(:inserted_at, email.inserted_at)
+    #   |> Ecto.Changeset.put_change(:updated_at, email.updated_at)
+    # else
+    #   Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
+    # end
+    Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
     |> Ecto.Changeset.put_change(:state, pipeline.state)
 
     Ecto.Multi.new()
