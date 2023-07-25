@@ -5,7 +5,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
-    only: [sort_emails: 1, assign_automation_pipelines: 1, get_pipline: 1, get_email_schedule_text: 6, get_email_name: 4]
+    only: [is_state_manually_trigger: 1, sort_emails: 1, assign_automation_pipelines: 1, get_pipline: 1, get_email_schedule_text: 6, get_email_name: 4]
 
   alias Picsello.{
     EmailAutomations,
@@ -248,7 +248,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                       </span>
                     <% end %>
                   </div>
-                  <button phx-click="edit-time-popup" phx-value-email_id={email.id}  phx-value-pipeline_id={@pipeline.id} class="flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap">
+                  <button phx-click="edit-time-popup" phx-value-email_id={email.id}  phx-value-pipeline_id={@pipeline.id} class={classes("flex items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"hidden" => is_state_manually_trigger(@pipeline.state) and index == 0})}>
                     <.icon name="settings" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Edit time
                   </button>

@@ -208,7 +208,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                   <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 z-40">
                     <%= cond do %>
                       <% not is_nil(email.reminded_at) -> %> <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
-                      <% is_state_manually_trigger(@pipeline.state) and index == 0-> %> <.icon name="flag" class="w-5 h-5 text-blue-planning-300" />
+                      <% is_state_manually_trigger(@pipeline.state) and index == 0 -> %> <.icon name="flag" class="w-5 h-5 text-blue-planning-300" />
                       <% true -> %>  <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
                     <% end %>
                   </div>
