@@ -537,15 +537,15 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
         <div class="grid gap-8 lg:grid-cols-2 grid-cols-1 mt-10">
           <div>
             <span class="text-xl font-bold">Single Image</span>
-            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-32 h-36">
+            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 h-auto">
               <div class="flex items-center">
-                <div class="flex flex-col md:pr-4">
+                <div class="flex flex-col pr-3">
                   <h1 class="text-xl font-bold">Pricing per image:</h1>
                   <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
                 </div>
-                <div class="flex flex-col ml-auto">
+                <div class="flex flex-col ml-auto mt-auto">
                   <div class="flex flex-row items-center w-32 mt-6 border border-blue-planning-300 rounded-lg relative">
-                    <%= input(f, :download_each_price, class: "sm:w-24 w-32 bg-white px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_debounce: 1000, phx_hook: "PriceMask", data_currency: Money.Currency.symbol!(@currency)) %>
+                    <%= input(f, :download_each_price, class: "w-full bg-white px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_debounce: 1000, phx_hook: "PriceMask", data_currency: Money.Currency.symbol!(@currency)) %>
                   </div>
                   <%= text_input f, :currency, value: @currency, class: "flex w-32 items-center form-control text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
                 </div>
@@ -557,15 +557,15 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
           </div>
           <div>
             <span class="text-xl font-bold">Buy them all</span>
-            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 md:h-32 h-36">
+            <div class="flex flex-col items-center border p-3 rounded-md border-base-250 mt-4 h-auto">
               <div class="flex items-center">
-                <div class="flex flex-col md:pr-4">
+                <div class="flex flex-col pr-3">
                   <h1 class="text-xl font-bold">Pricing for all images:</h1>
                   <span class="text-sm text-base-250 italic">Remember, this profit goes straight to you and your business so price fairly - for you and your clients!</span>
                 </div>
-                <div class="flex flex-col ml-auto">
+                <div class="flex flex-col ml-auto mt-auto">
                   <div class="flex flex-row items-center w-32 mt-6 border border-blue-planning-300 rounded-lg relative">
-                    <%= input(f, :buy_all_price, class: "sm:w-24 w-full bg-white px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_debounce: 1000, phx_hook: "PriceMask", data_currency: Money.Currency.symbol!(@currency)) %>
+                    <%= input(f, :buy_all_price, class: "w-full bg-white px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_debounce: 1000, phx_hook: "PriceMask", data_currency: Money.Currency.symbol!(@currency)) %>
                   </div>
                   <%= text_input f, :currency, value: @currency, class: "flex w-32 items-center form-control text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
                 </div>
