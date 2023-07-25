@@ -154,12 +154,16 @@ defmodule PicselloWeb.Shared.MultiSelect do
   end
 
   @doc false
-  defmacro init_rest(assigns, from_mount) when is_boolean(from_mount) do
+  defmacro init_rest(assigns, from_mount) do
     quote do
-      if @use_alpinejs do
-        unquote(from_mount) && add_alpinejs_assigns(unquote(assigns)) || unquote(assigns)
+      if unquote(from_mount) do
+        if @use_alpinejs do
+          add_alpinejs_assigns(unquote(assigns))
+        else
+          add_js_assigns(unquote(assigns))
+        end
       else
-        unquote(from_mount) && unquote(assigns) || add_js_assigns(unquote(assigns))
+        unquote(assigns)
       end
     end
   end
@@ -197,11 +201,11 @@ defmodule PicselloWeb.Shared.MultiSelect do
   def mount(%{assigns: assigns} = socket) do
     assigns =
       assigns
-      |> assign(:filter,            "")
-      |> assign(:cur_shown,      10000)
+      |> assign(:filter,"")
+      |> assign(:cur_shown,10000)
       |> assign(:filter_checked, false)
-      |> assign(:option_count,       0)
-      |> assign(:selected_count,     0)
+      |> assign(:option_count,0)
+      |> assign(:selected_count,0)
       |> init_rest(true)
 
     {:ok, Map.put(socket, :assigns, assigns)}
@@ -308,10 +312,10 @@ defmodule PicselloWeb.Shared.MultiSelect do
 
   @doc false
   def handle_event("select_all_options", _, %{assigns: %{options: options}} = socket) do
-    updated_options = Enum.map(options, fn option -> 
+    updated_options = Enum.map(options, fn option ->
       Map.put(option, :selected, true)
     end)
-    
+
     socket = socket
     |> assign(:options, updated_options)
     |> assign(:selected_count, Enum.count(updated_options))
@@ -398,7 +402,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
     rescue
       _ -> idx
     end
- 
+
     sel_inc = selected? && 1 || 0
 
     {count, sel_count, options} =
