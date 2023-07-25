@@ -1,7 +1,6 @@
 defmodule PicselloWeb.Live.FinanceSettings do
   @moduledoc false
   use PicselloWeb, :live_view
-  require Logger
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
 
   alias Ecto.Multi
@@ -22,7 +21,6 @@ defmodule PicselloWeb.Live.FinanceSettings do
 
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
-    Logger.info("#{current_user.organization.id} is the org_id")
     user_currency = UserCurrencies.get_user_currency(current_user.organization.id)
 
     socket
@@ -151,16 +149,11 @@ defmodule PicselloWeb.Live.FinanceSettings do
       change_event: :change_currency,
       submit_event: :submit_currency,
       title: "Edit Currency",
-      subtitle: "Change your Picsello account settings to charge clients in your native currency",
+      subtitle: "Enter the three letter currency code below to search, select and save your native currency.",
       component_used_for: :currency,
       warning_note: """
       Printed gallery products are fulfilled through our US-based lab partner, White House Custom Color
       (WHCC) so currently, non-US clients will be unable to order products through their Picsello gallery.
-      <br><br>
-      We are working on updates for self-fulfillment and ad-hoc invoice features to provide you with alternate
-      options for release in late 2023. In 2024–26, we'll be exploring alternate print lab partners so
-      <a class="chat text-blue-planning-300 underline" href="https://support.picsello.com/" rel="noopener noreferrer" target="_blank">let us know</a>
-       if you have a favorite.
       """
     })
     |> noreply()
@@ -196,7 +189,6 @@ defmodule PicselloWeb.Live.FinanceSettings do
         {:search_event, :submit_currency, %{name: new_currency}},
         %{assigns: %{user_currency: user_currency, current_user: current_user}} = socket
       ) do
-    Logger.info("#{user_currency.currency} is the currency")
     rate = ExchangeRatesApi.get_latest_rate(user_currency.currency, new_currency)
 
     {:ok, %{update_user_currency: user_currency}} =
