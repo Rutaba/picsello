@@ -163,7 +163,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     ~H"""
 
     <%= if Enum.member?(@collapsed_sections, @subcategory) do %>
-      <div class="md:my-5 md:mx-12 border border-base-200 rounded-lg">
+      <div class="mb-3 md:mr-4 border border-base-200 rounded-lg">
         <% next_email = get_next_email_schdule_date(@category_type, @gallery_id, @job_id, @pipeline.id, @pipeline.state) %>
         <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
           <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text <> " " <> next_email.date %>
@@ -208,7 +208,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                   <div class="flex w-8 h-8 rounded-full items-center justify-center bg-base-200 z-40">
                     <%= cond do %>
                       <% not is_nil(email.reminded_at) -> %> <.icon name="tick" class="w-5 h-5 text-blue-planning-300" />
-                      <% is_state_manually_trigger(@pipeline.state) and index == 0-> %> <.icon name="flag" class="w-5 h-5 text-blue-planning-300" />
+                      <% is_state_manually_trigger(@pipeline.state) and index == 0 -> %> <.icon name="flag" class="w-5 h-5 text-blue-planning-300" />
                       <% true -> %>  <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
                     <% end %>
                   </div>

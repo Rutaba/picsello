@@ -31,27 +31,30 @@
   <% end %>
 </div>
 
-<div class="px-6 py-6 xl:px-40 2xl:px-64 center-container">
-  <%= Enum.map(@email_schedules, fn email_schedule -> %>
-    <div class="flex flex-row mb-5">
-      <span class="flex flex-row w-8 h-8 rounded-full bg-base-200 items-center justify-center mr-2">
-        <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300"/>
-      </span>
-      <span class="text-2xl font-bold"> <%= email_schedule.category_name %> </span>
-    </div>
-      <%= Enum.map(email_schedule.subcategories, fn subcategory -> %>
-        <div class="mb-3 flex text-base-250 uppercase font-bold tracking-widestplus ml-10 mr-16 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
-          <div class="ml-auto">
-            <%= if !Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
-              <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
-            <% else %>
-              <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
-            <% end %>
+<%= Enum.map(@email_schedules, fn email_schedule -> %>
+  <div class="px-6 pt-6 lg:px-40 2xl:px-64 center-container flex flex-col sm:flex-row">
+      <div class={"mb-3 sm:mb-0 pt-1 sm:pl-0.5 flex sm:justify-center #{email_schedule.category_name == "Leads" && "sm:relative sm:before:absolute sm:before:top-7 sm:before:border sm:before:left-1/2 sm:before:h-full sm:before:border-base-200 sm:before:z-[-1]"}"}>
+        <span class="flex flex-row w-8 h-8 rounded-full bg-base-200 items-center justify-center">
+          <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300"/>
+        </span>
+        <span class="sm:hidden text-2xl font-bold ml-3"> <%= email_schedule.category_name %> </span>
+      </div>
+      <div class="w-full sm:pb-6 pl-3 flex flex-col">
+        <div class="text-2xl font-bold mb-3 hidden sm:block"> <%= email_schedule.category_name %> </div>
+        <%= Enum.map(email_schedule.subcategories, fn subcategory -> %>
+          <div class="mb-3 flex text-base-250 uppercase font-bold tracking-widestplus mr-4 md:mr-8 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
+            <div class="ml-auto">
+              <%= if !Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
+                <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+              <% else %>
+                <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+              <% end %>
+            </div>
           </div>
-        </div>
-        <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
-          <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={email_schedule.category_id} job_id={email_schedule.job_id} category_type={email_schedule.category_type} gallery_id={email_schedule.gallery_id} type={@type} subcategory={subcategory.subcategory_name} current_user={@current_user}/>
+          <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
+            <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={email_schedule.category_id} job_id={email_schedule.job_id} category_type={email_schedule.category_type} gallery_id={email_schedule.gallery_id} type={@type} subcategory={subcategory.subcategory_name} current_user={@current_user}/>
+          <% end) %>
         <% end) %>
-      <% end) %>
-  <% end) %>
-</div>
+      </div>
+  </div>
+<% end) %>
