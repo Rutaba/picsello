@@ -27,7 +27,7 @@ defmodule Picsello.Repo.Migrations.AddEmailSchedulesHistoryTable do
     end
 
     check =
-      "(job_id IS NOT NULL AND gallery_id IS NULL ) or (gallery_id IS NOT NULL AND job_id IS NULL)"
+      "(job_id IS NOT NULL AND gallery_id IS NULL) or (gallery_id IS NOT NULL AND job_id IS NULL)"
 
     create(constraint(@table, :job_gallery_constraint, check: check))
     create(index(@table, [:job_id, :gallery_id, :order_id, :email_automation_pipeline_id, :organization_id]))
