@@ -7,7 +7,8 @@ defmodule Picsello.EmailAutomationSchedules do
   alias Picsello.{
     Repo,
     EmailAutomations,
-    EmailAutomation.EmailSchedule
+    EmailAutomation.EmailSchedule,
+    EmailAutomation.EmailScheduleHistory
   }
 
   def get_schedule_by_id(id) do
@@ -33,54 +34,92 @@ defmodule Picsello.EmailAutomationSchedules do
   end
 
   def get_email_schedules_by_ids(ids, type) do
-    query =
+    email_schedule_query =
       from(
         es in EmailSchedule,
         join: p in assoc(es, :email_automation_pipeline),
         join: c in assoc(p, :email_automation_category),
-        join: s in assoc(p, :email_automation_sub_category),
-        select: %{
-          category_type: c.type,
-          category_id: c.id,
-          subcategory_slug: s.slug,
-          subcategory_id: s.id,
-          job_id: es.job_id,
-          pipeline:
-            fragment(
-              "to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?, 'email', ?))",
-              p.id,
-              p.name,
-              p.state,
-              p.description,
-              fragment(
-                "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
-                es.id,
-                es.name,
-                es.total_hours,
-                es.condition,
-                es.body_template,
-                es.private_name,
-                es.private_name,
-                es.is_stopped,
-                es.reminded_at,
-                es.order_id,
-                es.gallery_id,
-                es.job_id
-              )
-            )
-        }
+        join: s in assoc(p, :email_automation_sub_category)
       )
+      |> select_schedule_fields()
+      |> filter_email_schedule(ids, type)
 
-    query
-    |> filter_email_schedule(ids, type)
+    union_query =
+      from(
+        esh in EmailScheduleHistory,
+        join: eap in assoc(esh, :email_automation_pipeline),
+        join: eac in assoc(eap, :email_automation_category),
+        join: eas in assoc(eap, :email_automation_sub_category),
+        union_all: ^email_schedule_query
+      )
+      |> select_schedule_fields()
+      |> filter_email_schedule(ids, type)
+
+    from(q in subquery(union_query))
     |> Repo.all()
     |> email_schedules_group_by_categories()
+  end
+
+  defp select_schedule_fields(query) do
+    query
+    |> select([es, p, c, s], %{
+      category_type: c.type,
+      category_id: c.id,
+      subcategory_slug: s.slug,
+      subcategory_id: s.id,
+      job_id: es.job_id,
+      pipeline:
+        fragment(
+          "to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?, 'email', ?))",
+          p.id,
+          p.name,
+          p.state,
+          p.description,
+          fragment(
+            "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
+            es.id,
+            es.name,
+            es.total_hours,
+            es.condition,
+            es.body_template,
+            es.private_name,
+            es.private_name,
+            es.is_stopped,
+            es.reminded_at,
+            es.order_id,
+            es.gallery_id,
+            es.job_id
+          )
+        )
+    })
   end
 
   def get_all_emails_schedules(organizations) do
     from(es in EmailSchedule, where: es.organization_id in ^organizations)
     |> preload(email_automation_pipeline: [:email_automation_category])
     |> Repo.all()
+  end
+
+  def update_email_schedule(id, %{reminded_at: _reminded_at} = params) do
+    schedule = get_schedule_by_id(id)
+
+    history_params =
+      schedule
+      |> Map.drop([
+        :__meta__,
+        :__struct__,
+        :email_automation_pipeline,
+        :gallery,
+        :job,
+        :order,
+        :organization
+      ])
+      |> Map.merge(params)
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:email_schedule_history, EmailScheduleHistory.changeset(history_params))
+    |> Ecto.Multi.delete(:delete_email_schedule, schedule)
+    |> Repo.transaction()
   end
 
   def update_email_schedule(id, params) do
@@ -185,9 +224,15 @@ defmodule Picsello.EmailAutomationSchedules do
     |> Enum.sort_by(&{&1.category_id, &1.category_name}, :asc)
   end
 
-  def query_get_email_schedule(category_type, gallery_id, job_id, piepline_id) do
+  def query_get_email_schedule(
+        category_type,
+        gallery_id,
+        job_id,
+        piepline_id,
+        table \\ EmailSchedule
+      ) do
     query =
-      from(es in EmailSchedule,
+      from(es in table,
         where: es.email_automation_pipeline_id == ^piepline_id,
         limit: 1
       )
@@ -199,7 +244,7 @@ defmodule Picsello.EmailAutomationSchedules do
   end
 
   def get_last_completed_email(category_type, gallery_id, job_id, pipeline_id) do
-    query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id)
+    query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id, EmailScheduleHistory)
     |> where([es], not is_nil(es.reminded_at))
     |> order_by([es], desc: es.id)
     |> Repo.one()
