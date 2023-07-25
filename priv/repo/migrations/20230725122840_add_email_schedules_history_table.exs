@@ -31,10 +31,22 @@ defmodule Picsello.Repo.Migrations.AddEmailSchedulesHistoryTable do
 
     create(constraint(@table, :job_gallery_constraint, check: check))
     create(index(@table, [:job_id, :gallery_id]))
+
+    create index(:email_schedules_history, [:job_id])
+    create index(:email_schedules_history, [:gallery_id])
+    create index(:email_schedules_history, [:order_id])
+    create index(:email_schedules_history, [:email_automation_pipeline_id])
+    create index(:email_schedules_history, [:organization_id])
   end
 
   def down do
     drop(constraint(@table, :job_gallery_constraint))
+    drop index(:email_schedules_history, [:job_id, :gallery_id])
+    drop index(:email_schedules_history, [:job_id])
+    drop index(:email_schedules_history, [:gallery_id])
+    drop index(:email_schedules_history, [:order_id])
+    drop index(:email_schedules_history, [:email_automation_pipeline_id])
+    drop index(:email_schedules_history, [:organization_id])
     drop(table(@table))
   end
 end

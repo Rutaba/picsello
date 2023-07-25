@@ -46,49 +46,50 @@ defmodule Picsello.EmailAutomationSchedules do
 
     union_query =
       from(
-        esh in EmailScheduleHistory,
-        join: eap in assoc(esh, :email_automation_pipeline),
-        join: eac in assoc(eap, :email_automation_category),
-        join: eas in assoc(eap, :email_automation_sub_category),
+        history in EmailScheduleHistory,
+        join: pipeline in assoc(history, :email_automation_pipeline),
+        join: category in assoc(pipeline, :email_automation_category),
+        join: subcategory in assoc(pipeline, :email_automation_sub_category),
         union_all: ^email_schedule_query
       )
       |> select_schedule_fields()
       |> filter_email_schedule(ids, type)
 
-    from(q in subquery(union_query))
+
+    union_query
     |> Repo.all()
     |> email_schedules_group_by_categories()
   end
 
   defp select_schedule_fields(query) do
     query
-    |> select([es, p, c, s], %{
-      category_type: c.type,
-      category_id: c.id,
-      subcategory_slug: s.slug,
-      subcategory_id: s.id,
-      job_id: es.job_id,
+    |> select([email, pipeline, category, subcategory], %{
+      category_type: category.type,
+      category_id: category.id,
+      subcategory_slug: subcategory.slug,
+      subcategory_id: subcategory.id,
+      job_id: email.job_id,
       pipeline:
         fragment(
           "to_jsonb(json_build_object('id', ?, 'name', ?, 'state', ?, 'description', ?, 'email', ?))",
-          p.id,
-          p.name,
-          p.state,
-          p.description,
+          pipeline.id,
+          pipeline.name,
+          pipeline.state,
+          pipeline.description,
           fragment(
             "to_jsonb(json_build_object('id', ?, 'name', ?, 'total_hours', ?, 'condition', ?, 'body_template', ?, 'subject_template', ?, 'private_name', ?, 'is_stopped', ?, 'reminded_at', ?, 'order_id', ?, 'gallery_id', ?, 'job_id', ?))",
-            es.id,
-            es.name,
-            es.total_hours,
-            es.condition,
-            es.body_template,
-            es.private_name,
-            es.private_name,
-            es.is_stopped,
-            es.reminded_at,
-            es.order_id,
-            es.gallery_id,
-            es.job_id
+            email.id,
+            email.name,
+            email.total_hours,
+            email.condition,
+            email.body_template,
+            email.private_name,
+            email.private_name,
+            email.is_stopped,
+            email.reminded_at,
+            email.order_id,
+            email.gallery_id,
+            email.job_id
           )
         )
     })

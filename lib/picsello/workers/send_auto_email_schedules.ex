@@ -116,6 +116,8 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   defp send_email(state, pipeline_id, schedule, job, gallery, order) do
     type = schedule.email_automation_pipeline.email_automation_category.type
 
+    Logger.info("state #{state}")
+
     job_date_time =
       Shared.fetch_date_for_state_maybe_manual(state, pipeline_id, job, gallery, order)
 
