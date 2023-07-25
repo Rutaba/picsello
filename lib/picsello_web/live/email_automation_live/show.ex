@@ -221,7 +221,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                     <%= get_email_name(email, index, @type, @current_user.organization_id) %>
                   </p>
                   <div class="flex items-center bg-white">
-                  <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300 mr-2" />
+                    <div class="w-4 h-4 mr-2">
+                      <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300" />
+                    </div>
                     <p class="font-normal text-base-250 text-sm">
                       <%= get_email_schedule_text(email.total_hours, @pipeline.state, @pipeline.emails, index, @type, @current_user.organization_id) %>
                     </p>
