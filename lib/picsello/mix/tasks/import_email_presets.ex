@@ -38,7 +38,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
@@ -57,7 +57,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
@@ -74,7 +74,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
@@ -767,7 +767,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
@@ -785,7 +785,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
@@ -802,7 +802,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
@@ -1532,7 +1532,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
@@ -1550,7 +1550,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
@@ -1567,7 +1567,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
@@ -2268,7 +2268,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
@@ -2286,7 +2286,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
@@ -2303,7 +2303,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
@@ -3006,7 +3006,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
@@ -3024,7 +3024,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
@@ -3041,7 +3041,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
@@ -3732,7 +3732,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
@@ -3750,7 +3750,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
@@ -3767,7 +3767,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
@@ -4458,7 +4458,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
@@ -4476,7 +4476,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
@@ -4493,7 +4493,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
@@ -5185,7 +5185,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
@@ -5203,7 +5203,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
@@ -5220,7 +5220,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
@@ -5912,7 +5912,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
@@ -5930,7 +5930,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
@@ -5947,7 +5947,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
@@ -6637,7 +6637,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
@@ -6655,7 +6655,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
@@ -6672,7 +6672,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
