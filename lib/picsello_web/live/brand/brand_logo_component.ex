@@ -34,10 +34,12 @@ defmodule PicselloWeb.Brand.BrandLogoComponent do
         <h1 class="mb-4 text-3xl font-bold">
           Upload logo
         </h1>
+
         <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
           <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
         </button>
       </div>
+
       <div>
         <.drag_image_upload icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :logo)} image={@organization.profile.logo} uploads={@uploads} organization={@organization} edit={@edit} image_upload={@uploads.logo} disable_image_save_button={@disable_image_save_button} display_progress_bar={@display_progress_bar} myself={@myself} supports="PNG or SVG: under 10 mb" image_title="logo" meta={@meta} filename={@filename} filesize={@filesize}/>
       </div>
@@ -56,6 +58,7 @@ defmodule PicselloWeb.Brand.BrandLogoComponent do
             <div class="w-full sm:w-1/2 h-60 flex justify-center">
               <img src={make_url(@meta)} class="object-contain"/>
             </div>
+
             <div class="w-full sm:w-1/2 flex my-4 p-4 items-start justify-center grid grid-cols-2">
               <div class="mr-auto">
                 <p class="text-left sm:hidden"><%= trim_filename(@filename, "text-left sm:hidden") %></p>
@@ -78,7 +81,9 @@ defmodule PicselloWeb.Brand.BrandLogoComponent do
           </div>
           <%= live_file_input @image_upload, class: "hidden" %>
         <% end %>
+
       </label>
+
       <div data-testid="modal-buttons" class="bg-white -bottom-6">
         <%= if @display_progress_bar do %>
           <.progress image={@image_upload} class="flex m-4 items-center justify-center grid grid-cols-2" disabled={@display_progress_bar}/>
