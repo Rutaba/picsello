@@ -22,7 +22,7 @@
           </div>
         </div>
       </div>
-      <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto bg-white">
+      <div class="fixed bottom-0 left-0 right-0 z-10 mt-12 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto bg-white">
         <button type="button" title="create Contract" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-contract">Create contract</button>
       </div>
     </div>
@@ -36,7 +36,7 @@
     </.empty_state_base>
   <% end %>
     <div {testid("filter_and_sort_bar")} class="flex flex-col px-5 center-container px-1.5 lg:flex-row-reverse mb-0 md:mb-10"> 
-      <.select_dropdown class="w-full md:w-60" title="Contract Status" id="status" selected_option={@contract_status} options_list={contract_status_options()}/>
+      <.select_dropdown class="w-full" title="Contract Status" id="status" selected_option={@contract_status} options_list={contract_status_options()}/>
       <.select_dropdown class="w-full" title="Job Type" id="type" selected_option={@job_type} options_list={job_type_options()}/>
     </div>
     <div class="hidden sm:grid sm:grid-cols-12 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
@@ -66,7 +66,7 @@
             <% end %>
           </div>
           <div class="sm:col-span-2">
-              <span class="sm:hidden font-bold">Job type: </span> <%= contract.job_type %>
+              <span class="sm:hidden font-bold">Job type: </span> <%= if is_nil(contract.job_type), do: contract.job_type, else: String.capitalize(contract.job_type) %>
           </div>
           <div class="sm:col-span-3 flex justify-end">
               <.actions_cell contract={contract} />
@@ -75,5 +75,5 @@
       <% end %>
   <% end %>
 </div>
-<.pagination_component pagination_changeset={@pagination_changeset} limit_options={[4, 8, 12, 16]} />
+<.pagination_component wrapper_class="mb-8 sm:mb-0" pagination_changeset={@pagination_changeset} limit_options={[4, 8, 12, 16]} />
 
