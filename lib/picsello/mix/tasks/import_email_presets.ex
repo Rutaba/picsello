@@ -21,10 +21,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
     organizations = from(u in User, 
     select: %{id: u.organization_id},
     where: u.email in [
+      "rhinop+picsello@gmail.com",
       "ops+demo@picsello.com",
       "aatanasio.dempsey@gmail.com",
       "kyle+22@picsello.com",
-      "kyle+laine@picsello.com",
+      "xanadupod@workwithloop.com",
       "kyle+marketing@picsello.com",
       "kyle+jane@picsello.com",
       "gallerytest@gallerytest.com"
