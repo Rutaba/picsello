@@ -43,7 +43,18 @@ defmodule Picsello.CreateLeadPackageTest do
       text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$50"))
     )
+    |> sleep(1000)
+    |> sleep(1000)
+    |> sleep(1000)
+    |> sleep(1000)
+    |> sleep(1000)
+    |> sleep(1000)
     |> click(css("[href='/images/icons.svg#close-x']", at: 1))
+    |> sleep(1000)
+    |> sleep(1000)
+    |> sleep(1000)
+    |> sleep(1000)
+    |> sleep(1000)
     |> click(button("Edit upsell options"))
     |> click(css("#download_is_buy_all"))
     |> find(
@@ -116,10 +127,10 @@ defmodule Picsello.CreateLeadPackageTest do
   feature "user with package templates uses one as-is", %{session: session, user: user} do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
 
-    base_price = Money.new(10_000)
-    download_each_price = Money.new(300)
-    buy_all = Money.new(5000)
-    print_credits = Money.new(1500)
+    base_price = %Money{amount: 10_000, currency: :USD}
+    download_each_price = %Money{amount: 300, currency: :USD}
+    buy_all = %Money{amount: 5000, currency: :USD}
+    print_credits = %Money{amount: 1500, currency: :USD}
 
     template =
       insert(:package_template,
@@ -160,6 +171,8 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_text("best wedding")
 
     template_id = template.id
+
+    lead |> Repo.reload() |> Repo.preload(:package) |> Map.get(:package)
 
     assert %Package{
              name: "best wedding",

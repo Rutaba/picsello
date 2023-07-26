@@ -82,6 +82,8 @@ defmodule Picsello.Factory do
       |> Repo.update!()
     end
 
+    insert(:user_currency, user: user)
+
     user
     |> Ecto.Changeset.change(onboarding: build(:onboarding))
     |> Repo.update!()
@@ -139,13 +141,36 @@ defmodule Picsello.Factory do
     }
   end
 
+  def currency(), do: "USD"
+
+  def user_currency_factory(attrs) do
+    %Picsello.UserCurrency{
+      previous_currency: "USD",
+      exchange_rate: 1.0,
+      organization_id: fn ->
+        case attrs do
+          %{user: user} ->
+            user
+            |> Repo.preload(:organization)
+            |> Map.get(:organization)
+            |> Map.get(:id)
+
+          _ ->
+            build(:organization) |> Map.get(:id)
+        end
+      end,
+      currency: currency()
+    }
+    |> evaluate_lazy_attributes()
+  end
+
   def package_factory(attrs) do
     %Package{
-      base_price: Map.get(attrs, :base_price, 1000),
+      base_price: %{amount: 5000, currency: :USD},
       buy_all: nil,
-      print_credits: 0,
+      print_credits: %{amount: 0, currency: :USD},
       download_count: 0,
-      download_each_price: Money.new(300),
+      download_each_price: %{amount: 300, currency: :USD},
       name: "Package name",
       description: "<p>Package description</p>",
       shoot_count: 2,
@@ -157,7 +182,8 @@ defmodule Picsello.Factory do
           %{user: user} -> user |> Repo.preload(:organization) |> Map.get(:organization)
           _ -> build(:organization)
         end
-      end
+      end,
+      currency: currency()
     }
     |> merge_attributes(Map.drop(attrs, [:user]))
     |> evaluate_lazy_attributes()
