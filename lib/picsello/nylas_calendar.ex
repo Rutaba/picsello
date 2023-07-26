@@ -108,16 +108,15 @@ defmodule Picsello.NylasCalendar do
     end
   end
 
-  @spec add_event(any, any, token()) :: result(any)
+  @spec create_event(map(), token()) :: result(any)
   @doc """
-  Adds an event to the specified calendar.
+  Creates an event to the specified calendar.
   """
-  def add_event(calendar_id, params, token) do
+  def create_event(%{calendar_id: _} = params, token) do
     headers = build_headers(token)
     url = "#{@base_url}/#{@event_endpoint}"
 
     params
-    |> Map.put("calendar_id", calendar_id)
     |> Jason.encode!()
     |> then(&HTTPoison.post!(url, &1, headers))
     |> case do
@@ -131,7 +130,6 @@ defmodule Picsello.NylasCalendar do
 
   def update_event(%{id: id} = params, token) do
     headers = build_headers(token)
-
     url = "https://api.nylas.com/events/#{id}?notify_participants=true"
     response = HTTPoison.put!(url, Jason.encode!(params), headers)
 
@@ -167,29 +165,32 @@ defmodule Picsello.NylasCalendar do
           other: map()
         }
 
-  @spec get_events!([String.t()], String.t()) :: list(calendar_event())
-  def get_events!(calendars, token), do: get_events!(calendars, token, "America/New_York")
+  @spec get_external_events([String.t()], String.t()) :: list(calendar_event())
 
-  def get_events!(nil, _, _), do: []
-  def get_events!(_, nil, _), do: []
+  @timezone "America/New_York"
+  def get_external_events(calendars, token, timezone \\ @timezone),
+    do: filter_events(calendars, token, timezone, &remove_picsello/1)
 
-  def get_events!(calendars, token, timezone) when is_list(calendars) do
+  def get_picsello_events(calendars, token, timezone \\ @timezone),
+    do: filter_events(calendars, token, timezone, &only_picsello/1)
+
+  defp filter_events(calendars, token, timezone, filter_fn) when is_list(calendars) do
     calendars
     |> Enum.flat_map(fn calendar_id ->
       Logger.debug("Get events for #{calendar_id} #{token}")
       {:ok, events} = get_events(calendar_id, token)
       events
     end)
-    |> Enum.filter(&remove_from_picsello/1)
+    |> Enum.filter(filter_fn)
     |> Enum.map(&to_shoot(&1, timezone))
   end
 
-  @spec remove_from_picsello(map) :: boolean
-  def remove_from_picsello(%{"description" => nil}), do: true
+  @spec remove_picsello(map) :: boolean
+  defp remove_picsello(%{"description" => nil}), do: true
+  defp remove_picsello(%{"description" => des}), do: not (des =~ "[From Picsello]")
 
-  def remove_from_picsello(%{"description" => description}) do
-    not (description =~ "[From Picsello]")
-  end
+  defp only_picsello(%{"description" => nil}), do: true
+  defp only_picsello(%{"description" => des}), do: des =~ "[From Picsello]"
 
   @spec to_shoot(map, String.t()) :: calendar_event()
   def to_shoot(

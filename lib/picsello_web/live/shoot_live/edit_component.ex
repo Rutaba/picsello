@@ -14,7 +14,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
     Repo,
     PackagePaymentSchedule,
     PaymentSchedule,
-    PackagePayments
+    PackagePayments,
+    Workers.CalendarEvent
   }
 
   alias Ecto.{Changeset, Multi}
@@ -70,13 +71,23 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   def handle_event(
         "save",
         %{"shoot" => params},
-        %{assigns: %{job: %{job_status: job_status}}} = socket
+        %{assigns: %{current_user: user, job: %{job_status: job_status}}} = socket
       ) do
     socket
     |> build_changeset(params |> Enum.into(%{"address" => nil}))
     |> then(fn changeset ->
       Multi.new()
       |> Multi.insert_or_update(:shoot, changeset)
+      |> Multi.merge(fn
+        %{shoot: shoot} when not is_nil(user.nylas_oauth_token) ->
+          changeset
+          |> params_for_event_job(shoot)
+          |> CalendarEvent.new()
+          |> then(&Oban.insert(Multi.new(), :event, &1))
+
+        _ ->
+          Multi.new()
+      end)
       |> Multi.merge(fn _ ->
         if job_status.is_lead do
           {updated_package_payment_schedules, updated_payment_schedules,
@@ -125,6 +136,18 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           socket |> assign(changeset: changeset) |> noreply()
       end)
     end)
+  end
+
+  defp params_for_event_job(changeset, shoot) do
+    changeset
+    |> Ecto.Changeset.apply_changes()
+    |> case do
+      %{id: nil} ->
+        %{type: :insert, shoot_id: shoot.id}
+
+      %{id: _id} ->
+        %{type: :update, shoot_id: shoot.id}
+    end
   end
 
   defp get_messgae(%{
@@ -326,19 +349,12 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       else
         case parse_in_zone(starts_at, time_zone) do
           {:ok, datetime} -> datetime
-          {:error, _} -> nil
           _ -> nil
         end
       end
 
-    socket
-    |> build_changeset(
-      params
-      |> Map.put(
-        "starts_at",
-        new_date
-      )
-    )
+    params = Map.put(params, "starts_at", new_date)
+    build_changeset(socket, params)
   end
 
   defp build_changeset(%{assigns: %{shoot: shoot}}, params) when shoot != nil do

@@ -20,6 +20,9 @@ defmodule Picsello.Shoots do
     |> Repo.all()
   end
 
+  def get_shoot(shoot_id), do: Repo.get(Shoot, shoot_id)
+  def load_user(%Shoot{} = shoot), do: Repo.preload(shoot, job: [client: [organization: :user]])
+
   def get_next_shoot(%Job{shoots: shoots}) when is_nil(shoots), do: nil
 
   def get_next_shoot(%Job{shoots: shoots}) do

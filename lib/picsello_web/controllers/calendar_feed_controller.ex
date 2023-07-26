@@ -8,7 +8,7 @@ defmodule PicselloWeb.CalendarFeedController do
     feeds = user |> Shoots.get_shoots(params) |> map(conn, user)
     read_cals = user.external_calendar_read_list
 
-    events = NylasCalendar.get_events!(read_cals, user.nylas_oauth_token, user.time_zone)
+    events = NylasCalendar.get_external_events(read_cals, user.nylas_oauth_token, user.time_zone)
 
     conn
     |> put_resp_content_type("application/json")
