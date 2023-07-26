@@ -97,7 +97,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
           }
         } = socket
       ) do
-    template_id = Map.get(params, "template_id", "90") |> to_integer()
+    template_id = Map.get(params, "template_id", "1") |> to_integer()
     selected_preset = Enum.filter(email_presets, &(&1.id == template_id))
 
     new_email_preset =
@@ -281,6 +281,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
 
         <% f = to_form(@email_preset_changeset) %>
         <%= hidden_input f, :subject_template %>
+        <%= hidden_input f, :template_id %>
         <%= hidden_input f, :body_template %>
 
         <div class="flex flex-col md:px-14 px-6 py-6">
@@ -305,7 +306,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
                     <%= select f, :calendar, ["Hour", "Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
                   </div>
                   <div class="ml-2 w-3/5">
-                    <%= select f, :sign, [Before: "-", After: "+"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
+                    <%= select f, :sign, Shared.make_sign_options(@pipeline.state), wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
                   </div>
                 </div>
                 <%= if message = @email_preset_changeset.errors[:count] do %>

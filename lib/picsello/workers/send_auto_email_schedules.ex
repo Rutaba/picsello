@@ -73,11 +73,12 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     EmailAutomationSchedules.get_all_emails_schedules(organizations)
     |> Enum.group_by(&group_key/1)
     |> Enum.map(fn {{job_id, gallery_id, pipeline_id}, emails} ->
+      state = List.first(emails) |> Map.get(:email_automation_pipeline) |> Map.get(:state)
       %{
         job_id: job_id,
         gallery_id: gallery_id,
         pipeline_id: pipeline_id,
-        emails: Shared.sort_emails(emails)
+        emails: Shared.sort_emails(emails, state)
       }
     end)
   end

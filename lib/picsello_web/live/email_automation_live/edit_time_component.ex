@@ -148,7 +148,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                           <%= select f, :calendar, ["Hour", "Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
                         </div>
                         <div class="ml-2 w-3/5">
-                          <%= select f, :sign, [Before: "-", After: "+"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
+                          <%= select f, :sign, Shared.make_sign_options(@pipeline.state), wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
                         </div>
                       </div>
                       <%= if message = @changeset.errors[:count] do %>

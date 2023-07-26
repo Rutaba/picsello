@@ -50,6 +50,19 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     email_presets
     |> Enum.map(fn %{id: id, name: name} -> {name, id} end)
   end
+  
+  def make_sign_options(state) do
+    state = if is_atom(state), do: Atom.to_string(state), else: state
+
+    cond do
+      state in ["before_shoot", "gallery_expiration_soon"] ->
+        [[key: "Before", value: "-"], [key: "After", value: "+", disabled: true]]
+      state in ["balance_due", "offline_payment"] ->
+        [[key: "Before", value: "-"], [key: "After", value: "+"]]
+      true ->
+        [[key: "Before", value: "-", disabled: true], [key: "After", value: "+"]]  
+    end
+  end
 
   def email_preset_changeset(socket, email_preset, params \\ nil) do
     email_preset_changeset = build_email_changeset(email_preset, params)
@@ -96,14 +109,14 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
   end
 
-  def sort_emails(emails) do
-    emails =
-      Enum.reverse(emails)
-      |> Enum.sort_by(&{:asc, Map.fetch(&1, :inserted_at)})
+  def sort_emails(emails, state) do
+    emails = Enum.sort_by(emails, &{:asc, Map.fetch(&1, :inserted_at)})
 
     email_with_immediate_status = Enum.filter(emails, &(&1.total_hours == 0))
+    state? = if(is_atom(state), do: Atom.to_string(state), else: state) 
+    |> String.contains?("manual_")
 
-    if Enum.any?(email_with_immediate_status) do
+    if state? && Enum.any?(email_with_immediate_status) do
       {first_email, unsorted_emails} = email_with_immediate_status |> List.pop_at(0)
       pending_emails = unsorted_emails ++ Enum.filter(emails, &(&1.total_hours != 0))
       [first_email | Enum.sort_by(pending_emails, &Map.fetch(&1, :total_hours))]
@@ -191,9 +204,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     do: "Send email immediately"
 
   def get_email_schedule_text(hours, state, emails, index, job_type, organization_id) do
-    %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
-    sign = if sign == "+", do: "after", else: "before"
-    calendar = calendar_text(calendar, count)
+    %{calendar: calendar, count: count, sign: sign} = get_email_meta(hours)
     email = get_preceding_email(emails, index)
 
     sub_text =
@@ -236,6 +247,14 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def get_preceding_email(emails, index) do
     {email, _} = List.pop_at(emails, index - 1)
     if email, do: email, else: List.last(emails)
+  end
+
+  defp get_email_meta(hours) do
+    %{calendar: calendar, count: count, sign: sign} = explode_hours(hours)
+    sign = if sign == "+", do: "after", else: "before"
+    calendar = calendar_text(calendar, count)
+
+    %{calendar: calendar, count: count, sign: sign}
   end
 
   defp calendar_text("Hour", count), do: ngettext("hour", "hours", count)

@@ -8,7 +8,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     only: [
       assign_collapsed_sections: 1,
       is_state_manually_trigger: 1,
-      sort_emails: 1,
+      sort_emails: 2,
       assign_automation_pipelines: 1,
       get_pipline: 1,
       get_email_schedule_text: 6,
@@ -231,9 +231,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         </div>
 
         <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}") do %>
-          <% emails = sort_emails(@pipeline.emails) %>
+          <% emails = sort_emails(@pipeline.emails, @pipeline.state) %>
           <%= for {email, index} <- Enum.with_index(emails) do %>
-            <% last_index = Enum.count(@pipeline.emails) - 1 %>
+            <% last_index = Enum.count(emails) - 1 %>
             <div class="px-6">
               <div class="flex md:flex-row flex-col justify-between">
                 <div class="flex h-max">
