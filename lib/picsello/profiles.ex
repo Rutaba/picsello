@@ -120,15 +120,17 @@ defmodule Picsello.Profiles do
           email: #{contact.email}
           phone: #{contact.phone}
         """
-      msg = if contact.referred_by, do: msg <> referred_by?(contact.referred_by), else: msg
-      msg = if contact.referred_by, do: msg <> referral_name?(contact.referral_name), else: msg
 
-      msg <>
+      build_message(contact, msg) <>
       """
         job type: #{dyn_gettext(contact.job_type)}
         message: #{contact.message}
       """
     end
+
+    defp build_message(%{referred_by: nil}, msg), do: msg
+    defp build_message(%{referral_name: nil, referred_by: referred_by}, msg), do: msg <> referred_by?(referred_by)
+    defp build_message(%{referral_name: referral_name, referred_by: referred_by}, msg), do: msg <> referred_by?(referred_by) <> referral_name?(referral_name)
 
     defp referred_by?(nil), do: ""
     defp referred_by?(referred_by),
