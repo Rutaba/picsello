@@ -5,7 +5,15 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   import PicselloWeb.LiveHelpers
 
   import PicselloWeb.EmailAutomationLive.Shared,
-    only: [is_state_manually_trigger: 1, sort_emails: 1, assign_automation_pipelines: 1, get_pipline: 1, get_email_schedule_text: 6, get_email_name: 4]
+    only: [
+      assign_collapsed_sections: 1,
+      is_state_manually_trigger: 1,
+      sort_emails: 1,
+      assign_automation_pipelines: 1,
+      get_pipline: 1,
+      get_email_schedule_text: 6,
+      get_email_name: 4
+    ]
 
   alias Picsello.{
     EmailAutomations,
@@ -17,7 +25,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     socket
     |> assign(:page_title, "Automations")
     |> is_mobile(params)
-    |> assign(:collapsed_sections, [])
     |> default_assigns()
     |> ok()
   end
@@ -26,6 +33,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     socket
     |> assign_job_types()
     |> assign_automation_pipelines()
+    |> assign_collapsed_sections()
   end
 
   defp assign_job_types(%{assigns: %{current_user: current_user}} = socket) do
@@ -33,8 +41,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       current_user
       |> Repo.preload([organization: [organization_job_types: :jobtype]], force: true)
 
-    job_types = current_user.organization.organization_job_types
-    |> Picsello.Profiles.get_active_organization_job_types()
+    job_types =
+      current_user.organization.organization_job_types
+      |> Picsello.Profiles.get_active_organization_job_types()
 
     selected_job_type = job_types |> List.first()
 
@@ -71,7 +80,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   def handle_event(
         "add-email-popup",
         %{"pipeline_id" => pipeline_id},
-        %{assigns: %{current_user: current_user, job_types: job_types, selected_job_type: selected_job_type}} = socket
+        %{
+          assigns: %{
+            current_user: current_user,
+            job_types: job_types,
+            selected_job_type: selected_job_type
+          }
+        } = socket
       ) do
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.AddEmailComponent, %{
@@ -163,7 +178,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
   defdelegate handle_info(message, socket), to: PicselloWeb.EmailAutomationLive.Shared
 
   defp open_edit_modal(
-         %{assigns: %{job_types: job_types, current_user: current_user, selected_job_type: selected_job_type}} = socket,
+         %{
+           assigns: %{
+             job_types: job_types,
+             current_user: current_user,
+             selected_job_type: selected_job_type
+           }
+         } = socket,
          %{
            "email_id" => email_id,
            "pipeline_id" => pipeline_id

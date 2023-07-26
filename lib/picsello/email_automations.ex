@@ -16,6 +16,7 @@ defmodule Picsello.EmailAutomations do
 
   alias Picsello.EmailAutomation.{
     EmailAutomationPipeline,
+    EmailAutomationSubCategory,
     EmailSchedule
   }
 
@@ -29,13 +30,17 @@ defmodule Picsello.EmailAutomations do
       join: eas in assoc(eap, :email_automation_sub_category),
       # order_by: [desc: ep.id],
       where:
-        (ep.organization_id == ^organization_id) and
+        ep.organization_id == ^organization_id and
           ep.job_type == ^job_type and
           ep.status == :active and
           eac.type in ^types and
           eas.slug not in ^skip_sub_categories
     )
     |> Repo.all()
+  end
+
+  def get_sub_categories() do
+    from(EmailAutomationSubCategory) |> Repo.all()
   end
 
   def get_pipeline_by_id(id) do
@@ -273,7 +278,7 @@ defmodule Picsello.EmailAutomations do
       # order_by: [desc: ep.id],
       where:
         ep.email_automation_pipeline_id == ^pipeline_id and
-          (ep.organization_id == ^organization_id) and
+          ep.organization_id == ^organization_id and
           ep.job_type == ^job_type
     )
     |> Picsello.Repo.all()

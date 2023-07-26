@@ -356,13 +356,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:pays_retainer, _pipeline_id, job, _gallery, _order) do
-    if PaymentSchedules.is_with_cash?(job) do
-      nil
-    else
-      job.payment_schedules
-      |> PaymentSchedules.set_payment_schedules_order()
+    payment_schedules = PaymentSchedules.payment_schedules(job)
+    if !PaymentSchedules.is_with_cash?(job) and Enum.count(payment_schedules) > 0 do
+      payment_schedules
       |> List.first()
       |> Map.get(:inserted_at)
+    else
+      nil
     end
   end
 
@@ -398,12 +398,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:balance_due, _pipeline_id, job, _gallery, _order) do
-    if PaymentSchedules.free?(job) do
-      nil
-    else
+    payment_schedules = PaymentSchedules.payment_schedules(job)
+    if !PaymentSchedules.free?(job) and Enum.count(payment_schedules) > 0 do
       job
       |> PaymentSchedules.next_due_payment()
       |> Map.get(:due_at)
+    else
+      nil
     end
   end
 
@@ -417,9 +418,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:paid_full, _pipeline_id, job, _gallery, _order) do
-    if PaymentSchedules.all_paid?(job) do
-      job.payment_schedules
-      |> PaymentSchedules.set_payment_schedules_order()
+    payment_schedules = PaymentSchedules.payment_schedules(job)
+    if PaymentSchedules.all_paid?(job) and Enum.count(payment_schedules) > 0 do
+      payment_schedules
       |> List.last()
       |> Map.get(:paid_at)
     else
@@ -428,13 +429,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:paid_offline_full, _pipeline_id, job, _gallery, _order) do
+    payment_schedules = PaymentSchedules.payment_schedules(job)
     all_paid_offline =
-      PaymentSchedules.payment_schedules(job)
+      payment_schedules
       |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type in ["check", "cash"] end)
 
-    if all_paid_offline do
-      job.payment_schedules
-      |> PaymentSchedules.set_payment_schedules_order()
+    if all_paid_offline and Enum.count(payment_schedules) > 0 do
+      payment_schedules
       |> List.last()
       |> Map.get(:paid_at)
     else
@@ -567,6 +568,12 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       {count, nil} -> {:ok, count}
       _ -> {:error, "error insertion"}
     end
+  end
+
+  def assign_collapsed_sections(socket) do
+    sub_categories = EmailAutomations.get_sub_categories()|> Enum.map(fn x -> x.name end)
+    socket
+    |> assign(:collapsed_sections, sub_categories)
   end
 
   defp get_job_id(job) when is_map(job), do: job.id

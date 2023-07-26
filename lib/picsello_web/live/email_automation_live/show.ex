@@ -24,8 +24,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     socket
     |> assign(:job_id, to_integer(id))
     |> assign_email_schedules()
-    |> assign(:collapsed_sections, [])
     |> assign_job_types()
+    |> assign_collapsed_sections()
     |> ok()
   end
 
