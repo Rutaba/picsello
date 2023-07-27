@@ -107,7 +107,8 @@ defmodule Picsello.Orders.ConfirmationsTest do
         id: "payment-intent-id",
         amount: total_cents,
         status: "requires_capture",
-        amount_capturable: total_cents
+        amount_capturable: total_cents,
+        currency: "usd"
       )
     )
     |> insert_intent()
@@ -182,7 +183,12 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
     test "captures intent", %{stripe_invoice: stripe_invoice} do
       Mox.expect(MockPayments, :capture_payment_intent, fn _, _ ->
-        {:ok, build(:stripe_payment_intent, status: "succeeded", id: "payment-intent-id")}
+        {:ok,
+         build(:stripe_payment_intent,
+           status: "succeeded",
+           id: "payment-intent-id",
+           currency: "usd"
+         )}
       end)
 
       assert {:ok, _} = Confirmations.handle_invoice(stripe_invoice)
@@ -331,7 +337,13 @@ defmodule Picsello.Orders.ConfirmationsTest do
       [order: order]
     end
 
-    setup [:insert_intent, :stub_retrieve_intent, :build_session, :stub_capture_intent]
+    setup [
+      :insert_intent,
+      :stub_retrieve_intent,
+      :build_session,
+      :stub_capture_intent,
+      :stub_confirm_order
+    ]
 
     setup %{order: order} do
       refute Picsello.Orders.client_paid?(order)
@@ -403,7 +415,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
   describe "handle_intent - canceled, no invoice" do
     setup do
-      [stripe_intent: build(:stripe_payment_intent, status: "canceled")]
+      [stripe_intent: build(:stripe_payment_intent, status: "canceled", currency: "usd")]
     end
 
     setup [:insert_order, :insert_intent]
@@ -413,7 +425,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
   describe "handle_intent - cancelled, invoice" do
     setup do
-      [stripe_intent: build(:stripe_payment_intent, status: "canceled")]
+      [stripe_intent: build(:stripe_payment_intent, status: "canceled", currency: "usd")]
     end
 
     setup [:insert_order, :insert_intent]

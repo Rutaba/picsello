@@ -53,7 +53,6 @@ defmodule Picsello.ClientsIndexTest do
     )
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
     |> scroll_into_view(testid("edit-digital-collection"))
-    |> click(css("[phx-click='edit-digitals']"))
     |> click(css("[phx-click='edit-digitals']", at: 0))
     |> scroll_into_view(css("#download_status_limited"))
     |> click(css("#download_status_limited"))

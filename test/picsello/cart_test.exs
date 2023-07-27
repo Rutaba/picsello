@@ -42,9 +42,33 @@ defmodule Picsello.CartTest do
     |> Mox.stub(:editors_export, fn _, _, _ -> build(:whcc_editor_export) end)
     |> Mox.stub(:create_order, fn _, _ -> {:ok, build(:whcc_order_created)} end)
 
+    intent =
+      build(:stripe_payment_intent,
+        amount: 10,
+        application_fee_amount: 10,
+        currency: "usd",
+        id: "payment-intent-id"
+      )
+
     Picsello.MockPayments
-    |> Mox.stub(:create_session, fn _, _ -> {:ok, build(:stripe_session, id: "expire-me")} end)
-    |> Mox.stub(:retrieve_payment_intent, fn _, _ -> {:ok, build(:stripe_payment_intent)} end)
+    |> Mox.stub(:create_session, fn _, _ ->
+      {:ok,
+       build(:stripe_session,
+         id: "expire-me",
+         payment_intent: intent
+       )}
+    end)
+    |> Mox.stub(:retrieve_payment_intent, fn payment_intent_id, _ ->
+      {:ok,
+       %{
+         intent
+         | id: payment_intent_id,
+           status: "requires_capture",
+           amount_capturable: 10,
+           amount: 10,
+           currency: "usd"
+       }}
+    end)
 
     {:ok, order} =
       Cart.store_order_delivery_info(
@@ -61,7 +85,17 @@ defmodule Picsello.CartTest do
 
   def expect_expire_session() do
     Mox.expect(Picsello.MockPayments, :expire_session, fn "expire-me", _ ->
-      {:ok, build(:stripe_session, status: "expired")}
+      {:ok,
+       build(:stripe_session,
+         status: "expired",
+         payment_intent:
+           build(:stripe_payment_intent,
+             amount: 10,
+             application_fee_amount: 10,
+             currency: "usd",
+             id: "payment-intent-id"
+           )
+       )}
     end)
   end
 
