@@ -165,6 +165,8 @@ defmodule Picsello.EmailPresets.JobResolver do
         &case photographer(&1) do
           %Picsello.Accounts.User{name: name} -> name |> String.split() |> hd
           _ -> nil
-        end
+        end,
+      "first_red_section" => false,
+      "second_red_section" => false
     }
 end
