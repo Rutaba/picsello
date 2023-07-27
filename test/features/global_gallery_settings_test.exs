@@ -10,6 +10,8 @@ defmodule Picsello.GSGalleryTest do
   setup :authenticated_gallery
 
   setup %{gallery: gallery} do
+    insert(:user_currency, organization_id: gallery.job.client.organization.id)
+
     global_gallery_settings =
       insert(:global_gallery_settings,
         expiration_days: 50,

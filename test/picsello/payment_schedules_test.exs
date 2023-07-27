@@ -22,7 +22,7 @@ defmodule Picsello.PaymentSchedulesTest do
     payment_schedule =
       insert(:payment_schedule,
         job: lead,
-        price: ~M[5000]USD
+        price: %Money{amount: 5000, currency: :USD}
       )
 
     [lead: lead, proposal: proposal, payment_schedule: payment_schedule]
@@ -33,11 +33,15 @@ defmodule Picsello.PaymentSchedulesTest do
       %{id: lead_id} =
         lead =
         insert(:lead,
-          package: %{shoot_count: 1, base_price: 0, base_multiplier: 0},
+          package: %{
+            shoot_count: 1,
+            base_price: %Money{amount: 0, currency: :USD},
+            base_multiplier: 0
+          },
           shoots: [%{starts_at: ~U[2029-09-30 19:00:00Z]}]
         )
 
-      price = Money.new(0)
+      price = Money.new(0, "USD")
 
       assert %{
                details: "100% discount",
@@ -60,14 +64,14 @@ defmodule Picsello.PaymentSchedulesTest do
           lead =
           insert(:lead,
             type: type,
-            package: %{shoot_count: 2, base_price: 2000},
+            package: %{shoot_count: 2, base_price: %Money{amount: 2000, currency: :USD}},
             shoots: [
               %{starts_at: ~U[2029-09-30 19:00:00Z]},
               %{starts_at: ~U[2039-09-30 19:00:00Z]}
             ]
           )
 
-        price = Money.new(2000)
+        price = Money.new(2000, "USD")
 
         assert %{
                  details: "100% retainer",
@@ -94,16 +98,16 @@ defmodule Picsello.PaymentSchedulesTest do
         lead =
         insert(:lead,
           type: "wedding",
-          package: %{shoot_count: 2, base_price: 2000},
+          package: %{shoot_count: 2, base_price: %Money{amount: 2000, currency: :USD}},
           shoots: [
             %{starts_at: DateTime.utc_now()},
             %{starts_at: wedding_date}
           ]
         )
 
-      price1 = Money.new(700)
-      price2 = Money.new(700)
-      price3 = Money.new(600)
+      price1 = Money.new(700, "USD")
+      price2 = Money.new(700, "USD")
+      price3 = Money.new(600, "USD")
 
       assert %{
                details:
@@ -143,15 +147,15 @@ defmodule Picsello.PaymentSchedulesTest do
         lead =
         insert(:lead,
           type: "wedding",
-          package: %{shoot_count: 2, base_price: 2000},
+          package: %{shoot_count: 2, base_price: %Money{amount: 2000, currency: :USD}},
           shoots: [
             %{starts_at: DateTime.utc_now()},
             %{starts_at: wedding_date}
           ]
         )
 
-      price1 = Money.new(1400)
-      price2 = Money.new(600)
+      price1 = Money.new(1400, "USD")
+      price2 = Money.new(600, "USD")
 
       assert %{
                details: "70% retainer and 30% one month before shoot",
@@ -181,14 +185,14 @@ defmodule Picsello.PaymentSchedulesTest do
           lead =
           insert(:lead,
             type: type,
-            package: %{shoot_count: 2, base_price: 2000},
+            package: %{shoot_count: 2, base_price: %Money{amount: 2000, currency: :USD}},
             shoots: [
               %{starts_at: ~U[2029-09-30 19:00:00Z]},
               %{starts_at: ~U[2039-09-30 19:00:00Z]}
             ]
           )
 
-        price = Money.new(1000)
+        price = Money.new(1000, "USD")
 
         assert %{
                  details: "50% retainer and 50% on day of shoot",
@@ -248,28 +252,28 @@ defmodule Picsello.PaymentSchedulesTest do
       payment_lead =
         insert(:payment_schedule,
           job: lead1,
-          price: ~M[5000]USD,
+          price: %Money{amount: 5000, currency: :USD},
           due_at: DateTime.utc_now() |> DateTime.add(2 * :timer.hours(24), :millisecond)
         )
 
       payment1 =
         insert(:payment_schedule,
           job: job1,
-          price: ~M[5000]USD,
+          price: %Money{amount: 5000, currency: :USD},
           due_at: DateTime.utc_now() |> DateTime.add(2 * :timer.hours(24), :millisecond)
         )
 
       payment2 =
         insert(:payment_schedule,
           job: job2,
-          price: ~M[5000]USD,
+          price: %Money{amount: 5000, currency: :USD},
           due_at: DateTime.utc_now() |> DateTime.add(4 * :timer.hours(24), :millisecond)
         )
 
       _payment_from_completed_job =
         insert(:payment_schedule,
           job: completed_job,
-          price: ~M[5000]USD,
+          price: %Money{amount: 5000, currency: :USD},
           due_at: DateTime.utc_now() |> DateTime.add(2 * :timer.hours(24), :millisecond)
         )
 
@@ -278,7 +282,7 @@ defmodule Picsello.PaymentSchedulesTest do
       payment3 =
         insert(:payment_schedule,
           job: job3,
-          price: ~M[5000]USD,
+          price: %Money{amount: 5000, currency: :USD},
           due_at: DateTime.utc_now() |> DateTime.add(2 * :timer.hours(24), :millisecond),
           reminded_at: already_reminded_at
         )
@@ -326,7 +330,7 @@ defmodule Picsello.PaymentSchedulesTest do
       payment_schedule =
         insert(:payment_schedule,
           job: lead,
-          price: ~M[5000]USD,
+          price: %Money{amount: 5000, currency: :USD},
           paid_at: paid_at
         )
 

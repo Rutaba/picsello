@@ -196,20 +196,40 @@ defmodule PicselloWeb.Live.ClientLive.ClientFormComponent do
     do: add_payment_event("add-payment", %{}, socket) |> noreply()
 
   @impl true
-  def handle_event("submit", params, %{assigns: %{step: :package_payment}} = socket),
-    do: payment_package_submit_event("submit", params, socket) |> noreply()
+  def handle_event(
+        "submit",
+        params,
+        %{
+          assigns: %{step: :package_payment, currency_symbol: currency_symbol, currency: currency}
+        } = socket
+      ) do
+    params = Picsello.Currency.parse_params_for_currency(params, {currency_symbol, currency})
+    payment_package_submit_event("submit", params, socket) |> noreply()
+  end
 
   @impl true
   def handle_event("submit", %{}, %{assigns: %{step: :invoice}} = socket),
     do: invoice_submit_event("submit", %{}, socket) |> noreply()
 
   @impl true
-  def handle_event("validate", %{"package" => _} = params, socket),
-    do: validate_package_event("validate", params, socket) |> noreply()
+  def handle_event(
+        "validate",
+        %{"package" => _} = params,
+        %{assigns: %{currency: currency, currency_symbol: currency_symbol}} = socket
+      ) do
+    params = Picsello.Currency.parse_params_for_currency(params, {currency_symbol, currency})
+    validate_package_event("validate", params, socket) |> noreply()
+  end
 
   @impl true
-  def handle_event("validate", %{"custom_payments" => params}, socket),
-    do: validate_payments_event("validate", %{"custom_payments" => params}, socket) |> noreply()
+  def handle_event(
+        "validate",
+        %{"custom_payments" => params},
+        %{assigns: %{currency: currency, currency_symbol: currency_symbol}} = socket
+      ) do
+    params = Picsello.Currency.parse_params_for_currency(params, {currency_symbol, currency})
+    validate_payments_event("validate", %{"custom_payments" => params}, socket) |> noreply()
+  end
 
   @impl true
   def handle_event(

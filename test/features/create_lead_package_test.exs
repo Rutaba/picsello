@@ -29,33 +29,21 @@ defmodule Picsello.CreateLeadPackageTest do
       text_field("package[print_credits]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$30"))
     )
-    |> click(css("[href='/images/icons.svg#close-x']", at: 1))
     |> scroll_into_view(css("[phx-click='edit-digitals']"))
-    |> click(button("Edit settings", at: 1))
+    |> click(css("[phx-click='edit-digitals']", at: 0))
     |> click(css("#download_status_limited"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
-    |> click(css("[href='/images/icons.svg#close-x']", at: 1))
-    |> click(button("Edit image price"))
+    |> click(css("[phx-click='edit-digitals']"))
+    |> click(css("[phx-click='edit-digitals']", at: 1))
     |> find(
       text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$50"))
     )
-    |> sleep(1000)
-    |> sleep(1000)
-    |> sleep(1000)
-    |> sleep(1000)
-    |> sleep(1000)
-    |> sleep(1000)
-    |> click(css("[href='/images/icons.svg#close-x']", at: 1))
-    |> sleep(1000)
-    |> sleep(1000)
-    |> sleep(1000)
-    |> sleep(1000)
-    |> sleep(1000)
-    |> click(button("Edit upsell options"))
+    |> click(css("[phx-click='edit-digitals']"))
+    |> click(css("[phx-click='edit-digitals']", at: 2))
     |> click(css("#download_is_buy_all"))
     |> find(
       text_field("download[buy_all]"),
@@ -83,10 +71,10 @@ defmodule Picsello.CreateLeadPackageTest do
     |> assert_has(css("#modal-wrapper.hidden", visible: false))
     |> assert_text("Wedding Deluxe")
 
-    base_price = Money.new(100_000)
-    download_each_price = Money.new(5000)
-    buy_all = Money.new(25_000)
-    print_credits = Money.new(3000)
+    base_price = %Money{amount: 100_000, currency: :USD}
+    download_each_price = %Money{amount: 5000, currency: :USD}
+    buy_all = %Money{amount: 25_000, currency: :USD}
+    print_credits = %Money{amount: 3000, currency: :USD}
 
     description = "<p>My greatest wedding package</p>"
 
@@ -230,10 +218,10 @@ defmodule Picsello.CreateLeadPackageTest do
     lead = insert(:lead, %{user: user, client: %{name: "Elizabeth Taylor"}, type: "wedding"})
     insert(:global_gallery_settings, organization: user.organization)
 
-    base_price = Money.new(10_000)
-    download_each_price = Money.new(5000)
-    buy_all = Money.new(7000)
-    print_credits = Money.new(0)
+    base_price = %Money{amount: 10_000, currency: :USD}
+    download_each_price = %Money{amount: 5000, currency: :USD}
+    buy_all = %Money{amount: 7000, currency: :USD}
+    print_credits = %Money{amount: 0, currency: :USD}
 
     template =
       insert(:package_template,
@@ -284,12 +272,12 @@ defmodule Picsello.CreateLeadPackageTest do
     |> click(css("#package_pricing_print_credits_include_in_total"))
     |> click(css("[phx-click='edit-print-credits']"))
     |> scroll_into_view(css("[phx-click='edit-digitals']"))
-    |> click(button("Edit settings", at: 1))
+    |> click(css("[phx-click='edit-digitals']", at: 0))
     |> scroll_into_view(css("#download_digitals_include_in_total"))
     |> click(css("#download_digitals_include_in_total"))
     |> fill_in(css("#download_count"), with: 2)
     |> click(css("[phx-click='edit-digitals']"))
-    |> click(button("Edit image price"))
+    |> click(css("[phx-click='edit-digitals']", at: 1))
     |> scroll_into_view(css("#download_each_price"))
     |> fill_in(css("#download_each_price"), with: 0.0)
     |> assert_text("greater than two")
@@ -297,7 +285,7 @@ defmodule Picsello.CreateLeadPackageTest do
     |> fill_in(css("#download_each_price"), with: 2.2)
     |> assert_has(css("div", text: "greater than two", count: 0))
     |> click(css("[phx-click='edit-digitals']"))
-    |> click(button("Edit upsell options"))
+    |> click(css("[phx-click='edit-digitals']", at: 2))
     |> scroll_into_view(css("#download_buy_all"))
     |> find(
       text_field("download[buy_all]"),

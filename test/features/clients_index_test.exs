@@ -53,22 +53,23 @@ defmodule Picsello.ClientsIndexTest do
     )
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
     |> scroll_into_view(testid("edit-digital-collection"))
-    |> click(button("Edit settings"))
+    |> click(css("[phx-click='edit-digitals']"))
+    |> click(css("[phx-click='edit-digitals']", at: 0))
     |> scroll_into_view(css("#download_status_limited"))
     |> click(css("#download_status_limited"))
     |> find(
       text_field("download_count"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "2"))
     )
-    |> click(testid("close-settings"))
-    |> click(button("Edit image price"))
+    |> click(css("[phx-click='edit-digitals']"))
+    |> click(css("[phx-click='edit-digitals']", at: 1))
     |> scroll_into_view(css("#download_each_price"))
     |> find(
       text_field("download[each_price]"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$5"))
     )
-    |> click(testid("close-settings"))
-    |> click(button("Edit upsell options"))
+    |> click(css("[phx-click='edit-digitals']"))
+    |> click(css("[phx-click='edit-digitals']", at: 2))
     |> scroll_into_view(css("#download_is_buy_all"))
     |> click(css("#download_is_buy_all"))
     |> find(

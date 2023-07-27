@@ -230,7 +230,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <label class="flex flex-wrap md:flex-nowrap items-center justify-between mt-4 bg-blue-planning-100 p-4 rounded-t-lg gap-12">
             <p class="font-extrabold shrink text-xl">Gross Salary Needed <br /> <span class="italic font-normal text-sm">Remember, this isn't your take home pay. Adjust to make sure your take home is what you need.</span></p>
             <div>
-              <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$65,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center text-blue-planning-300 font-bold border-blue-planning-300 transition-colors focus:border-white", phx_hook: "PriceMask" %>
+              <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$65,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center text-blue-planning-300 font-bold border-blue-planning-300 transition-colors focus:border-white", phx_hook: "PriceMask", data_currency: "$" %>
               <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm block" %>
             </div>
           </label>
@@ -335,7 +335,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           <label class="flex flex-col gap-1">
             <p class="pb-2 font-bold shrink-0">Gross Salary Needed:</p>
             <div class="flex flex-col">
-              <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center", phx_hook: "PriceMask" %>
+              <%= input @f, :desired_salary, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$60,000", class: "p-4 sm:w-40 w-full sm:mb-0 mb-8 sm:mt-0 mt-4 text-center", phx_hook: "PriceMask", data_currency: "$"%>
               <%= error_tag @f, :desired_salary, class: "text-red-sales-300 text-sm block" %>
             </div>
           </label>
@@ -596,7 +596,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
             </div>
             <div class="flex items-center w-full p-4 text-center col-start-3 lg:w-auto">
               <%= hidden_input li, :yearly_cost_base %>
-              <%= input li, :yearly_cost, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$200", class: "p-4 lg:w-40 w-full text-center", phx_hook: "PriceMask" %><span class="ml-2 border-b-2 border-dotted cursor-pointer text-blue-planning-300 border-blue-planning-300" phx-hook="DefaultCostTooltip" id={"default-cost-tooltip-yearly-#{li.id}"}>/year <span class="hidden p-1 text-sm text-left text-black bg-white rounded shadow" role="tooltip"><strong class="opacity-40">Suggested:</strong><br /><%= input_value(li, :yearly_cost_base) %> /year</span></span>
+              <%= input li, :yearly_cost, type: :text_input, phx_debounce: 0, min: 0, placeholder: "$200", class: "p-4 lg:w-40 w-full text-center", phx_hook: "PriceMask", data_currency: "$" %><span class="ml-2 border-b-2 border-dotted cursor-pointer text-blue-planning-300 border-blue-planning-300" phx-hook="DefaultCostTooltip" id={"default-cost-tooltip-yearly-#{li.id}"}>/year <span class="hidden p-1 text-sm text-left text-black bg-white rounded shadow" role="tooltip"><strong class="opacity-40">Suggested:</strong><br /><%= input_value(li, :yearly_cost_base) %> /year</span></span>
             </div>
           </div>
         <% else %>

@@ -21,9 +21,9 @@ defmodule Picsello.EditLeadPackageTest do
           name: "My Greatest Package",
           description: "<p>My custom description</p>",
           shoot_count: 2,
-          print_credits: 200,
-          base_price: 100,
-          download_each_price: 0
+          print_credits: %Money{amount: 200, currency: :USD},
+          base_price: %Money{amount: 100, currency: :USD},
+          download_each_price: %Money{amount: 0, currency: :USD}
         },
         shoots: [%{}, %{}]
       })
@@ -55,11 +55,13 @@ defmodule Picsello.EditLeadPackageTest do
     |> click(css("#download_status_limited"))
     |> fill_in(css("#download_count"), with: 1)
     |> click(css("[href='/images/icons.svg#close-x']", at: 1))
-    |> click(button("Edit image price"))
+    |> click(css("[phx-click='edit-digitals']"))
+    |> click(css("[phx-click='edit-digitals']", at: 1))
     |> scroll_into_view(css("#download_each_price"))
     |> fill_in(css("#download_each_price"), with: 4)
     |> click(css("[href='/images/icons.svg#close-x']", at: 1))
-    |> click(button("Edit upsell options"))
+    |> click(css("[phx-click='edit-digitals']"))
+    |> click(css("[phx-click='edit-digitals']", at: 2))
     |> scroll_into_view(css("#download_is_buy_all"))
     |> click(css("#download_is_buy_all"))
     |> scroll_into_view(css("#download_buy_all"))
@@ -109,11 +111,11 @@ defmodule Picsello.EditLeadPackageTest do
         package
         | name: "My updated package",
           description: "<p>indescribably great.</p>",
-          base_price: Money.new(200),
+          base_price: %Money{amount: 200, currency: :USD},
           download_count: 1,
-          download_each_price: Money.new(400),
-          buy_all: Money.new(7000),
-          print_credits: Money.new(200),
+          download_each_price: %Money{amount: 400, currency: :USD},
+          buy_all: %Money{amount: 7000, currency: :USD},
+          print_credits: %Money{amount: 200, currency: :USD},
           schedule_type: "splits_2"
       }
       |> Map.take([:id | form_fields])
@@ -139,10 +141,10 @@ defmodule Picsello.EditLeadPackageTest do
     updated =
       %{
         package
-        | download_each_price: Money.new(400),
-          buy_all: Money.new(7000),
+        | download_each_price: %Money{amount: 400, currency: :USD},
+          buy_all: %Money{amount: 7000, currency: :USD},
           download_count: 1,
-          print_credits: Money.new(0)
+          print_credits: %Money{amount: 0, currency: :USD}
       }
       |> Map.take([:id | form_fields])
 

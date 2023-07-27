@@ -30,7 +30,7 @@ defmodule Picsello.CartTest do
     gallery_client =
       insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
 
-    [order: insert(:order, gallery: gallery, gallery_client: gallery_client)]
+    [order: insert(:order, currency: "USD", gallery: gallery, gallery_client: gallery_client)]
   end
 
   setup do
@@ -275,7 +275,9 @@ defmodule Picsello.CartTest do
     } do
       order
       |> Repo.preload(:products)
-      |> Order.update_changeset(cart_product(editor_id: "abc", price: ~M[100]USD))
+      |> Order.update_changeset(
+        cart_product(editor_id: "abc", price: %Money{amount: 100, currency: :USD})
+      )
       |> Repo.update!()
       |> then(fn order ->
         products = Cart.add_default_shipping_to_products(order)
@@ -559,7 +561,9 @@ defmodule Picsello.CartTest do
 
   describe "delivery_info_change" do
     test "requires address when order includes products" do
-      gallery = insert(:gallery) |> Map.put(:credits_available, true)
+      gallery =
+        insert(:gallery, job: insert(:lead, package: build(:package, currency: "USD")))
+        |> Map.put(:credits_available, true)
 
       gallery_client =
         insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
@@ -574,7 +578,9 @@ defmodule Picsello.CartTest do
     end
 
     test "does not require address when order is only digitals" do
-      gallery = insert(:gallery) |> Map.put(:credits_available, true)
+      gallery =
+        insert(:gallery, job: insert(:lead, package: build(:package, currency: "USD")))
+        |> Map.put(:credits_available, true)
 
       gallery_client =
         insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})

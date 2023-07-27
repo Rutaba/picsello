@@ -76,11 +76,8 @@ defmodule Picsello.Intents do
     end
 
     defp processing_fee(%{
-           currency: currency,
            charges: %{data: [%{balance_transaction: %{fee_details: fee_details}}]}
          }) do
-      currency = String.upcase(currency)
-
       %{amount: amount} =
         if fee_details && is_list(fee_details) do
           fee_details
@@ -89,7 +86,7 @@ defmodule Picsello.Intents do
         end
         |> Enum.find(fee_details, &(&1.type == "stripe_fee"))
 
-      Money.new(amount, currency)
+      amount
     end
 
     defp processing_fee(_), do: Money.new(0)

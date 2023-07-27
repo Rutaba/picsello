@@ -449,7 +449,7 @@ defmodule Picsello.Packages do
     def each_price(%__MODULE__{each_price: %{amount: amount}}, currency),
       do: Money.new(amount, currency)
 
-    # def each_price(_, _), do: nil
+    def each_price(_, _), do: nil
 
     def buy_all(%__MODULE__{is_buy_all: false}), do: nil
     def buy_all(%__MODULE__{buy_all: buy_all}), do: buy_all

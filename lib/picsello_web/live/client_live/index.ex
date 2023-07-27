@@ -358,14 +358,15 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   def handle_event(
         "create-gallery",
         %{"id" => id},
-        %{assigns: %{clients: clients, current_user: current_user}} = socket
+        %{assigns: %{clients: clients, current_user: current_user, currency: currency}} = socket
       ) do
     client = clients |> Enum.find(&(&1.id == to_integer(id)))
 
     socket
     |> open_modal(CreateComponent, %{
       current_user: current_user,
-      selected_client: client
+      selected_client: client,
+      currency: currency
     })
     |> noreply()
   end

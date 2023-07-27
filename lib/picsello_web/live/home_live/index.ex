@@ -112,11 +112,11 @@ defmodule PicselloWeb.HomeLive.Index do
       |> noreply()
 
   @impl true
-  def handle_event("create-gallery", %{}, %{assigns: %{current_user: current_user}} = socket) do
+  def handle_event("create-gallery", %{}, %{assigns: assigns} = socket) do
     socket
     |> open_modal(
       PicselloWeb.GalleryLive.CreateComponent,
-      %{current_user: current_user}
+      Map.take(assigns, [:current_user, :currency])
     )
     |> noreply()
   end

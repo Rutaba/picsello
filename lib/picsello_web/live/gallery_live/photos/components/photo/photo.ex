@@ -11,6 +11,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   @impl true
   def update(%{photo: photo} = assigns, socket) do
     show_products = Map.get(assigns, :show_products, true)
+
     socket
     |> assign(
       album_name: Photos.get_album_name(photo),
@@ -142,15 +143,18 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       [
         %{id: "photo-remove-#{id}", event: "photo_view", title: "View"}
       ]
-    end
-      ++
-    if show_products do
-      [
-        %{id: "photo-preview-#{id}", event: "photo_preview_pop", title: "Set as product preview"}
-      ]
-    else
-      []
-    end
+    end ++
+      if show_products do
+        [
+          %{
+            id: "photo-preview-#{id}",
+            event: "photo_preview_pop",
+            title: "Set as product preview"
+          }
+        ]
+      else
+        []
+      end
   end
 
   defp actions(assigns) do

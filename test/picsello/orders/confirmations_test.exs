@@ -46,7 +46,8 @@ defmodule Picsello.Orders.ConfirmationsTest do
           whcc_order: whcc_order,
           placed_at: placed_at,
           gallery: gallery,
-          gallery_client: gallery_client
+          gallery_client: gallery_client,
+          currency: "USD"
         )
         |> Repo.preload([:gallery, :products, :digitals])
     ]
@@ -204,7 +205,9 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
     setup :insert_order
 
-    setup %{gallery: gallery, order: order} do
+    setup %{order: order} do
+      gallery = insert(:gallery, job: insert(:lead, package: insert(:package, currency: "USD")))
+
       gallery_client =
         insert(:gallery_client, %{email: gallery.job.client.email, gallery_id: gallery.id})
 
@@ -297,11 +300,21 @@ defmodule Picsello.Orders.ConfirmationsTest do
       ]
     end
 
-    setup :insert_order
+    setup %{whcc_order: whcc_order, placed_at: placed_at} do
+      gallery = insert(:gallery, job: insert(:lead, package: insert(:package, currency: "USD")))
 
-    setup %{order: %{gallery: gallery} = order} do
       gallery_client =
         insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      order =
+        insert(:order,
+          delivery_info: %{email: "client@example.com"},
+          whcc_order: whcc_order,
+          placed_at: placed_at,
+          gallery: gallery,
+          currency: "USD",
+          gallery_client: gallery_client
+        )
 
       insert(:digital, order: order, photo: insert(:photo, gallery: gallery))
 

@@ -18,7 +18,7 @@ defmodule Picsello.Cart.CheckoutsTest do
   setup do
     Mox.verify_on_exit!()
 
-    gallery = insert(:gallery)
+    gallery = insert(:gallery, job: insert(:lead, package: insert(:package, currency: "USD")))
 
     gallery_digital_pricing =
       insert(:gallery_digital_pricing, %{

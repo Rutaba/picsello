@@ -149,7 +149,8 @@ defmodule PicselloWeb.Live.FinanceSettings do
       change_event: :change_currency,
       submit_event: :submit_currency,
       title: "Edit Currency",
-      subtitle: "Enter the three letter currency code below to search, select and save your native currency.",
+      subtitle:
+        "Enter the three letter currency code below to search, select and save your native currency.",
       component_used_for: :currency,
       warning_note: """
       Printed gallery products are fulfilled through our US-based lab partner, White House Custom Color

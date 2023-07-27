@@ -155,12 +155,16 @@ defmodule Picsello.Factory do
             |> Map.get(:organization)
             |> Map.get(:id)
 
+          %{organization_id: id} ->
+            id
+
           _ ->
-            build(:organization) |> Map.get(:id)
+            build(:organization, Map.get(attrs, :organization, %{})) |> Map.get(:id)
         end
       end,
       currency: currency()
     }
+    |> merge_attributes(Map.drop(attrs, [:user, :organization]))
     |> evaluate_lazy_attributes()
   end
 
@@ -581,9 +585,9 @@ defmodule Picsello.Factory do
 
   def gallery_digital_pricing_factory(attrs \\ %{}) do
     %Picsello.Galleries.GalleryDigitalPricing{
-      download_each_price: Money.new(10),
+      download_each_price: %Money{amount: 10, currency: "USD"},
       download_count: 10,
-      print_credits: Money.new(10),
+      print_credits: %Money{amount: 10, currency: "USD"},
       buy_all: nil,
       email_list: ["testing@picsello.com"],
       gallery: fn ->
