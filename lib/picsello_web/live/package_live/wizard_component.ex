@@ -496,12 +496,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :documents} = assigns) do
     ~H"""
-    <div class="font-normal pb-6 text-base-250 w-fit">
-      As with most things in Picsello, we have created default contracts/questionnaires for you to use. If you’d like to make your own, check out global questionnaire and contract management. (Modal will close & you can come back)
+    <div class="font-normal text-base-250 w-fit">
+      As with most things in Picsello, we have created default contracts/questionnaires for you to use. If you’d like to make your own, check out global questionnaire and contract management. <strong>NOTE: Make sure to save your work and come back to this page to select your custom documents.</strong>
     </div>
-    <div class="flex flex-row">
-      <a class="items-center text-blue-planning-300 py-5 underline font-normal" href={Routes.contracts_index_path(@socket, :index)}>Manage contracts</a>
-      <a class="items-center text-blue-planning-300 p-5 underline font-normal" href={Routes.questionnaires_index_path(@socket, :index)}>Manage questionnaires</a>
+
+    <div class="flex flex-row gap-4 mt-2 mb-8">
+      <a class="items-center text-blue-planning-300 underline font-normal flex gap-2" target="_blank" href={Routes.contracts_index_path(@socket, :index)}>
+        Manage contracts <.icon name="external-link" class="w-3.5 h-3.5"/>
+      </a>
+      <a class="items-center text-blue-planning-300 underline font-normal flex gap-2" target="_blank" href={Routes.questionnaires_index_path(@socket, :index)}>
+        Manage questionnaires <.icon name="external-link" class="w-3.5 h-3.5"/>
+      </a>
     </div>
 
     <div class="flex flex-row text-blue-planning-300 mb-4">
