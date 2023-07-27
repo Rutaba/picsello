@@ -336,39 +336,31 @@ defmodule PicselloWeb.Live.Profile do
           )
         )
       end)
-      |> filter_date()
+      |> filter_by_date()
       |> sort_by_date(:asc)
 
     socket
     |> assign(booking_events: booking_events)
   end
 
-  defp filter_date(booking_events),
-    do: filter_booking_events(booking_events, :desc, [:gt, :eq])
-
-  # This fuction filters(gets) only booking events with date greater than or equal to Today
-  defp filter_booking_events(booking_events, sort_by, condition) do
+  # Filters(gets) only booking events with date greater than or equal to Today
+  defp filter_by_date(booking_events) do
     {:ok, datetime} = DateTime.now("Etc/UTC")
 
-    booking_events
-    |> Enum.filter(fn booking_event ->
-      date =
-        booking_event
-        |> Map.get(:dates)
-        |> Enum.map(& &1.date)
-        |> Enum.sort_by(& &1, {sort_by, Date})
-        |> hd
-
-      Date.compare(date, datetime) in condition
+    Enum.filter(booking_events, fn %{dates: dates} ->
+      dates
+      |> Enum.map(& &1.date)
+      |> Enum.sort_by(& &1, {:desc, Date})
+      |> hd
+      |> Date.compare(datetime)
+      |> then(&(&1 in [:gt, :eq]))
     end)
   end
 
-  @doc """
-  Sorts booking events from descending to ascending by their dates
-  """
-  def sort_by_date(booking_events, sort_direction) do
+  # Sorts booking events from descending to ascending by their dates
+  defp sort_by_date(booking_events, sort_direction) do
     booking_events
-    |> Enum.sort_by(& &1.dates |> hd() |> Map.get(:date), {sort_direction, Date})
+    |> Enum.sort_by(&(&1.dates |> hd() |> Map.get(:date)), {sort_direction, Date})
   end
 
   defp image_text("logo"), do: "Choose a new logo"
