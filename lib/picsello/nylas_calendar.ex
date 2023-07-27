@@ -50,15 +50,9 @@ defmodule Picsello.NylasCalendar do
     headers = build_headers(token)
     url = "#{@base_url}#{@calendar_endpoint}"
 
-    response = HTTPoison.get!(url, headers)
-
-    case response.status_code do
-      200 ->
-        {:ok, Jason.decode!(response.body)}
-
-      code ->
-        {:error, "Failed to retrieve calendars. Status code: #{code}"}
-    end
+    url
+    |> HTTPoison.get!(headers)
+    |> build_response
   end
 
   @spec create_calendar(map(), token()) :: result(map())
@@ -69,42 +63,25 @@ defmodule Picsello.NylasCalendar do
     headers = build_headers(token)
     url = "#{@base_url}#{@calendar_endpoint}"
 
-    response = HTTPoison.post!(url, Jason.encode!(params), headers)
-
-    case response.status_code do
-      200 ->
-        {:ok, Jason.decode!(response.body)}
-
-      code ->
-        {:error, "Failed to create calendar. Status code: #{code}"}
-    end
+    url
+    |> HTTPoison.post!(Jason.encode!(params), headers)
+    |> build_response()
   end
 
-  @type calendar() :: %{
-          :busy => any,
-          :description => any,
-          :object => any,
-          :owner_email => any,
-          :participants => any,
-          :status => any,
-          :title => any,
-          :type => :date | :time,
-          :updated_at => DateTime.t(),
-          optional(:date) => any,
-          optional(:end_time) => DateTime.t(),
-          optional(:start_time) => DateTime.t()
-        }
-  @spec get_event_details(String.t(), String.t()) :: result(calendar())
-  def get_event_details(job_id, token) do
+  @spec get_event_details(String.t(), String.t()) :: result(any())
+  @doc """
+  Retrieve complete details against event
+  """
+  def get_event_details(event_id, token) do
     headers = build_headers(token)
-    url = "#{@base_url}/events/#{job_id}"
+    url = "#{@base_url}/events/#{event_id}"
 
-    case HTTPoison.get!(url, headers) do
-      %{status_code: 200, body: body} ->
-        body |> Jason.decode!() |> IO.inspect() |> convert_remote_to_calendar()
-
-      %{status_code: code} ->
-        {:error, "Failed to retrieve events. Status code: #{code}"}
+    url
+    |> HTTPoison.get!(headers)
+    |> build_response()
+    |> case do
+      {:ok, body} -> convert_remote_to_calendar(body)
+      error -> error
     end
   end
 
@@ -119,42 +96,33 @@ defmodule Picsello.NylasCalendar do
     params
     |> Jason.encode!()
     |> then(&HTTPoison.post!(url, &1, headers))
-    |> case do
-      %{status_code: 200, body: body} ->
-        {:ok, Jason.decode!(body)}
-
-      %{status_code: code} ->
-        {:error, "Failed to add event. Status code: #{code}"}
-    end
+    |> build_response()
   end
 
-  def update_event(%{id: id} = params, token) do
+  @spec update_event(map(), token()) :: result(any)
+  @doc """
+  Update an event using its id.
+  """
+  def update_event(%{id: event_id} = params, token) do
     headers = build_headers(token)
-    url = "https://api.nylas.com/events/#{id}?notify_participants=true"
-    response = HTTPoison.put!(url, Jason.encode!(params), headers)
+    url = "https://api.nylas.com/events/#{event_id}?notify_participants=true"
 
-    case response.status_code do
-      200 ->
-        {:ok, Jason.decode!(response.body)}
-
-      code ->
-        {:error, "Failed to add event. Status code: #{code}"}
-    end
+    url
+    |> HTTPoison.put!(Jason.encode!(params), headers)
+    |> build_response()
   end
 
-  @spec update_event(map, String.t()) :: result(map())
-  def delete_event(%{"id" => id}, token) do
+  @spec delete_event(String.t(), String.t()) :: result(map())
+  @doc """
+  Delete an event using its id.
+  """
+  def delete_event(event_id, token) do
     headers = build_headers(token)
-    url = "https://api.nylas.com/events/#{id}?notify_participants=true  "
-    response = HTTPoison.delete!(url, headers)
+    url = "https://api.nylas.com/events/#{event_id}?notify_participants=true  "
 
-    case response.status_code do
-      200 ->
-        {:ok, Jason.decode!(response.body)}
-
-      code ->
-        {:error, "Failed to delete event. Status code: #{code}"}
-    end
+    url
+    |> HTTPoison.delete!(headers)
+    |> build_response()
   end
 
   @type calendar_event() :: %{
@@ -165,15 +133,57 @@ defmodule Picsello.NylasCalendar do
           other: map()
         }
 
-  @spec get_external_events([String.t()], String.t()) :: list(calendar_event())
-
+  @spec get_external_events(list(String.t()), String.t(), String.t()) :: list(calendar_event())
+  @doc """
+  Retrive all events of given calendars that don't belong to Picsello
+  """
   @timezone "America/New_York"
   def get_external_events(calendars, token, timezone \\ @timezone),
     do: filter_events(calendars, token, timezone, &remove_picsello/1)
 
+  @spec get_picsello_events(list(String.t()), String.t(), String.t()) :: list(calendar_event())
+  @doc """
+  Retrive all events of given calendars that belong to Picsello
+  """
   def get_picsello_events(calendars, token, timezone \\ @timezone),
     do: filter_events(calendars, token, timezone, &only_picsello/1)
 
+  @spec get_events(String.t(), token()) :: {:error, String.t()} | {:ok, any}
+  @doc """
+  Retrieves a list of events on the specified calendar.
+  """
+  def get_events(calendar_id, token) do
+    headers = build_headers(token)
+
+    url = "#{@base_url}/#{@event_endpoint}?calendar_id=#{calendar_id}"
+
+    url
+    |> HTTPoison.get!(headers)
+    |> build_response()
+  end
+
+  @spec fetch_token(token()) :: result(token())
+  def fetch_token(code) do
+    %{client_id: client_id, client_secret: client_secret, redirect_uri: redirect_uri} =
+      Application.get_env(:picsello, :nylas)
+
+    url = "https://api.nylas.com/oauth/token"
+
+    body = %{
+      grant_type: "authorization_code",
+      client_id: client_id,
+      client_secret: client_secret,
+      code: code,
+      redirect_uri: redirect_uri
+    }
+
+    case HTTPoison.post(url, Jason.encode!(body), [{"Content-Type", "application/json"}]) do
+      {:ok, %{body: body}} -> process_token_response(body)
+      {:error, error} -> {:error, "Failed to fetch OAuth token: #{error}"}
+    end
+  end
+
+  # get and filter events using given filter function.
   defp filter_events(calendars, token, timezone, filter_fn) when is_list(calendars) do
     calendars
     |> Enum.flat_map(fn calendar_id ->
@@ -185,28 +195,29 @@ defmodule Picsello.NylasCalendar do
     |> Enum.map(&to_shoot(&1, timezone))
   end
 
+  @picsello_tag "[From Picsello]"
   @spec remove_picsello(map) :: boolean
   defp remove_picsello(%{"description" => nil}), do: true
-  defp remove_picsello(%{"description" => des}), do: not (des =~ "[From Picsello]")
+  defp remove_picsello(%{"description" => des}), do: not (des =~ @picsello_tag)
 
-  defp only_picsello(%{"description" => nil}), do: true
-  defp only_picsello(%{"description" => des}), do: des =~ "[From Picsello]"
+  defp only_picsello(%{"description" => nil}), do: false
+  defp only_picsello(%{"description" => des}), do: des =~ @picsello_tag
 
   @spec to_shoot(map, String.t()) :: calendar_event()
-  def to_shoot(
-        %{
-          "description" => description,
-          "id" => id,
-          "calendar_id" => calendar_id,
-          "location" => location,
-          "organizer_email" => organizer_email,
-          "organizer_name" => organizer_name,
-          "status" => status,
-          "title" => title,
-          "when" => date_obj
-        } = event,
-        timezone
-      ) do
+  defp to_shoot(
+         %{
+           "description" => description,
+           "id" => id,
+           "calendar_id" => calendar_id,
+           "location" => location,
+           "organizer_email" => organizer_email,
+           "organizer_name" => organizer_name,
+           "status" => status,
+           "title" => title,
+           "when" => date_obj
+         } = event,
+         timezone
+       ) do
     {start_date, end_date} = build_dates(date_obj, timezone)
 
     %{
@@ -260,40 +271,20 @@ defmodule Picsello.NylasCalendar do
     {build.(start_time), build.(end_time)}
   end
 
-  @spec get_events(String.t(), token()) :: {:error, String.t()} | {:ok, any}
-  @doc """
-  Retrieves a list of events on the specified calendar.
-  """
-  def get_events(calendar_id, token) do
-    headers = build_headers(token)
-
-    url = "#{@base_url}/#{@event_endpoint}?calendar_id=#{calendar_id}"
-
-    response = HTTPoison.get!(url, headers)
-
-    case response.status_code do
-      200 ->
-        {:ok, Jason.decode!(response.body)}
-
-      code ->
-        {:error, "Failed to retrieve events. Status code: #{code}"}
-    end
-  end
-
-  def convert_remote_to_calendar(%{
-        "busy" => busy,
-        "description" => description,
-        "object" => object_type,
-        "organizer_email" => owner_email,
-        "participants" => participants,
-        "status" => status,
-        "title" => title,
-        "updated_at" => updated_at,
-        "when" => %{
-          "end_time" => end_time,
-          "start_time" => start_time
-        }
-      }) do
+  defp convert_remote_to_calendar(%{
+         "busy" => busy,
+         "description" => description,
+         "object" => object_type,
+         "organizer_email" => owner_email,
+         "participants" => participants,
+         "status" => status,
+         "title" => title,
+         "updated_at" => updated_at,
+         "when" => %{
+           "end_time" => end_time,
+           "start_time" => start_time
+         }
+       }) do
     {:ok,
      %{
        busy: busy,
@@ -310,20 +301,20 @@ defmodule Picsello.NylasCalendar do
      }}
   end
 
-  def convert_remote_to_calendar(%{
-        "busy" => busy,
-        "description" => description,
-        "object" => object_type,
-        "organizer_email" => owner_email,
-        "participants" => participants,
-        "status" => status,
-        "title" => title,
-        "updated_at" => updated_at,
-        "when" => %{
-          "date" => date,
-          "object" => "date"
-        }
-      }) do
+  defp convert_remote_to_calendar(%{
+         "busy" => busy,
+         "description" => description,
+         "object" => object_type,
+         "organizer_email" => owner_email,
+         "participants" => participants,
+         "status" => status,
+         "title" => title,
+         "updated_at" => updated_at,
+         "when" => %{
+           "date" => date,
+           "object" => "date"
+         }
+       }) do
     {:ok,
      %{
        busy: busy,
@@ -339,24 +330,13 @@ defmodule Picsello.NylasCalendar do
      }}
   end
 
-  @spec fetch_token(token()) :: result(token())
-  def fetch_token(code) do
-    %{client_id: client_id, client_secret: client_secret, redirect_uri: redirect_uri} =
-      Application.get_env(:picsello, :nylas)
+  defp build_response(%{status_code: status_code, body: body}) do
+    case status_code do
+      200 ->
+        {:ok, Jason.decode!(body)}
 
-    url = "https://api.nylas.com/oauth/token"
-
-    body = %{
-      grant_type: "authorization_code",
-      client_id: client_id,
-      client_secret: client_secret,
-      code: code,
-      redirect_uri: redirect_uri
-    }
-
-    case HTTPoison.post(url, Jason.encode!(body), [{"Content-Type", "application/json"}]) do
-      {:ok, %{body: body}} -> process_token_response(body)
-      {:error, error} -> {:error, "Failed to fetch OAuth token: #{error}"}
+      status_code ->
+        {:error, "Failed request with status code: #{status_code}"}
     end
   end
 

@@ -129,8 +129,9 @@ defmodule Picsello.Shoot do
     end
   end
 
-  defp set_notes(nil), do: "\n[from picsello]\n"
-  defp set_notes(notes), do: notes <> "\n[from picsello]\n"
+  @picsello_tag "[From Picsello]"
+  defp set_notes(nil), do: "\n#{@picsello_tag}\n"
+  defp set_notes(notes), do: notes <> set_notes(nil)
 
   @type t :: %__MODULE__{
           id: integer(),
