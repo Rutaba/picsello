@@ -5,7 +5,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   import Picsello.Onboardings, only: [save_intro_state: 3]
   import PicselloWeb.LiveHelpers
 
-  import PicselloWeb.EmailAutomationLive.Shared
+  import PicselloWeb.EmailAutomationLive.Shared,
+    only: [
+      assign_collapsed_sections: 1,
+      is_state_manually_trigger: 1,
+      sort_emails: 2,
+      get_pipline: 1,
+      get_email_schedule_text: 6,
+      get_email_name: 4,
+      explode_hours: 1,
+      get_preceding_email: 2,
+      fetch_date_for_state_maybe_manual: 5
+    ]
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import Ecto.Query
@@ -163,6 +174,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     ~H"""
 
     <%= if Enum.member?(@collapsed_sections, @subcategory) do %>
+      <% sorted_emails = sort_emails(@pipeline.emails, @pipeline.state) %>
       <div class="mb-3 md:mr-4 border border-base-200 rounded-lg">
         <% next_email = get_next_email_schdule_date(@category_type, @gallery_id, @job_id, @pipeline.id, @pipeline.state) %>
         <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
@@ -182,7 +194,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
               </div>
               <span class="flex items-center text-blue-planning-300 text-xl font-bold ml-2">
                 <%= @pipeline.name %>
-                <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(@pipeline.emails) %> <%=ngettext("email", "emails", Enum.count(@pipeline.emails)) %></span>
+                <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(sorted_emails) %> <%=ngettext("email", "emails", Enum.count(sorted_emails)) %></span>
               </span>
             </div>
             <p class="text:xs text-base-250 lg:text-base ml-10">
@@ -200,8 +212,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         </div>
 
         <%= if Enum.member?(@collapsed_sections, "pipeline-#{@pipeline.id}-#{@subcategory}") do %>
-          <%= Enum.with_index(@pipeline.emails, fn email, index -> %>
-              <% last_index = Enum.count(@pipeline.emails) - 1 %>
+          <%= Enum.with_index(sorted_emails, fn email, index -> %>
+              <% last_index = Enum.count(sorted_emails) - 1 %>
             <div class={classes("flex flex-col md:flex-row pl-2 pr-7 md:items-center justify-between", %{"opacity-60" => next_email.is_completed})}>
               <div class="flex flex-row ml-2 h-max">
                 <div class={"h-auto pt-3 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
@@ -225,7 +237,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
                       <.icon name="play-icon" class="w-4 h-4 text-blue-planning-300" />
                     </div>
                     <p class="font-normal text-base-250 text-sm">
-                      <%= get_email_schedule_text(email.total_hours, @pipeline.state, @pipeline.emails, index, @type, @current_user.organization_id) %>
+                      <%= get_email_schedule_text(email.total_hours, @pipeline.state, sorted_emails, index, @type, @current_user.organization_id) %>
                     </p>
                   </div>
                 </span>
@@ -233,12 +245,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
               <div class="flex justify-end mr-2">
                 <%= if not (is_state_manually_trigger(@pipeline.state) and index == 0) do %>
-                  <button disabled={!is_nil(email.reminded_at) || disable_pipeline?(@pipeline.emails, @pipeline.state, index)} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => email.is_stopped || !is_nil(email.reminded_at) || disable_pipeline?(@pipeline.emails, @pipeline.state, index)})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
+                  <button disabled={!is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => email.is_stopped || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
                     <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
                   </button>
                 <% end %>
 
-                <button disabled={!is_nil(email.reminded_at) || disable_pipeline?(@pipeline.emails, @pipeline.state, index)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at) || disable_pipeline?(@pipeline.emails, @pipeline.state, index)})} phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
+                <button disabled={!is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)})} phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
                   <%= if is_state_manually_trigger(@pipeline.state) and index == 0 do %>
                       Start Sequence
                     <% else %>
