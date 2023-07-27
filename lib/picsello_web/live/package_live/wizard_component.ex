@@ -917,13 +917,20 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{assigns: %{job: job, payments_changeset: payments_changeset}} = socket
       ) do
     params = payments_changeset |> current() |> map_keys()
-    payment_schedules = params |> Map.get("payment_schedules") |> map_keys()
+
+    payment_schedules =
+      params
+      |> Map.get("payment_schedules")
+      |> map_keys()
+      |> Enum.with_index(fn %{"payment_field_index" => field_index} = payment, count ->
+        Map.put(payment, "payment_field_index", if(field_index, do: field_index, else: count))
+      end)
 
     new_payment =
       if params["fixed"] do
         %{"price" => nil, "due_interval" => "Day Before Shoot"}
       else
-        %{"percentage" => 34, "due_interval" => "34% Day Before"}
+        %{"percentage" => 8, "due_interval" => "8% Day Before"}
       end
       |> Map.merge(%{
         "shoot_date" => get_first_shoot(job),
@@ -1926,7 +1933,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> Map.merge(options)
   end
 
-  defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
+  defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 12
 
   defp get_tags(form, currency), do: make_tags(form, currency) |> Enum.join(", ")
 
