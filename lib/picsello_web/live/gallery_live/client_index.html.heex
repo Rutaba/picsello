@@ -52,7 +52,7 @@
     </div>
   <% end %>
 
-  <%= if @package.buy_all && !@download_all_visible && !disabled?(@gallery) do %>
+  <%= if @gallery.gallery_digital_pricing.buy_all && !@download_all_visible && !disabled?(@gallery) do %>
     <div class="py-8 sm:py-6 bg-blue-planning-100 center-container gallery__container">
       <div class="flex flex-col justify-center px-7 sm:mx-16 sm:flex-row">
         <div class="sm:mr-28">
