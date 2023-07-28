@@ -19,7 +19,13 @@ defmodule PicselloWeb.NylasController do
       }) do
     case NylasCalendar.fetch_token(code) do
       {:ok, token} ->
-        NylasDetail.set_nylas_token!(nylas_detail, token)
+        {:ok, [%{"account_id" => account_id} | _]} = NylasCalendar.get_calendars(token)
+
+        NylasDetail.set_nylas_token!(nylas_detail, %{
+          oauth_token: token,
+          account_id: account_id,
+          event_status: event_status(nylas_detail.account_id, account_id)
+        })
 
         conn
         |> put_status(302)
@@ -34,4 +40,8 @@ defmodule PicselloWeb.NylasController do
         |> Plug.Conn.halt()
     end
   end
+
+  defp event_status(nil, _account_id), do: :moved
+  defp event_status(account_id, account_id), do: :moved
+  defp event_status(_, _), do: :in_progress
 end
