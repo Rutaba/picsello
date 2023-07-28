@@ -103,6 +103,13 @@ defmodule PicselloWeb.SearchComponent do
   end
 
   @impl true
+
+  def handle_event("change", %{"_target" => ["search"], "search" => ""}, socket),
+    do:
+      socket
+      |> assign_defaults()
+      |> noreply
+
   def handle_event(
         "change",
         %{"_target" => ["search"], "search" => search},
@@ -122,9 +129,7 @@ defmodule PicselloWeb.SearchComponent do
     selection = Enum.find(results, &(to_string(&1.id) == selection))
 
     socket
-    |> assign(:selection, selection)
-    |> assign(:results, [])
-    |> assign(:search, nil)
+    |> assign_defaults(selection)
     |> may_be_assign_warning()
     |> noreply
   end
@@ -144,14 +149,19 @@ defmodule PicselloWeb.SearchComponent do
 
   def handle_event("clear-search", _, socket) do
     socket
-    |> assign(:selection, nil)
-    |> assign(:results, [])
-    |> assign(:search, nil)
+    |> assign_defaults()
     |> may_be_assign_warning()
     |> noreply
   end
 
   def handle_event(_, _, socket), do: noreply(socket)
+
+  defp assign_defaults(socket, selection \\ nil) do
+    socket
+    |> assign(:selection, selection)
+    |> assign(:results, [])
+    |> assign(:search, nil)
+  end
 
   def may_be_assign_warning(
         %{assigns: %{selection: %{id: id}, component_used_for: :currency}} = socket
