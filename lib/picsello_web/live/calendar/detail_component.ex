@@ -51,13 +51,6 @@ defmodule PicselloWeb.Calendar.Shared.DetailComponent do
 
         <.event_item icon="calendar" item_title="Home Calendar" item_desc={"Created by: #{@opts.organizer_email}"} />
       </div>
-
-      <.link href={@opts.url} target="_blank">
-        <button class={"w-full mt-6 flex justify-center " <> @confirm_class} type="button">
-          Open in calendar
-          <.icon name="new-window" class="ml-2 mt-1.5 w-3 h-4" />
-        </button>
-      </.link>
     """
   end
 

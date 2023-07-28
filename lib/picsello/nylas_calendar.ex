@@ -1,11 +1,8 @@
 defmodule Picsello.NylasCalendar do
   @moduledoc """
-
   An Elixir module for interacting with the Nylas Calendar
   API. Contains code to get a list of calendars, get events, add
   events to remote calendars etc
-
-
   """
 
   require Logger
@@ -210,8 +207,6 @@ defmodule Picsello.NylasCalendar do
   defp to_shoot(
          %{
            "description" => description,
-           "id" => id,
-           "calendar_id" => calendar_id,
            "location" => location,
            "organizer_email" => organizer_email,
            "organizer_name" => organizer_name,
@@ -235,15 +230,7 @@ defmodule Picsello.NylasCalendar do
         organizer_name: organizer_name,
         conferencing: event["conferencing"],
         status: status,
-        calendar: "external",
-        url:
-          PicselloWeb.Router.Helpers.remote_path(
-            PicselloWeb.Endpoint,
-            :remote,
-            calendar_id,
-            id,
-            %{"request_from" => "calendar"}
-          )
+        calendar: "external"
       }
     }
   end
