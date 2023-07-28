@@ -3,7 +3,7 @@ defmodule PicselloWeb.JobLive.Shared do
   handlers used by both leads and jobs
   """
 
-  import Ecto.Query
+  require Ecto.Query
   require Logger
 
   use Phoenix.Component
@@ -15,6 +15,7 @@ defmodule PicselloWeb.JobLive.Shared do
   import Phoenix.HTML.Form
   import PicselloWeb.Gettext, only: [ngettext: 3]
   import PicselloWeb.GalleryLive.Shared, only: [truncate_name: 2]
+  import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
 
   alias Picsello.{
     Galleries,
@@ -1771,7 +1772,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_inbox_count()
   end
 
-
   def open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
     do:
       socket
@@ -1866,9 +1866,10 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def get_job_email_by_pipeline(job_id, pipeline) do
     EmailAutomationSchedules.query_get_email_schedule(:lead, nil, job_id, pipeline.id)
-    |> order_by([es], asc: es.id)
-    |> Repo.one()
+    |> Repo.all()
     |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+    |> sort_emails(pipeline.state)
+    |> List.first()
   end
 
   def get_email_body_subject(nil, job, state) do

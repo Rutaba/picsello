@@ -50,17 +50,19 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     email_presets
     |> Enum.map(fn %{id: id, name: name} -> {name, id} end)
   end
-  
+
   def make_sign_options(state) do
     state = if is_atom(state), do: Atom.to_string(state), else: state
 
     cond do
       state in ["before_shoot", "gallery_expiration_soon"] ->
         [[key: "Before", value: "-"], [key: "After", value: "+", disabled: true]]
+
       state in ["balance_due", "offline_payment"] ->
         [[key: "Before", value: "-"], [key: "After", value: "+"]]
+
       true ->
-        [[key: "Before", value: "-", disabled: true], [key: "After", value: "+"]]  
+        [[key: "Before", value: "-", disabled: true], [key: "After", value: "+"]]
     end
   end
 
@@ -113,8 +115,10 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     emails = Enum.sort_by(emails, &{:asc, Map.fetch(&1, :inserted_at)})
 
     email_with_immediate_status = Enum.filter(emails, &(&1.total_hours == 0))
-    state? = if(is_atom(state), do: Atom.to_string(state), else: state) 
-    |> String.contains?("manual_")
+
+    state? =
+      if(is_atom(state), do: Atom.to_string(state), else: state)
+      |> String.contains?("manual_")
 
     if state? && Enum.any?(email_with_immediate_status) do
       {first_email, unsorted_emails} = email_with_immediate_status |> List.pop_at(0)
@@ -296,7 +300,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
              type,
              gallery_id,
              job_id,
-             pipeline_id
+             pipeline_id,
+             state
            ) do
         nil -> nil
         schedule -> schedule.reminded_at
@@ -376,6 +381,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def fetch_date_for_state(:pays_retainer, _pipeline_id, job, _gallery, _order) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
+
     if !PaymentSchedules.is_with_cash?(job) and Enum.count(payment_schedules) > 0 do
       payment_schedules
       |> List.first()
@@ -418,6 +424,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def fetch_date_for_state(:balance_due, _pipeline_id, job, _gallery, _order) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
+
     if !PaymentSchedules.free?(job) and Enum.count(payment_schedules) > 0 do
       job
       |> PaymentSchedules.next_due_payment()
@@ -438,6 +445,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def fetch_date_for_state(:paid_full, _pipeline_id, job, _gallery, _order) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
+
     if PaymentSchedules.all_paid?(job) and Enum.count(payment_schedules) > 0 do
       payment_schedules
       |> List.last()
@@ -449,6 +457,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def fetch_date_for_state(:paid_offline_full, _pipeline_id, job, _gallery, _order) do
     payment_schedules = PaymentSchedules.payment_schedules(job)
+
     all_paid_offline =
       payment_schedules
       |> Enum.all?(fn p -> not is_nil(p.paid_at) and p.type in ["check", "cash"] end)
@@ -503,22 +512,41 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   def job_emails(type, organization_id, job_id, types) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    EmailAutomations.get_emails_for_schedule(organization_id, type, types)
-    |> Enum.map(
-      &[
-        job_id: job_id,
-        total_hours: &1.total_hours,
-        condition: &1.condition,
-        body_template: &1.body_template,
-        name: &1.name,
-        subject_template: &1.subject_template,
-        private_name: &1.private_name,
-        email_automation_pipeline_id: &1.email_automation_pipeline_id,
-        organization_id: organization_id,
-        inserted_at: now,
-        updated_at: now
-      ]
-    )
+    emails =
+      EmailAutomations.get_emails_for_schedule(organization_id, type, types)
+      |> Enum.map(
+        &[
+          job_id: job_id,
+          total_hours: &1.total_hours,
+          condition: &1.condition,
+          body_template: &1.body_template,
+          name: &1.name,
+          subject_template: &1.subject_template,
+          private_name: &1.private_name,
+          email_automation_pipeline_id: &1.email_automation_pipeline_id,
+          organization_id: organization_id,
+          inserted_at: now,
+          updated_at: now
+        ]
+      )
+
+    previous_emails = EmailAutomationSchedules.get_schedules_by_job(job_id)
+
+    if is_nil(previous_emails) do
+      emails
+    else
+      []
+    end
+  end
+
+  def insert_job_emails_from_gallery(gallery, types) do
+    gallery =
+      gallery
+      |> Repo.preload([:job, organization: [organization_job_types: :jobtype]], force: true)
+
+    job_type = gallery.job.type
+    organization_id = gallery.organization.id
+    job_emails(job_type, organization_id, gallery.job.id, types)
   end
 
   @doc """
@@ -590,7 +618,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def assign_collapsed_sections(socket) do
-    sub_categories = EmailAutomations.get_sub_categories()|> Enum.map(fn x -> x.name end)
+    sub_categories = EmailAutomations.get_sub_categories() |> Enum.map(fn x -> x.name end)
+
     socket
     |> assign(:collapsed_sections, sub_categories)
   end

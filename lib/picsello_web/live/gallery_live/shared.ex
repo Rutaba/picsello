@@ -5,7 +5,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
   import Money.Sigils
-  import Ecto.Query
+  import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
 
   alias Picsello.{
     Job,
@@ -98,9 +98,10 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   defp get_gallery_email_by_pipeline(gallery_id, pipeline) do
     EmailAutomationSchedules.query_get_email_schedule(:gallery, gallery_id, nil, pipeline.id)
-    |> order_by([es], asc: es.id)
-    |> Repo.one()
+    |> Repo.all()
     |> Repo.preload(email_automation_pipeline: [:email_automation_category])
+    |> sort_emails(pipeline.state)
+    |> List.first()
   end
 
   defp is_manual_toggle?(nil), do: false

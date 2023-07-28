@@ -12,8 +12,11 @@ defmodule Picsello.Profiles do
     ClientMessage,
     Client,
     Accounts.User,
-    Notifiers.UserNotifier
+    Notifiers.UserNotifier,
+    EmailAutomation.EmailSchedule
   }
+
+  alias PicselloWeb.EmailAutomationLive.Shared
 
   require Logger
 
@@ -178,6 +181,10 @@ defmodule Picsello.Profiles do
             :lead,
             &Job.create_changeset(%{type: contact.job_type, client_id: &1.client.id})
           )
+          |> Ecto.Multi.insert_all(:email_automation_job, EmailSchedule, fn %{lead: job} ->
+            job = job |> Repo.preload(client: [organization: [:user]])
+            Shared.job_emails(job.type, job.client.organization.id, job.id, [:lead, :job])
+          end)
           |> Ecto.Multi.insert(
             :message,
             &ClientMessage.create_inbound_changeset(

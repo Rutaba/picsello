@@ -3,6 +3,7 @@ defmodule Picsello.EmailAutomationSchedules do
     context module for email automation
   """
   import Ecto.Query
+  import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
 
   alias Picsello.{
     Repo,
@@ -23,6 +24,11 @@ defmodule Picsello.EmailAutomationSchedules do
 
   def get_schedules_by_order(order_id) do
     from(es in EmailSchedule, where: es.order_id == ^order_id)
+    |> Repo.one()
+  end
+
+  def get_schedules_by_job(job_id) do
+    from(es in EmailSchedule, where: es.job_id == ^job_id)
     |> Repo.one()
   end
 
@@ -54,7 +60,6 @@ defmodule Picsello.EmailAutomationSchedules do
       )
       |> select_schedule_fields()
       |> filter_email_schedule(ids, type)
-
 
     union_query
     |> Repo.all()
@@ -232,11 +237,7 @@ defmodule Picsello.EmailAutomationSchedules do
         piepline_id,
         table \\ EmailSchedule
       ) do
-    query =
-      from(es in table,
-        where: es.email_automation_pipeline_id == ^piepline_id,
-        limit: 1
-      )
+    query = from(es in table, where: es.email_automation_pipeline_id == ^piepline_id)
 
     case category_type do
       :gallery -> query |> where([es], es.gallery_id == ^gallery_id)
@@ -244,10 +245,11 @@ defmodule Picsello.EmailAutomationSchedules do
     end
   end
 
-  def get_last_completed_email(category_type, gallery_id, job_id, pipeline_id) do
+  def get_last_completed_email(category_type, gallery_id, job_id, pipeline_id, state) do
     query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id, EmailScheduleHistory)
     |> where([es], not is_nil(es.reminded_at))
-    |> order_by([es], desc: es.id)
-    |> Repo.one()
+    |> Repo.all()
+    |> sort_emails(state)
+    |> List.last()
   end
 end

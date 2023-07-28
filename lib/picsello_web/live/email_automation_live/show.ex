@@ -310,8 +310,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         pipeline_id
       )
       |> where([es], is_nil(es.reminded_at))
-      |> order_by([es], asc: es.id)
-      |> Repo.one()
+      |> Repo.all()
+      |> sort_emails(state)
+      |> List.first()
 
     case email_schedule do
       nil ->
@@ -320,7 +321,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
             category_type,
             gallery_id,
             job_id,
-            pipeline_id
+            pipeline_id,
+            state
           )
 
         %{

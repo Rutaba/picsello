@@ -1,6 +1,7 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
-  alias Picsello.{Repo, BookingEvent, Job, Package}
+  alias Picsello.{Repo, BookingEvent, Job, Package, EmailAutomation.EmailSchedule}
+  alias PicselloWeb.EmailAutomationLive.Shared
   import Ecto.Query
 
   defmodule Booking do
@@ -472,6 +473,10 @@ defmodule Picsello.BookingEvents do
         |> Map.put(:starts_at, starts_at)
         |> Map.put(:job_id, changes.job.id)
       )
+    end)
+    |> Ecto.Multi.insert_all(:email_automation_job, EmailSchedule, fn %{job: job} ->
+      job = job |> Repo.preload(client: [organization: [:user]])
+      Shared.job_emails(job.type, job.client.organization.id, job.id, [:job])
     end)
     |> Ecto.Multi.insert(:proposal, fn changes ->
       Picsello.BookingProposal.create_changeset(%{job_id: changes.job.id})
