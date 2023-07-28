@@ -1,7 +1,7 @@
 defmodule Picsello.Shoot do
   @moduledoc false
   use Ecto.Schema
-  alias Picsello.{Accounts.User, Repo}
+  alias Picsello.NylasDetail
   import Ecto.{Changeset, Query}
 
   @locations ~w[studio on_location home]a
@@ -111,7 +111,7 @@ defmodule Picsello.Shoot do
           address: address,
           external_event_id: external_event_id
         },
-        %User{external_calendar_rw_id: calendar_id},
+        %NylasDetail{external_calendar_rw_id: calendar_id},
         action \\ :insert
       ) do
     end_time = DateTime.add(starts_at, duration_minutes * 60) |> DateTime.to_unix()

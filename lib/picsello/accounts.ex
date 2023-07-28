@@ -258,7 +258,7 @@ defmodule Picsello.Accounts do
       where: user.id in subquery(query),
       join: org in assoc(user, :organization),
       left_join: subscription in assoc(user, :subscription),
-      preload: [:subscription, [organization: :organization_job_types]]
+      preload: [:nylas_detail, :subscription, [organization: :organization_job_types]]
     )
     |> Repo.one()
   end
@@ -357,22 +357,6 @@ defmodule Picsello.Accounts do
     else
       _ -> nil
     end
-  end
-
-  @spec set_user_nylas_code(Picsello.Accounts.User.t(), String.t()) :: User.t()
-  def set_user_nylas_code(%User{} = user, code) do
-    User.set_user_nylas_code(user, code)
-  end
-
-  @spec clear_user_nylas_code(Picsello.Accounts.User.t()) :: User.t()
-  def clear_user_nylas_code(%User{} = user) do
-    User.clear_user_nylas_code(user)
-  end
-
-  def clear_user_nylas_code(user_id) when is_number(user_id) do
-    user_id
-    |> get_user!()
-    |> User.clear_user_nylas_code()
   end
 
   @spec reset_user_password(

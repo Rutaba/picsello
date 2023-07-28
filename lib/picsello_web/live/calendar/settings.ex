@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Calendar.Settings do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Accounts, NylasCalendar}
+  alias Picsello.{NylasCalendar, NylasDetail}
   alias PicselloWeb.Endpoint
   alias Phoenix.LiveView.Socket
   import PicselloWeb.Live.Calendar.Shared
@@ -14,7 +14,11 @@ defmodule PicselloWeb.Live.Calendar.Settings do
           map(),
           Phoenix.LiveView.Socket.t()
         ) :: {:ok, Phoenix.LiveView.Socket.t()}
-  def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{current_user: %{nylas_detail: nylas_detail} = user}} = socket
+      ) do
     url = Routes.i_calendar_url(socket, :index, Phoenix.Token.sign(Endpoint, "USER_ID", user.id))
     {:ok, nylas_url} = NylasCalendar.generate_login_link()
 
@@ -26,20 +30,15 @@ defmodule PicselloWeb.Live.Calendar.Settings do
       has_token: false,
       token: "",
       nylas_url: nylas_url,
-      rw_calendar: user.external_calendar_rw_id,
-      read_calendars: to_set(user)
+      rw_calendar: nylas_detail.external_calendar_rw_id,
+      read_calendars: to_set(nylas_detail)
     })
     |> assign_from_token(user)
     |> ok()
   end
 
-  defp to_set(%{external_calendar_read_list: nil}) do
-    MapSet.new([])
-  end
-
-  defp to_set(%{external_calendar_read_list: list}) do
-    MapSet.new(list)
-  end
+  defp to_set(%{external_calendar_read_list: nil}), do: MapSet.new([])
+  defp to_set(%{external_calendar_read_list: list}), do: MapSet.new(list)
 
   @impl true
   @spec handle_event(String.t(), any, Socket.t()) ::
@@ -47,9 +46,9 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   def handle_event(
         "disconnect_calendar",
         _,
-        %Socket{assigns: %{current_user: %Picsello.Accounts.User{} = user}} = socket
+        %Socket{assigns: %{current_user: %{nylas_detail: nylas_detail} = user}} = socket
       ) do
-    user = Accounts.clear_user_nylas_code(user)
+    NylasDetail.clear_nylas_token!(nylas_detail)
 
     {:noreply,
      socket
@@ -77,7 +76,11 @@ defmodule PicselloWeb.Live.Calendar.Settings do
         "save",
         _,
         %Socket{
-          assigns: %{read_calendars: read_calendars, rw_calendar: rw_calendar, current_user: user}
+          assigns: %{
+            read_calendars: read_calendars,
+            rw_calendar: rw_calendar,
+            current_user: %{nylas_detail: nylas_detail} = user
+          }
         } = socket
       ) do
     attrs = %{
@@ -85,7 +88,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
       external_calendar_read_list: MapSet.to_list(read_calendars)
     }
 
-    user = Picsello.Accounts.User.set_nylas_calendars(user, attrs)
+    NylasDetail.set_nylas_calendars!(nylas_detail, attrs)
 
     {:noreply,
      assign(socket, :current_user, user) |> put_flash(:success, "Calendar settings saved")}
@@ -93,8 +96,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
 
   defdelegate handle_event(event, params, socket), to: PicselloWeb.Live.Calendar.Shared
 
-  @spec toggle(MapSet.t(String.t()), String.t()) :: MapSet.t(String.t())
-  def toggle(calendars, key) do
+  defp toggle(calendars, key) do
     if MapSet.member?(calendars, key) do
       MapSet.delete(calendars, key)
     else
@@ -102,14 +104,10 @@ defmodule PicselloWeb.Live.Calendar.Settings do
     end
   end
 
-  @spec is_member(MapSet.t(), String.t()) :: boolean()
-  def is_member(calendars, cal_id) do
-    MapSet.member?(calendars, cal_id)
-  end
+  defp is_member(calendars, cal_id), do: MapSet.member?(calendars, cal_id)
 
-  @spec assign_from_token(Socket.t(), Picsello.Accounts.User.t()) :: Socket.t()
-  def assign_from_token(socket, %Picsello.Accounts.User{nylas_oauth_token: token})
-      when is_binary(token) do
+  defp assign_from_token(socket, %{nylas_detail: %{oauth_token: token}})
+       when is_binary(token) do
     case NylasCalendar.get_calendars(token) do
       {:ok, calendars} ->
         assign(socket, %{has_token: true, token: token, calendars: calendars})
@@ -119,7 +117,5 @@ defmodule PicselloWeb.Live.Calendar.Settings do
     end
   end
 
-  def assign_from_token(socket, _) do
-    socket
-  end
+  defp assign_from_token(socket, _), do: socket
 end

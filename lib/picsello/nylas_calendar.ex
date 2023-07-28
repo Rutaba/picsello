@@ -184,6 +184,9 @@ defmodule Picsello.NylasCalendar do
   end
 
   # get and filter events using given filter function.
+  defp filter_events(nil, _, _, _), do: []
+  defp filter_events(_, nil, _, _), do: []
+
   defp filter_events(calendars, token, timezone, filter_fn) when is_list(calendars) do
     calendars
     |> Enum.flat_map(fn calendar_id ->

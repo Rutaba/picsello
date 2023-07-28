@@ -10,14 +10,16 @@ defmodule PicselloWeb.NylasController do
   """
 
   use PicselloWeb, :controller
-  alias Picsello.{Accounts, NylasCalendar}
+  alias Picsello.{NylasCalendar, NylasDetail}
   require Logger
 
   @spec callback(Plug.Conn.t(), any) :: Plug.Conn.t()
-  def callback(%Plug.Conn{assigns: %{current_user: user}} = conn, %{"code" => code}) do
+  def callback(%Plug.Conn{assigns: %{current_user: %{nylas_detail: nylas_detail}}} = conn, %{
+        "code" => code
+      }) do
     case NylasCalendar.fetch_token(code) do
       {:ok, token} ->
-        Accounts.set_user_nylas_code(user, token)
+        NylasDetail.set_nylas_token!(nylas_detail, token)
 
         conn
         |> put_status(302)

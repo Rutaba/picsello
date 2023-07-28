@@ -71,7 +71,17 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   def handle_event(
         "save",
         %{"shoot" => params},
-        %{assigns: %{current_user: user, job: %{job_status: job_status}}} = socket
+        %{
+          assigns: %{
+            current_user: %{
+              nylas_detail: %{
+                oauth_token: oauth_token,
+                external_calendar_rw_id: external_calendar_rw_id
+              }
+            },
+            job: %{job_status: job_status}
+          }
+        } = socket
       ) do
     socket
     |> build_changeset(params |> Enum.into(%{"address" => nil}))
@@ -79,7 +89,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       Multi.new()
       |> Multi.insert_or_update(:shoot, changeset)
       |> Multi.merge(fn
-        %{shoot: shoot} when not is_nil(user.nylas_oauth_token) ->
+        %{shoot: shoot}
+        when not is_nil(oauth_token) and not is_nil(external_calendar_rw_id) ->
           changeset
           |> params_for_event_job(shoot)
           |> CalendarEvent.new()

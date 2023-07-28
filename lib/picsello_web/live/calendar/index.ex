@@ -1,20 +1,23 @@
 defmodule PicselloWeb.Live.Calendar.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Accounts, Jobs, Shoots, NylasCalendar, Repo}
+  alias Picsello.{Jobs, Shoots, NylasCalendar, Repo}
   import PicselloWeb.Live.Calendar.Shared
   alias PicselloWeb.Shared.PopupComponent
   alias PicselloWeb.Calendar.Shared.DetailComponent
 
   @impl true
   @spec mount(any, map, Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
-  def mount(_params, %{"user_token" => token}, socket) do
-    user = Accounts.get_user_by_session_token(token)
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{current_user: %{nylas_detail: nylas_detail}}} = socket
+      ) do
     {:ok, nylas_url} = NylasCalendar.generate_login_link()
 
     socket
     |> assign(:nylas_url, nylas_url)
-    |> assign(:show_calendar_setup, is_nil(user.nylas_oauth_token))
+    |> assign(:show_calendar_setup, is_nil(nylas_detail.oauth_token))
     |> assign(:page_title, "Calendar")
     |> ok()
   end

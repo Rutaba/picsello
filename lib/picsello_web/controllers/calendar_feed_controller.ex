@@ -4,11 +4,13 @@ defmodule PicselloWeb.CalendarFeedController do
   alias Picsello.{Shoots, Job, NylasCalendar}
   require Logger
   @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()
-  def index(%{assigns: %{current_user: user}} = conn, params) do
+  def index(%{assigns: %{current_user: %{nylas_detail: nylas_detail} = user}} = conn, params) do
     feeds = user |> Shoots.get_shoots(params) |> map(conn, user)
-    read_cals = user.external_calendar_read_list
 
-    events = NylasCalendar.get_external_events(read_cals, user.nylas_oauth_token, user.time_zone)
+    events =
+      nylas_detail
+      |> Map.get(:external_calendar_read_list)
+      |> NylasCalendar.get_external_events(nylas_detail.oauth_token, user.time_zone)
 
     conn
     |> put_resp_content_type("application/json")

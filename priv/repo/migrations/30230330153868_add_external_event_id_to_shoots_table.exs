@@ -3,7 +3,7 @@ defmodule Picsello.Repo.Migrations.AddExternalEventIdToShootsTable do
 
   def change do
     alter table(:shoots) do
-      modify(:external_event_id, :string)
+      add(:external_event_id, :string)
     end
   end
 end

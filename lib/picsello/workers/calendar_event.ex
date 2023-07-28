@@ -47,11 +47,11 @@ defmodule Picsello.Workers.CalendarEvent do
     :ok
   end
 
-  defp get_shoot(shoot_id), do:  shoot_id |> Shoots.get_shoot() |> Shoots.load_user()
+  defp get_shoot(shoot_id), do: shoot_id |> Shoots.get_shoot() |> Shoots.load_user()
 
-  def map_event(shoot, action) do
-    user = shoot.job.client.organization.user
+  def map_event(%{job: %{client: %{organization: %{user: user}}}} = shoot, action) do
+    nylas_detail = user.nylas_detail
 
-    {Picsello.Shoot.map_event(shoot, user, action), user.nylas_oauth_token}
+    {Shoot.map_event(shoot, nylas_detail, action), nylas_detail.oauth_token}
   end
 end

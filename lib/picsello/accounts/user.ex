@@ -3,7 +3,15 @@ defmodule Picsello.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
   import TzExtra.Changeset
-  alias Picsello.{Onboardings.Onboarding, Subscription, SubscriptionEvent, Organization}
+
+  alias Picsello.{
+    Repo,
+    Onboardings.Onboarding,
+    Subscription,
+    SubscriptionEvent,
+    Organization,
+    NylasDetail
+  }
 
   @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
   @derive {Inspect, except: [:password]}
@@ -19,12 +27,10 @@ defmodule Picsello.Accounts.User do
     field :time_zone, :string
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
     field :stripe_customer_id, :string
-    field :nylas_oauth_token, :string
-    field :external_calendar_rw_id, :string
-    field :external_calendar_read_list, {:array, :string}
     embeds_one(:onboarding, Onboarding, on_replace: :update)
     has_one(:subscription, Subscription)
     has_one(:subscription_event, SubscriptionEvent)
+    has_one(:nylas_detail, NylasDetail)
     belongs_to(:organization, Organization)
 
     timestamps()
@@ -62,10 +68,7 @@ defmodule Picsello.Accounts.User do
       :email,
       :name,
       :password,
-      :time_zone,
-      :nylas_oauth_token,
-      :external_calendar_rw_id,
-      :external_calendar_read_list
+      :time_zone
     ])
     |> validate_required([:name])
     |> validate_email()
@@ -84,33 +87,6 @@ defmodule Picsello.Accounts.User do
   def toggle(%__MODULE__{} = current_user) do
     current_user
     |> Ecto.Changeset.change(%{allow_cash_payment: !enabled?(current_user)})
-    |> Repo.update!()
-  end
-
-  @spec set_user_nylas_code(Picsello.Accounts.User.t(), String.t()) :: t()
-  def set_user_nylas_code(%__MODULE__{} = current_user, nylas_code) do
-    current_user
-    |> Ecto.Changeset.change(%{nylas_oauth_token: nylas_code})
-    |> Repo.update!()
-  end
-
-  @spec clear_user_nylas_code(Picsello.Accounts.User.t()) :: t()
-  def clear_user_nylas_code(%__MODULE__{} = current_user) do
-    current_user
-    |> Ecto.Changeset.change(%{nylas_oauth_token: nil})
-    |> Repo.update!()
-  end
-
-  @spec set_nylas_calendars(
-          Picsello.Accounts.User.t(),
-          :invalid | map()
-        ) :: Picsello.Accounts.User.t()
-  def set_nylas_calendars(%__MODULE__{} = user, calendars) do
-    user
-    |> cast(calendars, [
-      :external_calendar_rw_id,
-      :external_calendar_read_list
-    ])
     |> Repo.update!()
   end
 
@@ -342,9 +318,6 @@ defmodule Picsello.Accounts.User do
           confirmed_at: DateTime.t(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t(),
-          onboarding: Picsello.Onboardings.Onboarding.t(),
-          nylas_oauth_token: String.t(),
-          external_calendar_read_list: [String.t()] | nil,
-          external_calendar_rw_id: String.t() | nil
+          onboarding: Picsello.Onboardings.Onboarding.t()
         }
 end
