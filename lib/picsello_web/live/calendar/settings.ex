@@ -3,7 +3,8 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   use PicselloWeb, :live_view
   alias Picsello.{NylasCalendar, NylasDetail}
   alias PicselloWeb.Endpoint
-  alias Phoenix.LiveView.Socket
+  alias Phoenix.{LiveView.Socket, PubSub}
+
   import PicselloWeb.Live.Calendar.Shared
   require Logger
 
@@ -22,6 +23,10 @@ defmodule PicselloWeb.Live.Calendar.Settings do
     url = Routes.i_calendar_url(socket, :index, Phoenix.Token.sign(Endpoint, "USER_ID", user.id))
     {:ok, nylas_url} = NylasCalendar.generate_login_link()
 
+    if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "move_events:#{nylas_detail.id}")
+    end
+
     socket
     |> assign(%{
       url: url,
@@ -33,8 +38,16 @@ defmodule PicselloWeb.Live.Calendar.Settings do
       rw_calendar: nylas_detail.external_calendar_rw_id,
       read_calendars: to_set(nylas_detail)
     })
+    |> disable_settings_buttons?(nylas_detail)
     |> assign_from_token(user)
     |> ok()
+  end
+
+  defp disable_settings_buttons?(socket, %{
+         event_status: event_status,
+         external_calendar_rw_id: id
+       }) do
+    assign(socket, :disable_settings_buttons?, event_status == :in_progress && is_binary(id))
   end
 
   defp to_set(%{external_calendar_read_list: nil}), do: MapSet.new([])
@@ -83,18 +96,31 @@ defmodule PicselloWeb.Live.Calendar.Settings do
           }
         } = socket
       ) do
-    attrs = %{
-      external_calendar_rw_id: rw_calendar,
-      external_calendar_read_list: MapSet.to_list(read_calendars)
-    }
+    nylas_detail =
+      NylasDetail.set_nylas_calendars!(nylas_detail, %{
+        external_calendar_rw_id: rw_calendar,
+        external_calendar_read_list: MapSet.to_list(read_calendars)
+      })
 
-    NylasDetail.set_nylas_calendars!(nylas_detail, attrs)
-
-    {:noreply,
-     assign(socket, :current_user, user) |> put_flash(:success, "Calendar settings saved")}
+    socket
+    |> assign(:current_user, user)
+    |> disable_settings_buttons?(nylas_detail)
+    |> put_flash(:success, "Calendar settings saved")
+    |> noreply
   end
 
   defdelegate handle_event(event, params, socket), to: PicselloWeb.Live.Calendar.Shared
+
+  def handle_info(
+        {:move_events, nylas_detail},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    current_user
+    |> Map.put(:nylas_detail, nylas_detail)
+    |> then(&assign(socket, :current_user, &1))
+    |> disable_settings_buttons?(nylas_detail)
+    |> noreply()
+  end
 
   defp toggle(calendars, key) do
     if MapSet.member?(calendars, key) do

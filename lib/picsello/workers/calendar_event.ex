@@ -3,6 +3,7 @@ defmodule Picsello.Workers.CalendarEvent do
   use Oban.Worker, queue: :storage
 
   alias Picsello.{NylasCalendar, NylasDetail, Accounts, Shoot, Shoots, Repo}
+  alias Phoenix.PubSub
   require Logger
 
   def perform(%Oban.Job{args: %{"type" => "insert", "shoot_id" => shoot_id}}) do
@@ -47,7 +48,7 @@ defmodule Picsello.Workers.CalendarEvent do
       Task.await(task)
     end)
 
-    NylasDetail.reset_event_status!(user.nylas_detail)
+    user.nylas_detail |> NylasDetail.reset_event_status!() |> broadcast()
 
     :ok
   end
@@ -97,5 +98,13 @@ defmodule Picsello.Workers.CalendarEvent do
     nylas_detail = user.nylas_detail
 
     {Shoot.map_event(shoot, nylas_detail, action), nylas_detail.oauth_token}
+  end
+
+  defp broadcast(nylas_detail) do
+    PubSub.broadcast(
+      Picsello.PubSub,
+      "move_events:#{nylas_detail.id}",
+      {:move_events, nylas_detail}
+    )
   end
 end

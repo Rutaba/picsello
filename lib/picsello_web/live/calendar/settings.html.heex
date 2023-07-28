@@ -81,7 +81,7 @@
         </div>
       </div>
 
-      <button type="button" class="btn-primary" id="save" phx-click="save">Save</button>
+      <button type="button" disabled={@disable_settings_buttons?} class="btn-primary" id="save" phx-click="save">Save</button>
 
       <div id="danger">
         <hr class="my-4 sm:my-10" />
@@ -91,12 +91,16 @@
             <p class="text-base-250 mb-4">
               If for whatever reason you need to change calendars or resetup the sync, you can do so here. Let us know if you run into any trouble
             </p>
-            <button type="button" id="disconnect_button" class="btn-tertiary btn-warning" phx-click="disconnect_calendar">Disconnect</button>
+            <button type="button" disabled={@disable_settings_buttons?} id="disconnect_button" class="btn-tertiary btn-warning" phx-click="disconnect_calendar">Disconnect</button>
           </div>
           <div class="grid-col order-first lg:order-last">
             <img src="/images/calendar-4.svg" alt="Remove calendar from Picsello" />
           </div>
         </div>
+        
+        <%= if @disable_settings_buttons? do %>
+          <div class="mt-2"><b>Note:</b> We're importing your all external calendar events from previous account to this <br> new account, so you can't disconnet and save untill it gets finished</div>
+        <% end %>
       </div>
     </div>
   </section>
