@@ -8,7 +8,7 @@ defmodule Picsello.NylasDetail do
     field :oauth_token, :string
     field :previous_oauth_token, :string
     field :account_id, :string
-    field :previous_account_id, :string
+    field :event_status, Ecto.Enum, values: [:moved, :in_progress], default: :moved
     field :external_calendar_rw_id, :string
     field :external_calendar_read_list, {:array, :string}
 
@@ -22,15 +22,17 @@ defmodule Picsello.NylasDetail do
           account_id: String.t() | nil,
           oauth_token: String.t() | nil,
           previous_oauth_token: String.t() | nil,
-          previous_account_id: String.t() | nil,
+          event_status: atom(),
           external_calendar_read_list: [String.t()] | nil,
           external_calendar_rw_id: String.t() | nil
         }
 
-  @spec set_nylas_token!(t(), String.t()) :: t()
-  def set_nylas_token!(%__MODULE__{} = nylas_detail, token) do
+  @token_fields ~w(account_id event_status token)a
+  @spec set_nylas_token!(t(), map()) :: t()
+  def set_nylas_token!(%__MODULE__{} = nylas_detail, attrs) do
     nylas_detail
-    |> change(%{oauth_token: token})
+    |> cast(attrs, @token_fields)
+    |> validate_required(@token_fields)
     |> Repo.update!()
   end
 
@@ -42,7 +44,8 @@ defmodule Picsello.NylasDetail do
       account_id: nil,
       previous_oauth_token: oauth_token,
       external_calendar_rw_id: nil,
-      external_calendar_read_list: []
+      external_calendar_read_list: [],
+      previous_oauth_token: oauth_token
     })
     |> Repo.update!()
   end

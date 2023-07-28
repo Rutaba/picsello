@@ -7,7 +7,7 @@ defmodule Picsello.Repo.Migrations.CreateNylasDetail do
       add(:external_calendar_read_list, {:array, :string})
       add(:oauth_token, :string)
       add(:account_id, :string)
-      add(:previous_account_id, :string)
+      add(:event_status, :string, default: "moved")
       add(:previous_oauth_token, :string)
       add(:user_id, references(:users, on_delete: :nothing), null: false)
 
