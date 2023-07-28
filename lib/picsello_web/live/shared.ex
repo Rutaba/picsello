@@ -778,4 +778,13 @@ defmodule PicselloWeb.Live.Shared do
       socket |> noreply()
     end
   end
+
+  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
+
+  def handle_info({:redirect_to_gallery, gallery}, socket) do
+    socket
+    |> put_flash(:success, "Gallery created—You’re now ready to upload photos!")
+    |> push_redirect(to: new_gallery_path(socket, gallery))
+    |> noreply()
+  end
 end
