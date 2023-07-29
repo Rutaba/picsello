@@ -181,6 +181,10 @@ config :mime, :types, %{
   "text/calendar" => ["text/calendar"]
 }
 
+config :picsello, :exchange_rates,
+  url: System.get_env("EXCHANGE_RATES_API_URL"),
+  access_key: System.get_env("EXCHANGE_RATES_API_KEY")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

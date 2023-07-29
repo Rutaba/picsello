@@ -4,7 +4,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
   use Phoenix.Component
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  import Money.Sigils
 
   alias Picsello.{
     Job,
@@ -713,14 +712,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
     do: gallery |> Cart.credit_remaining() |> credits()
 
   def credits(credits) do
-    for {label, key, zero} <- [
-          {"Download Credits", :digital, 0},
-          {"Print Credit", :print, ~M[0]USD}
+    for {label, key} <- [
+          {"Download Credits", :digital},
+          {"Print Credit", :print}
         ],
         reduce: [] do
       acc ->
         case Map.get(credits, key) do
-          ^zero -> acc
+          0 -> acc
+          %{amount: 0} -> acc
           value -> [{label, value} | acc]
         end
     end

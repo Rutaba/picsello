@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   import PicselloWeb.GalleryLive.Shared
+  import Picsello.Utils, only: [products_currency: 0]
 
   alias Picsello.Galleries
   alias Phoenix.PubSub
@@ -26,6 +27,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
       PubSub.subscribe(Picsello.PubSub, "gallery_progress:#{gallery.id}")
     end
 
+    currency = Picsello.Currency.for_gallery(gallery)
     album = Map.get(params, :selected_album, nil)
 
     Phoenix.PubSub.broadcast(
@@ -39,6 +41,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     |> assign(:total_progress, total_progress)
     |> assign(:photos_error_count, photos_error_count)
     |> assign(:gallery, gallery)
+    |> assign(:currency, currency)
     |> assign(:edit_name, true)
     |> assign(:is_mobile, is_mobile)
     |> assign(:albums, albums)

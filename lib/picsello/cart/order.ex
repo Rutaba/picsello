@@ -16,7 +16,7 @@ defmodule Picsello.Cart.Order do
   }
 
   schema "gallery_orders" do
-    field :bundle_price, Money.Ecto.Amount.Type
+    field :bundle_price, Money.Ecto.Map.Type
     field :number, :integer, default: Enum.random(100_000..999_999)
     field :placed_at, :utc_datetime
     field :total_credits_amount, :integer, default: 0
@@ -24,6 +24,12 @@ defmodule Picsello.Cart.Order do
     belongs_to(:gallery_client, GalleryClient)
     belongs_to(:gallery, Gallery)
     belongs_to(:album, Album)
+
+    belongs_to(:order_currency, Picsello.Currency,
+      references: :code,
+      type: :string,
+      foreign_key: :currency
+    )
 
     has_one :package, through: [:gallery, :package]
     has_one :invoice, Picsello.Invoices.Invoice
@@ -78,7 +84,7 @@ defmodule Picsello.Cart.Order do
 
   defp do_create_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:gallery_id, :gallery_client_id, :album_id])
+    |> cast(attrs, [:gallery_id, :gallery_client_id, :album_id, :currency])
     |> validate_required([:gallery_id, :gallery_client_id])
     |> foreign_key_constraint(:gallery_id)
     |> foreign_key_constraint(:gallery_client_id)
@@ -179,8 +185,9 @@ defmodule Picsello.Cart.Order do
   def placed?(%__MODULE__{}), do: true
 
   @doc "calculate products cost, includes shipping price"
-  def product_total(%__MODULE__{products: products} = order) when is_list(products) do
-    for product <- products, reduce: Money.new(0) do
+  def product_total(%__MODULE__{products: products, currency: currency} = order)
+      when is_list(products) do
+    for product <- products, reduce: Money.new(0, currency) do
       sum ->
         product
         |> Product.charged_price()
@@ -189,9 +196,15 @@ defmodule Picsello.Cart.Order do
     |> Money.add(Cart.total_shipping(order))
   end
 
-  def digital_total(%__MODULE__{digitals: digitals, bundle_price: bundle_price})
+  def digital_total(%__MODULE__{
+        digitals: digitals,
+        bundle_price: bundle_price,
+        currency: currency
+      })
       when is_list(digitals) do
-    for digital <- digitals, reduce: bundle_price || Money.new(0) do
+    for digital <- digitals,
+        digital = Map.put(digital, :currency, currency),
+        reduce: bundle_price || Money.new(0, currency) do
       sum -> digital |> Digital.charged_price() |> Money.add(sum)
     end
   end

@@ -86,7 +86,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
     socket
     |> assign(
-      creator: Galleries.get_gallery_creator(gallery),
       package: Galleries.get_package(gallery),
       favorites_count: Galleries.gallery_favorites_count(gallery),
       favorites_filter: false,

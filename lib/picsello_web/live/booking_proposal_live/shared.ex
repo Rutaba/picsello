@@ -33,7 +33,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       <%= with discount_percent when discount_percent != nil <- Packages.discount_percent(@package) do %>
         <dl class="flex justify-between">
           <dt>Session fee</dt>
-          <dd><%= Package.base_price(@package) %></dd>
+          <dd><%= Money.to_string(Package.base_price(@package), symbol: false, code: true)%></dd>
         </dl>
         <dl class="flex justify-between text-green-finances-300 my-2">
           <dt>Discount</dt>
@@ -42,7 +42,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       <% end %>
       <dl class="flex justify-between text-xl font-bold mt-4">
         <dt>Total</dt>
-        <dd><%= Package.price(@package) %></dd>
+        <dd class="bold"><%= Money.to_string(Package.price(@package), symbol: false, code: true)%></dd>
       </dl>
 
     </div>
@@ -119,9 +119,9 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         <%= case Packages.Download.from_package(@package) do %>
           <% %{status: :limited} = d -> %>
             <p><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></p>
-            <p> Additional downloads @ <%= d.each_price %>/ea </p>
+            <p> Additional downloads @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea </p>
           <% %{status: :none} = d -> %>
-            <p> Download photos @ <%= d.each_price %>/ea </p>
+            <p> Download photos @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea </p>
           <% _ -> %>
             <p> All photos downloadable </p>
           <% end %>
@@ -134,7 +134,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         </div>
 
         <div class="flex flex-col col-span-2 sm:col-span-1">
-          <p> $<%= get_amount(@print_credit) %> in print credits to use in your gallery</p>
+          <p><%= get_amount(@print_credit) %><%= @print_credit.currency%> in print credits to use in your gallery</p>
         </div>
       <% end %>
 

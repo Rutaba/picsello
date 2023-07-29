@@ -41,7 +41,10 @@ defmodule Picsello.OrdersTest do
       Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
 
       user = insert(:user, email: "photographer@example.com") |> onboard!()
-      job = insert(:lead, user: user) |> promote_to_job()
+
+      job =
+        insert(:lead, package: insert(:package, currency: "USD"), user: user) |> promote_to_job()
+
       gallery = insert(:gallery, job: job) |> Map.put(:credits_available, true)
 
       gallery_client =

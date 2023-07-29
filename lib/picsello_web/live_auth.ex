@@ -3,8 +3,7 @@ defmodule PicselloWeb.LiveAuth do
   import Phoenix.LiveView
   import Phoenix.Component
   alias PicselloWeb.Router.Helpers, as: Routes
-  alias Picsello.{Accounts, Accounts.User, Subscriptions}
-  alias Picsello.{Galleries, Albums}
+  alias Picsello.{Accounts, Accounts.User, Subscriptions, UserCurrencies, Repo, Galleries, Albums}
 
   def on_mount(:default, params, session, socket) do
     socket |> allow_sandbox() |> mount(params, session)
@@ -50,6 +49,7 @@ defmodule PicselloWeb.LiveAuth do
     |> assign(galleries_count: 0)
     |> assign(accumulated_progress: 0)
     |> assign_current_user(session)
+    |> assign_currency()
     |> then(fn
       %{assigns: %{current_user: nil}} = socket ->
         socket |> redirect(to: Routes.user_session_path(socket, :new)) |> halt()
@@ -63,7 +63,26 @@ defmodule PicselloWeb.LiveAuth do
   end
 
   defp mount(socket, _params, _session),
-    do: socket |> assign(galleries_count: 0) |> assign(accumulated_progress: 0) |> halt()
+    do:
+      socket
+      |> assign(galleries_count: 0)
+      |> assign(accumulated_progress: 0)
+      |> halt()
+
+  defp assign_currency(%{assigns: %{current_user: current_user}} = socket)
+       when not is_nil(current_user) do
+    user_currency = UserCurrencies.get_user_currency(current_user.organization_id)
+    assign(socket, :currency, user_currency && user_currency.currency)
+  end
+
+  defp assign_currency(%{assigns: %{gallery: gallery}} = socket) do
+    %{organization: organization} = Repo.preload(gallery, :organization)
+
+    user_currency = UserCurrencies.get_user_currency(organization.id)
+    assign(socket, :currency, user_currency && user_currency.currency)
+  end
+
+  defp assign_currency(socket), do: socket
 
   defp assign_current_user(socket, %{"user_token" => user_token}) do
     socket

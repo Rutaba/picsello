@@ -193,7 +193,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
           }
         } = socket
       ) do
-      
     %{id: oban_job_id} =
       %{
         message: serialize(message_changeset),

@@ -21,9 +21,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     PackagePayments,
     Shoot,
     Questionnaire,
-    GlobalSettings
+    GlobalSettings,
+    Currency
   }
 
+  import Picsello.Utils, only: [products_currency: 0]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
@@ -47,13 +49,14 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     @moduledoc "For setting payments on last step"
     use Ecto.Schema
     import Ecto.Changeset
+    alias PicselloWeb.PackageLive.WizardComponent
 
     @primary_key false
     embedded_schema do
       field(:schedule_type, :string)
       field(:fixed, :boolean)
-      field(:total_price, Money.Ecto.Amount.Type)
-      field(:remaining_price, Money.Ecto.Amount.Type)
+      field(:total_price, Money.Ecto.Map.Type)
+      field(:remaining_price, Money.Ecto.Map.Type)
       embeds_many(:payment_schedules, PackagePaymentSchedule)
     end
 
@@ -136,15 +139,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     defp remaining_to_collect(payments_changeset) do
       %{
         fixed: fixed,
-        total_price: total_price,
+        total_price: %{currency: currency} = total_price,
         payment_schedules: payments
       } = payments_changeset |> current()
 
+      initial_price = WizardComponent.new_money(currency)
+
       total_collected =
         payments
-        |> Enum.reduce(Money.new(0), fn payment, acc ->
+        |> Enum.reduce(initial_price, fn payment, acc ->
           if fixed do
-            Money.add(acc, payment.price || Money.new(0))
+            Money.add(acc, payment.price || initial_price)
           else
             Money.add(acc, from_percentage(payment.percentage, total_price))
           end
@@ -153,7 +158,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       Money.subtract(total_price, total_collected.amount)
     end
 
-    defp from_percentage(nil, _), do: Money.new(0)
+    defp from_percentage(nil, %{currency: currency}), do: WizardComponent.new_money(currency)
 
     defp from_percentage(price, total_price) do
       Money.divide(total_price, 100) |> List.first() |> Money.multiply(price)
@@ -222,26 +227,27 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   @impl true
-  def update(%{current_user: current_user} = assigns, socket) do
+  def update(
+        %{current_user: %{organization: organization}, currency: currency} = assigns,
+        socket
+      ) do
     socket
     |> assign(assigns)
     |> assign_new(:job, fn -> nil end)
     |> assign_new(:show_on_public_profile, fn -> false end)
-    |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
+    |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil, currency: currency} end)
+    |> then(fn %{assigns: %{package: %{currency: currency}}} = socket ->
+      socket
+      |> assign(:currency, currency)
+      |> assign(:currency_symbol, symbol!(currency))
+    end)
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign_new(:contract_changeset, fn -> %{} end)
     |> assign_new(:collapsed_documents, fn -> [0, 1] end)
     |> assign(is_template: assigns |> Map.get(:job) |> is_nil())
-    |> assign(
-      job_types: Profiles.enabled_job_types(current_user.organization.organization_job_types)
-    )
-    |> assign(
-      global_settings:
-        Repo.get_by(GlobalSettings.Gallery, organization_id: current_user.organization_id)
-    )
+    |> assign(job_types: Profiles.enabled_job_types(organization.organization_job_types))
+    |> assign(global_settings: GlobalSettings.get(organization.id))
     |> choose_initial_step()
-    |> assign_changeset(%{})
-    |> assign_questionnaires()
     |> assign(default: %{})
     |> assign(custom: false)
     |> assign(job_type: nil)
@@ -252,6 +258,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign(:show_print_credits, false)
     |> assign(:show_discounts, false)
     |> assign(:show_digitals, "close")
+    |> assign_changeset(%{})
+    |> assign_questionnaires()
     |> ok()
   end
 
@@ -488,12 +496,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :documents} = assigns) do
     ~H"""
-    <div class="font-normal pb-6 text-base-250 w-fit">
-      As with most things in Picsello, we have created default contracts/questionnaires for you to use. If you’d like to make your own, check out global questionnaire and contract management. (Modal will close & you can come back)
+    <div class="font-normal text-base-250 w-fit">
+      As with most things in Picsello, we have created default contracts/questionnaires for you to use. If you’d like to make your own, check out global questionnaire and contract management. <strong>NOTE: Make sure to save your work and come back to this page to select your custom documents.</strong>
     </div>
-    <div class="flex flex-row">
-      <a class="items-center text-blue-planning-300 py-5 underline font-normal" href={Routes.contracts_index_path(@socket, :index)}>Manage contracts</a>
-      <a class="items-center text-blue-planning-300 p-5 underline font-normal" href={Routes.questionnaires_index_path(@socket, :index)}>Manage questionnaires</a>
+
+    <div class="flex flex-row gap-4 mt-2 mb-8">
+      <a class="items-center text-blue-planning-300 underline font-normal flex gap-2" target="_blank" href={Routes.contracts_index_path(@socket, :index)}>
+        Manage contracts <.icon name="external-link" class="w-3.5 h-3.5"/>
+      </a>
+      <a class="items-center text-blue-planning-300 underline font-normal flex gap-2" target="_blank" href={Routes.questionnaires_index_path(@socket, :index)}>
+        Manage questionnaires <.icon name="external-link" class="w-3.5 h-3.5"/>
+      </a>
     </div>
 
     <div class="flex flex-row text-blue-planning-300 mb-4">
@@ -567,20 +580,22 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <span class="text-base-250">Input your base session fee; if your location charges taxes, we’ll calculate those for your client at checkout.</span>
             </label>
 
-            <div class="flex flex-row items-center w-auto mt-6">
-              <%= input @f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg sm:mt-0 font-normal text-center", phx_hook: "PriceMask" %>
+            <div class="flex flex-row items-center w-auto mt-6 border rounded-lg">
+              <%= input @f, :base_price, placeholder: "#{@currency_symbol}0.00", class: "sm:w-32 w-full bg-white px-1 border-none text-lg sm:mt-0 font-normal text-center", phx_hook: "PriceMask", data_currency: @currency_symbol %>
             </div>
+            <%= text_input @f, :currency, value: @currency, class: "form-control border-none text-base-250", phx_debounce: "500", maxlength: 3, autocomplete: "off", readonly: true %>
           </div>
           <b class="flex w-1/5"> <%= current(@f) |> Map.get(:base_price) %> </b>
         </div>
 
         <hr class="w-full mt-6"/>
+        <%= if @currency in products_currency() do %>
+          <.package_print_credit_fields f={@f} package_pricing={@package_pricing} target={@myself} show_print_credits={@show_print_credits} currency_symbol={@currency_symbol} currency={@currency}/>
 
-        <.package_print_credit_fields f={@f} package_pricing={@package_pricing} target={@myself} show_print_credits={@show_print_credits}/>
+          <hr class="w-full mt-6"/>
+        <% end %>
 
-        <hr class="w-full mt-6"/>
-
-        <.digital_download_fields package_form={@f} download_changeset={@download_changeset} package_pricing={@package_pricing} target={@myself} show_digitals={@show_digitals}/>
+        <.digital_download_fields package_form={@f} download_changeset={@download_changeset} package_pricing={@package_pricing} target={@myself} show_digitals={@show_digitals} currency_symbol={@currency_symbol} currency={@currency}/>
 
         <hr class="w-full mt-6"/>
         <% changeset = current(@f) %>
@@ -625,10 +640,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                     <%= checkbox m, :discount_base_price, class: "w-5 h-5 mr-2.5 checkbox" %>
                     <%= label_for m, :discount_base_price, label: "Apply to creative session", class: "font-normal" %>
                   </div>
-                  <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !print_credits_include_in_total})}>
-                    <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !print_credits_include_in_total %>
-                    <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
-                  </div>
+                  <%= if @currency in products_currency() do%>
+                    <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !print_credits_include_in_total})}>
+                      <%= checkbox m, :discount_print_credits, class: "w-5 h-5 mr-2.5 checkbox", disabled: !print_credits_include_in_total %>
+                      <%= label_for m, :discount_print_credits, label: "Apply to print credit", class: "font-normal" %>
+                    </div>
+                  <% end %>
                   <div class={classes("flex items-center pl-0 sm:flex-row sm:pl-16", %{"text-base-250 cursor-none" => !digitals_include_in_total})}>
                     <%= checkbox m, :discount_digitals, class: "w-5 h-5 mr-2.5 checkbox", disabled: !digitals_include_in_total %>
                     <%= label_for m, :discount_digitals, label: "Apply to digitals", class: "font-normal" %>
@@ -682,10 +699,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           </div>
         </div>
 
-
-
       <hr class="w-full mt-6"/>
-
       </div>
     """
   end
@@ -697,7 +711,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           default_payment_changeset: _
         } = assigns
       ) do
-    job_type = Map.get(params, "job_type", nil) || Map.get(assigns.job, :type, nil)
+    job_type = Map.get(params, "job_type") || Map.get(assigns.job, :type)
     assigns = assign(assigns, job_type: job_type)
 
     ~H"""
@@ -711,7 +725,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       <% pc = to_form(@payments_changeset) %>
       <div {testid("select-preset-type")} class="grid gap-6 md:grid-cols-2 grid-cols-1 mt-8">
         <%= select pc, :schedule_type, payment_dropdown_options(@job_type, input_value(pc, :schedule_type)), wrapper_class: "mt-4", class: "py-3 border rounded-lg border-base-200 cursor-pointer", phx_update: "update" %>
-        <div {testid("preset-summary")} class="flex items-center"><%= get_tags(pc) %></div>
+        <div {testid("preset-summary")} class="flex items-center"><%= get_tags(pc, @currency) %></div>
       </div>
       <hr class="w-full my-6 md:my-8"/>
       <div class="flex flex-col items-start justify-between w-full sm:items-center sm:flex-row sm:w-auto">
@@ -739,7 +753,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         <%= hidden_input p, :shoot_date %>
         <%= hidden_input p, :last_shoot_date %>
         <%= hidden_input p, :schedule_date %>
-        <%= hidden_input p, :description, value: get_tag(p, input_value(pc, :fixed)) %>
+        <%= hidden_input p, :description, value: get_tag(p, input_value(pc, :fixed), @currency) %>
         <%= hidden_input p, :payment_field_index, value: p.index %>
         <%= hidden_input p, :fields_count, value: length(input_value(pc, :payment_schedules)) %>
         <div {testid("payment-count-card")} class="border rounded-lg border-base-200 md:w-1/2 pb-2 mt-3">
@@ -803,7 +817,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <% end %>
             <% end %>
             <div class="flex my-2">
-              <%= input p, :price, placeholder: "$0.00", class: classes("w-32 text-center p-3 border rounded-lg border-blue-planning-300 ml-auto", %{"hidden" => !input_value(pc, :fixed)}), phx_hook: "PriceMask" %>
+              <div class="flex flex-col ml-auto">
+                <div class="flex flex-row items-center w-auto mt-6 border rounded-lg relative border-blue-planning-300">
+                  <%= input p, :price, placeholder: "#{@currency_symbol}0.00", class: classes("w-32 bg-white p-3 border-none text-lg sm:mt-0 font-normal text-center", %{"hidden" => !input_value(pc, :fixed)}), phx_hook: "PriceMask", data_currency: @currency_symbol %>
+                </div>
+                <%= text_input p, :currency, value: @currency, class: classes("w-32 form-control text-base-250 border-none", %{"hidden" => !input_value(pc, :fixed)}), phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
+              </div>
               <%= input p, :percentage, placeholder: "0.00%", value: "#{input_value(p, :percentage)}%", class: classes("w-24 text-center p-3 border rounded-lg border-blue-planning-300 ml-auto", %{"hidden" => input_value(pc, :fixed)}), phx_hook: "PercentMask" %>
             </div>
           </div>
@@ -903,13 +922,20 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{assigns: %{job: job, payments_changeset: payments_changeset}} = socket
       ) do
     params = payments_changeset |> current() |> map_keys()
-    payment_schedules = params |> Map.get("payment_schedules") |> map_keys()
+
+    payment_schedules =
+      params
+      |> Map.get("payment_schedules")
+      |> map_keys()
+      |> Enum.with_index(fn %{"payment_field_index" => field_index} = payment, count ->
+        Map.put(payment, "payment_field_index", if(field_index, do: field_index, else: count))
+      end)
 
     new_payment =
       if params["fixed"] do
         %{"price" => nil, "due_interval" => "Day Before Shoot"}
       else
-        %{"percentage" => 34, "due_interval" => "34% Day Before"}
+        %{"percentage" => 8, "due_interval" => "8% Day Before"}
       end
       |> Map.merge(%{
         "shoot_date" => get_first_shoot(job),
@@ -927,6 +953,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket
     |> assign_payments_changeset(params, :validate)
     |> noreply()
+  end
+
+  @impl true
+  def handle_event("validate", params, %{assigns: %{currency: currency}} = socket)
+      when not is_map_key(params, "parsed?") do
+    __MODULE__.handle_event(
+      "validate",
+      params
+      |> Currency.parse_params_for_currency({Money.Currency.symbol(currency), currency})
+      |> put_in(["package", "name"], get_in(params, ["package", "name"])),
+      socket
+    )
   end
 
   @impl true
@@ -997,6 +1035,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   @impl true
   def handle_event("validate", params, socket) do
     socket |> assign_changeset(params, :validate) |> noreply()
+  end
+
+  @impl true
+  def handle_event("submit", params, %{assigns: %{currency: currency}} = socket)
+      when not is_map_key(params, "parsed?") do
+    __MODULE__.handle_event(
+      "submit",
+      params
+      |> Currency.parse_params_for_currency({Money.Currency.symbol(currency), currency})
+      |> put_in(["package", "name"], get_in(params, ["package", "name"])),
+      socket
+    )
   end
 
   @impl true
@@ -1120,13 +1170,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           assigns: %{
             is_template: false,
             job: job,
-            package: %Package{id: nil}
+            package: %Package{id: nil} = package
           }
         } = socket
       ) do
-    questionnaire =
-      socket.assigns.package
-      |> Questionnaire.for_package()
+    questionnaire = Questionnaire.for_package(package)
 
     socket
     |> maybe_assign_custom(payment_params)
@@ -1194,16 +1242,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         "submit",
         %{"step" => "payment"} = params,
         %{assigns: %{is_template: false, job: %{id: job_id}}} = socket
-      ),
-      do: socket |> save_payment(params, job_id)
+      ) do
+    socket |> save_payment(params, job_id)
+  end
 
   @impl true
   def handle_event(
         "submit",
         %{"step" => "payment"} = params,
         %{assigns: %{is_template: true}} = socket
-      ),
-      do: socket |> save_payment(params)
+      ) do
+    socket |> save_payment(params)
+  end
 
   @impl true
   def handle_event("new-package", %{}, socket) do
@@ -1378,7 +1428,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       params
       |> Map.get("payment_schedules")
       |> Map.values()
-      |> update_amount(fixed, total_price)
+      |> update_amount(fixed, total_price, socket.assigns.currency)
 
     params =
       params
@@ -1392,9 +1442,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> maybe_assign_custom(params)
   end
 
-  defp update_amount(schedules, fixed, total_price) do
+  defp update_amount(schedules, fixed, total_price, currency) do
     schedules
-    |> Enum.reduce({%{}, 0}, fn schedule, {schedules, collection} ->
+    |> Enum.reduce({%{}, Money.new(0, currency)}, fn schedule, {schedules, collection} ->
       schedule = Picsello.PackagePaymentSchedule.prepare_percentage(schedule)
 
       changeset =
@@ -1408,12 +1458,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
       if fixed do
         updated_price =
-          if(price, do: price.amount / 100, else: percentage_to_price(total_price, percentage))
+          if(price, do: price.amount, else: percentage_to_price(total_price, percentage))
           |> normalize_price(collection, presets_count, index, total_price)
+          |> then(&Money.new(&1, currency))
 
         {Map.merge(schedules, %{
            "#{index}" => %{schedule | "percentage" => nil, "price" => updated_price}
-         }), collection + updated_price}
+         }), Money.add(updated_price, collection)}
       else
         updated_percentage =
           if(percentage, do: percentage, else: price_to_percentage(total_price, price))
@@ -1421,20 +1472,27 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
         {Map.merge(schedules, %{
            "#{index}" => %{schedule | "percentage" => updated_percentage, "price" => nil}
-         }), collection + updated_percentage}
+         }), ((is_integer(collection) && collection) || collection.amount) + updated_percentage}
       end
     end)
   end
 
   defp normalize_price(price, collection, presets_count, index, total_price) do
     if index + 1 == presets_count do
-      (total_price.amount - collection) |> Kernel.trunc()
+      Kernel.trunc(total_price.amount - collection.amount)
     else
       price
     end
   end
 
   defp normalize_percentage(percentage, collection, presets_count, index) do
+    collection =
+      if is_map(collection) do
+        Map.get(collection, :amount, 0)
+      else
+        collection
+      end
+
     if index + 1 == presets_count do
       100 - collection
     else
@@ -1444,36 +1502,40 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp percentage_to_price(_, nil), do: nil
 
-  defp percentage_to_price(total_price, value) do
-    ((total_price.amount / 10_000 * value) |> Kernel.trunc()) * 100
-  end
+  defp percentage_to_price(total_price, value),
+    do: ((total_price.amount / 10_000 * value) |> Kernel.trunc()) * 100
 
   defp price_to_percentage(_, nil), do: nil
 
-  defp price_to_percentage(total_price, value) do
-    if Money.zero?(value),
-      do: 0,
-      else: (value.amount / total_price.amount * 100) |> Kernel.trunc()
+  defp price_to_percentage(_total_price, %{amount: 0}), do: 0
+
+  defp price_to_percentage(total_price, %{amount: amount}),
+    do: (amount / total_price.amount * 100) |> Kernel.trunc()
+
+  defp get_default_price(
+         schedule,
+         x_schedule,
+         %{currency: currency} = price,
+         %{fixed: true} = params,
+         index
+       ) do
+    params
+    |> Map.get(:package_payment_schedules)
+    |> Enum.reduce(new_money(currency), &Money.add(&2, new_money(&1.price, currency)))
+    |> then(&Money.subtract(price, &1))
+    |> then(fn extra_price ->
+      Money.add(
+        x_schedule |> Map.get("price") |> new_money(currency),
+        get_price(extra_price, length(params.package_payment_schedules), index)
+      )
+    end)
+    |> then(&Map.merge(schedule, %{"price" => &1}))
   end
 
-  defp get_default_price(schedule, x_schedule, price, params, index) do
-    if params.fixed do
-      x_price =
-        params.package_payment_schedules |> Enum.reduce(Money.new(0), &Money.add(&2, &1.price))
+  defp get_default_price(schedule, _x_schedule, _price, _params, _index), do: schedule
 
-      extra_price = Money.subtract(price, x_price)
-
-      updated_price =
-        Money.add(
-          Map.get(x_schedule, "price"),
-          get_price(extra_price, length(params.package_payment_schedules), index)
-        )
-
-      Map.merge(schedule, %{"price" => updated_price})
-    else
-      schedule
-    end
-  end
+  def new_money(price \\ Money.new(0), currency),
+    do: Money.new((price && price.amount) || 0, currency)
 
   defp assign_payment_defaults(
          %{assigns: %{job: job, changeset: changeset}} = socket,
@@ -1646,8 +1708,15 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     do: Packages.build_package_changeset(assigns, params)
 
   defp assign_changeset(
-         %{assigns: %{global_settings: global_settings, step: step, package: package} = assigns} =
-           socket,
+         %{
+           assigns:
+             %{
+               global_settings: global_settings,
+               step: step,
+               package: package,
+               currency: currency
+             } = assigns
+         } = socket,
          params,
          action \\ nil
        ) do
@@ -1688,7 +1757,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     package_params =
       params
       |> Map.get("package", %{})
-      |> maybe_trim_package_base_price()
+      |> Map.put("currency", currency)
       |> PackagePricing.handle_package_params(params)
       |> Map.merge(%{
         "base_multiplier" => multiplier |> Multiplier.to_decimal(),
@@ -1699,7 +1768,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           Map.get(package_pricing, :print_credits_include_in_total),
         "digitals_include_in_total" => Map.get(download, :digitals_include_in_total),
         "download_count" => Download.count(download),
-        "download_each_price" => Download.each_price(download),
+        "download_each_price" => Download.each_price(download, currency),
         "buy_all" => Download.buy_all(download),
         "status" => download.status
       })
@@ -1714,11 +1783,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     )
   end
 
-  defp maybe_trim_package_base_price(%{"base_price" => base_price} = package) do
-    Map.put(package, "base_price", String.split(base_price, ".") |> List.first())
-  end
-
-  defp maybe_trim_package_base_price(package), do: package
+  defp symbol!(currency), do: Money.Currency.symbol!(currency)
 
   defp adjust(adjustment) do
     sign = if Money.negative?(adjustment), do: "-", else: "+"
@@ -1873,35 +1938,35 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> Map.merge(options)
   end
 
-  defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
+  defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 12
 
-  defp get_tags(form), do: make_tags(form) |> Enum.join(", ")
+  defp get_tags(form, currency), do: make_tags(form, currency) |> Enum.join(", ")
 
-  defp make_tags(form) do
+  defp make_tags(form, currency) do
     fixed = input_value(form, :fixed)
-    {_, tags} = inputs_for(form, :payment_schedules, &get_tag(&1, fixed))
+    {_, tags} = inputs_for(form, :payment_schedules, &get_tag(&1, fixed, currency))
 
     tags |> List.flatten()
   end
 
-  defp get_tag(payment_schedule, fixed) do
+  defp get_tag(payment_schedule, fixed, currency) do
     if input_value(payment_schedule, :interval) do
       if fixed,
-        do: make_due_inteval_tag(payment_schedule, :price),
+        do: make_due_inteval_tag(payment_schedule, :price, currency),
         else: make_due_inteval_tag(payment_schedule, :percentage)
     else
       shoot_date = input_value(payment_schedule, :shoot_date) |> is_value_set()
 
       if shoot_date && !input_value(payment_schedule, :count_interval) do
-        make_date_tag(payment_schedule, :due_at)
+        make_date_tag(payment_schedule, :due_at, currency)
       else
-        make_shoot_interval(payment_schedule)
+        make_shoot_interval(payment_schedule, currency)
       end
     end
   end
 
-  defp make_shoot_interval(form) do
-    value = get_price_value(form)
+  defp make_shoot_interval(form, currency) do
+    value = get_price_value(form, currency)
 
     if value do
       time = input_value(form, :time_interval)
@@ -1913,9 +1978,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     end
   end
 
-  defp make_due_inteval_tag(form, :price = field) do
+  defp make_due_inteval_tag(form, :price = field, currency) do
     value = input_value(form, field) |> is_value_set()
-    if value && value != "$", do: "#{value} to #{input_value(form, :due_interval)}", else: ""
+
+    if value && value != Money.Currency.symbol(currency),
+      do: "#{value} to #{input_value(form, :due_interval)}",
+      else: ""
   end
 
   defp make_due_inteval_tag(form, field) do
@@ -1923,18 +1991,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     if value && value != "%", do: "#{value}% #{input_value(form, :due_interval)}", else: ""
   end
 
-  defp make_date_tag(form, field) do
+  defp make_date_tag(form, field, currency) do
     date = input_value(form, field) |> is_value_set()
-    value = get_price_value(form)
+    value = get_price_value(form, currency)
     if date && value, do: "#{value} at #{date |> Calendar.strftime("%m-%d-%Y")}", else: ""
   end
 
-  defp get_price_value(form) do
+  defp get_price_value(form, currency) do
     price = input_value(form, :price) |> is_value_set()
     percentage = input_value(form, :percentage) |> is_value_set()
 
     cond do
-      price && price != "$" -> price
+      price && price != Money.Currency.symbol!(currency) -> price
       percentage -> "#{percentage}%"
       true -> nil
     end

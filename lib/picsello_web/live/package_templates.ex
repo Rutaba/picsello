@@ -907,7 +907,11 @@ defmodule PicselloWeb.Live.PackageTemplates do
     socket
     |> open_modal(PicselloWeb.PackageLive.WizardComponent, %{
       close_event: :wizard_closed,
-      assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
+      assigns:
+        Enum.into(
+          assigns,
+          Map.take(socket.assigns, [:current_user, :live_action, :currency])
+        )
     })
   end
 

@@ -23,22 +23,29 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponentTest do
 
   test "downloads included" do
     assert String.contains?(
-             render_package(download_count: 0, download_each_price: 0),
+             render_package(
+               download_count: 0,
+               download_each_price: %Money{amount: 0, currency: :USD}
+             ),
              "All photos downloadable"
            )
   end
 
   test "charge for downloads" do
     assert String.contains?(
-             render_package(download_count: 0, download_each_price: 50),
-             "Download photos @ $0.50/ea"
+             render_package(
+               download_count: 0,
+               download_each_price: %Money{amount: 50, currency: :USD}
+             ),
+             "Download photos @ 0.50 USD/ea"
            )
   end
 
   test "include credits" do
-    html = render_package(download_count: 1, download_each_price: 50)
+    html =
+      render_package(download_count: 1, download_each_price: %Money{amount: 50, currency: :USD})
 
     assert String.contains?(html, "1 photo download")
-    assert String.contains?(html, "Additional downloads @ $0.50/ea")
+    assert String.contains?(html, "Additional downloads @ 0.50 USD/ea")
   end
 end

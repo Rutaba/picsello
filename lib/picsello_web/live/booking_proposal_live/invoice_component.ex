@@ -24,7 +24,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
           <%= if @package.collected_price do %>
             <dl class={"flex justify-between"}>
               <dt>Previously collected</dt>
-              <dd><%= @package.collected_price %></dd>
+              <dd><%= Money.to_string(@package.collected_price, symbol: false, code: true)%></dd>
             </dl>
           <% end %>
           <%= unless PaymentSchedules.free?(@job) do %>
@@ -32,11 +32,11 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
               <div class="bg-base-200 py-3 px-2">
                   <dl class={classes("flex justify-between font-semibold", %{"text-black" => PaymentSchedules.paid?(payment), "font-bold" => payment == PaymentSchedules.unpaid_payment(@job)})}>
                     <%= if PaymentSchedules.paid?(payment) do %>
-                      <dt><%= payment.price %> paid on <%= strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></dt>
+                      <dt><%= Money.to_string(payment.price, symbol: false, code: true)%> paid on <%= strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></dt>
                     <% else %>
-                      <dt><%= payment.price %> <%= to_book(payment, @photographer.time_zone)%></dt>
+                      <dt><%= Money.to_string(payment.price, symbol: false, code: true)%> <%= to_book(payment, @photographer.time_zone)%></dt>
                     <% end %>
-                    <dd><%= payment.price %></dd>
+                    <dd><%= Money.to_string(payment.price, symbol: false, code: true)%></dd>
                     </dl>
               </div>
             <% end %>

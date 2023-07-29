@@ -10,6 +10,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
 
   @impl true
   def update(%{photo: photo} = assigns, socket) do
+    show_products = Map.get(assigns, :show_products, true)
+
     socket
     |> assign(
       album_name: Photos.get_album_name(photo),
@@ -26,7 +28,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       is_proofing: assigns[:is_proofing] || false,
       client_link_hash: Map.get(assigns, :client_link_hash),
       is_liked: photo.is_photographer_liked,
-      url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg")
+      url: Routes.static_path(PicselloWeb.Endpoint, "/images/gallery-icon.svg"),
+      show_products: show_products
     )
     |> assign(assigns)
     |> ok
@@ -126,7 +129,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     end
   end
 
-  defp meatball(album, id) do
+  defp meatball(album, id, show_products) do
     if album && !album.is_client_liked do
       [
         %{
@@ -141,9 +144,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
         %{id: "photo-remove-#{id}", event: "photo_view", title: "View"}
       ]
     end ++
-      [
-        %{id: "photo-preview-#{id}", event: "photo_preview_pop", title: "Set as product preview"}
-      ]
+      if show_products do
+        [
+          %{
+            id: "photo-preview-#{id}",
+            event: "photo_preview_pop",
+            title: "Set as product preview"
+          }
+        ]
+      else
+        []
+      end
   end
 
   defp actions(assigns) do
