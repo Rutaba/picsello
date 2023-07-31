@@ -87,7 +87,7 @@ defmodule Picsello.Organization do
     |> cast_assoc(:organization_job_types, with: &OrganizationJobType.changeset/2)
     |> validate_required([:name])
     |> validate_org_name()
-    |> prepare_changes(fn changeset ->
+    |> then(fn changeset ->
       case get_change(changeset, :slug) do
         nil ->
           change_slug(changeset)
@@ -100,16 +100,14 @@ defmodule Picsello.Organization do
   end
 
   defp validate_org_name(changeset) do
-    case get_field(changeset, :name) do
+    case get_change(changeset, :name) do
       nil ->
         changeset
 
       name ->
-        updated_name = name |> String.trim() |> String.downcase()
-        names = Repo.all(from o in __MODULE__, select: o.name)
-        existing_names = Enum.map(names, &String.downcase/1)
+        updated_slug = build_slug(name)
 
-        case Enum.member?(existing_names, updated_name) do
+        case check_existing_name_and_slug(name, updated_slug) do
           true ->
             changeset |> add_error(:name, "already exists")
 
@@ -123,8 +121,8 @@ defmodule Picsello.Organization do
     organization
     |> cast(attrs, [:name])
     |> validate_required([:name])
-    |> validate_org_name()
     |> prepare_changes(&change_slug/1)
+    |> validate_org_name()
     |> unique_constraint(:slug)
     |> case do
       %{changes: %{name: _}} = changeset -> changeset
@@ -158,12 +156,9 @@ defmodule Picsello.Organization do
         name
       end
 
-    names =
-      Repo.all(from o in __MODULE__, select: o.name)
+    updated_slug = build_slug(updated_name)
 
-    existing_names = Enum.map(names, &String.downcase/1)
-
-    case Enum.member?(existing_names, updated_name) do
+    case check_existing_name_and_slug(updated_name, updated_slug) do
       true ->
         find_unique_organization_name(name, count + 1)
 
@@ -172,8 +167,26 @@ defmodule Picsello.Organization do
     end
   end
 
+  def build_slug(nil), do: nil
+
   def build_slug(name) do
     String.downcase(name) |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
+  end
+
+  defp check_existing_name_and_slug(name, slug) do
+    Repo.exists?(
+      from o in __MODULE__,
+        select: %{name: o.name, slug: o.slug},
+        where:
+          fragment(
+            "LOWER(?) = LOWER(?) OR LOWER(?) = LOWER(?)",
+            o.name,
+            ^name,
+            o.slug,
+            ^slug
+          ),
+        limit: 1
+    )
   end
 
   defp change_slug(changeset),

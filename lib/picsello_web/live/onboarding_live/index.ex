@@ -112,7 +112,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
 
         <.form_field label="What’s the name of your photography business?" error={:name} prefix="Photography business name" f={org} mt={0} >
           <%= input org, :name, phx_debounce: "500", placeholder: "Jack Nimble Photography", class: @input_class %>
-          <p class="italic text-sm text-gray-400 mt-2">We generate a URL for your Public Profile based on your business name. Here’s a preview: https://app.picsello.com/photographer/kyle-bacon-photography</p>
+          <p class="italic text-sm text-gray-400 mt-2">We generate a URL for your Public Profile based on your business name. Here’s a preview: https://app.picsello.com/photographer/<%= Ecto.Changeset.get_field(assigns.changeset.changes.organization, :slug) %></p>
         </.form_field>
 
       <% end %>
