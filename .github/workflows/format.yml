@@ -69,3 +69,12 @@ jobs:
 
             - name: Check format
               run: mix format --check-formatted
+
+            - name: Slack Workflow Notification
+              uses: Gamesight/slack-workflow-status@master
+              with:
+                include_commit_message: true
+                repo_token: ${{ secrets.GITHUB_TOKEN }}
+                slack_webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+                name: 'Picsello CI'
+                icon_emoji: ':camera:'
