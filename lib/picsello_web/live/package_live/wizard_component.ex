@@ -496,12 +496,17 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :documents} = assigns) do
     ~H"""
-    <div class="font-normal pb-6 text-base-250 w-fit">
-      As with most things in Picsello, we have created default contracts/questionnaires for you to use. If you’d like to make your own, check out global questionnaire and contract management. (Modal will close & you can come back)
+    <div class="font-normal text-base-250 w-fit">
+      As with most things in Picsello, we have created default contracts/questionnaires for you to use. If you’d like to make your own, check out global questionnaire and contract management. <strong>NOTE: Make sure to save your work and come back to this page to select your custom documents.</strong>
     </div>
-    <div class="flex flex-row">
-      <a class="items-center text-blue-planning-300 py-5 underline font-normal" href={Routes.contracts_index_path(@socket, :index)}>Manage contracts</a>
-      <a class="items-center text-blue-planning-300 p-5 underline font-normal" href={Routes.questionnaires_index_path(@socket, :index)}>Manage questionnaires</a>
+
+    <div class="flex flex-row gap-4 mt-2 mb-8">
+      <a class="items-center text-blue-planning-300 underline font-normal flex gap-2" target="_blank" href={Routes.contracts_index_path(@socket, :index)}>
+        Manage contracts <.icon name="external-link" class="w-3.5 h-3.5"/>
+      </a>
+      <a class="items-center text-blue-planning-300 underline font-normal flex gap-2" target="_blank" href={Routes.questionnaires_index_path(@socket, :index)}>
+        Manage questionnaires <.icon name="external-link" class="w-3.5 h-3.5"/>
+      </a>
     </div>
 
     <div class="flex flex-row text-blue-planning-300 mb-4">
@@ -917,13 +922,20 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         %{assigns: %{job: job, payments_changeset: payments_changeset}} = socket
       ) do
     params = payments_changeset |> current() |> map_keys()
-    payment_schedules = params |> Map.get("payment_schedules") |> map_keys()
+
+    payment_schedules =
+      params
+      |> Map.get("payment_schedules")
+      |> map_keys()
+      |> Enum.with_index(fn %{"payment_field_index" => field_index} = payment, count ->
+        Map.put(payment, "payment_field_index", if(field_index, do: field_index, else: count))
+      end)
 
     new_payment =
       if params["fixed"] do
         %{"price" => nil, "due_interval" => "Day Before Shoot"}
       else
-        %{"percentage" => 34, "due_interval" => "34% Day Before"}
+        %{"percentage" => 8, "due_interval" => "8% Day Before"}
       end
       |> Map.merge(%{
         "shoot_date" => get_first_shoot(job),
@@ -1926,7 +1938,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> Map.merge(options)
   end
 
-  defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 3
+  defp hide_add_button(form), do: input_value(form, :payment_schedules) |> length() == 12
 
   defp get_tags(form, currency), do: make_tags(form, currency) |> Enum.join(", ")
 
