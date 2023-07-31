@@ -100,20 +100,16 @@ defmodule Picsello.Organization do
   end
 
   defp validate_org_name(changeset) do
-    case get_change(changeset, :name) do
-      nil ->
-        changeset
+    name = get_change(changeset, :name)
 
-      name ->
-        updated_slug = build_slug(name)
-
-        case check_existing_name_and_slug(name, updated_slug) do
-          true ->
-            changeset |> add_error(:name, "already exists")
-
-          false ->
-            changeset
-        end
+    if name && check_existing_name_and_slug(name, build_slug(name)) do
+      add_error(
+        changeset,
+        :name,
+        "Business name already exists. Please try with a different name."
+      )
+    else
+      changeset
     end
   end
 
@@ -139,15 +135,13 @@ defmodule Picsello.Organization do
   def assign_stripe_account_changeset(%__MODULE__{} = organization, "" <> stripe_account_id),
     do: organization |> change(stripe_account_id: stripe_account_id)
 
-  def build_organization_name(name) do
-    converted_name =
-      String.downcase(name)
-      |> String.replace(~r/[^a-z0-9]+/, " ")
-      |> String.trim("-")
-
-    find_unique_organization_name(converted_name)
+  defp build_organization_name(name) do
+    name
+    |> reformat_string()
+    |> find_unique_organization_name()
   end
 
+  @spec find_unique_organization_name(name :: String.t(), count :: integer) :: String.t()
   defp find_unique_organization_name(name, count \\ 0) do
     updated_name =
       if count > 0 do
@@ -169,14 +163,12 @@ defmodule Picsello.Organization do
 
   def build_slug(nil), do: nil
 
-  def build_slug(name) do
-    String.downcase(name) |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
-  end
+  def build_slug(name), do: reformat_string(name, "-")
 
+  @spec check_existing_name_and_slug(name :: String.t(), slug :: String.t()) :: boolean
   defp check_existing_name_and_slug(name, slug) do
     Repo.exists?(
       from o in __MODULE__,
-        select: %{name: o.name, slug: o.slug},
         where:
           fragment(
             "LOWER(?) = LOWER(?) OR LOWER(?) = LOWER(?)",
@@ -188,6 +180,11 @@ defmodule Picsello.Organization do
         limit: 1
     )
   end
+
+  @spec reformat_string(name :: String.t(), replace_by :: String.t()) :: String.t()
+  defp reformat_string(name, replace_by \\ " "),
+    do:
+      name |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, replace_by) |> String.trim("-")
 
   defp change_slug(changeset),
     do:
