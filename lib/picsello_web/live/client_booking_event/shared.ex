@@ -74,7 +74,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
   defp formatted_subtitle(booking_event, %{download_count: count} = _package) do
     [
       if(count > 0,
-        do: "#{count} #{ngettext("image", "images", count)}"
+        do: "#{count} #{ngettext("image", "images", count)} included"
       ),
       "#{booking_event.duration_minutes} min session",
       dyn_gettext(booking_event.location)
