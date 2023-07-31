@@ -43,7 +43,7 @@ jobs:
 
             - name: Cache deps
               id: cache-deps
-              uses: actions/cache@v2
+              uses: actions/cache@v3
               env:
                 cache-name: cache-elixir-deps
               with:
@@ -54,7 +54,7 @@ jobs:
             
             - name: Cache compiled build
               id: cache-build
-              uses: actions/cache@v2
+              uses: actions/cache@v3
               env:
                 cache-name: cache-compiled-build
               with:
@@ -65,7 +65,7 @@ jobs:
                     ${{ runner.os }}-mix-
 
             - name: Restore PLT cache
-              uses: actions/cache@v2
+              uses: actions/cache@v3
               id: plt-cache
               with:
                 key: |
