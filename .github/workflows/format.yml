@@ -1,0 +1,46 @@
+name: Linter
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+    format:
+
+        name: Code format check
+        runs-on: ubuntu-20.04
+        timeout-minutes: 45
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Set up Elixir
+              uses: erlef/setup-beam@v1
+              id: beam
+              with:
+                elixir-version: '1.14.3' # Define the elixir version [required]
+                otp-version: '25.3' # Define the OTP version [required]
+
+            - name: Cache deps
+              id: cache-deps
+              uses: actions/cache@v2
+              env:
+                cache-name: cache-elixir-deps
+              with:
+                path: deps
+                key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+                restore-keys: |
+                    ${{ runner.os }}-mix-${{ env.cache-name }}-
+            
+            - name: Install dependencies
+              if: steps.cache-elixir-deps.outputs.cache-hit != 'true'
+              run: mix deps.get
+
+            - name: Check format
+              run: mix format --check-formatted
