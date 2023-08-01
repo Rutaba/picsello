@@ -109,9 +109,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
           Booking events
         </div>
         <div class="fixed bottom-0 left-0 right-0 z-10 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:ml-auto sm:static sm:items-start sm:w-auto">
-          <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="w-full md:w-auto btn-primary text-center">
+          <a title="add booking event" class="w-full md:w-auto btn-primary text-center" phx-click="new-event">
             Add booking event
-          </.live_link>
+          </a>
         </div>
       </div>
 
@@ -151,9 +151,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         <% else %>
           <div class="p-6 center-container">
             <.empty_state_base tour_embed="https://demo.arcade.software/eOBqmup7RcW8EVmGpqrY?embed" headline="Meet Client Booking" eyebrow_text="Booking Events Product Tour" body="Accelerate your business growth with mini-sessions, portraits & more! Create a booking link that you can share and take tedious work out of booking" third_party_padding="calc(66.66666666666666% + 41px)">
-              <.live_link to={Routes.calendar_booking_events_path(@socket, :new)} class="w-full md:w-auto btn-tertiary text-center flex-shrink-0">
+              <a title="add booking event" class="w-full md:w-auto btn-primary text-center" phx-click="new-event">
                 Add booking event
-              </.live_link>
+              </a>
             </.empty_state_base>
           </div>
         <% end %>
@@ -178,117 +178,33 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     """
   end
 
-  defp select_dropdown(assigns) do
-    ~H"""
-    <h1 class="font-extrabold text-sm flex flex-col"><%= @title %></h1>
-      <div class="flex">
-        <div id="select" class={classes("relative w-40 border-grey border rounded-l-lg p-2 cursor-pointer", %{"rounded-lg" => @title == "Filter"})} data-offset-y="5" phx-hook="Select">
-          <div class="flex flex-row items-center border-gray-700">
-              <%= capitalize_per_word(String.replace(@selected_option, "_", " ")) %>
-              <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
-              <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
-          </div>
-          <ul class={classes("absolute z-30 hidden mt-2 bg-white toggle rounded-md popover-content border border-base-200",%{"w-41" => @id == "status", "w-40" => @id=="sort-by"})}>
-            <%= for option <- @options_list do %>
-              <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-              class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
+  @impl true
+  def handle_event("new-event", %{}, socket),
+    do:
+      socket
+      |> PicselloWeb.Shared.SelectionPopupModal.open(%{
+        heading: "Create a Booking Event",
+        title_one: "Single Event",
+        subtitle_one: "Best for a single weekend or a few days you’d like to fill.",
+        icon_one: "calendar-add",
+        btnone_event: "create-single-event",
+        title_two: "Repeating Event",
+        subtitle_two: "Best for an event you’d like to run every week, weekend, every month, etc.",
+        icon_two: "calendar-repeat",
+        btntwo_event: "create-repeating-event"
+      })
+      |> noreply()
 
-                <button id={option.id} class="album-select w-40" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
-                <%= if option.id == @selected_option do %>
-                  <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-green" />
-                <% end %>
-              </li>
-            <% end %>
-          </ul>
-        </div>
-        <%= if @title == "Sort" do%>
-          <div class="items-center flex border rounded-r-lg border-grey p-2">
-            <button phx-click="switch_sort">
-              <.icon name={if @sort_direction == "asc", do: "sort-vector", else: "sort-vector-2"} {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
-            </button>
-          </div>
-        <% end %>
-      </div>
-    """
+  @impl true
+  def handle_event("create-single-event", _, socket) do
+    socket
+    |> noreply()
   end
 
-  defp details_cell(assigns) do
-    ~H"""
-    <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
-      <.blurred_thumbnail class="h-32 rounded-lg" url={@booking_event.thumbnail_url} />
-      <div class="flex flex-col items-start justify-center sm:ml-4">
-        <%= case @booking_event.status do %>
-        <% :archive -> %>
-          <.badge color={:gray}>Archived</.badge>
-        <% :disabled -> %>
-          <.badge color={:gray}>Disabled</.badge>
-        <% _ -> %>
-          <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
-        <% end %>
-        <div class="font-bold w-full">
-          <a href={if @booking_event.status in [:disabled, :archive], do: "javascript:void(0)", else: Routes.calendar_booking_events_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
-            <span class="w-full text-blue-planning-300 underline">
-              <%= if String.length(@booking_event.name) < 30 do
-                @booking_event.name
-              else
-                "#{@booking_event.name |> String.slice(0..29)} ..."
-              end %>
-            </span>
-          </a>
-        </div>
-        <p class="text-gray-400"><%= @booking_event.package_name %></p>
-        <p class="text-gray-400"><%= @booking_event.duration_minutes %> minutes</p>
-      </div>
-    </div>
-    """
-  end
-
-  defp bookings_cell(assigns) do
-    ~H"""
-    <div class="flex flex-col justify-center">
-      <p><%= ngettext("%{count} booking", "%{count} bookings", @booking_event.booking_count) %> so far</p>
-    </div>
-    """
-  end
-
-  defp actions_cell(assigns) do
-    ~H"""
-    <div class="flex flex-wrap gap-3 items-center lg:ml-auto justify-start md:w-auto w-full col-span-2">
-      <.icon_button icon="eye" disabled={if @booking_event.status in [:archive, :disabled], do: 'disabled'} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
-        Preview
-      </.icon_button>
-      <.icon_button icon="anchor" disabled={if @booking_event.status in [:archive, :disabled], do: 'disabled'} color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
-        <span>Copy link</span>
-        <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
-          Copied!
-        </div>
-      </.icon_button>
-      <div class="flex items-center w-full xl:w-auto grow sm:grow-0" data-offset-x="-21" data-placement="bottom-end" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{@booking_event.status}"}>
-        <button {testid("actions")} title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 w-full">
-          Actions
-          <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-          <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
-        </button>
-        <div class="z-10 flex hidden flex-col w-44 bg-white border rounded-lg shadow-lg popover-content">
-          <%= case @booking_event.status do %>
-          <% :archive -> %>
-            <.button title="Unarchive" icon="plus"  click_event="unarchive-event" id={@booking_event.id} color="blue-planning" />
-          <% status -> %>
-            <.button title="Edit" hidden={if @booking_event.status == :disabled, do: 'hidden'} icon="pencil"  click_event="edit-event" id={@booking_event.id} color="blue-planning" />
-            <.button title="Send update" icon="envelope"  click_event="send-email" id={@booking_event.id} color="blue-planning" />
-            <.button title="Duplicate" icon="duplicate"  click_event="duplicate-event" id={@booking_event.id} color="blue-planning" />
-            <%= case status do %>
-            <% :active -> %>
-              <.button title="Disable" icon="eye"  click_event="confirm-disable-event" id={@booking_event.id} color="red-sales" />
-            <% :disabled-> %>
-              <.button title="Enable" icon="plus"  click_event="enable-event" id={@booking_event.id} color="blue-planning" />
-            <% end %>
-            <.button title="Archive" icon="trash" click_event="confirm-archive-event" id={@booking_event.id} color="red-sales" />
-          <% end %>
-        </div>
-      </div>
-    </div>
-    """
+  @impl true
+  def handle_event("create-repeating-event", _, socket) do
+    socket
+    |> noreply()
   end
 
   @impl true
@@ -509,6 +425,121 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
       assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
     })
   end
+
+  defp bookings_cell(assigns) do
+    ~H"""
+    <div class="flex flex-col justify-center">
+      <p><%= ngettext("%{count} booking", "%{count} bookings", @booking_event.booking_count) %> so far</p>
+    </div>
+    """
+  end
+
+  defp actions_cell(assigns) do
+    ~H"""
+    <div class="flex flex-wrap gap-3 items-center lg:ml-auto justify-start md:w-auto w-full col-span-2">
+      <.icon_button icon="eye" disabled={disabled?(@booking_event, [:disabled, :archive])} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+        Preview
+      </.icon_button>
+      <.icon_button icon="anchor" disabled={disabled?(@booking_event, [:disabled, :archive])} color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+        <span>Copy link</span>
+        <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+          Copied!
+        </div>
+      </.icon_button>
+      <div class="flex items-center w-full xl:w-auto grow sm:grow-0" data-offset-x="-21" data-placement="bottom-end" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{@booking_event.status}"}>
+        <button {testid("actions")} title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 w-full">
+          Actions
+          <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+          <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+        </button>
+        <div class="z-10 flex hidden flex-col w-44 bg-white border rounded-lg shadow-lg popover-content">
+          <%= case @booking_event.status do %>
+            <% :archive -> %>
+              <.button title="Unarchive" icon="plus"  click_event="unarchive-event" id={@booking_event.id} color="blue-planning" />
+            <% status -> %>
+              <.button title="Edit" hidden={disabled?(@booking_event, [:disabled]) && 'hidden'} icon="pencil"  click_event="edit-event" id={@booking_event.id} color="blue-planning" />
+              <.button title="Send update" icon="envelope"  click_event="send-email" id={@booking_event.id} color="blue-planning" />
+              <.button title="Duplicate" icon="duplicate"  click_event="duplicate-event" id={@booking_event.id} color="blue-planning" />
+              <%= case status do %>
+                <% :active -> %>
+                  <.button title="Disable" icon="eye"  click_event="confirm-disable-event" id={@booking_event.id} color="red-sales" />
+                <% :disabled-> %>
+                  <.button title="Enable" icon="plus"  click_event="enable-event" id={@booking_event.id} color="blue-planning" />
+              <% end %>
+              <.button title="Archive" icon="trash" click_event="confirm-archive-event" id={@booking_event.id} color="red-sales" />
+          <% end %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp select_dropdown(assigns) do
+    ~H"""
+    <h1 class="font-extrabold text-sm flex flex-col"><%= @title %></h1>
+      <div class="flex">
+        <div id="select" class={classes("relative w-40 border-grey border rounded-l-lg p-2 cursor-pointer", %{"rounded-lg" => @title == "Filter"})} data-offset-y="5" phx-hook="Select">
+          <div class="flex flex-row items-center border-gray-700">
+            <%= capitalize_per_word(String.replace(@selected_option, "_", " ")) %>
+            <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
+            <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
+          </div>
+          <ul class={classes("absolute z-30 hidden mt-2 bg-white toggle rounded-md popover-content border border-base-200",%{"w-41" => @id == "status", "w-40" => @id=="sort-by"})}>
+            <%= for option <- @options_list do %>
+              <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
+              class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
+
+                <button id={option.id} class="album-select w-40" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
+                <%= if option.id == @selected_option do %>
+                  <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-green" />
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+        <%= if @title == "Sort" do%>
+          <div class="items-center flex border rounded-r-lg border-grey p-2">
+            <button phx-click="switch_sort">
+              <.icon name={if @sort_direction == "asc", do: "sort-vector", else: "sort-vector-2"} {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
+            </button>
+          </div>
+        <% end %>
+      </div>
+    """
+  end
+
+  defp details_cell(assigns) do
+    ~H"""
+    <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
+      <.blurred_thumbnail class="h-32 rounded-lg" url={@booking_event.thumbnail_url} />
+      <div class="flex flex-col items-start justify-center sm:ml-4">
+        <%= case @booking_event.status do %>
+        <% :archive -> %>
+          <.badge color={:gray}>Archived</.badge>
+        <% :disabled -> %>
+          <.badge color={:gray}>Disabled</.badge>
+        <% _ -> %>
+          <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
+        <% end %>
+        <div class="font-bold w-full">
+          <a href={if disabled?(@booking_event, [:disabled, :archive]), do: "javascript:void(0)", else: Routes.calendar_booking_events_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
+            <span class="w-full text-blue-planning-300 underline">
+              <%= if String.length(@booking_event.name) < 30 do
+                @booking_event.name
+              else
+                "#{String.slice(@booking_event.name, 0..29)} ..."
+              end %>
+            </span>
+          </a>
+        </div>
+        <p class="text-gray-400"><%= @booking_event.package_name %></p>
+        <p class="text-gray-400"><%= @booking_event.duration_minutes %> minutes</p>
+      </div>
+    </div>
+    """
+  end
+
+  defp disabled?(booking_event, status_list), do: booking_event.status in status_list
 
   defp assign_booking_events(
          %{

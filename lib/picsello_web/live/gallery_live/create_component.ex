@@ -20,12 +20,13 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
 
   alias Ecto.Multi
   alias Ecto.Changeset
-  alias PicselloWeb.JobLive.GalleryTypeComponent
 
   import Phoenix.Component
+  import PicselloWeb.Live.Shared, only: [heading_subtitle: 1]
   import PicselloWeb.JobLive.Shared, only: [search_clients: 1, job_form_fields: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1, expired_at: 1]
   import Picsello.Utils, only: [products_currency: 0]
+  import PicselloWeb.Shared.SelectionPopupModal, only: [render_modal: 1]
 
   import PicselloWeb.PackageLive.Shared,
     only: [digital_download_fields: 1, print_credit_fields: 1, current: 1]
@@ -269,20 +270,43 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   defdelegate handle_event(name, params, socket), to: PicselloWeb.JobLive.Shared
 
   @impl true
+  def render(%{step: :choose_type} = assigns) do
+    ~H"""
+      <div class="relative bg-white p-6 modal">
+        <.render_modal
+          {assigns}
+          heading="Create a Gallery:"
+          heading_subtitle={heading_subtitle(@step)}
+          title_one="Standard Gallery"
+          subtitle_one="Use this option if you already have your photos retouched, and your photos are ready to hand off to your client."
+          icon_one="photos-2"
+          btn_one_event="gallery_type"
+          btn_one_class="btn-primary"
+          btn_one_label="Next"
+          btn_one_value="standard"
+          title_two="Proofing Gallery"
+          subtitle_two="Use this option if you have proofs, but your client still needs to select which photos they’d like retouched."
+          icon_two="proofing"
+          btn_two_event="gallery_type"
+          btn_two_class="btn-secondary"
+          btn_two_label="Next"
+          btn_two_value="proofing"
+        />
+      </div>
+    """
+  end
+
+  @impl true
   def render(%{step: _} = assigns) do
     ~H"""
-    <div class={classes("relative bg-white p-6", %{"modal" => @step != :choose_type})}>
+    <div class="relative bg-white p-6 modal">
       <.close_x />
 
       <.steps step={@step} steps={@steps} target={@myself} />
 
       <h1 class="mt-2 mb-4 text-3xl">
         <span class="font-bold">Create a Gallery:</span>
-        <%= case @step do %>
-          <% :choose_type -> %> Get Started
-          <% :details -> %> General Details
-          <% :pricing -> %> Pricing
-        <% end %>
+        <%= heading_subtitle(@step) %>
       </h1>
 
       <%= if is_nil(@selected_client) && @step == :details do %>
@@ -305,18 +329,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     """
   end
 
-  def step(%{name: :choose_type} = assigns) do
-    ~H"""
-      <%= live_component GalleryTypeComponent,
-      id: "choose_gallery_type",
-      target: @myself,
-      main_class: "px-2",
-      button_title: "Next",
-      hide_close_button: true %>
-    """
-  end
-
-  def step(%{name: :details} = assigns) do
+  def step(%{step: :details} = assigns) do
     assigns = assigns |> Enum.into(%{email: nil, name: nil, phone: nil})
 
     ~H"""
@@ -330,7 +343,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     """
   end
 
-  def step(%{name: :pricing} = assigns) do
+  def step(%{step: :pricing} = assigns) do
     ~H"""
       <div class="">
         <% package = to_form(@package_changeset) %>

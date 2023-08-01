@@ -252,9 +252,12 @@ defmodule PicselloWeb.Live.Shared do
     Map.get(
       %{
         get_started: "Get Started",
+        choose_type: "Get Started",
         add_client: "General Details",
         job_details: "General Details",
+        details: "General Details",
         package_payment: "Package & Payment",
+        pricing: "Pricing",
         invoice: "Custom Invoice",
         documents: "Documents (optional)"
       },
