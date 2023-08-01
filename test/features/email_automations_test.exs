@@ -26,7 +26,7 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(css("span", text: "Newborn"))
     |> assert_has(css("h2", text: "Newborn Automations", count: 1))
     |> assert_has(css("h2", text: "Event Automations", count: 0))
-    |> click(css("span", text: "Event", count: 2, at: 0))           # Where is 2nd element???
+    |> click(css("span", text: "Event"))
     |> assert_has(css("h2", text: "Event Automations", count: 1))
     |> assert_has(css("h2", text: "Newborn Automations", count: 0))
     |> click(css("span", text: "Wedding"))
@@ -38,9 +38,12 @@ defmodule Picsello.EmailAutomationsTest do
   feature "Adding one email to Galleries category", %{session: session} do
     session
     |> visit("/email-automations")
-    |> click(css("span", text: "Send Gallery Link"))
+    |> click(css("span", text: "Client contacts you"))
     |> assert_has(css(".modal-container", count: 0))
-    |> assert_has(css("span", text: "1 emails", count: 0))
+    |> assert_has(css("div", text: "Wedding - Lead - Auto reply to contact form submission", count: 1))
+    |> assert_text("Send email immediately")
+    |> assert_has(button("Edit time", count: 1))
+    |> assert_has(button("Edit email", count: 1))
     |> click(button("Add email"))
     |> assert_has(css(".modal-container"))
     |> assert_text("Add Wedding Email Step: Timing")
@@ -50,11 +53,10 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_text("Add Wedding Email Step: Preview Email")
     |> click(button("Save"))
     |> assert_flash(:success, text: "Successfully created")
-    |> assert_has(css("span", text: "1 emails", count: 3))            # But we see only 2 elements in code. Her are 3, why???
-    |> assert_has(css("div", text: "Send gallery link", count: 11))            # 11 elements are visible (we inserted only one). Why???
+    |> assert_has(css("div", text: "Wedding - Lead - Auto reply to contact form submission", count: 2))
     |> assert_text("Send email immediately")
-    |> assert_has(button("Edit time"))
-    |> assert_has(button("Edit email"))
+    |> assert_has(button("Edit time", count: 2))
+    |> assert_has(button("Edit email", count: 2))
   end
 
   feature "Adding two emails to Galleries catefory and delete button testing", %{session: session} do
