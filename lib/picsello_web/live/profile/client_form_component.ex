@@ -49,12 +49,12 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
           </div>
 
             <%= if @additional_field do %>
-            <% info = referral_info(f.params) %>
               <div class="flex flex-col mt-3">
-                 <%= label_for f, :referral_name, label: info.label, class: "py-2 font-bold" %>
+                <% info = referral_info(f.params) %>
+                <%= label_for f, :referral_name, label: info.label, class: "py-2 font-bold" %>
 
-                 <%= input f, :referral_name, placeholder: info.placeholder, phx_debounce: 300 %>
-                 <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
+                <%= input f, :referral_name, placeholder: info.placeholder, phx_debounce: 300 %>
+                <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
               </div>
             <% end %>
           <%= if Enum.any?(@job_types) do %>

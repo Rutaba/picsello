@@ -132,13 +132,13 @@ defmodule Picsello.Profiles do
     defp build_message(%{referral_name: nil, referred_by: referred_by}, msg), do: msg <> referred_by?(referred_by)
     defp build_message(%{referral_name: referral_name, referred_by: referred_by}, msg), do: msg <> referred_by?(referred_by) <> referral_name?(referral_name)
 
-    defp referred_by?(nil), do: ""
+    defp referred_by?(nil), do: nil
     defp referred_by?(referred_by),
     do: """
       referred by: #{referred_by}
       """
 
-    defp referral_name?(nil), do: ""
+    defp referral_name?(nil), do: nil
     defp referral_name?(referral_name),
     do: """
       referral name: #{referral_name}
