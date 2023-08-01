@@ -36,6 +36,7 @@ defmodule Picsello.EmailAutomations do
           eac.type in ^types and
           eas.slug not in ^skip_sub_categories
     )
+    |> preload(:email_automation_pipeline)
     |> Repo.all()
   end
 

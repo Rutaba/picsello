@@ -111,7 +111,7 @@ defmodule PicselloWeb.JobLive.NewComponent do
            &Job.create_job_changeset(%{type: job.type, notes: job.notes, client_id: &1.client.id})
          )
          |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, fn %{lead: %Job{id: job_id}} ->
-           Shared.job_emails(job.type, current_user.organization_id, job_id, [:lead, :job])
+           Shared.job_emails(job.type, current_user.organization_id, job_id, [:lead, :job], [:client_contact])
          end)
          |> Repo.transaction() do
       {:ok, %{lead: %Job{id: job_id}}} ->

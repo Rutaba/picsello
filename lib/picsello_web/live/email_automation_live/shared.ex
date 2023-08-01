@@ -509,26 +509,31 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   @doc """
     Insert all emails templates for jobs & leads in email schedules
   """
-  def job_emails(type, organization_id, job_id, types) do
+  def job_emails(type, organization_id, job_id, types, skip_states \\ [""]) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     emails =
       EmailAutomations.get_emails_for_schedule(organization_id, type, types)
-      |> Enum.map(
-        &[
-          job_id: job_id,
-          total_hours: &1.total_hours,
-          condition: &1.condition,
-          body_template: &1.body_template,
-          name: &1.name,
-          subject_template: &1.subject_template,
-          private_name: &1.private_name,
-          email_automation_pipeline_id: &1.email_automation_pipeline_id,
-          organization_id: organization_id,
-          inserted_at: now,
-          updated_at: now
-        ]
-      )
+      |> Enum.map(fn(email_data) ->
+        state = Map.get(email_data, :email_automation_pipeline) |> Map.get(:state)
+
+        if state not in skip_states do
+          [
+            job_id: job_id,
+            total_hours: email_data.total_hours,
+            condition: email_data.condition,
+            body_template: email_data.body_template,
+            name: email_data.name,
+            subject_template: email_data.subject_template,
+            private_name: email_data.private_name,
+            email_automation_pipeline_id: email_data.email_automation_pipeline_id,
+            organization_id: organization_id,
+            inserted_at: now,
+            updated_at: now
+          ]
+        end
+      end)
+      |> Enum.filter(&(&1 != nil))
 
     previous_emails = EmailAutomationSchedules.get_schedules_by_job(job_id)
 
