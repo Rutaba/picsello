@@ -254,7 +254,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                       <% end %>
                     </div>
                     <div class="flex flex-row items-center text-base-250">
-                      <.icon name="play-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                      <div clas="w-4 h-4">
+                        <.icon name="play-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                      </div>
                       <span class="text-sm"><%= get_email_schedule_text(email.total_hours, @pipeline.state, emails, index, nil, nil) %> </span>
                     </div>
                   </div>
