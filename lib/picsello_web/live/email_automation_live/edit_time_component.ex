@@ -73,7 +73,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
            }
          } = socket
        ) do
-    
+
     case Repo.insert(email_preset_changeset,
       on_conflict: {:replace, [:total_hours, :condition, :status]},
       conflict_target: :id
@@ -87,7 +87,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
      socket
     {:error, changeset} ->
       socket
-      |> assign(changeset: changeset) 
+      |> assign(changeset: changeset)
     end
   end
 
@@ -164,13 +164,13 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
                   <label class="flex pt-4">
                     <%= checkbox f, :status, class: "peer hidden", checked: Changeset.get_field(@changeset, :status) == :active %>
                     <div class="hidden peer-checked:flex cursor-pointer">
-                      <div class="rounded-full bg-blue-planning-300 border border-base-100 w-14 p-1 flex justify-end mr-4">
+                      <div testid="enable-toggle-in-edit-email-modal" class="rounded-full bg-blue-planning-300 border border-base-100 w-14 p-1 flex justify-end mr-4">
                         <div class="rounded-full h-5 w-5 bg-base-100"></div>
                       </div>
                       Email enabled
                     </div>
                     <div class="flex peer-checked:hidden cursor-pointer">
-                      <div class="rounded-full w-14 p-1 flex mr-4 border border-blue-planning-300">
+                      <div testid="disable-toggle-in-edit-email-modal" class="rounded-full w-14 p-1 flex mr-4 border border-blue-planning-300">
                         <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
                       </div>
                       Email disabled

@@ -238,7 +238,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
               <div class="flex md:flex-row flex-col justify-between">
                 <div class="flex h-max">
                   <div class={"h-auto pt-6 md:relative #{index != last_index && "md:before:absolute md:before:border md:before:h-full md:before:border-base-200 md:before:left-1/2 md:before:z-10 md:before:z-[-1]"}"}>
-                    <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center">
+                    <div testid={"email-main-icon"} class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center">
                       <%= cond do %>
                         <% is_state_manually_trigger(@pipeline.state) and index == 0 -> %> <.icon name="flag" class="w-5 h-5 text-blue-planning-300" />
                         <% email.status == :active -> %>  <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
@@ -294,13 +294,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                 <.form :let={_} for={%{}} as={:toggle} phx-click="toggle" phx-value-pipeline_id={@pipeline.id} phx-value-active={is_pipeline_active?(@pipeline.status) |> to_string}>
                 <label class="flex">
                   <input type="checkbox" class="peer hidden" checked={is_pipeline_active?(@pipeline.status)}/>
-                  <div class="hidden peer-checked:flex cursor-pointer">
+                  <div testid={"enable-#{@pipeline.id}"} class="hidden peer-checked:flex cursor-pointer">
                     <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
                       <div class="rounded-full h-5 w-5 bg-base-100"></div>
                     </div>
                     Enable automation
                   </div>
-                  <div class="flex peer-checked:hidden cursor-pointer">
+                  <div testid={"disable-#{@pipeline.id}"} class="flex peer-checked:hidden cursor-pointer">
                     <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
                       <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
                     </div>
