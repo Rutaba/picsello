@@ -58,5 +58,20 @@ defmodule PicselloWeb.GalleryLive.Transaction.Index do
     end
   end
 
+  defp order_details(orders, time_zone) do
+    for order <- orders do
+      pending = if is_nil(order.placed_at), do: true, else: false
+
+      %{
+        status: (pending && "Pending") || order_status(order),
+        number: order.number,
+        title: (pending && "Pending") || "Product order",
+        cost: total_cost(order),
+        date: (pending && "Pending") || order_date(time_zone, order),
+        pending: pending
+      }
+    end
+  end
+
   defdelegate total_cost(order), to: Cart
 end
