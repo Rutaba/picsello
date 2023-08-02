@@ -418,7 +418,7 @@ defmodule PicselloWeb.JobLive.Show do
           p_class: "text-base h-12",
           btn_section_class: "mt-2",
           btn_class: "px-3",
-          count: Enum.count(Enum.filter(orders, & &1.placed_at)),
+          count: Enum.count(orders, & &1.placed_at),
           parent_has_orders?: true,
           parent_id: nil
         }
