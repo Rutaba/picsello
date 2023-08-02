@@ -87,7 +87,7 @@ defmodule Picsello.Intents do
         end
         |> Enum.find(fee_details, &(&1.type == "stripe_fee"))
 
-       Money.new(amount, currency)
+      Money.new(amount, currency)
     end
 
     defp processing_fee(_), do: Money.new(0)
