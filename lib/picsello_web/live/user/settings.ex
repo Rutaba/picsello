@@ -45,7 +45,9 @@ defmodule PicselloWeb.Live.User.Settings do
       )
     )
     |> assign(
+      name_changeset: name_changeset(user),
       organization_name_changeset: organization_name_changeset(user),
+      organization_address_changeset: organization_address_changeset(user),
       phone_changeset: phone_changeset(user),
       time_zone_changeset: time_zone_changeset(user)
     )
@@ -142,14 +144,24 @@ defmodule PicselloWeb.Live.User.Settings do
     )
   end
 
+  defp name_changeset(user, params \\ %{}) do
+    user
+    |> User.name_changeset(params)
+  end
+
   defp phone_changeset(user, params \\ %{}) do
     user
     |> Onboardings.user_onboarding_phone_changeset(params)
   end
 
-  defp organization_name_changeset(user, params \\ %{}) do
-    user.organization
+  defp organization_name_changeset(%{organization: organization}, params \\ %{}) do
+    organization
     |> Organization.name_changeset(params)
+  end
+
+  defp organization_address_changeset(%{organization: organization}, params \\ %{}) do
+    organization
+    |> Organization.address_changeset(params)
   end
 
   defp time_zone_changeset(user, params \\ %{}) do
@@ -195,7 +207,7 @@ defmodule PicselloWeb.Live.User.Settings do
   def handle_event(
         "validate",
         %{
-          "action" => "update_name",
+          "action" => "update_organization_name",
           "organization" => organization_params
         },
         %{assigns: %{current_user: user}} = socket
@@ -207,6 +219,38 @@ defmodule PicselloWeb.Live.User.Settings do
     socket
     |> assign(:organization_name_changeset, changeset)
     |> assign_is_save_settings()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "action" => "update_user_name",
+          "user" => user_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    user
+    |> name_changeset(user_params)
+    |> Map.put(:action, :validate)
+    |> then(&assign(socket, :name_changeset, &1))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "action" => "update_organization_address",
+          "organization" => organization_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    user
+    |> organization_address_changeset(organization_params)
+    |> Map.put(:action, :validate)
+    |> then(&assign(socket, :organization_address_changeset, &1))
     |> noreply()
   end
 
@@ -299,7 +343,7 @@ defmodule PicselloWeb.Live.User.Settings do
   end
 
   @impl true
-  def handle_event("save", %{"action" => "update_name"}, socket) do
+  def handle_event("save", %{"action" => "update_organization_name"}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
       close_label: "No, go back",
@@ -310,6 +354,55 @@ defmodule PicselloWeb.Live.User.Settings do
       subtitle: "Changing your business name will update throughout Picsello."
     })
     |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{"action" => "update_user_name", "user" => user_params},
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    user
+    |> name_changeset(user_params)
+    |> Repo.update()
+    |> case do
+      {:ok, user} ->
+        socket
+        |> put_flash(:success, "User name changed successfully")
+        |> assign(current_user: user)
+        |> assign(:name_changeset, name_changeset(user))
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> assign(name_changeset: changeset) |> noreply()
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "save",
+        %{
+          "action" => "update_organization_address",
+          "organization" => organization_params
+        },
+        %{assigns: %{current_user: user}} = socket
+      ) do
+    user
+    |> organization_address_changeset(organization_params)
+    |> Repo.update()
+    |> case do
+      {:ok, organization} ->
+        socket
+        |> put_flash(:success, "Business address changed successfully")
+        |> assign(
+          :organization_address_changeset,
+          organization_address_changeset(%{organization: organization})
+        )
+        |> noreply()
+
+      {:error, changeset} ->
+        socket |> assign(organization_address_changeset: changeset) |> noreply()
+    end
   end
 
   @impl true

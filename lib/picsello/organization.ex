@@ -97,6 +97,29 @@ defmodule Picsello.Organization do
         true ->
           changeset
       end
+
+  defmodule Address do
+    @moduledoc false
+    use Ecto.Schema
+    @primary_key false
+    embedded_schema do
+      field(:address_line_1, :string)
+      field(:address_line_2, :string)
+      field(:city, :string)
+      field(:state, :string)
+      field(:zipcode, :string)
+
+      belongs_to(:organization_country, Picsello.Country,
+        references: :name,
+        type: :string,
+        foreign_key: :country
+      )
+    end
+
+    def changeset(address, attrs) do
+      address
+      |> cast(attrs, [:address_line_1, :address_line_2, :city, :state, :zipcode, :country])
+      |> validate_required([:country, :state])
     end
   end
 
@@ -107,6 +130,7 @@ defmodule Picsello.Organization do
     field(:previous_slug, :string)
 
     embeds_one(:profile, Profile, on_replace: :update)
+    embeds_one(:address, Address, on_replace: :update)
     embeds_one(:email_signature, EmailSignature, on_replace: :update)
     embeds_one(:payment_options, PaymentOptions, on_replace: :update)
     embeds_one(:client_proposal, ClientProposal, on_replace: :update)
@@ -133,10 +157,17 @@ defmodule Picsello.Organization do
     |> cast_embed(:email_signature)
   end
 
+
   def client_proposal_portal_changeset(organization, attrs) do
     organization
     |> cast(attrs, [])
     |> cast_embed(:client_proposal)
+  end
+
+  def address_changeset(organization, attrs) do
+    organization
+    |> cast(attrs, [])
+    |> cast_embed(:address, required: true)
   end
 
   def registration_changeset(organization, attrs, "" <> user_name),

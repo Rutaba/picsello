@@ -177,6 +177,19 @@ defmodule Picsello.Accounts.User do
     |> validate_password(opts)
   end
 
+  @doc """
+  A user changeset for changing the name.
+  """
+  def name_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:name])
+    |> validate_required([:name])
+    |> case do
+      %{changes: %{name: _}} = changeset -> changeset
+      %{} = changeset -> add_error(changeset, :name, "did not change")
+    end
+  end
+
   def validate_previous_sign_up_auth_provider(changeset, opts) do
     message = opts |> Keyword.get(:message, "is invalid")
 
