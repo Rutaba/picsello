@@ -69,6 +69,11 @@ defmodule Picsello.Client do
     |> change(archived_at: DateTime.utc_now() |> DateTime.truncate(:second))
   end
 
+  def unarchive_changeset(%__MODULE__{} = client) do
+    client
+    |> change(archived_at: nil)
+  end
+
   def notes_changeset(client \\ %__MODULE__{}, attrs) do
     client |> cast(attrs, [:notes])
   end

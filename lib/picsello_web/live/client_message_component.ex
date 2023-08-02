@@ -360,8 +360,8 @@ defmodule PicselloWeb.ClientMessageComponent do
       end)
 
     valid_emails? =
-      email_list
-      |> Enum.all?(fn email ->
+      Enum.any?(email_list) && 
+      Enum.all?(email_list, fn email ->
         Repo.exists?(Clients.get_client_query(user, email: email))
       end)
 
