@@ -116,17 +116,18 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     email_with_immediate_status = Enum.filter(emails, &(&1.total_hours == 0))
 
-    state? =
-      if(is_atom(state), do: Atom.to_string(state), else: state)
-      |> String.contains?("manual_")
-
-    if state? && Enum.any?(email_with_immediate_status) do
+    if state?(state) && Enum.any?(email_with_immediate_status) do
       {first_email, unsorted_emails} = email_with_immediate_status |> List.pop_at(0)
       pending_emails = unsorted_emails ++ Enum.filter(emails, &(&1.total_hours != 0))
       [first_email | Enum.sort_by(pending_emails, &Map.fetch(&1, :total_hours))]
     else
       Enum.sort_by(emails, &Map.fetch(&1, :total_hours))
     end
+  end
+
+  defp state?(state) do
+    if(is_atom(state), do: Atom.to_string(state), else: state)
+    |> String.contains?("manual_")
   end
 
   defp assign_category_pipeline_count(automation_pipelines) do
@@ -204,8 +205,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     Enum.any?(job_types, &Map.get(&1, :selected, false))
   end
 
-  def get_email_schedule_text(0, _, _, _, _job_type, _organization_id),
-    do: "Send email immediately"
+  def get_email_schedule_text(0, state, _, index, _job_type, _organization_id) do
+    if state?(state) && index == 0 do
+      "Photographer Sends" 
+    else
+      "Send email immediately"
+    end
+  end
 
   def get_email_schedule_text(hours, state, emails, index, job_type, organization_id) do
     %{calendar: calendar, count: count, sign: sign} = get_email_meta(hours)
@@ -213,9 +219,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     sub_text =
       cond do
-        state in ["client_contact", "maual_booking_proposal_sent"] ->
-          "the prior email \"#{get_email_name(email, index, job_type, organization_id)}\" has been sent if no response from the client"
-
+        # state in ["client_contact", "maual_booking_proposal_sent"] ->
+        #   "the prior email \"#{get_email_name(email, index, job_type, organization_id)}\" has been sent if no response from the client"
         state in ["before_shoot", "shoot_thanks", "post_shoot"] ->
           "the shoot date"
 
@@ -232,7 +237,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
           "sending \"#{get_email_name(email, index, job_type, organization_id)}\""
 
         true ->
-          ""
+          "the prior email \"#{get_email_name(email, index, job_type, organization_id)}\" has been sent if no response from the client"
       end
 
     "Send #{count} #{calendar} #{sign} #{sub_text}"
@@ -246,6 +251,30 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       email.private_name -> email.private_name
       true -> "#{type} - " <> email.name
     end
+  end
+
+  def email_header(assigns) do
+    assigns = Enum.into(assigns, %{email_changeset: current(assigns.email_preset_changeset)})
+    
+    ~H"""
+      <div class="flex flex-row mt-2 mb-4 items-center">
+        <div class="flex mr-2">
+          <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-planning-300">
+            <.icon name="envelope" class="w-4 h-4 text-white fill-current"/>
+          </div>
+        </div>
+        <div class="flex flex-col ml-2">
+          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= get_email_name(@email, nil, @email.job_type, nil) %></p>
+          <p class="text-sm text-base-250">
+            <%= if @email_changeset.immediately do %>
+              Send email immediately
+            <% else %>
+              Send email <%= @email_changeset.count %> <%= String.downcase(@email_changeset.calendar) %>  <%= if @email_changeset.sign == "+", do: "after", else: "before" %> <%= String.downcase(@pipeline.name) %>
+            <% end %>
+          </p>
+        </div>
+      </div>
+    """
   end
 
   def get_preceding_email(emails, index) do
