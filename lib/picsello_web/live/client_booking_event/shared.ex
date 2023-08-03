@@ -33,7 +33,6 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
     """
   end
 
-
   def subtitle_display(assigns) do
     ~H"""
       <p class={@class}><%= formatted_subtitle(@booking_event, @package) %></p>
@@ -43,9 +42,11 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
   def formatted_date(%{dates: dates}) do
     dates
     |> Enum.sort_by(& &1.date, Date)
-    |>  Enum.reduce([], fn date, acc ->
+    |> Enum.reduce([], fn date, acc ->
       case acc do
-        [] -> [[date]]
+        [] ->
+          [[date]]
+
         [prev_chunk | rest] ->
           case Date.add(List.last(prev_chunk).date, 1) == date.date do
             true -> [prev_chunk ++ [date] | rest]
@@ -65,7 +66,8 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
     |> Enum.join(", ")
   end
 
-  defp format_date(date), do: "#{capitalize_month(Calendar.strftime(date, "%b"))} #{Calendar.strftime(date, "%d, %Y")}"
+  defp format_date(date),
+    do: "#{capitalize_month(Calendar.strftime(date, "%b"))} #{Calendar.strftime(date, "%d, %Y")}"
 
   defp capitalize_month(month), do: String.capitalize(to_string(month))
 
