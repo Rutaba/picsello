@@ -1,6 +1,5 @@
 defmodule Picsello.PaymentSchedules do
   @moduledoc "context module for payment schedules"
-  import Money.Sigils
   import Ecto.Query
 
   alias Picsello.{
@@ -13,10 +12,10 @@ defmodule Picsello.PaymentSchedules do
     Notifiers.ClientNotifier,
     BookingProposal,
     Client,
-    Shoot
+    Shoot,
+    Currency,
+    UserCurrencies
   }
-
-  @zero_price ~M[0]USD
 
   def get_description(%Job{package: nil} = job),
     do: build_payment_schedules_for_lead(job) |> Map.get(:details)
@@ -35,7 +34,14 @@ defmodule Picsello.PaymentSchedules do
     next_shoot = shoots |> Enum.at(0, %Shoot{}) |> Map.get(:starts_at)
     last_shoot = shoots |> Enum.at(-1, %Shoot{}) |> Map.get(:starts_at)
     now = DateTime.utc_now() |> DateTime.truncate(:second)
-    price = if package, do: Package.price(package), else: @zero_price
+
+    price =
+      if package do
+        Package.price(package)
+      else
+        %{currency: currency} = UserCurrencies.get_user_currency(job.client.organization_id)
+        Money.new(0, currency)
+      end
 
     info =
       payment_schedules_info(%{
@@ -87,10 +93,10 @@ defmodule Picsello.PaymentSchedules do
     |> Enum.all?(&Money.zero?(&1.price))
   end
 
-  defp payment_schedules_info(%{price: @zero_price, now: now}) do
+  defp payment_schedules_info(%{price: %{amount: 0} = price, now: now}) do
     %{
       details: "100% discount",
-      payments: [%{description: "100% discount", due_at: now, price: @zero_price}]
+      payments: [%{description: "100% discount", due_at: now, price: price}]
     }
   end
 
@@ -186,11 +192,13 @@ defmodule Picsello.PaymentSchedules do
   end
 
   def paid_price(%Job{} = job) do
+    currency = Currency.for_job(job)
+
     job
     |> payment_schedules()
     |> Enum.filter(&(&1.paid_at != nil))
-    |> Enum.reduce(Money.new(0), fn payment, acc -> Money.add(acc, payment.price) end)
-    |> Money.add(Map.get(job.package, :collected_price) || Money.new(0))
+    |> Enum.reduce(Money.new(0, currency), fn payment, acc -> Money.add(acc, payment.price) end)
+    |> Money.add(Map.get(job.package, :collected_price) || Money.new(0, currency))
   end
 
   def get_is_with_cash(job) do
@@ -202,15 +210,19 @@ defmodule Picsello.PaymentSchedules do
   end
 
   def owed_price(%Job{} = job) do
+    currency = Currency.for_job(job)
+
     job
     |> payment_schedules()
     |> Enum.filter(&(&1.paid_at == nil))
-    |> Enum.reduce(Money.new(0), fn payment, acc -> Money.add(acc, payment.price) end)
+    |> Enum.reduce(Money.new(0, currency), fn payment, acc -> Money.add(acc, payment.price) end)
   end
 
   def owed_offline_price(%Job{} = job) do
+    currency = Currency.for_job(job)
+
     total = Package.price(job.package) |> Map.get(:amount)
-    (total - paid_amount(job)) |> Money.new()
+    (total - paid_amount(job)) |> Money.new(currency)
   end
 
   def owed_amount(%Job{} = job) do
@@ -328,6 +340,8 @@ defmodule Picsello.PaymentSchedules do
     %{job: %{client: %{organization: organization} = client} = job} =
       proposal |> Repo.preload(job: [client: :organization])
 
+    currency = Currency.for_job(job)
+
     stripe_params = %{
       client_reference_id: "proposal_#{proposal.id}",
       cancel_url: Keyword.get(opts, :cancel_url),
@@ -340,7 +354,7 @@ defmodule Picsello.PaymentSchedules do
       line_items: [
         %{
           price_data: %{
-            currency: "usd",
+            currency: currency,
             unit_amount: payment.price.amount,
             product_data: %{
               name: "#{Job.name(job)} #{payment.description}",

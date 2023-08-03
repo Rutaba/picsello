@@ -49,7 +49,7 @@
                                 <.icon name="meatballs" class="text-gray-200 w-7 h-7 meatballs open-icon" />
                                 <.icon name="close-x" class="hidden absolute right-2 top-1 w-4 h-4 text-white stroke-current stroke-2 close-icon opacity-100"/>
                             </button>
-                            <.ul {assigns} entries={meatball(@album, @id)} />
+                            <.ul {assigns} entries={meatball(@album, @id, @show_products)} />
                         </div>
                     <% end %>
                 <% end %>

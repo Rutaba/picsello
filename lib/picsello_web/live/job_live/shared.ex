@@ -558,7 +558,7 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> open_modal(
       PicselloWeb.PackageLive.WizardComponent,
-      assigns |> Map.take([:current_user, :job, :package])
+      assigns |> Map.take([:current_user, :job, :package, :currency])
     )
     |> assign_disabled_copy_link()
     |> noreply()
@@ -956,7 +956,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def package_details_card(assigns) do
     ~H"""
-    <.card title="Package details" class="h-52">
+    <.card title="Package details" class="md:h-52">
       <%= if @package do %>
         <p class="font-bold"><%= @package.name %></p>
         <p><%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %></p>
@@ -990,7 +990,7 @@ defmodule PicselloWeb.JobLive.Shared do
       |> assign_new(:content_class, fn -> "line-clamp-4" end)
 
     ~H"""
-    <.card title="Private notes" class={"h-52 #{@class}"}>
+    <.card title="Private notes" class={"md:h-52 #{@class}"}>
       <%= if @job.notes do %>
         <p class={"whitespace-pre-line #{@content_class}"}><%= @job.notes %></p>
       <% else %>

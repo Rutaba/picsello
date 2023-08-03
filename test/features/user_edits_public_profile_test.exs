@@ -15,8 +15,18 @@ defmodule Picsello.UserEditsPublicProfileTest do
       |> onboard!
 
     insert(:brand_link, user: user)
-    insert(:package_template, user: user, job_type: "portrait", base_price: 3000)
-    insert(:package_template, user: user, job_type: "portrait", base_price: 2000)
+
+    insert(:package_template,
+      user: user,
+      job_type: "portrait",
+      base_price: %Money{amount: 3000, currency: :USD}
+    )
+
+    insert(:package_template,
+      user: user,
+      job_type: "portrait",
+      base_price: %Money{amount: 2000, currency: :USD}
+    )
 
     [
       user: user,

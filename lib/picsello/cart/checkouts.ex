@@ -29,7 +29,6 @@ defmodule Picsello.Cart.Checkouts do
   import Ecto.Multi, only: [new: 0, run: 3, merge: 2, insert: 3, update: 3, append: 2, put: 3]
 
   import Ecto.Query, only: [from: 2]
-  import Money.Sigils
 
   @doc """
   1. order already has a session?
@@ -58,7 +57,7 @@ defmodule Picsello.Cart.Checkouts do
       |> run(:cart, :load_cart, [order_id])
       |> run(:client_total, &client_total/2)
       |> merge(fn
-        %{client_total: ~M[0]USD, cart: %{products: []} = cart} ->
+        %{client_total: %Money{amount: 0}, cart: %{products: []} = cart} ->
           new()
           |> update(:order, place_order(cart))
           |> run(:insert_card, fn _repo, %{order: order} ->
@@ -280,7 +279,7 @@ defmodule Picsello.Cart.Checkouts do
   defp build_line_items(%Order{digitals: digitals, products: products} = order) do
     for item <- Enum.concat([products, digitals, [order]]), reduce: [] do
       line_items ->
-        case to_line_item(item) do
+        case item |> Map.put(:currency, order.currency) |> to_line_item() do
           %{
             image: image,
             name: name,

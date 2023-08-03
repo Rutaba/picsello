@@ -77,7 +77,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     insert(:package_template,
       user: user,
       name: "Deluxe Template",
-      download_each_price: 0
+      download_each_price: %Money{amount: 0, currency: :USD}
     )
 
     session
@@ -91,8 +91,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       user: user,
       name: "Super Deluxe Template",
       download_count: 5,
-      download_each_price: 20,
-      print_credits: 20
+      download_each_price: %Money{amount: 20, currency: :USD},
+      print_credits: %Money{amount: 20, currency: :USD}
     )
 
     session
@@ -211,7 +211,8 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
   end
 
   feature "Edit the package with contract", %{session: session, user: user} do
-    template = insert(:package_template, user: user, print_credits: 20)
+    template =
+      insert(:package_template, user: user, print_credits: %Money{amount: 20, currency: :USD})
 
     session
     |> click(testid("subnav-Settings"))

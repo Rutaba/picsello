@@ -6,10 +6,11 @@ defmodule Picsello.Galleries.GalleryDigitalPricing do
   alias Picsello.{Package, Galleries.Gallery}
 
   schema "gallery_digital_pricing" do
-    field :download_each_price, Money.Ecto.Amount.Type
+    field :download_each_price, Money.Ecto.Map.Type
     field :download_count, :integer
-    field :print_credits, Money.Ecto.Amount.Type
-    field :buy_all, Money.Ecto.Amount.Type
+    field :print_credits, Money.Ecto.Map.Type
+    field :currency, :string, virtual: true
+    field :buy_all, Money.Ecto.Map.Type
     field :email_list, {:array, :string}
 
     belongs_to(:gallery, Gallery)

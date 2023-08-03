@@ -1,0 +1,81 @@
+name: Linter
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 }}
+  PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE: ${{ vars.PACKAGES_CALCULATOR_COST_OF_LIVING_RANGE }}
+  PACKAGES_CALCULATOR_PRICES_RANGE: ${{ vars.PACKAGES_CALCULATOR_PRICES_RANGE }}
+  PACKAGES_CALCULATOR_SHEET_ID: ${{ vars.PACKAGES_CALCULATOR_SHEET_ID }}
+  PHOTO_PROCESSING_INPUT_TOPIC: ${{ vars.PHOTO_PROCESSING_INPUT_TOPIC }}
+  PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION: ${{ vars.PHOTO_PROCESSING_OUTPUT_SUBSCRIPTION }}
+  PHOTO_PROCESSING_OUTPUT_TOPIC: ${{ vars.PHOTO_PROCESSING_OUTPUT_TOPIC }}
+  PHOTO_STORAGE_BUCKET: ${{ vars.PHOTO_STORAGE_BUCKET }}
+  PUBLIC_BUCKET: ${{ vars.PUBLIC_BUCKET }}
+  SENDGRID_MARKETING_UNSUBSCRIBE_ID: ${{ vars.SENDGRID_MARKETING_UNSUBSCRIBE_ID }}
+  SHELL: ${{ vars.SHELL }}
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+    test:
+
+        name: Code format check
+        runs-on: ubuntu-20.04
+        timeout-minutes: 45
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Set up Elixir
+              uses: erlef/setup-beam@v1
+              id: beam
+              with:
+                elixir-version: '1.14.3' # Define the elixir version [required]
+                otp-version: '25.3' # Define the OTP version [required]
+
+            - name: Cache deps
+              id: cache-deps
+              uses: actions/cache@v3
+              env:
+                cache-name: cache-elixir-deps
+              with:
+                path: deps
+                key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+                restore-keys: |
+                    ${{ runner.os }}-mix-${{ env.cache-name }}-
+
+            - name: Cache compiled build
+              id: cache-build
+              uses: actions/cache@v3
+              env:
+                cache-name: cache-compiled-build
+              with:
+                path: _build
+                key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+                restore-keys: |
+                    ${{ runner.os }}-mix-${{ env.cache-name }}-
+                    ${{ runner.os }}-mix-
+            
+            - name: Install dependencies
+              if: steps.cache-elixir-deps.outputs.cache-hit != 'true'
+              run: mix deps.get
+
+            - name: Check format
+              run: mix format --check-formatted
+
+            - name: Slack Workflow Notification
+              uses: Gamesight/slack-workflow-status@master
+              with:
+                include_commit_message: true
+                repo_token: ${{ secrets.GITHUB_TOKEN }}
+                slack_webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+                name: 'Picsello CI'
+                icon_emoji: ':camera:'

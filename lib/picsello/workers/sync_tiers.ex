@@ -71,7 +71,7 @@ defmodule Picsello.Workers.SyncTiers do
           full_time: time != "Part-Time",
           min_years_experience: String.to_integer(min_years_experience),
           job_type: job_type,
-          base_price: price_to_cents(base_price),
+          base_price: price_to_cents(base_price) |> Money.new("USD"),
           tier: tier |> String.downcase() |> String.trim(),
           shoot_count: String.to_integer(shoots),
           download_count: String.to_integer(downloads),

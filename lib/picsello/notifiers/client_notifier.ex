@@ -209,7 +209,11 @@ defmodule Picsello.Notifiers.ClientNotifier do
       order_items: products ++ digitals,
       order_number: Picsello.Cart.Order.number(order),
       order_shipping: order |> Cart.preload_products() |> Cart.total_shipping(),
-      order_subtotal: Money.subtract(Order.total_cost(order), Cart.preload_products(order) |> Cart.total_shipping()),
+      order_subtotal:
+        Money.subtract(
+          Order.total_cost(order),
+          Cart.preload_products(order) |> Cart.total_shipping()
+        ),
       order_total: Order.total_cost(order),
       order_url:
         if(order.album_id,
