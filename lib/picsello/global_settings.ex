@@ -178,8 +178,8 @@ defmodule Picsello.GlobalSettings do
 
   defp build_digital_prices(each_price, buy_all_price, currency, rate) do
     %{
-      buy_all_price: Money.new(each_price.amount, currency) |> Money.multiply(rate),
-      download_each_price: Money.new(buy_all_price.amount, currency) |> Money.multiply(rate)
+      download_each_price: Money.new(each_price.amount, currency) |> Money.multiply(rate),
+      buy_all_price: Money.new(buy_all_price.amount, currency) |> Money.multiply(rate)
     }
   end
 
@@ -195,7 +195,7 @@ defmodule Picsello.GlobalSettings do
 
       GSGallery.price_changeset(
         gs_gallery,
-        build_digital_prices(buy_all_price, download_each_price, currency, rate)
+        build_digital_prices(download_each_price, buy_all_price, currency, rate)
       )
     end)
     |> Repo.transaction()

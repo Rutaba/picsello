@@ -3,6 +3,11 @@ defmodule Picsello.Clients do
   import Ecto.Query
   alias Picsello.{Repo, Client, ClientTag}
 
+  def client_by_email(email) do
+    from(c in Client, where: c.email == ^email)
+    |> Repo.one()
+  end
+
   def find_all_by(user: user) do
     clients_by_user(user)
     |> Repo.all()
@@ -117,9 +122,9 @@ defmodule Picsello.Clients do
   end
 
   defp find_all_query(
-    user: user,
-    filters: %{sort_by: sort_by, sort_direction: sort_direction} = opts
-  ) do
+         user: user,
+         filters: %{sort_by: sort_by, sort_direction: sort_direction} = opts
+       ) do
     from(client in Client,
       preload: [:tags, :jobs],
       left_join: jobs in assoc(client, :jobs),

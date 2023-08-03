@@ -360,10 +360,10 @@ defmodule PicselloWeb.ClientMessageComponent do
       end)
 
     valid_emails? =
-      Enum.any?(email_list) && 
-      Enum.all?(email_list, fn email ->
-        Repo.exists?(Clients.get_client_query(user, email: email))
-      end)
+      Enum.any?(email_list) &&
+        Enum.all?(email_list, fn email ->
+          Repo.exists?(Clients.get_client_query(user, email: email))
+        end)
 
     if valid_emails? do
       socket

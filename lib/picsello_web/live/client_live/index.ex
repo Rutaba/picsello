@@ -184,7 +184,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
         %{assigns: %{clients: clients}} = socket
       ) do
     client = clients |> Enum.find(&(&1.id == to_integer(id)))
-    
+
     socket
     |> ConfirmationComponent.open(%{
       close_label: "No, go back",

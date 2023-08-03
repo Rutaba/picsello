@@ -75,7 +75,12 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
   defp assign_photo(socket, photo_id) do
     socket
     |> assign(:photo, Galleries.get_photo(photo_id))
-    |> then(&assign(&1, url: preview_url(&1.assigns.photo, proofing_client_view?: &1.assigns.is_proofing, blank: true)))
+    |> then(
+      &assign(&1,
+        url:
+          preview_url(&1.assigns.photo, proofing_client_view?: &1.assigns.is_proofing, blank: true)
+      )
+    )
   end
 
   @impl true

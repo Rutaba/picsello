@@ -2,7 +2,16 @@ defmodule Picsello.Client do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Accounts.User, Organization, Job, ClientTag, Repo, ClientMessageRecipient}
+
+  alias Picsello.{
+    Clients,
+    Accounts.User,
+    Organization,
+    Job,
+    ClientTag,
+    Repo,
+    ClientMessageRecipient
+  }
 
   schema "clients" do
     field :email, :string
@@ -26,6 +35,7 @@ defmodule Picsello.Client do
     |> cast(attrs, [:name, :email, :organization_id, :phone, :address, :notes])
     |> validate_required([:name, :email, :organization_id])
     |> downcase_email()
+    |> validate_archived_email()
     |> User.validate_email_format()
     |> unique_constraint([:email, :organization_id])
   end
@@ -35,6 +45,7 @@ defmodule Picsello.Client do
     |> cast(attrs, [:name, :email, :phone, :address, :notes, :organization_id])
     |> validate_required([:email, :name, :organization_id])
     |> downcase_email()
+    |> validate_archived_email()
     |> User.validate_email_format()
     |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
     |> unique_constraint([:email, :organization_id])
@@ -46,6 +57,7 @@ defmodule Picsello.Client do
     |> downcase_email()
     |> User.validate_email_format()
     |> validate_required([:email, :organization_id])
+    |> validate_archived_email()
     |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
     |> unique_constraint([:email, :organization_id])
   end
@@ -56,6 +68,7 @@ defmodule Picsello.Client do
     |> downcase_email()
     |> User.validate_email_format()
     |> validate_required([:email])
+    |> validate_archived_email()
     |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
     |> unique_constraint([:email, :organization_id])
     |> validate_required_name()
@@ -78,11 +91,22 @@ defmodule Picsello.Client do
     client |> cast(attrs, [:notes])
   end
 
-  def validate_required_name(changeset) do
+  defp validate_required_name(changeset) do
     has_jobs = get_field(changeset, :id) |> Job.by_client_id() |> Repo.exists?()
 
     if has_jobs do
       changeset |> validate_required([:name])
+    else
+      changeset
+    end
+  end
+
+  defp validate_archived_email(changeset) do
+    email = get_field(changeset, :email)
+    client = if email, do: Clients.client_by_email(email), else: nil
+
+    if client && client.archived_at do
+      changeset |> add_error(:email, "archived, please unarchive the client")
     else
       changeset
     end

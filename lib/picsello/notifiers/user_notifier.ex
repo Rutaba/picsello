@@ -378,7 +378,9 @@ defmodule Picsello.Notifiers.UserNotifier do
           print_credit_used: credit |> Money.neg(),
           print_credit_remaining: Picsello.Cart.credit_remaining(gallery).print
         }
-      _ -> %{}
+
+      _ ->
+        %{}
     end
   end
 
