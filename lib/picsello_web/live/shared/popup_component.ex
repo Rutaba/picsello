@@ -27,7 +27,7 @@ defmodule PicselloWeb.Shared.PopupComponent do
     ~H"""
     <div class={@class}>
       <.close_x />
-      <h1 class="text-3xl font-bold">
+      <h1 class="text-3xl mr-8 font-bold">
         <%= @title %>
       </h1>
 
