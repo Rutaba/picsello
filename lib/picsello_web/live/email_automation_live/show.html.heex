@@ -32,7 +32,7 @@
 </div>
 
 <%= Enum.map(@email_schedules, fn email_schedule -> %>
-  <div class="px-6 pt-6 lg:px-40 2xl:px-64 center-container flex flex-col sm:flex-row">
+  <div testid="main-area" class="px-6 pt-6 lg:px-40 2xl:px-64 center-container flex flex-col sm:flex-row">
       <div class={"mb-3 sm:mb-0 pt-1 sm:pl-0.5 flex sm:justify-center #{email_schedule.category_name == "Leads" && "sm:relative sm:before:absolute sm:before:top-7 sm:before:border sm:before:left-1/2 sm:before:h-full sm:before:border-base-200 sm:before:z-[-1]"}"}>
         <span class="flex flex-row w-8 h-8 rounded-full bg-base-200 items-center justify-center">
           <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300"/>

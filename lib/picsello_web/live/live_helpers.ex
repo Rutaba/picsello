@@ -271,7 +271,7 @@ defmodule PicselloWeb.LiveHelpers do
       )}>
         <input class="hidden" type={@type} name={@name} value={@job_type} checked={@checked} disabled={@disabled} />
 
-        <div class={classes(
+        <div testid={@job_type} class={classes(
           "flex items-center justify-center w-7 h-7 ml-1 mr-3 rounded-full flex-shrink-0",
           %{"#{@bg_dark} text-white" => @checked, "bg-base-200" => !@checked}
         )}>
