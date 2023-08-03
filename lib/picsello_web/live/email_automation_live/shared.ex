@@ -220,7 +220,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     sub_text =
       cond do
         # state in ["client_contact", "maual_booking_proposal_sent"] ->
-        #   "the prior email \"#{get_email_name(email, index, job_type, organization_id)}\" has been sent if no response from the client"
+        #   "the prior email \"#{get_email_name(email, job_type)}\" has been sent if no response from the client"
         state in ["before_shoot", "shoot_thanks", "post_shoot"] ->
           "the shoot date"
 
@@ -228,24 +228,23 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
           "client abandons cart"
 
         state == "cart_abandoned" ->
-          "sending \"#{get_email_name(email, index, job_type, organization_id)}\" and no reply from the client"
+          "sending \"#{get_email_name(email, job_type)}\" and no reply from the client"
 
         state == "gallery_expiration_soon" ->
           "gallery expiration date"
 
         state == "manual_thank_you_lead" ->
-          "sending \"#{get_email_name(email, index, job_type, organization_id)}\""
+          "sending \"#{get_email_name(email, job_type)}\""
 
         true ->
-          "the prior email \"#{get_email_name(email, index, job_type, organization_id)}\" has been sent if no response from the client"
+          "the prior email \"#{get_email_name(email, job_type)}\" has been sent if no response from the client"
       end
 
     "Send #{count} #{calendar} #{sign} #{sub_text}"
   end
 
-  def get_email_name(email, _index, job_type, _organization_id) do
+  def get_email_name(email, job_type) do
     type = if job_type, do: job_type, else: String.capitalize(email.job_type)
-    # organization_id = if organization_id, do: organization_id, else: email.organization_id
 
     cond do
       email.private_name -> email.private_name
@@ -254,8 +253,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def email_header(assigns) do
-    assigns = Enum.into(assigns, %{email_changeset: current(assigns.email_preset_changeset)})
-    
     ~H"""
       <div class="flex flex-row mt-2 mb-4 items-center">
         <div class="flex mr-2">
@@ -264,12 +261,13 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
           </div>
         </div>
         <div class="flex flex-col ml-2">
-          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= get_email_name(@email, nil, @email.job_type, nil) %></p>
+          <p><b> <%= @email.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= get_email_name(@email, nil) %></p>
           <p class="text-sm text-base-250">
-            <%= if @email_changeset.immediately do %>
+            <%= if @email.total_hours == 0 do %>
               Send email immediately
             <% else %>
-              Send email <%= @email_changeset.count %> <%= String.downcase(@email_changeset.calendar) %>  <%= if @email_changeset.sign == "+", do: "after", else: "before" %> <%= String.downcase(@pipeline.name) %>
+              <% %{calendar: calendar, count: count, sign: sign} = get_email_meta(@email.total_hours) %>
+              <%= "Send email #{count} #{calendar} #{sign} #{String.downcase(@pipeline.name)}" %>
             <% end %>
           </p>
         </div>

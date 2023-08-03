@@ -3,6 +3,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   use PicselloWeb, :live_component
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.Shared.MultiSelect
@@ -215,17 +216,16 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   def step(%{step: :edit_email} = assigns) do
     ~H"""
-      <.email_header {assigns} />
+      <.email_header pipeline={@pipeline} email={@email}/>
       <hr class="my-8" />
 
       <% f = to_form(@email_preset_changeset) %>
       <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
+      <%= hidden_input f, :job_type %>
       <%= hidden_input f, :email_automation_pipeline_id %>
       <%= hidden_input f, :organization_id %>
       <%= hidden_input f, :name %>
-      <%= hidden_input f, :job_type %>
       <%= hidden_input f, :position %>
-
 
       <div class="mr-auto">
         <div class="grid grid-row md:grid-cols-3 gap-6">
@@ -271,7 +271,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   def step(%{step: :preview_email} = assigns) do
     ~H"""
-      <.email_header {assigns} />
+      <.email_header pipeline={@pipeline} email={@email_preset}/>
       <span class="text-base-250">Check out how your client will see your emails. We’ve put in some placeholder data to visualize the variables.</span>
 
       <hr class="my-4" />

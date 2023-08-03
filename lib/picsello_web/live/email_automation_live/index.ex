@@ -12,7 +12,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       assign_automation_pipelines: 1,
       get_pipline: 1,
       get_email_schedule_text: 6,
-      get_email_name: 4
+      get_email_name: 2
     ]
 
   alias Picsello.{
@@ -248,7 +248,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                   </div>
                   <div class="ml-3 py-6">
                     <div class="text-xl font-bold">
-                      <%= get_email_name(email, index, nil, nil) %>
+                      <%= get_email_name(email, nil) %>
                       <%= if email.status == :disabled do %>
                         <span class="ml-2 rounded-md bg-red-sales-100 text-red-sales-300 px-2 text-sm font-bold whitespace-nowrap">Disabled</span>
                       <% end %>
