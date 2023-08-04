@@ -7,18 +7,19 @@ defmodule Picsello.EmailAutomationsTest do
 
   setup do
     user = Picsello.Repo.one(from(u in Picsello.Accounts.User))
-    insert(:email_preset, job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: 1, state: "client_contact", type: "lead")
-    :ok
-  end
+    for {state, index} <- Enum.with_index(["client_contact", "manual_thank_you_lead", "manual_booking_proposal_sent"]) do
+    insert(:email_preset, job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+1, state: "client_contact", type: "lead")
+    end
 
-  setup %{user: user} do
-    lead =
-      insert(:lead, %{
-        type: "wedding",
-        user: user
-      })
+    for {state, index} <- Enum.with_index(["pays_retainer", "pays_retainer_offline", "booking_event", "before_shoot", "balance_due", "offline_payment", "paid_offline_full", "paid_full", "shoot_thanks", "post_shoot"]) do
+      insert(:email_preset, job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+4, state: state, type: "job")
+    end
 
-    [lead: lead]
+    for {state, index} <- ["manual_gallery_send_link", "cart_abandoned", "gallery_expiration_soon", "gallery_password_changed", "manual_send_proofing_gallery", "manual_send_proofing_gallery_finals", "order_confirmation_physical", "order_confirmation_digital", "order_confirmation_digital_physical", "digitals_ready_download", "order_shipped", "order_delayed", "order_arrived"] do
+      insert(:email_preset, job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+14, state: state, type: "gallery")
+    end
+
+    {:ok, user: user}
   end
 
   feature "testing", %{session: session} do
@@ -243,7 +244,6 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("div", text: "Demo Name", count: 1))
   end
 
-  # There is only one pipeline of leads, instead of 3
   feature "Testing emails related to a lead", %{session: session} do
     session
     |> click(button("Leads"))
@@ -259,14 +259,19 @@ defmodule Picsello.EmailAutomationsTest do
     |> find(css("div[data-testid='inbox']"), fn div ->
       click(div, button("View all"))
     end)
-    |> find(css("div[testid='main-area']"), fn div ->
+    |> find(css("div[testid='main-area']", count: 2, at: 0), fn div ->
       assert_has(div, css("div", text: "Leads", count: 2))
       assert_has(div, css("div", text: "Jobs", count: 0))
       assert_has(div, css("div", text: "Galleries", count: 0))
     end)
+    |> find(css("div[testid='main-area']", count: 2, at: 1), fn div ->
+      assert_has(div, css("div", text: "Leads", count: 0))
+      assert_has(div, css("div", text: "Jobs", count: 2))
+      assert_has(div, css("div", text: "Galleries", count: 0))
+    end)
+
   end
 
-  # No pipeline at all
   feature "testing emails related to a job", %{session: session} do
     session
     |> click(button("Jobs"))
