@@ -30,12 +30,14 @@ defmodule Picsello.Client do
     timestamps(type: :utc_datetime)
   end
 
+  @doc """
+  we are using it in client side booking events and client side public profile bottom form filling to create a lead
+  """
   def create_changeset(client \\ %__MODULE__{}, attrs) do
     client
     |> cast(attrs, [:name, :email, :organization_id, :phone, :address, :notes])
     |> validate_required([:name, :email, :organization_id])
     |> downcase_email()
-    |> validate_archived_email()
     |> User.validate_email_format()
     |> unique_constraint([:email, :organization_id])
   end
@@ -63,14 +65,7 @@ defmodule Picsello.Client do
   end
 
   def edit_client_changeset(%__MODULE__{} = client, attrs) do
-    client
-    |> cast(attrs, [:name, :email, :phone, :address, :notes])
-    |> downcase_email()
-    |> User.validate_email_format()
-    |> validate_required([:email])
-    |> validate_archived_email()
-    |> unsafe_validate_unique([:email, :organization_id], Picsello.Repo)
-    |> unique_constraint([:email, :organization_id])
+    create_client_changeset(client, attrs)
     |> validate_required_name()
   end
 
@@ -103,7 +98,8 @@ defmodule Picsello.Client do
 
   defp validate_archived_email(changeset) do
     email = get_field(changeset, :email)
-    client = if email, do: Clients.client_by_email(email), else: nil
+    organization_id = get_field(changeset, :organization_id)
+    client = if email && organization_id, do: Clients.client_by_email(organization_id, email), else: nil
 
     if client && client.archived_at do
       changeset |> add_error(:email, "archived, please unarchive the client")
