@@ -253,8 +253,8 @@ defmodule Picsello.EmailAutomations do
   defp toggle_status("true"), do: "disabled"
   defp toggle_status("false"), do: "active"
 
-  defp resolve_variables_for_subject(job, type, subject) do
-    schemas = {job}
+  defp resolve_variables_for_subject(schema, type, subject) do
+    schemas = {schema}
 
     resolver_module =
       case type do
@@ -275,8 +275,6 @@ defmodule Picsello.EmailAutomations do
   defp get_each_pipeline_emails(pipeline_id, organization_id, job_type) do
     from(
       ep in EmailPreset,
-      # distinct: ep.name,
-      # order_by: [desc: ep.id],
       where:
         ep.email_automation_pipeline_id == ^pipeline_id and
           ep.organization_id == ^organization_id and

@@ -3,7 +3,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   use PicselloWeb, :live_component
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.Shared.MultiSelect
@@ -26,7 +25,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       ) do
     job_types = get_selected_job_types(job_types, job_type)
     email_presets = EmailPresets.email_automation_presets(type, job_type.name, pipeline_id)
-    
+
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)

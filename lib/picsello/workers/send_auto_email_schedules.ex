@@ -25,6 +25,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
       |> Enum.map(fn job_pipeline ->
         job_id = job_pipeline.job_id
         gallery_id = job_pipeline.gallery_id
+        state = job_pipeline.state
 
         gallery_task = Task.async(fn -> get_gallery(gallery_id) end)
         gallery = Task.await(gallery_task)
@@ -53,7 +54,22 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
         Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
 
         # Check client reply for any email of current pipeline
-        is_reply = is_reply_receive!(job, subjects_resolve)
+        is_reply =
+          if state in [
+               :shoot_thanks,
+               :post_shoot,
+               :before_shoot,
+               :gallery_expiration_soon,
+               :paid_full,
+               :paid_offline_full,
+               :balance_due,
+               :offline_payment,
+               :digitals_ready_download
+             ] do
+            false
+          else
+            is_reply_receive!(job, subjects_resolve)
+          end
 
         Logger.info(
           "Reply of any email from client for job #{job_id} and pipeline_id #{job_pipeline.pipeline_id}"
@@ -74,10 +90,12 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     |> Enum.group_by(&group_key/1)
     |> Enum.map(fn {{job_id, gallery_id, pipeline_id}, emails} ->
       state = List.first(emails) |> Map.get(:email_automation_pipeline) |> Map.get(:state)
+
       %{
         job_id: job_id,
         gallery_id: gallery_id,
         pipeline_id: pipeline_id,
+        state: state,
         emails: Shared.sort_emails(emails, state)
       }
     end)
@@ -120,11 +138,18 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     Logger.info("state #{state}")
 
     job_date_time =
-      Shared.fetch_date_for_state_maybe_manual(state, pipeline_id, job, gallery, order)
+      Shared.fetch_date_for_state_maybe_manual(state, schedule, pipeline_id, job, gallery, order)
 
     Logger.info("Job date time for state #{state} #{job_date_time}")
 
-    is_send_time = is_email_send_time(job_date_time, schedule.total_hours)
+    is_send_time =
+      if state in [:shoot_thanks, :post_shoot, :before_shoot, :gallery_expiration_soon] and
+           not is_nil(job_date_time) do
+        true
+      else
+        is_email_send_time(job_date_time, schedule.total_hours)
+      end
+
     Logger.info("Time to send email #{is_send_time}")
 
     if is_send_time and is_nil(schedule.reminded_at) and !schedule.is_stopped do
@@ -163,11 +188,18 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   defp is_email_send_time(nil, _total_hours), do: false
 
   defp is_email_send_time(submit_time, total_hours) do
+    %{sign: sign} = Shared.explode_hours(total_hours)
     {:ok, current_time} = DateTime.now("Etc/UTC")
     diff_seconds = DateTime.diff(current_time, submit_time, :second)
     hours = div(diff_seconds, 3600)
-    if hours >= total_hours, do: true, else: false
+    before_after_send_time(sign, hours, abs(total_hours))
   end
+
+  defp before_after_send_time("+", hours, total_hours),
+    do: if(hours >= total_hours, do: true, else: false)
+
+  defp before_after_send_time("-", hours, total_hours),
+    do: if(hours <= total_hours, do: true, else: false)
 
   defp get_subjects_for_job_pipeline(emails) do
     emails

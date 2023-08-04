@@ -15,7 +15,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       get_email_name: 2,
       explode_hours: 1,
       get_preceding_email: 2,
-      fetch_date_for_state_maybe_manual: 5
+      fetch_date_for_state_maybe_manual: 6
     ]
 
   import PicselloWeb.Gettext, only: [ngettext: 3]
@@ -337,7 +337,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         job = EmailAutomations.get_job(job_id)
         gallery = if is_nil(gallery_id), do: nil, else: Galleries.get_gallery!(gallery_id)
 
-        date = get_conditional_date(state, pipeline_id, job, gallery)
+        date = get_conditional_date(state, email_schedule, pipeline_id, job, gallery)
 
         case date do
           nil ->
@@ -353,13 +353,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         end
     end
   end
-
-  # defp get_last_completed_email(category_type, gallery_id, job_id, pipeline_id) do
-  #   EmailAutomationSchedules.query_get_email_schedule(category_type, gallery_id, job_id, pipeline_id)
-  #   |> where([es], not is_nil(es.reminded_at))
-  #   |> order_by([es], desc: es.id)
-  #   |> Repo.one()
-  # end
 
   defp next_schedule_format(date, sign, hours) do
     if sign == "+" do
@@ -409,7 +402,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     if is_manual_trigger and is_nil(intial_email.reminded_at), do: true, else: false
   end
 
-  defp get_conditional_date(state, _pipeline_id, _job, _gallery)
+  defp get_conditional_date(state, _email, _pipeline_id, _job, _gallery)
        when state in [
               :order_arrived,
               :order_delayed,
@@ -421,6 +414,6 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
             ],
        do: nil
 
-  defp get_conditional_date(state, pipeline_id, job, gallery),
-    do: fetch_date_for_state_maybe_manual(state, pipeline_id, job, gallery, nil)
+  defp get_conditional_date(state, email, pipeline_id, job, gallery),
+    do: fetch_date_for_state_maybe_manual(state, email, pipeline_id, job, gallery, nil)
 end

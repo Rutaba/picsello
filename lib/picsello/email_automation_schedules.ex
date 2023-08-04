@@ -19,17 +19,17 @@ defmodule Picsello.EmailAutomationSchedules do
 
   def get_schedules_by_gallery(gallery_id) do
     from(es in EmailSchedule, where: es.gallery_id == ^gallery_id)
-    |> Repo.one()
+    |> Repo.all()
   end
 
   def get_schedules_by_order(order_id) do
     from(es in EmailSchedule, where: es.order_id == ^order_id)
-    |> Repo.one()
+    |> Repo.all()
   end
 
   def get_schedules_by_job(job_id) do
     from(es in EmailSchedule, where: es.job_id == ^job_id)
-    |> Repo.one()
+    |> Repo.all()
   end
 
   def get_active_email_schedule_count(job_id) do

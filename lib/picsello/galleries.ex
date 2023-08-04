@@ -555,7 +555,7 @@ defmodule Picsello.Galleries do
       |> Repo.preload(:package)
       |> check_watermark(user)
     end)
-    |> Ecto.Multi.insert_all(:email_automation_job, EmailSchedule, fn %{gallery: gallery} ->
+    |> Multi.insert_all(:email_automation_job, EmailSchedule, fn %{gallery: gallery} ->
       Shared.insert_job_emails_from_gallery(gallery, [:job])
     end)
     |> Multi.insert_all(:email_automation, EmailSchedule, fn %{gallery: gallery} ->
