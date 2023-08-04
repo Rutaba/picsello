@@ -3,8 +3,8 @@ defmodule Picsello.Clients do
   import Ecto.Query
   alias Picsello.{Repo, Client, ClientTag}
 
-  def client_by_email(email) do
-    from(c in Client, where: c.email == ^email)
+  def client_by_email(organization_id, email) do
+    from(c in Client, where: c.email == ^email and c.organization_id == ^organization_id)
     |> Repo.one()
   end
 
