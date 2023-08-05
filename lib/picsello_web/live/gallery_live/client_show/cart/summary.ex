@@ -231,9 +231,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
 
       credited ->
         credit = length(credited)
+        gallery = Picsello.Repo.get(Gallery, gallery_id)
 
         [
-          {credit(%Gallery{id: gallery_id}, credit, caller),
+          {credit(gallery, credit, caller),
            credited |> Enum.reduce(Money.new(0, currency), &Money.subtract(&2, &1.price))}
         ]
     end

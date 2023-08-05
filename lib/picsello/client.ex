@@ -99,7 +99,9 @@ defmodule Picsello.Client do
   defp validate_archived_email(changeset) do
     email = get_field(changeset, :email)
     organization_id = get_field(changeset, :organization_id)
-    client = if email && organization_id, do: Clients.client_by_email(organization_id, email), else: nil
+
+    client =
+      if email && organization_id, do: Clients.client_by_email(organization_id, email), else: nil
 
     if client && client.archived_at do
       changeset |> add_error(:email, "archived, please unarchive the client")
