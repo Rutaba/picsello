@@ -8,9 +8,9 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.Shared.MultiSelect
   import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
+  import PicselloWeb.EmailAutomationLive.Shared
 
   alias Picsello.{Repo, EmailPresets, EmailPresets.EmailPreset}
-  alias PicselloWeb.EmailAutomationLive.Shared
   alias Ecto.Changeset
 
   @steps [:timing, :edit_email, :preview_email]
@@ -24,7 +24,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         } = assigns,
         socket
       ) do
-    job_types = Shared.get_selected_job_types(job_types, job_type)
+    job_types = get_selected_job_types(job_types, job_type)
 
     email_presets = EmailPresets.email_automation_presets(type, job_type.name, pipeline_id)
 
@@ -66,7 +66,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         ],
         & &1.valid?
       )
-      |> Shared.validate?(assigns.job_types)
+      |> validate?(assigns.job_types)
 
   @impl true
   def handle_event("back", _, %{assigns: %{step: step, steps: steps}} = socket) do
@@ -116,7 +116,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
 
     socket
     |> assign(email_preset: new_email_preset)
-    |> Shared.email_preset_changeset(new_email_preset, maybe_normalize_params(params))
+    |> email_preset_changeset(new_email_preset, maybe_normalize_params(params))
     |> noreply()
   end
 
@@ -137,7 +137,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
       socket
     else
       socket
-      |> Shared.email_preset_changeset(email_preset)
+      |> email_preset_changeset(email_preset)
     end
     |> assign(step: next_step(assigns))
     |> noreply()
@@ -151,7 +151,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
       ) do
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
-      |> :bbmustache.render(Shared.get_sample_values(), key_type: :atom)
+      |> :bbmustache.render(get_sample_values(), key_type: :atom)
 
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
@@ -189,6 +189,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         <%= hidden_input f, :email_automation_pipeline_id %>
         <%= hidden_input f, :organization_id %>
         <%= hidden_input f, :type, value: @pipeline.email_automation_category.type %>
+        <%= hidden_input f, :job_type, value: @job_type.name %>
         <%= hidden_input f, :name %>
         <%= hidden_input f, :position %>
 
@@ -306,7 +307,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
                     <%= select f, :calendar, ["Hour", "Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
                   </div>
                   <div class="ml-2 w-3/5">
-                    <%= select f, :sign, Shared.make_sign_options(@pipeline.state), wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
+                    <%= select f, :sign, make_sign_options(@pipeline.state), wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
                   </div>
                 </div>
                 <%= if message = @email_preset_changeset.errors[:count] do %>
@@ -345,22 +346,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
 
   def step(%{step: :edit_email} = assigns) do
     ~H"""
-      <div class="flex flex-row mt-2 items-center">
-        <div class="flex mr-2">
-          <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-planning-300">
-            <.icon name="envelope" class="w-4 h-4 text-white fill-current"/>
-          </div>
-        </div>
-        <div class="flex flex-col ml-2">
-          <p><b> <%= @pipeline.email_automation_category.type |> Atom.to_string() |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
-          <% c = to_form(@email_preset_changeset) %>
-          <%= unless input_value(c, :immediately) do %>
-            <% sign = input_value(c, :sign) %>
-            <p class="text-sm text-base-250">Send email <%= input_value(c, :count) %> <%= String.downcase(input_value(c, :calendar)) %>  <%= if sign == "+", do: "after", else: "before" %> <%= String.downcase(@pipeline.name) %></p>
-          <% end %>
-        </div>
-      </div>
-
+      <.email_header pipeline={@pipeline} email={current(@email_preset_changeset)}/>
       <hr class="my-8" />
 
       <% f = to_form(@email_preset_changeset) %>
@@ -374,7 +360,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
         <div class="grid grid-row md:grid-cols-3 gap-6">
           <label class="flex flex-col">
             <b>Select email preset</b>
-            <%= select_field f, :template_id, Shared.make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
+            <%= select_field f, :template_id, make_email_presets_options(@email_presets), class: "border-base-200 hover:border-blue-planning-300 cursor-pointer pr-8 mt-2" %>
           </label>
 
           <label class="flex flex-col">
@@ -414,21 +400,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
 
   def step(%{step: :preview_email} = assigns) do
     ~H"""
-      <div class="flex flex-row mt-2 mb-4 items-center">
-        <div class="flex mr-2">
-          <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-planning-300">
-            <.icon name="envelope" class="w-4 h-4 text-white fill-current"/>
-          </div>
-        </div>
-        <div class="flex flex-col ml-2">
-          <p><b> Job:</b> Upcoming Shoot Automation</p>
-          <% c = to_form(@email_preset_changeset) %>
-          <%= unless input_value(c, :immediately) do %>
-            <% sign = input_value(c, :sign) %>
-            <p class="text-sm text-base-250">Send email <%= input_value(c, :count) %> <%= String.downcase(input_value(c, :calendar)) %>  <%= if sign == "+", do: "after", else: "before" %> <%= String.downcase(@pipeline.name) %></p>
-          <% end %>
-        </div>
-      </div>
+      <.email_header pipeline={@pipeline} email={current(@email_preset_changeset)}/>
       <span class="text-base-250">Check out how your client will see your emails. We’ve put in some placeholder data to visualize the variables.</span>
 
       <hr class="my-4" />
@@ -466,7 +438,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
       else
         email_preset
         |> Map.put(:template_id, email_preset.id)
-        |> Shared.prepare_email_preset_params()
+        |> prepare_email_preset_params()
       end
       |> Map.merge(%{
         "email_automation_pipeline_id" => pipeline.id,
@@ -475,7 +447,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
       })
 
     socket
-    |> Shared.email_preset_changeset(email_preset, automation_params)
+    |> email_preset_changeset(email_preset, automation_params)
   end
 
   defp maybe_normalize_params(nil), do: nil

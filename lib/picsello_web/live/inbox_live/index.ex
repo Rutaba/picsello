@@ -291,7 +291,7 @@ defmodule PicselloWeb.InboxLive.Index do
                   id: message.id,
                   body: message.body_text,
                   date:
-                    strftime(current_user.time_zone, message.inserted_at, "%a %b %-d, %-I:%-M %p"),
+                    strftime(current_user.time_zone, message.inserted_at, "%a %b %-d, %-I:%0M %p"),
                   outbound: message.outbound,
                   sender: sender,
                   same_sender: same_sender,

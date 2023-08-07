@@ -12,7 +12,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       assign_automation_pipelines: 1,
       get_pipline: 1,
       get_email_schedule_text: 6,
-      get_email_name: 4
+      get_email_name: 2
     ]
 
   alias Picsello.{
@@ -248,13 +248,15 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                   </div>
                   <div class="ml-3 py-6">
                     <div class="text-xl font-bold">
-                      <%= get_email_name(email, index, nil, nil) %>
+                      <%= get_email_name(email, nil) %>
                       <%= if email.status == :disabled do %>
                         <span class="ml-2 rounded-md bg-red-sales-100 text-red-sales-300 px-2 text-sm font-bold whitespace-nowrap">Disabled</span>
                       <% end %>
                     </div>
                     <div class="flex flex-row items-center text-base-250">
-                      <.icon name="play-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                      <div clas="w-4 h-4">
+                        <.icon name="play-icon" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+                      </div>
                       <span class="text-sm"><%= get_email_schedule_text(email.total_hours, @pipeline.state, emails, index, nil, nil) %> </span>
                     </div>
                   </div>
@@ -284,7 +286,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
           <% end %>
           <div class="flex flex-row justify-between pr-6 pl-8 sm:pl-16 py-6">
             <div class="flex items-center">
-              <button phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" type="button" class="flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300" >
+              <button phx-click="add-email-popup" phx-value-pipeline_id={@pipeline.id} data-popover-target="popover-default" type="button" class={classes("flex items-center px-2 py-1 btn-tertiary hover:border-blue-planning-300", %{"hidden" => @pipeline.state in ["pays_retainer_offline", "paid_full", "paid_offline_full"]})} >
                 <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
                     Add email
               </button>

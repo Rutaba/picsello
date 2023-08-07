@@ -168,11 +168,11 @@
         <% %{includes_credits: true} = d -> %>
           <div class="invoice-column">
             <div><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></div>
-            <div>Additional downloads @ <%= d.each_price %>/ea</div>
+            <div>Additional downloads @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea</div>
           </div>
         <% %{status: :limited} = d -> %>
           <div class="invoice-column">
-            <div>Download photos @ <%= d.each_price %>/ea</div>
+            <div>Download photos @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea</div>
           </div>
         <% _ -> %>
           <div class="invoice-column">
@@ -188,7 +188,7 @@
           <div class="bold pl1">Print Credit</div>
         </div>
         <div class="invoice-column">
-          <div>$<%= @amount %> in print credits to use in your gallery</div>
+          <div><%= @amount %><%= @amount.currency%> in print credits to use in your gallery</div>
         </div>
       </div>
 
@@ -200,7 +200,7 @@
         <%= with discount_percent when discount_percent != nil <- Picsello.Packages.discount_percent(@package) do %>
           <div class="invoice-row invoice-between mb1">
             <div class="bold">Session fee</div>
-            <div><%= Picsello.Package.base_price(@package) %></div>
+            <div><%= Money.to_string(Picsello.Package.base_price(@package), symbol: false, code: true)%></div>
           </div>
           <div class="invoice-row invoice-between mb1 text-green">
             <div>Discount</div>
@@ -209,7 +209,7 @@
         <% end %>
         <div class="invoice-row invoice-between">
           <div class="bold">Total</div>
-          <div class="bold"><%= Picsello.Package.price(@package) %></div>
+          <div class="bold"><%= Money.to_string(Picsello.Package.price(@package), symbol: false, code: true)%></div>
         </div>
       </div>
 
@@ -218,18 +218,18 @@
       <%= if @package.collected_price do %>
         <div class="invoice-row invoice-between mb1">
           <div class="bold">Previously collected</div>
-          <div><%= @package.collected_price %></div>
+          <div><%= Money.to_string(@package.collected_price, symbol: false, code: true)%></div>
         </div>
       <% end %>
       <%= unless Picsello.PaymentSchedules.free?(@job) do %>
         <%= for payment <- @job.payment_schedules do %>
           <div class="invoice-row invoice-between invoice-payment-container">
             <%= if Picsello.PaymentSchedules.paid?(payment) do %>
-              <div class="bold"><%= payment.price %> paid on <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></div>
+              <div class="bold"><%= Money.to_string(payment.price, symbol: false, code: true)%> paid on <%= PicselloWeb.LiveHelpers.strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></div>
             <% else %>
-              <div class="bold"><%= payment.price %> <%= PicselloWeb.BookingProposalLive.InvoiceComponent.to_book(payment, @photographer.time_zone) %></div>
+              <div class="bold"><%= Money.to_string(payment.price, symbol: false, code: true)%> <%= PicselloWeb.BookingProposalLive.InvoiceComponent.to_book(payment, @photographer.time_zone) %></div>
             <% end %>
-            <div><%= payment.price %></div>
+            <div><%= Money.to_string(payment.price, symbol: false, code: true)%></div>
           </div>
         <% end %>
       <% end %>

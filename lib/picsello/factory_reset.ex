@@ -12,7 +12,9 @@ defmodule Picsello.FactoryReset do
     GlobalSettings,
     GlobalSettings.GalleryProduct,
     OrganizationJobType,
-    Profiles.Profile
+    Profiles.Profile,
+    UserCurrency,
+    Currency
   }
 
   alias Ecto.{Multi}
@@ -84,6 +86,12 @@ defmodule Picsello.FactoryReset do
         |> put_embed(:onboarding, onboarding)
         |> cast_assoc(:organization, with: &registration_changeset/2)
       )
+      |> Multi.insert(:user_currency, fn %{user: user} ->
+        UserCurrency.currency_changeset(%{
+          organization_id: user.organization_id,
+          currency: Currency.default_currency()
+        })
+      end)
       |> organization_job_type_multi(:show_on_profile?, org_job_types)
       |> organization_job_type_multi(:show_on_business?, org_job_types)
       |> Multi.run(:packages, fn _repo, %{user: user} ->

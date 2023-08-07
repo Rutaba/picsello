@@ -37,7 +37,7 @@ defmodule Picsello.CreateBookingProposalTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 1,
-          base_price: 100,
+          base_price: %Money{amount: 100, currency: :USD},
           questionnaire_template_id: questionnaire.id
         }
       })

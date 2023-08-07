@@ -123,7 +123,14 @@ defmodule Picsello.EmailPresets.JobResolver do
           resolver.job.type
         )
       end,
-      "remaining_amount" => &Picsello.PaymentSchedules.owed_price(&1.job),
+      "remaining_amount" =>
+        &case &1.job do
+          %Picsello.Job{package_id: nil} ->
+            nil
+
+          job ->
+            Picsello.PaymentSchedules.owed_price(job)
+        end,
       "review_link" => &noop/1,
       "session_date" =>
         &with(

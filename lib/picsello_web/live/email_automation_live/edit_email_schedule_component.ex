@@ -6,10 +6,10 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.Shared.ShortCodeComponent, only: [short_codes_select: 1]
+  import PicselloWeb.EmailAutomationLive.Shared
 
   alias Picsello.{Repo, EmailPresets}
   alias Picsello.EmailAutomation.EmailSchedule
-  alias PicselloWeb.EmailAutomationLive.Shared
 
   @steps [:edit_email, :preview_email]
 
@@ -23,14 +23,14 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
         } = assigns,
         socket
       ) do
-    job_types = Shared.get_selected_job_types(job_types, job_type)
+    job_types = get_selected_job_types(job_types, job_type)
     email_presets = EmailPresets.email_automation_presets(type, job_type.name, pipeline_id)
 
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
     |> assign(email_presets: remove_duplicate(email_presets, email))
-    |> assign(email_preset: email)
+    |> assign(email_preset: Map.merge(email, %{type: type, job_type: job_type.name}))
     |> assign(steps: @steps)
     |> assign(step: :edit_email)
     |> assign(show_variables: false)
@@ -69,7 +69,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
         ],
         & &1.valid?
       )
-      |> Shared.validate?(assigns.job_types)
+      |> validate?(assigns.job_types)
 
   @impl true
   def handle_event("back", _, %{assigns: %{step: step, steps: steps}} = socket) do
@@ -99,7 +99,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
 
     socket
     |> assign(email_preset: new_email_preset)
-    |> Shared.email_preset_changeset(new_email_preset, params)
+    |> email_preset_changeset(new_email_preset, params)
     |> noreply()
   end
 
@@ -112,7 +112,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     socket
     |> assign(
       email_preset_changeset:
-        Shared.build_email_changeset(email_preset, maybe_normalize_params(params))
+        build_email_changeset(email_preset, maybe_normalize_params(params))
     )
     |> noreply()
   end
@@ -188,18 +188,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
 
   def step(%{step: :edit_email} = assigns) do
     ~H"""
-      <div class="flex flex-row mt-2 items-center">
-        <div class="flex mr-2">
-          <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-planning-300">
-            <.icon name="envelope" class="w-4 h-4 text-white fill-current"/>
-          </div>
-        </div>
-        <div class="flex flex-col ml-2">
-          <p><b> <%= @job_type.name |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
-          <p class="text-sm text-base-250">Send email 2 hours before shoot</p>
-        </div>
-      </div>
-
+      <.email_header pipeline={@pipeline} email={@email_preset}/>
       <hr class="my-8" />
 
       <% f = to_form(@email_preset_changeset) %>
@@ -252,17 +241,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
 
   def step(%{step: :preview_email} = assigns) do
     ~H"""
-      <div class="flex flex-row mt-2 mb-4 items-center">
-        <div class="flex mr-2">
-          <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-planning-300">
-            <.icon name="envelope" class="w-4 h-4 text-white fill-current"/>
-          </div>
-        </div>
-        <div class="flex flex-col ml-2">
-          <p><b> <%= @job_type.name |> String.capitalize()%>:</b> <%= @pipeline.email_automation_sub_category.name %></p>
-          <p class="text-sm text-base-250">Send email 7 days before next upcoming shoot</p>
-        </div>
-      </div>
+      <.email_header pipeline={@pipeline} email={@email_preset}/>
       <span class="text-base-250">Check out how your client will see your emails. We’ve put in some placeholder data to visualize the variables.</span>
 
       <hr class="my-4" />

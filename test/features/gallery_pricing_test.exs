@@ -1,22 +1,27 @@
 defmodule Picsello.GalleryPricingTest do
   use Picsello.FeatureCase, async: true
-  import Money.Sigils
 
   setup :onboarded
   setup :authenticated
-  setup :authenticated_gallery
 
   setup do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
     organization = insert(:organization, stripe_account_id: "photographer-stripe-account-id")
-    insert(:user, organization: organization)
-    package = insert(:package, organization: organization, download_each_price: ~M[2500]USD)
+    user = insert(:user, organization: organization)
+
+    insert(:user_currency, user: user)
+
+    package =
+      insert(:package,
+        organization: user.organization,
+        download_each_price: %Money{amount: 2500, currency: "USD"}
+      )
 
     gallery =
       insert(:gallery,
         job:
           insert(:lead,
-            client: insert(:client, organization: organization),
+            client: insert(:client, organization: user.organization),
             package: package
           )
       )
@@ -24,11 +29,16 @@ defmodule Picsello.GalleryPricingTest do
     gallery_digital_pricing =
       insert(:gallery_digital_pricing, %{
         gallery: gallery,
-        print_credits: Money.new(500_000),
-        download_each_price: Money.new(20)
+        print_credits: %Money{amount: 500_000, currency: "USD"},
+        download_each_price: %Money{amount: 2500, currency: "USD"}
       })
 
-    [gallery: gallery, gallery_digital_pricing: gallery_digital_pricing, package: package]
+    [
+      gallery: gallery,
+      gallery_digital_pricing: gallery_digital_pricing,
+      package: package,
+      user: user
+    ]
   end
 
   test "Pricing & print credit render", %{

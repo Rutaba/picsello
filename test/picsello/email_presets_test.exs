@@ -201,13 +201,22 @@ defmodule Picsello.EmailPresetsTest do
     end
 
     test "resolve strings for job with payment" do
-      job = insert(:lead)
+      job =
+        insert(:lead,
+          package: %{
+            currency: "USD"
+          }
+        )
 
       payment =
-        insert(:payment_schedule, job: job, price: ~M[2000]USD, paid_at: DateTime.utc_now())
+        insert(:payment_schedule,
+          job: job,
+          price: %Money{amount: 2000, currency: :USD},
+          paid_at: DateTime.utc_now()
+        )
 
-      insert(:payment_schedule, job: job, price: ~M[1000]USD)
-      insert(:payment_schedule, job: job, price: ~M[4000]USD)
+      insert(:payment_schedule, job: job, price: %Money{amount: 1000, currency: :USD})
+      insert(:payment_schedule, job: job, price: %Money{amount: 4000, currency: :USD})
 
       assert %{
                "payment_amount" => "$20.00",
@@ -350,7 +359,13 @@ defmodule Picsello.EmailPresetsTest do
         |> hd
 
     test "resolves html" do
-      job = insert(:lead)
+      job =
+        insert(:lead,
+          package: %{
+            currency: "USD"
+          }
+        )
+
       %{id: proposal_id} = insert(:proposal, job: job)
 
       %{body_template: view_proposal_button} =
@@ -360,7 +375,12 @@ defmodule Picsello.EmailPresetsTest do
     end
 
     test "does sections" do
-      job = insert(:lead)
+      job =
+        insert(:lead,
+          package: %{
+            currency: "USD"
+          }
+        )
 
       assert %{body_template: "invariant.\n"} =
                resolve_variables(

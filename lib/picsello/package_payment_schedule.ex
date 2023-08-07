@@ -6,7 +6,7 @@ defmodule Picsello.PackagePaymentSchedule do
   alias Picsello.{Package, PackagePaymentPreset}
 
   schema "package_payment_schedules" do
-    field :price, Money.Ecto.Amount.Type
+    field :price, Money.Ecto.Map.Type
     field :percentage, :integer
     field :interval, :boolean
     field :description, :string

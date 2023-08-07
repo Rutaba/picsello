@@ -30,12 +30,22 @@ defmodule Picsello.Repo.Migrations.AddEmailSchedulesHistoryTable do
       "(job_id IS NOT NULL AND gallery_id IS NULL) or (gallery_id IS NOT NULL AND job_id IS NULL)"
 
     create(constraint(@table, :job_gallery_constraint, check: check))
-    create(index(@table, [:job_id, :gallery_id, :order_id, :email_automation_pipeline_id, :organization_id]))
+    create(index(@table, [:job_id, :gallery_id]))
+    create(index(@table, [:job_id]))
+    create(index(@table, [:gallery_id]))
+    create(index(@table, [:order_id]))
+    create(index(@table, [:organization_id]))
+    create(index(@table, [:email_automation_pipeline_id]))
   end
 
   def down do
     drop(constraint(@table, :job_gallery_constraint))
-    drop index(@table, [:job_id, :gallery_id, :order_id, :email_automation_pipeline_id, :organization_id])
+    drop(index(@table, [:job_id, :gallery_id]))
+    drop(index(@table, [:job_id]))
+    drop(index(@table, [:gallery_id]))
+    drop(index(@table, [:order_id]))
+    drop(index(@table, [:organization_id]))
+    drop(index(@table, [:email_automation_pipeline_id]))
     drop(table(@table))
   end
 end

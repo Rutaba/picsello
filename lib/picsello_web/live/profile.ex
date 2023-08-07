@@ -511,6 +511,7 @@ defmodule PicselloWeb.Live.Profile do
        ) do
     {packages, _} =
       Packages.templates_for_organization(organization)
+      |> Enum.filter(& &1.show_on_public_profile)
       |> Enum.group_by(& &1.job_type)
       |> Map.split(job_types)
 
