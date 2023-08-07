@@ -143,7 +143,10 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       photo_id: digital.photo.id
     )
 
-    socket |> add_to_cart_assigns(order)
+    socket
+    |> add_to_cart_assigns(order)
+    |> put_flash(:success, "Added!")
+    |> noreply()
   end
 
   def handle_info(
@@ -159,7 +162,11 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       gallery_client: gallery_client
     )
 
-    socket |> add_to_cart_assigns(order)
+    socket
+    |> add_to_cart_assigns(order)
+    |> close_modal()
+    |> put_flash(:success, "Added!")
+    |> noreply()
   end
 
   def handle_info({:open_choose_product, photo_id}, socket) do

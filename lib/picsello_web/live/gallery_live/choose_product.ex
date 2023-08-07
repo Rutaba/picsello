@@ -12,7 +12,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       assign_cart_count: 2,
       get_unconfirmed_order: 2,
       assign_checkout_routes: 1,
-      disabled?: 1
+      disabled?: 1,
+      add_to_cart_assigns: 2
     ]
 
   import PicselloWeb.GalleryLive.Photos.Photo.Shared, only: [js_like_click: 2]
@@ -167,12 +168,32 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   end
 
   defp add_to_cart(
-         %{assigns: %{photo: photo, download_each_price: price, album: album}, root_pid: root_pid} =
-           socket
+         %{
+           assigns: %{
+             photo: photo,
+             download_each_price: price,
+             album: album,
+             gallery: gallery,
+             gallery_client: gallery_client
+           },
+           root_pid: root_pid
+         } = socket
        ) do
     finals_album_id = get_finals_album_id(album)
-    send(root_pid, {:add_digital_to_cart, %Digital{photo: photo, price: price}, finals_album_id})
+
+    order =
+      Cart.place_product(
+        %Digital{photo: photo, price: price},
+        gallery,
+        gallery_client,
+        finals_album_id
+      )
+
+    send(root_pid, :update_cart_count)
+
     socket
+    |> add_to_cart_assigns(order)
+    |> assign_details(photo.id)
   end
 
   defp move_carousel(%{assigns: %{photo_ids: photo_ids}} = socket, fun) do

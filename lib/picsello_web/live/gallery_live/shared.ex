@@ -462,8 +462,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> assign(credits: credits(gallery))
     |> assign(order: order)
     |> assign_cart_count(gallery)
-    |> put_flash(:success, "Added!")
-    |> noreply()
   end
 
   def inprogress_upload_broadcast(gallery_id, entries) do
