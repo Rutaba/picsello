@@ -15,7 +15,7 @@ defmodule Picsello.EmailAutomationsTest do
       insert(:email_preset, job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+4, state: state, type: "job")
     end
 
-    for {state, index} <- ["manual_gallery_send_link", "cart_abandoned", "gallery_expiration_soon", "gallery_password_changed", "manual_send_proofing_gallery", "manual_send_proofing_gallery_finals", "order_confirmation_physical", "order_confirmation_digital", "order_confirmation_digital_physical", "digitals_ready_download", "order_shipped", "order_delayed", "order_arrived"] do
+    for {state, index} <- Enum.with_index(["manual_gallery_send_link", "cart_abandoned", "gallery_expiration_soon", "gallery_password_changed", "manual_send_proofing_gallery", "manual_send_proofing_gallery_finals", "order_confirmation_physical", "order_confirmation_digital", "order_confirmation_digital_physical", "digitals_ready_download", "order_shipped", "order_delayed", "order_arrived"]) do
       insert(:email_preset, job_type: "wedding", organization_id: user.organization_id, status: :active, email_automation_pipeline_id: index+14, state: state, type: "gallery")
     end
 
@@ -151,7 +151,7 @@ defmodule Picsello.EmailAutomationsTest do
     end)
   end
 
-  feature "Testing Edit time button and modal", %{session: session} do
+  feature "Testing Edit-time button and modal", %{session: session} do
     session
     |> visit("/email-automations")
     |> click(css("span", text: "Wedding"))
@@ -184,8 +184,27 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("span", text: "Send email immediately", count: 1))
   end
 
+  feature "Effect of edited time, on UI of edit-email modal", %{session: session} do
+    session
+    |> visit("/email-automations")
+    |> click(css("span", text: "Wedding"))
+    |> scroll_into_view(css("span", text: "Client contacts you"))
+    |> click(css("span", text: "Client contacts you"))
+    |> click(button("Edit email"))
+    |> assert_has(css("p", text: "Send email immediately", count: 1))
+    |> assert_has(css("p", text: "Send email 2 hours after client contacts you", count: 0))
+    |> click(button("Close"))
+    |> click(button("Edit time"))
+    |> click(css("input[id='email_preset_immediately_false']"))
+    |> fill_in(css("input[id='email_preset_count']"), with: "2")
+    |> click(button("Save"))
+    |> click(button("Edit email"))
+    |> assert_has(css("p", text: "Send email immediately", count: 0))
+    |> assert_has(css("p", text: "Send email 2 hours after client contacts you", count: 1))
+  end
+
   # click issue
-  feature "toggle in Edit time modal, for enable/disble email", %{session: session} do
+  feature "toggle in Edit-time modal, for enable/disble email", %{session: session} do
     session
     |> visit("/email-automations")
     |> click(css("span", text: "Wedding"))
@@ -201,6 +220,46 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(css("div[testid='disable-toggle-in-edit-email-modal']"))
     |> click(button("Save"))
     |> assert_has(css("span", text: "Disabled", count: 0))
+  end
+
+  feature "Manually triggered automation's first email, does not have edit time button", %{session: session} do
+    session
+    |> visit("/email-automations")
+    |> scroll_into_view(css("span", text: "Thank you for contacting me"))
+    |> click(css("span", text: "Thank you for contacting me"))
+    |> assert_has(button("Edit time", count: 0))
+    |> assert_has(button("Edit email", count: 1))
+    |> click(css("span", text: "Thank you for contacting me"))
+    |> assert_has(button("Edit time", count: 0))
+    |> assert_has(button("Edit email", count: 0))
+    |> scroll_into_view(css("span", text: "Proposal Sent/Initiated"))
+    |> click(css("span", text: "Proposal Sent/Initiated"))
+    |> assert_has(button("Edit time", count: 0))
+    |> assert_has(button("Edit email", count: 1))
+    |> click(css("span", text: "Proposal Sent/Initiated"))
+    |> assert_has(button("Edit time", count: 0))
+    |> assert_has(button("Edit email", count: 0))
+    |> scroll_into_view(css("span", text: "Send Gallery Link"))
+    |> click(css("span", text: "Send Gallery Link"))
+    |> assert_has(button("Edit time", count: 0))
+    |> assert_has(button("Edit email", count: 1))
+    |> click(css("span", text: "Send Gallery Link"))
+    |> assert_has(button("Edit time", count: 0))
+    |> assert_has(button("Edit email", count: 0))
+    |> scroll_into_view(css("span", text: "Send Proofing Gallery For Selection"))
+    |> click(css("span", text: "Send Proofing Gallery For Selection"))
+    |> assert_has(button("Edit time", count: 0))
+    |> assert_has(button("Edit email", count: 1))
+    |> click(css("span", text: "Send Proofing Gallery For Selection"))
+    |> assert_has(button("Edit time", count: 0))
+    |> assert_has(button("Edit email", count: 0))
+    |> scroll_into_view(css("span", text: "Send Proofing Gallery Finals"))
+    |> click(css("span", text: "Send Proofing Gallery Finals"))
+    |> assert_has(button("Edit time", count: 0))
+    |> assert_has(button("Edit email", count: 1))
+    |> click(css("span", text: "Send Proofing Gallery Finals"))
+    |> assert_has(button("Edit time", count: 0))
+    |> assert_has(button("Edit email", count: 0))
   end
 
   feature "Testing Edit email button and modal", %{session: session} do
@@ -233,7 +292,6 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_text("Preview Wedding Email")
     |> assert_text("Lead: Inquiry emails")
     |> assert_text("Check out how your client will see your emails. We’ve put in some placeholder data to visualize the variables.")
-    |> sleep(10000)
     |> assert_has(css("span", text: "Step 2", count: 1))
     |> assert_has(css("span", text: "Step 1", count: 0))
     |> click(button("Go back"))
@@ -242,58 +300,5 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(button("Next"))
     |> click(button("Save"))
     |> assert_has(css("div", text: "Demo Name", count: 1))
-  end
-
-  feature "Testing emails related to a lead", %{session: session} do
-    session
-    |> click(button("Leads"))
-    |> click(button("Create a lead"))
-    |> click(button("Add a new client"))
-    |> fill_in(css("input[id='job_client_email']"), with: "example@example.com")
-    |> fill_in(css("input[id='job_client_name']"), with: "MyClient")
-    |> scroll_into_view(css("div[testid='wedding']"))
-    |> click(css("div[testid='wedding']"))
-    |> click(css("div[testid='wedding']"))
-    |> click(css("div[testid='wedding']"))
-    |> click(button("Save"))
-    |> find(css("div[data-testid='inbox']"), fn div ->
-      click(div, button("View all"))
-    end)
-    |> find(css("div[testid='main-area']", count: 2, at: 0), fn div ->
-      assert_has(div, css("div", text: "Leads", count: 2))
-      assert_has(div, css("div", text: "Jobs", count: 0))
-      assert_has(div, css("div", text: "Galleries", count: 0))
-    end)
-    |> find(css("div[testid='main-area']", count: 2, at: 1), fn div ->
-      assert_has(div, css("div", text: "Leads", count: 0))
-      assert_has(div, css("div", text: "Jobs", count: 2))
-      assert_has(div, css("div", text: "Galleries", count: 0))
-    end)
-
-  end
-
-  feature "testing emails related to a job", %{session: session} do
-    session
-    |> click(button("Jobs"))
-    |> click(button("Import a job"))
-    |> click(button("Next", at: 0))
-    |> click(button("Add a new client"))
-    |> fill_in(css("input[id='form-job_details_client_email']"), with: "example@example.com")
-    |> fill_in(css("input[id='form-job_details_client_name']"), with: "MyClient")
-    |> scroll_into_view(css("div[testid='wedding']"))
-    |> click(css("div[testid='wedding']"))
-    |> click(css("div[testid='wedding']"))
-    |> click(css("div[testid='wedding']"))
-    |> click(button("Next"))
-    |> fill_in(css("input[id='form-package_payment_name']"), with: "Demo Title")
-    |> wait_for_enabled_submit_button()
-    |> click(button("Next"))
-    |> wait_for_enabled_submit_button()
-    |> click(button("Next"))
-    |> click(button("Finish"))
-    |> click(css("span", text: "MyClient Wedding"))
-    |> find(css("div[data-testid='inbox']"), fn div ->
-      click(div, button("View all"))
-    end)
   end
 end

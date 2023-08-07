@@ -175,7 +175,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
     <%= if Enum.member?(@collapsed_sections, @subcategory) do %>
       <% sorted_emails = sort_emails(@pipeline.emails, @pipeline.state) %>
-      <div class="mb-3 md:mr-4 border border-base-200 rounded-lg">
+      <div testid="pipeline-section" class="mb-3 md:mr-4 border border-base-200 rounded-lg">
         <% next_email = get_next_email_schdule_date(@category_type, @gallery_id, @job_id, @pipeline.id, @pipeline.state) %>
         <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
           <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text <> " " <> next_email.date %>
