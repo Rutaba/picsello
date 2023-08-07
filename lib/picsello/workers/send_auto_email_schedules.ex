@@ -55,20 +55,10 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
         # Check client reply for any email of current pipeline
         is_reply =
-          if state in [
-               :shoot_thanks,
-               :post_shoot,
-               :before_shoot,
-               :gallery_expiration_soon,
-               :paid_full,
-               :paid_offline_full,
-               :balance_due,
-               :offline_payment,
-               :digitals_ready_download
-             ] do
-            false
-          else
+          if state in [:client_contact, :manual_thank_you_lead, :manual_booking_proposal_sent] do
             is_reply_receive!(job, subjects_resolve)
+          else
+            false
           end
 
         Logger.info(
