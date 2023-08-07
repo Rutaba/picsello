@@ -196,27 +196,9 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> customize_and_buy_product(whcc_product, photo, size: size, favorites_only: favorites_only)
   end
 
-  def handle_info(
-        {:add_digital_to_cart, digital, _finals_album_id},
-        %{assigns: %{gallery: gallery, gallery_client: gallery_client, modal_pid: modal_pid}} =
-          socket
-      ) do
-    order = Cart.place_product(digital, gallery, gallery_client)
-
-    send_update(modal_pid, PicselloWeb.GalleryLive.ChooseProduct,
-      id: PicselloWeb.GalleryLive.ChooseProduct,
-      photo_id: digital.photo.id
-    )
-
+  def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> add_to_cart_assigns(order)
-    |> put_flash(:success, "Added!")
-    |> noreply()
-  end
-
-  def handle_info({:update_cart_count, %{order: order}}, %{assigns: %{gallery: gallery}} = socket) do
-    socket
-    |> assign(:order, order)
+    |> assign(:order, nil)
     |> assign_cart_count(gallery)
     |> noreply()
   end
