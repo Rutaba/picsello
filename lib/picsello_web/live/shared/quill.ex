@@ -44,8 +44,8 @@ defmodule PicselloWeb.Shared.Quill do
         <%= hidden_input @f, :quill_source %>
       <% end %>
       <div class={"#{@editor_class} editor"}></div>
-      <%= if @html_field, do: hidden_input @f, @html_field, phx_debounce: @debounce %>
-      <%= if @text_field, do: hidden_input @f, @text_field, phx_debounce: @debounce %>
+      <%= if @html_field, do: (hidden_input @f, @html_field, phx_debounce: @debounce) %>
+      <%= if @text_field, do: (hidden_input @f, @text_field, phx_debounce: @debounce) %>
     </div>
     """
   end
