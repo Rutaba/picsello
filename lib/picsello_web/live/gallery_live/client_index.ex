@@ -196,9 +196,9 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> customize_and_buy_product(whcc_product, photo, size: size, favorites_only: favorites_only)
   end
 
-  def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info({:update_cart_count, %{order: order}}, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> assign(:order, nil)
+    |> assign(:order, order)
     |> assign_cart_count(gallery)
     |> noreply()
   end

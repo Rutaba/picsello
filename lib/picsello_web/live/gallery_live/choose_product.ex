@@ -190,7 +190,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
         finals_album_id
       )
 
-    send(root_pid, :update_cart_count)
+    send(root_pid, {:update_cart_count, %{order: order}})
 
     socket
     |> add_to_cart_assigns(order)
