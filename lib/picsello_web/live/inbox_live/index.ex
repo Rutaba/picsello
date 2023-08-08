@@ -77,7 +77,7 @@ defmodule PicselloWeb.InboxLive.Index do
           <% end %>
         </div>
         <div class="line-clamp-1 font-semibold py-0.5"><%= @subtitle %></div>
-        <div class="line-clamp-1"><%= @message %></div>
+        <div class="line-clamp-1"><%= raw @message %></div>
       </div>
       <div class="relative flex flex-shrink-0">
         <%= @date %>
@@ -137,7 +137,7 @@ defmodule PicselloWeb.InboxLive.Index do
                 <%= if message.unread do %>
                   <div class="absolute bg-orange-inbox-300 rounded-full -top-2 -right-2 w-4 h-4"></div>
                 <% end %>
-                <span class="whitespace-pre-line"><%= message.body %></span>
+                <span class="whitespace-pre-line"><%= raw message.body %></span>
               </div>
             </div>
           <% end %>
