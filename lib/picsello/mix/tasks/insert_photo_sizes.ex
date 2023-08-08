@@ -21,17 +21,21 @@ defmodule Mix.Tasks.InsertPhotoSizes do
     Logger.info("photo count: #{Enum.count(without_size)}")
 
     without_size
-    |> Enum.each(fn %{original_url: url, id: id} ->
-      url = PhotoStorage.path_to_url(url)
-      Logger.info("Photo fetched with id #{id} and url #{url}")
+    |> Enum.chunk_every(10)
+    |> Enum.each(fn chunk ->
+      chunk
+      |> Enum.each(fn %{original_url: url, id: id} ->
+        url = PhotoStorage.path_to_url(url)
+        Logger.info("Photo fetched with id #{id} and url #{url}")
 
-      case Tesla.get(url) do
-        {:ok, %{status: 200, body: body}} -> %{id: id, size: byte_size(body)}
-        _ -> %{id: id, size: 123_456}
-      end
+        case Tesla.get(url) do
+          {:ok, %{status: 200, body: body}} -> %{id: id, size: byte_size(body)}
+          _ -> %{id: id, size: 123_456}
+        end
+      end)
+      |> Enum.map(&elem(&1, 1))
+      |> then(&Photos.update_photos_in_bulk(without_size, &1))
     end)
-    |> Enum.map(&elem(&1, 1))
-    |> then(&Photos.update_photos_in_bulk(without_size, &1))
   end
 
   defp get_all_photos() do
