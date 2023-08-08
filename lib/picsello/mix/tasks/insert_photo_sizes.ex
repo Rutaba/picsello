@@ -1,0 +1,45 @@
+defmodule Mix.Tasks.InsertPhotoSizes do
+  @moduledoc false
+
+  use Mix.Task
+  import Ecto.Query
+  alias Picsello.{Photos, Repo, Galleries.Workers.PhotoStorage}
+
+  require Logger
+
+  @shortdoc "Insert photo sizes"
+  def run(_) do
+    load_app()
+
+    photos = get_all_photos()
+
+    Enum.split_with(photos, & &1.size)
+    |> assure_photo_size()
+  end
+
+  defp assure_photo_size({_with_size, without_size}) do
+    without_size
+    |> Task.async_stream(
+      fn %{original_url: url, id: id} ->
+        url = PhotoStorage.path_to_url(url)
+        Logger.info("Photo fetched with id #{id} and url #{url}")
+        {:ok, %{status: 200, body: body}} = Tesla.get(url)
+        %{id: id, size: byte_size(body)}
+      end,
+      timeout: 50_000
+    )
+    |> Enum.map(&elem(&1, 1))
+    |> then(&Photos.update_photos_in_bulk(without_size, &1))
+  end
+
+  defp get_all_photos() do
+    from(p in Photos.active_photos())
+    |> Repo.all()
+  end
+
+  defp load_app do
+    if System.get_env("MIX_ENV") != "prod" do
+      Mix.Task.run("app.start")
+    end
+  end
+end
