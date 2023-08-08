@@ -443,7 +443,8 @@ defmodule PicselloWeb.LiveHelpers do
 
   def is_mobile(socket, params) do
     is_mobile = Map.get(params, "is_mobile", get_connect_params(socket)["isMobile"])
-
+    is_mobile = if is_mobile, do: is_mobile, else: "false"
+    
     socket
     |> assign(
       is_mobile:
