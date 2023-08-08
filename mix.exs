@@ -77,7 +77,7 @@ defmodule Picsello.MixProject do
         {:google_api_storage, "~> 0.34.0"},
         {:google_api_sheets, "~> 0.29.2"},
         {:elixir_uuid, "~> 1.2"},
-        {:kane, "~> 1.0"},
+        {:kane, "~> 0.9.0"},
         {:sentry, "~> 8.0"},
         {:struct_access, "~> 1.1"},
         {:size, "~> 0.1.0"},
@@ -98,7 +98,8 @@ defmodule Picsello.MixProject do
       [
         {:bypass, "~> 2.1", only: :test},
         {:ex_machina, "~> 2.7.0", only: [:dev, :test]},
-        {:httpoison, "~> 1.8.0"},
+        # replace it when it actual package is fix, Issue with String.valid?(error).
+        {:httpotion, git: "git@github.com:dycoders/httpotion.git", override: true},
         {:wallaby, "~> 0.30.3", runtime: false, only: :test},
         {:csv, "~> 3.0"}
       ]
