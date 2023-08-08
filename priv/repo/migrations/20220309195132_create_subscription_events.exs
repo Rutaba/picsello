@@ -9,7 +9,9 @@ defmodule Picsello.Repo.Migrations.CreateSubscriptionEvents do
       add(:current_period_end, :utc_datetime, null: false)
       add(:cancel_at, :utc_datetime)
 
-      add(:subscription_plan_id, references(:subscription_plans, on_delete: :nothing), null: false)
+      add(:subscription_plan_id, references(:subscription_plans, on_delete: :nothing),
+        null: false
+      )
 
       add(:user_id, references(:users, on_delete: :nothing), null: false)
 
