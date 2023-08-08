@@ -350,6 +350,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       gallery_id: gallery.id,
       album_id: album_id,
       name: name,
+      size: entry.client_size,
       original_url: Photo.original_path(name, gallery.id, entry.uuid),
       position: (gallery.total_count || 0) + 100
     })
