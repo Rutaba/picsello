@@ -23,7 +23,6 @@ defmodule Picsello.Orders.Confirmations do
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
 
   import Ecto.Query, only: [from: 2]
-  import Money.Sigils
   import Ecto.Multi, only: [new: 0, put: 3, update: 3, run: 3, merge: 2, append: 2, insert: 3]
 
   @doc """

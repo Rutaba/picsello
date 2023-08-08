@@ -78,7 +78,7 @@ defmodule PicselloWeb.GalleryDownloadsController do
         {:ok, %{status: 200, body: body}} = PhotoStorage.path_to_url(url) |> Tesla.get()
         %{id: id, size: byte_size(body)}
       end,
-      timeout: 15000
+      timeout: 15_000
     )
     |> Enum.map(&elem(&1, 1))
     |> then(&Photos.update_photos_in_bulk(without_size, &1))

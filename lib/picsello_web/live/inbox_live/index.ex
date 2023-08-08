@@ -226,11 +226,13 @@ defmodule PicselloWeb.InboxLive.Index do
       |> Repo.all()
       |> Repo.preload(job: :client)
       |> Enum.map(fn message ->
+        body = if(message.body_text, do: message.body_text, else: message.body_html)
+
         %{
           id: message.job_id,
           title: message.job.client.name,
           subtitle: Job.name(message.job),
-          message: message.body_text,
+          message: body,
           date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y")
         }
       end)
