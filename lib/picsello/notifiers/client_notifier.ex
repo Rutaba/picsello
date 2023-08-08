@@ -1,7 +1,6 @@
 defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
-  import Picsello.Messages, only: [get_emails: 2]
 
   alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery}
   alias Cart.Order
@@ -358,19 +357,30 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> sendgrid_template(params)
     |> put_header("reply-to", "#{from_display} <#{reply_to}>")
     |> from({from_display, "noreply@picsello.com"})
-    |> to(get_emails(recipients, "to"))
-    |> cc(get_emails(recipients, "cc"))
-    |> bcc(get_emails(recipients, "bcc"))
+    |> to(map_recipients(Map.get(recipients, "to")))
+    |> cc(map_recipients(Map.get(recipients, "cc")))
+    |> bcc(map_recipients(Map.get(recipients, "bcc")))
     |> deliver_later()
   end
 
   defp deliver_transactional_email(params, recipients) do
     sendgrid_template(:generic_transactional_template, params)
-    |> to(get_emails(recipients, "to"))
-    |> cc(get_emails(recipients, "cc"))
-    |> bcc(get_emails(recipients, "bcc"))
+    |> to(map_recipients(Map.get(recipients, "to")))
+    |> cc(map_recipients(Map.get(recipients, "cc")))
+    |> bcc(map_recipients(Map.get(recipients, "bcc")))
     |> from("noreply@picsello.com")
     |> deliver_later()
+  end
+
+  defp map_recipients(nil), do: nil
+
+  defp map_recipients(recipients) do
+    if is_list(recipients) do
+      Enum.map(recipients, &{:email, String.trim(&1)})
+    else
+      String.split(recipients, ";")
+      |> Enum.map(&{:email, String.trim(&1)})
+    end
   end
 
   defp may_be_proofing_album_selection(nil), do: :order_confirmation_template
