@@ -5,7 +5,12 @@ defmodule Mix.Tasks.ImportEmailPresets do
   require Logger
   import Ecto.Query
 
-  alias Picsello.{Accounts.User, Repo, EmailPresets.EmailPreset, EmailAutomation.EmailAutomationPipeline}
+  alias Picsello.{
+    Accounts.User,
+    Repo,
+    EmailPresets.EmailPreset,
+    EmailAutomation.EmailAutomationPipeline
+  }
 
   @shortdoc "import email presets"
   def run(_) do
@@ -17,24 +22,26 @@ defmodule Mix.Tasks.ImportEmailPresets do
   def insert_emails() do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     pipelines = from(p in EmailAutomationPipeline) |> Repo.all()
-    
-    organizations = from(u in User, 
-    select: %{id: u.organization_id},
-    where: u.email in [
-      "rhinop+picsello@gmail.com",
-      "ops+demo@picsello.com",
-      "aatanasio.dempsey@gmail.com",
-      "kyle+22@picsello.com",
-      "xanadupod@workwithloop.com",
-      "kyle+marketing@picsello.com",
-      "kyle+jane@picsello.com",
-      "gallerytest@gallerytest.com"
-    ])
-    |> Repo.all()
+
+    organizations =
+      from(u in User,
+        select: %{id: u.organization_id},
+        where:
+          u.email in [
+            "rhinop+picsello@gmail.com",
+            "ops+demo@picsello.com",
+            "aatanasio.dempsey@gmail.com",
+            "kyle+22@picsello.com",
+            "xanadupod@workwithloop.com",
+            "kyle+marketing@picsello.com",
+            "kyle+jane@picsello.com",
+            "gallerytest@gallerytest.com"
+          ]
+      )
+      |> Repo.all()
 
     # organizations = from(o in Picsello.Organization) |> Repo.all()
-    Logger.warn("[orgs count] #{Enum.count(organizations)}")
-    
+    Logger.warning("[orgs count] #{Enum.count(organizations)}")
 
     [
       # wedding
@@ -56,7 +63,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
@@ -75,7 +83,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
@@ -92,7 +101,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
@@ -109,7 +119,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -131,7 +142,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -155,7 +167,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
@@ -178,7 +191,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
@@ -202,7 +216,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "wedding",
@@ -238,7 +253,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -293,7 +309,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -446,7 +462,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -466,7 +483,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -486,7 +504,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -559,7 +578,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "wedding",
@@ -577,7 +597,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "wedding",
@@ -595,7 +616,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "wedding",
@@ -614,7 +636,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -630,7 +653,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -650,7 +674,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -666,7 +691,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -687,7 +713,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -703,7 +730,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "wedding",
@@ -785,7 +813,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
@@ -803,7 +832,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
@@ -820,7 +850,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
@@ -836,7 +867,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -859,7 +891,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -883,7 +916,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
@@ -906,7 +940,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
@@ -929,7 +964,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "newborn",
@@ -964,7 +1000,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -993,7 +1030,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         name: "Payments - paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
-        
+
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
         <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
@@ -1020,7 +1057,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1213,7 +1250,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1233,7 +1271,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1253,7 +1292,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1324,7 +1364,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "newborn",
@@ -1342,7 +1383,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "newborn",
@@ -1360,7 +1402,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "newborn",
@@ -1379,7 +1422,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1395,7 +1439,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1415,7 +1460,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1431,7 +1477,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1452,7 +1499,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1468,7 +1516,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "newborn",
@@ -1550,7 +1599,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
@@ -1568,7 +1618,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
@@ -1585,7 +1636,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
@@ -1601,7 +1653,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -1624,7 +1677,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -1648,7 +1702,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
@@ -1671,7 +1726,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
@@ -1694,7 +1750,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "family",
@@ -1729,7 +1786,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -1758,7 +1816,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         name: "Payments - paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
-        
+
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
         <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
@@ -1785,7 +1843,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -1949,7 +2007,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -1969,7 +2028,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -1989,7 +2049,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -2060,7 +2121,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "family",
@@ -2078,7 +2140,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "family",
@@ -2096,7 +2159,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "family",
@@ -2115,7 +2179,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -2131,7 +2196,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -2151,7 +2217,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -2167,7 +2234,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -2188,7 +2256,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -2204,7 +2273,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "family",
@@ -2286,7 +2356,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
@@ -2304,7 +2375,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
@@ -2321,7 +2393,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
@@ -2338,7 +2411,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2361,7 +2435,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2385,7 +2460,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
@@ -2408,7 +2484,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
@@ -2431,7 +2508,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "mini",
@@ -2466,7 +2544,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2495,7 +2574,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         name: "Payments - paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
-        
+
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
         <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
@@ -2522,7 +2601,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2687,7 +2766,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2707,7 +2787,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2727,7 +2808,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2798,7 +2880,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "mini",
@@ -2816,7 +2899,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "mini",
@@ -2834,7 +2918,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "mini",
@@ -2853,7 +2938,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2869,7 +2955,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2889,7 +2976,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2905,7 +2993,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2926,7 +3015,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -2942,7 +3032,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "mini",
@@ -3024,7 +3115,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
@@ -3042,7 +3134,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
@@ -3059,7 +3152,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
@@ -3076,7 +3170,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3099,7 +3194,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3123,7 +3219,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
@@ -3146,7 +3243,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
@@ -3169,7 +3267,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "headshot",
@@ -3204,7 +3303,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3233,7 +3333,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         name: "Payments - paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
-        
+
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
         <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
@@ -3260,7 +3360,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3413,7 +3513,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3433,7 +3534,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3453,7 +3555,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3524,7 +3627,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "headshot",
@@ -3542,7 +3646,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "headshot",
@@ -3560,7 +3665,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "headshot",
@@ -3579,7 +3685,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3595,7 +3702,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3615,7 +3723,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3631,7 +3740,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3652,7 +3762,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3668,7 +3779,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "headshot",
@@ -3750,7 +3862,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
@@ -3768,7 +3881,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
@@ -3785,7 +3899,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
@@ -3802,7 +3917,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -3825,7 +3941,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -3849,7 +3966,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
@@ -3872,7 +3990,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
@@ -3895,7 +4014,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "portrait",
@@ -3930,7 +4050,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -3959,7 +4080,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         name: "Payments - paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
-        
+
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
         <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
@@ -3986,7 +4107,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4139,7 +4260,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4159,7 +4281,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4179,7 +4302,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4250,7 +4374,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "portrait",
@@ -4268,7 +4393,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "portrait",
@@ -4286,7 +4412,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "portrait",
@@ -4305,7 +4432,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4321,7 +4449,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4341,7 +4470,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4357,7 +4487,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4378,7 +4509,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4394,7 +4526,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "portrait",
@@ -4476,7 +4609,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
@@ -4494,7 +4628,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
@@ -4511,7 +4646,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
@@ -4528,7 +4664,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -4551,7 +4688,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -4575,7 +4713,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
@@ -4598,7 +4737,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
@@ -4621,7 +4761,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "boudoir",
@@ -4656,7 +4797,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -4711,7 +4853,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -4866,7 +5008,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -4886,7 +5029,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -4906,7 +5050,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -4977,7 +5122,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "boudoir",
@@ -4995,7 +5141,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "boudoir",
@@ -5013,7 +5160,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "boudoir",
@@ -5032,7 +5180,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -5048,7 +5197,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -5068,7 +5218,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -5084,7 +5235,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -5105,7 +5257,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -5121,7 +5274,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "boudoir",
@@ -5203,7 +5357,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
@@ -5221,7 +5376,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
@@ -5238,7 +5394,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
@@ -5255,7 +5412,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5278,7 +5436,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5302,7 +5461,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
@@ -5325,7 +5485,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
@@ -5348,7 +5509,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "other",
@@ -5383,7 +5545,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5438,7 +5601,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5593,7 +5756,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5613,7 +5777,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5633,7 +5798,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5704,7 +5870,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "other",
@@ -5722,7 +5889,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "other",
@@ -5740,7 +5908,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "other",
@@ -5759,7 +5928,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5775,7 +5945,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5795,7 +5966,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5811,7 +5983,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5832,7 +6005,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5848,7 +6022,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "other",
@@ -5930,7 +6105,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
@@ -5948,7 +6124,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
@@ -5965,7 +6142,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
@@ -5982,7 +6160,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6005,7 +6184,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6029,7 +6209,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
@@ -6052,7 +6233,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
@@ -6075,7 +6257,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "maternity",
@@ -6110,7 +6293,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6165,7 +6349,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6318,7 +6502,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6338,7 +6523,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6358,7 +6544,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6429,7 +6616,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "maternity",
@@ -6447,7 +6635,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "maternity",
@@ -6465,7 +6654,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "maternity",
@@ -6484,7 +6674,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6500,7 +6691,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6520,7 +6712,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6536,7 +6729,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6557,7 +6751,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6573,7 +6768,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "maternity",
@@ -6655,7 +6851,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
@@ -6673,7 +6870,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
@@ -6690,7 +6888,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
@@ -6707,7 +6906,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_thank_you_lead"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -6730,7 +6930,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -6754,7 +6955,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
@@ -6777,7 +6979,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(4, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
@@ -6800,7 +7003,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_booking_proposal_sent"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "+"}),
         status: "active",
         job_type: "event",
@@ -6835,7 +7039,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "pays_retainer_offline"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -6890,7 +7095,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "booking_event"),
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "thanks_booking"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -7039,7 +7244,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_gallery_send_link"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -7059,7 +7265,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -7079,7 +7286,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "manual_send_proofing_gallery_finals"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -7150,7 +7358,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(7, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "event",
@@ -7168,7 +7377,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "event",
@@ -7186,7 +7396,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_expiration_soon"),
         total_hours: EmailPreset.calculate_total_hours(1, %{calendar: "Day", sign: "-"}),
         status: "active",
         job_type: "event",
@@ -7205,7 +7416,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "gallery_password_changed"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -7221,7 +7433,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -7241,7 +7454,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_physical"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -7257,7 +7471,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "order_confirmation_digital_physical"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -7278,7 +7493,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -7294,7 +7510,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         """
       },
       %{
-        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
+        email_automation_pipeline_id:
+          get_pipeline_id_by_state(pipelines, "digitals_ready_download"),
         total_hours: 0,
         status: "active",
         job_type: "event",
@@ -7361,18 +7578,20 @@ defmodule Mix.Tasks.ImportEmailPresets do
     ]
     |> Enum.each(fn attrs ->
       state = get_state_by_pipeline_id(pipelines, attrs.email_automation_pipeline_id)
-      
+
       attrs = Map.merge(attrs, %{state: Atom.to_string(state), inserted_at: now, updated_at: now})
 
-      email_preset = from(e in email_preset_query(attrs), where: is_nil(e.organization_id)) |> Repo.one()
+      email_preset =
+        from(e in email_preset_query(attrs), where: is_nil(e.organization_id)) |> Repo.one()
 
       if email_preset do
         email_preset |> EmailPreset.default_presets_changeset(attrs) |> Repo.update!()
       else
         attrs |> EmailPreset.default_presets_changeset() |> Repo.insert!()
-        Logger.warn("[for current org] #{Enum.count(organizations) + 1} for #{attrs.job_type}")
-        Enum.map(organizations, fn %{id: org_id} -> 
-          Logger.warn("[record inserted] #{org_id} for #{attrs.job_type}")
+        Logger.warning("[for current org] #{Enum.count(organizations) + 1} for #{attrs.job_type}")
+
+        Enum.map(organizations, fn %{id: org_id} ->
+          Logger.warning("[record inserted] #{org_id} for #{attrs.job_type}")
           Map.merge(attrs, %{organization_id: org_id})
         end)
         |> then(&Repo.insert_all("email_presets", &1))
@@ -7382,26 +7601,28 @@ defmodule Mix.Tasks.ImportEmailPresets do
 
   defp email_preset_query(attrs) do
     from(ep in EmailPreset,
-          where:
-            ep.type == ^attrs.type and
-              ep.name == ^attrs.name and
-              ep.job_type == ^attrs.job_type and
-              ep.email_automation_pipeline_id == ^attrs.email_automation_pipeline_id
-        )
+      where:
+        ep.type == ^attrs.type and
+          ep.name == ^attrs.name and
+          ep.job_type == ^attrs.job_type and
+          ep.email_automation_pipeline_id == ^attrs.email_automation_pipeline_id
+    )
   end
 
   defp get_pipeline_id_by_state(pipelines, state) do
-    pipeline = pipelines
-    |> Enum.filter(& &1.state == String.to_atom(state))
-    |> List.first()
+    pipeline =
+      pipelines
+      |> Enum.filter(&(&1.state == String.to_atom(state)))
+      |> List.first()
 
     pipeline.id
   end
 
   defp get_state_by_pipeline_id(pipelines, id) do
-    pipeline = pipelines
-    |> Enum.filter(& &1.id == id)
-    |> List.first()
+    pipeline =
+      pipelines
+      |> Enum.filter(&(&1.id == id))
+      |> List.first()
 
     pipeline.state
   end

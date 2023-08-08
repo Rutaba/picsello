@@ -6,11 +6,12 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
 
   @impl true
   def render(assigns) do
-  assigns =
-    assigns
-    |> Enum.into(%{
-      variables_list: variables_codes(assigns.job_type)
-    })
+    assigns =
+      assigns
+      |> Enum.into(%{
+        variables_list: variables_codes(assigns.job_type)
+      })
+
     ~H"""
       <div>
         <div class="flex items-center font-bold bg-gray-100 rounded-t-lg border-gray-200 text-blue-planning-300 p-2.5">
@@ -70,11 +71,13 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         ]
       }
     ]
-    other = case job_type do
-      :job -> job_variables()
-      :gallery -> job_variables() ++ gallery_variables()
-      _ -> []
-    end
+
+    other =
+      case job_type do
+        :job -> job_variables()
+        :gallery -> job_variables() ++ gallery_variables()
+        _ -> []
+      end
 
     client_variables() ++ photograopher_variables() ++ leads ++ other
   end
@@ -130,6 +133,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
       }
     ]
   end
+
   defp client_variables() do
     [
       %{
@@ -156,8 +160,8 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         ]
       }
     ]
-
   end
+
   defp photograopher_variables() do
     [
       %{
@@ -180,6 +184,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
       }
     ]
   end
+
   defp job_variables() do
     [
       %{
@@ -246,5 +251,4 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
       }
     ]
   end
-
 end

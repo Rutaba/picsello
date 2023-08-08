@@ -733,7 +733,9 @@ defmodule Picsello.Galleries do
   end
 
   defp gallery_session_tokens_query(gallery) do
-    from(st in SessionToken, where: st.resource_id == ^gallery.id and st.resource_type == :gallery)
+    from(st in SessionToken,
+      where: st.resource_id == ^gallery.id and st.resource_type == :gallery
+    )
   end
 
   @doc """

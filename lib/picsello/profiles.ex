@@ -353,7 +353,7 @@ defmodule Picsello.Profiles do
         end
 
       _ ->
-        Logger.warn("ignoring path #{path} for version #{id}")
+        Logger.warning("ignoring path #{path} for version #{id}")
     end
 
     :ok

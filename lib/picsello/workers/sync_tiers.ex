@@ -65,7 +65,9 @@ defmodule Picsello.Workers.SyncTiers do
 
         [min_years_experience] = Regex.run(~r/^\d+/, experience_range)
         job_type = Map.get(@job_type_map, type, String.downcase(type))
-        max_session_per_year = if max_session_per_year, do: String.to_integer(max_session_per_year), else: 40
+
+        max_session_per_year =
+          if max_session_per_year, do: String.to_integer(max_session_per_year), else: 40
 
         %{
           full_time: time != "Part-Time",

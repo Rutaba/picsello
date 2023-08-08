@@ -100,7 +100,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
       },
       %{
         name: "Thank You for Booking",
-        state: "booking_event",
+        state: "thanks_booking",
         description: "Sent when the questionnaire, contract is signed and retainer is paid",
         email_automation_sub_category_id: automation_response.id,
         email_automation_category_id: email_automation_job.id

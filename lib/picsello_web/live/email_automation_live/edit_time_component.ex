@@ -69,25 +69,26 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
   defp save(
          %{
            assigns: %{
-             changeset: email_preset_changeset,
+             changeset: email_preset_changeset
            }
          } = socket
        ) do
-    
     case Repo.insert(email_preset_changeset,
-      on_conflict: {:replace, [:total_hours, :condition, :status]},
-      conflict_target: :id
-    ) do
-    {:ok, email_automation_setting} ->
-     send(
-       self(),
-       {:update_automation,
-        %{email_automation_setting: email_automation_setting, message: "successfully updated"}}
-     )
-     socket
-    {:error, changeset} ->
-      socket
-      |> assign(changeset: changeset) 
+           on_conflict: {:replace, [:total_hours, :condition, :status]},
+           conflict_target: :id
+         ) do
+      {:ok, email_automation_setting} ->
+        send(
+          self(),
+          {:update_automation,
+           %{email_automation_setting: email_automation_setting, message: "successfully updated"}}
+        )
+
+        socket
+
+      {:error, changeset} ->
+        socket
+        |> assign(changeset: changeset)
     end
   end
 

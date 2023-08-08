@@ -4,7 +4,7 @@ defmodule Picsello.JobType do
   use Ecto.Schema
   import Ecto.Query
   import Ecto.Changeset
-  
+
   alias Picsello.Repo
 
   @other_type "other"

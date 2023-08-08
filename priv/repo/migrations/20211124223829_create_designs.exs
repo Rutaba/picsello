@@ -16,7 +16,10 @@ defmodule Picsello.Repo.Migrations.CreateDesigns do
         default: fragment("(now() at time zone 'utc')")
       )
 
-      add(:updated_at, :utc_datetime, null: false, default: fragment("(now() at time zone 'utc')"))
+      add(:updated_at, :utc_datetime,
+        null: false,
+        default: fragment("(now() at time zone 'utc')")
+      )
     end
 
     create(unique_index(:designs, [:whcc_id]))

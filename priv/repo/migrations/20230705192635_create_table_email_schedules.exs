@@ -15,10 +15,12 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailSchedules do
       add(:job_id, references(:jobs, on_delete: :nothing))
       add(:gallery_id, references(:galleries, on_delete: :nothing))
       add(:order_id, references(:gallery_orders, on_delete: :nothing))
+
       add(
         :email_automation_pipeline_id,
         references(:email_automation_pipelines, on_delete: :nothing)
       )
+
       add(:organization_id, references(:organizations, on_delete: :nothing))
 
       timestamps()

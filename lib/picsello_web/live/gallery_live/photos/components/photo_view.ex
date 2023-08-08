@@ -78,7 +78,10 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
     |> then(
       &assign(&1,
         url:
-          preview_url(&1.assigns.photo, proofing_client_view?: &1.assigns.is_proofing, blank: true)
+          preview_url(&1.assigns.photo,
+            proofing_client_view?: &1.assigns.is_proofing,
+            blank: true
+          )
       )
     )
   end

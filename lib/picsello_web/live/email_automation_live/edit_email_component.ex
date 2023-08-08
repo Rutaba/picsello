@@ -111,8 +111,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
       ) do
     socket
     |> assign(
-      email_preset_changeset:
-        build_email_changeset(email_preset, maybe_normalize_params(params))
+      email_preset_changeset: build_email_changeset(email_preset, maybe_normalize_params(params))
     )
     |> noreply()
   end
@@ -123,8 +122,9 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
         %{"step" => "edit_email"},
         %{assigns: %{email_preset_changeset: changeset} = assigns} = socket
       ) do
-    body_html = Ecto.Changeset.get_field(changeset, :body_template)
-    |> :bbmustache.render(get_sample_values(), key_type: :atom)
+    body_html =
+      Ecto.Changeset.get_field(changeset, :body_template)
+      |> :bbmustache.render(get_sample_values(), key_type: :atom)
 
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
@@ -327,16 +327,16 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   defp save(
          %{
            assigns: %{
-            pipeline: pipeline,
+             pipeline: pipeline,
              email_preset_changeset: email_preset_changeset,
-             email: email,
-            #  current_user: %{organization_id: organization_id}
+             email: email
+             #  current_user: %{organization_id: organization_id}
            }
          } = socket
        ) do
     changeset =
-    Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
-    |> Ecto.Changeset.put_change(:state, pipeline.state)
+      Ecto.Changeset.put_change(email_preset_changeset, :id, email.id)
+      |> Ecto.Changeset.put_change(:state, pipeline.state)
 
     Ecto.Multi.new()
     |> Ecto.Multi.insert(

@@ -7,7 +7,6 @@ defmodule Picsello.EmailAutomation.EmailScheduleHistory do
     EmailAutomationPipeline
   }
 
-
   alias Picsello.{Job, Galleries.Gallery, Cart.Order, Organization}
 
   schema "email_schedules_history" do

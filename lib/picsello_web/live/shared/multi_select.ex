@@ -25,6 +25,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
     end
   end
 
+  @moduledoc false
   defmodule Option do
     @doc """
     The option struct can be used for passing a list of option values to the
@@ -211,7 +212,7 @@ defmodule PicselloWeb.Shared.MultiSelect do
     assigns =
       assigns
       |> assign(:filter, "")
-      |> assign(:cur_shown, 10000)
+      |> assign(:cur_shown, 10_000)
       |> assign(:filter_checked, false)
       |> assign(:option_count, 0)
       |> assign(:selected_count, 0)

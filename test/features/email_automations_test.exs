@@ -5,15 +5,12 @@ defmodule Picsello.EmailAutomationsTest do
   setup :authenticated
 
   setup do
-
     Tesla.Mock.mock_global(fn
       %{method: :get} ->
         body = %{"versions" => [%{"html_content" => "TEMPLATE_PREVIEW", "active" => 1}]}
         %Tesla.Env{status: 200, body: body}
     end)
-
   end
-
 
   feature "Checking side-manue click effects on heading", %{session: session} do
     session
@@ -26,7 +23,8 @@ defmodule Picsello.EmailAutomationsTest do
     |> click(css("span", text: "Newborn"))
     |> assert_has(css("h2", text: "Newborn Automations", count: 1))
     |> assert_has(css("h2", text: "Event Automations", count: 0))
-    |> click(css("span", text: "Event", count: 2, at: 0))           # Where is 2nd element???
+    # Where is 2nd element???
+    |> click(css("span", text: "Event", count: 2, at: 0))
     |> assert_has(css("h2", text: "Event Automations", count: 1))
     |> assert_has(css("h2", text: "Newborn Automations", count: 0))
     |> click(css("span", text: "Wedding"))
@@ -50,8 +48,10 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_text("Add Wedding Email Step: Preview Email")
     |> click(button("Save"))
     |> assert_flash(:success, text: "Successfully created")
-    |> assert_has(css("span", text: "1 emails", count: 3))            # But we see only 2 elements in code. Her are 3, why???
-    |> assert_has(css("div", text: "Send gallery link", count: 11))            # 11 elements are visible (we inserted only one). Why???
+    # But we see only 2 elements in code. Her are 3, why???
+    |> assert_has(css("span", text: "1 emails", count: 3))
+    # 11 elements are visible (we inserted only one). Why???
+    |> assert_has(css("div", text: "Send gallery link", count: 11))
     |> assert_text("Send email immediately")
     |> assert_has(button("Edit time"))
     |> assert_has(button("Edit email"))
@@ -71,8 +71,10 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_text("Add Wedding Email Step: Preview Email")
     |> click(button("Save"))
     |> assert_flash(:success, text: "Successfully created")
-    |> assert_has(css("span", text: "1 emails", count: 3))            # But we see only 2 elements in code. Her are 3, why???
-    |> assert_has(css("div", text: "Send gallery link", count: 11))            # 11 elements are visible (we inserted only one). Why???
+    # But we see only 2 elements in code. Her are 3, why???
+    |> assert_has(css("span", text: "1 emails", count: 3))
+    # 11 elements are visible (we inserted only one). Why???
+    |> assert_has(css("div", text: "Send gallery link", count: 11))
     |> assert_text("Send email immediately")
     |> assert_has(button("Edit time"))
     |> assert_has(button("Edit email"))
@@ -87,8 +89,10 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_text("Add Wedding Email Step: Preview Email")
     |> click(button("Save"))
     |> assert_flash(:success, text: "Successfully created")
-    |> assert_has(css("span", text: "2 emails", count: 3))            # But we see only 2 elements in code. Her are 3, why???
-    |> assert_has(css("div", text: "Send gallery link", count: 16))   # 16 elements are visible (we inserted only two). Why???
+    # But we see only 2 elements in code. Her are 3, why???
+    |> assert_has(css("span", text: "2 emails", count: 3))
+    # 16 elements are visible (we inserted only two). Why???
+    |> assert_has(css("div", text: "Send gallery link", count: 16))
     |> assert_text("Send email immediately")
     |> assert_has(button("Edit time", count: 2))
     |> assert_has(button("Edit email", count: 2))
@@ -97,20 +101,34 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(button("Edit time"))
     |> assert_has(button("Edit email"))
     |> assert_has(css("button[title='remove']"))
-    |> assert_has(css("span", text: "Can't delete first email; disable the entire sequence if you don't want it to send", count: 0))
+    |> assert_has(
+      css("span",
+        text:
+          "Can't delete first email; disable the entire sequence if you don't want it to send",
+        count: 0
+      )
+    )
     |> hover(css("button[phx-click='delete-email']"))
-    |> assert_has(css("span", text: "Can't delete first email; disable the entire sequence if you don't want it to send"))
+    |> assert_has(
+      css("span",
+        text: "Can't delete first email; disable the entire sequence if you don't want it to send"
+      )
+    )
   end
 
   feature "Enable/disable toggle button of the pipeline", %{session: session} do
     session
     |> visit("/email-automations")
     |> click(css("span", text: "Send Gallery Link"))
-    |> click(css("div", text: "Disable automation", count: 9, at: 0))   # Why 9 elements are present here???
+    # Why 9 elements are present here???
+    |> click(css("div", text: "Disable automation", count: 9, at: 0))
+
     # |> assert_flash(:success, text: "Pipeline successfully enabled")
   end
 
-  feature "Checking buttons; 'Edit email' and 'Edit time', and their modals UI", %{session: session} do
+  feature "Checking buttons; 'Edit email' and 'Edit time', and their modals UI", %{
+    session: session
+  } do
     session
     |> visit("/email-automations")
     |> click(css("span", text: "Send Gallery Link"))
@@ -124,8 +142,10 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_text("Add Wedding Email Step: Preview Email")
     |> click(button("Save"))
     |> assert_flash(:success, text: "Successfully created")
-    |> assert_has(css("span", text: "1 emails", count: 3))            # But we see only 2 elements in code. Her are 3, why???
-    |> assert_has(css("div", text: "Send gallery link", count: 11))   # 11 elements are visible (we inserted only one). Why???
+    # But we see only 2 elements in code. Her are 3, why???
+    |> assert_has(css("span", text: "1 emails", count: 3))
+    # 11 elements are visible (we inserted only one). Why???
+    |> assert_has(css("div", text: "Send gallery link", count: 11))
     |> assert_text("Send email immediately")
     |> assert_has(button("Edit time"))
     |> assert_has(button("Edit email"))
@@ -149,7 +169,7 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css(".modal"))
     |> assert_text("Edit Wedding Email")
     |> click(css("select"))
-    |> click(css("option", text: "Share Proofing Album" ))
+    |> click(css("option", text: "Share Proofing Album"))
     |> click(button("Next"))
     |> assert_text("Preview Wedding Email")
     |> assert_has(css("select", count: 0))
@@ -157,11 +177,8 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("select"))
     |> click(button("Next"))
     |> click(button("Save"))
-    |> assert_has(css("div", text: "Share Proofing Album", count: 11))      # 11 elements are visible (we inserted only one). Why???
+    # 11 elements are visible (we inserted only one). Why???
+    |> assert_has(css("div", text: "Share Proofing Album", count: 11))
     |> assert_has(css("div", text: "Send gallery link", count: 0))
   end
-
-
-
-
 end

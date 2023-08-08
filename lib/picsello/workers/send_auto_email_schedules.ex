@@ -20,7 +20,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   def perform(_) do
     get_all_organizations()
     |> Enum.chunk_every(2)
-    |> Enum.map(fn organizations ->
+    |> Enum.each(fn organizations ->
       get_all_emails(organizations)
       |> Enum.map(fn job_pipeline ->
         job_id = job_pipeline.job_id
@@ -132,35 +132,12 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
     Logger.info("Job date time for state #{state} #{job_date_time}")
 
-    is_send_time =
-      if state in [:shoot_thanks, :post_shoot, :before_shoot, :gallery_expiration_soon] and
-           not is_nil(job_date_time) do
-        true
-      else
-        is_email_send_time(job_date_time, schedule.total_hours)
-      end
+    is_send_time = is_email_send_time(job_date_time, schedule.total_hours)
 
     Logger.info("Time to send email #{is_send_time}")
 
     if is_send_time and is_nil(schedule.reminded_at) and !schedule.is_stopped do
-      schema =
-        case type do
-          :gallery -> if is_nil(order), do: gallery, else: order
-          _ -> job
-        end
-
-      send_email_task =
-        Task.async(fn -> EmailAutomations.send_now_email(type, schedule, schema, state) end)
-
-      case Task.await(send_email_task) do
-        {:ok, _result} ->
-          Logger.info(
-            "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
-          )
-
-        error ->
-          Logger.error("Email #{schedule.name} #{error}")
-      end
+      send_email(state, schedule, job, gallery, order)
     end
   end
 
@@ -175,9 +152,13 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     end
   end
 
-  defp is_email_send_time(nil, _total_hours), do: false
+  defp is_email_send_time(nil, _state, _total_hours), do: false
 
-  defp is_email_send_time(submit_time, total_hours) do
+  defp is_email_send_time(_submit_time, state, _total_hours)
+       when state in [:shoot_thanks, :post_shoot, :before_shoot, :gallery_expiration_soon],
+       do: true
+
+  defp is_email_send_time(submit_time, _state, total_hours) do
     %{sign: sign} = Shared.explode_hours(total_hours)
     {:ok, current_time} = DateTime.now("Etc/UTC")
     diff_seconds = DateTime.diff(current_time, submit_time, :second)
@@ -201,6 +182,27 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   defp is_reply_receive!(job, subjects) do
     ClientMessage.get_client_messages(job, subjects)
     |> Enum.count() > 0
+  end
+
+  defp send_email(state, schedule, job, gallery, order) do
+    schema =
+      case type do
+        :gallery -> if is_nil(order), do: gallery, else: order
+        _ -> job
+      end
+
+    send_email_task =
+      Task.async(fn -> EmailAutomations.send_now_email(type, schedule, schema, state) end)
+
+    case Task.await(send_email_task) do
+      {:ok, _result} ->
+        Logger.info(
+          "Email #{schedule.name} sent at #{DateTime.truncate(DateTime.utc_now(), :second)}"
+        )
+
+      error ->
+        Logger.error("Email #{schedule.name} #{error}")
+    end
   end
 
   defp get_all_organizations() do

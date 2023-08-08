@@ -111,8 +111,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
       ) do
     socket
     |> assign(
-      email_preset_changeset:
-        build_email_changeset(email_preset, maybe_normalize_params(params))
+      email_preset_changeset: build_email_changeset(email_preset, maybe_normalize_params(params))
     )
     |> noreply()
   end
