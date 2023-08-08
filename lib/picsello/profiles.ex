@@ -173,7 +173,7 @@ defmodule Picsello.Profiles do
             |> Map.take([:name, :email, :phone])
             |> Map.put(:organization_id, organization_id)
             |> Client.create_changeset(),
-            on_conflict: {:replace, [:email]},
+            on_conflict: {:replace, [:email, :archived_at]},
             conflict_target: [:organization_id, :email],
             returning: [:id]
           )

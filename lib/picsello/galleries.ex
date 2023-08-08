@@ -652,7 +652,8 @@ defmodule Picsello.Galleries do
         name: type,
         is_proofing: type == "proofing",
         is_finals: type == "finals",
-        set_password: false
+        set_password: false,
+        client_link_hash: UUID.uuid4()
       }
     ]
 

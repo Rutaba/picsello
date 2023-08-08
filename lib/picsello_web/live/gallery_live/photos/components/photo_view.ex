@@ -106,8 +106,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
             </div>
             <div class="flex flex-col md:items-center justify-center">
               <div class="relative lg:h-[450px] sm:h-screen justify-center">
-                <img src={preview_url(@photo, proofing_client_view?: @is_proofing)} class="lg:h-full lg:max-h-max max-h-96">
-                <img src={ @url } class="max-h-full sm:object-contain">
+                <img src={preview_url(@photo, proofing_client_view?: @is_proofing)} class="max-h-full sm:object-contain">
                 <%= if !@is_proofing do %>
                   <button class="likeBtn absolute" phx-click={js_like_click(@photo.id, @myself)}>
                     <div id={"photo-#{@photo.id}-liked"} style={!@is_liked && "display: none"}>
