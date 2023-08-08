@@ -17,7 +17,10 @@ defmodule Picsello.Repo.Migrations.CreateWHCCProducts do
         default: fragment("(now() at time zone 'utc')")
       )
 
-      add(:updated_at, :utc_datetime, null: false, default: fragment("(now() at time zone 'utc')"))
+      add(:updated_at, :utc_datetime,
+        null: false,
+        default: fragment("(now() at time zone 'utc')")
+      )
     end
 
     create(unique_index(:products, [:whcc_id]))
