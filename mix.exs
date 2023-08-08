@@ -99,7 +99,7 @@ defmodule Picsello.MixProject do
         {:bypass, "~> 2.1", only: :test},
         {:ex_machina, "~> 2.7.0", only: [:dev, :test]},
         # replace it when it actual package is fix, Issue with String.valid?(error).
-        {:httpotion, git: "git@github.com:dycoders/httpotion.git", override: true},
+        {:httpotion, git: "https://github.com/dycoders/httpotion.git", override: true},
         {:wallaby, "~> 0.30.3", runtime: false, only: :test},
         {:csv, "~> 3.0"}
       ]

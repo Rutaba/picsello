@@ -50,7 +50,7 @@
   "hpax": {:hex, :hpax, "0.1.2", "09a75600d9d8bbd064cdd741f21fc06fc1f4cf3d0fcc335e5aa19be1a7235c84", [:mix], [], "hexpm", "2c87843d5a23f5f16748ebe77969880e29809580efdaccd615cd3bed628a8c13"},
   "html_sanitize_ex": {:hex, :html_sanitize_ex, "1.4.3", "67b3d9fa8691b727317e0cc96b9b3093be00ee45419ffb221cdeee88e75d1360", [:mix], [{:mochiweb, "~> 2.15 or ~> 3.1", [hex: :mochiweb, repo: "hexpm", optional: false]}], "hexpm", "87748d3c4afe949c7c6eb7150c958c2bcba43fc5b2a02686af30e636b74bccb7"},
   "httpoison": {:hex, :httpoison, "1.8.2", "9eb9c63ae289296a544842ef816a85d881d4a31f518a0fec089aaa744beae290", [:mix], [{:hackney, "~> 1.17", [hex: :hackney, repo: "hexpm", optional: false]}], "hexpm", "2bb350d26972e30c96e2ca74a1aaf8293d61d0742ff17f01e0279fef11599921"},
-  "httpotion": {:git, "git@github.com:dycoders/httpotion.git", "9a4f2d9058b95cc6b06dd81bb30b9c11366ababf", []},
+  "httpotion": {:git, "https://github.com/dycoders/httpotion.git", "9a4f2d9058b95cc6b06dd81bb30b9c11366ababf", []},
   "ibrowse": {:hex, :ibrowse, "4.4.0", "2d923325efe0d2cb09b9c6a047b2835a5eda69d8a47ed6ff8bc03628b764e991", [:rebar3], [], "hexpm", "6a8e5988872086f0506bef68311493551ac5beae7c06ba2a00d5e9f97a60f1c2"},
   "icalendar": {:hex, :icalendar, "1.1.2", "5d0afff5d0143c5bd43f18ae32a777bf0fb9a724543ab05229a460d368f0a5e7", [:mix], [{:timex, "~> 3.4", [hex: :timex, repo: "hexpm", optional: false]}], "hexpm", "2060f8e353fdf3047e95a3f012583dc3c0bbd7ca1010e32ed9e9fc5760ad4292"},
   "idna": {:hex, :idna, "6.1.1", "8a63070e9f7d0c62eb9d9fcb360a7de382448200fbbd1b106cc96d3d8099df8d", [:rebar3], [{:unicode_util_compat, "~> 0.7.0", [hex: :unicode_util_compat, repo: "hexpm", optional: false]}], "hexpm", "92376eb7894412ed19ac475e4a86f7b413c1b9fbb5bd16dccd57934157944cea"},
