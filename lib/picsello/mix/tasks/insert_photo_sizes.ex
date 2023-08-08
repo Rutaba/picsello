@@ -23,8 +23,11 @@ defmodule Mix.Tasks.InsertPhotoSizes do
       fn %{original_url: url, id: id} ->
         url = PhotoStorage.path_to_url(url)
         Logger.info("Photo fetched with id #{id} and url #{url}")
-        {:ok, %{status: 200, body: body}} = Tesla.get(url)
-        %{id: id, size: byte_size(body)}
+
+        case Tesla.get(url) do
+          {:ok, %{status: 200, body: body}} -> %{id: id, size: byte_size(body)}
+          _ -> %{id: id, size: 123_456}
+        end
       end,
       timeout: 50_000
     )

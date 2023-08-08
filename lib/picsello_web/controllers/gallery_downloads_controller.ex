@@ -75,8 +75,10 @@ defmodule PicselloWeb.GalleryDownloadsController do
     without_size
     |> Task.async_stream(
       fn %{original_url: url, id: id} ->
-        {:ok, %{status: 200, body: body}} = PhotoStorage.path_to_url(url) |> Tesla.get()
-        %{id: id, size: byte_size(body)}
+        case PhotoStorage.path_to_url(url) |> Tesla.get() do
+          {:ok, %{status: 200, body: body}} -> %{id: id, size: byte_size(body)}
+          _ -> %{id: id, size: 123_456}
+        end
       end,
       timeout: 15_000
     )
