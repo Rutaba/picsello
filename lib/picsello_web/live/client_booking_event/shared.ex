@@ -4,7 +4,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
   """
   import PicselloWeb.LiveHelpers
   import Phoenix.Component
-  import PicselloWeb.Gettext, only: [dyn_gettext: 1]
+  import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
 
   def blurred_thumbnail(assigns) do
     ~H"""
@@ -71,10 +71,10 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
 
   defp capitalize_month(month), do: String.capitalize(to_string(month))
 
-  defp formatted_subtitle(booking_event, package) do
+  defp formatted_subtitle(booking_event, %{download_count: count} = _package) do
     [
-      if(package.download_count > 0,
-        do: "#{package.download_count} images include"
+      if(count > 0,
+        do: "#{count} #{ngettext("image", "images", count)}"
       ),
       "#{booking_event.duration_minutes} min session",
       dyn_gettext(booking_event.location)
