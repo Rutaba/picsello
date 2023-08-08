@@ -19,8 +19,7 @@ defmodule Mix.Tasks.InsertPhotoSizes do
 
   defp assure_photo_size({_with_size, without_size}) do
     without_size
-    |> Task.async_stream(
-      fn %{original_url: url, id: id} ->
+    |> Enum.each(%{original_url: url, id: id} do
         url = PhotoStorage.path_to_url(url)
         Logger.info("Photo fetched with id #{id} and url #{url}")
 
@@ -30,7 +29,7 @@ defmodule Mix.Tasks.InsertPhotoSizes do
         end
       end,
       timeout: 50_000
-    )
+    end)
     |> Enum.map(&elem(&1, 1))
     |> then(&Photos.update_photos_in_bulk(without_size, &1))
   end
