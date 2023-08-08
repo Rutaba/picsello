@@ -19,16 +19,14 @@ defmodule Mix.Tasks.InsertPhotoSizes do
 
   defp assure_photo_size({_with_size, without_size}) do
     without_size
-    |> Enum.each(%{original_url: url, id: id} do
-        url = PhotoStorage.path_to_url(url)
-        Logger.info("Photo fetched with id #{id} and url #{url}")
+    |> Enum.each(fn %{original_url: url, id: id} ->
+      url = PhotoStorage.path_to_url(url)
+      Logger.info("Photo fetched with id #{id} and url #{url}")
 
-        case Tesla.get(url) do
-          {:ok, %{status: 200, body: body}} -> %{id: id, size: byte_size(body)}
-          _ -> %{id: id, size: 123_456}
-        end
-      end,
-      timeout: 50_000
+      case Tesla.get(url) do
+        {:ok, %{status: 200, body: body}} -> %{id: id, size: byte_size(body)}
+        _ -> %{id: id, size: 123_456}
+      end
     end)
     |> Enum.map(&elem(&1, 1))
     |> then(&Photos.update_photos_in_bulk(without_size, &1))
