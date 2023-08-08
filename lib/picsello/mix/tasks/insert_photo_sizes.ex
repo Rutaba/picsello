@@ -61,7 +61,7 @@ defmodule Mix.Tasks.InsertPhotoSizes do
   end
 
   defp get_all_photos() do
-    from(p in Photos.active_photos(), limit: 1000, where: is_nil(p.size))
+    from(p in Photos.active_photos(), limit: 100, where: is_nil(p.size))
     |> Repo.all()
   end
 
