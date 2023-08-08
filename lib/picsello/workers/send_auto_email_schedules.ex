@@ -132,12 +132,12 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
     Logger.info("Job date time for state #{state} #{job_date_time}")
 
-    is_send_time = is_email_send_time(job_date_time, schedule.total_hours)
+    is_send_time = is_email_send_time(job_date_time, state, schedule.total_hours)
 
     Logger.info("Time to send email #{is_send_time}")
 
     if is_send_time and is_nil(schedule.reminded_at) and !schedule.is_stopped do
-      send_email(state, schedule, job, gallery, order)
+      send_email_task(type, state, schedule, job, gallery, order)
     end
   end
 
@@ -184,7 +184,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     |> Enum.count() > 0
   end
 
-  defp send_email(state, schedule, job, gallery, order) do
+  defp send_email_task(type, state, schedule, job, gallery, order) do
     schema =
       case type do
         :gallery -> if is_nil(order), do: gallery, else: order

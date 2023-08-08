@@ -25,7 +25,6 @@ defmodule PicselloWeb.Shared.MultiSelect do
     end
   end
 
-  @moduledoc false
   defmodule Option do
     @doc """
     The option struct can be used for passing a list of option values to the
