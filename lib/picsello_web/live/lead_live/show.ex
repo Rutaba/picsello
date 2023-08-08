@@ -156,7 +156,7 @@ defmodule PicselloWeb.LeadLive.Show do
           )
 
         _ ->
-          Logger.warn("No booking proposal email preset for #{job.type}")
+          Logger.warning("No booking proposal email preset for #{job.type}")
           %{body_template: "", subject_template: ""}
       end
 
