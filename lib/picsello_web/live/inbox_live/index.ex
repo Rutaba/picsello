@@ -283,6 +283,7 @@ defmodule PicselloWeb.InboxLive.Index do
                                                     %{last: last, messages: messages} ->
         sender = if message.outbound, do: "You", else: job.client.name
         same_sender = last && last.outbound == message.outbound
+        body = if message.body_text, do: message.body_text, else: message.body_html
 
         %{
           last: message,
@@ -291,7 +292,7 @@ defmodule PicselloWeb.InboxLive.Index do
               [
                 %{
                   id: message.id,
-                  body: message.body_text,
+                  body: body,
                   date:
                     strftime(current_user.time_zone, message.inserted_at, "%a %b %-d, %-I:%0M %p"),
                   outbound: message.outbound,
