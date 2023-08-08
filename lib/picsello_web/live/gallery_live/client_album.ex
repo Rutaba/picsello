@@ -22,6 +22,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     |> assign(:gallery_client, get_client_by_email(assigns))
     |> assign(:download_all_visible, false)
     |> assign(:selected_filter, false)
+    |> assign(:digitals, %{})
     |> assign(:client_proofing, "true")
     |> ok()
   end
@@ -173,9 +174,9 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
     socket |> client_photo_click(photo_id)
   end
 
-  def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info({:update_cart_count, %{order: order}}, %{assigns: %{gallery: gallery}} = socket) do
     socket
-    |> assign(:order, nil)
+    |> assign(:order, order)
     |> assign_cart_count(gallery)
     |> noreply()
   end
@@ -293,7 +294,7 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
   defp top_section(%{is_proofing: true} = assigns) do
     ~H"""
       <h3 {testid("album-title")} class="text-lg font-bold lg:text-3xl"><%= @album.name %></h3>
-      <p class="mt-2 text-lg font-normal">Select your favourite photos below
+      <p class="mt-2 text-lg font-normal">Select your favorite photos below
         and then send those selections to your photographer for retouching.
       </p>
     <.photos_count {assigns} />
