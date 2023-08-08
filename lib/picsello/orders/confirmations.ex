@@ -23,7 +23,6 @@ defmodule Picsello.Orders.Confirmations do
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
 
   import Ecto.Query, only: [from: 2]
-  import Money.Sigils
   import Ecto.Multi, only: [new: 0, put: 3, update: 3, run: 3, merge: 2, append: 2, insert: 3]
 
   @doc """
@@ -146,7 +145,7 @@ defmodule Picsello.Orders.Confirmations do
     |> run(:intent, &update_intent/2)
     |> run(:photographer_owes, &photographer_owes/2)
     |> merge(fn
-      %{order: %{products: [_ | _]} = order, photographer_owes: ~M[0]USD} = multi ->
+      %{order: %{products: [_ | _]} = order, photographer_owes: %{amount: 0}} = multi ->
         new()
         |> run(:confirm_order, fn _, _ -> confirm_order(order) end)
         |> update(:confirmed_order, Order.whcc_confirmation_changeset(order))
