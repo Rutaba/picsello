@@ -60,7 +60,7 @@ defmodule Mix.Tasks.InsertPhotoSizes do
     # end)
   end
 
-  def get_all_photos() do
+  defp get_all_photos() do
     from(p in Photos.active_photos(),
       limit: 100,
       where: is_nil(p.size) and p.inserted_at > ^Timex.shift(DateTime.utc_now(), months: -6)
