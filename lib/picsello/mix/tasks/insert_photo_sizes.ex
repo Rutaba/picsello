@@ -18,6 +18,8 @@ defmodule Mix.Tasks.InsertPhotoSizes do
   end
 
   defp assure_photo_size({_with_size, without_size}) do
+    Logger.info("photo count: #{Enum.count(without_size)}")
+
     without_size
     |> Enum.each(fn %{original_url: url, id: id} ->
       url = PhotoStorage.path_to_url(url)
@@ -33,7 +35,7 @@ defmodule Mix.Tasks.InsertPhotoSizes do
   end
 
   defp get_all_photos() do
-    from(p in Photos.active_photos())
+    from(p in Photos.active_photos(), limit: 1000)
     |> Repo.all()
   end
 
