@@ -22,11 +22,6 @@ defmodule Picsello.EmailAutomationsTest do
     {:ok, user: user}
   end
 
-  feature "testing", %{session: session} do
-    session
-    |> sleep(10000)
-  end
-
   feature "Checking side-manue click effects on headings and text color", %{session: session} do
     session
     |> visit("/email-automations")
@@ -278,12 +273,17 @@ defmodule Picsello.EmailAutomationsTest do
     |> assert_has(css("div", text: "Demo Name", count: 0))
     |> click(button("Edit email"))
     |> assert_text("Edit Wedding Email")
-    |> assert_text("Lead: Inquiry emails")
+    |> assert_text("Lead:")
     |> assert_text("Select email preset")
     |> assert_text("Subject Line")
     |> assert_text("Private Name")
     |> assert_text("Email Content")
     |> assert_text("View email variables")
+    |> assert_has(css("div[testid='variables']", count: 0))
+    |> click(css("button[id='view-variables']"))
+    |> assert_has(css("div[testid='variables']", count: 1))
+    |> click(css("use[href='/images/icons.svg#close-x']", count: 2, at: 1))
+    |> assert_has(css("div[testid='variables']", count: 0))
     |> assert_has(css("span", text: "Step 1", count: 1))
     |> assert_has(css("span", text: "Step 2", count: 0))
     |> fill_in(css("input[placeholder='Inquiry Email']"), with: "Demo Name")

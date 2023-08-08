@@ -105,14 +105,42 @@ defmodule Picsello.EmailAutomationsTest do
     |> find(css("div[testid='main-area']", count: 2, at: 0), fn div ->
       assert_has(div, css("div", text: "Leads", count: 0))
       assert_has(div, css("div", text: "Jobs", count: 2))
-      assert_has(div, css("div", text: "Galleries", count: 0))
+      assert_has(div, css("div", text: "Galleries: MyClient wedding", count: 0))
     end)
     |> find(css("div[testid='main-area']", count: 2, at: 1), fn div ->
       assert_has(div, css("div", text: "Leads", count: 0))
       assert_has(div, css("div", text: "Jobs", count: 0))
-      assert_has(div, css("div", text: "Galleries:MyClient wedding", count: 2))
+      assert_has(div, css("div", text: "Galleries: MyClient wedding", count: 2))
+    end)
+    |> visit("/jobs")
+    |> click(css("p", text: "MyClient", count: 2, at: 0))
+    |> scroll_into_view(css("section[testid='gallery section']"))
+    |> find(css("section[testid='gallery section']"), fn div ->
+      click(div, button("Add another gallery"))
+    end)
+    |> click(button("Get Started", count: 2, at: 0))
+    |> visit("/jobs")
+    |> click(css("p", text: "MyClient", count: 2, at: 0))
+    |> find(css("div[data-testid='inbox']"), fn div ->
+      click(div, button("View all"))
+    end)
+    |> find(css("div[testid='main-area']", count: 3, at: 0), fn div ->
+      assert_has(div, css("div", text: "Leads", count: 0))
+      assert_has(div, css("div", text: "Jobs", count: 2))
+      assert_has(div, css("div", text: "Galleries: MyClient wedding", count: 0))
+      assert_has(div, css("div", text: "Galleries: MyClient Wedding 2", count: 0))
+    end)
+    |> find(css("div[testid='main-area']", count: 3, at: 1), fn div ->
+      assert_has(div, css("div", text: "Leads", count: 0))
+      assert_has(div, css("div", text: "Jobs", count: 0))
+      assert_has(div, css("div", text: "Galleries: MyClient Wedding 2", count: 2))
+      assert_has(div, css("div", text: "Galleries: MyClient wedding", count: 0))
+    end)
+    |> find(css("div[testid='main-area']", count: 3, at: 2), fn div ->
+      assert_has(div, css("div", text: "Leads", count: 0))
+      assert_has(div, css("div", text: "Jobs", count: 0))
+      assert_has(div, css("div", text: "Galleries: MyClient wedding", count: 2))
+      assert_has(div, css("div", text: "Galleries: MyClient Wedding 2", count: 0))
     end)
   end
-
-
 end

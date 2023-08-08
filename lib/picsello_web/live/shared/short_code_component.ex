@@ -13,7 +13,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     })
     ~H"""
       <div>
-        <div class="flex items-center font-bold bg-gray-100 rounded-t-lg border-gray-200 text-blue-planning-300 p-2.5">
+        <div testid="variables" class="flex items-center font-bold bg-gray-100 rounded-t-lg border-gray-200 text-blue-planning-300 p-2.5">
           <.icon name="vertical-list" class="w-4 h-4 mr-2 text-blue-planning-300" />
           Email Variables
 
