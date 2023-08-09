@@ -24,12 +24,18 @@ defmodule Picsello.Invoices do
       timestamps(type: :utc_datetime)
     end
 
-    def changeset(%Stripe.Invoice{id: stripe_id} = params, %Order{id: order_id}) do
+    def changeset(%Stripe.Invoice{id: stripe_id} = params, %Order{
+          id: order_id,
+          currency: currency
+        }) do
       attrs = ~w[amount_due amount_paid amount_remaining description stripe_id status order_id]a
 
       cast(
         %__MODULE__{},
-        params |> Map.from_struct() |> Map.merge(%{stripe_id: stripe_id, order_id: order_id}),
+        params
+        |> Map.from_struct()
+        |> build_amounts(currency)
+        |> Map.merge(%{stripe_id: stripe_id, order_id: order_id}),
         attrs
       )
       |> validate_required(attrs)
@@ -44,6 +50,18 @@ defmodule Picsello.Invoices do
         Map.from_struct(params),
         ~w[amount_due amount_paid amount_remaining description status]a
       )
+    end
+
+    defp build_amounts(params, currency) do
+      %{amount_due: amount_due, amount_paid: amount_paid, amount_remaining: amount_remaining} =
+        params
+
+      %{
+        params
+        | amount_due: Money.new(amount_due, currency),
+          amount_paid: Money.new(amount_paid, currency),
+          amount_remaining: Money.new(amount_remaining, currency)
+      }
     end
   end
 
