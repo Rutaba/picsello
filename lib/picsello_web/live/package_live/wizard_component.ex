@@ -478,7 +478,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <% end %>
           </div>
           <div class="col-start-7">
-            <label class="flex items-center mt-8" {intro_hints_only("intro_hints_only_1")}>
+            <label class="flex items-center mt-8">
               <%= checkbox @f, :show_on_public_profile, class: "w-6 h-6 checkbox" %>
               <h1 class="text-xl ml-2 mr-1 font-bold">Show package on my Public Profile</h1>
             </label>

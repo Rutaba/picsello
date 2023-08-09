@@ -353,7 +353,7 @@ defmodule PicselloWeb.Live.Shared do
       <h3 class="font-bold">Balance to collect: <%= total_remaining_amount(@package_changeset) %></h3>
 
       <div class={classes("flex items-center bg-blue-planning-100 rounded-lg my-4 py-4", %{"hidden" => !@remaining_amount_zero?})}}>
-        <.intro_hint class="ml-4" content={"#"}/>
+        <.tooltip class="ml-4" content={"#"} id="currency" />
         <div class="pl-2">
           <b>Since your remaining balance is <%=@currency_symbol%>0.00, we'll mark your job as paid for.</b> Make sure to follow up with any emails as needed to your client.
         </div>

@@ -50,18 +50,6 @@ export default {
     // to see if the user has seen it yet or not
     const el = this.el;
     const introId = el.id;
-    const isHintsOnly = introId.includes('intro_hints_only'); // ran into a use case where we only need hints using phx-hook
-    const shouldSeeIntro = !isHintsOnly && JSON.parse(el.dataset.introShow); // turn to an actual boolean
-
-    // We are using hints as tooltips and they will
-    // using the data-attribute API to embed directly
-    // into the HTML to avoid JS bloat
-    // see https://introjs.com/docs/hints/attributes
-    introJs()
-      .setOptions({
-        hintShowButton: false,
-      })
-      .addHints();
 
     if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
@@ -73,25 +61,5 @@ export default {
       const introSteps = intros[introId](el);
       intro_tour(this, introSteps, introId);
     }
-  },
-  updated() {
-    // remove existing intro elements of previous page
-    document.querySelectorAll('.introjs-hint').forEach((el) => el.remove());
-
-    // add new intro elements to current page
-    introJs()
-      .setOptions({
-        hintShowButton: false,
-      })
-      .addHints();
-  },
-  destroyed() {
-    // Intro js doesn't have a method
-    // to delete itself from the DOM ran into
-    // and edge case where live view navgations
-    // need to force remove to reset the introHints
-    // for the next view
-    const hintsEl = document.querySelector('.introjs-hints');
-    hintsEl?.remove();
   },
 };
