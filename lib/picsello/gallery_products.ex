@@ -144,7 +144,6 @@ defmodule Picsello.GalleryProducts do
             "$[*] \? (@._id == $id).attributes[*]",
             ^%{id: "size"}
           ),
-        on: true,
         group_by: product.id,
         select: %{
           product_id: product.id,
