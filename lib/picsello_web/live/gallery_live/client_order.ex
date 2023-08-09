@@ -161,8 +161,8 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
         for retouching, you can always add more to your list.
       </p>
       <p class="mt-4 text-lg">
-        Simple select more of your favourite images, and send your list to <%= @photographer.name %> again.
-        They'll be notified that you've added new favourites to your list and get those ready for you
+        Simply select more of your favorite images, and send your list to <%= @photographer.name %> again.
+        They'll be notified that you've added new favourites to your list and get those ready for you.
       </p>
     </div>
     """
@@ -182,7 +182,7 @@ defmodule PicselloWeb.GalleryLive.ClientOrder do
     """
   end
 
-  defp message_heading(true), do: "Your Selections were Sent!"
+  defp message_heading(true), do: "Your selections were sent!"
   defp message_heading(false), do: "Thank you for your order!"
 
   defp get_order!(
