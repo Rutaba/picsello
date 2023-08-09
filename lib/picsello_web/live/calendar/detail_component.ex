@@ -1,4 +1,5 @@
 defmodule PicselloWeb.Calendar.Shared.DetailComponent do
+  @moduledoc false
   use Phoenix.Component
   import PicselloWeb.LiveHelpers
   import Phoenix.LiveComponent
