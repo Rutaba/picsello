@@ -4,7 +4,7 @@ defmodule Picsello.PaymentSchedule do
   import Ecto.Changeset
 
   schema "payment_schedules" do
-    field :price, Money.Ecto.Amount.Type
+    field :price, Money.Ecto.Map.Type
     field :due_at, :utc_datetime
     field :reminded_at, :utc_datetime
     field :paid_at, :utc_datetime

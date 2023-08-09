@@ -20,7 +20,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     Albums,
     Orders,
     Galleries.Watermark,
-    Notifiers.UserNotifier
+    Notifiers.UserNotifier,
+    Utils
   }
 
   alias Picsello.Galleries.Workers.PositionNormalizer
@@ -960,9 +961,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       PubSub.subscribe(Picsello.PubSub, "uploading:#{gallery_id}")
     end
 
+    currency = Picsello.Currency.for_gallery(gallery)
+
     socket
     |> assign(
       favorites_count: Galleries.gallery_favorites_count(gallery),
+      show_products: currency in Utils.products_currency(),
       gallery: gallery,
       album: album,
       page_title: page_title(socket.assigns.live_action),

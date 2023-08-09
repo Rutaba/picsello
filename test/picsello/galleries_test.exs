@@ -24,7 +24,7 @@ defmodule Picsello.GalleriesTest do
 
     test "create_gallery/1 with valid data creates a gallery" do
       user = insert(:user, name: "Jane Doe")
-      %{id: job_id} = insert(:lead)
+      %{id: job_id} = insert(:lead, package: insert(:package, currency: "USD"))
 
       assert {:ok, %Gallery{}} =
                Galleries.create_gallery(user, Map.put(@valid_attrs, :job_id, job_id))
@@ -32,7 +32,7 @@ defmodule Picsello.GalleriesTest do
 
     test "create_gallery/1 with valid data creates a gallery with gallery products" do
       user = insert(:user, name: "Jane Doe")
-      %{id: job_id} = insert(:lead)
+      %{id: job_id} = insert(:lead, package: insert(:package, currency: "USD"))
       insert(:category, deleted_at: DateTime.utc_now())
       insert(:category, hidden: true)
       %{id: active_category_id} = insert(:category)

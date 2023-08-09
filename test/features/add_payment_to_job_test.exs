@@ -13,7 +13,7 @@ defmodule Picsello.AddPaymentsToJobTest do
           name: "My Package",
           description: "My custom description",
           shoot_count: 1,
-          base_price: 297_000
+          base_price: %Money{amount: 297_000, currency: "USD"}
         },
         client: %{name: "John"}
       })

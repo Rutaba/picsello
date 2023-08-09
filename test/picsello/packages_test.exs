@@ -9,7 +9,8 @@ defmodule Picsello.PackagesTest do
                Download.changeset(%{
                  "includes_credits" => true,
                  "status" => :limited,
-                 "step" => :pricing
+                 "step" => :pricing,
+                 "currency" => "USD"
                })
 
       assert %{errors: [count: {_, validation}]} =
@@ -17,7 +18,8 @@ defmodule Picsello.PackagesTest do
                  "includes_credits" => true,
                  "count" => 0,
                  "status" => :limited,
-                 "step" => :pricing
+                 "step" => :pricing,
+                 "currency" => "USD"
                })
 
       assert :number = Keyword.get(validation, :validation)
@@ -26,7 +28,8 @@ defmodule Picsello.PackagesTest do
                Download.changeset(%Download{count: 0}, %{
                  "includes_credits" => true,
                  "status" => :limited,
-                 "step" => :pricing
+                 "step" => :pricing,
+                 "currency" => "USD"
                })
     end
   end

@@ -26,8 +26,8 @@ defmodule Picsello.GlobalSettings.Gallery do
     field(:watermark_size, :integer)
     field(:watermark_text, :string)
     field(:global_watermark_path, :string)
-    field(:buy_all_price, Money.Ecto.Amount.Type, default: @default_buy_all_price)
-    field(:download_each_price, Money.Ecto.Amount.Type, default: @default_each_price)
+    field(:buy_all_price, Money.Ecto.Map.Type, default: @default_buy_all_price)
+    field(:download_each_price, Money.Ecto.Map.Type, default: @default_each_price)
 
     belongs_to(:organization, Organization)
     timestamps()

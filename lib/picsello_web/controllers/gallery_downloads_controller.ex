@@ -73,10 +73,15 @@ defmodule PicselloWeb.GalleryDownloadsController do
 
   defp assure_photo_size({with_size, without_size}) do
     without_size
-    |> Task.async_stream(fn %{original_url: url, id: id} ->
-      {:ok, %{status: 200, body: body}} = PhotoStorage.path_to_url(url) |> Tesla.get()
-      %{id: id, size: byte_size(body)}
-    end)
+    |> Task.async_stream(
+      fn %{original_url: url, id: id} ->
+        case PhotoStorage.path_to_url(url) |> Tesla.get() do
+          {:ok, %{status: 200, body: body}} -> %{id: id, size: byte_size(body)}
+          _ -> %{id: id, size: 123_456}
+        end
+      end,
+      timeout: 15_000
+    )
     |> Enum.map(&elem(&1, 1))
     |> then(&Photos.update_photos_in_bulk(without_size, &1))
     |> then(fn {:ok, photos} -> photos end)

@@ -7,7 +7,7 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
 
   setup %{gallery: gallery} do
     Mox.stub(Picsello.PhotoStorageMock, :path_to_url, & &1)
-
+    insert(:user_currency, organization_id: gallery.job.client.organization.id)
     album = insert(:album, %{gallery_id: gallery.id})
     proofing_album = insert(:proofing_album, %{gallery_id: gallery.id})
     photo_ids = insert_photo(%{gallery: gallery, album: album, total_photos: 20})
@@ -50,7 +50,11 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     gallery_client =
       insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
 
-    insert(:order, gallery_client: gallery_client, gallery: gallery, placed_at: DateTime.utc_now())
+    insert(:order,
+      gallery_client: gallery_client,
+      gallery: gallery,
+      placed_at: DateTime.utc_now()
+    )
 
     visit_homepage(session)
     |> visit_view_all_galleries()

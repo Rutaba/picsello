@@ -9,17 +9,16 @@ defmodule Picsello.Package do
   schema "packages" do
     field :archived_at, :utc_datetime
     field :base_multiplier, :decimal, default: 1
-    field :base_price, Money.Ecto.Amount.Type
+    field :base_price, Money.Ecto.Map.Type
     field :description, :string
-    # field :download_status, Ecto.Enum, values: [:limited, :unlimited, :none]
     field :download_count, :integer
-    field :download_each_price, Money.Ecto.Amount.Type
+    field :download_each_price, Money.Ecto.Map.Type
     field :job_type, :string
     field :name, :string
     field :shoot_count, :integer
-    field :print_credits, Money.Ecto.Amount.Type
-    field :collected_price, Money.Ecto.Amount.Type
-    field :buy_all, Money.Ecto.Amount.Type
+    field :print_credits, Money.Ecto.Map.Type
+    field :collected_price, Money.Ecto.Map.Type
+    field :buy_all, Money.Ecto.Map.Type
     field :turnaround_weeks, :integer, default: 1
     field :schedule_type, :string
     field :fixed, :boolean, default: true
@@ -33,6 +32,13 @@ defmodule Picsello.Package do
     belongs_to :questionnaire_template, Picsello.Questionnaire
     belongs_to(:organization, Picsello.Organization)
     belongs_to(:package_template, __MODULE__, on_replace: :nilify)
+
+    belongs_to(:package_currency, Picsello.Currency,
+      references: :code,
+      type: :string,
+      foreign_key: :currency
+    )
+
     has_one(:job, Picsello.Job)
     has_one(:contract, Picsello.Contract)
 
@@ -57,11 +63,10 @@ defmodule Picsello.Package do
     end)
   end
 
-  @fields ~w[base_price organization_id name download_count download_each_price base_multiplier print_credits buy_all shoot_count turnaround_weeks]a
+  @fields ~w[base_price currency organization_id name download_count download_each_price base_multiplier print_credits buy_all shoot_count turnaround_weeks]a
   def changeset_for_create_gallery(package \\ %__MODULE__{}, attrs) do
     package
     |> cast(attrs, @fields)
-    |> put_change(:base_price, Money.new(0))
     |> validate_required(~w[download_count name download_each_price organization_id shoot_count]a)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
     |> then(fn changeset ->
@@ -82,16 +87,22 @@ defmodule Picsello.Package do
   end
 
   def import_changeset(package \\ %__MODULE__{}, attrs) do
-    base_price = package |> cast(attrs, [:base_price]) |> get_field(:base_price) || Money.new(0)
+    changeset = package |> cast(attrs, [:base_price, :currency])
+    currency = get_field(changeset, :currency)
+
+    base_price = get_field(changeset, :base_price) || Money.new(0, currency)
     skip_base_price = Money.zero?(base_price)
 
     package
     |> create_details(attrs, skip_description: true)
     |> update_pricing(attrs, skip_base_price: skip_base_price)
-    |> cast(attrs, ~w[collected_price]a)
+    |> cast(attrs, ~w[collected_price currency]a)
     |> then(fn changeset ->
       changeset
-      |> put_change(:collected_price, get_field(changeset, :collected_price) || Money.new(0))
+      |> put_change(
+        :collected_price,
+        get_field(changeset, :collected_price) || Money.new(0, currency)
+      )
       |> validate_money(:collected_price,
         greater_than_or_equal_to: 0,
         less_than_or_equal_to: base_price.amount
@@ -145,30 +156,37 @@ defmodule Picsello.Package do
         package_id = Ecto.Changeset.get_field(changeset, :id)
 
         changeset
-        |> validate_number(:shoot_count, greater_than_or_equal_to: shoot_count_minimum(package_id))
+        |> validate_number(:shoot_count,
+          greater_than_or_equal_to: shoot_count_minimum(package_id)
+        )
       else
         changeset
       end
     end)
   end
 
-  defp update_pricing(package, attrs, opts \\ []) do
+  def update_pricing(package, attrs, opts \\ []) do
     package
     |> cast(
       attrs,
-      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed base_price download_count download_each_price base_multiplier print_credits buy_all]a
+      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed base_price download_count download_each_price base_multiplier print_credits buy_all currency]a
     )
-    |> validate_required(~w[base_price download_count download_each_price]a)
+    |> validate_required(~w[base_price download_count download_each_price currency]a)
     |> then(fn changeset ->
+      currency = get_field(changeset, :currency) || Picsello.Currency.default_currency()
+      fallback_price = Money.new(0, currency)
+
       if Keyword.get(opts, :skip_base_price) do
         changeset
-        |> put_change(:base_price, Money.new(0))
-        |> put_change(:print_credits, Money.new(0))
+        |> put_change(:base_price, fallback_price)
+        |> put_change(:print_credits, fallback_price)
       else
         changeset
         |> validate_required(~w[base_price]a)
-        |> put_change(:print_credits, get_field(changeset, :print_credits) || Money.new(0))
-        |> validate_money(:base_price, greater_than_or_equal_to: 200)
+        |> put_change(
+          :print_credits,
+          get_field(changeset, :print_credits) || fallback_price
+        )
       end
     end)
     |> validate_number(:download_count, greater_than_or_equal_to: 0)
@@ -186,7 +204,8 @@ defmodule Picsello.Package do
       end
     end)
     |> then(fn changeset ->
-      base_price = get_field(changeset, :base_price) || Money.new(0)
+      currency = get_field(changeset, :currency)
+      base_price = get_field(changeset, :base_price) || Money.new(0, currency)
 
       changeset
       |> validate_money(:print_credits,
@@ -201,19 +220,25 @@ defmodule Picsello.Package do
   def digitals_price(%__MODULE__{} = package),
     do: Money.multiply(download_each_price(package), download_count(package))
 
-  def download_each_price(%__MODULE__{download_each_price: nil}), do: Money.new(0)
+  def download_each_price(%__MODULE__{download_each_price: nil, currency: currency}),
+    do: Money.new(0, currency)
 
-  def download_each_price(%__MODULE__{download_each_price: download_each_price}),
-    do: download_each_price
+  def download_each_price(%__MODULE__{download_each_price: %{amount: amount}, currency: currency}),
+    do: Money.new(amount, currency)
 
   def download_count(%__MODULE__{download_count: nil}), do: 0
   def download_count(%__MODULE__{download_count: download_count}), do: download_count
 
-  def base_price(%__MODULE__{base_price: nil}), do: Money.new(0)
-  def base_price(%__MODULE__{base_price: base}), do: base
+  def base_price(%__MODULE__{base_price: nil, currency: currency}), do: Money.new(0, currency)
 
-  def print_credits(%__MODULE__{print_credits: nil}), do: Money.new(0)
-  def print_credits(%__MODULE__{print_credits: credits}), do: credits
+  def base_price(%__MODULE__{base_price: %{amount: amount}, currency: currency}),
+    do: Money.new(amount, currency)
+
+  def print_credits(%__MODULE__{print_credits: nil, currency: currency}),
+    do: Money.new(0, currency)
+
+  def print_credits(%__MODULE__{print_credits: %{amount: amount}, currency: currency}),
+    do: Money.new(amount, currency)
 
   def adjusted_base_price(%__MODULE__{base_multiplier: multiplier} = package),
     do: package |> base_price() |> Money.multiply(multiplier)
@@ -233,12 +258,12 @@ defmodule Picsello.Package do
   def digitals_adjustment(%__MODULE__{} = package),
     do: package |> adjusted_digitals_price() |> Money.subtract(digitals_price(package))
 
-  def price(%__MODULE__{} = package) do
+  def price(%__MODULE__{currency: currency} = package) do
     print_credits_price =
       if package.print_credits_include_in_total do
         print_credits(package)
       else
-        Money.new(0)
+        Money.new(0, currency)
       end
 
     digitals_price =
