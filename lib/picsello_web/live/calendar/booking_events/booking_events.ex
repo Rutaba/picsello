@@ -187,17 +187,19 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
         title_one: "Single Event",
         subtitle_one: "Best for a single weekend or a few days you’d like to fill.",
         icon_one: "calendar-add",
-        btnone_event: "create-single-event",
+        btn_one_event: "create-single-event",
         title_two: "Repeating Event",
-        subtitle_two: "Best for an event you’d like to run every week, weekend, every month, etc.",
+        subtitle_two:
+          "Best for an event you’d like to run every week, weekend, every month, etc.",
         icon_two: "calendar-repeat",
-        btntwo_event: "create-repeating-event"
+        btn_two_event: "create-repeating-event"
       })
       |> noreply()
 
   @impl true
-  def handle_event("create-single-event", _, socket) do
+  def handle_info({:confirm_event, "create-single-event"}, socket) do
     socket
+    |> redirect(to: "/booking-events/new")
     |> noreply()
   end
 

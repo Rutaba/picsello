@@ -95,7 +95,7 @@ defmodule PicselloWeb.Shared.SelectionPopupModal do
         }) :: Phoenix.LiveView.Socket.t()
   def open(socket, assigns) do
     socket
-    |> open_modal(__MODULE__, assigns)
+    |> open_modal(__MODULE__, Map.put(assigns, :parent_pid, self()))
   end
 
   def render_modal(assigns) do
