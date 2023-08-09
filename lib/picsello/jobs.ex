@@ -51,7 +51,6 @@ defmodule Picsello.Jobs do
 
     from(j in query,
       left_join: shoots in subquery(shoots),
-      on: true,
       left_join: job_status in assoc(j, :job_status),
       left_join: package in assoc(j, :package),
       left_join: payment_schedules in assoc(j, :payment_schedules),

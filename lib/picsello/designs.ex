@@ -28,9 +28,7 @@ defmodule Picsello.Designs do
   def occasions() do
     from(designs in active(),
       join: face in jsonb_path_query(designs.api, "$.faces[0]"),
-      on: true,
       join: preview in jsonb_path_query(face, "$.layouts[0].previews.keyvalue().value", :first),
-      on: true,
       where: face ~> "height" |> type(:float) > face ~> "width" |> type(:float),
       group_by: 1,
       select: {designs.api ~> "occasion", preview |> jsonb_agg() ~> 0}
@@ -47,7 +45,6 @@ defmodule Picsello.Designs do
     photo_slots_query =
       from(designs in filtered_designs,
         join: faces in jsonb_path_query(designs.api, "$.faces[*]"),
-        on: true,
         group_by: designs.id,
         select: %{
           design_id: designs.id,
@@ -62,7 +59,6 @@ defmodule Picsello.Designs do
           "$.faces[0].layouts[0].previews.keyvalue().value",
           :first
         ),
-      on: true,
       join: product in assoc(designs, :product),
       join: photo_slots in subquery(photo_slots_query),
       on: photo_slots.design_id == designs.id,
@@ -84,7 +80,6 @@ defmodule Picsello.Designs do
     photo_slots_query =
       from(designs in filtered_designs,
         join: faces in jsonb_path_query(designs.api, "$.faces[*]"),
-        on: true,
         group_by: designs.id,
         select: %{
           design_id: designs.id,
@@ -99,7 +94,6 @@ defmodule Picsello.Designs do
           "$.faces[0].layouts[0].previews.keyvalue().value",
           :first
         ),
-      on: true,
       join: product in assoc(designs, :product),
       join: photo_slots in subquery(photo_slots_query),
       on: photo_slots.design_id == designs.id,
@@ -122,7 +116,6 @@ defmodule Picsello.Designs do
     photo_slots_query =
       from(designs in filtered_designs,
         join: faces in jsonb_path_query(designs.api, "$.faces[*]"),
-        on: true,
         group_by: designs.id,
         select: %{
           design_id: designs.id,
@@ -137,7 +130,6 @@ defmodule Picsello.Designs do
           "$.faces[1].layouts[0].previews.keyvalue().value",
           :first
         ),
-      on: true,
       join: product in assoc(designs, :product),
       join: photo_slots in subquery(photo_slots_query),
       on: photo_slots.design_id == designs.id,
