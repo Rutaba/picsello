@@ -27,6 +27,14 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @max_age 60 * 60 * 24 * 365 * 10
 
   @pages ~w(details contract questionnaire invoice idle)
+  @default_client_proposal_params %{
+    client_proposal: %{
+      title: "Welcome",
+      booking_panel_title: "Here's how to officially book your photo session:",
+      message:
+        "<p>Let's get your shoot booked!</p><p><br></p><p>We are so excited to work with you!</p><p><br></p><p>Your session will not be considered officially...</p><p><br></p><p>We can't wait to capture this time for you!</p>"
+    }
+  }
 
   @impl true
   def mount(%{"token" => token} = params, session, socket) do
@@ -34,6 +42,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> assign_defaults(session)
     |> assign_proposal(token)
     |> assign_stripe_status()
+    |> assign_default_client_proposal_params()
     |> maybe_confetti(params)
     |> maybe_set_booking_countdown()
     |> reorder_payment_schedules()
@@ -248,6 +257,18 @@ I look forward to capturing these memories for you!"}
       icon: nil,
       close_class: "btn-primary"
     })
+  end
+
+  defp assign_default_client_proposal_params(%{assigns: %{organization: organization}} = socket) do
+    socket
+    |> assign(
+      :default_client_proposal_params,
+      put_in(
+        @default_client_proposal_params,
+        [:client_proposal, :contact_button],
+        "Message #{organization.name}"
+      )
+    )
   end
 
   defp assign_proposal(%{assigns: %{current_user: current_user}} = socket, token) do

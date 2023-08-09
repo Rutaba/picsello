@@ -33,6 +33,32 @@ defmodule Picsello.Organization do
     end
   end
 
+  defmodule ClientProposal do
+    @moduledoc false
+    use Ecto.Schema
+    @primary_key false
+
+    embedded_schema do
+      field(:title, :string)
+      field(:booking_panel_title, :string)
+      field(:message, :string)
+      field(:contact_button, :string)
+    end
+
+    def changeset(signature, attrs) do
+      signature
+      |> cast(attrs, [:title, :booking_panel_title, :message, :contact_button])
+      |> validate_required([:title, :booking_panel_title, :message, :contact_button], message: "enter data in missing fields")
+      |> validate_format(:title, ~r/[a-z]/, message: ", at least one lower case character")
+      |> validate_format(:title, ~r/[A-Z]/, message: ", at least one upper case character")
+      |> validate_format(:booking_panel_title, ~r/[a-z]/, message: ", at least one lower case character")
+      |> validate_format(:booking_panel_title, ~r/[A-Z]/, message: ", at least one upper case character")
+      |> validate_length(:title, min: 5, max: 30, message: "length must be between 5 and 30")
+      |> validate_length(:booking_panel_title, min: 10, max: 50, message: "length must be between 10 and 50")
+      |> validate_length(:contact_button, min: 5, max: 35, message: "length must be between 5 and 35")
+    end
+  end
+
   schema "organizations" do
     field(:name, :string)
     field(:stripe_account_id, :string)
@@ -41,6 +67,7 @@ defmodule Picsello.Organization do
 
     embeds_one(:profile, Profile, on_replace: :update)
     embeds_one(:email_signature, EmailSignature, on_replace: :update)
+    embeds_one(:client_proposal, ClientProposal, on_replace: :update)
 
     has_many(:package_templates, Package, where: [package_template_id: nil])
     has_many(:campaigns, Campaign)
@@ -62,6 +89,12 @@ defmodule Picsello.Organization do
     organization
     |> cast(attrs, [])
     |> cast_embed(:email_signature)
+  end
+
+  def client_proposal_portal_changeset(organization, attrs) do
+    organization
+    |> cast(attrs, [])
+    |> cast_embed(:client_proposal)
   end
 
   def registration_changeset(organization, attrs, "" <> user_name),

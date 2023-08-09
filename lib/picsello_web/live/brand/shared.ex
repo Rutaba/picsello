@@ -33,4 +33,17 @@ defmodule PicselloWeb.Live.Brand.Shared do
     </div>
     """
   end
+
+  def client_proposal_preview(assigns) do
+    ~H"""
+    <div>
+      <div class="input-label mb-4">Client Proposal Preview</div>
+      <div class="shadow-2xl rounded-lg px-6 pb-6 raw_html">
+        <div>
+          <%= raw Phoenix.View.render_to_string(PicselloWeb.ClientProposalView, "show.html", organization: @organization, user: @user, default_client_proposal_params: @default_client_proposal_params) %>
+        </div>
+      </div>
+    </div>
+    """
+  end
 end

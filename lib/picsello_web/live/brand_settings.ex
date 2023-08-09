@@ -2,7 +2,18 @@ defmodule PicselloWeb.Live.BrandSettings do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
-  import PicselloWeb.Live.Brand.Shared, only: [email_signature_preview: 1, brand_logo_preview: 1]
+
+  import PicselloWeb.Live.Brand.Shared,
+    only: [email_signature_preview: 1, client_proposal_preview: 1, brand_logo_preview: 1]
+
+  @default_client_proposal_params %{
+    client_proposal: %{
+      title: "Welcome",
+      booking_panel_title: "Here's how to officially book your photo session:",
+      message:
+        "<p>Let's get your shoot booked!</p><p><br></p><p>We are so excited to work with you!</p><p><br></p><p>Your session will not be considered officially...</p><p><br></p><p>We can't wait to capture this time for you!</p>"
+    }
+  }
 
   @impl true
   def mount(_params, _session, socket) do
@@ -57,6 +68,21 @@ defmodule PicselloWeb.Live.BrandSettings do
           </div>
         </div>
       </.card>
+
+      <.card title="Update your client proposal introduction">
+        <div class={"grid sm:grid-cols-2 gap-6 sm:gap-12 sm:pr-10 sm:pb-10"}>
+          <div class="mt-4">
+            <div class="text-base-250">
+              Customize how you’d like to welcome your clients as they view your proposal or client booking portal as they start booking a session
+            </div>
+            <button phx-click="customize-portal" class="hidden mt-6 sm:block btn-primary intro-signature">Customize</button>
+          </div>
+          <div {testid("portal-preview")} class="flex flex-col">
+            <.client_proposal_preview organization={@organization} user={@current_user} default_client_proposal_params={@default_client_proposal_params}/>
+            <button phx-click="customize-portal" class="self-end block mt-12 sm:hidden btn-primary">Customize</button>
+          </div>
+        </div>
+      </.card>
     </.settings_nav>
     """
   end
@@ -76,14 +102,22 @@ defmodule PicselloWeb.Live.BrandSettings do
       |> noreply()
 
   @impl true
+  def handle_event("customize-portal", %{}, %{assigns: %{organization: organization}} = socket)
+    do
+      socket
+      |> PicselloWeb.Live.Brand.CustomizeClientProposalComponent.open(organization)
+      |> noreply()
+    end
+
+  @impl true
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
   @impl true
-  def handle_info({:update, organization}, socket) do
+  def handle_info({:update, organization, flash_message}, socket) do
     socket
     |> assign_organization(organization)
-    |> put_flash(:success, "Email signature saved")
+    |> put_flash(:success, flash_message)
     |> noreply()
   end
 
@@ -99,6 +133,15 @@ defmodule PicselloWeb.Live.BrandSettings do
   end
 
   defp assign_organization(socket, organization) do
-    socket |> assign(:organization, organization)
+    socket
+    |> assign(:organization, organization)
+    |> assign(
+      :default_client_proposal_params,
+      put_in(
+        @default_client_proposal_params,
+        [:client_proposal, :contact_button],
+        "Message #{organization.name}"
+      )
+    )
   end
 end
