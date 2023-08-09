@@ -1,7 +1,0 @@
-The files in this directory are used by various tests to pre-record
-external API queries and their response from that external API.
-
-This is done by the ExVCR module. 
-        
-The API tokens/credentials have been stripped out of these files.
-        
