@@ -7,7 +7,7 @@ export default {
     });
   },
   updated() {
-    tippy(`#${this.id}`, {
+    tippy(`#${this.el.id}`, {
       content: this.el.dataset.hint,
     });
   },
