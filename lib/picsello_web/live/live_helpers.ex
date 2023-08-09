@@ -368,7 +368,7 @@ defmodule PicselloWeb.LiveHelpers do
       |> Enum.into(%{class: "", id: nil})
 
     ~H"""
-    <span class={"inline-block relative #{@class}"} data-hint={"#{@content}"} data-hintposition="middle-middle" phx-hook="Tooltip" id={@id}><.icon name="tooltip" class="inline-block w-4 h-4 mr-2 rounded-sm fill-current text-blue-planning-300" /></span>
+    <span class={"inline-block relative cursor-pointer #{@class}"} data-hint={"#{@content}"} data-hintposition="middle-middle" phx-hook="Tooltip" id={@id}><.icon name="tooltip" class="inline-block w-4 h-4 mr-2 rounded-sm fill-current text-blue-planning-300" /></span>
     """
   end
 

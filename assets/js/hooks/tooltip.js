@@ -7,7 +7,6 @@ export default {
     });
   },
   updated() {
-    console.log(this.el.id);
     tippy(`#${this.id}`, {
       content: this.el.dataset.hint,
     });
