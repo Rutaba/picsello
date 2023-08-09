@@ -1,13 +1,11 @@
 defmodule Picsello.Repo.Migrations.AddCountriesTable do
   use Ecto.Migration
-  alias Picsello.Repo
-  import Ecto.Query
 
   @csv_file "./priv/repo/csv/countries.csv"
   def up do
-    create table(:countries) do
+    create table(:countries, primary_key: false) do
       add(:code, :string)
-      add(:name, :string)
+      add(:name, :string, primary_key: true)
     end
 
     @csv_file

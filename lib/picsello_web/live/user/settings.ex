@@ -23,6 +23,7 @@ defmodule PicselloWeb.Live.User.Settings do
   @impl true
   def mount(_params, _session, %{assigns: %{current_user: user}} = socket) do
     socket
+    |> assign(:current_user, Accounts.preload_address(user))
     |> assigns_changesets()
     |> assign(:promotion_code, Subscriptions.maybe_get_promotion_code?(user))
     |> ok()
@@ -371,11 +372,11 @@ defmodule PicselloWeb.Live.User.Settings do
         |> put_flash(:success, "User name changed successfully")
         |> assign(current_user: user)
         |> assign(:name_changeset, name_changeset(user))
-        |> noreply()
 
       {:error, changeset} ->
-        socket |> assign(name_changeset: changeset) |> noreply()
+        assign(socket, name_changeset: changeset)
     end
+    |> noreply()
   end
 
   @impl true
@@ -398,11 +399,11 @@ defmodule PicselloWeb.Live.User.Settings do
           :organization_address_changeset,
           organization_address_changeset(%{organization: organization})
         )
-        |> noreply()
 
       {:error, changeset} ->
-        socket |> assign(organization_address_changeset: changeset) |> noreply()
+        assign(socket, organization_address_changeset: changeset)
     end
+    |> noreply()
   end
 
   @impl true

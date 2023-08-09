@@ -3,6 +3,7 @@ defmodule Picsello.Country do
   use Ecto.Schema
   alias Picsello.Repo
 
+  @primary_key false
   schema "countries" do
     field :code, :string
     field :name, :string

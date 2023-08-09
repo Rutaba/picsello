@@ -130,7 +130,7 @@
           <%= labeled_input a, :city, label: "City", placeholder: "enter city...", class: "mt-4" %>
           <%= labeled_input a, :state, label: "State/Provice/Locality", placeholder: "enter state/provice/locality...", class: "mt-4" %>
           <%= labeled_input a, :zipcode, label: "Zipcode", placeholder: "enter zipcode if applicable...", class: "mt-4" %>
-          <%= labeled_select a, :country, Picsello.Country.all |> Enum.map(& &1.name), label: "Country", class: "mt-4" %>
+          <%= labeled_select a, :country_name, Picsello.Country.all |> Enum.map(& &1.name), label: "Country", class: "mt-4" %>
         <% end %>
 
         <div class="mt-5 col-span-2 text-right">

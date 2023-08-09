@@ -15,7 +15,8 @@ defmodule Picsello.Organization do
     Accounts.User,
     Repo,
     Profiles.Profile,
-    GlobalSettings.GalleryProduct
+    GlobalSettings.GalleryProduct,
+    Address
   }
 
   defmodule EmailSignature do
@@ -130,7 +131,6 @@ defmodule Picsello.Organization do
     field(:previous_slug, :string)
 
     embeds_one(:profile, Profile, on_replace: :update)
-    embeds_one(:address, Address, on_replace: :update)
     embeds_one(:email_signature, EmailSignature, on_replace: :update)
     embeds_one(:payment_options, PaymentOptions, on_replace: :update)
     embeds_one(:client_proposal, ClientProposal, on_replace: :update)
@@ -145,6 +145,7 @@ defmodule Picsello.Organization do
     has_many(:organization_job_types, OrganizationJobType, on_replace: :delete)
     has_one(:global_setting, Picsello.GlobalSettings.Gallery)
     has_one(:user, User)
+    has_one(:address, Address, on_replace: :update)
 
     timestamps()
   end
@@ -167,7 +168,7 @@ defmodule Picsello.Organization do
   def address_changeset(organization, attrs) do
     organization
     |> cast(attrs, [])
-    |> cast_embed(:address, required: true)
+    |> cast_assoc(:address, required: true)
   end
 
   def registration_changeset(organization, attrs, "" <> user_name),

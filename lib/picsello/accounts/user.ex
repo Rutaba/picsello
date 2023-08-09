@@ -179,6 +179,8 @@ defmodule Picsello.Accounts.User do
 
   @doc """
   A user changeset for changing the name.
+  Accept %Picsello.Accounts.User{} as first argument and map as second argument.
+  Returns %Ecto.Changeset{}
   """
   def name_changeset(user, attrs) do
     user
