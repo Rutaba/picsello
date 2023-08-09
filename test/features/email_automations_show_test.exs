@@ -102,6 +102,12 @@ defmodule Picsello.EmailAutomationsTest do
     |> find(css("div[data-testid='inbox']"), fn div ->
       click(div, button("View all"))
     end)
+    |> click(css("span", text: "Client Pays Retainer", count: 2, at: 0))
+    |> assert_has(css("button", text: "Send now", count: 1))
+    |> assert_has(css("button[disabled]", text: "Send now", count: 0))
+    |> assert_has(css("button[testid='email_stop_button']", count: 1))
+    |> click(css("button", text: "Send now"))
+    |> assert_has(css("button[disabled]", text: "Send now", count: 1))
     |> find(css("div[testid='main-area']", count: 2, at: 0), fn div ->
       assert_has(div, css("div", text: "Leads", count: 0))
       assert_has(div, css("div", text: "Jobs", count: 2))
