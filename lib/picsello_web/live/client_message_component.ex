@@ -94,7 +94,7 @@ defmodule PicselloWeb.ClientMessageComponent do
 
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <div class="grid grid-flow-row md:grid-flow-col md:auto-cols-fr md:gap-4 mt-2">
-          <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
+          <%= if Enum.any?(@preset_options), do: (labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12") %>
           <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "h-12", phx_debounce: "500" %>
         </div>
 
@@ -360,10 +360,10 @@ defmodule PicselloWeb.ClientMessageComponent do
       end)
 
     valid_emails? =
-      email_list
-      |> Enum.all?(fn email ->
-        Repo.exists?(Clients.get_client_query(user, email: email))
-      end)
+      Enum.any?(email_list) &&
+        Enum.all?(email_list, fn email ->
+          Repo.exists?(Clients.get_client_query(user, email: email))
+        end)
 
     if valid_emails? do
       socket

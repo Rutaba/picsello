@@ -19,6 +19,8 @@ defmodule Picsello.ClientBooksEventTest do
     |> Picsello.Organization.assign_stripe_account_changeset("stripe_id")
     |> Picsello.Repo.update!()
 
+    questionnaire = insert(:questionnaire)
+
     template =
       insert(:package_template,
         user: user,
@@ -26,7 +28,8 @@ defmodule Picsello.ClientBooksEventTest do
         name: "My custom package",
         download_count: 3,
         download_each_price: ~M[5000]USD,
-        base_price: ~M[1500]USD
+        base_price: ~M[1500]USD,
+        questionnaire_template_id: questionnaire.id
       )
 
     insert(:package_payment_schedule, %{package: template})

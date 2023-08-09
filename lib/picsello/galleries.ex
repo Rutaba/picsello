@@ -644,7 +644,8 @@ defmodule Picsello.Galleries do
         name: type,
         is_proofing: type == "proofing",
         is_finals: type == "finals",
-        set_password: false
+        set_password: false,
+        client_link_hash: UUID.uuid4()
       }
     ]
 
@@ -720,7 +721,9 @@ defmodule Picsello.Galleries do
   end
 
   defp gallery_session_tokens_query(gallery) do
-    from(st in SessionToken, where: st.resource_id == ^gallery.id and st.resource_type == :gallery)
+    from(st in SessionToken,
+      where: st.resource_id == ^gallery.id and st.resource_type == :gallery
+    )
   end
 
   @doc """

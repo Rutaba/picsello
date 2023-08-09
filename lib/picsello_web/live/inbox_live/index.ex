@@ -77,7 +77,7 @@ defmodule PicselloWeb.InboxLive.Index do
           <% end %>
         </div>
         <div class="line-clamp-1 font-semibold py-0.5"><%= @subtitle %></div>
-        <div class="line-clamp-1"><%= @message %></div>
+        <div class="line-clamp-1"><%= raw @message %></div>
       </div>
       <div class="relative flex flex-shrink-0">
         <%= @date %>
@@ -137,7 +137,7 @@ defmodule PicselloWeb.InboxLive.Index do
                 <%= if message.unread do %>
                   <div class="absolute bg-orange-inbox-300 rounded-full -top-2 -right-2 w-4 h-4"></div>
                 <% end %>
-                <span class="whitespace-pre-line"><%= message.body %></span>
+                <span class="whitespace-pre-line"><%= raw message.body %></span>
               </div>
             </div>
           <% end %>
@@ -226,11 +226,13 @@ defmodule PicselloWeb.InboxLive.Index do
       |> Repo.all()
       |> Repo.preload(job: :client)
       |> Enum.map(fn message ->
+        body = if(message.body_text, do: message.body_text, else: message.body_html)
+
         %{
           id: message.job_id,
           title: message.job.client.name,
           subtitle: Job.name(message.job),
-          message: message.body_text,
+          message: body,
           date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y")
         }
       end)
@@ -281,6 +283,7 @@ defmodule PicselloWeb.InboxLive.Index do
                                                     %{last: last, messages: messages} ->
         sender = if message.outbound, do: "You", else: job.client.name
         same_sender = last && last.outbound == message.outbound
+        body = if message.body_text, do: message.body_text, else: message.body_html
 
         %{
           last: message,
@@ -289,7 +292,7 @@ defmodule PicselloWeb.InboxLive.Index do
               [
                 %{
                   id: message.id,
-                  body: message.body_text,
+                  body: body,
                   date:
                     strftime(current_user.time_zone, message.inserted_at, "%a %b %-d, %-I:%0M %p"),
                   outbound: message.outbound,

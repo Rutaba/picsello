@@ -156,7 +156,9 @@ defmodule Picsello.Package do
         package_id = Ecto.Changeset.get_field(changeset, :id)
 
         changeset
-        |> validate_number(:shoot_count, greater_than_or_equal_to: shoot_count_minimum(package_id))
+        |> validate_number(:shoot_count,
+          greater_than_or_equal_to: shoot_count_minimum(package_id)
+        )
       else
         changeset
       end

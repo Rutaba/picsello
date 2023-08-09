@@ -94,7 +94,7 @@ defmodule Picsello.Workers.SyncEmailPresets do
           ]
         rescue
           e ->
-            Logger.warn("skipping row #{inspect(row)} because #{inspect(e)}")
+            Logger.warning("skipping row #{inspect(row)} because #{inspect(e)}")
             acc
         end
       end
