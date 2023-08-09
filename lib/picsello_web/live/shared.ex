@@ -8,6 +8,7 @@ defmodule PicselloWeb.Live.Shared do
   import Phoenix.HTML.Form
 
   import PicselloWeb.LiveModal, only: [footer: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
 
   import PicselloWeb.PackageLive.Shared,
     only: [package_basic_fields: 1, digital_download_fields: 1, current: 1]
@@ -778,8 +779,6 @@ defmodule PicselloWeb.Live.Shared do
       socket |> noreply()
     end
   end
-
-  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
 
   def handle_info({:redirect_to_gallery, gallery}, socket) do
     socket

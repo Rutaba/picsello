@@ -3,7 +3,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
   use PicselloWeb, :live_view
 
   import PicselloWeb.GalleryLive.Index, only: [update_gallery_listing: 1]
-  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3, new_gallery_path: 2]
+  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
 
   import PicselloWeb.Shared.CustomPagination,
     only: [

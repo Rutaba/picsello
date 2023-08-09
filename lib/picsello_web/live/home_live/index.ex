@@ -40,7 +40,7 @@ defmodule PicselloWeb.HomeLive.Index do
   import PicselloWeb.Gettext, only: [ngettext: 3]
 
   import PicselloWeb.GalleryLive.Shared,
-    only: [new_gallery_path: 2, clip_board: 2, cover_photo_url: 1, disabled?: 1]
+    only: [clip_board: 2, cover_photo_url: 1, disabled?: 1]
 
   import Ecto.Query
   import Ecto.Changeset, only: [get_change: 2]
