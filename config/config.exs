@@ -180,7 +180,8 @@ config :pdf_generator,
   raise_on_missing_wkhtmltopdf_binary: false
 
 config :mime, :types, %{
-  "text/calendar" => ["text/calendar"]
+  "text/calendar" => ["text/calendar"],
+  "application/xml" => ["xml"]
 }
 
 config :picsello, :exchange_rates,
