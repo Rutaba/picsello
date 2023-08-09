@@ -29,7 +29,7 @@
       <div class="h-auto">
         <div id={"replace-"} phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">
           <%= Enum.map(@job_types, fn type -> %>
-            <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"text-blue-planning-300" => @selected_job_type.job_type == type.job_type})}
+            <div class={classes("font-bold bg-base-250/10 rounded-lg cursor-pointer grid-item", %{"md:text-blue-planning-300" => @selected_job_type.job_type == type.job_type})}
             phx-click="assign_templates_by_type" phx-value-id={type.id}>
               <div class="flex items-center lg:h-11 pr-4 lg:pl-2 lg:py-4 pl-3 py-3 overflow-hidden text-sm transition duration-300 ease-in-out rounded-lg text-ellipsis hover:text-blue-planning-300" >
                 <a class="flex w-full">
