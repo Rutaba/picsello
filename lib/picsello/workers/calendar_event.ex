@@ -54,7 +54,7 @@ defmodule Picsello.Workers.CalendarEvent do
   end
 
   def perform(x) do
-    Logger.warn("Unknown job format #{inspect(x)}")
+    Logger.warning("Unknown job format #{inspect(x)}")
     :ok
   end
 
