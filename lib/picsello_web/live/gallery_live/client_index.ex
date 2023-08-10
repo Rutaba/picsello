@@ -218,9 +218,13 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     noreply(socket)
   end
 
-  def handle_info(:update_client_gallery_state, %{assigns: %{gallery: gallery}} = socket) do
+  def handle_info(:update_client_gallery_state, %{assigns: %{gallery: gallery, favorites_filter: favorites_filter}} = socket) do
     socket
+    |> assign_count(favorites_filter, gallery)
     |> assign(favorites_count: Galleries.gallery_favorites_count(gallery))
+    |> assign(:update_mode, "replace")
+    |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
