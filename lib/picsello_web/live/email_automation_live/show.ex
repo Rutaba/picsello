@@ -4,6 +4,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.JobLive.Shared, only: [assign_job: 2]
 
   import PicselloWeb.EmailAutomationLive.Shared,
     only: [
@@ -33,6 +34,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   @impl true
   def mount(%{"id" => id} = _params, _session, socket) do
     socket
+    |> assign_job(to_integer(id))
     |> assign(:job_id, to_integer(id))
     |> assign_email_schedules()
     |> assign_job_types()

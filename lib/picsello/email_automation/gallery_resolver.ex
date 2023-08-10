@@ -52,6 +52,8 @@ defmodule Picsello.EmailPresets.GalleryResolver do
     resolver |> photographer() |> Map.get(:time_zone) |> helpers.strftime(date, format)
   end
 
+  defp show_red_section(%__MODULE__{}), do: false
+
   defp helpers(%__MODULE__{helpers: helpers}), do: helpers
 
   def vars,
@@ -85,7 +87,7 @@ defmodule Picsello.EmailPresets.GalleryResolver do
           do: helpers(&1).album_url(client_link_hash)
         ),
       "album_password" => &(&1 |> gallery() |> Map.get(:password)),
-      "first_red_section" => false,
-      "second_red_section" => false
+      "first_red_section" => &show_red_section/1,
+      "second_red_section" => &show_red_section/1
     }
 end

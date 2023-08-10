@@ -1481,6 +1481,15 @@ defmodule PicselloWeb.JobLive.Shared do
     socket |> do_assign_job(job)
   end
 
+  def assign_job(%{assigns: %{current_user: current_user}} = socket, job_id) do
+    job =
+      current_user
+      |> Job.for_user()
+      |> Repo.get!(job_id)
+
+    socket |> do_assign_job(job)
+  end
+
   def validate_payment_schedule(%{assigns: %{payment_schedules: payment_schedules}} = socket) do
     due_at_list = payment_schedules |> Enum.sort_by(& &1.id, :asc) |> Enum.map(& &1.due_at)
     updated_due_at_list = due_at_list |> Enum.sort_by(& &1, {:asc, DateTime})
