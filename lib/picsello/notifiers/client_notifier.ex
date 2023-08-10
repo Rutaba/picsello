@@ -2,6 +2,9 @@ defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
 
+  import Picsello.Messages, only: [get_emails: 2]
+  import Money.Sigils
+
   alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery}
   alias Cart.Order
   require Logger
@@ -162,7 +165,8 @@ defmodule Picsello.Notifiers.ClientNotifier do
               }
             } = gallery,
           delivery_info: %{name: client_name, address: address, email: to_email},
-          album: album
+          album: album,
+          bundle_price: nil
         } = order,
         helpers
       ) do
@@ -181,37 +185,49 @@ defmodule Picsello.Notifiers.ClientNotifier do
         %{
           item_name: "Digital Download",
           item_quantity: 1,
-          item_price: Cart.price_display(digital),
-          item_is_digital: true
+          is_credit: digital.is_credit,
+          item_is_digital: true,
+          item_price: if(digital.is_credit, do: "$0.00", else: digital.price)
         }
       end
 
-    opts = [
-      client_name: client_name,
-      order_first_name: String.split(client_name, " ") |> List.first(),
-      photographer_organization_name: organization.name,
-      contains_digital: digitals != [],
-      contains_physical: products != [],
-      gallery_url: helpers.gallery_url(gallery),
-      logo_url: Picsello.Profiles.logo_url(organization),
-      order_address: products != [] && order_address(client_name, address),
-      order_date: helpers.strftime(time_zone, order.placed_at, "%-m/%-d/%y"),
-      order_items: products ++ digitals,
-      order_number: Picsello.Cart.Order.number(order),
-      order_shipping: order |> Cart.preload_products() |> Cart.total_shipping(),
-      order_subtotal:
-        Money.subtract(
-          Order.total_cost(order),
-          Cart.preload_products(order) |> Cart.total_shipping()
-        ),
-      order_total: Order.total_cost(order),
-      order_url:
-        if(order.album_id,
-          do: helpers.proofing_album_selections_url(album, gallery, order),
-          else: helpers.order_url(gallery, order)
-        ),
-      subject: "#{organization.name} - order ##{Picsello.Cart.Order.number(order)}"
-    ]
+    opts =
+      %{
+        client_name: client_name,
+        order_first_name: String.split(client_name, " ") |> List.first(),
+        photographer_organization_name: organization.name,
+        contains_digital: digitals != [],
+        contains_physical: products != [],
+        gallery_url: helpers.gallery_url(gallery),
+        gallery_name: gallery.name,
+        order_address: products != [] && order_address(client_name, address),
+        order_date: helpers.strftime(time_zone, order.placed_at, "%-m/%-d/%y"),
+        order_items: products ++ digitals,
+        order_number: Picsello.Cart.Order.number(order),
+        order_shipping: order |> Cart.preload_products() |> Cart.total_shipping(),
+        order_subtotal:
+          Money.subtract(
+            Order.total_cost(order),
+            Cart.preload_products(order) |> Cart.total_shipping()
+          ),
+        order_total: Order.total_cost(order),
+        order_url:
+          if(order.album_id,
+            do: helpers.proofing_album_selections_url(album, gallery, order),
+            else: helpers.order_url(gallery, order)
+          ),
+        subject: "#{organization.name} - order ##{Picsello.Cart.Order.number(order)}",
+        print_credits_remaining:
+          Cart.print_credit_remaining(gallery.id) |> Map.get(:print, ~M[0]USD),
+        print_credits_used:
+          Cart.preload_products(order).products
+          |> Enum.reduce(~M[0]USD, &Money.add(&2, &1.print_credit_discount)),
+        digital_credits_remaining:
+          Cart.digital_credit_remaining(gallery.id) |> Map.get(:digital, 0),
+        digital_credits_used: digital_credits_used(order.digitals),
+        email_signature: email_signature(organization)
+      }
+      |> Map.merge(logo_url(organization))
 
     order.album_id
     |> may_be_proofing_album_selection()
@@ -221,6 +237,61 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> deliver_later()
   end
 
+  def deliver_order_confirmation(
+        %{
+          gallery:
+            %{
+              job: %{
+                client: %{organization: %{user: %{time_zone: "" <> time_zone}} = organization}
+              }
+            } = gallery,
+          delivery_info: %{name: client_name, email: to_email},
+          bundle_price: bundle_price
+        } = order,
+        helpers
+      ) do
+    params =
+      %{
+        order_first_name: String.split(client_name, " ") |> List.first(),
+        photographer_organization_name: organization.name,
+        order_url: helpers.order_url(gallery, order),
+        order_number: Picsello.Cart.Order.number(order),
+        order_date: helpers.strftime(time_zone, order.placed_at, "%-m/%-d/%y"),
+        order_subtotal:
+          Money.subtract(
+            Order.total_cost(order),
+            Cart.preload_products(order) |> Cart.total_shipping()
+          ),
+        order_shipping: order |> Cart.preload_products() |> Cart.total_shipping(),
+        order_total: Order.total_cost(order),
+        contains_digital: true,
+        order_items: [
+          %{
+            item_name: "Digital Downloads Bundle",
+            item_quantity: "1",
+            item_price: bundle_price,
+            item_is_digital: true
+          }
+        ]
+      }
+      |> Map.merge(logo_url(organization))
+
+    sendgrid_template(:download_being_prepared_client, params)
+    |> to({client_name, to_email})
+    |> from({organization.name, "noreply@picsello.com"})
+    |> deliver_later()
+  end
+
+  defp digital_credits_used(digitals) do
+    Enum.reduce(digitals, 0, fn digital, acc ->
+      if digital.is_credit do
+        acc + 1
+      else
+        acc
+      end
+    end)
+  end
+
   def deliver_order_cancelation(
         %{
           delivery_info: %{email: email, name: client_name},
@@ -228,24 +299,25 @@ defmodule Picsello.Notifiers.ClientNotifier do
         } = order,
         helpers
       ) do
-    params = %{
-      logo_url: Picsello.Profiles.logo_url(organization),
-      headline: "Your order has been canceled",
-      client_name: client_name,
-      client_order_url: helpers.order_url(gallery, order),
-      client_gallery_url: helpers.gallery_url(gallery),
-      organization_name: organization.name,
-      email_signature: email_signature(organization),
-      order_number: Picsello.Cart.Order.number(order),
-      order_date: helpers.strftime(user.time_zone, order.placed_at, "%-m/%-d/%y"),
-      order_items:
-        for product <- order.products do
-          %{
-            item_name: Picsello.Cart.product_name(product),
-            item_quantity: Picsello.Cart.product_quantity(product)
-          }
-        end ++ List.duplicate(%{item_name: "Digital Download"}, length(order.digitals))
-    }
+    params =
+      %{
+        headline: "Your order has been canceled",
+        client_name: client_name,
+        client_order_url: helpers.order_url(gallery, order),
+        client_gallery_url: helpers.gallery_url(gallery),
+        organization_name: organization.name,
+        email_signature: email_signature(organization),
+        order_number: Picsello.Cart.Order.number(order),
+        order_date: helpers.strftime(user.time_zone, order.placed_at, "%-m/%-d/%y"),
+        order_items:
+          for product <- order.products do
+            %{
+              item_name: Picsello.Cart.product_name(product),
+              item_quantity: Picsello.Cart.product_quantity(product)
+            }
+          end ++ List.duplicate(%{item_name: "Digital Download"}, length(order.digitals))
+      }
+      |> Map.merge(logo_url(organization))
 
     sendgrid_template(:client_order_canceled_template, params)
     |> to(email)
@@ -285,12 +357,13 @@ defmodule Picsello.Notifiers.ClientNotifier do
         download_link,
         helpers
       ) do
-    params = %{
-      download_link: download_link,
-      logo_url: Picsello.Profiles.logo_url(organization),
-      name: name,
-      gallery_url: helpers.gallery_url(gallery)
-    }
+    params =
+      %{
+        download_url: download_link,
+        gallery_url: helpers.gallery_url(gallery),
+        order_first_name: String.split(name, " ") |> List.first()
+      }
+      |> Map.merge(logo_url(organization))
 
     sendgrid_template(:client_download_ready_template, params)
     |> to(email)
@@ -344,12 +417,12 @@ defmodule Picsello.Notifiers.ClientNotifier do
     params =
       Map.merge(
         %{
-          logo_url: if(organization.profile.logo, do: organization.profile.logo.url),
           organization_name: organization.name,
           email_signature: email_signature(organization)
         },
         params
       )
+      |> Map.merge(logo_url(organization))
 
     from_display = organization.name
 
@@ -380,6 +453,13 @@ defmodule Picsello.Notifiers.ClientNotifier do
     else
       String.split(recipients, ";")
       |> Enum.map(&{:email, String.trim(&1)})
+    end
+  end
+
+  defp logo_url(organization) do
+    case Picsello.Profiles.logo_url(organization) do
+      nil -> %{organization_name: organization.name}
+      url -> %{logo_url: url}
     end
   end
 
