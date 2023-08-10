@@ -218,6 +218,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
+  def handle_event("edit-marketing-event", %{"event-id" => id}, %{assigns: %{current_user: current_user}} = socket) do
+    socket
+    |> PicselloWeb.Live.Calendar.EditMarketingEvent.open(%{
+      event_id: id,
+      current_user: current_user
+    })
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("duplicate-event", %{"event-id" => id}, socket) do
     socket
     |> push_patch(to: Routes.calendar_booking_events_show_path(socket, :edit, duplicate: id))

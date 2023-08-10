@@ -86,6 +86,7 @@ defmodule Picsello.BookingEvent do
     field :location, :string
     field :address, :string
     field :thumbnail_url, :string
+    field :show_on_profile?, :boolean, default: false
     field(:status, Ecto.Enum, values: [:active, :disabled, :archive])
     belongs_to :package_template, Picsello.Package
     belongs_to :organization, Picsello.Organization
@@ -176,8 +177,10 @@ defmodule Picsello.BookingEvent do
   defp update_customize(booking_event, attrs) do
     booking_event
     |> cast(attrs, [
+      :name,
       :description,
-      :thumbnail_url
+      :thumbnail_url,
+      :show_on_profile?
     ])
     |> validate_required([
       :description,
