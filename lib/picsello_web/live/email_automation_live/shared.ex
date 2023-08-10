@@ -15,10 +15,10 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     EmailPresets.EmailPreset,
     EmailAutomations,
     EmailAutomationSchedules,
+    EmailAutomation.EmailSchedule,
+    EmailAutomation.EmailScheduleHistory,
     Repo
   }
-
-  alias Picsello.EmailAutomation.EmailSchedule
 
   # @impl true
   def handle_info({:update_automation, %{message: message}}, socket) do
@@ -657,12 +657,6 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     %{calendar: calendar, count: count} = explode_hours(email.total_hours)
     time_calendar = get_timex_calendar(calendar)
 
-    # filter_shoots_count =
-    #   job.shoots
-    #   |> Enum.filter(fn item ->
-    #     Timex.compare(today, item.starts_at, time_calendar) >= count
-    #   end)
-    #   |> Enum.count()
     filter_shoots_count =
       Enum.count(job.shoots, fn item ->
         Timex.compare(today, item.starts_at, time_calendar) >= count
@@ -716,9 +710,10 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       end)
       |> Enum.filter(&(&1 != nil))
 
-    previous_emails = EmailAutomationSchedules.get_schedules_by_job(job_id)
+    previous_emails_schedules = EmailAutomationSchedules.get_emails_by_job(EmailSchedule, job_id)
+    previous_emails_history = EmailAutomationSchedules.get_emails_by_job(EmailScheduleHistory, job_id)
 
-    if Enum.empty?(previous_emails) do
+    if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) do
       emails
     else
       []
@@ -784,10 +779,15 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     previous_emails =
       if order,
-        do: EmailAutomationSchedules.get_schedules_by_order(order.id),
-        else: EmailAutomationSchedules.get_schedules_by_gallery(gallery.id)
+        do: EmailAutomationSchedules.get_emails_by_order(EmailSchedule, order.id),
+        else: EmailAutomationSchedules.get_emails_by_gallery(EmailSchedule, gallery.id)
 
-    if Enum.empty?(previous_emails) do
+    previous_emails_history =
+      if order,
+        do: EmailAutomationSchedules.get_emails_by_order(EmailScheduleHistory, order.id),
+        else: EmailAutomationSchedules.get_emails_by_gallery(EmailScheduleHistory, gallery.id)
+
+    if Enum.empty?(previous_emails) and Enum.empty?(previous_emails_history) do
       emails
     else
       []
