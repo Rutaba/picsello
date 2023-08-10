@@ -1,5 +1,5 @@
 <div class="center-container px-6 pt-6">
-    <div class="flex text-4xl items-center ml-2">
+    <div class="flex text-4xl items-center">
         <.back_button to={Routes.home_path(@socket, :index)} icon_dimensions="w-3 h-3" icon_stroke="stroke-3" live_link_padding="p-1.5" live_link_right_padding="mr-2"/>
         <.crumbs class="text-sm text-base-250">
         <:crumb to={}>Calendar</:crumb>
@@ -8,35 +8,12 @@
     </div>
     <div class="flex mt-2"> 
         <h1 class="text-4xl font-bold">New event</h1>
-        <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-2">
+        <div class="flex items-center justify-center w-7 h-7 bg-base-200 rounded-lg p-1 ml-2 mt-2.5">
             <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
         </div>
-        <div class="ml-auto" data-offset="0" phx-hook="Select" id="id">
-            <button {testid("actions")} class="btn-tertiary px-3 h-10 py-1.5 flex items-center gap-3 mr-2 text-black xl:w-auto w-full">
-            Actions
-            <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-            <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
-            </button>
-            <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
-                <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                    <.icon name="envelope" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                    Create marketing email
-                </button>
-                <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                    <.icon name="duplicate_2" class="inline-block w-4 h-4 mt-1 mr-3 fill-blue-planning-300" />
-                    Duplicate
-                </button>
-                <button class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-                    <.icon name="eye" class="inline-block w-4 h-4 mr-3 text-red-sales-300" />
-                    Disable
-                </button>
-                <button class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-                    <.icon name="trash" class="inline-block w-4 h-4 mr-3 text-red-sales-300" />
-                    Archive
-                </button>
-            </div>
-        </div>
-        <button class="btn-tertiary px-3 h-10 py-1.5 flex items-center gap-3 mr-2 text-black xl:w-auto w-full">
+        <.actions_button type="heading"/>
+        <button class="btn-tertiary px-3 h-10 py-1.5 flex items-center mr-2 text-black xl:w-auto w-full">
+            <.icon name="eye" class="inline-block w-4 h-4 mr-2 stroke-3 text-blue-planning-300" />
             Client preview
         </button>
         <button class="btn-primary px-6 h-10 py-1.5 flex items-center gap-3 mr-2 text-white bg-black xl:w-auto w-full">
@@ -49,16 +26,16 @@
 </div>
 
 <div class="bg-base-200 h-auto">
-    <div class="center-container p-6 grid grid-cols-8 gap-10">
-        <div class="flex flex-col col-span-5 bg-white p-7 rounded-lg">
+    <div class="center-container p-6 grid grid-cols-10 gap-8">
+        <div class="flex flex-col col-span-7 bg-white p-7 rounded-lg">
             <div class="flex">
                 <div class="flex flex-col">
                     <p class="ml-2 mb-1 p-0.5 bg-blue-100 text-blue-planning-300 text-center w-28 h-6 rounded-lg font-bold text-sm">Single Event</p>
                     <h2 class="mb-1 text-2xl font-bold">Let's get you booked!</h2>
-                    <p class="text-gray-400">Here's an overview of your booking event:</p>
+                    <p class="text-base-250">Here's an overview of your booking event:</p>
                 </div>
                 <div class="ml-auto flex items-end">
-                    <button class="btn-tertiary px-3 h-10 py-1.5 flex items-center gap-3 ml-auto text-white bg-black xl:w-auto w-full">
+                    <button class="ml-auto btn-primary px-4 h-8 py-1.5 flex items-center gap-3 mr-2 text-white bg-black">
                         Add date
                     </button>
                 </div>
@@ -78,9 +55,9 @@
                     <button class="flex text-blue-planning-300 ml-auto items-center justify-center" phx-click="toggle-section" phx-value-section_id="first">
                         View details
                         <%= if !Enum.member?(@collapsed_sections, "first") do %>
-                            <.icon name="down" class="mt-0.5 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
+                            <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
                         <% else %>
-                            <.icon name="up" class="mt-0.5 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
+                            <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
 
                         <% end %>
                     </button>
@@ -105,107 +82,9 @@
                         
                         </div>
                     </div>
-                    <div class="grid grid-cols-7 items-center">
-                        <div class="col-span-2">
-                            5:00am - 5:15am
-                        </div>
-                        <div class="col-span-2">
-                            Open
-                        </div>
-                        <div class="col-span-2">
-                            -
-                        </div>
-                        <div>
-                            <div class="ml-auto h-8 flex justify-end" data-offset="0" phx-hook="Select" id="id">
-                                <button {testid("actions")} class="mr-0 btn-tertiary px-3 h-8 py-1.5 flex items-center gap-3 text-black xl:w-auto w-full">
-                                Actions
-                                <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-                                <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
-                                </button>
-                                <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
-                                    <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                                        <.icon name="closed-eye" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
-                                        Mark hidden
-                                    </button>
-                                    <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                                        <.icon name="client-icon" class="inline-block w-4 h-4 mt-1 mr-3 text-blue-planning-300" />
-                                        Reserve
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <hr class="my-3 col-span-7">
-                    </div>
-                    <div class="grid grid-cols-7 items-center">
-                        <div class="col-span-2">
-                            5:00am - 5:15am
-                        </div>
-                        <div class="text-gray-400 col-span-2">
-                            Booked (hidden)
-                        </div>
-                        <div class="col-span-2">
-                            -
-                        </div>
-                        <div>
-                            <div class="ml-auto h-8 flex justify-end" data-offset="0" phx-hook="Select" id="id">
-                                <button {testid("actions")} class="mr-0 btn-tertiary px-3 h-8 py-1.5 flex items-center gap-3 text-black xl:w-auto w-full">
-                                Actions
-                                <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-                                <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
-                                </button>
-                                <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
-                                    <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                                        <.icon name="eye" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
-                                        Mark open
-                                    </button>
-                                    <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                                        <.icon name="client-icon" class="inline-block w-4 h-4 mt-1 mr-3 text-blue-planning-300" />
-                                        Reserve
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <hr class="my-3 col-span-7">
-                    </div>
-                    <div class="grid grid-cols-7 items-center">
-                        <div class="text-blue-planning-300 underline col-span-2">
-                            5:00am - 5:15am
-                        </div>
-                        <div class="text-gray-400 col-span-2">
-                            Booked
-                        </div>
-                        <div class="text-blue-planning-300 underline col-span-2">
-                            ClientName
-                        </div>
-                        <div>
-                            <div class="ml-auto flex justify-end h-8" data-offset="0" phx-hook="Select" id="id">
-                                <button {testid("actions")} class="mr-0 btn-tertiary px-3 h-8 py-1.5 flex items-center gap-3 text-black xl:w-auto w-full">
-                                Actions
-                                <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-                                <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
-                                </button>
-                                <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
-                                    <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                                        <.icon name="gallery-camera" class="inline-block w-4 h-4 mr-3 fill-blue-planning-300" />
-                                        Go to job
-                                    </button>
-                                    <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                                        <.icon name="client-icon" class="inline-block w-4 h-4 mt-1 mr-3 text-blue-planning-300" />
-                                        View client
-                                    </button>
-                                    <button class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-                                        <.icon name="calendar" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
-                                        Reschedule
-                                    </button>
-                                    <button class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-                                        <.icon name="cross" class="inline-block w-4 h-4 mr-3 text-red-sales-300" />
-                                        Cancel
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <hr class="my-3 col-span-7">
-                    </div>
+                    <.slots_description time="4:45am - 5:00am" status="Open" client={nil}/>
+                    <.slots_description time="5:00am - 5:15am" status="booked (hidden)" client={nil}/>
+                    <.slots_description time="5:15am - 5:30am" status="Booked" client={"ClientName"}/>
                     <div class="flex justify-end">
                         <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-2">
                             <.icon name="envelope" class="w-4 h-4 text-blue-planning-300" />
@@ -228,122 +107,189 @@
                         <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300" />
                     </div>
                     <p class="text-2xl font-bold">Package</p>
-                    <button class="ml-auto btn-primary px-6 h-10 py-1.5 flex items-center gap-3 mr-2 text-white bg-black xl:w-auto w-full">
+                    <button class="ml-auto btn-primary px-4 h-8 py-1.5 flex items-center gap-3 text-white bg-black">
                         Choose
                     </button>
                 </div>
-                <div class="grid grid-cols-4 items-center border-b-4 text-lg border-blue-planning-300 my-4">
-                    <div class="text-gray-400 font-bold">
+                <div class="grid grid-cols-4 items-center border-b-4 text-lg border-blue-planning-300 mt-5 mb-4">
+                    <div class="text-base-250 font-bold">
                         Name
                     </div>
-                    <div class="text-gray-400 font-bold">
+                    <div class="text-base-250 font-bold">
                         Pricing
                     </div>
-                    <div class="text-gray-400 font-bold">
+                    <div class="text-base-250 font-bold">
                         Payment Schedule
                     </div>
                 </div>
                 <div class="grid grid-cols-4 mt-4">
                     <div class="flex flex-col pr-2">
                         <p class="text-lg font-bold">Graduate Shoot Basic</p>
-                        <p class="text-gray-400">Headshot</p>
+                        <p class="text-base-250">Headshot</p>
                     </div>
                     <div class="flex flex-col">
-                        <div class="flex">
+                        <div class="flex items-center">
                             <div class="mr-2">
                                 <.icon name="package" class="inline-block w-3 h-3 text-blue-planning-300" />
                             </div>
-                            <p class="text-gray-400">$250.00</p>
+                            <p class="text-base-250">$250.00</p>
                         </div>
-                        <div class="flex">
+                        <div class="flex items-center">
                             <div class="mr-2">
                                 <.icon name="photo" class="inline-block w-3 h-3 fill-blue-planning-300 text-blue-planning-300" />
                             </div>
-                            <p class="text-gray-400">$50.00/each</p>
+                            <p class="text-base-250">$50.00/each</p>
                         </div>
-                        <div class="flex">
+                        <div class="flex items-center">
                             <div class="mr-2">
                                 <.icon name="add-photos" class="inline-block w-3 h-3 text-blue-planning-300" />
                             </div>
-                            <p class="text-gray-400">No digital images inclulded</p>
+                            <p class="text-base-250">No digital images inclulded</p>
                         </div>
                     </div>
                     <div class="flex justify-start">
                         <div class="mr-2">
                             <.icon name="add-photos" class="inline-block w-3 h-3 text-blue-planning-300" />
                         </div>
-                        <p class="text-gray-400">$100.00 due to book + 2 other payments</p>
+                        <p class="text-base-250">$100.00 due to book + 2 other payments</p>
                     </div>
                     <div class="flex">
                         <button class="flex items-center h-8 px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 ml-auto mr-1" >
                             <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-white text-white" />
                             Edit
                         </button>
-                        <div class="h-8" data-offset="0" phx-hook="Select" id="id">
-                            <button {testid("actions")} class="btn-tertiary px-3 h-8 py-1.5 flex items-center gap-3 text-black xl:w-auto w-full">
-                            Actions
-                            <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-                            <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
-                            </button>
-                            <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
-                                <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                                    <.icon name="package" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                                    Replace package
-                                </button>
-                            </div>
-                        </div>
+                        <.actions_button type={"Package"}/>
                     </div>
                 </div>
             </div>
             <div class="mt-10 p-3 border-2 border-base-200 rounded-lg">
                 <div class="flex items-center">
                     <div class="mr-2">
-                        <.icon name="document_2" class="inline-block w-5 h-5 fill-blue-planning-300" />
+                        <.icon name="document_2" class="inline-block mb-0.5 w-5 h-5 fill-blue-planning-300" />
                     </div>
                     <p class="text-2xl font-bold">Client Documents</p>
                 </div>
-                <div class="grid grid-cols-1 items-center border-b-4 text-lg border-blue-planning-300 my-4">
-                    <div class="text-lg text-gray-400 font-bold">Name</div>
+                <div class="grid grid-cols-1 items-center border-b-4 text-lg border-blue-planning-300 mt-5 mb-4">
+                    <div class="text-lg text-base-250 font-bold">Name</div>
                 </div>
                 <div class="flex">
                     <div class="flex flex-col">
                         <p class="text-lg font-bold">Questionnaire</p>
-                        <p class="text-gray-400">Your Questionnaire</p>
+                        <p class="text-base-250">Your Questionnaire</p>
                     </div>
                     <div class="flex items-center ml-auto">
                         <button class="flex items-center h-8 px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 ml-auto mr-1" >
                             <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-white text-white" />
                             Edit
                         </button>
-                        <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-1">
+                        <button class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-1">
                             <.icon name="eye" class="w-4 h-4 text-blue-planning-300" />
-                        </div>
+                        </button>
                     </div>
                 </div>
                 <hr class="my-2">
                 <div class="flex">
                     <div class="flex flex-col">
                         <p class="text-lg font-bold">Contract</p>
-                        <p class="text-gray-400">Picsello Default Contract</p>
+                        <p class="text-base-250">Picsello Default Contract</p>
                     </div>
                     <div class="flex items-center ml-auto">
                         <button class="flex items-center h-8 px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 ml-auto mr-1" >
                             <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-white text-white" />
                             Edit
                         </button>
-                        <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-1">
+                        <button class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-1">
                             <.icon name="eye" class="w-4 h-4 text-blue-planning-300" />
-                        </div>
+                        </button>
                     </div>
                 </div>
                 <hr class="my-2"/>
             </div>
         </div>
-        <div class="bg-white col-span-3">
-            Marketing
+        <div class="bg-base-200 flex flex-col col-span-3">
+            <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3">
+                <div class="flex items-center mb-4">
+                    <div class="flex items-center">
+                        <.icon name="marketing" class="inline-block w-5 h-5 mr-3 mt-0.5 fill-blue-planning-300" />
+                    </div>
+                    <div class="text-xl font-bold">
+                        Marketing preview
+                    </div>
+                </div>
+                <div class="bg-white aspect-video mb-4">
+                    Pic Area
+                </div>
+                <div class="grid grid-cols-1">
+                    <div class="text-3xl font-bold">
+                        Fall minis
+                    </div>
+                    <div class="text-base-250 text-xl">
+                        $350.00
+                    </div>
+                    <div class="text-base-250 text-md">
+                        5 images included | 15 min session
+                    </div>
+                    <hr class="my-3">
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex items-center">
+                        <div class="flex items-center">
+                            <.icon name="marketing" class="inline-block w-4 h-4 mr-3 text-black" />
+                        </div>
+                        <div class="text-base-250 text-md">
+                            Aug 31, 2022 - Sep 01, 2022
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="flex items-center">
+                            <.icon name="location" class="inline-block w-4 h-4 mr-3 text-black" />
+                        </div>
+                        <div class="text-base-250 text-md">
+                            12345 Gabriel Street, Ries, Florida 97060
+                        </div>
+                    </div>
+                    <hr class="my-3">
+                </div>
+                <div class="flex flex-col mb-3 items-start">
+                    <p>
+                        <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                        <%= String.slice("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu a", 0..100) <> "..." %>
+                        <% else %>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu a
+                        <% end %>
+                    </p>
+                    <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
+                        <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                            Read more <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
+                        <% else %>
+                            Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
+                        <% end %>
+                    </button>
+                </div>
+                <button class="p-2 bg-stone-300 font-bold rounded-lg w-1/2">
+                    Edit marketing details
+                </button>
+            </div>
+            <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3 mt-6">
+                <div class="flex mb-4 items-center">
+                    <div class="mr-2">
+                        <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300" />
+                    </div>
+                    <div class="text-xl font-bold">
+                        Coupons
+                    </div>
+                </div>
+                <p class="mb-4"> 
+                    If you’d like to provide a coupon code to your clients to use at checkout, you can do so here!
+                </p>
+                <button class="p-2 bg-stone-300 font-bold rounded-lg w-1/3">
+                    Add coupon
+                </button>
+            </div>
         </div>
     </div>
 </div>
+
 
 
  
