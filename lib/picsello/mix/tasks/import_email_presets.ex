@@ -131,11 +131,13 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing weddings.</p>
-        <p style="color: red;">Try to preempt any questions you think they might have:</p>
-        <p style="color: red;">1. What is your process? Do you want to schedule a call with them? Meet in person?</p>
-        <p style="color: red;">2. Try to answer any frequently asked questions that often come up</p>
-        <p style="color: red;">3. If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing weddings.</span></p>
+        <p><span style="color: red;">Try to preempt any questions you think they might have:</span></p>
+        <p><span style="color: red;">1. What is your process? Do you want to schedule a call with them? Meet in person?</span></p>
+        <p><span style="color: red;">2. Try to answer any frequently asked questions that often come up</span></p>
+        <p><span style="color: red;">3. If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</span></p>
+        {{/first_red_section}}
         <p>When is your wedding date? Please reply to this email so we can check our availability for that date!</p>
         <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
@@ -340,7 +342,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>I am looking forward to photographing your wedding on {{session_date}}.</p>
         <p>I will be meeting you at {{session_time}} at {{session_location}}.</p>
         <p>I hope this week is as stress-free as the week of a wedding can be for you!</p>
-        <p style="color: red;">Perhaps include a last minute reminder of the shot list they wanted, the wedding day schedule, confirm who will be the liasions (with their contact info) on the day to help guide you with the people/key moments.</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Perhaps include a last minute reminder of the shot list they wanted, the wedding day schedule, confirm who will be the liasions (with their contact info) on the day to help guide you with the people/key moments.</span></p>
+        {{/first_red_section}}
         <p>I truly can't wait to capture your special day.</p>
         {{email_signature}}
         """
@@ -879,12 +883,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that you and your family will treasure for years to come.</p>
-        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing newborns.</p>
-        <p style="color: red;">Try to preempt any questions you think they might have:</p>
-        <p style="color: red;">- What is a session like with you?</p>
-        <p style="color: red;">- How much does a session cost</p>
-        <p style="color: red;">- How do they book? Can they book directly on your scheduling page?</p>
-        <p style="color: red;">- Any frequently asked questions that often come up (best time to photograph newborns, who can be in the session, safety training, your experience working with newborns)</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing newborns.</span></p>
+        <p><span style="color: red;">Try to preempt any questions you think they might have:</span></p>
+        <p><span style="color: red;">- What is a session like with you?</span></p>
+        <p><span style="color: red;">- How much does a session cost</span></p>
+        <p><span style="color: red;">- How do they book? Can they book directly on your scheduling page?</span></p>
+        <p><span style="color: red;">- Any frequently asked questions that often come up (best time to photograph newborns, who can be in the session, safety training, your experience working with newborns)</span></p>
+        {{/first_red_section}}
         <p>If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
         <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
@@ -1030,7 +1036,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         name: "Payments - paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
-
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
         <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
@@ -1086,7 +1091,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>I am looking forward to  your newborn photoshoot on {{session_date}} at {{session_time}} at {{session_location}}. I'm sending along a reminder about how to best prepare for our upcoming shoot. Please read through as it is very helpful to our shoot!</p>
-        <p stype="color: red;"><span stype="font-weight: bold;">Wardrobe</span> Please tailor to create your own wardrobe guidelines.</p>
+        {{#first_red_section}}
+        <p><span style="color: red;"><span stype="font-weight: bold;">Wardrobe</span> Please tailor to create your own wardrobe guidelines.</span></p>
+        {{/first_red_section}}
         <p>Depending upon what you want from the shoot, you can choose fun, casual clothes or something more dressy. Make sure that the clothes are timeless as possible. Creams, whites, off whites and neutrals look timeless in newborn images.  Avoid really busy logos so the photographs let your family, rather than the clothes, shine.  Please avoid onesies with wording on them (like big brother, little sister)  as well as collared shirts or dresses for newborns - they just don't photograph well.</p>
         <p style="font-weight: bold;">Preparation Tips</p>
         <p>The morning of your session, be sure to give the baby a bath and bring extra wipes for a last minute nose cleaning (very important to have a clean nose!) and for eye boogers! The bath really helps for a fantastic shoot.</p>
@@ -1220,8 +1227,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I hope everyone is doing well and you are loving your newborn portraits!  </p>
         <p>As you know, little ones change so fast. I know how much joy it brings us to look back at the many stages of kids’ lives through beautiful photographs. I’d love the chance to document your family as you grow.</p>
-        <p>So you don't miss how fast your little one grows, I do offer a baby's first year package - this includes sitter session and one year portraits and cake smash. Here is more information on the package <span style="color: red; font-style: italic;">"insert link here or write the package details below".</span></p>
-        <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here <span style="color: red; font-style: italic;">"insert your scheduling page link here".</span></p>
+        <p>So you don't miss how fast your little one grows, I do offer a baby's first year package - this includes sitter session and one year portraits and cake smash. Here is more information on the package {{#first_red_section}}<span style="color: red; font-style: italic;">"insert link here or write the package details below".</span>{{/first_red_section}}</p>
+        <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here {{#second_red_section}}<span style="color: red; font-style: italic;">"insert your scheduling page link here".</span>{{/second_red_section}}</p>
         <p>Forgive me if we already discussed this - I have to schedule automated emails or I would forget!</span>
         <p>Reply to this email if you don't see a date you need or if you have any questions!</p>
         <p>I can’t wait to see you again!</p>
@@ -1241,8 +1248,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I hope everyone is doing well and you are loving your newborn portraits!</p>
         <p>As you know, little ones change so fast. I know how much joy it brings us to look back at the many stages of kids’ lives through beautiful photographs. I’d love the chance to document your family as you grow.</p>
-        <p>So you don't miss how fast your little one grows, I do offer a baby's first year package - this includes sitter session and one year portraits and cake smash. Here is more information on the package <span style="color: red; font-style: italic;">"insert link here or write the package details below".</span></p>
-        <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here <span style="color: red; font-style: italic;">"insert your scheduling page link here".</span></p>
+        <p>So you don't miss how fast your little one grows, I do offer a baby's first year package - this includes sitter session and one year portraits and cake smash. Here is more information on the package {{#first_red_section}}<span style="color: red; font-style: italic;">"insert link here or write the package details below".</span>{{/first_red_section}}</p>
+        <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here {{#second_red_section}}<span style="color: red; font-style: italic;">"insert your scheduling page link here".</span>{{/second_red_section}}</p>
         <p>Forgive me if we already discussed this - I have to schedule automated emails or I would forget!</p>
         <p>Reply to this email if you don't see a date you need or if you have any questions!</p>
         <p>I can’t wait to see you again!</p>
@@ -1665,12 +1672,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that you and your family will treasure for years to come.</p>
-        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing familys.</p>
-        <p style="color: red;">Try to preempt any questions you think they might have:</p>
-        <p style="color: red;">- What is a session like with you?</p>
-        <p style="color: red;">- How much does a session cost</p>
-        <p style="color: red;">- How do they book? Can they book directly on your scheduling page?</p>
-        <p style="color: red;">- Any frequently asked questions that often come up</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing familys.</span></p>
+        <p><span style="color: red;">Try to preempt any questions you think they might have:</span></p>
+        <p><span style="color: red;">- What is a session like with you?</span></p>
+        <p><span style="color: red;">- How much does a session cost</span></p>
+        <p><span style="color: red;">- How do they book? Can they book directly on your scheduling page?</span></p>
+        <p><span style="color: red;">- Any frequently asked questions that often come up</span></p>
+        {{/first_red_section}}
         <p>If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
         <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
@@ -1816,7 +1825,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         name: "Payments - paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
-
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
         <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
@@ -1981,7 +1989,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I had an absolute blast photographing your family recently and would love to hear from you about your experience.</p>
         <p>Are you enjoying your photos? Do you need any help choosing the right products? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget!</p>
+        {{#first_red_section}}
         <p>Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on google will really help my small business!  <span style="color: red; font-style: italic;">"Insert your google review link here"</span>  It would mean the world to me!</p>
+        {{/first_red_section}}
         <p>Thanks again! I look forward to hearing from you again next time you’re in need of photography!</p>
         {{email_signature}}
         """
@@ -1999,8 +2009,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I hope you are doing well. It's been a while!</p>
         <p>I loved spending time with your family and I just loved our shoot. Assuming you’re in the habit of taking annual family photos (and there are so many good reasons to do so) I'd love to be your photographer again.</p>
+        {{#first_red_section}}
         <p>My current price list is <span style="color: red; font-style: italic;">"insert your pricing link".</span></p>
         <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here <span style="color: red; font-style: italic;">"insert your scheduling page link here".</span></p>
+        {{/first_red_section}}
         <p>Reply to this email if you don't see a date you need or if you have any questions!</p>
         <p>I can’t wait to see you again!</p>
         {{email_signature}}
@@ -2423,12 +2435,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that you and your mini will treasure for years to come.</p>
-        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing mini sessions.</p>
-        <p style="color: red;">Try to preempt any questions you think they might have:</p>
-        <p style="color: red;">- What is a mini session like with you?</p>
-        <p style="color: red;">- How much does a session cost</p>
-        <p style="color: red;">- How do they book? Can they book directly on your scheduling page?</p>
-        <p style="color: red;">- Any frequently asked questions that often come up</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing mini sessions.</span></p>
+        <p><span style="color: red;">Try to preempt any questions you think they might have:</span></p>
+        <p><span style="color: red;">- What is a mini session like with you?</span></p>
+        <p><span style="color: red;">- How much does a session cost</span></p>
+        <p><span style="color: red;">- How do they book? Can they book directly on your scheduling page?</span></p>
+        <p><span style="color: red;">- Any frequently asked questions that often come up</span></p>
+        {{/first_red_section}}
         <p>If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
         <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
@@ -2574,7 +2588,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         name: "Payments - paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
-
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
         <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
@@ -2739,7 +2752,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I had an absolute blast photographing your family recently and would love to hear from you about your experience.</p>
         <p>Are you enjoying your photos? Do you need any help choosing the right products? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget!</p>
+        {{#first_red_section}}
         <p>Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on google will really help my small business!  <span style="color: red; font-style: italic;">"Insert your google review link here"</span>  It would mean the world to me!</p>
+        {{/first_red_section}}
         <p>Thanks again! I look forward to hearing from you again next time you’re in need of photography!</p>
         {{email_signature}}
         """
@@ -2757,9 +2772,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I hope you are doing well. It's been a while!</p>
         <p>I loved spending time with your mini and I just loved our shoot. Assuming you’re in the habit of taking annual family photos (and there are so many good reasons to do so) I'd love to be your photographer again.</p>
+        {{#first_red_section}}
         <p>Our current price list for full sessions can be found in our pricing guide <span style="color: red; font-style: italic;">"insert your pricing link".</span> here</p>
         <p>The latest information on current mini-sessions can be found here <span style="color: red; font-style: italic;">"insert mini session calendar link / public profile"</span> here</p>
         <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here <span style="color: red; font-style: italic;">"insert your scheduling page link here".</span></p>
+        {{/first_red_section}}
         <p>Reply to this email if you don't see a date you need or if you have any questions!</p>
         <p>I can’t wait to see you again!</p>
         {{email_signature}}
@@ -3182,12 +3199,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that you and your headshot will treasure for years to come.</p>
-        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing headshots.</p>
-        <p style="color: red;">Try to preempt any questions you think they might have:</p>
-        <p style="color: red;">- What is a session like with you?</p>
-        <p style="color: red;">- How much does a session cost</p>
-        <p style="color: red;">- How do they book? Can they book directly on your scheduling page?</p>
-        <p style="color: red;">- Any frequently asked questions that often come up</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing headshots.</span></p>
+        <p><span style="color: red;">Try to preempt any questions you think they might have:</span></p>
+        <p><span style="color: red;">- What is a session like with you?</span></p>
+        <p><span style="color: red;">- How much does a session cost</span></p>
+        <p><span style="color: red;">- How do they book? Can they book directly on your scheduling page?</span></p>
+        <p><span style="color: red;">- Any frequently asked questions that often come up</span></p>
+        {{/first_red_section}}
         <p>If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
         <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
@@ -3333,7 +3352,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         name: "Payments - paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
-
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
         <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
@@ -3390,7 +3408,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>I am looking forward to your photoshoot on {{session_date}} at {{session_time}} at {{session_location}}.</p>
         <p>How to plan for your shoot:</p>
         <p>1. Plan ahead to look and feel your best. Be sure to get a manicure, facial etc - whatever makes you feel confident. If you need hair and makeup recommendations let me know!</p>
-        <p>2. Think through how these photos will be used and what you most want people who look at them to understand about you. Do you want to project strength and competence? Friendliness and approachability? Trustworthiness? It can help to think through what you want your clients or audience to feel when they see your photo by imagining sitting across from that person. What would you want to be wearing? What do you want your clients or audience to feel about you. All of this comes through in a great headshot photo.<span style="color: red; font-style: italic;">* insert link to your wardrobe guide or what you recommend for headshots*</span></p>
+        <p>2. Think through how these photos will be used and what you most want people who look at them to understand about you. Do you want to project strength and competence? Friendliness and approachability? Trustworthiness? It can help to think through what you want your clients or audience to feel when they see your photo by imagining sitting across from that person. What would you want to be wearing? What do you want your clients or audience to feel about you. All of this comes through in a great headshot photo.{{#first_red_section}}<span style="color: red; font-style: italic;">* insert link to your wardrobe guide or what you recommend for headshots*</span>{{/first_red_section}}</p>
         <p>3. Don’t stress! We are working together to make these photos. I will help guide you through the process to ensure that you look amazing in your photos.</p>
         <p>I am looking forward to working with you!</p>
         {{email_signature}}
@@ -3487,7 +3505,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I had an absolute blast photographing your family recently and would love to hear from you about your experience.</p>
         <p>Are you enjoying your photos? Do you need any help choosing the right products? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget!</p>
+        {{#first_red_section}}
         <p>Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on google will really help my small business!  <span style="color: red; font-style: italic;">"Insert your google review link here"</span>  It would mean the world to me!</p>
+        {{/first_red_section}}
         <p>Thanks again! I look forward to hearing from you again next time you’re in need of photography!</p>
         {{email_signature}}
         """
@@ -3505,8 +3525,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I hope you are doing well. It's been a while!</p>
         <p>I loved spending time with you and I just loved our shoot. I wanted to check in to see if you have any other photography needs (or want another headshot!)</p>
+        {{#first_red_section}}
         <p>I also offer the following <span style="color: red; font-style: italic;">*list your services*</span>.  Our current price list for these sessions can be found in our pricing guide <span style="color: red; font-style: italic;">"insert your pricing link" here.</span></p>
         <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here <span style="color: red; font-style: italic;">"insert your scheduling page link here".</span></p>
+        {{/first_red_section}}
         <p>Reply to this email if you don't see a date you need or if you have any questions!</p>
         <p>I can’t wait to see you again!</p>
         {{email_signature}}
@@ -3929,12 +3951,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that you and your portrait will treasure for years to come.</p>
-        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing portraits.</p>
-        <p style="color: red;">Try to preempt any questions you think they might have:</p>
-        <p style="color: red;">- What is a session like with you?</p>
-        <p style="color: red;">- How much does a session cost</p>
-        <p style="color: red;">- How do they book? Can they book directly on your scheduling page?</p>
-        <p style="color: red;">- Any frequently asked questions that often come up</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing portraits.</span></p>
+        <p><span style="color: red;">Try to preempt any questions you think they might have:</span></p>
+        <p><span style="color: red;">- What is a session like with you?</span></p>
+        <p><span style="color: red;">- How much does a session cost</span></p>
+        <p><span style="color: red;">- How do they book? Can they book directly on your scheduling page?</span></p>
+        <p><span style="color: red;">- Any frequently asked questions that often come up</span></p>
+        {{/first_red_section}}
         <p>If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
         <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
@@ -4080,7 +4104,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         name: "Payments - paid in full email",
         subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
         body_template: """
-
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for your payment in the amount of {{payment_amount}}.</p>
         <p>You are now officially paid in full for your shoot on {{#session_date}} on {{session_date}} at {{session_time}} at {{session_location}}{{/session_date}}.</p>
@@ -4137,7 +4160,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>I am looking forward to your photoshoot on {{session_date}} at {{session_time}} at {{session_location}}.</p>
         <p>How to plan for your shoot:</p>
         <p>1. Plan ahead to look and feel your best. Be sure to get a manicure, facial etc - whatever makes you feel confident. If you need hair and makeup recommendations let me know!</p>
-        <p>2. Think through how these photos will be used and what you most want people who look at them to understand about you. What would you want to be wearing? What do you want your audience to feel about you. All of this comes through in a great portrait photo.<span style="color: red; font-style: italic;">* insert link to your wardrobe guide or what you recommend for Portraits*</span></p>
+        <p>2. Think through how these photos will be used and what you most want people who look at them to understand about you. What would you want to be wearing? What do you want your audience to feel about you. All of this comes through in a great portrait photo.{{#first_red_section}}<span style="color: red; font-style: italic;">* insert link to your wardrobe guide or what you recommend for Portraits*</span>{{/first_red_section}}</p>
         <p>3.  Don’t stress! We are working together to make these photos. I will help guide you through the process to ensure that you look amazing in your photos.</p>
         <p>I am looking forward to working with you!</p>
         {{email_signature}}
@@ -4234,7 +4257,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I had an absolute blast photographing your family recently and would love to hear from you about your experience.</p>
         <p>Are you enjoying your photos? Do you need any help choosing the right products? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget!</p>
+        {{#first_red_section}}
         <p>Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on google will really help my small business!  <span style="color: red; font-style: italic;">"Insert your google review link here"</span>  It would mean the world to me!</p>
+        {{/first_red_section}}
         <p>Thanks again! I look forward to hearing from you again next time you’re in need of photography!</p>
         {{email_signature}}
         """
@@ -4252,8 +4277,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I hope you are doing well. It's been a while!</p>
         <p>I loved spending time with you and I just loved our shoot. I wanted to check in to see if you have any other photography needs (or want another headshot!)</p>
+        {{#first_red_section}}
         <p>I also offer the following <span style="color: red; font-style: italic;">*list your services*</span>.  Our current price list for these sessions can be found in our pricing guide <span style="color: red; font-style: italic;">"insert your pricing link" here.</span></p>
         <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here <span style="color: red; font-style: italic;">"insert your scheduling page link here".</span></p>
+        {{/first_red_section}}
         <p>Reply to this email if you don't see a date you need or if you have any questions!</p>
         <p>I can’t wait to see you again!</p>
         {{email_signature}}
@@ -4676,12 +4703,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that you and your boudoir will treasure for years to come.</p>
-        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing boudoir shoots.</p>
-        <p style="color: red;">Try to preempt any questions you think they might have:</p>
-        <p style="color: red;">- What is a session like with you?</p>
-        <p style="color: red;">- How much does a session cost</p>
-        <p style="color: red;">- How do they book? Can they book directly on your scheduling page?</p>
-        <p style="color: red;">- Any frequently asked questions that often come up</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing boudoir shoots.</span></p>
+        <p><span style="color: red;">Try to preempt any questions you think they might have:</span></p>
+        <p><span style="color: red;">- What is a session like with you?</span></p>
+        <p><span style="color: red;">- How much does a session cost</span></p>
+        <p><span style="color: red;">- How do they book? Can they book directly on your scheduling page?</span></p>
+        <p><span style="color: red;">- Any frequently asked questions that often come up</span></p>
+        {{/first_red_section}}
         <p>If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
         <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
@@ -4884,7 +4913,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Really help your client prepare for the shoot, how will you make them feel comfortable, what to expect, how can they prepare for their shoot.</p>
         <p>How to plan for your shoot:</p>
         <p>1. Plan ahead to look and feel your best. Be sure to get a manicure, facial etc - whatever makes you feel confident. If you need hair and makeup recommendations let me know!</p>
-        <p>2. Think through how these photos will be used and what you most want people who look at them to understand about you. What would you want to be wearing? What do you want your audience to feel about you. All of this comes through in the final artwork. Review this wardrobe guide:<span style="color: red; font-style: italic">* insert link to your wardrobe guide or what you recommend for Portraits*</span></p>
+        <p>2. Think through how these photos will be used and what you most want people who look at them to understand about you. What would you want to be wearing? What do you want your audience to feel about you. All of this comes through in the final artwork. Review this wardrobe guide:{{#first_red_section}}<span style="color: red; font-style: italic">* insert link to your wardrobe guide or what you recommend for Portraits*</span>{{/first_red_section}}</p>
         <p>3. Don’t stress! We are working together to make these photos. I will help guide you through the process to ensure that you look amazing in your photos.</p>
         <p>I am looking forward to working with you!</p>
         {{email_signature}}
@@ -4981,7 +5010,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I had an absolute blast photographing your family recently and would love to hear from you about your experience.</p>
         <p>Are you enjoying your photos? Do you need any help choosing the right products? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget!</p>
+        {{#first_red_section}}
         <p>Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on google will really help my small business!  <span style="color: red; font-style: italic;">"Insert your google review link here"</span>  It would mean the world to me!</p>
+        {{/first_red_section}}
         <p>Thanks again! I look forward to hearing from you again next time you’re in need of photography!</p>
         {{email_signature}}
         """
@@ -4999,9 +5030,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I hope you are doing well. It's been a while!</p>
         <p>I loved spending time with your boudoir and I just loved our shoot. Assuming you’re in the habit of taking annual family photos (and there are so many good reasons to do so) I'd love to be your photographer again.</p>
+        {{#first_red_section}}
         <p>Our current price list for full sessions can be found in our pricing guide <span style="color: red; font-style: italic;">"insert your pricing link".</span> here</p>
         <p>The latest information on current boudoir-sessions can be found here <span style="color: red; font-style: italic;">"insert boudoir session calendar link / public profile"</span> here</p>
         <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here <span style="color: red; font-style: italic;">"insert your scheduling page link here".</span></p>
+        {{/first_red_section}}
         <p>Reply to this email if you don't see a date you need or if you have any questions!</p>
         <p>I can’t wait to see you again!</p>
         {{email_signature}}
@@ -5424,12 +5457,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that you and your other will treasure for years to come.</p>
-        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing.</p>
-        <p style="color: red;">Try to preempt any questions you think they might have:</p>
-        <p style="color: red;">- What is a session like with you?</p>
-        <p style="color: red;">- How much does a session cost</p>
-        <p style="color: red;">- How do they book? Can they book directly on your scheduling page?</p>
-        <p style="color: red;">- Any frequently asked questions that often come up</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing.</span></p>
+        <p><span style="color: red;">Try to preempt any questions you think they might have:</span></p>
+        <p><span style="color: red;">- What is a session like with you?</span></p>
+        <p><span style="color: red;">- How much does a session cost</span></p>
+        <p><span style="color: red;">- How do they book? Can they book directly on your scheduling page?</span></p>
+        <p><span style="color: red;">- Any frequently asked questions that often come up</span></p>
+        {{/first_red_section}}
         <p>If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
         <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
@@ -5631,7 +5666,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>I am looking forward to your photoshoot on {{session_date}} at {{session_time}} at {{session_location}}.</p>
         <p>Think about what type of session you use 'other' for, you will want to tailor the prep email accordingly. Aim for as generic as possible. Remember you can always edit the email at the job level.</p>
         <p>1. Plan ahead to look and feel your best. Be sure to get a manicure, facial etc - whatever makes you feel confident. If you need hair and makeup recommendations let me know!</p>
-        <p>2. Think through how these photos will be used and what you most want people who look at them to understand about you. What would you want to be wearing? What do you want your audience to feel about you. All of this comes through in the images.<span style="color: red; font-style: italic;">* insert link to your wardrobe guide or what you recommend for headshots*</span></p>
+        <p>2. Think through how these photos will be used and what you most want people who look at them to understand about you. What would you want to be wearing? What do you want your audience to feel about you. All of this comes through in the images.{{#first_red_section}}<span style="color: red; font-style: italic;">* insert link to your wardrobe guide or what you recommend for headshots*</span>{{/first_red_section}}</p>
         <p>3. Don’t stress! We are working together to make these photos. I will help guide you through the process to ensure that you look amazing in your photos.</p>
         <p>I am looking forward to working with you!</p>
         {{email_signature}}
@@ -5729,7 +5764,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I had an absolute blast photographing your family recently and would love to hear from you about your experience.</p>
         <p>Are you enjoying your photos? Do you need any help choosing the right products? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget!</p>
+        {{#first_red_section}}
         <p>Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on google will really help my small business!  <span style="color: red; font-style: italic;">"Insert your google review link here"</span>  It would mean the world to me!</p>
+        {{/first_red_section}}
         <p>Thanks again! I look forward to hearing from you again next time you’re in need of photography!</p>
         {{email_signature}}
         """
@@ -5747,9 +5784,11 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I hope you are doing well. It's been a while!</p>
         <p>I loved spending time with your other and I just loved our shoot. Assuming you’re in the habit of taking annual family photos (and there are so many good reasons to do so) I'd love to be your photographer again.</p>
+        {{#first_red_section}}
         <p>Our current price list for full sessions can be found in our pricing guide <span style="color: red; font-style: italic;">"insert your pricing link".</span> here</p>
         <p>The latest information on current other-sessions can be found here <span style="color: red; font-style: italic;">"insert other session calendar link / public profile"</span> here</p>
         <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here <span style="color: red; font-style: italic;">"insert your scheduling page link here".</span></p>
+        {{/first_red_section}}
         <p>Reply to this email if you don't see a date you need or if you have any questions!</p>
         <p>I can’t wait to see you again!</p>
         {{email_signature}}
@@ -6172,12 +6211,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that you and your maternity will treasure for years to come.</p>
-        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing maternity shoots.</p>
-        <p style="color: red;">Try to preempt any questions you think they might have:</p>
-        <p style="color: red;">- What is a session like with you?</p>
-        <p style="color: red;">- How much does a session cost</p>
-        <p style="color: red;">- How do they book? Can they book directly on your scheduling page?</p>
-        <p style="color: red;">- Any frequently asked questions that often come up</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing maternity shoots.</span></p>
+        <p><span style="color: red;">Try to preempt any questions you think they might have:</span></p>
+        <p><span style="color: red;">- What is a session like with you?</span></p>
+        <p><span style="color: red;">- How much does a session cost</span></p>
+        <p><span style="color: red;">- How do they book? Can they book directly on your scheduling page?</span></p>
+        <p><span style="color: red;">- Any frequently asked questions that often come up</span></p>
+        {{/first_red_section}}
         <p>If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
         <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
@@ -6377,10 +6418,12 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>I am looking forward to your photoshoot on {{session_date}} at {{session_time}} at {{session_location}}.</p>
-        <p style="color: red; font-style: italic;">Really help your client prepare for the shoot, how will you make them feel comfortable, what to expect, how can they prepare for their shoot.</p>
+        {{#first_red_section}}
+        <p><span style="color: red; font-style: italic;">Really help your client prepare for the shoot, how will you make them feel comfortable, what to expect, how can they prepare for their shoot.</span></p>
+        {{/first_red_section}}
         <p>How to plan for your shoot:</p>
         <p>1. Plan ahead to look and feel your best. Be sure to get a manicure, facial etc - whatever makes you feel confident. If you need hair and makeup recommendations let me know!</p>
-        <p>2. Think through how these photos will be used and what you most want people who look at them to understand about you. What would you want to be wearing? What do you want your audience to feel about you. All of this comes through in the final artwork.<span style="color: red; font-style: italic;">* insert link to your wardrobe guide or what you recommend for Maternity Shoot*</span></p>
+        <p>2. Think through how these photos will be used and what you most want people who look at them to understand about you. What would you want to be wearing? What do you want your audience to feel about you. All of this comes through in the final artwork.{{#second_red_section}}<span style="color: red; font-style: italic;">* insert link to your wardrobe guide or what you recommend for Maternity Shoot*</span>{{/second_red_section}}</p>
         <p>3. Don’t stress! We are working together to make these photos. I will help guide you through the process to ensure that you look amazing in your photos.</p>
         <p>I am looking forward to working with you!</p>
         {{email_signature}}
@@ -6476,7 +6519,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I had an absolute blast photographing your family recently and would love to hear from you about your experience.</p>
         <p>Are you enjoying your photos? Do you need any help choosing the right products? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget!</p>
+        {{#first_red_section}}
         <p>Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on google will really help my small business!  <span style="color: red; font-style: italic;">"Insert your google review link here"</span>  It would mean the world to me!</p>
+        {{/first_red_section}}
         <p>Thanks again! I look forward to hearing from you again next time you’re in need of photography!</p>
         {{email_signature}}
         """
@@ -6494,8 +6539,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I hope you are doing well. It's been a while!</p>
         <p>I loved spending time with you and I just loved our shoot. I wanted to check in to see if you have any other photography needs (or want another headshot!)</p>
+        {{#first_red_section}}
         <p>I also offer the following <span style="color: red; font-style: italic;">*list your services*</span>.  Our current price list for these sessions can be found in our pricing guide <span style="color: red; font-style: italic;">"insert your pricing link" here.</span></p>
         <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here <span style="color: red; font-style: italic;">"insert your scheduling page link here".</span></p>
+        {{/first_red_section}}
         <p>Reply to this email if you don't see a date you need or if you have any questions!</p>
         <p>I can’t wait to see you again!</p>
         {{email_signature}}
@@ -6918,12 +6965,14 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>Thank you for inquiring with {{photography_company_s_name}}. I am thrilled to hear from you and am looking forward to creating photographs that you and your event will treasure for years to come.</p>
-        <p style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing events.</p>
-        <p style="color: red;">Try to preempt any questions you think they might have:</p>
-        <p style="color: red;">- What is a session like with you?</p>
-        <p style="color: red;">- How much does a session cost</p>
-        <p style="color: red;">- How do they book? Can they book directly on your scheduling page?</p>
-        <p style="color: red;">- Any frequently asked questions that often come up</p>
+        {{#first_red_section}}
+        <p><span style="color: red;">Insert a sentence or two about your brand, what sets you apart and why you love photographing events.</span></p>
+        <p><span style="color: red;">Try to preempt any questions you think they might have:</span></p>
+        <p><span style="color: red;">- What is a session like with you?</span></p>
+        <p><span style="color: red;">- How much does a session cost</span></p>
+        <p><span style="color: red;">- How do they book? Can they book directly on your scheduling page?</span></p>
+        <p><span style="color: red;">- Any frequently asked questions that often come up</span></p>
+        {{/first_red_section}}
         <p>If you have a pricing guide, scheduling link or FAQ page link you can simply insert them as hyperlinks in the email body!</p>
         <p>I am looking forward to hearing from you!</p>
         {{email_signature}}
@@ -7141,7 +7190,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p>I am looking forward to your photoshoot tomorrow  at {{session_time}} at {{session_location}}.</p>
-        <p style="color: red; font-style: ialic;">Think about what type of session you use 'event' for, you will want to tailor the prep email accordingly. Aim for as generic as possible. Remember you can always edit the email at the job level.</p>
+        {{#first_red_section}}
+        <p><span style="color: red; font-style: italic;">Think about what type of session you use 'event' for, you will want to tailor the prep email accordingly. Aim for as generic as possible. Remember you can always edit the email at the job level.</span></p>
+        {{/first_red_section}}
         <p>If we haven't confirmed who will be the liasion, please let me know who will meet me on arrival and help me to identify people and moments on your list of desired photographs. Please understand that if no one is available to assist the photographer in identifying people or moments on the list, or if moments on the list don’t occur as planned, the photographer will be unable to capture those photographs.</p>
         <p>In general, email is the best way to get ahold of me, however, If you have any issues finding me  tomorrow, or an emergency, you can call or text me on the shoot day at {{photographer_cell}}.</p>
         <p>I am looking forward to working with you!</p>
@@ -7218,7 +7269,9 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I had an absolute blast photographing your family recently and would love to hear from you about your experience.</p>
         <p>Are you enjoying your photos? Do you need any help choosing the right products? Forgive me if you have already decided, I need to schedule these emails in advance or I might forget!</p>
+        {{#first_red_section}}
         <p>Would you be willing to leave me a review? Public reviews are huge for my business. Leaving a kind review on google will really help my small business!  <span style="color: red; font-style: italic;">"Insert your google review link here"</span>  It would mean the world to me!</p>
+        {{/first_red_section}}
         <p>Thanks again! I look forward to hearing from you again next time you’re in need of photography!</p>
         {{email_signature}}
         """
@@ -7236,8 +7289,10 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>Hello {{client_first_name}},</p>
         <p>I hope you are doing well. It's been a while!</p>
         <p>I loved spending time with you and I just loved our shoot. I wanted to check in to see if you have any other photography needs (or want another headshot!)</p>
+        {{/first_red_section}}
         <p>I also offer the following <span style="color: red; font-style: italic;">*list your services*</span>.  Our current price list for these sessions can be found in our pricing guide <span style="color: red; font-style: italic;">"insert your pricing link" here.</span></p>
         <p>I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available. Simply book directly here <span style="color: red; font-style: italic;">"insert your scheduling page link here".</span></p>
+        {{/first_red_section}}
         <p>Reply to this email if you don't see a date you need or if you have any questions!</p>
         <p>I can’t wait to see you again!</p>
         {{email_signature}}

@@ -242,10 +242,6 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
 
   defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
-  defp next_step(%{step: step, steps: steps}) do
-    Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
-  end
-
   def step_buttons(%{step: step} = assigns) when step in [:timing, :edit_email] do
     ~H"""
     <button class="btn-primary" title="Next" disabled={!@is_valid} type="submit" phx-disable-with="Next">

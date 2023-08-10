@@ -46,6 +46,68 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> noreply()
   end
 
+  @doc """
+  Compiles the section values and renders the body_html, and assigns the following to socket:
+
+    - template_preview
+    - email_preset_changeset
+    - step
+
+  Returns `{:noreply, socket}`
+  """
+  def preview_template(
+        %{
+          assigns:
+            %{
+              email_preset_changeset: changeset,
+              first_red_section: first_red_section_value,
+              second_red_section: second_red_section_value,
+              module_name: module_name
+            } = assigns
+        } = socket
+      ) do
+    first_red_section =
+      get_plain_text(Ecto.Changeset.get_field(changeset, :body_template), "first_red_section")
+
+    second_red_section =
+      get_plain_text(Ecto.Changeset.get_field(changeset, :body_template), "second_red_section")
+
+    body_html =
+      Ecto.Changeset.get_field(changeset, :body_template)
+      |> :bbmustache.render(
+        get_sample_values()
+        |> Map.merge(%{
+          first_red_section: assign_section_value(first_red_section_value, first_red_section),
+          second_red_section: assign_section_value(second_red_section_value, second_red_section)
+        }),
+        key_type: :atom
+      )
+
+    Process.send_after(self(), {:load_template_preview, module_name, body_html}, 50)
+
+    changeset = Ecto.Changeset.change(changeset, %{body_template: body_html})
+
+    socket
+    |> assign(:template_preview, :loading)
+    |> assign(:email_preset_changeset, changeset)
+    |> assign(step: next_step(assigns))
+    |> noreply()
+  end
+
+  defp assign_section_value(section_value, section_to_compare),
+    do:
+      if(is_nil(section_value),
+        do: false,
+        else: get_section_value(section_value, section_to_compare)
+      )
+
+  defp get_section_value(paragraph1, paragraph2),
+    do:
+      if(String.bag_distance(paragraph1, paragraph2) < 0.80,
+        do: true,
+        else: false
+      )
+
   def make_email_presets_options(email_presets) do
     email_presets
     |> Enum.map(fn %{id: id, name: name} -> {name, id} end)
@@ -746,6 +808,32 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     socket
     |> assign(:collapsed_sections, sub_categories)
+  end
+
+  @doc """
+  Takes the html body and split it on the basis of search_param
+  and flattens the html body to plain-text.
+
+  Returns a string
+  """
+  def get_plain_text(html_text, to_search) do
+    if(html_text |> String.contains?(to_search)) do
+      html_text
+      |> String.split("{{##{to_search}}}")
+      |> Enum.at(1)
+      |> String.split("{{/#{to_search}}}")
+      |> Enum.at(0)
+      |> HtmlSanitizeEx.strip_tags()
+    end
+  end
+
+  @doc """
+  Takes the step and steps assigns and return what would be the next step
+
+  Returns an atom, i.e. :edit_email or :preview_email
+  """
+  def next_step(%{step: step, steps: steps}) do
+    Enum.at(steps, Enum.find_index(steps, &(&1 == step)) + 1)
   end
 
   defp get_job_id(job) when is_map(job), do: job.id
