@@ -99,7 +99,6 @@ defmodule Picsello.Designs.Filter do
     def load_options(designs_query) do
       from(design in designs_query,
         join: tag in fragment("jsonb_array_elements_text(? -> 'metadata' -> 'tags')", design.api),
-        on: true,
         where: fragment("length(?)", tag) > 0,
         group_by: 1,
         select: fragment("?", tag),
@@ -132,7 +131,6 @@ defmodule Picsello.Designs.Filter do
     def load_options(designs_query) do
       from(design in designs_query,
         join: themes in fragment("jsonb_each(? -> 'themes')", design.api),
-        on: true,
         group_by: [1, 2, 3],
         select: %{
           color: {
@@ -163,7 +161,6 @@ defmodule Picsello.Designs.Filter do
               from(
                 design in Picsello.Design,
                 join: swatches in jsonb_path_query(design.api, "$.themes.*.swatch"),
-                on: true,
                 select: design.id,
                 distinct: true
               ) do

@@ -63,6 +63,7 @@ defmodule PicselloWeb.GalleryLive.Transaction.OrderDetail do
     socket
     |> assign(
       organization_name: current_user.organization.name,
+      shipping_email: order.delivery_info.email,
       shipping_address: order.delivery_info.address,
       shipping_name: order.delivery_info.name
     )
