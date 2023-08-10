@@ -5,7 +5,7 @@ defmodule Picsello.MixProject do
     [
       app: :picsello,
       version: "0.1.0",
-      elixir: "~> 1.15.4",
+      elixir: "~> 1.14.3",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -98,8 +98,7 @@ defmodule Picsello.MixProject do
       [
         {:bypass, "~> 2.1", only: :test},
         {:ex_machina, "~> 2.7.0", only: [:dev, :test]},
-        # replace it when it actual package is fix, Issue with String.valid?(error).
-        {:httpotion, git: "https://github.com/dycoders/httpotion.git", override: true},
+        {:httpoison, "~> 1.8.0"},
         {:wallaby, "~> 0.30.3", runtime: false, only: :test},
         {:csv, "~> 3.0"}
       ]

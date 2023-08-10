@@ -443,12 +443,10 @@ defmodule PicselloWeb.LiveHelpers do
 
   def is_mobile(socket, params) do
     is_mobile = Map.get(params, "is_mobile", get_connect_params(socket)["isMobile"])
-    is_mobile = if is_mobile, do: is_mobile, else: "false"
 
     socket
     |> assign(
-      is_mobile:
-        if(String.valid?(is_mobile), do: String.to_existing_atom(is_mobile), else: is_mobile)
+      is_mobile: if(is_binary(is_mobile), do: String.to_existing_atom(is_mobile), else: is_mobile)
     )
   end
 
