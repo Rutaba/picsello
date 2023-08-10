@@ -42,16 +42,17 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
           </div>
 
           <%= if Enum.any?(@job_types) do %>
-            <div class="mt-7 grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <%= label_for f, :job_type, label: "What photography type are you interested in?", class: "py-2 font-light col-span-1 lg:col-span-2" %>
-
-              <%= for job_type <- @job_types do %>
-                <.job_type_option name={input_name(f, :job_type)} type={:radio} job_type={job_type} checked={input_value(f, :job_type) == job_type} color="black" class="rounded-none" />
-              <% end %>
+            <div class="mt-4">
+              <%= label_for f, :job_type, label: "What type of session are you looking for?", class: "font-light" %>
+              <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-1">
+                <%= for job_type <- @job_types do %>
+                  <.job_type_option name={input_name(f, :job_type)} type={:radio} job_type={job_type} checked={input_value(f, :job_type) == job_type} color="black" class="rounded-none" />
+                <% end %>
+              </div>
             </div>
           <% end %>
 
-          <div class="flex flex-col mt-7">
+          <div class="flex flex-col mt-3">
             <%= label_for f, :message, label: "Your message", class: "py-2 font-light" %>
 
             <%= input f, :message, type: :textarea, placeholder: "e.g. Date(s), what you're looking for, any relevant information, etc.", rows: 5, phx_debounce: 300 %>
