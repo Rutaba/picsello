@@ -7,6 +7,7 @@ defmodule PicselloWeb.Live.Calendar.SingleBookingEvents do
   def mount(_params, _session, socket) do
     socket
     |> assign(:collapsed_sections, [])
+    |> assign(:list_or_calendar, "Calendar")
     |> ok()
   end
 
@@ -28,11 +29,16 @@ defmodule PicselloWeb.Live.Calendar.SingleBookingEvents do
     |> noreply()
   end
 
+  def handle_event("list_or_calendar", %{"choice" => choice}, socket) do
+    socket
+    |> assign(:list_or_calendar, choice)
+    |> noreply()
+  end
+
   def actions_button(assigns) do
     ~H"""
-
     <div class={"#{@type |> String.capitalize() == "Heading" && "ml-auto"} #{@type |> String.capitalize() == "Package" && "h-8"} #{@type |> String.capitalize() |> String.contains?(["Open", "Booked (hidden)", "Booked"]) && "h-8 flex justify-end"} "} data-offset="0" phx-hook="Select" id="id">
-      <button {testid("actions")} class={"btn-tertiary px-3 #{@type |> String.capitalize() == "Heading" && "h-10"} py-1.5 flex items-center gap-3 mr-2 text-black xl:w-auto w-full #{@type |> String.capitalize() |> String.contains?(["Open", "Booked (hidden)", "Booked", "Package"]) && "h-8"}"}>
+      <button {testid("actions")} class={"btn-tertiary px-3 #{@type |> String.capitalize() == "Heading" && "h-10"} py-1.5 flex items-center gap-3 text-black xl:w-auto w-full #{@type |> String.capitalize() |> String.contains?(["Open", "Booked (hidden)", "Booked", "Package"]) && "h-8"}"}>
       Actions
       <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
       <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
@@ -110,29 +116,54 @@ defmodule PicselloWeb.Live.Calendar.SingleBookingEvents do
     """
   end
 
+  # requires 1) Mode 2) Time 3) Status 4) ClientName
   def slots_description(assigns) do
     ~H"""
-      <div class="grid grid-cols-7 items-center">
-        <div class={"col-span-2 #{@status |> String.capitalize() == "Booked (hidden)" && "text-base-250"}"}>
-            <%= if @status |> String.capitalize() == "Booked" do %>
-              <button class="text-blue-planning-300 underline"><%= @time %></button>
-            <% else %>
-              <%= @time %>
-            <% end %>
+      <%= if @mode do %>
+        <div class="border-2 border-base-200 rounded-lg flex p-3 items-center my-1.5">
+          <div class="flex flex-col">
+            <p class={"mb-1 font-bold text-black text-lg"}>
+              <%= if @status |> String.capitalize() == "Booked" do %>
+                <button class="text-blue-planning-300 underline"><%= @time %></button>
+              <% else %>
+                <%= @time %>
+              <% end %>
+            </p>
+            <p class="text-blue-planning-300 underline">
+              <%= if @client && @status |> String.capitalize() == "Booked" do %>
+                <button class="text-blue-planning-300 underline"><%= "Booked with " <> @client |> String.capitalize() %></button>
+              <% else %>
+                <p class={"#{@status |> String.capitalize() == "Booked (hidden)" && "text-base-250"}"}><%= @status |> String.capitalize() %></p>
+              <% end %>
+            </p>
+          </div>
+          <div class="flex ml-auto">
+              <.actions_button type={@status}/>
+          </div>
         </div>
-        <div class={"col-span-2 #{@status |> String.capitalize() != "Open" && "text-base-250"}"}>
-            <%= @status |> String.capitalize() %>
+      <% else %>
+        <div class="grid grid-cols-7 items-center">
+          <div class={"col-span-2 #{@status |> String.capitalize() == "Booked (hidden)" && "text-base-250"}"}>
+              <%= if @status |> String.capitalize() == "Booked" do %>
+                <button class="text-blue-planning-300 underline"><%= @time %></button>
+              <% else %>
+                <%= @time %>
+              <% end %>
+          </div>
+          <div class={"col-span-2 #{@status |> String.capitalize() != "Open" && "text-base-250"}"}>
+              <%= @status |> String.capitalize() %>
+          </div>
+          <div class="col-span-2">
+              <%= if @client && @status |> String.capitalize() == "Booked" do %>
+                <button class="text-blue-planning-300 underline"><%= @client |> String.capitalize() %></button>
+              <% else %>
+                      -
+              <% end %>
+          </div>
+          <.actions_button type={@status}/>
+          <hr class="my-3 col-span-7">
         </div>
-        <div class="col-span-2">
-            <%= if @client && @status |> String.capitalize() == "Booked" do %>
-              <button class="text-blue-planning-300 underline"><%= @client |> String.capitalize() %></button>
-            <% else %>
-                    -
-            <% end %>
-        </div>
-        <.actions_button type={@status}/>
-        <hr class="my-3 col-span-7">
-      </div>
+      <% end %>
     """
   end
 end
