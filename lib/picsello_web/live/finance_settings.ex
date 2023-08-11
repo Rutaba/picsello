@@ -81,18 +81,10 @@ defmodule PicselloWeb.Live.FinanceSettings do
                   <h3 class="font-bold text-xl mb-3 mt-4">Via Stripe Online</h3>
                   <hr class=""/>
                   <div class="grid gap-6 sm:gap-x-16 sm:gap-y-4 sm:grid-cols-2">
-                    <%= if @user_currency.currency in Utils.payment_options_currency(:allow_afterpay_clearpay) do %>
-                      <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Afterpay" description="Buy now pay later" input_name={:allow_afterpay_clearpay} f={fp} icon="payment-afterpay" />
-                    <% end %>
-                    <%= if @user_currency.currency in Utils.payment_options_currency(:allow_klarna) do %>
-                      <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Klarna" description="Buy now pay later" input_name={:allow_klarna} f={fp} icon="payment-klarna" />
-                    <% end %>
-                    <%= if @user_currency.currency in Utils.payment_options_currency(:allow_affirm) do %>
-                      <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Affirm" description="Buy now pay later" input_name={:allow_affirm} f={fp} icon="payment-affirm" />
-                    <% end %>
-                    <%= if @user_currency.currency in Utils.payment_options_currency(:allow_cashapp) do %>
-                      <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Cash App Pay" description="Pay with CashApp" input_name={:allow_cashapp} f={fp} icon="payment-cashapp" />
-                    <% end %>
+                    <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Afterpay" description="Buy now pay later" input_name={:allow_afterpay_clearpay} f={fp} icon="payment-afterpay" />
+                    <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Klarna" description="Buy now pay later" input_name={:allow_klarna} f={fp} icon="payment-klarna" />
+                    <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Affirm" description="Buy now pay later" input_name={:allow_affirm} f={fp} icon="payment-affirm" />
+                    <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Cash App Pay" description="Pay with CashApp" input_name={:allow_cashapp} f={fp} icon="payment-cashapp" />
                   </div>
                 </div>
               <% end %>
