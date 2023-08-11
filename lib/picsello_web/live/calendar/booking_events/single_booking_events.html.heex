@@ -11,7 +11,7 @@
         <div class="flex items-center justify-center w-7 h-7 bg-base-200 rounded-lg p-1 ml-2 mt-2.5">
             <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
         </div>
-        <.actions booking_event={%{id: 1, archived_at: nil}} button_actions={header_actions()} />
+        <.actions id="header" archive_option={false} booking_event={@booking_event} button_actions={header_actions()} />
         <button class="btn-tertiary px-3 h-10 py-1.5 flex items-center text-black mx-2">
             <.icon name="eye" class="inline-block w-4 h-4 mr-2 stroke-3 text-blue-planning-300" />
             Client preview
@@ -43,15 +43,6 @@
             <hr class="mt-6 w-full">
             <.booking_slot_tabs_nav booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
             <.booking_slot_tabs_content assigns={assigns} socket={@socket} />
-
-            <%!-- <div class="flex">
-                <button class={"#{@list_or_calendar == "List" && "border-b-4 border-blue-planning-300"} font-bold py-2 text-blue-planning-300"} phx-click="list_or_calendar" phx-value-choice="List">
-                    List
-                </button>
-                <button class={"#{@list_or_calendar == "Calendar" && "border-b-4 border-blue-planning-300"} font-bold py-2 ml-4 text-blue-planning-300"} phx-click="list_or_calendar" phx-value-choice="Calendar">
-                    Calendar
-                </button>
-            </div> --%>
             
             <div class="mt-10 p-3 border-2 border-base-200 rounded-lg">
                 <div class="flex items-center">
@@ -110,7 +101,7 @@
                             <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-white text-white" />
                             Edit
                         </button>
-                        <.actions booking_event={%{id: 1, archived_at: nil}} button_actions={package_actions()} />
+                        <.actions id="package" booking_event={@booking_event} button_actions={package_actions()} />
                     </div>
                 </div>
             </div>

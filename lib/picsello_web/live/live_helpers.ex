@@ -446,7 +446,8 @@ defmodule PicselloWeb.LiveHelpers do
 
     socket
     |> assign(
-      is_mobile: if(is_binary(is_mobile), do: String.to_existing_atom(is_mobile), else: is_mobile)
+      is_mobile:
+        if(is_binary(is_mobile), do: String.to_existing_atom(is_mobile), else: is_mobile)
     )
   end
 
