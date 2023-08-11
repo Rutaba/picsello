@@ -375,7 +375,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
       socket
       |> assign(:archive_package_id, package_id)
       |> PicselloWeb.ConfirmationComponent.open(%{
-        close_label: "No! Get me out of here",
+        close_label: "Cancel",
         confirm_event: "archive_unarchive",
         confirm_label: if(type == "archive", do: "Yes, archive", else: "Yes, unarchive"),
         icon: "warning-orange",
