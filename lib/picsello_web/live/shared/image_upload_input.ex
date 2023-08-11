@@ -36,7 +36,7 @@ defmodule PicselloWeb.Shared.ImageUploadInput do
               <img src={@url} class="h-full w-full object-cover" />
             <% end %>
             <div class="upload-button absolute top-5 right-4 rounded-3xl bg-white shadow-lg cursor-pointer flex p-3 py-2 items-center justify-center">
-              <span class="text-blue-planning-300 hover:opacity-75">
+              <span class="text-blue-planning-300 text-normal hover:opacity-75">
                 Replace Photo
               </span>
               <.icon name="trash" class="w-4 h-4 ml-2 text-blue-planning-300" />

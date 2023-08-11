@@ -218,7 +218,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
-  def handle_event("edit-marketing-event", %{"event-id" => id}, %{assigns: %{current_user: current_user}} = socket) do
+  def handle_event(
+        "edit-marketing-event",
+        %{"event-id" => id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
     socket
     |> PicselloWeb.Live.Calendar.EditMarketingEvent.open(%{
       event_id: id,
