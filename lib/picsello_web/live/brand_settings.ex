@@ -29,7 +29,7 @@ defmodule PicselloWeb.Live.BrandSettings do
         <div class={"grid sm:grid-cols-2 gap-6 sm:gap-12 sm:pr-10 sm:pb-10"}>
           <div class="mt-4">
             <div class="text-base-250">
-              Showcase your brand—if you don’t have a logo, no worries, we will display a default one. <span class="font-normal text-normal text-blue-planning-300"><a class="underline" target="_blank" rel="noopener noreferrer" href="https://support.picsello.com/article/108-brand-settings">Get tips on making a logo.</a></span>
+              Showcase your brand—if you don’t have a logo, no worries, we will display a default one.
             </div>
             <button phx-click="add-update-logo" class="hidden mt-6 sm:block btn-primary intro-signature">Add or update logo</button>
           </div>
