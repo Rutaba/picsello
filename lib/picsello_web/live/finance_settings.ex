@@ -127,7 +127,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
       ) do
     PicselloWeb.ConfirmationComponent.open(socket, %{
       close_event: "toggle_close_event",
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "allow-cash",
       confirm_label: "Yes, allow cash/check",
       icon: "warning-orange",

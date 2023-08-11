@@ -103,7 +103,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       ) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "delete_gallery",
       confirm_label: "Yes, delete",
       icon: "warning-orange",

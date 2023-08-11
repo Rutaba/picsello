@@ -152,7 +152,7 @@ defmodule PicselloWeb.JobLive.Shared do
   def handle_event("delete_document", %{"name" => name, "document_id" => id} = _params, socket) do
     socket
     |> ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "delete_docs",
       confirm_label: "Yes, delete",
       icon: "warning-orange",

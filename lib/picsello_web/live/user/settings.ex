@@ -302,7 +302,7 @@ defmodule PicselloWeb.Live.User.Settings do
   def handle_event("save", %{"action" => "update_name"}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      close_label: "No, go back",
+      close_label: "Cancel",
       confirm_event: "change-name",
       confirm_label: "Yes, change name",
       icon: "warning-orange",
