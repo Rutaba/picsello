@@ -11,7 +11,7 @@
         <div class="flex items-center justify-center w-7 h-7 bg-base-200 rounded-lg p-1 ml-2 mt-2.5">
             <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
         </div>
-        <.actions_button type="heading"/>
+        <.actions booking_event={%{id: 1, archived_at: nil}} button_actions={header_actions()} />
         <button class="btn-tertiary px-3 h-10 py-1.5 flex items-center text-black mx-2">
             <.icon name="eye" class="inline-block w-4 h-4 mr-2 stroke-3 text-blue-planning-300" />
             Client preview
@@ -41,103 +41,17 @@
                 </div>
             </div>
             <hr class="mt-6 w-full">
-            <div class="flex">
+            <.booking_slot_tabs_nav booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
+            <.booking_slot_tabs_content assigns={assigns} socket={@socket} />
+
+            <%!-- <div class="flex">
                 <button class={"#{@list_or_calendar == "List" && "border-b-4 border-blue-planning-300"} font-bold py-2 text-blue-planning-300"} phx-click="list_or_calendar" phx-value-choice="List">
                     List
                 </button>
                 <button class={"#{@list_or_calendar == "Calendar" && "border-b-4 border-blue-planning-300"} font-bold py-2 ml-4 text-blue-planning-300"} phx-click="list_or_calendar" phx-value-choice="Calendar">
                     Calendar
                 </button>
-            </div>
-
-            <%= if @list_or_calendar == "List" do  %>
-                <div class="mt-10 p-3 border-2 border-base-200 rounded-lg">
-                    <div class="flex mb-1">
-                        <p class="text-2xl font-bold">Thursday, March 29th, 2023</p>
-                        <button class="flex text-blue-planning-300 ml-auto items-center justify-center" phx-click="toggle-section" phx-value-section_id="first">
-                            View details
-                            <%= if !Enum.member?(@collapsed_sections, "first") do %>
-                                <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
-                            <% else %>
-                                <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
-
-                            <% end %>
-                        </button>
-                    </div>
-                    <div class="flex">
-                        <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
-                        <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
-                        <p class="text-blue-planning-300"><b>1</b> hidden</p>
-                    </div>
-                    <%= if Enum.member?(@collapsed_sections, "first") do %>
-                        <div class="grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
-                            <div class="col-span-2">
-                                Time
-                            </div>
-                            <div class="col-span-2">
-                                Status
-                            </div>
-                            <div class="col-span-2">
-                                Client
-                            </div>
-                            <div>
-                            
-                            </div>
-                        </div>
-                        <.slots_description mode={nil} time="4:45am - 5:00am" status="Open" client={nil}/>
-                        <.slots_description mode={nil} time="5:00am - 5:15am" status="booked (hidden)" client={nil}/>
-                        <.slots_description mode={nil} time="5:15am - 5:30am" status="Booked" client={"ClientName"}/>
-                        <div class="flex justify-end">
-                            <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-2">
-                                <.icon name="envelope" class="w-4 h-4 text-blue-planning-300" />
-                            </div>
-                            <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-2">
-                                <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
-                            </div>
-                            <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-2">
-                                <.icon name="duplicate_2" class="w-4 h-4 fill-blue-planning-300" />
-                            </div>
-                            <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-2">
-                                <.icon name="trash" class="w-4 h-4 text-red-sales-300" />
-                            </div>
-                        </div>
-                    <% end %>
-                </div>
-            <% end %>
-
-            <%= if @list_or_calendar == "Calendar" do  %>
-                <div class="mt-10 pr-5 grid grid-cols-5 gap-5">
-                    <div class="col-span-2 bg-base-200">
-                        Calender area
-                    </div>
-                    <div class="col-span-3 flex flex-col justify-center">
-                        <div class="flex">
-                            <div class="flex text-2xl font-bold">
-                                September 15th, 2023
-                            </div>
-                            <div class="flex justify-end ml-auto">
-                                <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
-                                    <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
-                                </div>
-                                <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
-                                    <.icon name="duplicate_2" class="w-4 h-4 fill-blue-planning-300" />
-                                </div>
-                                <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
-                                    <.icon name="trash" class="w-4 h-4 text-red-sales-300" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex mt-2">
-                            <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
-                            <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
-                            <p class="text-blue-planning-300"><b>1</b> hidden</p>
-                        </div>
-                        <.slots_description mode="calendar" status="booked (hidden)" client={"ClientName"} time="5:00am - 5:15am"/>
-                        <.slots_description mode="calendar" status="Open" client={"ClientName"} time="5:15am - 5:30am"/>
-                        <.slots_description mode="calendar" status="booked" client={"ClientName"} time="5:30am - 5:45am"/>
-                    </div>
-                </div>
-            <% end %>
+            </div> --%>
             
             <div class="mt-10 p-3 border-2 border-base-200 rounded-lg">
                 <div class="flex items-center">
@@ -196,7 +110,7 @@
                             <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-white text-white" />
                             Edit
                         </button>
-                        <.actions_button type={"Package"}/>
+                        <.actions booking_event={%{id: 1, archived_at: nil}} button_actions={package_actions()} />
                     </div>
                 </div>
             </div>

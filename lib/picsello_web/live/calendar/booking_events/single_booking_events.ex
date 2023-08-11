@@ -7,8 +7,33 @@ defmodule PicselloWeb.Live.Calendar.SingleBookingEvents do
   def mount(_params, _session, socket) do
     socket
     |> assign(:collapsed_sections, [])
-    |> assign(:list_or_calendar, "Calendar")
+    |> assign(:booking_event, %{id: 1, archived_at: nil, slots: [
+      %{title: "Open", status: "open", time: "4:45am - 5:00am"},
+      %{title: "Booked", status: "booked", time: "4:45am - 5:20am"},
+      %{title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
+      ]})
+    |> assign(:client, %{id: 1, name: "hammad"})
+    |> assign(:booking_slot_tab_active, "list")
+    |> assign(:booking_slot_tabs, booking_slot_tabs())
+    |> assign(:booking_event_tabs, booking_event_tabs())
+    |> assign(:booking_event_tab_active, "overview")
     |> ok()
+  end
+
+  @impl true
+  def handle_event("change-booking-slot-tab", %{"tab" => tab}, socket) do
+    socket
+    |> assign(:booking_slot_tab_active, tab)
+    |> assign_tab_data(tab)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("change-booking-event-tab", %{"tab" => tab}, socket) do
+    socket
+    |> assign(:booking_event_tab_active, tab)
+    |> assign_tab_data(tab)
+    |> noreply()
   end
 
   @impl true
@@ -29,138 +54,342 @@ defmodule PicselloWeb.Live.Calendar.SingleBookingEvents do
     |> noreply()
   end
 
-  def handle_event("list_or_calendar", %{"choice" => choice}, socket) do
+  def handle_event("toggle_booking_slot_tab", %{"id" => booking_slot_tab}, socket) do
     socket
-    |> assign(:list_or_calendar, choice)
+    |> assign(:booking_slot_tab, booking_slot_tab)
     |> noreply()
   end
 
-  def actions_button(assigns) do
+  defp booking_event_tabs_nav(assigns) do
     ~H"""
-    <div class={"#{@type |> String.capitalize() == "Heading" && "ml-auto"} #{@type |> String.capitalize() == "Package" && "h-8"} #{@type |> String.capitalize() |> String.contains?(["Open", "Booked (hidden)", "Booked"]) && "h-8 flex justify-end"} "} data-offset="0" phx-hook="Select" id="id">
-      <button {testid("actions")} class={"btn-tertiary px-3 #{@type |> String.capitalize() == "Heading" && "h-10"} py-1.5 flex items-center gap-3 text-black xl:w-auto w-full #{@type |> String.capitalize() |> String.contains?(["Open", "Booked (hidden)", "Booked", "Package"]) && "h-8"}"}>
-      Actions
-      <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
-      <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
-      </button>
-      <%= case @type |> String.capitalize() do %>
-      <% "Heading" -> %>
-        <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-              <.icon name="envelope" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-              Create marketing email
-          </button>
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-              <.icon name="duplicate_2" class="inline-block w-4 h-4 mt-1 mr-3 fill-blue-planning-300" />
-              Duplicate
-          </button>
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-              <.icon name="eye" class="inline-block w-4 h-4 mr-3 text-red-sales-300" />
-              Disable
-          </button>
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-              <.icon name="trash" class="inline-block w-4 h-4 mr-3 text-red-sales-300" />
-              Archive
-          </button>
+    <ul class="flex overflow-auto gap-6 mb-6 py-6 md:py-0">
+      <%= for {true, %{name: name, concise_name: concise_name, redirect_route: redirect_route}} <-  @booking_event_tabs do %>
+        <li class={classes("text-blue-planning-300 font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @booking_event_tab_active === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @booking_event_tab_active !== concise_name})}>
+          <button type="button" phx-click="change-booking-event-tab" phx-value-tab={concise_name} phx-value-to={redirect_route}><%= name %></button>
+        </li>
+      <% end %>
+    </ul>
+    """
+  end
+
+  defp booking_slot_tabs_nav(assigns) do
+    ~H"""
+    <ul class="flex overflow-auto gap-6 mb-6 py-6 md:py-0">
+      <%= for {true, %{name: name, concise_name: concise_name, redirect_route: redirect_route}} <- @booking_slot_tabs do %>
+        <li class={classes("text-blue-planning-300 font-bold text-lg border-b-4 transition-all shrink-0", %{"opacity-100 border-b-blue-planning-300" => @booking_slot_tab_active === concise_name, "opacity-40 border-b-transparent hover:opacity-100" => @booking_slot_tab_active !== concise_name})}>
+          <button type="button" phx-click="change-booking-slot-tab" phx-value-tab={concise_name} phx-value-to={redirect_route}><%= name %></button>
+        </li>
+      <% end %>
+    </ul>
+    """
+  end
+
+  defp booking_slot_tabs_content(%{assigns: assigns}) do
+    ~H"""
+    <div>
+      <%= case @booking_slot_tab_active do %>
+        <% "list" -> %>
+          <div class="mt-10 p-3 border-2 border-base-200 rounded-lg">
+            <div class="flex mb-1">
+              <p class="text-2xl font-bold">Thursday, March 29th, 2023</p>
+              <button class="flex text-blue-planning-300 ml-auto items-center justify-center" phx-click="toggle-section" phx-value-section_id="first">
+                View details
+                <%= if !Enum.member?(@collapsed_sections, "first") do %>
+                  <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
+                <% else %>
+                  <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
+                <% end %>
+              </button>
+            </div>
+            <div class="flex">
+              <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
+              <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
+              <p class="text-blue-planning-300"><b>1</b> hidden</p>
+            </div>
+            <%= if Enum.member?(@collapsed_sections, "first") do %>
+              <div class="grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
+                <div class="col-span-2">Time</div>
+                <div class="col-span-2">Status</div>
+                <div class="col-span-2">Client</div>
+              </div>
+              <%= for slot <- @booking_event.slots do %>
+                <%= case slot.status do %>
+                  <% "open" -> %>
+                    <.slots_description client={@client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={hidden_slot_actions()} />
+                  <% "booked_hidden" -> %>
+                    <.slots_description client={@client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={open_slot_actions()} />
+                  <% _ -> %>
+                    <.slots_description client={@client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={booked_slot_actions()} />
+                <% end %>
+              <% end %>
+            <div class="flex justify-end">
+              <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-2">
+                <.icon name="envelope" class="w-4 h-4 text-blue-planning-300" />
+              </div>
+              <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-2">
+                <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
+              </div>
+              <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-2">
+                <.icon name="duplicate_2" class="w-4 h-4 fill-blue-planning-300" />
+              </div>
+              <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-2">
+                <.icon name="trash" class="w-4 h-4 text-red-sales-300" />
+              </div>
+            </div>
+          <% end %>
         </div>
-      <% "Open" -> %>
-        <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-              <.icon name="closed-eye" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
-              Mark hidden
-          </button>
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-              <.icon name="client-icon" class="inline-block w-4 h-4 mt-1 mr-3 text-blue-planning-300" />
-              Reserve
-          </button>
-        </div>
-      <% "Booked (hidden)" -> %>
-        <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-              <.icon name="eye" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
-              Mark open
-          </button>
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-              <.icon name="client-icon" class="inline-block w-4 h-4 mt-1 mr-3 text-blue-planning-300" />
-              Reserve
-          </button>
-        </div>
-      <% "Booked" -> %>
-        <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-              <.icon name="gallery-camera" class="inline-block w-4 h-4 mr-3 fill-blue-planning-300" />
-              Go to job
-          </button>
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-              <.icon name="client-icon" class="inline-block w-4 h-4 mt-1 mr-3 text-blue-planning-300" />
-              View client
-          </button>
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-              <.icon name="calendar" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
-              Reschedule
-          </button>
-          <button class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
-              <.icon name="cross" class="inline-block w-4 h-4 mr-3 text-red-sales-300" />
-              Cancel
-          </button>
-        </div>
-      <% "Package" -> %>
-          <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
-            <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-                <.icon name="package" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
-                Replace package
-            </button>
+      <% "calendar" -> %>
+        <div class="mt-10 pr-5 grid grid-cols-5 gap-5">
+          <div class="col-span-2 bg-base-200">Calender area</div>
+          <div class="col-span-3 flex flex-col justify-center">
+            <div class="flex">
+              <div class="flex text-2xl font-bold">September 15th, 2023</div>
+              <div class="flex justify-end ml-auto">
+                <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
+                  <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
+                </div>
+                <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
+                  <.icon name="duplicate_2" class="w-4 h-4 fill-blue-planning-300" />
+                </div>
+                <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
+                  <.icon name="trash" class="w-4 h-4 text-red-sales-300" />
+                </div>
+              </div>
+            </div>
+            <div class="flex mt-2">
+              <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
+              <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
+              <p class="text-blue-planning-300"><b>1</b> hidden</p>
+            </div>
+            <%= for slot <- @booking_event.slots do %>
+              <%= case slot.status do %>
+                <% "open" -> %>
+                  <.slots_description client={@client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={hidden_slot_actions()} />
+                <% "booked_hidden" -> %>
+                  <.slots_description client={@client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={open_slot_actions()} />
+                <% _ -> %>
+                  <.slots_description client={@client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={booked_slot_actions()} />
+              <% end %>
+            <% end %>
           </div>
+        </div>
       <% end %>
     </div>
     """
   end
 
-  # requires 1) Mode 2) Time 3) Status 4) ClientName
-  def slots_description(assigns) do
+  defp booking_event_tabs_content(%{assigns: assigns}) do
     ~H"""
-      <%= if @mode do %>
+    xyz ---
+    """
+  end
+
+  defp assign_tab_data(%{assigns: %{current_user: _current_user}} = socket, tab) do
+    case tab do
+      "list" -> socket
+
+      "overview" -> socket
+
+      _ -> socket
+    end
+  end
+
+  defp booking_slot_tabs() do
+    [
+      {true,
+       %{
+         name: "List",
+         concise_name: "list",
+         redirect_route: nil,
+         notification_count: nil
+       }},
+      {true,
+       %{
+        name: "Calendar",
+        concise_name: "calendar",
+        redirect_route: nil,
+        notification_count: nil
+      }}
+    ]
+  end
+
+  defp booking_event_tabs() do
+    [
+      {true,
+       %{
+         name: "Overview",
+         concise_name: "overview",
+         redirect_route: nil,
+         notification_count: nil
+       }}
+    ]
+  end
+
+  def actions(assigns) do
+    ~H"""
+    <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@booking_event.id}"}>
+      <button {testid("actions-#{@booking_event.id}")} title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 xl:w-auto w-full">
+        Actions
+        <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+        <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
+      </button>
+
+      <div class="z-10 flex flex-col hidden w-auto bg-white border rounded-lg shadow-lg popover-content">
+        <%= if is_nil(@booking_event.archived_at) do %>
+          <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
+            <button title={title} type="button" phx-click={action} phx-value-id={@booking_event.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+              <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
+              <%= title %>
+            </button>
+          <% end %>
+        <% else %>
+          <button title="Unarchive" type="button" phx-click="confirm-unarchive" phx-value-id={@booking_event.id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+            <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300"/>
+            Unarchive
+          </button>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
+
+  defp header_actions do
+    [
+      %{title: "Create marketing email", action: "open-compose", icon: "envelope"},
+      %{title: "Duplicate", action: "duplicate", icon: "duplicate_2"},
+      %{title: "Disable", action: "disable", icon: "eye"},
+      %{title: "Archive", action: "archive", icon: "trash"}
+    ]
+  end
+
+  defp booked_slot_actions do
+    [
+      %{title: "Go to job", action: "open-job", icon: "gallery-camera"},
+      %{title: "View client", action: "open-client", icon: "client-icon"},
+      %{title: "Reschedule", action: "reschedule", icon: "calendar"},
+      %{title: "Cancel", action: "cancel", icon: "cross"}
+    ]
+  end
+
+  defp open_slot_actions do
+    [
+      %{title: "Reserve", action: "reserve", icon: "client-icon"},
+      %{title: "Mark hidden", action: "mark-hidden", icon: "closed-eye"}
+    ]
+  end
+
+  defp hidden_slot_actions do
+    [
+      %{title: "Reserve", action: "reserve", icon: "client-icon"},
+      %{title: "Mark open", action: "mark-open", icon: "eye"}
+    ]
+  end
+
+  defp package_actions do
+    [
+      %{title: "Replace package", action: "replace-package", icon: "package"}
+    ]
+  end
+
+  #     <% "Open" -> %>
+  #       <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
+  #         <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+  #             <.icon name="closed-eye" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
+  #             Mark hidden
+  #         </button>
+  #         <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+  #             <.icon name="client-icon" class="inline-block w-4 h-4 mt-1 mr-3 text-blue-planning-300" />
+  #             Reserve
+  #         </button>
+  #       </div>
+  #     <% "Booked (hidden)" -> %>
+  #       <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
+  #         <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+  #             <.icon name="eye" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
+  #             Mark open
+  #         </button>
+  #         <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+  #             <.icon name="client-icon" class="inline-block w-4 h-4 mt-1 mr-3 text-blue-planning-300" />
+  #             Reserve
+  #         </button>
+  #       </div>
+  #     <% "Booked" -> %>
+  #       <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
+  #         <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+  #             <.icon name="gallery-camera" class="inline-block w-4 h-4 mr-3 fill-blue-planning-300" />
+  #             Go to job
+  #         </button>
+  #         <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+  #             <.icon name="client-icon" class="inline-block w-4 h-4 mt-1 mr-3 text-blue-planning-300" />
+  #             View client
+  #         </button>
+  #         <button class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+  #             <.icon name="calendar" class="inline-block w-4 h-4 mr-3 text-blue-planning-300" />
+  #             Reschedule
+  #         </button>
+  #         <button class="flex items-center px-3 py-2 rounded-lg hover:bg-red-sales-100 hover:font-bold">
+  #             <.icon name="cross" class="inline-block w-4 h-4 mr-3 text-red-sales-300" />
+  #             Cancel
+  #         </button>
+  #       </div>
+  #     <% "Package" -> %>
+  #         <div class="flex flex-col hidden bg-white border rounded-lg shadow-lg popover-content" style="z-index: 2147483001;">
+  #           <button class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+  #               <.icon name="package" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300" />
+  #               Replace package
+  #           </button>
+  #         </div>
+  #     <% end %>
+  #   </div>
+  #   """
+  # end
+
+  # requires 1) Mode 2) Time 3) Status 4) ClientName
+  defp slots_description(assigns) do
+    ~H"""
+      <%= case @booking_slot_tab_active do %>
+      <% "list" -> %>
         <div class="border-2 border-base-200 rounded-lg flex p-3 items-center my-1.5">
           <div class="flex flex-col">
-            <p class={"mb-1 font-bold text-black text-lg"}>
-              <%= if @status |> String.capitalize() == "Booked" do %>
-                <button class="text-blue-planning-300 underline"><%= @time %></button>
+            <p class="mb-1 font-bold text-black text-lg">
+              <%= if @slot.status == "booked" do %>
+                <button class="text-blue-planning-300 underline"><%= @slot.time %></button>
               <% else %>
-                <%= @time %>
+                <%= @slot.time %>
               <% end %>
             </p>
             <p class="text-blue-planning-300 underline">
-              <%= if @client && @status |> String.capitalize() == "Booked" do %>
-                <button class="text-blue-planning-300 underline"><%= "Booked with " <> @client |> String.capitalize() %></button>
+              <%= if @client && @slot.status == "booked" do %>
+                <button class="text-blue-planning-300 underline"><%= "Booked with " <> @client.name %></button>
               <% else %>
-                <p class={"#{@status |> String.capitalize() == "Booked (hidden)" && "text-base-250"}"}><%= @status |> String.capitalize() %></p>
+                <p class={classes(%{"text-base-250" => @slot.status == "booked_hidden"})}><%= @slot.title %></p>
               <% end %>
             </p>
           </div>
           <div class="flex ml-auto">
-              <.actions_button type={@status}/>
+            <.actions booking_event={@booking_event} button_actions={@button_actions} />
           </div>
         </div>
-      <% else %>
+        <% "calendar" -> %>
         <div class="grid grid-cols-7 items-center">
-          <div class={"col-span-2 #{@status |> String.capitalize() == "Booked (hidden)" && "text-base-250"}"}>
-              <%= if @status |> String.capitalize() == "Booked" do %>
-                <button class="text-blue-planning-300 underline"><%= @time %></button>
+          <div class={classes("col-span-2", %{"text-base-250" => @slot.status == "booked_hidden"})}>
+              <%= if @slot.status == "booked" do %>
+                <button class="text-blue-planning-300 underline"><%= @slot.time %></button>
               <% else %>
-                <%= @time %>
+                <%= @slot.time %>
               <% end %>
           </div>
-          <div class={"col-span-2 #{@status |> String.capitalize() != "Open" && "text-base-250"}"}>
-              <%= @status |> String.capitalize() %>
+          <div class={classes("col-span-2", %{"text-base-250" => @slot.status != "Open"})}>
+              <%= @slot.title %>
           </div>
           <div class="col-span-2">
-              <%= if @client && @status |> String.capitalize() == "Booked" do %>
-                <button class="text-blue-planning-300 underline"><%= @client |> String.capitalize() %></button>
+              <%= if @client && @slot.status == "booked" do %>
+                <button class="text-blue-planning-300 underline"><%= @client.name %></button>
               <% else %>
                       -
               <% end %>
           </div>
-          <.actions_button type={@status}/>
+          <.actions booking_event={@booking_event} button_actions={@button_actions} />
           <hr class="my-3 col-span-7">
         </div>
       <% end %>
