@@ -32,7 +32,6 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
 
   @impl true
   def render(assigns) do
-    description = {:safe, assigns.booking_event.description}
     ~H"""
     <%= if @status == :active do %>
       <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col">
@@ -51,7 +50,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
                 <.date_display date={formatted_date(@booking_event)} />
                 <.address_display booking_event={@booking_event} class="mt-4"/>
               </div>
-              <div class="mt-4 raw-html"><%= description %></div>
+              <div class="mt-4 raw_html"><%= raw @booking_event.description %></div>
               <.live_link to={Routes.client_booking_event_path(@socket, :book, @organization.slug, @booking_event.id)} class="btn-primary text-center mt-12">Book now</.live_link>
             </div>
           </div>
