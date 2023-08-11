@@ -207,8 +207,7 @@ defmodule Picsello.Cart.Checkouts do
        ) do
     order_number = Order.number(order)
 
-    payment_method_types =
-      Picsello.Payments.map_payment_opts_to_stripe_opts(organization)
+    payment_method_types = Picsello.Payments.map_payment_opts_to_stripe_opts(organization)
 
     params = %{
       shipping_address_collection: %{

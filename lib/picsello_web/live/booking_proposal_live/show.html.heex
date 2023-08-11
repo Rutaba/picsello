@@ -42,6 +42,26 @@
         <hr class="border-gray-100 my-8">
         <h3 class="uppercase text-base-250">Have Questions?</h3>
         <a class="block mt-2 btn-primary w-max" phx-click="open-compose" href="#">Message <%= @organization.name %></a>
+        <hr class="border-gray-100 my-8">
+        <h3 class="uppercase text-base-250">Online payment options</h3>
+        <div class="mr-auto flex flex-wrap items-center gap-4 mt-2">
+          <.payment_icon icon="payment-card" option="Cards" />
+          <%= if(@organization.payment_options.allow_cash) do %>
+            <.payment_icon icon="payment-offline" option="Manual payments (check/cash/Venmo/Etc)" />
+          <% end %>
+          <%= if(@organization.payment_options.allow_afterpay_clearpay) do %>
+            <.payment_icon icon="payment-afterpay" option="Afterpay" />
+          <% end %>
+          <%= if(@organization.payment_options.allow_affirm) do %>
+            <.payment_icon icon="payment-affirm" option="Affirm" />
+          <% end %>
+          <%= if(@organization.payment_options.allow_klarna) do %>
+            <.payment_icon icon="payment-klarna" option="Klarna" />
+          <% end %>
+          <%= if(@organization.payment_options.allow_cashapp) do %>
+            <.payment_icon icon="payment-cashapp" option="Cashapp Pay" />
+          <% end %>
+        </div>
       </div>
       <div class="md:border md:border-gray-100 sm:px-10 lg:px-20 py-12">
         <%= if @job.booking_event do %>

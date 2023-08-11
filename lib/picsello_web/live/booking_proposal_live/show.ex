@@ -36,6 +36,15 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   @impl true
   def handle_params(_params, _uri, socket), do: socket |> noreply()
 
+  def payment_icon(assigns) do
+    ~H"""
+    <div class="flex gap-1 items-center text-sm">
+      <.icon name={@icon} class="w-4 h-4" />
+      <%= @option %>
+    </div>
+    """
+  end
+
   @impl true
   def handle_event("open-compose", %{}, socket), do: open_compose(socket)
 

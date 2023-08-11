@@ -69,34 +69,9 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
                   </span>
                 </button>
               <% end %>
-              <div class="mr-auto flex flex-wrap items-center gap-4">
-                <h3 class="text-sm font-bold">Online payment options:</h3>
-                <.payment_icon icon="credit-card" option="Card" />
-                <%= if(@organization.payment_options.allow_afterpay_clearpay) do %>
-                  <.payment_icon icon="payment-afterpay" option="Afterpay" />
-                <% end %>
-                <%= if(@organization.payment_options.allow_affirm) do %>
-                  <.payment_icon icon="payment-affirm" option="Affirm" />
-                <% end %>
-                <%= if(@organization.payment_options.allow_klarna) do %>
-                  <.payment_icon icon="payment-klarna" option="Klarna" />
-                <% end %>
-                <%= if(@organization.payment_options.allow_cashapp) do %>
-                  <.payment_icon icon="payment-cashapp" option="Cashapp Pay" />
-                <% end %>
-              </div>
           <% end %>
         </.footer>
       </form>
-    </div>
-    """
-  end
-
-  def payment_icon(assigns) do
-    ~H"""
-    <div class="flex gap-1 items-center text-sm">
-      <.icon name={@icon} class="w-4 h-4" />
-      <%= @option %>
     </div>
     """
   end

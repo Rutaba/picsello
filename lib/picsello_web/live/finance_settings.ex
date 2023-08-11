@@ -45,20 +45,16 @@ defmodule PicselloWeb.Live.FinanceSettings do
       </div>
       <hr class="my-4 sm:my-10" />
       <div class="grid gap-6 sm:grid-cols-2">
-        <.card title="Tax info" class="intro-taxes">
-          <p class="mt-2 text-base-250">Stripe can easily manage your tax settings to simplify filing.</p>
-          <a class="link" target="_blank" href="https://support.picsello.com/article/113-stripe-taxes">Do I need this?</a>
+        <.card title="Stripe account" class="intro-stripe">
+          <p class="mt-2 text-base-250">Picsello uses Stripe so your payments are always secure. View and manage your payments through your Stripe account.</p>
           <div class="flex mt-6 justify-end">
-            <%= if @stripe_status == :charges_enabled do %>
-              <a class="text-center block btn-primary sm:w-auto w-full" href="https://dashboard.stripe.com/settings/tax" target="_blank" rel="noopener noreferrer">
-                View tax settings in Stripe
-              </a>
-            <% else %>
-              <div class="flex flex-col sm:w-auto w-full">
-                <button class="btn-primary" disabled>View tax settings in Stripe</button>
-                <em class="block pt-1 text-xs text-center">Set up Stripe to view tax settings</em>
-              </div>
-            <% end %>
+            <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
+            error_class: "text-right",
+            class: "px-8 text-center btn-primary sm:w-auto w-full",
+            container_class: "sm:w-auto w-full",
+            current_user: @current_user,
+            return_url: Routes.home_url(@socket, :index),
+            stripe_status: @stripe_status %>
           </div>
         </.card>
         <.card title="Currency" class="intro-taxes">
@@ -75,35 +71,58 @@ defmodule PicselloWeb.Live.FinanceSettings do
         </.card>
       </div>
       <div class="grid gap-6 mt-6">
-        <.card title="Payment options" class="intro-payments">
-          <p class="mt-2 text-base-250">Picsello uses Stripe so your payments are always secure. Configure the payment types you'd like to offer to your clients. Cards are always accepted!</p>
-          <div>
-            <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding,
-            error_class: "text-right",
-            class: "px-8 text-center btn-primary",
-            container_class: "flex w-full justify-end items-center gap-4 mt-6",
-            current_user: @current_user,
-            return_url: Routes.home_url(@socket, :index),
-            stripe_status: @stripe_status %>
-          </div>
+        <.card title="Accepted payment types" class="intro-payments">
+          <p class="mt-2 text-base-250">Here you can enable payment methods you would like to accept.</p>
           <.form :let={f} for={@payment_options_changeset} phx-change="update-payment-options">
             <%= inputs_for f, :payment_options, fn fp -> %>
               <%= hidden_inputs_for(fp) %>
-              <div>
-                <hr class="my-6"/>
-                <div class="grid gap-6 sm:gap-16 sm:grid-cols-2">
-                  <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Afterpay" description="Buy now pay later" input_name={:allow_afterpay_clearpay} f={fp} icon="payment-afterpay" />
-                  <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Klarna" description="Buy now pay later" input_name={:allow_klarna} f={fp} icon="payment-klarna" />
-                  <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Affirm" description="Buy now pay later" input_name={:allow_affirm} f={fp} icon="payment-affirm" />
-                  <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Cash App Pay" description="Simple payment method using Cash App" input_name={:allow_cashapp} f={fp} icon="payment-cashapp" />
+              <%= if @user_currency.currency in Utils.payment_options_currency() do %>
+                <div>
+                  <h3 class="font-bold text-xl mb-3 mt-4">Via Stripe Online</h3>
+                  <hr class=""/>
+                  <div class="grid gap-6 sm:gap-x-16 sm:gap-y-4 sm:grid-cols-2">
+                    <%= if @user_currency.currency in Utils.payment_options_currency(:allow_afterpay_clearpay) do %>
+                      <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Afterpay" description="Buy now pay later" input_name={:allow_afterpay_clearpay} f={fp} icon="payment-afterpay" />
+                    <% end %>
+                    <%= if @user_currency.currency in Utils.payment_options_currency(:allow_klarna) do %>
+                      <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Klarna" description="Buy now pay later" input_name={:allow_klarna} f={fp} icon="payment-klarna" />
+                    <% end %>
+                    <%= if @user_currency.currency in Utils.payment_options_currency(:allow_affirm) do %>
+                      <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Affirm" description="Buy now pay later" input_name={:allow_affirm} f={fp} icon="payment-affirm" />
+                    <% end %>
+                    <%= if @user_currency.currency in Utils.payment_options_currency(:allow_cashapp) do %>
+                      <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Cash App Pay" description="Pay with CashApp" input_name={:allow_cashapp} f={fp} icon="payment-cashapp" />
+                    <% end %>
+                  </div>
                 </div>
-              </div>
+              <% end %>
               <div>
-                <hr class="my-6" />
-                <.toggle current_user={@current_user} heading="Cash/check payments" description="Accept offline payments" input_name={:allow_cash} f={fp} />
+                <h3 class="font-bold text-xl mb-3 mt-6">Via Manual Methods</h3>
+                <hr class="" />
+                <div class="grid gap-6 sm:gap-16 sm:grid-cols-2">
+                  <.toggle current_user={@current_user} heading="Manual" description="All others including Cash, Check, Venmo, etc." input_name={:allow_cash} f={fp} />
+                </div>
               </div>
             <% end %>
           </.form>
+        </.card>
+      </div>
+      <div class="grid gap-6 sm:grid-cols-2 mt-6">
+        <.card title="Tax info" class="intro-taxes">
+          <p class="mt-2 text-base-250">Stripe can easily manage your tax settings to simplify filing.</p>
+          <a class="link" target="_blank" href="https://support.picsello.com/article/113-stripe-taxes">Do I need this?</a>
+          <div class="flex mt-6 justify-end">
+            <%= if @stripe_status == :charges_enabled do %>
+              <a class="text-center block btn-primary sm:w-auto w-full" href="https://dashboard.stripe.com/settings/tax" target="_blank" rel="noopener noreferrer">
+                View tax settings in Stripe
+              </a>
+            <% else %>
+              <div class="flex flex-col sm:w-auto w-full">
+                <button class="btn-primary" disabled>View tax settings in Stripe</button>
+                <em class="block pt-1 text-xs text-center">Set up Stripe to view tax settings</em>
+              </div>
+            <% end %>
+          </div>
         </.card>
       </div>
     </.settings_nav>
@@ -225,7 +244,12 @@ defmodule PicselloWeb.Live.FinanceSettings do
 
   def handle_info(
         {:search_event, :submit_currency, %{name: new_currency}},
-        %{assigns: %{user_currency: user_currency, current_user: current_user}} = socket
+        %{
+          assigns: %{
+            user_currency: user_currency,
+            current_user: %{organization: organization} = current_user
+          }
+        } = socket
       ) do
     rate = ExchangeRatesApi.get_latest_rate(user_currency.currency, new_currency)
 
@@ -237,7 +261,8 @@ defmodule PicselloWeb.Live.FinanceSettings do
       })
 
     {:ok, _} = convert_packages_currencies(current_user, user_currency)
-    maybe_disable_sell_global_products(new_currency, current_user.organization.id)
+    maybe_disable_sell_global_products(new_currency, organization.id)
+    maybe_disable_payment_options(new_currency, organization)
 
     socket
     |> assign(:user_currency, user_currency)
@@ -324,6 +349,38 @@ defmodule PicselloWeb.Live.FinanceSettings do
         GlobalSettings.update_gallery_product(gallery_product, %{sell_product_enabled: false})
       end
     end
+  end
+
+  defp maybe_disable_payment_options(
+         currency,
+         %{payment_options: payment_options} = organization
+       ) do
+    updated_payment_options =
+      payment_options
+      |> Map.from_struct()
+      |> Enum.map(fn {payment_option, enabled?} ->
+        case payment_option do
+          :allow_cash ->
+            {payment_option, enabled?}
+
+          _ ->
+            if currency in Utils.payment_options_currency(payment_option) do
+              {payment_option, enabled?}
+            else
+              {payment_option, false}
+            end
+        end
+      end)
+      |> Map.new()
+
+    build_payment_options_changeset(
+      %{assigns: %{current_user: %{organization: organization}}},
+      %{
+        payment_options: updated_payment_options
+      },
+      :update
+    )
+    |> Repo.update()
   end
 
   defp build_payment_options_changeset(
