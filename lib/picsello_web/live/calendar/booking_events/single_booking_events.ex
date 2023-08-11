@@ -27,20 +27,9 @@ defmodule PicselloWeb.Live.Calendar.SingleBookingEvents do
     |> noreply()
   end
 
-
-
-
   # def render(assigns) do
   #   ~H"""
   #   ss
   #   """
   # end
-
-
-
-
-
-
-
-
 end

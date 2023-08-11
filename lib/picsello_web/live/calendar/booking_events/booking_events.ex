@@ -516,12 +516,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
       <.blurred_thumbnail class="h-32 rounded-lg" url={@booking_event.thumbnail_url} />
       <div class="flex flex-col items-start justify-center sm:ml-4">
         <%= case @booking_event.status do %>
-        <% :archive -> %>
-          <.badge color={:gray}>Archived</.badge>
-        <% :disabled -> %>
-          <.badge color={:gray}>Disabled</.badge>
-        <% _ -> %>
-          <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
+          <% :archive -> %>
+            <.badge color={:gray}>Archived</.badge>
+          <% :disabled -> %>
+            <.badge color={:gray}>Disabled</.badge>
+          <% _ -> %>
+            <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
         <% end %>
         <div class="font-bold w-full">
           <a href={if disabled?(@booking_event, [:disabled, :archive]), do: "javascript:void(0)", else: Routes.calendar_booking_events_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">

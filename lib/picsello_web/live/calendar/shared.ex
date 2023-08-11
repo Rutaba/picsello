@@ -6,7 +6,16 @@ defmodule PicselloWeb.Live.Calendar.Shared do
   import Phoenix.Component
 
   def back_button(assigns) do
-    assigns = assigns |> Enum.into(%{class: nil, icon_dimensions: "w-4 h-4", icon_stroke: "stroke-2", live_link_padding: "p-2.5", live_link_right_padding: "mr-4"} )
+    assigns =
+      assigns
+      |> Enum.into(%{
+        class: nil,
+        icon_dimensions: "w-4 h-4",
+        icon_stroke: "stroke-2",
+        live_link_padding: "p-2.5",
+        live_link_right_padding: "mr-4"
+      })
+
     ~H"""
     <.live_link to={@to} class={"#{@class} rounded-full bg-base-200 flex items-center justify-center #{@live_link_padding} #{@live_link_right_padding}"}>
       <.icon name="back" class={"#{@icon_dimensions} #{@icon_stroke}"}/>
