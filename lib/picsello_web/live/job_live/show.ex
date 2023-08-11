@@ -22,7 +22,8 @@ defmodule PicselloWeb.JobLive.Show do
       title_header: 1,
       card_title: 1,
       process_cancel_upload: 2,
-      renew_uploads: 3
+      renew_uploads: 3,
+      complete_job_component: 1
     ]
 
   import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1, new_gallery_path: 2]
@@ -62,15 +63,7 @@ defmodule PicselloWeb.JobLive.Show do
   @impl true
   def handle_event("confirm_job_complete", %{}, socket) do
     socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      confirm_event: "complete_job",
-      confirm_label: "Yes, complete",
-      confirm_class: "btn-primary",
-      subtitle:
-        "After you complete the job this becomes read-only. This action cannot be undone.",
-      title: "Are you sure you want to complete this job?",
-      icon: "warning-blue"
-    })
+    |> complete_job_component()
     |> noreply()
   end
 
@@ -154,15 +147,7 @@ defmodule PicselloWeb.JobLive.Show do
   @impl true
   def handle_info({:action_event, "confirm_job_complete"}, socket) do
     socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      confirm_event: "complete_job",
-      confirm_label: "Yes, complete",
-      confirm_class: "btn-primary",
-      subtitle:
-        "After you complete the job this becomes read-only. This action cannot be undone.",
-      title: "Are you sure you want to complete this job?",
-      icon: "warning-blue"
-    })
+    |> complete_job_component()
     |> noreply()
   end
 
