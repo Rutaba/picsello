@@ -20,6 +20,7 @@ defmodule Picsello.ClientBooksEventTest do
     |> Picsello.Repo.update!()
 
     questionnaire = insert(:questionnaire)
+
     template =
       insert(:package_template,
         user: user,

@@ -2,9 +2,10 @@ name: ci
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+    types: ["opened", "edited", "reopened", "synchronize", "ready_for_review"]
 
 permissions:
   contents: read
@@ -58,7 +59,7 @@ jobs:
       - test_6-6
     runs-on: ubuntu-latest
     permissions:
-      actions: 'read'
+      actions: "read"
     steps:
       - name: Slack Workflow Notification
         uses: Gamesight/slack-workflow-status@master
@@ -66,5 +67,5 @@ jobs:
           include_commit_message: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           slack_webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-          name: 'Picsello CI'
-          icon_emoji: ':camera:'
+          name: "Picsello CI"
+          icon_emoji: ":camera:"

@@ -407,7 +407,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   defp date_part_in_text({count, _date_part}) when count <= 0, do: ""
 
   defp date_part_in_text({count, date_part}) when count > 0,
-    do: "#{count} #{date_part}#{(count > 1 && 's') || ""} "
+    do: "#{count} #{date_part}#{(count > 1 && ~c"s") || ""} "
 
   defp total_days(day, month, year) do
     {d, m, y} = date_parts = {to_int(day), to_int(month), to_int(year)}

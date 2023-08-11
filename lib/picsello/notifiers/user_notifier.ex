@@ -243,6 +243,7 @@ defmodule Picsello.Notifiers.UserNotifier do
           optional(:contains_product) => boolean(),
           optional(:digital_quantity) => String.t(),
           optional(:total_digitals_price) => Money.t(),
+          optional(:print_credits_available) => boolean(),
           optional(:print_credit_used) => Money.t(),
           optional(:print_credit_remaining) => Money.t(),
           optional(:print_cost) => Money.t(),
@@ -371,14 +372,15 @@ defmodule Picsello.Notifiers.UserNotifier do
     products
     |> Enum.reduce(Money.new(0, order.currency), &Money.add(&2, &1.print_credit_discount))
     |> case do
-      %{amount: 0} ->
-        %{}
-
-      credit ->
+      %{amount: _amount, currency: :USD} = credit ->
         %{
+          print_credits_available: true,
           print_credit_used: credit |> Money.neg(),
           print_credit_remaining: Picsello.Cart.credit_remaining(gallery).print
         }
+
+      _ ->
+        %{}
     end
   end
 

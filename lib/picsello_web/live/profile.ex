@@ -336,9 +336,31 @@ defmodule PicselloWeb.Live.Profile do
           )
         )
       end)
+      |> filter_by_date()
+      |> sort_by_date(:asc)
 
     socket
     |> assign(booking_events: booking_events)
+  end
+
+  # Filters(gets) only booking events with date greater than or equal to Today
+  defp filter_by_date(booking_events) do
+    {:ok, datetime} = DateTime.now("Etc/UTC")
+
+    Enum.filter(booking_events, fn %{dates: dates} ->
+      dates
+      |> Enum.map(& &1.date)
+      |> Enum.sort_by(& &1, {:desc, Date})
+      |> hd
+      |> Date.compare(datetime)
+      |> then(&(&1 in [:gt, :eq]))
+    end)
+  end
+
+  # Sorts booking events from descending to ascending by their dates
+  defp sort_by_date(booking_events, sort_direction) do
+    booking_events
+    |> Enum.sort_by(&(&1.dates |> hd() |> Map.get(:date)), {sort_direction, Date})
   end
 
   defp image_text("logo"), do: "Choose a new logo"
