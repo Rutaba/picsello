@@ -341,7 +341,7 @@ defmodule Picsello.PaymentSchedules do
 
     stripe_params = %{
       shipping_address_collection: %{
-        allowed_countries: ["US", "CA"]
+        allowed_countries: ["US"]
       },
       payment_method_types: payment_method_types,
       client_reference_id: "proposal_#{proposal.id}",

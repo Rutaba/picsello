@@ -312,9 +312,10 @@ defmodule Picsello.Payments do
       |> Map.from_struct()
       |> Map.delete(:allow_cash)
       |> Enum.reduce([], fn {key, value}, acc ->
-        case value do
-          true -> [payment_option(key) | acc]
-          _ -> acc
+        if value do
+          [payment_option(key) | acc]
+        else
+          acc
         end
       end)
 

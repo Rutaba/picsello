@@ -211,7 +211,7 @@ defmodule Picsello.Cart.Checkouts do
 
     params = %{
       shipping_address_collection: %{
-        allowed_countries: ["US", "CA"]
+        allowed_countries: ["US"]
       },
       payment_method_types: payment_method_types,
       line_items: build_line_items(order),
