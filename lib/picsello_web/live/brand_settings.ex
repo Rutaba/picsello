@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.BrandSettings do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.User.Settings, only: [settings_nav: 1, card: 1]
-  import PicselloWeb.Live.Brand.Shared, only: [email_signature_preview: 1]
+  import PicselloWeb.Live.Brand.Shared, only: [email_signature_preview: 1, brand_logo_preview: 1]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -25,22 +25,47 @@ defmodule PicselloWeb.Live.BrandSettings do
 
       <hr class="my-4 sm:my-10" />
 
-      <.card title="Change your email signature">
+      <.card title="Upload a logo">
         <div class={"grid sm:grid-cols-2 gap-6 sm:gap-12 sm:pr-10 sm:pb-10"}>
           <div class="mt-4">
             <div class="text-base-250">
-              Here’s the email signature that we’ve generated for you that will be included on all <.live_link class="link" to={Routes.inbox_path(@socket, :index)}>Inbox</.live_link> emails. To change your info, you’ll have to upload a logo <.live_link class="link" to={Routes.profile_settings_path(@socket, :edit)}>here</.live_link>, update your <.live_link class="link" to={Routes.user_settings_path(@socket, :edit)}>business name</.live_link> and modify your phone number.
+              Showcase your brand—if you don’t have a logo, no worries, we will display a default one.
+            </div>
+            <button phx-click="add-update-logo" class="hidden mt-6 sm:block btn-primary intro-signature">Add or update logo</button>
+          </div>
+          <div {testid("logo-preview")} class="flex flex-col">
+            <.brand_logo_preview organization={@organization} user={@current_user} />
+            <button phx-click="add-update-logo" class="self-end block mt-20 sm:hidden btn-primary">Add or update logo</button>
+          </div>
+        </div>
+      </.card>
+
+      <.card title="Change your email signature">
+        <div class={"grid sm:grid-cols-2 gap-6 sm:gap-12 sm:pr-10"}>
+          <div class="mt-4">
+            <div class="text-base-250">
+              Here’s the email signature that we’ve generated for you that will be included on all <.live_link class="link" to={Routes.inbox_path(@socket, :index)}>Inbox</.live_link> emails.
+              To change your info, update your
+              <.live_link class="link" to={Routes.user_settings_path(@socket, :edit)}>business name</.live_link>
+               and modify your <.live_link class="link" to={Routes.user_settings_path(@socket, :edit)}>phone number</.live_link>.
             </div>
             <button phx-click="edit-signature" class="hidden mt-6 sm:block btn-primary intro-signature">Change signature</button>
           </div>
           <div {testid("signature-preview")} class="flex flex-col">
             <.email_signature_preview organization={@organization} user={@current_user} />
-            <button phx-click="edit-signature" class="self-end block mt-12 sm:hidden btn-primary">Change signature</button>
+            <button phx-click="edit-signature" class="self-end block mt-12 sm:hidden btn-primary">Change your email signature</button>
           </div>
         </div>
       </.card>
     </.settings_nav>
     """
+  end
+
+  @impl true
+  def handle_event("add-update-logo", %{}, %{assigns: %{organization: organization}} = socket) do
+    socket
+    |> PicselloWeb.Brand.BrandLogoComponent.open(organization)
+    |> noreply()
   end
 
   @impl true
@@ -60,6 +85,13 @@ defmodule PicselloWeb.Live.BrandSettings do
     |> assign_organization(organization)
     |> put_flash(:success, "Email signature saved")
     |> noreply()
+  end
+
+  @impl true
+  def handle_info({:image_ready, image_field, organization}, socket) do
+    consume_uploaded_entries(socket, image_field, fn _, _ -> ok(nil) end)
+
+    socket |> assign_organization(organization) |> noreply()
   end
 
   defp assign_organization(%{assigns: %{current_user: current_user}} = socket) do
