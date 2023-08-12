@@ -88,6 +88,7 @@ defmodule Picsello.BookingEvent do
     field :thumbnail_url, :string
     field(:status, Ecto.Enum, values: [:active, :disabled, :archive])
     belongs_to :package_template, Picsello.Package
+    belongs_to :organization, Picsello.Organization
     embeds_many :dates, EventDate, on_replace: :delete
     has_many :jobs, Picsello.Job
 
@@ -107,6 +108,13 @@ defmodule Picsello.BookingEvent do
     Enum.reduce_while(steps, booking_event, fn {step_name, initializer}, changeset ->
       {if(step_name == step, do: :halt, else: :cont), initializer.(changeset, attrs)}
     end)
+  end
+
+  # create booking event with minimal info
+  def create_changeset(booking_event \\ %__MODULE__{}, attrs) do
+    booking_event
+    |> cast(attrs, [:name, :organization_id])
+    |> validate_required([:name, :organization_id])
   end
 
   def archive_changeset(%__MODULE__{} = booking_event) do

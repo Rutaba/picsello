@@ -279,19 +279,20 @@ defmodule PicselloWeb.HomeLive.Index do
     socket |> noreply()
   end
 
-  @impl true
-  def handle_event("create-booking-event", _, socket),
-    do:
-      socket
-      |> push_redirect(to: Routes.calendar_booking_events_path(socket, :new))
-      |> noreply()
+  # TODO: need to change it
+  # @impl true
+  # def handle_event("create-booking-event", _, socket),
+  #   do:
+  #     socket
+  #     |> push_redirect(to: Routes.calendar_booking_events_show_path(socket, :edit))
+  #     |> noreply()
 
-  @impl true
-  def handle_event("duplicate-event", %{"event-id" => id}, socket),
-    do:
-      socket
-      |> push_redirect(to: Routes.calendar_booking_events_path(socket, :new, duplicate: id))
-      |> noreply()
+  # @impl true
+  # def handle_event("duplicate-event", %{"event-id" => id}, socket),
+  #   do:
+  #     socket
+  #     |> push_redirect(to: Routes.calendar_booking_events_path(socket, :new, duplicate: id))
+  #     |> noreply()
 
   @impl true
   def handle_event("add-client", _, socket),
@@ -332,7 +333,7 @@ defmodule PicselloWeb.HomeLive.Index do
   def handle_event("view-booking-events", _, socket),
     do:
       socket
-      |> push_redirect(to: Routes.calendar_booking_events_path(socket, :index))
+      |> push_redirect(to: Routes.calendar_booking_events_index_path(socket, :index))
       |> noreply()
 
   @impl true
@@ -483,7 +484,7 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
-  defdelegate handle_event(name, params, socket), to: PicselloWeb.Live.Calendar.BookingEvents
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.Live.Calendar.BookingEvents.Index
 
   @impl true
   def handle_info(
@@ -1245,12 +1246,12 @@ defmodule PicselloWeb.HomeLive.Index do
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col p-2 gap-2 md:gap-4 w-full md:flex-row grow">
           <%= if Map.has_key?(@data, :thumbnail_url) do %>
-            <%= live_redirect to: Routes.calendar_booking_events_path(@socket, :edit, @data.id) do %>
+            <%= live_redirect to: Routes.calendar_booking_events_show_path(@socket, :edit, @data.id) do %>
               <.blurred_thumbnail class="rounded-lg h-full items-center flex flex-col w-[100px] h-[65px] bg-base-200" url={@data.thumbnail_url} />
             <% end %>
           <% else %>
               <%= if @data.cover_photo do %>
-                <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_path(@socket, :edit, @data.id)) do %>
+                <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_show_path(@socket, :edit, @data.id)) do %>
                 <div class="rounded-lg float-left w-[100px] min-h-[65px]" style={"background-image: url('#{if Map.has_key?(@data, :client_link_hash), do: cover_photo_url(@data), else: @data.thumbnail_url}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
               <% end %>
             <% else %>
@@ -1267,7 +1268,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
           <div class="flex flex-col w-2/3 text-sm">
             <div class={"font-bold w-full"}>
-              <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_path(@socket, :edit, @data.id)) do %>
+              <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_show_path(@socket, :edit, @data.id)) do %>
                 <span class="w-full text-blue-planning-300 underline">
                   <%= if String.length(@data.name) < 30 do
                     @data.name
@@ -1314,7 +1315,7 @@ defmodule PicselloWeb.HomeLive.Index do
                       <% :archive -> %>
                         <.dropdown_item {assigns} id={"unarchive_event_#{@data.id}"} icon="plus" title="Unarchive" link={[phx_click: "unarchive-event", phx_value_event_id: @data.id]} class={classes(%{"hidden" => disabled?(@data)})} />
                       <% status -> %>
-                        <.dropdown_item {assigns} id={"edit_event_#{@data.id}"} icon="pencil" title="Edit" link={[href: Routes.calendar_booking_events_path(@socket, :edit, @data.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
+                        <.dropdown_item {assigns} id={"edit_event_#{@data.id}"} icon="pencil" title="Edit" link={[href: Routes.calendar_booking_events_show_path(@socket, :edit, @data.id)]} class={classes(%{"hidden" => disabled?(@data)})} />
                         <.dropdown_item {assigns} class="disable-link hover:cursor-pointer" icon="envelope" title="Send update" link={[phx_click: "send-email", phx_value_event_id: @data.id]} />
                         <.dropdown_item {assigns} class="disable-link hover:cursor-pointer" icon="duplicate" title="Duplicate" link={[phx_click: "duplicate-event", phx_value_event_id: @data.id]} />
 

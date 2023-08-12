@@ -150,7 +150,7 @@ defmodule PicselloWeb.LayoutView do
           %{
             title: "Booking Events",
             icon: "calendar",
-            path: Routes.calendar_booking_events_path(socket, :index)
+            path: Routes.calendar_booking_events_index_path(socket, :index)
           },
           %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)}
         ]
@@ -244,7 +244,7 @@ defmodule PicselloWeb.LayoutView do
       %{
         title: "Booking Events",
         icon: "calendar",
-        path: Routes.calendar_booking_events_path(socket, :index)
+        path: Routes.calendar_booking_events_index_path(socket, :index)
       },
       %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
       %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}

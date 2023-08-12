@@ -608,7 +608,7 @@
     </g>
   </svg>
 
-  <svg id="duplicate_2" width="15" height="15" viewBox="0 0 15 15" fill="current" xmlns="http://www.w3.org/2000/svg">
+  <svg id="duplicate-2" width="15" height="15" viewBox="0 0 15 15" fill="current" xmlns="http://www.w3.org/2000/svg">
     <path fill-rule="evenodd" clip-rule="evenodd" d="M12.25 4.61111C12.25 4.27361 12.5236 4 12.8611 4H13.7778C14.4528 4 15 4.54721 15 5.22222V13.7778C15 14.4528 14.4528 15 13.7778 15H5.22222C4.54721 15 4 14.4528 4 13.7778V12.8611C4 12.5236 4.27361 12.25 4.61111 12.25C4.94862 12.25 5.22222 12.5236 5.22222 12.8611V13.7778H13.7778V5.22222H12.8611C12.5236 5.22222 12.25 4.94862 12.25 4.61111Z" fill="current"/>
     <path fill-rule="evenodd" clip-rule="evenodd" d="M1.22222 0C0.547208 0 0 0.547207 0 1.22222V9.77778C0 10.4528 0.547207 11 1.22222 11H9.77778C10.4528 11 11 10.4528 11 9.77778V1.22222C11 0.547208 10.4528 0 9.77778 0H1.22222Z" fill="current"/>
   </svg>

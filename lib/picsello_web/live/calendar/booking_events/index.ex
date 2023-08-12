@@ -1,4 +1,4 @@
-defmodule PicselloWeb.Live.Calendar.BookingEvents do
+defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   @moduledoc false
   use PicselloWeb, :live_view
 
@@ -79,7 +79,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
       |> noreply()
     else
       socket
-      |> push_patch(to: Routes.calendar_booking_events_path(socket, :index), replace: true)
+      |> push_patch(to: Routes.calendar_booking_events_index_path(socket, :index), replace: true)
       |> noreply()
     end
   end
@@ -197,9 +197,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
       |> noreply()
 
   @impl true
-  def handle_info({:confirm_event, "create-single-event"}, socket) do
-    socket
-    |> redirect(to: "/booking-events/new")
+  def handle_info({:confirm_event, "create-single-event"}, %{assigns: %{current_user: %{organization_id: organization_id}}} = socket) do
+    case BookingEvents.create_booking_event(%{organization_id: organization_id, name: "New event"}) do
+      {:ok, booking_event} ->
+        socket
+        |> redirect(to: "/booking-events/#{booking_event.id}")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Unable to create booking event")
+    end
     |> noreply()
   end
 
@@ -277,14 +284,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
   @impl true
   def handle_event("edit-event", %{"event-id" => id}, socket) do
     socket
-    |> push_patch(to: Routes.calendar_booking_events_path(socket, :edit, id))
+    |> push_patch(to: Routes.calendar_booking_events_show_path(socket, :edit, id))
     |> noreply()
   end
 
   @impl true
   def handle_event("duplicate-event", %{"event-id" => id}, socket) do
     socket
-    |> push_patch(to: Routes.calendar_booking_events_path(socket, :new, duplicate: id))
+    |> push_patch(to: Routes.calendar_booking_events_show_path(socket, :edit, duplicate: id))
     |> noreply()
   end
 
@@ -416,7 +423,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     assigns
     |> Map.get(:flash, %{})
     |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
-    |> push_patch(to: Routes.calendar_booking_events_path(socket, :index))
+    |> push_patch(to: Routes.calendar_booking_events_index_path(socket, :index))
     |> noreply()
   end
 
@@ -524,7 +531,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
             <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
         <% end %>
         <div class="font-bold w-full">
-          <a href={if disabled?(@booking_event, [:disabled, :archive]), do: "javascript:void(0)", else: Routes.calendar_booking_events_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
+          <a href={if disabled?(@booking_event, [:disabled, :archive]), do: "javascript:void(0)", else: Routes.calendar_booking_events_show_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
             <span class="w-full text-blue-planning-300 underline">
               <%= if String.length(@booking_event.name) < 30 do
                 @booking_event.name

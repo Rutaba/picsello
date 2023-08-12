@@ -19,9 +19,15 @@ defmodule Picsello.BookingEvents do
 
     def changeset(attrs \\ %{}) do
       %__MODULE__{}
-      |> cast(attrs, [:name, :email, :phone, :date, :time])
-      |> validate_required([:name, :email, :phone, :date, :time])
+      |> cast(attrs, [:name, :organization_id, :email, :phone, :date, :time])
+      |> validate_required([:name, :organization_id, :email, :phone, :date, :time])
     end
+  end
+
+  def create_booking_event(params) do
+    %BookingEvent{}
+    |> BookingEvent.create_changeset(params)
+    |> Repo.insert()
   end
 
   def upsert_booking_event(changeset) do
@@ -153,10 +159,7 @@ defmodule Picsello.BookingEvents do
   def update_column(column), do: column
 
   def get_booking_event!(organization_id, event_id) do
-    from(event in BookingEvent,
-      join: package in assoc(event, :package_template),
-      where: package.organization_id == ^organization_id
-    )
+    from(event in BookingEvent, where: event.organization_id == ^organization_id)
     |> Repo.get!(event_id)
   end
 

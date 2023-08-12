@@ -10,10 +10,12 @@ function buildConfig(dataset) {
     customDisplayFormat,
     customDateFormat,
     timeZone,
+    inline
   } = dataset;
-
+  
   return {
     wrap: true,
+    inline: inline ? true : false,
     enableTime: timePicker ? true : false,
     minDate: minDate ? minDate : null,
     maxDate: maxDate ? maxDate : null,
@@ -41,7 +43,6 @@ function buildConfig(dataset) {
 export default {
   mounted() {
     const { el } = this;
-
     this.pickr = flatpickr(this.el, buildConfig(el.dataset));
   },
   destroyed() {
