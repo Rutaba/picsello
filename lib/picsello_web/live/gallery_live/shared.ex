@@ -89,6 +89,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     gallery_client
   end
 
+  # TODO: look at this code after deployed fix
   def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
     with true <- is_nil(client_email),
          nil <- Map.get(assigns, :current_user) do
@@ -97,6 +98,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       false -> maybe_insert_gallery_client(gallery, client_email)
       current_user -> maybe_insert_gallery_client(gallery, current_user.email)
     end
+    |> List.first()
   end
 
   def toggle_favorites(
