@@ -11,11 +11,12 @@ defmodule Picsello.Repo.Migrations.AlterTableBookingEventsAddOrganizationId do
       modify(:thumbnail_url, :string, null: true)
       modify(:package_template_id, :integer, null: true)
       modify(:dates, :map, null: true)
-
     end
+
     create(index(@table, [:organization_id]))
 
     flush()
+
     execute("""
       update booking_events set organization_id = (select p.organization_id from booking_events be join packages as p on be.package_template_id = p.id)
     """)
@@ -32,6 +33,7 @@ defmodule Picsello.Repo.Migrations.AlterTableBookingEventsAddOrganizationId do
       modify(:package_template_id, :integer, null: false)
       modify(:dates, :map, null: false)
     end
+
     drop(index(@table, [:organization_id]))
   end
 end

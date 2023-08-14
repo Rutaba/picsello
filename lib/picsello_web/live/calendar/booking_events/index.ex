@@ -197,7 +197,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
       |> noreply()
 
   @impl true
-  def handle_info({:confirm_event, "create-single-event"}, %{assigns: %{current_user: %{organization_id: organization_id}}} = socket) do
+  def handle_info(
+        {:confirm_event, "create-single-event"},
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+      ) do
     case BookingEvents.create_booking_event(%{organization_id: organization_id, name: "New event"}) do
       {:ok, booking_event} ->
         socket

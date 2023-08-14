@@ -12,12 +12,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_params(%{"id" => event_id},
-    _session,
-   %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
-   ) do
-    booking_event = BookingEvents.get_booking_event!(organization_id, to_integer(event_id))
-    |> Repo.preload(package_template: [:contract, :questionnaire_template])
+  def handle_params(
+        %{"id" => event_id},
+        _session,
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+      ) do
+    booking_event =
+      BookingEvents.get_booking_event!(organization_id, to_integer(event_id))
+      |> Repo.preload(package_template: [:contract, :questionnaire_template])
 
     socket
     |> assign(:booking_event, booking_event)
@@ -77,13 +79,22 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> noreply()
   end
 
-  def handle_info({:update, %{package: package}}, %{assigns: %{booking_event: booking_event}} = socket) do
+  def handle_info(
+        {:update, %{package: package}},
+        %{assigns: %{booking_event: booking_event}} = socket
+      ) do
     package_template =
       package
       |> Repo.preload([:contract, :questionnaire_template], force: true)
 
     socket
-    |> assign(booking_event: %{booking_event | package_template: package_template, package_template_id: package_template.id})
+    |> assign(
+      booking_event: %{
+        booking_event
+        | package_template: package_template,
+          package_template_id: package_template.id
+      }
+    )
     |> put_flash(:success, "Package details saved sucessfully.")
     |> noreply()
   end
@@ -275,9 +286,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   defp assign_tab_data(%{assigns: %{current_user: _current_user}} = socket, tab) do
     case tab do
       "list" -> socket
-
       "overview" -> socket
-
       _ -> socket
     end
   end
@@ -293,11 +302,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
        }},
       {true,
        %{
-        name: "Calendar",
-        concise_name: "calendar",
-        redirect_route: nil,
-        notification_count: nil
-      }}
+         name: "Calendar",
+         concise_name: "calendar",
+         redirect_route: nil,
+         notification_count: nil
+       }}
     ]
   end
 

@@ -1,6 +1,7 @@
 defmodule Picsello.Packages do
   @moduledoc "context module for packages"
   alias PicselloWeb.Live.Calendar.BookingEvents
+
   alias Picsello.{
     Accounts.User,
     Organization,
@@ -529,7 +530,9 @@ defmodule Picsello.Packages do
     |> Ecto.Multi.insert(:package, changeset)
     |> maybe_update_questionnaire_package_id_multi(changeset, opts)
     |> Ecto.Multi.update(:booking_event_update, fn changes ->
-      BookingEvent.update_package_template(booking_event, %{package_template_id: changes.package.id})
+      BookingEvent.update_package_template(booking_event, %{
+        package_template_id: changes.package.id
+      })
     end)
     |> merge_multi(opts)
   end

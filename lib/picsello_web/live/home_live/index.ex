@@ -484,7 +484,8 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
-  defdelegate handle_event(name, params, socket), to: PicselloWeb.Live.Calendar.BookingEvents.Index
+  defdelegate handle_event(name, params, socket),
+    to: PicselloWeb.Live.Calendar.BookingEvents.Index
 
   @impl true
   def handle_info(
