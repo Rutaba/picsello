@@ -172,7 +172,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
   def photographer_logo(assigns) do
     ~H"""
       <%= case Profiles.logo_url(@organization) do %>
-        <% nil -> %> <h1 class="pt-3 text-3xl font-bold font-client text-base-300"><%= @organization.name %></h1>
+        <% nil -> %> <h1 class="pt-3 text-3xl font-light font-client text-base-300"><%= @organization.name %></h1>
         <% url -> %> <img class="h-16" src={url} />
       <% end %>
     """
