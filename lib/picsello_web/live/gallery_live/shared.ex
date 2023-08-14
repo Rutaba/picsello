@@ -89,7 +89,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     gallery_client
   end
 
-  # TODO: look at this code after deployed fix
   def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
     with true <- is_nil(client_email),
          nil <- Map.get(assigns, :current_user) do
