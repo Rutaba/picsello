@@ -447,7 +447,7 @@ defmodule PicselloWeb.JobLive.Shared do
     subtitle =
       if type.singular == "job",
         do:
-          "This will ensure no further payments are processed and you may need to reimburse your client depending on verbal and contractual agreements with your them.",
+          "This will ensure no further payments are processed and you may need to reimburse your client depending on verbal and contractual agreements with them.",
         else: ""
 
     socket
