@@ -24,7 +24,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         _session,
         %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
       ) do
-    gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
+    gallery = Picsello.Repo.preload(gallery, [:gallery_digital_pricing, :organization])
 
     gallery =
       Map.put(
@@ -117,7 +117,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       Cart.store_order_delivery_info(order, delivery_info_changeset)
     end)
     |> Multi.run(:update_shipping, fn _, _ ->
-      {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
+      {:ok, order} =
+        get_unconfirmed_order(socket,
+          preload: [:products, :digitals, :package]
+        )
 
       unless Enum.empty?(order.products) do
         %{delivery_info: %{address: %{zip: zipcode}}} = order
@@ -332,7 +335,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       changeset = DeliveryInfo.changeset_for_zipcode(%{"address" => %{"zip" => input}})
 
       {:ok, _order} = Cart.store_order_delivery_info(order, changeset)
-      {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
+
+      {:ok, order} =
+        get_unconfirmed_order(socket,
+          preload: [:products, :digitals, :package]
+        )
 
       socket
       |> assign(:order, order)
@@ -346,7 +353,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp continue_summary(assigns) do
     ~H"""
-    <.summary caller={checkout_type(@is_proofing)} order={@order} id={@id}>
+    <.summary caller={checkout_type(@is_proofing)} order={@order} id={@id} gallery={@gallery}>
       <%= live_patch to: @checkout_routes.cart_address, class: "mx-5 text-lg mb-7 btn-primary text-center" do %>
         Continue
       <% end %>

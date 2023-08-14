@@ -205,9 +205,19 @@ defmodule Picsello.Cart.Checkouts do
          %{amount: application_fee_cents},
          %{"success_url" => success_url, "cancel_url" => cancel_url}
        ) do
+    total_cost = Order.total_cost(order)
     order_number = Order.number(order)
 
-    payment_method_types = Picsello.Payments.map_payment_opts_to_stripe_opts(organization)
+    # if total_cost is less than %Money{5000} then filter out affirm per their requirements
+    payment_method_types =
+      Picsello.Payments.map_payment_opts_to_stripe_opts(organization)
+      |> Enum.filter(fn method ->
+        if total_cost.amount < 5000 do
+          method != "affirm"
+        else
+          true
+        end
+      end)
 
     params = %{
       shipping_address_collection: %{
