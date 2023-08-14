@@ -1,5 +1,6 @@
 defmodule Picsello.Packages do
   @moduledoc "context module for packages"
+  alias PicselloWeb.Live.Calendar.BookingEvents
   alias Picsello.{
     Accounts.User,
     Organization,
@@ -12,7 +13,8 @@ defmodule Picsello.Packages do
     Packages.CostOfLivingAdjustment,
     PackagePaymentSchedule,
     Questionnaire,
-    PackagePayments
+    PackagePayments,
+    BookingEvent
   }
 
   import Picsello.Repo.CustomMacros
@@ -522,19 +524,22 @@ defmodule Picsello.Packages do
   def templates_for_organization(%Organization{id: id}),
     do: id |> Package.templates_for_organization_query() |> Repo.all()
 
+  def insert_package_and_update_booking_event(changeset, booking_event, opts \\ %{}) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:package, changeset)
+    |> maybe_update_questionnaire_package_id_multi(changeset, opts)
+    |> Ecto.Multi.update(:booking_event_update, fn changes ->
+      BookingEvent.update_package_template(booking_event, %{package_template_id: changes.package.id})
+    end)
+    |> merge_multi(opts)
+  end
+
   def insert_package_and_update_job(changeset, job, opts \\ %{}) do
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:package, changeset)
     |> maybe_update_questionnaire_package_id_multi(changeset, opts)
     |> Ecto.Multi.update(:job_update, fn changes ->
       Job.add_package_changeset(job, %{package_id: changes.package.id})
-    end)
-    |> Ecto.Multi.merge(fn %{package: package} ->
-      if Map.get(opts, :action) in [:insert, :insert_preset] do
-        PackagePayments.insert_schedules(package, opts)
-      else
-        Ecto.Multi.new()
-      end
     end)
     |> Ecto.Multi.merge(fn _ ->
       payment_schedules = Map.get(opts, :payment_schedules)
@@ -550,21 +555,7 @@ defmodule Picsello.Packages do
         Ecto.Multi.new()
       end
     end)
-    |> Ecto.Multi.merge(fn %{package: package} ->
-      case package |> Repo.preload(package_template: :contract) do
-        %{package_template: %{contract: %Picsello.Contract{} = contract}} ->
-          contract_params = %{
-            "name" => contract.name,
-            "content" => contract.content,
-            "contract_template_id" => contract.contract_template_id
-          }
-
-          Picsello.Contracts.insert_contract_multi(package, contract_params)
-
-        _ ->
-          Ecto.Multi.new()
-      end
-    end)
+    |> merge_multi(opts)
   end
 
   def build_package_changeset(
@@ -585,6 +576,27 @@ defmodule Picsello.Packages do
       step: step,
       is_template: is_template,
       validate_shoot_count: job && package.id
+    )
+  end
+
+  def build_package_changeset(
+        %{
+          current_user: current_user,
+          step: step,
+          is_template: is_template,
+          package: package,
+          booking_event: booking_event
+        },
+        params
+      ) do
+    params = Map.put(params, "organization_id", current_user.organization_id)
+
+    package
+    |> Map.put(:package_payment_schedules, [])
+    |> Package.changeset(params,
+      step: step,
+      is_template: is_template,
+      validate_shoot_count: booking_event && package.id
     )
   end
 
@@ -632,6 +644,32 @@ defmodule Picsello.Packages do
       {:ok, %{package: package}} -> {:ok, package}
       _ -> {:error}
     end
+  end
+
+  defp merge_multi(multi, opts) do
+    multi
+    |> Ecto.Multi.merge(fn %{package: package} ->
+      if Map.get(opts, :action) in [:insert, :insert_preset] do
+        PackagePayments.insert_schedules(package, opts)
+      else
+        Ecto.Multi.new()
+      end
+    end)
+    |> Ecto.Multi.merge(fn %{package: package} ->
+      case package |> Repo.preload(package_template: :contract) do
+        %{package_template: %{contract: %Picsello.Contract{} = contract}} ->
+          contract_params = %{
+            "name" => contract.name,
+            "content" => contract.content,
+            "contract_template_id" => contract.contract_template_id
+          }
+
+          Picsello.Contracts.insert_contract_multi(package, contract_params)
+
+        _ ->
+          Ecto.Multi.new()
+      end
+    end)
   end
 
   defp contract_multi(package, contract_params) do

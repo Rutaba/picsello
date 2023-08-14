@@ -129,6 +129,12 @@ defmodule Picsello.BookingEvent do
     booking_event |> change(status: :active)
   end
 
+  def update_package_template(booking_event, attrs) do
+    booking_event
+    |> cast(attrs, [:package_template_id])
+    |> validate_required([:package_template_id])
+  end
+
   defp update_details(booking_event, attrs) do
     booking_event
     |> cast(attrs, [
@@ -165,12 +171,6 @@ defmodule Picsello.BookingEvent do
     else
       changeset |> add_error(:dates, "can't be the same")
     end
-  end
-
-  defp update_package_template(booking_event, attrs) do
-    booking_event
-    |> cast(attrs, [:package_template_id])
-    |> validate_required([:package_template_id])
   end
 
   defp update_customize(booking_event, attrs) do

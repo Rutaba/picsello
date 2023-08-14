@@ -17,7 +17,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
    %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
    ) do
     booking_event = BookingEvents.get_booking_event!(organization_id, to_integer(event_id))
-    |> Repo.preload(:package_template)
+    |> Repo.preload(package_template: [:contract, :questionnaire_template])
 
     socket
     |> assign(:booking_event, booking_event)
@@ -32,6 +32,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     socket
     |> assign(:booking_slot_tab_active, tab)
     |> assign_tab_data(tab)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("add-package", _, %{assigns: %{booking_event: booking_event}} = socket) do
+    socket
+    |> open_modal(
+      PicselloWeb.PackageLive.WizardComponent,
+      Map.take(socket.assigns, [:current_user, :currency, :booking_event])
+    )
     |> noreply()
   end
 
@@ -64,6 +74,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event("toggle_booking_slot_tab", %{"id" => booking_slot_tab}, socket) do
     socket
     |> assign(:booking_slot_tab, booking_slot_tab)
+    |> noreply()
+  end
+
+  def handle_info({:update, %{package: package}}, %{assigns: %{booking_event: booking_event}} = socket) do
+    package_template =
+      package
+      |> Repo.preload([:contract, :questionnaire_template], force: true)
+
+    socket
+    |> assign(booking_event: %{booking_event | package_template: package_template, package_template_id: package_template.id})
+    |> put_flash(:success, "Package details saved sucessfully.")
     |> noreply()
   end
 
