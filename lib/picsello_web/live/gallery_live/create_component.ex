@@ -29,7 +29,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   import PicselloWeb.Shared.SelectionPopupModal, only: [render_modal: 1]
 
   import PicselloWeb.PackageLive.Shared,
-    only: [digital_download_fields: 1, print_credit_fields: 1, current: 1]
+    only: [digital_download_fields: 1, print_credit_fields: 1, current: 1, get_job_type: 2]
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
@@ -458,7 +458,9 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         "buy_all" => Download.buy_all(download),
         "name" => "New package",
         "organization_id" => current_user.organization_id,
-        "status" => download.status
+        "status" => download.status,
+        "job_type" => get_job_type(assigns, params),
+        "is_template" => false
       })
       |> then(&Package.changeset_for_create_gallery(package, &1))
 

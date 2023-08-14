@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
-  alias Picsello.{Repo, BookingEvents}
+  alias Picsello.{Repo, BookingEvents, Package}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -19,10 +19,22 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       ) do
     booking_event =
       BookingEvents.get_booking_event!(organization_id, to_integer(event_id))
-      |> Repo.preload(package_template: [:contract, :questionnaire_template])
+      |> Repo.preload(
+        package_template: [:package_payment_schedules, :contract, :questionnaire_template]
+      )
+      |> Map.merge(%{
+        # please remove them when real implementaiton is complete
+        slots: [
+          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
+          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
+          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
+        ]
+      })
 
     socket
     |> assign(:booking_event, booking_event)
+    |> assign(:payments_description, payments_description(booking_event))
+    |> assign(:package, booking_event.package_template)
     |> assign(:client, %{id: 1, name: "hammad"})
     |> assign(:booking_slot_tab_active, "list")
     |> assign(:booking_slot_tabs, booking_slot_tabs())
@@ -38,11 +50,24 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_event("add-package", _, %{assigns: %{booking_event: booking_event}} = socket) do
+  def handle_event("add-package", _, socket) do
     socket
     |> open_modal(
       PicselloWeb.PackageLive.WizardComponent,
       Map.take(socket.assigns, [:current_user, :currency, :booking_event])
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("replace-package", _, %{assigns: %{booking_event: booking_event}} = socket) do
+    booking_event = Map.put(booking_event, :package_template, nil)
+
+    socket
+    |> open_modal(
+      PicselloWeb.PackageLive.WizardComponent,
+      Map.take(socket.assigns, [:current_user, :currency])
+      |> Map.put(:booking_event, booking_event)
     )
     |> noreply()
   end
@@ -85,16 +110,25 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       ) do
     package_template =
       package
-      |> Repo.preload([:contract, :questionnaire_template], force: true)
+      |> Repo.preload([:package_payment_schedules, :contract, :questionnaire_template],
+        force: true
+      )
 
     socket
     |> assign(
       booking_event: %{
         booking_event
         | package_template: package_template,
-          package_template_id: package_template.id
+          package_template_id: package_template.id,
+          # please remove them when real implementaiton is complete
+          slots: [
+            %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
+            %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
+            %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
+          ]
       }
     )
+    |> assign(package: package_template)
     |> put_flash(:success, "Package details saved sucessfully.")
     |> noreply()
   end
@@ -288,6 +322,42 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       "list" -> socket
       "overview" -> socket
       _ -> socket
+    end
+  end
+
+  # TODO: refine logic
+  defp payments_description(%{package_template: nil}), do: nil
+
+  defp payments_description(%{
+         package_template: %{package_payment_schedules: package_payment_schedules} = package
+       }) do
+    currency_symbol = Money.Currency.symbol!(package.currency)
+    total_price = Package.price(package)
+    {first_payment, remaining_payments} = package_payment_schedules |> List.pop_at(0)
+
+    payment_count = Enum.count(remaining_payments)
+
+    count_text =
+      if payment_count > 0,
+        do: ngettext("1 other payment", "%{count} other payments", payment_count),
+        else: nil
+
+    if first_payment do
+      interval_text =
+        if first_payment.interval do
+          "#{first_payment.due_interval}"
+        else
+          "#{first_payment.count_interval} #{first_payment.time_interval} #{first_payment.shoot_interval}"
+        end
+
+      if first_payment.percentage do
+        amount = (total_price.amount / 10_000 * first_payment.percentage) |> Kernel.trunc()
+        "#{currency_symbol}#{amount}.00 #{interval_text}"
+      else
+        "#{first_payment.price} #{interval_text}"
+      end <> " #{count_text}"
+    else
+      nil
     end
   end
 

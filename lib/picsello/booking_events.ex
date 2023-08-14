@@ -463,6 +463,7 @@ defmodule Picsello.BookingEvents do
       }
 
       package_template
+      |> Map.put(:is_template, false)
       |> Picsello.Packages.changeset_from_template()
       |> Picsello.Packages.insert_package_and_update_job(job, opts)
     end)

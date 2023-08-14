@@ -197,23 +197,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
       |> noreply()
 
   @impl true
-  def handle_info(
-        {:confirm_event, "create-single-event"},
-        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
-      ) do
-    case BookingEvents.create_booking_event(%{organization_id: organization_id, name: "New event"}) do
-      {:ok, booking_event} ->
-        socket
-        |> redirect(to: "/booking-events/#{booking_event.id}")
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Unable to create booking event")
-    end
-    |> noreply()
-  end
-
-  @impl true
   def handle_event("create-repeating-event", _, socket) do
     socket
     |> noreply()
@@ -373,6 +356,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
         |> put_flash(:success, "Error unarchiving event")
         |> noreply()
     end
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "create-single-event"},
+        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
+      ) do
+    case BookingEvents.create_booking_event(%{organization_id: organization_id, name: "New event"}) do
+      {:ok, booking_event} ->
+        socket
+        |> redirect(to: "/booking-events/#{booking_event.id}")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Unable to create booking event")
+    end
+    |> noreply()
   end
 
   @impl true

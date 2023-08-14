@@ -15,7 +15,8 @@ defmodule Picsello.Packages do
     PackagePaymentSchedule,
     Questionnaire,
     PackagePayments,
-    BookingEvent
+    Contract,
+    Contracts
   }
 
   import Picsello.Repo.CustomMacros
@@ -526,14 +527,51 @@ defmodule Picsello.Packages do
     do: id |> Package.templates_for_organization_query() |> Repo.all()
 
   def insert_package_and_update_booking_event(changeset, booking_event, opts \\ %{}) do
+    x_booking_event = booking_event
+
     Ecto.Multi.new()
     |> Ecto.Multi.insert(:package, changeset)
-    |> maybe_update_questionnaire_package_id_multi(changeset, opts)
     |> Ecto.Multi.update(:booking_event_update, fn changes ->
       BookingEvent.update_package_template(booking_event, %{
         package_template_id: changes.package.id
       })
     end)
+    |> Ecto.Multi.merge(fn _ ->
+      # TODO: logic split into functions
+      if is_nil(x_booking_event.package_template) and x_booking_event.package_template_id do
+        PackagePayments.delete_schedules(
+          x_booking_event.package_template_id,
+          Map.get(opts, :payment_preset)
+        )
+        |> Ecto.Multi.merge(fn _ ->
+          case Repo.get_by(Questionnaire, package_id: x_booking_event.package_template_id) do
+            nil ->
+              Ecto.Multi.new()
+
+            questionnaire ->
+              Ecto.Multi.new()
+              |> Ecto.Multi.delete(:delete_questionnaire, questionnaire)
+          end
+        end)
+        |> Ecto.Multi.merge(fn _ ->
+          case Repo.get_by(Contract, package_id: x_booking_event.package_template_id) do
+            nil ->
+              Ecto.Multi.new()
+
+            contract ->
+              Ecto.Multi.new()
+              |> Ecto.Multi.delete(:delete_contract, contract)
+          end
+        end)
+        |> Ecto.Multi.delete(
+          :delete_package,
+          Repo.get!(Package, x_booking_event.package_template_id)
+        )
+      else
+        Ecto.Multi.new()
+      end
+    end)
+    |> maybe_update_questionnaire_package_id_multi(changeset, opts)
     |> merge_multi(opts)
   end
 
@@ -660,14 +698,14 @@ defmodule Picsello.Packages do
     end)
     |> Ecto.Multi.merge(fn %{package: package} ->
       case package |> Repo.preload(package_template: :contract) do
-        %{package_template: %{contract: %Picsello.Contract{} = contract}} ->
+        %{package_template: %{contract: %Contract{} = contract}} ->
           contract_params = %{
             "name" => contract.name,
             "content" => contract.content,
             "contract_template_id" => contract.contract_template_id
           }
 
-          Picsello.Contracts.insert_contract_multi(package, contract_params)
+          Contracts.insert_contract_multi(package, contract_params)
 
         _ ->
           Ecto.Multi.new()
@@ -681,17 +719,17 @@ defmodule Picsello.Packages do
         Ecto.Multi.new()
 
       Map.get(contract_params, "edited") ->
-        Picsello.Contracts.insert_template_and_contract_multi(package, contract_params)
+        Contracts.insert_template_and_contract_multi(package, contract_params)
 
       !Map.get(contract_params, "edited") ->
-        Picsello.Contracts.insert_contract_multi(package, contract_params)
+        Contracts.insert_contract_multi(package, contract_params)
     end
   end
 
   def changeset_from_template(%Package{id: template_id} = template) do
     template
     |> Map.from_struct()
-    |> Map.put(:package_template_id, template_id)
+    |> Map.merge(%{package_template_id: template_id, is_template: false})
     |> Package.create_from_template_changeset()
   end
 

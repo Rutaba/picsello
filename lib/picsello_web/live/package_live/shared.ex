@@ -625,6 +625,17 @@ defmodule PicselloWeb.PackageLive.Shared do
     """
   end
 
+  def get_job_type(assigns, params) do
+    with nil <- Map.get(assigns, :job),
+         %{job_type: nil} <- Map.get(assigns, :package),
+         job_type <- get_in(params, ["package", "job_type"]) do
+      job_type
+    else
+      %{type: job_type} -> job_type
+      %{job_type: job_type} -> job_type
+    end
+  end
+
   def check?(d, field), do: d |> current() |> Map.get(field)
   def get_field(d, field), do: d |> current() |> Map.get(field)
 

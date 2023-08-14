@@ -22,6 +22,7 @@ defmodule Picsello.Package do
     field :turnaround_weeks, :integer, default: 1
     field :schedule_type, :string
     field :fixed, :boolean, default: true
+    field :is_template, :boolean, default: false
     field :show_on_public_profile, :boolean, default: false
     field :print_credits_include_in_total, :boolean, default: false
     field :digitals_include_in_total, :boolean, default: false
@@ -63,7 +64,7 @@ defmodule Picsello.Package do
     end)
   end
 
-  @fields ~w[base_price currency organization_id name download_count download_each_price base_multiplier print_credits buy_all shoot_count turnaround_weeks]a
+  @fields ~w[base_price currency organization_id name download_count download_each_price base_multiplier print_credits buy_all shoot_count turnaround_weeks is_template]a
   def changeset_for_create_gallery(package \\ %__MODULE__{}, attrs) do
     package
     |> cast(attrs, @fields)
@@ -132,9 +133,9 @@ defmodule Picsello.Package do
     package
     |> cast(
       attrs,
-      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed description questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks show_on_public_profile]a
+      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total job_type schedule_type fixed description questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks show_on_public_profile is_template]a
     )
-    |> validate_required(~w[name organization_id shoot_count turnaround_weeks]a)
+    |> validate_required(~w[name job_type organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
     |> validate_number(:turnaround_weeks, greater_than_or_equal_to: 1)
     |> then(fn changeset ->
@@ -142,13 +143,6 @@ defmodule Picsello.Package do
         changeset
       else
         changeset |> validate_required(~w[description]a)
-      end
-    end)
-    |> then(fn changeset ->
-      if Keyword.get(opts, :is_template) do
-        changeset |> cast(attrs, [:job_type]) |> validate_required([:job_type])
-      else
-        changeset
       end
     end)
     |> then(fn changeset ->
@@ -169,7 +163,7 @@ defmodule Picsello.Package do
     package
     |> cast(
       attrs,
-      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed base_price download_count download_each_price base_multiplier print_credits buy_all currency]a
+      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed base_price download_count download_each_price base_multiplier print_credits buy_all currency is_template]a
     )
     |> validate_required(~w[base_price download_count download_each_price currency]a)
     |> then(fn changeset ->
@@ -305,7 +299,7 @@ defmodule Picsello.Package do
   def templates_for_organization_query(organization_id) do
     from(package in __MODULE__,
       where:
-        not is_nil(package.job_type) and package.organization_id == ^organization_id and
+        package.is_template and package.organization_id == ^organization_id and
           is_nil(package.archived_at),
       order_by: [desc: package.base_price]
     )
@@ -377,6 +371,7 @@ defmodule Picsello.Package do
           buy_all: Money.t(),
           job_type: String.t(),
           show_on_public_profile: boolean(),
+          is_template: boolean(),
           archived_at: DateTime.t()
         }
 end

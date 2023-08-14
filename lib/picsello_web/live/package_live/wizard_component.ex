@@ -38,7 +38,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       package_print_credit_fields: 1,
       current: 1,
       assign_turnaround_weeks: 1,
-      digitals_total: 1
+      digitals_total: 1,
+      get_job_type: 2
     ]
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
@@ -483,18 +484,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   def step(%{name: :details} = assigns) do
-    job = Map.get(assigns, :job)
+    booking_event = Map.get(assigns, :booking_event)
 
     assigns =
       Enum.into(assigns, %{
-        placeholder_job_type:
-          if !assigns.is_template && job do
-            job.type
-          else
-            job_type = Map.get(assigns.package, :job_type)
-            if(job_type, do: job_type, else: "wedding")
-          end,
-        is_booking_event: !Map.get(assigns.package, :id)
+        job_type_for_placeholder: Map.get(current(assigns.changeset), :job_type) || "wedding",
+        is_booking_event:
+          if(booking_event, do: !Map.get(booking_event, :package_template), else: false)
       })
 
     ~H"""
@@ -505,7 +501,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       </div>
       <% end %>
 
-      <.package_basic_fields form={@f} job_type={@placeholder_job_type} />
+      <.package_basic_fields form={@f} job_type={@job_type_for_placeholder} />
 
       <div class="flex flex-col mt-4">
 
@@ -515,7 +511,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
             <p class="text-black">Clear</p>
           </.icon_button>
         </.input_label>
-        <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your #{@placeholder_job_type} offering and pricing"} />
+        <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your #{@job_type_for_placeholder} offering and pricing"} />
       </div>
 
       <%= if @is_template || @is_booking_event do %>
@@ -755,20 +751,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step(
-        %{
-          name: :payment,
-          f: %{params: params},
-          default_payment_changeset: _
-        } = assigns
-      ) do
-    job = Map.get(assigns, :job)
-
-    job_type =
-      Map.get(params, "job_type") ||
-        if(job, do: job.type, else: Map.get(assigns.package, :job_type))
-
-    assigns = assign(assigns, job_type: job_type) |> Enum.into(%{job: job})
+  def step(%{name: :payment} = assigns) do
+    # important: when adding package for booking event there is no job. so assigning nil
+    assigns = assigns |> Enum.into(%{job: Map.get(assigns, :job)})
 
     ~H"""
     <div>
@@ -1198,18 +1183,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket
     |> assign_changeset(params)
     |> assign_contract_changeset(params)
-    |> then(fn %{assigns: %{changeset: changeset} = assigns} = socket ->
-      job_type =
-        with nil <- Map.get(assigns, :job),
-             nil <- Changeset.get_field(changeset, :job_type),
-             %{job_type: nil} <- Map.get(assigns, :package),
-             job_type <- get_in(params, ["package", "job_type"]) do
-          job_type
-        else
-          %{type: job_type} -> job_type
-          %{job_type: job_type} -> job_type
-          job_type -> job_type
-        end
+    |> then(fn %{assigns: %{changeset: changeset}} = socket ->
+      job_type = Changeset.get_field(changeset, :job_type)
 
       package_payment_presets =
         case package do
@@ -1822,7 +1797,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                global_settings: global_settings,
                step: step,
                package: package,
-               currency: currency
+               currency: currency,
+               is_template: is_template
              } = assigns
          } = socket,
          params,
@@ -1878,7 +1854,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         "download_count" => Download.count(download),
         "download_each_price" => Download.each_price(download, currency),
         "buy_all" => Download.buy_all(download),
-        "status" => download.status
+        "status" => download.status,
+        "job_type" => get_job_type(assigns, params),
+        "is_template" => is_template
       })
 
     changeset = build_changeset(socket, package_params) |> Map.put(:action, action)
