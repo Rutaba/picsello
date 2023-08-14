@@ -194,7 +194,7 @@ defmodule PicselloWeb.LeadLive.Show do
     |> PicselloWeb.ConfirmationComponent.open(%{
       close_label: "Cancel",
       confirm_event: "archive",
-      confirm_label: "Yes, archive the lead",
+      confirm_label: "Yes, archive",
       icon: "warning-orange",
       title: "Are you sure you want to archive this lead?"
     })

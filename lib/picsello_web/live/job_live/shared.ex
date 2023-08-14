@@ -389,7 +389,7 @@ defmodule PicselloWeb.JobLive.Shared do
     |> ConfirmationComponent.open(%{
       close_label: "Cancel",
       confirm_event: "#{action_string}-entity",
-      confirm_label: "Yes, #{action_string} the #{type.singular}",
+      confirm_label: "Yes, #{action_string}",
       icon: "warning-orange",
       title: "Are you sure you want to #{action_string} this #{type.singular}?",
       payload: %{job_id: job_id}
