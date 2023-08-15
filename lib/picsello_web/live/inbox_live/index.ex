@@ -13,6 +13,8 @@ defmodule PicselloWeb.InboxLive.Index do
     |> assign_threads()
     |> assign_unread()
     |> subscribe_inbound_messages()
+    |> assign(:tabs, tabs_list(socket))
+    |> assign(:tab_active, "all")
     |> ok()
   end
 
@@ -31,8 +33,15 @@ defmodule PicselloWeb.InboxLive.Index do
   def render(assigns) do
     ~H"""
     <div class={classes(%{"hidden sm:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-10 text-4xl font-bold center-container" {testid("inbox-title")}>Inbox</h1></div>
-    <div class={classes("center-container py-6", %{"pt-0" => @current_thread})}>
-      <h2 class={classes("font-semibold text-2xl mb-6 px-6", %{"hidden sm:block sm:mt-6" => @current_thread})}>Messages</h2>
+    <div class={classes("center-container pb-6", %{"pt-0" => @current_thread})}>
+      <div class={classes("flex bg-gray-100 py-6 items-center mb-6 px-4 rounded-lg", %{"hidden sm:flex" => @current_thread})}>
+        <h2 class="font-bold text-2xl">Viewing all messages</h2>
+        <div class="flex ml-auto gap-3">
+          <%= for {true, %{name: name, action: action, concise_name: concise_name}} <- @tabs do %>
+            <button class={classes("border rounded-lg border-blue-planning-300 text-blue-planning-300 py-1 px-4", %{"text-white bg-blue-planning-300" => @tab_active === concise_name, "hover:opacity-100" => @tab_active !== concise_name})} type="button" phx-click={action} phx-value-tab={concise_name}><%= name %></button>
+          <% end %>
+        </div>
+      </div>
 
       <div class="flex sm:h-[calc(100vh-18rem)]">
         <div class={classes("border-t w-full sm:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden sm:block" => @current_thread, "hidden" => Enum.empty?(@threads)})}>
@@ -47,18 +56,18 @@ defmodule PicselloWeb.InboxLive.Index do
           <% @current_thread != nil -> %>
             <.current_thread {@current_thread} socket={@socket} />
           <% Enum.empty?(@threads) -> %>
-            <div class="flex w-full bg-orange-inbox-100 items-center justify-center p-6">
-              <div class="flex items-center flex-col text-orange-inbox-300 text-xl">
-                <.icon name="envelope" class="text-orange-inbox-300 w-20 h-32" />
+            <div class="flex w-full items-center justify-center p-6 border">
+              <div class="flex items-center flex-col text-blue-planning-300 text-xl">
+                <.icon name="envelope" class="text-blue-planning-300 w-20 h-32" />
                 <p>You don’t have any new messages.</p>
                 <p>Go to a job or lead to send a new message. <.tooltip id="inbox-lead" content="You haven’t sent any booking proposals or client communications yet - once you have, those conversations will all be logged here, and you’ll be able to send and receive messages to your clients. " /></p>
               </div>
             </div>
           <% true -> %>
-            <div class="hidden sm:flex w-2/3 bg-orange-inbox-100 items-center justify-center">
+            <div class="hidden sm:flex w-2/3 items-center justify-center border ml-4 rounded-lg">
               <div class="flex items-center">
-                <.icon name="envelope" class="text-orange-inbox-300 w-20 h-32" />
-                <p class="ml-4 text-orange-inbox-300 text-xl w-48">Select a message to your left</p>
+                <.icon name="envelope" class="text-blue-planning-300 w-20 h-32" />
+                <p class="ml-4 text-blue-planning-300 text-xl w-52">No message selected</p>
               </div>
             </div>
         <% end %>
@@ -69,16 +78,19 @@ defmodule PicselloWeb.InboxLive.Index do
 
   defp thread_card(assigns) do
     ~H"""
-    <div {testid("thread-card")} {scroll_to_thread(@selected, @id)} phx-click="open-thread" phx-value-id={@id} class={classes("flex justify-between py-6 border-b pl-2 p-8 hover:bg-gray-100 cursor-pointer", %{"bg-gray-100" => @selected})}>
+    <div {testid("thread-card")} {scroll_to_thread(@selected, @id)} phx-click="open-thread" phx-value-id={@id} class={classes("flex justify-between py-6 border-b pl-2 p-8 hover:bg-gray-100 hover:text-black cursor-pointer", %{"bg-blue-planning-300 rounded-lg text-white" => @selected})}>
       <div class="px-4">
         <div class="flex items-center">
-          <div class="text-2xl line-clamp-1"><%= @title %></div>
+          <div class="font-bold	text-2xl line-clamp-1"><%= @title %></div>
           <%= if @unread do %>
-            <span {testid("new-badge")} class="mx-4 px-2 py-0.5 text-xs rounded bg-blue-planning-200 text-white">New</span>
+            <span {testid("new-badge")} class="mx-4 px-2 py-0.5 text-xs rounded bg-orange-inbox-300 text-white">New</span>
           <% end %>
         </div>
         <div class="line-clamp-1 font-semibold py-0.5"><%= @subtitle %></div>
-        <div class="line-clamp-1"><%= raw @message %></div>
+        <%= if (@message) do %>
+          <div class={classes("line-clamp-1", %{"w-48" => String.length(@message) > 28})}><%= raw @message %></div>
+        <% end %>
+        <span class="px-2 py-0.5 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300 capitalize"><%= @type %></span>
       </div>
       <div class="relative flex flex-shrink-0">
         <%= @date %>
@@ -90,32 +102,34 @@ defmodule PicselloWeb.InboxLive.Index do
 
   defp current_thread(assigns) do
     ~H"""
-      <div class="flex flex-col w-full sm:overflow-y-auto sm:border">
-        <div class="sticky z-10 top-0 bg-white px-6 py-2 flex shadow-sm sm:shadow-none">
+      <div class="flex flex-col w-full sm:overflow-y-auto sm:border rounded-lg ml-2">
+        <div class="sticky z-10 top-0 px-6 py-3 flex shadow-sm sm:shadow-none bg-base-200">
           <.live_link to={Routes.inbox_path(@socket, :index)} class="sm:hidden pt-2 pr-4">
             <.icon name="left-arrow" class="w-6 h-6" />
           </.live_link>
           <div>
-            <div class="sm:font-semibold text-2xl line-clamp-1"><%= @title %></div>
-            <div class="line-clamp-1 leading-tight pb-1">
-              <span class="mr-2">
-                <%= @subtitle %>
-              </span>
+            <div class="sm:font-semibold text-2xl line-clamp-1 text-blue-planning-300"><%= @title %></div>
+          </div>
+          <button title="Delete" type="button" phx-click="confirm-delete" class="ml-auto flex items-center hover:opacity-80">
+            <.icon name="trash" class="sm:w-5 sm:h-5 w-6 h-6 mr-3 text-red-sales-300" />
+          </button>
+        </div>
+          <div class="bg-white sticky top-14 z-10 pt-4">
+            <div class="flex items-center ml-4">
+              <.icon name="camera-check" class="text-blue-planning-300 w-6 h-6 mr-2" />
               <%= if @is_lead do %>
-                <.live_link to={Routes.job_path(@socket, :leads, @id)} class="underline">
-                  view lead
+                <.live_link to={Routes.job_path(@socket, :leads, @id)} class="rounded-lg bg-gray-100 py-1 px-4 text-blue-planning-300">
+                  View lead
                 </.live_link>
               <% else %>
-                <.live_link to={Routes.job_path(@socket, :jobs, @id)} class="underline">
-                  view job
+                <.live_link to={Routes.job_path(@socket, :jobs, @id)} class="flex gap-2 items-center rounded-lg bg-gray-100 py-1 px-4 text-blue-planning-300">
+                  View job
+                  <.icon name="forth" class="stroke-2 h-3 w-2 mt-1" />
                 </.live_link>
               <% end %>
             </div>
+            <hr class="my-4 sm:my-4" />
           </div>
-          <button title="Delete" type="button" phx-click="confirm-delete" class="ml-auto flex items-center hover:opacity-80">
-            <.icon name="trash" class="sm:w-5 sm:h-5 w-6 h-6 mr-3" />
-          </button>
-        </div>
         <div class="flex flex-1 flex-col p-6">
           <%= for message <- @messages do %>
             <%= if message.is_first_unread do %>
@@ -125,15 +139,15 @@ defmodule PicselloWeb.InboxLive.Index do
                 <div class="flex-1 h-px bg-orange-inbox-300"></div>
               </div>
             <% end %>
-            <div {testid("thread-message")} {scroll_to_message(message)} class={classes("m-2 max-w-lg sm:max-w-xl scroll-mb-28", %{"self-end" => message.outbound, "self-start" => !message.outbound})}>
-              <div class={classes("mb-3 flex justify-between items-end text-base-250", %{"flex-row-reverse" => !message.outbound})}>
-                <div class="text-xs"><%= message.date %></div>
+            <div {testid("thread-message")} {scroll_to_message(message)} class="m-2" style="scroll-margin-bottom: 7rem">
+              <div class={classes("mb-3 flex justify-between items-end", %{"flex-row-reverse" => !message.outbound})}>
                 <div class="mx-1">
                   <%= unless message.same_sender do %>
                     <%= message.sender %> wrote:
                   <% end %>
                 </div>
               </div>
+
               <div class="relative border rounded p-4">
                 <%= if message.unread do %>
                   <div class="absolute bg-orange-inbox-300 rounded-full -top-2 -right-2 w-4 h-4"></div>
@@ -154,7 +168,47 @@ defmodule PicselloWeb.InboxLive.Index do
                     </div>
                   </div>
                 <% end %>
+
+              <div class={classes("flex items-center font-bold text-xl px-4 py-2", %{"rounded-t-lg" => message.collapsed_sections, "rounded-lg" => !message.collapsed_sections, "bg-blue-planning-300 text-white" => message.outbound, "bg-gray-300" => !message.outbound})} phx-click="collapse-section" phx-value-id={message.id}>
+                <%= message.subject %>
+                <div class="flex gap-2 text-xs ml-auto">
+                  <%= message.date %>
+                  <%= if message.collapsed_sections do %>
+                    <.icon name="down" class="w-4 h-4 stroke-current stroke-2" />
+                  <% else %>
+                    <.icon name="up" class="w-4 h-4 stroke-current stroke-2" />
+                  <% end %>
+                </div>
               </div>
+              <%= if message.collapsed_sections do %>
+                <div class="flex border px-4 py-2 text-base-250">
+                  <div class="flex flex-col">
+                    <p> To: <%= message.receiver %> </p>
+                    <%= if(message.show_cc?) do %>
+                      <p> Cc: <%= message.cc %> </p>
+                      <p> Bcc: <%= message.bcc %> </p>
+                    <% end %>
+                  </div>
+                  <div class="ml-auto text-blue-planning-300 underline cursor-pointer" phx-click="show-cc" phx-value-id={message.id}>
+                    <%= if(message.show_cc?) do %>
+                      Hide Cc/Bcc
+                    <% else %>
+                      Show Cc/Bcc
+                    <% end %>
+                  </div>
+                </div>
+                <div class="flex flex-col relative border rounded-b-lg p-6">
+                  <%= if message.unread do %>
+                    <div class="absolute bg-orange-inbox-300 rounded-full -top-2 -right-2 w-4 h-4"></div>
+                  <% end %>
+                  <span class="whitespace-pre-line"><%= raw message.body %></span>
+                  <%= if message.read_at do %>
+                    <span class="ml-auto text-base-250 text-sm">
+                        <%= message.read_at %>
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
             </div>
           <% end %>
         </div>
@@ -187,6 +241,60 @@ defmodule PicselloWeb.InboxLive.Index do
   def handle_event("open-thread", %{"id" => id}, socket) do
     socket
     |> push_patch(to: Routes.inbox_path(socket, :show, id))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("change-tab", %{"tab" => tab}, socket) do
+    socket
+    |> assign(:tab_active, tab)
+    |> assign_tab_data(tab)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("show-cc", %{"id" => id}, socket) do
+    new_messages =
+      Enum.map(socket.assigns.current_thread.messages, fn entry ->
+        if entry.id == String.to_integer(id) do
+          show_cc? = Map.get(entry, :show_cc?, false)
+          Map.update!(entry, :show_cc?, fn _ -> !show_cc? end)
+        else
+          entry
+        end
+      end)
+
+    socket
+    |> assign(
+      :current_thread,
+      %{
+        socket.assigns.current_thread
+        | messages: new_messages
+      }
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("collapse-section", %{"id" => id}, socket) do
+    new_messages =
+      Enum.map(socket.assigns.current_thread.messages, fn entry ->
+        if entry.id == String.to_integer(id) do
+          collapsed_sections = Map.get(entry, :collapsed_sections, false)
+          Map.update!(entry, :collapsed_sections, fn _ -> !collapsed_sections end)
+        else
+          entry
+        end
+      end)
+
+    socket
+    |> assign(
+      :current_thread,
+      %{
+        socket.assigns.current_thread
+        | messages: new_messages
+      }
+    )
     |> noreply()
   end
 
@@ -225,31 +333,66 @@ defmodule PicselloWeb.InboxLive.Index do
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
-  defp assign_threads(%{assigns: %{current_user: current_user}} = socket) do
-    job_query = Job.for_user(current_user)
-
+  defp assign_threads(%{assigns: %{current_user: current_user}} = socket, type \\ :all) do
     message_query =
-      from(message in ClientMessage,
-        distinct: message.job_id,
-        join: jobs in subquery(job_query),
-        on: jobs.id == message.job_id,
-        where: is_nil(message.deleted_at),
-        order_by: [desc: message.inserted_at]
-      )
+      case type do
+        :job ->
+          job_query = Job.for_user(current_user)
+
+          from(message in ClientMessage,
+            where: not is_nil(message.job_id),
+            distinct: message.job_id,
+            join: jobs in subquery(job_query),
+            on: jobs.id == message.job_id,
+            where: is_nil(message.deleted_at),
+            order_by: [desc: message.inserted_at]
+          )
+
+        :client ->
+          client_message_receipent_query = Picsello.ClientMessageRecipient.for_user(current_user)
+
+          from(message in ClientMessage,
+            where: is_nil(message.job_id),
+            where: is_nil(message.deleted_at),
+            join: client_message_receipents in subquery(client_message_receipent_query),
+            on: client_message_receipents.client_message_id == message.id,
+            distinct: client_message_receipents.client_id,
+            order_by: [desc: message.inserted_at]
+          )
+
+        :all ->
+          job_query = Job.for_user(current_user)
+
+          message_query =
+            from(message in ClientMessage,
+              distinct: message.job_id,
+              join: jobs in subquery(job_query),
+              on: jobs.id == message.job_id,
+              where: is_nil(message.deleted_at),
+              order_by: [desc: message.inserted_at]
+            )
+      end
 
     threads =
       from(message in subquery(message_query), order_by: [desc: message.inserted_at])
+      |> IO.inspect()
       |> Repo.all()
-      |> Repo.preload(job: :client)
+      |> IO.inspect()
+      |> Repo.preload([:client_message_recipients, job: [:client]])
       |> Enum.map(fn message ->
+        IO.inspect(message)
         body = if(message.body_text, do: message.body_text, else: message.body_html)
+        type = check_and_assign_type(message.job_id)
+        title = if message.job, do: message.job.client.name, else: "CLIENTS TITLE"
+        subtitle = if message.job, do: Job.name(message.job), else: "CLIENTS SUBTITLE"
 
         %{
-          id: message.job_id,
-          title: message.job.client.name,
-          subtitle: Job.name(message.job),
+          id: message.job_id || hd(message.client_message_recipients).client_id,
+          title: title,
+          subtitle: subtitle,
           message: body,
-          date: strftime(current_user.time_zone, message.inserted_at, "%-m/%-d/%y")
+          type: type,
+          date: strftime(current_user.time_zone, message.inserted_at, "%a, %B %d, %I:%M:%S %p")
         }
       end)
 
@@ -288,7 +431,8 @@ defmodule PicselloWeb.InboxLive.Index do
     client_messages =
       from(message in ClientMessage,
         where: message.job_id == ^job.id and is_nil(message.deleted_at),
-        order_by: [asc: message.inserted_at]
+        order_by: [asc: message.inserted_at],
+        preload: [:client_message_recipients]
       )
       |> Repo.all()
       |> Repo.preload(:client_message_attachments)
@@ -299,8 +443,16 @@ defmodule PicselloWeb.InboxLive.Index do
       |> Enum.reduce(%{last: nil, messages: []}, fn {message, index},
                                                     %{last: last, messages: messages} ->
         sender = if message.outbound, do: "You", else: job.client.name
+        receiver = if message.outbound, do: job.client.email, else: "You"
         same_sender = last && last.outbound == message.outbound
         body = if message.body_text, do: message.body_text, else: message.body_html
+        cc = assign_message_recipients(message, :cc)
+        bcc = assign_message_recipients(message, :bcc)
+
+        read_at =
+          if message.read_at,
+            do: strftime(current_user.time_zone, message.read_at, "%a, %B %d, %I:%M:%S %p"),
+            else: nil
 
         %{
           last: message,
@@ -314,12 +466,19 @@ defmodule PicselloWeb.InboxLive.Index do
                     strftime(current_user.time_zone, message.inserted_at, "%a %b %-d, %-I:%0M %p"),
                   outbound: message.outbound,
                   sender: sender,
+                  receiver: receiver,
+                  cc: cc,
+                  bcc: bcc,
+                  subject: message.subject,
                   same_sender: same_sender,
                   is_first_unread: Enum.member?(unread_message_ids, message.id),
                   scroll:
                     message.id == message_id_to_scroll || index == length(client_messages) - 1,
                   unread: message.read_at == nil,
-                  client_message_attachments: message.client_message_attachments
+                  client_message_attachments: message.client_message_attachments,
+                  show_cc?: false,
+                  collapsed_sections: true,
+                  read_at: read_at
                 }
               ]
         }
@@ -338,6 +497,70 @@ defmodule PicselloWeb.InboxLive.Index do
     |> mark_current_thread_as_read()
   end
 
+  defp assign_message_recipients(%{client_message_recipients: client_message_recipients}, type) do
+    client_message_recipients
+    |> Enum.filter(fn x -> x.recipient_type == type end)
+    |> case do
+      [] ->
+        nil
+
+      list ->
+        Enum.map_join(list, ";", fn x ->
+          Repo.get(Picsello.Client, x.client_id).email
+        end)
+    end
+  end
+
+  defp check_and_assign_type(nil), do: :client
+  defp check_and_assign_type(_job_id), do: :job
+
+  defp tabs_list(_socket) do
+    [
+      {true,
+       %{
+         name: "All",
+         concise_name: "all",
+         action: "change-tab"
+       }},
+      {true,
+       %{
+         name: "Jobs/Leads",
+         concise_name: "jobs-leads",
+         action: "change-tab"
+       }},
+      {true,
+       %{
+         name: "Clients",
+         concise_name: "clients",
+         action: "change-tab"
+       }},
+      {true,
+       %{
+         name: "Marketing",
+         concise_name: "marketing",
+         action: "change-tab"
+       }}
+    ]
+  end
+
+  defp assign_tab_data(%{assigns: %{current_user: current_user}} = socket, tab) do
+    case tab do
+      "all" ->
+        socket
+        |> assign_threads()
+
+      "jobs-leads" ->
+        socket = socket |> assign_threads(:job)
+
+      "marketing" ->
+        socket |> assign_threads()
+
+      _ ->
+        socket
+    end
+    |> assign(:current_thread, nil)
+  end
+
   defp mark_current_thread_as_read(%{assigns: %{current_thread: %{id: id}}} = socket) do
     if connected?(socket) do
       from(m in ClientMessage, where: m.job_id == ^id and is_nil(m.read_at))
@@ -345,6 +568,12 @@ defmodule PicselloWeb.InboxLive.Index do
     end
 
     socket
+  end
+
+  defp filter_messages(threads, filter) do
+    Enum.filter(threads, fn x ->
+      x.type == filter
+    end)
   end
 
   defp subscribe_inbound_messages(%{assigns: %{current_user: current_user}} = socket) do

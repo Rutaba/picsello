@@ -82,22 +82,23 @@ defmodule Picsello.Galleries.PhotoProcessing.ProcessedConsumer do
   end
 
   defp do_handle_message(%{"task" => task} = context) do
-    with {:ok, photo} <- Context.save_processed(context) do
-      task
-      |> case do
-        %{"photoId" => photo_id} ->
-          Waiter.complete_tracking(photo.gallery_id, photo.id)
-          "Photo has been processed [#{photo_id}]"
+    # with {:ok, photo} <- Context.save_processed(context) do
+    #   task
+    #   |> case do
+    #     %{"photoId" => photo_id} ->
+    #       Waiter.complete_tracking(photo.gallery_id, photo.id)
+    #       "Photo has been processed [#{photo_id}]"
 
-        %{"processCoverPhoto" => true, "originalPath" => path} ->
-          "Cover photo [#{path}] has been processed"
-      end
-      |> Logger.info()
+    #     %{"processCoverPhoto" => true, "originalPath" => path} ->
+    #       "Cover photo [#{path}] has been processed"
+    #   end
+    #   |> Logger.info()
 
-      Context.notify_processed(context, photo)
+    #   Context.notify_processed(context, photo)
 
-      :ok
-    end
+    #   :ok
+    # end
+    :ok
   end
 
   defp do_handle_message(%{"path" => "" <> path, "metadata" => %{"version-id" => "" <> id}}) do
