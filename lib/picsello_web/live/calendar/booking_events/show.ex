@@ -1,8 +1,16 @@
 defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
+  import PicselloWeb.Calendar.BookingEvents.Shared
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+<<<<<<< HEAD
   alias Picsello.{Repo, BookingEvents, Package}
+=======
+  import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
+  import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
+  alias Picsello.{Repo, BookingEvents, Package, BookingEvent, Questionnaire}
+  alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
+>>>>>>> 701df64a8 (add questionnaire, contract, marketing preview, updated listings for booking events)
 
   @impl true
   def mount(_params, _session, socket) do
@@ -84,6 +92,44 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> open_modal(
       PicselloWeb.PackageLive.WizardComponent,
       Map.take(socket.assigns, [:current_user, :currency, :booking_event])
+    )
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "open-questionnaire",
+        %{},
+        socket
+      ) do
+    socket
+    |> QuestionnaireComponent.open_modal_from_booking_events()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "add-questionnaire",
+        %{},
+        %{assigns: %{current_user: current_user, package: package}} = socket
+      ) do
+    questionnaire = Questionnaire.for_package(package)
+
+    socket
+    |> PicselloWeb.QuestionnaireFormComponent.open(%{
+      state: :edit_booking_event,
+      current_user: current_user,
+      questionnaire: questionnaire,
+      package: package
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("add-contract", %{}, socket) do
+    socket
+    |> PicselloWeb.ContractFormComponent.open(
+      Map.take(socket.assigns, [:package, :booking_event, :current_user])
     )
     |> noreply()
   end
@@ -173,8 +219,26 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> noreply()
   end
 
+  def handle_info(
+        {:update, %{questionnaire: _questionnaire}},
+        %{assigns: %{package: package}} = socket
+      ) do
+    package = package |> Repo.preload(:questionnaire_template, force: true)
+
+    socket
+    |> assign(:package, package)
+    |> put_flash(:success, "Questionnaire updated")
+    |> noreply()
+  end
+
   @impl true
-  defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
+  def handle_info({:contract_saved, contract}, %{assigns: %{package: package}} = socket) do
+    socket
+    |> assign(package: %{package | contract: contract})
+    |> put_flash(:success, "Contract updated successfully")
+    |> close_modal()
+    |> noreply()
+  end
 
   defp booking_slot_tabs_nav(assigns) do
     ~H"""
@@ -412,6 +476,97 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     """
   end
 
+  defp marketing_preview(assigns) do
+    ~H"""
+      <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3">
+        <div class="flex items-center mb-4">
+          <div class="flex items-center">
+            <.icon name="marketing" class="inline-block w-5 h-5 mr-3 mt-0.5 fill-blue-planning-300" />
+          </div>
+          <div class="text-xl font-bold">
+            Marketing preview
+          </div>
+        </div>
+        <%= if @booking_event.thumbnail_url do %>
+          <%= live_redirect to: Routes.calendar_booking_events_show_path(@socket, :edit, @booking_event.id) do %>
+            <.blurred_thumbnail class="h-full items-center flex flex-col w-[100px] h-[65px] bg-base-400" url={@booking_event.thumbnail_url} />
+          <% end %>
+        <% else %>
+          <div class="aspect-video h-full p-6 mb-2 items-center flex flex-col bg-white">
+            <div class="flex justify-center h-auto mt-6 items-center">
+              <.icon name="photos-2" class="inline-block w-12 h-12 text-gray-400"/>
+            </div>
+            <div class="mt-1 p-4 text-xl text-gray-400 text-center h-full">
+              <span>Edit marketing details to add a photo. Don’t forget to add a package too</span>
+            </div>
+          </div>
+        <% end %>
+        <div class="grid grid-cols-1">
+          <div class="text-3xl font-bold">
+            <%= @booking_event.name %>
+          </div>
+          <%= if @package do %>
+            <div class="text-base-250 text-md">
+              <%= Money.to_string(Package.price(@package)) %>
+            </div>
+            <div class="text-base-250 text-md">
+              <%= if @package.download_count < 1, do: "No digital", else: @package.download_count %> images included <%= if Enum.any?(@booking_event.dates), do: "| 15 min session" %>
+            </div>
+            <hr class="my-3">
+          <% end %>
+        </div>
+        <%= if @package do %>
+          <%= if Enum.any?(@booking_event.dates) do %>
+            <div class="flex flex-col">
+              <div class="flex items-center">
+                <div class="flex items-center">
+                  <.icon name="marketing" class="inline-block w-4 h-4 mr-3 text-black" />
+                </div>
+                <div class="text-base-250 text-md">
+                  Aug 31, 2022 - Sep 01, 2022
+                </div>
+              </div>
+              <div class="flex items-center">
+                <div class="flex items-center">
+                  <.icon name="location" class="inline-block w-4 h-4 mr-3 text-black" />
+                </div>
+                <div class="text-base-250 text-md">
+                  12345 Gabriel Street, Ries, Florida 97060
+                </div>
+              </div>
+              <hr class="my-3">
+            </div>
+          <% end %>
+          <div class="flex flex-col mb-3 items-start">
+            <%= if package_description_length_long?(@package.description) do %>
+              <p>
+                <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                  <%= String.slice(raw(@package.description), 0..100) <> "..." %>
+                <% end %>
+              </p>
+              <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
+                <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                  Read more <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
+                <% else %>
+                  Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
+                <% end %>
+              </button>
+            <% else %>
+              <%= raw(@package.description) %>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-base-250 mt-4 mb-4 text-xl">
+            <p>Pick a package and update your marketing details to get started</p>
+          </div>
+        <% end %>
+        <button phx-click="edit-marketing-event" phx-value-event-id={@booking_event.id} class="p-2 bg-stone-300 font-bold rounded-lg w-1/2">
+            Edit marketing details
+        </button>
+      </div>
+    """
+  end
+
   defp open_wizard(socket, assigns \\ %{}) do
     # TODO: BookingEventModal backend functionality Currently just with minimal information
     socket
@@ -427,6 +582,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       "overview" -> socket
       _ -> socket
     end
+  end
+
+  defp assign_booking_event(socket, booking_event) do
+    booking_event =
+      booking_event
+      |> Repo.preload(
+        package_template: [:package_payment_schedules, :contract, :questionnaire_template]
+      )
+
+    socket
+    |> assign(:booking_event, booking_event)
+    |> assign(:payments_description, payments_description(booking_event))
+    |> assign(:package, booking_event.package_template)
+    |> assign(:edit_name, true)
+    |> assign(:name_changeset, BookingEvent.create_changeset(booking_event, %{}))
   end
 
   # TODO: refine logic
