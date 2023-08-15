@@ -6,236 +6,236 @@
         <:crumb>Booking Events</:crumb>
         </.crumbs>
     </div>
-    <div class="flex mt-2">        
-        <h1 class="text-4xl font-bold">New event</h1>
-        <div class="flex items-center justify-center w-7 h-7 bg-base-200 rounded-lg p-1 ml-2 mt-2.5">
-            <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
+    <div class="flex flex-col md:items-center md:flex-row mt-2 gap-4">
+        <div class="flex">        
+            <h1 class="text-4xl font-bold">New event</h1>
+            <div class="flex items-center justify-center w-7 h-7 bg-base-200 rounded-lg p-1 ml-2 mt-2.5">
+                <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
+            </div>
         </div>
-        <.actions id="header" archive_option={false} booking_event={@booking_event} button_actions={header_actions()} />
-        <button class="btn-tertiary px-3 h-10 py-1.5 flex items-center text-black mx-2">
-            <.icon name="eye" class="inline-block w-4 h-4 mr-2 stroke-3 text-blue-planning-300" />
-            Client preview
-        </button>
-        <button class="btn-primary px-6 h-10 py-1.5 flex items-center gap-3 mr-2 text-white bg-black xl:w-auto w-full">
-            Copy Link
-        </button>
-    </div>
+        <div class="flex gap-2 ml-auto py-2">
+            <.actions id="header" main_button_class="h-12" archive_option={false} booking_event={@booking_event} button_actions={header_actions()} />
+            <.icon_button icon="eye" color="blue-planning-300" class="text-black">Client preview</.icon_button>
+            <.button_simple>Copy Link</.button_simple>
+        </div>
+    </div> 
     <div class="ml-2 pb-1.5 mt-10 w-20 text-center border-b-4 border-blue-planning-300 text-blue-planning-300 font-bold">
         Overview
     </div>
 </div>
 
 <div class="bg-base-200 h-auto">
-    <div class="center-container p-6 grid grid-cols-10 gap-8">
-        <div class="flex flex-col col-span-7 bg-white p-7 rounded-lg">
-            <div class="flex">
-                <div class="flex flex-col">
-                    <p class="ml-2 mb-1 p-0.5 bg-blue-100 text-blue-planning-300 text-center w-28 h-6 rounded-lg font-bold text-sm">Single Event</p>
-                    <h2 class="mb-1 text-2xl font-bold">Let's get you booked!</h2>
-                    <p class="text-base-250">Here's an overview of your booking event:</p>
-                </div>
-                <div class="ml-auto flex items-end">
-                    <button class="ml-auto btn-primary px-4 h-8 py-1.5 flex items-center gap-3 mr-2 text-white bg-black">
-                        Add date
-                    </button>
-                </div>
-            </div>
-            <hr class="mt-6 w-full">
-            <.booking_slot_tabs_nav booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
-            <.booking_slot_tabs_content assigns={assigns} socket={@socket} />
-            
-            <div class={classes("mt-10 p-3 border-2 rounded-lg border-red-sales-300", %{"border-base-200" => @package})}>
-                <div class="flex items-center">
-                    <div class="mr-2">
-                      <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300" />
-                    </div>
-                    <div class="text-2xl font-bold">Package</div>
-                  <%= unless @package do %>    
-                    <button phx-click="add-package" class="ml-auto btn-primary px-4 h-8 py-1.5 flex items-center gap-3 text-white bg-black">
-                      Choose
-                    </button>
-                  <% end %>
-                </div>
-                <%= if @package do %>
-                    <div>
-                        <div class="grid grid-cols-4 items-center border-b-4 text-lg border-blue-planning-300 mt-4 mb-2">
-                            <div class="text-base-250 font-bold">
-                                Name
-                            </div>
-                            <div class="text-base-250 font-bold">
-                                Pricing
-                            </div>
-                            <div class="text-base-250 font-bold">
-                                Payment Schedule
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-4">
-                          <div class="flex flex-col pr-2">
-                            <div class="text-lg font-bold"><%= @package.name %></div>
-                            <div class="text-base-250"><%= @package.job_type %></div>
-                          </div>
-                            <div class="flex flex-col">
-                              <div class="flex items-center">
-                                <div class="mr-2">
-                                  <.icon name="package" class="inline-block w-3 h-3 text-blue-planning-300" />
-                                </div>
-                                <div class="text-base-250"><%= Package.price(@package) %></div>
-                              </div>
-                              <div class="flex items-center">
-                                  <div class="mr-2">
-                                    <.icon name="photo" class="inline-block w-3 h-3 fill-blue-planning-300 text-blue-planning-300" />
-                                  </div>
-                                  <div class="text-base-250"><%= @package.download_each_price %>/each</div>
-                              </div>
-                              <div class="flex items-center">
-                                <div class="mr-2">
-                                  <.icon name="add-photos" class="inline-block w-3 h-3 text-blue-planning-300" />
-                                </div>
-                                <div class="text-base-250"><%= if @package.download_count < 1, do: "No digital images inclulded", else: @package.download_count %></div>
-                              </div>
-                            </div>
-                            <div class="flex justify-start">
-                              <div class="mr-2">
-                                <.icon name="add-photos" class="inline-block w-3 h-3 text-blue-planning-300" />
-                              </div>
-                              <div class="text-base-250"><%= @payments_description %></div>
-                            </div>
-                            <div class="flex items-center">
-                              <button phx-click="add-package" class="flex items-center h-8 px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 ml-auto mr-1" >
-                                <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-white text-white" />
-                                Edit
-                              </button>
-                              <.actions id="package" booking_event={@booking_event} button_actions={package_actions()} />
-                            </div>
-                        </div>
-                    </div>
-                <% else %>
-                    <div class="text-base-250">Looks like you need to choose a package</div>
-                <% end %>
-            </div>
-            <div class="mt-10 p-3 border-2 border-base-200 rounded-lg">
-                <div class="flex items-center">
-                    <div class="mr-2">
-                        <.icon name="document_2" class="inline-block mb-0.5 w-5 h-5 fill-blue-planning-300" />
-                    </div>
-                    <p class="text-2xl font-bold">Client Documents</p>
-                </div>
-                <div class="grid grid-cols-1 items-center border-b-4 text-lg border-blue-planning-300 mt-5 mb-4">
-                    <div class="text-lg text-base-250 font-bold">Name</div>
-                </div>
-                <div class="flex">
-                    <div class="flex flex-col">
-                        <p class="text-lg font-bold">Questionnaire</p>
-                        <p class="text-base-250">Your Questionnaire</p>
-                    </div>
-                    <div class="flex items-center ml-auto">
-                        <button class="flex items-center h-8 px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 ml-auto mr-1" >
-                            <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-white text-white" />
-                            Edit
-                        </button>
-                        <button class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-1">
-                            <.icon name="eye" class="w-4 h-4 text-blue-planning-300" />
-                        </button>
-                    </div>
-                </div>
-                <hr class="my-2">
-                <div class="flex">
-                    <div class="flex flex-col">
-                        <p class="text-lg font-bold">Contract</p>
-                        <p class="text-base-250">Picsello Default Contract</p>
-                    </div>
-                    <div class="flex items-center ml-auto">
-                        <button class="flex items-center h-8 px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 ml-auto mr-1" >
-                            <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-white text-white" />
-                            Edit
-                        </button>
-                        <button class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-1">
-                            <.icon name="eye" class="w-4 h-4 text-blue-planning-300" />
-                        </button>
-                    </div>
-                </div>
-                <hr class="my-2"/>
-            </div>
+    <div class="center-container ">
+        <div class="md:hidden flex pt-4 mx-6">
+            <div class="uppercase text-base-250 font-bold tracking-widest tracking-widestplus">section manue</div>
+            <div class="text-blue-planning-300 underline ml-auto">Details</div>
+            <div class="text-blue-planning-300 underline ml-4">Marketing</div>
+            <div class="text-blue-planning-300 underline ml-4">Coupons</div> 
         </div>
-        <div class="bg-base-200 flex flex-col col-span-3">
-            <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3">
-                <div class="flex items-center mb-4">
-                    <div class="flex items-center">
-                        <.icon name="marketing" class="inline-block w-5 h-5 mr-3 mt-0.5 fill-blue-planning-300" />
-                    </div>
-                    <div class="text-xl font-bold">
-                        Marketing preview
-                    </div>
-                </div>
-                <div class="bg-white aspect-video mb-4">
-                    Pic Area
-                </div>
-                <div class="grid grid-cols-1">
-                    <div class="text-3xl font-bold">
-                        Fall minis
-                    </div>
-                    <div class="text-base-250 text-xl">
-                        $350.00
-                    </div>
-                    <div class="text-base-250 text-md">
-                        5 images included | 15 min session
-                    </div>
-                    <hr class="my-3">
-                </div>
+        <div class="p-6 grid grid-cols-1 lg:grid-cols-10 gap-8">
+            <div class="flex flex-col lg:col-span-7 bg-white p-7 rounded-lg">
                 <div class="flex flex-col">
-                    <div class="flex items-center">
-                        <div class="flex items-center">
-                            <.icon name="marketing" class="inline-block w-4 h-4 mr-3 text-black" />
+                    <div class="ml-2 mb-1 p-0.5 bg-blue-100 text-blue-planning-300 text-center w-28 h-6 rounded-lg font-bold text-sm">Single Event</div>
+                    <div class="flex">
+                        <div class="flex flex-col">
+                            <h2 class="mb-1 text-2xl font-bold">Let's get you booked!</h2>
+                            <p class="text-base-250">Here's an overview of your booking event:</p>
                         </div>
-                        <div class="text-base-250 text-md">
-                            Aug 31, 2022 - Sep 01, 2022
-                        </div>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="flex items-center">
-                            <.icon name="location" class="inline-block w-4 h-4 mr-3 text-black" />
-                        </div>
-                        <div class="text-base-250 text-md">
-                            12345 Gabriel Street, Ries, Florida 97060
+                        <div class="ml-auto pl-2 flex mt-1 md:mt-0 md:items-end">
+                            <.button_simple class="h-8 py-0.5">Add date</.button_simple>
                         </div>
                     </div>
-                    <hr class="my-3">
                 </div>
-                <div class="flex flex-col mb-3 items-start">
-                    <p>
-                        <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
-                        <%= String.slice("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu a", 0..100) <> "..." %>
+                <hr class="mt-6 w-full">
+                <.booking_slot_tabs_nav booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
+                <.booking_slot_tabs_content assigns={assigns} socket={@socket} />
+                
+                <div class={classes("mt-10 p-3 border-2 flex rounded-lg border-red-sales-300", %{"border-base-200" => @package})}>
+                    <div class="flex flex-col">
+                        <div class="mr-2 flex items-center gap-3">
+                            <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300 mt-1" />
+                        <div class="text-2xl font-bold">Package</div>
+                        </div>
+                        <%= if @package do %>
+                            <div>
+                                <div class="hidden md:grid grid-cols-4 items-center border-b-4 text-lg border-blue-planning-300 mt-4 mb-2">
+                                    <div class="text-base-250 font-bold">
+                                        Name
+                                    </div>
+                                    <div class="text-base-250 font-bold">
+                                        Pricing
+                                    </div>
+                                    <div class="text-base-250 font-bold">
+                                        Payment Schedule
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-4">
+                                    <div class="flex flex-col pr-2">
+                                        <div class="text-lg font-bold"><%= @package.name %></div>
+                                        <div class="text-base-250"><%= @package.job_type %></div>
+                                    </div>
+                                    <div class="flex flex-col my-3 md:my-0">
+                                        <div class="text-md text-base-250 mb-2 block md:hidden">Pricing</div>
+                                        <div class="flex items-center">
+                                            <div class="mr-2">
+                                            <.icon name="package" class="inline-block w-3 h-3 text-blue-planning-300" />
+                                            </div>
+                                            <div class="text-base-250"><%= Package.price(@package) %></div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="mr-2">
+                                                <.icon name="photo" class="inline-block w-3 h-3 fill-blue-planning-300 text-blue-planning-300" />
+                                            </div>
+                                            <div class="text-base-250"><%= @package.download_each_price %>/each</div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="mr-2">
+                                            <.icon name="add-photos" class="inline-block w-3 h-3 text-blue-planning-300" />
+                                            </div>
+                                            <div class="text-base-250"><%= if @package.download_count < 1, do: "No digital images inclulded", else: @package.download_count %></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-start my-3 md:my-0">
+                                        <div class="text-md text-base-250 mb-2 block md:hidden">Payment Schedule</div>
+                                        <div class="mr-2">
+                                            <.icon name="add-photos" class="inline-block w-3 h-3 text-blue-planning-300" />
+                                        </div>
+                                        <div class="text-base-250"><%= @payments_description %></div>
+                                    </div>
+                                    <hr class="my-3 block md:hidden">
+                                    <div class="flex items-center">
+                                        <button phx-click="add-package" class="flex items-center h-8 px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 ml-auto mr-1" >
+                                            <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-white text-white" />
+                                            Edit
+                                        </button>
+                                        <.actions id="package" booking_event={@booking_event} button_actions={package_actions()} />
+                                    </div>
+                                </div>
+                            </div>
                         <% else %>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu a
+                            <div class="text-base-250">Looks like you need to choose a package</div>
                         <% end %>
-                    </p>
-                    <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
-                        <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
-                            Read more <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
-                        <% else %>
-                            Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
-                        <% end %>
+                    </div>
+                    <%= unless @package do %>  
+                        <button phx-click="add-package" class="ml-auto mt-1 btn-primary px-4 h-8 py-0.5 flex gap-3 text-white bg-black">
+                        Choose
+                        </button>
+                    <% end %>
+                </div>
+                <div class="mt-10 p-3 border-2 border-base-200 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="mr-2">
+                            <.icon name="document_2" class="inline-block mb-0.5 w-5 h-5 fill-blue-planning-300" />
+                        </div>
+                        <p class="text-2xl font-bold">Client Documents</p>
+                    </div>
+                    <div class="grid grid-cols-1 items-center border-b-4 text-lg border-blue-planning-300 mt-5 mb-4">
+                        <div class="text-lg text-base-250 font-bold">Name</div>
+                    </div>
+                    <div class="flex">
+                        <div class="flex flex-col">
+                            <p class="text-lg font-bold">Questionnaire</p>
+                            <p class="text-base-250">Your Questionnaire</p>
+                        </div>
+                        <div class="flex items-center ml-auto gap-2">
+                            <.icon_button icon="pencil" color="white" class="bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
+                            <.icon_button icon="eye" color="blue-planning-300" class="h-8 w-8"/>
+                        </div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="flex">
+                        <div class="flex flex-col">
+                            <p class="text-lg font-bold">Contract</p>
+                            <p class="text-base-250">Picsello Default Contract</p>
+                        </div>
+                        <div class="flex items-center ml-auto gap-2">
+                            <.icon_button icon="pencil" color="white" class="bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
+                            <.icon_button icon="eye" color="blue-planning-300" class="h-8 w-8"/>
+                        </div>
+                    </div>
+                    <hr class="my-2"/>
+                </div>
+            </div>
+            <div class="bg-base-200 flex flex-col lg:col-span-3">
+                <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3">
+                    <div class="flex items-center mb-4">
+                        <div class="flex items-center">
+                            <.icon name="marketing" class="inline-block w-5 h-5 mr-3 mt-0.5 fill-blue-planning-300" />
+                        </div>
+                        <div class="text-xl font-bold">
+                            Marketing preview
+                        </div>
+                    </div>
+                    <div class="bg-white aspect-video mb-4">
+                        Pic Area
+                    </div>
+                    <div class="grid grid-cols-1">
+                        <div class="text-3xl font-bold">
+                            Fall minis
+                        </div>
+                        <div class="text-base-250 text-xl">
+                            $350.00
+                        </div>
+                        <div class="text-base-250 text-md">
+                            5 images included | 15 min session
+                        </div>
+                        <hr class="my-3">
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="flex items-center">
+                            <div class="flex items-center">
+                                <.icon name="marketing" class="inline-block w-4 h-4 mr-3 text-black" />
+                            </div>
+                            <div class="text-base-250 text-md">
+                                Aug 31, 2022 - Sep 01, 2022
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="flex items-center">
+                                <.icon name="location" class="inline-block w-4 h-4 mr-3 text-black" />
+                            </div>
+                            <div class="text-base-250 text-md">
+                                12345 Gabriel Street, Ries, Florida 97060
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                    </div>
+                    <div class="flex flex-col mb-3 items-start">
+                        <p>
+                            <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                            <%= String.slice("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu a", 0..100) <> "..." %>
+                            <% else %>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu a
+                            <% end %>
+                        </p>
+                        <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
+                            <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                                Read more <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
+                            <% else %>
+                                Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
+                            <% end %>
+                        </button>
+                    </div>
+                    <button class="p-2 bg-stone-300 font-bold rounded-lg 2xl:w-1/2 w-auto whitespace-nowrap">
+                        Edit marketing details
                     </button>
                 </div>
-                <button class="p-2 bg-stone-300 font-bold rounded-lg w-1/2">
-                    Edit marketing details
-                </button>
-            </div>
-            <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3 mt-6">
-                <div class="flex mb-4 items-center">
-                    <div class="mr-2">
-                        <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300" />
+                <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3 mt-6">
+                    <div class="flex mb-4 items-center">
+                        <div class="mr-2">
+                            <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300" />
+                        </div>
+                        <div class="text-xl font-bold">
+                            Coupons
+                        </div>
                     </div>
-                    <div class="text-xl font-bold">
-                        Coupons
-                    </div>
+                    <p class="mb-4"> 
+                        If you’d like to provide a coupon code to your clients to use at checkout, you can do so here!
+                    </p>
+                    <button class="p-2 bg-stone-300 font-bold rounded-lg xl:w-1/3 w-auto whitespace-nowrap">
+                        Add coupon
+                    </button>
                 </div>
-                <p class="mb-4"> 
-                    If you’d like to provide a coupon code to your clients to use at checkout, you can do so here!
-                </p>
-                <button class="p-2 bg-stone-300 font-bold rounded-lg w-1/3">
-                    Add coupon
-                </button>
             </div>
         </div>
     </div>

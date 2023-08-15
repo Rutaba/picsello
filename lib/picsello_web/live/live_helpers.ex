@@ -127,11 +127,11 @@ defmodule PicselloWeb.LiveHelpers do
     assigns =
       assigns
       |> Map.put(:rest, Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled]))
-      |> Enum.into(%{class: "", disabled: false, inner_block: nil})
+      |> Enum.into(%{class: "", disabled: false, inner_block: nil, icon_class: ""})
 
     ~H"""
-    <button type="button" class={classes("btn-tertiary flex items-center px-2 py-1 font-sans rounded-lg hover:opacity-75 transition-colors text-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
-      <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color}", %{"mr-2" => @inner_block})} />
+    <button type="button" class={classes("btn-tertiary flex items-center px-2 py-1 font-sans rounded-lg hover:opacity-75 transition-colors whitespace-nowrap text-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
+      <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color} #{@icon_class}", %{"mr-2" => @inner_block})} />
       <%= if @inner_block do %>
         <%= render_slot(@inner_block) %>
       <% end %>
@@ -139,19 +139,12 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
-  def icon_button_simple(assigns) do
-    assigns =
-      assigns
-      |> Map.put(
-        :rest,
-        Map.drop(assigns, [:color, :icon, :inner_block, :class, :disabled, :icon_class])
-      )
-      |> Enum.into(%{class: "", disabled: false, inner_block: nil})
-
+  def button_simple(assigns) do
+    assigns = assigns |> Enum.into(%{class: ""})
     ~H"""
-    <button type="button" class={classes("flex items-center px-2 py-1 font-sans hover:opacity-75 #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
-      <.icon name={@icon} class={"fill-current text-#{@color} #{@icon_class}"} />
-    </button>
+      <button class={"btn-primary whitespace-nowrap #{@class}"}>
+        <%= render_slot(@inner_block) %>
+      </button>
     """
   end
 

@@ -500,7 +500,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
     ~H"""
       <div class="flex-wrap items-center sm:col-span-2 sm:flex gap-2 sm:gap-0">
         <%= if Enum.empty?(Clients.client_tags(@client)) do%>
-            <p><%= "-" %></p>
+            <p><%= "" %></p>
         <% else %>
           <%= for tag <- Clients.client_tags(@client) do%>
             <span class="mb-2 inline-block mt-1 pb-1 text-s bg-gray-200 text-gray-800 px-2 mr-1 rounded" phx-value-client_id={@client.id} phx-value={tag}>
@@ -523,7 +523,7 @@ defmodule PicselloWeb.Live.ClientLive.Index do
                 </a>
               </div>
             <% else %>
-              <.icon_button_simple class="flex flex-shrink-0 ml-2 bg-white border rounded border-gray-600 text-gray-600" color="gray-400" phx-click="add-tags" phx-value-client_id={"#{@client.id}"} icon="plus" icon_class="w-2 h-3"></.icon_button_simple>
+              <.icon_button icon="plus" color="gray-400" class="border-gray-600 hover:border-gray-600 bg-white rounded" icon_class="w-2 h-3" phx-click="add-tags" phx-value-client_id={"#{@client.id}"} />
             <% end %>
           </span>
         <% end %>
