@@ -747,6 +747,9 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> noreply()
   end
 
+  @impl true
+  defdelegate handle_info(message, socket), to: JobLive.Shared
+
   defp default_assigns(socket) do
     socket
     |> assign_job_types()

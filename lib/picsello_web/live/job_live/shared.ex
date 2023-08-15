@@ -627,6 +627,14 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
+  @impl true
+  def handle_info({:update_templates, %{templates: templates}}, %{assigns: %{modal_pid: modal_pid}} = socket) do
+    component = PicselloWeb.PackageLive.WizardComponent
+    send_update(modal_pid, component, id: component, templates: templates)
+    socket
+    |> noreply()
+  end
+
   def assign_proposal(%{assigns: %{job: %{id: job_id}}} = socket) do
     proposal = BookingProposal.last_for_job(job_id) |> Repo.preload(:answer)
     socket |> assign(proposal: proposal)

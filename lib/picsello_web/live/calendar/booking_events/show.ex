@@ -98,12 +98,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> noreply()
   end
 
+  @impl true
   def handle_event("toggle_booking_slot_tab", %{"id" => booking_slot_tab}, socket) do
     socket
     |> assign(:booking_slot_tab, booking_slot_tab)
     |> noreply()
   end
 
+  @impl true
   def handle_info(
         {:update, %{package: package}},
         %{assigns: %{booking_event: booking_event}} = socket
@@ -132,6 +134,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> put_flash(:success, "Package details saved sucessfully.")
     |> noreply()
   end
+
+  @impl true
+  defdelegate handle_info(message, socket), to: JobLive.Shared
 
   defp booking_slot_tabs_nav(assigns) do
     ~H"""

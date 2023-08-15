@@ -29,6 +29,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
+  import PicselloWeb.PackageLive.PackagesSearchComponent, only: [packages_search_component: 1]
 
   import PicselloWeb.PackageLive.Shared,
     only: [
@@ -238,6 +239,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> assign(is_template: assigns |> Map.get(:booking_event) |> is_nil())
     |> assign_defaults()
     |> ok()
+  end
+
+  @impl true
+  def update(%{templates: templates} = assigns, socket) do
+    socket |> assign(assigns) |> assign(:templates, templates) |> ok
   end
 
   @impl true
@@ -468,6 +474,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :choose_template} = assigns) do
     ~H"""
+    <.packages_search_component id="packages" target={@myself} module={PicselloWeb.PackageLive.PackagesSearchComponent} job_types={@job_types} current_user={@current_user} />
     <h1 class="mt-6 text-xl font-bold">Select Package <%= if template_selected?(@f), do: "(1 selected)", else: "" %></h1>
     <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
       <%= for title <- ["Package name", "Package Pricing", "Select package"] do %>
@@ -1317,6 +1324,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       ) do
     socket |> save_payment(params)
   end
+
+  @impl true
+  def handle_event("submit", _params, socket), do: socket |> noreply()
 
   @impl true
   def handle_event("new-package", %{}, socket) do
