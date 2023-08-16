@@ -531,7 +531,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           <% :disabled -> %>
             <.badge color={:gray}>Disabled</.badge>
           <% _ -> %>
-            <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
+            <%= if @booking_event.date do %>
+              <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
+            <% end %>
         <% end %>
         <div class="font-bold w-full">
           <a href={if disabled?(@booking_event, [:disabled, :archive]), do: "javascript:void(0)", else: Routes.calendar_booking_events_show_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
@@ -573,6 +575,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           status: event_status
         }
       )
+      |> IO.inspect(label: "booking_events")
       |> Enum.map(fn booking_event ->
         booking_event
         |> assign_sort_date(sort_direction, sort_by, event_status)
@@ -602,6 +605,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
 
   def sort_by_date(booking_events, _sort_direction, _sort_by), do: booking_events
 
+  defp assign_sort_date(%{dates: []} = booking_event, _sort_direction, _sort_by, _filter_status), do: booking_event |> Map.put(:date, nil)
   defp assign_sort_date(booking_event, sort_direction, sort_by, filter_status) do
     sorted_date =
       if sort_by == "date" || filter_status in ["future_events", "past_events"] do
