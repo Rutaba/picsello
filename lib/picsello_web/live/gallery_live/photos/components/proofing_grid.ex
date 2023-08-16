@@ -26,17 +26,17 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
             </button>
             <ul class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
               <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
-                    <a class="hover-drop-down"
-                      download
-                      href={Routes.gallery_downloads_path(
-                            @socket,
-                            :download_all,
-                            @gallery.client_link_hash,
-                            photo_ids: Enum.map(order.digitals, fn digital -> digital.photo.id end) |> Enum.join(",")
-                            )}>
-                      Download photos
-                    </a>
-                  </li>
+                <a href={Routes.gallery_downloads_url(
+                          @socket,
+                          :download_lightroom_csv,
+                          @gallery.client_link_hash,
+                          order.number)}
+                  class="hover-drop-down"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  Download Lightroom CSV
+                </a>
+              </li>
               <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
                 <a href={Routes.gallery_downloads_url(
                           @socket,
@@ -46,7 +46,19 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
                   class="hover-drop-down"
                   target="_blank"
                   rel="noopener noreferrer">
-                  Download as .CSV
+                  Download full CSV
+                </a>
+              </li>
+              <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
+                <a class="hover-drop-down"
+                  download
+                  href={Routes.gallery_downloads_path(
+                        @socket,
+                        :download_all,
+                        @gallery.client_link_hash,
+                        photo_ids: Enum.map(order.digitals, fn digital -> digital.photo.id end) |> Enum.join(",")
+                        )}>
+                  Download photos
                 </a>
               </li>
             </ul>

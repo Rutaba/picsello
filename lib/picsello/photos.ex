@@ -215,13 +215,24 @@ defmodule Picsello.Photos do
   end
 
   @headers [:photo_name, :size]
-  def csv_content(photos) do
+  def csv_content(photos, :base) do
     photos
     |> Enum.map(fn photo -> [photo.name, Size.humanize!(photo.size)] end)
     |> then(&[@headers | &1])
     |> CSV.encode()
     |> Enum.to_list()
     |> to_string()
+  end
+
+  def csv_content(photos, :lightroom) do
+    content =
+      photos
+      |> Enum.map(fn photo -> photo.name end)
+      |> Enum.join(", ")
+
+    # Adobe Lightroom requires file names in a single column separated by commas
+    # This is how you do that in CSV
+    "\"#{content}\""
   end
 
   defdelegate path_to_url(path), to: PhotoStorage
