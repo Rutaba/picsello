@@ -288,13 +288,25 @@ I look forward to capturing these memories for you!"}
   defp maybe_confetti(socket, %{}), do: socket
 
   defp invoice_disabled?(
-         %BookingProposal{accepted_at: accepted_at, signed_at: signed_at, job: job},
-         :charges_enabled
+         %BookingProposal{
+           accepted_at: accepted_at,
+           signed_at: signed_at,
+           job: job,
+           questionnaire_id: questionnaire_id
+         },
+         :charges_enabled,
+         questionnaire_answer
        ) do
-    !Job.imported?(job) && (is_nil(accepted_at) || is_nil(signed_at))
+    if is_nil(questionnaire_id) do
+      !Job.imported?(job) && (is_nil(accepted_at) || is_nil(signed_at))
+    else
+      !Job.imported?(job) &&
+        (is_nil(accepted_at) || is_nil(signed_at) ||
+           is_nil(questionnaire_answer))
+    end
   end
 
-  defp invoice_disabled?(_proposal, _stripe_status), do: true
+  defp invoice_disabled?(_proposal, _stripe_status, _questionnaire_answer), do: true
 
   defp open_compose(
          %{
