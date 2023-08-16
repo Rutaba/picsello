@@ -28,7 +28,7 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
   def render(assigns) do
     ~H"""
     <div class="flex flex-col justify-between items-center px-1.5 md:flex-row mb-10 gap-6">
-      <div class="relative flex md:w-2/3 w-full md:mt-6">
+      <div class="relative flex lg:w-2/3 md:w-1/2 w-full md:mt-6">
         <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
           <%= if @search_phrase_packages do %>
             <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
@@ -41,7 +41,7 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
           <input type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={"#{@search_phrase_packages}"} phx-debounce="100" phx-change= "search" phx-target={@myself} spellcheck="false" placeholder="Search packages..." />
       </div>
 
-      <div class="flex flex-wrap md:flex-nowrap gap-3 items-center justify-between md:w-1/3 w-full">
+      <div class="flex flex-wrap grow md:flex-nowrap gap-3 items-center md:w-1/3 w-full">
         <.select_dropdown title="Photography Type" selected_option={@package_type} id="type" options_list={@job_types} target={@myself}/>
         <.select_dropdown title="Sort" id="sort" selected_option={@sort_by} options_list={packages_sort_options()} sort_direction={@sort_direction} target={@myself}/>
       </div>
@@ -51,33 +51,39 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
 
   def select_dropdown(assigns) do
     ~H"""
-    <div class="flex">
-      <div id={@id} class={"relative w-full mt-3 md:mt-0 w-full"} data-offset-y="10" phx-hook="Select">
-        <h4 class="font-extrabold text-sm mb-1"><%= @title %></h4>
-        <div class="flex flex-row items-center border rounded-lg p-3">
-            <span class="flex-shrink-0"><%= String.capitalize(String.replace(@selected_option, "_", " ")) %></span>
-            <.icon name="down" class="flex-shrink-0 w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
-            <.icon name="up" class="flex-shrink-0 hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
+    <div class="flex grow">
+      <div id={@id} class={"relative w-full mt-3 md:mt-0"} data-offset-y="10" phx-hook="Select">
+        <div>
+          <h4 class="font-extrabold text-sm mb-1"><%= @title %></h4>
         </div>
-        <ul class="absolute z-30 hidden w-full md:w-32 mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
-          <%= for option <- @options_list do %>
-            <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-            class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
-              <button id={option.id} class="album-select" phx-click={"apply-filter-#{@id}"} phx-target={@target} phx-value-option={option.id}><%= option.title %></button>
-              <%= if option.id == @selected_option do %>
-                <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-blue-planning-300" />
+        <div class="flex w-full">
+          <div class="w-full">
+            <div class={"flex flex-row items-center border #{@title != "Sort" && "rounded-lg"} p-3 #{@title == "Sort" && "rounded-l-lg"}"}>
+                <span class="flex-shrink-0"><%= String.capitalize(String.replace(@selected_option, "_", " ")) %></span>
+                <.icon name="down" class="flex-shrink-0 w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
+                <.icon name="up" class="flex-shrink-0 hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
+            </div>
+            <ul class="absolute z-30 hidden w-full md:w-32 mt-2 bg-white toggle rounded-md popover-content border shadow-lg">
+              <%= for option <- @options_list do %>
+                <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
+                class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
+                  <button id={option.id} class="album-select" phx-click={"apply-filter-#{@id}"} phx-target={@target} phx-value-option={option.id}><%= option.title %></button>
+                  <%= if option.id == @selected_option do %>
+                    <.icon name="tick" class="w-6 h-5 mr-1 toggle-it text-blue-planning-300" />
+                  <% end %>
+                </li>
               <% end %>
-            </li>
+            </ul>
+          </div>
+          <%= if @title == "Sort" do%>
+          <div class="items-center flex border rounded-r-lg border-grey p-2">
+            <button phx-click="switch_sort" phx-target={@target}>
+              <.icon name={if @sort_direction == "asc", do: "sort-vector", else: "sort-vector-2"} {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
+            </button>
+          </div>
           <% end %>
-        </ul>
-      </div>
-      <%= if @title == "Sort" do%>
-        <div class="items-center flex border rounded-r-lg border-grey p-2">
-          <button phx-click="switch_sort" phx-target={@target}>
-            <.icon name={if @sort_direction == "asc", do: "sort-vector", else: "sort-vector-2"} {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
-          </button>
         </div>
-      <% end %>
+      </div>
     </div>
     """
   end
