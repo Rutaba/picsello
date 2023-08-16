@@ -18,7 +18,8 @@ defmodule Picsello.Repo.Migrations.AlterTableBookingEventsAddOrganizationId do
     flush()
 
     execute("""
-      update booking_events set organization_id = (select p.organization_id from booking_events be join packages as p on be.package_template_id = p.id)
+      update booking_events set organization_id = p.organization_id
+      from packages p where p.id = booking_events.package_template_id;
     """)
 
     # execute("""
