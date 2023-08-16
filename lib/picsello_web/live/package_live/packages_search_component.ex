@@ -1,4 +1,6 @@
 defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
+  @moduledoc false
+
   use PicselloWeb, :live_component
 
   import Ecto.Query
@@ -9,6 +11,7 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
     Package
   }
 
+  @impl true
   def update(assigns, socket) do
     socket
     |> assign_new(:package_type, fn -> "all" end)
@@ -21,6 +24,7 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
     |> ok()
   end
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="flex flex-col justify-between items-center px-1.5 md:flex-row mb-10 gap-6">

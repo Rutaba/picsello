@@ -16,7 +16,8 @@ defmodule Picsello.Packages do
     Questionnaire,
     PackagePayments,
     Contract,
-    Contracts
+    Contracts,
+    BookingEvent
   }
 
   import Picsello.Repo.CustomMacros

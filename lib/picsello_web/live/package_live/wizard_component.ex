@@ -242,8 +242,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   @impl true
-  def update(%{templates: templates} = assigns, socket) do
-    socket |> assign(assigns) |> assign(:templates, templates) |> ok
+  def update(%{templates: templates}, socket) do
+    socket |> assign(:templates, templates) |> ok
   end
 
   @impl true

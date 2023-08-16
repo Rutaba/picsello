@@ -136,7 +136,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  defdelegate handle_info(message, socket), to: JobLive.Shared
+  defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
 
   defp booking_slot_tabs_nav(assigns) do
     ~H"""
