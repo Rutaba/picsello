@@ -141,6 +141,7 @@ defmodule PicselloWeb.LiveHelpers do
 
   def button_simple(assigns) do
     assigns = assigns |> Enum.into(%{class: ""})
+
     ~H"""
       <button class={"btn-primary whitespace-nowrap #{@class}"}>
         <%= render_slot(@inner_block) %>

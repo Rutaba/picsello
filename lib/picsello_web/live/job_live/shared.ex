@@ -628,9 +628,13 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   @impl true
-  def handle_info({:update_templates, %{templates: templates}}, %{assigns: %{modal_pid: modal_pid}} = socket) do
+  def handle_info(
+        {:update_templates, %{templates: templates}},
+        %{assigns: %{modal_pid: modal_pid}} = socket
+      ) do
     component = PicselloWeb.PackageLive.WizardComponent
     send_update(modal_pid, component, id: component, templates: templates)
+
     socket
     |> noreply()
   end

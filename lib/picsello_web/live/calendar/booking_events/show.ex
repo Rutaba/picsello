@@ -153,6 +153,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   # Funtion Description: [Funtionality should be modified according to backend implementation] By default, status is 'nil' here. 'nil' status means 'Enabled'. If we pass status in assigns, it is recieved as 'disabled'. Similarly, by default, uses are '0'. We are to pass uses in assigns.
   defp add_coupon(assigns) do
     assigns = assigns |> Enum.into(%{status: nil, uses: 0})
+
     ~H"""
       <div class="flex mt-2">
         <div class="">
