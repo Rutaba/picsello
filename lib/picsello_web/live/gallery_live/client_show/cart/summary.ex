@@ -50,10 +50,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
          %{caller: caller, gallery: %{organization: %{payment_options: payment_options}}} =
            assigns
        )
-       when caller in ~w(order cart proofing_album_order proofing_album_cart)a do
+       when caller in ~w(cart proofing_album_cart)a do
     assigns =
       Enum.into(assigns, %{
-        is_proofing: caller == :proofing_album_order,
         payment_options: payment_options
       })
 
@@ -79,6 +78,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
           <% end %>
         </div>
     </div>
+    """
+  end
+
+  defp payment_options(assigns) do
+    ~H"""
     """
   end
 
