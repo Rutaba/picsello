@@ -151,9 +151,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <%= case @booking_slot_tab_active do %>
       <% "list" -> %>
         <div class="mt-10 p-3 border-2 border-base-200 rounded-lg">
-          <div class="flex mb-1">
-            <p class="text-2xl font-bold">Thursday, March 29th, 2023</p>
-            <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id="first">
+          <div class="flex mb-1 items-start">
+            <div class="text-2xl font-bold pr-2">Thursday, March 29th, 2023</div>
+            <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap mt-1" phx-click="toggle-section" phx-value-section_id="first">
               View details
               <%= if !Enum.member?(@collapsed_sections, "first") do %>
                 <.icon name="down" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
@@ -184,9 +184,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <% end %>
         </div>
       <% "calendar" -> %>
-        <div class="mt-10 pr-5 grid grid-cols-1 sm:grid-cols-5 gap-5">
-          <div class="sm:col-span-2 bg-base-200">Calender area</div>
-          <div class="sm:col-span-3 flex flex-col justify-center">
+        <div class="mt-10 pr-5 grid grid-cols-1 md:grid-cols-5 gap-5">
+          <div class="md:col-span-2 bg-base-200">Calender area</div>
+          <div class="md:col-span-3 flex flex-col justify-center">
             <div class="flex">
               <div class="flex text-2xl font-bold">September 15th, 2023</div>
               <div class="flex justify-end ml-auto">

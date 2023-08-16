@@ -50,7 +50,7 @@
                 <.booking_slot_tabs_nav booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
                 <.booking_slot_tabs_content assigns={assigns} socket={@socket} />
                 
-                <div class={classes("mt-10 p-3 border-2 flex rounded-lg border-red-sales-300", %{"border-base-200" => @package})}>
+                <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-red-sales-300", %{"border-base-200" => @package})}>
                     <div class="flex flex-col">
                         <div class="mr-2 flex items-center gap-3">
                             <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300 mt-1" />
@@ -113,7 +113,7 @@
                                 </div>
                             </div>
                         <% else %>
-                            <div class="text-base-250">Looks like you need to choose a package</div>
+                            <div class="text-base-250 pr-2">Looks like you need to choose a package</div>
                         <% end %>
                     </div>
                     <%= unless @package do %>  
