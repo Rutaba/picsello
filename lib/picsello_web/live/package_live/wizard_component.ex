@@ -274,11 +274,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     assign(socket, payments_changeset: changeset)
   end
 
-  defp remaining_price(changeset),
-    do:
-      Changeset.get_field(changeset, :base_price)
-      |> Money.multiply(Changeset.get_field(changeset, :base_multiplier))
-
   defp choose_initial_step(%{assigns: %{is_template: true}} = socket) do
     socket
     |> assign(templates: [], step: :details, steps: [:details, :documents, :pricing, :payment])
@@ -1542,7 +1537,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          job_type,
          params
        ) do
-    price = remaining_price(changeset)
+    price = total_price(changeset)
 
     params =
       if params && params.package_payment_schedules != [] do
