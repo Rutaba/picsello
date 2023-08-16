@@ -15,14 +15,16 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
     ~H"""
     <div class="md:mt-0 md:mb-0 mt-16 mb-6">
       <%= for order <- @orders do%>
+        <hr class="sticky my-2 border-base-300/10">
         <div class="flex my-2">
-          <div {testid("selection-name")} class="flex items-center z-10 text-base-250">Client Selection - <%= DateTime.to_date(order.placed_at) %></div>
+          <div {testid("selection-name")} class="flex items-center z-10 text-blue-planning-300 font-bold">Client Selection - <%= DateTime.to_date(order.placed_at) %></div>
           <div id={"meatball-order-#{order.id}"} data-offset-y="0" data-offset-x="0" phx-hook="Select" class="ml-auto items-center flex">
-            <button class="sticky">
-              <.icon name="meatballs" class="w-4 h-4 text-base-225 stroke-current stroke-2 opacity-100 open-icon" />
-              <.icon name="close-x" class="hidden w-3 h-3 text-base-225 stroke-current stroke-2 close-icon opacity-100"/>
+            <button {testid("actions")} class="sticky flex items-center px-2 py-2 font-sans rounded-lg hover:opacity-75 text-sm ml-2.5 bg-white shadow-lg lg:my-0 gap-2 text-blue-planning-300">
+              Actions
+              <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
+              <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
             </button>
-            <ul class="absolute hidden bg-white rounded-md popover-content meatballsdropdown w-40 overflow-visible cursor-pointer">
+            <ul class="z-10 flex flex-col hidden w-44 bg-white border rounded-lg shadow-lg popover-content">
               <li class="flex items-center pl-1 py-1 hover:bg-blue-planning-100 hover:rounded-md">
                     <a class="hover-drop-down"
                       download
@@ -51,9 +53,9 @@ defmodule PicselloWeb.GalleryLive.Photos.ProofingGrid do
           </div>
         </div>
 
-        <hr class="sticky my-2 border-base-225">
+        <hr class="sticky my-2 border-base-300/10">
 
-        <div class="grid gap-2.5 md:justify-start justify-center" style="grid-template-columns: repeat(auto-fill, minmax(0px, 200px));">
+        <div class="grid gap-2.5 md:justify-start justify-center mt-4" style="grid-template-columns: repeat(auto-fill, minmax(0px, 200px));">
           <%= for digital <- order.digitals do%>
             <div class="sticky w-[200px] h-[130px] bg-gray-200 cursor-pointer hover:opacity-80" phx-click={toggle_border(digital.photo.id)} phx-click-away={JS.remove_class("item-border", to: "item-#{digital.photo.id}")} id={"selected-item-#{digital.photo.id}"}>
               <div {testid("proofing-grid-item")} class="h-full relative toggle-parent" id={"selected-photo-#{digital.photo.id}"} phx-click="toggle_selected_photos" phx-value-photo_id={digital.photo.id} phx-hook="GallerySelector">
