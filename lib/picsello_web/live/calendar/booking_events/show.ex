@@ -156,9 +156,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     ~H"""
       <div class="flex mt-2">
         <div class="">
-          <div class={"uppercase text-lg font-bold #{@status && "text-base-250"}"}>BEESKNEES</div>
+          <div class={classes("uppercase text-lg font-bold", %{"text-base-250" => @status})}>BEESKNEES</div>
           <%= if !@status do %>
-            <div class={"#{(@uses > 0) && "text-blue-planning-300 underline"}"}><%= @uses %> uses</div>
+            <div class={classes("", %{"text-blue-planning-300 underline" => @uses > 0})}><%= @uses %> uses</div>
           <% else %>
             <%= if @uses > 0 do %>
               <div class="text-base-250 capitalize"><span class="text-blue-planning-300 underline opacity-60"><%= @uses %> uses</span>-Disabled</div>
