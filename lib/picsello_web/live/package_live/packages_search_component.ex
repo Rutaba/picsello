@@ -73,7 +73,7 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
       </div>
       <%= if @title == "Sort" do%>
         <div class="items-center flex border rounded-r-lg border-grey p-2">
-          <button phx-click="switch_sort">
+          <button phx-click="switch_sort" phx-target={@target}>
             <.icon name={if @sort_direction == "asc", do: "sort-vector", else: "sort-vector-2"} {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
           </button>
         </div>
@@ -120,6 +120,16 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
       ) do
     socket
     |> assign(:search_phrase_packages, search_phrase)
+    |> assign_packages()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("switch_sort", _, %{assigns: %{sort_direction: sort_direction}} = socket) do
+    direction = if sort_direction == "asc", do: "desc", else: "asc"
+
+    socket
+    |> assign(:sort_direction, direction)
     |> assign_packages()
     |> noreply()
   end

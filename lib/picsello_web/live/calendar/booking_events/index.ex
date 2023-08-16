@@ -575,7 +575,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           status: event_status
         }
       )
-      |> IO.inspect(label: "booking_events")
       |> Enum.map(fn booking_event ->
         booking_event
         |> assign_sort_date(sort_direction, sort_by, event_status)
