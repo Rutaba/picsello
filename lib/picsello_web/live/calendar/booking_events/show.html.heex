@@ -229,14 +229,18 @@
                             Coupons
                         </div>
                     </div>
-                    <p class="mb-4"> 
+                    <div class=""> 
                         If you’d like to provide a coupon code to your clients to use at checkout, you can do so here!
-                    </p>
-                    <button class="p-2 bg-stone-300 font-bold rounded-lg xl:w-1/3 w-auto whitespace-nowrap">
+                    </div>
+                    <.add_coupon uses={0}/>
+                    <.add_coupon uses={2}/>
+                    <.add_coupon uses={2} status={"dis"}/>
+                    <.add_coupon uses={0} status={"dis"}/>
+                    <button class="p-2 mt-2 bg-stone-300 font-bold rounded-lg xl:w-1/3 w-auto whitespace-nowrap">
                         Add coupon
                     </button>
                 </div>
             </div>
-        </div>
+        </div> 
     </div>
 </div>

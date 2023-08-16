@@ -150,6 +150,37 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     """
   end
 
+  # Funtion Description: [Funtionality should be modified according to backend implementation] By default, status is 'nil' here. 'nil' status means 'Enabled'. If we pass status in assigns, it is recieved as 'disabled'. Similarly, by default, uses are '0'. We are to pass uses in assigns.
+  defp add_coupon(assigns) do
+    assigns = assigns |> Enum.into(%{status: nil, uses: 0})
+    ~H"""
+      <div class="flex mt-2">
+        <div class="">
+          <div class={"uppercase text-lg font-bold #{@status && "text-base-250"}"}>BEESKNEES</div>
+          <%= if !@status do %>
+            <div class={"#{(@uses > 0) && "text-blue-planning-300 underline"}"}><%= @uses %> uses</div>
+          <% else %>
+            <%= if @uses > 0 do %>
+              <div class="text-base-250 capitalize"><span class="text-blue-planning-300 underline opacity-60"><%= @uses %> uses</span>-Disabled</div>
+            <% else %>
+              <div class="text-base-250 capitalize">Disabled</div>
+            <% end %>
+          <% end %>
+        </div>
+        <div class="ml-auto flex items-center">
+          <div class="flex gap-1.5">
+            <%= if @status do %>
+              <.icon_button icon="eye" color="blue-planning-300" class="border-2 border-stone-300 bg-base-200 hover:border-base-250 h-8 w-8"/>
+            <% else %>
+              <.icon_button icon="closed-eye" color="red-sales-300" class="border-2 border-stone-300 bg-base-200 hover:border-base-250 h-8 w-8"/>
+            <% end %>
+            <.icon_button icon="trash" color="red-sales-300" class="border-2 border-stone-300 bg-base-200 hover:border-base-250 h-8 w-8"/>
+          </div>
+        </div>
+      </div>
+    """
+  end
+
   defp booking_slot_tabs_content(%{assigns: assigns}) do
     ~H"""
     <div>
