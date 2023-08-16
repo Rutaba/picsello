@@ -35,7 +35,7 @@ defmodule Picsello.NylasCalendar do
 
   @spec generate_login_link() :: {:ok, String.t()}
   def generate_login_link() do
-    %{client_id: client_id, redirect_uri: redirect} = Application.get_env(:picsello, :nylas)
+    %{client_id: client_id, redirect_uri: redirect} = config()
     generate_login_link(client_id, redirect)
   end
 
@@ -161,8 +161,7 @@ defmodule Picsello.NylasCalendar do
 
   @spec fetch_token(token()) :: result(token())
   def fetch_token(code) do
-    %{client_id: client_id, client_secret: client_secret, redirect_uri: redirect_uri} =
-      Application.get_env(:picsello, :nylas)
+    %{client_id: client_id, client_secret: client_secret, redirect_uri: redirect_uri} = config()
 
     url = "https://api.nylas.com/oauth/token"
 
@@ -343,5 +342,11 @@ defmodule Picsello.NylasCalendar do
       {"Authorization", "Bearer #{token}"},
       {"Content-Type", "application/json"}
     ]
+  end
+
+  defp config() do
+    %{redirect_uri: redirect} = config = Application.get_env(:picsello, :nylas)
+
+    %{config | redirect_uri: PicselloWeb.Endpoint.url() <> redirect}
   end
 end

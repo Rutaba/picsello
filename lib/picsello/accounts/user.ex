@@ -73,6 +73,7 @@ defmodule Picsello.Accounts.User do
     |> validate_required([:name])
     |> validate_email()
     |> validate_password(opts)
+    |> put_assoc(:nylas_detail, NylasDetail.changeset())
     |> then(fn changeset ->
       cast_assoc(changeset, :organization,
         with: &Organization.registration_changeset(&1, &2, get_field(changeset, :name))

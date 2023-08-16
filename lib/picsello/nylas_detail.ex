@@ -28,6 +28,11 @@ defmodule Picsello.NylasDetail do
           external_calendar_rw_id: String.t() | nil
         }
 
+  @spec changeset(t()) :: t()
+  def changeset(nylas \\ %__MODULE__{}) do
+    cast(nylas, %{}, [:user_id])
+  end
+
   @fields ~w(external_calendar_rw_id external_calendar_read_list)a
   @clear_fields Enum.into([:oauth_token | @fields], %{}, &{&1, nil})
   @token_fields ~w(account_id event_status oauth_token)a

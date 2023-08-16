@@ -191,7 +191,7 @@ config :picsello, :nylas, %{
   client_id: System.get_env("NYLAS_CLIENT_ID"),
   client_secret: System.get_env("NYLAS_CLIENT_SECRET"),
   token: System.get_env("NYLAS_TOKEN"),
-  redirect_uri: "http://localhost:4000/nylas/callback"
+  redirect_uri: "/nylas/callback"
 }
 
 # Import environment specific config. This must remain at the bottom
