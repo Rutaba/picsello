@@ -3,10 +3,20 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
   use Phoenix.Component
   use Phoenix.HTML
 
-  import PicselloWeb.LiveHelpers, only: [strftime: 3, testid: 1, badge: 1, shoot_location: 1]
+  import PicselloWeb.LiveHelpers,
+    only: [
+      strftime: 3,
+      testid: 1,
+      badge: 1,
+      shoot_location: 1,
+      finish_booking: 1,
+      stripe_checkout: 1,
+      noreply: 1
+    ]
+
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
 
-  alias Picsello.{Job, Package, Packages}
+  alias Picsello.{Repo, PaymentSchedules, Notifiers, Job, Package, Packages}
   alias PicselloWeb.Router.Helpers, as: Routes
 
   def banner(assigns) do
@@ -168,6 +178,38 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       nil
     else
       print_credit
+    end
+  end
+
+  def handle_checkout(socket, job) do
+    if PaymentSchedules.free?(job) do
+      finish_booking(socket) |> noreply()
+    else
+      stripe_checkout(socket) |> noreply()
+    end
+  end
+
+  def handle_offline_checkout(socket, job, proposal) do
+    if PaymentSchedules.free?(job) do
+      finish_booking(socket) |> noreply()
+    else
+      job
+      |> PaymentSchedules.next_due_payment()
+      |> case do
+        nil -> raise("There is no unpaid payment schedule found against #{job.id}")
+        payment_schedule -> payment_schedule
+      end
+      |> Ecto.Changeset.change(%{is_with_cash: true, type: "cash"})
+      |> Repo.update!()
+
+      Notifiers.ClientNotifier.deliver_payment_due(proposal)
+      Notifiers.ClientNotifier.deliver_paying_by_invoice(proposal)
+      Notifiers.UserNotifier.deliver_paying_by_invoice(proposal)
+
+      send(self(), {:update_offline_payment_schedules})
+
+      socket
+      |> noreply()
     end
   end
 

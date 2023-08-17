@@ -7,6 +7,12 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   import Picsello.PaymentSchedules, only: [set_payment_schedules_order: 1]
 
+  import PicselloWeb.BookingProposalLive.Shared,
+    only: [
+      handle_checkout: 2,
+      handle_offline_checkout: 3
+    ]
+
   import PicselloWeb.Live.Profile.Shared,
     only: [
       assign_organization: 2,
@@ -47,6 +53,11 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_event("open-compose", %{}, socket), do: open_compose(socket)
 
   @impl true
+  def handle_event("handle_checkout", %{}, %{assigns: %{job: job}} = socket) do
+    handle_checkout(socket, job)
+  end
+
+  @impl true
   def handle_event(
         "open_schedule_popup",
         _params,
@@ -67,6 +78,10 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     socket
     |> open_page_modal(page, read_only)
     |> noreply()
+  end
+
+  def handle_event("pay_offline", %{}, %{assigns: %{job: job, proposal: proposal}} = socket) do
+    handle_offline_checkout(socket, job, proposal)
   end
 
   @impl true
@@ -422,11 +437,8 @@ I look forward to capturing these memories for you!"}
 
   defp reorder_payment_schedules(socket), do: socket
 
-  defp pending_amount_details(job),
-    do:
-      if(PaymentSchedules.owed_amount(job) > PaymentSchedules.paid_amount(job),
-        do: "To-Do",
-        else:
-          "Next payment due: #{PaymentSchedules.remainder_due_on(job) |> format_date_via_type("MM/DD/YY")}"
-      )
+  defp pending_amount_details(job) do
+    percentage_left = PaymentSchedules.percentage_paid(job) |> round() |> to_string()
+    "#{percentage_left}% paid"
+  end
 end

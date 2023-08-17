@@ -1,12 +1,14 @@
 defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, PaymentSchedules, Notifiers, BookingProposal}
+  alias Picsello.{PaymentSchedules, BookingProposal}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,
     only: [
-      items: 1
+      items: 1,
+      handle_checkout: 2,
+      handle_offline_checkout: 3
     ]
 
   @impl true
@@ -47,17 +49,27 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
           <%= cond do %>
             <% @read_only -> %>
             <% PaymentSchedules.free?(@job) -> %>
-              <button type="submit" class="btn-primary" phx-disabled-with="Finish booking">
+              <button type="submit" class="btn-tertiary" phx-disabled-with="Finish booking">
                 Finish booking
               </button>
             <% !PaymentSchedules.free?(@job) -> %>
-              <button type="submit" class="btn-primary" style="background-color: black; color: white;" phx-disabled-with="Pay with card">
-                Pay with card  <br /> Fast easy and secure
+              <button type="submit" class="btn-tertiary flex gap-10 text-left" phx-disabled-with="Pay with card">
+                <span class="flex flex-col">
+                  <strong>Pay online</strong> Fast, easy and secure
+                </span>
+                <span class="ml-auto">
+                  <.icon name="forth" class="stroke-2 stroke-current h-4 w-4 mt-2" />
+                </span>
               </button>
               <%= if(@organization.user.allow_cash_payment) do %>
-              <button class="btn-primary" phx-click="pay_offline" phx-target={@myself} type="button">
-                Pay with cash/check <br /> We will send you an invoice
-              </button>
+                <button class="btn-secondary flex gap-10 text-left" phx-click="pay_offline" phx-target={@myself} type="button">
+                  <span class="flex flex-col">
+                    <strong>Pay with cash/check</strong> We'll send an invoice
+                  </span>
+                  <span class="ml-auto">
+                    <.icon name="forth" class="stroke-2 stroke-current h-4 w-4 mt-2" />
+                  </span>
+                </button>
               <% end %>
           <% end %>
               <button class="btn-secondary" phx-click="modal" phx-value-action="close" type="button">
@@ -71,35 +83,11 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
 
   @impl true
   def handle_event("submit", %{}, %{assigns: %{job: job}} = socket) do
-    if PaymentSchedules.free?(job) do
-      finish_booking(socket) |> noreply()
-    else
-      stripe_checkout(socket) |> noreply()
-    end
+    handle_checkout(socket, job)
   end
 
   def handle_event("pay_offline", %{}, %{assigns: %{job: job, proposal: proposal}} = socket) do
-    if PaymentSchedules.free?(job) do
-      finish_booking(socket) |> noreply()
-    else
-      job
-      |> PaymentSchedules.next_due_payment()
-      |> case do
-        nil -> raise("There is no unpaid payment schedule found against #{job.id}")
-        payment_schedule -> payment_schedule
-      end
-      |> Ecto.Changeset.change(%{is_with_cash: true, type: "cash"})
-      |> Repo.update!()
-
-      Notifiers.ClientNotifier.deliver_payment_due(proposal)
-      Notifiers.ClientNotifier.deliver_paying_by_invoice(proposal)
-      Notifiers.UserNotifier.deliver_paying_by_invoice(proposal)
-
-      send(self(), {:update_offline_payment_schedules})
-
-      socket
-      |> noreply()
-    end
+    handle_offline_checkout(socket, job, proposal)
   end
 
   def open_modal_from_proposal(socket, proposal, read_only \\ true) do
