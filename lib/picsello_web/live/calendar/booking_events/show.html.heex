@@ -83,30 +83,29 @@
                                             <div class="text-md text-base-250 mb-2 font-bold block md:hidden">Pricing</div>
                                             <div class="flex items-center">
                                                 <div class="mr-2">
-                                                <.icon name="package" class="inline-block w-3 h-3 text-blue-planning-300" />
+                                                <.icon name="package" class="inline-block w-4 h-4 text-blue-planning-300" />
                                                 </div>
                                                 <div class="text-base-250"><%= Package.price(@package) %></div>
                                             </div>
                                             <div class="flex items-center">
                                                 <div class="mr-2">
-                                                    <.icon name="photo" class="inline-block w-3 h-3 fill-blue-planning-300 text-blue-planning-300" />
+                                                    <.icon name="photo" class="inline-block w-4 h-4 fill-blue-planning-300 text-blue-planning-300" />
                                                 </div>
                                                 <div class="text-base-250"><%= @package.download_each_price %>/each</div>
                                             </div>
                                             <div class="flex items-center">
                                                 <div class="mr-2">
-                                                <.icon name="add-photos" class="inline-block w-3 h-3 text-blue-planning-300" />
+                                                <.icon name="add-photos" class="inline-block w-4 h-4 text-blue-planning-300" />
                                                 </div>
-                                                <div class="text-base-250"><%= if @package.download_count < 1, do: "No digital images inclulded", else: @package.download_count %></div>
+                                                <div class="text-base-250"><%= if @package.download_count < 1, do: "No digital images inclulded", else: "#{@package.download_count} images included" %></div>
                                             </div>
                                         </div>
                                         <div class="flex flex-col md:flex-row justify-start my-3 md:my-0">
                                             <div class="text-md text-base-250 font-bold mb-2 block md:hidden">Payment Schedule</div>
                                             <div class="mr-2 flex items-center md:items-start md:pt-2">
-                                                <.icon name="add-photos" class="inline-block w-3 h-3 text-blue-planning-300 mt-0.5 md:mt-0" />
-                                                <div class="ml-2 flex md:hidden text-base-250"><%= @payments_description %></div>
+                                                <.icon name="money-bags" class="inline-block w-5 h-5 text-blue-planning-300 mt-0.5 md:mt-0" />
+                                                <div class="ml-2 flex text-base-250"><%= @payments_description %></div>
                                             </div>
-                                                <div class="hidden md:flex text-base-250"><%= @payments_description %></div>
                                         </div>
                                         <hr class="my-3 block md:hidden">
                                         <div class="flex items-center ml-auto">
@@ -195,14 +194,14 @@
                     </div>
                     <div class="grid grid-cols-1">
                         <div class="text-3xl font-bold">
-                            Fall minis
+                            <%= @booking_event.name %>
                         </div>
                         <%= if @package do %>
                             <div class="text-base-250 text-xl">
-                                $350.00
+                                <%= @package.base_price %>
                             </div>
                             <div class="text-base-250 text-md">
-                                5 images included | 15 min session
+                                <%= @package.download_count %> images included | 15 min session
                             </div>
                             <hr class="my-3">
                         <% else %>

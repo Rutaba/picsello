@@ -175,11 +175,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="ml-auto flex items-center">
           <div class="flex gap-1.5">
             <%= if @status do %>
-              <.icon_button icon="eye" color="blue-planning-300" class="border-2 border-stone-300 bg-base-200 hover:border-base-250 h-8 w-8"/>
+              <.icon_button icon="eye" color="blue-planning-300" class="border-2 border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"/>
             <% else %>
-              <.icon_button icon="closed-eye" color="red-sales-300" class="border-2 border-stone-300 bg-base-200 hover:border-base-250 h-8 w-8"/>
+              <.icon_button icon="closed-eye" color="red-sales-300" class="border-2 border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"/>
             <% end %>
-            <.icon_button icon="trash" color="red-sales-300" class="border-2 border-stone-300 bg-base-200 hover:border-base-250 h-8 w-8"/>
+            <.icon_button icon="trash" color="red-sales-300" class="border-2 border-base-250/20 bg-base-200 hover:border-base-250 h-8 w-8"/>
           </div>
         </div>
       </div>
