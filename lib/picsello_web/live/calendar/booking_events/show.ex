@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
-  alias Picsello.{Repo, BookingEvents, Package, BookingEvent}
+  alias Picsello.{Repo, BookingEvents, Package}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -38,6 +38,31 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> assign(:client, %{id: 1, name: "hammad"})
     |> assign(:booking_slot_tab_active, "list")
     |> assign(:booking_slot_tabs, booking_slot_tabs())
+    |> noreply()
+  end
+
+  @impl true
+  def handle_params(_, _, socket) do
+    socket |> noreply()
+  end
+
+  @impl true
+  def handle_event("add-date", _, socket) do
+    socket
+    |> open_wizard()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "edit-date",
+        %{"index" => index},
+        %{assigns: %{booking_event: booking_event}} = socket
+      ) do
+    booking_date = booking_event |> Map.get(:dates, []) |> Enum.at(to_integer(index))
+
+    socket
+    |> open_wizard(%{booking_date: booking_date})
     |> noreply()
   end
 
@@ -110,6 +135,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
+  def handle_info({:wizard_closed, _modal}, %{assigns: assigns} = socket) do
+    assigns
+    |> Map.get(:flash, %{})
+    |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
+    |> noreply()
+  end
+
+  @impl true
   def handle_info(
         {:update, %{package: package}},
         %{assigns: %{booking_event: booking_event}} = socket
@@ -119,6 +152,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       |> Repo.preload([:package_payment_schedules, :contract, :questionnaire_template],
         force: true
       )
+
     booking_event = %{
       booking_event
       | package_template: package_template,
@@ -130,10 +164,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
         ]
     }
+
     socket
-    |> assign(
-      booking_event: booking_event
-    )
+    |> assign(booking_event: booking_event)
     |> assign(package: package_template)
     |> assign(:payments_description, payments_description(booking_event))
     |> put_flash(:success, "Package details saved sucessfully.")
@@ -220,7 +253,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <.render_slots {assigns} />
               <div class="flex justify-end gap-2">
                 <.icon_button icon="envelope" color="blue-planning-300"/>
-                <.icon_button icon="pencil" color="blue-planning-300"/>
+                <.icon_button icon="pencil" color="blue-planning-300" phx-click="edit-date" phx-value-index={0}/>
                 <.icon_button icon="duplicate-2" color="blue-planning-300"/>
                 <.icon_button icon="trash" color="red-sales-300"/>
               </div>
@@ -377,6 +410,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       </div>
     </div>
     """
+  end
+
+  defp open_wizard(socket, assigns \\ %{}) do
+    # TODO: BookingEventModal backend functionality Currently just with minimal information
+    socket
+    |> open_modal(PicselloWeb.Live.Calendar.BookingEventModal, %{
+      close_event: :wizard_closed,
+      assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
+    })
   end
 
   defp assign_tab_data(%{assigns: %{current_user: _current_user}} = socket, tab) do

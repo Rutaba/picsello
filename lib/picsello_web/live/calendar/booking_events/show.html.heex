@@ -47,7 +47,9 @@
                                 <% end %>
                             </div>
                             <div class="ml-auto pl-2 flex mt-1 md:mt-0 md:items-end">
-                                <.button_simple class="h-8 py-0.5">Add date</.button_simple>
+                                <button phx-click="add-date" class={"btn-primary whitespace-nowrap h-8 py-0.5"}>
+                                    Add date
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -251,7 +253,7 @@
                     </button>
                 </div>
 
-                <% if @package do %>
+                <%= if @package do %>
                     <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3 mt-6">
                         <div class="flex mb-4 items-center">
                             <div class="mr-2">
