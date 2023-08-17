@@ -604,7 +604,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
 
   def sort_by_date(booking_events, _sort_direction, _sort_by), do: booking_events
 
-  defp assign_sort_date(%{dates: []} = booking_event, _sort_direction, _sort_by, _filter_status), do: booking_event |> Map.put(:date, nil)
+  defp assign_sort_date(%{dates: []} = booking_event, _sort_direction, _sort_by, _filter_status),
+    do: booking_event |> Map.put(:date, nil)
+
   defp assign_sort_date(booking_event, sort_direction, sort_by, filter_status) do
     sorted_date =
       if sort_by == "date" || filter_status in ["future_events", "past_events"] do

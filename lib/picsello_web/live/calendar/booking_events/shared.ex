@@ -1,6 +1,4 @@
 defmodule PicselloWeb.Calendar.BookingEvents.Shared do
-
-
   # tells us if the created/duplicated booking event is complete or not
   # if we dont have dates or a package_template_id, then its incomplete
   # similarly its complete if both dates and package_template_id exist

@@ -43,7 +43,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   def handle_event("change-booking-slot-tab", %{"tab" => tab}, socket) do
-    if (tab == "calendar") and (socket.assigns.booking_event.dates == []) do
+    if tab == "calendar" and socket.assigns.booking_event.dates == [] do
       socket |> noreply()
     else
       socket
