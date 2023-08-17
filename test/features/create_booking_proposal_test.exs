@@ -60,7 +60,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> click(button("Next"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> assert_text("$0.50 to To Book, $0.50 to Day Before Shoot")
+    |> assert_text("$0.50 To Book, $0.50 to Day Before Shoot")
     |> assert_text("Add all shoots")
     |> click(button("Add shoot details"))
     |> fill_in(text_field("Shoot Title"), with: "chute")

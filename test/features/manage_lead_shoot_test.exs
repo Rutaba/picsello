@@ -24,7 +24,7 @@ defmodule Picsello.ManageLeadShootTest do
     session
     |> visit(lead_path)
     |> scroll_into_view(testid("booking-summary"))
-    |> assert_text("$1.00 to To Book")
+    |> assert_text("$1.00 To Book")
     |> click(button("Add shoot details", count: 2, at: 1))
     |> fill_in(text_field("Shoot Title"), with: " ")
     |> assert_has(css("label", text: "Shoot Title can't be blank"))
