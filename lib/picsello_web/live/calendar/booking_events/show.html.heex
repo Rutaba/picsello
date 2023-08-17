@@ -197,73 +197,82 @@
                         <div class="text-3xl font-bold">
                             Fall minis
                         </div>
-                        <div class="text-base-250 text-xl">
-                            $350.00
-                        </div>
-                        <div class="text-base-250 text-md">
-                            5 images included | 15 min session
-                        </div>
-                        <hr class="my-3">
-                    </div>
-                    <div class="flex flex-col">
-                        <div class="flex items-center">
-                            <div class="flex items-center">
-                                <.icon name="marketing" class="inline-block w-4 h-4 mr-3 text-black" />
+                        <%= if @package do %>
+                            <div class="text-base-250 text-xl">
+                                $350.00
                             </div>
                             <div class="text-base-250 text-md">
-                                Aug 31, 2022 - Sep 01, 2022
+                                5 images included | 15 min session
                             </div>
-                        </div>
-                        <div class="flex items-center">
+                            <hr class="my-3">
+                        <% else %>
+                            <div class="text-base-250 my-2"> Pick a package and update your marketing details to get started </div>
+                        <% end %>
+                    </div>
+                    <%= if @package do %>
+                        <div class="flex flex-col">
                             <div class="flex items-center">
-                                <.icon name="location" class="inline-block w-4 h-4 mr-3 text-black" />
+                                <div class="flex items-center">
+                                    <.icon name="marketing" class="inline-block w-4 h-4 mr-3 text-black" />
+                                </div>
+                                <div class="text-base-250 text-md">
+                                    Aug 31, 2022 - Sep 01, 2022
+                                </div>
                             </div>
-                            <div class="text-base-250 text-md">
-                                12345 Gabriel Street, Ries, Florida 97060
+                            <div class="flex items-center">
+                                <div class="flex items-center">
+                                    <.icon name="location" class="inline-block w-4 h-4 mr-3 text-black" />
+                                </div>
+                                <div class="text-base-250 text-md">
+                                    12345 Gabriel Street, Ries, Florida 97060
+                                </div>
                             </div>
+                            <hr class="my-3">
                         </div>
-                        <hr class="my-3">
-                    </div>
-                    <div class="flex flex-col mb-3 items-start">
-                        <p>
-                            <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
-                            <%= String.slice("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu a", 0..100) <> "..." %>
-                            <% else %>
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu a
-                            <% end %>
-                        </p>
-                        <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
-                            <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
-                                Read more <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
-                            <% else %>
-                                Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
-                            <% end %>
-                        </button>
-                    </div>
+                        <div class="flex flex-col mb-3 items-start">
+                            <p>
+                                <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                                <%= String.slice("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu a", 0..100) <> "..." %>
+                                <% else %>
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu orem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqu a
+                                <% end %>
+                            </p>
+                            <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
+                                <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                                    Read more <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
+                                <% else %>
+                                    Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
+                                <% end %>
+                            </button>
+                        </div>
+                    <% end %>
                     <button class="p-2 bg-stone-300 font-bold rounded-lg 2xl:w-1/2 w-auto whitespace-nowrap">
                         Edit marketing details
                     </button>
                 </div>
-                <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3 mt-6">
-                    <div class="flex mb-4 items-center">
-                        <div class="mr-2">
-                            <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300" />
+
+                <% if @package do %>
+                    <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3 mt-6">
+                        <div class="flex mb-4 items-center">
+                            <div class="mr-2">
+                                <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300" />
+                            </div>
+                            <div class="text-xl font-bold">
+                                Coupons
+                            </div>
                         </div>
-                        <div class="text-xl font-bold">
-                            Coupons
+                        <div class=""> 
+                            If you’d like to provide a coupon code to your clients to use at checkout, you can do so here!
                         </div>
+                        <.add_coupon uses={0}/>
+                        <.add_coupon uses={2}/>
+                        <.add_coupon uses={2} status={"dis"}/>
+                        <.add_coupon uses={0} status={"dis"}/>
+                        <button class="p-2 mt-2 bg-stone-300 font-bold rounded-lg xl:w-1/3 w-auto whitespace-nowrap">
+                            Add coupon
+                        </button>
                     </div>
-                    <div class=""> 
-                        If you’d like to provide a coupon code to your clients to use at checkout, you can do so here!
-                    </div>
-                    <.add_coupon uses={0}/>
-                    <.add_coupon uses={2}/>
-                    <.add_coupon uses={2} status={"dis"}/>
-                    <.add_coupon uses={0} status={"dis"}/>
-                    <button class="p-2 mt-2 bg-stone-300 font-bold rounded-lg xl:w-1/3 w-auto whitespace-nowrap">
-                        Add coupon
-                    </button>
-                </div>
+                <% end %>
             </div>
         </div> 
     </div>
