@@ -43,10 +43,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   def handle_event("change-booking-slot-tab", %{"tab" => tab}, socket) do
-    socket
-    |> assign(:booking_slot_tab_active, tab)
-    |> assign_tab_data(tab)
-    |> noreply()
+    if (tab == "calendar") and (socket.assigns.booking_event.dates == []) do
+      socket |> noreply()
+    else
+      socket
+      |> assign(:booking_slot_tab_active, tab)
+      |> assign_tab_data(tab)
+      |> noreply()
+    end
   end
 
   @impl true
@@ -188,36 +192,40 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <%= case @booking_slot_tab_active do %>
       <% "list" -> %>
         <div class="mt-10 p-3 border-2 border-base-200 rounded-lg">
-          <div class="flex mb-1 items-start">
-            <div class="text-2xl font-bold pr-2">Thursday, March 29th, 2023</div>
-            <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap mt-1" phx-click="toggle-section" phx-value-section_id="first">
-              View details
-              <%= if !Enum.member?(@collapsed_sections, "first") do %>
-                <.icon name="down" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
-              <% else %>
-                <.icon name="up" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
-              <% end %>
-            </button>
-          </div>
-          <div class="flex">
-            <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
-            <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
-            <p class="text-blue-planning-300"><b>1</b> hidden</p>
-          </div>
-          <hr class="block md:hidden my-2">
-          <%= if Enum.member?(@collapsed_sections, "first") do %>
-            <div class="hidden md:grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
-              <div class="col-span-2">Time</div>
-              <div class="col-span-2">Status</div>
-              <div class="col-span-2">Client</div>
+          <%= if @booking_event.dates != [] do %>
+            <div class="flex mb-1 items-start">
+              <div class="text-2xl font-bold pr-2">Thursday, March 29th, 2023</div>
+              <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap mt-1" phx-click="toggle-section" phx-value-section_id="first">
+                View details
+                <%= if !Enum.member?(@collapsed_sections, "first") do %>
+                  <.icon name="down" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
+                <% else %>
+                  <.icon name="up" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
+                <% end %>
+              </button>
             </div>
-            <.render_slots {assigns} />
-            <div class="flex justify-end gap-2">
-              <.icon_button icon="envelope" color="blue-planning-300"/>
-              <.icon_button icon="pencil" color="blue-planning-300"/>
-              <.icon_button icon="duplicate-2" color="blue-planning-300"/>
-              <.icon_button icon="trash" color="red-sales-300"/>
+            <div class="flex">
+              <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
+              <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
+              <p class="text-blue-planning-300"><b>1</b> hidden</p>
             </div>
+            <hr class="block md:hidden my-2">
+            <%= if Enum.member?(@collapsed_sections, "first") do %>
+              <div class="hidden md:grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
+                <div class="col-span-2">Time</div>
+                <div class="col-span-2">Status</div>
+                <div class="col-span-2">Client</div>
+              </div>
+              <.render_slots {assigns} />
+              <div class="flex justify-end gap-2">
+                <.icon_button icon="envelope" color="blue-planning-300"/>
+                <.icon_button icon="pencil" color="blue-planning-300"/>
+                <.icon_button icon="duplicate-2" color="blue-planning-300"/>
+                <.icon_button icon="trash" color="red-sales-300"/>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Pick a package and add a date </div> </div>
           <% end %>
         </div>
       <% "calendar" -> %>

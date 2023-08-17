@@ -1,4 +1,4 @@
-defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
+defmodule PicselloWeb.Live.Calendar.BookingEvents.BookingEventWizard do
   @moduledoc false
   use PicselloWeb, :live_component
 
