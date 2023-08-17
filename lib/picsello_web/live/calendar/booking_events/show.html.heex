@@ -97,13 +97,13 @@
                                                 <div class="mr-2">
                                                 <.icon name="add-photos" class="inline-block w-4 h-4 text-blue-planning-300" />
                                                 </div>
-                                                <div class="text-base-250"><%= if @package.download_count < 1, do: "No digital images inclulded", else: "#{@package.download_count} images included" %></div>
+                                                <div class="text-base-250"><%= if @package.download_count < 1, do: "No digital images inclulded", else: "#{@package.download_count} #{ngettext("image included", "images included", @package.download_count)}" %></div>
                                             </div>
                                         </div>
                                         <div class="flex flex-col md:flex-row justify-start my-3 md:my-0">
                                             <div class="text-md text-base-250 font-bold mb-2 block md:hidden">Payment Schedule</div>
                                             <div class="mr-2 flex items-center md:items-start md:pt-2">
-                                                <.icon name="money-bags" class="inline-block w-5 h-5 text-blue-planning-300 mt-0.5 md:mt-0" />
+                                                <.icon name="money-bags" class="inline-block w-6 h-6 text-blue-planning-300 mt-0.5 md:mt-0" />
                                                 <div class="ml-2 flex text-base-250"><%= @payments_description %></div>
                                             </div>
                                         </div>
@@ -201,7 +201,7 @@
                                 <%= @package.base_price %>
                             </div>
                             <div class="text-base-250 text-md">
-                                <%= @package.download_count %> images included | 15 min session
+                                <%= @package.download_count %> <%= ngettext "image included", "images included", @package.download_count %> | 15 min session
                             </div>
                             <hr class="my-3">
                         <% else %>

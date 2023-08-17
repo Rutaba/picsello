@@ -119,22 +119,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       |> Repo.preload([:package_payment_schedules, :contract, :questionnaire_template],
         force: true
       )
-
+    booking_event = %{
+      booking_event
+      | package_template: package_template,
+        package_template_id: package_template.id,
+        # please remove them when real implementaiton is complete
+        slots: [
+          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
+          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
+          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
+        ]
+    }
     socket
     |> assign(
-      booking_event: %{
-        booking_event
-        | package_template: package_template,
-          package_template_id: package_template.id,
-          # please remove them when real implementaiton is complete
-          slots: [
-            %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
-            %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
-            %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
-          ]
-      }
+      booking_event: booking_event
     )
     |> assign(package: package_template)
+    |> assign(:payments_description, payments_description(booking_event))
     |> put_flash(:success, "Package details saved sucessfully.")
     |> noreply()
   end
@@ -400,7 +401,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
     count_text =
       if payment_count > 0,
-        do: ngettext("1 other payment", "%{count} other payments", payment_count),
+        do: ngettext(", 1 other payment", ", %{count} other payments", payment_count),
         else: nil
 
     if first_payment do
@@ -416,7 +417,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         "#{currency_symbol}#{amount}.00 #{interval_text}"
       else
         "#{first_payment.price} #{interval_text}"
-      end <> " #{count_text}"
+      end <> "#{count_text}"
     else
       nil
     end

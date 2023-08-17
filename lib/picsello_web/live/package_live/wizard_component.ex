@@ -1608,11 +1608,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     do: Money.new((price && price.amount) || 0, currency)
 
   defp assign_payment_defaults(
-    %{assigns: %{job: job, changeset: changeset}} = socket,
-    job_type,
-    params
-  ) do
-  price = total_price(changeset)
+         %{assigns: %{changeset: changeset} = assigns} = socket,
+         job_type,
+         params
+       ) do
+    price = total_price(changeset)
+    job = Map.get(assigns, :job, %{id: nil})
 
     params =
       if params && params.package_payment_schedules != [] do
