@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
-  alias Picsello.{Repo, BookingEvents, Package, BookingEvent}
+  alias Picsello.{Repo, BookingEvents, Package}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -119,6 +119,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       |> Repo.preload([:package_payment_schedules, :contract, :questionnaire_template],
         force: true
       )
+
     booking_event = %{
       booking_event
       | package_template: package_template,
@@ -130,10 +131,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
         ]
     }
+
     socket
-    |> assign(
-      booking_event: booking_event
-    )
+    |> assign(booking_event: booking_event)
     |> assign(package: package_template)
     |> assign(:payments_description, payments_description(booking_event))
     |> put_flash(:success, "Package details saved sucessfully.")

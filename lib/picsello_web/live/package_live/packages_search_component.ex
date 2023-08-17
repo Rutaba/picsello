@@ -80,7 +80,7 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
             <button phx-click="switch_sort" phx-target={@target}>
               <%= if @sort_direction == "asc" do%>
                 <.icon name="sort-vector" {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
-              <%= else%>
+              <% else%>
                 <.icon name="sort-vector-2" {testid("edit-link-button")} class="blue-planning-300 w-5 h-5" />
               <% end %>
             </button>

@@ -29,6 +29,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1]
   import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
+  import PicselloWeb.PackageLive.PackagesSearchComponent, only: [packages_search_component: 1]
 
   import PicselloWeb.PackageLive.Shared,
     only: [
@@ -240,6 +241,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   @impl true
+  def update(%{templates: templates}, socket) do
+    socket |> assign(:templates, templates) |> ok
+  end
+
+  @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
@@ -249,7 +255,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     |> ok()
   end
 
-  defp assign_defaults(%{assigns: %{current_user: %{organization: organization}, currency: currency}} = socket) do
+  defp assign_defaults(
+         %{assigns: %{current_user: %{organization: organization}, currency: currency}} = socket
+       ) do
     socket
     |> assign_new(:show_on_public_profile, fn -> false end)
     |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil, currency: currency} end)
@@ -309,10 +317,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     end
   end
 
-  defp choose_initial_step(%{assigns: %{current_user: user, booking_event: booking_event}} = socket) do
+  defp choose_initial_step(
+         %{assigns: %{current_user: user, booking_event: booking_event}} = socket
+       ) do
     with nil <- booking_event.package_template,
-          templates when templates != [] <- Packages.templates_with_single_shoot(user) do
-
+         templates when templates != [] <- Packages.templates_with_single_shoot(user) do
       socket
       |> assign(
         templates: templates,
@@ -321,12 +330,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       )
     else
       _ ->
-      socket
-      |> assign(
-        templates: [],
-        package: booking_event.package_template,
-        step: :details, steps: [:details, :pricing, :payment]
-      )
+        socket
+        |> assign(
+          templates: [],
+          package: booking_event.package_template,
+          step: :details,
+          steps: [:details, :pricing, :payment]
+        )
     end
   end
 
@@ -463,6 +473,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :choose_template} = assigns) do
     ~H"""
+    <.packages_search_component id="packages" target={@myself} module={PicselloWeb.PackageLive.PackagesSearchComponent} job_types={@job_types} current_user={@current_user} />
     <h1 class="mt-6 text-xl font-bold">Select Package <%= if template_selected?(@f), do: "(1 selected)", else: "" %></h1>
     <div class="hidden sm:flex items-center justify-between border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250">
       <%= for title <- ["Package name", "Package Pricing", "Select package"] do %>
@@ -480,15 +491,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   def step(%{name: :details} = assigns) do
     job = Map.get(assigns, :job)
-    assigns = Enum.into(assigns, %{
-      placeholder_job_type: if !assigns.is_template && job do
-        job.type
-      else
-        job_type = Map.get(assigns.package, :job_type)
-        if(job_type, do: job_type, else: "wedding")
-      end,
-      is_booking_event: !Map.get(assigns.package, :id)
-    })
+
+    assigns =
+      Enum.into(assigns, %{
+        placeholder_job_type:
+          if !assigns.is_template && job do
+            job.type
+          else
+            job_type = Map.get(assigns.package, :job_type)
+            if(job_type, do: job_type, else: "wedding")
+          end,
+        is_booking_event: !Map.get(assigns.package, :id)
+      })
 
     ~H"""
       <%= if !@is_template && Map.get(assigns, :job) do %>
@@ -748,16 +762,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step(
-        %{
-          name: :payment,
-          f: %{params: params},
-          default_payment_changeset: _
-        } = assigns
-      ) do
-    job = Map.get(assigns, :job)
-    job_type = Map.get(params, "job_type") || if(job, do: job.type, else: Map.get(assigns.package, :job_type))
-    assigns = assign(assigns, job_type: job_type) |> Enum.into(%{job: job})
+  def step(%{name: :payment} = assigns) do
+    # important: when adding package for booking event there is no job. so assigning nil
+    assigns = assigns |> Enum.into(%{job: Map.get(assigns, :job)})
 
     ~H"""
     <div>
@@ -1129,6 +1136,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     }
 
     job = Map.get(assigns, :job)
+
     if job do
       insert_package_and_update_job(socket, changeset, job, opts)
     else
@@ -1186,17 +1194,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket
     |> assign_changeset(params)
     |> assign_contract_changeset(params)
-    |> then(fn %{assigns: %{changeset: changeset} = assigns} = socket ->
-      job_type = with nil <- Map.get(assigns, :job),
-      nil <- Changeset.get_field(changeset, :job_type),
-      %{job_type: nil} <- Map.get(assigns, :package),
-      job_type <- get_in(params, ["package", "job_type"]) do
-        job_type
-      else
-        %{type: job_type} -> job_type
-        %{job_type: job_type} -> job_type
-        job_type -> job_type
-      end
+    |> then(fn %{assigns: %{changeset: changeset}} = socket ->
+      job_type = Changeset.get_field(changeset, :job_type)
 
       package_payment_presets =
         case package do
@@ -1226,10 +1225,11 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         "submit",
         %{"step" => "payment", "custom_payments" => payment_params},
         %{
-          assigns: %{
-            is_template: false,
-            package: %Package{id: nil} = package
-          } = assigns
+          assigns:
+            %{
+              is_template: false,
+              package: %Package{id: nil} = package
+            } = assigns
         } = socket
       ) do
     questionnaire = Questionnaire.for_package(package)
@@ -1262,7 +1262,12 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       if job do
         insert_package_and_update_job(socket, package_changeset, job, opts)
       else
-        insert_package_and_update_booking_event(socket, package_changeset, assigns.booking_event, opts)
+        insert_package_and_update_booking_event(
+          socket,
+          package_changeset,
+          assigns.booking_event,
+          opts
+        )
       end
     end)
   end
@@ -1323,6 +1328,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       ) do
     socket |> save_payment(params)
   end
+
+  @impl true
+  def handle_event("submit", _params, socket), do: socket |> noreply()
 
   @impl true
   def handle_event("new-package", %{}, socket) do
@@ -1776,7 +1784,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
   end
 
   defp insert_package_and_update_booking_event(socket, changeset, booking_event, opts) do
-    case Packages.insert_package_and_update_booking_event(changeset, booking_event, opts) |> Repo.transaction() do
+    case Packages.insert_package_and_update_booking_event(changeset, booking_event, opts)
+         |> Repo.transaction() do
       {:ok, %{package_update: package}} ->
         successfull_save(socket, package)
 
