@@ -293,8 +293,8 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   defp top_section(%{is_proofing: true} = assigns) do
     ~H"""
-      <h3 {testid("album-title")} class="text-lg font-bold lg:text-3xl"><%= @album.name %></h3>
-      <p class="mt-2 text-lg font-normal">Select your favorite photos below
+      <h3 {testid("album-title")} class="text-lg lg:text-3xl">Proofing Selections</h3>
+      <p class="mt-2 text-lg font-normal">Select your favourite photos below
         and then send those selections to your photographer for retouching.
       </p>
     <.photos_count {assigns} />
