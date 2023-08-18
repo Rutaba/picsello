@@ -173,7 +173,8 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   end
 
   def maybe_get_unlimited_downloads?(gallery) do
-    if get_pricing_value(gallery).download_count == 0 and get_pricing_value(gallery).download_each_price.amount == 0 do
+    if get_pricing_value(gallery).download_count == 0 and
+         get_pricing_value(gallery).download_each_price.amount == 0 do
       "All images included"
     else
       get_pricing_value(gallery).download_count || "-"
