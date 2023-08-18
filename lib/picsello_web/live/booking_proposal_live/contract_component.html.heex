@@ -2,14 +2,27 @@
   <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself}>
     <.close_x />
 
-    <.banner title="Contract" job={@job} package={@package}>
+    <div class="mb-4 md:mb-8">
+      <.maybe_show_photographer_logo? organization={@organization} />
+    </div>
+
+    <.visual_banner 
+      title="Contract"
+      job={@job}
+      package={@package}
+      proposal={@proposal}
+      photographer={@photographer}
+      client={@client}
+    />
+
+    <%!-- <.banner title="Contract" job={@job} package={@package}>
       <p class="py-2">Terms and Conditions</p>
       <%= if @proposal.signed_at do %>
         <p>Signed on <%= strftime(@photographer.time_zone, @proposal.signed_at, "%b %d, %Y") %></p>
       <% end %>
-    </.banner>
+    </.banner> --%>
 
-    <div class="mt-4 grid grid-cols-2 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
+    <%!-- <div class="mt-4 grid grid-cols-2 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
       <dl class="flex flex-col">
         <dt class="inline-block font-semibold">Dated:</dt>
         <dd class="inline"><%= strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
@@ -21,9 +34,9 @@
       </dl>
 
       <hr class="col-span-2">
-    </div>
+    </div> --%>
 
-    <div class="block py-2 sm:hidden">
+    <%!-- <div class="block py-2 sm:hidden">
       <dl class="flex flex-col">
         <dt class="font-semibold">For:</dt>
         <dd><%= @client.name %></dd>
@@ -33,8 +46,10 @@
         <dd><%= @package.name %></dd>
       </dl>
 
-      <hr class="mt-2 col-span-2">
-    </div>
+      
+    </div> --%>
+
+    <hr class="mt-2 col-span-2" />
 
     <div class="mt-4 raw_html">
       <div class="min-h-[8rem] editor ql-container ql-snow">
