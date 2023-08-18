@@ -4,7 +4,7 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Repo, BookingProposal, Contracts}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.BookingProposalLive.Shared, only: [visual_banner: 1]
+  import PicselloWeb.BookingProposalLive.Shared, only: [visual_banner: 1, items: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -49,9 +49,10 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
     %{
       job:
         %{
+          client: client,
+          shoots: shoots,
           package:
-            %{contract: contract, organization: %{user: photographer} = organization} = package,
-          client: client
+            %{contract: contract, organization: %{user: photographer} = organization} = package
         } = job
     } = proposal |> Repo.preload(job: [:client, package: [:contract, organization: :user]])
 
@@ -68,6 +69,7 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
         ),
       proposal: proposal,
       package: package,
+      shoots: shoots,
       photographer: photographer,
       organization: organization
     })

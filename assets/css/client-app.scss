@@ -25,6 +25,10 @@
 .client-app {
   @apply font-client;
 
+  strong {
+    @apply font-light uppercase tracking-wider;
+  }
+
   .client-transactions-summary{
     @apply font-client rounded-none md:border;
     
