@@ -28,37 +28,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
-  def handle_params(
-        %{"id" => event_id},
-        _,
-        %{
-          assigns: %{
-            live_action: :edit,
-            current_user: current_user,
-            booking_events: booking_events
-          }
-        } = socket
-      ) do
-    event_id = String.to_integer(event_id)
-
-    booking_event = booking_events |> Enum.find(&(&1.id == event_id))
-
-    if booking_event do
-      socket
-      |> open_wizard(%{
-        booking_event: BookingEvents.get_booking_event!(current_user.organization_id, event_id),
-        can_edit?: Map.get(booking_event, :can_edit?),
-        booking_count: Map.get(booking_event, :booking_count)
-      })
-      |> noreply()
-    else
-      socket
-      |> push_patch(to: Routes.calendar_booking_events_index_path(socket, :index), replace: true)
-      |> noreply()
-    end
-  end
-
-  @impl true
   def handle_params(_, _, socket) do
     socket |> noreply()
   end

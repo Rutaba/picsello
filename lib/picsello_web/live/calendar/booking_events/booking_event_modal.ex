@@ -1,7 +1,6 @@
 defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   @moduledoc false
   use PicselloWeb, :live_component
-  import Phoenix.Component
 
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
@@ -11,23 +10,26 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign(assign_event_keys(assigns))
+    |> assign_event_keys(assigns)
     |> ok()
   end
 
-  def assign_event_keys(assigns) do
-    assigns
-    |> Map.put_new(:booking_date, %EventDate{date: nil})
-    |> Map.put_new(:is_valid, true)
-    |> Map.put_new(:can_edit, true)
-    |> Map.put_new(:booking_count, 0)
-    |> Map.put_new(:slots, [
-      %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
-      %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
-      %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
-    ])
-    |> Map.put_new(:break_block_booked, false)
-    |> Map.put_new(:params, %{})
+  def assign_event_keys(socket, assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        booking_date: %EventDate{date: nil},
+        is_valid: true,
+        can_edit: true,
+        booking_count: 0,
+        slots: [
+          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
+          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
+          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
+        ],
+        params: %{}
+      })
+
+    socket |> assign(assigns)
   end
 
   @impl true
@@ -118,11 +120,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   @impl true
   def handle_event("validate", _params, socket) do
+    # TODO: Currentyly with minimal info
     socket |> noreply()
   end
 
   @impl true
   def handle_event("submit", _params, socket) do
+    # TODO: Currentyly with minimal info
     socket
     |> put_flash(:success, "Date Added")
     |> close_modal()
