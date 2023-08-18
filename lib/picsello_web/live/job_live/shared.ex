@@ -1672,7 +1672,7 @@ defmodule PicselloWeb.JobLive.Shared do
         confirm_class: "btn-primary",
         close_label: "Cancel",
         subtitle:
-          "Mark jobs complete when the session has transpired and you have delivered a final gallery of images. Your client can still access and order from images, print products and you can still create new gallery as needed.\n\nNote, this action CANNOT be undone.",
+          "Mark jobs complete when the session has transpired and you have delivered a final gallery of images. Your client can still access and order digital images, print products and you can still create new galleries as needed.\n\nNote, this action CANNOT be undone.",
         title: "Well done—another job successfully completed!",
         icon: "confetti"
       })
