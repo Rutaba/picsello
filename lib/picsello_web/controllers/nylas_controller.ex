@@ -29,7 +29,7 @@ defmodule PicselloWeb.NylasController do
 
         conn
         |> put_status(302)
-        |> redirect(to: "/calendar")
+        |> redirect(to: "/calendar/settings")
         |> Plug.Conn.halt()
 
       {:error, e} ->
