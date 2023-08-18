@@ -42,6 +42,31 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
+  def handle_params(_, _, socket) do
+    socket |> noreply()
+  end
+
+  @impl true
+  def handle_event("add-date", _, socket) do
+    socket
+    |> open_wizard()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "edit-date",
+        %{"index" => index},
+        %{assigns: %{booking_event: booking_event}} = socket
+      ) do
+    booking_date = booking_event |> Map.get(:dates, []) |> Enum.at(to_integer(index))
+
+    socket
+    |> open_wizard(%{booking_date: booking_date})
+    |> noreply()
+  end
+
+  @impl true
   def handle_event("change-booking-slot-tab", %{"tab" => tab}, socket) do
     if tab == "calendar" and socket.assigns.booking_event.dates == [] do
       socket |> noreply()
@@ -106,6 +131,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event("toggle_booking_slot_tab", %{"id" => booking_slot_tab}, socket) do
     socket
     |> assign(:booking_slot_tab, booking_slot_tab)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:wizard_closed, _modal}, %{assigns: assigns} = socket) do
+    assigns
+    |> Map.get(:flash, %{})
+    |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
     |> noreply()
   end
 
@@ -220,7 +253,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <.render_slots {assigns} />
               <div class="flex justify-end gap-2">
                 <.icon_button icon="envelope" color="blue-planning-300"/>
-                <.icon_button icon="pencil" color="blue-planning-300"/>
+                <.icon_button icon="pencil" color="blue-planning-300" phx-click="edit-date" phx-value-index={0}/>
                 <.icon_button icon="duplicate-2" color="blue-planning-300"/>
                 <.icon_button icon="trash" color="red-sales-300"/>
               </div>
@@ -377,6 +410,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       </div>
     </div>
     """
+  end
+
+  defp open_wizard(socket, assigns \\ %{}) do
+    # TODO: BookingEventModal backend functionality Currently just with minimal information
+    socket
+    |> open_modal(PicselloWeb.Live.Calendar.BookingEventModal, %{
+      close_event: :wizard_closed,
+      assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
+    })
   end
 
   defp assign_tab_data(%{assigns: %{current_user: _current_user}} = socket, tab) do

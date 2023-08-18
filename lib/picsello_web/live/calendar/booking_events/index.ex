@@ -28,63 +28,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
-  def handle_params(
-        %{"duplicate" => event_id},
-        _,
-        %{assigns: %{live_action: :new, current_user: current_user}} = socket
-      ) do
-    socket
-    |> open_wizard(%{
-      booking_event:
-        BookingEvents.get_booking_event!(current_user.organization_id, event_id)
-        |> Map.put(:id, nil)
-        |> Map.put(:inserted_at, nil)
-        |> Map.put(:updated_at, nil)
-        |> Map.put(:status, :active)
-        |> Map.put(:__meta__, %Picsello.BookingEvent{} |> Map.get(:__meta__))
-    })
-    |> noreply()
-  end
-
-  @impl true
-  def handle_params(_, _, %{assigns: %{live_action: :new}} = socket) do
-    socket
-    |> open_wizard()
-    |> noreply()
-  end
-
-  @impl true
-  def handle_params(
-        %{"id" => event_id},
-        _,
-        %{
-          assigns: %{
-            live_action: :edit,
-            current_user: current_user,
-            booking_events: booking_events
-          }
-        } = socket
-      ) do
-    event_id = String.to_integer(event_id)
-
-    booking_event = booking_events |> Enum.find(&(&1.id == event_id))
-
-    if booking_event do
-      socket
-      |> open_wizard(%{
-        booking_event: BookingEvents.get_booking_event!(current_user.organization_id, event_id),
-        can_edit?: Map.get(booking_event, :can_edit?),
-        booking_count: Map.get(booking_event, :booking_count)
-      })
-      |> noreply()
-    else
-      socket
-      |> push_patch(to: Routes.calendar_booking_events_index_path(socket, :index), replace: true)
-      |> noreply()
-    end
-  end
-
-  @impl true
   def handle_params(_, _, socket) do
     socket |> noreply()
   end
@@ -419,23 +362,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
     |> assign_booking_events()
     |> put_flash(:success, "Booking event saved successfully")
     |> noreply()
-  end
-
-  @impl true
-  def handle_info({:wizard_closed, _modal}, %{assigns: assigns} = socket) do
-    assigns
-    |> Map.get(:flash, %{})
-    |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
-    |> push_patch(to: Routes.calendar_booking_events_index_path(socket, :index))
-    |> noreply()
-  end
-
-  defp open_wizard(socket, assigns \\ %{}) do
-    socket
-    |> open_modal(PicselloWeb.Live.Calendar.BookingEventWizard, %{
-      close_event: :wizard_closed,
-      assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
-    })
   end
 
   defp bookings_cell(assigns) do
