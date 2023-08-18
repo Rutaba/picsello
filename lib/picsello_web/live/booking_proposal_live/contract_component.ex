@@ -23,10 +23,9 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
   def handle_event("submit", %{"booking_proposal" => params}, socket) do
     case socket |> build_changeset(params) |> Repo.update() do
       {:ok, proposal} ->
-        send(self(), {:update, %{proposal: proposal}})
+        send(self(), {:update, %{proposal: proposal, next_page: "questionnaire"}})
 
         socket
-        |> close_modal()
         |> noreply()
 
       {:error, _} ->

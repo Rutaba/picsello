@@ -31,11 +31,10 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
          |> Answer.changeset(%{answers: update_answers(answer.answers, params)})
          |> Repo.insert() do
       {:ok, answer} ->
-        send(self(), {:update, %{answer: answer}})
+        send(self(), {:update, %{answer: answer, next_page: "invoice"}})
 
         socket
         |> assign(answer: answer)
-        |> close_modal()
         |> noreply()
 
       _error ->

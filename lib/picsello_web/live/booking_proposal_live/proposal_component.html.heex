@@ -5,13 +5,30 @@
     <.maybe_show_photographer_logo? organization={@organization} />
   </div>
   
-  <.visual_banner title="Proposal" job={@job} package={@package} proposal={@proposal} photographer={@photographer} client={@client} />
+  <.visual_banner 
+    title="Proposal"
+    job={@job}
+    package={@package}
+    proposal={@proposal}
+    photographer={@photographer}
+    client={@client}
+  />
 
   <hr class="mt-8 mb-8" />
 
   <h2 class="text-2xl">Quote</h2>
 
-  <.items photographer={@photographer} proposal={@proposal} organization={@organization} shoots={@shoots} package={@package} client={@client} socket={@socket} show_header={false} />
+  <.items 
+    photographer={@photographer}
+    proposal={@proposal}
+    organization={@organization}
+    shoots={@shoots}
+    package={@package}
+    client={@client}
+    socket={@socket}
+    show_header={false}
+    total_heading="Quote Total"
+  />
 
   <.footer>
     <%= unless @read_only do %>

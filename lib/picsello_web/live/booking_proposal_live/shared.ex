@@ -98,6 +98,11 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
   end
 
   def total(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        total_heading: "Total"
+      })
+
     ~H"""
     <div class="contents">
       <%= with discount_percent when discount_percent != nil <- Packages.discount_percent(@package) do %>
@@ -111,7 +116,13 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         </dl>
       <% end %>
       <dl class="flex justify-between text-xl font-light mt-4">
-        <dt>Total</dt>
+        <dt>
+          <%= if (@total_heading) do %>
+            <%= @total_heading %>
+          <% else %>
+            Total
+          <%end%>
+        </dt>
         <dd class="bold"><%= Money.to_string(Package.price(@package), symbol: false, code: true)%></dd>
       </dl>
 
@@ -124,11 +135,12 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       Enum.into(assigns, %{
         inner_block: nil,
         print_credit: get_print_credit(package),
-        show_header: true
+        show_header: true,
+        total_heading: nil
       })
 
     ~H"""
-    <div class="mt-4 grid grid-cols-3 sm:grid-cols-[2fr,2fr,1fr] gap-4 sm:gap-6">
+    <div class="mt-4 grid grid-cols-2 sm:grid-cols-[2fr,2fr] gap-4 sm:gap-6">
       <%= if @show_header do %>
         <dl class="flex flex-col">
           <dt class="inline-block font-light">Dated:</dt>
@@ -145,7 +157,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
           </dl>
         </dl>
 
-        <hr class="col-span-3">
+        <hr class="col-span-2">
 
         <dl class="flex flex-col col-span-2 sm:col-span-1">
           <dt class="font-light">For:</dt>
@@ -161,15 +173,14 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         </dl>
       <% end %>
 
-      <div class="block pt-2 border-t col-span-3 sm:hidden">
-        <.total package={@package} />
+      <div class="block pt-2 border-t col-span-2 sm:hidden">
+        <.total package={@package} total_heading={@total_heading} />
         <%= if @inner_block, do: render_slot @inner_block %>
       </div>
 
-      <div class="modal-banner uppercase font-light py-2 bg-base-200 grid grid-cols-[2fr,2fr,1fr] gap-4 col-span-3">
+      <div class="modal-banner uppercase font-light py-2 bg-base-200 grid grid-cols-[2fr,2fr] gap-4 col-span-2">
         <h2>Item</h2>
         <h2 class="hidden sm:block">Details</h2>
-        <h2 class="hidden sm:block text-right">Amount</h2>
       </div>
 
       <%= for shoot <- @shoots do %>
@@ -186,13 +197,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
           <p><%= shoot_location(shoot) %></p>
         </div>
 
-        <div {testid("shoot-total")} class="flex flex-col col-span-1 text-right pr-4 md:pr-8">
-          <p>
-            1234
-          </p>
-        </div>
-
-        <hr class="col-span-3">
+        <hr class="col-span-2">
       <% end %>
 
       <div class="flex flex-col col-span-1 sm:col-span-1 pl-4 md:pl-8">
@@ -203,14 +208,8 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         <.photo_dowloads_display package={@package} />
       </div>
 
-      <div {testid("shoot-total")} class="flex flex-col col-span-1 text-right pr-4 md:pr-8">
-        <p>
-          1234
-        </p>
-      </div>
-
       <%= if @print_credit do %>
-        <hr class="col-span-3">
+        <hr class="col-span-2">
         <div class="flex flex-col col-span-1 sm:col-span-1">
           <h3 class="font-light">Print Credits</h3>
         </div>
@@ -220,10 +219,10 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         </div>
       <% end %>
 
-      <hr class="hidden col-span-3 sm:block">
+      <hr class="hidden col-span-2 sm:block">
 
-      <div class="hidden col-start-2 col-span-2 sm:block pr-4 md:pr-8">
-        <.total package={@package} />
+      <div class="hidden col-start-2 col-span-1 sm:block pr-4 md:pr-8">
+        <.total package={@package} total_heading={@total_heading} />
         <%= if @inner_block, do: render_slot @inner_block %>
       </div>
     </div>
