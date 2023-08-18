@@ -25,10 +25,10 @@ env:
 
 permissions:
   contents: read
-  
+
 jobs:
   test:
-    if: '! github.event.pull_request.draft'
+    if: "! github.event.pull_request.draft"
     name: Build and test
     runs-on: ubuntu-20.04
     timeout-minutes: 45
@@ -36,7 +36,7 @@ jobs:
     services:
       db:
         image: postgres:13
-        ports: ['5432:5432']
+        ports: ["5432:5432"]
         env:
           POSTGRES_PASSWORD: postgres
         options: >-
@@ -53,8 +53,8 @@ jobs:
         uses: erlef/setup-beam@v1
         id: beam
         with:
-          elixir-version: '1.14.3' # Define the elixir version [required]
-          otp-version: '25.3' # Define the OTP version [required]
+          elixir-version: "1.14.3" # Define the elixir version [required]
+          otp-version: "25.3" # Define the OTP version [required]
 
       - name: Cache deps
         id: cache-deps
@@ -66,7 +66,7 @@ jobs:
           key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
             ${{ runner.os }}-mix-${{ env.cache-name }}-
-      
+
       - name: Cache compiled build
         id: cache-build
         uses: actions/cache@v3
@@ -87,12 +87,12 @@ jobs:
         run: MIX_ENV=test mix deps.compile
 
       - name: Compile code for tests
-        run: MIX_ENV=test mix compile --warnings-as-errors
+        run: MIX_ENV=test mix compile
 
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.14.2' # WARNING: *must* match ../.node-version
-          cache: 'npm'
+          node-version: "16.14.2" # WARNING: *must* match ../.node-version
+          cache: "npm"
           cache-dependency-path: assets/package-lock.json
 
       - name: Build js

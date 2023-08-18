@@ -274,11 +274,6 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     assign(socket, payments_changeset: changeset)
   end
 
-  defp remaining_price(changeset),
-    do:
-      Changeset.get_field(changeset, :base_price)
-      |> Money.multiply(Changeset.get_field(changeset, :base_multiplier))
-
   defp choose_initial_step(%{assigns: %{is_template: true}} = socket) do
     socket
     |> assign(templates: [], step: :details, steps: [:details, :documents, :pricing, :payment])
@@ -790,7 +785,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               </div>
             </label>
             <%= unless input_value(p, :interval) do %>
-              <%= if input_value(p, :due_at) || ((input_value(p, :shoot_date) |> is_value_set()) && PackagePaymentSchedule.get_default_payment_schedules_values(@default_payment_changeset, :interval, p.index)) do %>
+              <%= if input_value(p, :due_at) || (input_value(p, :shoot_date) |> is_value_set()) do %>
                 <div class="flex flex-col my-2 ml-8 cursor-pointer">
                   <.date_picker_field class="w-full px-4 text-lg cursor-pointer" id={"payment-interval-#{p.index}"} form={p} field={:due_at} input_placeholder="mm/dd/yyyy" input_label="Payment Date" data_min_data={Date.utc_today()} />
                   <%= if message = p.errors[:schedule_date] do %>
@@ -941,7 +936,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
         "shoot_date" => get_first_shoot(job),
         "last_shoot_date" => get_last_shoot(job),
         "interval" => true,
-        "payment_field_index" => length(payment_schedules) - 1
+        "payment_field_index" => length(payment_schedules)
       })
 
     params =
@@ -1542,7 +1537,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
          job_type,
          params
        ) do
-    price = remaining_price(changeset)
+    price = total_price(changeset)
 
     params =
       if params && params.package_payment_schedules != [] do
