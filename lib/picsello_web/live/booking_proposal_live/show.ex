@@ -10,7 +10,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   import PicselloWeb.BookingProposalLive.Shared,
     only: [
       handle_checkout: 2,
-      handle_offline_checkout: 3
+      handle_offline_checkout: 3,
+      formatted_date: 2
     ]
 
   import PicselloWeb.Live.Profile.Shared,
@@ -362,10 +363,6 @@ I look forward to capturing these memories for you!"}
       socket
       |> put_flash(:error, "Payment is not enabled yet. Please contact your photographer.")
     end
-  end
-
-  defp formatted_date(%Job{shoots: [shoot | _]}, photographer) do
-    strftime(photographer.time_zone, shoot.starts_at, "%A, %B %-d @ %-I:%M %P")
   end
 
   defp maybe_set_booking_countdown(%{assigns: %{job: job}} = socket) do

@@ -11,7 +11,13 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       shoot_location: 1,
       finish_booking: 1,
       stripe_checkout: 1,
-      noreply: 1
+      noreply: 1,
+      icon: 1
+    ]
+
+  import PicselloWeb.ClientBookingEventLive.Shared,
+    only: [
+      blurred_thumbnail: 1
     ]
 
   import PicselloWeb.Gettext, only: [dyn_gettext: 1, ngettext: 3]
@@ -25,14 +31,68 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       <.badge color={:gray} mode={:outlined}>Read-only</.badge>
     <% end %>
 
-    <h1 class="mb-4 text-3xl font-bold"><%= @title %></h1>
+    <h1 class="mb-4 text-3xl font-light"><%= @title %></h1>
 
     <div class="py-4 bg-base-200 modal-banner">
-      <div class="text-2xl font-bold">
+      <div class="text-2xl font-light">
         <h2><%= Job.name @job %> Shoot <%= if @package, do: @package.name %></h2>
       </div>
 
       <%= render_slot @inner_block%>
+    </div>
+    """
+  end
+
+  def visual_banner(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        proposal: nil
+      })
+
+    ~H"""
+    <div class="grid grid-cols-1 md:grid-cols-2 items-center gap-4 md:gap-10">
+      <div>
+        <%= if assigns[:read_only] do %>
+          <.badge color={:gray} mode={:outlined}>Read-only</.badge>
+        <% end %>
+
+        <h1 class="text-3xl font-light">
+          <%= @title %>
+          <%= if @client do %>
+            for <%= @client.name %>
+          <% end %>
+        </h1>
+
+        <%= if @proposal && @proposal.accepted_at do %>
+          <p class="text-base-250">Accepted on <%= strftime(@photographer.time_zone, @proposal.accepted_at, "%b %d, %Y") %></p>
+        <% end %>
+
+        <%= if @package do %>
+          <p class="mt-2 text-base-250"><%= Money.to_string(PaymentSchedules.total_price(@job), code: true) %></p>
+          <.photo_dowloads_display package={@package} class="text-base-250 mt-2" />
+        <% end %>
+
+        <%= if @package && @package.description do %>
+          <hr class="my-4" />
+          <div class="mt-2 mb-4" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="click">
+            <div class="line-clamp-2 raw_html raw_html_inline mb-4 text-base-250">
+              <%= raw @package.description %>
+            </div>
+            <%= if package_description_length_long?(@package.description) do %>
+              <button class="flex items-center font-light text-base-250 view_more_click" type="button">
+                <.icon name="down" class="text-base-250 h-4 w-4 stroke-current stroke-2 mr-1 transition-transform" /> <span>See more</span>
+              </button>
+            <% end %>
+          </div>
+        <% end %>
+
+      </div>
+
+      <%= if @package && @package.thumbnail_url do %>
+        <div>
+          <.blurred_thumbnail class="w-full" url={@package.thumbnail_url} />
+        </div>
+      <% end %>
     </div>
     """
   end
@@ -50,7 +110,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
           <dd><%= discount_percent %>%</dd>
         </dl>
       <% end %>
-      <dl class="flex justify-between text-xl font-bold mt-4">
+      <dl class="flex justify-between text-xl font-light mt-4">
         <dt>Total</dt>
         <dd class="bold"><%= Money.to_string(Package.price(@package), symbol: false, code: true)%></dd>
       </dl>
@@ -60,57 +120,65 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
   end
 
   def items(%{package: package} = assigns) do
-    assigns = Enum.into(assigns, %{inner_block: nil, print_credit: get_print_credit(package)})
+    assigns =
+      Enum.into(assigns, %{
+        inner_block: nil,
+        print_credit: get_print_credit(package),
+        show_header: true
+      })
 
     ~H"""
-    <div class="mt-4 grid grid-cols-3 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
-      <dl class="flex flex-col">
-        <dt class="inline-block font-bold">Dated:</dt>
-        <dd class="inline"><%= strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
-      </dl>
-
-      <dl class="flex flex-col">
-        <dt class="inline-block font-bold">Order #:</dt>
-        <dl class="flex justify-between">
-          <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %></dd>
-          <%= link to: Routes.job_download_path(@socket, :download_invoice_pdf, @proposal.job_id, @proposal.id) do %>
-            <dd class="inline link text-black">Download Invoice</dd>
-          <% end %>
+    <div class="mt-4 grid grid-cols-3 sm:grid-cols-[2fr,2fr,1fr] gap-4 sm:gap-6">
+      <%= if @show_header do %>
+        <dl class="flex flex-col">
+          <dt class="inline-block font-light">Dated:</dt>
+          <dd class="inline"><%= strftime(@photographer.time_zone, @proposal.inserted_at, "%b %d, %Y") %></dd>
         </dl>
-      </dl>
 
-      <hr class="col-span-2">
+        <dl class="flex flex-col">
+          <dt class="inline-block font-light">Order #:</dt>
+          <dl class="flex justify-between">
+            <dd class="inline after:block"><%= @proposal.id |> Integer.to_string |> String.pad_leading(6, "0") %></dd>
+            <%= link to: Routes.job_download_path(@socket, :download_invoice_pdf, @proposal.job_id, @proposal.id) do %>
+              <dd class="inline link text-black">Download Invoice</dd>
+            <% end %>
+          </dl>
+        </dl>
 
-      <dl class="flex flex-col col-span-2 sm:col-span-1">
-        <dt class="font-bold">For:</dt>
-        <dd><%= @client.name %></dd>
-        <dd class="inline"><%= @client.email %></dd>
-      </dl>
+        <hr class="col-span-3">
 
-      <dl class="flex flex-col col-span-2 sm:col-span-1">
-        <dt class="font-bold">From:</dt>
-        <dd><%= @organization.name %></dd>
-        <dt class="mt-4 font-bold">Email:</dt>
-        <dd><%= @photographer.email %></dd>
-      </dl>
+        <dl class="flex flex-col col-span-2 sm:col-span-1">
+          <dt class="font-light">For:</dt>
+          <dd><%= @client.name %></dd>
+          <dd class="inline"><%= @client.email %></dd>
+        </dl>
 
-      <div class="block pt-2 border-t col-span-2 sm:hidden">
+        <dl class="flex flex-col col-span-2 sm:col-span-1">
+          <dt class="font-light">From:</dt>
+          <dd><%= @organization.name %></dd>
+          <dt class="mt-4 font-light">Email:</dt>
+          <dd><%= @photographer.email %></dd>
+        </dl>
+      <% end %>
+
+      <div class="block pt-2 border-t col-span-3 sm:hidden">
         <.total package={@package} />
         <%= if @inner_block, do: render_slot @inner_block %>
       </div>
 
-      <div class="modal-banner uppercase font-bold py-4 bg-base-200 grid grid-cols-[2fr,3fr] gap-4 col-span-2">
-        <h2>item</h2>
-        <h2 class="hidden sm:block">details</h2>
+      <div class="modal-banner uppercase font-light py-2 bg-base-200 grid grid-cols-[2fr,2fr,1fr] gap-4 col-span-3">
+        <h2>Item</h2>
+        <h2 class="hidden sm:block">Details</h2>
+        <h2 class="hidden sm:block text-right">Amount</h2>
       </div>
 
       <%= for shoot <- @shoots do %>
-        <div {testid("shoot-title")} class="flex flex-col col-span-2 sm:col-span-1">
-          <h3 class="font-bold"><%= shoot.name %></h3>
+        <div {testid("shoot-title")} class="flex flex-col col-span-1 sm:col-span-1 pl-4 md:pl-8">
+          <h3 class="font-light"><%= shoot.name %></h3>
           <%= strftime(@photographer.time_zone, shoot.starts_at, "%B %d, %Y") %>
         </div>
 
-        <div {testid("shoot-description")} class="flex flex-col col-span-2 sm:col-span-1">
+        <div {testid("shoot-description")} class="flex flex-col col-span-1 sm:col-span-1">
           <p>
             <%= dyn_gettext("duration-#{shoot.duration_minutes}") %>
             starting at <%= strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
@@ -118,42 +186,85 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
           <p><%= shoot_location(shoot) %></p>
         </div>
 
-        <hr class="col-span-2">
+        <div {testid("shoot-total")} class="flex flex-col col-span-1 text-right pr-4 md:pr-8">
+          <p>
+            1234
+          </p>
+        </div>
+
+        <hr class="col-span-3">
       <% end %>
 
-      <div class="flex flex-col col-span-2 sm:col-span-1">
-        <h3 class="font-bold">Photo Downloads</h3>
+      <div class="flex flex-col col-span-1 sm:col-span-1 pl-4 md:pl-8">
+        <h3 class="font-light">Photo Downloads</h3>
       </div>
 
-      <div class="flex flex-col col-span-2 sm:col-span-1">
-        <%= case Packages.Download.from_package(@package) do %>
-          <% %{status: :limited} = d -> %>
-            <p><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></p>
-            <p> Additional downloads @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea </p>
-          <% %{status: :none} = d -> %>
-            <p> Download photos @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea </p>
-          <% _ -> %>
-            <p> All photos downloadable </p>
-          <% end %>
+      <div class="flex flex-col col-span-1 sm:col-span-1">
+        <.photo_dowloads_display package={@package} />
+      </div>
+
+      <div {testid("shoot-total")} class="flex flex-col col-span-1 text-right pr-4 md:pr-8">
+        <p>
+          1234
+        </p>
       </div>
 
       <%= if @print_credit do %>
-        <hr class="col-span-2">
-        <div class="flex flex-col col-span-2 sm:col-span-1">
-          <h3 class="font-bold">Print Credits</h3>
+        <hr class="col-span-3">
+        <div class="flex flex-col col-span-1 sm:col-span-1">
+          <h3 class="font-light">Print Credits</h3>
         </div>
 
-        <div class="flex flex-col col-span-2 sm:col-span-1">
+        <div class="flex flex-col col-span-1 sm:col-span-1">
           <p><%= get_amount(@print_credit) %><%= @print_credit.currency%> in print credits to use in your gallery</p>
         </div>
       <% end %>
 
-      <hr class="hidden col-span-2 sm:block">
+      <hr class="hidden col-span-3 sm:block">
 
-      <div class="hidden col-start-2 sm:block">
+      <div class="hidden col-start-2 col-span-2 sm:block pr-4 md:pr-8">
         <.total package={@package} />
         <%= if @inner_block, do: render_slot @inner_block %>
       </div>
+    </div>
+    """
+  end
+
+  def date_display(assigns) do
+    ~H"""
+      <div class="flex items-center">
+        <.icon name="calendar" class="w-5 h-5 text-black" />
+        <span class="ml-2 pt-1 text-base-250"><%= @date %></span>
+      </div>
+    """
+  end
+
+  def address_display(assigns) do
+    ~H"""
+      <div class={"flex items-center #{@class}"}>
+        <.icon name="pin" class="w-5 h-5 text-black" />
+        <span class="ml-2 pt-1"><%= @address %></span>
+      </div>
+    """
+  end
+
+  def photo_dowloads_display(assigns) do
+    assigns =
+      Enum.into(assigns, %{
+        class: ""
+      })
+
+    ~H"""
+    <div class={"#{@class}"}>
+      <%= case Packages.Download.from_package(@package) do %>
+        <% %{status: :limited} = d -> %>
+          <p><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></p>
+          <p> Additional downloads @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea </p>
+        <% %{status: :none} = d -> %>
+          <p> Download photos @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea </p>
+        <% _ -> %>
+          <p> All photos downloadable </p>
+      <% end %>
     </div>
     """
   end
@@ -211,6 +322,10 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       socket
       |> noreply()
     end
+  end
+
+  def formatted_date(%Job{shoots: [shoot | _]}, photographer) do
+    strftime(photographer.time_zone, shoot.starts_at, "%A, %B %-d @ %-I:%M %P")
   end
 
   def package_description_length_long?(nil), do: false
