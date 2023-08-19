@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap" rel="stylesheet">
+    <style>
+      html {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 12px;
+        line-height: 22px;
+      }
+    </style>
+  </head>
+  <body style="border:0;margin:0;padding-bottom:1rem;">
+    <header style="border-bottom:1px solid #E1E1E1;margin:1rem 0rem;">
+      <%= case @organization_logo_url do %>
+        <% nil -> %> <h1><%= @organization.name %></h1>
+        <% organization_logo_url -> %> <img style="max-height:80px;" src={organization_logo_url} />
+      <% end %>
+    </header>
+  </body>
+</html>
