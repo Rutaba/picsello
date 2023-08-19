@@ -2,7 +2,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
-  alias Picsello.{Repo, BookingEvents, Package}
+  alias Picsello.{Repo, BookingEvents, Package, BookingEventDate}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -19,9 +19,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       ) do
     booking_event =
       BookingEvents.get_booking_event!(organization_id, to_integer(event_id))
-      |> Repo.preload(
+      |> Repo.preload([
+        :dates,
         package_template: [:package_payment_schedules, :contract, :questionnaire_template]
-      )
+      ])
       |> Map.merge(%{
         # please remove them when real implementaiton is complete
         slots: [
@@ -47,9 +48,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_event("add-date", _, socket) do
+  def handle_event("add-date", _, %{assigns: %{booking_event: booking_event}} = socket) do
+    booking_date = %BookingEventDate{id: nil, booking_event_id: booking_event.id}
+
     socket
-    |> open_wizard()
+    |> open_wizard(%{booking_date: booking_date})
     |> noreply()
   end
 
@@ -412,7 +415,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     """
   end
 
-  defp open_wizard(socket, assigns \\ %{}) do
+  defp open_wizard(socket, assigns) do
     # TODO: BookingEventModal backend functionality Currently just with minimal information
     socket
     |> open_modal(PicselloWeb.Live.Calendar.BookingEventModal, %{

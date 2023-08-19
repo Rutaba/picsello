@@ -167,7 +167,7 @@ defmodule Picsello.BookingEvents do
     from(event in BookingEvent,
       join: package in assoc(event, :package_template),
       where: package.organization_id == ^organization_id,
-      preload: [package_template: package]
+      preload: [:dates, package_template: package]
     )
     |> Repo.get!(event_id)
   end
