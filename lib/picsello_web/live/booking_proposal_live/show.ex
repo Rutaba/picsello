@@ -62,10 +62,10 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_event(
         "open_schedule_popup",
         _params,
-        %{assigns: %{proposal: proposal, job: job}} = socket
+        %{assigns: %{proposal: proposal, job: job, organization: organization}} = socket
       ) do
     socket
-    |> open_modal(ScheduleComponent, %{proposal: proposal, job: job})
+    |> open_modal(ScheduleComponent, %{proposal: proposal, job: job, organization: organization})
     |> noreply()
   end
 

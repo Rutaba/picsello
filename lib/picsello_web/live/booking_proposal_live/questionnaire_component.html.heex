@@ -7,7 +7,7 @@
     </div>
 
     <h1 class="text-3xl font-light">
-      Questionnaire for <%= if @job.client && @job.client.name do %><%= @job.client.name %><% end %>
+      Questionnaire for <%= @job.client.name %>
     </h1>
 
     <fieldset class={classes(%{"opacity-75" => @read_only})} disabled={@read_only}>
