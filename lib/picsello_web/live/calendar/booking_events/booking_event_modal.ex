@@ -64,10 +64,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           <% end %>
           <div class="col-span-4 flex gap-5">
             <div class="grow">
-              <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below" %>
+              <%= labeled_select f, :duration_minutes, duration_options(), label: "Session length", prompt: "Select below", class: "" %>
             </div>
             <div class="grow">
-              <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true %>
+              <%= labeled_select f, :buffer_minutes, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true %>
             </div>
           </div>
         </div>
@@ -91,7 +91,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           <div class="col-span-2">Time</div>
           <div class="col-span-3">Status</div>
         </div>
-        <!-- TODO slots section -->
         <%= inputs_for f, :slots, fn s -> %>
           <div class="mt-4 grid grid-cols-5 items-center">
             <div class="col-span-2">

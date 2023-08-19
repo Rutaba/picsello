@@ -55,7 +55,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   def handle_event("add-date", _, %{assigns: %{booking_event: booking_event}} = socket) do
-    booking_date = %BookingEventDate{booking_event_id: booking_event.id}
+    booking_date = %BookingEventDate{id: nil, booking_event_id: booking_event.id}
 
     socket
     |> open_wizard(%{booking_date: booking_date})
