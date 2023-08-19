@@ -18,9 +18,13 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
       <form action="#" phx-submit="submit" phx-target={ @myself }>
         <.close_x />
 
-        <h1 class="mb-4 text-3xl font-normal">Invoice for <%= @job.client.name %></h1>
+        <div class="mb-4 md:mb-8">
+          <.maybe_show_photographer_logo? organization={@organization} />
+        </div>
 
-        <.items {assigns}>
+        <h1 class="mb-4 text-3xl font-light">Invoice for <%= @job.client.name %></h1>
+
+        <.items {assigns} total_heading="Invoice Total">
           <hr class="my-4" />
 
           <%= if @package.collected_price do %>
@@ -30,18 +34,16 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
             </dl>
           <% end %>
           <%= unless PaymentSchedules.free?(@job) do %>
-            <%= for payment <- @job.payment_schedules do %>
-              <div class="bg-base-200 py-3 px-2">
-                  <dl class={classes("flex justify-between font-semibold", %{"text-black" => PaymentSchedules.paid?(payment), "font-bold" => payment == PaymentSchedules.unpaid_payment(@job)})}>
-                    <%= if PaymentSchedules.paid?(payment) do %>
-                      <dt><%= Money.to_string(payment.price, symbol: false, code: true)%> paid on <%= strftime(@photographer.time_zone, payment.paid_at, "%b %d, %Y") %></dt>
-                    <% else %>
-                      <dt><%= Money.to_string(payment.price, symbol: false, code: true)%> <%= to_book(payment, @photographer.time_zone)%></dt>
-                    <% end %>
-                    <dd><%= Money.to_string(payment.price, symbol: false, code: true)%></dd>
-                    </dl>
+            <div class="bg-base-200 py-3 px-4">
+              <div class="text-xl flex justify-between">
+                <h4>Paid</h4>
+                <p><%= Money.to_string(PaymentSchedules.paid_price(@job), code: true) %></p>
               </div>
-            <% end %>
+              <div class="text-xl flex justify-between mt-3">
+                <h4>Owed</h4>
+                <p><%=  Money.to_string(PaymentSchedules.owed_price(@job), code: true) %></p>
+              </div>
+            </div>
           <% end %>
         </.items>
 
