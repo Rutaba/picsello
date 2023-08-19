@@ -26,7 +26,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   @max_age 60 * 60 * 24 * 365 * 10
 
-  @pages ~w(details contract questionnaire invoice)
+  @pages ~w(details contract questionnaire invoice idle)
 
   @impl true
   def mount(%{"token" => token} = params, session, socket) do
@@ -78,6 +78,12 @@ defmodule PicselloWeb.BookingProposalLive.Show do
       when page in @pages do
     socket
     |> open_page_modal(page, read_only)
+    |> noreply()
+  end
+
+  def handle_event("fire_idle_popup", %{}, %{assigns: %{read_only: read_only}} = socket) do
+    socket
+    |> open_page_modal("idle", read_only)
     |> noreply()
   end
 
@@ -217,7 +223,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         "questionnaire" => PicselloWeb.BookingProposalLive.QuestionnaireComponent,
         "details" => PicselloWeb.BookingProposalLive.ProposalComponent,
         "contract" => PicselloWeb.BookingProposalLive.ContractComponent,
-        "invoice" => PicselloWeb.BookingProposalLive.InvoiceComponent
+        "invoice" => PicselloWeb.BookingProposalLive.InvoiceComponent,
+        "idle" => PicselloWeb.BookingProposalLive.IdleComponent
       },
       page
     )

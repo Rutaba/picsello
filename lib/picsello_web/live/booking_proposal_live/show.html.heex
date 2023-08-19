@@ -6,7 +6,7 @@
     </div>
   <% end %>
 
-  <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col">
+  <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col" {if PaymentSchedules.paid_any?(@job) || PaymentSchedules.is_with_cash?(@job), do: %{}, else: %{phx_hook: "CheckIdle", id: "check-idle"}}>
     <div class="flex">
       <.photographer_logo organization={@organization} />
     </div>
@@ -58,7 +58,7 @@
           </div>
         <% end %>
 
-        <%= if PaymentSchedules.paid_any?(@job) do %>
+        <%= if PaymentSchedules.paid_any?(@job) || PaymentSchedules.is_with_cash?(@job) do %>
           <h3 class="text-3xl md:mr-20">Manage your session:</h3>
         <% else %>
           <h3 class="text-3xl md:mr-20">To officially book your session:</h3>
