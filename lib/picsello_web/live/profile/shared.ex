@@ -165,7 +165,7 @@ defmodule PicselloWeb.Live.Profile.Shared do
   defp get_website_link(nil), do: nil
 
   defp get_website_link(brand_links) do
-    website = Enum.find(brand_links, &(&1.link_id == "website"))
+    website = Enum.find(brand_links, &(&1.link_id == "website" && &1.show_on_profile?))
     if website, do: website |> Map.get(:link), else: nil
   end
 
