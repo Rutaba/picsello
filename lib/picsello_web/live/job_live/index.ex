@@ -249,9 +249,8 @@ defmodule PicselloWeb.JobLive.Index do
             <ul class={"absolute z-30 hidden mt-2 bg-white toggle rounded-md popover-content border border-base-200 #{@class}"}>
               <%= for option <- @options_list do %>
                 <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
-                class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md">
-
-                  <button id={"btn-#{option.id}"} class={classes("album-select", %{"w-64" => @id == "status", "w-40" => @id != "status"})} phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}><%= option.title %></button>
+                class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}>
+                  <button id={"btn-#{option.id}"} class={classes("album-select", %{"w-64" => @id == "status", "w-40" => @id != "status"})}><%= option.title %></button>
                   <%= if option.id == @selected_option do %>
                     <.icon name="tick" class="w-6 h-5 ml-auto mr-1 toggle-it text-green" />
                   <% end %>
