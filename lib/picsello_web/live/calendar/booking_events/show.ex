@@ -3,6 +3,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   alias Picsello.{Repo, BookingEvents, Package, BookingEventDate}
+  alias PicselloWeb.Live.Calendar.BookingEventModal
 
   @impl true
   def mount(_params, _session, socket) do
@@ -49,7 +50,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   def handle_event("add-date", _, %{assigns: %{booking_event: booking_event}} = socket) do
-    booking_date = %BookingEventDate{id: nil, booking_event_id: booking_event.id}
+    booking_date = %BookingEventDate{booking_event_id: booking_event.id}
 
     socket
     |> open_wizard(%{booking_date: booking_date})
@@ -418,7 +419,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   defp open_wizard(socket, assigns) do
     # TODO: BookingEventModal backend functionality Currently just with minimal information
     socket
-    |> open_modal(PicselloWeb.Live.Calendar.BookingEventModal, %{
+    |> open_modal(BookingEventModal, %{
       close_event: :wizard_closed,
       assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
     })

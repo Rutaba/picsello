@@ -1,4 +1,5 @@
 defmodule Picsello.BookingEventDate do
+  @moduledoc "embedded schema module for booking events"
   use Ecto.Schema
   import Ecto.Changeset
 
