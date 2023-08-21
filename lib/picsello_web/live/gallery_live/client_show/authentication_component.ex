@@ -57,14 +57,20 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
         <% nil -> %> <h1 class="pt-3 text-3xl font-light font-client text-base-300 mb-2 text-center"><%= @organization.name %></h1>
         <% url -> %> <img class="h-20 mx-auto" src={url} />
       <% end %>
-      <p class="text-base-300/75 text-center">Welcome! Enter your email and password to view your gallery</p>
+      <.welcome_message />
     """
   end
 
   def maybe_show_logo?(assigns) do
     ~H"""
     <h1 class="pt-3 text-2xl font-light font-client text-base-300 text-center mb-2">Welcome!</h1>
-    <p class="text-base-300/75 text-center">Enter your email and password to view your gallery</p>
+    <.welcome_message />
+    """
+  end
+
+  def welcome_message(assigns) do
+    ~H"""
+    <p class="text-base-300/75 text-center">Welcome! To view your gallery as well as access any digital image and print credits, enter the email address that matches the inbox to which you received your gallery link and password below.</p>
     """
   end
 
