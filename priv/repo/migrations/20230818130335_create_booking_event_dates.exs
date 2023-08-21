@@ -4,9 +4,9 @@ defmodule Picsello.Repo.Migrations.CreateBookingEventDates do
   @table :booking_event_dates
   def up do
     create table(@table) do
-      add(:date, :date)
-      add(:location, :string, null: true)
-      add(:address, :string, null: true)
+      add(:date, :date, null: false)
+      add(:location, :string)
+      add(:address, :string)
       add(:session_length, :integer, null: false)
       add(:session_gap, :integer)
       add(:time_blocks, :map, null: false)
@@ -20,6 +20,6 @@ defmodule Picsello.Repo.Migrations.CreateBookingEventDates do
   end
 
   def down do
-    drop table @table
+    drop(table(@table))
   end
 end
