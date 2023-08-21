@@ -30,6 +30,12 @@ defmodule Picsello.BookingEvents do
     |> Repo.insert()
   end
 
+  def duplicate_booking_event(params) do
+    %BookingEvent{}
+    |> BookingEvent.duplicate_changeset(params)
+    |> Repo.insert()
+  end
+
   def upsert_booking_event(changeset) do
     changeset |> Repo.insert_or_update()
   end

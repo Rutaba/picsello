@@ -4,6 +4,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
 
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
+  import PicselloWeb.Calendar.BookingEvents.Shared
   alias Picsello.BookingEvents
 
   @impl true
@@ -122,24 +123,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
-  def handle_event("new-event", %{}, socket),
-    do:
-      socket
-      |> PicselloWeb.Shared.SelectionPopupModal.open(%{
-        heading: "Create a Booking Event",
-        title_one: "Single Event",
-        subtitle_one: "Best for a single weekend or a few days you’d like to fill.",
-        icon_one: "calendar-add",
-        btn_one_event: "create-single-event",
-        title_two: "Repeating Event",
-        subtitle_two:
-          "Best for an event you’d like to run every week, weekend, every month, etc.",
-        icon_two: "calendar-repeat",
-        btn_two_event: "create-repeating-event"
-      })
-      |> noreply()
-
-  @impl true
   def handle_event("create-repeating-event", _, socket) do
     socket
     |> noreply()
@@ -218,50 +201,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
-  def handle_event("duplicate-event", %{"event-id" => id}, socket) do
-    socket
-    |> push_patch(to: Routes.calendar_booking_events_show_path(socket, :edit, duplicate: id))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("confirm-archive-event", %{"event-id" => id}, socket) do
-    socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      title: "Are you sure?",
-      subtitle: """
-      Are you sure you want to archive this event?
-      """,
-      confirm_event: "archive_event_" <> id,
-      confirm_label: "Yes, archive",
-      close_label: "Cancel",
-      icon: "warning-orange"
-    })
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("confirm-disable-event", %{"event-id" => id}, socket) do
-    socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
-      title: "Disable this event?",
-      subtitle: """
-      Disabling this event will hide all availability for this event and prevent any further booking. This is also the first step to take if you need to cancel an event for any reason.
-      Some things to keep in mind:
-        • If you are no longer able to shoot at the date and time provided, let your clients know. We suggest offering them a new link to book with once you reschedule!
-        • You may need to refund any payments made to prevent confusion with your clients.
-        • Archive each job individually in the Jobs page if you intend to cancel it.
-        • Reschedule if possible to keep business coming in!
-      """,
-      confirm_event: "disable_event_" <> id,
-      confirm_label: "Disable Event",
-      close_label: "Cancel",
-      icon: "warning-orange"
-    })
-    |> noreply()
-  end
-
-  @impl true
   def handle_event(
         "enable-event",
         %{"event-id" => id},
@@ -300,6 +239,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
         |> noreply()
     end
   end
+
+  @impl true
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.Calendar.BookingEvents.Shared
 
   @impl true
   def handle_info(
@@ -375,10 +317,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex flex-wrap gap-3 items-center lg:ml-auto justify-start md:w-auto w-full col-span-2">
-      <.icon_button icon="eye" disabled={disabled?(@booking_event, [:disabled, :archive])} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+      <.icon_button icon="eye" disabled={incomplete_status?(@booking_event)} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
         Preview
       </.icon_button>
-      <.icon_button icon="anchor" disabled={disabled?(@booking_event, [:disabled, :archive])} color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+      <.icon_button icon="anchor" disabled={incomplete_status?(@booking_event)} color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
         <span>Copy link</span>
         <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
           Copied!
@@ -478,8 +420,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
     </div>
     """
   end
-
-  defp disabled?(booking_event, status_list), do: booking_event.status in status_list
 
   defp assign_booking_events(
          %{

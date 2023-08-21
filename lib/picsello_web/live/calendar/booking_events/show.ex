@@ -2,6 +2,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+  import PicselloWeb.Calendar.BookingEvents.Shared
   alias Picsello.{Repo, BookingEvents, Package}
 
   @impl true
@@ -44,6 +45,121 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @impl true
   def handle_params(_, _, socket) do
     socket |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "archive_event_" <> id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.archive_booking_event(id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> put_flash(:success, "Event archive successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error archiving event")
+    end
+    |> close_modal()
+    |> redirect(to: "/booking-events/#{id}")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "disable_event_" <> id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.disable_booking_event(id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> put_flash(:success, "Event disabled successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error disabling event")
+    end
+    |> close_modal()
+    |> redirect(to: "/booking-events/#{id}")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:update, %{package: package}},
+        %{assigns: %{booking_event: booking_event}} = socket
+      ) do
+    package_template =
+      package
+      |> Repo.preload([:package_payment_schedules, :contract, :questionnaire_template],
+        force: true
+      )
+
+    socket
+    |> assign(
+      booking_event: %{
+        booking_event
+        | package_template: package_template,
+          package_template_id: package_template.id,
+          # please remove them when real implementaiton is complete
+          slots: [
+            %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
+            %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
+            %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
+          ]
+      }
+    )
+    |> assign(package: package_template)
+    |> put_flash(:success, "Package details saved sucessfully.")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:wizard_closed, _modal}, %{assigns: assigns} = socket) do
+    assigns
+    |> Map.get(:flash, %{})
+    |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
+    |> noreply()
+  end
+
+  @impl true
+  defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
+
+  @impl true
+  def handle_event(
+        "enable-event",
+        _,
+        %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
+      ) do
+    case BookingEvents.enable_booking_event(booking_event.id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> put_flash(:success, "Event enabled successfully")
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error enabling event")
+    end
+    |> redirect(to: "/booking-events/#{booking_event.id}")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "unarchive-event",
+        _,
+        %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
+      ) do
+    case BookingEvents.enable_booking_event(booking_event.id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> put_flash(:success, "Event unarchive successfully")
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error unarchiving event")
+    end
+    |> redirect(to: "/booking-events/#{booking_event.id}")
+    |> noreply()
   end
 
   @impl true
@@ -135,46 +251,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_info({:wizard_closed, _modal}, %{assigns: assigns} = socket) do
-    assigns
-    |> Map.get(:flash, %{})
-    |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:update, %{package: package}},
-        %{assigns: %{booking_event: booking_event}} = socket
-      ) do
-    package_template =
-      package
-      |> Repo.preload([:package_payment_schedules, :contract, :questionnaire_template],
-        force: true
-      )
-
-    booking_event = %{
-      booking_event
-      | package_template: package_template,
-        package_template_id: package_template.id,
-        # please remove them when real implementaiton is complete
-        slots: [
-          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
-          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
-          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
-        ]
-    }
-
-    socket
-    |> assign(booking_event: booking_event)
-    |> assign(package: package_template)
-    |> assign(:payments_description, payments_description(booking_event))
-    |> put_flash(:success, "Package details saved sucessfully.")
-    |> noreply()
-  end
-
-  @impl true
-  defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
+  defdelegate handle_event(name, params, socket), to: PicselloWeb.Calendar.BookingEvents.Shared
 
   defp booking_slot_tabs_nav(assigns) do
     ~H"""
@@ -225,43 +302,45 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     <div>
       <%= case @booking_slot_tab_active do %>
       <% "list" -> %>
-        <div class="mt-10 p-3 border-2 border-base-200 rounded-lg">
-          <%= if @booking_event.dates != [] do %>
-            <div class="flex mb-1 items-start">
-              <div class="text-2xl font-bold pr-2">Thursday, March 29th, 2023</div>
-              <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap mt-1" phx-click="toggle-section" phx-value-section_id="first">
-                View details
-                <%= if !Enum.member?(@collapsed_sections, "first") do %>
-                  <.icon name="down" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
-                <% else %>
-                  <.icon name="up" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
-                <% end %>
-              </button>
+        <div class={classes("mt-10 p-3 border-2 rounded-lg border-red-sales-300", %{"border-base-200" => @booking_event.dates != []})}>
+          <div class="flex mb-1">
+            <%= if @booking_event.dates == [] do %>
+              <p class="text-2xl font-bold">Select day</p>
+            <% else  %>
+            <%!-- further logic of dates should be added here --%>
+              <p class="text-2xl font-bold">Thursday, March 29th, 2023</p>
+            <% end  %>
+            <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id="first">
+              View details
+              <%= if !Enum.member?(@collapsed_sections, "first") do %>
+                <.icon name="down" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
+              <% else %>
+                <.icon name="up" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
+              <% end %>
+            </button>
+          </div>
+          <div class="flex">
+            <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
+            <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
+            <p class="text-blue-planning-300"><b>1</b> hidden</p>
+          </div>
+          <hr class="block md:hidden my-2">
+          <%= if Enum.member?(@collapsed_sections, "first") do %>
+            <div class="hidden md:grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
+              <div class="col-span-2">Time</div>
+              <div class="col-span-2">Status</div>
+              <div class="col-span-2">Client</div>
             </div>
-            <div class="flex">
-              <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
-              <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
-              <p class="text-blue-planning-300"><b>1</b> hidden</p>
+            <.render_slots {assigns} />
+            <div class="flex justify-end gap-2">
+              <.icon_button icon="envelope" color="blue-planning-300"/>
+              <.icon_button icon="pencil" color="blue-planning-300"/>
+              <.icon_button icon="duplicate-2" color="blue-planning-300"/>
+              <.icon_button icon="trash" color="red-sales-300"/>
             </div>
-            <hr class="block md:hidden my-2">
-            <%= if Enum.member?(@collapsed_sections, "first") do %>
-              <div class="hidden md:grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
-                <div class="col-span-2">Time</div>
-                <div class="col-span-2">Status</div>
-                <div class="col-span-2">Client</div>
-              </div>
-              <.render_slots {assigns} />
-              <div class="flex justify-end gap-2">
-                <.icon_button icon="envelope" color="blue-planning-300"/>
-                <.icon_button icon="pencil" color="blue-planning-300" phx-click="edit-date" phx-value-index={0}/>
-                <.icon_button icon="duplicate-2" color="blue-planning-300"/>
-                <.icon_button icon="trash" color="red-sales-300"/>
-              </div>
-            <% end %>
-          <% else %>
-            <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Pick a package and add a date </div> </div>
           <% end %>
         </div>
+
       <% "calendar" -> %>
         <div class="mt-10 pr-5 grid grid-cols-1 md:grid-cols-5 gap-5">
           <div class="md:col-span-2 bg-base-200">Calender area</div>
@@ -394,19 +473,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       </button>
 
       <div class="z-10 flex flex-col hidden w-auto bg-white border rounded-lg shadow-lg popover-content">
-        <%= if @booking_event.status == "archived" || @archive_option do %>
           <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
             <button title={title} type="button" phx-click={action} phx-value-id={@id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
               <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
               <%= title %>
             </button>
           <% end %>
-        <% else %>
-          <button title="Unarchive" type="button" phx-click="confirm-unarchive" class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-            <.icon name="plus" class="inline-block w-4 h-4 mr-3 fill-current text-blue-planning-300"/>
-              Unarchive
-          </button>
-        <% end %>
       </div>
     </div>
     """
@@ -484,13 +556,29 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     ]
   end
 
-  defp header_actions do
-    [
-      %{title: "Create marketing email", action: "open-compose", icon: "envelope"},
-      %{title: "Duplicate", action: "duplicate", icon: "duplicate-2"},
-      %{title: "Disable", action: "disable", icon: "eye"},
-      %{title: "Archive", action: "archive", icon: "trash"}
-    ]
+  defp header_actions(%{status: status}) do
+    common_actions =
+      [
+        %{title: "Create marketing email", action: "open-compose", icon: "envelope"},
+        %{title: "Duplicate", action: "duplicate-event", icon: "duplicate-2"}
+      ]
+    case status do
+      :active ->
+        Enum.concat(common_actions, [
+          %{title: "Disable", action: "confirm-disable-event", icon: "eye"},
+          %{title: "Archive", action: "confirm-archive-event", icon: "trash"}
+        ])
+      :disabled ->
+        Enum.concat(common_actions, [
+          %{title: "Enable", action: "enable-event", icon: "plus"},
+          %{title: "Archive", action: "confirm-archive-event", icon: "trash"}
+        ])
+      :archive ->
+        Enum.concat(common_actions, [
+          %{title: "Enable", action: "enable-event", icon: "plus"},
+          %{title: "Unarchive", action: "unarchive-event", icon: "plus"}
+        ])
+    end
   end
 
   defp booked_slot_actions do

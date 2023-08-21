@@ -140,10 +140,9 @@ defmodule PicselloWeb.LiveHelpers do
   end
 
   def button_simple(assigns) do
-    assigns = assigns |> Enum.into(%{class: ""})
-
+    assigns = assigns |> Enum.into(%{class: "", disabled: false})
     ~H"""
-      <button class={"btn-primary whitespace-nowrap #{@class}"}>
+      <button class={"btn-primary whitespace-nowrap #{@class}"} disabled={@disabled}>
         <%= render_slot(@inner_block) %>
       </button>
     """
