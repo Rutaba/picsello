@@ -26,6 +26,7 @@ defmodule PicselloWeb.Shared.CustomPagination do
 
   def render(assigns) do
     assigns = Enum.into(assigns, %{wrapper_class: nil})
+
     ~H"""
       <div id={"#{@id}-wrapper"} class={"flex items-center px-6 pb-6 center-container #{@wrapper_class}"}>
         <%= if pagination_index(@pagination_changeset, :total_count) >= 0 do %>
