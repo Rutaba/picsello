@@ -70,7 +70,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
 
   def welcome_message(assigns) do
     ~H"""
-    <p class="text-base-300/75 text-center">Welcome! To view your gallery as well as access any digital image and print credits, enter the email address that matches the inbox to which you received your gallery link and password below.</p>
+    <p class="text-base-300/75 text-center">Welcome! To view your gallery and access any digital image and print credits, enter the email address that matches the inbox to which you received your gallery link and password below.</p>
     """
   end
 
