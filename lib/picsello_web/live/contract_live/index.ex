@@ -1,17 +1,85 @@
 defmodule PicselloWeb.Live.Contracts.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Contract, Contracts}
+
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import Picsello.Onboardings, only: [save_intro_state: 3]
+
+  import PicselloWeb.Shared.CustomPagination,
+    only: [
+      pagination_component: 1,
+      assign_pagination: 2,
+      update_pagination: 2,
+      reset_pagination: 2,
+      pagination_index: 2
+    ]
+
+  alias Ecto.Changeset
+  alias Picsello.{Contract, Contracts, Utils, Repo}
+
+  @default_pagination_limit 4
 
   @impl true
   def mount(_params, _session, socket) do
     socket
     |> assign(:page_title, "Contracts")
+    |> assign(:contract_status, "current")
+    |> assign(:job_type, "all")
+    |> assign_pagination(@default_pagination_limit)
     |> assign_contracts()
     |> ok()
   end
+
+  @impl true
+  def handle_event(
+        "apply-filter-status",
+        %{"option" => status},
+        socket
+      ) do
+    socket
+    |> assign(:contract_status, status)
+    |> reassign_pagination_and_contracts()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "apply-filter-type",
+        %{"option" => type},
+        socket
+      ) do
+    socket
+    |> assign(:job_type, type)
+    |> reassign_pagination_and_contracts()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "page",
+        %{"direction" => _direction} = params,
+        socket
+      ) do
+    socket
+    |> update_pagination(params)
+    |> assign_contracts()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "page",
+        %{"custom_pagination" => %{"limit" => _limit}} = params,
+        socket
+      ) do
+    socket
+    |> update_pagination(params)
+    |> assign_contracts()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("page", %{}, socket), do: socket |> noreply()
 
   @impl true
   def handle_event(
@@ -37,6 +105,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
         state: :create
       })
     )
+    |> reassign_pagination_and_contracts()
     |> noreply()
   end
 
@@ -93,6 +162,7 @@ defmodule PicselloWeb.Live.Contracts.Index do
     |> PicselloWeb.ContractTemplateComponent.open(
       Map.merge(Map.take(assigns, [:contract, :current_user]), %{state: :edit})
     )
+    |> reassign_pagination_and_contracts()
     |> noreply()
   end
 
@@ -243,14 +313,112 @@ defmodule PicselloWeb.Live.Contracts.Index do
     """
   end
 
-  defp assign_contracts(%{assigns: %{current_user: %{organization_id: organization_id}}} = socket) do
-    contracts = Contracts.for_organization(organization_id)
+  defp select_dropdown(assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{class: ""})
+
+    ~H"""
+      <div class="flex flex-col w-full lg:w-auto mr-2 mb-3 lg:mb-0">
+        <h1 class="font-extrabold text-sm flex flex-col whitespace-nowrap"><%= @title %></h1>
+        <div class="flex">
+          <div id={@id} class="relative rounded-lg w-full lg:w-48 border-grey border p-2 cursor-pointer") data-offset-y="5" phx-hook="Select">
+            <div {testid("dropdown_#{@id}")} class="flex flex-row items-center border-gray-700">
+                <%= Utils.capitalize_all_words(String.replace(@selected_option, "_", " ")) %>
+                <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
+                <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
+            </div>
+            <ul class={"absolute z-30 hidden mt-2 bg-white toggle rounded-md popover-content border border-base-200 #{@class}"}>
+              <%= for option <- @options_list do %>
+                <li id={option.id} target-class="toggle-it" parent-class="toggle" toggle-type="selected-active" phx-hook="ToggleSiblings"
+                class="flex items-center py-1.5 hover:bg-blue-planning-100 hover:rounded-md" phx-click={"apply-filter-#{@id}"} phx-value-option={option.id}>
+                  <button id={"btn-#{option.id}"} class="album-select"><%= option.title %></button>
+                  <%= if option.id == @selected_option do %>
+                    <.icon name="tick" class="w-6 h-5 ml-auto mr-1 toggle-it text-green" />
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </div>
+    """
+  end
+
+  defp job_type_options do
+    types =
+      Picsello.JobType.all()
+      |> Enum.map(fn type -> %{title: String.capitalize(type), id: type} end)
+
+    [%{title: "All", id: "all"} | types]
+  end
+
+  defp contract_status_options do
+    [
+      %{title: "All", id: "all"},
+      %{title: "Current", id: "current"},
+      %{title: "Archived", id: "archived"}
+    ]
+  end
+
+  defp assign_contracts(
+         %{
+           assigns: %{
+             pagination_changeset: pagination_changeset,
+             job_type: job_type,
+             contract_status: contract_status,
+             current_user: %{organization_id: organization_id}
+           }
+         } = socket
+       ) do
+    pagination = pagination_changeset |> Changeset.apply_changes()
+
+    contracts =
+      Contracts.for_organization(organization_id, %{
+        status: contract_status,
+        type: job_type,
+        pagination: pagination
+      })
 
     socket
     |> assign(
       :contracts,
       contracts
     )
+    |> update_pagination(%{
+      total_count:
+        if(pagination.total_count == 0,
+          do: contracts_count(socket),
+          else: pagination.total_count
+        ),
+      last_index: pagination.first_index + Enum.count(contracts) - 1
+    })
+  end
+
+  defp reassign_pagination_and_contracts(%{assigns: %{pagination_changeset: changeset}} = socket) do
+    limit = pagination_index(changeset, :limit)
+
+    socket
+    |> reset_pagination(%{limit: limit, last_index: limit, total_count: contracts_count(socket)})
+    |> assign_contracts()
+  end
+
+  defp contracts_count(%{
+         assigns: %{
+           pagination_changeset: pagination_changeset,
+           job_type: job_type,
+           contract_status: contract_status,
+           current_user: %{organization_id: organization_id}
+         }
+       }) do
+    pagination = pagination_changeset |> Changeset.apply_changes()
+
+    Contracts.get_organization_contracts(organization_id, %{
+      status: contract_status,
+      type: job_type,
+      pagination: pagination
+    })
+    |> Repo.aggregate(:count)
   end
 
   def get_contract(id), do: Contracts.get_contract_by_id(id)

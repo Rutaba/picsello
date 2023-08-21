@@ -25,8 +25,10 @@ defmodule PicselloWeb.Shared.CustomPagination do
   end
 
   def render(assigns) do
+    assigns = Enum.into(assigns, %{wrapper_class: nil})
+
     ~H"""
-      <div id={"#{@id}-wrapper"} class="flex items-center px-6 pb-6 center-container">
+      <div id={"#{@id}-wrapper"} class={"flex items-center px-6 pb-6 center-container #{@wrapper_class}"}>
         <%= if pagination_index(@pagination_changeset, :total_count) >= 0 do %>
           <.form :let={f} for={@pagination_changeset} phx-change="page" class="flex items-center text-gray-500 rounded p-1 border cursor-pointer border-blue-planning-300">
               <%= select f, :limit, @limit_options, class: "cursor-pointer"%>

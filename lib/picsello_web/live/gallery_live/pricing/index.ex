@@ -76,6 +76,11 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   end
 
   @impl true
+  def handle_info({:message_composed_for_album, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "album")
+  end
+
+  @impl true
   def handle_info(
         {:save, %{title: title}},
         %{assigns: %{gallery: gallery}} = socket

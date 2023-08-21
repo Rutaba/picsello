@@ -73,8 +73,17 @@ defmodule Picsello.Currency do
     }
 
   def for_job(job) do
-    %{package: %{currency: currency}} = Repo.preload(job, :package)
-    currency
+    case Repo.preload(job, :package) do
+      %{package: %{currency: currency}} ->
+        currency
+
+      %{client: %{organization_id: organization_id}} ->
+        %{currency: currency} = Picsello.UserCurrencies.get_user_currency(organization_id)
+        currency
+
+      _ ->
+        "USD"
+    end
   end
 
   def for_gallery(gallery) do
