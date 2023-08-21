@@ -52,12 +52,12 @@ defmodule PicselloWeb.PackageLive.PackagesSearchComponent do
   def select_dropdown(assigns) do
     ~H"""
     <div class="flex grow">
-      <div id={@id} class={"relative w-full mt-3 md:mt-0"} data-offset-y="10" phx-hook="Select">
+      <div class={"relative w-full mt-3 md:mt-0"}>
         <div>
           <h4 class="font-extrabold text-sm mb-1"><%= @title %></h4>
         </div>
         <div class="flex w-full">
-          <div class="w-full">
+          <div id={@id} class="w-full" data-offset-y="10" phx-hook="Select">
             <div class={"flex flex-row items-center border #{@title != "Sort" && "rounded-lg"} p-3 #{@title == "Sort" && "rounded-l-lg"}"}>
                 <span class="flex-shrink-0"><%= String.capitalize(String.replace(@selected_option, "_", " ")) %></span>
                 <.icon name="down" class="flex-shrink-0 w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
