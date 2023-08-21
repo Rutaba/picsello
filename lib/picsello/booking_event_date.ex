@@ -44,7 +44,7 @@ defmodule Picsello.BookingEventDate do
 
     def changeset(slot_block \\ %__MODULE__{}, attrs) do
       slot_block
-      |> cast(attrs, [:start_time, :end_time, :status])
+      |> cast(attrs, [:slot_start, :slot_end, :status])
       |> validate_required([:slot_start, :slot_end])
     end
   end
