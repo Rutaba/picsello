@@ -1501,7 +1501,7 @@ defmodule PicselloWeb.HomeLive.Index do
     ~H"""
     <li class={"relative #{Map.get(assigns, :class)}"} {@attrs}>
       <%= if @badge do %>
-        <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
+          <div {testid "badge"} class={classes("absolute -top-2.5 right-5 leading-none w-5 h-5 rounded-full pb-0.5 flex items-center justify-center text-xs", %{"bg-base-300 text-white" => @badge > 0, "bg-gray-300" => @badge == 0})}>
           <%= if @badge > 0, do: @badge %>
         </div>
       <% end %>
