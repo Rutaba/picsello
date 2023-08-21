@@ -1,7 +1,7 @@
 defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
   @moduledoc false
   use PicselloWeb, :live_component
-  alias Picsello.{Repo, PaymentSchedule, PaymentSchedules, Job}
+  alias Picsello.{Repo, PaymentSchedule, PaymentSchedules, Job, Currency}
 
   import Ecto.Query
   @impl true
@@ -12,6 +12,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     |> assign(:add_payment_show, false)
     |> assign_payments()
     |> assign_job()
+    |> assign_currency()
     |> ok()
   end
 
@@ -69,8 +70,9 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
         <div class="mx-5 grid grid-cols-3 gap-12">
           <dl>
             <dd>
-            <%= labeled_input f, :price, placeholder: "$0.00", label: "Amount", class: "w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center h-12", phx_hook: "PriceMask" %>
+            <%= labeled_input f, :price, placeholder: "#{@currency_symbol}0.00", label: "Amount", class: "w-full px-4 text-lg mt-6 sm:mt-0 sm:font-normal font-bold text-center h-12", phx_hook: "PriceMask", data_currency: @currency_symbol %>
             </dd>
+            <%= text_input f, :currency, value: @currency, class: "flex w-32 items-center form-control text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
           </dl>
           <dl>
               <%= labeled_select f, :type,  ["Check": :check, "Cash": :cash], label: "Payment type", class: "w-full h-12 border rounded-lg" %>
@@ -116,17 +118,22 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
               "type" => _
             } = params
         },
-        %{assigns: %{current_user: current_user}} = socket
+        %{assigns: %{current_user: current_user, currency: currency}} = socket
       ) do
     paid_at = date_to_datetime(paid_at, current_user.time_zone)
-    params = Map.put(params, "paid_at", paid_at)
+
+    params =
+      params
+      |> Currency.parse_params_for_currency({Money.Currency.symbol(currency), currency})
+      |> Map.put("paid_at", paid_at)
+
     socket = assign_changeset(socket, params)
 
     owed = PaymentSchedules.owed_offline_price(socket.assigns.job)
 
     price =
       Ecto.Changeset.get_field(socket.assigns.changeset, :price) ||
-        %Money{amount: 0, currency: :USD}
+        Money.new(0, currency)
 
     case Money.cmp(price, owed) do
       :gt ->
@@ -155,7 +162,8 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
           assigns: %{
             add_payment_show: add_payment_show,
             job: %{payment_schedules: payment_schedules} = job,
-            current_user: current_user
+            current_user: current_user,
+            currency: currency
           }
         } = socket
       ) do
@@ -166,7 +174,9 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     paid_at = date_to_datetime(paid_at, current_user.time_zone)
 
     params =
-      Map.put(params, "due_at", due_at)
+      params
+      |> Currency.parse_params_for_currency({Money.Currency.symbol(currency), currency})
+      |> Map.put("due_at", due_at)
       |> Map.put("paid_at", paid_at)
       |> Map.put("job_id", job.id)
       |> Map.put("description", "Offline Payment")
@@ -175,7 +185,7 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     |> Ecto.Multi.insert(:new_payment, build_changeset(socket, params))
     |> Ecto.Multi.merge(fn %{new_payment: new_payment} ->
       pending_payments
-      |> calculate_payment(new_payment)
+      |> calculate_payment(new_payment, currency)
       |> update_or_delete_multi()
     end)
     |> Repo.transaction()
@@ -246,6 +256,14 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     })
   end
 
+  defp assign_currency(%{assigns: %{job: job}} = socket) do
+    currency = Currency.for_job(job)
+
+    socket
+    |> assign(:currency_symbol, Money.Currency.symbol!(currency))
+    |> assign(:currency, currency)
+  end
+
   defp update_or_delete_multi({for_delete, for_update, _}) do
     multi = Ecto.Multi.new()
     multi = if for_update, do: Ecto.Multi.update(multi, :update_payment, for_update), else: multi
@@ -274,10 +292,10 @@ defmodule PicselloWeb.JobLive.Shared.MarkPaidModal do
     assign(socket, changeset: changeset)
   end
 
-  defp calculate_payment(pending_payments, new_payment) do
+  defp calculate_payment(pending_payments, new_payment, currency) do
     pending_payments
     |> Enum.reduce_while(
-      {[], nil, Money.new(0)},
+      {[], nil, Money.new(0, currency)},
       fn %{price: price} = payment, {for_delete, for_update, acc} ->
         owed = Money.add(price, acc)
 

@@ -169,17 +169,24 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_info(
         :update_client_gallery_state,
-        %{assigns: %{album: album, gallery: gallery}} = socket
+        %{assigns: %{album: album, gallery: gallery, favorites_filter: favorites_filter}} = socket
       ) do
     socket
+    |> assign_count(favorites_filter, gallery)
     |> assign(
       album_favorites_count: Galleries.gallery_album_favorites_count(gallery, album.id),
       favorites_count: Galleries.gallery_favorites_count(gallery)
     )
+    |> assign(:update_mode, "replace")
+    |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 
-  defp assigns(%{assigns: %{album: album, gallery: gallery, client_email: client_email}} = socket) do
+  defp assigns(
+         %{assigns: %{album: album, gallery: gallery, client_email: client_email} = assigns} =
+           socket
+       ) do
     album = album |> Repo.preload(:photos)
 
     %{job: %{client: %{organization: organization}}} =
@@ -192,7 +199,8 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
       Map.put(
         gallery,
         :credits_available,
-        client_email && client_email in gallery.gallery_digital_pricing.email_list
+        (client_email && client_email in gallery.gallery_digital_pricing.email_list) ||
+          is_photographer_view(assigns)
       )
 
     if album.is_proofing && is_nil(gallery.watermark) do

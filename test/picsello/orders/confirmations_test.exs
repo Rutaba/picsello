@@ -46,7 +46,8 @@ defmodule Picsello.Orders.ConfirmationsTest do
           whcc_order: whcc_order,
           placed_at: placed_at,
           gallery: gallery,
-          gallery_client: gallery_client
+          gallery_client: gallery_client,
+          currency: "USD"
         )
         |> Repo.preload([:gallery, :products, :digitals])
     ]
@@ -106,7 +107,8 @@ defmodule Picsello.Orders.ConfirmationsTest do
         id: "payment-intent-id",
         amount: total_cents,
         status: "requires_capture",
-        amount_capturable: total_cents
+        amount_capturable: total_cents,
+        currency: "usd"
       )
     )
     |> insert_intent()
@@ -181,7 +183,12 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
     test "captures intent", %{stripe_invoice: stripe_invoice} do
       Mox.expect(MockPayments, :capture_payment_intent, fn _, _ ->
-        {:ok, build(:stripe_payment_intent, status: "succeeded", id: "payment-intent-id")}
+        {:ok,
+         build(:stripe_payment_intent,
+           status: "succeeded",
+           id: "payment-intent-id",
+           currency: "usd"
+         )}
       end)
 
       assert {:ok, _} = Confirmations.handle_invoice(stripe_invoice)
@@ -204,7 +211,9 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
     setup :insert_order
 
-    setup %{gallery: gallery, order: order} do
+    setup %{order: order} do
+      gallery = insert(:gallery, job: insert(:lead, package: insert(:package, currency: "USD")))
+
       gallery_client =
         insert(:gallery_client, %{email: gallery.job.client.email, gallery_id: gallery.id})
 
@@ -297,11 +306,21 @@ defmodule Picsello.Orders.ConfirmationsTest do
       ]
     end
 
-    setup :insert_order
+    setup %{whcc_order: whcc_order, placed_at: placed_at} do
+      gallery = insert(:gallery, job: insert(:lead, package: insert(:package, currency: "USD")))
 
-    setup %{order: %{gallery: gallery} = order} do
       gallery_client =
         insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
+
+      order =
+        insert(:order,
+          delivery_info: %{email: "client@example.com"},
+          whcc_order: whcc_order,
+          placed_at: placed_at,
+          gallery: gallery,
+          currency: "USD",
+          gallery_client: gallery_client
+        )
 
       insert(:digital, order: order, photo: insert(:photo, gallery: gallery))
 
@@ -309,7 +328,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
       order = Repo.preload(order, [:digitals, :products], force: true)
 
-      assert :lt ==
+      assert :gt ==
                Money.cmp(
                  Order.total_cost(order),
                  Picsello.WHCC.Order.Created.total(order.whcc_order)
@@ -318,7 +337,13 @@ defmodule Picsello.Orders.ConfirmationsTest do
       [order: order]
     end
 
-    setup [:insert_intent, :stub_retrieve_intent, :build_session, :stub_capture_intent]
+    setup [
+      :insert_intent,
+      :stub_retrieve_intent,
+      :build_session,
+      :stub_capture_intent,
+      :stub_confirm_order
+    ]
 
     setup %{order: order} do
       refute Picsello.Orders.client_paid?(order)
@@ -390,7 +415,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
   describe "handle_intent - canceled, no invoice" do
     setup do
-      [stripe_intent: build(:stripe_payment_intent, status: "canceled")]
+      [stripe_intent: build(:stripe_payment_intent, status: "canceled", currency: "usd")]
     end
 
     setup [:insert_order, :insert_intent]
@@ -400,7 +425,7 @@ defmodule Picsello.Orders.ConfirmationsTest do
 
   describe "handle_intent - cancelled, invoice" do
     setup do
-      [stripe_intent: build(:stripe_payment_intent, status: "canceled")]
+      [stripe_intent: build(:stripe_payment_intent, status: "canceled", currency: "usd")]
     end
 
     setup [:insert_order, :insert_intent]

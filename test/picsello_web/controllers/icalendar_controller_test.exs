@@ -10,7 +10,7 @@ defmodule PicselloWeb.ICalendarControllerTest do
 
     lead =
       insert(:lead,
-        package: %{shoot_count: 2, base_price: 2000},
+        package: %{shoot_count: 2, base_price: %{amount: 2000, currency: :USD}},
         shoots: [
           %{starts_at: DateTime.utc_now() |> DateTime.add(2 * 24 * 60 * 60)},
           %{starts_at: DateTime.utc_now() |> DateTime.add(3 * 24 * 60 * 60)}

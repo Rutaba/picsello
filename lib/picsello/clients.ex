@@ -3,25 +3,25 @@ defmodule Picsello.Clients do
   import Ecto.Query
   alias Picsello.{Repo, Client, ClientTag}
 
+  def client_by_email(organization_id, email) do
+    from(c in Client, where: c.email == ^email and c.organization_id == ^organization_id)
+    |> Repo.one()
+  end
+
   def find_all_by(user: user) do
     clients_by_user(user)
     |> Repo.all()
   end
 
-  def find_all_by(
-        user: user,
-        filters: %{sort_by: sort_by, sort_direction: sort_direction} = opts
-      ) do
-    from(client in Client,
-      preload: [:tags, :jobs],
-      left_join: jobs in assoc(client, :jobs),
-      left_join: job_status in assoc(jobs, :job_status),
-      where: client.organization_id == ^user.organization_id and is_nil(client.archived_at),
-      where: ^filters_where(opts),
-      where: ^filters_status(opts),
-      group_by: client.id,
-      order_by: ^filter_order_by(sort_by, sort_direction)
-    )
+  def find_all_by(params) do
+    find_all_query(params)
+    |> where([client], is_nil(client.archived_at))
+  end
+
+  def find_clients_count(params) do
+    find_all_query(params)
+    |> Repo.all()
+    |> Enum.count()
   end
 
   def find_all_by_pagination(
@@ -29,7 +29,7 @@ defmodule Picsello.Clients do
         filters: opts,
         pagination: %{limit: limit, offset: offset}
       ) do
-    query = find_all_by(user: user, filters: opts)
+    query = find_all_query(user: user, filters: opts)
 
     from(c in query,
       limit: ^limit,
@@ -66,6 +66,12 @@ defmodule Picsello.Clients do
     |> Repo.update()
   end
 
+  def unarchive_client(id) do
+    Repo.get(Client, id)
+    |> Client.unarchive_changeset()
+    |> Repo.update()
+  end
+
   def get_client_tags(client_id) do
     from(tag in ClientTag,
       where: tag.client_id == ^client_id
@@ -93,6 +99,15 @@ defmodule Picsello.Clients do
     |> Repo.one()
   end
 
+  def get_recent_clients(user) do
+    from(c in Client,
+      where: c.organization_id == ^user.organization_id and is_nil(c.archived_at),
+      order_by: [desc: c.inserted_at],
+      limit: 6
+    )
+    |> Repo.all()
+  end
+
   def client_tags(client) do
     (Enum.map(client.jobs, & &1.type)
      |> Enum.uniq()) ++
@@ -103,6 +118,22 @@ defmodule Picsello.Clients do
     from(c in Client,
       preload: [jobs: [galleries: [orders: [:intent, :digitals, :products]]]],
       where: c.id == ^client_id
+    )
+  end
+
+  defp find_all_query(
+         user: user,
+         filters: %{sort_by: sort_by, sort_direction: sort_direction} = opts
+       ) do
+    from(client in Client,
+      preload: [:tags, :jobs],
+      left_join: jobs in assoc(client, :jobs),
+      left_join: job_status in assoc(jobs, :job_status),
+      where: client.organization_id == ^user.organization_id,
+      where: ^filters_where(opts),
+      where: ^filters_status(opts),
+      group_by: client.id,
+      order_by: ^filter_order_by(sort_by, sort_direction)
     )
   end
 

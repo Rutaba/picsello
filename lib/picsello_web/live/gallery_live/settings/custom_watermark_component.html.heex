@@ -80,17 +80,19 @@
     </div>
   <% end %>
   <div class="flex flex-col gap-2 py-6 lg:flex-row-reverse">
-    <%= if @ready_to_save do %>
-      <button id="saveWatermark" class="btn-primary" phx-click="save" phx-target={@myself}>
-        Save
+    <%= unless @case == :image do %>
+      <%= if @ready_to_save do %>
+        <button id="saveWatermark" class="btn-primary" phx-click="save" phx-target={@myself}>
+          Save
+        </button>
+      <% else %>
+        <button class="btn-primary cursor-not-allowed" disabled>
+          Save
+        </button>
+      <% end %>
+      <button class="btn-secondary" phx-click="close" phx-target={@myself}>
+        <span>Cancel</span>
       </button>
-    <% else %>
-      <button class="btn-primary cursor-not-allowed" disabled>
-        Save
-      </button>
-    <% end %>
-    <button class="btn-secondary" phx-click="close" phx-target={@myself}>
-      <span>Cancel</span>
-    </button>
+      <% end %>
   </div>
 </div>

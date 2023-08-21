@@ -30,7 +30,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       Map.put(
         gallery,
         :credits_available,
-        client_email && client_email in gallery.gallery_digital_pricing.email_list
+        (client_email && client_email in gallery.gallery_digital_pricing.email_list) ||
+          is_photographer_view(assigns)
       )
 
     socket
@@ -106,14 +107,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         %{
           assigns: %{
             delivery_info_changeset: delivery_info_changeset,
-            order: order,
-            checkout_routes: checkout_routes
+            order: order
           }
         } = socket
       ) do
     Multi.new()
     |> Multi.run(:order, fn _, _ ->
-      Cart.store_order_delivery_info(order, Map.put(delivery_info_changeset, :action, nil))
+      delivery_info_changeset = Map.put(delivery_info_changeset, :action, nil)
+      Cart.store_order_delivery_info(order, delivery_info_changeset)
     end)
     |> Multi.run(:update_shipping, fn _, _ ->
       {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
@@ -129,26 +130,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     |> Repo.transaction()
     |> case do
       {:ok, %{order: order}} ->
-        order
-        |> Cart.checkout(
-          success_url:
-            Enum.join(
-              [
-                Endpoint.url() <> checkout_routes.order_paid,
-                "session_id={CHECKOUT_SESSION_ID}"
-              ],
-              "?"
-            ),
-          cancel_url: Endpoint.url() <> checkout_routes.cart,
-          helpers: PicselloWeb.Helpers
-        )
-        |> case do
-          :ok ->
-            socket |> assign(:checking_out, true) |> push_event("scroll:lock", %{})
-
-          _error ->
-            socket |> put_flash(:error, "Something went wrong")
-        end
+        socket
+        |> cart_checkout(order)
         |> noreply()
 
       {:error, :order, changeset, _} ->
@@ -268,6 +251,29 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       }
     )
     |> noreply()
+  end
+
+  defp cart_checkout(%{assigns: %{checkout_routes: checkout_routes}} = socket, order) do
+    order
+    |> Cart.checkout(
+      success_url:
+        Enum.join(
+          [
+            Endpoint.url() <> checkout_routes.order_paid,
+            "session_id={CHECKOUT_SESSION_ID}"
+          ],
+          "?"
+        ),
+      cancel_url: Endpoint.url() <> checkout_routes.cart,
+      helpers: PicselloWeb.Helpers
+    )
+    |> case do
+      :ok ->
+        socket |> assign(:checking_out, true) |> push_event("scroll:lock", %{})
+
+      _error ->
+        socket |> put_flash(:error, "Something went wrong")
+    end
   end
 
   defp assign_products_shipping(%{assigns: %{order: nil}} = socket), do: socket
@@ -401,7 +407,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     <div class="col-span-1 text-lg">
       <div class="flex flex-col items-center justify-center border border-base-225 flex p-8 border-t">
         <span class="flex mb-4">
-          Total: <b>$0.00</b>
+          Total: <b>0.00</b>
         </span>
         <button disabled class="flex items-center justify-center border border-base-225 text-base-225 w-full py-2">
           Send to my photographer
@@ -451,4 +457,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
   defdelegate add_shipping_details!(product, shipping_type), to: Picsello.Cart
   defdelegate shipping_price(product), to: Picsello.Cart
   defdelegate add_total_markuped_sum(product, products), to: Picsello.Cart
+
+  def abc(line_item, shipment_details, das_type, shipping_type) do
+    shipping_details(line_item, %{
+      shipment_details: shipment_details,
+      das_type: das_type,
+      shipping_type: shipping_type
+    })
+  end
 end

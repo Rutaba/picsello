@@ -18,7 +18,7 @@ defmodule Picsello.Cart.CheckoutsTest do
   setup do
     Mox.verify_on_exit!()
 
-    gallery = insert(:gallery)
+    gallery = insert(:gallery, job: insert(:lead, package: insert(:package, currency: "USD")))
 
     gallery_digital_pricing =
       insert(:gallery_digital_pricing, %{
@@ -79,7 +79,11 @@ defmodule Picsello.Cart.CheckoutsTest do
       {:ok,
        build(
          :stripe_session,
-         payment_intent: build(:stripe_payment_intent, Map.get(params, :payment_intent_data, %{}))
+         payment_intent:
+           build(
+             :stripe_payment_intent,
+             Map.get(params, :payment_intent_data, %{}) |> Map.put(:currency, "usd")
+           )
        )}
     end)
 
@@ -117,7 +121,10 @@ defmodule Picsello.Cart.CheckoutsTest do
       {:ok,
        build(:stripe_session,
          payment_intent:
-           build(:stripe_payment_intent, Map.put(payment_intent_data, :id, "intent-stripe-id"))
+           build(
+             :stripe_payment_intent,
+             Map.put(payment_intent_data, :id, "intent-stripe-id") |> Map.put(:currency, "usd")
+           )
        )}
     end)
 
@@ -157,10 +164,21 @@ defmodule Picsello.Cart.CheckoutsTest do
     test "exipres previous session", %{order: order} do
       MockPayments
       |> Mox.expect(:retrieve_payment_intent, fn id, _ ->
-        {:ok, build(:stripe_payment_intent, id: id)}
+        {:ok, build(:stripe_payment_intent, id: id, currency: "usd")}
       end)
       |> Mox.expect(:expire_session, fn id, _ ->
-        {:ok, build(:stripe_session, id: id, status: "expired")}
+        {:ok,
+         build(:stripe_session,
+           id: id,
+           status: "expired",
+           payment_intent:
+             build(:stripe_payment_intent,
+               amount: 10,
+               application_fee_amount: 10,
+               currency: "usd",
+               id: "payment-intent-id"
+             )
+         )}
       end)
 
       check_out(order)
@@ -182,7 +200,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
       refute ~M[0]USD == Order.total_cost(order)
 
-      assert :lt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
+      assert :gt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
 
       [order: order]
     end
@@ -262,7 +280,7 @@ defmodule Picsello.Cart.CheckoutsTest do
 
       assert ~M[45]USD == Order.total_cost(order)
 
-      assert :lt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
+      assert :gt = Money.cmp(Order.total_cost(order), WHCCOrder.total(whcc_order))
 
       [order: order]
     end
@@ -273,7 +291,10 @@ defmodule Picsello.Cart.CheckoutsTest do
         {:ok,
          build(:stripe_session,
            payment_intent:
-             build(:stripe_payment_intent, Map.put(payment_intent_data, :id, "intent-stripe-id"))
+             build(
+               :stripe_payment_intent,
+               Map.put(payment_intent_data, :id, "intent-stripe-id") |> Map.put(:currency, "usd")
+             )
          )}
       end)
 
@@ -315,7 +336,8 @@ defmodule Picsello.Cart.CheckoutsTest do
 
         {:ok,
          build(:stripe_session,
-           payment_intent: build(:stripe_payment_intent, application_fee_amount: ~M[10]USD)
+           payment_intent:
+             build(:stripe_payment_intent, application_fee_amount: 10, currency: "usd")
          )}
       end)
 

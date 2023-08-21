@@ -8,7 +8,7 @@ defmodule PicselloWeb.GalleryLive.Index do
   import PicselloWeb.Live.Shared, only: [make_popup: 2]
 
   alias Ecto.Query
-  alias Picsello.{Galleries, Job, Repo, Orders, Albums}
+  alias Picsello.{Galleries, Job, Repo, Orders}
 
   defmodule Pagination do
     @moduledoc false
@@ -148,7 +148,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       socket
       |> open_modal(
         PicselloWeb.GalleryLive.CreateComponent,
-        Map.take(socket.assigns, [:current_user])
+        Map.take(socket.assigns, [:current_user, :currency])
       )
       |> noreply()
 
@@ -227,7 +227,7 @@ defmodule PicselloWeb.GalleryLive.Index do
     ~H"""
       <div class="flex flex-wrap w-full md:w-auto">
         <div class="flex flex-col md:flex-row grow">
-          <%= if Galleries.preview_image(@gallery) do %>
+          <%= if @gallery.cover_photo do %>
             <div>
               <%= live_redirect to: Routes.gallery_photographer_index_path(@socket, :index, @gallery.id, is_mobile: false) do %>
               <div class="rounded-lg float-left w-[200px] mr-4 md:mr-7 min-h-[130px]" style={"background-image: url('#{cover_photo_url(@gallery)}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
@@ -389,40 +389,5 @@ defmodule PicselloWeb.GalleryLive.Index do
         |> put_flash(:success, "The gallery has been #{type}")
         |> noreply()
     end
-  end
-
-  defp clip_board(socket, gallery) do
-    albums = Albums.get_albums_by_gallery_id(gallery.id)
-
-    proofing_album =
-      albums
-      |> Enum.filter(& &1.is_proofing)
-      |> List.first()
-
-    final_album =
-      albums
-      |> Enum.filter(& &1.is_finals)
-      |> List.first()
-
-    cond do
-      final_album ->
-        proofing_and_final_album_url(socket, final_album)
-
-      proofing_album ->
-        proofing_and_final_album_url(socket, proofing_album)
-
-      true ->
-        hash =
-          gallery
-          |> Galleries.set_gallery_hash()
-          |> Map.get(:client_link_hash)
-
-        Routes.gallery_client_index_url(socket, :index, hash)
-    end
-  end
-
-  defp proofing_and_final_album_url(socket, album) do
-    album = Albums.set_album_hash(album)
-    Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
   end
 end

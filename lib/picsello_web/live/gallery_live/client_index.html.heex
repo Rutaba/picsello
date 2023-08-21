@@ -1,4 +1,4 @@
-<div 
+<div
   class={classes("w-screen lg:h-screen h-[66vw]", %{"block sm:hidden" => @active, "hidden" => !@active})}
   id="gallery-conver-photo"
   phx-hook="ClientGalleryCookie"
@@ -38,7 +38,7 @@
     <div class="h-full py-0 mx-auto center-container gallery__container my-0 px-7 sm:px-16">
       <div class="pt-8 lg:pt-14">
         <div class="text-base font-bold lg:text-3xl">
-          Order custom products with <%= @creator.name %>
+          Order custom products with <%= @organization.name%>
         </div>
 
         <ul {testid("products")} class="pt-2 pb-5 mx-auto grid gap-6 sm:gap-8 grid-cols-2 xl:grid-cols-4 lg:pb-4 lg:pt-6 productPreview__client">
@@ -50,9 +50,12 @@
         </ul>
       </div>
     </div>
+    <div class={classes("center-container gallery__container", %{"hidden" => disabled?(@gallery)})}>
+      <hr class="mt-8 opacity-30 border-base-300" />
+    </div>
   <% end %>
 
-  <%= if @package.buy_all && !@download_all_visible && !disabled?(@gallery) do %>
+  <%= if @gallery.gallery_digital_pricing.buy_all && !@download_all_visible && !disabled?(@gallery) do %>
     <div class="py-8 sm:py-6 bg-blue-planning-100 center-container gallery__container">
       <div class="flex flex-col justify-center px-7 sm:mx-16 sm:flex-row">
         <div class="sm:mr-28">
@@ -67,10 +70,6 @@
   <% end %>
 
   <!-- Content -->
-  <div class={classes("center-container gallery__container", %{"hidden" => disabled?(@gallery)})}>
-    <hr class="mt-8 opacity-30 border-base-300" />
-  </div>
-
   <div class="h-full pt-0 mx-auto center-container gallery__container my-0 pb-28 sm:pb-24 px-7 sm:px-16">
     <div class="pt-5 lg:pt-16" id="gallery">
       <div class="flex flex-col mb-8 sm:flex-row sm:justify-between sm:items-end lg:mb-16">
@@ -134,7 +133,7 @@
           <!-- images -->
           <div
             id="muuri-grid"
-            class="muuri grid"
+            class="mb-6 muuri grid"
             phx-hook="MasonryGrid"
             phx-update={@update_mode}
             data-page={@page}

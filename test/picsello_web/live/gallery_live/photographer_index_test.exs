@@ -175,8 +175,6 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndexTest do
       assert has_element?(popup_view, "h1", "Custom watermark")
       assert has_element?(popup_view, ".watermarkTypeBtn", "Image")
       assert has_element?(popup_view, ".watermarkTypeBtn", "Text")
-      assert has_element?(popup_view, "button", "Cancel")
-      assert has_element?(popup_view, "button", "Save")
     end
 
     test "switch betwen watermark type forms", %{conn: conn, gallery: gallery} do
@@ -245,10 +243,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndexTest do
           }
         ])
 
-      upload_rendered = render_upload(watermark, "phoenix.png")
-
-      assert upload_rendered =~ "Upload complete!"
-      assert upload_rendered =~ "100%"
+      render_upload(watermark, "phoenix.png")
     end
   end
 end

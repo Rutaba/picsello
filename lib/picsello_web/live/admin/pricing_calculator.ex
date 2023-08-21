@@ -50,11 +50,11 @@ defmodule PicselloWeb.Live.Admin.PricingCalculator do
               <div class="col-start-4 font-bold">Bracket Fixed Cost Start</div>
               <div class="col-start-5 font-bold">Bracket Fixed Cost</div>
               <%= inputs_for f, :income_brackets, [], fn fp -> %>
-                <%= input fp, :income_min, phx_debounce: 200, phx_hook: "PriceMask" %>
-                <%= input fp, :income_max, phx_debounce: 200, phx_hook: "PriceMask" %>
+                <%= input fp, :income_min, phx_debounce: 200, phx_hook: "PriceMask", data_currency: "$" %>
+                <%= input fp, :income_max, phx_debounce: 200, phx_hook: "PriceMask", data_currency: "$" %>
                 <%= input fp, :percentage, type: :number_input, phx_debounce: 200, step: 0.1, min: 1.0 %>
-                <%= input fp, :fixed_cost_start, phx_debounce: 200, phx_hook: "PriceMask" %>
-                <%= input fp, :fixed_cost, phx_debounce: 200, phx_hook: "PriceMask" %>
+                <%= input fp, :fixed_cost_start, phx_debounce: 200, phx_hook: "PriceMask", data_currency: "$" %>
+                <%= input fp, :fixed_cost, phx_debounce: 200, phx_hook: "PriceMask", data_currency: "$" %>
               <% end %>
             </div>
           </.form>

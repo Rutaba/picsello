@@ -36,7 +36,7 @@ defmodule Picsello.CreateClientTest do
     session
     |> open_add_client_popup()
     |> fill_client_form()
-    |> click(css(".checkbox"))
+    |> force_simulate_click(css(".checkbox"))
     |> within_modal(fn modal ->
       modal
       |> scroll_to_bottom()
@@ -155,7 +155,8 @@ defmodule Picsello.CreateClientTest do
     session
     |> open_add_client_popup()
     |> fill_client_form()
-    |> click(css("#pre-picsello-check"))
+    |> scroll_to_bottom()
+    |> force_simulate_click(css("#pre-picsello-check"))
     |> within_modal(fn modal ->
       modal
       |> scroll_to_bottom()
@@ -256,7 +257,7 @@ defmodule Picsello.CreateClientTest do
     |> fill_in(css("#form-package_payment_name"), with: @package_name)
     |> find(
       text_field("The amount you’ve charged for your job"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: @base_price))
+      &(&1 |> Element.clear() |> Element.fill_in(with: 10))
     )
   end
 
@@ -271,7 +272,7 @@ defmodule Picsello.CreateClientTest do
     |> click(css("[aria-label='January 1, 2030']"))
 
     modal
-    |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "$5"))
+    |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "5"))
     |> click(css("#payment-1"))
 
     session

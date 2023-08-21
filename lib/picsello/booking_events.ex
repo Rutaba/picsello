@@ -10,21 +10,18 @@ defmodule Picsello.BookingEvents do
 
     @primary_key false
     embedded_schema do
-      field :name, :string
-      field :email, :string
-      field :phone, :string
-      field :date, :date
-      field :time, :time
+      field(:name, :string)
+      field(:email, :string)
+      field(:phone, :string)
+      field(:date, :date)
+      field(:time, :time)
     end
 
     def changeset(attrs \\ %{}) do
       %__MODULE__{}
       |> cast(attrs, [:name, :email, :phone, :date, :time])
       |> validate_required([:name, :email, :phone, :date, :time])
-      |> validate_change(:phone, &valid_phone/2)
     end
-
-    defdelegate valid_phone(field, value), to: Picsello.Client
   end
 
   def upsert_booking_event(changeset) do
@@ -72,7 +69,8 @@ defmodule Picsello.BookingEvents do
         thumbnail_url: event.thumbnail_url,
         status: event.status,
         duration_minutes: event.duration_minutes,
-        dates: event.dates
+        dates: event.dates,
+        inserted_at: event.inserted_at
       },
       group_by: [event.id, package.name],
       order_by: ^filter_order_by(sort_by, sort_direction)
@@ -289,7 +287,7 @@ defmodule Picsello.BookingEvents do
       ) do
     Enum.count(slots, fn {slot_time, is_available, _is_break, _is_hide} ->
       !is_available && Time.compare(slot_time, start_time) in [:gt, :eq] &&
-        Time.compare(slot_time, end_time) in [:lt, :eq]
+        Time.compare(slot_time, end_time) in [:lt]
     end) > 0
   end
 
@@ -457,7 +455,8 @@ defmodule Picsello.BookingEvents do
       opts = %{
         payment_schedules: payment_schedules,
         action: :insert,
-        total_price: Package.price(package_template)
+        total_price: Package.price(package_template),
+        questionnaire: Picsello.Questionnaire.for_package(package_template)
       }
 
       package_template
@@ -476,7 +475,10 @@ defmodule Picsello.BookingEvents do
       )
     end)
     |> Ecto.Multi.insert(:proposal, fn changes ->
-      Picsello.BookingProposal.create_changeset(%{job_id: changes.job.id})
+      Picsello.BookingProposal.create_changeset(%{
+        job_id: changes.job.id,
+        questionnaire_id: changes.package_update.questionnaire_template_id
+      })
     end)
     |> Oban.insert(:oban_job, fn changes ->
       # multiply booking reservation by 2 to account for time spent on Stripe checkout

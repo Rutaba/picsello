@@ -32,7 +32,7 @@ defmodule Picsello.ImportJobTest do
 
   defp fill_in_existing_client_form(session, _opts \\ []) do
     session
-    |> fill_in(text_field("search_phrase", count: 2, at: 0), with: "tayl")
+    |> fill_in(text_field("search_phrase"), with: "tayl")
     |> assert_has(css("#search_results"))
     |> send_keys([:down_arrow])
     |> send_keys([:enter])
@@ -46,7 +46,7 @@ defmodule Picsello.ImportJobTest do
     |> fill_in(text_field("Image Turnaround Time"), with: "2")
     |> find(
       text_field("The amount you’ve charged for your job"),
-      &(&1 |> Element.clear() |> Element.fill_in(with: "$1000.00"))
+      &(&1 |> Element.clear() |> Element.fill_in(with: "1000.00"))
     )
     |> find(
       text_field("How much of the creative session fee is for print credits"),
@@ -63,13 +63,13 @@ defmodule Picsello.ImportJobTest do
     session
     |> assert_text("Balance to collect: $800.00")
     |> assert_text("Remaining to collect: $800.00")
-    |> find(testid("payment-1"), &fill_in(&1, text_field("Payment amount"), with: "$300"))
+    |> find(testid("payment-1"), &fill_in(&1, text_field("Payment amount"), with: "300"))
     |> click(css("#payment-0"))
     |> fill_in(css(".numInput.cur-year"), with: "2030")
     |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("January")))
     |> click(css("[aria-label='January 1, 2030']"))
     |> assert_text("Remaining to collect: $500.00")
-    |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "$500"))
+    |> find(testid("payment-2"), &fill_in(&1, text_field("Payment amount"), with: "500"))
     |> click(css("#payment-1"))
     |> fill_in(css(".numInput.cur-year"), with: "2030")
     |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("February")))
@@ -86,7 +86,7 @@ defmodule Picsello.ImportJobTest do
   def import_job(session) do
     session
     |> click(button("Jobs"))
-    |> click(link("Import existing job"))
+    |> click(button("Import a job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
     |> click(button("Add a new client"))
@@ -112,7 +112,7 @@ defmodule Picsello.ImportJobTest do
   feature "user imports job", %{session: session} do
     session
     |> click(button("Jobs"))
-    |> click(link("Import existing job"))
+    |> click(button("Import a job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
     |> click(button("Add a new client"))
@@ -149,14 +149,14 @@ defmodule Picsello.ImportJobTest do
     )
     |> click(button("View invoice"))
     |> scroll_to_bottom()
-    |> assert_has(definition("Previously collected", text: "$200.00"))
-    |> assert_has(definition("$300.00 due on Jan 01, 2030", text: "$300.00"))
-    |> assert_has(definition("$500.00 due on Feb 01, 2030", text: "$500.00"))
+    |> assert_has(definition("Previously collected", text: "200.00 USD"))
+    |> assert_has(definition("300.00 USD due on Jan 01, 2030", text: "300.00 USD"))
+    |> assert_has(definition("500.00 USD due on Feb 01, 2030", text: "500.00 USD"))
 
-    base_price = Money.new(100_000)
-    download_each_price = Money.new(5000)
-    print_credits = Money.new(10_000)
-    collected_price = Money.new(20_000)
+    base_price = Money.new(100_000, "USD")
+    download_each_price = Money.new(5000, "USD")
+    print_credits = Money.new(10_000, "USD")
+    collected_price = Money.new(20_000, "USD")
 
     job =
       Repo.one(Job) |> Repo.preload([:package, :payment_schedules, :client, :booking_proposals])
@@ -184,8 +184,8 @@ defmodule Picsello.ImportJobTest do
              phone: "(210) 111-1234"
            } = job.client
 
-    payment1_price = Money.new(30_000)
-    payment2_price = Money.new(50_000)
+    payment1_price = Money.new(30_000, "USD")
+    payment2_price = Money.new(50_000, "USD")
 
     assert [
              %PaymentSchedule{
@@ -214,7 +214,7 @@ defmodule Picsello.ImportJobTest do
 
     session
     |> click(button("Jobs"))
-    |> click(link("Import existing job"))
+    |> click(button("Import a job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
     |> fill_in_existing_client_form()
@@ -269,7 +269,7 @@ defmodule Picsello.ImportJobTest do
 
     session
     |> click(button("Jobs"))
-    |> click(link("Import existing job"))
+    |> click(button("Import a job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
     |> fill_in_existing_client_form()
@@ -311,7 +311,7 @@ defmodule Picsello.ImportJobTest do
   feature "user imports job with only one payment", %{session: session} do
     session
     |> click(button("Jobs"))
-    |> click(link("Import existing job"))
+    |> click(button("Import a job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
     |> click(button("Add a new client"))
@@ -353,7 +353,7 @@ defmodule Picsello.ImportJobTest do
   feature "user imports job without payments", %{session: session} do
     session
     |> click(button("Jobs"))
-    |> click(link("Import existing job"))
+    |> click(button("Import a job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
     |> click(button("Add a new client"))
@@ -394,7 +394,7 @@ defmodule Picsello.ImportJobTest do
   feature "user imports job with zero base price", %{session: session} do
     session
     |> click(button("Jobs"))
-    |> click(link("Import existing job"))
+    |> click(button("Import a job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
     |> click(button("Add a new client"))
@@ -425,7 +425,7 @@ defmodule Picsello.ImportJobTest do
   feature "user sees validation errors when importing job", %{session: session} do
     session
     |> click(button("Jobs"))
-    |> click(link("Import existing job"))
+    |> click(button("Import a job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
     |> click(button("Add a new client"))
@@ -444,14 +444,14 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Import Existing Job: Custom Invoice")
     |> assert_text("Client: #{@client_name}")
     |> find(testid("payment-1"), &fill_in(&1, text_field("Payment amount"), with: " "))
-    |> assert_has(css("label", text: "Payment amount is invalid"))
+    |> assert_has(css("label", text: "Payment amount must be greater than 0"))
     |> assert_disabled_submit()
   end
 
   feature "user navigates back and forth on steps", %{session: session} do
     session
     |> click(button("Jobs"))
-    |> click(link("Import existing job"))
+    |> click(button("Import a job"))
     |> find(testid("import-job-card"), &click(&1, button("Next")))
     |> assert_text("Import Existing Job: General Details")
     |> click(button("Add a new client"))
@@ -526,9 +526,9 @@ defmodule Picsello.ImportJobTest do
     |> assert_has(button("Questionnaire", count: 0))
     |> assert_has(button("Invoice", count: 1))
     |> click(button("Invoice"))
-    |> assert_has(definition("Previously collected", text: "$200.00"))
-    |> assert_has(definition("$300.00 due on Jan 01, 2030", text: "$300.00"))
-    |> assert_has(definition("$500.00 due on Feb 01, 2030", text: "$500.00"))
+    |> assert_has(definition("Previously collected", text: "200.00 USD"))
+    |> assert_has(definition("300.00 USD due on Jan 01, 2030", text: "300.00 USD"))
+    |> assert_has(definition("500.00 USD due on Feb 01, 2030", text: "500.00 USD"))
     |> click(button("Pay with card Fast easy and secure"))
     |> assert_url_contains("stripe-checkout")
 

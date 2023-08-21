@@ -140,7 +140,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
 
   defp shipping_description(_, _), do: {false, "estimated"}
 
-  def details(%{products: products, digitals: digitals} = order, caller)
+  def details(%{products: products, digitals: digitals, currency: currency} = order, caller)
       when is_list(products) and is_list(digitals) do
     charges = charges(order, caller)
     product_charge = product_charge_lines(order)
@@ -149,9 +149,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     %{
       charges: charges,
       product_charge_lines: product_charge,
-      subtotal: sum_lines(charges ++ product_charge),
+      subtotal: sum_lines(charges ++ product_charge, currency),
       discounts: discounts,
-      total: sum_lines(charges ++ product_charge ++ discounts)
+      total: sum_lines(charges ++ product_charge ++ discounts, currency)
     }
   end
 
@@ -167,14 +167,14 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   defp toggle(class),
     do: JS.toggle(to: ".#{class} > button .toggle") |> JS.toggle(to: ".#{class} .grid .toggle")
 
-  defp sum_lines(charges) do
-    for {_label, %Money{} = price} <- charges, reduce: ~M[0]USD do
+  defp sum_lines(charges, currency) do
+    for {_label, %Money{} = price} <- charges, reduce: Money.new(0, currency) do
       acc -> Money.add(acc, price)
     end
   end
 
-  defp sum_prices(items) do
-    for %{price: price} <- items, reduce: ~M[0]USD do
+  defp sum_prices(items, currency) do
+    for %{price: price} <- items, reduce: Money.new(0, currency) do
       acc -> Money.add(acc, price)
     end
   end
@@ -190,9 +190,9 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
 
   defp product_charge_lines(%{products: []}), do: []
 
-  defp product_charge_lines(%{products: products} = order) do
+  defp product_charge_lines(%{products: products, currency: currency} = order) do
     [
-      {"Products (#{length(products)})", sum_prices(products)},
+      {"Products (#{length(products)})", sum_prices(products, currency)},
       Enum.any?(products, & &1.shipping_type) && {"", Cart.total_shipping(order)}
     ]
   end
@@ -200,13 +200,13 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
   defp digital_charge_lines(%{digitals: []}, _), do: []
 
   @proofing_album_calls ~w(proofing_album_cart proofing_album_order)a
-  defp digital_charge_lines(%{digitals: digitals}, caller)
+  defp digital_charge_lines(%{digitals: digitals, currency: currency}, caller)
        when caller in @proofing_album_calls do
-    [{"Selected for retouching (#{length(digitals)})", sum_prices(digitals)}]
+    [{"Selected for retouching (#{length(digitals)})", sum_prices(digitals, currency)}]
   end
 
-  defp digital_charge_lines(%{digitals: digitals}, _caller) do
-    [{"Digital downloads (#{length(digitals)})", sum_prices(digitals)}]
+  defp digital_charge_lines(%{digitals: digitals, currency: currency}, _caller) do
+    [{"Digital downloads (#{length(digitals)})", sum_prices(digitals, currency)}]
   end
 
   defp bundle_charge_lines(%{bundle_price: nil}), do: []
@@ -224,17 +224,18 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart.Summary do
     end
   end
 
-  defp digital_discount_lines(%{gallery_id: gallery_id} = order, caller) do
+  defp digital_discount_lines(%{gallery_id: gallery_id, currency: currency} = order, caller) do
     case Enum.filter(order.digitals, & &1.is_credit) do
       [] ->
         []
 
       credited ->
         credit = length(credited)
+        gallery = Picsello.Repo.get(Gallery, gallery_id)
 
         [
-          {credit(%Gallery{id: gallery_id}, credit, caller),
-           credited |> Enum.reduce(~M[0]USD, &Money.subtract(&2, &1.price))}
+          {credit(gallery, credit, caller),
+           credited |> Enum.reduce(Money.new(0, currency), &Money.subtract(&2, &1.price))}
         ]
     end
   end

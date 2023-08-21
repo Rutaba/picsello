@@ -94,7 +94,7 @@ defmodule PicselloWeb.ClientMessageComponent do
 
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
         <div class="grid grid-flow-row md:grid-flow-col md:auto-cols-fr md:gap-4 mt-2">
-          <%= if Enum.any?(@preset_options), do: labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12" %>
+          <%= if Enum.any?(@preset_options), do: (labeled_select f, :preset_id, @preset_options, label: "Select email preset", class: "h-12") %>
           <%= labeled_input f, :subject, label: "Subject line", wrapper_class: classes(hidden: !@show_subject), class: "h-12", phx_debounce: "500" %>
         </div>
 
@@ -228,13 +228,25 @@ defmodule PicselloWeb.ClientMessageComponent do
   end
 
   @impl true
-  def handle_event("save", %{"client_message" => _params}, socket) do
-    %{assigns: %{changeset: changeset, composed_event: composed_event, recipients: recipients}} =
-      socket
+  def handle_event(
+        "save",
+        %{"client_message" => _params},
+        %{
+          assigns: %{
+            changeset: changeset,
+            composed_event: composed_event,
+            recipients: recipients
+          }
+        } = socket
+      ) do
+    updated_recipients = remove_duplicate_recipients(recipients)
 
     if changeset.valid?,
       do:
-        send(socket.parent_pid, {composed_event, changeset |> Map.put(:action, nil), recipients})
+        send(
+          socket.parent_pid,
+          {composed_event, changeset |> Map.put(:action, nil), updated_recipients}
+        )
 
     socket |> noreply()
   end
@@ -268,6 +280,19 @@ defmodule PicselloWeb.ClientMessageComponent do
       )
 
   def client_email(%Job{client: %{email: email}}), do: email
+
+  def remove_duplicate_recipients(recipients) do
+    to = Map.get(recipients, "to") |> List.wrap() |> Enum.uniq()
+    cc = (Map.get(recipients, "cc", []) |> Enum.uniq()) -- to
+    bcc = ((Map.get(recipients, "bcc", []) |> Enum.uniq()) -- to) -- cc
+
+    %{"to" => to}
+    |> update_recipients_map("cc", cc)
+    |> update_recipients_map("bcc", bcc)
+  end
+
+  defp update_recipients_map(map, _, []), do: map
+  defp update_recipients_map(map, key, value), do: Map.put(map, key, value)
 
   defp assign_changeset(
          socket,
@@ -335,10 +360,10 @@ defmodule PicselloWeb.ClientMessageComponent do
       end)
 
     valid_emails? =
-      email_list
-      |> Enum.all?(fn email ->
-        Repo.exists?(Clients.get_client_query(user, email: email))
-      end)
+      Enum.any?(email_list) &&
+        Enum.all?(email_list, fn email ->
+          Repo.exists?(Clients.get_client_query(user, email: email))
+        end)
 
     if valid_emails? do
       socket

@@ -23,8 +23,8 @@ defmodule Picsello.Profiles do
     import Ecto.Changeset
 
     embedded_schema do
-      field :url, :string
-      field :content_type, :string
+      field(:url, :string)
+      field(:content_type, :string)
     end
 
     def changeset(profile_image, attrs) do
@@ -94,7 +94,6 @@ defmodule Picsello.Profiles do
     @moduledoc "container for the contact form data"
     use Ecto.Schema
     import Ecto.Changeset
-    import Picsello.Client, only: [valid_phone: 2]
     import Picsello.Accounts.User, only: [validate_email_format: 1]
     import PicselloWeb.Gettext
 
@@ -102,7 +101,7 @@ defmodule Picsello.Profiles do
 
     embedded_schema do
       for field <- @fields do
-        field field, :string
+        field(field, :string)
       end
     end
 
@@ -111,7 +110,6 @@ defmodule Picsello.Profiles do
       |> cast(attrs, @fields)
       |> validate_email_format()
       |> validate_required(@fields)
-      |> validate_change(:phone, &valid_phone/2)
     end
 
     def to_string(%__MODULE__{} = contact) do
@@ -154,7 +152,9 @@ defmodule Picsello.Profiles do
   end
 
   def update_organization_profile(%Organization{} = organization, attrs) do
-    organization |> edit_organization_profile_changeset(attrs) |> Repo.update()
+    organization
+    |> edit_organization_profile_changeset(attrs)
+    |> Repo.update()
   end
 
   def handle_contact(%{id: organization_id} = _organization, params, helpers) do
@@ -172,7 +172,7 @@ defmodule Picsello.Profiles do
             |> Map.take([:name, :email, :phone])
             |> Map.put(:organization_id, organization_id)
             |> Client.create_changeset(),
-            on_conflict: {:replace, [:email]},
+            on_conflict: {:replace, [:email, :archived_at]},
             conflict_target: [:organization_id, :email],
             returning: [:id]
           )
@@ -307,18 +307,6 @@ defmodule Picsello.Profiles do
     Phoenix.PubSub.subscribe(Picsello.PubSub, topic)
   end
 
-  defp delete_image_from_storage(url) do
-    Task.start(fn ->
-      url
-      |> URI.parse()
-      |> Map.get(:path)
-      |> Path.split()
-      |> Enum.drop(2)
-      |> Path.join()
-      |> Picsello.Galleries.Workers.PhotoStorage.delete(bucket())
-    end)
-  end
-
   def handle_photo_processed_message(path, id) do
     image_field = if String.contains?(path, "main_image"), do: "main_image", else: "logo"
 
@@ -348,7 +336,7 @@ defmodule Picsello.Profiles do
         end
 
       _ ->
-        Logger.warn("ignoring path #{path} for version #{id}")
+        Logger.warning("ignoring path #{path} for version #{id}")
     end
 
     :ok
@@ -379,7 +367,7 @@ defmodule Picsello.Profiles do
       Picsello.Galleries.Workers.PhotoStorage.params_for_upload(
         expires_in: 600,
         bucket: bucket(),
-        key: to_filename(organization, image, "original"),
+        key: to_filename(organization, image, remove_file_extension(image.client_name)),
         fields:
           %{
             "resize" => Jason.encode!(%{height: resize_height, withoutEnlargement: true}),
@@ -401,14 +389,48 @@ defmodule Picsello.Profiles do
         ]
       )
 
-    meta = params |> Map.take([:url, :key, :fields]) |> Map.put(:uploader, "GCS")
-
     {:ok, organization} =
       update_organization_profile(organization, %{
         profile: %{image_field => %{id: image.uuid, content_type: image.client_type}}
       })
 
-    {:ok, meta, organization}
+    {:ok, make_meta(params), organization}
+  end
+
+  def brand_logo_preflight(%{upload_config: image_field} = image, organization) do
+    resize_height =
+      %{
+        logo: 104,
+        main_image: 600
+      }
+      |> Map.get(image_field)
+
+    {:ok,
+     Picsello.Galleries.Workers.PhotoStorage.params_for_upload(
+       expires_in: 600,
+       bucket: bucket(),
+       key: to_filename(organization, image, remove_file_extension(image.client_name)),
+       fields:
+         %{
+           "resize" => Jason.encode!(%{height: resize_height, withoutEnlargement: true}),
+           "pubsub-topic" => output_topic(),
+           "version-id" => image.uuid,
+           "out-filename" => to_filename(organization, image, "#{image.uuid}.png")
+         }
+         |> meta_fields()
+         |> Enum.into(%{
+           "content-type" => image.client_type,
+           "cache-control" => "public, max-age=@upload_options"
+         }),
+       conditions: [
+         [
+           "content-length-range",
+           0,
+           String.to_integer(Application.get_env(:picsello, :photo_max_file_size))
+         ]
+       ]
+     )
+     |> make_meta()}
   end
 
   def logo_url(organization) do
@@ -430,6 +452,26 @@ defmodule Picsello.Profiles do
       job_type.show_on_business? and job_type.show_on_profile?
     end)
     |> Enum.map(& &1.job_type)
+  end
+
+  defp delete_image_from_storage(url) do
+    Task.start(fn ->
+      url
+      |> URI.parse()
+      |> Map.get(:path)
+      |> Path.split()
+      |> Enum.drop(2)
+      |> Path.join()
+      |> Picsello.Galleries.Workers.PhotoStorage.delete(bucket())
+    end)
+  end
+
+  defp remove_file_extension(filename) do
+    String.replace(filename, [".svg", ".png", ".jpeg", ".jpg", ".pdf", ".docx", ".txt"], "")
+  end
+
+  defp make_meta(params) do
+    params |> Map.take([:url, :key, :fields]) |> Map.put(:uploader, "GCS")
   end
 
   defp to_filename(organization, %{client_type: content_type} = image, name),

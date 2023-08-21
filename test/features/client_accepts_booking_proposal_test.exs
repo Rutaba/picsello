@@ -37,7 +37,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
           shoot_count: 1,
           questionnaire_template_id: nil,
           base_multiplier: 0.8,
-          base_price: 100
+          base_price: %{amount: 100, currency: :USD}
         },
         client: %{name: "John"},
         shoots: [
@@ -176,9 +176,10 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(definition("For:", text: "John"))
       |> assert_has(definition("From:", text: "Photography LLC"))
       |> assert_has(definition("Email:", text: "photographer@example.com"))
-      |> assert_has(definition("Session fee", text: "$1.00"))
+      |> scroll_into_view(testid("modal-buttons"))
+      |> assert_has(definition("Session fee", text: "1.00 USD"))
       |> assert_has(definition("Discount", text: "20%"))
-      |> assert_has(definition("Total", text: "$0.80"))
+      |> assert_has(definition("Total", text: "0.80 USD"))
       |> assert_has(testid("shoot-title", text: "Shoot 1"))
       |> assert_has(testid("shoot-title", text: "September 30, 2029"))
       |> assert_has(testid("shoot-description", text: "15 mins starting at 7:00 pm"))
@@ -249,15 +250,16 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> click(button("Return to your portal"))
       # |> assert_text("#{String.capitalize(lead.client.name)}, let’s get your shoot booked!")
       |> click(button("Make payment"))
-      |> assert_has(definition("Total", text: "$0.80"))
+      |> scroll_into_view(testid("modal-buttons"))
+      |> assert_has(definition("Total", text: "0.80 USD"))
       |> assert_has(
-        definition("$5.00 paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$5.00"
+        definition("5.00 USD paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+          text: "5.00 USD"
         )
       )
       |> assert_has(
-        definition("$5.00 due on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$5.00"
+        definition("5.00 USD due on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+          text: "5.00 USD"
         )
       )
       |> click(button("Pay with card Fast easy and secure"))
@@ -297,10 +299,11 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_has(css("h1", text: "Congratulations - your session is now booked."))
       |> click(button("Return to your portal"))
       |> click(button("Completed Make payment"))
-      |> assert_has(definition("Total", text: "$0.80"))
+      |> scroll_into_view(testid("modal-buttons"))
+      |> assert_has(definition("Total", text: "0.80 USD"))
       |> assert_has(
-        definition("$5.00 paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
-          text: "$5.00",
+        definition("5.00 USD paid on #{Calendar.strftime(DateTime.utc_now(), "%b %d, %Y")}",
+          text: "5.00 USD",
           count: 2
         )
       )
@@ -529,7 +532,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     lead: lead
   } do
     Repo.update_all(Package, set: [base_multiplier: 0])
-    Repo.update_all(PaymentSchedule, set: [price: 0])
+    Repo.update_all(PaymentSchedule, set: [price: %{amount: 0, currency: :USD}])
 
     photographer_session
     |> visit("/leads/#{lead.id}")
@@ -555,9 +558,9 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
     |> click(button("Make payment"))
-    |> assert_has(definition("Session fee", text: "$1.00"))
+    |> assert_has(definition("Session fee", text: "1.00 USD"))
     |> assert_has(definition("Discount", text: "100%"))
-    |> assert_has(definition("Total", text: "$0.00"))
+    |> assert_has(definition("Total", text: "0.00 USD"))
     |> within_modal(&click(&1, button("Finish booking")))
     |> assert_has(css("h1", text: "Congratulations - your session is now booked."))
     |> click(button("Return to your portal"))

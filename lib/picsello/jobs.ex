@@ -12,6 +12,35 @@ defmodule Picsello.Jobs do
 
   import Ecto.Query
 
+  def get_recent_leads(user) do
+    query =
+      user
+      |> Job.for_user()
+      |> Job.leads()
+      |> Job.not_booking()
+
+    from(j in query,
+      preload: :job_status,
+      order_by: [desc: j.inserted_at],
+      limit: 6
+    )
+    |> Repo.all()
+  end
+
+  def get_recent_jobs(user) do
+    query =
+      user
+      |> Job.for_user()
+      |> Job.not_leads()
+
+    from(j in query,
+      preload: :shoots,
+      order_by: [desc: j.inserted_at],
+      limit: 6
+    )
+    |> Repo.all()
+  end
+
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
     shoots =
       from(s in Shoot,
@@ -23,6 +52,7 @@ defmodule Picsello.Jobs do
     from(j in query,
       left_join: job_status in assoc(j, :job_status),
       left_join: shoots in subquery(shoots),
+      on: true,
       left_join: package in assoc(j, :package),
       left_join: payment_schedules in assoc(j, :payment_schedules),
       where: ^filters_where(opts),

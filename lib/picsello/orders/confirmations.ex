@@ -20,8 +20,9 @@ defmodule Picsello.Orders.Confirmations do
     OrganizationCard
   }
 
+  alias Picsello.WHCC.Order.Created, as: WHCCOrder
+
   import Ecto.Query, only: [from: 2]
-  import Money.Sigils
   import Ecto.Multi, only: [new: 0, put: 3, update: 3, run: 3, merge: 2, append: 2, insert: 3]
 
   @doc """
@@ -144,7 +145,7 @@ defmodule Picsello.Orders.Confirmations do
     |> run(:intent, &update_intent/2)
     |> run(:photographer_owes, &photographer_owes/2)
     |> merge(fn
-      %{order: %{products: [_ | _]} = order, photographer_owes: ~M[0]USD} = multi ->
+      %{order: %{products: [_ | _]} = order, photographer_owes: %{amount: 0}} = multi ->
         new()
         |> run(:confirm_order, fn _, _ -> confirm_order(order) end)
         |> update(:confirmed_order, Order.whcc_confirmation_changeset(order))
@@ -153,10 +154,11 @@ defmodule Picsello.Orders.Confirmations do
       %{order: %{products: []}} = multi ->
         run(new(), :capture, fn _, _ -> capture(multi) end)
 
-      %{order: order, photographer_owes: photographer_owes} ->
+      %{order: order, photographer_owes: photographer_owes} = multi ->
         new()
         |> run(:stripe_invoice, fn _, _ -> create_stripe_invoice(order, photographer_owes) end)
         |> insert(:invoice, &insert_invoice_changeset(&1, order))
+        |> run(:capture, fn _, _ -> capture(multi) end)
     end)
     |> run(:insert_card, fn _repo, %{order: order} ->
       OrganizationCard.insert_for_proofing_order(order)
@@ -179,27 +181,55 @@ defmodule Picsello.Orders.Confirmations do
     end
   end
 
-  defp photographer_owes(_repo, %{order: %{whcc_order: nil}}), do: {:ok, ~M[0]USD}
+  defp photographer_owes(_repo, %{order: %{whcc_order: nil} = order}),
+    do: {:ok, Money.new(0, order.currency)}
 
   defp photographer_owes(_repo, %{
-         intent: %{application_fee_amount: nil},
-         order: %{whcc_order: whcc_order} = order
+         intent: %{application_fee_amount: nil, amount: amount},
+         order: %{currency: currency} = order
        }) do
-    shipping = Picsello.Cart.total_shipping(order)
-    {:ok, Picsello.WHCC.Order.Created.total(whcc_order) |> Money.add(shipping)}
+    {:ok, calculate_total_costs(order) |> Money.add(stripe_fee(amount, currency))}
   end
 
   defp photographer_owes(_repo, %{
-         intent: %{application_fee_amount: application_fee_amount},
-         order: %{whcc_order: whcc_order} = order
+         intent: %{application_fee_amount: _application_fee_amount, amount: amount},
+         order: %{currency: currency} = order
        }) do
-    shipping = Picsello.Cart.total_shipping(order)
+    actual_costs_and_fees =
+      calculate_total_costs(order) |> Money.add(actual_stripe_fee(amount, currency))
 
-    {:ok,
-     whcc_order
-     |> Picsello.WHCC.Order.Created.total()
-     |> Money.add(shipping)
-     |> Money.subtract(application_fee_amount)}
+    costs_and_fees =
+      calculate_total_costs(order)
+      |> stripe_fee(currency)
+      |> Money.add(calculate_total_costs(order))
+
+    case Money.cmp(amount, actual_costs_and_fees) do
+      :lt -> {:ok, Money.subtract(costs_and_fees, amount)}
+      :gt -> {:ok, Money.new(0, currency)}
+      _ -> {:ok, Money.new(0, currency)}
+    end
+  end
+
+  defp calculate_total_costs(%{whcc_order: whcc_order} = order) do
+    whcc_order
+    |> WHCCOrder.total()
+    |> Money.add(Picsello.Cart.total_shipping(order))
+  end
+
+  # stripe's actual formula to calculate fee
+  # After transactions of $1million, stripe processing fee is discounted,
+  # and we will need to tweak this formula in future.
+  defp actual_stripe_fee(amount, currency) do
+    amount
+    |> Money.multiply(2.9 / 100)
+    |> Money.add(Money.new(30, currency))
+  end
+
+  # our formula to calculate fee to be on safe side
+  defp stripe_fee(amount, currency) do
+    amount
+    |> Money.multiply(2.9 / 100)
+    |> Money.add(Money.new(70, currency))
   end
 
   defp place_order(%{order: order}), do: Order.placed_changeset(order)
@@ -326,11 +356,12 @@ defmodule Picsello.Orders.Confirmations do
   end
 
   defp create_stripe_invoice(
-         %{gallery: %{organization: %{user: user}}} = invoice_order,
+         %{currency: currency, gallery: %{organization: %{user: user}}} = invoice_order,
          outstanding
        ) do
     Invoices.invoice_user(user, outstanding,
-      description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}"
+      description: "Outstanding fulfilment charges for order ##{Order.number(invoice_order)}",
+      currency: currency
     )
   end
 

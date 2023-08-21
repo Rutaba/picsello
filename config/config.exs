@@ -178,8 +178,13 @@ config :pdf_generator,
   raise_on_missing_wkhtmltopdf_binary: false
 
 config :mime, :types, %{
-  "text/calendar" => ["text/calendar"]
+  "text/calendar" => ["text/calendar"],
+  "application/xml" => ["xml"]
 }
+
+config :picsello, :exchange_rates,
+  url: System.get_env("EXCHANGE_RATES_API_URL"),
+  access_key: System.get_env("EXCHANGE_RATES_API_KEY")
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

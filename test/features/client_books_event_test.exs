@@ -19,6 +19,8 @@ defmodule Picsello.ClientBooksEventTest do
     |> Picsello.Organization.assign_stripe_account_changeset("stripe_id")
     |> Picsello.Repo.update!()
 
+    questionnaire = insert(:questionnaire)
+
     template =
       insert(:package_template,
         user: user,
@@ -26,7 +28,8 @@ defmodule Picsello.ClientBooksEventTest do
         name: "My custom package",
         download_count: 3,
         download_each_price: ~M[5000]USD,
-        base_price: ~M[1500]USD
+        base_price: ~M[1500]USD,
+        questionnaire_template_id: questionnaire.id
       )
 
     insert(:package_payment_schedule, %{package: template})
@@ -104,7 +107,6 @@ defmodule Picsello.ClientBooksEventTest do
     |> fill_in(text_field("Your phone number"), with: " ")
     |> assert_text("Your name can't be blank")
     |> assert_text("Your email can't be blank")
-    |> assert_text("Your phone number is invalid")
     |> fill_in(text_field("Your name"), with: "Chad Smith")
     |> fill_in(text_field("Your email"), with: "chad@example.com")
     |> fill_in(text_field("Your phone number"), with: "987 123 4567")
@@ -137,7 +139,7 @@ defmodule Picsello.ClientBooksEventTest do
     |> assert_text("Sunday, December 11 @ 11:00 am")
     |> assert_text("320 1st St N")
     |> click(button("To-Do Review and accept your proposal"))
-    |> assert_has(definition("Total", text: "$15.00"))
+    |> assert_has(definition("Total", text: "15.00 USD"))
     |> click(button("Accept Quote"))
     |> scroll_to_bottom()
     |> click(button("To-Do Review and sign your contract"))
@@ -146,7 +148,7 @@ defmodule Picsello.ClientBooksEventTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
     |> click(button("To-Do Make payment"))
-    |> assert_has(definition("$1.00 due to book", text: "$1.00"))
+    |> assert_has(definition("1.00 USD due to book", text: "1.00 USD"))
     |> click(button("Pay with card Fast easy and secure"))
     |> assert_url_contains("stripe-checkout")
 

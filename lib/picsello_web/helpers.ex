@@ -29,7 +29,7 @@ defmodule PicselloWeb.Helpers do
         email: Galleries.get_gallery_client_email(order)
       )
 
-  def proofing_album_selections_url(%{client_link_hash: hash, password: password}, order),
+  def proofing_album_selections_url(%{client_link_hash: hash}, %{password: password}, order),
     do:
       Routes.gallery_client_order_url(Endpoint, :proofing_album, hash, Order.number(order),
         pw: password,

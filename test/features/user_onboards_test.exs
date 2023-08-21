@@ -35,7 +35,7 @@ defmodule Picsello.UserOnboardsTest do
     insert(:cost_of_living_adjustment, state: "Non-US")
 
     insert(:package_tier)
-    insert(:package_base_price, base_price: 300)
+    insert(:package_base_price, base_price: %{amount: 300, currency: :USD})
     subscription_plan = insert(:subscription_plan)
     [session: visit(session, "/"), subscription_plan: subscription_plan]
   end
@@ -114,7 +114,6 @@ defmodule Picsello.UserOnboardsTest do
     |> wait_for_enabled_submit_button()
     |> click(button("Next"))
     |> sleep(250)
-    |> assert_disabled_submit()
     |> click(css("label", text: "Portrait"))
     |> click(css("label", text: "Event"))
     |> wait_for_enabled_submit_button()

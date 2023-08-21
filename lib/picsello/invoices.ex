@@ -12,9 +12,9 @@ defmodule Picsello.Invoices do
     @statuses ~w[draft open paid void uncollectable]a
 
     schema "gallery_order_invoices" do
-      field :amount_due, Money.Ecto.Type
-      field :amount_paid, Money.Ecto.Type
-      field :amount_remaining, Money.Ecto.Type
+      field :amount_due, Money.Ecto.Map.Type
+      field :amount_paid, Money.Ecto.Map.Type
+      field :amount_remaining, Money.Ecto.Map.Type
       field :description, :string
       field :status, Ecto.Enum, values: @statuses
       field :stripe_id, :string
@@ -24,12 +24,18 @@ defmodule Picsello.Invoices do
       timestamps(type: :utc_datetime)
     end
 
-    def changeset(%Stripe.Invoice{id: stripe_id} = params, %Order{id: order_id}) do
+    def changeset(%Stripe.Invoice{id: stripe_id} = params, %Order{
+          id: order_id,
+          currency: currency
+        }) do
       attrs = ~w[amount_due amount_paid amount_remaining description stripe_id status order_id]a
 
       cast(
         %__MODULE__{},
-        params |> Map.from_struct() |> Map.merge(%{stripe_id: stripe_id, order_id: order_id}),
+        params
+        |> Map.from_struct()
+        |> build_amounts(currency)
+        |> Map.merge(%{stripe_id: stripe_id, order_id: order_id}),
         attrs
       )
       |> validate_required(attrs)
@@ -44,6 +50,18 @@ defmodule Picsello.Invoices do
         Map.from_struct(params),
         ~w[amount_due amount_paid amount_remaining description status]a
       )
+    end
+
+    defp build_amounts(params, currency) do
+      %{amount_due: amount_due, amount_paid: amount_paid, amount_remaining: amount_remaining} =
+        params
+
+      %{
+        params
+        | amount_due: Money.new(amount_due, currency),
+          amount_paid: Money.new(amount_paid, currency),
+          amount_remaining: Money.new(amount_remaining, currency)
+      }
     end
   end
 
@@ -68,7 +86,7 @@ defmodule Picsello.Invoices do
            Payments.create_invoice_item(%{
              customer: customer,
              amount: outstanding_cents,
-             currency: "USD"
+             currency: Keyword.get(opts, :currency)
            }),
          {:ok, %{id: invoice_id}} <-
            Payments.create_invoice(%{

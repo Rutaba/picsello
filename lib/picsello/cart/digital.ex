@@ -1,14 +1,14 @@
 defmodule Picsello.Cart.Digital do
   @moduledoc false
   use Ecto.Schema
-  import Money.Sigils
 
   schema "digital_line_items" do
     belongs_to :photo, Picsello.Galleries.Photo
     belongs_to :order, Picsello.Cart.Order
-    field :price, Money.Ecto.Amount.Type
+    field :price, Money.Ecto.Map.Type
     field :is_credit, :boolean, default: false
     field :preview_url, :string, virtual: true
+    field :currency, :string, virtual: true
 
     timestamps(type: :utc_datetime)
   end
@@ -23,6 +23,6 @@ defmodule Picsello.Cart.Digital do
           updated_at: DateTime.t()
         }
 
-  def charged_price(%__MODULE__{is_credit: true}), do: ~M[0]USD
+  def charged_price(%__MODULE__{is_credit: true, currency: currency}), do: Money.new(0, currency)
   def charged_price(%__MODULE__{is_credit: false, price: price}), do: price
 end

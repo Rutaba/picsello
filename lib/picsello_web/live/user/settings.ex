@@ -444,10 +444,10 @@ defmodule PicselloWeb.Live.User.Settings do
     assigns = Enum.into(assigns, %{class: "", title_badge: nil, select: false})
 
     ~H"""
-    <div class={"flex overflow-hidden border rounded-lg #{@class}"}>
+    <div class={"mb-5 flex overflow-hidden border rounded-lg #{@class}"}>
       <div class="w-4 border-r bg-blue-planning-300" />
 
-      <div class={classes("flex flex-col justify-between w-full p-4", %{"pl-8 -ml-4" => @select})}>
+      <div class={classes("flex flex-col justify-between w-full p-10", %{"pl-8 -ml-4" => @select})}>
 
         <div class="flex flex-col items-start sm:items-center sm:flex-row">
           <h1 class="mb-2 mr-4 text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>

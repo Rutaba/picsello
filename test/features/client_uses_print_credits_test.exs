@@ -20,8 +20,9 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     package =
       insert(:package,
         organization: organization,
-        print_credits: ~M[500000]USD,
-        download_each_price: ~M[5500]USD
+        print_credits: %Money{amount: 500_000, currency: :USD},
+        download_each_price: %Money{amount: 5500, currency: :USD},
+        currency: "USD"
       )
 
     gallery =
@@ -40,7 +41,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       insert(:category,
         default_markup: Decimal.new("1.1"),
         shipping_upcharge: Decimal.new(0),
-        shipping_base_charge: ~M[500]USD
+        shipping_base_charge: %Money{amount: 500, currency: :USD}
       )
 
     product = insert(:product, category: category)
@@ -50,8 +51,8 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       insert(:gallery_digital_pricing, %{
         gallery: gallery,
         email_list: ["testing@picsello.com", user.email],
-        print_credits: ~M[500000]USD,
-        download_each_price: ~M[5500]USD
+        print_credits: %Money{amount: 500_000, currency: :USD},
+        download_each_price: %Money{amount: 5500, currency: :USD}
       })
 
     insert(:gallery_client, %{email: "testing@picsello.com", gallery_id: gallery.id})
@@ -230,7 +231,8 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     intent =
       build(:stripe_payment_intent,
         application_fee_amount: application_fee_amount,
-        amount: amount_cents
+        amount: amount_cents,
+        currency: "usd"
       )
 
     Picsello.MockPayments
@@ -268,7 +270,8 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
            | id: payment_intent_id,
              status: "requires_capture",
              amount_capturable: amount_cents,
-             amount: amount_cents
+             amount: amount_cents,
+             currency: "usd"
          }}
       end
     )
@@ -311,13 +314,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
             amount_remaining: 5000,
             status: :draft
           ),
-        whcc_unit_base_price: ~M[4200]USD,
-        whcc_total: ~M[5000]USD,
+        whcc_unit_base_price: %Money{amount: 4200, currency: :USD},
+        whcc_total: %Money{amount: 5000, currency: :USD},
         stripe_checkout: %{application_fee_amount: ~M[1095]USD, amount: ~M[5500]USD}
       ]
     end
 
-    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc, :expect_stripe_checkout]
+    setup [:stub_whcc, :expect_stripe_checkout]
 
     feature "only charges photographer", %{
       session: session,
@@ -349,7 +352,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> click(link("Home"))
       |> assert_has(definition("Print Credit", text: "$758.00"))
 
-      refute_receive({:order_confirmed, _order})
+      assert_receive({:order_confirmed, _order})
 
       trigger_stripe_webhook(session, :app, "invoice.payment_succeeded", %{
         invoice
@@ -359,7 +362,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           status: :paid
       })
 
-      assert_receive({:order_confirmed, _order})
+      assert_receive({:delivered_email, _order})
     end
   end
 
@@ -381,13 +384,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
             amount_remaining: 5000,
             status: :draft
           ),
-        whcc_unit_base_price: ~M[2000]USD,
-        whcc_total: ~M[5000]USD,
+        whcc_unit_base_price: %Money{amount: 2000, currency: :USD},
+        whcc_total: %Money{amount: 5000, currency: :USD},
         stripe_checkout: %{application_fee_amount: ~M[1095]USD, amount: ~M[5500]USD}
       ]
     end
 
-    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc, :expect_stripe_checkout]
+    setup [:stub_whcc, :expect_stripe_checkout]
 
     feature("only charges photographer", %{
       session: session,
@@ -419,7 +422,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> click(link("Home"))
       |> assert_has(definition("Print Credit", text: "$2,980.00"))
 
-      refute_receive({:order_confirmed, _order})
+      assert_receive({:order_confirmed, _order})
 
       trigger_stripe_webhook(session, :app, "invoice.payment_succeeded", %{
         invoice
@@ -429,7 +432,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
           status: :paid
       })
 
-      assert_receive({:order_confirmed, _order})
+      assert_receive({:delivered_email, _order})
     end
   end
 
@@ -452,13 +455,13 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
             amount_remaining: 5000,
             status: :draft
           ),
-        whcc_unit_base_price: ~M[2000]USD,
-        whcc_total: ~M[5000]USD,
+        whcc_unit_base_price: %Money{amount: 2000, currency: :USD},
+        whcc_total: %Money{amount: 5000, currency: :USD},
         stripe_checkout: %{application_fee_amount: ~M[1095]USD, amount: ~M[5500]USD}
       ]
     end
 
-    setup [:expect_create_invoice, :expect_finalize_invoice, :stub_whcc, :expect_stripe_checkout]
+    setup [:stub_whcc, :expect_stripe_checkout]
 
     feature("only charges client", %{session: session, photo_ids: photo_ids}) do
       session
@@ -513,9 +516,9 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
       [
         stripe_invoice: stripe_invoice,
-        whcc_unit_base_price: ~M[5300]USD,
-        whcc_total: ~M[5000]USD,
-        stripe_checkout: %{application_fee_amount: ~M[6095]USD, amount: ~M[2000]USD}
+        whcc_unit_base_price: %Money{amount: 5300, currency: :USD},
+        whcc_total: %Money{amount: 5000, currency: :USD},
+        stripe_checkout: %{application_fee_amount: ~M[1095]USD, amount: ~M[2000]USD}
       ]
     end
 
@@ -548,7 +551,6 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     }) do
       session
       |> place_order(photo_ids)
-      |> sleep(1000)
       |> assert_url_contains("orders")
       |> assert_text("Order details")
       |> assert_has(definition("Total", text: "$363.95"))

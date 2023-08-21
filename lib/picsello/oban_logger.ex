@@ -3,7 +3,7 @@ defmodule Picsello.ObanLogger do
   require Logger
 
   def handle_event([:oban, :job, :start], measure, meta, _) do
-    Logger.warn("[Oban] start #{meta.worker} at #{measure.system_time}")
+    Logger.warning("[Oban] start #{meta.worker} at #{measure.system_time}")
   end
 
   def handle_event([:oban, :job, :exception], measure, %{kind: kind, worker: worker} = meta, _) do
@@ -21,6 +21,6 @@ defmodule Picsello.ObanLogger do
   end
 
   def handle_event([:oban, :job, event], measure, meta, _) do
-    Logger.warn("[Oban] #{event} #{meta.worker} ran in #{measure.duration}")
+    Logger.warning("[Oban] #{event} #{meta.worker} ran in #{measure.duration}")
   end
 end

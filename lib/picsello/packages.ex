@@ -39,6 +39,7 @@ defmodule Picsello.Packages do
     @moduledoc "For setting buy_all and print_credits price"
     use Ecto.Schema
     import Ecto.Changeset
+    alias Picsello.Packages.Download
 
     @primary_key false
     embedded_schema do
@@ -58,10 +59,12 @@ defmodule Picsello.Packages do
     end
 
     def handle_package_params(package, params) do
+      currency = Map.get(package, "currency")
+
       case Map.get(params, "package_pricing", %{})
            |> Map.get("is_enabled") do
         "false" ->
-          Map.put(package, "print_credits", Money.new(0))
+          Map.put(package, "print_credits", Download.zero_price(currency))
           |> Map.put("print_credits_include_in_total", false)
 
         _ ->
@@ -180,13 +183,11 @@ defmodule Picsello.Packages do
     @moduledoc false
     use Ecto.Schema
     import Ecto.Changeset
-    import Money.Sigils
     import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
     alias Picsello.Package
 
-    @default_each_price ~M[5000]USD
-    @zero_price ~M[0]USD
+    @default_each_price_amount 5000
 
     @primary_key false
     embedded_schema do
@@ -194,9 +195,10 @@ defmodule Picsello.Packages do
       field(:is_custom_price, :boolean, default: false)
       field(:includes_credits, :boolean, default: false)
       field(:digitals_include_in_total, :boolean, default: false)
-      field(:each_price, Money.Ecto.Amount.Type)
+      field(:each_price, Money.Ecto.Map.Type)
       field(:count, :integer)
-      field(:buy_all, Money.Ecto.Amount.Type)
+      field(:currency, :string)
+      field(:buy_all, Money.Ecto.Map.Type)
       field(:is_buy_all, :boolean)
     end
 
@@ -211,8 +213,12 @@ defmodule Picsello.Packages do
           :count,
           :is_buy_all,
           :buy_all,
-          :digitals_include_in_total
+          :digitals_include_in_total,
+          :currency
         ])
+
+      currency = get_field(changeset, :currency)
+      zero_price = zero_price(currency)
 
       if Map.get(attrs, "step") in [:choose_type, :pricing, :package_payment] do
         changeset
@@ -222,7 +228,7 @@ defmodule Picsello.Packages do
             do:
               Enum.reduce(
                 [
-                  each_price: @zero_price,
+                  each_price: zero_price,
                   is_custom_price: false,
                   includes_credits: false,
                   is_buy_all: false,
@@ -261,8 +267,8 @@ defmodule Picsello.Packages do
             else: &1
           )
         )
-        |> validate_buy_all()
-        |> validate_each_price()
+        |> validate_buy_all(zero_price)
+        |> validate_each_price(zero_price)
       else
         changeset
       end
@@ -295,8 +301,8 @@ defmodule Picsello.Packages do
     defp get_status(status_changeset),
       do: if(status_changeset, do: current(status_changeset) |> Map.get(:status), else: nil)
 
-    defp validate_buy_all(changeset) do
-      download_each_price = get_field(changeset, :each_price) || @zero_price
+    defp validate_buy_all(changeset, zero_price) do
+      download_each_price = get_field(changeset, :each_price) || zero_price
 
       if get_field(changeset, :is_buy_all) do
         changeset
@@ -310,8 +316,8 @@ defmodule Picsello.Packages do
       )
     end
 
-    defp validate_each_price(changeset) do
-      buy_all = get_field(changeset, :buy_all) || @zero_price
+    defp validate_each_price(changeset, zero_price) do
+      buy_all = get_field(changeset, :buy_all) || zero_price
 
       if Money.zero?(buy_all) do
         changeset
@@ -330,17 +336,24 @@ defmodule Picsello.Packages do
       do: from_package(package, %{download_each_price: nil, buy_all_price: nil})
 
     def from_package(
-          %{download_each_price: nil, buy_all: nil, download_count: nil} = package,
+          %{download_each_price: nil, buy_all: nil, download_count: nil, currency: currency} =
+            package,
           global_settings
         ),
         do:
           Map.merge(
-            %__MODULE__{status: :none, is_custom_price: true, is_buy_all: true},
+            %__MODULE__{
+              status: :none,
+              is_custom_price: true,
+              is_buy_all: true,
+              currency: currency
+            },
             set_download_fields(package, global_settings)
           )
 
     def from_package(
-          %{download_each_price: each_price, download_count: count, id: id} = package,
+          %{download_each_price: each_price, download_count: count, id: id, currency: currency} =
+            package,
           global_settings
         )
         when not is_nil(id) do
@@ -350,50 +363,59 @@ defmodule Picsello.Packages do
             status: :limited,
             is_custom_price: true,
             count: count,
-            digitals_include_in_total: Map.get(package, :digitals_include_in_total, false)
+            digitals_include_in_total: Map.get(package, :digitals_include_in_total, false),
+            currency: currency
           }
-          |> Map.merge(set_each_price(%{each_price: each_price}, global_settings))
+          |> Map.merge(
+            set_each_price(%{each_price: each_price, currency: currency}, global_settings)
+          )
           |> Map.merge(set_buy_all(package, global_settings))
 
         each_price && Money.positive?(each_price) ->
           %__MODULE__{
             status: :none,
             is_custom_price: true,
-            count: nil
+            count: nil,
+            currency: currency
           }
-          |> Map.merge(set_each_price(%{each_price: each_price}, global_settings))
+          |> Map.merge(
+            set_each_price(%{each_price: each_price, currency: currency}, global_settings)
+          )
           |> Map.merge(set_buy_all(package, global_settings))
 
         true ->
-          %__MODULE__{status: :unlimited, is_custom_price: true, count: nil}
-          |> Map.merge(set_default_download_each_price(global_settings))
+          %__MODULE__{status: :unlimited, is_custom_price: true, count: nil, currency: currency}
+          |> Map.merge(set_default_download_each_price(global_settings, currency))
           |> Map.merge(set_buy_all(package, global_settings))
       end
     end
 
     def from_package(
-          %{download_each_price: each_price, download_count: count} = package,
-          global_settings
+          %{download_each_price: each_price, download_count: count, currency: currency} = package,
+          %{download_each_price: gs_each_price} = global_settings
         )
-        when each_price in [global_settings.download_each_price, @default_each_price] and
+        when not is_nil(each_price) and
+               (each_price == gs_each_price or each_price.amount == @default_each_price_amount) and
                count in [0, nil] do
       Map.merge(
-        %__MODULE__{status: :none, is_custom_price: true, is_buy_all: true},
+        %__MODULE__{status: :none, is_custom_price: true, is_buy_all: true, currency: currency},
         set_download_fields(package, global_settings)
       )
     end
 
     def from_package(
-          %{download_each_price: each_price, download_count: count} = package,
+          %{download_each_price: each_price, download_count: count, currency: currency} = package,
           global_settings
         )
-        when each_price in [global_settings.download_each_price, @default_each_price, nil] do
+        when each_price in [global_settings.download_each_price, nil] or
+               each_price.amount == @default_each_price_amount do
       Map.merge(
         %__MODULE__{
           status: :limited,
           is_custom_price: true,
           is_buy_all: true,
-          digitals_include_in_total: Map.get(package, :digitals_include_in_total, false)
+          digitals_include_in_total: Map.get(package, :digitals_include_in_total, false),
+          currency: currency
         },
         set_download_fields(package, global_settings)
       )
@@ -401,7 +423,7 @@ defmodule Picsello.Packages do
     end
 
     def from_package(
-          %{download_count: count},
+          %{download_count: count, currency: currency},
           _global_settings
         )
         when count in [0, nil],
@@ -410,9 +432,10 @@ defmodule Picsello.Packages do
             %__MODULE__{
               status: :unlimited,
               is_custom_price: false,
-              each_price: @zero_price,
+              each_price: zero_price(currency),
               buy_all: nil,
-              is_buy_all: false
+              is_buy_all: false,
+              currency: currency
             },
             count
           )
@@ -420,44 +443,56 @@ defmodule Picsello.Packages do
     def count(%__MODULE__{count: nil}), do: 0
     def count(%__MODULE__{count: count}), do: count
 
-    def each_price(%__MODULE__{status: :unlimited}), do: @zero_price
-    def each_price(%__MODULE__{each_price: each_price}), do: each_price
+    def each_price(download, currency \\ "USD")
+    def each_price(%__MODULE__{status: :unlimited}, currency), do: zero_price(currency)
+
+    def each_price(%__MODULE__{each_price: %{amount: amount}}, currency),
+      do: Money.new(amount, currency)
+
+    def each_price(_, _), do: nil
 
     def buy_all(%__MODULE__{is_buy_all: false}), do: nil
     def buy_all(%__MODULE__{buy_all: buy_all}), do: buy_all
 
-    def default_each_price(), do: @default_each_price
+    def default_each_price_amount(), do: @default_each_price_amount
+    def zero_price(currency), do: Money.new(0, currency)
 
-    defp set_download_fields(package, global_settings) do
+    defp set_download_fields(%{currency: currency} = package, global_settings) do
       if is_nil(package.id) do
-        set_default_download_each_price(global_settings)
+        set_default_download_each_price(global_settings, currency)
       else
         set_each_price(package, global_settings)
       end
       |> Map.merge(set_buy_all(package, global_settings))
     end
 
-    defp set_each_price(%{each_price: each_price}, global_settings) do
+    defp set_each_price(%{each_price: each_price, currency: currency}, global_settings) do
       if each_price && !Money.zero?(each_price),
         do: %{each_price: each_price},
-        else: set_default_download_each_price(global_settings)
+        else: set_default_download_each_price(global_settings, currency)
     end
 
-    defp set_default_download_each_price(global_settings) do
+    defp set_default_download_each_price(global_settings, currency) do
       each_price = global_settings.download_each_price
-      %{each_price: if(each_price, do: each_price, else: @default_each_price)}
+      amount = if(each_price, do: each_price.amount, else: @default_each_price_amount)
+
+      %{each_price: Money.new(amount, currency)}
     end
 
-    defp set_buy_all(%{buy_all: buy_all}, global_settings) do
+    defp set_buy_all(%{buy_all: buy_all, currency: currency}, %{
+           buy_all_price: buy_all_price = global_settings
+         }) do
+      buy_all_price = buy_all_price && Money.new(buy_all_price.amount, currency)
+
       cond do
         buy_all && Money.zero?(buy_all) && global_settings.buy_all_price ->
-          %{buy_all: global_settings.buy_all_price, is_buy_all: true}
+          %{buy_all: buy_all_price, is_buy_all: true}
 
         buy_all ->
-          %{buy_all: buy_all, is_buy_all: true}
+          %{buy_all: Money.new(buy_all.amount, currency), is_buy_all: true}
 
         true ->
-          %{buy_all: global_settings.buy_all_price, is_buy_all: false}
+          %{buy_all: buy_all_price, is_buy_all: false}
       end
     end
 
@@ -485,7 +520,7 @@ defmodule Picsello.Packages do
     do: user |> Package.templates_for_user(job_type) |> Repo.all()
 
   def templates_for_organization(%Organization{id: id}),
-    do: id |> Package.templates_for_organization() |> Repo.all()
+    do: id |> Package.templates_for_organization_query() |> Repo.all()
 
   def insert_package_and_update_job(changeset, job, opts \\ %{}) do
     Ecto.Multi.new()
@@ -754,8 +789,8 @@ defmodule Picsello.Packages do
        }) do
     full_time = schedule == :full_time
     nearest = 500
-    zero_price = Money.new(0)
-    default_each_price = Download.default_each_price()
+    zero_price = Download.zero_price("USD")
+    default_each_price = Money.new(Download.default_each_price_amount(), "USD")
 
     from(base in BasePrice,
       where:
@@ -769,7 +804,18 @@ defmodule Picsello.Packages do
       select: %{
         base_price:
           type(
-            nearest(adjustment.multiplier * base.base_price, ^nearest),
+            fragment(
+              "jsonb_build_object('amount', (?::numeric)::integer, 'currency', (?::text))",
+              nearest(
+                fragment(
+                  "(?::numeric * (?->>'amount')::numeric)::numeric",
+                  adjustment.multiplier,
+                  base.base_price
+                ),
+                ^nearest
+              ),
+              "USD"
+            ),
             base.base_price
           ),
         description: coalesce(base.description, name.initcap),
@@ -861,5 +907,11 @@ defmodule Picsello.Packages do
 
   def update_all_query(package_ids, opts) do
     from(p in Package, where: p.id in ^package_ids, update: [set: ^opts])
+  end
+
+  def get_recent_packages(user) do
+    query = Package.templates_for_organization_query(user.organization_id)
+
+    from(q in query, order_by: [desc: q.inserted_at], limit: 6) |> Repo.all()
   end
 end

@@ -72,14 +72,15 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
   defp assign_booking_event(%{assigns: %{organization: organization}} = socket, event_id) do
     booking_event = BookingEvents.get_booking_event_preload!(organization.id, event_id)
     title = "#{booking_event.name} | Book with #{organization.name}"
+    description = HtmlSanitizeEx.strip_tags(booking_event.description)
 
     socket
     |> assign(booking_event: booking_event)
     |> assign(:page_title, title)
     |> assign(:meta_attrs, %{
-      description: booking_event.description,
+      description: description,
       "og:title": title,
-      "og:description": booking_event.description,
+      "og:description": description,
       "og:image": booking_event.thumbnail_url,
       "og:url":
         "https://app.picsello.com#{Routes.client_booking_event_path(socket, :show, organization.slug, booking_event.id)}",

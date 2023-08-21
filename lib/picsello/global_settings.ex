@@ -3,10 +3,12 @@ defmodule Picsello.GlobalSettings do
   alias Picsello.GlobalSettings.GalleryProduct, as: GSGalleryProduct
   alias Picsello.GlobalSettings.PrintProduct, as: GSPrintProduct
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
-  alias Picsello.{Repo, Category}
+  alias Picsello.{Repo, Category, UserCurrency}
   alias Ecto.Multi
   alias Picsello.Galleries.GalleryProduct
+  alias Ecto.Changeset
   import Ecto.Query
+  alias Ecto.Changeset
 
   @whcc_print_category Category.print_category()
 
@@ -56,7 +58,11 @@ defmodule Picsello.GlobalSettings do
   defp gallery_product_query() do
     GSGalleryProduct
     |> join(:inner, [gs_gp], category in assoc(gs_gp, :category))
-    |> preload([gs_gp, category], category: {category, [:products, gs_gallery_products: gs_gp]})
+    |> join(:left, [_, category], product in assoc(category, :products))
+    |> where([_, _, product], is_nil(product.deleted_at))
+    |> preload([gs_gp, category, product],
+      category: {category, [products: product, gs_gallery_products: gs_gp]}
+    )
   end
 
   def gallery_products_params() do
@@ -65,8 +71,8 @@ defmodule Picsello.GlobalSettings do
     categories
     |> Enum.find(%{}, &(&1.whcc_id == @whcc_print_category))
     |> Map.get(:products, [])
+    |> Repo.preload(:category)
     |> Enum.map(fn product ->
-      product = Picsello.Repo.preload(product, :category)
       {categories, selections} = Picsello.Product.selections_with_prices(product)
 
       selections
@@ -122,9 +128,10 @@ defmodule Picsello.GlobalSettings do
   defp print_products(_whcc_print_categroy, _print_category), do: []
 
   def list_print_products(gs_gallery_product_id) do
-    from(gs_print_product in GSPrintProduct,
-      where: gs_print_product.global_settings_gallery_product_id == ^gs_gallery_product_id
-    )
+    GSPrintProduct
+    |> join(:inner, [gs_pp], product in assoc(gs_pp, :product))
+    |> where([gs_pp], gs_pp.global_settings_gallery_product_id == ^gs_gallery_product_id)
+    |> where([_, product], is_nil(product.deleted_at))
     |> Repo.all()
   end
 
@@ -135,4 +142,62 @@ defmodule Picsello.GlobalSettings do
   end
 
   def get(organization_id), do: Repo.get_by(GSGallery, organization_id: organization_id)
+
+  alias Ecto.Changeset
+
+  def get_or_add!(%{
+        organization_id: organization_id,
+        currency: currency,
+        exchange_rate: rate
+      }) do
+    case get(organization_id) do
+      nil ->
+        each_price = GSGallery.default_each_price()
+        buy_all_price = GSGallery.default_buy_all_price()
+
+        %GSGallery{}
+        |> Changeset.change(
+          Map.merge(
+            %{organization_id: organization_id},
+            build_digital_prices(each_price, buy_all_price, currency, rate)
+          )
+        )
+        |> Repo.insert!()
+
+      gs_gallery ->
+        gs_gallery
+    end
+  end
+
+  def save(%GSGallery{} = gs, attrs), do: Changeset.change(gs, attrs) |> save()
+  def save(%Changeset{} = changeset), do: Repo.insert_or_update(changeset)
+
+  def delete_watermark(%GSGallery{} = gs_gallery) do
+    save(gs_gallery, Enum.into(GSGallery.watermark_fields(), %{}, &{&1, nil}))
+  end
+
+  defp build_digital_prices(each_price, buy_all_price, currency, rate) do
+    %{
+      download_each_price: Money.new(each_price.amount, currency) |> Money.multiply(rate),
+      buy_all_price: Money.new(buy_all_price.amount, currency) |> Money.multiply(rate)
+    }
+  end
+
+  def update_currency(
+        user_currency,
+        %{currency: currency, exchange_rate: rate} = attrs
+      ) do
+    Multi.new()
+    |> Multi.update(:update_user_currency, UserCurrency.currency_changeset(user_currency, attrs))
+    |> Multi.update(:update_global_settings, fn _ ->
+      %{buy_all_price: buy_all_price, download_each_price: download_each_price} =
+        gs_gallery = get_or_add!(user_currency)
+
+      GSGallery.price_changeset(
+        gs_gallery,
+        build_digital_prices(download_each_price, buy_all_price, currency, rate)
+      )
+    end)
+    |> Repo.transaction()
+  end
 end

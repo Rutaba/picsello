@@ -11,7 +11,13 @@
                   <.icon name="back" class="stroke-current items-center ml-auto mr-auto w-5 h-5 text-white" />
                </div>
                <div class="ml-3">
-                  <span class="font-sans lg:text-2xl font-bold text-3xl">Pricing & Print Credits</span>
+                  <span class="font-sans lg:text-2xl font-bold text-3xl">
+                     <%= if @currency in products_currency() do %>
+                     Pricing & Print Credits
+                     <% else %>
+                      Digital Pricing & Credits
+                     <% end %>
+                  </span>
                </div>
             </div>
             <hr class="mt-4 lg:hidden">
@@ -32,26 +38,28 @@
                 <div id="gallery-pricing" class="flex flex-col xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
                     <h3>Digital Pricing</h3>
                     <p class="font-sans text-base-250">
-                        Your pricing & print credits have been inherited from your initial package. You can
+                        Your pricing & credits have been inherited from your initial package. You can
                         change that here if you’d like, it will only apply to this gallery if you have multiple!
                     </p>
                     <div class="flex flex-col mt-2">
                         <div class="flex">
                             <p class="font-bold">Here’s the pricing you have setup:</p>
                         </div>
-                        <div class="grid grid-cols-4">
-                            <div class="col-span-2">
-                                <.grid_item icon="money-bags" item_name="Print Credit" item_value={get_pricing_value(@gallery).print_credits || "-"} />
-                            </div>
-                            <div class="col-span-2">
-                                <.grid_item icon="photos-2" item_name="Included Digital Images" item_value={get_pricing_value(@gallery).download_count || "-"} />
-                            </div>
-                            <div class="col-span-2 mt-4">
-                                <.grid_item icon="money-bags" item_name="Digital Image Price" item_value={get_pricing_value(@gallery).download_each_price || "-"} />
-                            </div>
-                            <div class="col-span-2 mt-4">
-                                <.grid_item icon="money-bags" item_name="Buy Them All Price" item_value={get_pricing_value(@gallery).buy_all || "-"} />
-                            </div>
+                        <div class="grid grid-cols-4 gap-4">
+                           <%= if @currency in products_currency() do %>
+                              <div class="col-span-2">
+                                 <.grid_item icon="money-bags" item_name="Print Credit" item_value={get_pricing_value(@gallery).print_credits || "-"} />
+                              </div>
+                           <% end %>
+                           <div class="col-span-2">
+                              <.grid_item icon="photos-2" item_name="Included Digital Images" item_value={get_pricing_value(@gallery).download_count || "-"} />
+                           </div>
+                           <div class="col-span-2">
+                              <.grid_item icon="money-bags" item_name="Digital Image Price" item_value={get_pricing_value(@gallery).download_each_price || "-"} />
+                           </div>
+                           <div class="col-span-2">
+                              <.grid_item icon="money-bags" item_name="Buy Them All Price" item_value={get_pricing_value(@gallery).buy_all || "-"} />
+                           </div>
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row items-center w-full mt-8">
@@ -59,17 +67,19 @@
                         <button phx-click="edit-digital-pricing" class="btn-settings w-auto px-7">Edit digital pricing & credits</button>
                     </div>
                 </div>
-               <div id="global-print-pricing" class="flex flex-col mb-40 lg:mb-3 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
-                  <h3>Global Print Pricing</h3>
-                    <p class="font-sans text-base-250">
-                        In Picsello, we only allow you to edit your product pricing globally. Ideally you should be offering <br/>
-                        more or less print credit and leveraging discounts. Picsello is designed to make you more money. <br/>
-                        From our research, granular pricing per gallery goes against that ethos.
-                    </p>
-                    <div class="flex flex-row-reverse items-center w-full mt-8">
-                        <button phx-click="edit-global-pricing" class="btn-settings w-auto px-7">Edit global pricing</button>
-                    </div>
-               </div>
+               <%= if @currency in products_currency() do %>
+                  <div id="global-print-pricing" class="flex flex-col mb-40 lg:mb-3 xl:col-start-2 xl:col-end-3 xl:row-start-2 xl:row-end-3">
+                     <h3>Global Print Pricing</h3>
+                     <p class="font-sans text-base-250">
+                           In Picsello, we only allow you to edit your product pricing globally. Ideally you should be offering <br/>
+                           more or less print credit and leveraging discounts. Picsello is designed to make you more money. <br/>
+                           From our research, granular pricing per gallery goes against that ethos.
+                     </p>
+                     <div class="flex flex-row-reverse items-center w-full mt-8">
+                           <button phx-click="edit-global-pricing" class="btn-settings w-auto px-7">Edit global pricing</button>
+                     </div>
+                  </div>
+               <% end %>
             </div>
          </div>
       </div>

@@ -141,7 +141,7 @@ defmodule Picsello.ClientOrdersTest do
            |> Map.put(:query, URI.encode_query(%{"session_id" => session_id}))
            |> URI.to_string(),
          payment_intent:
-           %{payment_intent() | id: payment_intent_id, amount: amount}
+           %{payment_intent() | id: payment_intent_id, amount: amount, currency: "usd"}
            |> Map.merge(payment_intent_data)
        )}
     end)
@@ -181,7 +181,8 @@ defmodule Picsello.ClientOrdersTest do
            | id: payment_intent_id,
              status: "requires_capture",
              amount_capturable: amount,
-             amount: amount
+             amount: amount,
+             currency: "usd"
          }}
       end
     )
@@ -192,7 +193,7 @@ defmodule Picsello.ClientOrdersTest do
       mock,
       :capture_payment_intent,
       fn ^intent_id, [expand: ["charges.data.balance_transaction"], connect_account: ^connect] ->
-        {:ok, %{payment_intent() | id: intent_id, status: "succeeded"}}
+        {:ok, %{payment_intent() | id: intent_id, status: "succeeded", currency: "usd"}}
       end
     )
   end
@@ -282,6 +283,8 @@ defmodule Picsello.ClientOrdersTest do
       {:ok, :confirmed}
     end)
 
+    invoice = build(:stripe_invoice, id: "invoice-stripe-id")
+
     %{stripe_account_id: connect_account_id} = organization
 
     Picsello.MockPayments
@@ -305,6 +308,15 @@ defmodule Picsello.ClientOrdersTest do
       payment_intent: "payment-intent-id",
       connect_account: connect_account_id
     })
+    |> Mox.stub(:create_invoice_item, fn _, _ ->
+      {:ok, %Stripe.Invoiceitem{}}
+    end)
+    |> Mox.stub(:create_invoice, fn _, _ ->
+      {:ok, invoice}
+    end)
+    |> Mox.stub(:finalize_invoice, fn _, _, _ ->
+      {:ok, %{invoice | status: "open"}}
+    end)
 
     Picsello.PhotoStorageMock |> Mox.stub(:path_to_url, & &1)
 

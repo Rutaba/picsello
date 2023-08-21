@@ -27,9 +27,9 @@ defmodule PicselloWeb.GalleryAddAndClone do
       )
 
     gallery_account_id = Galleries.account_id(gallery)
-    gallery_client = Galleries.get_gallery_client(gallery, client_email)
+    gallery_client = Galleries.get_gallery_client(gallery, client_email) |> List.first()
 
-    if gallery_account_id == in_account_id do
+    if gallery_account_id == in_account_id && gallery_client do
       cart_product = Cart.new_product(whcc_editor_id, gallery.id)
       Cart.place_product(cart_product, gallery, gallery_client)
 

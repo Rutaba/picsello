@@ -104,7 +104,7 @@ defmodule PicselloWeb.JobLive.Shared.HistoryComponentTest do
 
     test "when status is :imported", %{lead: lead, user: user} do
       _proposal = insert(:proposal, %{job: lead})
-      package = insert(:package, user: user, collected_price: 0)
+      package = insert(:package, user: user, collected_price: %{amount: 0, currency: :USD})
       lead = lead |> Job.add_package_changeset(%{package_id: package.id}) |> Repo.update!()
 
       component = render_component(HistoryComponent, job: lead, current_user: user)

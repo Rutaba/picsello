@@ -47,7 +47,7 @@ defmodule PicselloWeb.Live.Shared do
 
     @primary_key false
     embedded_schema do
-      field :price, Money.Ecto.Amount.Type
+      field :price, Money.Ecto.Map.Type
       field :due_date, :date
     end
 
@@ -66,13 +66,14 @@ defmodule PicselloWeb.Live.Shared do
 
     @primary_key false
     embedded_schema do
-      field(:remaining_price, Money.Ecto.Amount.Type)
+      field(:currency, :string)
+      field(:remaining_price, Money.Ecto.Map.Type)
       embeds_many(:payment_schedules, CustomPaymentSchedule)
     end
 
     def changeset(attrs) do
       %__MODULE__{}
-      |> cast(attrs, [:remaining_price])
+      |> cast(attrs, [:remaining_price, :currency])
       |> cast_embed(:payment_schedules)
       |> validate_total_amount()
     end
@@ -178,23 +179,26 @@ defmodule PicselloWeb.Live.Shared do
   def step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
   def total_remaining_amount(package_changeset) do
-    base_price = Changeset.get_field(package_changeset, :base_price) || Money.new(0)
+    currency = Changeset.get_field(package_changeset, :currency)
+    fallback_price = Money.new(0, currency)
 
-    collected_price = Changeset.get_field(package_changeset, :collected_price) || Money.new(0)
-
-    base_price |> Money.subtract(collected_price)
+    Money.subtract(
+      Changeset.get_field(package_changeset, :base_price) || fallback_price,
+      Changeset.get_field(package_changeset, :collected_price) || fallback_price
+    )
   end
 
   def remaining_to_collect(payments_changeset) do
     %{
       remaining_price: remaining_price,
+      currency: currency,
       payment_schedules: payments
     } = payments_changeset |> current()
 
     total_collected =
       payments
-      |> Enum.reduce(Money.new(0), fn payment, acc ->
-        Money.add(acc, payment.price || Money.new(0))
+      |> Enum.reduce(Money.new(0, currency), fn payment, acc ->
+        Money.add(acc, payment.price || Money.new(0, currency))
       end)
 
     Money.subtract(remaining_price, total_collected)
@@ -220,6 +224,9 @@ defmodule PicselloWeb.Live.Shared do
       end)
     end
   end
+
+  def serialize(data), do: data |> :erlang.term_to_binary() |> Base.encode64()
+  def deserialize(data), do: data |> Base.decode64!() |> :erlang.binary_to_term()
 
   defp make_payment_schedule(multi_changes, changes) do
     multi_changes
@@ -275,7 +282,10 @@ defmodule PicselloWeb.Live.Shared do
   end
 
   def package_payment_step(%{package_changeset: package_changeset} = assigns) do
-    assigns = assign(assigns, base_price_zero?: base_price_zero?(package_changeset))
+    assigns =
+      assigns
+      |> assign(base_price_zero?: base_price_zero?(package_changeset))
+      |> Enum.into(%{currency: nil})
 
     ~H"""
     <.form for={@package_changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself} id={"form-#{@step}"}>
@@ -291,7 +301,7 @@ defmodule PicselloWeb.Live.Shared do
         </label>
         <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
           <span class="mx-3 text-2xl font-bold text-base-250">+</span>
-          <%= input f, :base_price, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
+          <%= input f, :base_price, placeholder: "#{@currency_symbol}0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask", data_currency: @currency_symbol %>
         </div>
       </div>
       <div class="flex flex-col items-start justify-between w-full mt-4 sm:items-center sm:flex-row sm:w-auto">
@@ -300,7 +310,7 @@ defmodule PicselloWeb.Live.Shared do
         </label>
         <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
           <span class="mx-4 text-2xl font-bold text-base-250">&nbsp;</span>
-          <%= input f, :print_credits, disabled: @base_price_zero?, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
+          <%= input f, :print_credits, disabled: @base_price_zero?, placeholder: "#{@currency_symbol}0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask", data_currency: @currency_symbol %>
         </div>
       </div>
 
@@ -312,7 +322,7 @@ defmodule PicselloWeb.Live.Shared do
         </label>
         <div class="flex items-center justify-end w-full mt-6 sm:w-auto">
           <span class="mx-3 text-2xl font-bold text-base-250">-</span>
-          <%= input f, :collected_price, disabled: @base_price_zero?, placeholder: "$0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
+          <%= input f, :collected_price, disabled: @base_price_zero?, placeholder: "#{@currency_symbol}0.00", class: "sm:w-32 w-full px-4 text-lg text-center", phx_hook: "PriceMask", data_currency: @currency_symbol %>
         </div>
       </div>
 
@@ -323,7 +333,7 @@ defmodule PicselloWeb.Live.Shared do
 
       <hr class="mt-4 border-gray-100">
 
-      <.digital_download_fields for={:import_job} package_form={f} download_changeset={@download_changeset} package_pricing={@package_pricing_changeset} target={@myself} show_digitals={@show_digitals} />
+      <.digital_download_fields for={:import_job} package_form={f} currency={@currency} currency_symbol={@currency_symbol} download_changeset={@download_changeset} package_pricing={@package_pricing_changeset} target={@myself} show_digitals={@show_digitals} />
 
       <.footer>
         <button class="px-8 btn-primary" title="Next" type="submit" disabled={Enum.any?([@download_changeset, @package_pricing_changeset, @package_changeset], &(!&1.valid?))} phx-disable-with="Next">
@@ -345,7 +355,7 @@ defmodule PicselloWeb.Live.Shared do
       <div class={classes("flex items-center bg-blue-planning-100 rounded-lg my-4 py-4", %{"hidden" => !@remaining_amount_zero?})}}>
         <.intro_hint class="ml-4" content={"#"}/>
         <div class="pl-2">
-          <b>Since your remaining balance is $0.00, we'll mark your job as paid for.</b> Make sure to follow up with any emails as needed to your client.
+          <b>Since your remaining balance is <%=@currency_symbol%>0.00, we'll mark your job as paid for.</b> Make sure to follow up with any emails as needed to your client.
         </div>
       </div>
 
@@ -367,7 +377,7 @@ defmodule PicselloWeb.Live.Shared do
                 <.date_picker_field class="sm:w-64 w-full text-lg" id={"payment-#{p.index}"} form={p} field={:due_date} input_placeholder="mm/dd/yyyy" input_label="Due" />
               </div>
               <div class="w-full sm:ml-16 sm:w-auto">
-                <%= labeled_input p, :price, label: "Payment amount", placeholder: "$0.00", class: "sm:w-36 w-full px-4 text-lg text-center", phx_hook: "PriceMask" %>
+                <%= labeled_input p, :price, label: "Payment amount", placeholder: "#{@currency_symbol}0.00", class: "sm:w-36 w-full px-4 text-lg text-center", phx_hook: "PriceMask", data_currency: @currency_symbol %>
               </div>
             </div>
           </div>
@@ -583,13 +593,14 @@ defmodule PicselloWeb.Live.Shared do
     do: socket |> assign_payments_changeset(params, :validate)
 
   def assign_payments_changeset(
-        %{assigns: %{package_changeset: package_changeset}} = socket,
+        %{assigns: %{package_changeset: package_changeset, currency: currency}} = socket,
         params,
         action \\ nil
       ) do
     changeset =
       params
       |> Map.put("remaining_price", total_remaining_amount(package_changeset))
+      |> Map.put("currency", currency)
       |> CustomPayments.changeset()
       |> Map.put(:action, action)
 
@@ -597,7 +608,8 @@ defmodule PicselloWeb.Live.Shared do
   end
 
   def assign_package_changeset(
-        %{assigns: %{current_user: current_user, step: step} = assigns} = socket,
+        %{assigns: %{current_user: current_user, step: step, currency: currency} = assigns} =
+          socket,
         params,
         action \\ nil
       ) do
@@ -606,8 +618,7 @@ defmodule PicselloWeb.Live.Shared do
       |> PackagePricing.changeset()
       |> Map.put(:action, action)
 
-    global_settings =
-      Repo.get_by(Picsello.GlobalSettings.Gallery, organization_id: current_user.organization_id)
+    global_settings = Picsello.GlobalSettings.get(current_user.organization_id)
 
     download_params = Map.get(params, "download", %{}) |> Map.put("step", step)
 
@@ -622,10 +633,11 @@ defmodule PicselloWeb.Live.Shared do
     package_changeset =
       params
       |> Map.get("package", %{})
+      |> Map.put("currency", currency)
       |> PackagePricing.handle_package_params(params)
       |> Map.merge(%{
         "download_count" => Download.count(download),
-        "download_each_price" => Download.each_price(download),
+        "download_each_price" => Download.each_price(download, currency),
         "organization_id" => current_user.organization_id,
         "buy_all" => Download.buy_all(download),
         "status" => download.status

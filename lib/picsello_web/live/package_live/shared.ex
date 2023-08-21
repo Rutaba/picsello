@@ -215,7 +215,7 @@ defmodule PicselloWeb.PackageLive.Shared do
             <div class="flex items-center text-base-250">
               <span class="">Package price:&nbsp;</span>
               <div class="">
-                <%= @package |> Package.price() |> Money.to_string(fractional_unit: false) %>
+                <%= @package |> Package.price() %>
               </div>
             </div>
             <div class="flex items-center text-base-250">
@@ -356,7 +356,12 @@ defmodule PicselloWeb.PackageLive.Shared do
           </label>
           <div class="flex items-center gap-4 ml-7">
             <%= if p |> current() |> Map.get(:is_enabled) do %>
-              <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
+              <div class="flex flex-col">
+                <div class="flex flex-row items-center w-auto border border-blue-planning-300 rounded-lg relative">
+                  <%= input(@f, :print_credits, placeholder: "#{@currency_symbol}0.00", class: "w-full sm:w-32 text-lg text-center font-normal bg-white px-1 border-none", phx_hook: "PriceMask", data_currency: @currency_symbol) %>
+                </div>
+                <%= text_input @f, :currency, value: @currency, class: "form-control w-32 text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
+              </div>
               <div class="flex items-center text-base-250">
                 <%= label_for @f, :print_credits, label: "as a portion of Package Price", class: "font-normal" %>
               </div>
@@ -374,6 +379,9 @@ defmodule PicselloWeb.PackageLive.Shared do
   end
 
   def package_print_credit_fields(assigns) do
+    assigns = Map.put_new(assigns, :currency, nil)
+    assigns = Map.put_new(assigns, :currency_symbol, nil)
+
     ~H"""
     <div class="flex">
       <% p = to_form(@package_pricing) %>
@@ -410,8 +418,8 @@ defmodule PicselloWeb.PackageLive.Shared do
           </label>
           <div class="flex flex-col gap-4 ml-7">
             <%= if Map.get(print_credits, :is_enabled) do %>
-              <%= input(@f, :print_credits, placeholder: "$0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask") %>
-
+              <%= input(@f, :print_credits, placeholder: "#{@currency_symbol}0.00", class: "mt-2 w-full sm:w-32 text-lg text-center font-normal", phx_hook: "PriceMask", data_currency: @currency_symbol) %>
+              <%= text_input @f, :currency, value: @currency, class: "form-control text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
               <div class="flex items-center text-base-250">
                 <%= checkbox(p, :print_credits_include_in_total, class: "w-5 h-5 mr-2.5 checkbox") %>
                 <%= label_for p, :print_credits_include_in_total, label: "Include in package total calculation", class: "font-normal" %>
@@ -436,7 +444,9 @@ defmodule PicselloWeb.PackageLive.Shared do
       |> Enum.into(%{
         for: nil,
         target: nil,
-        show_digitals: false
+        show_digitals: false,
+        currency: nil,
+        currency_symbol: nil
       })
 
     ~H"""
@@ -487,7 +497,7 @@ defmodule PicselloWeb.PackageLive.Shared do
           Digital Image Price
           <a {testid("close-settings")} phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
-        <.include_download_price download_changeset={d} />
+        <.include_download_price download_changeset={d} currency={@currency} currency_symbol={@currency_symbol} />
       </div>
 
       <div class={classes("border border-solid mt-6 rounded-lg md:w-1/2", %{"hidden" => @show_digitals !== "buy_all"})}>
@@ -495,7 +505,7 @@ defmodule PicselloWeb.PackageLive.Shared do
           Upsell Options
           <a {testid("close-settings")} phx-target={@target} phx-value-type="close" phx-click="edit-digitals"><.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 text-black"/></a>
         </div>
-        <.is_buy_all download_changeset={d} />
+        <.is_buy_all download_changeset={d} currency={@currency} currency_symbol={@currency_symbol} />
       </div>
     """
   end
@@ -544,6 +554,9 @@ defmodule PicselloWeb.PackageLive.Shared do
   end
 
   defp is_buy_all(assigns) do
+    assigns = Map.put_new(assigns, :currency, nil)
+    assigns = Map.put_new(assigns, :currency_symbol, nil)
+
     ~H"""
     <div class="mt-4 px-6 pb-6 flex flex-col justify-between">
       <div class="text-base-250">This is optional, but if you’d like to provide your client with the opportunity to buy all images in the gallery, set that here</div>
@@ -554,25 +567,34 @@ defmodule PicselloWeb.PackageLive.Shared do
 
       <%= if check?(@download_changeset, :is_buy_all) do %>
         <div class="flex flex-row items-center mt-3 lg:ml-7">
-            <%= input(@download_changeset, :buy_all, placeholder: "$750.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+            <div class="flex flex-row items-center w-auto border border-blue-planning-300 rounded-lg relative">
+              <%= input(@download_changeset, :buy_all, placeholder: "#{@currency_symbol}750.00", class: "w-full sm:w-32 text-lg text-center font-normal bg-white px-1 border-none", phx_hook: "PriceMask", data_currency: @currency_symbol) %>
+            </div>
             <%= error_tag @download_changeset, :buy_all, class: "text-red-sales-300 text-sm ml-2" %>
             <span class="ml-3 text-base-250"> for all images </span>
         </div>
+        <%= text_input @download_changeset, :currency, value: @currency, class: "form-control lg:ml-7 text-base-250 border-none", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
       <% end %>
     </div>
     """
   end
 
   defp include_download_price(assigns) do
+    assigns = Map.put_new(assigns, :currency, nil)
+    assigns = Map.put_new(assigns, :currency_symbol, nil)
+
     ~H"""
     <div class="flex flex-col justify-between mt-4 sm:flex-row px-6 pb-6">
       <div class="w-full sm:w-auto">
         <span class="text-base-250">We default to the price you set in global gallery settings, you can override here for this package</span>
         <div class="flex flex-row items-center mt-3 lg:ml-7">
-          <%= input(@download_changeset, :each_price, placeholder: "$50.00", class: "w-full sm:w-32 text-lg text-center", phx_hook: "PriceMask") %>
+          <div class="flex flex-row items-center w-auto border border-blue-planning-300 rounded-lg relative">
+            <%= input(@download_changeset, :each_price, placeholder: "#{@currency_symbol}50.00", class: "w-full sm:w-32 text-lg text-center font-normal bg-white px-1 border-none", phx_hook: "PriceMask", data_currency: @currency_symbol) %>
+          </div>
           <%= error_tag @download_changeset, :each_price, class: "text-red-sales-300 text-sm ml-2" %>
           <span class="ml-3 text-base-250"> per image </span>
         </div>
+        <%= text_input @download_changeset, :currency, value: @currency, class: "lg:ml-7 form-control border-none text-base-250", phx_debounce: "500", maxlength: 3, autocomplete: "off" %>
       </div>
     </div>
     """
@@ -596,7 +618,7 @@ defmodule PicselloWeb.PackageLive.Shared do
 
   defp print_fields_heading(assigns) do
     ~H"""
-    <div class="mt-9 md:mt-1 mb-2" {testid("print")}>
+    <div class="mt-9 md:mt-1 mb-2 pr-2" {testid("print")}>
       <h2 class="mb-2 text-xl font-bold justify-self-start sm:mr-4 whitespace-nowrap">Professional Print Credit</h2>
       <p class="text-base-250">Print Credits allow your clients to order professional prints and products from your gallery based on the amount you set.</p>
     </div>

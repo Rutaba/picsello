@@ -20,7 +20,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     Albums,
     Orders,
     Galleries.Watermark,
-    Notifiers.UserNotifier
+    Notifiers.UserNotifier,
+    Utils
   }
 
   alias Picsello.Galleries.Workers.PositionNormalizer
@@ -947,7 +948,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   def handle_info(:update_photo_gallery_state, socket) do
     socket
     |> assign_show_favorite_toggle()
-    |> noreply()
+    |> process_favorites(@per_page)
   end
 
   defp assigns(socket, gallery_id, album \\ nil) do
@@ -960,9 +961,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       PubSub.subscribe(Picsello.PubSub, "uploading:#{gallery_id}")
     end
 
+    currency = Picsello.Currency.for_gallery(gallery)
+
     socket
     |> assign(
       favorites_count: Galleries.gallery_favorites_count(gallery),
+      show_products: currency in Utils.products_currency(),
       gallery: gallery,
       album: album,
       page_title: page_title(socket.assigns.live_action),

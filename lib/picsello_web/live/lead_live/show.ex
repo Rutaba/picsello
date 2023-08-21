@@ -113,7 +113,7 @@ defmodule PicselloWeb.LeadLive.Show do
       socket
       |> open_modal(
         PicselloWeb.PackageLive.WizardComponent,
-        assigns |> Map.take([:current_user, :job])
+        assigns |> Map.take([:current_user, :job, :currency])
       )
       |> assign_disabled_copy_link()
       |> noreply()
@@ -156,7 +156,7 @@ defmodule PicselloWeb.LeadLive.Show do
           )
 
         _ ->
-          Logger.warn("No booking proposal email preset for #{job.type}")
+          Logger.warning("No booking proposal email preset for #{job.type}")
           %{body_template: "", subject_template: ""}
       end
 
@@ -323,7 +323,7 @@ defmodule PicselloWeb.LeadLive.Show do
     socket
     |> open_modal(
       PicselloWeb.PackageLive.WizardComponent,
-      assigns |> Map.take([:current_user, :job, :package])
+      assigns |> Map.take([:current_user, :job, :package, :currency])
     )
     |> assign_disabled_copy_link()
     |> noreply()
