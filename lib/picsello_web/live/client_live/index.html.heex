@@ -63,12 +63,23 @@
       </div>
       <%= for client <- @clients do %>
         <div {testid("client-row")} class="grid sm:grid-cols-7 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
-          <div phx-click="edit-client" phx-value-id={client.id} class="flex flex-col text-blue-planning-300 underline hover:cursor-pointer">
-            <p><%= client.name || "-" %></p>
-          </div>
+          <%= if is_nil(client.archived_at) do %>
+            <div phx-click="edit-client" phx-value-id={client.id} class="flex flex-col text-blue-planning-300 underline hover:cursor-pointer">
+              <p><%= client.name || "-" %></p>
+            </div>
+          <% else %>
+            <div class="flex flex-col">
+              <p><%= client.name || "-" %></p>
+            </div>
+          <% end %>
           <hr class="sm:hidden border-gray-100 my-2" />
           <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0 overflow-hidden">
-            <p><%= client.email || "-" %></p>
+            <p>
+              <%= client.email || "-" %>
+              <%= unless is_nil(client.archived_at) do %>
+                <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded bg-red-sales-100 text-red-sales-300 w-fit">Archived</span> 
+              <% end %>
+            </p>
           </div>
           <hr class="sm:hidden border-gray-100 my-2" />
           <div class="flex flex-col">

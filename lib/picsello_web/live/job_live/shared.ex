@@ -533,7 +533,7 @@ defmodule PicselloWeb.JobLive.Shared do
     socket
     |> open_modal(
       PicselloWeb.PackageLive.WizardComponent,
-      assigns |> Map.take([:current_user, :job, :package])
+      assigns |> Map.take([:current_user, :job, :package, :currency])
     )
     |> assign_disabled_copy_link()
     |> noreply()

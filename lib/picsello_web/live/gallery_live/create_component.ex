@@ -25,6 +25,7 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   import Phoenix.Component
   import PicselloWeb.JobLive.Shared, only: [search_clients: 1, job_form_fields: 1]
   import PicselloWeb.GalleryLive.Shared, only: [steps: 1, expired_at: 1]
+  import Picsello.Utils, only: [products_currency: 0]
 
   import PicselloWeb.PackageLive.Shared,
     only: [digital_download_fields: 1, print_credit_fields: 1, current: 1]
@@ -36,18 +37,20 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
   @impl true
   def update(
         %{
+          currency: currency,
           current_user:
             %{
-              organization: %{id: organization_id, organization_job_types: organization_job_types}
+              organization: %{
+                id: organization_id,
+                organization_job_types: organization_job_types
+              }
             } = current_user
         } = assigns,
         socket
       ) do
     socket
     |> assign(assigns)
-    |> assign(
-      global_settings: Repo.get_by(GlobalSettings.Gallery, organization_id: organization_id)
-    )
+    |> assign(global_settings: GlobalSettings.get(organization_id))
     |> assign(:new_gallery, nil)
     |> assign(:clients, Clients.find_all_by(user: current_user))
     |> assign(:search_results, [])
@@ -63,7 +66,9 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
         assign_job_changeset(socket, %{"client" => %{}, "shoots" => [%{"starts_at" => nil}]})
       end
     end)
-    |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil} end)
+    |> assign_new(:package, fn -> %Package{shoot_count: 1, contract: nil, currency: currency} end)
+    |> assign(:currency, currency)
+    |> assign(:currency_symbol, Money.Currency.symbol!(currency))
     |> assign_new(:package_pricing, fn -> %PackagePricing{} end)
     |> assign(templates: [], step: :choose_type, steps: @steps)
     |> assign_package_changesets()
@@ -90,6 +95,23 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     |> assign(:gallery_type, type)
     |> assign(:step, :details)
     |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        event,
+        params,
+        %{assigns: %{currency: currency, currency_symbol: currency_symbol}} = socket
+      )
+      when event in ~w(validate submit) and not is_map_key(params, "parsed?") do
+    __MODULE__.handle_event(
+      event,
+      Picsello.Currency.parse_params_for_currency(
+        params,
+        {currency_symbol, currency}
+      ),
+      socket
+    )
   end
 
   @impl true
@@ -312,12 +334,14 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     ~H"""
       <div class="">
         <% package = to_form(@package_changeset) %>
-
         <%= hidden_input package, :turnaround_weeks, value: 1 %>
-
-        <.print_credit_fields f={package} package_pricing={@package_pricing} />
-
-        <.digital_download_fields for={:create_gallery} package_form={package} download_changeset={@download_changeset} package_pricing={@package_pricing}  target={@myself} show_digitals={@show_digitals} />
+        <%= if @currency in products_currency() do%>
+          <.print_credit_fields f={package} package_pricing={@package_pricing} currency_symbol={@currency_symbol} currency={@currency} />
+        <% else %>
+          <% p = to_form(@package_pricing) %>
+          <%= hidden_input p, :is_enabled, value: false %>
+        <% end %>
+        <.digital_download_fields for={:create_gallery} package_form={package} currency_symbol={@currency_symbol} currency={@currency} download_changeset={@download_changeset} package_pricing={@package_pricing}  target={@myself} show_digitals={@show_digitals} />
         <%= if @new_gallery do %>
           <div id="set-gallery-cookie" data-gallery-type={@new_gallery.type} phx-hook="SetGalleryCookie">
           </div>
@@ -393,7 +417,8 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
               package_pricing: package_pricing,
               current_user: current_user,
               step: step,
-              global_settings: global_settings
+              global_settings: global_settings,
+              currency: currency
             } = assigns
         } = socket,
         params \\ %{},
@@ -412,10 +437,11 @@ defmodule PicselloWeb.GalleryLive.CreateComponent do
     package_changeset =
       params
       |> Map.get("package", %{})
+      |> Map.put("currency", currency)
       |> PackagePricing.handle_package_params(params)
       |> Map.merge(%{
         "download_count" => Download.count(download),
-        "download_each_price" => Download.each_price(download),
+        "download_each_price" => Download.each_price(download, currency),
         "buy_all" => Download.buy_all(download),
         "name" => "New package",
         "organization_id" => current_user.organization_id,

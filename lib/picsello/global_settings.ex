@@ -3,7 +3,7 @@ defmodule Picsello.GlobalSettings do
   alias Picsello.GlobalSettings.GalleryProduct, as: GSGalleryProduct
   alias Picsello.GlobalSettings.PrintProduct, as: GSPrintProduct
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
-  alias Picsello.{Repo, Category}
+  alias Picsello.{Repo, Category, UserCurrency}
   alias Ecto.Multi
   alias Picsello.Galleries.GalleryProduct
   alias Ecto.Changeset
@@ -143,11 +143,26 @@ defmodule Picsello.GlobalSettings do
 
   def get(organization_id), do: Repo.get_by(GSGallery, organization_id: organization_id)
 
-  def get_or_add(organization_id) do
+  alias Ecto.Changeset
+
+  def get_or_add!(%{
+        organization_id: organization_id,
+        currency: currency,
+        exchange_rate: rate
+      }) do
     case get(organization_id) do
       nil ->
-        {:ok, gs} = save(%GSGallery{}, %{organization_id: organization_id})
-        gs
+        each_price = GSGallery.default_each_price()
+        buy_all_price = GSGallery.default_buy_all_price()
+
+        %GSGallery{}
+        |> Changeset.change(
+          Map.merge(
+            %{organization_id: organization_id},
+            build_digital_prices(each_price, buy_all_price, currency, rate)
+          )
+        )
+        |> Repo.insert!()
 
       gs_gallery ->
         gs_gallery
@@ -157,8 +172,32 @@ defmodule Picsello.GlobalSettings do
   def save(%GSGallery{} = gs, attrs), do: Changeset.change(gs, attrs) |> save()
   def save(%Changeset{} = changeset), do: Repo.insert_or_update(changeset)
 
-  @watermark_fields GSGallery.watermark_fields()
   def delete_watermark(%GSGallery{} = gs_gallery) do
-    save(gs_gallery, Enum.into(@watermark_fields, %{}, &{&1, nil}))
+    save(gs_gallery, Enum.into(GSGallery.watermark_fields(), %{}, &{&1, nil}))
+  end
+
+  defp build_digital_prices(each_price, buy_all_price, currency, rate) do
+    %{
+      download_each_price: Money.new(each_price.amount, currency) |> Money.multiply(rate),
+      buy_all_price: Money.new(buy_all_price.amount, currency) |> Money.multiply(rate)
+    }
+  end
+
+  def update_currency(
+        user_currency,
+        %{currency: currency, exchange_rate: rate} = attrs
+      ) do
+    Multi.new()
+    |> Multi.update(:update_user_currency, UserCurrency.currency_changeset(user_currency, attrs))
+    |> Multi.update(:update_global_settings, fn _ ->
+      %{buy_all_price: buy_all_price, download_each_price: download_each_price} =
+        gs_gallery = get_or_add!(user_currency)
+
+      GSGallery.price_changeset(
+        gs_gallery,
+        build_digital_prices(download_each_price, buy_all_price, currency, rate)
+      )
+    end)
+    |> Repo.transaction()
   end
 end

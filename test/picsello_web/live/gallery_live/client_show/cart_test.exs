@@ -153,7 +153,8 @@ defmodule PicselloWeb.GalleryLive.ClientShow.CartTest do
                amount: 100,
                description: "i dont know what this will be",
                id: "payment-intent-id",
-               status: "requires_payment_method"
+               status: "requires_payment_method",
+               currency: "usd"
              )
          )}
       end)

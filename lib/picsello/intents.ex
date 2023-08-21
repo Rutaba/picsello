@@ -12,16 +12,16 @@ defmodule Picsello.Intents do
     @statuses ~w[requires_payment_method requires_confirmation requires_capture requires_action processing succeeded canceled]a
 
     schema "gallery_order_intents" do
-      field :amount, Money.Ecto.Type
-      field :amount_capturable, Money.Ecto.Type
-      field :amount_received, Money.Ecto.Type
-      field :application_fee_amount, Money.Ecto.Type
+      field :amount, Money.Ecto.Map.Type
+      field :amount_capturable, Money.Ecto.Map.Type
+      field :amount_received, Money.Ecto.Map.Type
+      field :application_fee_amount, Money.Ecto.Map.Type
 
       field :status, Ecto.Enum, values: @statuses
 
       field :stripe_payment_intent_id, :string
       field :stripe_session_id, :string
-      field :processing_fee, Money.Ecto.Type
+      field :processing_fee, Money.Ecto.Map.Type
 
       belongs_to :order, Order
 
@@ -35,7 +35,7 @@ defmodule Picsello.Intents do
       cast(
         %__MODULE__{},
         params
-        |> Map.from_struct()
+        |> build_stripe_intent_params
         |> Map.merge(%{
           stripe_payment_intent_id: stripe_id,
           order_id: Keyword.get(opts, :order_id),
@@ -52,7 +52,9 @@ defmodule Picsello.Intents do
 
       cast(
         intent,
-        params |> Map.from_struct() |> Map.put(:processing_fee, processing_fee(params)),
+        params
+        |> build_stripe_intent_params()
+        |> Map.put(:processing_fee, processing_fee(params)),
         [
           :processing_fee | attrs
         ]
@@ -61,7 +63,22 @@ defmodule Picsello.Intents do
       |> validate_one_uncancelled()
     end
 
-    defp processing_fee(%{charges: %{data: [%{balance_transaction: %{fee_details: fee_details}}]}}) do
+    defp build_stripe_intent_params(%Stripe.PaymentIntent{currency: currency} = params) do
+      currency = String.upcase(currency)
+
+      %{
+        status: params.status,
+        amount: Money.new(params.amount, currency),
+        amount_capturable: Money.new(params.amount_capturable, currency),
+        amount_received: Money.new(params.amount_received, currency),
+        application_fee_amount: Money.new(params.application_fee_amount, currency)
+      }
+    end
+
+    defp processing_fee(%{
+           charges: %{data: [%{balance_transaction: %{fee_details: fee_details}}]},
+           currency: currency
+         }) do
       %{amount: amount} =
         if fee_details && is_list(fee_details) do
           fee_details
@@ -70,7 +87,7 @@ defmodule Picsello.Intents do
         end
         |> Enum.find(fee_details, &(&1.type == "stripe_fee"))
 
-      amount
+      if is_map(amount), do: amount, else: Money.new(amount, currency)
     end
 
     defp processing_fee(_), do: Money.new(0)

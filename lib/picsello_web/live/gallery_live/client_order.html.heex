@@ -53,6 +53,7 @@
         <h4 class="text-lg font-bold">Your order will be sent to:</h4>
 
         <p class="pt-4 text-base"><%= @shipping_name %></p>
+        <p class="pt-4 text-base"><%= @shipping_email %></p>
 
         <p class="text-base pt-2.5"><%= @shipping_address.addr1 %></p>
         <%= case @shipping_address.addr2 do %>

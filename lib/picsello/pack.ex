@@ -182,7 +182,7 @@ defmodule Picsello.Pack do
     end
   end
 
-  def to_sized_binary(iodata) do
+  defp to_sized_binary(iodata) do
     binary = IO.iodata_to_binary(iodata)
 
     {byte_size(binary), binary}

@@ -5,6 +5,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   import PicselloWeb.LiveHelpers
   import PicselloWeb.GalleryLive.Shared
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
+  import Picsello.Utils, only: [products_currency: 0]
 
   alias Picsello.{Galleries, Repo, Orders}
 
@@ -24,10 +25,12 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
       |> Galleries.load_watermark_in_gallery()
 
     prepare_gallery(gallery)
+    currency = Picsello.Currency.for_gallery(gallery)
 
     socket
     |> is_mobile(params)
     |> assign(:has_order?, Orders.placed_orders_count(gallery) > 0)
+    |> assign(:currency, currency)
     |> assign(:gallery, gallery)
     |> noreply()
   end
@@ -68,8 +71,13 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   defdelegate handle_event(event, params, socket), to: PicselloWeb.GalleryLive.Shared
 
   @impl true
-  def handle_info({:message_composed, message_changeset}, socket) do
-    add_message_and_notify(socket, message_changeset, "gallery")
+  def handle_info({:message_composed, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "gallery")
+  end
+
+  @impl true
+  def handle_info({:message_composed_for_album, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "album")
   end
 
   @impl true

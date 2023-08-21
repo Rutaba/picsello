@@ -213,7 +213,7 @@
                 phx-hook="MasonryGrid"
                 phx-update={@update_mode}
                 id="photos"
-                class="grid muuri"
+                class="mb-6 grid muuri"
                 data-page={@page}
                 data-id="photos"
                 data-uploading={@total_progress}
@@ -239,7 +239,8 @@
                     is_meatball: true,
                     selected_photo_id: @selected_photo_id,
                     client_liked_album: @client_liked_album,
-                    client_link_hash: @gallery.client_link_hash
+                    client_link_hash: @gallery.client_link_hash,
+                    show_products: @show_products
                   %>
                 <% end %>
                 <.photo_loader inprogress_photos={@inprogress_photos} url={@url} />

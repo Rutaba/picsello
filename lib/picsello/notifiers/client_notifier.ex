@@ -1,7 +1,6 @@
 defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
-  import Picsello.Messages, only: [get_emails: 2]
 
   alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery}
   alias Cart.Order
@@ -132,8 +131,8 @@ defmodule Picsello.Notifiers.ClientNotifier do
          [preset | _] <- Picsello.EmailPresets.for(job, :balance_due),
          %{body_template: body, subject_template: subject} <-
            Picsello.EmailPresets.resolve_variables(preset, {job}, helpers) do
-      Logger.warn("job: #{inspect(job.id)}")
-      Logger.warn("Proposal: #{inspect(proposal)}")
+      Logger.warning("job: #{inspect(job.id)}")
+      Logger.warning("Proposal: #{inspect(proposal)}")
 
       %{subject: subject, body_text: HtmlSanitizeEx.strip_tags(body)}
       |> Picsello.Messages.insert_scheduled_message!(job)
@@ -148,8 +147,8 @@ defmodule Picsello.Notifiers.ClientNotifier do
       )
     else
       error ->
-        Logger.warn("job: #{inspect(job.id)}")
-        Logger.warn("something went wrong: #{inspect(error)}")
+        Logger.warning("job: #{inspect(job.id)}")
+        Logger.warning("something went wrong: #{inspect(error)}")
         error
     end
   end
@@ -200,7 +199,11 @@ defmodule Picsello.Notifiers.ClientNotifier do
       order_items: products ++ digitals,
       order_number: Picsello.Cart.Order.number(order),
       order_shipping: order |> Cart.preload_products() |> Cart.total_shipping(),
-      order_subtotal: Money.subtract(Order.total_cost(order), Cart.preload_products(order) |> Cart.total_shipping()),
+      order_subtotal:
+        Money.subtract(
+          Order.total_cost(order),
+          Cart.preload_products(order) |> Cart.total_shipping()
+        ),
       order_total: Order.total_cost(order),
       order_url:
         if(order.album_id,
@@ -354,19 +357,30 @@ defmodule Picsello.Notifiers.ClientNotifier do
     |> sendgrid_template(params)
     |> put_header("reply-to", "#{from_display} <#{reply_to}>")
     |> from({from_display, "noreply@picsello.com"})
-    |> to(get_emails(recipients, "to"))
-    |> cc(get_emails(recipients, "cc"))
-    |> bcc(get_emails(recipients, "bcc"))
+    |> to(map_recipients(Map.get(recipients, "to")))
+    |> cc(map_recipients(Map.get(recipients, "cc")))
+    |> bcc(map_recipients(Map.get(recipients, "bcc")))
     |> deliver_later()
   end
 
   defp deliver_transactional_email(params, recipients) do
     sendgrid_template(:generic_transactional_template, params)
-    |> to(get_emails(recipients, "to"))
-    |> cc(get_emails(recipients, "cc"))
-    |> bcc(get_emails(recipients, "bcc"))
+    |> to(map_recipients(Map.get(recipients, "to")))
+    |> cc(map_recipients(Map.get(recipients, "cc")))
+    |> bcc(map_recipients(Map.get(recipients, "bcc")))
     |> from("noreply@picsello.com")
     |> deliver_later()
+  end
+
+  defp map_recipients(nil), do: nil
+
+  defp map_recipients(recipients) do
+    if is_list(recipients) do
+      Enum.map(recipients, &{:email, String.trim(&1)})
+    else
+      String.split(recipients, ";")
+      |> Enum.map(&{:email, String.trim(&1)})
+    end
   end
 
   defp may_be_proofing_album_selection(nil), do: :order_confirmation_template

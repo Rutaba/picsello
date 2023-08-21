@@ -56,7 +56,12 @@ defmodule Picsello.Cart do
       {:error, _} ->
         create_order_with_product(
           product,
-          %{gallery_id: id, gallery_client_id: gallery_client.id, album_id: album_id},
+          %{
+            gallery_id: id,
+            gallery_client_id: gallery_client.id,
+            album_id: album_id,
+            currency: Picsello.Currency.for_gallery(gallery)
+          },
           opts
         )
     end
@@ -85,17 +90,20 @@ defmodule Picsello.Cart do
   end
 
   def credit_remaining(%{id: gallery_id} = gallery) do
+    currency = Picsello.Currency.for_gallery(gallery)
+    zero_price = Money.new(0, currency)
+
     {digital_credit, print_credit} =
       if Map.get(gallery, :credits_available) do
         {digital_credit_remaining(gallery_id), print_credit_remaining(gallery_id)}
       else
-        {%{digital: 0}, %{print: ~M[0]USD}}
+        {%{digital: 0}, %{print: zero_price}}
       end
 
     if digital_credit && print_credit do
       Map.merge(digital_credit, print_credit)
     else
-      %{digital: 0, print: ~M[0]USD}
+      %{digital: 0, print: zero_price}
     end
   end
 
@@ -115,7 +123,7 @@ defmodule Picsello.Cart do
     |> Repo.one()
   end
 
-  defp print_credit_remaining(gallery_id) do
+  def print_credit_remaining(gallery_id) do
     from(gallery in Gallery,
       join: digital_pricing in assoc(gallery, :gallery_digital_pricing),
       left_join: orders in assoc(gallery, :orders),
@@ -124,9 +132,16 @@ defmodule Picsello.Cart do
       select: %{
         print:
           type(
-            coalesce(digital_pricing.print_credits, 0) -
-              coalesce(sum(products.print_credit_discount), 0),
-            Money.Ecto.Amount.Type
+            fragment(
+              "jsonb_build_object('amount', (?::numeric)::integer, 'currency', (?::text))",
+              coalesce(
+                type(fragment("(? ->> 'amount')::text", digital_pricing.print_credits), :integer),
+                0
+              ) -
+                coalesce(sum(products.print_credit_discount), 0),
+              fragment("? ->> 'currency'", digital_pricing.print_credits)
+            ),
+            Money.Ecto.Map.Type
           )
       },
       group_by: digital_pricing.print_credits
@@ -404,7 +419,12 @@ defmodule Picsello.Cart do
     |> Repo.update!()
   end
 
-  def price_display(%Digital{is_credit: true}), do: "1 credit - $0.00"
+  def price_display(%Digital{is_credit: true} = digital) do
+    digital = digital |> Repo.preload(:order)
+    currency_symbol = Money.Currency.symbol!(digital.order.currency)
+    "1 credit - #{currency_symbol}0.00"
+  end
+
   def price_display(%Digital{price: price}), do: price
 
   def price_display({:bundle, %Order{bundle_price: price}}), do: price
@@ -561,7 +581,7 @@ defmodule Picsello.Cart do
     end)
   end
 
-  def total_shipping(_order), do: Money.new(0)
+  def total_shipping(order), do: Money.new(0, order.currency)
 
   def has_shipping?(%{shipping_type: nil}), do: false
   def has_shipping?(_product), do: true

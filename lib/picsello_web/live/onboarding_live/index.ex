@@ -8,7 +8,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   require Logger
 
   alias Ecto.Multi
-  alias Picsello.{Repo, Onboardings, Onboardings.Onboarding, Subscriptions}
+  alias Picsello.{Repo, Onboardings, Onboardings.Onboarding, Subscriptions, UserCurrency}
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
 
   @impl true
@@ -363,6 +363,12 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> Multi.update(:user, build_changeset(socket, params))
     |> Multi.insert(:global_gallery_settings, fn %{user: %{organization: organization}} ->
       GSGallery.price_changeset(%GSGallery{}, %{organization_id: organization.id})
+    end)
+    |> Multi.insert(:user_currencies, fn %{user: %{organization: organization}} ->
+      UserCurrency.currency_changeset(%UserCurrency{}, %{
+        organization_id: organization.id,
+        currency: "USD"
+      })
     end)
     |> Multi.run(:subscription, fn _repo, %{user: user} ->
       with :ok <-

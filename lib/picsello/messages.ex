@@ -83,7 +83,7 @@ defmodule Picsello.Messages do
   def find_by_token("" <> token) do
     result = Phoenix.Token.verify(PicselloWeb.Endpoint, "JOB_ID", token, max_age: :infinity)
 
-    Logger.warn(
+    Logger.warning(
       "[Token] find_by_token result {#{Tuple.to_list(result) |> List.first()}, #{Tuple.to_list(result) |> List.last()}}"
     )
 
@@ -100,7 +100,7 @@ defmodule Picsello.Messages do
   def find_by_token("" <> token, key) do
     result = Phoenix.Token.verify(PicselloWeb.Endpoint, key, token, max_age: :infinity)
 
-    Logger.warn(
+    Logger.warning(
       "[Token] find_by_token result {#{Tuple.to_list(result) |> List.first()}, #{Tuple.to_list(result) |> List.last()}}"
     )
 

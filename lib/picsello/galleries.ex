@@ -9,6 +9,7 @@ defmodule Picsello.Galleries do
   alias Ecto.Multi
 
   alias Picsello.{
+    Currency,
     Galleries,
     Repo,
     Photos,
@@ -19,6 +20,7 @@ defmodule Picsello.Galleries do
     Cart.Digital,
     Job,
     Client,
+    Utils,
     WHCC,
     Galleries.Gallery.UseGlobal
   }
@@ -489,6 +491,7 @@ defmodule Picsello.Galleries do
     end
   end
 
+  @products_currency Utils.products_currency()
   def create_gallery_multi(user, attrs) do
     Multi.new()
     |> Multi.insert(:gallery, Gallery.create_changeset(%Gallery{}, attrs))
@@ -515,22 +518,26 @@ defmodule Picsello.Galleries do
       :gallery_products,
       GalleryProduct,
       fn %{
-           gallery: %{
-             id: gallery_id,
-             type: type
-           }
+           gallery:
+             %{
+               id: gallery_id,
+               type: type
+             } = gallery
          } ->
         case type do
           :proofing ->
             []
 
           _ ->
+            currency = Currency.for_gallery(gallery)
+
             from(category in (Category.active() |> Category.shown()),
               select: %{
                 inserted_at: now(),
                 updated_at: now(),
                 gallery_id: ^gallery_id,
-                category_id: category.id
+                category_id: category.id,
+                sell_product_enabled: ^currency in @products_currency
               }
             )
         end
@@ -590,7 +597,7 @@ defmodule Picsello.Galleries do
               print_credits:
                 if(first_gallery.id == gallery.id,
                   do: package.print_credits,
-                  else: Money.new(0)
+                  else: Money.new(0, package.currency)
                 ),
               download_count: package.download_count,
               download_each_price: package.download_each_price,
@@ -611,7 +618,7 @@ defmodule Picsello.Galleries do
         print_credits:
           if(first_gallery.id == gallery.id,
             do: gallery.package.print_credits,
-            else: Money.new(0)
+            else: Money.new(0, gallery.package.currency)
           ),
         download_count: gallery.package.download_count,
         download_each_price: gallery.package.download_each_price
@@ -637,7 +644,8 @@ defmodule Picsello.Galleries do
         name: type,
         is_proofing: type == "proofing",
         is_finals: type == "finals",
-        set_password: false
+        set_password: false,
+        client_link_hash: UUID.uuid4()
       }
     ]
 
@@ -713,7 +721,9 @@ defmodule Picsello.Galleries do
   end
 
   defp gallery_session_tokens_query(gallery) do
-    from(st in SessionToken, where: st.resource_id == ^gallery.id and st.resource_type == :gallery)
+    from(st in SessionToken,
+      where: st.resource_id == ^gallery.id and st.resource_type == :gallery
+    )
   end
 
   @doc """
@@ -1173,7 +1183,7 @@ defmodule Picsello.Galleries do
     from(gc in GalleryClient,
       where: gc.gallery_id == ^gallery.id and gc.email == ^email
     )
-    |> Repo.one()
+    |> Repo.all()
   end
 
   @doc """
@@ -1306,7 +1316,7 @@ defmodule Picsello.Galleries do
 
   def insert_gallery_client(gallery, email) do
     case Galleries.get_gallery_client(gallery, email) do
-      nil ->
+      [] ->
         GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
         |> Repo.insert()
 

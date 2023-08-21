@@ -148,7 +148,7 @@ defmodule PicselloWeb.GalleryLive.Index do
       socket
       |> open_modal(
         PicselloWeb.GalleryLive.CreateComponent,
-        Map.take(socket.assigns, [:current_user])
+        Map.take(socket.assigns, [:current_user, :currency])
       )
       |> noreply()
 

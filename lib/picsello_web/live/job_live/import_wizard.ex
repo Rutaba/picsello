@@ -10,7 +10,8 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     Job,
     Clients,
     Package,
-    Profiles
+    Profiles,
+    UserCurrencies
   }
 
   import Phoenix.Component
@@ -36,17 +37,27 @@ defmodule PicselloWeb.JobLive.ImportWizard do
   ]
 
   @impl true
-  def update(assigns, socket) do
+  def update(
+        %{current_user: %{organization: organization}} = assigns,
+        socket
+      ) do
+    %{currency: currency} = UserCurrencies.get_user_currency(organization.id)
+
     socket
     |> assign(assigns)
     |> assign_new(:job, fn -> nil end)
-    |> assign_new(:package, fn -> %Package{shoot_count: 1} end)
+    |> assign_new(:package, fn -> %Package{shoot_count: 1, currency: currency} end)
     |> assign_new(:step, fn -> :get_started end)
     |> assign(steps: [:get_started, :job_details, :package_payment, :invoice, :documents])
     |> assign_job_changeset(%{"client" => %{}})
     |> assign_uploads(@upload_options)
     |> assign(:ex_documents, [])
     |> assign(:another_import, nil)
+    |> then(fn %{assigns: %{package: %{currency: currency}}} = socket ->
+      socket
+      |> assign(:currency, currency)
+      |> assign(:currency_symbol, Money.Currency.symbol!(currency))
+    end)
     |> assign_package_changeset(%{})
     |> assign_payments_changeset(%{"payment_schedules" => [%{}, %{}]})
     |> search_assigns()
@@ -183,6 +194,23 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     do: add_payment_event("add-payment", %{}, socket) |> noreply()
 
   @impl true
+  def handle_event(
+        event,
+        params,
+        %{assigns: %{currency: currency, currency_symbol: currency_symbol}} = socket
+      )
+      when event in ~w(validate submit) and not is_map_key(params, "parsed?") do
+    __MODULE__.handle_event(
+      event,
+      Picsello.Currency.parse_params_for_currency(
+        params,
+        {currency_symbol, currency}
+      ),
+      socket
+    )
+  end
+
+  @impl true
   def handle_event("validate", %{"package" => _} = params, socket),
     do: validate_package_event("validate", params, socket) |> noreply()
 
@@ -199,18 +227,18 @@ defmodule PicselloWeb.JobLive.ImportWizard do
     do: payment_package_submit_event("submit", params, socket) |> noreply()
 
   @impl true
-  def handle_event("start_another_job", %{}, %{assigns: %{step: :documents}} = socket),
-    do:
-      socket
-      |> assign(:another_import, true)
-      |> import_job_for_import_wizard()
-      |> noreply()
-
-  @impl true
   def handle_event("submit", %{}, %{assigns: %{step: :documents}} = socket),
     do:
       socket
       |> assign(:another_import, false)
+      |> import_job_for_import_wizard()
+      |> noreply()
+
+  @impl true
+  def handle_event("start_another_job", %{}, %{assigns: %{step: :documents}} = socket),
+    do:
+      socket
+      |> assign(:another_import, true)
       |> import_job_for_import_wizard()
       |> noreply()
 

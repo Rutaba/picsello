@@ -101,6 +101,7 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
         amount: 0,
         amount_capturable: 0,
         amount_received: 0,
+        currency: "usd",
         id: "order-payment-intent-id",
         status: "requires_capture"
       }
@@ -136,23 +137,20 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
 
     setup [:stub_create_invoice]
 
-    def expect_capture,
-      do:
-        Mox.expect(
-          Picsello.MockPayments,
-          :capture_payment_intent,
-          fn "order-payment-intent-id", connect_account: "connect-account-id" ->
-            {:ok, %{intent() | status: "succeeded"}}
-          end
-        )
-
     def expect_retrieve(%{amount: amount}),
       do:
         Mox.expect(
           Picsello.MockPayments,
           :retrieve_payment_intent,
           fn "order-payment-intent-id", connect_account: "connect-account-id" ->
-            {:ok, %{intent() | amount: amount, amount_capturable: amount}}
+            {:ok,
+             %{
+               intent()
+               | id: "order-payment-intent-id",
+                 amount: amount,
+                 amount_capturable: amount,
+                 currency: "usd"
+             }}
           end
         )
 
@@ -180,9 +178,9 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
         |> Repo.preload(:products)
         |> Order.update_changeset(
           build(:cart_product,
-            shipping_base_charge: ~M[10]USD,
+            shipping_base_charge: %Money{amount: 10, currency: :USD},
             shipping_upcharge: Decimal.new(1),
-            unit_markup: ~M[1]USD,
+            unit_markup: %Money{amount: 1, currency: :USD},
             unit_price: price,
             whcc_product: insert(:product)
           )
@@ -195,10 +193,8 @@ defmodule PicselloWeb.StripeWebhooksControllerTest do
         |> Repo.preload(products: :whcc_product)
 
     test "marks order as paid", %{conn: conn, order: order} do
-      insert(:digital, order: order, price: ~M[10]USD)
-      expect_retrieve(~M[10]USD)
-
-      expect_capture()
+      insert(:digital, order: order, price: %{amount: 10, currency: :USD})
+      expect_retrieve(%{amount: 10, currency: :USD})
 
       refute Picsello.Orders.client_paid?(order)
 
