@@ -50,6 +50,7 @@ export default {
     // to see if the user has seen it yet or not
     const el = this.el;
     const introId = el.id;
+    const shouldSeeIntro = JSON.parse(el.dataset.introShow); // turn to an actual boolean
 
     if (shouldSeeIntro && !isMobile()) {
       const introSteps = intros[introId](el);
