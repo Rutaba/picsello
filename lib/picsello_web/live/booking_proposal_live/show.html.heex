@@ -17,11 +17,7 @@
       <%= if PaymentSchedules.paid_any?(@job) do %>
         <span class="capitalize"><%= @job.client.name %></span>, your shoot has been booked!
       <% else %>
-      <%= if is_nil(@organization.client_proposal) do %>
-        <span class="capitalize"><%= @job.client.name %></span>, <%= @default_client_proposal_params.client_proposal.title %>.
-      <% else %>
-        <span class="capitalize"><%= @job.client.name %></span>, <%= @organization.client_proposal.title %>.
-      <% end %>
+        <span class="capitalize"><%= @job.client.name %></span>, <%= @client_proposal.title %>.
       <% end %>
     </h2>
 
@@ -39,23 +35,16 @@
 
             Once your payment has been confirmed, your session is booked for you exclusively and any other client inquiries will be declined. You will receive a payment confirmation email and additional emails about your session leading up to the shoot.
 
-          <%= if is_nil(@organization.client_proposal) do %>
-            <%= raw @default_client_proposal_params.client_proposal.message %>
+            <%= raw @client_proposal.message %>
             <br>
-          <% else  %>
-            <%= raw @organization.client_proposal.message %>
-          <% end %>
 
             <span><%= @organization.name %></span>
           <% end %>
         </p>
         <hr class="border-gray-100 my-8">
         <h3 class="uppercase text-base-250">Have Questions?</h3>
-        <%= if is_nil(@organization.client_proposal) do %>
-          <a class="block mt-2 btn-primary w-max" phx-click="open-compose" href="#"><%= @default_client_proposal_params.client_proposal.contact_button %></a>
-        <% else  %>
-          <a class="block mt-2 btn-primary w-max" phx-click="open-compose" href="#"><%= @organization.client_proposal.contact_button %></a>
-        <% end %>
+        <a class="block mt-2 btn-primary w-max" phx-click="open-compose" href="#"><%= @client_proposal.contact_button %></a>
+        <br>
       </div>
       <div class="md:border md:border-gray-100 sm:px-10 py-10">
         <%= if @job.booking_event do %>
@@ -76,11 +65,7 @@
           <% PaymentSchedules.paid_any?(@job) || PaymentSchedules.is_with_cash?(@job) -> %>
             <h3 class="text-3xl md:mr-20">Manage your session:</h3>
           <% true -> %>
-        <%= if is_nil(@organization.client_proposal) do %>
-          <h3 class="text-3xl md:mr-20"><%= @default_client_proposal_params.client_proposal.booking_panel_title %></h3>
-        <% else  %>
-          <h3 class="text-3xl md:mr-20"><%= @organization.client_proposal.booking_panel_title %></h3>
-        <% end %>
+        <h3 class="text-3xl md:mr-20"><%= @client_proposal.booking_panel_title %></h3>
 
         <%= unless Job.imported?(@job) do %>
           <button title="Proposal" type="button" phx-click="open-details" class="mt-6 font-semibold btn-row">

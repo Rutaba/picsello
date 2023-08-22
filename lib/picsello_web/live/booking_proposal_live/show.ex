@@ -3,7 +3,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
   alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules, Messages}
-  alias PicselloWeb.BookingProposalLive.ScheduleComponent
+  alias PicselloWeb.{BookingProposalLive.ScheduleComponent, Live.Brand.Shared}
 
   import Picsello.PaymentSchedules, only: [set_payment_schedules_order: 1]
 
@@ -26,6 +26,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   @max_age 60 * 60 * 24 * 365 * 10
 
+<<<<<<< HEAD
   @pages ~w(details contract questionnaire invoice idle)
   @default_client_proposal_params %{
     client_proposal: %{
@@ -35,6 +36,9 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         "<p>Let's get your shoot booked!</p><p><br></p><p>We are so excited to work with you!</p><p><br></p><p>Your session will not be considered officially...</p><p><br></p><p>We can't wait to capture this time for you!</p>"
     }
   }
+=======
+  @pages ~w(details contract questionnaire invoice)
+>>>>>>> d58b763bf (change requests)
 
   @impl true
   def mount(%{"token" => token} = params, session, socket) do
@@ -42,7 +46,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> assign_defaults(session)
     |> assign_proposal(token)
     |> assign_stripe_status()
-    |> assign_default_client_proposal_params()
+    |> assign_client_proposal()
     |> maybe_confetti(params)
     |> maybe_set_booking_countdown()
     |> reorder_payment_schedules()
@@ -259,16 +263,9 @@ I look forward to capturing these memories for you!"}
     })
   end
 
-  defp assign_default_client_proposal_params(%{assigns: %{organization: organization}} = socket) do
+  defp assign_client_proposal(%{assigns: %{organization: organization}} = socket) do
     socket
-    |> assign(
-      :default_client_proposal_params,
-      put_in(
-        @default_client_proposal_params,
-        [:client_proposal, :contact_button],
-        "Message #{organization.name}"
-      )
-    )
+    |> assign(client_proposal: Shared.client_proposal(organization))
   end
 
   defp assign_proposal(%{assigns: %{current_user: current_user}} = socket, token) do

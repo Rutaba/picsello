@@ -2,7 +2,9 @@ defmodule PicselloWeb.Live.Brand.CustomizeClientProposalComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.{Organization, Repo}
+  alias PicselloWeb.Live.Brand.Shared
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
+  import PicselloWeb.LiveModal, only: [close_x: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -20,9 +22,7 @@ defmodule PicselloWeb.Live.Brand.CustomizeClientProposalComponent do
           <h1 class="mb-4 text-3xl font-bold">
             Customize client proposal
           </h1>
-          <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
-            <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
-          </button>
+          <.close_x myself={@myself}/>
         </div>
         <.form for={@changeset} :let={f} phx-change="validate" phx-submit="save" phx-target={@myself}>
           <%= for e <- inputs_for(f, :client_proposal) do %>
@@ -67,19 +67,21 @@ defmodule PicselloWeb.Live.Brand.CustomizeClientProposalComponent do
   def handle_event("save", %{"organization" => params}, socket) do
     case socket |> build_changeset(params) |> Repo.update() do
       {:ok, organization} ->
-        send(socket.parent_pid, {:update, organization, "Client Proposal saved"})
+        send(socket.parent_pid, {:update, organization, "Client proposal saved"})
         socket |> close_modal() |> noreply()
 
       {:error, changeset} ->
-        socket |> assign(changeset: changeset) |> noreply()
+        socket
+        |> assign(changeset: changeset)
+        |> put_flash(:error, "Unable to save client proposal")
+        |> noreply()
     end
   end
 
   defp build_changeset(
          %{
            assigns: %{
-             organization: organization,
-             default_client_proposal_params: default_client_proposal_params
+             organization: organization
            }
          },
          params
@@ -88,7 +90,7 @@ defmodule PicselloWeb.Live.Brand.CustomizeClientProposalComponent do
       updated_organization =
         Organization.client_proposal_portal_changeset(
           organization,
-          default_client_proposal_params
+          %{client_proposal: Shared.client_proposal(organization)}
         )
         |> current_organization()
 
@@ -120,8 +122,7 @@ defmodule PicselloWeb.Live.Brand.CustomizeClientProposalComponent do
   def open(
         %{
           assigns: %{
-            current_user: current_user,
-            default_client_proposal_params: default_client_proposal_params
+            current_user: current_user
           }
         } = socket,
         organization
@@ -129,8 +130,7 @@ defmodule PicselloWeb.Live.Brand.CustomizeClientProposalComponent do
     socket
     |> open_modal(__MODULE__, %{
       current_user: current_user,
-      organization: organization,
-      default_client_proposal_params: default_client_proposal_params
+      organization: organization
     })
   end
 end

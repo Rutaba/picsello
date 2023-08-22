@@ -6,15 +6,6 @@ defmodule PicselloWeb.Live.BrandSettings do
   import PicselloWeb.Live.Brand.Shared,
     only: [email_signature_preview: 1, client_proposal_preview: 1, brand_logo_preview: 1]
 
-  @default_client_proposal_params %{
-    client_proposal: %{
-      title: "Welcome",
-      booking_panel_title: "Here's how to officially book your photo session:",
-      message:
-        "<p>Let's get your shoot booked!</p><p><br></p><p>We are so excited to work with you!</p><p><br></p><p>Your session will not be considered officially...</p><p><br></p><p>We can't wait to capture this time for you!</p>"
-    }
-  }
-
   @impl true
   def mount(_params, _session, socket) do
     socket |> assign(:page_title, "Settings") |> assign_organization() |> ok()
@@ -78,7 +69,7 @@ defmodule PicselloWeb.Live.BrandSettings do
             <button phx-click="customize-portal" class="hidden mt-6 sm:block btn-primary intro-signature">Customize</button>
           </div>
           <div {testid("portal-preview")} class="flex flex-col">
-            <.client_proposal_preview organization={@organization} user={@current_user} default_client_proposal_params={@default_client_proposal_params}/>
+            <.client_proposal_preview organization={@organization} user={@current_user}/>
             <button phx-click="customize-portal" class="self-end block mt-12 sm:hidden btn-primary">Customize</button>
           </div>
         </div>
@@ -135,13 +126,5 @@ defmodule PicselloWeb.Live.BrandSettings do
   defp assign_organization(socket, organization) do
     socket
     |> assign(:organization, organization)
-    |> assign(
-      :default_client_proposal_params,
-      put_in(
-        @default_client_proposal_params,
-        [:client_proposal, :contact_button],
-        "Message #{organization.name}"
-      )
-    )
   end
 end
