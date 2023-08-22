@@ -16,12 +16,12 @@
         <div class="flex gap-2 ml-auto py-2">
             <.actions id="header" main_button_class="h-12" archive_option={false} booking_event={@booking_event} button_actions={header_actions()} />
             <.icon_button icon="eye" color="blue-planning-300" class="text-black">Client preview</.icon_button>
-            <.button_simple>Copy Link</.button_simple>
+            <.button_black>Copy Link</.button_black>
         </div>
     </div> 
     <div class="ml-2 pb-1.5 mt-10 w-20 text-center border-b-4 border-blue-planning-300 text-blue-planning-300 font-bold">
         Overview
-    </div>
+    </div> 
 </div>
 
 <div class="bg-base-200 h-auto">
@@ -50,7 +50,7 @@
                                 <button phx-click="add-date" class="btn-primary whitespace-nowrap h-8 py-0.5">
                                     Add date
                                 </button>
-                            </div>
+                            </div> 
                         </div>
                     </div>
                     <hr class="mt-6 w-full">
@@ -111,10 +111,7 @@
                                         </div>
                                         <hr class="my-3 block md:hidden">
                                         <div class="flex items-center ml-auto">
-                                            <button phx-click="add-package" class="flex items-center h-8 px-2 py-1 btn-tertiary bg-blue-planning-300 text-white hover:bg-blue-planning-300/75 ml-auto mr-1" >
-                                                <.icon name="pencil" class="inline-block w-4 h-4 mr-3 fill-white text-white" />
-                                                Edit
-                                            </button>
+                                            <.icon_button phx-click="add-package" icon="pencil" color="white" class="bg-blue-planning-300 hover:bg-blue-planning-300/75 mr-1">Edit</.icon_button>
                                             <.actions id="package" booking_event={@booking_event} button_actions={package_actions()} />
                                         </div>
                                     </div>

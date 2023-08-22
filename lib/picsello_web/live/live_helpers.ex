@@ -130,7 +130,7 @@ defmodule PicselloWeb.LiveHelpers do
       |> Enum.into(%{class: "", disabled: false, inner_block: nil, icon_class: ""})
 
     ~H"""
-    <button type="button" class={classes("btn-tertiary flex items-center px-2 py-1 font-sans rounded-lg hover:opacity-75 transition-colors whitespace-nowrap text-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
+    <button type="button" class={classes("btn-tertiary flex items-center whitespace-nowrap text-#{@color} #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
       <.icon name={@icon} class={classes("w-4 h-4 fill-current text-#{@color} #{@icon_class}", %{"mr-2" => @inner_block})} />
       <%= if @inner_block do %>
         <%= render_slot(@inner_block) %>
@@ -139,11 +139,31 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
-  def button_simple(assigns) do
+  def button_black(assigns) do
     assigns = assigns |> Enum.into(%{class: ""})
 
     ~H"""
       <button class={"btn-primary whitespace-nowrap #{@class}"}>
+        <%= render_slot(@inner_block) %>
+      </button>
+    """
+  end
+
+  def button_white(assigns) do
+    assigns = assigns |> Enum.into(%{class: ""})
+
+    ~H"""
+      <button class={"btn-secondary whitespace-nowrap #{@class}"}>
+        <%= render_slot(@inner_block) %>
+      </button>
+    """
+  end
+
+  def button_base(assigns) do
+    assigns = assigns |> Enum.into(%{class: ""})
+
+    ~H"""
+      <button class={"btn-tertiary whitespace-nowrap #{@class}"}>
         <%= render_slot(@inner_block) %>
       </button>
     """
