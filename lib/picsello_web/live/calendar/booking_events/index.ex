@@ -5,6 +5,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   alias Picsello.BookingEvents
+  alias PicselloWeb.Live.Calendar.EditMarketingEvent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -202,6 +203,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   def handle_event("edit-event", %{"event-id" => id}, socket) do
     socket
     |> redirect(to: Routes.calendar_booking_events_show_path(socket, :edit, id))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "edit-marketing-event",
+        %{"event-id" => id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    socket
+    |> EditMarketingEvent.open(%{
+      event_id: id,
+      current_user: current_user
+    })
     |> noreply()
   end
 
