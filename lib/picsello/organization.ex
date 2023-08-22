@@ -45,17 +45,29 @@ defmodule Picsello.Organization do
       field(:contact_button, :string)
     end
 
-    def changeset(signature, attrs) do
-      signature
+    def changeset(proposal, attrs) do
+      proposal
       |> cast(attrs, [:title, :booking_panel_title, :message, :contact_button])
-      |> validate_required([:title, :booking_panel_title, :message, :contact_button], message: "enter data in missing fields")
-      |> validate_format(:title, ~r/[a-z]/, message: ", at least one lower case character")
-      |> validate_format(:title, ~r/[A-Z]/, message: ", at least one upper case character")
-      |> validate_format(:booking_panel_title, ~r/[a-z]/, message: ", at least one lower case character")
-      |> validate_format(:booking_panel_title, ~r/[A-Z]/, message: ", at least one upper case character")
-      |> validate_length(:title, min: 5, max: 30, message: "length must be between 5 and 30")
-      |> validate_length(:booking_panel_title, min: 10, max: 50, message: "length must be between 10 and 50")
-      |> validate_length(:contact_button, min: 5, max: 35, message: "length must be between 5 and 35")
+      |> validate_required([:title, :booking_panel_title, :message, :contact_button], message: "should not be empty")
+      |> validate_field(:title, min: 5, max: 30)
+      |> validate_field(:booking_panel_title, min: 10, max: 50)
+      |> validate_field(:contact_button, min: 5, max: 35)
+    end
+
+    defp validate_field(changeset, field, min: min, max: max) do
+      check_field = get_field(changeset, field)
+      cond do
+        String.length(check_field) < min ->
+          add_error(changeset, field, "must be greater than #{min} characters")
+
+        String.length(check_field) > max ->
+          add_error(changeset, field, "must be less than #{max} characters")
+
+        !Regex.match?(~r/[A-Za-z]/, check_field) ->
+          add_error(changeset, field, "has invalide format")
+        true ->
+          changeset
+      end
     end
   end
 
