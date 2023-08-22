@@ -190,6 +190,6 @@ defmodule Picsello.GalleryDashboardCardAndViewTest do
     session
     |> assert_text("Your Galleries")
     |> assert_text("Meet Galleries")
-    |> assert_has(link("Create a gallery"))
+    |> assert_has(testid("create-a-gallery", text: "Create a gallery", count: 2))
   end
 end
