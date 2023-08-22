@@ -10,18 +10,18 @@
   </h1>
 
   <div class="py-2 center-container">
-      <div class="items-center text-center justify-between font-light md:grid md:grid-cols-3 hidden bg-base-200 h-11">
+      <div class="items-center text-center justify-between font-light md:grid md:grid-cols-3 hidden bg-base-200 h-11 uppercase">
         <div class="flex grid-cols md:pl-6 pl-2">Payment Name</div>
-        <div class="flex grid-cols">Amount</div>
         <div class="flex grid-cols">Status</div>
+        <div class="flex grid-cols">Amount</div>
       </div>
 
       <%= for schedule <- @job.payment_schedules do %>
         <div {testid("schedule-#{schedule.id}")} class="px-6 md:py-0 py-6 md:mt-0 mt-2 md:mb-0 mb-8 md:pt-2 border border-base-200 rounded-lg md:border-none">      
           <div class="flex grid md:grid-cols-3 grid-cols-3">
             <div class="flex md:justify-start justify-start"><%= schedule.description %></div>
-            <div class="flex md:justify-start justify-start"><%= schedule.price %></div>
             <div class={"flex md:justify-start justify-start #{status_class(make_status(schedule))}"} ><%= make_status(schedule) %></div>
+            <div class="flex md:justify-start justify-start"><%= schedule.price %></div>
             <hr class="border-base-200 mt-5 col-span-5 md:block hidden"/>
           </div> 
         </div> 
