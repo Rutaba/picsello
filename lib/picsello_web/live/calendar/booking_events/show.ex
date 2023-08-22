@@ -5,8 +5,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
-  alias Picsello.{Repo, BookingEvents, Package, BookingEvent, Questionnaire}
+  alias Picsello.{Repo, BookingEvents, Package, Questionnaire, BookingEventDate}
   alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
+  alias PicselloWeb.Live.Calendar.BookingEventModal
 
   @impl true
   def mount(_params, _session, socket) do
@@ -23,9 +24,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       ) do
     booking_event =
       BookingEvents.get_booking_event!(organization_id, to_integer(event_id))
-      |> Repo.preload(
+      |> Repo.preload([
+        :dates,
         package_template: [:package_payment_schedules, :contract, :questionnaire_template]
-      )
+      ])
       |> Map.merge(%{
         # please remove them when real implementaiton is complete
         slots: [
@@ -51,9 +53,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_event("add-date", _, socket) do
+  def handle_event("add-date", _, %{assigns: %{booking_event: booking_event}} = socket) do
+    booking_date = %BookingEventDate{booking_event_id: booking_event.id}
+
     socket
-    |> open_wizard()
+    |> open_wizard(%{booking_date: booking_date})
     |> noreply()
   end
 
@@ -563,10 +567,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     """
   end
 
-  defp open_wizard(socket, assigns \\ %{}) do
+  defp open_wizard(socket, assigns) do
     # TODO: BookingEventModal backend functionality Currently just with minimal information
     socket
-    |> open_modal(PicselloWeb.Live.Calendar.BookingEventModal, %{
+    |> open_modal(BookingEventModal, %{
       close_event: :wizard_closed,
       assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
     })
@@ -578,21 +582,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       "overview" -> socket
       _ -> socket
     end
-  end
-
-  defp assign_booking_event(socket, booking_event) do
-    booking_event =
-      booking_event
-      |> Repo.preload(
-        package_template: [:package_payment_schedules, :contract, :questionnaire_template]
-      )
-
-    socket
-    |> assign(:booking_event, booking_event)
-    |> assign(:payments_description, payments_description(booking_event))
-    |> assign(:package, booking_event.package_template)
-    |> assign(:edit_name, true)
-    |> assign(:name_changeset, BookingEvent.create_changeset(booking_event, %{}))
   end
 
   # TODO: refine logic

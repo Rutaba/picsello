@@ -4,29 +4,26 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  alias Picsello.BookingEvent.EventDate
+  alias Picsello.BookingEventDate
 
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_event_keys(assigns)
+    |> assign_changeset(%{"time_blocks" => [%{}], "slots" => []})
     |> ok()
   end
 
   def assign_event_keys(socket, assigns) do
+    # TODO: This will be remove in later version
     assigns =
       Enum.into(assigns, %{
-        booking_date: %EventDate{date: nil},
-        is_valid: true,
-        can_edit: true,
-        booking_count: 0,
         slots: [
           %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
           %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
           %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
-        ],
-        params: %{}
+        ]
       })
 
     socket |> assign(assigns)
@@ -48,26 +45,29 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           <p>Client details, discounts, reservations, and all other settings will be found after you save/close this modal.</p>
         </div>
       </div>
-      <.form :let={f} for={} phx-change="validate" phx-submit="submit" phx-target={@myself} >
+      <.form :let={f} for={@changeset} phx-change="validate" phx-submit="submit" phx-target={@myself} >
         <div class="grid grid-cols-11 gap-5 mt-8">
           <div class="col-span-3">
             <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full" %>
           </div>
-          <div class="col-span-4 flex items-center pl-4">
-            <div class="grow">
-              <%= labeled_input f, :start_time, type: :time_input, class: "w-11/12" %>
+          <%= error_tag(f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
+          <%= inputs_for f, :time_blocks, fn t -> %>
+            <div class="col-span-4 flex items-center pl-4">
+              <div class="grow">
+                <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "w-11/12" %>
+              </div>
+              <div class="pt-5 mr-4"> - </div>
+              <div class="grow">
+                <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "w-11/12" %>
+              </div>
             </div>
-            <div class="pt-5 mr-4"> - </div>
-            <div class="grow">
-              <%= labeled_input f, :end_time, type: :time_input, class: "w-11/12" %>
-            </div>
-          </div>
+          <% end %>
           <div class="col-span-4 flex gap-5">
             <div class="grow">
-              <%= labeled_select f, :session_gap, buffer_options(), class: "" %>
+              <%= labeled_select f, :duration_minutes, duration_options(), label: "Session length", prompt: "Select below" %>
             </div>
             <div class="grow">
-              <%= labeled_select f, :session_length, duration_options(), class: "" %>
+              <%= labeled_select f, :buffer_minutes, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true %>
             </div>
           </div>
         </div>
@@ -91,23 +91,24 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           <div class="col-span-2">Time</div>
           <div class="col-span-3">Status</div>
         </div>
-        <%= for slot <- @slots do %>
+        <!-- TODO slots section -->
+        <%= inputs_for f, :slots, fn s -> %>
           <div class="mt-4 grid grid-cols-5 items-center">
             <div class="col-span-2">
-              <%= slot.time %>
+              <%= s.slot_start %>
             </div>
             <div>
-              <%= slot.title %>
+              <%= s.status %>
             </div>
             <div class="col-span-2 flex justify-end pr-2">
-              <%= input f, :active, type: :checkbox, class: "checkbox w-6 h-6" %>
+              <%= input s, :active, type: :checkbox, class: "checkbox w-6 h-6" %>
               <div class="ml-2"> Show block as booked (break)</div>
             </div>
           </div>
         <% end %>
         <.footer>
-          <button class="btn-primary" title="Save" type="submit" disabled={!@is_valid} phx-disable-with="Save">
-            Save
+          <button class="btn-primary" title="Save" type="submit" disabled={!@changeset.valid?} phx-disable-with="Save">
+              Save
           </button>
           <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
               Cancel
@@ -119,9 +120,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   end
 
   @impl true
-  def handle_event("validate", _params, socket) do
-    # TODO: Currentyly with minimal info
-    socket |> noreply()
+  def handle_event("validate", %{"booking_event_date" => params}, socket) do
+    socket |> assign_changeset(params, :validate) |> noreply()
   end
 
   @impl true
@@ -133,12 +133,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     |> noreply()
   end
 
-  defp heading_title(booking_date), do: if(booking_date.date, do: "Edit Date", else: "Add Date")
+  defp heading_title(booking_date), do: if(booking_date.id, do: "Edit Date", else: "Add Date")
 
   defp buffer_options() do
     for(
       duration <- [5, 10, 15, 20, 30, 45, 60],
       do: {dyn_gettext("duration-#{duration}"), duration}
     )
+  end
+
+  defp assign_changeset(
+         %{assigns: %{booking_date: booking_date}} = socket,
+         params,
+         action \\ nil
+       ) do
+    # TODO: will remove this in later version
+    # event = current(changeset)
+    changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)
+    assign(socket, changeset: changeset)
   end
 end

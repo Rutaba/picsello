@@ -90,14 +90,14 @@ defmodule Picsello.BookingEvent do
     field(:status, Ecto.Enum, values: [:active, :disabled, :archive])
     belongs_to :package_template, Picsello.Package
     belongs_to :organization, Picsello.Organization
-    embeds_many :dates, EventDate, on_replace: :delete
+    has_many :dates, Picsello.BookingEventDate
     has_many :jobs, Picsello.Job
 
     timestamps()
   end
 
   @doc false
-  def changeset(booking_event \\ %__MODULE__{}, attrs, opts) do
+   def changeset(booking_event \\ %__MODULE__{}, attrs, opts) do
     steps = [
       details: &update_details/2,
       package: &update_package_template/2,
