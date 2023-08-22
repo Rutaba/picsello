@@ -627,7 +627,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  @impl true
   def handle_info(
         {:update_templates, %{templates: templates}},
         %{assigns: %{modal_pid: modal_pid}} = socket

@@ -1,6 +1,5 @@
 defmodule Picsello.Packages do
   @moduledoc "context module for packages"
-  alias PicselloWeb.Live.Calendar.BookingEvents
 
   alias Picsello.{
     Accounts.User,

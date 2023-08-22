@@ -5,6 +5,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   alias Picsello.BookingEvents
+  alias PicselloWeb.Live.Calendar.EditMarketingEvent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -224,7 +225,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
         %{assigns: %{current_user: current_user}} = socket
       ) do
     socket
-    |> PicselloWeb.Live.Calendar.EditMarketingEvent.open(%{
+    |> EditMarketingEvent.open(%{
       event_id: id,
       current_user: current_user
     })
