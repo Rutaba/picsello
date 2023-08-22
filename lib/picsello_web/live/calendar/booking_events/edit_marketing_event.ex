@@ -2,8 +2,6 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   @moduledoc false
   use PicselloWeb, :live_component
 
-  import Phoenix.Component
-  import PicselloWeb.ShootLive.Shared, only: [duration_options: 0, location: 1]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [package_row: 1, current: 1]
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
@@ -164,7 +162,7 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
 
     ~H"""
       <div class="flex mt-4 lg:mt-8">
-        <label id="toggle_visibility" class="flex items-center cursor-pointer">
+        <label class="flex items-center cursor-pointer">
           <div class="text-sm font-bold lg:text-normal text-black"><%= @title %></div>
 
           <div class="relative ml-3">
