@@ -90,12 +90,19 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
-    with true <- is_nil(client_email),
-         nil <- Map.get(assigns, :current_user) do
-      %GalleryClient{email: gallery.job.client.email, gallery_id: gallery.id}
+    result =
+      with true <- is_nil(client_email),
+           nil <- Map.get(assigns, :current_user) do
+        %GalleryClient{email: gallery.job.client.email, gallery_id: gallery.id}
+      else
+        false -> maybe_insert_gallery_client(gallery, client_email)
+        current_user -> maybe_insert_gallery_client(gallery, current_user.email)
+      end
+
+    if is_list(result) do
+      result |> List.first()
     else
-      false -> maybe_insert_gallery_client(gallery, client_email)
-      current_user -> maybe_insert_gallery_client(gallery, current_user.email)
+      result
     end
   end
 
