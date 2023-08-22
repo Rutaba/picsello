@@ -397,7 +397,7 @@
             <tr class={"payment-schedule-row #{status_class(make_status(schedule))}"}>      
               <td class="payment-schedule-col"><%= schedule.description %></td>
               <td class="payment-schedule-col"><%= make_status(schedule) %></td>
-              <td class="payment-schedule-col"><%= schedule.price %></td>
+              <td class="payment-schedule-col"><%= Money.to_string(schedule.price, symbol: false, code: true) %></td>
             </tr> 
           <% end %>
         </table>
