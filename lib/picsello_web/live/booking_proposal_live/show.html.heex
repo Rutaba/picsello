@@ -58,10 +58,13 @@
           </div>
         <% end %>
 
-        <%= if PaymentSchedules.paid_any?(@job) || PaymentSchedules.is_with_cash?(@job) do %>
-          <h3 class="text-3xl md:mr-20">Manage your session:</h3>
-        <% else %>
-          <h3 class="text-3xl md:mr-20">To officially book your session:</h3>
+        <%= cond do %>
+          <% PaymentSchedules.all_paid?(@job) -> %>
+            <h3 class="text-3xl md:mr-20">Completed session details:</h3>
+          <% PaymentSchedules.paid_any?(@job) || PaymentSchedules.is_with_cash?(@job) -> %>
+            <h3 class="text-3xl md:mr-20">Manage your session:</h3>
+          <% true -> %>
+            <h3 class="text-3xl md:mr-20">To officially book your session:</h3>
         <% end %>
 
         <%= unless Job.imported?(@job) do %>
