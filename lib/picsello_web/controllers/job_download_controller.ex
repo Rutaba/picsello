@@ -19,11 +19,13 @@ defmodule PicselloWeb.JobDownloadController do
       booking_proposal_id
       |> BookingProposal.by_id()
       |> BookingProposal.preloads()
-      |> Repo.preload(job: [package: [:contract]])
+      |> Repo.preload([:questionnaire, :answer, job: [package: [:contract]]])
 
     print_credit = get_print_credit(package)
     amount = get_amount(print_credit)
     organization_logo_url = logo_url(organization)
+
+    IO.inspect(proposal)
 
     PicselloWeb.PDFView.render("job_invoice.html", %{
       read_only: true,
