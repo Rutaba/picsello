@@ -25,8 +25,6 @@ defmodule PicselloWeb.JobDownloadController do
     amount = get_amount(print_credit)
     organization_logo_url = logo_url(organization)
 
-    IO.inspect(proposal)
-
     PicselloWeb.PDFView.render("job_invoice.html", %{
       read_only: true,
       job: job,

@@ -268,6 +268,77 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
     """
   end
 
+  def questionnaire_item(assigns) do
+    ~H"""
+    <dt class="pt-4">
+      <label class="input-label" for={"question_#{@question_index}"}>
+        <%= @question.prompt %>
+      </label>
+      <%= if @question.optional do %>
+        <em class="text-xs">(optional)</em>
+      <% end %>
+    </dt>
+      <%= case @question.type do %>
+        <% :multiselect -> %>
+          <input type="hidden" name={"answers[#{@question_index}][]"} value="">
+
+          <dd>
+            <%= for {option, option_index} <- @question.options |> Enum.with_index() do %>
+              <label class="flex items-center mt-2">
+                <input
+                  class="checkbox"
+                  type="checkbox"
+                  name={"answers[#{@question_index}][]"}
+                  value={option_index}
+                  checked={@answer |> Enum.map(&String.to_integer(&1)) |> Enum.member?(option_index)}>
+                  <div class="pl-2 input-label" ><%= option %></div>
+              </label>
+            <% end %>
+          </dd>
+
+        <% :select -> %>
+          <dd>
+            <%= for {option, option_index} <- @question.options |> Enum.with_index() do %>
+              <label class="flex items-center mt-2">
+                <input
+                  class="radio"
+                  type="radio"
+                  name={"answers[#{@question_index}][]"}
+                  value={option_index}
+                  checked={@answer |> Enum.map(&String.to_integer(&1)) |> Enum.member?(option_index)}>
+                <div class="pl-2 input-label" ><%= option %></div>
+              </label>
+            <% end %>
+          </dd>
+
+        <% :text -> %>
+          <dd class="mt-2">
+            <input type="text" phx-debounce="1000" class="w-full text-input" id={"question_#{@question_index}"} name={"answers[#{@question_index}][]"} value={@answer} placeholder={@question.placeholder} />
+          </dd>
+
+        <% :phone -> %>
+          <dd class="mt-2">
+            <input type="tel" phx-debounce="1000" class="w-full text-input" id={"question_#{@question_index}"} name={"answers[#{@question_index}][]"} value={@answer} />
+          </dd>
+
+        <% :email -> %>
+          <dd class="mt-2">
+            <input type="email" phx-debounce="1000" class="w-full text-input" id={"question_#{@question_index}"} name={"answers[#{@question_index}][]"} value={@answer} />
+          </dd>
+
+        <% :date -> %>
+          <dd class="mt-2">
+            <input type="date" phx-debounce="1000" class="w-full text-input" id={"question_#{@question_index}"} name={"answers[#{@question_index}][]"} value={@answer} />
+          </dd>
+
+        <% :textarea -> %>
+          <dd class="mt-2">
+            <textarea phx-debounce="1000" class="w-full text-input"  id={"question_#{@question_index}"} name={"answers[#{@question_index}][]"}><%= @answer %></textarea>
+          </dd>
+      <% end %>
+    """
+  end
+
   def get_amount(nil), do: nil
 
   def get_amount(print_credit) do

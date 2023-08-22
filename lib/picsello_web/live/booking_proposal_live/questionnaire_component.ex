@@ -4,6 +4,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Repo, Questionnaire, Questionnaire.Answer}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
+  import PicselloWeb.BookingProposalLive.Shared, only: [questionnaire_item: 1]
 
   @impl true
   def update(assigns, socket) do
