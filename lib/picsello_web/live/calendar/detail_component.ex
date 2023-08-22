@@ -39,13 +39,13 @@ defmodule PicselloWeb.Calendar.Shared.DetailComponent do
         <%= if @opts.description do %>
           <.event_item icon="description" custom_item={true}>
             <div class="font-normal text-base"> You have been invited to schedule meeting </div>
-            <div class="mt-1 font-normal text-base"> <%= @opts.description %> </div>
+            <div class="mt-1 font-normal text-base w-96 break-all"> <%= @opts.description %> </div>
           </.event_item>
         <% end %>
 
         <.event_item icon="attending" custom_item={true}>
           <div class="font-bold text-base"> Attending </div>
-          <div class="text-sm w-fit rounded bg-emerald-300 font-semibold text-emerald-600 px-1">
+          <div class="text-sm w-fit rounded bg-blue-planning-100 font-semibold text-blue-planning-300 px-1">
             <%= @opts.status == "confirmed" && "Yes" || "No" %>
           </div>
         </.event_item>
