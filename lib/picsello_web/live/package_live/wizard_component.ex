@@ -762,9 +762,20 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     """
   end
 
-  def step(%{name: :payment} = assigns) do
-    # important: when adding package for booking event there is no job. so assigning nil
-    assigns = assigns |> Enum.into(%{job: Map.get(assigns, :job)})
+  def step(
+        %{
+          name: :payment,
+          f: %{params: params},
+          default_payment_changeset: _
+        } = assigns
+      ) do
+    job = Map.get(assigns, :job)
+
+    job_type =
+      Map.get(params, "job_type") ||
+        if(job, do: job.type, else: Map.get(assigns.package, :job_type))
+
+    assigns = assign(assigns, job_type: job_type) |> Enum.into(%{job: job})
 
     ~H"""
     <div>
@@ -1194,8 +1205,18 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket
     |> assign_changeset(params)
     |> assign_contract_changeset(params)
-    |> then(fn %{assigns: %{changeset: changeset}} = socket ->
-      job_type = Changeset.get_field(changeset, :job_type)
+    |> then(fn %{assigns: %{changeset: changeset} = assigns} = socket ->
+      job_type =
+        with nil <- Map.get(assigns, :job),
+             nil <- Changeset.get_field(changeset, :job_type),
+             %{job_type: nil} <- Map.get(assigns, :package),
+             job_type <- get_in(params, ["package", "job_type"]) do
+          job_type
+        else
+          %{type: job_type} -> job_type
+          %{job_type: job_type} -> job_type
+          job_type -> job_type
+        end
 
       package_payment_presets =
         case package do

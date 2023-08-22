@@ -15,15 +15,16 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       <.badge color={:gray} mode={:outlined}>Read-only</.badge>
     <% end %>
 
+
     <h1 class="mb-4 text-3xl font-bold"><%= @title %></h1>
 
-    <div class="py-4 bg-base-200 modal-banner">
-      <div class="text-2xl font-bold">
-        <h2><%= Job.name @job %> Shoot <%= if @package, do: @package.name %></h2>
-      </div>
+      <div class="py-4 bg-base-200 modal-banner">
+        <div class="text-2xl font-bold">
+          <h2><%= if @job, do: Job.name(@job), else: @booking_event.name %> Shoot <%= if @package, do: @package.name %></h2>
+        </div>
 
-      <%= render_slot @inner_block%>
-    </div>
+        <%= render_slot @inner_block%>
+      </div>
     """
   end
 

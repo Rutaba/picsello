@@ -130,7 +130,7 @@ defmodule Picsello.Questionnaire do
     name_change = get_change(changeset, :name)
     is_picsello_default = get_field(changeset, :is_picsello_default)
 
-    if state !== :edit_lead && !is_picsello_default && name_change &&
+    if state not in [:edit_lead, :edit_booking_event] && !is_picsello_default && name_change &&
          String.contains?(name_field, ["Picsello", "Template", "picsello", "template"]) do
       changeset |> add_error(:name, "cannot contain 'Picsello' or 'Template'")
     else

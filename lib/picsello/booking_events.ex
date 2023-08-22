@@ -62,13 +62,14 @@ defmodule Picsello.BookingEvents do
     from(event in BookingEvent,
       left_join: job in assoc(event, :jobs),
       left_join: status in assoc(job, :job_status),
-      join: package in assoc(event, :package_template),
-      where: package.organization_id == ^organization_id,
+      left_join: package in assoc(event, :package_template),
+      where: event.organization_id == ^organization_id,
       where: ^filters_search(opts),
       where: ^filters_status(opts),
       select: %{
         booking_count: fragment("sum(case when ?.is_lead = false then 1 else 0 end)", status),
         can_edit?: fragment("count(?.*) = 0", job),
+        package_template_id: event.package_template_id,
         package_name: package.name,
         id: event.id,
         name: event.name,
@@ -167,7 +168,7 @@ defmodule Picsello.BookingEvents do
     from(event in BookingEvent,
       join: package in assoc(event, :package_template),
       where: package.organization_id == ^organization_id,
-      preload: [package_template: package]
+      preload: [:dates, package_template: package]
     )
     |> Repo.get!(event_id)
   end
