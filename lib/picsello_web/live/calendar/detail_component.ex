@@ -1,6 +1,7 @@
 defmodule PicselloWeb.Calendar.Shared.DetailComponent do
   @moduledoc false
   use Phoenix.Component
+  use Phoenix.HTML
   import PicselloWeb.LiveHelpers
   import Phoenix.LiveComponent
 
@@ -39,7 +40,7 @@ defmodule PicselloWeb.Calendar.Shared.DetailComponent do
         <%= if @opts.description do %>
           <.event_item icon="description" custom_item={true}>
             <div class="font-normal text-base"> You have been invited to schedule meeting </div>
-            <div class="mt-1 font-normal text-base w-96 break-all"> <%= @opts.description %> </div>
+            <div class="mt-1 font-normal text-base w-96 break-all"> <%= raw(@opts.description) %> </div>
           </.event_item>
         <% end %>
 

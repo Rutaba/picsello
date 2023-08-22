@@ -10,7 +10,7 @@ defmodule PicselloWeb.NylasController do
   """
 
   use PicselloWeb, :controller
-  alias Picsello.{NylasCalendar, NylasDetail}
+  alias Picsello.{NylasCalendar, NylasDetails}
   require Logger
 
   @spec callback(Plug.Conn.t(), any) :: Plug.Conn.t()
@@ -21,7 +21,7 @@ defmodule PicselloWeb.NylasController do
       {:ok, token} ->
         {:ok, [%{"account_id" => account_id} | _]} = NylasCalendar.get_calendars(token)
 
-        NylasDetail.set_nylas_token!(nylas_detail, %{
+        NylasDetails.set_nylas_token!(nylas_detail, %{
           oauth_token: token,
           account_id: account_id,
           event_status: event_status(nylas_detail.account_id, account_id)

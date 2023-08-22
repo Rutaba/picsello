@@ -4,6 +4,9 @@ defmodule Picsello.Shoot do
   alias Picsello.NylasDetail
   import Ecto.{Changeset, Query}
 
+  @config Application.compile_env(:picsello, :nylas)
+  @picsello_tag @config[:picsello_tag]
+
   @locations ~w[studio on_location home]a
   @durations [
     5,
@@ -129,7 +132,6 @@ defmodule Picsello.Shoot do
     end
   end
 
-  @picsello_tag "[From Picsello]"
   defp set_notes(nil), do: "\n#{@picsello_tag}\n"
   defp set_notes(notes), do: notes <> set_notes(nil)
 

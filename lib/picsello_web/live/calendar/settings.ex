@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Calendar.Settings do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{NylasCalendar, NylasDetail}
+  alias Picsello.{NylasCalendar, NylasDetails}
   alias PicselloWeb.Endpoint
   alias Phoenix.{LiveView.Socket, PubSub}
 
@@ -61,7 +61,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
         _,
         %Socket{assigns: %{current_user: %{nylas_detail: nylas_detail} = user}} = socket
       ) do
-    NylasDetail.clear_nylas_token!(nylas_detail)
+    NylasDetails.clear_nylas_token!(nylas_detail)
 
     {:noreply,
      socket
@@ -97,7 +97,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
         } = socket
       ) do
     nylas_detail =
-      NylasDetail.set_nylas_calendars!(nylas_detail, %{
+      NylasDetails.set_nylas_calendars!(nylas_detail, %{
         external_calendar_rw_id: rw_calendar,
         external_calendar_read_list: MapSet.to_list(read_calendars)
       })

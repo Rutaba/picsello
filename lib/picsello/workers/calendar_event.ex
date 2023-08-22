@@ -1,8 +1,8 @@
 defmodule Picsello.Workers.CalendarEvent do
-  @moduledoc "Background job to clear obsolete files in storage"
+  @moduledoc "Background job to move events from previous calendar to new"
   use Oban.Worker, queue: :storage
 
-  alias Picsello.{NylasCalendar, NylasDetail, Accounts, Shoot, Shoots, Repo}
+  alias Picsello.{NylasCalendar, NylasDetails, Accounts, Shoot, Shoots, Repo}
   alias Phoenix.PubSub
   require Logger
 
@@ -48,7 +48,7 @@ defmodule Picsello.Workers.CalendarEvent do
       Task.await(task)
     end)
 
-    user.nylas_detail |> NylasDetail.reset_event_status!() |> broadcast()
+    user.nylas_detail |> NylasDetails.reset_event_status!() |> broadcast()
 
     :ok
   end
@@ -60,9 +60,12 @@ defmodule Picsello.Workers.CalendarEvent do
 
   defp delete_events(shoots, nylas_detail) do
     shoots
-    |> Task.async_stream(fn %{external_event_id: event_id} = shoot ->
-      {NylasCalendar.delete_event(event_id, nylas_detail.previous_oauth_token), shoot}
-    end)
+    |> Task.async_stream(
+      fn %{external_event_id: event_id} = shoot ->
+        {NylasCalendar.delete_event(event_id, nylas_detail.previous_oauth_token), shoot}
+      end,
+      timeout: 10000
+    )
     |> Enum.reduce({[], []}, fn
       {:ok, {{:ok, _}, shoot}}, {pass, fail} ->
         {[shoot.external_event_id | pass], fail}
