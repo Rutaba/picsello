@@ -348,16 +348,10 @@ defmodule PicselloWeb.ClientMessageComponent do
 
   defp validate_email(
          email,
-         type,
+         "to",
          %{assigns: %{recipients: recipients, current_user: user}} = socket
        ) do
-    email_list =
-      email
-      |> String.downcase()
-      |> String.split(";", trim: true)
-      |> Enum.map(fn email ->
-        String.trim(email)
-      end)
+    email_list = get_email_list(email)
 
     valid_emails? =
       Enum.any?(email_list) &&
@@ -367,17 +361,54 @@ defmodule PicselloWeb.ClientMessageComponent do
 
     if valid_emails? do
       socket
+      |> assign(:to_email_error, nil)
+    else
+      socket
+      |> assign(
+        :to_email_error,
+        "please enter valid client emails that already exist in the system"
+      )
+    end
+    |> assign(:recipients, Map.put(recipients, "to", email_list))
+    |> then(fn socket -> re_assign_clients(socket) end)
+    |> noreply()
+  end
+
+  defp validate_email(
+         email,
+         type,
+         %{assigns: %{recipients: recipients}} = socket
+       ) do
+    email_list = get_email_list(email)
+
+    valid_emails? =
+      Enum.any?(email_list) &&
+        Enum.all?(email_list, fn email ->
+          String.match?(email, Picsello.Accounts.User.email_regex())
+        end)
+
+    if valid_emails? do
+      socket
       |> assign(:"#{type}_email_error", nil)
     else
       socket
       |> assign(
         :"#{type}_email_error",
-        "please enter valid client emails that already exist in the system"
+        "please enter valid emails"
       )
     end
     |> assign(:recipients, Map.put(recipients, type, email_list))
     |> then(fn socket -> re_assign_clients(socket) end)
     |> noreply()
+  end
+
+  defp get_email_list(email) do
+    email
+    |> String.downcase()
+    |> String.split(";", trim: true)
+    |> Enum.map(fn email ->
+      String.trim(email)
+    end)
   end
 
   defp remove_client_name(
