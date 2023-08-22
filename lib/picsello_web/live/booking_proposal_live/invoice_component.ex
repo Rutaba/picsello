@@ -37,11 +37,11 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
             <div class="bg-base-200 py-3 px-4">
               <div class="text-xl flex justify-between">
                 <h4>Paid</h4>
-                <p><%= Money.to_string(PaymentSchedules.paid_price(@job), code: true) %></p>
+                <p><%= Money.to_string(PaymentSchedules.paid_price(@job), symbol: false, code: true) %></p>
               </div>
               <div class="text-xl flex justify-between mt-3">
                 <h4>Owed</h4>
-                <p><%=  Money.to_string(PaymentSchedules.owed_price(@job), code: true) %></p>
+                <p><%=  Money.to_string(PaymentSchedules.owed_price(@job), symbol: false, code: true) %></p>
               </div>
             </div>
           <% end %>

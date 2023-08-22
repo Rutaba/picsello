@@ -68,7 +68,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         <% end %>
 
         <%= if @package do %>
-          <p class="mt-2 text-base-250"><%= Money.to_string(PaymentSchedules.total_price(@job), code: true) %></p>
+          <p class="mt-2 text-base-250"><%= Money.to_string(PaymentSchedules.total_price(@job), symbol: false, code: true) %></p>
           <.photo_dowloads_display package={@package} class="text-base-250 mt-2" />
         <% end %>
 
@@ -80,7 +80,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
             </div>
             <%= if package_description_length_long?(@package.description) do %>
               <button class="flex items-center font-light text-base-250 view_more_click" type="button">
-                <.icon name="down" class="text-base-250 h-4 w-4 stroke-current stroke-2 mr-1 transition-transform" /> <span>See more</span>
+                <span>See more</span> <.icon name="down" class="text-base-250 h-4 w-4 stroke-current stroke-2 ml-1 transition-transform" />
               </button>
             <% end %>
           </div>
