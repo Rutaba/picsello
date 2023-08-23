@@ -117,7 +117,7 @@
                                         </div>
                                         <hr class="my-3 block md:hidden">
                                         <div class="flex items-center ml-auto">
-                                            <.icon_button phx-click="add-package" icon="pencil" color="white" class="bg-blue-planning-300 hover:bg-blue-planning-300/75 mr-1">Edit</.icon_button>
+                                            <.icon_button phx-click="add-package" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75 mr-1">Edit</.icon_button>
                                             <.actions id="package" booking_event={@booking_event} button_actions={package_actions()} />
                                         </div>
                                     </div>
@@ -163,8 +163,10 @@
                                         <p class="text-base-250"><%= @package.questionnaire_template.name %></p>
                                     </div>
                                     <div class="flex items-center ml-auto gap-2">
-                                        <.icon_button phx-click="add-questionnaire" icon="pencil" color="white" class="bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
-                                        <.icon_button icon="eye" color="blue-planning-300" class="h-8 w-8"/>
+                                        <.icon_button phx-click="add-questionnaire" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
+                                        <button phx-click="add-questionnaire" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
+                                            <.icon name="eye" class="inline-block w-4 h-4 fill-current text-blue-planning-300" />
+                                        </button>
                                     </div>
                                 </div>
                                 <hr class="my-2">
@@ -174,8 +176,10 @@
                                         <p class="text-base-250"><%= if @package.contract, do: @package.contract.name, else: "Choose your contract" %></p>
                                     </div>
                                     <div class="flex items-center ml-auto gap-2">
-                                        <.icon_button phx-click="add-contract" icon="pencil" color="white" class="bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
-                                        <.icon_button icon="eye" color="blue-planning-300" class="h-8 w-8"/>
+                                        <.icon_button phx-click="add-contract" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>                                        
+                                        <button phx-click="add-contract" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
+                                            <.icon name="eye" class="inline-block w-4 h-4 fill-current text-blue-planning-300" />
+                                        </button>
                                     </div>
                                 </div>
                                 <hr class="my-2"/>

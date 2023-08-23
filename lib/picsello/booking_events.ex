@@ -37,6 +37,7 @@ defmodule Picsello.BookingEvents do
   def get_booking_events_public(organization_id) do
     from(event in BookingEvent,
       join: package in assoc(event, :package_template),
+      left_join: booking_date in assoc(event, :dates),
       where: package.organization_id == ^organization_id,
       where: event.status == :active,
       select: %{
@@ -47,11 +48,17 @@ defmodule Picsello.BookingEvents do
         status: event.status,
         location: event.location,
         duration_minutes: event.duration_minutes,
-        dates: event.dates,
+        dates:
+          fragment(
+            "array_agg(to_jsonb(json_build_object('id', ?, 'booking_event_id', ?, 'date', ?)))",
+            booking_date.id,
+            booking_date.booking_event_id,
+            booking_date.date
+          ),
         description: event.description,
         address: event.address,
-        package_template: package
-      }
+      },
+      group_by: [event.id, package.name, booking_date.booking_event_id],
     )
     |> Repo.all()
   end

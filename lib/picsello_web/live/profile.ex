@@ -349,7 +349,7 @@ defmodule PicselloWeb.Live.Profile do
 
     Enum.filter(booking_events, fn %{dates: dates} ->
       dates
-      |> Enum.map(& &1.date)
+      |> Enum.map(fn %{"date" => date} -> date end)
       |> Enum.sort_by(& &1, {:desc, Date})
       |> hd
       |> Date.compare(datetime)
