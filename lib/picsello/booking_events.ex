@@ -68,23 +68,31 @@ defmodule Picsello.BookingEvents do
     from(event in BookingEvent,
       left_join: job in assoc(event, :jobs),
       left_join: status in assoc(job, :job_status),
-      join: package in assoc(event, :package_template),
-      where: package.organization_id == ^organization_id,
+      left_join: package in assoc(event, :package_template),
+      left_join: booking_date in assoc(event, :dates),
+      where: event.organization_id == ^organization_id,
       where: ^filters_search(opts),
       where: ^filters_status(opts),
       select: %{
         booking_count: fragment("sum(case when ?.is_lead = false then 1 else 0 end)", status),
         can_edit?: fragment("count(?.*) = 0", job),
+        package_template_id: event.package_template_id,
         package_name: package.name,
         id: event.id,
         name: event.name,
         thumbnail_url: event.thumbnail_url,
         status: event.status,
+        dates:
+          fragment(
+            "array_agg(to_jsonb(json_build_object('id', ?, 'booking_event_id', ?, 'date', ?)))",
+            booking_date.id,
+            booking_date.booking_event_id,
+            booking_date.date
+          ),
         duration_minutes: event.duration_minutes,
-        dates: event.dates,
         inserted_at: event.inserted_at
       },
-      group_by: [event.id, package.name],
+      group_by: [event.id, package.name, booking_date.booking_event_id],
       order_by: ^filter_order_by(sort_by, sort_direction)
     )
     |> Repo.all()
@@ -173,7 +181,7 @@ defmodule Picsello.BookingEvents do
     from(event in BookingEvent,
       join: package in assoc(event, :package_template),
       where: package.organization_id == ^organization_id,
-      preload: [package_template: package]
+      preload: [:dates, package_template: package]
     )
     |> Repo.get!(event_id)
   end

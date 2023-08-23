@@ -2,7 +2,7 @@
   <form action="#" phx-submit="submit" phx-change="validate" phx-target={ @myself }>
     <.close_x />
 
-    <.banner title="Questionnaire" job={@job} package={@package} read_only={@read_only}>
+    <.banner title="Questionnaire" {assigns}>
       <%= if @answer.id do %>
         <p>Answered on <%= strftime(@photographer.time_zone, @answer.inserted_at, "%b %d, %Y") %></p>
       <% end %>

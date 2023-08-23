@@ -1,11 +1,12 @@
 defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-
+  import PicselloWeb.Calendar.BookingEvents.Shared
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.Calendar.BookingEvents.Shared
   alias Picsello.BookingEvents
+  alias PicselloWeb.Live.Calendar.EditMarketingEvent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -14,18 +15,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
     |> assign_events()
     |> assign_booking_events()
     |> ok()
-  end
-
-  defp assign_events(socket) do
-    socket
-    |> assign(:event_status, "all")
-    |> assign(:sort_by, "name")
-    |> assign(:sort_col, "name")
-    |> assign(:sort_direction, "asc")
-    |> assign(:search_phrase, nil)
-    |> assign(:new_event, false)
-    |> assign(current_focus: -1)
-    |> assign_new(:selected_event, fn -> nil end)
   end
 
   @impl true
@@ -196,7 +185,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   @impl true
   def handle_event("edit-event", %{"event-id" => id}, socket) do
     socket
-    |> push_patch(to: Routes.calendar_booking_events_show_path(socket, :edit, id))
+    |> redirect(to: Routes.calendar_booking_events_show_path(socket, :edit, id))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "edit-marketing-event",
+        %{"event-id" => id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    socket
+    |> EditMarketingEvent.open(%{
+      event_id: id,
+      current_user: current_user
+    })
     |> noreply()
   end
 
@@ -248,7 +251,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
         {:confirm_event, "create-single-event"},
         %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
       ) do
-    case BookingEvents.create_booking_event(%{organization_id: organization_id, name: "New event"}) do
+    case BookingEvents.create_booking_event(%{
+           organization_id: organization_id,
+           name: "New event"
+         }) do
       {:ok, booking_event} ->
         socket
         |> redirect(to: "/booking-events/#{booking_event.id}")
@@ -309,7 +315,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   defp bookings_cell(assigns) do
     ~H"""
     <div class="flex flex-col justify-center">
-      <p><%= ngettext("%{count} booking", "%{count} bookings", @booking_event.booking_count) %> so far</p>
+      <p><%= if incomplete_status?(@booking_event), do: "-", else: ngettext("%{count} booking", "%{count} bookings", @booking_event.booking_count) <> " so far" %></p>
     </div>
     """
   end
@@ -340,13 +346,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
               <.button title="Edit" hidden={disabled?(@booking_event, [:disabled]) && 'hidden'} icon="pencil"  click_event="edit-event" id={@booking_event.id} color="blue-planning" />
               <.button title="Send update" icon="envelope"  click_event="send-email" id={@booking_event.id} color="blue-planning" />
               <.button title="Duplicate" icon="duplicate"  click_event="duplicate-event" id={@booking_event.id} color="blue-planning" />
-              <%= case status do %>
-                <% :active -> %>
+              <%= cond do %>
+                <% status == :active && !incomplete_status?(@booking_event) -> %>
                   <.button title="Disable" icon="eye"  click_event="confirm-disable-event" id={@booking_event.id} color="red-sales" />
                 <% :disabled-> %>
                   <.button title="Enable" icon="plus"  click_event="enable-event" id={@booking_event.id} color="blue-planning" />
               <% end %>
-              <.button title="Archive" icon="trash" click_event="confirm-archive-event" id={@booking_event.id} color="red-sales" />
           <% end %>
         </div>
       </div>
@@ -393,15 +398,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
     <div class="sm:col-span-2 grid sm:flex gap-2 sm:gap-0">
       <.blurred_thumbnail class="h-32 rounded-lg" url={@booking_event.thumbnail_url} />
       <div class="flex flex-col items-start justify-center sm:ml-4">
-        <%= case @booking_event.status do %>
-          <% :archive -> %>
+        <%= cond do %>
+          <% incomplete_status?(@booking_event) -> %>
+            <.badge color={:gray}>Incomplete-Disabled</.badge>
+          <% @booking_event.status == :archive and not incomplete_status?(@booking_event) -> %>
             <.badge color={:gray}>Archived</.badge>
-          <% :disabled -> %>
+          <% @booking_event.status == :disabled -> %>
             <.badge color={:gray}>Disabled</.badge>
-          <% _ -> %>
-            <%= if @booking_event.date do %>
-              <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
-            <% end %>
+          <% true -> %>
+            <p class="font-semibold"><%= if @booking_event.date, do: @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
         <% end %>
         <div class="font-bold w-full">
           <a href={if disabled?(@booking_event, [:disabled, :archive]), do: "javascript:void(0)", else: Routes.calendar_booking_events_show_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
@@ -414,11 +419,31 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
             </span>
           </a>
         </div>
-        <p class="text-gray-400"><%= @booking_event.package_name %></p>
-        <p class="text-gray-400"><%= @booking_event.duration_minutes %> minutes</p>
+        <div class="text-gray-400">
+          <p class={classes(%{"text-red-sales-300 font-bold" => is_nil(@booking_event.package_name)})}><%= if is_nil(@booking_event.package_name), do: "No package selected", else: @booking_event.package_name  %></p>
+          <p>
+         <%= if @booking_event.duration_minutes do %>
+            <%= @booking_event.duration_minutes %> minutes
+          <% else %>
+            -
+          <% end %>
+      </p>
+        </div>
       </div>
     </div>
     """
+  end
+
+  defp assign_events(socket) do
+    socket
+    |> assign(:event_status, "all")
+    |> assign(:sort_by, "name")
+    |> assign(:sort_col, "name")
+    |> assign(:sort_direction, "asc")
+    |> assign(:search_phrase, nil)
+    |> assign(:new_event, false)
+    |> assign(current_focus: -1)
+    |> assign_new(:selected_event, fn -> nil end)
   end
 
   defp assign_booking_events(
@@ -475,21 +500,26 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
 
   defp assign_sort_date(booking_event, sort_direction, sort_by, filter_status) do
     sorted_date =
-      if sort_by == "date" || filter_status in ["future_events", "past_events"] do
-        sort_direction =
-          case filter_status do
-            "future_events" -> :desc
-            "past_events" -> :asc
-            _ -> String.to_atom(sort_direction)
-          end
+      cond do
+        Enum.empty?(booking_event.dates) ->
+          booking_event
 
-        booking_event
-        |> Map.get(:dates)
-        |> Enum.map(& &1.date)
-        |> Enum.sort_by(& &1, {sort_direction, Date})
-        |> hd
-      else
-        booking_event.dates |> hd |> Map.get(:date)
+        sort_by == "date" || filter_status in ["future_events", "past_events"] ->
+          sort_direction =
+            case filter_status do
+              "future_events" -> :desc
+              "past_events" -> :asc
+              _ -> String.to_atom(sort_direction)
+            end
+
+          booking_event
+          |> Map.get(:dates)
+          |> Enum.map(& &1.date)
+          |> Enum.sort_by(& &1, {sort_direction, Date})
+          |> hd
+
+        true ->
+          booking_event.dates |> hd |> Map.get(:date)
       end
 
     booking_event

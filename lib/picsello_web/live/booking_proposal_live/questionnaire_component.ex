@@ -6,10 +6,18 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1]
 
+  @default_assigns %{
+    read_only: true,
+    job: nil,
+    package: nil,
+    proposal: nil,
+    booking_event: nil
+  }
+
   @impl true
   def update(assigns, socket) do
     socket
-    |> assign(assigns)
+    |> assign(Enum.into(assigns, @default_assigns))
     |> assign_answer()
     |> assign_validation()
     |> ok()
@@ -134,15 +142,29 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
 
     socket
     |> open_modal(__MODULE__, %{
-      read_only: true,
       job: job,
       package: package,
       answer: %Answer{
         answers: List.duplicate([], Enum.count(questionnaire.questions))
       },
       questionnaire: questionnaire,
-      photographer: socket.assigns.current_user,
-      proposal: nil
+      photographer: socket.assigns.current_user
+    })
+  end
+
+  def open_modal_from_booking_events(
+        %{assigns: %{current_user: current_user, package: package, booking_event: booking_event}} =
+          socket
+      ) do
+    socket
+    |> open_modal(__MODULE__, %{
+      booking_event: booking_event,
+      package: package,
+      answer: %Answer{
+        answers: List.duplicate([], Enum.count(package.questionnaire_template.questions))
+      },
+      questionnaire: package.questionnaire_template,
+      photographer: current_user
     })
   end
 end

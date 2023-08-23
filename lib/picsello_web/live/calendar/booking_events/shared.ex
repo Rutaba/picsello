@@ -1,5 +1,5 @@
 defmodule PicselloWeb.Calendar.BookingEvents.Shared do
-  @moduledoc false
+@moduledoc "shared functions for booking events"
   use Phoenix.HTML
   use Phoenix.Component
 

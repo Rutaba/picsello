@@ -86,17 +86,18 @@ defmodule Picsello.BookingEvent do
     field :location, :string
     field :address, :string
     field :thumbnail_url, :string
+    field :show_on_profile?, :boolean, default: false
     field(:status, Ecto.Enum, values: [:active, :disabled, :archive])
     belongs_to :package_template, Picsello.Package
     belongs_to :organization, Picsello.Organization
-    embeds_many :dates, EventDate, on_replace: :delete
+    has_many :dates, Picsello.BookingEventDate
     has_many :jobs, Picsello.Job
 
     timestamps()
   end
 
   @doc false
-  def changeset(booking_event \\ %__MODULE__{}, attrs, opts) do
+   def changeset(booking_event \\ %__MODULE__{}, attrs, opts) do
     steps = [
       details: &update_details/2,
       package: &update_package_template/2,
@@ -183,8 +184,10 @@ defmodule Picsello.BookingEvent do
   defp update_customize(booking_event, attrs) do
     booking_event
     |> cast(attrs, [
+      :name,
       :description,
-      :thumbnail_url
+      :thumbnail_url,
+      :show_on_profile?
     ])
     |> validate_required([
       :description,

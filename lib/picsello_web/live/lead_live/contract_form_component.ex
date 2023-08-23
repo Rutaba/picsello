@@ -33,7 +33,7 @@ defmodule PicselloWeb.ContractFormComponent do
     ~H"""
     <div class="modal">
       <h1 class="text-3xl font-bold mb-4">Edit contract </h1>
-      <h2 class="font-normal mb-4 text-base-250">Any change you make to the contract is just for this lead or job</h2>
+      <h2 class="font-normal mb-4 text-base-250">Any change you make to the contract is just for this lead, job or booking event</h2>
 
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
 
@@ -136,7 +136,7 @@ defmodule PicselloWeb.ContractFormComponent do
         socket,
         __MODULE__,
         %{
-          assigns: Enum.into(opts, Map.take(assigns, [:job, :package]))
+          assigns: Enum.into(opts, Map.take(assigns, [:job, :booking_events, :package]))
         }
       )
 

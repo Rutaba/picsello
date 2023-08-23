@@ -1005,15 +1005,6 @@ defmodule Picsello.Factory do
       address: "320 1st St N, Jax Beach, FL",
       duration_minutes: 45,
       buffer_minutes: 15,
-      dates: [
-        %{
-          date: ~D[2050-12-10],
-          time_blocks: [
-            %{start_time: ~T[09:00:00], end_time: ~T[13:00:00]},
-            %{start_time: ~T[15:00:00], end_time: ~T[17:00:00]}
-          ]
-        }
-      ],
       thumbnail_url: PicselloWeb.Endpoint.static_url() <> "/images/phoenix.png",
       description: "<p>My custom description</p>"
     }

@@ -30,8 +30,8 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
         <h2 class="text-2xl leading-6 text-gray-900 mb-8 font-bold">Details</h2>
         <%= hidden_input f, :package_id %>
 
-        <div class={classes(%{"grid gap-3" => @state == :edit_lead})}>
-          <%= if @state == :edit_lead do %>
+        <div class={classes(%{"grid gap-3" => @state in [:edit_lead, :edit_booking_event]})}>
+          <%= if @state in [:edit_lead, :edit_booking_event] do %>
             <div class="flex flex-col">
               <label class="input-label">Select template to reset questions</label>
               <%= select f, :change_template, template_options(@current_user.organization_id), selected: "", class: "select", disabled: is_nil(@state) %>
@@ -42,7 +42,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
           <% end %>
         </div>
 
-        <div class={classes("mt-8", %{"hidden" => @state == :edit_lead})}>
+        <div class={classes("mt-8", %{"hidden" => @state in [:edit_lead, :edit_booking_event]})}>
           <%= label_for f, :type, label: "Type of Photography (select Other to use for all types)" %>
           <div class="grid grid-cols-2 gap-3 mt-2 sm:grid-cols-4 sm:gap-5">
             <%= for job_type <- @job_types do %>
@@ -145,6 +145,7 @@ defmodule PicselloWeb.QuestionnaireFormComponent do
       :edit -> "Edit questionnaire"
       :edit_lead -> "Edit questionnaire"
       :create -> "Add questionnaire"
+      :edit_booking_event -> "Add Questionnaire"
       _ -> "View questionnaire template"
     end
   end
