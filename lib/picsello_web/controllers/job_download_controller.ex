@@ -55,6 +55,8 @@ defmodule PicselloWeb.JobDownloadController do
         })
     )
     |> then(fn {:ok, path} ->
+      IO.inspect(path)
+
       conn
       |> put_resp_content_type("pdf")
       |> put_resp_header(
@@ -73,16 +75,14 @@ defmodule PicselloWeb.JobDownloadController do
   end
 
   defp render_page_wrapper(template, params) do
-    tmp_dir = System.tmp_dir!() |> IO.inspect()
-    location = Path.join(tmp_dir, template)
+    location = Path.join(System.tmp_dir!(), template)
 
     File.write!(
       location,
       PicselloWeb.PDFView.render(template, params)
       |> Phoenix.HTML.Safe.to_iodata()
     )
-    |> IO.inspect()
 
-    location |> IO.inspect()
+    location
   end
 end
