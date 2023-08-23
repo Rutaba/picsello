@@ -10,13 +10,18 @@
         font-size: 12px;
         line-height: 22px;
       }
+      img {
+        width: auto;
+        height: 80px;
+        display: block;
+      }
     </style>
   </head>
   <body style="border:0;margin:0;padding-bottom:1rem;">
     <header style="border-bottom:1px solid #E1E1E1;margin:1rem 0rem;">
       <%= case @organization_logo_url do %>
         <% nil -> %> <h1><%= @organization.name %></h1>
-        <% organization_logo_url -> %> <img style="max-height:80px;" src={organization_logo_url} />
+        <% organization_logo_url -> %> <img src={organization_logo_url} />
       <% end %>
     </header>
   </body>
