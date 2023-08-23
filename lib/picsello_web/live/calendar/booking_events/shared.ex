@@ -1,33 +1,68 @@
 defmodule PicselloWeb.Calendar.BookingEvents.Shared do
-@moduledoc "shared functions for booking events"
+  @moduledoc "shared functions for booking events"
   use Phoenix.HTML
   use Phoenix.Component
 
   import import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  alias Picsello.{BookingEvents, Repo}
+  alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, BookingEventDates, Repo}
+  alias Ecto.Multi
 
   def handle_event(
         "duplicate-event",
         params,
         %{assigns: %{current_user: %{organization_id: org_id}}} = socket
       ) do
+    old_booking_event_id = get_id(params, socket)
+
     to_duplicate_booking_event =
       BookingEvents.get_booking_event!(
         org_id,
-        get_id(params, socket)
+        old_booking_event_id
       )
       |> Repo.preload([:jobs])
-      |> Map.delete(:__meta__)
-      |> Map.delete(:__struct__)
       |> Map.put(:status, :active)
+      |> Map.from_struct()
 
-    case BookingEvents.duplicate_booking_event(to_duplicate_booking_event) do
-      {:ok, booking_event} ->
+    to_duplicate_event_dates =
+      BookingEventDates.get_booking_events_dates(old_booking_event_id)
+      |> Enum.map(fn t ->
+        Map.replace(t, :slots, edit_slots_status(t))
+      end)
+
+    multi =
+      Multi.new()
+      |> Multi.insert(
+        :duplicate_booking_event,
+        BookingEvent.duplicate_changeset(%BookingEvent{}, to_duplicate_booking_event)
+      )
+
+    to_duplicate_event_dates
+    |> Enum.with_index()
+    |> Enum.reduce(multi, fn {event_date, i}, multi ->
+      multi
+      |> Multi.insert(
+        "duplicate_booking_event_date_#{i}",
+        fn %{duplicate_booking_event: event} ->
+          BookingEventDate.duplicate_changeset(%BookingEventDate{}, %{
+            booking_event_id: event.id,
+            location: event_date.location,
+            address: event_date.address,
+            session_length: event_date.session_length,
+            session_gap: event_date.session_gap,
+            time_blocks: to_map(event_date.time_blocks),
+            slots: to_map(event_date.slots)
+          })
+        end
+      )
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{duplicate_booking_event: new_event}} ->
         socket
-        |> redirect(to: "/booking-events/#{booking_event.id}")
+        |> redirect(to: "/booking-events/#{new_event.id}")
 
-      {:error, _} ->
+      {:error, _some_error} ->
         socket
         |> put_flash(:error, "Unable to duplicate event")
     end
@@ -86,6 +121,24 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> noreply()
   end
 
+  def edit_slots_status(%{slots: slots}) do
+    slots
+    |> Enum.map(fn s ->
+      if s.status == :hide do
+        %{s | status: :hide}
+      else
+        %{s | status: :open}
+      end
+    end)
+  end
+
+  def to_map(data) do
+    Enum.map(data, &Map.from_struct(&1))
+  end
+
+  # to cater different handle_event and info calls
+  # if we get booking-event-id in params (1st argument) it returns the id
+  # otherwise get the id from socket
   defp get_id(%{"event-id" => id}, _assigns), do: id
   defp get_id(%{}, %{assigns: %{booking_event: booking_event}}), do: booking_event.id
 
@@ -94,6 +147,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   # similarly its complete if both dates and package_template_id exist
   def incomplete_status?(%{package_template_id: nil}), do: true
   def incomplete_status?(%{dates: []}), do: true
+  def incomplete_status?(%{dates: [d]}), do: is_nil(d["date"])
   def incomplete_status?(_), do: false
 
   # will be true if the status matches in the array <status_list>

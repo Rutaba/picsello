@@ -58,16 +58,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{assigns: %{current_user: current_user}} = socket
       ) do
     case BookingEvents.archive_booking_event(id, current_user.organization_id) do
-      {:ok, _event} ->
+      {:ok, event} ->
         socket
+        |> assign(booking_event: event)
         |> put_flash(:success, "Event archive successfully")
 
       {:error, _} ->
         socket
-        |> put_flash(:success, "Error archiving event")
+        |> put_flash(:error, "Error archiving event")
     end
     |> close_modal()
-    |> redirect(to: "/booking-events/#{id}")
     |> noreply()
   end
 
@@ -77,16 +77,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{assigns: %{current_user: current_user}} = socket
       ) do
     case BookingEvents.disable_booking_event(id, current_user.organization_id) do
-      {:ok, _event} ->
+      {:ok, event} ->
         socket
+        |> assign(booking_event: event)
         |> put_flash(:success, "Event disabled successfully")
 
       {:error, _} ->
         socket
-        |> put_flash(:success, "Error disabling event")
+        |> put_flash(:error, "Error disabling event")
     end
     |> close_modal()
-    |> redirect(to: "/booking-events/#{id}")
     |> noreply()
   end
 
@@ -97,6 +97,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
     |> noreply()
   end
+
   @impl true
   def handle_info(
         {:update, %{package: package}},
@@ -159,14 +160,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
       ) do
     case BookingEvents.enable_booking_event(booking_event.id, current_user.organization_id) do
-      {:ok, _event} ->
+      {:ok, event} ->
         socket
+        |> assign(booking_event: event)
         |> put_flash(:success, "Event enabled successfully")
+
       {:error, _} ->
         socket
-        |> put_flash(:success, "Error enabling event")
+        |> put_flash(:error, "Error enabling event")
     end
-    |> redirect(to: "/booking-events/#{booking_event.id}")
     |> noreply()
   end
 
@@ -177,14 +179,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
       ) do
     case BookingEvents.enable_booking_event(booking_event.id, current_user.organization_id) do
-      {:ok, _event} ->
+      {:ok, event} ->
         socket
+        |> assign(booking_event: event)
         |> put_flash(:success, "Event unarchive successfully")
+
       {:error, _} ->
         socket
-        |> put_flash(:success, "Error unarchiving event")
+        |> put_flash(:error, "Error unarchiving event")
     end
-    |> redirect(to: "/booking-events/#{booking_event.id}")
     |> noreply()
   end
 
@@ -530,7 +533,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     assigns = assigns |> Enum.into(%{archive_option: true, main_button_class: ""})
 
     ~H"""
-    <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" phx-update="ignore" data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@id}"}>
+    <div class="flex items-center md:ml-auto w-full md:w-auto left-3 sm:left-8" data-placement="bottom-end" phx-hook="Select" id={"manage-client-#{@id}"}>
       <button {testid("actions-#{@id}")} title="Manage" class={"btn-tertiary px-2 py-1 flex items-center gap-3 text-blue-planning-300 xl:w-auto w-full #{@main_button_class}"}>
         Actions
         <.icon name="down" class="w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 open-icon" />
@@ -538,12 +541,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       </button>
 
       <div class="z-10 flex flex-col hidden w-auto bg-white border rounded-lg shadow-lg popover-content">
-          <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
-            <button title={title} type="button" phx-click={action} phx-value-id={@id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
-              <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
-              <%= title %>
-            </button>
-          <% end %>
+        <%= for %{title: title, action: action, icon: icon} <- @button_actions do %>
+          <button title={title} type="button" phx-click={action} phx-value-id={@id} class="flex items-center px-3 py-2 rounded-lg hover:bg-blue-planning-100 hover:font-bold">
+            <.icon name={icon} class={classes("inline-block w-4 h-4 mr-3 fill-current", %{"text-red-sales-300" => icon == "trash", "text-blue-planning-300" => icon != "trash"})} />
+            <%= title %>
+          </button>
+        <% end %>
       </div>
     </div>
     """
@@ -614,18 +617,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <%= if package_description_length_long?(@package.description) do %>
               <p>
                 <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
-                  <%= String.slice(raw(@package.description), 0..100) <> "..." %>
+                  <%= @package.description |> slice_description() |> raw() %>
                 <% end %>
               </p>
               <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
                 <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
-                  Read more <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
-                <% else %>
                   Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
+                <% else %>
+                  Read more <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
                 <% end %>
               </button>
             <% else %>
-              <%= raw(@package.description) %>
+              <%= @package.description |> slice_description() |> raw() %>
             <% end %>
           </div>
         <% else %>
@@ -713,22 +716,24 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   defp header_actions(%{status: status}) do
-    common_actions =
-      [
-        %{title: "Create marketing email", action: "open-compose", icon: "envelope"},
-        %{title: "Duplicate", action: "duplicate-event", icon: "duplicate-2"}
-      ]
+    common_actions = [
+      %{title: "Create marketing email", action: "open-compose", icon: "envelope"},
+      %{title: "Duplicate", action: "duplicate-event", icon: "duplicate-2"}
+    ]
+
     case status do
       :active ->
         Enum.concat(common_actions, [
           %{title: "Disable", action: "confirm-disable-event", icon: "eye"},
           %{title: "Archive", action: "confirm-archive-event", icon: "trash"}
         ])
+
       :disabled ->
         Enum.concat(common_actions, [
           %{title: "Enable", action: "enable-event", icon: "plus"},
           %{title: "Archive", action: "confirm-archive-event", icon: "trash"}
         ])
+
       :archive ->
         Enum.concat(common_actions, [
           %{title: "Enable", action: "enable-event", icon: "plus"},
@@ -764,5 +769,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     [
       %{title: "Replace package", action: "replace-package", icon: "package"}
     ]
+  end
+
+  defp slice_description(description) do
+    if String.length(description) > 100 do
+      String.slice(description, 0..100) <> "..."
+    else
+      description
+    end
   end
 end
