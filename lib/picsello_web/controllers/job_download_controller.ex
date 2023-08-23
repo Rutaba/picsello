@@ -73,7 +73,7 @@ defmodule PicselloWeb.JobDownloadController do
   end
 
   defp render_page_wrapper(template, params) do
-    tmp_dir = System.tmp_dir!()
+    tmp_dir = System.tmp_dir!() |> IO.inspect()
     location = Path.join(tmp_dir, template)
 
     File.write!(
@@ -82,6 +82,6 @@ defmodule PicselloWeb.JobDownloadController do
       |> Phoenix.HTML.Safe.to_iodata()
     )
 
-    location
+    location |> IO.inspect()
   end
 end
