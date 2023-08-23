@@ -81,6 +81,7 @@ defmodule PicselloWeb.JobDownloadController do
       PicselloWeb.PDFView.render(template, params)
       |> Phoenix.HTML.Safe.to_iodata()
     )
+    |> IO.inspect()
 
     location |> IO.inspect()
   end
