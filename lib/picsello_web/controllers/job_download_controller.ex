@@ -81,6 +81,7 @@ defmodule PicselloWeb.JobDownloadController do
       location,
       PicselloWeb.PDFView.render(template, params)
       |> Phoenix.HTML.Safe.to_iodata()
+      |> IO.iodata_to_binary()
     )
 
     location
