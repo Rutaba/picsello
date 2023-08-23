@@ -166,7 +166,7 @@ defmodule Picsello.OrdersTest do
                }
              } = Repo.reload!(order)
 
-      assert_receive {:delivered_email, %{to: [nil: "customer@example.com"]} = email}
+      assert_receive {:delivered_email, %{to: [email: "customer@example.com"]} = email}
 
       assert %{
                "button" => %{
