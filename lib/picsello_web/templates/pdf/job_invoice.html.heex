@@ -236,9 +236,26 @@
       label > .input-label {
         display: inline;
       }
+
+      .logo-img {
+        width: auto;
+        height: 80px;
+        display: block;
+      }
+      header {
+        border-bottom: 1px solid #E1E1E1;
+        margin: 1rem 0rem;
+      }
     </style>
   </head>
   <body style="border:0; margin: 0;">
+    <header>
+      <%= case @organization_logo_url do %>
+        <% nil -> %> <h1><%= @organization.name %></h1>
+        <% organization_logo_url -> %> <img class="logo-img" src={organization_logo_url} />
+      <% end %>
+    </header>
+
     <%!-- Invoice --%>
     <section>
       <div class="invoice-row mb1">

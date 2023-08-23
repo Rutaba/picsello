@@ -35,6 +35,7 @@ defmodule PicselloWeb.JobDownloadController do
       shoots: shoots,
       package: package,
       contract: contract,
+      organization_logo_url: organization_logo_url,
       contract_content:
         Contracts.contract_content(
           contract,
@@ -48,11 +49,14 @@ defmodule PicselloWeb.JobDownloadController do
     |> IO.iodata_to_binary()
     |> PdfGenerator.generate(
       page_size: "A5",
-      shell_params:
-        generate_pdf_options(%{
-          organization: organization,
-          organization_logo_url: organization_logo_url
-        })
+      shell_params: [
+        "--footer-right",
+        "[page] / [toPage]",
+        "--footer-font-size",
+        "5",
+        "--footer-font-name",
+        "Montserrat"
+      ]
     )
     |> then(fn {:ok, path} ->
       conn
@@ -63,25 +67,5 @@ defmodule PicselloWeb.JobDownloadController do
       )
       |> send_resp(200, File.read!(path))
     end)
-  end
-
-  defp generate_pdf_options(params) do
-    header = render_page_wrapper("client_header.html", params)
-    footer = render_page_wrapper("client_footer.html", params)
-
-    ["--header-html", "#{header}", "--footer-html", "#{footer}"]
-  end
-
-  defp render_page_wrapper(template, params) do
-    location = Path.join(System.tmp_dir!(), "#{PdfGenerator.Random.string(16)}_#{template}")
-
-    File.write!(
-      location,
-      PicselloWeb.PDFView.render(template, params)
-      |> Phoenix.HTML.Safe.to_iodata()
-      |> IO.iodata_to_binary()
-    )
-
-    location
   end
 end
