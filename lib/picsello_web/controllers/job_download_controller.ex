@@ -75,15 +75,16 @@ defmodule PicselloWeb.JobDownloadController do
   end
 
   defp render_page_wrapper(template, params) do
-    location = Path.join(System.tmp_dir!(), template)
+    location = Path.join(System.tmp_dir!(), "#{PdfGenerator.Random.string(16)}_#{template}")
 
     File.write!(
       location,
       PicselloWeb.PDFView.render(template, params)
+      |> IO.inspect()
       |> Phoenix.HTML.Safe.to_iodata()
       |> IO.iodata_to_binary()
     )
 
-    location
+    location |> IO.inspect()
   end
 end
