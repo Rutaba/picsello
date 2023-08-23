@@ -470,7 +470,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           <% @booking_event.status == :disabled -> %>
             <.badge color={:gray}>Disabled</.badge>
           <% true -> %>
-            <p class="font-semibold"><%= @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
+            <p class="font-semibold"><%= if @booking_event.date, do: @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
         <% end %>
         <div class="font-bold w-full">
           <a href={if disabled?(@booking_event, [:disabled, :archive]), do: "javascript:void(0)", else: Routes.calendar_booking_events_show_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
