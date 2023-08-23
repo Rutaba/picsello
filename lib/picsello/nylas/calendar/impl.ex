@@ -121,14 +121,15 @@ defmodule Picsello.NylasCalendar.Impl do
           other: map()
         }
 
-  @spec get_external_events(list(String.t()), String.t(), String.t()) :: list(calendar_event())
+  @spec get_external_events(list(String.t()), String.t(), tuple(), String.t()) ::
+          list(calendar_event())
   @doc """
   Retrive all events of given calendars that don't belong to Picsello
   """
   @timezone "America/New_York"
   @impl NylasCalendar
-  def get_external_events(calendars, token, timezone \\ @timezone),
-    do: filter_events(calendars, token, timezone, &remove_picsello/1)
+  def get_external_events(calendars, token, datetimes, timezone \\ @timezone),
+    do: filter_events(calendars, token, timezone, &remove_picsello/1, datetimes)
 
   @spec get_picsello_events(list(String.t()), String.t(), String.t()) :: list(calendar_event())
   @doc """
@@ -138,18 +139,18 @@ defmodule Picsello.NylasCalendar.Impl do
   def get_picsello_events(calendars, token, timezone \\ @timezone),
     do: filter_events(calendars, token, timezone, &only_picsello/1)
 
-  @spec get_events(String.t(), token()) :: {:error, String.t()} | {:ok, any}
+  @spec get_events(String.t(), token(), tuple() | nil) :: {:error, String.t()} | {:ok, any}
   @doc """
   Retrieves a list of events on the specified calendar.
   """
+  @timeout 15000
   @impl NylasCalendar
-  def get_events(calendar_id, token) do
+  def get_events(calendar_id, token, datetimes) do
     headers = build_headers(token)
 
-    url = "#{@base_url}/events?calendar_id=#{calendar_id}"
-
-    url
-    |> HTTPoison.get!(headers, timout: 20000)
+    calendar_id
+    |> get_events_url(datetimes)
+    |> HTTPoison.get!(headers, timeout: @timeout, recv_timeout: @timeout)
     |> Mapper.handle_response()
   end
 
@@ -175,14 +176,16 @@ defmodule Picsello.NylasCalendar.Impl do
   end
 
   # get and filter events using given filter function.
-  defp filter_events(nil, _, _, _), do: []
-  defp filter_events(_, nil, _, _), do: []
+  defp filter_events(calendars, token, timezone, filter_fn, datetimes \\ nil)
+  defp filter_events(nil, _, _, _, _), do: []
+  defp filter_events(_, nil, _, _, _), do: []
 
-  defp filter_events(calendars, token, timezone, filter_fn) when is_list(calendars) do
+  defp filter_events(calendars, token, timezone, filter_fn, datetimes)
+       when is_list(calendars) do
     calendars
     |> Enum.flat_map(fn calendar_id ->
       Logger.debug("Get events for #{calendar_id} #{token}")
-      {:ok, events} = get_events(calendar_id, token)
+      {:ok, events} = get_events(calendar_id, token, datetimes)
       events
     end)
     |> Enum.filter(filter_fn)
@@ -202,6 +205,13 @@ defmodule Picsello.NylasCalendar.Impl do
       {"Content-Type", "application/json"}
     ]
   end
+
+  defp get_events_url(calendar_id, {starttime, endtime}) do
+    "#{get_events_url(calendar_id, nil)}&starts_after=#{starttime}&ends_before=#{endtime}"
+  end
+
+  defp get_events_url(calendar_id, _),
+    do: "#{@base_url}/events?calendar_id=#{calendar_id}&limit=1000"
 
   defp config() do
     %{redirect_uri: redirect} = config = @config
