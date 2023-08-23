@@ -240,6 +240,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> noreply()
   end
 
+  @impl true
+  defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
+
   defp booking_slot_tabs_nav(assigns) do
     ~H"""
     <ul class="flex overflow-auto gap-6 mb-6 py-6 md:py-0">
