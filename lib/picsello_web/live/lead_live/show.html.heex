@@ -1,7 +1,7 @@
 <div {intro(@current_user, "intro_leads_new")}>
   <header>
     <div class="px-6 pt-6 pb-2 center-container">
-      <.crumbs>
+      <.crumbs class="text-sm text-base-250 items-center">
         <:crumb to={Routes.job_path(@socket, @live_action)}>
           <%= action_name(@live_action, :plural) %>
         </:crumb>
@@ -18,7 +18,10 @@
       <% end %>
 
       <div class="flex flex-col justify-between md:flex-row">
-        <.title_header job={@job} back_path={
+        <.edit_name_input 
+        data={@job}
+        edit_name={@edit_name}
+        back_path={
           case @request_from do
             "job_history" -> Routes.client_path(@socket, :job_history, @job.client_id)
             "gallery_index" -> Routes.gallery_path(@socket, :galleries)

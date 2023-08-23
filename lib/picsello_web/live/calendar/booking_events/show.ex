@@ -1,9 +1,8 @@
 defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-
-  import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
-  import PicselloWeb.Live.Shared, only: [update_package_questionnaire: 1]
+  import PicselloWeb.Calendar.BookingEvents.Shared
+  import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
@@ -16,6 +15,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def mount(_params, _session, socket) do
     socket
     |> assign(:collapsed_sections, [])
+    |> assign(:edit_name, false)
     |> ok()
   end
 
