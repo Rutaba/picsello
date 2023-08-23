@@ -52,8 +52,8 @@ defmodule Picsello.BookingEventDate do
 
   schema "booking_event_dates" do
     field :date, :date
-    field :buffer_minutes, :integer
-    field :duration_minutes, :integer
+    field :session_gap, :integer
+    field :session_length, :integer
     field :location, :string
     field :address, :string
     belongs_to :booking_event, Picsello.BookingEvent
@@ -71,15 +71,15 @@ defmodule Picsello.BookingEventDate do
       :location,
       :address,
       :booking_event_id,
-      :duration_minutes,
-      :buffer_minutes
+      :session_length,
+      :session_gap
     ])
     |> cast_embed(:time_blocks, required: true)
     |> cast_embed(:slots, required: true)
     |> validate_required([
       :date,
       :booking_event_id,
-      :duration_minutes
+      :session_length
     ])
     |> validate_length(:time_blocks, min: 1)
     |> validate_length(:slots, min: 1)
