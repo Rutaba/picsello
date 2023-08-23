@@ -95,7 +95,7 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
 
     case BookingEvents.upsert_booking_event(changeset) do
       {:ok, booking_event} ->
-        successfull_save(socket, booking_event)
+        successful_save(socket, booking_event)
 
       _ ->
         socket |> noreply()
@@ -110,7 +110,7 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   |> open_modal(__MODULE__, assigns)
   end
 
-  defp successfull_save(socket, booking_event) do
+  defp successful_save(socket, booking_event) do
     send(self(), {:update, %{booking_event: booking_event}})
 
     socket
