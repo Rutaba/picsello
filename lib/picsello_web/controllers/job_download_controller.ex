@@ -71,7 +71,7 @@ defmodule PicselloWeb.JobDownloadController do
     header = render_page_wrapper("client_header.html", params)
     footer = render_page_wrapper("client_footer.html", params)
 
-    ["--header-html", "file://#{header}", "--footer-html", "file://#{footer}"]
+    ["--header-html", "#{header}", "--footer-html", "#{footer}"]
   end
 
   defp render_page_wrapper(template, params) do
