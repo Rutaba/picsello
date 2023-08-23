@@ -180,7 +180,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
 
       <div class="modal-banner uppercase font-light py-2 bg-base-200 grid grid-cols-[2fr,2fr] gap-4 col-span-2">
         <h2>Item</h2>
-        <h2 class="hidden sm:block">Details</h2>
+        <h2>Details</h2>
       </div>
 
       <%= for shoot <- @shoots do %>
