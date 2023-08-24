@@ -136,6 +136,12 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     Enum.map(data, &Map.from_struct(&1))
   end
 
+  def count_booked_slots(slot), do: Enum.count(slot, fn s -> s.status == :book || s.status == :reserve end)
+  def count_available_slots(slot), do: Enum.count(slot, fn s -> s.status == :open end)
+  def count_hidden_slots(slot), do: Enum.count(slot, fn s -> s.status == :hide end)
+
+  def date_formatter(date), do: "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
+
   # to cater different handle_event and info calls
   # if we get booking-event-id in params (1st argument) it returns the id
   # otherwise get the id from socket
@@ -147,8 +153,14 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   # similarly its complete if both dates and package_template_id exist
   def incomplete_status?(%{package_template_id: nil}), do: true
   def incomplete_status?(%{dates: []}), do: true
-  def incomplete_status?(%{dates: [d]}), do: is_nil(d["date"])
   def incomplete_status?(_), do: false
+
+  # checks if an event made has any date that is nil in its array of dates field
+  def incomplete_dates?(%{dates: d}) do
+    Enum.any?(d, fn  x ->
+      is_nil(x.date)
+    end)
+  end
 
   # will be true if the status matches in the array <status_list>
   def disabled?(booking_event, status_list), do: booking_event.status in status_list

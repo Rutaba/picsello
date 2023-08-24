@@ -10,7 +10,8 @@ defmodule Picsello.BookingEventDates do
 
   def get_booking_events_dates(booking_event_id) do
     from(event_dates in BookingEventDate,
-      where: event_dates.booking_event_id == ^booking_event_id
+      where: event_dates.booking_event_id == ^booking_event_id,
+      order_by: [desc: event_dates.date]
     )
     |> Repo.all()
   end

@@ -1,7 +1,17 @@
 defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  import PicselloWeb.Calendar.BookingEvents.Shared
+
+  import PicselloWeb.Calendar.BookingEvents.Shared,
+    only: [
+      date_formatter: 1,
+      incomplete_status?: 1,
+      incomplete_dates?: 1,
+      count_booked_slots: 1,
+      count_available_slots: 1,
+      count_hidden_slots: 1
+    ]
+
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
@@ -36,6 +46,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
         ]
       })
+      |> sort_by_date()
 
     socket
     |> assign(:booking_event, booking_event)
@@ -365,18 +376,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     """
   end
 
-  defp booking_slot_tabs_content(%{assigns: assigns}) do
+  defp booking_slot_tabs_content(assigns) do
     ~H"""
     <div>
       <%= case @booking_slot_tab_active do %>
       <% "list" -> %>
-        <div class={classes("mt-10 p-3 border-2 rounded-lg border-red-sales-300", %{"border-base-200" => @booking_event.dates != []})}>
+        <div class={classes("mt-10 p-3 border-2 rounded-lg border-red-sales-300", %{"border-base-200" => !incomplete_dates?(@booking_event)})}>
           <div class="flex mb-1">
-            <%= if @booking_event.dates == [] do %>
+            <%= if is_nil(@booking_event_date.date) do %>
               <p class="text-2xl font-bold">Select day</p>
             <% else  %>
             <%!-- further logic of dates should be added here --%>
-              <p class="text-2xl font-bold">Thursday, March 29th, 2023</p>
+              <p class="text-2xl font-bold"> <%= date_formatter(@booking_event_date.date) %> </p>
             <% end  %>
             <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id="first">
               View details
@@ -388,9 +399,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             </button>
           </div>
           <div class="flex">
-            <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
-            <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
-            <p class="text-blue-planning-300"><b>1</b> hidden</p>
+            <p class="text-blue-planning-300 mr-4"><b><%= count_booked_slots(@booking_event_date.slots) %></b> bookings</p>
+            <p class="text-blue-planning-300 mr-4"><b><%= count_available_slots(@booking_event_date.slots) %></b> available</p>
+            <p class="text-blue-planning-300"><b><%= count_hidden_slots(@booking_event_date.slots) %></b> hidden</p>
           </div>
           <hr class="block md:hidden my-2">
           <%= if Enum.member?(@collapsed_sections, "first") do %>
@@ -442,11 +453,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   defp render_slots(assigns) do
     ~H"""
-    <%= for slot <- @booking_event.slots do %>
+    <%= for slot <- @booking_event_date.slots do %>
       <%= case slot.status do %>
         <% "open" -> %>
           <.slots_description client={@client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={hidden_slot_actions()} />
-        <% "booked_hidden" -> %>
+        <% "hide" -> %>
           <.slots_description client={@client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={open_slot_actions()} />
         <% _ -> %>
           <.slots_description client={@client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={booked_slot_actions()} />
@@ -461,34 +472,34 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <% "list" -> %>
         <div class="grid grid-cols-3 md:grid-cols-7 items-start md:items-center my-2">
           <div class="col-span-6 grid grid-cols-2 md:grid-cols-6">
-            <div class={classes("col-span-2", %{"text-base-250" => @slot.status == "booked_hidden"})}>
-              <%= if @slot.status == "booked" do %>
+            <div class={classes("col-span-2", %{"text-base-250" => @slot.status == :hide})}>
+              <%= if @slot.status == :book do %>
                 <div class="flex gap-2 items-center">
                   <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                  <button class="text-blue-planning-300 underline"><%= @slot.time %></button>
+                  <button class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
                 </div>
               <% else %>
                 <div class="flex gap-2 items-center">
                   <.icon name="clock-2" class="block md:hidden w-3 h-3 stroke-current text-blue-planning-300 mt-1" />
-                  <div><%= @slot.time %></div>
+                  <div><%= slot_time_formatter(@slot) %></div>
                 </div>
               <% end %>
             </div>
-            <div class={classes("col-span-2", %{"text-base-250" => @slot.status != "open"})}>
+            <div class={classes("col-span-2", %{"text-base-250" => @slot.status != :open})}>
               <div class="flex gap-2 items-center">
-                <%= if @slot.status != "open" do %>
+                <%= if @slot.status != :open do %>
                   <.icon name="booked-slot" class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
                 <% else %>
                   <.icon name="open-slot" class="block md:hidden w-3 h-3 fill-blue-planning-300 mt-1.5" />
                 <% end %>
-                <div class=""><%= @slot.title %></div>
+                <div class=""><%= String.capitalize(to_string(@slot.status)) %></div>
               </div>
             </div>
             <div class="col-span-2">
-                <%= if @client && @slot.status == "booked" do %>
+                <%= if @client && @slot.status == :book do %>
                   <div class="flex gap-2 items-center">
                     <.icon name="client-icon" class="block md:hidden w-3 h-3 text-blue-planning-300 mt-1.5" />
-                    <div class="text-blue-planning-300 underline"><%= @client.name %></div>
+                    <div class="text-blue-planning-300 underline"><%= String.capitalize(@client.name) %></div>
                   </div>
                 <% else %>
                   <div class="flex gap-2 items-center">
@@ -499,7 +510,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             </div>
           </div>
           <div class="justify-start">
-            <.actions id={@slot.id} booking_event={@booking_event} button_actions={@button_actions} />
+            <.actions id={@booking_event.id} booking_event={@booking_event} button_actions={@button_actions} />
           </div>
           <hr class="my-2 md:my-3 col-span-7">
         </div>
@@ -507,22 +518,22 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class="border-2 border-base-200 rounded-lg flex p-3 my-1.5">
           <div class="flex flex-col">
             <p class="mb-1 font-bold text-black text-lg">
-              <%= if @slot.status == "booked" do %>
-                <button class="text-blue-planning-300 underline"><%= @slot.time %></button>
+              <%= if @slot.status == :book do %>
+                <button class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
               <% else %>
-                <%= @slot.time %>
+                slot_time_formatter(@slot)
               <% end %>
             </p>
             <p class="text-blue-planning-300 underline">
-              <%= if @client && @slot.status == "booked" do %>
-                <button class="text-blue-planning-300 underline"><%= "Booked with " <> @client.name %></button>
+              <%= if @client && @slot.status == :book do %>
+                <button class="text-blue-planning-300 underline"><%= "Booked with " <> String.capitalize(@client.name) %></button>
               <% else %>
-                <p class={classes(%{"text-base-250" => @slot.status == "booked_hidden"})}><%= @slot.title %></p>
+                <p class={classes(%{"text-base-250" => @slot.status == :hide})}><%= @slot.status %></p>
               <% end %>
             </p>
           </div>
           <div class="flex ml-auto">
-            <.actions id={@slot.id} booking_event={@booking_event} button_actions={@button_actions} />
+            <.actions id={@booking_event.id} booking_event={@booking_event} button_actions={@button_actions} />
           </div>
         </div>
       <% end %>
@@ -770,6 +781,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       %{title: "Replace package", action: "replace-package", icon: "package"}
     ]
   end
+
+  defp sort_by_date(%{dates: dates} = booking_event),
+    do: Map.replace(booking_event, :dates, Enum.sort(dates, :desc))
+
+  defp slot_time_formatter(slot),
+    do: Time.to_string(slot.slot_start) <> " - " <> Time.to_string(slot.slot_end)
 
   defp slice_description(description) do
     if String.length(description) > 100 do
