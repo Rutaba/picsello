@@ -456,7 +456,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> assign(credits: credits(gallery))
     |> assign(order: order)
     |> assign_cart_count(gallery)
-    |> close_modal()
     |> put_flash(:success, "Added!")
     |> noreply()
   end
