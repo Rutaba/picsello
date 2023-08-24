@@ -119,7 +119,7 @@
           <% end %>
         <% end %>
 
-        <div title="Invoice" class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal, @stripe_status, @answer)})} disabled={invoice_disabled?(@proposal, @stripe_status, @answer)}>
+        <div title="Invoice" class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal, @stripe_status, @answer)})}>
           <div class="flex flex-col items-start w-full font-medium">
             <%= cond do %>
               <% PaymentSchedules.is_with_cash?(@job) && @next_due_payment && DateTime.compare(DateTime.utc_now(), @next_due_payment |> Map.get(:due_at)) in [:eq, :gt] -> %>
@@ -146,13 +146,13 @@
 
             <%= cond do %>
               <% PaymentSchedules.free?(@job) and !PaymentSchedules.all_paid?(@job) -> %>
-                <button type="button" class="btn-tertiary w-full mt-4 flex items-center justify-center gap-2" phx-click="handle_checkout">
+                <button type="button" class="btn-tertiary w-full mt-4 flex items-center justify-center gap-2" phx-click="handle_checkout" disabled={invoice_disabled?(@proposal, @stripe_status, @answer)}>
                   Finish booking <.icon name="forth" class="stroke-2 stroke-current h-4 w-4" />
                 </button>
               <% !PaymentSchedules.free?(@job) and !PaymentSchedules.all_paid?(@job) -> %>
                 <div class="flex flex-wrap justify-between items-center gap-4 w-full mt-4">
                   <%= if(@organization.user.allow_cash_payment) do %>
-                    <button type="button" class="btn-secondary flex gap-2 text-left flex-grow order-2 md:order-1" phx-click="pay_offline" type="button">
+                    <button type="button" class="btn-secondary flex gap-2 text-left flex-grow order-2 md:order-1" phx-click="pay_offline" type="button" disabled={invoice_disabled?(@proposal, @stripe_status, @answer)}>
                       <span class="flex flex-col">
                         <strong>Pay with cash/check</strong> We'll send an invoice
                       </span>
@@ -161,7 +161,7 @@
                       </span>
                     </button>
                   <% end %>
-                  <button type="button" class="btn-tertiary flex gap-2 text-left flex-grow order-1 md:order-2" phx-click="handle_checkout">
+                  <button type="button" class="btn-tertiary flex gap-2 text-left flex-grow order-1 md:order-2" phx-click="handle_checkout" disabled={invoice_disabled?(@proposal, @stripe_status, @answer)}>
                     <span class="flex flex-col">
                       <strong>Pay online</strong> Fast, easy and secure
                     </span>

@@ -57,7 +57,8 @@ defmodule Picsello.ContractsIndexTest do
     )
     |> assert_flash(:success, text: "Contract saved")
 
-    contract = Repo.all(Contract) |> Enum.at(-1)
+    contract =
+      Repo.all(Contract) |> Enum.filter(fn c -> c.name == "Contract 1" end) |> List.first()
 
     assert %Contract{
              name: "Contract 1",
@@ -87,7 +88,10 @@ defmodule Picsello.ContractsIndexTest do
     |> assert_has(button("Contract 1"))
     |> assert_has(button("Picsello Default Contract"))
 
-    contract = Repo.all(Contract) |> Enum.at(-1)
+    contract =
+      Repo.all(Contract)
+      |> Enum.filter(fn c -> c.name == "Duplicate Contract" end)
+      |> List.first()
 
     assert %Contract{
              name: "Duplicate Contract",

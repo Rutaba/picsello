@@ -10,6 +10,10 @@
       Questionnaire for <%= @job.client.name %>
     </h1>
 
+    <%= if @answer.id do %>
+      <p>Answered on <%= strftime(@photographer.time_zone, @answer.inserted_at, "%b %d, %Y") %></p>
+    <% end %>
+
     <fieldset class={classes(%{"opacity-75" => @read_only})} disabled={@read_only}>
       <dl>
         <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
