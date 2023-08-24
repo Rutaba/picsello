@@ -135,7 +135,7 @@ defmodule Picsello.ClientBooksEventTest do
       "Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment."
     )
     |> assert_text("Event 1")
-    |> assert_text("3 images include | 45 min session | In Studio")
+    |> assert_text("3 images | 45 min session | In Studio")
     |> assert_text("Sunday, December 11 @ 11:00 am")
     |> assert_text("320 1st St N")
     |> click(button("To-Do Review and accept your proposal"))

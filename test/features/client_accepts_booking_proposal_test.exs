@@ -153,7 +153,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
         css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!")
       )
       |> assert_disabled(@invoice_button)
-      |> click(link("Message Photography LLC"))
+      |> click(css("a", text: "Message Photography LLC"))
       |> within_modal(fn modal ->
         modal
         |> fill_in(css(".editor > div"), with: "actual message")

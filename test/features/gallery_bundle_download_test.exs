@@ -74,7 +74,7 @@ defmodule Picsello.GalleryBundleDownloadTest do
     session
     |> visit("/gallery/#{gallery.client_link_hash}")
     |> assert_text(gallery.name)
-    |> click(link("View Gallery"))
+    |> click(css("a", text: "View Gallery"))
     |> assert_has(link("Download all"))
 
     session
