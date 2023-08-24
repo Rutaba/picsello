@@ -325,12 +325,12 @@
           <div class="pl1">Photo Downloads</div>
         </div>
         <%= case Picsello.Packages.Download.from_package(@package) do %>
-          <% %{includes_credits: true} = d -> %>
+          <% %{status: :limited} = d -> %>
             <div class="invoice-column">
               <div><%= ngettext "1 photo download", "%{count} photo downloads", d.count %></div>
               <div>Additional downloads @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea</div>
             </div>
-          <% %{status: :limited} = d -> %>
+          <% %{status: :none} = d -> %>
             <div class="invoice-column">
               <div>Download photos @ <%= Money.to_string(d.each_price, symbol: false, code: true)%>/ea</div>
             </div>
