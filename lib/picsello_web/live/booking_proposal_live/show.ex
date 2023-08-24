@@ -30,6 +30,13 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> maybe_confetti(params)
     |> maybe_set_booking_countdown()
     |> reorder_payment_schedules()
+    |> then(fn
+      %{assigns: %{job: job = %{}}} = socket ->
+        assign(socket, :next_due_payment, PaymentSchedules.next_due_payment(job))
+
+      socket ->
+        assign(socket, :next_due_payment, nil)
+    end)
     |> ok()
   end
 
