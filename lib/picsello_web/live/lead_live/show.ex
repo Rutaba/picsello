@@ -22,6 +22,7 @@ defmodule PicselloWeb.LeadLive.Show do
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
+      assign_changeset: 2,
       assign_proposal: 1,
       assign_disabled_copy_link: 1,
       proposal_disabled_message: 1,
@@ -45,6 +46,7 @@ defmodule PicselloWeb.LeadLive.Show do
     |> assign(:type, %{singular: "lead", plural: "leads"})
     |> assign(:request_from, assigns["request_from"])
     |> assign_job(job_id)
+    |> assign_changeset(%{})
     |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
     |> then(fn %{assigns: assigns} = socket ->

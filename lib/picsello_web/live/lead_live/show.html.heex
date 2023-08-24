@@ -21,6 +21,7 @@
         <.edit_name_input 
         data={@job}
         edit_name={@edit_name}
+        changeset={@changeset}
         back_path={
           case @request_from do
             "job_history" -> Routes.client_path(@socket, :job_history, @job.client_id)

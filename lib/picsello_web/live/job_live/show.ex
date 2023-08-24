@@ -9,6 +9,7 @@ defmodule PicselloWeb.JobLive.Show do
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
+      assign_changeset: 2,
       booking_details_section: 1,
       card: 1,
       communications_card: 1,
@@ -41,6 +42,7 @@ defmodule PicselloWeb.JobLive.Show do
     socket
     |> assign_job(job_id)
     |> assign(:edit_name, false)
+    |> assign_changeset(%{})
     |> assign(:type, %{singular: "job", plural: "jobs"})
     |> assign_new(:anchor, fn -> Map.get(params, "anchor", nil) end)
     |> assign(:request_from, params["request_from"])

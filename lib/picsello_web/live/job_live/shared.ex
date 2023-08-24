@@ -554,6 +554,36 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def handle_info(
+        {:validate, %{"job" => %{"name" => name}}},
+        socket
+      ) do
+    socket
+    |> assign_changeset(%{job_name: name})
+    |> assign(:edit_name, true)
+    |> noreply()
+  end
+
+  def handle_info(
+        {:save, %{"job" => %{"name" => _}}},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    case Repo.update(changeset) do
+      {:ok, job} ->
+        socket
+        |> assign_job(job.id)
+        |> assign(:edit_name, false)
+        |> put_flash(
+          :success,
+          "#{if job.job_status.is_lead, do: "Lead", else: "Job"} updated successfully"
+        )
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset)
+    end
+    |> noreply()
+  end
+
+  def handle_info(
         {:update, %{shoot_number: shoot_number, shoot: new_shoot}},
         %{assigns: %{shoots: shoots, job: job}} = socket
       ) do
@@ -629,6 +659,11 @@ defmodule PicselloWeb.JobLive.Shared do
 
     socket
     |> noreply()
+  end
+
+  def assign_changeset(%{assigns: %{job: job}} = socket, params \\ %{}) do
+    socket
+    |> assign(:changeset, Job.edit_job_changeset(job, params))
   end
 
   def assign_proposal(%{assigns: %{job: %{id: job_id}}} = socket) do

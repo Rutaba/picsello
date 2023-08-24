@@ -9,7 +9,7 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Galleries, Repo}
-  alias PicselloWeb.GalleryLive.ProductPreview.Preview
+  alias PicselloWeb.GalleryLive.{ProductPreview.Preview, Shared}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -108,6 +108,10 @@ defmodule PicselloWeb.GalleryLive.ProductPreview.Index do
     |> assign(:photos_error_count, photos_error_count)
     |> noreply()
   end
+
+  # for validating and saving gallery name
+  @impl true
+  defdelegate handle_info(message, socket), to: Shared
 
   defp page_title(:index), do: "Product Previews"
 end

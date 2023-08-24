@@ -6,6 +6,7 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   import PicselloWeb.Shared.StickyUpload, only: [sticky_upload: 1]
 
   alias Picsello.{Repo, Galleries, Albums}
+  alias PicselloWeb.GalleryLive.Shared
   alias PicselloWeb.GalleryLive.Albums.{AlbumSettings, AlbumThumbnail}
 
   @blank_image "/images/album_placeholder.png"
@@ -241,15 +242,6 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   end
 
   @impl true
-  def handle_info({:save, _}, %{assigns: %{gallery_id: gallery_id}} = socket) do
-    socket
-    |> close_modal()
-    |> assign(:albums, Albums.get_albums_by_gallery_id(gallery_id) |> Repo.preload(:orders))
-    |> put_flash(:success, "Album thumbnail successfully updated")
-    |> noreply
-  end
-
-  @impl true
   def handle_info(
         {:album_settings, %{message: message}},
         %{assigns: %{gallery: gallery}} = socket
@@ -289,6 +281,19 @@ defmodule PicselloWeb.GalleryLive.Albums.Index do
   def handle_info({:message_composed, message_changeset, recipients}, socket) do
     add_message_and_notify(socket, message_changeset, recipients, "gallery")
   end
+
+  @impl true
+  def handle_info({:save, %{message: message}}, %{assigns: %{gallery_id: gallery_id}} = socket) do
+    socket
+    |> close_modal()
+    |> assign(:albums, Albums.get_albums_by_gallery_id(gallery_id) |> Repo.preload(:orders))
+    |> put_flash(:success, message)
+    |> noreply
+  end
+
+  # for validating and saving gallery name
+  @impl true
+  defdelegate handle_info(message, socket), to: Shared
 
   def thumbnail(%{album: %{thumbnail_photo: nil}} = assigns) do
     ~H"""

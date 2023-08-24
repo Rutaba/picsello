@@ -70,24 +70,45 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  defp schemas(%{type: :standard} = gallery), do: {gallery}
-  defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
-
-  defp preset_state(:standard), do: :gallery_send_link
-  defp preset_state(:proofing), do: :proofs_send_link
-  defp preset_state(:finals), do: :album_send_link
-
-  defp modal_title(:standard), do: "Share gallery"
-  defp modal_title(:proofing), do: "Share Proofing Album"
-  defp modal_title(:finals), do: "Share Finals Album"
-
-  defp composed_event(:standard), do: :message_composed
-  defp composed_event(_type), do: :message_composed_for_album
-
-  defp maybe_insert_gallery_client(gallery, email) do
-    {:ok, gallery_client} = Galleries.insert_gallery_client(gallery, email)
-    gallery_client
+  def handle_info({:validate, %{"gallery" => %{"name" => name}}}, socket) do
+    socket
+    |> assign_gallery_changeset(%{name: name})
+    |> assign(:edit_name, true)
+    |> noreply
   end
+
+  def handle_info(
+        {:save, %{"gallery" => %{"name" => name}}},
+        %{assigns: %{gallery: gallery}} = socket
+      ) do
+    {:ok, gallery} =
+      gallery
+      |> Galleries.update_gallery(%{name: name})
+
+    gallery =
+      gallery
+      |> Galleries.load_watermark_in_gallery()
+      |> Repo.preload(:photographer, job: :client)
+
+    socket
+    |> assign(:gallery, gallery)
+    |> assign(:edit_name, false)
+    |> put_flash(:success, "Gallery updated successfully")
+    |> noreply()
+  end
+
+  def assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket),
+    do:
+      socket
+      |> assign(:changeset, Galleries.change_gallery(gallery) |> Map.put(:action, :validate))
+
+  def assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket, attrs),
+    do:
+      socket
+      |> assign(
+        :changeset,
+        Galleries.change_gallery(gallery, attrs) |> Map.put(:action, :validate)
+      )
 
   def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
     result =
@@ -253,30 +274,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     )
   end
 
-  defp editor_urls(%{assigns: %{album: %Album{is_finals: true} = album}} = socket) do
-    [
-      complete_url:
-        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
-          "?editorId=%EDITOR_ID%",
-      secondary_url:
-        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
-          "?editorId=%EDITOR_ID%&clone=true",
-      cancel_url: Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
-    ]
-  end
-
-  defp editor_urls(%{assigns: %{gallery: %Galleries.Gallery{} = gallery}} = socket) do
-    [
-      complete_url:
-        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-          "?editorId=%EDITOR_ID%",
-      secondary_url:
-        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-          "?editorId=%EDITOR_ID%&clone=true",
-      cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
-    ]
-  end
-
   def get_all_gallery_albums(gallery_id) do
     case client_liked_album(gallery_id) do
       nil -> Albums.get_albums_by_gallery_id(gallery_id)
@@ -292,22 +289,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
       _ -> true
     end
     |> never_expire(expired_at)
-  end
-
-  defp never_expire(result, expired_at) do
-    result && DateTime.compare(get_expiry_date(), expired_at) != :eq
-  end
-
-  defp get_expiry_date(%{expired_at: expired_at}) do
-    case expired_at do
-      nil -> get_expiry_date()
-      _ -> expired_at
-    end
-  end
-
-  defp get_expiry_date() do
-    {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
-    date
   end
 
   def expired_at(organization_id) do
@@ -381,8 +362,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
       Galleries.may_be_prepare_gallery(gallery, photo)
     end
   end
-
-  defp opts(), do: [limit: 1, valid: true]
 
   def add_message_and_notify(
         %{assigns: %{job: job, current_user: user}} = socket,
@@ -493,16 +472,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
       <% end %>
     </div>
     """
-  end
-
-  defp tracking_info(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
-    Enum.find_value(sub_orders, fn
-      %{editor_ids: editor_ids, whcc_tracking: tracking} ->
-        if editor_id in editor_ids, do: tracking
-
-      _ ->
-        nil
-    end)
   end
 
   def actions(assigns) do
@@ -618,24 +587,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
           <% end %>
       </div>
     </div>
-    """
-  end
-
-  defp button_element(%{element: "a"} = assigns) do
-    attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
-    assigns = Enum.into(assigns, %{attrs: attrs})
-
-    ~H"""
-      <a {@attrs}><%= render_slot(@inner_block) %></a>
-    """
-  end
-
-  defp button_element(%{element: "button"} = assigns) do
-    attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
-    assigns = Enum.into(assigns, %{attrs: attrs})
-
-    ~H"""
-      <button {@attrs}><%= render_slot(@inner_block) %></button>
     """
   end
 
@@ -852,18 +803,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     Cart.get_unconfirmed_order(gallery.id, opts)
   end
 
-  defp build_credits(nil, credits, _cart_count), do: credits
-
-  defp build_credits(_, credits, total_count) do
-    {_, remaining} = Enum.find(credits, &(elem(&1, 0) == "Download Credits")) || {"", 0}
-    [{"Digital Image Credits", "#{remaining} out of #{total_count}"}]
-  end
-
-  defp name(%Digital{photo: photo}, true), do: "Selected for retouching - #{photo.name}"
-  defp name(%Digital{}, false), do: "Digital download"
-  defp name({:bundle, _}, false), do: "All digital downloads"
-  defp name(item, false), do: Cart.product_name(item)
-
   # routes to use for proofing_album and gallery checkout flow
   def assign_checkout_routes(
         %{assigns: %{album: %{client_link_hash: hash} = album, order: order}} = socket
@@ -902,18 +841,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> assign_checkout_routes()
   end
 
-  defp orders_path(socket, method, client_link_hash) do
-    Routes.gallery_client_orders_path(socket, method, client_link_hash)
-  end
-
-  defp order_path(socket, method, client_link_hash, order_number) do
-    Routes.gallery_client_order_path(socket, method, client_link_hash, order_number)
-  end
-
-  defp cart_path(socket, method, client_link_hash) do
-    Routes.gallery_client_show_cart_path(socket, method, client_link_hash)
-  end
-
   def assign_is_proofing(%{assigns: %{album: nil}} = socket) do
     assign(socket, is_proofing: false)
   end
@@ -947,8 +874,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     </a>
     """
   end
-
-  defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
 
   defdelegate item_image_url(item), to: Cart
   defdelegate item_image_url(item, opts), to: Cart
@@ -1036,23 +961,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
 
   def cover_photo_url(%{cover_photo: %{id: photo_id}}),
     do: Picsello.Galleries.Workers.PhotoStorage.path_to_url(photo_id)
-
-  defp upsert_album(result, message) do
-    case result do
-      {:ok, %Album{} = album} -> {album, message}
-      {:ok, result} -> {result.album, message}
-      _ -> {nil, "something went wrong"}
-    end
-  end
-
-  defp insert_album(%{selected_photos: []}, album_params), do: Albums.insert_album(album_params)
-
-  defp insert_album(%{selected_photos: selected_photos}, album_params) do
-    case Albums.insert_album_with_selected_photos(album_params, selected_photos) do
-      {:ok, album} -> {:ok, album.album}
-      _ -> {nil, "something went wrong"}
-    end
-  end
 
   def place_product_in_cart(
         %{
@@ -1156,15 +1064,147 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
-  defp proofing_and_final_album_url(socket, album) do
-    album = Albums.set_album_hash(album)
-    Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
-  end
-
   def is_photographer_view(assigns) do
     case Map.get(assigns, :current_user) do
       nil -> false
       _ -> true
     end
+  end
+
+  defp opts(), do: [limit: 1, valid: true]
+
+  defp schemas(%{type: :standard} = gallery), do: {gallery}
+  defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
+
+  defp preset_state(:standard), do: :gallery_send_link
+  defp preset_state(:proofing), do: :proofs_send_link
+  defp preset_state(:finals), do: :album_send_link
+
+  defp modal_title(:standard), do: "Share gallery"
+  defp modal_title(:proofing), do: "Share Proofing Album"
+  defp modal_title(:finals), do: "Share Finals Album"
+
+  defp composed_event(:standard), do: :message_composed
+  defp composed_event(_type), do: :message_composed_for_album
+
+  defp step_number(name, steps), do: Enum.find_index(steps, &(&1 == name)) + 1
+
+  defp orders_path(socket, method, client_link_hash) do
+    Routes.gallery_client_orders_path(socket, method, client_link_hash)
+  end
+
+  defp order_path(socket, method, client_link_hash, order_number) do
+    Routes.gallery_client_order_path(socket, method, client_link_hash, order_number)
+  end
+
+  defp cart_path(socket, method, client_link_hash) do
+    Routes.gallery_client_show_cart_path(socket, method, client_link_hash)
+  end
+
+  defp build_credits(nil, credits, _cart_count), do: credits
+
+  defp build_credits(_, credits, total_count) do
+    {_, remaining} = Enum.find(credits, &(elem(&1, 0) == "Download Credits")) || {"", 0}
+    [{"Digital Image Credits", "#{remaining} out of #{total_count}"}]
+  end
+
+  defp name(%Digital{photo: photo}, true), do: "Selected for retouching - #{photo.name}"
+  defp name(%Digital{}, false), do: "Digital download"
+  defp name({:bundle, _}, false), do: "All digital downloads"
+  defp name(item, false), do: Cart.product_name(item)
+
+  defp upsert_album(result, message) do
+    case result do
+      {:ok, %Album{} = album} -> {album, message}
+      {:ok, result} -> {result.album, message}
+      _ -> {nil, "something went wrong"}
+    end
+  end
+
+  defp insert_album(%{selected_photos: []}, album_params), do: Albums.insert_album(album_params)
+
+  defp insert_album(%{selected_photos: selected_photos}, album_params) do
+    case Albums.insert_album_with_selected_photos(album_params, selected_photos) do
+      {:ok, album} -> {:ok, album.album}
+      _ -> {nil, "something went wrong"}
+    end
+  end
+
+  defp proofing_and_final_album_url(socket, album) do
+    album = Albums.set_album_hash(album)
+    Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
+  end
+
+  defp editor_urls(%{assigns: %{album: %Album{is_finals: true} = album}} = socket) do
+    [
+      complete_url:
+        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
+          "?editorId=%EDITOR_ID%",
+      secondary_url:
+        Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
+          "?editorId=%EDITOR_ID%&clone=true",
+      cancel_url: Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
+    ]
+  end
+
+  defp editor_urls(%{assigns: %{gallery: %Galleries.Gallery{} = gallery}} = socket) do
+    [
+      complete_url:
+        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+          "?editorId=%EDITOR_ID%",
+      secondary_url:
+        Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
+          "?editorId=%EDITOR_ID%&clone=true",
+      cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
+    ]
+  end
+
+  defp tracking_info(%{whcc_order: %{orders: sub_orders}}, %{editor_id: editor_id}) do
+    Enum.find_value(sub_orders, fn
+      %{editor_ids: editor_ids, whcc_tracking: tracking} ->
+        if editor_id in editor_ids, do: tracking
+
+      _ ->
+        nil
+    end)
+  end
+
+  defp button_element(%{element: "a"} = assigns) do
+    attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
+    assigns = Enum.into(assigns, %{attrs: attrs})
+
+    ~H"""
+      <a {@attrs}><%= render_slot(@inner_block) %></a>
+    """
+  end
+
+  defp button_element(%{element: "button"} = assigns) do
+    attrs = Map.drop(assigns, [:inner_block, :__changed__, :element])
+    assigns = Enum.into(assigns, %{attrs: attrs})
+
+    ~H"""
+      <button {@attrs}><%= render_slot(@inner_block) %></button>
+    """
+  end
+
+  defp maybe_insert_gallery_client(gallery, email) do
+    {:ok, gallery_client} = Galleries.insert_gallery_client(gallery, email)
+    gallery_client
+  end
+
+  defp never_expire(result, expired_at) do
+    result && DateTime.compare(get_expiry_date(), expired_at) != :eq
+  end
+
+  defp get_expiry_date(%{expired_at: expired_at}) do
+    case expired_at do
+      nil -> get_expiry_date()
+      _ -> expired_at
+    end
+  end
+
+  defp get_expiry_date() do
+    {:ok, date} = DateTime.new(~D[3022-02-01], ~T[12:00:00], "Etc/UTC")
+    date
   end
 end

@@ -8,7 +8,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   import PicselloWeb.Live.Shared, only: [make_popup: 2, serialize: 1]
 
   alias Picsello.{Repo, Galleries, Messages, Notifiers.ClientNotifier}
-  alias PicselloWeb.Shared.ConfirmationComponent
+  alias PicselloWeb.{Shared.ConfirmationComponent, GalleryLive.Shared}
 
   alias PicselloWeb.GalleryLive.{
     Settings.CustomWatermarkComponent
@@ -172,17 +172,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     make_popup(socket, opts)
   end
 
-  def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
-    if entry.done? do
-      CoverPhoto.original_path(gallery.id, entry.uuid)
-      |> ProcessingManager.process_cover_photo()
-    end
-
-    socket
-    |> assign(:cover_photo_processing, true)
-    |> noreply
-  end
-
+  @impl true
   def handle_info(
         {:message_composed, message_changeset, recipients},
         %{
@@ -314,6 +304,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> noreply()
   end
 
+  @impl true
   def handle_info({:cover_photo_processed, _, _}, %{assigns: %{gallery: gallery}} = socket) do
     gallery =
       Galleries.get_gallery!(gallery.id)
@@ -326,6 +317,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> noreply()
   end
 
+  @impl true
   def handle_info(
         {:confirm_event, "delete_gallery"},
         %{assigns: %{gallery: gallery}} = socket
@@ -350,27 +342,16 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
   end
 
   @impl true
-  def handle_info({:update_name, %{gallery: gallery}}, socket) do
-    gallery =
-      gallery
-      |> Galleries.load_watermark_in_gallery()
-      |> Repo.preload(:photographer, job: :client)
-
-    socket
-    |> assign(:gallery, gallery)
-    |> close_modal()
-    |> noreply()
-  end
-
-  @impl true
   def handle_info({:pack, :ok, _}, socket) do
     socket
     |> put_flash(:success, "Gallery is ready for download")
     |> noreply()
   end
 
+  @impl true
   def handle_info({:pack, _, _}, socket), do: noreply(socket)
 
+  @impl true
   def handle_info(
         {:confirm_event, "disable_gallery", _},
         %{assigns: %{gallery: gallery}} = socket
@@ -380,6 +361,7 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> process_gallery(socket, :disabled)
   end
 
+  @impl true
   def handle_info(
         {:confirm_event, "enable_gallery", _},
         %{assigns: %{gallery: gallery}} = socket
@@ -388,6 +370,10 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
     |> Galleries.update_gallery(%{status: :active})
     |> process_gallery(socket, :enabled)
   end
+
+  # for validating and saving gallery name
+  @impl true
+  defdelegate handle_info(message, socket), to: Shared
 
   defp process_gallery(result, socket, type) do
     {success, failure} =
@@ -407,6 +393,17 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
         |> close_modal()
         |> noreply()
     end
+  end
+
+  def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
+    if entry.done? do
+      CoverPhoto.original_path(gallery.id, entry.uuid)
+      |> ProcessingManager.process_cover_photo()
+    end
+
+    socket
+    |> assign(:cover_photo_processing, true)
+    |> noreply
   end
 
   defp process_gallery_message(socket, type, gallery) do

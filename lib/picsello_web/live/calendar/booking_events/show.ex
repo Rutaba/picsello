@@ -1,12 +1,13 @@
 defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
+
   import PicselloWeb.Calendar.BookingEvents.Shared
   import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
-  alias Picsello.{Repo, BookingEvents, Package, BookingEventDate}
+  alias Picsello.{Repo, BookingEvent, BookingEvents, Package, Questionnaire, BookingEventDate}
   alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
@@ -253,6 +254,33 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   defdelegate handle_info(message, socket), to: BEShared
+  def handle_info(
+        {:validate, %{"booking_event" => params}},
+        socket
+      ) do
+    socket
+    |> assign(:edit_name, true)
+    |> assign_changeset(params)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:save, %{"booking_event" => %{"name" => _}}},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    case BookingEvents.upsert_booking_event(changeset) do
+      {:ok, booking_event} ->
+        socket
+        |> assign(:edit_name, false)
+        |> assign(:booking_event, booking_event)
+        |> put_flash(:success, "Booking Event updated successfully")
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset)
+    end
+    |> noreply()
+  end
 
   defp booking_slot_tabs_nav(assigns) do
     ~H"""
@@ -598,6 +626,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         </button>
       </div>
     """
+  end
+
+  defp assign_changeset(%{assigns: %{booking_event: booking_event}} = socket, params) do
+    socket
+    |> assign(:changeset, BookingEvent.create_changeset(booking_event, params))
   end
 
   defp open_wizard(socket, assigns) do

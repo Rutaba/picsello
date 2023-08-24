@@ -3,8 +3,8 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
   use PicselloWeb, :live_component
   import PicselloWeb.GalleryLive.Shared
   import Picsello.Utils, only: [products_currency: 0]
+  import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
 
-  alias Picsello.Galleries
   alias Phoenix.PubSub
 
   @impl true
@@ -42,7 +42,7 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     |> assign(:photos_error_count, photos_error_count)
     |> assign(:gallery, gallery)
     |> assign(:currency, currency)
-    |> assign(:edit_name, true)
+    |> assign(:edit_name, false)
     |> assign(:is_mobile, is_mobile)
     |> assign(:albums, albums)
     |> assign(:arrow_show, arrow_show)
@@ -50,33 +50,6 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
     |> assign(:selected_album, album)
     |> assign_gallery_changeset()
     |> ok()
-  end
-
-  @impl true
-  def handle_event("validate", %{"gallery" => %{"name" => name}}, socket) do
-    socket
-    |> assign_gallery_changeset(%{name: name})
-    |> noreply
-  end
-
-  @impl true
-  def handle_event("click", _, socket) do
-    socket
-    |> assign(:edit_name, false)
-    |> noreply
-  end
-
-  @impl true
-  def handle_event("save", %{"gallery" => %{"name" => name}}, socket) do
-    %{assigns: %{gallery: gallery, arrow_show: arrow}} = socket
-    {:ok, gallery} = Galleries.update_gallery(gallery, %{name: name})
-
-    arrow == "overview" && send(self(), {:update_name, %{gallery: gallery}})
-
-    socket
-    |> assign(:edit_name, true)
-    |> assign(:gallery, gallery)
-    |> noreply
   end
 
   @impl true
@@ -139,19 +112,6 @@ defmodule PicselloWeb.GalleryLive.Shared.SideNavComponent do
       Routes.gallery_albums_index_path(socket, :index, gallery, opts)
     end
   end
-
-  defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket),
-    do:
-      socket
-      |> assign(:changeset, Galleries.change_gallery(gallery) |> Map.put(:action, :validate))
-
-  defp assign_gallery_changeset(%{assigns: %{gallery: gallery}} = socket, attrs),
-    do:
-      socket
-      |> assign(
-        :changeset,
-        Galleries.change_gallery(gallery, attrs) |> Map.put(:action, :validate)
-      )
 
   defp is_selected_album(album, selected_album),
     do: selected_album && album.id == selected_album.id
