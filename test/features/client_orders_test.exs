@@ -380,7 +380,7 @@ defmodule Picsello.ClientOrdersTest do
     )
 
     session
-    |> click(link("My orders"))
+    |> click(css("a", text: "My orders"))
     |> find(definition("Order total:"), &assert(Element.text(&1) == "$313.95"))
   end
 
@@ -537,7 +537,7 @@ defmodule Picsello.ClientOrdersTest do
       |> click(link("Home"))
       |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_has(testid("product_option_digital_download", text: "Download"))
-      |> click(link("close"))
+      |> click(css("[phx-click='close']"))
       |> click(link("My orders"))
       |> find(definition("Order number:"), fn number ->
         session
@@ -727,7 +727,7 @@ defmodule Picsello.ClientOrdersTest do
               Path.join(gallery_url, "photos/#{List.first(photo_ids)}/download")
           )
         )
-        |> click(link("close"))
+        |> click(css("[phx-click='close']"))
       end)
       |> refute_has(button("Buy now"))
       |> click(link("My orders"))

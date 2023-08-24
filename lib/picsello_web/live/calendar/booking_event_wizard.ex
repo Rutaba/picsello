@@ -302,7 +302,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
           <% end %>
         </div>
       </div>
-      <div class={classes("p-4 grid gap-5 lg:grid-cols-3 grid-cols-1", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})} {intro_hints_only("intro_hints_only")}>
+      <div class={classes("p-4 grid gap-5 lg:grid-cols-3 grid-cols-1", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})}>
         <div class="flex flex-col">
           <h3 class="text-md font-bold">When is your event?</h3>
           <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today(), disabled: is_date_booked(@event_form, input_value(@f, :date)) %>
@@ -327,10 +327,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
               </div>
               <div class="flex items-center justify-between w-full mt-2 lg:mt-6">
                   <%= if get_is_break!(@changeset, @f.index,t.index) do %>
-                    <span class="italic text-base-250 ml-2"> Break Block <.intro_hint class="ml-2 hidden lg:inline-block" content="Breaks are important so you can catch your breath!"/></span>
+                    <span class="italic text-base-250 ml-2"> Break Block <.tooltip class="ml-2 hidden lg:inline-block" content="Breaks are important so you can catch your breath!" id={"break-#{@f.index}-#{t.index}"} /></span>
                   <% end %>
                   <%= if get_is_hidden!(@changeset, @f.index,t.index) do %>
-                    <span class="italic text-base-250 ml-2"> Hidden Block <.intro_hint class="ml-2 hidden lg:inline-block" content="This is a great way to add some urgency for clients to book!"/></span>
+                    <span class="italic text-base-250 ml-2"> Hidden Block <.tooltip class="ml-2 hidden lg:inline-block" content="This is a great way to add some urgency for clients to book!" id={"hidden-#{@f.index}-#{t.index}"}/></span>
                   <% end %>
                 <div class="flex ml-auto">
                   <div data-offset="0" phx-hook="Select" id={"manage-event-#{@f.index}-#{t.index}"} class={classes(%{"pointer-events-none opacity-40" => t |> current |> Map.get(:is_break)})}>

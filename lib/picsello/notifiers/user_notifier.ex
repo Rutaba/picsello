@@ -301,14 +301,14 @@ defmodule Picsello.Notifiers.UserNotifier do
   end
 
   def order_confirmation_params(
-        %{gallery: %{job: job} = gallery, album: album} = order,
+        %{gallery: %{job: job} = gallery},
         helpers
       ) do
     %{
       job_url: helpers.job_url(job.id),
       gallery_name: gallery.name,
       job_name: Job.name(job),
-      order_url: helpers.proofing_album_selections_url(album, gallery, order)
+      order_url: helpers.gallery_url(gallery)
     }
   end
 
