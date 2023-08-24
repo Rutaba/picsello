@@ -3,8 +3,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   use Phoenix.HTML
   use Phoenix.Component
 
-  import import Phoenix.LiveView
+  import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
+  alias PicselloWeb.{Live.Calendar.BookingEvents.Index}
   alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, BookingEventDates, Repo}
   alias Ecto.Multi
 
@@ -121,6 +122,78 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> noreply()
   end
 
+  def handle_event(
+        "enable-event",
+        params,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.enable_booking_event(get_id(params, socket), current_user.organization_id) do
+      {:ok, event} ->
+        socket
+        |> assign_events(preload_data(event))
+        |> put_flash(:success, "Event enabled successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error enabling event")
+    end
+    |> noreply()
+  end
+
+  def handle_event(
+        "unarchive-event",
+        params,
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.enable_booking_event(get_id(params, socket), current_user.organization_id) do
+      {:ok, event} ->
+        socket
+        |> assign_events(preload_data(event))
+        |> put_flash(:success, "Event unarchive successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error unarchiving event")
+    end
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "disable_event_" <> id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.disable_booking_event(id, current_user.organization_id) do
+      {:ok, event} ->
+        socket
+        |> assign_events(preload_data(event))
+        |> put_flash(:success, "Event disabled successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error disabling event")
+    end
+    |> close_modal()
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "archive_event_" <> id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.archive_booking_event(id, current_user.organization_id) do
+      {:ok, event} ->
+        socket
+        |> assign_events(preload_data(event))
+        |> put_flash(:success, "Event archive successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:success, "Error archiving event")
+    end
+    |> close_modal()
+    |> noreply()
+  end
+
   def edit_slots_status(%{slots: slots}) do
     slots
     |> Enum.map(fn s ->
@@ -136,17 +209,19 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     Enum.map(data, &Map.from_struct(&1))
   end
 
-  def count_booked_slots(slot), do: Enum.count(slot, fn s -> s.status == :book || s.status == :reserve end)
+  def assign_events(%{assigns: %{booking_event: _booking_event}} = socket, event),
+    do: assign(socket, :booking_event, event)
+
+  def assign_events(%{assigns: %{booking_events: _booking_events}} = socket, _event),
+    do: Index.assign_booking_events(socket)
+
+  def count_booked_slots(slot),
+    do: Enum.count(slot, fn s -> s.status == :book || s.status == :reserve end)
+
   def count_available_slots(slot), do: Enum.count(slot, fn s -> s.status == :open end)
   def count_hidden_slots(slot), do: Enum.count(slot, fn s -> s.status == :hide end)
 
   def date_formatter(date), do: "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
-
-  # to cater different handle_event and info calls
-  # if we get booking-event-id in params (1st argument) it returns the id
-  # otherwise get the id from socket
-  defp get_id(%{"event-id" => id}, _assigns), do: id
-  defp get_id(%{}, %{assigns: %{booking_event: booking_event}}), do: booking_event.id
 
   # tells us if the created/duplicated booking event is complete or not
   # if we dont have dates or a package_template_id, then its incomplete
@@ -157,11 +232,24 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   # checks if an event made has any date that is nil in its array of dates field
   def incomplete_dates?(%{dates: d}) do
-    Enum.any?(d, fn  x ->
+    Enum.any?(d, fn x ->
       is_nil(x.date)
     end)
   end
 
+  def preload_data(event),
+    do:
+      Repo.preload(event, [
+        :dates,
+        package_template: [:package_payment_schedules, :contract, :questionnaire_template]
+      ])
+
   # will be true if the status matches in the array <status_list>
   def disabled?(booking_event, status_list), do: booking_event.status in status_list
+
+  # to cater different handle_event and info calls
+  # if we get booking-event-id in params (1st argument) it returns the id
+  # otherwise get the id from socket
+  defp get_id(%{"event-id" => id}, _assigns), do: id
+  defp get_id(%{}, %{assigns: %{booking_event: booking_event}}), do: booking_event.id
 end

@@ -204,46 +204,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
-  def handle_event(
-        "enable-event",
-        %{"event-id" => id},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    case BookingEvents.enable_booking_event(id, current_user.organization_id) do
-      {:ok, _event} ->
-        socket
-        |> assign_booking_events()
-        |> put_flash(:success, "Event enabled successfully")
-        |> noreply()
-
-      {:error, _} ->
-        socket
-        |> put_flash(:success, "Error enabling event")
-        |> noreply()
-    end
-  end
-
-  @impl true
-  def handle_event(
-        "unarchive-event",
-        %{"event-id" => id},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    case BookingEvents.enable_booking_event(id, current_user.organization_id) do
-      {:ok, _event} ->
-        socket
-        |> assign_booking_events()
-        |> put_flash(:success, "Event unarchive successfully")
-        |> noreply()
-
-      {:error, _} ->
-        socket
-        |> put_flash(:success, "Error unarchiving event")
-        |> noreply()
-    end
-  end
-
-  @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.Calendar.BookingEvents.Shared
 
   @impl true
@@ -267,50 +227,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
-  def handle_info(
-        {:confirm_event, "disable_event_" <> id},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    case BookingEvents.disable_booking_event(id, current_user.organization_id) do
-      {:ok, _event} ->
-        socket
-        |> assign_booking_events()
-        |> put_flash(:success, "Event disabled successfully")
-
-      {:error, _} ->
-        socket
-        |> put_flash(:success, "Error disabling event")
-    end
-    |> close_modal()
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:confirm_event, "archive_event_" <> id},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    case BookingEvents.archive_booking_event(id, current_user.organization_id) do
-      {:ok, _event} ->
-        socket
-        |> assign_booking_events()
-        |> put_flash(:success, "Event archive successfully")
-
-      {:error, _} ->
-        socket
-        |> put_flash(:success, "Error archiving event")
-    end
-    |> close_modal()
-    |> noreply()
-  end
-
-  @impl true
   def handle_info({:update, %{booking_event: _booking_event}}, socket) do
     socket
     |> assign_booking_events()
     |> put_flash(:success, "Booking event saved successfully")
     |> noreply()
   end
+
+  @impl true
+  defdelegate handle_info(message, socket), to: PicselloWeb.Calendar.BookingEvents.Shared
 
   defp bookings_cell(assigns) do
     ~H"""
@@ -323,6 +248,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex flex-wrap gap-3 items-center lg:ml-auto justify-start md:w-auto w-full col-span-2">
+      <.icon_button phx-click="edit-event" phx-value-event-id={@booking_event.id} icon="pencil" color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full px-4" rel="noopener noreferrer">
+        Edit
+      </.icon_button>
       <.icon_button icon="eye" disabled={incomplete_status?(@booking_event)} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
         Preview
       </.icon_button>
@@ -349,6 +277,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
               <%= cond do %>
                 <% status == :active && !incomplete_status?(@booking_event) -> %>
                   <.button title="Disable" icon="eye"  click_event="confirm-disable-event" id={@booking_event.id} color="red-sales" />
+                  <.button title="Archive" icon="trash"  click_event="confirm-archive-event" id={@booking_event.id} color="red-sales" />
                 <% :disabled-> %>
                   <.button title="Enable" icon="plus"  click_event="enable-event" id={@booking_event.id} color="blue-planning" />
               <% end %>
@@ -446,7 +375,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
     |> assign_new(:selected_event, fn -> nil end)
   end
 
-  defp assign_booking_events(
+  def assign_booking_events(
          %{
            assigns: %{
              current_user: current_user,

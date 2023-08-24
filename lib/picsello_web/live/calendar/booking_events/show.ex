@@ -9,7 +9,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       incomplete_dates?: 1,
       count_booked_slots: 1,
       count_available_slots: 1,
-      count_hidden_slots: 1
+      count_hidden_slots: 1,
+      preload_data: 1
     ]
 
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
@@ -34,10 +35,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       ) do
     booking_event =
       BookingEvents.get_booking_event!(organization_id, to_integer(event_id))
-      |> Repo.preload([
-        :dates,
-        package_template: [:package_payment_schedules, :contract, :questionnaire_template]
-      ])
+      |> preload_data()
       |> Map.merge(%{
         # please remove them when real implementaiton is complete
         slots: [
@@ -61,44 +59,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @impl true
   def handle_params(_, _, socket) do
     socket |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:confirm_event, "archive_event_" <> id},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    case BookingEvents.archive_booking_event(id, current_user.organization_id) do
-      {:ok, event} ->
-        socket
-        |> assign(booking_event: event)
-        |> put_flash(:success, "Event archive successfully")
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Error archiving event")
-    end
-    |> close_modal()
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:confirm_event, "disable_event_" <> id},
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    case BookingEvents.disable_booking_event(id, current_user.organization_id) do
-      {:ok, event} ->
-        socket
-        |> assign(booking_event: event)
-        |> put_flash(:success, "Event disabled successfully")
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Error disabling event")
-    end
-    |> close_modal()
-    |> noreply()
   end
 
   @impl true
@@ -162,45 +122,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  defdelegate handle_info(message, socket), to: PicselloWeb.JobLive.Shared
-
-  @impl true
-  def handle_event(
-        "enable-event",
-        _,
-        %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
-      ) do
-    case BookingEvents.enable_booking_event(booking_event.id, current_user.organization_id) do
-      {:ok, event} ->
-        socket
-        |> assign(booking_event: event)
-        |> put_flash(:success, "Event enabled successfully")
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Error enabling event")
-    end
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "unarchive-event",
-        _,
-        %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
-      ) do
-    case BookingEvents.enable_booking_event(booking_event.id, current_user.organization_id) do
-      {:ok, event} ->
-        socket
-        |> assign(booking_event: event)
-        |> put_flash(:success, "Event unarchive successfully")
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Error unarchiving event")
-    end
-    |> noreply()
-  end
+  defdelegate handle_info(message, socket), to: PicselloWeb.Calendar.BookingEvents.Shared
 
   @impl true
   def handle_event("add-date", _, %{assigns: %{booking_event: booking_event}} = socket) do
