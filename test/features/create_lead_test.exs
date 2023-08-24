@@ -108,6 +108,7 @@ defmodule Picsello.CreateLeadTest do
   end
 
   feature "user cannot create client with existing email", %{session: session} do
+  feature "user cannot create client with existing email", %{session: session} do
     session
     |> click(button("Actions"))
     |> click(button("Create lead"))
@@ -117,6 +118,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("button:disabled[type='submit']"))
   end
 
+  feature "user cannot create lead without job type", %{session: session} do
   feature "user cannot create lead without job type", %{session: session} do
     session
     |> click(button("Actions"))
@@ -128,6 +130,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("button:disabled[type='submit']"))
   end
 
+  feature "user creates lead with job type 'other'", %{session: session} do
   feature "user creates lead with job type 'other'", %{session: session} do
     session
     |> click(button("Actions"))

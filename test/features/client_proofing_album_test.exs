@@ -65,11 +65,10 @@ defmodule Picsello.ClientProofingAlbumTest do
 
   feature "Render proofing album", %{
     session: session,
-    proofing_album: album,
     photo_ids: photo_ids
   } do
     session
-    |> assert_has(css("h3", text: album.name))
+    |> assert_has(css("h3", text: "Proofing Selection"))
     |> assert_has(css("#muuri-grid", count: 1))
     |> assert_has(css(".item", count: Enum.count(photo_ids)))
   end
