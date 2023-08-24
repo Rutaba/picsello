@@ -220,10 +220,10 @@ defmodule Picsello.PaymentSchedules do
     total = total_price(job) |> Map.get(:amount)
     paid = paid_price(job) |> Map.get(:amount)
 
-    if total == 0 do
+    if maybe_return_0?(total) == 0 do
       0
     else
-      paid / total * 100
+      maybe_return_0?(paid) / maybe_return_0?(total) * 100
     end
   end
 
@@ -415,6 +415,14 @@ defmodule Picsello.PaymentSchedules do
 
   defp remainder_payment(job) do
     unpaid_payment(job) || %PaymentSchedule{}
+  end
+
+  defp maybe_return_0?(value) do
+    if value == nil || value == 0 do
+      0
+    else
+      value
+    end
   end
 
   defdelegate is_with_cash?(payment_schedule), to: PaymentSchedule
