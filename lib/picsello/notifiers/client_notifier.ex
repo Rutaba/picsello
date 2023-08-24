@@ -2,7 +2,6 @@ defmodule Picsello.Notifiers.ClientNotifier do
   @moduledoc false
   use Picsello.Notifiers
 
-  import Picsello.Messages, only: [get_emails: 2]
   import Money.Sigils
 
   alias Picsello.{BookingProposal, Job, Repo, Cart, Messages, ClientMessage, Galleries.Gallery}
