@@ -91,7 +91,7 @@ defmodule PicselloWeb.Live.Profile do
 
         <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
-        <%= if @website || @edit do %>
+        <%= if @website do %>
           <div class="flex items-center py-6">
             <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1 font-light">See our full portfolio</a>
             <%= if @edit do %>

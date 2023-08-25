@@ -296,7 +296,7 @@ defmodule Picsello.PaymentSchedulesTest do
       assert payment3 |> Repo.reload!() |> Map.get(:reminded_at) ==
                already_reminded_at |> DateTime.truncate(:second)
 
-      assert_receive {:delivered_email, %{to: [nil: "elizabeth1@example.com"]}}
+      assert_receive {:delivered_email, %{to: [email: "elizabeth1@example.com"]}}
       job_id = job1.id
       assert [%{job_id: ^job_id, body_text: "$50.00"}] = Repo.all(Picsello.ClientMessage)
     end
@@ -321,7 +321,7 @@ defmodule Picsello.PaymentSchedulesTest do
       assert %{paid_at: %DateTime{}} = payment_schedule |> Repo.reload!()
 
       assert_receive {:delivered_email, %{to: [nil: "photographer@example.com"]}}
-      assert_receive {:delivered_email, %{to: [nil: "elizabeth-lead@example.com"]}}
+      assert_receive {:delivered_email, %{to: [email: "elizabeth-lead@example.com"]}}
     end
 
     test "it does not update paid_at if already paid", %{lead: lead, proposal: proposal} do

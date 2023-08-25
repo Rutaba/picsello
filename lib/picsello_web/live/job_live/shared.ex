@@ -814,7 +814,7 @@ defmodule PicselloWeb.JobLive.Shared do
       <.card_title color={@color} title={@title}  />
       <h4 class="border rounded-md bg-base-200 px-2 mb-1.5 text-base-250 font-bold text-base"><%= Utils.capitalize_all_words(@gallery_type) %>
       <%= if @gallery_type == :unlinked_finals do %>
-        <.intro_hint class="ml-2" content="<b>Note:</b> You had more than one finals album, within your proofing gallery. To keep your data safe, we have created a gallery to hold those and you can reorganize/reupload photos to the new/improved proofing gallery"/>
+        <.tooltip id="unlinked-finals" class="ml-2" content="<b>Note:</b> You had more than one finals album, within your proofing gallery. To keep your data safe, we have created a gallery to hold those and you can reorganize/reupload photos to the new/improved proofing gallery"/>
       <% end %>
       </h4>
     </div>
@@ -1193,7 +1193,7 @@ defmodule PicselloWeb.JobLive.Shared do
       <%= form_tag("#", [phx_change: :search, phx_submit: :submit, phx_target: @myself]) do %>
         <div class="flex flex-col justify-between items-center px-1.5 md:flex-row">
           <div class="relative flex md:w-2/3 w-full">
-            <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+            <a class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
               <%= if (Enum.any?(@search_results) && @search_phrase) || @searched_client do %>
                 <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
                   <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />

@@ -73,7 +73,7 @@ defmodule Picsello.Profiles do
     def url_validation_errors(url) do
       case URI.parse(url) do
         %{scheme: nil} ->
-          ("https://" <> url) |> url_validation_errors()
+          ["is invalid"]
 
         %{scheme: scheme, host: "" <> host} when scheme in ["http", "https"] ->
           label = "[a-zA-Z0-9\\-]{1,63}+"

@@ -76,6 +76,7 @@ import DatePicker from './hooks/date-picker';
 import BeforeUnload from './hooks/before-unload';
 import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
+import Tooltip from './hooks/tooltip';
 
 const Modal = {
   mounted() {
@@ -283,6 +284,7 @@ const Hooks = {
   TZCookie,
   ToggleContent,
   ToggleSiblings,
+  Tooltip,
   ResumeUpload,
   GallerySelector,
   ClientGalleryCookie,

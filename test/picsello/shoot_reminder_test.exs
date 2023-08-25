@@ -51,7 +51,7 @@ defmodule Picsello.ShootReminderTest do
 
       assert [%{job_id: ^job1_id, scheduled: true, outbound: true}] = Repo.all(ClientMessage)
 
-      assert_receive {:delivered_email, %{to: [nil: "john@example.com"]}}
+      assert_receive {:delivered_email, %{to: [email: "john@example.com"]}}
 
       assert %{reminded_at: %DateTime{}, thanked_at: nil} = shoot1 |> Repo.reload()
       assert %{reminded_at: nil, thanked_at: nil} = shoot2 |> Repo.reload()
@@ -94,7 +94,7 @@ defmodule Picsello.ShootReminderTest do
 
       assert [%{job_id: ^job1_id, scheduled: true, outbound: true}] = Repo.all(ClientMessage)
 
-      assert_receive {:delivered_email, %{to: [nil: "john@example.com"]}}
+      assert_receive {:delivered_email, %{to: [email: "john@example.com"]}}
 
       assert %{thanked_at: %DateTime{}, reminded_at: nil} = shoot1 |> Repo.reload()
       assert %{thanked_at: nil, reminded_at: nil} = shoot2 |> Repo.reload()

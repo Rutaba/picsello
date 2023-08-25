@@ -2,7 +2,6 @@ defmodule Picsello.Pack do
   @moduledoc """
   context module for creating a zip of an order's digitals
   """
-
   defmodule IodataStream do
     @moduledoc false
 
