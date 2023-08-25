@@ -25,8 +25,8 @@
             </div>
             <div>
               <button class="btn-primary sm:px-8" phx-click="open-billing">Open Billing Portal</button>
-              <%= if Subscriptions.monthly?(subscription) do %>
-                <p phx-click="open-billing" class="underline text-sm mt-2 text-center cursor-pointer text-blue-planning-300">Update to yearly</p>
+              <%= if Subscriptions.interval(subscription) do %>
+                <p phx-click="open-billing" class="underline text-sm mt-2 text-center cursor-pointer text-blue-planning-300">Update to <%= Subscriptions.interval(subscription) == "month" && "yearly" || "monthly" %></p>
               <% end %>
             </div>
             <div class="w-full mt-4 border-t pt-4">
@@ -47,28 +47,17 @@
         <%= labeled_input f, :name, label: "Business name", wrapper_class: "mt-4"  %>
 
         <div class="mt-5 text-right">
-          <%= submit "Edit name", class: "btn-primary mx-1", disabled: !@organization_name_changeset.valid?, phx_disable_with: "Editing name..." %>
+          <%= submit "Edit business name", class: @card_btn_class, disabled: !@organization_name_changeset.valid?, phx_disable_with: "Editing business name..." %>
         </div>
       </.form>
     </.card>
-    <.card title="Edit your name" select={true}>
+    <.card title="Edit your name">
       <.form :let={f} for={@name_changeset} phx-change="validate" phx-submit="save" id="time_zone_form">
         <%= hidden_input f, :action, name: "action", value: "update_user_name" %>
-        <%= labeled_input f, :name, label: "Your name", class: "mt-4" %>
+        <%= labeled_input f, :name, label: "Your name", wrapper_class: "mt-4" %>
 
         <div class="mt-5 text-right">
-          <%= submit "Edit name", class: "btn-primary mx-1", disabled: !@name_changeset.valid?, phx_disable_with: "Editing name..." %>
-        </div>
-      </.form>
-    </.card>
-
-    <.card title="Edit your timezone" select={true}>
-      <.form :let={f} for={@time_zone_changeset} phx-change="validate" phx-submit="save" id="time_zone_form">
-        <%= hidden_input f, :action, name: "action", value: "update_time_zone" %>
-        <%= labeled_select f, :time_zone, time_zone_options(), label: "Timezone", class: "mt-4" %>
-
-        <div class="mt-5 text-right">
-          <%= submit "Edit timezone", class: "btn-primary mx-1", disabled: !@time_zone_changeset.valid?, phx_disable_with: "Editing timezone..." %>
+          <%= submit "Edit name", class: @card_btn_class, disabled: !@name_changeset.valid?, phx_disable_with: "Editing name..." %>
         </div>
       </.form>
     </.card>
@@ -83,11 +72,22 @@
           <% end %>
           
           <div class="mt-5 text-right">
-            <%= submit "Edit number", class: "btn-primary mx-1", disabled: !@phone_changeset.valid?, phx_disable_with: "Editing number..." %>
+            <%= submit "Edit number", class: @card_btn_class, disabled: !@phone_changeset.valid?, phx_disable_with: "Editing number..." %>
           </div>
         </.form>
       </.card>
     <% end %>
+
+    <.card title="Edit your timezone" select={true}>
+      <.form :let={f} for={@time_zone_changeset} phx-change="validate" phx-submit="save" id="time_zone_form">
+        <%= hidden_input f, :action, name: "action", value: "update_time_zone" %>
+        <%= labeled_select f, :time_zone, time_zone_options(), label: "Timezone", wrapper_class: "mt-4" %>
+
+        <div class="mt-5 text-right">
+          <%= submit "Edit timezone", class: @card_btn_class, disabled: !@time_zone_changeset.valid?, phx_disable_with: "Editing timezone..." %>
+        </div>
+      </.form>
+    </.card>
 
     <%= if @email_changeset do %>
       <.card title="Edit email">
@@ -99,7 +99,7 @@
         <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :current_password, name: :current_password, label: "Current password", placeholder: "Enter password" %>
 
           <div class="mt-5 text-right">
-            <%= submit "Edit email", class: "btn-primary mx-1", disabled: !@email_changeset.valid?, phx_disable_with: "Editing email..." %>
+            <%= submit "Edit email", class: @card_btn_class, disabled: !@email_changeset.valid?, phx_disable_with: "Editing email..." %>
           </div>
         </.form>
       </.card>
@@ -115,26 +115,26 @@
           <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :password_to_change, name: :password_to_change, label: "Current password", placeholder: "Enter password" %>
 
           <div class="mt-5 text-right">
-            <%= submit "Edit password", class: "btn-primary mx-1", disabled: !@password_changeset.valid?, phx_disable_with: "Editing password..." %>
+            <%= submit "Edit password", class: @card_btn_class, disabled: !@password_changeset.valid?, phx_disable_with: "Editing password..." %>
           </div>
         </.form>
       </.card>
     <% end %>
 
-    <.card title="Edit your business address" class="col-span-2">
+    <.card title="Edit your business address" class="sm:col-span-2">
       <.form :let={f} for={@organization_address_changeset} phx-change="validate" phx-submit="save" class="grid gap-x-7 gap-y-3 grid-cols-1 sm:grid-cols-2">
         <%= hidden_input f, :action, name: "action", value: "update_organization_address" %>
         <%= inputs_for f, :address, fn a -> %>
-          <%= labeled_input a, :address_line_1, label: "Address Line 1", placeholder: "enter address line 1...", class: "mt-4" %>
-          <%= labeled_input a, :address_line_2, label: "Address Line 2", placeholder: "enter address line 2 if applicable...", class: "mt-4" %>
-          <%= labeled_input a, :city, label: "City", placeholder: "enter city...", class: "mt-4" %>
-          <%= labeled_input a, :state, label: "State/Provice/Locality", placeholder: "enter state/provice/locality...", class: "mt-4" %>
-          <%= labeled_input a, :zipcode, label: "Zipcode", placeholder: "enter zipcode if applicable...", class: "mt-4" %>
-          <%= labeled_select a, :country_name, Picsello.Country.all |> Enum.map(& &1.name), label: "Country", class: "mt-4" %>
+          <%= labeled_input a, :address_line_1, label: "Address Line 1", placeholder: "enter address line 1...", wrapper_class: "mt-4" %>
+          <%= labeled_input a, :address_line_2, label: "Address Line 2", placeholder: "enter address line 2 if applicable...", wrapper_class: "mt-4" %>
+          <%= labeled_input a, :city, label: "City", placeholder: "enter city...", wrapper_class: "mt-4" %>
+          <%= labeled_input a, :state, label: "State/Provice/Locality", placeholder: "enter state/provice/locality...", wrapper_class: "mt-4" %>
+          <%= labeled_input a, :zipcode, label: "Zipcode", placeholder: "enter zipcode if applicable...", wrapper_class: "mt-4" %>
+          <%= labeled_select a, :country_name, Picsello.Country.all |> Enum.map(& &1.name), label: "Country", wrapper_class: "mt-4" %>
         <% end %>
 
-        <div class="mt-5 col-span-2 text-right">
-          <%= submit "Edit address", class: "btn-primary mx-1", disabled: !@organization_address_changeset.valid? || @organization_address_changeset.changes == %{}, phx_disable_with: "Editing adress..." %>
+        <div class="mt-5 sm:col-span-2 text-right">
+          <%= submit "Edit address", class: @card_btn_class, disabled: !@organization_address_changeset.valid? || @organization_address_changeset.changes == %{}, phx_disable_with: "Editing adress..." %>
         </div>
       </.form>
     </.card>

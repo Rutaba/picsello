@@ -1372,7 +1372,7 @@ defmodule PicselloWeb.HomeLive.Index do
       "missing-payment-method" =>
         {!Picsello.Subscriptions.subscription_payment_method?(current_user), org_card},
       "create-lead" => {leads_empty?, org_card},
-      "black-friday" => {Subscriptions.monthly?(current_user.subscription), org_card}
+      "black-friday" => {Subscriptions.interval(current_user.subscription) == "month", org_card}
     }
 
     case params |> Map.fetch(concise_name) do

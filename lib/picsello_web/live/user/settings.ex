@@ -26,6 +26,7 @@ defmodule PicselloWeb.Live.User.Settings do
     |> assign(:current_user, Accounts.preload_address(user))
     |> assigns_changesets()
     |> assign(:promotion_code, Subscriptions.maybe_get_promotion_code?(user))
+    |> assign(:card_btn_class, "btn-primary px-9 mx-1")
     |> ok()
   end
 
@@ -541,7 +542,7 @@ defmodule PicselloWeb.Live.User.Settings do
     <div class={"mb-5 flex overflow-hidden border rounded-lg #{@class}"}>
       <div class="w-4 border-r bg-blue-planning-300" />
 
-      <div class={classes("flex flex-col justify-between w-full p-10", %{"pl-8 -ml-4" => @select})}>
+      <div class={classes("flex flex-col justify-between w-full p-10", %{"pl-14 -ml-4" => @select})}>
 
         <div class="flex flex-col items-start sm:items-center sm:flex-row">
           <h1 class="mb-2 mr-4 text-xl font-bold sm:text-2xl text-blue-planning-300"><%= @title %></h1>
