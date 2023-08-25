@@ -329,7 +329,7 @@ defmodule Picsello.PaymentSchedules do
     job
     |> payment_schedules()
     |> Enum.filter(&(&1.paid_at == nil))
-    |> Enum.min_by(& &1.due_at)
+    |> Enum.min_by(& &1.due_at, fn -> nil end)
   end
 
   def checkout_link(%BookingProposal{} = proposal, payment, opts) do
