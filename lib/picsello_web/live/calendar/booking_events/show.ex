@@ -16,9 +16,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
+
   alias Picsello.{Repo, BookingEvents, Package, Questionnaire, BookingEventDate}
   alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
-  alias PicselloWeb.Live.Calendar.BookingEventModal
+  alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -109,6 +110,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     socket
     |> assign(:package, package)
     |> put_flash(:success, "Questionnaire updated")
+    |> noreply()
+  end
+
+  def handle_info(
+        {:update, %{booking_event: booking_event}},
+        %{assigns: %{package: _package}} = socket
+      ) do
+
+    socket
+    |> assign(:booking_event, booking_event)
+    |> put_flash(:success, "Marketing details updated")
     |> noreply()
   end
 
@@ -252,6 +264,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> noreply()
   end
 
+  @impl true
+  def handle_event(
+        "edit-marketing-event",
+        %{"event-id" => id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    socket
+    |> EditMarketingEvent.open(%{
+      event_id: id,
+      current_user: current_user
+    })
+    |> noreply()
+  end
+
+  @impl true
   defdelegate handle_event(name, params, socket), to: PicselloWeb.Calendar.BookingEvents.Shared
 
   defp booking_slot_tabs_nav(assigns) do
@@ -306,7 +333,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <div class={classes("mt-10 p-3 border-2 rounded-lg border-red-sales-300", %{"border-base-200" => !incomplete_dates?(@booking_event)})}>
           <div class="flex mb-1">
             <%= if is_nil(@booking_event_date.date) do %>
-              <p class="text-2xl font-bold">Select day</p>
+              <p class="text-2xl font-bold text-red-sales-300">Select day</p>
             <% else  %>
             <%!-- further logic of dates should be added here --%>
               <p class="text-2xl font-bold"> <%= date_formatter(@booking_event_date.date) %> </p>
@@ -486,6 +513,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   defp marketing_preview(assigns) do
+    description = HtmlSanitizeEx.strip_tags(assigns.booking_event.description)
+    assigns = Map.put(assigns, :description, description)
     ~H"""
       <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3">
         <div class="flex items-center mb-4">
@@ -497,9 +526,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           </div>
         </div>
         <%= if @booking_event.thumbnail_url do %>
-          <%= live_redirect to: Routes.calendar_booking_events_show_path(@socket, :edit, @booking_event.id) do %>
-            <.blurred_thumbnail class="h-full items-center flex flex-col w-[100px] h-[65px] bg-base-400" url={@booking_event.thumbnail_url} />
-          <% end %>
+            <.blurred_thumbnail class="h-full items-center flex flex-col bg-base-400" url={@booking_event.thumbnail_url} />
         <% else %>
           <div class="aspect-video h-full p-6 mb-2 items-center flex flex-col bg-white">
             <div class="flex justify-center h-auto mt-6 items-center">
@@ -547,7 +574,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             </div>
           <% end %>
           <div class="flex flex-col mb-3 items-start">
-            <%= if package_description_length_long?(@package.description) do %>
+            <%= if package_description_length_long?(@description) do %>
               <p>
                 <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
                   <%= @package.description |> slice_description() |> raw() %>
@@ -569,7 +596,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <p>Pick a package and update your marketing details to get started</p>
           </div>
         <% end %>
-        <button phx-click="edit-marketing-event" phx-value-event-id={@booking_event.id} class="p-2 bg-stone-300 font-bold rounded-lg w-1/2">
+        <button phx-click="edit-marketing-event" phx-value-event-id={@booking_event.id} class="p-2 bg-base-250/20 font-bold rounded-lg">
             Edit marketing details
         </button>
       </div>

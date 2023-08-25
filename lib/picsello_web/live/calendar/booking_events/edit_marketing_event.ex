@@ -97,7 +97,7 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
 
     case BookingEvents.upsert_booking_event(changeset) do
       {:ok, booking_event} ->
-        successfull_save(socket, booking_event)
+        successful_save(socket, booking_event)
 
       _ ->
         socket |> noreply()
@@ -112,7 +112,7 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
     |> open_modal(__MODULE__, assigns)
   end
 
-  defp successfull_save(socket, booking_event) do
+  defp successful_save(socket, booking_event) do
     send(self(), {:update, %{booking_event: booking_event}})
 
     socket
@@ -136,6 +136,12 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   defp assign_sorted_booking_event(%{assigns: %{booking_event: booking_event}} = socket) do
+    booking_event =
+      booking_event
+      |> Picsello.Repo.preload([
+      :dates,
+      package_template: [:package_payment_schedules, :contract, :questionnaire_template]
+      ])
     dates = reorder_time_blocks(booking_event.dates)
     booking_event = Map.put(booking_event, :dates, dates)
 
