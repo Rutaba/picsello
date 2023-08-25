@@ -135,6 +135,8 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
       |> Questionnaire.for_job()
       |> Repo.one!()
 
+    package = package |> Repo.preload([:organization])
+
     socket
     |> open_modal(__MODULE__, %{
       read_only: true,
