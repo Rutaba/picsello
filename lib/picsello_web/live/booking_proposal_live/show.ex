@@ -101,7 +101,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   @impl true
   def handle_info({:update, %{proposal: proposal, next_page: next_page}}, socket) do
-    next_page = if is_nil(proposal.questionnaire_id), do: "invoice", else: next_page
+    next_page = if is_nil(proposal.questionnaire_id), do: "contract", else: next_page
 
     socket
     |> assign(proposal: proposal)

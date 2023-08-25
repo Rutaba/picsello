@@ -136,6 +136,7 @@ defmodule Picsello.ClientsIndexTest do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Clients", count: 2, at: 1))
+    |> sleep(300)
     |> click(button("Add client"))
     |> fill_in(text_field("Email"), with: "jane@example.com")
     |> wait_for_enabled_submit_button(text: "Save")
