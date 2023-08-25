@@ -152,12 +152,10 @@ defmodule Picsello.Organization do
 
     updated_slug = build_slug(updated_name)
 
-    case check_existing_name_and_slug(updated_name, updated_slug) do
-      true ->
-        find_unique_organization_name(name, count + 1)
-
-      false ->
-        updated_name
+    if check_existing_name_and_slug(updated_name, updated_slug) do
+      find_unique_organization_name(name, count + 1)
+    else
+      updated_name
     end
   end
 
