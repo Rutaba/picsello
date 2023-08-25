@@ -379,6 +379,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
       |> wait_for_enabled_submit_button()
       |> click(button("Accept Contract"))
+      |> click(button("Close"))
       |> click(button("Pay online Fast, easy and secure"))
       |> assert_url_contains("stripe-checkout")
 
