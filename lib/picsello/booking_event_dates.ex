@@ -2,7 +2,7 @@ defmodule Picsello.BookingEventDates do
   alias Picsello.{Repo, BookingEventDate}
   import Ecto.Query
 
-  def duplicate_booking_event_dates(params) do
+  def create_booking_event_dates(params) do
     %BookingEventDate{}
     |> BookingEventDate.changeset(params)
     |> Repo.insert()

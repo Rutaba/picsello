@@ -2,17 +2,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  import PicselloWeb.Calendar.BookingEvents.Shared,
-    only: [
-      date_formatter: 1,
-      incomplete_status?: 1,
-      incomplete_dates?: 1,
-      count_booked_slots: 1,
-      count_available_slots: 1,
-      count_hidden_slots: 1,
-      preload_data: 1
-    ]
-
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
@@ -20,6 +9,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   alias Picsello.{Repo, BookingEvents, Package, Questionnaire, BookingEventDate}
   alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
+  alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
 
   @impl true
   def mount(_params, _session, socket) do
@@ -36,7 +26,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       ) do
     booking_event =
       BookingEvents.get_booking_event!(organization_id, to_integer(event_id))
-      |> preload_data()
+      |> BookingEvents.preload_booking_event()
       |> Map.merge(%{
         # please remove them when real implementaiton is complete
         slots: [
@@ -134,7 +124,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  defdelegate handle_info(message, socket), to: PicselloWeb.Calendar.BookingEvents.Shared
+  defdelegate handle_info(message, socket), to: BEShared
 
   @impl true
   def handle_event("add-date", _, %{assigns: %{booking_event: booking_event}} = socket) do
@@ -279,7 +269,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  defdelegate handle_event(name, params, socket), to: PicselloWeb.Calendar.BookingEvents.Shared
+  defdelegate handle_event(name, params, socket), to: BEShared
 
   defp booking_slot_tabs_nav(assigns) do
     ~H"""
@@ -330,13 +320,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     <div>
       <%= case @booking_slot_tab_active do %>
       <% "list" -> %>
-        <div class={classes("mt-10 p-3 border-2 rounded-lg border-red-sales-300", %{"border-base-200" => !incomplete_dates?(@booking_event)})}>
+        <div class={classes("mt-10 p-3 border-2 rounded-lg border-red-sales-300", %{"border-base-200" => !is_nil(@booking_event_date.date)})}>
           <div class="flex mb-1">
             <%= if is_nil(@booking_event_date.date) do %>
               <p class="text-2xl font-bold text-red-sales-300">Select day</p>
             <% else  %>
             <%!-- further logic of dates should be added here --%>
-              <p class="text-2xl font-bold"> <%= date_formatter(@booking_event_date.date) %> </p>
+              <p class="text-2xl font-bold"> <%= BEShared.date_formatter(@booking_event_date.date) %> </p>
             <% end  %>
             <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id="first">
               View details
@@ -348,9 +338,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             </button>
           </div>
           <div class="flex">
-            <p class="text-blue-planning-300 mr-4"><b><%= count_booked_slots(@booking_event_date.slots) %></b> bookings</p>
-            <p class="text-blue-planning-300 mr-4"><b><%= count_available_slots(@booking_event_date.slots) %></b> available</p>
-            <p class="text-blue-planning-300"><b><%= count_hidden_slots(@booking_event_date.slots) %></b> hidden</p>
+            <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_booked_slots(@booking_event_date.slots) %></b> bookings</p>
+            <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_available_slots(@booking_event_date.slots) %></b> available</p>
+            <p class="text-blue-planning-300"><b><%= BEShared.count_hidden_slots(@booking_event_date.slots) %></b> hidden</p>
           </div>
           <hr class="block md:hidden my-2">
           <%= if Enum.member?(@collapsed_sections, "first") do %>

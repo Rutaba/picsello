@@ -5,8 +5,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  alias PicselloWeb.{Live.Calendar.BookingEvents.Index}
-  alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, BookingEventDates, Repo}
+  alias PicselloWeb.{Live.Calendar.BookingEvents.Index, Shared.SelectionPopupModal}
+  alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, Repo}
   alias Ecto.Multi
 
   def handle_event(
@@ -14,28 +14,28 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         params,
         %{assigns: %{current_user: %{organization_id: org_id}}} = socket
       ) do
-    old_booking_event_id = get_id(params, socket)
-
     to_duplicate_booking_event =
       BookingEvents.get_booking_event!(
         org_id,
-        old_booking_event_id
+        fetch_booking_event_id(params, socket)
       )
-      |> Repo.preload([:jobs])
+      |> Repo.preload([:dates])
       |> Map.put(:status, :active)
       |> Map.from_struct()
 
     to_duplicate_event_dates =
-      BookingEventDates.get_booking_events_dates(old_booking_event_id)
+      to_duplicate_booking_event.dates
       |> Enum.map(fn t ->
-        Map.replace(t, :slots, edit_slots_status(t))
+        t
+        |> Map.replace(:date, nil)
+        |> Map.replace(:slots, edit_slots_status(t))
       end)
 
     multi =
       Multi.new()
       |> Multi.insert(
         :duplicate_booking_event,
-        BookingEvent.duplicate_changeset(%BookingEvent{}, to_duplicate_booking_event)
+        BookingEvent.duplicate_changeset(to_duplicate_booking_event)
       )
 
     to_duplicate_event_dates
@@ -45,7 +45,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       |> Multi.insert(
         "duplicate_booking_event_date_#{i}",
         fn %{duplicate_booking_event: event} ->
-          BookingEventDate.duplicate_changeset(%BookingEventDate{}, %{
+          BookingEventDate.changeset(%{
             booking_event_id: event.id,
             location: event_date.location,
             address: event_date.address,
@@ -63,9 +63,12 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         socket
         |> redirect(to: "/booking-events/#{new_event.id}")
 
-      {:error, _some_error} ->
+      {:error, :duplicate_booking_event, _, _} ->
         socket
         |> put_flash(:error, "Unable to duplicate event")
+      _ ->
+        socket
+        |> put_flash(:error, "Unexpected error")
     end
     |> noreply()
   end
@@ -73,7 +76,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def handle_event("new-event", %{}, socket),
     do:
       socket
-      |> PicselloWeb.Shared.SelectionPopupModal.open(%{
+      |> SelectionPopupModal.open(%{
         heading: "Create a Booking Event",
         title_one: "Single Event",
         subtitle_one: "Best for a single weekend or a few days you’d like to fill.",
@@ -94,7 +97,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       subtitle: """
       Are you sure you want to archive this event?
       """,
-      confirm_event: "archive_event_#{get_id(params, socket)}",
+      confirm_event: "archive_event_#{fetch_booking_event_id(params, socket)}",
       confirm_label: "Yes, archive",
       close_label: "Cancel",
       icon: "warning-orange"
@@ -114,7 +117,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         • Archive each job individually in the Jobs page if you intend to cancel it.
         • Reschedule if possible to keep business coming in!
       """,
-      confirm_event: "disable_event_#{get_id(params, socket)}",
+      confirm_event: "disable_event_#{fetch_booking_event_id(params, socket)}",
       confirm_label: "Disable Event",
       close_label: "Cancel",
       icon: "warning-orange"
@@ -127,10 +130,13 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         params,
         %{assigns: %{current_user: current_user}} = socket
       ) do
-    case BookingEvents.enable_booking_event(get_id(params, socket), current_user.organization_id) do
+    params
+    |> fetch_booking_event_id(socket)
+    |> BookingEvents.enable_booking_event(current_user.organization_id)
+    |> case do
       {:ok, event} ->
         socket
-        |> assign_events(preload_data(event))
+        |> assign_events(BookingEvents.preload_booking_event(event))
         |> put_flash(:success, "Event enabled successfully")
 
       {:error, _} ->
@@ -145,10 +151,13 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         params,
         %{assigns: %{current_user: current_user}} = socket
       ) do
-    case BookingEvents.enable_booking_event(get_id(params, socket), current_user.organization_id) do
+    params
+    |> fetch_booking_event_id(socket)
+    |> BookingEvents.enable_booking_event(current_user.organization_id)
+    |> case do
       {:ok, event} ->
         socket
-        |> assign_events(preload_data(event))
+        |> assign_events(BookingEvents.preload_booking_event(event))
         |> put_flash(:success, "Event unarchive successfully")
 
       {:error, _} ->
@@ -165,7 +174,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     case BookingEvents.disable_booking_event(id, current_user.organization_id) do
       {:ok, event} ->
         socket
-        |> assign_events(preload_data(event))
+        |> assign_events(BookingEvents.preload_booking_event(event))
         |> put_flash(:success, "Event disabled successfully")
 
       {:error, _} ->
@@ -183,7 +192,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     case BookingEvents.archive_booking_event(id, current_user.organization_id) do
       {:ok, event} ->
         socket
-        |> assign_events(preload_data(event))
+        |> assign_events(BookingEvents.preload_booking_event(event))
         |> put_flash(:success, "Event archive successfully")
 
       {:error, _} ->
@@ -230,26 +239,14 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def incomplete_status?(%{dates: []}), do: true
   def incomplete_status?(_), do: false
 
-  # checks if an event made has any date that is nil in its array of dates field
-  def incomplete_dates?(%{dates: d}) do
-    Enum.any?(d, fn x ->
-      is_nil(x.date)
-    end)
-  end
-
-  def preload_data(event),
-    do:
-      Repo.preload(event, [
-        :dates,
-        package_template: [:package_payment_schedules, :contract, :questionnaire_template]
-      ])
-
   # will be true if the status matches in the array <status_list>
   def disabled?(booking_event, status_list), do: booking_event.status in status_list
 
   # to cater different handle_event and info calls
   # if we get booking-event-id in params (1st argument) it returns the id
   # otherwise get the id from socket
-  defp get_id(%{"event-id" => id}, _assigns), do: id
-  defp get_id(%{}, %{assigns: %{booking_event: booking_event}}), do: booking_event.id
+  defp fetch_booking_event_id(%{"event-id" => id}, _assigns), do: id
+
+  defp fetch_booking_event_id(%{}, %{assigns: %{booking_event: booking_event}}),
+    do: booking_event.id
 end

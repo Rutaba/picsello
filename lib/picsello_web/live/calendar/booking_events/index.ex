@@ -1,11 +1,10 @@
 defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  import PicselloWeb.Calendar.BookingEvents.Shared
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
-  import PicselloWeb.Calendar.BookingEvents.Shared
-  alias Picsello.BookingEvents
+  alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
+  alias Picsello.BookingEvents, as: BE
   alias PicselloWeb.Live.Calendar.EditMarketingEvent
 
   @impl true
@@ -204,14 +203,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
-  defdelegate handle_event(name, params, socket), to: PicselloWeb.Calendar.BookingEvents.Shared
+  defdelegate handle_event(name, params, socket), to: BEShared
 
   @impl true
   def handle_info(
         {:confirm_event, "create-single-event"},
         %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
       ) do
-    case BookingEvents.create_booking_event(%{
+    case BE.create_booking_event(%{
            organization_id: organization_id,
            name: "New event"
          }) do
@@ -235,12 +234,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
-  defdelegate handle_info(message, socket), to: PicselloWeb.Calendar.BookingEvents.Shared
+  defdelegate handle_info(message, socket), to: BEShared
 
   defp bookings_cell(assigns) do
     ~H"""
     <div class="flex flex-col justify-center">
-      <p><%= if incomplete_status?(@booking_event), do: "-", else: ngettext("%{count} booking", "%{count} bookings", @booking_event.booking_count) <> " so far" %></p>
+      <p><%= if BEShared.incomplete_status?(@booking_event), do: "-", else: ngettext("%{count} booking", "%{count} bookings", @booking_event.booking_count) <> " so far" %></p>
     </div>
     """
   end
@@ -251,10 +250,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
       <.icon_button phx-click="edit-event" phx-value-event-id={@booking_event.id} icon="pencil" color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full px-4" rel="noopener noreferrer">
         Edit
       </.icon_button>
-      <.icon_button icon="eye" disabled={incomplete_status?(@booking_event)} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+      <.icon_button icon="eye" disabled={BEShared.incomplete_status?(@booking_event)} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
         Preview
       </.icon_button>
-      <.icon_button icon="anchor" disabled={incomplete_status?(@booking_event)} color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+      <.icon_button icon="anchor" disabled={BEShared.incomplete_status?(@booking_event)} color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
         <span>Copy link</span>
         <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
           Copied!
@@ -271,11 +270,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
             <% :archive -> %>
               <.button title="Unarchive" icon="plus"  click_event="unarchive-event" id={@booking_event.id} color="blue-planning" />
             <% status -> %>
-              <.button title="Edit" hidden={disabled?(@booking_event, [:disabled]) && 'hidden'} icon="pencil"  click_event="edit-event" id={@booking_event.id} color="blue-planning" />
+              <.button title="Edit" hidden={BEShared.disabled?(@booking_event, [:disabled]) && 'hidden'} icon="pencil"  click_event="edit-event" id={@booking_event.id} color="blue-planning" />
               <.button title="Send update" icon="envelope"  click_event="send-email" id={@booking_event.id} color="blue-planning" />
               <.button title="Duplicate" icon="duplicate"  click_event="duplicate-event" id={@booking_event.id} color="blue-planning" />
               <%= cond do %>
-                <% status == :active && !incomplete_status?(@booking_event) -> %>
+                <% status == :active && !BEShared.incomplete_status?(@booking_event) -> %>
                   <.button title="Disable" icon="eye"  click_event="confirm-disable-event" id={@booking_event.id} color="red-sales" />
                   <.button title="Archive" icon="trash"  click_event="confirm-archive-event" id={@booking_event.id} color="red-sales" />
                 <% :disabled-> %>
@@ -328,9 +327,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
       <.blurred_thumbnail class="h-32 rounded-lg" url={@booking_event.thumbnail_url} />
       <div class="flex flex-col items-start justify-center sm:ml-4">
         <%= cond do %>
-          <% incomplete_status?(@booking_event) -> %>
+          <% BEShared.incomplete_status?(@booking_event) -> %>
             <.badge color={:gray}>Incomplete-Disabled</.badge>
-          <% @booking_event.status == :archive and not incomplete_status?(@booking_event) -> %>
+          <% @booking_event.status == :archive and not BEShared.incomplete_status?(@booking_event) -> %>
             <.badge color={:gray}>Archived</.badge>
           <% @booking_event.status == :disabled -> %>
             <.badge color={:gray}>Disabled</.badge>
@@ -338,7 +337,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
             <p class="font-semibold"><%= if @booking_event.date, do: @booking_event.date |> Calendar.strftime("%m/%d/%Y") %></p>
         <% end %>
         <div class="font-bold w-full">
-          <a href={if disabled?(@booking_event, [:disabled, :archive]), do: "javascript:void(0)", else: Routes.calendar_booking_events_show_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
+          <a href={if BEShared.disabled?(@booking_event, [:disabled, :archive]), do: "javascript:void(0)", else: Routes.calendar_booking_events_show_path(@socket, :edit, @booking_event.id)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1">
             <span class="w-full text-blue-planning-300 underline">
               <%= if String.length(@booking_event.name) < 30 do
                 @booking_event.name
@@ -387,7 +386,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
          } = socket
        ) do
     booking_events =
-      BookingEvents.get_booking_events(current_user.organization_id,
+      BE.get_booking_events(current_user.organization_id,
         filters: %{
           sort_by: String.to_atom(sort_by),
           sort_direction: String.to_atom(sort_direction),

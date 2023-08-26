@@ -69,18 +69,6 @@ defmodule Picsello.BookingEventDate do
   ]
 
   @doc false
-  def duplicate_changeset(booking_event \\ %__MODULE__{}, attrs) do
-    booking_event
-    |> cast(attrs, [:location, :address, :booking_event_id, :session_length, :session_gap])
-    |> cast_embed(:time_blocks, required: true)
-    |> cast_embed(:slots, required: true)
-    |> validate_required(@required_attrs)
-    |> validate_length(:time_blocks, min: 1)
-    |> validate_length(:slots, min: 1)
-    |> validate_time_blocks()
-  end
-
-  @doc false
   def changeset(booking_event \\ %__MODULE__{}, attrs) do
     booking_event
     |> cast(attrs, [

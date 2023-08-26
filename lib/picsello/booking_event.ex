@@ -118,7 +118,7 @@ defmodule Picsello.BookingEvent do
     |> validate_required([:name, :organization_id])
   end
 
-  # duplicate booking event with dates and time slots nil
+  # changeset used to duplicate booking events with empty dates & time slots
   def duplicate_changeset(booking_event \\ %__MODULE__{}, attrs) do
     booking_event
     |> cast(attrs, [:name, :organization_id, :address, :description, :location, :package_template_id, :status, :thumbnail_url])

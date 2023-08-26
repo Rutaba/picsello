@@ -608,5 +608,12 @@ defmodule Picsello.BookingEvents do
     end
   end
 
+  def preload_booking_event(event),
+  do:
+    Repo.preload(event, [
+      :dates,
+      package_template: [:package_payment_schedules, :contract, :questionnaire_template]
+    ])
+
   defp shoot_start_at(date, time, time_zone), do: DateTime.new!(date, time, time_zone)
 end
