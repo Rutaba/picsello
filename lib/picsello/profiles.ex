@@ -113,7 +113,7 @@ defmodule Picsello.Profiles do
       |> validate_required(@required_fields)
     end
 
-    def to_msg_string(%__MODULE__{} = contact) do
+    def message_for(%__MODULE__{} = contact) do
       msg =
         """
           name: #{contact.name}
@@ -129,20 +129,14 @@ defmodule Picsello.Profiles do
     end
 
     defp build_message(%{referred_by: nil}, msg), do: msg
-    defp build_message(%{referral_name: nil, referred_by: referred_by}, msg), do: msg <> referred_by?(referred_by)
-    defp build_message(%{referral_name: referral_name, referred_by: referred_by}, msg), do: msg <> referred_by?(referred_by) <> referral_name?(referral_name)
+    defp build_message(%{referral_name: nil, referred_by: ref_by}, msg), do: msg <> referred_by(ref_by)
+    defp build_message(%{referral_name: ref_name, referred_by: ref_by}, msg), do: msg <> referred_by(ref_by) <> referral_name(ref_name)
 
-    defp referred_by?(nil), do: nil
-    defp referred_by?(referred_by),
-    do: """
-      referred by: #{referred_by}
-      """
+    defp referred_by(nil), do: nil
+    defp referred_by(value), do: "referred by: #{value}"
 
-    defp referral_name?(nil), do: nil
-    defp referral_name?(referral_name),
-    do: """
-      referral name: #{referral_name}
-      """
+    defp referral_name(nil), do: nil
+    defp referral_name(value), do: "referral name: #{value}"
   end
 
   def contact_changeset(contact, attrs) do
@@ -208,7 +202,7 @@ defmodule Picsello.Profiles do
               %{
                 job_id: &1.lead.id,
                 subject: "New lead from profile",
-                body_text: Contact.to_msg_string(contact)
+                body_text: Contact.message_for(contact)
               },
               [:job_id]
             )

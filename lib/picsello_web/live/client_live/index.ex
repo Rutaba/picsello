@@ -728,10 +728,10 @@ defmodule PicselloWeb.Live.ClientLive.Index do
 
   @referrals ["Friend", "Other"]
   def referred_by_name(referred_by, referral_name) when referred_by in @referrals do
-    if is_nil(referral_name) do
-      "#{referred_by}"
-    else
+    if referral_name do
       "#{referred_by} - #{referral_name}"
+    else
+      "#{referred_by}"
     end
   end
 

@@ -9,7 +9,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
     |> assign(assigns)
     |> assign_job_types()
     |> assign_changeset()
-    |> assign(:additional_field, false)
+    |> assign(:additional_field?, false)
     |> ok()
   end
 
@@ -48,7 +48,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
             <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
           </div>
 
-            <%= if @additional_field do %>
+            <%= if @additional_field? do %>
               <div class="flex flex-col mt-3">
                 <% info = referral_info(f.params) %>
                 <%= label_for f, :referral_name, label: info.label, class: "py-2 font-bold" %>
@@ -142,7 +142,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
         socket
       ) do
     socket
-    |> assign(:additional_field, should_show_additional_field?(referred_by))
+    |> assign(:additional_field?, should_show_additional_field?(referred_by))
     |> assign(changeset: params |> Profiles.contact_changeset() |> Map.put(:action, :validate))
     |> noreply()
   end
@@ -168,18 +168,4 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
     do: assign(socket, :job_types, ["other"])
 
   defp assign_job_types(socket), do: socket
-
-  defp assign_changeset(%{assigns: %{job_type: job_type}} = socket) do
-    assign(socket, :changeset, Profiles.contact_changeset(%{job_type: job_type}))
-  end
-
-  defp assign_changeset(%{assigns: %{job_types: types}} = socket) do
-    params =
-      case types do
-        [job_type] -> %{job_type: job_type}
-        _ -> %{}
-      end
-
-    assign(socket, :changeset, Profiles.contact_changeset(params))
-  end
 end
