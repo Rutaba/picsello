@@ -4,7 +4,7 @@ defmodule Picsello.Repo.Migrations.CreateBookingEventDates do
   @table :booking_event_dates
   def up do
     create table(@table) do
-      add(:date, :date, null: false)
+      add(:date, :date, null: true)
       add(:location, :string)
       add(:address, :string)
       add(:session_length, :integer, null: false)
