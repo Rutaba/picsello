@@ -971,7 +971,7 @@
     </defs>
   </svg>
 
-  <svg id="calendar-1" width="623" height="179" viewBox="0 0 623 179" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg id="calendar-1" viewBox="0 0 623 179" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="623" height="179" rx="10" fill="#EFEFEF"/>
     <rect x="122" y="63" width="55" height="52" rx="7" fill="white"/>
     <rect x="470" y="63" width="55" height="52" rx="7" fill="white"/>

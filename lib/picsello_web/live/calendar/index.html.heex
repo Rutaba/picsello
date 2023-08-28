@@ -17,10 +17,6 @@
       <.live_link to={Routes.calendar_settings_path(@socket, :settings)} class="btn-tertiary flex items-center md:mr-3 md:ml-auto text-blue-planning-300">
         <.icon name="settings" class="inline-block w-6 h-6 text-blue-planning-300" />
       </.live_link>
-      <button type="button" phx-click="toggle_connect_modal" class="btn-tertiary flex items-center md:mr-3 text-blue-planning-300" id="button-connect">
-        <.icon name="plus" class="inline-block w-5 h-5 mr-2 text-blue-planning-300" />
-        <span id="connect">Connect Calendar</span>
-      </button>
     <% else %>
       <.live_link to={Routes.calendar_settings_path(@socket, :settings)} class="btn-tertiary flex items-center md:ml-auto md:mr-3 text-blue-planning-300">
         <.icon name="settings" class="inline-block w-6 h-6 mr-2 text-blue-planning-300" />
