@@ -15,8 +15,8 @@ defmodule Picsello.OrganizaitonTest do
     test "slug - error name already exists" do
       insert(:organization, slug: "jane-s-photography")
 
-      assert {:error, _} =
-               Organization.registration_changeset(%Organization{}, %{name: "Jane's Photography"})
+      assert {:ok, %{slug: "jane-s-photography-2"}} =
+               Organization.registration_changeset(%Organization{}, %{name: "Jane's Photography 2"})
                |> Repo.insert()
     end
 
@@ -32,8 +32,8 @@ defmodule Picsello.OrganizaitonTest do
       insert(:organization, slug: "jane-photography")
       insert(:organization, slug: "jane-photography-1")
 
-      assert {:ok, %{slug: "jane-photography-2"}} =
-               Organization.registration_changeset(%Organization{}, %{}, "Jane")
+      assert {:ok, %{slug: "jane-s-photography-3"}} =
+               Organization.registration_changeset(%Organization{}, %{name: "Jane's Photography 3"})
                |> Repo.insert()
     end
 
