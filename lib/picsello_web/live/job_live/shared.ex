@@ -31,7 +31,7 @@ defmodule PicselloWeb.JobLive.Shared do
     Utils
   }
 
-  alias PicselloWeb.{ConfirmationComponent, ClientMessageComponent}
+  alias PicselloWeb.{ConfirmationComponent, ClientMessageComponent, PackageLive.WizardComponent}
   alias PicselloWeb.Router.Helpers, as: Routes
 
   @string_length 15
@@ -631,8 +631,7 @@ defmodule PicselloWeb.JobLive.Shared do
         {:update_templates, %{templates: templates}},
         %{assigns: %{modal_pid: modal_pid}} = socket
       ) do
-    component = PicselloWeb.PackageLive.WizardComponent
-    send_update(modal_pid, component, id: component, templates: templates)
+    send_update(modal_pid, WizardComponent, id: WizardComponent, templates: templates)
 
     socket
     |> noreply()

@@ -5,7 +5,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  alias PicselloWeb.{Live.Calendar.BookingEvents.Index, Shared.SelectionPopupModal}
+  alias PicselloWeb.{Live.Calendar.BookingEvents.Index, Shared.SelectionPopupModal, PackageLive.WizardComponent}
   alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, Repo}
   alias Ecto.Multi
 
@@ -172,8 +172,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         {:update_templates, %{templates: templates}},
         %{assigns: %{modal_pid: modal_pid}} = socket
       ) do
-    component = PicselloWeb.PackageLive.WizardComponent
-    send_update(modal_pid, component, id: component, templates: templates)
+    send_update(modal_pid, WizardComponent, id: WizardComponent, templates: templates)
 
     socket
     |> noreply()
