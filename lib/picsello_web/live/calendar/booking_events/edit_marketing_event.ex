@@ -3,10 +3,12 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   use PicselloWeb, :live_component
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
+  import PicselloWeb.PackageLive.Shared, only: [package_row: 1, current: 1]
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
-  alias Picsello.{BookingEvent, BookingEvents}
+  import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
+  alias Picsello.{BookingEvent, BookingEvents, Packages}
 
   @impl true
   def update(%{event_id: event_id, current_user: user} = assigns, socket) do
@@ -43,7 +45,8 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
                 </:image_slot>
               </.image_upload_input>
 
-              <.toggle_visibility title="Show event on my Public Profile?" event="toggle_visibility" myself={@myself} show_on_public_profile?={@show_on_public_profile?}/>
+              <.toggle_visibility title="Show event on my Public Profile?" event="toggle_visibility" applied?={@booking_event.show_on_profile?}/>
+
             </div>
             <div class="flex flex-col">
               <%= labeled_input f, :name, label: "Name", placeholder: "Fall Mini-sessions", wrapper_class: "sm:col-span-2" %>
@@ -74,10 +77,9 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   @impl true
-  def handle_event("toggle_visibility", _, %{assigns: assigns} = socket) do
+  def handle_event("toggle_visibility", _, %{assigns: %{show_on_public_profile?: show_on_public_profile?}} = socket) do
     socket
-    |> assign(:show_on_public_profile?, !assigns.show_on_public_profile?)
-    |> noreply()
+    |> assign(:show_on_public_profile?, !show_on_public_profile? )
   end
 
   @impl true
@@ -87,11 +89,7 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   @impl true
-  def handle_event(
-        "submit",
-        %{"booking_event" => params},
-        %{assigns: %{show_on_public_profile?: show_on_public_profile?}} = socket
-      ) do
+  def handle_event("submit", %{"step" => "customize", "booking_event" => params}, %{assings: %{show_on_public_profile?: show_on_public_profile?}} = socket) do
     params = Map.put_new(params, "show_on_profile?", show_on_public_profile?)
     %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
 
@@ -105,11 +103,11 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   @spec open(Phoenix.LiveView.Socket.t(), %{
-          event_id: any
-        }) :: Phoenix.LiveView.Socket.t()
+    event_id: any
+  }) :: Phoenix.LiveView.Socket.t()
   def open(socket, assigns) do
-    socket
-    |> open_modal(__MODULE__, assigns)
+  socket
+  |> open_modal(__MODULE__, assigns)
   end
 
   defp successful_save(socket, booking_event) do
@@ -157,9 +155,9 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
     end)
   end
 
-  defp toggle_visibility(%{show_on_public_profile?: show_on_public_profile?} = assigns) do
-    class_1 = if show_on_public_profile?, do: ~s(bg-blue-planning-100), else: ~s(bg-gray-200)
-    class_2 = if show_on_public_profile?, do: ~s(right-1), else: ~s(left-1)
+  defp toggle_visibility(%{applied?: applied?} = assigns) do
+    class_1 = if applied?, do: ~s(bg-blue-planning-100), else: ~s(bg-gray-200)
+    class_2 = if applied?, do: ~s(right-1), else: ~s(left-1)
     assigns = assign(assigns, class_1: class_1, class_2: class_2)
 
     ~H"""
@@ -168,9 +166,9 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
           <div class="text-sm font-bold lg:text-normal text-black"><%= @title %></div>
 
           <div class="relative ml-3">
-            <input type="checkbox" class="sr-only" phx-click={@event} phx-target={@myself}>
+            <input type="checkbox" class="sr-only" phx-click={@event}>
 
-            <div class={"block h-6 border rounded-full w-12 border-blue-planning-300 #{@class_1}"}></div>
+            <div class={"block h-4 border rounded-full w-14 border-blue-planning-300 #{@class_1}"}></div>
             <div class={"absolute w-4 h-4 rounded-full dot top-1 bg-blue-planning-300 transition #{@class_2}"}></div>
           </div>
         </label>

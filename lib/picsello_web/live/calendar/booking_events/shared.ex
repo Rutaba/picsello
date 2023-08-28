@@ -66,6 +66,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       {:error, :duplicate_booking_event, _, _} ->
         socket
         |> put_flash(:error, "Unable to duplicate event")
+
       _ ->
         socket
         |> put_flash(:error, "Unexpected error")
@@ -164,6 +165,17 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
         socket
         |> put_flash(:success, "Error unarchiving event")
     end
+    |> noreply()
+  end
+
+  def handle_info(
+        {:update_templates, %{templates: templates}},
+        %{assigns: %{modal_pid: modal_pid}} = socket
+      ) do
+    component = PicselloWeb.PackageLive.WizardComponent
+    send_update(modal_pid, component, id: component, templates: templates)
+
+    socket
     |> noreply()
   end
 
