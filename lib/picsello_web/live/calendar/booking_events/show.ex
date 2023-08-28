@@ -248,7 +248,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   def handle_info(
         {:update, %{booking_event: booking_event}},
-        %{assigns: %{package: package}} = socket
+        socket
       ) do
 
     socket
@@ -506,8 +506,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   defp marketing_preview(assigns) do
-    description = HtmlSanitizeEx.strip_tags(assigns.booking_event.description)
-    assigns = Map.put(assigns, :description, description)
+    description = assigns.booking_event.description
+    description = if description == "" or is_nil(description), do: assigns.package.description, else: description
+    assigns = Map.put(assigns, :description, HtmlSanitizeEx.strip_tags(description))
     ~H"""
       <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3">
         <div class="flex items-center mb-4">
@@ -545,32 +546,42 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
           <% end %>
         </div>
         <%= if @package do %>
-          <%= if Enum.any?(@booking_event.dates) do %>
-            <div class="flex flex-col">
+          <div class="flex flex-col">
+            <div class="flex items-center">
               <div class="flex items-center">
-                <div class="flex items-center">
-                  <.icon name="marketing" class="inline-block w-4 h-4 mr-3 text-black" />
-                </div>
-                <div class="text-base-250 text-md">
-                  Aug 31, 2022 - Sep 01, 2022
-                </div>
+                <.icon name="marketing" class="inline-block w-4 h-4 mr-3 text-black" />
               </div>
-              <div class="flex items-center">
-                <div class="flex items-center">
-                  <.icon name="location" class="inline-block w-4 h-4 mr-3 text-black" />
-                </div>
-                <div class="text-base-250 text-md">
-                  12345 Gabriel Street, Ries, Florida 97060
-                </div>
+              <div class="text-base-250 text-md">
+              <%=
+                if Enum.any?(@booking_event.dates),
+                do:
+                  @booking_event.date,
+                else:
+                  "Set event dates"
+              %>
               </div>
-              <hr class="my-3">
             </div>
-          <% end %>
+            <div class="flex items-center">
+              <div class="flex items-center">
+                <.icon name="location" class="inline-block w-4 h-4 mr-3 text-black" />
+              </div>
+              <div class="text-base-250 text-md">
+                <%=
+                  if @booking_event.location,
+                  do:
+                    @booking_event.location,
+                  else:
+                    "Set event location"
+                %>
+              </div>
+            </div>
+            <hr class="my-3">
+          </div>
           <div class="flex flex-col mb-3 items-start">
             <%= if package_description_length_long?(@description) do %>
               <p>
                 <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
-                  <%= String.slice(description, 0..100) <> "..." %>
+                  <%= String.slice(@description, 0..100) <> "..." %>
                 <% else %>
                   <%= @description %>
                 <% end %>

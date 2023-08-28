@@ -58,7 +58,7 @@ defmodule Picsello.BookingEvents do
         description: event.description,
         address: event.address,
       },
-      group_by: [event.id, package.name, booking_date.booking_event_id],
+      group_by: [event.id, package.name, booking_date.booking_event_id]
     )
     |> Repo.all()
   end
