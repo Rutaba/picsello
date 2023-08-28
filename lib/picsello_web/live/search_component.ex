@@ -15,6 +15,8 @@ defmodule PicselloWeb.SearchComponent do
     empty_result_description: "No results"
   }
 
+  @products_currency Picsello.Product.currency()
+
   @impl true
   def update(new_assigns, %{assigns: assigns} = socket) do
     assigns = Map.drop(assigns, [:flash, :myself]) |> Enum.into(@default_assigns)
@@ -62,8 +64,8 @@ defmodule PicselloWeb.SearchComponent do
               <div id="search_results" class="absolute top-14 w-4/6 z-10">
                 <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white w-full overflow-auto max-h-48 h-fit">
                   <%= for result <- @results do %>
-                    <div class="flex p-2 border-b-2 hover:bg-base-200">
-                      <%= radio_button f, :selection, result.id, class: "mr-5 w-5 h-5 cursor-pointer radio text-blue-planning-300" %>
+                    <div class="flex p-2 border-b-2 hover:bg-base-200 cursor-pointer" phx-hook="SearchResultSelect" id={"search-#{result.id}"} data-result-id={result.id} data-target={@myself}>
+                      <%= radio_button :f, :selection, result.id, id: result.id, class: "mr-5 w-5 h-5 cursor-pointer radio text-blue-planning-300" %>
                       <p class="text-sm font-semibold"><%= result.name %></p>
                     </div>
                   <% end %>
@@ -166,7 +168,7 @@ defmodule PicselloWeb.SearchComponent do
   def may_be_assign_warning(
         %{assigns: %{selection: %{id: id}, component_used_for: :currency}} = socket
       )
-      when id != "USD" do
+      when id != @products_currency do
     socket
     |> assign(:show_warning?, true)
   end
@@ -177,12 +179,14 @@ defmodule PicselloWeb.SearchComponent do
           optional(:close_label) => binary,
           optional(:save_label) => binary,
           optional(:subtitle) => binary,
+          optional(:title) => binary,
           optional(:warning_note) => binary,
           optional(:empty_result_description) => binary,
           optional(:change_event) => atom(),
           optional(:submit_event) => atom(),
           optional(:selection) => map(),
           optional(:component_used_for) => atom(),
+          optional(:show_warning?) => atom(),
           title: binary
         }) :: Phoenix.LiveView.Socket.t()
   def open(socket, assigns) do
