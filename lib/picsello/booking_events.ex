@@ -213,28 +213,27 @@ defmodule Picsello.BookingEvents do
           []
       end
 
-    re_ordered_slots =
-      reorder_time_blocks(booking_event.old_dates)
-      |> Enum.filter(fn e ->
-        e.date == date
-      end)
+    re_ordered_time_blocks =
+      booking_event.old_dates
+      |> reorder_time_blocks()
+      |> Enum.filter(& &1.date == date)
       |> List.first()
       |> Map.get(:time_blocks)
 
     time_blocks = [
       %BookingEventDate.TimeBlock{
         start_time:
-          re_ordered_slots
+        re_ordered_time_blocks
           |> List.first()
           |> Map.get(:start_time),
         end_time:
-          re_ordered_slots
+        re_ordered_time_blocks
           |> List.last()
           |> Map.get(:end_time)
       }
     ]
 
-    [
+   %{
       booking_event_id: booking_event.id,
       date: date,
       slots: slots,
@@ -243,14 +242,13 @@ defmodule Picsello.BookingEvents do
       session_gap: booking_event.buffer_minutes,
       inserted_at: booking_event.inserted_at,
       updated_at: booking_event.updated_at
-    ]
+   }
   end
 
   # TODO: delete this after the migration is done running
   defp reorder_time_blocks(dates) do
     Enum.map(dates, fn %{time_blocks: time_blocks} = event_date ->
-      sorted_time_blocks = Enum.sort_by(time_blocks, &{&1.start_time, &1.end_time})
-      %{event_date | time_blocks: sorted_time_blocks}
+      %{event_date | time_blocks: Enum.sort_by(time_blocks, &{&1.start_time, &1.end_time})}
     end)
   end
 
