@@ -56,7 +56,7 @@ defmodule Picsello.BookingEvents do
             booking_date.date
           ),
         description: event.description,
-        address: event.address,
+        address: event.address
       },
       group_by: [event.id, package.name, booking_date.booking_event_id]
     )

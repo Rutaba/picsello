@@ -3,12 +3,10 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   use PicselloWeb, :live_component
 
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.PackageLive.Shared, only: [package_row: 1, current: 1]
   import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
-  import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
-  alias Picsello.{BookingEvent, BookingEvents, Packages}
+  alias Picsello.{BookingEvent, BookingEvents}
 
   @impl true
   def update(%{event_id: event_id, current_user: user} = assigns, socket) do
@@ -77,9 +75,13 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   @impl true
-  def handle_event("toggle_visibility", _, %{assigns: %{show_on_public_profile?: show_on_public_profile?}} = socket) do
+  def handle_event(
+        "toggle_visibility",
+        _,
+        %{assigns: %{show_on_public_profile?: show_on_public_profile?}} = socket
+      ) do
     socket
-    |> assign(:show_on_public_profile?, !show_on_public_profile? )
+    |> assign(:show_on_public_profile?, !show_on_public_profile?)
   end
 
   @impl true
@@ -89,7 +91,11 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   @impl true
-  def handle_event("submit", %{"step" => "customize", "booking_event" => params}, %{assings: %{show_on_public_profile?: show_on_public_profile?}} = socket) do
+  def handle_event(
+        "submit",
+        %{"step" => "customize", "booking_event" => params},
+        %{assings: %{show_on_public_profile?: show_on_public_profile?}} = socket
+      ) do
     params = Map.put_new(params, "show_on_profile?", show_on_public_profile?)
     %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
 
@@ -103,11 +109,11 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   @spec open(Phoenix.LiveView.Socket.t(), %{
-    event_id: any
-  }) :: Phoenix.LiveView.Socket.t()
+          event_id: any
+        }) :: Phoenix.LiveView.Socket.t()
   def open(socket, assigns) do
-  socket
-  |> open_modal(__MODULE__, assigns)
+    socket
+    |> open_modal(__MODULE__, assigns)
   end
 
   defp successful_save(socket, booking_event) do
@@ -137,9 +143,10 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
     booking_event =
       booking_event
       |> Picsello.Repo.preload([
-      :dates,
-      package_template: [:package_payment_schedules, :contract, :questionnaire_template]
+        :dates,
+        package_template: [:package_payment_schedules, :contract, :questionnaire_template]
       ])
+
     dates = reorder_time_blocks(booking_event.dates)
     booking_event = Map.put(booking_event, :dates, dates)
 

@@ -97,7 +97,7 @@ defmodule Picsello.BookingEvent do
   end
 
   @doc false
-   def changeset(booking_event \\ %__MODULE__{}, attrs, opts) do
+  def changeset(booking_event \\ %__MODULE__{}, attrs, opts) do
     steps = [
       details: &update_details/2,
       package: &update_package_template/2,

@@ -31,6 +31,7 @@ defmodule PicselloWeb.Live.Shared do
     Client,
     Package,
     Repo,
+    Questionnaire,
     BookingProposal,
     Workers.CleanStore,
     Packages.Download,
@@ -682,6 +683,68 @@ defmodule PicselloWeb.Live.Shared do
 
     socket
     |> save_multi(client, job_changeset, "form_component")
+  end
+
+  def update_package_questionnaire(
+        %{assigns: %{current_user: current_user, package: package} = assigns} = socket
+      ) do
+    if is_nil(package.questionnaire_template) do
+      template =
+        if Map.has_key?(assigns, :job) do
+          assigns.job |> Questionnaire.for_job()
+        else
+          package
+          |> Questionnaire.for_package()
+        end
+        |> Repo.one()
+
+      case maybe_insert_questionnaire(template, current_user, package) do
+        {:ok, %{questionnaire_insert: questionnaire_insert}} ->
+          socket
+          |> open_questionnaire_modal(:edit_lead, questionnaire_insert)
+
+        {:error, _} ->
+          socket
+          |> put_flash(:error, "Failed to fetch questionnaire. Please try again.")
+      end
+    else
+      socket
+      |> open_questionnaire_modal(:edit_lead, package.questionnaire_template)
+    end
+    |> noreply()
+  end
+
+  def open_questionnaire_modal(
+        %{assigns: %{current_user: current_user}} = socket,
+        state,
+        questionnaire
+      ) do
+    socket
+    |> PicselloWeb.QuestionnaireFormComponent.open(%{
+      state: state,
+      current_user: current_user,
+      questionnaire: questionnaire
+    })
+  end
+
+  def maybe_insert_questionnaire(template, current_user, %{id: package_id} = package) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:questionnaire_insert, fn _ ->
+      Questionnaire.clean_questionnaire_for_changeset(
+        template,
+        current_user.organization_id,
+        package_id
+      )
+      |> Questionnaire.changeset()
+    end)
+    |> Ecto.Multi.update(:package_update, fn %{questionnaire_insert: questionnaire} ->
+      package
+      |> Picsello.Package.changeset(
+        %{questionnaire_template_id: questionnaire.id},
+        step: :details
+      )
+    end)
+    |> Repo.transaction()
   end
 
   defp save_multi(

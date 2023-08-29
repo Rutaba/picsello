@@ -3,10 +3,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   use PicselloWeb, :live_view
   import PicselloWeb.Calendar.BookingEvents.Shared
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+  import PicselloWeb.Live.Shared, only: [update_package_questionnaire: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
-  alias Picsello.{Repo, BookingEvents, Package, Questionnaire, BookingEventDate}
+  alias Picsello.{Repo, BookingEvents, Package, BookingEventDate}
   alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
 
@@ -112,18 +113,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event(
         "add-questionnaire",
         %{},
-        %{assigns: %{current_user: current_user, package: package}} = socket
+        socket
       ) do
-    questionnaire = Questionnaire.for_package(package)
-
     socket
-    |> PicselloWeb.QuestionnaireFormComponent.open(%{
-      state: :edit_booking_event,
-      current_user: current_user,
-      questionnaire: questionnaire,
-      package: package
-    })
-    |> noreply()
+    |> update_package_questionnaire()
   end
 
   @impl true
@@ -250,7 +243,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         {:update, %{booking_event: booking_event}},
         socket
       ) do
-
     socket
     |> assign(:booking_event, booking_event)
     |> put_flash(:success, "Marketing details updated")
@@ -507,8 +499,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   defp marketing_preview(assigns) do
     description = assigns.booking_event.description
-    description = if description == "" or is_nil(description), do: assigns.package.description, else: description
+
+    description =
+      if description == "" or is_nil(description),
+        do: assigns.package.description,
+        else: description
+
     assigns = Map.put(assigns, :description, HtmlSanitizeEx.strip_tags(description))
+
     ~H"""
       <div class="rounded-lg border-2 border-gray-300 flex flex-col p-3">
         <div class="flex items-center mb-4">
