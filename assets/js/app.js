@@ -44,6 +44,7 @@ import '@fontsource/be-vietnam/700.css';
 import Analytics from './hooks/analytics';
 import AutoHeight from './hooks/auto-height';
 import Calendar from './hooks/calendar';
+import CheckIdle from './hooks/check-idle';
 import ClientGalleryCookie from './hooks/client-gallery-cookie';
 import Clipboard from './hooks/clipboard';
 import DefaultCostTooltip from './hooks/default-cost-tooltip';
@@ -250,6 +251,7 @@ const showAdminBanner = {
 const Hooks = {
   AutoHeight,
   Calendar,
+  CheckIdle,
   ClearInput,
   ClearQuillInput,
   ClientGalleryCookie,

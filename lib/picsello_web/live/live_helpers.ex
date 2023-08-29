@@ -8,6 +8,7 @@ defmodule PicselloWeb.LiveHelpers do
   import Phoenix.Component
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
+  import Picsello.Profiles, only: [logo_url: 1]
   require Logger
 
   def live_modal(_socket, component, opts) do
@@ -152,6 +153,17 @@ defmodule PicselloWeb.LiveHelpers do
     <button type="button" class={classes("flex items-center px-2 py-1 font-sans hover:opacity-75 #{@class}", %{"opacity-50 hover:opacity-30 hover:cursor-not-allowed" => @disabled})}} disabled={@disabled} {@rest}>
       <.icon name={@icon} class={"fill-current text-#{@color} #{@icon_class}"} />
     </button>
+    """
+  end
+
+  def maybe_show_photographer_logo?(assigns) do
+    assigns = Enum.into(assigns, %{heading_class: "", logo_class: ""})
+
+    ~H"""
+    <%= case logo_url(@organization) do %>
+      <% nil -> %> <h1 class="pt-3 text-3xl font-light font-client text-base-300 mb-2 #{@heading_class}"><%= @organization.name %></h1>
+      <% url -> %> <img class="h-20 #{@logo_class}" src={url} />
+    <% end %>
     """
   end
 

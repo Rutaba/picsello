@@ -41,6 +41,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       digitals_total: 1
     ]
 
+  import PicselloWeb.ClientBookingEventLive.Shared,
+    only: [
+      blurred_thumbnail: 1
+    ]
+
+  import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
+
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @all_fields Package.__schema__(:fields)
@@ -453,15 +460,33 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
       <.package_basic_fields form={@f} job_type={if !@is_template do @job.type else "wedding" end} />
 
-      <div class="flex flex-col mt-4">
-
-        <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:description}>
-          <span>Description <%= error_tag(@f, :description) %></span>
-          <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(@f,:description)}>
-            <p class="text-black">Clear</p>
-          </.icon_button>
-        </.input_label>
-        <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your#{if !@is_template do " " <> @job.type end} offering and pricing "} />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mt-4">
+        <div class="flex flex-col">
+          <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:thumbnail_url}
+          >
+            <span>Package Thumbnail <%= error_tag(@f, :thumbnail_url) %></span>
+          </.input_label>
+          <.image_upload_input
+            current_user={@current_user}
+            upload_folder="package_image"
+            name={input_name(@f, :thumbnail_url)}
+            url={input_value(@f, :thumbnail_url)}
+            class="mt-3 flex-grow"
+          >
+            <:image_slot>
+              <.blurred_thumbnail class="h-full w-full" url={input_value(@f, :thumbnail_url)} />
+            </:image_slot>
+          </.image_upload_input>
+        </div>
+        <div>
+          <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:description}>
+            <span>Description <%= error_tag(@f, :description) %></span>
+            <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(@f,:description)}>
+              <p class="text-black">Clear</p>
+            </.icon_button>
+          </.input_label>
+          <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your#{if !@is_template do " " <> @job.type end} offering and pricing "} />
+        </div>
       </div>
 
       <%= if @is_template do %>

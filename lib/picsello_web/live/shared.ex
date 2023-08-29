@@ -326,7 +326,7 @@ defmodule PicselloWeb.Live.Shared do
         </div>
       </div>
 
-      <dl class="flex flex-col justify-between mt-4 text-lg font-bold sm:flex-row">
+      <dl class="flex flex-col justify-between mt-4 text-lg font-bold sm:flex-row" {testid("remaining-balance")}>
         <dt>Remaining balance to collect with Picsello</dt>
         <dd class="w-full p-6 py-2 mt-2 text-center rounded-lg sm:w-32 text-green-finances-300 bg-green-finances-100/30 sm:mt-0"><%= total_remaining_amount(@package_changeset) %></dd>
       </dl>
