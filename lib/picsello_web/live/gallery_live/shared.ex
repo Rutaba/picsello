@@ -81,14 +81,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
         {:save, %{"gallery" => %{"name" => name}}},
         %{assigns: %{gallery: gallery}} = socket
       ) do
-    {:ok, gallery} =
-      gallery
-      |> Galleries.update_gallery(%{name: name})
-
-    gallery =
-      gallery
-      |> Galleries.load_watermark_in_gallery()
-      |> Repo.preload(:photographer, job: :client)
+      gallery =
+        gallery
+        |> Galleries.update_gallery(%{name: name})
+        |> then(& Galleries.load_watermark_in_gallery(elem(&1, 1)))
+        |> Repo.preload(:photographer, job: :client)
 
     socket
     |> assign(:gallery, gallery)
@@ -1065,10 +1062,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def is_photographer_view(assigns) do
-    case Map.get(assigns, :current_user) do
-      nil -> false
-      _ -> true
-    end
+    Map.get(assigns, :current_user) && true || false
   end
 
   defp opts(), do: [limit: 1, valid: true]

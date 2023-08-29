@@ -35,7 +35,7 @@ defmodule PicselloWeb.Shared.EditNameComponent do
 
   @impl true
   def render(assigns) do
-    assigns = Enum.into(assigns, %{input_label: nil, main_class: "items-center gap-4"})
+    assigns = Enum.into(assigns, %{input_label: nil, main_class: "items-center gap-2"})
 
     ~H"""
       <div class="flex items-center mt-4 md:justify-start">
@@ -56,7 +56,7 @@ defmodule PicselloWeb.Shared.EditNameComponent do
                   Edit gallery name
                 </.icon_button>
               <% else %>
-                <.icon_button phx_click="click" phx-target={@myself} class="bg-gray-200 pt-2 pb-2 shadow-lg" color="blue-planning-300" icon="pencil" />
+                <.icon_button phx_click="click" phx-target={@myself} class="bg-gray-200 mt-3 px-2 py-1 shadow-lg w-fit" color="blue-planning-300" icon="pencil" />
               <% end %>
             </div>
             <div class={classes("flex", %{"hidden" => !@edit_name, "flex-col" => @input_label})}>

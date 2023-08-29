@@ -397,7 +397,8 @@ defmodule PicselloWeb.GalleryLive.PhotographerIndex do
 
   def handle_cover_progress(:cover_photo, entry, %{assigns: %{gallery: gallery}} = socket) do
     if entry.done? do
-      CoverPhoto.original_path(gallery.id, entry.uuid)
+      gallery.id
+      |> CoverPhoto.original_path(entry.uuid)
       |> ProcessingManager.process_cover_photo()
     end
 
