@@ -469,6 +469,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       |> scroll_to_bottom()
       |> click(css("#img-#{List.first(photo_ids)}"))
       |> click(button("Add to cart"))
+      |> click(css("[phx-click='close']"))
       |> click(link("Home"))
       |> assert_has(definition("Print Credit", text: "$5,000.00"))
       |> scroll_to_bottom()

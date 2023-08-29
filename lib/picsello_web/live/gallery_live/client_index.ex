@@ -194,17 +194,32 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
 
   def handle_info(
         {:add_digital_to_cart, digital, _finals_album_id},
-        %{assigns: %{gallery: gallery, gallery_client: gallery_client}} = socket
+        %{assigns: %{gallery: gallery, gallery_client: gallery_client, modal_pid: modal_pid}} =
+          socket
       ) do
     order = Cart.place_product(digital, gallery, gallery_client)
+
+    send_update(modal_pid, PicselloWeb.GalleryLive.ChooseProduct,
+      id: PicselloWeb.GalleryLive.ChooseProduct,
+      photo_id: digital.photo.id
+    )
+
     socket |> add_to_cart_assigns(order)
   end
 
   def handle_info(
         {:add_bundle_to_cart, bundle_price},
-        %{assigns: %{gallery: gallery, gallery_client: gallery_client}} = socket
+        %{assigns: %{gallery: gallery, gallery_client: gallery_client, modal_pid: modal_pid}} =
+          socket
       ) do
     order = Cart.place_product({:bundle, bundle_price}, gallery, gallery_client)
+
+    send_update(modal_pid, PicselloWeb.GalleryLive.ChooseBundle,
+      id: PicselloWeb.GalleryLive.ChooseBundle,
+      gallery: gallery,
+      gallery_client: gallery_client
+    )
+
     socket |> add_to_cart_assigns(order)
   end
 
