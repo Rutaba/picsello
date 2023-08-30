@@ -183,11 +183,12 @@ defmodule Picsello.NylasCalendar.Impl do
   defp filter_events(calendars, token, timezone, filter_fn, datetimes)
        when is_list(calendars) do
     calendars
-    |> Enum.flat_map(fn calendar_id ->
+    |> Task.async_stream(fn calendar_id ->
       Logger.debug("Get events for #{calendar_id} #{token}")
       {:ok, events} = get_events(calendar_id, token, datetimes)
       events
     end)
+    |> Enum.reduce([], fn {:ok, events}, acc -> events ++ acc end)
     |> Enum.filter(filter_fn)
     |> Enum.map(&Mapper.to_shoot(&1, timezone))
   end
@@ -211,7 +212,7 @@ defmodule Picsello.NylasCalendar.Impl do
   end
 
   defp get_events_url(calendar_id, _),
-    do: "#{@base_url}/events?calendar_id=#{calendar_id}&limit=1000"
+    do: "#{@base_url}/events?calendar_id=#{calendar_id}&limit=1000&expand_recurring=true"
 
   defp config() do
     %{redirect_uri: redirect} = config = @config
