@@ -2,21 +2,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  import PicselloWeb.Calendar.BookingEvents.Shared
+  import PicselloWeb.Live.Shared, only: [update_package_questionnaire: 1]
   import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
-  alias Picsello.{Repo, BookingEvent, BookingEvents, Package, Questionnaire, BookingEventDate}
-  alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
+  alias Picsello.{Repo, BookingEvent, BookingEvents, Package, BookingEventDate}
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
+  alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
 
   @impl true
   def mount(_params, _session, socket) do
     socket
     |> assign(:collapsed_sections, [])
-    |> assign(:edit_name, false)
     |> ok()
   end
 
@@ -24,7 +23,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_params(%{"id" => event_id}, _session, socket) do
     socket
     |> assign(:id, to_integer(event_id))
+    |> assign(:edit_name, false)
     |> assign_booking_event()
+    |> assign_changeset(%{})
     |> assign(:client, %{id: 1, name: "hammad"})
     |> assign(:booking_slot_tab_active, "list")
     |> assign(:booking_slot_tabs, booking_slot_tabs())
@@ -252,8 +253,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> noreply()
   end
 
-  @impl true
-  defdelegate handle_info(message, socket), to: BEShared
   def handle_info(
         {:validate, %{"booking_event" => params}},
         socket
@@ -281,6 +280,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     end
     |> noreply()
   end
+
+  @impl true
+  defdelegate handle_info(message, socket), to: BEShared
 
   defp booking_slot_tabs_nav(assigns) do
     ~H"""
@@ -516,13 +518,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   defp marketing_preview(
          %{
            booking_event: %{description: event_description},
-           package: %{description: package_description}
+           package: package
          } = assigns
        ) do
     description =
-      if event_description && event_description != "",
-        do: event_description,
-        else: package_description
+      case package do
+        nil ->
+          event_description
+
+        %{description: description} ->
+          if event_description == "", do: description, else: event_description
+      end
 
     assigns = Map.put(assigns, :description, HtmlSanitizeEx.strip_tags(description))
 
@@ -613,7 +619,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 <% end %>
               </button>
             <% else %>
-              <%= @package.description |> slice_description() |> raw() %>
+              <%= @description %>
             <% end %>
           </div>
         <% else %>

@@ -84,7 +84,7 @@ defmodule Picsello.BookingEventDates do
     |> filter_overlapping_shoots_slots(booking_event, booking_date, false)
   end
 
-  # "Returns all slots with status for the given booking date start_time & end_time"
+  # Returns all slots with status for the given booking date start_time & end_time
   defp get_available_slots_each_block(start_time, end_time, _duration, _duration_buffer)
        when is_nil(start_time) or is_nil(end_time),
        do: []
@@ -131,7 +131,7 @@ defmodule Picsello.BookingEventDates do
     |> Enum.reverse()
   end
 
-  # "Returns slots with status open or book"
+  # Returns slots with status open or book
   defp filter_overlapping_shoots_slots(_, _, %{date: date, session_length: session_length}, _)
        when is_nil(date) or is_nil(session_length),
        do: []
