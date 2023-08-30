@@ -1,6 +1,6 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
-  alias Picsello.{Repo, BookingEvent, Job, Package, BookingEventDate}
+  alias Picsello.{Repo, BookingEvent, Job, Package}
   import Ecto.Query
 
   defmodule Booking do
@@ -196,63 +196,22 @@ defmodule Picsello.BookingEvents do
 
     skip_overlapping_shoots = opts |> Keyword.get(:skip_overlapping_shoots, false)
 
-    # TODO: delete this after the migration is done running
-    slots =
-      case booking_event.old_dates |> Enum.find(&(&1.date == date)) do
-        %{time_blocks: time_blocks} ->
-          Enum.map(time_blocks, fn %{start_time: start_time, end_time: end_time} ->
-            get_available_slots_each_block(start_time, end_time, duration, duration_buffer)
-          end)
-          |> List.flatten()
-          |> Enum.uniq()
-          |> Enum.filter(&(!is_nil(&1)))
-          |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
-          |> filter_is_break_slots(booking_event, date)
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
+      %{time_blocks: time_blocks} ->
+        Enum.map(time_blocks, fn %{start_time: start_time, end_time: end_time} ->
+          get_available_slots_each_block(start_time, end_time, duration, duration_buffer)
+        end)
+        |> List.flatten()
+        |> Enum.uniq()
+        |> Enum.filter(&(!is_nil(&1)))
+        |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
+        |> filter_is_break_slots(booking_event, date)
 
-        _ ->
-          []
-      end
-
-    re_ordered_time_blocks =
-      booking_event.old_dates
-      |> reorder_time_blocks()
-      |> Enum.filter(& &1.date == date)
-      |> List.first()
-      |> Map.get(:time_blocks)
-
-    time_blocks = [
-      %BookingEventDate.TimeBlock{
-        start_time:
-        re_ordered_time_blocks
-          |> List.first()
-          |> Map.get(:start_time),
-        end_time:
-        re_ordered_time_blocks
-          |> List.last()
-          |> Map.get(:end_time)
-      }
-    ]
-
-   %{
-      booking_event_id: booking_event.id,
-      date: date,
-      slots: slots,
-      time_blocks: time_blocks,
-      session_length: booking_event.duration_minutes,
-      session_gap: booking_event.buffer_minutes,
-      inserted_at: booking_event.inserted_at,
-      updated_at: booking_event.updated_at
-   }
+      _ ->
+        []
+    end
   end
 
-  # TODO: delete this after the migration is done running
-  defp reorder_time_blocks(dates) do
-    Enum.map(dates, fn %{time_blocks: time_blocks} = event_date ->
-      %{event_date | time_blocks: Enum.sort_by(time_blocks, &{&1.start_time, &1.end_time})}
-    end)
-  end
-
-  # TODO: delete this after the migration is done runnings
   defp get_available_slots_each_block(start_time, end_time, duration, duration_buffer) do
     if !is_nil(start_time) and !is_nil(end_time) do
       available_slots = (Time.diff(end_time, start_time) / duration) |> trunc()
@@ -269,7 +228,6 @@ defmodule Picsello.BookingEvents do
     end
   end
 
-  # TODO: delete this after the migration is done running
   defp get_available_slots_each_block(
          slot,
          available_slots,
@@ -280,7 +238,7 @@ defmodule Picsello.BookingEvents do
        ) do
     if available_slots > 0 do
       Enum.reduce_while(slot, [], fn x, acc ->
-        %{slot_start: slot_start, slot_end: slot_end} =
+        %{slot_start: slot_time, slot_end: slot_end} =
           if x != available_slots - 1 do
             %{
               slot_start: start_time |> Time.add(duration_buffer * x),
@@ -298,11 +256,9 @@ defmodule Picsello.BookingEvents do
         end_trunc = end_time |> Time.add(time) |> Time.truncate(:second)
 
         if slot_trunc > end_trunc do
-          {:halt,
-           [%BookingEventDate.SlotBlock{slot_start: slot_start, slot_end: end_time}] ++ acc}
+          {:halt, [slot_time | acc]}
         else
-          {:cont,
-           [%BookingEventDate.SlotBlock{slot_start: slot_start, slot_end: slot_end}] ++ acc}
+          {:cont, [slot_time | acc]}
         end
       end)
       |> Enum.reverse()
@@ -353,29 +309,19 @@ defmodule Picsello.BookingEvents do
     end) > 0
   end
 
-  # TODO: delete this after the migration is done running
   defp filter_is_break_slots(slot_times, booking_event, date) do
     slot_times
-    |> Enum.map(fn slot_time ->
-      blocker_slots = filter_is_break_time_slots(booking_event, slot_time.slot_start, date)
-      hidden_slots = filter_is_hidden_time_slots(booking_event, slot_time.slot_start, date)
+    |> Enum.map(fn {slot_time, is_available, _is_break, _is_hide} ->
+      blocker_slots = filter_is_break_time_slots(booking_event, slot_time, date)
+      hidden_slots = filter_is_hidden_time_slots(booking_event, slot_time, date)
       is_break = Enum.any?(blocker_slots)
       is_hidden = Enum.any?(hidden_slots)
-
-      status =
-        cond do
-          is_break -> :break
-          is_hidden -> :hide
-          true -> slot_time.status
-        end
-
-      Map.put(slot_time, :status, status)
+      {slot_time, is_available, is_break, is_hidden}
     end)
   end
 
-  # TODO: delete this after the migration is done running
   defp filter_is_break_time_slots(booking_event, slot_time, date) do
-    case booking_event.old_dates |> Enum.find(&(&1.date == date)) do
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
         for(
           %{
@@ -395,9 +341,8 @@ defmodule Picsello.BookingEvents do
     end
   end
 
-  # TODO: delete this after the migration is done running
   defp filter_is_hidden_time_slots(booking_event, slot_time, date) do
-    case booking_event.old_dates |> Enum.find(&(&1.date == date)) do
+    case booking_event.dates |> Enum.find(&(&1.date == date)) do
       %{time_blocks: time_blocks} ->
         for(
           %{
@@ -417,12 +362,10 @@ defmodule Picsello.BookingEvents do
     end
   end
 
-  # TODO: delete this after the migration is done running
-  # defp filter_overlapping_shoots(slot_times, _booking_event, _date, true) do
-  #   slot_times |> Enum.map(fn slot_time -> {slot_time, true, true, true} end)
-  # end
+  defp filter_overlapping_shoots(slot_times, _booking_event, _date, true) do
+    slot_times |> Enum.map(fn slot_time -> {slot_time, true, true, true} end)
+  end
 
-  # TODO: delete this after the migration is done running
   defp filter_overlapping_shoots(
          slot_times,
          %BookingEvent{} = booking_event,
@@ -452,7 +395,7 @@ defmodule Picsello.BookingEvents do
 
     slot_times
     |> Enum.map(fn slot_time ->
-      slot_start = DateTime.new!(date, slot_time.slot_start, user.time_zone)
+      slot_start = DateTime.new!(date, slot_time, user.time_zone)
 
       slot_end =
         slot_start
@@ -466,8 +409,7 @@ defmodule Picsello.BookingEvents do
           is_slot_booked(booking_event.buffer_minutes, slot_start, slot_end, start_time, end_time)
         end)
 
-      status = if is_available, do: :open, else: :book
-      Map.put(slot_time, :status, status)
+      {slot_time, is_available, false, false}
     end)
   end
 
