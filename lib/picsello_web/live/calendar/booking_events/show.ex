@@ -497,13 +497,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     """
   end
 
-  defp marketing_preview(assigns) do
-    description = assigns.booking_event.description
-
+  defp marketing_preview(
+         %{
+           booking_event: %{description: event_description},
+           package: %{description: package_description}
+         } = assigns
+       ) do
     description =
-      if description == "" or is_nil(description),
-        do: assigns.package.description,
-        else: description
+      if event_description && event_description != "",
+        do: event_description,
+        else: package_description
 
     assigns = Map.put(assigns, :description, HtmlSanitizeEx.strip_tags(description))
 

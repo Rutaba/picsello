@@ -3,6 +3,8 @@ defmodule Picsello.Questionnaire do
 
   use Ecto.Schema
   import Ecto.{Changeset, Query}
+
+  alias Ecto.Multi
   alias Picsello.{Job, Repo, Package}
 
   defmodule Question do
@@ -123,6 +125,26 @@ defmodule Picsello.Questionnaire do
       name: questionnaire.name,
       job_type: questionnaire.job_type
     }
+  end
+
+  def insert_questionnaire_for_package(template, current_user, %{id: package_id} = package) do
+    Multi.new()
+    |> Multi.insert(:questionnaire_insert, fn _ ->
+      clean_questionnaire_for_changeset(
+        template,
+        current_user.organization_id,
+        package_id
+      )
+      |> changeset()
+    end)
+    |> Multi.update(:package_update, fn %{questionnaire_insert: questionnaire} ->
+      package
+      |> Picsello.Package.changeset(
+        %{questionnaire_template_id: questionnaire.id},
+        step: :details
+      )
+    end)
+    |> Repo.transaction()
   end
 
   defp validate_name(changeset, state) do

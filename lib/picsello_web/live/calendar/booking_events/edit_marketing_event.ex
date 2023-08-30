@@ -140,26 +140,11 @@ defmodule PicselloWeb.Live.Calendar.EditMarketingEvent do
   end
 
   defp assign_sorted_booking_event(%{assigns: %{booking_event: booking_event}} = socket) do
-    booking_event =
-      booking_event
-      |> Picsello.Repo.preload([
-        :dates,
-        package_template: [:package_payment_schedules, :contract, :questionnaire_template]
-      ])
-
-    dates = reorder_time_blocks(booking_event.dates)
-    booking_event = Map.put(booking_event, :dates, dates)
+    booking_event = BookingEvents.sorted_booking_event(booking_event)
 
     socket
     |> assign(booking_event: booking_event)
     |> assign(show_on_public_profile?: booking_event.show_on_profile?)
-  end
-
-  defp reorder_time_blocks(dates) do
-    Enum.map(dates, fn %{time_blocks: time_blocks} = event_date ->
-      sorted_time_blocks = Enum.sort_by(time_blocks, &{&1.start_time, &1.end_time})
-      %{event_date | time_blocks: sorted_time_blocks}
-    end)
   end
 
   defp toggle_visibility(%{applied?: applied?} = assigns) do
