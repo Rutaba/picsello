@@ -4,29 +4,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  alias Picsello.BookingEventDate
-
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
+  alias Picsello.{BookingEventDate, BookingEventDates}
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign_event_keys(assigns)
-    |> assign_changeset(%{"time_blocks" => [%{}], "slots" => []})
+    |> assign(:open_slots, 0)
+    |> case do
+      %{assigns: %{booking_date: %BookingEventDate{id: nil}}} = socket ->
+        socket |> assign_changeset(%{"time_blocks" => [%{}], "slots" => []})
+
+      socket ->
+        socket |> assign_changeset(%{})
+    end
     |> ok()
-  end
-
-  def assign_event_keys(socket, assigns) do
-    # TODO: This will be remove in later version
-    assigns =
-      Enum.into(assigns, %{
-        slots: [
-          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
-          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
-          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
-        ]
-      })
-
-    socket |> assign(assigns)
   end
 
   @impl true
@@ -64,10 +56,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           <% end %>
           <div class="col-span-4 flex gap-5">
             <div class="grow">
-              <%= labeled_select f, :duration_minutes, duration_options(), label: "Session length", prompt: "Select below" %>
+              <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below" %>
             </div>
             <div class="grow">
-              <%= labeled_select f, :buffer_minutes, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true %>
+              <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true %>
             </div>
           </div>
         </div>
@@ -86,22 +78,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
         </div>
 
-        <div class="font-bold mt-6">You'll have <span class="text-blue-planning-300">10</span> open session blocks</div>
+        <div class="font-bold mt-6">You'll have <span class="text-blue-planning-300"><%= @open_slots %></span> open session blocks</div>
         <div class="mt-6 grid grid-cols-5 border-b-4 border-blue-planning-300 text-lg font-bold">
           <div class="col-span-2">Time</div>
           <div class="col-span-3">Status</div>
         </div>
-        <!-- TODO slots section -->
-        <%= inputs_for f, :slots, fn s -> %>
+         <%= inputs_for f, :slots, fn s -> %>
           <div class="mt-4 grid grid-cols-5 items-center">
-            <div class="col-span-2">
-              <%= s.slot_start %>
+          <div class="col-span-2">
+            <%= hidden_input s, :slot_start %>
+            <%= hidden_input s, :slot_end %>
+            <%= parse_time(input_value(s, :slot_start)) <> "-" <> parse_time(input_value(s, :slot_end))%>
             </div>
             <div>
-              <%= s.status %>
+              <%= if to_string(input_value(s, :status)) == "hide", do: "Booked (Hidden)", else: input_value(s, :status) |> to_string() |> String.capitalize() %>
             </div>
             <div class="col-span-2 flex justify-end pr-2">
-              <%= input s, :active, type: :checkbox, class: "checkbox w-6 h-6" %>
+              <%= input s, :is_hide, type: :checkbox, checked: hidden_time?(s |> current |> Map.get(:status)), class: "checkbox w-6 h-6" %>
               <div class="ml-2"> Show block as booked (break)</div>
             </div>
           </div>
@@ -120,15 +113,39 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   end
 
   @impl true
-  def handle_event("validate", %{"booking_event_date" => params}, socket) do
+  def handle_event(
+        "validate",
+        %{
+          "booking_event_date" => params,
+          "_target" => ["booking_event_date", "slots", _, "is_hide"]
+        },
+        socket
+      ) do
     socket |> assign_changeset(params, :validate) |> noreply()
   end
 
   @impl true
-  def handle_event("submit", _params, socket) do
-    # TODO: Currentyly with minimal info
+  def handle_event("validate", %{"booking_event_date" => params}, socket) do
+    socket |> assign_changeset_with_slots(params, :validate) |> noreply()
+  end
+
+  @impl true
+  def handle_event("submit", %{"booking_event_date" => params}, socket) do
+    %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
+
+    case BookingEventDates.upsert_booking_event_date(changeset) do
+      {:ok, booking_event} ->
+        successfull_save(socket, booking_event)
+
+      _ ->
+        socket |> noreply()
+    end
+  end
+
+  defp successfull_save(socket, booking_event_date) do
+    send(self(), {:update, %{booking_event_date: booking_event_date}})
+
     socket
-    |> put_flash(:success, "Date Added")
     |> close_modal()
     |> noreply()
   end
@@ -142,14 +159,33 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     )
   end
 
-  defp assign_changeset(
-         %{assigns: %{booking_date: booking_date}} = socket,
-         params,
-         action \\ nil
-       ) do
-    # TODO: will remove this in later version
-    # event = current(changeset)
+  defp assign_changeset(%{assigns: %{booking_date: booking_date}} = socket, params, action \\ nil) do
     changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)
-    assign(socket, changeset: changeset)
+    event = current(changeset)
+    open_slots = Enum.count(event.slots, &(&1.status == :open))
+
+    socket |> assign(changeset: changeset, open_slots: open_slots)
   end
+
+  defp assign_changeset_with_slots(
+         %{assigns: %{booking_date: booking_date, booking_event: booking_event}} = socket,
+         params,
+         action
+       ) do
+    socket = socket |> assign_changeset(params, :validate)
+    changeset = socket.assigns.changeset
+    event = current(changeset)
+
+    slots = event |> BookingEventDates.available_slots(booking_event)
+    open_slots = Enum.count(event.slots, &(&1.status == :open))
+    params = Map.put(params, "slots", slots)
+    changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)
+
+    socket |> assign(changeset: changeset, open_slots: open_slots)
+  end
+
+  defp hidden_time?(:hide), do: true
+  defp hidden_time?(_state), do: false
+
+  defp parse_time(time), do: time |> Timex.format("{h12}:{0m} {am}") |> elem(1)
 end

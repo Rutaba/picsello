@@ -41,12 +41,18 @@ defmodule Picsello.BookingEventDate do
       field(:slot_start, :time)
       field(:slot_end, :time)
       field(:status, Ecto.Enum, values: [:open, :book, :reserve, :hide], default: :open)
+      field(:is_hide, :boolean, default: false, virtual: true)
     end
 
     def changeset(slot_block \\ %__MODULE__{}, attrs) do
       slot_block
-      |> cast(attrs, [:slot_start, :slot_end, :status])
+      |> cast(attrs, [:slot_start, :slot_end, :status, :is_hide])
       |> validate_required([:slot_start, :slot_end])
+      |> then(fn changeset ->
+        if get_field(changeset, :is_hide),
+          do: put_change(changeset, :status, :hide),
+          else: put_change(changeset, :status, :open)
+      end)
     end
   end
 
