@@ -53,81 +53,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_info({:wizard_closed, _modal}, %{assigns: assigns} = socket) do
-    assigns
-    |> Map.get(:flash, %{})
-    |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:update, %{package: package}},
-        %{assigns: %{booking_event: booking_event}} = socket
-      ) do
-    package_template =
-      package
-      |> Repo.preload([:package_payment_schedules, :contract, :questionnaire_template],
-        force: true
-      )
-
-    booking_event = %{
-      booking_event
-      | package_template: package_template,
-        package_template_id: package_template.id,
-        # please remove them when real implementaiton is complete
-        slots: [
-          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
-          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
-          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
-        ]
-    }
-
-    socket
-    |> assign(booking_event: booking_event)
-    |> assign(package: package_template)
-    |> assign(:payments_description, payments_description(booking_event))
-    |> put_flash(:success, "Package details saved sucessfully.")
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:update, %{questionnaire: _questionnaire}},
-        %{assigns: %{package: package}} = socket
-      ) do
-    package = package |> Repo.preload(:questionnaire_template, force: true)
-
-    socket
-    |> assign(:package, package)
-    |> put_flash(:success, "Questionnaire updated")
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info(
-        {:update, %{booking_event: booking_event}},
-        socket
-      ) do
-    socket
-    |> assign(:booking_event, booking_event)
-    |> put_flash(:success, "Marketing details updated")
-    |> noreply()
-  end
-
-  @impl true
-  def handle_info({:contract_saved, contract}, %{assigns: %{package: package}} = socket) do
-    socket
-    |> assign(package: %{package | contract: contract})
-    |> put_flash(:success, "Contract updated successfully")
-    |> close_modal()
-    |> noreply()
-  end
-
-  @impl true
-  defdelegate handle_info(message, socket), to: BEShared
-
-  @impl true
   def handle_event("add-date", _, %{assigns: %{booking_event: booking_event}} = socket) do
     booking_date = %BookingEventDate{booking_event_id: booking_event.id}
 
@@ -271,6 +196,81 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   defdelegate handle_event(name, params, socket), to: BEShared
+
+  @impl true
+  def handle_info({:wizard_closed, _modal}, %{assigns: assigns} = socket) do
+    assigns
+    |> Map.get(:flash, %{})
+    |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:update, %{package: package}},
+        %{assigns: %{booking_event: booking_event}} = socket
+      ) do
+    package_template =
+      package
+      |> Repo.preload([:package_payment_schedules, :contract, :questionnaire_template],
+        force: true
+      )
+
+    booking_event = %{
+      booking_event
+      | package_template: package_template,
+        package_template_id: package_template.id,
+        # please remove them when real implementaiton is complete
+        slots: [
+          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
+          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
+          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
+        ]
+    }
+
+    socket
+    |> assign(booking_event: booking_event)
+    |> assign(package: package_template)
+    |> assign(:payments_description, payments_description(booking_event))
+    |> put_flash(:success, "Package details saved sucessfully.")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:update, %{questionnaire: _questionnaire}},
+        %{assigns: %{package: package}} = socket
+      ) do
+    package = package |> Repo.preload(:questionnaire_template, force: true)
+
+    socket
+    |> assign(:package, package)
+    |> put_flash(:success, "Questionnaire updated")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:update, %{booking_event: booking_event}},
+        socket
+      ) do
+    socket
+    |> assign(:booking_event, booking_event)
+    |> put_flash(:success, "Marketing details updated")
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:contract_saved, contract}, %{assigns: %{package: package}} = socket) do
+    socket
+    |> assign(package: %{package | contract: contract})
+    |> put_flash(:success, "Contract updated successfully")
+    |> close_modal()
+    |> noreply()
+  end
+
+  @impl true
+  defdelegate handle_info(message, socket), to: BEShared
 
   defp booking_slot_tabs_nav(assigns) do
     ~H"""
