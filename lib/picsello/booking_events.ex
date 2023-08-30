@@ -40,6 +40,18 @@ defmodule Picsello.BookingEvents do
     changeset |> Repo.insert_or_update()
   end
 
+  def sorted_booking_event(booking_event) do
+    booking_event =
+      booking_event
+      |> Picsello.Repo.preload([
+        :dates,
+        package_template: [:package_payment_schedules, :contract, :questionnaire_template]
+      ])
+
+    dates = reorder_time_blocks(booking_event.dates)
+    Map.put(booking_event, :dates, dates)
+  end
+
   def get_booking_events_public(organization_id) do
     from(event in BookingEvent,
       join: package in assoc(event, :package_template),
@@ -62,7 +74,7 @@ defmodule Picsello.BookingEvents do
             booking_date.date
           ),
         description: event.description,
-        address: event.address,
+        address: event.address
       },
       group_by: [event.id, package.name, booking_date.booking_event_id]
     )
@@ -609,11 +621,18 @@ defmodule Picsello.BookingEvents do
   end
 
   def preload_booking_event(event),
-  do:
-    Repo.preload(event, [
-      :dates,
-      package_template: [:package_payment_schedules, :contract, :questionnaire_template]
-    ])
+    do:
+      Repo.preload(event, [
+        :dates,
+        package_template: [:package_payment_schedules, :contract, :questionnaire_template]
+      ])
+
+  defp reorder_time_blocks(dates) do
+    Enum.map(dates, fn %{time_blocks: time_blocks} = event_date ->
+      sorted_time_blocks = Enum.sort_by(time_blocks, &{&1.start_time, &1.end_time})
+      %{event_date | time_blocks: sorted_time_blocks}
+    end)
+  end
 
   defp shoot_start_at(date, time, time_zone), do: DateTime.new!(date, time, time_zone)
 end

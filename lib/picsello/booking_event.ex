@@ -78,6 +78,8 @@ defmodule Picsello.BookingEvent do
     end
   end
 
+  # TODO: delete old_dates after the migration is done running.
+  # Used this field to copy dates ---> old_dates and then data in old_dates ---> booking_event_date
   schema "booking_events" do
     field :name, :string
     field :description, :string
@@ -90,6 +92,7 @@ defmodule Picsello.BookingEvent do
     field(:status, Ecto.Enum, values: [:active, :disabled, :archive])
     belongs_to :package_template, Picsello.Package
     belongs_to :organization, Picsello.Organization
+    embeds_many :old_dates, EventDate, on_replace: :delete
     has_many :dates, Picsello.BookingEventDate
     has_many :jobs, Picsello.Job
 
@@ -97,7 +100,7 @@ defmodule Picsello.BookingEvent do
   end
 
   @doc false
-   def changeset(booking_event \\ %__MODULE__{}, attrs, opts) do
+  def changeset(booking_event \\ %__MODULE__{}, attrs, opts) do
     steps = [
       details: &update_details/2,
       package: &update_package_template/2,

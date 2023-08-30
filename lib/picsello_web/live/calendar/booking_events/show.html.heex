@@ -162,7 +162,7 @@
                                 <div class="flex">
                                     <div class="flex flex-col">
                                         <p class="text-lg font-bold">Questionnaire</p>
-                                        <p class="text-base-250"><%= @package.questionnaire_template.name %></p>
+                                        <p class="text-base-250"><%= if @package.questionnaire_template, do: @package.questionnaire_template.name, else: "Choose your Questionnaire" %></p>
                                     </div>
                                     <div class="flex items-center ml-auto gap-2">
                                         <.icon_button phx-click="add-questionnaire" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>

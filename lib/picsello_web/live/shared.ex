@@ -31,6 +31,7 @@ defmodule PicselloWeb.Live.Shared do
     Client,
     Package,
     Repo,
+    Questionnaire,
     BookingProposal,
     Workers.CleanStore,
     Packages.Download,
@@ -684,6 +685,46 @@ defmodule PicselloWeb.Live.Shared do
     |> save_multi(client, job_changeset, "form_component")
   end
 
+  def update_package_questionnaire(
+        %{
+          assigns: %{
+            current_user: current_user,
+            package: %{questionnaire_template_id: nil} = package
+          }
+        } = socket
+      ) do
+    template = get_template(socket)
+
+    case Questionnaire.insert_questionnaire_for_package(template, current_user, package) do
+      {:ok, %{questionnaire_insert: questionnaire_insert}} ->
+        socket
+        |> open_questionnaire_modal(:edit_lead, questionnaire_insert)
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Failed to fetch questionnaire. Please try again.")
+    end
+  end
+
+  def update_package_questionnaire(%{assigns: %{package: package}} = socket) do
+    socket
+    |> open_questionnaire_modal(:edit_lead, package.questionnaire_template)
+    |> noreply()
+  end
+
+  def open_questionnaire_modal(
+        %{assigns: %{current_user: current_user}} = socket,
+        state,
+        questionnaire
+      ) do
+    socket
+    |> PicselloWeb.QuestionnaireFormComponent.open(%{
+      state: state,
+      current_user: current_user,
+      questionnaire: questionnaire
+    })
+  end
+
   defp save_multi(
          %{
            assigns: %{
@@ -780,5 +821,13 @@ defmodule PicselloWeb.Live.Shared do
     else
       socket |> noreply()
     end
+  end
+
+  defp get_template(%{assigns: %{job: job}}) do
+    Questionnaire.for_job(job)
+  end
+
+  defp get_template(%{assigns: %{package: package}}) do
+    Questionnaire.for_package(package)
   end
 end

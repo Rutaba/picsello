@@ -3,10 +3,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   use PicselloWeb, :live_view
 
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+  import PicselloWeb.Live.Shared, only: [update_package_questionnaire: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
-  alias Picsello.{Repo, BookingEvents, Package, Questionnaire, BookingEventDate}
+  alias Picsello.{Repo, BookingEvents, Package, BookingEventDate}
   alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
@@ -19,28 +20,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_params(
-        %{"id" => event_id},
-        _session,
-        %{assigns: %{current_user: %{organization_id: organization_id}}} = socket
-      ) do
-    booking_event =
-      BookingEvents.get_booking_event!(organization_id, to_integer(event_id))
-      |> BookingEvents.preload_booking_event()
-      |> Map.merge(%{
-        # please remove them when real implementaiton is complete
-        slots: [
-          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
-          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
-          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
-        ]
-      })
-      |> sort_by_date()
-
+  def handle_params(%{"id" => event_id}, _session, socket) do
     socket
-    |> assign(:booking_event, booking_event)
-    |> assign(:payments_description, payments_description(booking_event))
-    |> assign(:package, booking_event.package_template)
+    |> assign(:id, to_integer(event_id))
+    |> assign_booking_event()
     |> assign(:client, %{id: 1, name: "hammad"})
     |> assign(:booking_slot_tab_active, "list")
     |> assign(:booking_slot_tabs, booking_slot_tabs())
@@ -111,18 +94,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event(
         "add-questionnaire",
         %{},
-        %{assigns: %{current_user: current_user, package: package}} = socket
+        socket
       ) do
-    questionnaire = Questionnaire.for_package(package)
-
     socket
-    |> PicselloWeb.QuestionnaireFormComponent.open(%{
-      state: :edit_booking_event,
-      current_user: current_user,
-      questionnaire: questionnaire,
-      package: package
-    })
-    |> noreply()
+    |> update_package_questionnaire()
   end
 
   @impl true
@@ -202,6 +177,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     assigns
     |> Map.get(:flash, %{})
     |> Enum.reduce(socket, fn {kind, msg}, socket -> put_flash(socket, kind, msg) end)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:update, %{booking_event_date: _booking_event}}, socket) do
+    socket
+    |> put_flash(:success, "Booking event date saved successfully")
     |> noreply()
   end
 
@@ -503,8 +485,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     """
   end
 
-  defp marketing_preview(assigns) do
-    description = assigns.booking_event.description
+  defp marketing_preview(
+         %{
+           booking_event: %{description: event_description},
+           package: %{description: package_description}
+         } = assigns
+       ) do
+    description =
+      if event_description && event_description != "",
+        do: event_description,
+        else: package_description
 
     assigns = Map.put(assigns, :description, HtmlSanitizeEx.strip_tags(description))
 
@@ -611,12 +601,33 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   defp open_wizard(socket, assigns) do
-    # TODO: BookingEventModal backend functionality Currently just with minimal information
     socket
     |> open_modal(BookingEventModal, %{
       close_event: :wizard_closed,
-      assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user]))
+      assigns: Enum.into(assigns, Map.take(socket.assigns, [:current_user, :booking_event]))
     })
+  end
+
+  def assign_booking_event(
+        %{assigns: %{current_user: %{organization_id: organization_id}, id: id}} = socket
+      ) do
+    booking_event =
+      BookingEvents.get_booking_event!(organization_id, id)
+      |> BookingEvents.preload_booking_event()
+      |> Map.merge(%{
+        # please remove them when real implementaiton is complete
+        slots: [
+          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
+          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
+          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
+        ]
+      })
+      |> sort_by_date()
+
+    socket
+    |> assign(:booking_event, booking_event)
+    |> assign(:payments_description, payments_description(booking_event))
+    |> assign(:package, booking_event.package_template)
   end
 
   defp assign_tab_data(%{assigns: %{current_user: _current_user}} = socket, tab) do
