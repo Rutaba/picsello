@@ -37,7 +37,7 @@ defmodule Picsello.BookingEventDates do
     |> filter_overlapping_shoots_slots(booking_event, booking_date, false)
   end
 
-  @doc "Returns all slots with status for the given booking date start_time & end_time"
+  # "Returns all slots with status for the given booking date start_time & end_time"
   defp get_available_slots_each_block(start_time, end_time, _duration, _duration_buffer)
        when is_nil(start_time) or is_nil(end_time),
        do: []
@@ -84,7 +84,7 @@ defmodule Picsello.BookingEventDates do
     |> Enum.reverse()
   end
 
-  @doc "Returns slots with status open or book"
+  # "Returns slots with status open or book"
   defp filter_overlapping_shoots_slots(_, _, %{date: date, session_length: session_length}, _)
        when is_nil(date) or is_nil(session_length),
        do: []
@@ -115,6 +115,15 @@ defmodule Picsello.BookingEventDates do
         where: shoot.starts_at >= ^beginning_of_day and shoot.starts_at <= ^end_of_day_with_buffer
       )
       |> Repo.all()
+      |> Enum.map(fn shoot ->
+        Map.merge(
+          shoot,
+          %{
+            start_time: shoot.starts_at |> DateTime.shift_zone!(user.time_zone),
+            end_time: shoot.starts_at |> DateTime.add(shoot.duration_minutes * 60)
+          }
+        )
+      end)
 
     slot_times
     |> Enum.map(fn slot ->
@@ -126,9 +135,7 @@ defmodule Picsello.BookingEventDates do
         |> DateTime.add((booking_date.session_gap || 0) * 60 - 1)
 
       is_available =
-        !Enum.any?(shoots, fn shoot ->
-          start_time = shoot.starts_at |> DateTime.shift_zone!(user.time_zone)
-          end_time = shoot.starts_at |> DateTime.add(shoot.duration_minutes * 60)
+        !Enum.any?(shoots, fn %{start_time: start_time, end_time: end_time} ->
           is_slot_booked(booking_date.session_gap, slot_start, slot_end, start_time, end_time)
         end)
 

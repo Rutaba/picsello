@@ -1,5 +1,7 @@
 defmodule Picsello.BookingEventDate do
-  @moduledoc "embedded schema module for booking events"
+  @moduledoc """
+  This module defines the schema for booking event dates, including embedded schemas for time blocks, slot blocks, and repeat day blocks.
+  """
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -56,12 +58,36 @@ defmodule Picsello.BookingEventDate do
     end
   end
 
+  defmodule RepeatDayBlock do
+    @moduledoc false
+    use Ecto.Schema
+
+    @primary_key false
+    embedded_schema do
+      field(:day, :string)
+      field(:active, :boolean, default: false)
+    end
+
+    def changeset(repeat_day \\ %__MODULE__{}, attrs) do
+      repeat_day
+      |> cast(attrs, [:day, :active])
+      |> validate_required([:day, :active])
+    end
+  end
+
   schema "booking_event_dates" do
     field :date, :date
     field :session_gap, :integer
     field :session_length, :integer
     field :location, :string
     field :address, :string
+    field :calendar, :string
+    field :count_calendar, :integer
+    field :stop_repeating, :date
+    field :occurences, :integer, default: 0
+    embeds_many :repeat_on, RepeatDayBlock, on_replace: :delete
+    field :is_repeat, :boolean, default: false, virtual: true
+    field :repetition, :boolean, default: false, virtual: true
     belongs_to :booking_event, Picsello.BookingEvent
     embeds_many :time_blocks, TimeBlock, on_replace: :delete
     embeds_many :slots, SlotBlock, on_replace: :delete
@@ -71,7 +97,8 @@ defmodule Picsello.BookingEventDate do
 
   @required_attrs [
     :booking_event_id,
-    :session_length
+    :session_length,
+    :date
   ]
 
   @doc false
@@ -83,14 +110,45 @@ defmodule Picsello.BookingEventDate do
       :address,
       :booking_event_id,
       :session_length,
-      :session_gap
+      :session_gap,
+      :count_calendar,
+      :calendar,
+      :stop_repeating,
+      :occurences,
+      :is_repeat,
+      :repetition
     ])
     |> cast_embed(:time_blocks, required: true)
     |> cast_embed(:slots, required: true)
+    |> cast_embed(:repeat_on)
     |> validate_required(@required_attrs)
     |> validate_length(:time_blocks, min: 1)
     |> validate_length(:slots, min: 1)
     |> validate_time_blocks()
+    |> set_default_repeat_on()
+    |> then(fn changeset ->
+      if get_field(changeset, :is_repeat) do
+        changeset
+        |> validate_required([:count_calendar, :calendar])
+        |> validate_stop_repeating()
+      else
+        changeset
+      end
+    end)
+  end
+
+  defp validate_stop_repeating(changeset) do
+    repetition_value = get_field(changeset, :repetition)
+
+    {key, value} = if repetition_value, do: {:stop_repeating, nil}, else: {:occurences, 0}
+    changeset = put_change(changeset, key, value)
+
+    occurences = get_field(changeset, :occurences)
+    stop_repeating = get_field(changeset, :stop_repeating)
+
+    if occurences == 0 and is_nil(stop_repeating),
+      do: changeset |> add_error(:repetition, "Either occurence or date should be selected"),
+      else: changeset
   end
 
   defp validate_time_blocks(changeset) do
@@ -106,6 +164,22 @@ defmodule Picsello.BookingEventDate do
 
     if overlap_times do
       changeset |> add_error(:time_blocks, "can't be overlapping")
+    else
+      changeset
+    end
+  end
+
+  defp set_default_repeat_on(changeset) do
+    if(Enum.empty?(get_field(changeset, :repeat_on))) do
+      put_change(changeset, :repeat_on, [
+        %{day: "sun", active: true},
+        %{day: "mon", active: false},
+        %{day: "tue", active: false},
+        %{day: "wed", active: false},
+        %{day: "thu", active: false},
+        %{day: "fri", active: false},
+        %{day: "sat", active: false}
+      ])
     else
       changeset
     end
