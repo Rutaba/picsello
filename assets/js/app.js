@@ -44,6 +44,7 @@ import '@fontsource/be-vietnam/700.css';
 import Analytics from './hooks/analytics';
 import AutoHeight from './hooks/auto-height';
 import Calendar from './hooks/calendar';
+import BookingEventCalendar from './hooks/booking-event-calendar';
 import ClientGalleryCookie from './hooks/client-gallery-cookie';
 import Clipboard from './hooks/clipboard';
 import DefaultCostTooltip from './hooks/default-cost-tooltip';
@@ -293,6 +294,7 @@ const Hooks = {
   showWelcomeModal,
   showAdminBanner,
   FolderUpload,
+  BookingEventCalendar
 };
 
 let Uploaders = {};

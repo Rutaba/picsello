@@ -1,7 +1,10 @@
 defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4b0fb292e (calendar view handled)
   import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.Live.Shared, only: [update_package_questionnaire: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
@@ -25,7 +28,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> assign(:id, to_integer(event_id))
     |> assign_booking_event()
     |> assign(:client, %{id: 1, name: "hammad"})
-    |> assign(:booking_slot_tab_active, "list")
+    |> assign(:booking_slot_tab_active, "calendar")
     |> assign(:booking_slot_tabs, booking_slot_tabs())
     |> noreply()
   end
@@ -59,14 +62,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   @impl true
   def handle_event("change-booking-slot-tab", %{"tab" => tab}, socket) do
-    if tab == "calendar" and socket.assigns.booking_event.dates == [] do
-      socket |> noreply()
-    else
-      socket
-      |> assign(:booking_slot_tab_active, tab)
-      |> assign_tab_data(tab)
-      |> noreply()
-    end
+    socket
+    |> assign(:booking_slot_tab_active, tab)
+    |> assign_tab_data(tab)
+    |> noreply()
   end
 
   @impl true
@@ -344,28 +343,36 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
       <% "calendar" -> %>
         <div class="mt-10 pr-5 grid grid-cols-1 md:grid-cols-5 gap-5">
-          <div class="md:col-span-2 bg-base-200">Calender area</div>
+          <div class="md:col-span-2 bg-base-200">
+            <div phx-hook="BookingEventCalendar" phx-update="replace" class="w-full" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :index)}></div>
+          </div>
           <div class="md:col-span-3 flex flex-col justify-center">
-            <div class="flex">
-              <div class="flex text-2xl font-bold">September 15th, 2023</div>
-              <div class="flex justify-end ml-auto">
-                <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
-                  <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
-                </div>
-                <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
-                  <.icon name="duplicate-2" class="w-4 h-4 fill-blue-planning-300" />
-                </div>
-                <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
-                  <.icon name="trash" class="w-4 h-4 text-red-sales-300" />
+            <%= if @booking_event.dates != [] do %>
+              <div class="flex">
+                <div class="flex text-2xl font-bold">September 15th, 2023</div>
+                <div class="flex justify-end ml-auto">
+                  <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
+                    <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
+                  </div>
+                  <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
+                    <.icon name="duplicate-2" class="w-4 h-4 fill-blue-planning-300" />
+                  </div>
+                  <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
+                    <.icon name="trash" class="w-4 h-4 text-red-sales-300" />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="flex mt-2">
-              <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
-              <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
-              <p class="text-blue-planning-300"><b>1</b> hidden</p>
-            </div>
-            <.render_slots {assigns} />
+              <div class="flex mt-2">
+                <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
+                <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
+                <p class="text-blue-planning-300"><b>1</b> hidden</p>
+              </div>
+              <.render_slots {assigns} />
+              <% else %>
+                <div class="p-3 border-2 border-base-200 rounded-lg">
+                  <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Add booking event dates </div> </div>
+                </div>
+              <% end %>
           </div>
         </div>
       <% end %>
