@@ -72,8 +72,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
           <%= input f, :is_repeat, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
           <div class="ml-2"> Repeat dates?</div>
         </div>
-
-        <%= if input_value(f, :is_repeat) do %>
+        <% is_repeat = if is_atom(input_value(f, :is_repeat)), do: input_value(f, :is_repeat), else: String.to_atom(input_value(f, :is_repeat))%>
+        <%= if is_repeat do %>
           <div class="lg:w-2/3 border-2 border-base-200 rounded-lg mt-4">
             <div class="font-bold p-4 bg-base-200 text-md">
               Repeat settings

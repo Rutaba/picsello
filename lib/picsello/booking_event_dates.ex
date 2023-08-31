@@ -79,7 +79,7 @@ defmodule Picsello.BookingEventDates do
       end_trunc = end_time |> Time.add(time) |> Time.truncate(:second)
 
       flag_type = if slot_trunc > end_trunc, do: :halt, else: :cont
-      {flag_type, [%{slot_start: slot_start, slot_end: end_time}] ++ acc}
+      {flag_type, [%{slot_start: slot_start, slot_end: slot_end}] ++ acc}
     end)
     |> Enum.reverse()
   end
