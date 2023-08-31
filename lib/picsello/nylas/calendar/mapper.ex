@@ -60,7 +60,7 @@ defmodule Picsello.NylasCalendar.Mapper do
   defp build_dates(%{"date" => date, "object" => "date"}, _timezone) do
     {:ok, start_date} = Date.from_iso8601(date)
 
-    {start_date, start_date |> Date.add(1) |> Date.to_iso8601()}
+    {start_date, start_date}
   end
 
   defp build_dates(
@@ -73,13 +73,20 @@ defmodule Picsello.NylasCalendar.Mapper do
          %{"start_time" => start_time, "end_time" => end_time, "object" => "timespan"},
          timezone
        ) do
-    build = fn time ->
-      time
-      |> DateTime.from_unix!()
-      |> DateTime.shift_zone!(timezone)
-      |> DateTime.to_iso8601()
-    end
+    {from_unix(start_time, timezone), from_unix(end_time, timezone)}
+  end
 
-    {build.(start_time), build.(end_time)}
+  defp build_dates(
+         %{"time" => time, "object" => "time"},
+         timezone
+       ) do
+    {from_unix(time, timezone), from_unix(time, timezone)}
+  end
+
+  defp from_unix(time, timezone) do
+    time
+    |> DateTime.from_unix!()
+    |> DateTime.shift_zone!(timezone)
+    |> DateTime.to_iso8601()
   end
 end

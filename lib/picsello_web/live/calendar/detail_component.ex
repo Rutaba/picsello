@@ -56,11 +56,19 @@ defmodule PicselloWeb.Calendar.Shared.DetailComponent do
     """
   end
 
-  defp date_time_item(assigns) do
+  defp date_time_item(%{start_date: start_date, end_date: end_date} = assigns) do
+    assigns =
+      assigns
+      |> assign(:week_day, Timex.weekday(start_date) |> Timex.day_name())
+      |> assign(:month, start_date.month |> Timex.month_name() |> String.capitalize())
+      |> assign(:day, start_date.day)
+      |> assign(:to_day, if(Date.compare(start_date, end_date) != :eq, do: " - #{end_date.day}"))
+      |> assign(:year, end_date.year)
+
     ~H"""
       <.event_item
         icon="clock"
-        item_title={"#{Timex.weekday(@opts.start_date) |> Timex.day_name()}, #{@opts.start_date.month |> Timex.month_name() |> String.capitalize()} #{@opts.start_date.day}"}
+        item_title={"#{@week_day}, #{@month} #{@day}#{@to_day}, #{@year}"}
         item_desc={"#{normalize_datetime(@opts.start_date)} - #{normalize_datetime(@opts.end_date)}"}
         class="bg-base-200 mx-[-31px] px-6"
         font_size="text-xl"

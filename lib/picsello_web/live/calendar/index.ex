@@ -34,7 +34,7 @@ defmodule PicselloWeb.Live.Calendar.Index do
         |> build_opts()
         |> Map.merge(%{
           start_date: build_datetime(event["start"]),
-          end_date: build_datetime(event["end"]),
+          end_date: build_datetime(event["end"] || event["start"]),
           url: props["other"]["url"]
         })
     })
@@ -68,6 +68,8 @@ defmodule PicselloWeb.Live.Calendar.Index do
   end
 
   defp build_datetime(value) do
+    IO.inspect(value)
+
     case DateTime.from_iso8601(value) do
       {:error, :invalid_format} ->
         {:ok, %Date{} = date} = Date.from_iso8601(value)
