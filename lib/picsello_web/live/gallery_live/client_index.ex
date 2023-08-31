@@ -196,13 +196,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     |> customize_and_buy_product(whcc_product, photo, size: size, favorites_only: favorites_only)
   end
 
-  def handle_info({:update_cart_count, %{order: order}}, %{assigns: %{gallery: gallery}} = socket) do
-    socket
-    |> assign(:order, order)
-    |> assign_cart_count(gallery)
-    |> noreply()
-  end
-
   def handle_info(
         {:add_bundle_to_cart, bundle_price},
         %{assigns: %{gallery: gallery, gallery_client: gallery_client, modal_pid: modal_pid}} =
@@ -250,6 +243,8 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
   def handle_info({:upload_success_message, _}, socket), do: noreply(socket)
   def handle_info({:photo_processed, _, _}, socket), do: noreply(socket)
   def handle_info({:cover_photo_processed, _, _}, socket), do: noreply(socket)
+
+  defdelegate handle_info(message, socket), to: PicselloWeb.GalleryLive.Shared
 
   defp cover_photo(%{cover_photo: nil}), do: %{style: "background-image: url('#{@blank_image}')"}
   defp cover_photo(gallery), do: display_cover_photo(gallery)
