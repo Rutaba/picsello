@@ -151,6 +151,16 @@ defmodule Picsello.BookingEventDate do
     end)
   end
 
+  def update_slot_changeset(booking_event_date, slot_index, slot_update_args) do
+    slot =
+      booking_event_date.slots
+      |> Enum.at(slot_index)
+      |> Map.merge(slot_update_args)
+
+    booking_event_date
+    |> change(slots: List.replace_at(booking_event_date.slots, slot_index, slot))
+  end
+
   # This is to validate whether a booking-event-date already exists within a booking-event
   defp validate_booking_event_date(changeset) do
     booking_event_id = get_field(changeset, :booking_event_id)

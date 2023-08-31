@@ -5,6 +5,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
   alias Picsello.BookingEvents, as: BE
+  alias Picsello.Utils
   alias PicselloWeb.Live.Calendar.EditMarketingEvent
   alias Picsello.{Payments, BookingEvents}
 
@@ -315,10 +316,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           Edit
         </.icon_button>
       <% else %>
-        <.icon_button icon="eye" disabled={BEShared.incomplete_status?(@booking_event)} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+        <.icon_button icon="eye" color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
           Preview
         </.icon_button>
-        <.icon_button icon="anchor" disabled={BEShared.incomplete_status?(@booking_event)} color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full p-1 px-2" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+        <.icon_button icon="anchor" color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full p-1 px-2" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
           <span>Copy link</span>
           <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
             Copied!
@@ -359,7 +360,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
       <div class="flex">
         <div id="select" class={classes("relative w-40 border-grey border rounded-l-lg p-2 cursor-pointer", %{"rounded-lg" => @title == "Filter"})} data-offset-y="5" phx-hook="Select">
           <div class="flex flex-row items-center border-gray-700">
-            <%= capitalize_per_word(String.replace(@selected_option, "_", " ")) %>
+            <%= Utils.capitalize_all_words(String.replace(@selected_option, "_", " ")) %>
             <.icon name="down" class="w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 open-icon" />
             <.icon name="up" class="hidden w-3 h-3 ml-auto lg:mr-2 mr-1 stroke-current stroke-2 close-icon" />
           </div>
@@ -566,10 +567,5 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
         <%= @title %>
       </button>
     """
-  end
-
-  def capitalize_per_word(string) do
-    String.split(string)
-    |> Enum.map_join(" ", &String.capitalize/1)
   end
 end

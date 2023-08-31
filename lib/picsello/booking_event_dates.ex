@@ -64,9 +64,18 @@ defmodule Picsello.BookingEventDates do
   end
 
   def get_booking_date(id) do
-    from(event_date in BookingEventDate, where: event_date.id == ^id)
-    |> Repo.one()
-    |> Repo.preload(:booking_event)
+    from(
+      event_date in BookingEventDate,
+      where: event_date.id == ^id,
+      preload: :booking_event
+    )
+    |> Repo.one!()
+  end
+
+  def delete_booking_date(id) do
+    id
+    |> get_booking_date()
+    |> Repo.delete()
   end
 
   @doc """
@@ -199,6 +208,12 @@ defmodule Picsello.BookingEventDates do
       event_date in BookingEventDate,
       where: event_date.date in ^dates and event_date.booking_event_id == ^booking_event_id
     )
+  end
+
+  def update_slot_status(booking_event_date_id, slot_index, slot_update_args) do
+    get_booking_date(booking_event_date_id)
+    |> BookingEventDate.update_slot_changeset(slot_index, slot_update_args)
+    |> upsert_booking_event_date()
   end
 
   @doc """

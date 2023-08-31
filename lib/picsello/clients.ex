@@ -3,6 +3,29 @@ defmodule Picsello.Clients do
   import Ecto.Query
   alias Picsello.{Repo, Client, ClientTag}
 
+  def search(nil, _clients), do: []
+
+  def search("", _clients), do: []
+
+  def search(search_phrase, clients) do
+    clients
+    |> Enum.filter(&client_matches?(&1, search_phrase))
+  end
+
+  defp client_matches?(client, query) do
+    (client.name && do_match?(client.name, query)) ||
+      (client.name && do_match?(List.last(String.split(client.name)), query)) ||
+      do_match?(client.email, query) ||
+      (client.phone && String.contains?(client.phone, query))
+  end
+
+  defp do_match?(data, query) do
+    String.starts_with?(
+      String.downcase(data),
+      String.downcase(query)
+    )
+  end
+
   def client_by_email(organization_id, email) do
     from(c in Client, where: c.email == ^email and c.organization_id == ^organization_id)
     |> Repo.one()

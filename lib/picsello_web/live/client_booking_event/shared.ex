@@ -89,13 +89,13 @@ defmodule PicselloWeb.ClientBookingEventLive.Shared do
 
   defp capitalize_month(month), do: String.capitalize(to_string(month))
 
-  defp formatted_subtitle(booking_event, %{download_count: count} = _package) do
+  defp formatted_subtitle(_booking_event, %{download_count: count} = _package) do
     [
       if(count > 0,
-        do: "#{count} #{ngettext("image", "images", count)} included"
-      ),
-      "#{booking_event.duration_minutes} min session",
-      dyn_gettext(booking_event.location)
+        do: "#{count} #{ngettext("image", "images", count)}"
+      )
+      # "#{booking_event.duration_minutes} min session",
+      # dyn_gettext(booking_event.location)
     ]
     |> Enum.filter(& &1)
     |> Enum.join(" | ")

@@ -141,7 +141,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
             <%= parse_time(input_value(s, :slot_start)) <> "-" <> parse_time(input_value(s, :slot_end))%>
             </div>
             <div>
-              <%= if to_string(s |> current |> Map.get(:status)) == "hide", do: "Booked (Hidden)", else: s |> current |> Map.get(:status) |> to_string() |> String.capitalize() %>
+              <%= if to_string(s |> current |> Map.get(:status)) == "hidden", do: "Booked (Hidden)", else: s |> current |> Map.get(:status) |> to_string() |> String.capitalize() %>
             </div>
             <div class="col-span-2 flex justify-end pr-2">
               <%= input s, :is_hide, type: :checkbox, disabled: (s |> current |> Map.get(:status) == :booked), checked: hidden_time?(s |> current |> Map.get(:status)), class: "checkbox w-6 h-6"%>

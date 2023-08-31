@@ -52,7 +52,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
                 <.address_display booking_event={@booking_event} class="mt-4"/>
               </div>
               <div class="mt-4 raw_html"><%= raw @booking_event.description %></div>
-              <.live_link to={Routes.client_booking_event_path(@socket, :book, @organization.slug, @booking_event.id)} class="btn-primary text-center mt-12">Book now</.live_link>
+              <.live_link to={Routes.client_booking_event_path(@socket, :booked, @organization.slug, @booking_event.id)} class="btn-primary text-center mt-12">Book now</.live_link>
             </div>
           </div>
           <.blurred_thumbnail class="w-full flex-1" url={@booking_event.thumbnail_url} />

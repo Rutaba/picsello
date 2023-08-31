@@ -19,6 +19,7 @@ defmodule PicselloWeb.JobLive.Shared do
     Job,
     Jobs,
     Client,
+    Clients,
     Shoot,
     ClientMessage,
     Repo,
@@ -183,7 +184,7 @@ defmodule PicselloWeb.JobLive.Shared do
       |> assign(:search_phrase, nil)
     else
       socket
-      |> assign(search_results: search(search_phrase, socket))
+      |> assign(search_results: Clients.search(search_phrase, clients))
       |> assign(search_phrase: search_phrase)
     end
     |> noreply()
@@ -228,6 +229,13 @@ defmodule PicselloWeb.JobLive.Shared do
       :changeset,
       Job.new_job_changeset(Map.delete(changeset.changes, :client_id))
     )
+    |> noreply()
+  end
+
+  def handle_event("clear-search", _, socket) do
+    socket
+    |> assign(:search_results, [])
+    |> assign(:search_phrase, nil)
     |> noreply()
   end
 
@@ -1334,11 +1342,13 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def search_clients(assigns) do
+    assigns = assigns |> Enum.into(%{main_class: "md:w-2/3"})
+
     ~H"""
       <%= form_tag("#", [phx_change: :search, phx_submit: :submit, phx_target: @myself]) do %>
         <div class="flex flex-col justify-between items-center px-1.5 md:flex-row">
-          <div class="relative flex md:w-2/3 w-full">
-            <a class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
+          <div class={"relative flex #{@main_class} w-full"}>
+            <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
               <%= if (Enum.any?(@search_results) && @search_phrase) || @searched_client do %>
                 <span phx-click="clear-search" phx-target={@myself} class="cursor-pointer">
                   <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
@@ -1347,7 +1357,7 @@ defmodule PicselloWeb.JobLive.Shared do
                 <.icon name="search" class="w-4 ml-1 fill-current" />
               <% end %>
             </a>
-            <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={if !is_nil(@selected_client), do: @selected_client.name, else: "#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients by email or first and last names..." />
+            <input disabled={!is_nil(@selected_client) || @new_client} type="text" class="form-control w-full text-input indent-6" id="search_phrase_input" name="search_phrase" value={if !is_nil(@selected_client), do: @selected_client.name, else: "#{@search_phrase}"} phx-debounce="500" phx-target={@myself} spellcheck="false" placeholder="Search clients by email or first/last name..." />
             <%= if Enum.any?(@search_results) && @search_phrase do %>
               <div id="search_results" class="absolute top-14 w-full" phx-window-keydown="set-focus" phx-target={@myself}>
                 <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white w-full overflow-auto max-h-48 h-fit">
@@ -1707,19 +1717,15 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_documents_uploads(socket)
   end
 
-  def complete_job_component(socket),
-    do:
-      socket
-      |> ConfirmationComponent.open(%{
-        confirm_event: "complete_job",
-        confirm_label: "Yes, mark complete",
-        confirm_class: "btn-primary",
-        close_label: "Cancel",
-        subtitle:
-          "Mark jobs complete when the session has transpired and you have delivered a final gallery of images. Your client can still access and order digital images, print products and you can still create new galleries as needed.\n\nNote, this action CANNOT be undone.",
-        title: "Well done—another job successfully completed!",
-        icon: "confetti"
-      })
+  def search_assigns(socket) do
+    socket
+    |> assign(:new_client, false)
+    |> assign(:search_results, [])
+    |> assign(:search_phrase, nil)
+    |> assign(:searched_client, nil)
+    |> assign(:selected_client, nil)
+    |> assign(:current_focus, -1)
+  end
 
   defdelegate path_to_url(path), to: PhotoStorage
 
@@ -1763,38 +1769,6 @@ defmodule PicselloWeb.JobLive.Shared do
 
   defp ex_docs(%{ex_documents: ex_documents}),
     do: Enum.map(ex_documents, & &1.client_name)
-
-  defp search_assigns(socket) do
-    socket
-    |> assign(:search_results, [])
-    |> assign(:search_phrase, nil)
-    |> assign(:searched_client, nil)
-    |> assign(:selected_client, nil)
-    |> assign(:current_focus, -1)
-  end
-
-  defp search(nil, _socket), do: []
-
-  defp search("", _socket), do: []
-
-  defp search(search_phrase, %{assigns: %{clients: clients}}) do
-    clients
-    |> Enum.filter(&client_matches?(&1, search_phrase))
-  end
-
-  defp client_matches?(client, query) do
-    (client.name && do_match?(client.name, query)) ||
-      (client.name && do_match?(List.last(String.split(client.name)), query)) ||
-      do_match?(client.email, query) ||
-      (client.phone && String.contains?(client.phone, query))
-  end
-
-  defp do_match?(data, query) do
-    String.starts_with?(
-      String.downcase(data),
-      String.downcase(query)
-    )
-  end
 
   defp assign_inbox_count(%{assigns: %{job: job}} = socket) do
     count =

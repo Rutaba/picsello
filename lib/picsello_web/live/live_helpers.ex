@@ -492,6 +492,14 @@ defmodule PicselloWeb.LiveHelpers do
     end
   end
 
+  def date_formatter(date), do: "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
+
+  def date_formatter(date, :day),
+    do: "#{day_of_week(date)}, #{Timex.month_name(date.month)} #{date.day}"
+
+  # Calculates the day of the week for a given date.
+  def day_of_week(date), do: Timex.weekday(date, :sunday)
+
   def format_date_via_type(_, _ \\ "MM DD, YY")
 
   def format_date_via_type(%DateTime{} = datetime, type),

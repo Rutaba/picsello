@@ -2,20 +2,39 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   @moduledoc "shared functions for booking events"
   use Phoenix.HTML
   use Phoenix.Component
+  require Logger
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
+  import PicselloWeb.Live.Shared, only: [make_popup: 2]
+  import PicselloWeb.Helpers, only: [job_url: 1, ngettext: 3]
+  import PicselloWeb.GalleryLive.Shared, only: [add_message_and_notify: 3]
 
   alias PicselloWeb.{
-    Live.Calendar.BookingEvents.Index,
+    SearchComponent,
+    ConfirmationComponent,
+    ClientMessageComponent,
     Shared.SelectionPopupModal,
-    PackageLive.WizardComponent
+    PackageLive.WizardComponent,
+    Live.Calendar.BookingEvents.Index
   }
 
-  alias PicselloWeb.Router.Helpers, as: Routes
-  alias Picsello.{Repo, BookingEvent, BookingEvents, BookingEventDate, BookingEventDates}
-  alias BookingEventDate.SlotBlock
+  alias Picsello.{
+    Repo,
+    Utils,
+    Client,
+    Clients,
+    Package,
+    BookingEvent,
+    BookingEvents,
+    BookingProposal,
+    BookingEventDate,
+    BookingEventDates,
+    BookingEventDate.SlotBlock
+  }
+
   alias Ecto.Multi
+  alias PicselloWeb.Router.Helpers, as: Routes
 
   def handle_event(
         "duplicate-event",
@@ -101,7 +120,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   def handle_event("confirm-archive-event", params, socket) do
     socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
+    |> ConfirmationComponent.open(%{
       title: "Are you sure?",
       subtitle: """
       Are you sure you want to archive this event?
@@ -116,7 +135,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   def handle_event("confirm-disable-event", params, socket) do
     socket
-    |> PicselloWeb.ConfirmationComponent.open(%{
+    |> ConfirmationComponent.open(%{
       title: "Disable this event?",
       subtitle: """
       Disabling this event will hide all availability for this event and prevent any further booking. This is also the first step to take if you need to cancel an event for any reason.
@@ -176,6 +195,200 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> noreply()
   end
 
+  def handle_event("confirm-delete-date", _params, socket) do
+    socket
+    |> ConfirmationComponent.open(%{
+      title: "Are you sure?",
+      subtitle: "Are you sure you want to delete this date?",
+      confirm_event: "delete_date",
+      confirm_label: "Yes, delete",
+      close_label: "Cancel",
+      icon: "warning-orange"
+    })
+  end
+
+  def handle_event(
+        "confirm-cancel-session",
+        %{
+          "booking_event_date_id" => booking_event_date_id,
+          "slot_index" => slot_index
+        },
+        socket
+      ) do
+    socket
+    |> ConfirmationComponent.open(%{
+      title: "Cancel session?",
+      subtitle:
+        "Are you sure you want to cancel this session? You'll have to refund them through Stripe or whatever payment method you use previously",
+      confirm_event: "cancel_session",
+      confirm_label: "Yes, cancel",
+      close_label: "No, go back",
+      icon: "warning-orange",
+      payload: %{
+        booking_event_date_id: String.to_integer(booking_event_date_id),
+        slot_index: String.to_integer(slot_index),
+        slot_update_args: %{status: :open, client_id: nil, job_id: nil}
+      }
+    })
+    |> noreply()
+  end
+
+  def handle_event(
+        "confirm-reschedule",
+        %{
+          "booking_event_date_id" => booking_event_date_id,
+          "slot_client_id" => slot_client_id,
+          "slot_index" => slot_index
+        },
+        %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
+      ) do
+    [booking_event_date_id, slot_client_id, slot_index] =
+      convert_string_to_integer([booking_event_date_id, slot_client_id, slot_index])
+
+    booking_event_dates = get_booking_date(booking_event, booking_event_date_id)
+
+    filtered_slots =
+      booking_event_dates.slots
+      |> Enum.filter(&(&1.status == :open))
+      |> Enum.with_index(fn slot, slot_index ->
+        {"#{slot.slot_start} - #{slot.slot_end}", slot_index}
+      end)
+
+    socket
+    |> make_popup(
+      icon: nil,
+      dropdown?: true,
+      close_label: "Cancel",
+      class: "dialog",
+      title: "Reschedule session",
+      confirm_label: "Reschedule",
+      confirm_class: "btn-primary",
+      dropdown_items: filtered_slots,
+      dropdown_label: "Pick a new time",
+      confirm_event: "reschedule_session",
+      payload: %{
+        booking_event_date_id: booking_event_date_id,
+        slot_index: slot_index,
+        slot_client_id: slot_client_id,
+        client_name: slot_client_name(current_user, slot_client_id),
+        client_icon: "client-icon"
+      }
+    )
+  end
+
+  def handle_event(
+        "confirm-mark-hide",
+        %{"booking_event_date_id" => booking_event_date_id, "slot_index" => slot_index},
+        socket
+      ) do
+    socket
+    |> ConfirmationComponent.open(%{
+      title: "Mark block hidden?",
+      subtitle:
+        "This is useful if you'd like to give yourself a break or make yourself look booked at this time and open it up later",
+      confirm_event: "change_slot_status",
+      confirm_class: "btn-primary",
+      confirm_label: "Hide block",
+      close_label: "Cancel",
+      icon: nil,
+      payload: %{
+        booking_event_date_id: String.to_integer(booking_event_date_id),
+        slot_index: String.to_integer(slot_index),
+        slot_update_args: %{status: :hidden}
+      }
+    })
+    |> noreply()
+  end
+
+  def handle_event(
+        "confirm-mark-open",
+        %{"booking_event_date_id" => booking_event_date_id, "slot_index" => slot_index},
+        socket
+      ) do
+    socket
+    |> ConfirmationComponent.open(%{
+      title: "Mark block open?",
+      subtitle: "Are you sure you to allow this block to be bookable by clients?",
+      confirm_event: "change_slot_status",
+      confirm_class: "btn-primary",
+      confirm_label: "Show block",
+      close_label: "Cancel",
+      icon: nil,
+      payload: %{
+        booking_event_date_id: String.to_integer(booking_event_date_id),
+        slot_index: String.to_integer(slot_index),
+        slot_update_args: %{status: :open, client_id: nil}
+      }
+    })
+    |> noreply()
+  end
+
+  def handle_event("open-client", params, socket) do
+    Map.get(params, "slot_client_id", nil)
+    |> case do
+      nil ->
+        socket
+        |> put_flash(:error, "Unable to open the client")
+
+      client_id ->
+        socket
+        |> redirect(to: "/clients/#{to_integer(client_id)}")
+    end
+    |> noreply()
+  end
+
+  def handle_event(
+        "open-job",
+        params,
+        socket
+      ) do
+    Map.get(params, "slot_job_id", nil)
+    |> case do
+      nil ->
+        socket
+        |> put_flash(:error, "There is no job assigned. Please set a job first.")
+
+      job_id ->
+        socket
+        |> redirect(to: "/leads/#{to_integer(job_id)}")
+    end
+    |> noreply()
+  end
+
+  def handle_event(
+        "confirm-reserve",
+        %{"booking_event_date_id" => booking_event_date_id, "slot_index" => slot_index},
+        %{assigns: %{current_user: current_user, booking_event: booking_event}} = socket
+      ) do
+    [booking_event_date_id, slot_index] =
+      convert_string_to_integer([booking_event_date_id, slot_index])
+
+    booking_event_date = get_booking_date(booking_event, booking_event_date_id)
+    slot = Enum.at(booking_event_date.slots, slot_index)
+    clients = Clients.find_all_by(user: current_user)
+
+    socket
+    |> assign(:clients, clients)
+    |> SearchComponent.open(%{
+      change_event: :change_client,
+      submit_event: :reserve_session,
+      save_label: "Reserve",
+      title: "Reserve session",
+      icon: "clock",
+      placeholder: "Search clients by email or first/last name…",
+      empty_result_description: "No client found with that information",
+      component_used_for: :booking_events_search,
+      payload: %{
+        clients: clients,
+        booking_event: booking_event,
+        booking_event_date: booking_event_date,
+        slot_index: slot_index,
+        slot: slot
+      }
+    })
+    |> noreply()
+  end
+
   def handle_info(
         {:update_templates, %{templates: templates}},
         %{assigns: %{modal_pid: modal_pid}} = socket
@@ -183,6 +396,219 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     send_update(modal_pid, WizardComponent, id: WizardComponent, templates: templates)
 
     socket
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "confirm_duplicate_event",
+         %{booking_event_id: event_id, organization_id: org_id}},
+        socket
+      ) do
+    to_duplicate_booking_event =
+      BookingEvents.get_booking_event!(
+        org_id,
+        event_id
+      )
+      |> Repo.preload([:dates])
+      |> Map.put(:status, :active)
+      |> Map.from_struct()
+
+    to_duplicate_event_dates =
+      to_duplicate_booking_event.dates
+      |> Enum.map(fn t ->
+        t
+        |> Map.replace(:date, nil)
+        |> Map.replace(:slots, edit_slots_status(t))
+      end)
+
+    multi =
+      Multi.new()
+      |> Multi.insert(
+        :duplicate_booking_event,
+        BookingEvent.duplicate_changeset(to_duplicate_booking_event)
+      )
+
+    to_duplicate_event_dates
+    |> Enum.with_index()
+    |> Enum.reduce(multi, fn {event_date, i}, multi ->
+      multi
+      |> Multi.insert(
+        "duplicate_booking_event_date_#{i}",
+        fn %{duplicate_booking_event: event} ->
+          BookingEventDate.changeset(%{
+            booking_event_id: event.id,
+            location: event_date.location,
+            address: event_date.address,
+            session_length: event_date.session_length,
+            session_gap: event_date.session_gap,
+            time_blocks: to_map(event_date.time_blocks),
+            slots: to_map(event_date.slots)
+          })
+        end
+      )
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{duplicate_booking_event: new_event}} ->
+        socket
+        |> redirect(to: "/booking-events/#{new_event.id}")
+
+      {:error, :duplicate_booking_event, _, _} ->
+        socket
+        |> put_flash(:error, "Unable to duplicate event")
+
+      _ ->
+        socket
+        |> put_flash(:error, "Unexpected error")
+    end
+    |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "change_slot_status",
+         %{
+           booking_event_date_id: booking_event_date_id,
+           slot_index: slot_index,
+           slot_update_args: slot_update_args
+         }},
+        socket
+      ) do
+    case BookingEventDates.update_slot_status(booking_event_date_id, slot_index, slot_update_args) do
+      {:ok, _booking_event_date} ->
+        socket
+        |> assign_booking_event()
+        |> put_flash(:success, "Slot changed successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Error changing slot status")
+    end
+    |> close_modal()
+    |> noreply()
+  end
+
+  def handle_info({:confirm_event, "delete_date"}, socket) do
+    socket |> close_modal() |> noreply()
+  end
+
+  def handle_info(
+        {:confirm_event, "reschedule_session",
+         %{
+           booking_event_date_id: booking_event_date_id,
+           item_id: item_id,
+           slot_client_id: slot_client_id,
+           slot_index: slot_index
+         }},
+        %{assigns: %{current_user: user, booking_event: booking_event}} = socket
+      ) do
+    booking_event_date = get_booking_date(booking_event, to_integer(booking_event_date_id))
+
+    slot =
+      booking_event_date.slots
+      |> Enum.at(slot_index)
+
+    new_slot =
+      booking_event_date
+      |> BookingEventDates.available_slots(booking_event)
+      |> Enum.at(to_integer(item_id))
+
+    {_slot, new_slot_index} =
+      booking_event_date.slots
+      |> Enum.with_index(fn slot, slot_index -> {slot, slot_index} end)
+      |> Enum.filter(fn {slot, _slot_index} ->
+        slot.slot_start == new_slot.slot_start && slot.slot_end == new_slot.slot_end
+      end)
+      |> hd()
+
+    with %Client{name: name, email: email} <- slot_client(user, slot_client_id),
+         {:ok, %{proposal: proposal, shoot: shoot, job: job}} <-
+           BookingEvents.save_booking(
+             booking_event,
+             booking_event_date,
+             %{
+               name: name,
+               email: email,
+               phone: nil,
+               date: booking_event_date.date,
+               time: slot.slot_start
+             },
+             %{slot_index: new_slot_index, slot_status: :reserved}
+           ),
+         {:ok, _} <-
+           BookingEvents.expire_booking(%{
+             "id" => slot.job_id,
+             "booking_date_id" => booking_event_date.id,
+             "slot_index" => slot_index
+           }) do
+      Picsello.Shoots.broadcast_shoot_change(shoot)
+      class = "underline text-blue-planning-300"
+
+      socket
+      |> assign_booking_event()
+      |> make_popup(
+        icon: nil,
+        title: "Reschedule Session",
+        subtitle: """
+          Great! Session has been rescheduled and a <a class="#{class}" href="#{job_url(job.id)}" target="_blank">job</a> + <a class="#{class}" href="#{BookingProposal.url(proposal.id)}" target="_blank">client portal</a> has been created for you to share
+        """,
+        copy_btn_label: "Copy link, I’ll send separately",
+        copy_btn_event: "copy-link",
+        copy_btn_value: BookingProposal.url(proposal.id),
+        confirm_event: "finish-proposal",
+        confirm_class: "btn-primary",
+        confirm_label: "Send client link via email",
+        show_search: false,
+        close_label: "Close",
+        payload: %{
+          client_name: name,
+          client_icon: "client-icon",
+          job: Picsello.Jobs.get_job_by_id(job.id),
+          proposal: proposal
+        }
+      )
+    else
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Booking cannot be rescheduled, please try again")
+        |> close_modal()
+        |> noreply()
+
+      e ->
+        Logger.warning("[save_booking] error: #{inspect(e)}")
+
+        socket
+        |> put_flash(:error, "Couldn't reschedule this booking")
+        |> close_modal()
+        |> noreply()
+    end
+  end
+
+  def handle_info(
+        {:confirm_event, "cancel_session",
+         %{
+           booking_event_date_id: booking_event_date_id,
+           slot_index: slot_index
+         }},
+        %{assigns: %{booking_event: booking_event}} = socket
+      ) do
+    booking_event_date = get_booking_date(booking_event, to_integer(booking_event_date_id))
+    slot = Enum.at(booking_event_date.slots, slot_index)
+
+    case BookingEvents.expire_booking(%{
+           "id" => slot.job_id,
+           "booking_date_id" => booking_event_date_id,
+           "slot_index" => slot_index
+         }) do
+      {:ok, _} ->
+        socket
+        |> assign_booking_event()
+        |> put_flash(:success, "Session cancelled successfully!")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Error changing slot status")
+    end
+    |> close_modal()
     |> noreply()
   end
 
@@ -222,14 +648,122 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> noreply()
   end
 
+  def handle_info(
+        {:search_event, :change_client, search},
+        %{assigns: %{modal_pid: modal_pid, clients: clients}} = socket
+      ) do
+    send_update(modal_pid, SearchComponent,
+      id: SearchComponent,
+      results:
+        Clients.search(search, clients) |> Enum.map(&%{id: &1.id, name: &1.name, email: &1.email}),
+      search: search,
+      selection: nil
+    )
+
+    socket
+    |> noreply
+  end
+
+  def handle_info(
+        {:search_event, :reserve_session, client,
+         %{
+           slot_index: slot_index,
+           slot: slot,
+           booking_event_date: booking_event_date,
+           booking_event: booking_event
+         }},
+        %{assigns: %{current_user: _current_user}} = socket
+      ) do
+    {:ok, %{proposal: proposal, shoot: shoot, job: job}} =
+      BookingEvents.save_booking(
+        booking_event,
+        booking_event_date,
+        %{
+          name: client.name,
+          email: client.email,
+          phone: nil,
+          date: booking_event_date.date,
+          time: slot.slot_start
+        },
+        %{slot_index: slot_index, slot_status: :reserved}
+      )
+
+    Picsello.Shoots.broadcast_shoot_change(shoot)
+    class = "underline text-blue-planning-300"
+
+    socket
+    |> assign_booking_event()
+    |> make_popup(
+      icon: nil,
+      title: "Reserve Session",
+      subtitle: """
+        Great! Session has been reserved and a <a class="#{class}" href="#{job_url(job.id)}" target="_blank">job</a> + <a class="#{class}" href="#{BookingProposal.url(proposal.id)}" target="_blank">client portal</a> has been created for you to share
+      """,
+      copy_btn_label: "Copy link, I’ll send separately",
+      copy_btn_event: "copy-link",
+      copy_btn_value: BookingProposal.url(proposal.id),
+      confirm_event: "finish-proposal",
+      confirm_class: "btn-primary",
+      confirm_label: "Send client link via email",
+      show_search: false,
+      close_label: "Cancel",
+      payload: %{
+        job: Picsello.Jobs.get_job_by_id(job.id),
+        proposal: proposal,
+        client_name: client.name,
+        client_icon: "client-icon",
+        booking_event_date_id: booking_event_date.id
+      }
+    )
+  end
+
+  def handle_info(
+        {:confirm_event, "finish-proposal", %{job: job}},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    %{body_template: body_html, subject_template: subject} =
+      case Picsello.EmailPresets.for(job, :booking_proposal) do
+        [preset | _] ->
+          Picsello.EmailPresets.resolve_variables(
+            preset,
+            {job},
+            PicselloWeb.Helpers
+          )
+
+        _ ->
+          Logger.warning("No booking proposal email preset for #{job.type}")
+          %{body_template: "", subject_template: ""}
+      end
+
+    socket
+    |> assign(:job, job)
+    |> ClientMessageComponent.open(%{
+      composed_event: :proposal_message_composed,
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true,
+      presets: [],
+      body_html: body_html,
+      subject: subject,
+      client: Picsello.Job.client(job)
+    })
+    |> noreply()
+  end
+
+  def handle_info({:message_composed, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients)
+  end
+
+  defdelegate handle_info(message, socket), to: PicselloWeb.LeadLive.Show
+
   def overlap_time?(blocks), do: BookingEvents.overlap_time?(blocks)
 
   @doc """
   Edits the status of booking event date slots.
 
   This function takes a list of booking event date slots and edits their status. It iterates through each slot
-  in the list and sets the status to either `:hide` or `:open` based on the existing status. If the current
-  status is `:hide`, it remains unchanged; otherwise, it is updated to `:open`. This function is typically
+  in the list and sets the status to either `:hidden` or `:open` based on the existing status. If the current
+  status is `:hidden`, it remains unchanged; otherwise, it is updated to `:open`. This function is typically
   used to toggle the visibility of slots.
 
   ## Parameters
@@ -244,9 +778,9 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   ```elixir
   # Edit the status of booking event date slots
-  iex> slots = [%SlotBlock{status: :hide}, %SlotBlock{status: :open}]
+  iex> slots = [%SlotBlock{status: :hidden}, %SlotBlock{status: :open}]
   iex> edit_slots_status(%{slots: slots})
-  [%SlotBlock{status: :hide}, %SlotBlock{status: :open}]
+  [%SlotBlock{status: :hidden}, %SlotBlock{status: :open}]
 
   ## Notes
 
@@ -254,6 +788,14 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   """
   @spec edit_slots_status(map()) :: [SlotBlock.t()]
   def edit_slots_status(%{slots: slots}) do
+    slots
+    |> Enum.map(fn s ->
+      if s.status == :hidden, do: %{s | status: :hidden}, else: %{s | status: :open}
+    end)
+  end
+
+  @spec update_slots_for_edit(map()) :: [%SlotBlock{}]
+  def update_slots_for_edit(%{slots: slots}) do
     slots
     |> Enum.map(fn s ->
       if s.status == :hidden, do: %{s | is_hide: true}, else: s
@@ -301,12 +843,10 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     do: Index.assign_booking_events(socket)
 
   def count_booked_slots(slot),
-    do: Enum.count(slot, fn s -> s.status in [:booked, :reserved] end)
+    do: Enum.count(slot, fn s -> s.status == :booked || s.status == :reserved end)
 
   def count_available_slots(slot), do: Enum.count(slot, fn s -> s.status == :open end)
   def count_hidden_slots(slot), do: Enum.count(slot, fn s -> s.status == :hidden end)
-
-  def date_formatter(date), do: "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
 
   # tells us if the created/duplicated booking event is complete or not
   # if we dont have dates or a package_template_id, then its incomplete
