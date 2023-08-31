@@ -38,7 +38,7 @@
 
       <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20 mb-6">
         <div class="grid-col items-center flex-col lg:order-first order-last">
-          <h2 class="text-xl sm:mt-0 mt-4 mb-1">Picsello will see events in the following calendars</h2>
+          <h2 class="text-xl sm:mt-0 mt-4 mb-1">Select the calendars with events that you want to sync with your Picsello calendar (select all that apply)</h2>
           <div class="flex flex-col">
             <%= for calendar <- @calendars do %>
               <label class="flex items-center mt-3 cursor-pointer">
@@ -58,13 +58,13 @@
           </div>
         </div>
         <div class="grid-col order-first lg:order-last">
-          <.icon name="calendar-2" width="623" height="179" />
+          <.icon name="calendar-1" height="179"  class="2xl:pl-16 w-11/12"/>
         </div>
       </div>
 
       <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20 mb-6" id="calendar_read_write">
         <div class="grid-col items-center flex-col lg:order-first order-last">
-          <h2 class="text-xl sm:mt-0 mt-4 mb-1">Picsello will send events to the following calendar</h2>
+          <h2 class="text-xl sm:mt-0 mt-4 mb-1">Picsello will share events to the following calendar (select one) </h2>
           <div class="flex flex-col">
             <%= for calendar <- @calendars do %>
               <label class="flex items-center mt-3 cursor-pointer">
@@ -82,9 +82,6 @@
             <% end %>
           </div>
         </div>
-        <div class="grid-col order-first lg:order-last">
-          <.icon name="calendar-1" width="623" height="179" />
-        </div>
       </div>
 
       <button type="button" disabled={@disable_settings_buttons?} class="btn-primary" id="save" phx-click="save">Save</button>
@@ -93,14 +90,15 @@
         <hr class="my-4 sm:my-10" />
         <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20 mb-4">
           <div class="grid-col items-center flex-col lg:order-first order-last">
-            <h2 class="text-lg font-bold text-red-sales-300 sm:mt-0 mt-4 mb-1">Danger zone</h2>
+            <h2 class="text-lg font-bold text-red-sales-300 sm:mt-0 mt-4 mb-1">Disconnect Calendar</h2>
             <p class="text-base-250 mb-4">
-              If for whatever reason you need to change calendars or resetup the sync, you can do so here. Let us know if you run into any trouble
+             If at any point you need to switch to a different calendar or re-sync, you can do so by using the Disconnect button below. <br>
+             As always, hit the message icon in the bottom right-hand corner to reach <a href="https://support.picsello.com/" class="text-blue-planning-300">Customer Success</a> for additional help. 
             </p>
             <button type="button" disabled={@disable_settings_buttons?} id="disconnect_button" class="btn-tertiary btn-warning" phx-click="disconnect_calendar">Disconnect</button>
           </div>
           <div class="grid-col order-first lg:order-last">
-           <.icon name="calendar-4" width="623" height="179" />
+           <.icon name="calendar-4" height="179" class="2xl:pl-16 w-11/12"/>
           </div>
         </div>
         
@@ -114,13 +112,13 @@
   <section class="px-6 center-container">
     <div class="border rounded-lg p-4">
       <h1 class="text-3xl font-bold mb-6">2-way Calendar Sync</h1>
-      <h2 class="text-xl mb-4 text-base-250">
-        Make double-booking between calendars a thing of the past with 2-way Calendar sync. Setting this 
-        up enables the sharing of calendar booking events and reconciles your availability across both 
-        your Picsello and your external calendar.
-      </h2>
       <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20">
         <div class="-">
+        <p class="text-base-250 text-xl">
+          Make double-booking between calendars a thing of the past with 2-way Calendar Sync. Setting this 
+          up enables the sharing of calendar booking events and reconciles your availability across both 
+          your Picsello and your external calendar.
+        </p>
           <button type="button" phx-click="toggle_connect_modal" class="btn-primary flex items-center mt-4 md:mr-3" id="button-connect">
             <.icon name="plus" class="inline-block w-5 h-5 mr-2 text-white" />
             <span id="connect">Connect Calendar</span>
@@ -128,7 +126,7 @@
         </div>
  
         <div class="grid-col order-first lg:order-last">
-          <.icon name="calendar-1" width="623" height="179" />
+          <.icon name="calendar-1" height="179" class="2xl:pl-16 w-11/12"/>
         </div>
       </div>
     </div>
@@ -143,7 +141,7 @@
 
         <p class="text-base-250">
           1-way Calendar Subscription shares a copy of your Picsello bookings with your external calendar, 
-          regardless of availability. <br>
+          regardless of availability. <br><br>
           Consider 1-way Calendar Subscription in addition to 2-way Calendar Sync if you use a secondary 
           external calendar or wish to share your Picsello calendar with someone else.</p>
         <div class="flex flex-col my-7" id="subscribe-calendar-url">
@@ -158,7 +156,7 @@
         </.icon_button>
       </div>
       <div class="grid-col order-first lg:order-last">
-        <.icon name="calendar-3" width="623" height="179" />
+        <.icon name="calendar-3" height="179" class="2xl:pl-16 w-11/12"/>
       </div>
     </div>
   </div>

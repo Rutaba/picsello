@@ -21,7 +21,7 @@ const calendar_render = (component, el) => {
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
-      right: 'dayGridMonth,timeGridWeek',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay',
     },
     eventBackgroundColor: 'green',
     eventBorderColor: 'green',

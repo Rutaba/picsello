@@ -32,7 +32,7 @@ defmodule PicselloWeb.Calendar.Shared.DetailComponent do
         <.date_time_item opts={@opts} />
 
         <%= if @opts.conferencing do %>
-          <.event_item icon="vector" custom_item={true}>
+          <.event_item icon="vector" custom_item={true} icon_class="w-12">
             <div class="mt-1 font-bold text-base"> <%=@opts.conferencing["details"]["url"] %> </div>
           </.event_item>
         <% end %>
@@ -56,7 +56,7 @@ defmodule PicselloWeb.Calendar.Shared.DetailComponent do
     """
   end
 
-  defp date_time_item(%{start_date: start_date, end_date: end_date} = assigns) do
+  defp date_time_item(%{opts: %{start_date: start_date, end_date: end_date}} = assigns) do
     assigns =
       assigns
       |> assign(:week_day, Timex.weekday(start_date) |> Timex.day_name())
@@ -68,6 +68,7 @@ defmodule PicselloWeb.Calendar.Shared.DetailComponent do
     ~H"""
       <.event_item
         icon="clock"
+        icon_class="ml-1"
         item_title={"#{@week_day}, #{@month} #{@day}#{@to_day}, #{@year}"}
         item_desc={"#{normalize_datetime(@opts.start_date)} - #{normalize_datetime(@opts.end_date)}"}
         class="bg-base-200 mx-[-31px] px-6"

@@ -14,7 +14,7 @@ defmodule PicselloWeb.Live.Calendar.Shared.ConnectModal do
     ~H"""
     <div class="dialog">
       <h1 class="flex justify-between mb-4 text-3xl font-bold">
-        2-way calendar sync
+        2-way Calendar Sync
         <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
           <.icon name="close-x" class="w-4 h-4 stroke-current stroke-2"/>
         </button>
@@ -23,10 +23,10 @@ defmodule PicselloWeb.Live.Calendar.Shared.ConnectModal do
       <p class="font-bold mt-4">Securely connect your external and Picsello calendars so you can:</p>
       <ul class="list-disc ml-4">
         <li>Avoid schedule conflicts and double-bookings between your photography and personal calendars</li>
-        <li>Have all your external calendar events and details will synced with your Picsello account and vice versa!</li>
+        <li>Have all your external calendar events and details sync with your Picsello account and vice versa!</li>
       </ul>
       <PicselloWeb.LiveModal.footer class="pt-8">
-        <a class="btn-primary" id="button-connect" href={@nylas_url}>Sync calendars</a>
+        <a class="btn-primary" id="button-connect" href={@nylas_url}>Sync Calendars</a>
         <button class="btn-secondary" title="cancel" type="button" phx-click="modal" phx-value-action="close">
           Close
         </button>

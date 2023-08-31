@@ -68,8 +68,6 @@ defmodule PicselloWeb.Live.Calendar.Index do
   end
 
   defp build_datetime(value) do
-    IO.inspect(value)
-
     case DateTime.from_iso8601(value) do
       {:error, :invalid_format} ->
         {:ok, %Date{} = date} = Date.from_iso8601(value)
