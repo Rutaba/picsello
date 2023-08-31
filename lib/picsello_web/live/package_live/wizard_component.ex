@@ -1567,7 +1567,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     params =
       if params && params.package_payment_schedules != [] do
         presets =
-          map_keys(params.package_payment_schedules)
+          sort_payment_schedules(params.package_payment_schedules)
+          |> map_keys()
           |> Enum.with_index(
             &Map.merge(
               &1,
@@ -1589,7 +1590,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           "schedule_type" => params.schedule_type
         }
       else
-        default_presets = Packages.get_payment_defaults(job_type)
+        default_presets = Packages.get_payment_defaults(job_type) |> sort_payment_schedules()
 
         presets =
           default_presets
@@ -1615,6 +1616,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket
     |> assign_payments_changeset(params, :insert)
     |> assign(step: :payment)
+  end
+
+  defp sort_payment_schedules(presets) do
+    {first, remaining} =
+      Enum.split_with(presets, fn preset -> preset.due_interval == "To Book" end)
+
+    if first, do: List.flatten([first | remaining]), else: remaining
   end
 
   defp save_payment(socket, %{"custom_payments" => payment_params} = params, job_id \\ nil) do
