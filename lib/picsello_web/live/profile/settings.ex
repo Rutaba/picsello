@@ -13,7 +13,6 @@ defmodule PicselloWeb.Live.Profile.Settings do
     socket
     |> assign(:page_title, "Settings")
     |> assign(profile_url: url, organization: organization, embed_code: embed_code)
-    |> assign(:footer_class, nil)
     |> ok()
   end
 

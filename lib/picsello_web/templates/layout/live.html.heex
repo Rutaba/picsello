@@ -12,7 +12,7 @@
     <%= @inner_content %>
   </div>
 
-  <.main_footer footer_class={Map.get(assigns, :footer_class, "hidden")} socket={@socket} current_user={@current_user} />
+  <.main_footer socket={@socket} current_user={@current_user} />
   <.admin_banner socket={@socket} />
 </main>
 

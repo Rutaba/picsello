@@ -19,7 +19,6 @@ defmodule PicselloWeb.Live.Calendar.Index do
     |> assign(:nylas_url, nylas_url)
     |> assign(:show_calendar_setup, is_nil(nylas_detail.oauth_token))
     |> assign(:page_title, "Calendar")
-    |> assign(:footer_class, nil)
     |> ok()
   end
 

@@ -13,7 +13,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents do
     |> assign(stripe_status: Payments.status(current_user))
     |> assign_events()
     |> assign_booking_events()
-    |> assign(:footer_class, nil)
     |> ok()
   end
 

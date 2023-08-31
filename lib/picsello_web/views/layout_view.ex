@@ -538,6 +538,7 @@ defmodule PicselloWeb.LayoutView do
   end
 
   def main_footer(assigns) do
+    assigns = assign_new(assigns, :footer_class, fn -> nil end)
     ~H"""
     <div class="mt-12"></div>
     <footer class={"mt-auto #{@footer_class} sm:block bg-base-300 text-white"}>
@@ -557,7 +558,7 @@ defmodule PicselloWeb.LayoutView do
         <hr class="my-8 opacity-30" />
         <div class="flex flex-col lg:flex-row">
           <div class="text-base-250 text-xs">Copyright © <%= DateTime.utc_now.year %> Picsello</div>
-          <ul class="flex lg:ml-auto items-center	">
+          <ul class="flex lg:ml-auto items-center">
             <li class="text-base-250 text-xs"><a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer">Terms</a></li>
             <li class="text-base-250 mx-3.5">|</li>
             <li class="text-base-250 text-xs"><a href="https://www.picsello.com/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>

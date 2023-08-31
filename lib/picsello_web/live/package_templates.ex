@@ -33,7 +33,6 @@ defmodule PicselloWeb.Live.PackageTemplates do
     |> assign_new(:pagination, fn -> PaginationLive.changeset() |> Changeset.apply_changes() end)
     |> assign_new(:pagination_changeset, fn -> PaginationLive.changeset() end)
     |> default_assigns()
-    |> assign(:footer_class, nil)
     |> ok()
   end
 

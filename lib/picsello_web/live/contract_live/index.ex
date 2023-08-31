@@ -27,7 +27,6 @@ defmodule PicselloWeb.Live.Contracts.Index do
     |> assign(:job_type, "all")
     |> assign_pagination(@default_pagination_limit)
     |> assign_contracts()
-    |> assign(:footer_class, nil)
     |> ok()
   end
 
