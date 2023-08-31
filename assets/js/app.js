@@ -44,6 +44,7 @@ import '@fontsource/be-vietnam/700.css';
 import Analytics from './hooks/analytics';
 import AutoHeight from './hooks/auto-height';
 import Calendar from './hooks/calendar';
+import CheckIdle from './hooks/check-idle';
 import ClientGalleryCookie from './hooks/client-gallery-cookie';
 import Clipboard from './hooks/clipboard';
 import DefaultCostTooltip from './hooks/default-cost-tooltip';
@@ -76,6 +77,7 @@ import DatePicker from './hooks/date-picker';
 import BeforeUnload from './hooks/before-unload';
 import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
+import Tooltip from './hooks/tooltip';
 
 const Modal = {
   mounted() {
@@ -249,6 +251,7 @@ const showAdminBanner = {
 const Hooks = {
   AutoHeight,
   Calendar,
+  CheckIdle,
   ClearInput,
   ClearQuillInput,
   ClientGalleryCookie,
@@ -283,6 +286,7 @@ const Hooks = {
   TZCookie,
   ToggleContent,
   ToggleSiblings,
+  Tooltip,
   ResumeUpload,
   GallerySelector,
   ClientGalleryCookie,

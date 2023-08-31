@@ -1,7 +1,6 @@
 defmodule Picsello.Jobs do
   @moduledoc "context module for jobs"
   alias Picsello.{
-    Accounts.User,
     Repo,
     Client,
     Job,
@@ -119,29 +118,19 @@ defmodule Picsello.Jobs do
     job |> Job.unarchive_changeset() |> Repo.update()
   end
 
-  def maybe_upsert_client(%Ecto.Multi{} = multi, %Client{} = new_client, %User{} = current_user) do
-    old_client =
-      Repo.get_by(Client,
-        email: new_client.email |> String.downcase(),
-        organization_id: current_user.organization_id
-      )
+  def maybe_upsert_client(%Ecto.Multi{} = multi, client, current_user) do
+    client = Map.put(client, :email, client.email |> String.downcase())
 
-    maybe_upsert_client(multi, old_client, new_client, current_user.organization_id)
-  end
-
-  defp maybe_upsert_client(multi, %Client{id: id} = old_client, _new_client, _organization_id)
-       when id != nil do
-    Ecto.Multi.put(multi, :client, old_client)
-  end
-
-  defp maybe_upsert_client(multi, nil = _old_client, new_client, organization_id) do
-    Ecto.Multi.insert(
-      multi,
+    multi
+    |> Ecto.Multi.insert(
       :client,
-      new_client
+      client
       |> Map.take([:name, :email, :phone])
-      |> Map.put(:organization_id, organization_id)
-      |> Client.create_changeset()
+      |> Map.put(:organization_id, current_user.organization_id)
+      |> Client.create_changeset(),
+      on_conflict: {:replace, [:email, :archived_at]},
+      conflict_target: [:organization_id, :email],
+      returning: [:id]
     )
   end
 

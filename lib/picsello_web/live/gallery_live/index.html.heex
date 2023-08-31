@@ -22,7 +22,7 @@
 <%= if Enum.empty? @galleries do %>
   <div class="px-6 py-2 center-container">
     <.empty_state_base tour_embed="https://demo.arcade.software/FVJxmDikFo0OyhhV8raN?embed" headline="Meet Galleries" eyebrow_text="Galleries Product Tour" body="If you simply want to upload a gallery and get started selling products and digitals, this is the place for you!" third_party_padding="calc(66.66666666666666% + 41px)">
-      <a {testid("create-a-gallery")} title="Create a gallery" href="#" class="flex justify-center mt-5 text-lg px-7 btn-tertiary intro-galleries" phx-click="create_gallery">
+      <a {testid("create-a-gallery")} title="Create a gallery" class="flex justify-center mt-5 text-lg px-7 btn-tertiary intro-galleries" phx-click="create_gallery">
         Create a gallery
       </a>
     </.empty_state_base>
@@ -49,7 +49,7 @@
           <hr class="block md:hidden base-250 w-full my-4"/>
 
           <div class="flex flex-wrap gap-3 items-center md:text-sm lg:text-base md:ml-auto md:w-auto w-full">
-            <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg text-white bg-blue-planning-300 hover:bg-blue-planning-300/75", %{"pointer-events-none text-gray-200 border-gray-200" => disabled?(gallery)})}>
+            <a href={Routes.gallery_photographer_index_path(@socket, :index, gallery.id)} class={classes("flex flex-shrink-0 grow items-center justify-center text-center px-2 py-1 font-sans border rounded-lg text-white bg-blue-planning-300 hover:bg-blue-planning-300/75", %{"pointer-events-none bg-blue-planning-200 text-gray-200 border-gray-200" => disabled?(gallery)})}>
               <.icon name="add-photos" class={classes("w-4 h-4 fill-current text-white inline mr-2", %{"opacity-50" => disabled?(gallery)})} />
               Upload photos
             </a>
@@ -67,9 +67,9 @@
                 <.icon name="up" class="hidden w-4 h-4 ml-auto mr-1 stroke-current stroke-3 text-blue-planning-300 close-icon" />
               </button>
               <div class="flex-col bg-white border rounded-lg shadow-lg popover-content z-20 hidden">
-                <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} class={classes(%{"hidden" => disabled?(gallery)})} />
-                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} class={classes(%{"hidden" => disabled?(gallery)})} />
-                <.dropdown_item {assigns} id="send_email_link" class={classes("hover:cursor-pointer", %{"hidden" => disabled?(gallery)})} icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} />
+                <.dropdown_item {assigns} id="edit_link" icon="pencil" title="Edit" link={[href: Routes.gallery_photographer_index_path(@socket, :index, gallery.id)]} disable={disabled?(gallery)} />
+                <.dropdown_item {assigns} id="go_to_job_link" icon="camera-check" title="Go to Job" link={[href: Routes.job_path(@socket, :jobs, gallery.job.id)]} disable={disabled?(gallery)} />
+                <.dropdown_item {assigns} id="send_email_link" icon="envelope" title="Send Email" link={[phx_click: "open_compose"]} disable={disabled?(gallery)} />
                 <%= if Enum.any?(gallery.orders) do %>
                   <%= case disabled?(gallery) do %>
                     <% true -> %>

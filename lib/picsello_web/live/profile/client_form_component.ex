@@ -7,6 +7,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign_job_types()
     |> assign_changeset()
     |> ok()
   end
@@ -73,20 +74,6 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
     """
   end
 
-  defp assign_changeset(%{assigns: %{job_type: job_type}} = socket) do
-    assign(socket, :changeset, Profiles.contact_changeset(%{job_type: job_type}))
-  end
-
-  defp assign_changeset(%{assigns: %{job_types: types}} = socket) do
-    params =
-      case types do
-        [job_type] -> %{job_type: job_type}
-        _ -> %{}
-      end
-
-    assign(socket, :changeset, Profiles.contact_changeset(params))
-  end
-
   @impl true
   def handle_event("validate-client", %{"contact" => params}, socket) do
     socket
@@ -109,5 +96,24 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
         socket |> assign(changeset: changeset)
     end
     |> noreply()
+  end
+
+  defp assign_job_types(%{assigns: %{job_types: []}} = socket),
+    do: assign(socket, :job_types, ["other"])
+
+  defp assign_job_types(socket), do: socket
+
+  defp assign_changeset(%{assigns: %{job_type: job_type}} = socket) do
+    assign(socket, :changeset, Profiles.contact_changeset(%{job_type: job_type}))
+  end
+
+  defp assign_changeset(%{assigns: %{job_types: types}} = socket) do
+    params =
+      case types do
+        [job_type] -> %{job_type: job_type}
+        _ -> %{}
+      end
+
+    assign(socket, :changeset, Profiles.contact_changeset(params))
   end
 end

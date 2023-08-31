@@ -90,13 +90,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
-    result = with true <- is_nil(client_email),
-         nil <- Map.get(assigns, :current_user) do
-      %GalleryClient{email: gallery.job.client.email, gallery_id: gallery.id}
-    else
-      false -> maybe_insert_gallery_client(gallery, client_email)
-      current_user -> maybe_insert_gallery_client(gallery, current_user.email)
-    end
+    result =
+      with true <- is_nil(client_email),
+           nil <- Map.get(assigns, :current_user) do
+        %GalleryClient{email: gallery.job.client.email, gallery_id: gallery.id}
+      else
+        false -> maybe_insert_gallery_client(gallery, client_email)
+        current_user -> maybe_insert_gallery_client(gallery, current_user.email)
+      end
 
     if is_list(result) do
       result |> List.first()
@@ -455,7 +456,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> assign(credits: credits(gallery))
     |> assign(order: order)
     |> assign_cart_count(gallery)
-    |> close_modal()
     |> put_flash(:success, "Added!")
     |> noreply()
   end
@@ -512,7 +512,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         selection_filter: false,
         client_liked_album: false,
         selected_photos: [],
-        has_orders: true
+        has_orders: true,
+        favorite_album?: false
       })
 
     any_client_liked_photo? =
@@ -531,7 +532,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       </div>
       <ul class="absolute z-30 hidden w-full mt-2 bg-white border rounded-md popover-content border-base-200">
         <%= render_slot(@inner_block) %>
-        <%= if @has_orders do %>
+        <%= if @has_orders && !@favorite_album? do %>
         <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter || @client_liked_album || @any_client_liked_photo?})}>
           <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
             <%= @delete_title %>

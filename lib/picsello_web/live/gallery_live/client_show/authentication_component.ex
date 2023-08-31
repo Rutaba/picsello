@@ -33,10 +33,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
 
     if valid_email? do
       gallery
-      |> Galleries.build_gallery_session_token(password, email)
+      |> Galleries.build_gallery_session_token(password, String.downcase(email))
       |> case do
         {:ok, token} ->
-          update_emails_map(email, gallery)
+          update_emails_map(String.downcase(email), gallery)
           assign(socket, submit: true, session_token: token)
 
         _ ->

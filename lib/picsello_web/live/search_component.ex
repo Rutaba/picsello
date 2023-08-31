@@ -49,7 +49,7 @@ defmodule PicselloWeb.SearchComponent do
         <div class="flex flex-col justify-between items-center px-1.5 md:flex-row">
           <div class="relative flex w-full">
               <a href='#' class="absolute top-0 bottom-0 flex flex-row items-center justify-center overflow-hidden text-xs text-gray-400 left-2">
-              <%= if Enum.any?(@results) || @selection do %>
+              <%= if @search not in [nil, ""] && Enum.any?(@results) || @selection do %>
                 <span phx-click="clear-search" class="cursor-pointer" phx-target={@myself}>
                   <.icon name="close-x" class="w-4 ml-1 fill-current stroke-current stroke-2 close-icon text-blue-planning-300" />
                 </span>
@@ -58,7 +58,7 @@ defmodule PicselloWeb.SearchComponent do
               <% end %>
             </a>
             <%= text_input f, :search, value: Map.get(@selection || %{}, :name), class: "form-control w-full text-input indent-6", phx_debounce: "500", placeholder: "Search Currencies...", maxlength: 3, autocomplete: "off" %>
-            <%= if Enum.any?(@results) do %>
+            <%= if @search not in [nil, ""] && Enum.any?(@results) do %>
               <div id="search_results" class="absolute top-14 w-4/6 z-10">
                 <div class="z-50 left-0 right-0 rounded-lg border border-gray-100 shadow py-2 px-2 bg-white w-full overflow-auto max-h-48 h-fit">
                   <%= for result <- @results do %>

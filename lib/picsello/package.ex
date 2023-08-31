@@ -11,6 +11,7 @@ defmodule Picsello.Package do
     field :base_multiplier, :decimal, default: 1
     field :base_price, Money.Ecto.Map.Type
     field :description, :string
+    field :thumbnail_url, :string
     field :download_count, :integer
     field :download_each_price, Money.Ecto.Map.Type
     field :job_type, :string
@@ -132,7 +133,7 @@ defmodule Picsello.Package do
     package
     |> cast(
       attrs,
-      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed description questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks show_on_public_profile]a
+      ~w[discount_base_price discount_digitals discount_print_credits digitals_include_in_total print_credits_include_in_total schedule_type fixed description thumbnail_url questionnaire_template_id name organization_id shoot_count print_credits turnaround_weeks show_on_public_profile]a
     )
     |> validate_required(~w[name organization_id shoot_count turnaround_weeks]a)
     |> validate_number(:shoot_count, less_than_or_equal_to: 10)
@@ -359,6 +360,7 @@ defmodule Picsello.Package do
           id: integer(),
           name: String.t(),
           description: String.t(),
+          thumbnail_url: String.t(),
           organization_id: integer(),
           shoot_count: integer(),
           turnaround_weeks: integer(),

@@ -104,6 +104,7 @@ defmodule Picsello.UserManagesMarketingBrandLinksTest do
     |> force_simulate_click(testid("active?"))
     |> assert_has(css("#delete-link", count: 0))
     |> click(css("#save"))
+    |> scroll_into_view(testid("marketing-links"))
     |> find(css("[data-testid='marketing-links']:first-child"), fn card ->
       card
       |> assert_has(css("a[href='https://xyz.com']", text: "Open"))
