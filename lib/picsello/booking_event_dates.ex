@@ -2,6 +2,7 @@ defmodule Picsello.BookingEventDates do
   @moduledoc "context module for booking events dates"
 
   alias Picsello.{Repo, BookingEventDate}
+  import PicselloWeb.PackageLive.Shared, only: [current: 1]
   import Ecto.Query
 
   def create_booking_event_dates(params) do
@@ -18,8 +19,46 @@ defmodule Picsello.BookingEventDates do
     |> Repo.all()
   end
 
+  def delete_old_repeat_dates(dates, booking_event_id) do
+    from(
+      event_date in BookingEventDate,
+      where: event_date.date in ^dates and event_date.booking_event_id == ^booking_event_id
+    )
+    |> Repo.delete_all()
+  end
+
   def upsert_booking_event_date(changeset) do
     changeset |> Repo.insert_or_update()
+  end
+
+  def generate_rows_for_repeat_dates(changeset, repeat_dates) do
+    default_repeat_changeset = set_defaults_for_repeat_dates_changeset(changeset)
+
+    Enum.map(repeat_dates, fn date ->
+      default_repeat_changeset
+      |> Ecto.Changeset.put_change(:date, date)
+      |> current()
+      |> prepare_params()
+    end)
+  end
+
+  defp prepare_params(changeset) do
+    changeset
+    |> Map.from_struct()
+    |> Map.drop([:id])
+  end
+
+  defp set_defaults_for_repeat_dates_changeset(booking_event) do
+    booking_event
+    |> Ecto.Changeset.change(%{
+      calendar: "",
+      count_calendar: nil,
+      stop_repeating: nil,
+      is_repeat: false,
+      repetition: false,
+      inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
+      updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    })
   end
 
   def available_slots(%BookingEventDate{} = booking_date, booking_event) do
@@ -157,4 +196,7 @@ defmodule Picsello.BookingEventDates do
       (ss_st in [:gt, :eq] && ss_et == :lt) || (se_st in [:gt, :eq] && se_et == :lt)
     end
   end
+
+  # TODO: functionality of this handle in next PR
+  def is_booked_any_date?(dates), do: false
 end

@@ -6,6 +6,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
   alias Picsello.{BookingEventDate, BookingEventDates}
+  alias PicselloWeb.Calendar.BookingEvents.Shared
   import Ecto.Changeset
 
   @occurences [0, 5, 10, 15, 20, 30, 45, 60]
@@ -167,15 +168,33 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   @impl true
   def handle_event("submit", %{"booking_event_date" => params}, socket) do
-    %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
+    %{assigns: %{changeset: changeset, booking_date: booking_date}} =
+      socket = assign_changeset(socket, params)
+
+    repeat_dates = get_repeat_dates(changeset)
+    # TODO: Repeat dates delete & insert functionality
+    is_booked_dates = BookingEventDates.is_booked_any_date?(repeat_dates)
+
+    _repeat_dates_rows =
+      cond do
+        is_booked_dates -> []
+        true -> BookingEventDates.generate_rows_for_repeat_dates(changeset, repeat_dates)
+      end
 
     case BookingEventDates.upsert_booking_event_date(changeset) do
       {:ok, booking_event} ->
-        successfull_save(socket, booking_event)
+        socket
+        |> successfull_save(booking_event)
 
       _ ->
         socket |> noreply()
     end
+  end
+
+  defp get_repeat_dates(changeset) do
+    selected_days = get_field(changeset, :repeat_on) |> Enum.map(&Map.from_struct(&1))
+    booking_event_date = current(changeset)
+    Shared.calculate_dates(booking_event_date, selected_days)
   end
 
   defp successfull_save(socket, booking_event_date) do
