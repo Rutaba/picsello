@@ -3,8 +3,7 @@ defmodule Picsello.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
   import TzExtra.Changeset
-  alias Picsello.Onboardings.Onboarding
-  alias Picsello.Repo
+  alias Picsello.{Repo, Onboardings.Onboarding, Subscription, SubscriptionEvent, Organization}
 
   @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
   @derive {Inspect, except: [:password]}
@@ -22,9 +21,9 @@ defmodule Picsello.Accounts.User do
     field :sign_up_auth_provider, Ecto.Enum, values: [:google, :password], default: :password
     field :stripe_customer_id, :string
     embeds_one(:onboarding, Onboarding, on_replace: :update)
-    has_one(:subscription, Picsello.Subscription)
-    has_one(:subscription_event, Picsello.SubscriptionEvent)
-    belongs_to(:organization, Picsello.Organization)
+    has_one(:subscription, Subscription)
+    has_one(:subscription_event, SubscriptionEvent)
+    belongs_to(:organization, Organization)
 
     timestamps()
   end
@@ -57,11 +56,11 @@ defmodule Picsello.Accounts.User do
     |> validate_required([:name])
     |> validate_email()
     |> validate_password(opts)
-    |> then(
-      &cast_assoc(&1, :organization,
-        with: {Picsello.Organization, :registration_changeset, [get_field(&1, :name)]}
+    |> then(fn changeset ->
+      cast_assoc(changeset, :organization,
+        with: &Organization.registration_changeset(&1, &2, get_field(changeset, :name))
       )
-    )
+    end)
   end
 
   def enabled?(%{allow_cash_payment: allow_cash_payment}), do: allow_cash_payment
