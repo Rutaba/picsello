@@ -225,11 +225,10 @@ defmodule Picsello.Photos do
   end
 
   def csv_content(photos, :lightroom) do
+    # remove filename extensions, input -> [%{name: "abc.jpg"},  %{name: "xyz.jpg"}] and output will be like that "abc, xyz"
     content =
       photos
-      # remove filename extensions
-      |> Enum.map(fn photo -> photo.name |> String.split(".") |> Enum.drop(-1) end)
-      |> Enum.join(", ")
+      |> Enum.map_join(", ", fn photo -> photo.name |> String.split(".") |> Enum.drop(-1) end)
 
     # Adobe Lightroom requires file names in a single column separated by commas
     # This is how you do that in CSV
