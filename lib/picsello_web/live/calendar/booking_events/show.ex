@@ -522,12 +522,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
          } = assigns
        ) do
     description =
-      case package do
-        nil ->
+      cond do
+        event_description ->
           event_description
 
-        %{description: description} ->
-          if event_description == "", do: description, else: event_description
+        package && package.description ->
+          package.description
+
+        true ->
+          "Pick a package"
       end
 
     assigns = Map.put(assigns, :description, HtmlSanitizeEx.strip_tags(description))
