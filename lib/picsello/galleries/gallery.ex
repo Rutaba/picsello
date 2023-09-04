@@ -144,7 +144,7 @@ defmodule Picsello.Galleries.Gallery do
   def save_cover_photo_changeset(gallery, attrs \\ %{}) do
     gallery
     |> cast(attrs, [])
-    |> cast_embed(:cover_photo, with: {CoverPhoto, :changeset, [gallery.id]}, required: true)
+    |> cast_embed(:cover_photo, with: &CoverPhoto.changeset(&1, &2, gallery.id), required: true)
   end
 
   def delete_cover_photo_changeset(gallery) do
