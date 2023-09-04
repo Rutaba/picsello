@@ -100,6 +100,7 @@ defmodule Picsello.UserManagesMarketingBrandLinksTest do
     |> click(css("#hamburger-menu"))
     |> click(link("Marketing"))
     |> click(button("Manage links"))
+    |> clear(css("#brand-link_link"))
     |> fill_in(css("#brand-link_link"), with: "https://xyz.com")
     |> force_simulate_click(testid("active?"))
     |> assert_has(css("#delete-link", count: 0))
