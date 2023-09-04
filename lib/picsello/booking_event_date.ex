@@ -199,7 +199,7 @@ defmodule Picsello.BookingEventDate do
   end
 
   defp set_default_repeat_on(changeset) do
-    if(Enum.empty?(get_field(changeset, :repeat_on))) do
+    if Enum.empty?(get_field(changeset, :repeat_on)) do
       put_change(changeset, :repeat_on, [
         %{day: "sun", active: true},
         %{day: "mon", active: false},

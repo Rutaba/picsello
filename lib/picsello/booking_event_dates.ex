@@ -206,5 +206,5 @@ defmodule Picsello.BookingEventDates do
   end
 
   # TODO: functionality of this handle in next PR
-  def is_booked_any_date?(dates), do: false
+  def is_booked_any_date?(_dates), do: false
 end

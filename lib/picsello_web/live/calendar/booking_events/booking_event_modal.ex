@@ -168,8 +168,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   @impl true
   def handle_event("submit", %{"booking_event_date" => params}, socket) do
-    %{assigns: %{changeset: changeset, booking_date: booking_date}} =
-      socket = assign_changeset(socket, params)
+    %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
 
     repeat_dates = get_repeat_dates(changeset)
     # TODO: Repeat dates delete & insert functionality
