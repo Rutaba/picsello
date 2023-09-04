@@ -48,6 +48,15 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> ok()
   end
 
+  def update(
+        %{photo_id: photo_id},
+        socket
+      ) do
+    socket
+    |> assign_details(photo_id)
+    |> ok()
+  end
+
   @impl true
   def handle_event("prev", _, socket) do
     socket

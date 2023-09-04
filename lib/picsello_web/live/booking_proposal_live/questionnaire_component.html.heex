@@ -2,81 +2,22 @@
   <form action="#" phx-submit="submit" phx-change="validate" phx-target={ @myself }>
     <.close_x />
 
-    <.banner title="Questionnaire" job={@job} package={@package} read_only={@read_only}>
-      <%= if @answer.id do %>
-        <p>Answered on <%= strftime(@photographer.time_zone, @answer.inserted_at, "%b %d, %Y") %></p>
-      <% end %>
-    </.banner>
+    <div class="mb-4 md:mb-8">
+      <.maybe_show_photographer_logo? organization={@organization} />
+    </div>
+
+    <h1 class="text-3xl font-light">
+      Questionnaire for <%= @job.client.name %>
+    </h1>
+
+    <%= if @answer.id do %>
+      <p>Answered on <%= strftime(@photographer.time_zone, @answer.inserted_at, "%b %d, %Y") %></p>
+    <% end %>
 
     <fieldset class={classes(%{"opacity-75" => @read_only})} disabled={@read_only}>
       <dl>
         <%= for {{question, answer}, question_index} <- @questionnaire.questions |> Enum.zip(@answer.answers) |> Enum.with_index() do %>
-          <dt class="pt-4">
-            <label class="input-label" for={"question_#{question_index}"}>
-              <%= question.prompt %>
-            </label>
-            <%= if question.optional do %>
-              <em class="text-xs">(optional)</em>
-            <% end %>
-          </dt>
-            <%= case question.type do %>
-              <% :multiselect -> %>
-                <input type="hidden" name={"answers[#{question_index}][]"} value="">
-
-                <dd>
-                  <%= for {option, option_index} <- question.options |> Enum.with_index() do %>
-                    <label class="flex items-center mt-2">
-                      <input
-                        class="checkbox"
-                        type="checkbox"
-                        name={"answers[#{question_index}][]"}
-                        value={option_index}
-                        checked={answer |> Enum.map(&String.to_integer(&1)) |> Enum.member?(option_index)}>
-                        <div class="pl-2 input-label" ><%= option %></div>
-                    </label>
-                  <% end %>
-                </dd>
-
-              <% :select -> %>
-                <dd>
-                  <%= for {option, option_index} <- question.options |> Enum.with_index() do %>
-                    <label class="flex items-center mt-2">
-                      <input
-                        class="radio"
-                        type="radio"
-                        name={"answers[#{question_index}][]"}
-                        value={option_index}
-                        checked={answer |> Enum.map(&String.to_integer(&1)) |> Enum.member?(option_index)}>
-                      <div class="pl-2 input-label" ><%= option %></div>
-                    </label>
-                  <% end %>
-                </dd>
-
-              <% :text -> %>
-                <dd class="mt-2">
-                  <input type="text" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} placeholder={question.placeholder} />
-                </dd>
-
-              <% :phone -> %>
-                <dd class="mt-2">
-                  <input type="tel" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} />
-                </dd>
-
-              <% :email -> %>
-                <dd class="mt-2">
-                  <input type="email" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} />
-                </dd>
-
-              <% :date -> %>
-                <dd class="mt-2">
-                  <input type="date" phx-debounce="1000" class="w-full text-input" id={"question_#{question_index}"} name={"answers[#{question_index}][]"} value={answer} />
-                </dd>
-
-              <% :textarea -> %>
-                <dd class="mt-2">
-                  <textarea phx-debounce="1000" class="w-full text-input"  id={"question_#{question_index}"} name={"answers[#{question_index}][]"}><%= answer %></textarea>
-                </dd>
-            <% end %>
+          <.questionnaire_item question={question} answer={answer} question_index={question_index} />
         <% end %>
       </dl>
     </fieldset>

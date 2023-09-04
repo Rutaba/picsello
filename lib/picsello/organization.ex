@@ -9,6 +9,7 @@ defmodule Picsello.Organization do
     OrganizationJobType,
     OrganizationCard,
     Package,
+    Utils,
     Campaign,
     Client,
     Accounts.User,
@@ -67,7 +68,12 @@ defmodule Picsello.Organization do
     do:
       registration_changeset(
         organization,
-        Map.put_new(attrs, :name, "#{user_name} Photography")
+        Map.put_new(
+          attrs,
+          :name,
+          build_organization_name("#{user_name} Photography")
+          |> Utils.capitalize_all_words()
+        )
       )
 
   def registration_changeset(organization, attrs, _user_name),
@@ -80,7 +86,8 @@ defmodule Picsello.Organization do
     |> cast_assoc(:gs_gallery_products, with: &GalleryProduct.changeset/2)
     |> cast_assoc(:organization_job_types, with: &OrganizationJobType.changeset/2)
     |> validate_required([:name])
-    |> prepare_changes(fn changeset ->
+    |> validate_org_name()
+    |> then(fn changeset ->
       case get_change(changeset, :slug) do
         nil ->
           change_slug(changeset)
@@ -92,11 +99,26 @@ defmodule Picsello.Organization do
     |> unique_constraint(:slug)
   end
 
+  defp validate_org_name(changeset) do
+    name = get_change(changeset, :name)
+
+    if name && check_existing_name_and_slug(name, build_slug(name)) do
+      add_error(
+        changeset,
+        :name,
+        "Business name already exists. Please try with a different name."
+      )
+    else
+      changeset
+    end
+  end
+
   def name_changeset(organization, attrs) do
     organization
     |> cast(attrs, [:name])
     |> validate_required([:name])
     |> prepare_changes(&change_slug/1)
+    |> validate_org_name()
     |> unique_constraint(:slug)
     |> case do
       %{changes: %{name: _}} = changeset -> changeset
@@ -113,25 +135,54 @@ defmodule Picsello.Organization do
   def assign_stripe_account_changeset(%__MODULE__{} = organization, "" <> stripe_account_id),
     do: organization |> change(stripe_account_id: stripe_account_id)
 
-  def build_slug(name) do
-    slug = name |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
-    slug_like = "#{slug}%"
+  defp build_organization_name(name) do
+    name
+    |> reformat_string()
+    |> find_unique_organization_name()
+  end
 
-    highest_slug_index =
-      from(organization in __MODULE__,
-        where: like(organization.slug, ^slug_like),
-        select:
-          "(coalesce(regexp_match(?, '\\d+$'), ARRAY['1']))[1]::int"
-          |> fragment(organization.slug)
-          |> max()
-      )
-      |> Repo.one()
+  @spec find_unique_organization_name(name :: String.t(), count :: integer) :: String.t()
+  defp find_unique_organization_name(name, count \\ 0) do
+    updated_name =
+      if count > 0 do
+        "#{name} #{count}"
+      else
+        name
+      end
 
-    case highest_slug_index do
-      nil -> slug
-      n -> "#{slug}-#{n + 1}"
+    updated_slug = build_slug(updated_name)
+
+    if check_existing_name_and_slug(updated_name, updated_slug) do
+      find_unique_organization_name(name, count + 1)
+    else
+      updated_name
     end
   end
+
+  def build_slug(nil), do: nil
+
+  def build_slug(name), do: reformat_string(name, "-")
+
+  @spec check_existing_name_and_slug(name :: String.t(), slug :: String.t()) :: boolean
+  defp check_existing_name_and_slug(name, slug) do
+    Repo.exists?(
+      from o in __MODULE__,
+        where:
+          fragment(
+            "LOWER(?) = LOWER(?) OR LOWER(?) = LOWER(?)",
+            o.name,
+            ^name,
+            o.slug,
+            ^slug
+          ),
+        limit: 1
+    )
+  end
+
+  @spec reformat_string(name :: String.t(), replace_by :: String.t()) :: String.t()
+  defp reformat_string(name, replace_by \\ " "),
+    do:
+      name |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, replace_by) |> String.trim("-")
 
   defp change_slug(changeset),
     do:

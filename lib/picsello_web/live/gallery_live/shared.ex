@@ -133,12 +133,19 @@ defmodule PicselloWeb.GalleryLive.Shared do
   end
 
   def get_client_by_email(%{client_email: client_email, gallery: gallery} = assigns) do
-    with true <- is_nil(client_email),
-         nil <- Map.get(assigns, :current_user) do
-      %GalleryClient{email: gallery.job.client.email, gallery_id: gallery.id}
+    result =
+      with true <- is_nil(client_email),
+           nil <- Map.get(assigns, :current_user) do
+        %GalleryClient{email: gallery.job.client.email, gallery_id: gallery.id}
+      else
+        false -> maybe_insert_gallery_client(gallery, client_email)
+        current_user -> maybe_insert_gallery_client(gallery, current_user.email)
+      end
+
+    if is_list(result) do
+      result |> List.first()
     else
-      false -> maybe_insert_gallery_client(gallery, client_email)
-      current_user -> maybe_insert_gallery_client(gallery, current_user.email)
+      result
     end
   end
 
@@ -168,7 +175,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> process_favorites(per_page)
   end
 
-  defp process_favorites(socket, per_page) do
+  def process_favorites(socket, per_page) do
     socket
     |> assign(:page, 0)
     |> assign(:update_mode, "replace")
@@ -492,7 +499,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> assign(credits: credits(gallery))
     |> assign(order: order)
     |> assign_cart_count(gallery)
-    |> close_modal()
     |> put_flash(:success, "Added!")
     |> noreply()
   end
@@ -549,7 +555,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         selection_filter: false,
         client_liked_album: false,
         selected_photos: [],
-        has_orders: true
+        has_orders: true,
+        favorite_album?: false
       })
 
     any_client_liked_photo? =
@@ -568,7 +575,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
       </div>
       <ul class="absolute z-30 hidden w-full mt-2 bg-white border rounded-md popover-content border-base-200">
         <%= render_slot(@inner_block) %>
-        <%= if @has_orders do %>
+        <%= if @has_orders && !@favorite_album? do %>
         <li class={classes("flex items-center py-1 bg-base-200 rounded-b-md hover:opacity-75", %{"hidden" => @selection_filter || @client_liked_album || @any_client_liked_photo?})}>
           <button phx-click={@delete_event} phx-value-id={@delete_value} class="flex items-center w-full h-6 py-2.5 pl-2 overflow-hidden font-sans text-gray-700 transition duration-300 ease-in-out text-ellipsis hover:opacity-75">
             <%= @delete_title %>
@@ -633,7 +640,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
           phx-hook="MasonryGrid"
           phx-update="append"
           id="muuri-grid"
-          class="grid muuri"
+          class="mb-6 grid muuri"
           data-page={@page}
           data-id="muuri-grid"
           data-uploading="0"
@@ -727,26 +734,26 @@ defmodule PicselloWeb.GalleryLive.Shared do
       )
 
     ~H"""
-      <div class={classes("relative", %{"hidden" => @for == :proofing_album_order})}>
+      <div class={classes("relative", %{"hidden" => @for == :proofing_album_order || Enum.empty?(build_credits(@for, @credits, @total_count))})}>
           <div class={classes("bottom-0 left-0 right-0 z-10 w-full h-24 sm:h-20 bg-base-100 pointer-events-none", %{"fixed shadow-top" => @is_fixed and @for != :proofing_album, "absolute border-t border-base-225" => !@is_fixed or @for == :proofing_album })}>
           <div class="center-container gallery__container flex items-center justify-between h-full mx-auto px-7 sm:px-16">
-              <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
-                <%= for {label, value} <- build_credits(@for, @credits, @total_count) do %>
-                  <div>
-                    <dl class="flex items-center sm:mr-5" >
-                      <dt class="mr-2 font-extrabold">
-                        <%= label %><span class="hidden sm:inline"> available</span>:
-                      </dt>
+            <div class="flex flex-col items-start h-full py-4 justify-evenly sm:flex-row sm:items-center">
+              <%= for {label, value} <- build_credits(@for, @credits, @total_count) do %>
+                <div>
+                  <dl class="flex items-center sm:mr-5" >
+                    <dt class="mr-2 font-extrabold">
+                      <%= label %><span class="hidden sm:inline"> available</span>:
+                    </dt>
 
-                      <dd class="font-semibold"><%= value %></dd>
-                    </dl>
-                    <div {testid("selections")} class={!@for && "hidden"}>Selections <%= @cart_count %></div>
-                  </div>
-                <% end %>
-              </div>
-              <.icon name="gallery-info" class="fill-current hidden text-base-300 w-7 h-7" />
+                    <dd class="font-semibold"><%= value %></dd>
+                  </dl>
+                  <div {testid("selections")} class={!@for && "hidden"}>Selections <%= @cart_count %></div>
+                </div>
+              <% end %>
             </div>
+            <.icon name="gallery-info" class="fill-current hidden text-base-300 w-7 h-7" />
           </div>
+        </div>
       </div>
     """
   end
@@ -1142,6 +1149,11 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def new_gallery_path(socket, %{albums: [%{id: album_id}]} = gallery) do
     Routes.gallery_photos_index_path(socket, :index, gallery.id, album_id, is_mobile: false)
   end
+
+  def assign_count(socket, true, gallery),
+    do: assign(socket, photos_count: Galleries.gallery_favorites_count(gallery))
+
+  def assign_count(socket, false, _gallery), do: socket
 
   def standard?(%{type: type}), do: type == :standard
   def disabled?(%{status: status}), do: status == :disabled

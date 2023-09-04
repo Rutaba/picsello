@@ -36,12 +36,12 @@
               <span class="hidden lg:flex items-center mt-1.5 text-2xl font-bold font-sans"><%= extract_album(@album, :name, "All photos") %></span>
               <% end %>
               <%= if @album && !@client_liked_album  do %>
-                <button type="button" {testid("edit-album-settings")} class={"flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white shadow-lg border rounded-lg hover:opacity-75 border-blue-planning-300 lg:mt-0 mt-2 #{disabled?(@gallery) && 'opacity-50 cursor-not-allowed pointer-events-none'}"} title="Album settings" phx-click="album_settings_popup" >
+                <button type="button" {testid("edit-album-settings")} class={"flex items-center px-2.5 py-2 lg:ml-2.5 font-sans bg-white text-blue-planning-300 shadow-lg rounded-lg hover:opacity-75 lg:mt-0 mt-2 #{disabled?(@gallery) && 'opacity-50 cursor-not-allowed pointer-events-none'}"} title="Album settings" phx-click="album_settings_popup" >
                     <.icon name="gear" class="w-5 h-5 fill-current text-blue-planning-300" />
                 </button>
                 <%=if @album.is_proofing do %>
                   <a href={proofing_album_hash(@album, @socket)} target="_blank" class="flex justify-center items-center">
-                    <button type="button" class="flex items-center px-2 py-2 font-sans border rounded-lg hover:opacity-75 border-blue-planning-300 text-sm ml-2.5 bg-white shadow-lg lg:my-0 mt-2">
+                    <button type="button" class="flex items-center px-2 py-2 font-sans rounded-lg hover:opacity-75 text-sm ml-2.5 bg-white shadow-lg lg:my-0 mt-2 text-blue-planning-300">
                       <.icon name="eye" class="w-4 h-4 fill-current text-blue-planning-300 mr-1" />
                       Preview
                     </button>
@@ -213,7 +213,7 @@
                 phx-hook="MasonryGrid"
                 phx-update={@update_mode}
                 id="photos"
-                class="grid muuri"
+                class="mb-6 grid muuri"
                 data-page={@page}
                 data-id="photos"
                 data-uploading={@total_progress}

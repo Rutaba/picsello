@@ -128,7 +128,7 @@ defmodule Picsello.CreatePricingCalculationTest do
     |> click(testid("subnav-Settings"))
     |> click(css("a", text: "Packages"))
     |> click(link("helpful calculator"))
-    |> click(link("Exit calculator"))
+    |> click(css("[phx-click='exit']"))
     |> assert_path("/home")
   end
 

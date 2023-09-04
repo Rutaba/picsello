@@ -83,7 +83,7 @@ defmodule PicselloWeb.Live.Profile do
 
       <div class="flex flex-col justify-center max-w-screen-lg px-6 mx-auto mt-10 md:px-16">
         <.main_image icon_class={select_icon_class(@entry, @entry && @entry.upload_config == :main_image)} edit={@edit} uploads={@uploads} image={@organization.profile.main_image} />
-        <h1 class="font-bold mt-12 text-2xl text-center lg:text-3xl md:text-left">About <%= @organization.name %>.</h1>
+        <h1 class="font-light mt-12 text-2xl text-center lg:text-3xl md:text-left">About <%= @organization.name %>.</h1>
 
         <%= if Enum.any?(@job_types) do %>
           <.job_types_details socket={@socket} edit={@edit} job_types={@job_types} job_types_description={@job_types_description} />
@@ -91,9 +91,9 @@ defmodule PicselloWeb.Live.Profile do
 
         <.rich_text_content edit={@edit} field_name="description" field_value={@description} />
 
-        <%= if @website || @edit do %>
+        <%= if @website do %>
           <div class="flex items-center py-6">
-            <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1 font-bold">See our full portfolio</a>
+            <a href={website_url(@website)} style="text-decoration-thickness: 2px" class="block pt-2 underline underline-offset-1 font-light">See our full portfolio</a>
             <%= if @edit do %>
               <.icon_button {testid("edit-link-button")} class="ml-5 bg-blue-planning-300 hover:bg-blue-planning-300/75" title="edit link" phx-click="edit-website" color="white" icon="pencil">
                 Edit Link
@@ -106,7 +106,7 @@ defmodule PicselloWeb.Live.Profile do
 
         <%= if Enum.any?(@booking_events) do %>
           <section class="mt-20">
-            <h2 class="text-4xl font-bold mb-8" {testid("events-heading")}>Book a session with me!</h2>
+            <h2 class="text-4xl font-light mb-8" {testid("events-heading")}>Book a session with me!</h2>
             <div class="grid sm:grid-cols-2 gap-8">
               <%= for event <- @booking_events do %>
                 <div {testid("booking-cards")}>
@@ -135,13 +135,13 @@ defmodule PicselloWeb.Live.Profile do
         <% end %>
 
         <%= if @job_types_description do %>
-          <h3 class="mt-20 uppercase font-bold">MORE ABOUT MY OFFERINGS:</h3>
+          <h3 class="mt-20 uppercase font-light">MORE ABOUT MY OFFERINGS:</h3>
           <.rich_text_content edit={@edit} field_name="job_types_description" field_value={@job_types_description} />
           <hr class="mt-20" />
         <% end %>
 
         <%= if Enum.any?(@job_type_packages) do %>
-          <h3 class="mt-20 uppercase font-bold">PRICING & SERVICES:</h3>
+          <h3 class="mt-20 uppercase font-light">PRICING & SERVICES:</h3>
           <%= for {job_type, packages} <- @job_type_packages do %>
             <h2 class="mt-10 text-2xl text-center" id={to_string(job_type)}><%= dyn_gettext job_type %></h2>
             <%= for package <- packages do %>
@@ -170,14 +170,14 @@ defmodule PicselloWeb.Live.Profile do
   def job_types_details(assigns) do
     ~H"""
     <div class="flex items-center mt-8">
-      <h3 class="uppercase font-black">Specializing In</h3>
+      <h3 class="uppercase font-light">Specializing In</h3>
     </div>
     <div class="flex items-center">
       <span class="w-auto mt-1">
         <span class="font-semibold mr-5">
           <%= @job_types |> Enum.with_index |> Enum.map(fn({job_type, i}) -> %>
             <%= if i > 0 do %><span>&nbsp;|&nbsp;</span><% end %>
-            <span {testid("job-type")} class="text-xl whitespace-nowrap"><%= dyn_gettext job_type %></span>
+            <span {testid("job-type")} class="text-xl whitespace-nowrap font-light"><%= dyn_gettext job_type %></span>
           <% end) %>
         </span>
         <%= if @edit do %>
@@ -336,9 +336,31 @@ defmodule PicselloWeb.Live.Profile do
           )
         )
       end)
+      |> filter_by_date()
+      |> sort_by_date(:asc)
 
     socket
     |> assign(booking_events: booking_events)
+  end
+
+  # Filters(gets) only booking events with date greater than or equal to Today
+  defp filter_by_date(booking_events) do
+    {:ok, datetime} = DateTime.now("Etc/UTC")
+
+    Enum.filter(booking_events, fn %{dates: dates} ->
+      dates
+      |> Enum.map(& &1.date)
+      |> Enum.sort_by(& &1, {:desc, Date})
+      |> hd
+      |> Date.compare(datetime)
+      |> then(&(&1 in [:gt, :eq]))
+    end)
+  end
+
+  # Sorts booking events from descending to ascending by their dates
+  defp sort_by_date(booking_events, sort_direction) do
+    booking_events
+    |> Enum.sort_by(&(&1.dates |> hd() |> Map.get(:date)), {sort_direction, Date})
   end
 
   defp image_text("logo"), do: "Choose a new logo"
@@ -396,7 +418,7 @@ defmodule PicselloWeb.Live.Profile do
         <%= if @organization.profile.logo && @organization.profile.logo.url do %>
           <div class="my-8 sm:my-0 sm:ml-8"><.edit_image_button image={@uploads.logo} image_field={"logo"}/></div>
         <% else %>
-          <p class="mx-5 font-sans text-2xl font-bold">or</p>
+          <p class="mx-5 font-sans text-2xl font-light">or</p>
           <.drag_image_upload icon_class={@icon_class} image={@organization.profile.logo} image_upload={@uploads.logo} supports="PNG or SVG: under 10 mb" image_title="logo" />
         <% end %>
       <% end %>

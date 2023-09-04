@@ -133,17 +133,32 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_info(
         {:add_digital_to_cart, digital, finals_album_id},
-        %{assigns: %{gallery: gallery, gallery_client: gallery_client}} = socket
+        %{assigns: %{gallery: gallery, gallery_client: gallery_client, modal_pid: modal_pid}} =
+          socket
       ) do
     order = Cart.place_product(digital, gallery, gallery_client, finals_album_id)
+
+    send_update(modal_pid, PicselloWeb.GalleryLive.ChooseProduct,
+      id: PicselloWeb.GalleryLive.ChooseProduct,
+      photo_id: digital.photo.id
+    )
+
     socket |> add_to_cart_assigns(order)
   end
 
   def handle_info(
         {:add_bundle_to_cart, bundle_price},
-        %{assigns: %{gallery: gallery, gallery_client: gallery_client}} = socket
+        %{assigns: %{gallery: gallery, gallery_client: gallery_client, modal_pid: modal_pid}} =
+          socket
       ) do
     order = Cart.place_product({:bundle, bundle_price}, gallery, gallery_client)
+
+    send_update(modal_pid, PicselloWeb.GalleryLive.ChooseBundle,
+      id: PicselloWeb.GalleryLive.ChooseBundle,
+      gallery: gallery,
+      gallery_client: gallery_client
+    )
+
     socket |> add_to_cart_assigns(order)
   end
 
@@ -169,13 +184,17 @@ defmodule PicselloWeb.GalleryLive.ClientAlbum do
 
   def handle_info(
         :update_client_gallery_state,
-        %{assigns: %{album: album, gallery: gallery}} = socket
+        %{assigns: %{album: album, gallery: gallery, favorites_filter: favorites_filter}} = socket
       ) do
     socket
+    |> assign_count(favorites_filter, gallery)
     |> assign(
       album_favorites_count: Galleries.gallery_album_favorites_count(gallery, album.id),
       favorites_count: Galleries.gallery_favorites_count(gallery)
     )
+    |> assign(:update_mode, "replace")
+    |> assign_photos(@per_page)
+    |> push_event("reload_grid", %{})
     |> noreply()
   end
 

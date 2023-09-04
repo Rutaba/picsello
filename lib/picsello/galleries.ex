@@ -1195,7 +1195,7 @@ defmodule Picsello.Galleries do
     from(gc in GalleryClient,
       where: gc.gallery_id == ^gallery.id and gc.email == ^email
     )
-    |> Repo.one()
+    |> Repo.all()
   end
 
   @doc """
@@ -1328,7 +1328,7 @@ defmodule Picsello.Galleries do
 
   def insert_gallery_client(gallery, email) do
     case Galleries.get_gallery_client(gallery, email) do
-      nil ->
+      [] ->
         GalleryClient.changeset(%GalleryClient{}, %{email: email, gallery_id: gallery.id})
         |> Repo.insert()
 

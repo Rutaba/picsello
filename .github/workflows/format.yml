@@ -2,9 +2,9 @@ name: Linter
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 }}
@@ -24,58 +24,57 @@ permissions:
   actions: read
 
 jobs:
-    test:
+  test:
+    name: Code format check
+    runs-on: ubuntu-20.04
+    timeout-minutes: 45
 
-        name: Code format check
-        runs-on: ubuntu-20.04
-        timeout-minutes: 45
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        id: beam
+        with:
+          elixir-version: "1.14.3" # Define the elixir version [required]
+          otp-version: "25.3" # Define the OTP version [required]
 
-            - name: Set up Elixir
-              uses: erlef/setup-beam@v1
-              id: beam
-              with:
-                elixir-version: '1.14.3' # Define the elixir version [required]
-                otp-version: '25.3' # Define the OTP version [required]
+      - name: Cache deps
+        id: cache-deps
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-elixir-deps
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ env.cache-name }}-
 
-            - name: Cache deps
-              id: cache-deps
-              uses: actions/cache@v3
-              env:
-                cache-name: cache-elixir-deps
-              with:
-                path: deps
-                key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
-                restore-keys: |
-                    ${{ runner.os }}-mix-${{ env.cache-name }}-
+      - name: Cache compiled build
+        id: cache-build
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-compiled-build
+        with:
+          path: _build
+          key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ env.cache-name }}-
+            ${{ runner.os }}-mix-
 
-            - name: Cache compiled build
-              id: cache-build
-              uses: actions/cache@v3
-              env:
-                cache-name: cache-compiled-build
-              with:
-                path: _build
-                key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
-                restore-keys: |
-                    ${{ runner.os }}-mix-${{ env.cache-name }}-
-                    ${{ runner.os }}-mix-
-            
-            - name: Install dependencies
-              if: steps.cache-elixir-deps.outputs.cache-hit != 'true'
-              run: mix deps.get
+      - name: Install dependencies
+        if: steps.cache-elixir-deps.outputs.cache-hit != 'true'
+        run: mix deps.get
 
-            - name: Check format
-              run: mix format --check-formatted
+      - name: Check format
+        run: mix format --check-formatted
 
-            - name: Slack Workflow Notification
-              uses: Gamesight/slack-workflow-status@master
-              with:
-                include_commit_message: true
-                repo_token: ${{ secrets.GITHUB_TOKEN }}
-                slack_webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-                name: 'Picsello CI'
-                icon_emoji: ':camera:'
+      - name: Slack Workflow Notification
+        uses: Gamesight/slack-workflow-status@master
+        with:
+          include_commit_message: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          name: "Picsello CI"
+          icon_emoji: ":camera:"

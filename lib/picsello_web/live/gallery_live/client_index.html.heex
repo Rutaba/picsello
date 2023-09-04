@@ -1,4 +1,4 @@
-<div 
+<div
   class={classes("w-screen lg:h-screen h-[66vw]", %{"block sm:hidden" => @active, "hidden" => !@active})}
   id="gallery-conver-photo"
   phx-hook="ClientGalleryCookie"
@@ -18,7 +18,7 @@
         </h1>
 
         <p class="hidden w-full text-center sm:block">
-          <a id="view-gallery" href="#" phx-click="view_gallery" class="text-center text-white bg-transparent border-white cursor-pointer gallery__button btn-secondary hover:bg-white/10">
+          <a {testid("view-gallery")} phx-click="view_gallery" class="text-center text-white bg-transparent border-white cursor-pointer gallery__button btn-secondary hover:bg-white/10">
             View Gallery
           </a>
         </p>
@@ -133,7 +133,7 @@
           <!-- images -->
           <div
             id="muuri-grid"
-            class="muuri grid"
+            class="mb-6 muuri grid"
             phx-hook="MasonryGrid"
             phx-update={@update_mode}
             data-page={@page}

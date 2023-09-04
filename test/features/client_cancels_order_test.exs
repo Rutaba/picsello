@@ -43,13 +43,15 @@ defmodule Picsello.ClientCancelsOrderTest do
     photo_ids: photo_ids
   } do
     session
-    |> click(link("View Gallery"))
+    |> click(css("a", text: "View Gallery"))
     |> click(css("#img-#{List.first(photo_ids)}"))
     |> assert_text("Select an option")
     |> within_modal(&click(&1, button("Add to cart")))
     |> click(css("#img-#{List.last(photo_ids)}"))
+    |> click(css("[phx-click='next']"))
     |> assert_text("Select an option")
     |> within_modal(&click(&1, button("Add to cart")))
+    |> click(css("[phx-click='close']"))
     |> click(css("p", text: "Added!"))
     |> click(link("cart"))
     |> click(link("Continue"))
@@ -70,7 +72,7 @@ defmodule Picsello.ClientCancelsOrderTest do
     # |> click(button("Check out with Stripe"))
     #
     # assert [%{errors: []}, %{errors: []}] = run_jobs()
-    # 
+    #
     # assert_receive {:create_session, _params}
   end
 end
