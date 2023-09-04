@@ -296,8 +296,16 @@ const Hooks = {
   GetGalleryCookie,
   showWelcomeModal,
   showAdminBanner,
-  FolderUpload,
+  FolderUpload
 };
+
+window.addEventListener(`phx:download`, (event) => {
+  let frame = document.createElement("iframe");
+  frame.setAttribute("src", event.detail.uri);
+  frame.style.visibility = 'hidden';
+  frame.style.display = 'none';
+  document.body.appendChild(frame);
+});
 
 let Uploaders = {};
 Uploaders.GCS = function (entries, onViewError) {

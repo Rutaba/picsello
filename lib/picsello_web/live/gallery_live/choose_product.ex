@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   use PicselloWeb, :live_component
   alias Picsello.{Cart, Cart.Digital, Galleries, GalleryProducts, Cart.Digital, Photos}
   alias PicselloWeb.GalleryLive.Photos.PhotoView
+  alias PicselloWeb.GalleryLive.Shared
 
   import PicselloWeb.GalleryLive.Shared,
     only: [
@@ -130,6 +131,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> noreply
   end
 
+  defdelegate handle_event(event, params, socket), to: Shared
+
   def go_to_cart_wrapper(assigns) do
     ~H"""
     <%= if @count > 0 do %>
@@ -215,12 +218,13 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       <% :purchased -> %>
         <.option {@opts}>
           <:button
-            element="a"
-            download
             icon="download"
             icon_class="h-4 w-4 fill-current"
-            class="my-4 mr-4 py-1.5 px-8"
-            href={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}>
+            phx-click="download-photo"
+            phx-target={@myself}
+            phx-value-uri={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}
+            class="my-4 py-1.5"
+            >
             Download
           </:button>
         </.option>
