@@ -64,12 +64,16 @@ defmodule Picsello.BrandLink do
     url = get_field(changeset, :link)
 
     link =
-      case URI.parse(url) do
-        %{scheme: nil} ->
-          "https://" <> url
+      if url do
+        case URI.parse(url) do
+          %{scheme: nil} ->
+            "https://" <> url
 
-        _ ->
-          url
+          _ ->
+            url
+        end
+      else
+        url
       end
 
     changeset

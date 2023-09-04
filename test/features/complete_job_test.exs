@@ -16,7 +16,7 @@ defmodule Picsello.CompleteJobTest do
     |> visit("/jobs/#{job.id}")
     |> click(css("#manage"))
     |> click(css("li", text: "Complete job"))
-    |> click(button("Yes, complete"))
+    |> click(button("Yes, mark complete"))
     |> assert_path("/jobs")
     |> assert_flash(:success, text: "Job completed")
     |> assert_has(css("*[role='status']", text: "Completed"))
