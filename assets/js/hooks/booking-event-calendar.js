@@ -1,7 +1,6 @@
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import listPlugin from '@fullcalendar/list';
+import interactionPlugin from "@fullcalendar/interaction"; 
 
 const isMobile = () => window.innerWidth <= 768;
 
@@ -9,13 +8,13 @@ const getView = () => {
   return isMobile() ? 'listWeek' : 'dayGridMonth';
 };
 
-const calendar_render = (el) => {
-  const { timeZone, feedPath } = el.dataset;
+const calendar_render = (el, component) => {
+  const { timeZone } = el.dataset;
 
   const calendar = new Calendar(el, {
     themeSystem: 'cosmo',
     height: 'auto',
-    plugins: [dayGridPlugin, listPlugin, timeGridPlugin],
+    plugins: [dayGridPlugin, interactionPlugin],
     timeZone,
     initialView: getView(),
     headerToolbar: {
@@ -23,7 +22,6 @@ const calendar_render = (el) => {
       left: 'title',
       // right: 'dayGridMonth,timeGridWeek',
     },
-    eventSources: [{ url: feedPath }],
     editable: true,
     selectable: true,
     windowResize: function (view) {
@@ -35,15 +33,19 @@ const calendar_render = (el) => {
   });
 
   calendar.render();
+  calendar.on('dateClick', function(info) {
+    console.log(info);
+    component.pushEvent("calendar-date-changed", {date: info.dateStr})
+  });
 };
 
 export default {
   mounted() {
     const { el } = this;
-    calendar_render(el);
+    calendar_render(el, this);
   },
   updated() {
     const { el } = this;
-    calendar_render(el);
+    calendar_render(el, this);
   }
 };

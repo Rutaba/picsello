@@ -2,8 +2,10 @@
   --fc-event-bg-color: #4daac6;
   --fc-event-border-color: #4daac6;
 
-  --fc-button-bg-color: #1f1c1e;
-  --fc-button-border-color: #1f1c1e;
+  --fc-button-bg-color: #4daac6;
+  --fc-button-border-color: #4daac6;
+
+  --fc-toolbar-title-color: #4daac6;
 
   --fc-today-bg-color: #f2fdfb;
 }

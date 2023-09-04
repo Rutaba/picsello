@@ -14,6 +14,7 @@
     "@fontsource/be-vietnam": "~4.4.5",
     "@fullcalendar/core": "^5.10.1",
     "@fullcalendar/daygrid": "^5.10.1",
+    "@fullcalendar/interaction": "^5.10.1",
     "@fullcalendar/list": "^5.10.1",
     "@fullcalendar/timegrid": "^5.10.1",
     "@popperjs/core": "~2.10.1",
