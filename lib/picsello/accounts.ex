@@ -12,9 +12,7 @@ defmodule Picsello.Accounts do
     Accounts.UserToken,
     OrganizationCard,
     Notifiers.UserNotifier,
-    GlobalSettings,
-    Organization,
-    Address
+    GlobalSettings
   }
 
   ## Database getters
@@ -454,7 +452,7 @@ defmodule Picsello.Accounts do
     end
   end
 
-  @spec preload_address(User.t()) :: %User{organization: %Organization{address: %Address{} | nil}}
+  @spec preload_address(User.t()) :: User.t()
   def preload_address(%User{} = user) do
     Repo.preload(user, [organization: :address], force: true)
   end

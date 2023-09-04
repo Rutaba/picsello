@@ -98,29 +98,6 @@ defmodule Picsello.Organization do
         true ->
           changeset
       end
-
-  defmodule Address do
-    @moduledoc false
-    use Ecto.Schema
-    @primary_key false
-    embedded_schema do
-      field(:address_line_1, :string)
-      field(:address_line_2, :string)
-      field(:city, :string)
-      field(:state, :string)
-      field(:zipcode, :string)
-
-      belongs_to(:organization_country, Picsello.Country,
-        references: :name,
-        type: :string,
-        foreign_key: :country
-      )
-    end
-
-    def changeset(address, attrs) do
-      address
-      |> cast(attrs, [:address_line_1, :address_line_2, :city, :state, :zipcode, :country])
-      |> validate_required([:country, :state])
     end
   end
 
@@ -157,7 +134,6 @@ defmodule Picsello.Organization do
     |> cast(attrs, [])
     |> cast_embed(:email_signature)
   end
-
 
   def client_proposal_portal_changeset(organization, attrs) do
     organization
