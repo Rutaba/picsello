@@ -11,12 +11,20 @@ defmodule Picsello.BookingEventDates do
     |> Repo.insert()
   end
 
-  def get_booking_events_dates(booking_event_id) do
+  def get_booking_events_dates(booking_event_id),
+    do: booking_events_dates_query(booking_event_id) |> Repo.all()
+
+  def get_booking_events_dates_with_same_date(booking_event_id, date) do
+    booking_events_dates_query(booking_event_id)
+    |> where(date: ^date)
+    |> Repo.all()
+  end
+
+  defp booking_events_dates_query(booking_event_id) do
     from(event_dates in BookingEventDate,
       where: event_dates.booking_event_id == ^booking_event_id,
       order_by: [desc: event_dates.date]
     )
-    |> Repo.all()
   end
 
   def delete_old_repeat_dates(dates, booking_event_id) do
