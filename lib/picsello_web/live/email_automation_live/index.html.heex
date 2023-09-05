@@ -71,7 +71,7 @@
             <span class="ml-2 rounded-md bg-base-200 px-2 text-sm font-bold"> <%= automation_pipeline.total_emails_count %> emails</span>
           </div>
           <%= Enum.map(automation_pipeline.subcategories, fn subcategory -> %>
-            <div class="mb-3 flex text-base-250 uppercase font-bold tracking-widestplus mr-5 mt-5 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
+            <div class="mb-3 flex text-base-250 uppercase font-bold tracking-[.3em] mr-5 mt-5 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
               <div class="ml-auto">
                 <%= if !Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
                   <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
