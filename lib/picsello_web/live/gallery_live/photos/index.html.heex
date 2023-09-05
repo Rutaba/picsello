@@ -130,9 +130,9 @@
                     <% end %>
                     <%= if Enum.count(@selected_photos) == 1 do %>
                       <li class={classes("relative py-1 hover:bg-blue-planning-100", %{"hidden" => @selection_filter})}>
-                        <a class="album-actions" download href={Routes.gallery_downloads_path(@socket, :download_all, @gallery.client_link_hash, photo_ids: Enum.join(@selected_photos, ","))}>
+                        <button class="album-actions cursor-pointer" phx-click="download-photo" phx-value-uri={Routes.gallery_downloads_path(@socket, :download_all, @gallery.client_link_hash, photo_ids: Enum.join(@selected_photos, ","))}>
                           Download photo
-                        </a>
+                        </button>
                       </li>
                     <% end %>
                     <%= if @select_mode == "selected_all" do %>

@@ -76,6 +76,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def handle_event("download-photo", %{"uri" => uri}, socket) do
+    socket
+    |> push_event("download", %{uri: uri})
+    |> noreply
+  end
+
   defp get_email_body_subject(nil, gallery, preset_state) do
     with [preset | _] <- Picsello.EmailPresets.for(gallery, preset_state) do
       Picsello.EmailPresets.resolve_variables(
