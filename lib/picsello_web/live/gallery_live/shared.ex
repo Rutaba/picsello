@@ -4,7 +4,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
   use Phoenix.Component
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  import Money.Sigils
   import PicselloWeb.EmailAutomationLive.Shared, only: [sort_emails: 2]
 
   alias Picsello.{
