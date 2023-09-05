@@ -335,6 +335,7 @@ defmodule Picsello.Packages do
     def from_package(package, nil),
       do: from_package(package, %{download_each_price: nil, buy_all_price: nil})
 
+    # called when creating new package
     def from_package(
           %{download_each_price: nil, buy_all: nil, download_count: nil, currency: currency} =
             package,
@@ -351,6 +352,7 @@ defmodule Picsello.Packages do
             set_download_fields(package, global_settings)
           )
 
+    # Called when editing existing package
     def from_package(
           %{download_each_price: each_price, download_count: count, id: id, currency: currency} =
             package,
@@ -391,24 +393,10 @@ defmodule Picsello.Packages do
     end
 
     def from_package(
-          %{download_each_price: each_price, download_count: count, currency: currency} = package,
-          %{download_each_price: gs_each_price} = global_settings
-        )
-        when not is_nil(each_price) and
-               (each_price == gs_each_price or each_price.amount == @default_each_price_amount) and
-               count in [0, nil] do
-      Map.merge(
-        %__MODULE__{status: :none, is_custom_price: true, is_buy_all: true, currency: currency},
-        set_download_fields(package, global_settings)
-      )
-    end
-
-    def from_package(
-          %{download_each_price: each_price, download_count: count, currency: currency} = package,
+          %{download_count: count, currency: currency} = package,
           global_settings
         )
-        when each_price in [global_settings.download_each_price, nil] or
-               each_price.amount == @default_each_price_amount do
+        when count > 0 do
       Map.merge(
         %__MODULE__{
           status: :limited,
@@ -423,22 +411,29 @@ defmodule Picsello.Packages do
     end
 
     def from_package(
-          %{download_count: count, currency: currency},
-          _global_settings
+          %{download_each_price: each_price, currency: currency} = package,
+          global_settings
         )
-        when count in [0, nil],
-        do:
-          set_count_fields(
-            %__MODULE__{
-              status: :unlimited,
-              is_custom_price: false,
-              each_price: zero_price(currency),
-              buy_all: nil,
-              is_buy_all: false,
-              currency: currency
-            },
-            count
-          )
+        when not is_nil(each_price) and each_price.amount > 0 do
+      Map.merge(
+        %__MODULE__{status: :none, is_custom_price: true, is_buy_all: true, currency: currency},
+        set_download_fields(package, global_settings)
+      )
+    end
+
+    def from_package(%{download_count: count, currency: currency}, _),
+      do:
+        set_count_fields(
+          %__MODULE__{
+            status: :unlimited,
+            is_custom_price: false,
+            each_price: zero_price(currency),
+            buy_all: nil,
+            is_buy_all: false,
+            currency: currency
+          },
+          count
+        )
 
     def count(%__MODULE__{count: nil}), do: 0
     def count(%__MODULE__{count: count}), do: count

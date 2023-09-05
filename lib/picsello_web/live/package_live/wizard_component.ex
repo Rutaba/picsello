@@ -1620,9 +1620,15 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
   defp sort_payment_schedules(presets) do
     {first, remaining} =
-      Enum.split_with(presets, fn preset -> preset.due_interval == "To Book" end)
+      Enum.split_with(presets, fn preset ->
+        if is_binary(preset) do
+          preset == "To Book"
+        else
+          preset.due_interval == "To Book"
+        end
+      end)
 
-    if first, do: List.flatten([first | remaining]), else: remaining
+    List.flatten([first | remaining])
   end
 
   defp save_payment(socket, %{"custom_payments" => payment_params} = params, job_id \\ nil) do
