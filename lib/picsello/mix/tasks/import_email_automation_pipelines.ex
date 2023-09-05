@@ -5,12 +5,12 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
 
   import Ecto.Query
   alias Picsello.Repo
+
   alias Picsello.EmailAutomation.{
     EmailAutomationCategory,
     EmailAutomationSubCategory,
     EmailAutomationPipeline
   }
-
 
   @shortdoc "import email automation pipelines"
   def run(_) do
@@ -26,38 +26,56 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
 
     {:ok, email_automation_lead} = maybe_insert_email_automation(categories, "Leads", "lead")
     {:ok, email_automation_job} = maybe_insert_email_automation(categories, "Jobs", "job")
-    {:ok, email_automation_gallery} = maybe_insert_email_automation(categories, "Galleries", "gallery")
+
+    {:ok, email_automation_gallery} =
+      maybe_insert_email_automation(categories, "Galleries", "gallery")
 
     {:ok, automation_inquiry} =
-    maybe_insert_email_automation_slug(sub_categories, "Inquiry emails", "inquiry_emails")
+      maybe_insert_email_automation_slug(sub_categories, "Inquiry emails", "inquiry_emails")
 
     {:ok, automation_proposal} =
-    maybe_insert_email_automation_slug(sub_categories, "Booking proposal", "booking_proposal")
+      maybe_insert_email_automation_slug(sub_categories, "Booking proposal", "booking_proposal")
 
     {:ok, automation_response} =
-    maybe_insert_email_automation_slug(sub_categories, "Booking response emails", "booking_response_emails")
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Booking response emails",
+        "booking_response_emails"
+      )
 
     {:ok, automation_prep} =
-    maybe_insert_email_automation_slug(sub_categories, "Shoot prep emails", "shoot_prep_emails")
+      maybe_insert_email_automation_slug(sub_categories, "Shoot prep emails", "shoot_prep_emails")
 
     {:ok, automation_reminder} =
-    maybe_insert_email_automation_slug(sub_categories, "Payment reminder emails", "payment_reminder_emails")
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Payment reminder emails",
+        "payment_reminder_emails"
+      )
 
     {:ok, automation_post} =
-    maybe_insert_email_automation_slug(sub_categories, "Post shoot emails", "post_shoot_emails")
+      maybe_insert_email_automation_slug(sub_categories, "Post shoot emails", "post_shoot_emails")
 
     {:ok, automation_notification} =
-    maybe_insert_email_automation_slug(
-      sub_categories,
-      "Gallery notification emails",
-      "gallery_notification_emails"
-    )
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Gallery notification emails",
+        "gallery_notification_emails"
+      )
 
     {:ok, automation_confirmation} =
-    maybe_insert_email_automation_slug(sub_categories, "Order Confirmation emails", "order_confirmation_emails")
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Order Confirmation emails",
+        "order_confirmation_emails"
+      )
 
     {:ok, automation_status} =
-    maybe_insert_email_automation_slug(sub_categories, "Order status emails", "order_status_emails")
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Order status emails",
+        "order_status_emails"
+      )
 
     [
       # leads
@@ -250,7 +268,9 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
     ]
     |> Enum.each(fn attrs ->
       attrs = Map.merge(attrs, %{inserted_at: now, updated_at: now})
-      pipeline = from(ep in EmailAutomationPipeline, where: ep.state == ^attrs.state) |> Repo.one()
+
+      pipeline =
+        from(ep in EmailAutomationPipeline, where: ep.state == ^attrs.state) |> Repo.one()
 
       if pipeline do
         pipeline |> EmailAutomationPipeline.changeset(attrs) |> Repo.update!()
@@ -261,13 +281,12 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
   end
 
   defp maybe_insert_email_automation(categories, name, type) do
-    category = Enum.filter(categories, & &1.type == String.to_atom(type)) |> List.first()
+    category = Enum.filter(categories, &(&1.type == String.to_atom(type))) |> List.first()
 
     if category do
       category
       |> EmailAutomationCategory.changeset(%{name: name})
       |> Repo.update()
-
     else
       %EmailAutomationCategory{}
       |> EmailAutomationCategory.changeset(%{
@@ -279,7 +298,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
   end
 
   defp maybe_insert_email_automation_slug(sub_categories, name, slug) do
-    sub_category = Enum.filter(sub_categories, & &1.slug == slug) |> List.first()
+    sub_category = Enum.filter(sub_categories, &(&1.slug == slug)) |> List.first()
 
     if sub_category do
       sub_category

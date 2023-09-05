@@ -711,7 +711,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       |> Enum.filter(&(&1 != nil))
 
     previous_emails_schedules = EmailAutomationSchedules.get_emails_by_job(EmailSchedule, job_id)
-    previous_emails_history = EmailAutomationSchedules.get_emails_by_job(EmailScheduleHistory, job_id)
+
+    previous_emails_history =
+      EmailAutomationSchedules.get_emails_by_job(EmailScheduleHistory, job_id)
 
     if Enum.empty?(previous_emails_schedules) and Enum.empty?(previous_emails_history) do
       emails
