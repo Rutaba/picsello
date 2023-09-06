@@ -130,7 +130,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(button("Add a discount or surcharge"))
     |> scroll_into_view(css("#multiplier_is_enabled"))
     |> click(css("#multiplier_is_enabled"))
-    |> click(option("30%"))
+    |> fill_in(css("#multiplier_percent"), with: "30%")
     |> scroll_into_view(css("#multiplier_discount_base_price"))
     |> click(css("#multiplier_discount_base_price"))
     |> assert_text("-$30.00")

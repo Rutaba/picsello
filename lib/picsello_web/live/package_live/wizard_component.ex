@@ -649,9 +649,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                   <div class="flex flex-col items-center pl-0 my-6 sm:flex-row sm:pl-16">
                     <h2 class="self-start mt-3 text-base-250 sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
 
-                    <div class="flex w-full mt-3 sm:mt-0">
-                      <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
-
+                    <div class="flex w-full mt-3 sm:mt-0 gap-2 items-center">
+                      <%= input m, :percent, placeholder: "0.00%", value: "#{input_value(m, :percent)}", class: "w-24 text-center p-3 border rounded-lg border-blue-planning-300", phx_hook: "PercentMask", data_include: false, data_include_sign: "false" %>
+                      <p>%</p>
                       <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-4 py-4 pr-10") %>
                     </div>
                   </div>
