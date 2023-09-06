@@ -33,4 +33,34 @@ defmodule PicselloWeb.Live.Brand.Shared do
     </div>
     """
   end
+
+  def client_proposal_preview(assigns) do
+    ~H"""
+    <div>
+      <div class="input-label mb-4">Client Proposal Preview</div>
+      <div class="shadow-2xl rounded-lg px-6 pb-6 raw_html">
+        <div>
+          <%= raw Phoenix.View.render_to_string(PicselloWeb.ClientProposalView, "show.html", organization: @organization, user: @user, client_proposal: client_proposal(@organization)) %>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  def default_client_proposal(organization) do
+    name = if organization, do: organization.name, else: "Us"
+
+    %{
+      title: "Welcome",
+      booking_panel_title: "Here's how to officially book your photo session:",
+      message:
+        "<p>Let's get your shoot booked!</p><p><br></p><p>We are so excited to work with you!</p><p><br></p><p>Your session will not be considered officially...</p><p><br></p><p>We can't wait to capture this time for you!</p>",
+      contact_button: "Message #{name}"
+    }
+  end
+
+  def client_proposal(%{client_proposal: nil} = organization),
+    do: default_client_proposal(organization)
+
+  def client_proposal(%{client_proposal: client_proposal}), do: client_proposal
 end
