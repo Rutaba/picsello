@@ -38,8 +38,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_event("add-date", _, %{assigns: %{booking_event: booking_event}} = socket) do
-    booking_date = %BookingEventDate{booking_event_id: booking_event.id}
+  def handle_event("add-date", _, %{assigns: %{booking_event: booking_event, current_user: %{organization_id: organization_id}}} = socket) do
+    booking_date = %BookingEventDate{booking_event_id: booking_event.id, organization_id: organization_id}
 
     socket
     |> open_wizard(%{booking_date: booking_date})
@@ -50,9 +50,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event(
         "edit-date",
         %{"index" => index},
-        %{assigns: %{booking_event: booking_event}} = socket
+        %{assigns: %{booking_event: booking_event, current_user: %{organization_id: organization_id}}} = socket
       ) do
-    booking_date = booking_event |> Map.get(:dates, []) |> Enum.at(to_integer(index))
+    booking_date = booking_event |> Map.get(:dates, []) |> Enum.at(to_integer(index)) |> Map.put(:organization_id, organization_id)
 
     socket
     |> open_wizard(%{booking_date: booking_date})

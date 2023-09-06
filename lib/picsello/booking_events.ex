@@ -40,6 +40,11 @@ defmodule Picsello.BookingEvents do
     changeset |> Repo.insert_or_update()
   end
 
+  def get_all_booking_events(organization_id) do
+    from(event in BookingEvent, where: event.organization_id == ^organization_id)
+    |> Repo.all()
+  end
+
   def sorted_booking_event(booking_event) do
     booking_event =
       booking_event
@@ -626,6 +631,192 @@ defmodule Picsello.BookingEvents do
         :dates,
         package_template: [:package_payment_schedules, :contract, :questionnaire_template]
       ])
+
+  @doc """
+  This function, overlap_time?, takes a list of time blocks represented as maps and determines if there is any overlap between consecutive time blocks based on their end and start times.
+
+  ## Parameters:
+
+    - blocks (type: [map]): A list of maps representing time blocks. Each map should have at least two fields, end_time and start_time, which are expected to be of type %Time{}. These fields represent the end time of the previous block and the start time of the current block, respectively.
+
+  ## Returns:
+
+    - boolean: Returns true if there is any overlap between consecutive time blocks, otherwise false.
+
+  ## Example:
+
+  ```elixir
+      blocks = [
+      %{end_time: %Time{hour: 10, minute: 30}, start_time: %Time{hour: 9, minute: 0}},
+      %{end_time: %Time{hour: 12, minute: 0}, start_time: %Time{hour: 11, minute: 0}},
+      %{end_time: %Time{hour: 14, minute: 0}, start_time: %Time{hour: 13, minute: 30}}
+    ]
+
+    overlap = overlap_time?(blocks)  # Should return true, as there is an overlap between the second and third blocks.
+
+    blocks_without_overlap = [
+      %{end_time: %Time{hour: 10, minute: 30}, start_time: %Time{hour: 9, minute: 0}},
+      %{end_time: %Time{hour: 11, minute: 0}, start_time: %Time{hour: 10, minute: 30}},
+      %{end_time: %Time{hour: 13, minute: 30}, start_time: %Time{hour: 11, minute: 0}}
+    ]
+
+    overlap_time?(blocks_without_overlap)  # Should return false, as there is no overlap between any of the blocks.
+  ```
+
+  ## Note:
+
+    - The function checks for overlap between consecutive time blocks by comparing the end time of one block with the start time of the next block. If the end time of a block is greater than the start time of the next block, it considers them to be overlapping.
+    - The function uses the Time.compare/2 function to perform the time comparison. Ensure that the %Time{} structs in your input data are correctly formatted.
+  """
+  @spec overlap_time?(blocks :: [map]) :: boolean
+  def overlap_time?(blocks) do
+    for(
+      [%{end_time: %Time{} = previous_time}, %{start_time: %Time{} = start_time}] <-
+        Enum.chunk_every(blocks, 2, 1),
+      do: Time.compare(previous_time, start_time) == :gt
+    )
+    |> Enum.any?()
+  end
+
+  @doc """
+  Calculates a list of recurring dates based on a given booking event date and selected days.
+
+  This function takes a booking event date and a list of selected days and calculates a
+  list of recurring dates based on the provided parameters. The recurring dates are
+  determined by the `occurences`, `calendar`, `repeat_interval`, and `selected_days` parameters.
+  The calculation continues until the specified number of occurrences is reached or until the date
+  exceeds the `stop_repeating` date, whichever comes first.
+
+  ## Parameters
+
+  - `booking_event_date` (map): A map containing the booking event date and other relevant parameters.
+    - `:date` (date): The initial booking event date.
+    - `:stop_repeating` (date): The date at which the recurrence should stop.
+    - `:occurences` (integer): The maximum number of occurrences (or 0 for unlimited).
+    - `:calendar` (string): The calendar type (e.g., "week", "month" or "year").
+    - `:count_calendar` (integer): The calendar count.
+
+  - `selected_days` (list of integers): A list of selected days of the week
+  (1-7, where 1 is Sunday, 2 is Monday, etc.) on which the event should recur.
+
+  ## Returns
+
+  - A list of recurring dates.
+
+  ## Examples
+
+  booking_event_date = %{
+    date: ~D[2023-09-01],
+    stop_repeating: ~D[2023-09-30],
+    occurences: 0,
+    calendar: "week",
+    count_calendar: 1
+  }
+  selected_days = [2, 4] # Recur on Tuesdays and Thursdays
+
+  # Returns a list of recurring dates.
+  calculate_dates(booking_event_date, selected_days)
+  """
+  @spec calculate_dates(map(), [map()]) :: [Datetime.t()]
+  def calculate_dates(booking_event_date, selected_days) do
+    selected_days = selected_days_indexed_array(selected_days)
+
+    calculate_dates(
+      Map.get(booking_event_date, :date),
+      Map.get(booking_event_date, :stop_repeating),
+      Map.get(booking_event_date, :occurences),
+      Map.get(booking_event_date, :calendar),
+      Map.get(booking_event_date, :count_calendar),
+      selected_days,
+      []
+    )
+  end
+
+  # Compares two dates to check if date is less than stopped_date. some base-cases are added as well
+  # to have a check on some inputs for the function i.e. if date and stopped-date are nil, then return false
+  # instead of calling the difference functions which would make function fall apart.
+  defp date_valid?(%Date{} = date, %Date{} = stopped_date),
+    do: Date.compare(date, stopped_date) == :lt
+
+  defp date_valid?(_date, _stopped_date), do: false
+
+  # Calculates the day of the week for a given date.
+  defp day_of_week(date), do: Timex.weekday(date, :sunday)
+
+  # Recursively calculates a list of dates based on specified criteria.
+  defp calculate_dates(
+         booking_date,
+         stopped_date,
+         occurences,
+         calendar,
+         repeat_interval,
+         selected_days,
+         acc_dates
+       ) do
+    recursive_cond? =
+      if occurences > 0,
+        do: Enum.count(acc_dates) <= occurences,
+        else: date_valid?(booking_date, stopped_date)
+
+    if recursive_cond? do
+      shifted_date = calendar_shift(calendar, repeat_interval, booking_date)
+
+      dates =
+        calculate_week_day_date(
+          acc_dates,
+          shifted_date,
+          occurences,
+          stopped_date,
+          selected_days
+        )
+
+      calculate_dates(
+        shifted_date,
+        stopped_date,
+        occurences,
+        calendar,
+        repeat_interval,
+        selected_days,
+        dates
+      )
+    else
+      Enum.reverse(acc_dates) |> Enum.sort()
+    end
+  end
+
+  # Calculates dates based on specified weekdays, within certain criteria.
+  defp calculate_week_day_date(dates, shifted_date, occurences, stopped_date, selected_days) do
+    shifted_date = Timex.shift(shifted_date, days: -1)
+
+    Enum.reduce_while(1..7, dates, fn n, acc ->
+      next_day = Timex.shift(shifted_date, days: n)
+      weekday = day_of_week(next_day)
+
+      halt_condition =
+        if occurences > 0,
+          do: Enum.count(acc) > occurences,
+          else: !date_valid?(next_day, stopped_date)
+
+      cond do
+        halt_condition -> {:halt, acc}
+        weekday in selected_days -> {:cont, acc ++ [next_day]}
+        true -> {:cont, acc}
+      end
+    end)
+  end
+
+  # Generates an indexed array of selected days.
+  defp selected_days_indexed_array(selected_days) do
+    selected_days
+    |> Enum.filter(& &1.active)
+    |> Enum.with_index()
+    |> Enum.map(fn {_map, value} -> value + 1 end)
+  end
+
+  # Shifts a date by a specified amount based on the calendar unit.
+  defp calendar_shift("week", shift_count, date), do: Timex.shift(date, weeks: shift_count)
+  defp calendar_shift("month", shift_count, date), do: Timex.shift(date, months: shift_count)
+  defp calendar_shift("year", shift_count, date), do: Timex.shift(date, years: shift_count)
 
   defp reorder_time_blocks(dates) do
     Enum.map(dates, fn %{time_blocks: time_blocks} = event_date ->

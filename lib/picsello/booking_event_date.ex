@@ -3,8 +3,10 @@ defmodule Picsello.BookingEventDate do
   This module defines the schema for booking event dates, including embedded schemas for time blocks, slot blocks, and repeat day blocks.
   """
   use Ecto.Schema
+
   import Ecto.Changeset
-  alias Picsello.{Client, BookingEventDates}
+
+  alias Picsello.{Client, BookingEventDates, BookingEvents}
 
   defmodule TimeBlock do
     @moduledoc false
@@ -88,6 +90,7 @@ defmodule Picsello.BookingEventDate do
     field :stop_repeating, :date
     field :occurences, :integer, default: 0
     embeds_many :repeat_on, RepeatDayBlock, on_replace: :delete
+    field :organization_id, :integer, virtual: true
     field :is_repeat, :boolean, default: false, virtual: true
     field :repetition, :boolean, default: false, virtual: true
     belongs_to :booking_event, Picsello.BookingEvent
@@ -134,6 +137,7 @@ defmodule Picsello.BookingEventDate do
         changeset
         |> validate_required([:count_calendar, :calendar])
         |> validate_stop_repeating()
+        |> validate_repeat_date_overlapping()
       else
         changeset
       end
@@ -145,11 +149,10 @@ defmodule Picsello.BookingEventDate do
     booking_event_id = get_field(changeset, :booking_event_id)
 
     if get_field(changeset, :date) do
-      date = get_field(changeset, :date)
-      booking_event_date_id = get_field(changeset, :id)
+      [date, booking_event_date_id] = get_fields(changeset, [:date, :id])
 
       booking_event_dates =
-        BookingEventDates.get_booking_events_dates_with_same_date(booking_event_id, date)
+        BookingEventDates.get_booking_events_dates_with_same_date([booking_event_id], date)
 
       booking_event_dates =
         if booking_event_date_id,
@@ -166,30 +169,31 @@ defmodule Picsello.BookingEventDate do
     end
   end
 
+  # Validates the `stop_repeating` field based on the `repetition` field.
   defp validate_stop_repeating(changeset) do
     repetition_value = get_field(changeset, :repetition)
 
     {key, value} = if repetition_value, do: {:stop_repeating, nil}, else: {:occurences, 0}
     changeset = put_change(changeset, key, value)
 
-    occurences = get_field(changeset, :occurences)
-    stop_repeating = get_field(changeset, :stop_repeating)
+    [occurences, stop_repeating] = get_fields(changeset, [:occurences, :stop_repeating])
 
     if occurences == 0 and is_nil(stop_repeating),
       do: changeset |> add_error(:repetition, "Either occurence or date should be selected"),
       else: changeset
   end
 
+  # Validates the time blocks to ensure they do not overlap with existing blocks.
   defp validate_time_blocks(changeset) do
-    blocks = changeset |> get_field(:time_blocks)
+    [date, organization_id, current_time_block] =
+      get_fields(changeset, [:date, :organization_id, :time_blocks])
 
     overlap_times =
-      for(
-        [%{end_time: %Time{} = previous_time}, %{start_time: %Time{} = start_time}] <-
-          Enum.chunk_every(blocks, 2, 1),
-        do: Time.compare(previous_time, start_time) == :gt
+      BookingEventDates.booking_date_time_block_overlap?(
+        organization_id,
+        date,
+        current_time_block
       )
-      |> Enum.any?()
 
     if overlap_times do
       changeset |> add_error(:time_blocks, "can't be overlapping")
@@ -198,19 +202,60 @@ defmodule Picsello.BookingEventDate do
     end
   end
 
-  defp set_default_repeat_on(changeset) do
-    if Enum.empty?(get_field(changeset, :repeat_on)) do
-      put_change(changeset, :repeat_on, [
-        %{day: "sun", active: true},
-        %{day: "mon", active: false},
-        %{day: "tue", active: false},
-        %{day: "wed", active: false},
-        %{day: "thu", active: false},
-        %{day: "fri", active: false},
-        %{day: "sat", active: false}
-      ])
+  # Validates repeat dates to ensure they do not overlap with existing bookings.
+  defp validate_repeat_date_overlapping(changeset) do
+    repeat_dates = get_repeat_dates(changeset)
+
+    [booking_event_id, organization_id, blocks] =
+      get_fields(changeset, [:booking_event_id, :organization_id, :time_blocks])
+
+    repeat_date_overlap_any_booking_event? =
+      BookingEventDates.repeat_dates_overlap?(
+        organization_id,
+        blocks,
+        repeat_dates,
+        booking_event_id
+      )
+
+    if repeat_date_overlap_any_booking_event? do
+      changeset
+      |> add_error(
+        :is_repeat,
+        "repeat date is overlapping"
+      )
     else
       changeset
     end
+  end
+
+  # Sets default values for the `repeat_on` field if it is empty.
+  @default_values [
+    %{day: "sun", active: true},
+    %{day: "mon", active: false},
+    %{day: "tue", active: false},
+    %{day: "wed", active: false},
+    %{day: "thu", active: false},
+    %{day: "fri", active: false},
+    %{day: "sat", active: false}
+  ]
+  defp set_default_repeat_on(changeset) do
+    if(Enum.empty?(get_field(changeset, :repeat_on))) do
+      put_change(changeset, :repeat_on, @default_values)
+    else
+      changeset
+    end
+  end
+
+  # Gets a list of repeat dates based on selected days of the week.
+  defp get_repeat_dates(changeset) do
+    selected_days = get_field(changeset, :repeat_on) |> Enum.map(&Map.from_struct(&1))
+
+    changeset
+    |> Ecto.Changeset.apply_changes()
+    |> BookingEvents.calculate_dates(selected_days)
+  end
+
+  defp get_fields(changeset, keys) do
+    for key <- keys, do: get_field(changeset, key)
   end
 end
