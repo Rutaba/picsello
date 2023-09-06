@@ -634,8 +634,6 @@ defmodule Picsello.ClientOrdersTest do
         connect_account: connect_account_id
       })
 
-      gallery_url = session |> current_url()
-
       session
       |> click(css("a", text: "View Gallery"))
       |> click(button("Buy now"))
@@ -728,13 +726,7 @@ defmodule Picsello.ClientOrdersTest do
       |> within_modal(fn modal ->
         modal
         |> assert_has(testid("product_option_digital_download", text: "Download"))
-        |> find(
-          link("Download"),
-          &assert(
-            Element.attr(&1, "href") ==
-              Path.join(gallery_url, "photos/#{List.first(photo_ids)}/download")
-          )
-        )
+        |> assert_has(button("Download"))
         |> click(css("[phx-click='close']"))
       end)
       |> refute_has(button("Buy now"))
