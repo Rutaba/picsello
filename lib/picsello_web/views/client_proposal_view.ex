@@ -1,5 +1,4 @@
 defmodule PicselloWeb.ClientProposalView do
-
   use PicselloWeb, :view
 
   import PicselloWeb.Live.Profile.Shared,

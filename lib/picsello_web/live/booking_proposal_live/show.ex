@@ -26,7 +26,6 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   @max_age 60 * 60 * 24 * 365 * 10
 
-<<<<<<< HEAD
   @pages ~w(details contract questionnaire invoice idle)
   @default_client_proposal_params %{
     client_proposal: %{
@@ -36,9 +35,6 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         "<p>Let's get your shoot booked!</p><p><br></p><p>We are so excited to work with you!</p><p><br></p><p>Your session will not be considered officially...</p><p><br></p><p>We can't wait to capture this time for you!</p>"
     }
   }
-=======
-  @pages ~w(details contract questionnaire invoice)
->>>>>>> d58b763bf (change requests)
 
   @impl true
   def mount(%{"token" => token} = params, session, socket) do

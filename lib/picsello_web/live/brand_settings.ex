@@ -93,12 +93,11 @@ defmodule PicselloWeb.Live.BrandSettings do
       |> noreply()
 
   @impl true
-  def handle_event("customize-portal", %{}, %{assigns: %{organization: organization}} = socket)
-    do
-      socket
-      |> PicselloWeb.Live.Brand.CustomizeClientProposalComponent.open(organization)
-      |> noreply()
-    end
+  def handle_event("customize-portal", %{}, %{assigns: %{organization: organization}} = socket) do
+    socket
+    |> PicselloWeb.Live.Brand.CustomizeClientProposalComponent.open(organization)
+    |> noreply()
+  end
 
   @impl true
   def handle_event("intro_js" = event, params, socket),

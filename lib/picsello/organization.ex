@@ -48,7 +48,9 @@ defmodule Picsello.Organization do
     def changeset(proposal, attrs) do
       proposal
       |> cast(attrs, [:title, :booking_panel_title, :message, :contact_button])
-      |> validate_required([:title, :booking_panel_title, :message, :contact_button], message: "should not be empty")
+      |> validate_required([:title, :booking_panel_title, :message, :contact_button],
+        message: "should not be empty"
+      )
       |> validate_field(:title, min: 5, max: 30)
       |> validate_field(:booking_panel_title, min: 10, max: 50)
       |> validate_field(:contact_button, min: 5, max: 35)
@@ -56,6 +58,7 @@ defmodule Picsello.Organization do
 
     defp validate_field(changeset, field, min: min, max: max) do
       check_field = get_field(changeset, field)
+
       cond do
         String.length(check_field) < min ->
           add_error(changeset, field, "must be greater than #{min} characters")
@@ -65,6 +68,7 @@ defmodule Picsello.Organization do
 
         !Regex.match?(~r/[A-Za-z]/, check_field) ->
           add_error(changeset, field, "has invalide format")
+
         true ->
           changeset
       end
