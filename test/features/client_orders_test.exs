@@ -456,7 +456,6 @@ defmodule Picsello.ClientOrdersTest do
       |> assert_text("Select an option")
       |> click(button("Add to cart"))
       |> click(css("[phx-click='close']"))
-      |> click(css("p", text: "Added!"))
       |> assert_has(link("cart", text: "1"))
       |> click(css("#img-#{List.first(photo_ids)}"))
       |> assert_has(testid("product_option_digital_download", text: "In cart"))
@@ -641,7 +640,6 @@ defmodule Picsello.ClientOrdersTest do
         |> assert_text("$50.00")
         |> click(button("Add to cart"))
       end)
-      |> click(css("[phx-click='close']"))
       |> click(css("p", text: "Added!"))
       |> assert_has(link("cart", text: "1"))
       |> click(css("#img-#{List.first(photo_ids)}"))
@@ -664,7 +662,6 @@ defmodule Picsello.ClientOrdersTest do
         option
         |> click(button("Add to cart"))
       end)
-      |> click(css("[phx-click='close']"))
       |> click(css("p", text: "Added!"))
       |> assert_has(link("cart", text: "1"))
       |> click(link("cart"))
