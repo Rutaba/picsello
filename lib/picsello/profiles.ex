@@ -114,23 +114,26 @@ defmodule Picsello.Profiles do
     end
 
     def message_for(%__MODULE__{} = contact) do
-      msg =
-        """
-          name: #{contact.name}
-          email: #{contact.email}
-          phone: #{contact.phone}
-        """
+      msg = """
+        name: #{contact.name}
+        email: #{contact.email}
+        phone: #{contact.phone}
+      """
 
       build_message(contact, msg) <>
-      """
-        job type: #{dyn_gettext(contact.job_type)}
-        message: #{contact.message}
-      """
+        """
+          job type: #{dyn_gettext(contact.job_type)}
+          message: #{contact.message}
+        """
     end
 
     defp build_message(%{referred_by: nil}, msg), do: msg
-    defp build_message(%{referral_name: nil, referred_by: ref_by}, msg), do: msg <> referred_by(ref_by)
-    defp build_message(%{referral_name: ref_name, referred_by: ref_by}, msg), do: msg <> referred_by(ref_by) <> referral_name(ref_name)
+
+    defp build_message(%{referral_name: nil, referred_by: ref_by}, msg),
+      do: msg <> referred_by(ref_by)
+
+    defp build_message(%{referral_name: ref_name, referred_by: ref_by}, msg),
+      do: msg <> referred_by(ref_by) <> referral_name(ref_name)
 
     defp referred_by(nil), do: nil
     defp referred_by(value), do: "referred by: #{value}"

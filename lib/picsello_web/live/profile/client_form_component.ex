@@ -127,6 +127,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
           label: "Would you mind sharing their name?",
           placeholder: "Type name..."
         }
+
       "Other" ->
         %{
           label: "Would you mind sharing where?",

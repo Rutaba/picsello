@@ -154,7 +154,8 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
              },
              client_messages: [
                %{
-                 body_text: "  name: Chad Smith\n  email: chad@example.com\n  phone: 987 123 4567\n  job type: Wedding\n  message: May you take some pictures of our family?\n"
+                 body_text:
+                   "  name: Chad Smith\n  email: chad@example.com\n  phone: 987 123 4567\n  job type: Wedding\n  message: May you take some pictures of our family?\n"
                }
              ]
            } = photographer |> latest_job()
@@ -185,7 +186,8 @@ defmodule Picsello.ClientVisitsPhotographerProfileTest do
              },
              client_messages: [
                %{
-                 body_text: "  name: Not Chad\n  email: chad@example.com\n  phone: 918 123 4567\n  job type: Event\n  message: May you take some pictures of our party?\n"
+                 body_text:
+                   "  name: Not Chad\n  email: chad@example.com\n  phone: 918 123 4567\n  job type: Event\n  message: May you take some pictures of our party?\n"
                }
              ]
            } = photographer |> latest_job()
