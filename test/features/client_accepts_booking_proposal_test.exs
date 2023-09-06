@@ -113,8 +113,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       lead: lead,
       proposal: proposal,
       sessions: [photographer_session, client_session],
-      url: url,
-      user: user
+      url: url
     } do
       Mox.stub(Picsello.MockPayments, :construct_event, fn metadata, _, _ ->
         {:ok,
@@ -149,9 +148,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(
-        css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!")
-      )
+      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome."))
       |> assert_disabled(@invoice_button)
       |> click(css("a", text: "Message Photography LLC"))
       |> within_modal(fn modal ->
@@ -316,9 +313,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(
-        css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!")
-      )
+      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome."))
       |> click(button("To-Do Review and accept your proposal"))
       |> click(button("Accept Quote"))
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
@@ -371,9 +366,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(
-        css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!")
-      )
+      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome."))
       |> click(button("To-Do Review and accept your proposal"))
       |> click(button("Accept Quote"))
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
@@ -515,9 +508,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(url)
-    |> assert_has(
-      css("h2", text: "#{String.capitalize(lead.client.name)}, let's get your shoot booked!")
-    )
+    |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome."))
     |> click(button("To-Do Review and accept your proposal"))
     |> click(button("Accept Quote"))
     |> assert_text("COPYRIGHT AND REPRODUCTIONS")
