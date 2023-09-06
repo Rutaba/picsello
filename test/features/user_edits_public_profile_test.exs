@@ -14,7 +14,7 @@ defmodule Picsello.UserEditsPublicProfileTest do
       )
       |> onboard!
 
-    insert(:brand_link, user: user)
+    insert(:brand_link, user: user, show_on_profile?: true)
 
     insert(:package_template,
       user: user,
@@ -54,24 +54,20 @@ defmodule Picsello.UserEditsPublicProfileTest do
     |> assert_path(Routes.profile_settings_path(PicselloWeb.Endpoint, :index))
   end
 
-  # Verify why this button is gone
-  # feature "user edits website", %{session: session, user: %{organization: organization}} do
-  #   session
-  #   |> assert_has(testid("subnav-Settings"))
-  #   |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
-  #   |> assert_text("About #{organization.name}.")
-  #   |> assert_text("SPECIALIZING IN")
-  #   |> resize_window(1280, 900)
-  #   |> scroll_into_view(testid("edit-link-button"))
-  #   |> click(button("Edit Link"))
-  #   |> fill_in(text_field("organization_brand_links_0_link"), with: "http://google.com")
-  #   |> click(button("Save"))
-  #   |> assert_has(css("a[href='http://google.com']", text: "See our full portfolio"))
-  #   |> click(button("Edit Link"))
-  #   |> fill_in(text_field("organization_brand_links_0_link"), with: "")
-  #   |> click(button("Save"))
-  #   |> assert_has(css("a", text: "See our full portfolio"))
-  # end
+  feature "user edits website", %{session: session, user: %{organization: organization}} do
+    session
+    |> assert_has(testid("subnav-Settings"))
+    |> visit(Routes.profile_settings_path(PicselloWeb.Endpoint, :edit))
+    |> assert_text("About #{organization.name}.")
+    |> assert_text("SPECIALIZING IN")
+    |> assert_has(css("a[href='https://photos.example.com']", text: "See our full portfolio"))
+    |> resize_window(1280, 900)
+    |> scroll_into_view(testid("edit-link-button"))
+    |> click(button("Edit Link"))
+    |> fill_in(text_field("organization_brand_links_0_link"), with: "http://google.com")
+    |> click(button("Save"))
+    |> assert_has(css("a[href='http://google.com']", text: "See our full portfolio"))
+  end
 
   feature "user edits description", %{session: session, user: %{organization: organization}} do
     session
