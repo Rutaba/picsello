@@ -4,7 +4,7 @@ defmodule Picsello.BookingEventDate do
   """
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Client}
+  alias Picsello.{Client, Job}
 
   defmodule TimeBlock do
     @moduledoc false
@@ -44,14 +44,17 @@ defmodule Picsello.BookingEventDate do
       field(:slot_start, :time)
       field(:slot_end, :time)
       belongs_to(:client, Client)
+      belongs_to(:job, Job)
       field(:status, Ecto.Enum, values: [:open, :book, :reserve, :hide], default: :open)
       field(:is_hide, :boolean, default: false, virtual: true)
     end
 
     def changeset(slot_block \\ %__MODULE__{}, attrs) do
       slot_block
-      |> cast(attrs, [:slot_start, :slot_end, :client_id, :status, :is_hide])
+      |> cast(attrs, [:slot_start, :slot_end, :client_id, :job_id, :status, :is_hide])
       |> validate_required([:slot_start, :slot_end])
+      |> foreign_key_constraint(:client_id)
+      |> foreign_key_constraint(:job_id)
       |> then(fn changeset ->
         if get_field(changeset, :is_hide),
           do: put_change(changeset, :status, :hide),
