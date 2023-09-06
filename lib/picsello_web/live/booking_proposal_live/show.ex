@@ -256,6 +256,11 @@ I look forward to capturing these memories for you!"}
     |> assign(client_proposal: Shared.client_proposal(organization))
   end
 
+  defp assign_client_proposal(socket) do
+    socket
+    |> assign(client_proposal: Shared.default_client_proposal(nil))
+  end
+
   defp assign_proposal(%{assigns: %{current_user: current_user}} = socket, token) do
     with {:ok, proposal_id} <-
            Phoenix.Token.verify(PicselloWeb.Endpoint, "PROPOSAL_ID", token, max_age: @max_age),
