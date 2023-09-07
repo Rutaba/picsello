@@ -13,9 +13,14 @@ defmodule Picsello.AdminGlobalSetting do
     timestamps(type: :utc_datetime)
   end
 
-  def changeset(%__MODULE__{} = admin_global_setting, attrs) do
+  def changeset(%__MODULE__{} = admin_global_setting, attrs \\ %{}) do
     admin_global_setting
-    |> cast(attrs, [:title, :description, :slug, :value, :status])
-    |> validate_required([:title, :slug, :value, :status])
+    |> cast(attrs, [
+      :title,
+      :description,
+      :value,
+      :status
+    ])
+    |> validate_required([:title, :status, :value])
   end
 end

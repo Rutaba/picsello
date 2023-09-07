@@ -24,10 +24,20 @@ defmodule Picsello.AdminGlobalSettings do
     |> Repo.all()
   end
 
-  def insert_setting(setting) do
-    %AdminGlobalSetting{}
-    |> AdminGlobalSetting.changeset(setting)
-    |> Repo.insert()
+  @doc """
+  Gets all admin global settings.
+
+  Returns [] if the admin global settings does not exist.
+  """
+  def get_all_settings() do
+    from(ags in AdminGlobalSetting)
+    |> Repo.all()
+  end
+
+  def update_setting!(%AdminGlobalSetting{} = admin_global_setting, attrs) do
+    admin_global_setting
+    |> AdminGlobalSetting.changeset(attrs)
+    |> Repo.update!()
   end
 
   def delete_setting(setting), do: setting |> Repo.delete()
