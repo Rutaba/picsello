@@ -362,17 +362,7 @@ defmodule PicselloWeb.OnboardingLive.Index do
   end
 
   defp save_final(socket, params, data \\ :skip) do
-    {key, _value} =
-      Enum.find(params["organization"]["organization_job_types"], fn {_key, value} ->
-        Map.get(value, "type") == "mini"
-      end)
-
-    params =
-      update_in(
-        params,
-        ["organization", "organization_job_types", key],
-        &Map.put(&1, "job_type", "mini")
-      )
+    params = update_job_params(params)
 
     Multi.new()
     |> Multi.put(:data, data)
@@ -420,6 +410,19 @@ defmodule PicselloWeb.OnboardingLive.Index do
         socket |> assign(changeset: reason)
     end)
     |> noreply()
+  end
+
+  defp update_job_params(params) do
+    {key, _value} =
+      Enum.find(params["organization"]["organization_job_types"], fn {_key, value} ->
+        Map.get(value, "type") == "mini"
+      end)
+
+    update_in(
+      params,
+      ["organization", "organization_job_types", key],
+      &Map.put(&1, "job_type", "mini")
+    )
   end
 
   defdelegate states(), to: Onboardings, as: :state_options
