@@ -169,11 +169,19 @@ defmodule Picsello.Packages do
 
     def to_decimal(%__MODULE__{sign: sign, percent: percent}) do
       case sign do
-        "+" -> percent |> Decimal.from_float()
-        "-" -> percent |> Decimal.from_float() |> Decimal.negate()
+        "+" -> percent_to_decimal(percent)
+        "-" -> percent |> percent_to_decimal() |> Decimal.negate()
       end
       |> Decimal.div(100)
       |> Decimal.add(1)
+    end
+
+    defp percent_to_decimal(value) do
+      if is_float(value) do
+        Decimal.from_float(value)
+      else
+        Decimal.new(value)
+      end
     end
   end
 
