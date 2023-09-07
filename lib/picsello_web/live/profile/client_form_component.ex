@@ -139,11 +139,11 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
   @impl true
   def handle_event(
         "validate-client",
-        %{"contact" => %{"referred_by" => referred_by} = params},
+        %{"contact" => params},
         socket
       ) do
     socket
-    |> assign(:additional_field?, should_show_additional_field?(referred_by))
+    |> assign(:additional_field?, should_show_additional_field?(params["referred_by"]))
     |> assign(changeset: params |> Profiles.contact_changeset() |> Map.put(:action, :validate))
     |> noreply()
   end
