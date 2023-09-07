@@ -55,14 +55,15 @@
     </div>
   <% else %>
     <div class="md:p-6 center-container">
-      <div class="hidden items-center sm:grid sm:grid-cols-7 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
+      <div class="hidden items-center sm:grid sm:grid-cols-8 gap-2 border-b-8 border-blue-planning-300 font-semibold text-lg pb-6">
         <div>Name</div>
         <div class="sm:col-span-2">Email</div>
         <div>Phone</div>
+        <div>Referred By</div>
         <div class="sm:col-span-2">Tags</div>
       </div>
       <%= for client <- @clients do %>
-        <div {testid("client-row")} class="grid sm:grid-cols-7 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
+        <div {testid("client-row")} class="grid sm:grid-cols-8 gap-2 border p-3 items-center sm:pt-0 sm:px-0 sm:pb-2 sm:border-b sm:border-t-0 sm:border-x-0 rounded-lg sm:rounded-none border-gray-100 mt-2">
           <%= if is_nil(client.archived_at) do %>
             <div phx-click="edit-client" phx-value-id={client.id} class="flex flex-col text-blue-planning-300 underline hover:cursor-pointer">
               <p><%= client.name || "-" %></p>
@@ -84,6 +85,10 @@
           <hr class="sm:hidden border-gray-100 my-2" />
           <div class="flex flex-col">
             <p><%= client.phone || "-" %></p>
+          </div>
+          <hr class="sm:hidden border-gray-100 my-2" />
+          <div class="flex flex-col">
+            <p><%= referred_by_name(client.referred_by, client.referral_name) %></p>
           </div>
           <hr class="sm:hidden border-gray-100 my-2  grid sm:flex gap-2 sm:gap-0" />
           <.tags client={client} tags_changeset={@tags_changeset} job_types={@job_types} />

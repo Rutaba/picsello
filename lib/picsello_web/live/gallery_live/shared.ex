@@ -70,6 +70,12 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def handle_event("download-photo", %{"uri" => uri}, socket) do
+    socket
+    |> push_event("download", %{uri: uri})
+    |> noreply
+  end
+
   defp schemas(%{type: :standard} = gallery), do: {gallery}
   defp schemas(%{albums: [album]} = gallery), do: {gallery, album}
 
@@ -444,7 +450,15 @@ defmodule PicselloWeb.GalleryLive.Shared do
   def assign_cart_count(socket, gallery) do
     case get_unconfirmed_order(socket, preload: [:products, :digitals]) do
       {:ok, order} ->
-        socket |> assign(order: order) |> assign_cart_count(gallery)
+        digitals =
+          order
+          |> Map.get(:digitals, [])
+          |> Map.new(&{&1.photo_id, &1})
+
+        socket
+        |> assign(order: order)
+        |> assign_cart_count(gallery)
+        |> assign(digitals: digitals)
 
       _ ->
         socket |> assign(cart_count: 0, order: nil)
@@ -456,8 +470,6 @@ defmodule PicselloWeb.GalleryLive.Shared do
     |> assign(credits: credits(gallery))
     |> assign(order: order)
     |> assign_cart_count(gallery)
-    |> put_flash(:success, "Added!")
-    |> noreply()
   end
 
   def inprogress_upload_broadcast(gallery_id, entries) do

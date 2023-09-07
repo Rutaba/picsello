@@ -3,6 +3,7 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
   use PicselloWeb, :live_component
   alias Picsello.{Cart, Cart.Digital, Galleries, GalleryProducts, Cart.Digital, Photos}
   alias PicselloWeb.GalleryLive.Photos.PhotoView
+  alias PicselloWeb.GalleryLive.Shared
 
   import PicselloWeb.GalleryLive.Shared,
     only: [
@@ -11,7 +12,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       assign_cart_count: 2,
       get_unconfirmed_order: 2,
       assign_checkout_routes: 1,
-      disabled?: 1
+      disabled?: 1,
+      add_to_cart_assigns: 2
     ]
 
   import PicselloWeb.GalleryLive.Photos.Photo.Shared, only: [js_like_click: 2]
@@ -107,10 +109,9 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> get_unconfirmed_order(preload: [:products, :digitals])
     |> then(fn {:ok, order} ->
       digital = Enum.find(order.digitals, &(&1.photo_id == photo.id))
-      Cart.delete_product(order, gallery, digital_id: digital.id)
+      {_, order} = Cart.delete_product(order, gallery, digital_id: digital.id)
+      send(self(), {:update_cart_count, %{order: order}})
     end)
-
-    send(self(), :update_cart_count)
 
     socket
     |> assign_details(photo.id)
@@ -130,6 +131,8 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
     |> noreply
   end
 
+  defdelegate handle_event(event, params, socket), to: Shared
+
   def go_to_cart_wrapper(assigns) do
     ~H"""
     <%= if @count > 0 do %>
@@ -144,32 +147,54 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
          %{assigns: %{is_proofing: true, gallery_client: gallery_client} = assigns} = socket
        ) do
     %{gallery: gallery, photo: photo, download_each_price: price} = assigns
-    send(self(), :update_cart_count)
 
     date_time = DateTime.truncate(DateTime.utc_now(), :second)
 
-    Cart.place_product(
-      %Digital{
-        photo: photo,
-        price: price,
-        inserted_at: date_time,
-        updated_at: date_time
-      },
-      gallery,
-      gallery_client,
-      photo.album_id
-    )
+    order =
+      Cart.place_product(
+        %Digital{
+          photo: photo,
+          price: price,
+          inserted_at: date_time,
+          updated_at: date_time
+        },
+        gallery,
+        gallery_client,
+        photo.album_id
+      )
+
+    send(self(), {:update_cart_count, %{order: order}})
 
     assign_details(socket, photo.id)
   end
 
   defp add_to_cart(
-         %{assigns: %{photo: photo, download_each_price: price, album: album}, root_pid: root_pid} =
-           socket
+         %{
+           assigns: %{
+             photo: photo,
+             download_each_price: price,
+             album: album,
+             gallery: gallery,
+             gallery_client: gallery_client
+           },
+           root_pid: root_pid
+         } = socket
        ) do
     finals_album_id = get_finals_album_id(album)
-    send(root_pid, {:add_digital_to_cart, %Digital{photo: photo, price: price}, finals_album_id})
+
+    order =
+      Cart.place_product(
+        %Digital{photo: photo, price: price},
+        gallery,
+        gallery_client,
+        finals_album_id
+      )
+
+    send(root_pid, {:update_cart_count, %{order: order}})
+
     socket
+    |> add_to_cart_assigns(order)
+    |> assign_details(photo.id)
   end
 
   defp move_carousel(%{assigns: %{photo_ids: photo_ids}} = socket, fun) do
@@ -215,12 +240,13 @@ defmodule PicselloWeb.GalleryLive.ChooseProduct do
       <% :purchased -> %>
         <.option {@opts}>
           <:button
-            element="a"
-            download
             icon="download"
             icon_class="h-4 w-4 fill-current"
-            class="my-4 mr-4 py-1.5 px-8"
-            href={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}>
+            phx-click="download-photo"
+            phx-target={@myself}
+            phx-value-uri={Routes.gallery_downloads_path(@socket, :download_photo, @gallery.client_link_hash, @photo.id)}
+            class="my-4 py-1.5"
+            >
             Download
           </:button>
         </.option>

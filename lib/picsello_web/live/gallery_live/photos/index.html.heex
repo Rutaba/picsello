@@ -130,9 +130,9 @@
                     <% end %>
                     <%= if Enum.count(@selected_photos) == 1 do %>
                       <li class={classes("relative py-1 hover:bg-blue-planning-100", %{"hidden" => @selection_filter})}>
-                        <a class="album-actions" download href={Routes.gallery_downloads_path(@socket, :download_all, @gallery.client_link_hash, photo_ids: Enum.join(@selected_photos, ","))}>
+                        <button class="album-actions cursor-pointer" phx-click="download-photo" phx-value-uri={Routes.gallery_downloads_path(@socket, :download_all, @gallery.client_link_hash, photo_ids: Enum.join(@selected_photos, ","))}>
                           Download photo
-                        </a>
+                        </button>
                       </li>
                     <% end %>
                     <%= if @select_mode == "selected_all" do %>
@@ -185,7 +185,7 @@
       <div class={classes("lg:pt-16 pb-10 pl-10 pr-8", %{"pt-80" => @gallery.type == :finals, "pt-60" => @gallery.type != :finals})}>
         <div class={classes(%{"hidden" => @photos != [] || @inprogress_photos != [] || @selection_filter || @favorites_filter})}>
           <%= if !@photographer_favorites_filter do %>
-            <div class="relative justify-between mt-36 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300">
+            <div class={classes("relative justify-between mt-48 mb-12 text-2xl font-bold font-sans text-center text-blue-planning-300", %{"mt-60" => @first_visit?})}>
                 <span class={classes("hidden lg:block", %{"text-gray-400" => disabled?(@gallery)})}>Oops, there's nothing here - upload photos now to get started!</span>
                 <span class={classes("lg:hidden", %{"text-gray-400" => disabled?(@gallery)})}>Oops, there's nothing here - upload photos from your desktop to get started!</span>
             </div>
@@ -204,7 +204,7 @@
               <.proofing_grid orders={@orders} gallery={@gallery} />
             </div>
           <% false -> %>
-            <div class={classes("lg:pb-16 pb-20 mx-0 gallery__container center-container px-0 pt-60", %{"lg:pt-44 pt-48" => @photos_error_count == 0, "pt-64" => @album && @album.is_finals})} id="gallery">
+            <div class={"lg:pb-16 pb-20 mx-0 gallery__container center-container px-0 #{grid_padding(assigns)}"} id="gallery">
               <%= if @album && @album.is_proofing do %>
                 <.proofing_grid orders={@orders} gallery={@gallery} />
                 <hr class={classes("sticky my-6 border-base-225", %{"hidden" => @orders == []})}>

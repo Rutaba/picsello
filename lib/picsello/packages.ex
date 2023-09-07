@@ -80,12 +80,11 @@ defmodule Picsello.Packages do
 
     import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
-    @percent_options for(amount <- 10..100//10, do: {"#{amount}%", amount})
     @sign_options [{"Discount", "-"}, {"Surcharge", "+"}]
 
     @primary_key false
     embedded_schema do
-      field(:percent, :integer, default: @percent_options |> hd |> elem(1))
+      field(:percent, :float, default: 0.0)
       field(:sign, :string, default: @sign_options |> hd |> elem(1))
       field(:is_enabled, :boolean)
       field(:discount_base_price, :boolean, default: false)
@@ -146,7 +145,6 @@ defmodule Picsello.Packages do
         Map.get(multiplier, :discount_digitals)
     end
 
-    def percent_options(), do: @percent_options
     def sign_options(), do: @sign_options
 
     def from_decimal(%{base_multiplier: d} = package) do
@@ -171,11 +169,19 @@ defmodule Picsello.Packages do
 
     def to_decimal(%__MODULE__{sign: sign, percent: percent}) do
       case sign do
-        "+" -> percent
-        "-" -> Decimal.negate(percent)
+        "+" -> percent_to_decimal(percent)
+        "-" -> percent |> percent_to_decimal() |> Decimal.negate()
       end
       |> Decimal.div(100)
       |> Decimal.add(1)
+    end
+
+    defp percent_to_decimal(value) do
+      if is_float(value) do
+        Decimal.from_float(value)
+      else
+        Decimal.new(value)
+      end
     end
   end
 

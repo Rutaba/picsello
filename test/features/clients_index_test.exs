@@ -202,7 +202,7 @@ defmodule Picsello.ClientsIndexTest do
     |> visit("/clients")
     |> click(button("Manage", count: 3, at: 0))
     |> click(button("Create gallery"))
-    |> click(button("Next", count: 2, at: 0))
+    |> click(button("Next", at: 1))
     |> click(css("label", text: "Wedding"))
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> wait_for_enabled_submit_button(text: "Next")
