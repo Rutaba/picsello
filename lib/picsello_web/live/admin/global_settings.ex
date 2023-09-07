@@ -19,10 +19,10 @@ defmodule PicselloWeb.Live.Admin.GlobalSettings do
 
     <div class="p-4">
       <div class="relative overflow-x-auto">
-        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        <table class="w-full text-left text-gray-500 dark:text-gray-400">
           <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <%= for value <- ["Slug", "Title", "Description", "value", "Status"] do %>
+              <%= for value <- ["Setting", "value", "Status"] do %>
                 <th scope="col" class="px-12 py-3">
                   <%= value%>
                 </th>
@@ -31,20 +31,19 @@ defmodule PicselloWeb.Live.Admin.GlobalSettings do
           </thead>
           <tbody>
             <%= for({changeset, i} <- @changesets) do %>
+
               <tr class="bg-white dark:bg-gray-800">
                 <.form :let={f} for={changeset} class="contents" phx-change="save" id={"form-#{i}"}>
                   <%= hidden_input f, :index, value: i %>
+                  <%= hidden_input f, :slug %>
+                  <%= hidden_input f, :title %>
+                  <%= hidden_input f, :description %>
                   <td class="px-12 py-4">
-                    <%= input f, :slug, phx_debounce: 200, class: "w-36", disabled: true %>
+                    <div class="uppercase font-bold"> <%= input_value(f, :title) %> </div>
+                    <div class="text-sm text-sm"> <%= input_value(f, :description) %> </div>
                   </td>
                   <td class="px-12 py-4">
-                    <%= input f, :title, phx_debounce: 200, class: "w-42" %>
-                  </td>
-                  <td class="px-12 py-4">
-                    <%= input f, :description, phx_debounce: 200, class: "w-64" %>
-                  </td>
-                  <td class="px-12 py-4">
-                    <%= input f, :value, phx_debounce: 200, class: "w-16" %>
+                    <%= input f, :value, phx_debounce: 200, class: "w-2/5" %>
                   </td>
                   <td class="px-12 py-4">
                     <%= select f, :status, [:active, :disabled, :archived], phx_debounce: 200, disabled: true %>
@@ -66,8 +65,11 @@ defmodule PicselloWeb.Live.Admin.GlobalSettings do
         %{assigns: %{changesets: changesets}} = socket
       ) do
     {%{data: data}, _i} = Enum.at(changesets, String.to_integer(index))
+    value = params["value"]
 
-    AdminGlobalSettings.update_setting!(data, params)
+    if value && String.length(value) > 0 do
+      AdminGlobalSettings.update_setting!(data, params)
+    end
 
     socket
     |> assign_changesets()
@@ -79,7 +81,6 @@ defmodule PicselloWeb.Live.Admin.GlobalSettings do
     |> assign(
       changesets:
         AdminGlobalSettings.get_all_settings()
-        |> Enum.sort_by(& &1.slug)
         |> Enum.map(&AdminGlobalSetting.changeset(&1))
         |> Enum.with_index()
     )

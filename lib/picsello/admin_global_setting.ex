@@ -17,10 +17,11 @@ defmodule Picsello.AdminGlobalSetting do
     admin_global_setting
     |> cast(attrs, [
       :title,
+      :slug,
       :description,
       :value,
       :status
     ])
-    |> validate_required([:title, :status, :value])
+    |> validate_required([:title, :slug, :status, :value])
   end
 end

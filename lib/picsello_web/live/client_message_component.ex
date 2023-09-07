@@ -5,7 +5,6 @@ defmodule PicselloWeb.ClientMessageComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import Picsello.Messages, only: [get_emails: 2]
-
   alias Picsello.{Repo, Job, Clients, AdminGlobalSettings}
 
   @default_assigns %{
@@ -353,7 +352,6 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign(:search_phrase, nil)
   end
 
-  @error_1 ~s(maximum limit reached of adding emails)
   @error_2 ~s(please enter valid client emails that already exist in the system)
   @error_3 ~s(please enter valid emails)
 
@@ -381,7 +379,12 @@ defmodule PicselloWeb.ClientMessageComponent do
         "bcc" -> admin_global_settings[@bcc_slug]
       end
 
-    error = length(email_list) > String.to_integer(value) && @error_1
+    value = String.to_integer(value)
+
+    error =
+      length(email_list) > value &&
+        "Limit reached, #{ngettext("1 email", "%{count} emails", value)} allowed, Contact support to increase limit"
+
     error = if error, do: error, else: do_validate_emails(email_list, type, user)
 
     socket

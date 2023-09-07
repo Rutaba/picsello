@@ -20,7 +20,7 @@ defmodule Picsello.AdminGlobalSettings do
   Returns [] if the admin global settings does not exist.
   """
   def get_all_active_settings() do
-    from(ags in AdminGlobalSetting, where: ags.status == :active)
+    from(ags in AdminGlobalSetting, where: ags.status == :active, order_by: ags.id)
     |> Repo.all()
   end
 
@@ -30,7 +30,7 @@ defmodule Picsello.AdminGlobalSettings do
   Returns [] if the admin global settings does not exist.
   """
   def get_all_settings() do
-    from(ags in AdminGlobalSetting)
+    from(ags in AdminGlobalSetting, order_by: ags.id)
     |> Repo.all()
   end
 
