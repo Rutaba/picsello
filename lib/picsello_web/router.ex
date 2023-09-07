@@ -101,6 +101,8 @@ defmodule PicselloWeb.Router do
     live "/user/:id/contact_upload", Live.Admin.User.ContactUpload, :show
     live "/workers", Live.Admin.Workers, :index
     live "/", Live.Admin.Index, :index
+    live "/global_settings", Live.Admin.GlobalSettings, :index
+
     post "/users/log_in", UserAdminSessionController, :create
   end
 
