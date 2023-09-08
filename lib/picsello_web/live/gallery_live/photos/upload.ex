@@ -245,7 +245,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
   defp total(list) when is_list(list), do: list |> length
   defp total(_), do: nil
 
-  defp assign_overall_progress(%{assigns: %{progress: progress, gallery: gallery}} = socket) do
+  defp assign_overall_progress(
+         %{assigns: %{progress: progress, gallery: gallery, album_id: album_id}} = socket
+       ) do
     total_progress = GalleryUploadProgress.total_progress(progress)
 
     gallery_progress_broadcast(socket, total_progress)
@@ -261,11 +263,16 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
       uploading_broadcast(socket, gallery.id)
       Galleries.update_gallery_photo_count(gallery.id)
-      Galleries.normalize_gallery_photo_positions(gallery.id)
+
+      if album_id,
+        do: Galleries.sort_album_photo_positions_by_name(album_id),
+        else: Galleries.sort_gallery_photo_positions_by_name(gallery.id)
+
       Galleries.refresh_bundle(gallery)
 
       socket
       |> assign(:inprogress_photos, [])
+      |> push_event("reload_grid", %{})
     else
       socket
     end
