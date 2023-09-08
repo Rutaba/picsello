@@ -105,6 +105,7 @@ defmodule PicselloWeb.StripeWebhooksController do
     if card.customer do
       Accounts.get_user_by_stripe_customer_id(card.customer.id)
     end
+
     :ok
   end
 end
