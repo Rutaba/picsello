@@ -95,6 +95,7 @@ defmodule PicselloWeb.Router do
     live "/pricing_calculator", Live.Admin.PricingCalculator, :index
     live "/next_up_cards", Live.Admin.NextUpCards, :index
     live "/subscription_pricing", Live.Admin.SubscriptionPricing, :index
+    live "/whcc_orders_report", Live.Admin.WHCCOrdersReport, :index
     live "/product_pricing", Live.Admin.ProductPricing, :index
     live "/product_pricing/:id", Live.Admin.ProductPricing, :show
     live "/user", Live.Admin.User.Index, :index
