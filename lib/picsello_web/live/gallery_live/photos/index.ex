@@ -731,7 +731,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name, gallery)))
     end
 
-    Galleries.sort_album_photo_positions_by_name(album_id)
+    Galleries.sort_album_photo_positions_by_name(String.to_integer(album_id))
 
     socket
     |> close_modal()
