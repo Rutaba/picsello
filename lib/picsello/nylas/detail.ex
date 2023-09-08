@@ -19,7 +19,6 @@ defmodule Picsello.NylasDetail do
   end
 
   @type t :: %__MODULE__{
-          id: Ecto.UUID.t(),
           account_id: String.t() | nil,
           oauth_token: String.t() | nil,
           previous_oauth_token: String.t() | nil,
@@ -51,7 +50,7 @@ defmodule Picsello.NylasDetail do
     |> change(Map.put(@clear_fields, :previous_oauth_token, oauth_token))
   end
 
-  @spec set_token_changeset(t(), map()) :: Changeset.t()
+  @spec set_calendars_changeset(t(), map()) :: Changeset.t()
   def set_calendars_changeset(%__MODULE__{} = nylas_detail, calendars) do
     nylas_detail
     |> cast(calendars, @fields)

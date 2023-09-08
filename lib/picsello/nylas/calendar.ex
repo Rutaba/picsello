@@ -3,7 +3,7 @@ defmodule Picsello.NylasCalendar do
 
   @moduledoc "behavior of calendar"
 
-  @callback generate_login_link(integer(), String.t()) ::
+  @callback generate_login_link(String.t(), String.t()) ::
               {:ok, String.t()}
 
   @callback generate_login_link() ::
