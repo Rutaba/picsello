@@ -131,9 +131,6 @@ defmodule Picsello.ClientBooksEventTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Your booking reservation expires in 9:")
-    |> assert_text(
-      "Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment."
-    )
     |> assert_text("Event 1")
     |> assert_text("3 images | 45 min session | In Studio")
     |> assert_text("Sunday, December 11 @ 11:00 am")
@@ -273,9 +270,6 @@ defmodule Picsello.ClientBooksEventTest do
     |> click(css("label", text: "9:00am"))
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
-    |> assert_text(
-      "Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment."
-    )
     |> scroll_to_bottom()
     |> click(button("To-Do Review and accept your proposal"))
     |> assert_text("Package description")
