@@ -54,7 +54,13 @@ defmodule PicselloWeb.Live.Brand.Shared do
       title: "Welcome",
       booking_panel_title: "Here's how to officially book your photo session:",
       message:
-        "<p>Let's get your shoot booked!</p><p><br></p><p>We are so excited to work with you!</p><p><br></p>",
+        "Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment.
+        <br>
+        Once your payment has been confirmed, your session is booked for you exclusively and any other client inquiries will be declined. You will receive a payment confirmation email and additional emails about your session leading up to the shoot.
+        <br>
+        Let's get your shoot booked!
+        <br>
+        We are so excited to work with you!",
       contact_button: "Message #{name}"
     }
   end

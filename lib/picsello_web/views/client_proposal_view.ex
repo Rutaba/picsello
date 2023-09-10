@@ -19,16 +19,8 @@ defmodule PicselloWeb.ClientProposalView do
 
         <div class="grid md:grid-cols-2 gap-5">
           <div>
-            <p class="text-xs">
-              <br>
-              Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment.
-              <br><br>
-              Once your payment has been confirmed, your session is booked for you exclusively and any other client inquiries will be declined. You will receive a payment confirmation email and additional emails about your session leading up to the shoot.
-              <br><br>
-              <div class="text-xs">
-                  <%= raw @client_proposal.message %>
-              </div>
-              <span class="text-xs"><%= @organization.name %></span>
+            <p class="text-xs whitespace-pre-line">
+              <%= raw @client_proposal.message %>
             </p>
             <hr class="border-gray-100 my-4">
             <h3 class="uppercase text-base-250 text-xs">Have Questions?</h3>

@@ -17,7 +17,7 @@
       <%= if PaymentSchedules.paid_any?(@job) do %>
         <span class="capitalize"><%= @job.client.name %></span>, your shoot has been booked!
       <% else %>
-        <span class="capitalize"><%= @job.client.name %></span>, <%= @client_proposal.title %>.
+        <span class="capitalize"><%= @job.client.name %></span>, <%= @client_proposal.title %>
       <% end %>
     </h2>
 
@@ -31,14 +31,8 @@
 
             Thank you for choosing <%= @organization.name %>.
           <% else %>
-            Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment.
-
-            Once your payment has been confirmed, your session is booked for you exclusively and any other client inquiries will be declined. You will receive a payment confirmation email and additional emails about your session leading up to the shoot.
-
             <%= raw @client_proposal.message %>
             <br>
-
-            <span><%= @organization.name %></span>
           <% end %>
         </p>
         <hr class="border-gray-100 my-8">
