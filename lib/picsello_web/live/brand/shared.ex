@@ -54,7 +54,7 @@ defmodule PicselloWeb.Live.Brand.Shared do
       title: "Welcome",
       booking_panel_title: "Here's how to officially book your photo session:",
       message:
-        "<p>Let's get your shoot booked!</p><p><br></p><p>We are so excited to work with you!</p><p><br></p><p>Your session will not be considered officially...</p><p><br></p><p>We can't wait to capture this time for you!</p>",
+        "<p>Let's get your shoot booked!</p><p><br></p><p>We are so excited to work with you!</p><p><br></p>",
       contact_button: "Message #{name}"
     }
   end
