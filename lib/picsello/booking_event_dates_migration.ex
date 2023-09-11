@@ -1,4 +1,5 @@
 defmodule Picsello.BookingEventDatesMigration do
+  @moduledoc "temporary file for transition of booking_events"
   alias Picsello.{Repo, BookingEvent, BookingEventDate}
   import Ecto.Query
 

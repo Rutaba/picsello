@@ -2,14 +2,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
 
-  import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
   import PicselloWeb.Live.Shared, only: [update_package_questionnaire: 1]
+  import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
-  alias Picsello.{Repo, BookingEvents, Package, BookingEventDate}
-  alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
+  alias Picsello.{Repo, BookingEvent, BookingEvents, Package, BookingEventDate}
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
+  alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
 
   @impl true
@@ -23,7 +23,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_params(%{"id" => event_id}, _session, socket) do
     socket
     |> assign(:id, to_integer(event_id))
+    |> assign(:edit_name, false)
     |> assign_booking_event()
+    |> assign_changeset(%{})
     |> assign(:client, %{id: 1, name: "hammad"})
     |> assign(:booking_slot_tab_active, "list")
     |> assign(:booking_slot_tabs, booking_slot_tabs())
@@ -248,6 +250,34 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> assign(package: %{package | contract: contract})
     |> put_flash(:success, "Contract updated successfully")
     |> close_modal()
+    |> noreply()
+  end
+
+  def handle_info(
+        {:validate, %{"booking_event" => params}},
+        socket
+      ) do
+    socket
+    |> assign(:edit_name, true)
+    |> assign_changeset(params)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:save, %{"booking_event" => %{"name" => _}}},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    case BookingEvents.upsert_booking_event(changeset) do
+      {:ok, booking_event} ->
+        socket
+        |> assign(:edit_name, false)
+        |> assign(:booking_event, booking_event)
+        |> put_flash(:success, "Booking Event updated successfully")
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset)
+    end
     |> noreply()
   end
 
@@ -488,13 +518,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   defp marketing_preview(
          %{
            booking_event: %{description: event_description},
-           package: %{description: package_description}
+           package: package
          } = assigns
        ) do
     description =
-      if event_description && event_description != "",
-        do: event_description,
-        else: package_description
+      cond do
+        event_description ->
+          event_description
+
+        package && package.description ->
+          package.description
+
+        true ->
+          "Pick a package"
+      end
 
     assigns = Map.put(assigns, :description, HtmlSanitizeEx.strip_tags(description))
 
@@ -585,7 +622,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 <% end %>
               </button>
             <% else %>
-              <%= @package.description |> slice_description() |> raw() %>
+              <%= @description %>
             <% end %>
           </div>
         <% else %>
@@ -598,6 +635,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         </button>
       </div>
     """
+  end
+
+  defp assign_changeset(%{assigns: %{booking_event: booking_event}} = socket, params) do
+    socket
+    |> assign(:changeset, BookingEvent.create_changeset(booking_event, params))
   end
 
   defp open_wizard(socket, assigns) do

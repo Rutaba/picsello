@@ -9,6 +9,7 @@ defmodule PicselloWeb.JobLive.Show do
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
+      assign_changeset: 2,
       booking_details_section: 1,
       card: 1,
       communications_card: 1,
@@ -19,12 +20,12 @@ defmodule PicselloWeb.JobLive.Show do
       presign_entry: 2,
       shoot_details_section: 1,
       validate_payment_schedule: 1,
-      title_header: 1,
       card_title: 1,
       process_cancel_upload: 2,
       renew_uploads: 3
     ]
 
+  import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
   import PicselloWeb.GalleryLive.Shared, only: [expired_at: 1, new_gallery_path: 2]
 
   @upload_options [
@@ -40,6 +41,8 @@ defmodule PicselloWeb.JobLive.Show do
   def mount(%{"id" => job_id} = params, _session, socket) do
     socket
     |> assign_job(job_id)
+    |> assign(:edit_name, false)
+    |> assign_changeset(%{})
     |> assign(:type, %{singular: "job", plural: "jobs"})
     |> assign_new(:anchor, fn -> Map.get(params, "anchor", nil) end)
     |> assign(:request_from, params["request_from"])

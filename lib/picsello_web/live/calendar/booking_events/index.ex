@@ -375,16 +375,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   def assign_booking_events(
-         %{
-           assigns: %{
-             current_user: current_user,
-             sort_col: sort_by,
-             sort_direction: sort_direction,
-             search_phrase: search_phrase,
-             event_status: event_status
-           }
-         } = socket
-       ) do
+        %{
+          assigns: %{
+            current_user: current_user,
+            sort_col: sort_by,
+            sort_direction: sort_direction,
+            search_phrase: search_phrase,
+            event_status: event_status
+          }
+        } = socket
+      ) do
     booking_events =
       BE.get_booking_events(current_user.organization_id,
         filters: %{

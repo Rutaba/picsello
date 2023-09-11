@@ -4,7 +4,7 @@ defmodule Picsello.BookingEventDate do
   """
   use Ecto.Schema
   import Ecto.Changeset
-  alias Picsello.{Client, Job}
+  alias Picsello.{Client, Job, BookingEventDates}
 
   defmodule TimeBlock do
     @moduledoc false
@@ -131,6 +131,7 @@ defmodule Picsello.BookingEventDate do
     |> validate_length(:slots, min: 1)
     |> validate_time_blocks()
     |> set_default_repeat_on()
+    |> validate_booking_event_date()
     |> then(fn changeset ->
       if get_field(changeset, :is_repeat) do
         changeset
@@ -140,6 +141,32 @@ defmodule Picsello.BookingEventDate do
         changeset
       end
     end)
+  end
+
+  # This is to validate whether a booking-event-date already exists within a booking-event
+  defp validate_booking_event_date(changeset) do
+    booking_event_id = get_field(changeset, :booking_event_id)
+
+    if get_field(changeset, :date) do
+      date = get_field(changeset, :date)
+      booking_event_date_id = get_field(changeset, :id)
+
+      booking_event_dates =
+        BookingEventDates.get_booking_events_dates_with_same_date(booking_event_id, date)
+
+      booking_event_dates =
+        if booking_event_date_id,
+          do:
+            booking_event_dates
+            |> Enum.filter(&(&1.id != booking_event_date_id)),
+          else: booking_event_dates
+
+      if Enum.any?(booking_event_dates),
+        do: changeset |> add_error(:date, "is already selected"),
+        else: changeset
+    else
+      changeset
+    end
   end
 
   defp validate_stop_repeating(changeset) do
@@ -175,7 +202,7 @@ defmodule Picsello.BookingEventDate do
   end
 
   defp set_default_repeat_on(changeset) do
-    if(Enum.empty?(get_field(changeset, :repeat_on))) do
+    if Enum.empty?(get_field(changeset, :repeat_on)) do
       put_change(changeset, :repeat_on, [
         %{day: "sun", active: true},
         %{day: "mon", active: false},
