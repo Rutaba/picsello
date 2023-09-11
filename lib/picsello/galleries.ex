@@ -945,6 +945,47 @@ defmodule Picsello.Galleries do
   end
 
   @doc """
+  Sorts photos positions within an album by ascending order
+  """
+  def sort_album_photo_positions_by_name(album_id) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        WITH ranks AS (
+          SELECT id, ROW_NUMBER() OVER (ORDER BY LOWER(name)) AS pos
+          FROM photos
+          WHERE album_id = $1::integer
+        )
+        UPDATE photos p
+        SET position = r.pos
+        FROM ranks r
+        WHERE p.album_id = $1::integer
+          AND p.id = r.id
+      """,
+      [album_id]
+    )
+  end
+
+  def sort_gallery_photo_positions_by_name(gallery_id) do
+    Ecto.Adapters.SQL.query(
+      Repo,
+      """
+        WITH ranks AS (
+          SELECT id, ROW_NUMBER() OVER (ORDER BY LOWER(name)) AS pos
+          FROM photos
+          WHERE gallery_id = $1::integer
+        )
+        UPDATE photos p
+        SET position = r.pos
+        FROM ranks r
+        WHERE p.gallery_id = $1::integer
+          AND p.id = r.id
+      """,
+      [gallery_id]
+    )
+  end
+
+  @doc """
     Changes photo position within a gallery updating the only row
   """
   def update_gallery_photo_position(gallery_id, photo_id, "between", [first_id, second_id]) do

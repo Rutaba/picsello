@@ -17,7 +17,7 @@
       <%= if PaymentSchedules.paid_any?(@job) do %>
         <span class="capitalize"><%= @job.client.name %></span>, your shoot has been booked!
       <% else %>
-        <span class="capitalize"><%= @job.client.name %></span>, let's get your shoot booked!
+        <span class="capitalize"><%= @job.client.name %></span>, <%= @client_proposal.title %>
       <% end %>
     </h2>
 
@@ -31,19 +31,14 @@
 
             Thank you for choosing <%= @organization.name %>.
           <% else %>
-            Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment.
-
-            Once your payment has been confirmed, your session is booked for you exclusively and any other client inquiries will be declined. You will receive a payment confirmation email and additional emails about your session leading up to the shoot.
-
-            I look forward to capturing these memories for you and greatly
-            appreciate your business.
-
-            <span><%= @organization.name %></span>
+            <%= raw @client_proposal.message %>
+            <br>
           <% end %>
         </p>
         <hr class="border-gray-100 my-8">
         <h3 class="uppercase text-base-250">Have Questions?</h3>
-        <a class="block mt-2 btn-primary w-max" phx-click="open-compose">Message <%= @organization.name %></a>
+        <a class="block mt-2 border text-md w-max p-2 border-black cursor-pointer hover:border-base-250 hover:text-base-300 hover:bg-base-300/10" phx-click="open-compose"><%= @client_proposal.contact_button %></a>
+        <br>
       </div>
       <div class="md:border md:border-gray-100 sm:px-10 py-10">
         <%= if @job.booking_event do %>
@@ -64,7 +59,7 @@
           <% PaymentSchedules.paid_any?(@job) || PaymentSchedules.is_with_cash?(@job) -> %>
             <h3 class="text-3xl md:mr-20">Manage your session:</h3>
           <% true -> %>
-            <h3 class="text-3xl md:mr-20">To officially book your session:</h3>
+            <h3 class="text-3xl md:mr-20"><%= @client_proposal.booking_panel_title %></h3>
         <% end %>
 
         <%= unless Job.imported?(@job) do %>

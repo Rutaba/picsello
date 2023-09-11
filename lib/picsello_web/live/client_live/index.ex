@@ -725,4 +725,15 @@ defmodule PicselloWeb.Live.ClientLive.Index do
       %{title: "Archive", action: "confirm-archive", icon: "trash"}
     ]
   end
+
+  @referrals ["Friend", "Other"]
+  def referred_by_name(referred_by, referral_name) when referred_by in @referrals do
+    if referral_name do
+      "#{referred_by} - #{referral_name}"
+    else
+      "#{referred_by}"
+    end
+  end
+
+  def referred_by_name(_referred_by, _referral_name), do: "-"
 end

@@ -3,7 +3,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
   alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules, Messages}
-  alias PicselloWeb.BookingProposalLive.ScheduleComponent
+  alias PicselloWeb.{BookingProposalLive.ScheduleComponent, Live.Brand.Shared}
 
   import Picsello.PaymentSchedules, only: [set_payment_schedules_order: 1]
 
@@ -34,6 +34,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> assign_defaults(session)
     |> assign_proposal(token)
     |> assign_stripe_status()
+    |> assign_client_proposal()
     |> maybe_confetti(params)
     |> maybe_set_booking_countdown()
     |> reorder_payment_schedules()
@@ -248,6 +249,16 @@ I look forward to capturing these memories for you!"}
       icon: nil,
       close_class: "btn-primary"
     })
+  end
+
+  defp assign_client_proposal(%{assigns: %{organization: organization}} = socket) do
+    socket
+    |> assign(client_proposal: Shared.client_proposal(organization))
+  end
+
+  defp assign_client_proposal(socket) do
+    socket
+    |> assign(client_proposal: Shared.default_client_proposal(nil))
   end
 
   defp assign_proposal(%{assigns: %{current_user: current_user}} = socket, token) do

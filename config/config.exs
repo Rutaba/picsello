@@ -52,6 +52,7 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 config :money, default_currency: :USD
 config :picsello, :modal_transition_ms, 400
+config :picsello, :plug_parser_length, System.get_env("PLUG_PARSER_LENGTH") || 100_000_000
 config :picsello, :payments, Picsello.StripePayments
 config :picsello, :google_site_verification, System.get_env("GOOGLE_SITE_VERIFICATION")
 config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_API_KEY")
