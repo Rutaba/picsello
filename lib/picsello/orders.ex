@@ -81,9 +81,10 @@ defmodule Picsello.Orders do
   def orders(), do: from(orders in Order, where: not is_nil(orders.placed_at))
 
   def get_whcc_orders() do
-    from(orders in Order,
-      where: not is_nil(orders.placed_at) and not is_nil(orders.whcc_order),
-      preload: [:gallery_client, gallery: [:organization]]
+    from(order in Order,
+      where: not is_nil(order.placed_at) and not is_nil(order.whcc_order),
+      preload: [:gallery_client, gallery: [:organization]],
+      order_by: [desc: order.placed_at]
     )
     |> Repo.all()
   end
