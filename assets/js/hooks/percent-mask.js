@@ -1,13 +1,11 @@
 import IMask from 'imask';
 
 function percentMask(el) {
-  return IMask(el, {
-    mask: 'num%',
+  let maskOptions = {
     lazy: false,
     blocks: {
       num: {
         mask: Number,
-        max: 9999,
         min: 0,
         normalizeZeros: true,
         scale: 2,
@@ -16,11 +14,22 @@ function percentMask(el) {
         lazy: false,
       },
     },
-  });
+  };
+
+  if (el.dataset.includeSign === 'false') {
+    maskOptions.mask = 'num';
+    maskOptions.blocks.num.max = 100; // Set the custom max value for false
+  } else {
+    maskOptions.mask = 'num%';
+    maskOptions.blocks.num.max = 9999; // Set the max value for percentage
+  }
+
+  return IMask(el, maskOptions);
 }
 
 export default {
   mounted() {
+    const customValue = this.el.dataset.includeSign;
     this.mask = percentMask(this.el);
     this.resetOnBlur = (_) => {
       if (this.el.classList.contains('text-input-invalid')) {

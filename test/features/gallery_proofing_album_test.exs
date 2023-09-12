@@ -130,7 +130,7 @@ defmodule Picsello.GalleryProofingAlbumTest do
     |> assert_has(testid("selection-complete", text: "Client selection complete"))
     |> click(css("#meatball-order-#{order.id}"))
     |> find(
-      link("Download as .CSV"),
+      link("Download full CSV"),
       &assert(Element.attr(&1, "href") =~ link)
     )
   end

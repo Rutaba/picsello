@@ -21,6 +21,12 @@
                     </div>
                 </button>
             <% else %>
+                <%= if @digitals[@photo.id] do %>
+                    <div class={"flex items-center p-1 bg-base-200 absolute opacity-100 z-10 right-3 top-3 #{@photo.is_selected && 'hidden'}"}>
+                        <.icon name="shopping-cart" class="w-4 h-4 text-base-300" />
+                        In cart
+                    </div>
+                <% end %>
                 <button class={"absolute opacity-100 z-10 right-3 bottom-3 #{!@photo.is_selected && 'hidden'}"}>
                     <.icon name="star" class="text-gray-200 w-7 h-7"/>
                 </button>

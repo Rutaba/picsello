@@ -9,6 +9,7 @@ defmodule Picsello.Organization do
     OrganizationJobType,
     OrganizationCard,
     Package,
+    Utils,
     Campaign,
     Client,
     Accounts.User,
@@ -32,6 +33,48 @@ defmodule Picsello.Organization do
     end
   end
 
+  defmodule ClientProposal do
+    @moduledoc false
+    use Ecto.Schema
+    @primary_key false
+
+    embedded_schema do
+      field(:title, :string)
+      field(:booking_panel_title, :string)
+      field(:message, :string)
+      field(:contact_button, :string)
+    end
+
+    def changeset(proposal, attrs) do
+      proposal
+      |> cast(attrs, [:title, :booking_panel_title, :message, :contact_button])
+      |> validate_required([:title, :booking_panel_title, :message, :contact_button],
+        message: "should not be empty"
+      )
+      |> validate_field(:title, min: 5, max: 30)
+      |> validate_field(:booking_panel_title, min: 10, max: 50)
+      |> validate_field(:contact_button, min: 5, max: 35)
+    end
+
+    defp validate_field(changeset, field, min: min, max: max) do
+      check_field = get_field(changeset, field)
+
+      cond do
+        String.length(check_field) < min ->
+          add_error(changeset, field, "must be greater than #{min} characters")
+
+        String.length(check_field) > max ->
+          add_error(changeset, field, "must be less than #{max} characters")
+
+        !Regex.match?(~r/[A-Za-z]/, check_field) ->
+          add_error(changeset, field, "has invalide format")
+
+        true ->
+          changeset
+      end
+    end
+  end
+
   schema "organizations" do
     field(:name, :string)
     field(:stripe_account_id, :string)
@@ -40,6 +83,7 @@ defmodule Picsello.Organization do
 
     embeds_one(:profile, Profile, on_replace: :update)
     embeds_one(:email_signature, EmailSignature, on_replace: :update)
+    embeds_one(:client_proposal, ClientProposal, on_replace: :update)
 
     has_many(:package_templates, Package, where: [package_template_id: nil])
     has_many(:campaigns, Campaign)
@@ -63,11 +107,22 @@ defmodule Picsello.Organization do
     |> cast_embed(:email_signature)
   end
 
+  def client_proposal_portal_changeset(organization, attrs) do
+    organization
+    |> cast(attrs, [])
+    |> cast_embed(:client_proposal)
+  end
+
   def registration_changeset(organization, attrs, "" <> user_name),
     do:
       registration_changeset(
         organization,
-        Map.put_new(attrs, :name, "#{user_name} Photography")
+        Map.put_new(
+          attrs,
+          :name,
+          build_organization_name("#{user_name} Photography")
+          |> Utils.capitalize_all_words()
+        )
       )
 
   def registration_changeset(organization, attrs, _user_name),
@@ -80,7 +135,8 @@ defmodule Picsello.Organization do
     |> cast_assoc(:gs_gallery_products, with: &GalleryProduct.changeset/2)
     |> cast_assoc(:organization_job_types, with: &OrganizationJobType.changeset/2)
     |> validate_required([:name])
-    |> prepare_changes(fn changeset ->
+    |> validate_org_name()
+    |> then(fn changeset ->
       case get_change(changeset, :slug) do
         nil ->
           change_slug(changeset)
@@ -92,11 +148,26 @@ defmodule Picsello.Organization do
     |> unique_constraint(:slug)
   end
 
+  defp validate_org_name(changeset) do
+    name = get_change(changeset, :name)
+
+    if name && check_existing_name_and_slug(name, build_slug(name)) do
+      add_error(
+        changeset,
+        :name,
+        "Business name already exists. Please try with a different name."
+      )
+    else
+      changeset
+    end
+  end
+
   def name_changeset(organization, attrs) do
     organization
     |> cast(attrs, [:name])
     |> validate_required([:name])
     |> prepare_changes(&change_slug/1)
+    |> validate_org_name()
     |> unique_constraint(:slug)
     |> case do
       %{changes: %{name: _}} = changeset -> changeset
@@ -113,25 +184,54 @@ defmodule Picsello.Organization do
   def assign_stripe_account_changeset(%__MODULE__{} = organization, "" <> stripe_account_id),
     do: organization |> change(stripe_account_id: stripe_account_id)
 
-  def build_slug(name) do
-    slug = name |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
-    slug_like = "#{slug}%"
+  defp build_organization_name(name) do
+    name
+    |> reformat_string()
+    |> find_unique_organization_name()
+  end
 
-    highest_slug_index =
-      from(organization in __MODULE__,
-        where: like(organization.slug, ^slug_like),
-        select:
-          "(coalesce(regexp_match(?, '\\d+$'), ARRAY['1']))[1]::int"
-          |> fragment(organization.slug)
-          |> max()
-      )
-      |> Repo.one()
+  @spec find_unique_organization_name(name :: String.t(), count :: integer) :: String.t()
+  defp find_unique_organization_name(name, count \\ 0) do
+    updated_name =
+      if count > 0 do
+        "#{name} #{count}"
+      else
+        name
+      end
 
-    case highest_slug_index do
-      nil -> slug
-      n -> "#{slug}-#{n + 1}"
+    updated_slug = build_slug(updated_name)
+
+    if check_existing_name_and_slug(updated_name, updated_slug) do
+      find_unique_organization_name(name, count + 1)
+    else
+      updated_name
     end
   end
+
+  def build_slug(nil), do: nil
+
+  def build_slug(name), do: reformat_string(name, "-")
+
+  @spec check_existing_name_and_slug(name :: String.t(), slug :: String.t()) :: boolean
+  defp check_existing_name_and_slug(name, slug) do
+    Repo.exists?(
+      from o in __MODULE__,
+        where:
+          fragment(
+            "LOWER(?) = LOWER(?) OR LOWER(?) = LOWER(?)",
+            o.name,
+            ^name,
+            o.slug,
+            ^slug
+          ),
+        limit: 1
+    )
+  end
+
+  @spec reformat_string(name :: String.t(), replace_by :: String.t()) :: String.t()
+  defp reformat_string(name, replace_by \\ " "),
+    do:
+      name |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, replace_by) |> String.trim("-")
 
   defp change_slug(changeset),
     do:

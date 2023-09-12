@@ -4,6 +4,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
   alias Picsello.Photos
   alias PicselloWeb.Router.Helpers, as: Routes
   alias Phoenix.LiveView.JS
+  alias PicselloWeb.GalleryLive.Shared
 
   import PicselloWeb.GalleryLive.Shared, only: [original_album_link: 2]
   import PicselloWeb.GalleryLive.Photos.Photo.Shared
@@ -74,6 +75,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
     |> noreply()
   end
 
+  defdelegate handle_event(event, params, socket), to: Shared
+
   defp photo_wrapper(assigns) do
     ~H"""
     <div id={"img-#{@id}"} class="galleryItem" data-selected_photo_id={"img-#{@selected_photo_id}"} phx-click="toggle_selected_photos" phx-value-photo_id={@id} phx-hook="GallerySelector">
@@ -94,15 +97,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Photo do
       </li>
       <% end %>
       <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">
-        <a id={"download-photo-#{@id}"} class="hover-drop-down"
-          download
-          href={Routes.gallery_downloads_path(
-            @socket,
-            :download_photo,
-            @client_link_hash,
-            @id
-          )}>Download photo
-        </a>
+        <button
+          id={"download-photo-#{@id}"}
+          class="hover-drop-down"
+          phx-click="download-photo"
+          phx-target={@myself}
+          phx-value-uri={Routes.gallery_downloads_path(@socket, :download_photo, @client_link_hash, @photo.id)}
+          >Download photo
+        </button>
       </li>
       <%= if @album && @album.is_client_liked do %>
         <li class="flex items-center hover:bg-blue-planning-100 hover:rounded-md">

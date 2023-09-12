@@ -226,7 +226,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <h4 class="text-4xl font-bold">Let us know how much you’d like to make</h4>
         <p class="py-2 text-base-250 text-lg">Make sure to notice how taxes affect your take home pay. You can easily adjust your Gross Salary needed if the amount of taxes surprises you!</p>
 
-        <div {intro_hints_only("intro_hints_only")}>
+        <div>
           <label class="flex flex-wrap md:flex-nowrap items-center justify-between mt-4 bg-blue-planning-100 p-4 rounded-t-lg gap-12">
             <p class="font-extrabold shrink text-xl">Gross Salary Needed <br /> <span class="italic font-normal text-sm">Remember, this isn't your take home pay. Adjust to make sure your take home is what you need.</span></p>
             <div>
@@ -236,7 +236,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </label>
           <hr class="hidden mb-4 sm:block"/>
           <div class="flex flex-wrap items-center justify-between px-4">
-            <p class="font-extrabold">Approximate Tax Bracket <br /><span class="italic font-normal text-sm text-base-250">How did you calculate this? <.intro_hint content="Based on the salary you entered, we looked at what the IRS has listed as the percentage band of income you are in." class="ml-1" /></span></p>
+            <p class="font-extrabold">Approximate Tax Bracket <br /><span class="italic font-normal text-sm text-base-250">How did you calculate this? <.tooltip id="tax-bracket" content="Based on the salary you entered, we looked at what the IRS has listed as the percentage band of income you are in." class="ml-1" /></span></p>
             <%= hidden_input(@f, :tax_bracket, value: @tax_bracket.percentage ) %>
             <p class="text-base-250 w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= @tax_bracket.percentage %>%</p>
           </div>
@@ -248,7 +248,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
           </div>
           <hr class="hidden mt-4 mb-4 sm:block" />
           <div class="flex flex-wrap items-center justify-between px-4">
-            <p class="py-2 font-extrabold">Self-employment tax <br /><span class="italic font-normal text-sm text-base-250">What's this? <.intro_hint content="Since you are technically self-employed, the IRS has a special tax percentage, this is calculated after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
+            <p class="py-2 font-extrabold">Self-employment tax <br /><span class="italic font-normal text-sm text-base-250">What's this? <.tooltip id="employment-tax" content="Since you are technically self-employed, the IRS has a special tax percentage, this is calculated after your normal income tax. There is no graduation here, just straight 15.3%." class="ml-1" /></span></p>
             <p class="text-base-250 w-full p-4 mt-4 mb-6 text-center bg-gray-100 sm:w-40 sm:bg-transparent sm:mb-0 sm:mt-0 sm:p-0"><%= @pricing_calculations.self_employment_tax_percentage %>%</p>
           </div>
           <hr class="hidden mt-4 mb-4 sm:block" />
@@ -625,7 +625,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   def financial_review(assigns) do
     ~H"""
       <h4 class="mt-4 mb-6 text-xl font-bold text-base-250">Financial summary</h4>
-      <div class="flex flex-wrap items-center justify-between p-8 mt-2 mb-6 bg-gray-100 rounded-lg" {intro_hints_only("intro_hints_only")}>
+      <div class="flex flex-wrap items-center justify-between p-8 mt-2 mb-6 bg-gray-100 rounded-lg">
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @desired_salary %></h5>
           <p class="italic text-center">Gross Salary (Before Taxes)</p>
@@ -638,7 +638,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <p class="w-full text-5xl font-bold text-center text-base-250 sm:mb-8 sm:w-auto">=</p>
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= PricingCalculations.calculate_revenue(@desired_salary, @costs) %></h5>
-          <p class="italic text-center">Gross Revenue <.intro_hint content="Your revenue is the total amount of sales you made before any deductions. This includes your costs because you should be including those in your pricing!" class="ml-1" /></p>
+          <p class="italic text-center">Gross Revenue <.tooltip id="gross-revenue" content="Your revenue is the total amount of sales you made before any deductions. This includes your costs because you should be including those in your pricing!" class="ml-1" /></p>
         </div>
       </div>
     """
@@ -647,7 +647,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
   def tax_review(assigns) do
     ~H"""
       <h4 class="mt-8 mb-6 text-xl font-bold text-base-250">Tax summary</h4>
-      <div class="flex flex-wrap items-center justify-between p-8 mt-2 mb-6 bg-gray-100 rounded-lg" {intro_hints_only("intro_hints_only")}>
+      <div class="flex flex-wrap items-center justify-between p-8 mt-2 mb-6 bg-gray-100 rounded-lg">
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @desired_salary %></h5>
           <p class="italic text-center">Gross Salary (before taxes)</p>
@@ -660,7 +660,7 @@ defmodule PicselloWeb.Live.Pricing.Calculator.Index do
         <p class="w-full text-5xl font-bold text-center text-base-250 sm:mb-8 sm:w-auto">=</p>
         <div class="w-full sm:w-auto">
           <h5 class="mb-2 text-4xl font-bold text-center"><%= @take_home %></h5>
-          <p class="italic text-center">Total Take Home Pay <.intro_hint content="This doesn't include your expenses or any savings from business cost deductions" class="ml-1" /></p>
+          <p class="italic text-center">Total Take Home Pay <.tooltip id="take-home" content="This doesn't include your expenses or any savings from business cost deductions" class="ml-1" /></p>
         </div>
       </div>
     """

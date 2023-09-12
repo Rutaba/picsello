@@ -155,7 +155,7 @@ defmodule PicselloWeb.Live.Marketing.EditLinkComponent do
   defp check_box(assigns) do
     ~H"""
     <label {testid(@field)} class={"flex items-center lg:order-2 order-1 mt-7 cursor-pointer #{@class}"}>
-      <div class="font-sans font-extrabold" {intro_hints_only("intro_hints_only")}>
+      <div class="font-sans font-extrabold">
         <%= @label %>
       </div>
       <div class="relative ml-auto">

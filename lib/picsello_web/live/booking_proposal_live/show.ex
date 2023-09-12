@@ -3,9 +3,16 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   use PicselloWeb, live_view: [layout: "live_client"]
   require Logger
   alias Picsello.{Repo, BookingProposal, Job, Payments, PaymentSchedules, Messages}
-  alias PicselloWeb.BookingProposalLive.ScheduleComponent
+  alias PicselloWeb.{BookingProposalLive.ScheduleComponent, Live.Brand.Shared}
 
   import Picsello.PaymentSchedules, only: [set_payment_schedules_order: 1]
+
+  import PicselloWeb.BookingProposalLive.Shared,
+    only: [
+      handle_checkout: 2,
+      handle_offline_checkout: 3,
+      formatted_date: 2
+    ]
 
   import PicselloWeb.Live.Profile.Shared,
     only: [
@@ -19,7 +26,7 @@ defmodule PicselloWeb.BookingProposalLive.Show do
 
   @max_age 60 * 60 * 24 * 365 * 10
 
-  @pages ~w(details contract questionnaire invoice)
+  @pages ~w(details contract questionnaire invoice idle)
 
   @impl true
   def mount(%{"token" => token} = params, session, socket) do
@@ -27,9 +34,17 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> assign_defaults(session)
     |> assign_proposal(token)
     |> assign_stripe_status()
+    |> assign_client_proposal()
     |> maybe_confetti(params)
     |> maybe_set_booking_countdown()
     |> reorder_payment_schedules()
+    |> then(fn
+      %{assigns: %{job: job = %{}}} = socket ->
+        assign(socket, :next_due_payment, PaymentSchedules.next_due_payment(job))
+
+      socket ->
+        assign(socket, :next_due_payment, nil)
+    end)
     |> ok()
   end
 
@@ -40,13 +55,18 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   def handle_event("open-compose", %{}, socket), do: open_compose(socket)
 
   @impl true
+  def handle_event("handle_checkout", %{}, %{assigns: %{job: job}} = socket) do
+    handle_checkout(socket, job)
+  end
+
+  @impl true
   def handle_event(
         "open_schedule_popup",
         _params,
-        %{assigns: %{proposal: proposal, job: job}} = socket
+        %{assigns: %{proposal: proposal, job: job, organization: organization}} = socket
       ) do
     socket
-    |> open_modal(ScheduleComponent, %{proposal: proposal, job: job})
+    |> open_modal(ScheduleComponent, %{proposal: proposal, job: job, organization: organization})
     |> noreply()
   end
 
@@ -62,6 +82,16 @@ defmodule PicselloWeb.BookingProposalLive.Show do
     |> noreply()
   end
 
+  def handle_event("fire_idle_popup", %{}, %{assigns: %{read_only: read_only}} = socket) do
+    socket
+    |> open_page_modal("idle", read_only)
+    |> noreply()
+  end
+
+  def handle_event("pay_offline", %{}, %{assigns: %{job: job, proposal: proposal}} = socket) do
+    handle_offline_checkout(socket, job, proposal)
+  end
+
   @impl true
   def handle_info({:stripe_status, status}, socket) do
     socket
@@ -71,12 +101,25 @@ defmodule PicselloWeb.BookingProposalLive.Show do
   end
 
   @impl true
-  def handle_info({:update, %{proposal: proposal}}, socket),
-    do: socket |> assign(proposal: proposal) |> noreply()
+  def handle_info({:update, %{proposal: proposal, next_page: next_page}}, socket) do
+    next_page = if is_nil(proposal.questionnaire_id), do: "contract", else: next_page
+
+    socket
+    |> assign(proposal: proposal)
+    |> open_page_modal(next_page)
+    |> noreply()
+  end
 
   @impl true
-  def handle_info({:update, %{answer: answer}}, %{assigns: %{proposal: proposal}} = socket),
-    do: socket |> assign(answer: answer, proposal: %{proposal | answer: answer}) |> noreply()
+  def handle_info(
+        {:update, %{answer: answer, next_page: next_page}},
+        %{assigns: %{proposal: proposal}} = socket
+      ),
+      do:
+        socket
+        |> assign(answer: answer, proposal: %{proposal | answer: answer})
+        |> open_page_modal(next_page)
+        |> noreply()
 
   @impl true
   def handle_info({:update_payment_schedules}, %{assigns: %{job: job}} = socket),
@@ -183,7 +226,8 @@ defmodule PicselloWeb.BookingProposalLive.Show do
         "questionnaire" => PicselloWeb.BookingProposalLive.QuestionnaireComponent,
         "details" => PicselloWeb.BookingProposalLive.ProposalComponent,
         "contract" => PicselloWeb.BookingProposalLive.ContractComponent,
-        "invoice" => PicselloWeb.BookingProposalLive.InvoiceComponent
+        "invoice" => PicselloWeb.BookingProposalLive.InvoiceComponent,
+        "idle" => PicselloWeb.BookingProposalLive.IdleComponent
       },
       page
     )
@@ -205,6 +249,16 @@ I look forward to capturing these memories for you!"}
       icon: nil,
       close_class: "btn-primary"
     })
+  end
+
+  defp assign_client_proposal(%{assigns: %{organization: organization}} = socket) do
+    socket
+    |> assign(client_proposal: Shared.client_proposal(organization))
+  end
+
+  defp assign_client_proposal(socket) do
+    socket
+    |> assign(client_proposal: Shared.default_client_proposal(nil))
   end
 
   defp assign_proposal(%{assigns: %{current_user: current_user}} = socket, token) do
@@ -281,13 +335,25 @@ I look forward to capturing these memories for you!"}
   defp maybe_confetti(socket, %{}), do: socket
 
   defp invoice_disabled?(
-         %BookingProposal{accepted_at: accepted_at, signed_at: signed_at, job: job},
-         :charges_enabled
+         %BookingProposal{
+           accepted_at: accepted_at,
+           signed_at: signed_at,
+           job: job,
+           questionnaire_id: questionnaire_id
+         },
+         :charges_enabled,
+         questionnaire_answer
        ) do
-    !Job.imported?(job) && (is_nil(accepted_at) || is_nil(signed_at))
+    if is_nil(questionnaire_id) do
+      !Job.imported?(job) && (is_nil(accepted_at) || is_nil(signed_at))
+    else
+      !Job.imported?(job) &&
+        (is_nil(accepted_at) || is_nil(signed_at) ||
+           is_nil(questionnaire_answer))
+    end
   end
 
-  defp invoice_disabled?(_proposal, _stripe_status), do: true
+  defp invoice_disabled?(_proposal, _stripe_status, _questionnaire_answer), do: true
 
   defp open_compose(
          %{
@@ -328,10 +394,6 @@ I look forward to capturing these memories for you!"}
       socket
       |> put_flash(:error, "Payment is not enabled yet. Please contact your photographer.")
     end
-  end
-
-  defp formatted_date(%Job{shoots: [shoot | _]}, photographer) do
-    strftime(photographer.time_zone, shoot.starts_at, "%A, %B %-d @ %-I:%M %P")
   end
 
   defp maybe_set_booking_countdown(%{assigns: %{job: job}} = socket) do
@@ -403,11 +465,8 @@ I look forward to capturing these memories for you!"}
 
   defp reorder_payment_schedules(socket), do: socket
 
-  defp pending_amount_details(job),
-    do:
-      if(PaymentSchedules.owed_amount(job) > PaymentSchedules.paid_amount(job),
-        do: "To-Do",
-        else:
-          "Next payment due: #{PaymentSchedules.remainder_due_on(job) |> format_date_via_type("MM/DD/YY")}"
-      )
+  defp pending_amount_details(job) do
+    percentage_left = PaymentSchedules.percentage_paid(job) |> round() |> to_string()
+    "#{percentage_left}% paid"
+  end
 end

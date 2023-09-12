@@ -4,7 +4,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Repo, Questionnaire, Questionnaire.Answer}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.BookingProposalLive.Shared, only: [banner: 1]
+  import PicselloWeb.BookingProposalLive.Shared, only: [questionnaire_item: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -31,11 +31,10 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
          |> Answer.changeset(%{answers: update_answers(answer.answers, params)})
          |> Repo.insert() do
       {:ok, answer} ->
-        send(self(), {:update, %{answer: answer}})
+        send(self(), {:update, %{answer: answer, next_page: "invoice"}})
 
         socket
         |> assign(answer: answer)
-        |> close_modal()
         |> noreply()
 
       _error ->
@@ -115,7 +114,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
         } = job
     } =
       proposal
-      |> Repo.preload([:answer, :questionnaire, job: [package: [organization: :user]]])
+      |> Repo.preload([:answer, :questionnaire, job: [:client, package: [organization: :user]]])
 
     socket
     |> open_modal(__MODULE__, %{
@@ -123,6 +122,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
       job: job,
       package: package,
       answer: answer,
+      organization: package.organization,
       questionnaire: questionnaire,
       photographer: photographer,
       proposal: proposal
@@ -130,7 +130,12 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
   end
 
   def open_modal_from_lead(socket, job, package) do
-    questionnaire = job |> Questionnaire.for_job() |> Repo.one!()
+    questionnaire =
+      job
+      |> Questionnaire.for_job()
+      |> Repo.one!()
+
+    package = package |> Repo.preload([:organization])
 
     socket
     |> open_modal(__MODULE__, %{
@@ -140,6 +145,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
       answer: %Answer{
         answers: List.duplicate([], Enum.count(questionnaire.questions))
       },
+      organization: package.organization,
       questionnaire: questionnaire,
       photographer: socket.assigns.current_user,
       proposal: nil
