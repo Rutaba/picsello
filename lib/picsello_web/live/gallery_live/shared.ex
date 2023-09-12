@@ -4,7 +4,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
   use Phoenix.Component
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-
+  require Logger
   alias Picsello.{
     Job,
     Repo,
@@ -18,7 +18,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
     GlobalSettings,
     Utils
   }
-
+  require Logger
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
   alias Cart.{Order, Digital}
   alias Galleries.{GalleryProduct, Photo}
@@ -104,7 +104,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
         false -> maybe_insert_gallery_client(gallery, client_email)
         current_user -> maybe_insert_gallery_client(gallery, current_user.email)
       end
-
+    Logger.info("Reached get_client_by_email for #{gallery.id}")
     if is_list(result) do
       result |> List.first()
     else
@@ -454,7 +454,7 @@ defmodule PicselloWeb.GalleryLive.Shared do
           order
           |> Map.get(:digitals, [])
           |> Map.new(&{&1.photo_id, &1})
-
+        Logger.info("Reached assign_cart_count for #{gallery.id}")
         socket
         |> assign(order: order)
         |> assign_cart_count(gallery)
@@ -727,10 +727,14 @@ defmodule PicselloWeb.GalleryLive.Shared do
     """
   end
 
-  def credits(%Galleries.Gallery{} = gallery),
-    do: gallery |> Cart.credit_remaining() |> credits()
+  def credits(%{id: _id} = gallery) do
+    Logger.info("Reached credits for #{gallery.id}")
+    gallery |> Cart.credit_remaining() |> credits()
+  end
 
   def credits(credits) do
+    Logger.info("Reached other credits")
+    credits =
     for {label, key} <- [
           {"Download Credits", :digital},
           {"Print Credit", :print}
@@ -738,11 +742,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
         reduce: [] do
       acc ->
         case Map.get(credits, key) do
-          0 -> acc
-          %{amount: 0} -> acc
+          0 ->
+          Logger.info("Reached other credits first acc")
+          acc
+          %{amount: 0} ->
+          Logger.info("Reached other credits second acc")
+          acc
           value -> [{label, value} | acc]
         end
     end
+    Logger.info("Reached other credits end")
+    credits
   end
 
   def cards_width(frame_image), do: if(frame_image == "card.png", do: "198")
