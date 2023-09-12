@@ -72,7 +72,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
       </div>
       <div class="grid gap-6 mt-6">
         <.card title="Accepted payment types" class="intro-payments">
-          <p class="mt-2 text-base-250">Here you can enable payment methods you would like to accept.</p>
+          <p class="mt-2 text-base-250">Here you can enable payment methods you would like to accept. Note, payment methods available may be contingent upon the currency selected.</p>
           <.form :let={f} for={@payment_options_changeset} phx-change="update-payment-options">
             <%= inputs_for f, :payment_options, fn fp -> %>
               <%= hidden_inputs_for(fp) %>
