@@ -87,7 +87,7 @@ defmodule Picsello.Currency do
   end
 
   def for_gallery(gallery) do
-    %{package: %{currency: currency} = package} = Repo.preload(gallery, :package)
+    %{package: %{currency: currency}} = Repo.preload(gallery, :package)
     currency
   end
 end
