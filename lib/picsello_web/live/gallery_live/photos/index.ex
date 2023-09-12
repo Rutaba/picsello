@@ -1166,7 +1166,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     }
   end
 
-  defp grid_padding(%{photos_error_count: error_count, first_visit?: first_visit?}) do
+  defp grid_padding(error_count, first_visit?) do
     cond do
       first_visit? && error_count != 0 -> "pt-80 mt-4"
       first_visit? && error_count == 0 -> "pt-72"
