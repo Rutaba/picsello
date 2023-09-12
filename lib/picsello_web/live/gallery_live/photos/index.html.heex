@@ -204,7 +204,7 @@
               <.proofing_grid orders={@orders} gallery={@gallery} />
             </div>
           <% false -> %>
-            <div class={"lg:pb-16 pb-20 mx-0 gallery__container center-container px-0 #{grid_padding(assigns)}"} id="gallery">
+            <div class={"lg:pb-16 pb-20 mx-0 gallery__container center-container px-0 pt-60 #{grid_padding(@photos_error_count, @first_visit?)}"} id="gallery">
               <%= if @album && @album.is_proofing do %>
                 <.proofing_grid orders={@orders} gallery={@gallery} />
                 <hr class={classes("sticky my-6 border-base-225", %{"hidden" => @orders == []})}>
