@@ -1,7 +1,7 @@
 defmodule PicselloWeb.StripeWebhooksController do
   use PicselloWeb, :controller
   require Logger
-  alias Picsello.{Orders, PaymentSchedules, Notifiers.OrderNotifier}
+  alias Picsello.{Accounts, Orders, PaymentSchedules, Notifiers.OrderNotifier}
 
   def connect_webhooks(conn, _params) do
     do_webhook(:connect, conn)
@@ -98,6 +98,14 @@ defmodule PicselloWeb.StripeWebhooksController do
               "invoice.payment_failed"
             ] do
     {:ok, _} = Orders.handle_invoice(invoice)
+    :ok
+  end
+
+  defp handle_webhook(:app, %{type: "customer.source.expiring", data: %{object: card}}) do
+    if card.customer do
+      Accounts.get_user_by_stripe_customer_id(card.customer.id)
+    end
+
     :ok
   end
 end
