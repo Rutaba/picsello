@@ -691,13 +691,12 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_info({:update, assigns}, socket),
-    do:
-      socket
-      |> assign(assigns)
-      |> assign_payment_schedules()
-      |> assign_disabled_copy_link()
-      |> noreply()
+  def handle_info({:update, assigns}, socket) do
+    socket
+    |> assign(assigns)
+    |> assign_disabled_copy_link()
+    |> noreply()
+  end
 
   def handle_info(
         {:inbound_messages, message},
