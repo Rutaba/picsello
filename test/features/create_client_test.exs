@@ -134,7 +134,7 @@ defmodule Picsello.CreateClientTest do
       |> click(css(".trash"))
     end)
     |> assert_text("Are you sure you want to archive this lead?")
-    |> click(button("No! Get me out of here"))
+    |> click(button("Cancel"))
     |> visit("/clients/#{client.id}/job-history")
     |> find(css("[data-testid='client-jobs'] > div:first-child"), fn row ->
       row

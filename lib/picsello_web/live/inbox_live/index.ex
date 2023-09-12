@@ -50,7 +50,7 @@ defmodule PicselloWeb.InboxLive.Index do
               <div class="flex items-center flex-col text-orange-inbox-300 text-xl">
                 <.icon name="envelope" class="text-orange-inbox-300 w-20 h-32" />
                 <p>You don’t have any new messages.</p>
-                <p>Go to a job or lead to send a new message. <.intro_hint content="You haven’t sent any booking proposals or client communications yet - once you have, those conversations will all be logged here, and you’ll be able to send and receive messages to your clients. " /></p>
+                <p>Go to a job or lead to send a new message. <.tooltip id="inbox-lead" content="You haven’t sent any booking proposals or client communications yet - once you have, those conversations will all be logged here, and you’ll be able to send and receive messages to your clients. " /></p>
               </div>
             </div>
           <% true -> %>

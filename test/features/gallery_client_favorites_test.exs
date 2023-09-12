@@ -148,7 +148,7 @@ defmodule Picsello.GalleryClientFavoritesTest do
     } do
       session
       |> visit("/gallery/#{gallery.client_link_hash}")
-      |> click(css("#view-gallery"))
+      |> click(testid("view-gallery"))
       |> assert_has(css(".item", count: photos_count))
       |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-to-like"))
       |> visit("/galleries/#{gallery.id}/albums")
@@ -162,7 +162,7 @@ defmodule Picsello.GalleryClientFavoritesTest do
     } do
       session
       |> visit("/gallery/#{gallery.client_link_hash}")
-      |> click(css("#view-gallery"))
+      |> click(testid("view-gallery"))
       |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-to-like"))
       |> visit("/galleries/#{gallery.id}/albums/client_liked")
       |> find(css("#album_name", text: "All photos"))
@@ -177,7 +177,7 @@ defmodule Picsello.GalleryClientFavoritesTest do
 
       session
       |> visit("/gallery/#{gallery.client_link_hash}")
-      |> click(css("#view-gallery"))
+      |> click(testid("view-gallery"))
       |> force_simulate_click(css("#photo-#{List.first(photo_ids)}-to-like"))
       |> visit("/galleries/#{gallery.id}/albums")
       |> assert_has(css("#albums", count: 1, text: "Client Favorites"))

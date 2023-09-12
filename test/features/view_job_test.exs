@@ -57,7 +57,7 @@ defmodule Picsello.ViewJobTest do
     session
     |> click(testid("view-contract"))
     |> assert_text("the greatest job contract")
-    |> assert_has(css(".modal", text: "Signed on"))
+    |> assert_has(css(".modal", text: "Accepted on"))
     |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
   end
 
@@ -71,7 +71,7 @@ defmodule Picsello.ViewJobTest do
   feature "user views invoice", %{session: session} do
     session
     |> click(button("View invoice"))
-    |> assert_has(css(".modal", text: "paid on"))
+    |> assert_has(css(".modal", text: "Paid"))
     |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
   end
 

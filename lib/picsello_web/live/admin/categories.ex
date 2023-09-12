@@ -48,8 +48,8 @@ defmodule PicselloWeb.Live.Admin.Categories do
             </.form>
 
             <div class="flex text-center justify-evenly">
-              <a class="flex-grow p-2 mr-2 border rounded" phx-value-id={id} phx-value-direction="up" phx-click="reorder" href="#">↑</a>
-              <a class="flex-grow p-2 border rounded" phx-value-id={id} phx-value-direction="down" phx-click="reorder" href="#">↓</a>
+              <a class="flex-grow p-2 mr-2 border rounded" phx-value-id={id} phx-value-direction="up" phx-click="reorder">↑</a>
+              <a class="flex-grow p-2 border rounded" phx-value-id={id} phx-value-direction="down" phx-click="reorder">↓</a>
             </div>
           </div>
         <% end %>

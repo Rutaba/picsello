@@ -186,9 +186,11 @@ defmodule Picsello.PaymentSchedules do
   end
 
   def total_price(%Job{} = job) do
+    currency = Currency.for_job(job)
+
     job
     |> payment_schedules()
-    |> Enum.reduce(Money.new(0), fn payment, acc -> Money.add(acc, payment.price) end)
+    |> Enum.reduce(Money.new(0, currency), fn payment, acc -> Money.add(acc, payment.price) end)
   end
 
   def paid_price(%Job{} = job) do
@@ -212,6 +214,17 @@ defmodule Picsello.PaymentSchedules do
     |> payment_schedules()
     |> Enum.filter(&(&1.paid_at == nil))
     |> Enum.reduce(Money.new(0, currency), fn payment, acc -> Money.add(acc, payment.price) end)
+  end
+
+  def percentage_paid(%Job{} = job) do
+    total = total_price(job) |> Map.get(:amount)
+    paid = paid_price(job) |> Map.get(:amount)
+
+    if maybe_return_0?(total) == 0 do
+      0
+    else
+      maybe_return_0?(paid) / maybe_return_0?(total) * 100
+    end
   end
 
   def owed_offline_price(%Job{} = job) do
@@ -329,7 +342,7 @@ defmodule Picsello.PaymentSchedules do
     job
     |> payment_schedules()
     |> Enum.filter(&(&1.paid_at == nil))
-    |> Enum.min_by(& &1.due_at)
+    |> Enum.min_by(& &1.due_at, fn -> nil end)
   end
 
   def checkout_link(%BookingProposal{} = proposal, payment, opts) do
@@ -406,6 +419,14 @@ defmodule Picsello.PaymentSchedules do
 
   defp remainder_payment(job) do
     unpaid_payment(job) || %PaymentSchedule{}
+  end
+
+  defp maybe_return_0?(value) do
+    if value == nil || value == 0 do
+      0
+    else
+      value
+    end
   end
 
   defdelegate is_with_cash?(payment_schedule), to: PaymentSchedule

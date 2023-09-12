@@ -5,17 +5,19 @@
       <span class="mt-1 ml-2 text-center">Your booking reservation expires in <%= @booking_countdown |> Time.from_seconds_after_midnight() |> Calendar.strftime("%-M:%S") %> minutes!</span>
     </div>
   <% end %>
-  <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col">
+
+  <div class="center-container px-8 pt-6 mx-auto min-h-screen flex flex-col" {if PaymentSchedules.paid_any?(@job) || PaymentSchedules.is_with_cash?(@job), do: %{}, else: %{phx_hook: "CheckIdle", id: "check-idle"}}>
     <div class="flex">
       <.photographer_logo organization={@organization} />
     </div>
+
     <hr class="border-gray-100 my-8">
 
     <h2 class="text-2xl md:mt-12">
-      <%= if PaymentSchedules.all_paid?(@job) do %>
+      <%= if PaymentSchedules.paid_any?(@job) do %>
         <span class="capitalize"><%= @job.client.name %></span>, your shoot has been booked!
       <% else %>
-        <span class="capitalize"><%= @job.client.name %></span>, let's get your shoot booked!
+        <span class="capitalize"><%= @job.client.name %></span>, <%= @client_proposal.title %>
       <% end %>
     </h2>
 
@@ -29,19 +31,13 @@
 
             Thank you for choosing <%= @organization.name %>.
           <% else %>
-            Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment.
-
-            Once your payment has been confirmed, your session is booked for you exclusively and any other client inquiries will be declined. You will receive a payment confirmation email and additional emails about your session leading up to the shoot.
-
-            I look forward to capturing these memories for you and greatly
-            appreciate your business.
-
-            <span><%= @organization.name %></span>
+            <%= raw @client_proposal.message %>
+            <br>
           <% end %>
         </p>
         <hr class="border-gray-100 my-8">
         <h3 class="uppercase text-base-250">Have Questions?</h3>
-        <a class="block mt-2 btn-primary w-max" phx-click="open-compose" href="#">Message <%= @organization.name %></a>
+        <a class="block mt-2 border text-md w-max p-2 border-black cursor-pointer hover:border-base-250 hover:text-base-300 hover:bg-base-300/10" phx-click="open-compose"><%= @client_proposal.contact_button %></a>
         <hr class="border-gray-100 my-8">
         <h3 class="uppercase text-base-250">Online payment options</h3>
         <div class="mr-auto flex flex-wrap items-center gap-4 mt-2">
@@ -63,10 +59,10 @@
           <% end %>
         </div>
       </div>
-      <div class="md:border md:border-gray-100 sm:px-10 lg:px-20 py-12">
+      <div class="md:border md:border-gray-100 sm:px-10 py-10">
         <%= if @job.booking_event do %>
           <div class="p-3 bg-base-200 mb-8">
-            <p class="font-bold"><%= @job.booking_event.name %></p>
+            <p class="font-light"><%= @job.booking_event.name %></p>
             <p><%= Picsello.Package.price(@package) %></p>
             <.subtitle_display booking_event={@job.booking_event} package={@package} class="mt-0" />
             <div class="mt-1 flex flex-col">
@@ -75,7 +71,15 @@
             </div>
           </div>
         <% end %>
-        <h3 class="text-3xl md:mr-20">To officially book your session:</h3>
+
+        <%= cond do %>
+          <% PaymentSchedules.all_paid?(@job) -> %>
+            <h3 class="text-3xl md:mr-20">Completed session details:</h3>
+          <% PaymentSchedules.paid_any?(@job) || PaymentSchedules.is_with_cash?(@job) -> %>
+            <h3 class="text-3xl md:mr-20">Manage your session:</h3>
+          <% true -> %>
+            <h3 class="text-3xl md:mr-20"><%= @client_proposal.booking_panel_title %></h3>
+        <% end %>
 
         <%= unless Job.imported?(@job) do %>
           <button title="Proposal" type="button" phx-click="open-details" class="mt-6 font-semibold btn-row">
@@ -86,8 +90,10 @@
                 <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
               <% end %>
               <div class="flex items-center justify-between w-full font-light">
-                Review and accept your proposal
-                <.icon name="forth" class="stroke-2 stroke-current h-4 w-4" />
+                <h3 class="text-sm md:text-xl">Review and accept your proposal</h3>
+                <div class="bg-base-200 p-1">
+                  <.icon name="forth" class="stroke-2 w-4 h-4 stroke-current"/>
+                </div>
               </div>
             </div>
           </button>
@@ -100,8 +106,10 @@
                 <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
               <% end %>
               <div class="flex items-center justify-between w-full font-light">
-                Review and sign your contract
-                <.icon name="forth" class="stroke-2 stroke-current h-4 w-4" />
+                <h3 class="text-sm md:text-xl">Review and sign your contract</h3>
+                <div class="bg-base-200 p-1">
+                  <.icon name="forth" class="stroke-2 w-4 h-4 stroke-current"/>
+                </div>
               </div>
             </div>
           </button>
@@ -115,34 +123,82 @@
                   <.badge class="mb-1" color={:red} mode={:outlined}>To-Do</.badge>
                 <% end %>
                 <div class="flex items-center justify-between w-full font-light">
-                  Fill out the initial questionnaire
-                  <.icon name="forth" class="stroke-2 stroke-current h-4 w-4" />
+                  <h3 class="text-sm md:text-xl">Fill out the initial questionnaire</h3>
+                  <div class="bg-base-200 p-1">
+                    <.icon name="forth" class="stroke-2 w-4 h-4 stroke-current"/>
+                  </div>
                 </div>
               </div>
             </button>
           <% end %>
         <% end %>
 
-        <button title="Invoice" type="button" {if invoice_disabled?(@proposal, @stripe_status), do: %{}, else: %{phx_click: "open-invoice"}} class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal, @stripe_status)})} disabled={invoice_disabled?(@proposal, @stripe_status)}>
+        <div title="Invoice" class={classes("mt-6 font-semibold btn-row", %{"cursor-not-allowed opacity-25" => invoice_disabled?(@proposal, @stripe_status, @answer)})}>
           <div class="flex flex-col items-start w-full font-medium">
             <%= cond do %>
-              <% PaymentSchedules.is_with_cash?(@job) && !PaymentSchedules.all_paid?(@job) -> %>
-                <.badge class="mb-1" color={:red} mode={:outlined}>Pending offline payment</.badge>
+              <% PaymentSchedules.is_with_cash?(@job) && @next_due_payment && DateTime.compare(DateTime.utc_now(), @next_due_payment |> Map.get(:due_at)) in [:eq, :gt] -> %>
+                <.badge class="mb-1" color={:red} mode={:outlined}><%= pending_amount_details(@job) %>—Pending offline payment</.badge>
               <% PaymentSchedules.all_paid?(@job) -> %>
-                <.badge class="mb-1" color={:gray} mode={:outlined}>Completed</.badge>
+                <.badge class="mb-1" color={:gray} mode={:outlined}>100% paid</.badge>
               <% true -> %>
                 <.badge class="mb-1" color={:red} mode={:outlined}><%= pending_amount_details(@job) %></.badge>
             <% end %>
-            <div class="flex items-center justify-between w-full font-light">
-              Make payment
-              <.icon name="forth" class="stroke-2 w-4 h-4 stroke-current"/>
+
+            <div class="flex flex-wrap justify-between items-center w-full font-light">
+              <h3 class="text-sm md:text-xl">Payment</h3>
+              <div class="ml-auto flex gap-8 ">
+                <div class="uppercase tracking-wider text-sm">
+                  <h4>Paid</h4>
+                  <p><%= Money.to_string(PaymentSchedules.paid_price(@job), symbol: false, code: true) %></p>
+                </div>
+                <div class="uppercase tracking-wider text-sm">
+                  <h4>Owed</h4>
+                  <p><%=  Money.to_string(PaymentSchedules.owed_price(@job), symbol: false, code: true) %></p>
+                </div>
+              </div>
             </div>
-            <%= if PaymentSchedules.payment_schedules_count(@job) > 1 do %>
-            <hr class="w-full mt-3">
-              <a {testid("show-schedule")} {if invoice_disabled?(@proposal, @stripe_status), do: %{}, else: %{phx_click: "open_schedule_popup"}} class="mt-3 text-base-250 underline underline-offset-2 font-normal schedule-popup-link" disabled={invoice_disabled?(@proposal, @stripe_status)}>Show schedule</a>
+
+            <%= cond do %>
+              <% PaymentSchedules.free?(@job) and !PaymentSchedules.all_paid?(@job) -> %>
+                <button type="button" class="btn-tertiary w-full mt-4 flex items-center justify-center gap-2" phx-click="handle_checkout" disabled={invoice_disabled?(@proposal, @stripe_status, @answer)} {testid("payment-portal-finish")}>
+                  Finish booking <.icon name="forth" class="stroke-2 stroke-current h-4 w-4" />
+                </button>
+              <% !PaymentSchedules.free?(@job) and !PaymentSchedules.all_paid?(@job) -> %>
+                <div class="flex flex-wrap justify-between items-center gap-4 w-full mt-4">
+                  <%= if(@organization.payment_options.allow_cash) do %>
+                    <button type="button" class="btn-secondary flex gap-2 text-left flex-grow order-2 md:order-1" phx-click="pay_offline" type="button" disabled={invoice_disabled?(@proposal, @stripe_status, @answer)} {testid("payment-portal-offline")}>
+                      <span class="flex flex-col">
+                        <strong>Pay with cash/check</strong> We'll send an invoice
+                      </span>
+                      <span class="ml-auto">
+                        <.icon name="forth" class="stroke-2 stroke-current h-4 w-4 mt-2" />
+                      </span>
+                    </button>
+                  <% end %>
+                  <button type="button" class="btn-tertiary flex gap-2 text-left flex-grow order-1 md:order-2" phx-click="handle_checkout" disabled={invoice_disabled?(@proposal, @stripe_status, @answer)} {testid("payment-portal-online")}>
+                    <span class="flex flex-col">
+                      <strong>Pay online</strong> Fast, easy and secure
+                    </span>
+                    <span class="ml-auto">
+                      <.icon name="forth" class="stroke-2 stroke-current h-4 w-4 mt-2" />
+                    </span>
+                  </button>
+                </div>
+              <% true -> %>
             <% end %>
+
+            <hr class="w-full my-4">
+
+            <div class="flex items-center justify-between w-full font-light">
+              <%= if PaymentSchedules.payment_schedules_count(@job) > 1 do %>
+                <button {testid("show-schedule")} {if invoice_disabled?(@proposal, @stripe_status, @answer), do: %{}, else: %{phx_click: "open_schedule_popup"}} class="text-base-250 underline underline-offset-2 font-normal schedule-popup-link" disabled={invoice_disabled?(@proposal, @stripe_status, @answer)}>Show schedule</button>
+              <% end %>
+              <div class="flex items-center gap-2 ml-auto">
+                <button type="button" {if invoice_disabled?(@proposal, @stripe_status, @answer), do: %{}, else: %{phx_click: "open-invoice"}} class="text-base-250 underline underline-offset-2 font-normal" disabled={invoice_disabled?(@proposal, @stripe_status, @answer)}>View invoice</button>
+              </div>
+            </div>
           </div>
-        </button>
+        </div>
       </div>
     </div>
     <.profile_footer color={@color} photographer={@photographer} organization={@organization} />

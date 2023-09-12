@@ -9,11 +9,11 @@
       <div class="fixed bottom-0 left-0 right-0 z-4 flex flex-shrink-0 w-full sm:p-0 p-6 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto">
         <%= case @type.singular do %>
           <% "lead" -> %>
-            <a {testid("create-a-lead")} title="create lead" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
+            <a {testid("create-a-lead")} title="create lead" class="w-full md:w-auto btn-primary text-center" phx-click="create-lead">
               Create a lead
             </a>
           <% "job" -> %>
-            <a title="import job" href="#" class="w-full md:w-auto btn-primary text-center" phx-click="import-job">
+            <a title="import job" class="w-full md:w-auto btn-primary text-center" phx-click="import-job">
               Import existing job
             </a>
         <% end %>
@@ -34,7 +34,7 @@
           <p class="text-center text-lg lg:text-2xl text-base-250">No leads match your search or filters.</p>
         <% else %>
           <.empty_state_base tour_embed="https://demo.arcade.software/2rNmJeh5ZDMmrhth7v0P?embed" headline="Meet Leads" eyebrow_text="Leads Product Tour" body="Leads are the beginning to a great relationship between you and your client! Creating one takes less than a minute." third_party_padding="calc(59.916666666666664% + 41px)">
-            <a title="create lead" href="#" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="create-lead">
+            <a title="create lead" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="create-lead">
               Create a lead
             </a>
           </.empty_state_base>
@@ -45,7 +45,7 @@
           <p class="text-center text-lg lg:text-2xl text-base-250">No jobs match your search or filters.</p>
         <% else %>
           <.empty_state_base tour_embed="https://demo.arcade.software/UyCDDjBKFuMgVF6LOSG7?embed" headline="Meet Jobs" eyebrow_text="Jobs Product Tour" body="Jobs are the core to your business. They mean you have been booked and contain the history of your shoots and galleries. You can import a job if you are migrating or have something in progress." third_party_padding="calc(66.66666666666666% + 41px)">
-            <a title="import a job" href="#" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="import-job">
+            <a title="import a job" class="w-full md:w-auto btn-tertiary text-center flex-shrink-0" phx-click="import-job">
               Import a job
             </a>
           </.empty_state_base>

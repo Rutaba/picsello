@@ -20,7 +20,7 @@ defmodule PicselloWeb.GalleryLive.ChooseBundle do
   def render(assigns) do
     ~H"""
     <div class="choose-product__modal bg-base-100">
-      <a href="#" phx-click="close" title="close" phx-target={@myself} class="absolute cursor-pointer right-5 top-5">
+      <a phx-click="close" title="close" phx-target={@myself} class="absolute cursor-pointer right-5 top-5">
         <.icon name="close-x" class="w-4 h-4 stroke-current lg:w-5 lg:h-5 stroke-2" />
       </a>
       <p class="px-5 pt-10 pb-5 text-2xl font-bold text-base-300 lg:hidden">Select an option below</p>

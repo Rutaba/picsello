@@ -12,9 +12,9 @@
 
   <.form :let={f} for={@changeset} action={Routes.user_registration_path(@socket,:create)} phx-change="validate" phx-submit="save" phx-trigger-action={@trigger_submit}>
     <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
-    <%= labeled_input f, :name, placeholder: "First and last name", phx_debounce: "500", label: "Name", autocomplete: "name" %>
-    <%= labeled_input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
-    <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password, placeholder: "Enter password"%>
+    <%= labeled_input f, :name, placeholder: "Jack Nimble", phx_debounce: "500", label: "Your first & last name", autocomplete: "name" %>
+    <%= labeled_input f, :email, type: :email_input, placeholder: "jack.nimble@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
+    <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password, placeholder: "something secret"%>
 
     <p class="text-sm text-gray-400 mt-6 sm:pr-6 mb-8">By signing up you agree to our
       <a href="https://www.picsello.com/privacy-policy" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Privacy Policy</a> and
@@ -25,7 +25,7 @@
       <%= submit "Sign up",
         class: "btn-primary sm:flex-1 px-6 sm:px-10 flex-grow",
         disabled: !@changeset.valid?,
-        phx_disable_with: "Saving..." 
+        phx_disable_with: "Saving..."
       %>
     </div>
   </.form>

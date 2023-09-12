@@ -56,6 +56,7 @@ defmodule Picsello.ImportJobTest do
       text_field("The amount you’ve already collected"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$200.00"))
     )
+    |> scroll_into_view(testid("remaining-balance"))
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$800.00"))
   end
 
@@ -149,9 +150,10 @@ defmodule Picsello.ImportJobTest do
     )
     |> click(button("View invoice"))
     |> scroll_to_bottom()
-    |> assert_has(definition("Previously collected", text: "200.00 USD"))
-    |> assert_has(definition("300.00 USD due on Jan 01, 2030", text: "300.00 USD"))
-    |> assert_has(definition("500.00 USD due on Feb 01, 2030", text: "500.00 USD"))
+    |> assert_text("Paid")
+    |> assert_text("200.00 USD")
+    |> assert_text("Owed")
+    |> assert_text("800.00 USD")
 
     base_price = Money.new(100_000, "USD")
     download_each_price = Money.new(5000, "USD")
@@ -367,6 +369,7 @@ defmodule Picsello.ImportJobTest do
       text_field("The amount you’ve already collected"),
       &(&1 |> Element.clear() |> Element.fill_in(with: "$1000"))
     )
+    |> scroll_into_view(testid("remaining-balance"))
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$0.00"))
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
@@ -409,6 +412,7 @@ defmodule Picsello.ImportJobTest do
     |> fill_in(text_field("The amount you’ve charged for your job"), with: "$0.00")
     |> assert_disabled(text_field("How much of the creative session fee is for print credits"))
     |> assert_disabled(text_field("The amount you’ve already collected"))
+    |> scroll_into_view(testid("remaining-balance"))
     |> assert_has(definition("Remaining balance to collect with Picsello", text: "$0.00"))
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
@@ -524,12 +528,15 @@ defmodule Picsello.ImportJobTest do
     |> assert_has(button("Proposal", count: 0))
     |> assert_has(button("Contract", count: 0))
     |> assert_has(button("Questionnaire", count: 0))
-    |> assert_has(button("Invoice", count: 1))
-    |> click(button("Invoice"))
-    |> assert_has(definition("Previously collected", text: "200.00 USD"))
-    |> assert_has(definition("300.00 USD due on Jan 01, 2030", text: "300.00 USD"))
-    |> assert_has(definition("500.00 USD due on Feb 01, 2030", text: "500.00 USD"))
-    |> click(button("Pay with card Fast easy and secure"))
+    |> assert_has(button("View invoice", count: 1))
+    |> click(button("View invoice"))
+    |> assert_text("Paid")
+    |> assert_text("200.00 USD")
+    |> assert_text("Owed")
+    |> assert_text("800.00 USD")
+    |> assert_has(button("Pay online", at: 1))
+    |> click(button("Close"))
+    |> click(button("Pay online"))
     |> assert_url_contains("stripe-checkout")
 
     assert_receive {:checkout_linked,
@@ -568,7 +575,7 @@ defmodule Picsello.ImportJobTest do
 
     session
     |> visit(url)
-    |> assert_disabled(button("Invoice"))
+    |> assert_disabled(button("Pay online"))
     |> assert_flash(:error, text: "Payment is not enabled yet")
   end
 end
