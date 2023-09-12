@@ -7,7 +7,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     ]
 
   import PicselloWeb.GalleryLive.Shared
-  require Logger
+
   alias Picsello.{
     Galleries,
     Albums,
@@ -31,7 +31,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
         _session,
         %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
       ) do
-    Logger.info("Reached mount start for #{gallery.id}")
     if connected?(socket), do: Galleries.subscribe(gallery)
     gallery = Repo.preload(gallery, :gallery_digital_pricing)
 
@@ -42,8 +41,7 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
         (client_email && client_email in gallery.gallery_digital_pricing.email_list) ||
           is_photographer_view(assigns)
       )
-  Logger.info("Reached mount middle for #{gallery.id}")
-  socket =
+
     socket
     |> assign(
       gallery_client: get_client_by_email(assigns),
@@ -54,8 +52,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       digitals: %{},
       credits: credits(gallery)
     )
-    Logger.info("Reached mount end for #{gallery.id}")
-    socket
     |> ok()
   end
 
@@ -89,7 +85,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
     %{job: %{client: %{organization: organization}}} =
       gallery = gallery |> Galleries.populate_organization_user()
 
-    socket =
     socket
     |> assign(
       package: Galleries.get_package(gallery),
@@ -105,9 +100,6 @@ defmodule PicselloWeb.GalleryLive.ClientIndex do
       organization: organization
     )
     |> assign_cart_count(gallery)
-
-    Logger.info("Reached handle params for #{gallery.id}")
-    socket
     |> assign_photo_count()
     |> assign_photos(@per_page)
     |> push_event("reload_grid", %{})
