@@ -155,6 +155,20 @@ defmodule Picsello.BookingEvent do
     |> validate_required([:package_template_id])
   end
 
+  def update_customize(booking_event, attrs) do
+    booking_event
+    |> cast(attrs, [
+      :name,
+      :description,
+      :thumbnail_url,
+      :show_on_profile?
+    ])
+    |> validate_required([
+      :description,
+      :thumbnail_url
+    ])
+  end
+
   defp update_details(booking_event, attrs) do
     booking_event
     |> cast(attrs, [
@@ -164,7 +178,7 @@ defmodule Picsello.BookingEvent do
       :duration_minutes,
       :buffer_minutes
     ])
-    |> cast_embed(:dates, required: true)
+    |> cast_assoc(:dates, required: true)
     |> validate_required([
       :name,
       :location,
@@ -191,19 +205,5 @@ defmodule Picsello.BookingEvent do
     else
       changeset |> add_error(:dates, "can't be the same")
     end
-  end
-
-  defp update_customize(booking_event, attrs) do
-    booking_event
-    |> cast(attrs, [
-      :name,
-      :description,
-      :thumbnail_url,
-      :show_on_profile?
-    ])
-    |> validate_required([
-      :description,
-      :thumbnail_url
-    ])
   end
 end

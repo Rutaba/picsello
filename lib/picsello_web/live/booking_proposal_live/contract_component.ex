@@ -36,6 +36,10 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
     end
   end
 
+  defp build_changeset(%{assigns: %{proposal: nil}}, params) do
+    BookingProposal.sign_changeset(%BookingProposal{}, params)
+  end
+
   defp build_changeset(%{assigns: %{proposal: proposal}}, params) do
     proposal
     |> BookingProposal.sign_changeset(params)
@@ -69,6 +73,35 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
         ),
       proposal: proposal,
       package: package,
+      booking_event: nil,
+      photographer: photographer,
+      organization: organization
+    })
+  end
+
+  def open_modal_from_booking_events(
+        %{
+          assigns: %{
+            current_user: %{organization: organization} = photographer,
+            package: %{contract: contract} = package,
+            booking_event: booking_event
+          }
+        } = socket
+      ) do
+    socket
+    |> open_modal(__MODULE__, %{
+      read_only: true,
+      contract_content:
+        Contracts.contract_content(
+          contract,
+          package,
+          PicselloWeb.Helpers
+        ),
+      job: nil,
+      client: nil,
+      proposal: nil,
+      package: package,
+      booking_event: booking_event,
       photographer: photographer,
       organization: organization
     })
