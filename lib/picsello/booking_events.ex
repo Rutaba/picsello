@@ -19,8 +19,8 @@ defmodule Picsello.BookingEvents do
 
     def changeset(attrs \\ %{}) do
       %__MODULE__{}
-      |> cast(attrs, [:name, :organization_id, :email, :phone, :date, :time])
-      |> validate_required([:name, :organization_id, :email, :phone, :date, :time])
+      |> cast(attrs, [:name, :email, :phone, :date, :time])
+      |> validate_required([:name, :email, :phone, :date, :time])
     end
   end
 
@@ -445,7 +445,7 @@ defmodule Picsello.BookingEvents do
          DateTime.compare(slot_end, end_time) in [:lt, :eq])
   end
 
-  def save_booking(booking_event, %Booking{
+  def save_booking(booking_event, booking_date, %Booking{
         email: email,
         name: name,
         phone: phone,
@@ -506,9 +506,10 @@ defmodule Picsello.BookingEvents do
     |> Ecto.Multi.insert(:shoot, fn changes ->
       Picsello.Shoot.create_changeset(
         booking_event
-        |> Map.take([:name, :duration_minutes, :location, :address])
+        |> Map.take([:name, :location, :address])
         |> Map.put(:starts_at, starts_at)
         |> Map.put(:job_id, changes.job.id)
+        |> Map.put(:duration_minutes, booking_date.session_length)
       )
     end)
     |> Ecto.Multi.insert(:proposal, fn changes ->
