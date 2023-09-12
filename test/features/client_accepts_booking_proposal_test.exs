@@ -148,7 +148,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome."))
+      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome"))
       |> assert_disabled(@invoice_button)
       |> click(css("a", text: "Message Photography LLC"))
       |> within_modal(fn modal ->
@@ -170,7 +170,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
       |> assert_text("Proposal for John")
       |> scroll_into_view(testid("modal-buttons"))
       |> assert_has(definition("Session fee", text: "1.00 USD"))
-      |> assert_has(definition("Discount", text: "20%"))
+      |> assert_has(definition("Discount", text: "0.20 USD"))
       |> assert_has(definition("Total", text: "0.80 USD"))
       |> assert_has(testid("shoot-title", text: "Shoot 1"))
       |> assert_has(testid("shoot-title", text: "September 30, 2029"))
@@ -313,7 +313,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome."))
+      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome"))
       |> click(button("To-Do Review and accept your proposal"))
       |> click(button("Accept Quote"))
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
@@ -366,7 +366,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
       client_session
       |> visit(url)
-      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome."))
+      |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome"))
       |> click(button("To-Do Review and accept your proposal"))
       |> click(button("Accept Quote"))
       |> fill_in(text_field("Type your full legal name"), with: "Rick Sanchez")
@@ -508,7 +508,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
 
     client_session
     |> visit(url)
-    |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome."))
+    |> assert_has(css("h2", text: "#{String.capitalize(lead.client.name)}, Welcome"))
     |> click(button("To-Do Review and accept your proposal"))
     |> click(button("Accept Quote"))
     |> assert_text("COPYRIGHT AND REPRODUCTIONS")
@@ -518,7 +518,7 @@ defmodule Picsello.ClientAcceptsBookingProposalTest do
     |> click(button("Close"))
     |> click(button("View invoice"))
     |> assert_has(definition("Session fee", text: "1.00 USD"))
-    |> assert_has(definition("Discount", text: "100%"))
+    |> assert_has(definition("Discount", text: "1.00 USD"))
     |> assert_has(definition("Total", text: "0.00 USD"))
     |> within_modal(&click(&1, button("Finish booking")))
     |> assert_has(css("h1", text: "Congratulations - your session is now booked."))
