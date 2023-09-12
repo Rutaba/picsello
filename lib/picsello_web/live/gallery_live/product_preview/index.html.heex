@@ -4,7 +4,7 @@
     <div class={classes("lg:flex", %{"hidden" => !@is_mobile})}>
       <%= live_component PicselloWeb.GalleryLive.Shared.SideNavComponent, id: @gallery.id, gallery: @gallery, total_progress: @total_progress, photos_error_count: @photos_error_count, arrow_show: "product_previews", album_dropdown_show: false, is_mobile: @is_mobile %>
     </div>
-    <div class={classes("w-full h-full mb-36 lg:mb-20 lg:bg-base-100 bg-white lg:pl-96 lg:pt-16 pt-24", %{"lg:block hidden" => @is_mobile})} {intro_hints_only("intro_hints_only")}>
+    <div class={classes("w-full h-full mb-36 lg:mb-20 lg:bg-base-100 bg-white lg:pl-96 lg:pt-16 pt-24", %{"lg:block hidden" => @is_mobile})}>
       <div class="relative items-center justify-between lg:px-10 pb-10">
         <div class="center-container">
           <div class="flex flex-row lg:px-0 px-6 items-center">
@@ -14,7 +14,7 @@
             <span class="font-sans lg:text-2xl text-3xl font-black" >
               Product Previews
             </span>
-            <.intro_hint class="ml-2 hidden lg:block" content="You can edit your products to showcase your favorite photos, and create product previews that are meaningful to your client.<br>
+            <.tooltip id="product-previews" class="ml-2 hidden lg:block" content="You can edit your products to showcase your favorite photos, and create product previews that are meaningful to your client.<br>
             100% of product sales go to you. You only pay what the print and product seller charges. The rest of the money goes to you!"/>
           </div>
         </div>
@@ -34,7 +34,7 @@
                   </div>
                 <% true -> %>
                   <p>Showcase products your clients will love.</p>
-                  <.intro_hint class="lg:hidden" content="You can edit your products to showcase your favorite photos, and create product previews that are meaningful to your client.<br>
+                  <.tooltip id="product-previews-intro" class="lg:hidden" content="You can edit your products to showcase your favorite photos, and create product previews that are meaningful to your client.<br>
                 100% of product sales go to you. You only pay what the print and product seller charges. The rest of the money goes to you!"/>       
             <% end %>
           </div>

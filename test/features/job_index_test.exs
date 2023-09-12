@@ -140,14 +140,14 @@ defmodule Picsello.JobIndexTest do
     session
     |> visit("/jobs")
     |> assert_text("Meet Jobs")
-    |> assert_has(link("Import a job"))
+    |> assert_has(css("*[phx-click='import-job']", text: "Import a job"))
   end
 
   feature "empty leads", %{session: session, lead: lead} do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Leads"))
-    |> click(link("Create a lead"))
+    |> click(testid("create-a-lead"))
     |> assert_has(css("h1", text: "Create a lead"))
 
     Repo.delete(lead)
@@ -155,7 +155,7 @@ defmodule Picsello.JobIndexTest do
     session
     |> visit("/leads")
     |> assert_text("Meet Leads")
-    |> click(link("Create a lead", count: 2, at: 1))
+    |> click(testid("create-a-lead"))
     |> assert_has(css("h1", text: "Create a lead"))
   end
 

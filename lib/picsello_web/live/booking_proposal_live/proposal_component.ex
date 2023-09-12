@@ -6,7 +6,7 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   import PicselloWeb.BookingProposalLive.Shared,
-    only: [banner: 1, items: 1, package_description_length_long?: 1]
+    only: [visual_banner: 1, items: 1]
 
   @impl true
   def update(assigns, socket) do
@@ -19,10 +19,9 @@ defmodule PicselloWeb.BookingProposalLive.ProposalComponent do
   def handle_event("accept-proposal", %{}, %{assigns: %{proposal: proposal}} = socket) do
     case proposal |> BookingProposal.accept_changeset() |> Repo.update() do
       {:ok, proposal} ->
-        send(self(), {:update, %{proposal: proposal}})
+        send(self(), {:update, %{proposal: proposal, next_page: "contract"}})
 
         socket
-        |> close_modal()
         |> noreply()
 
       {:error, _} ->

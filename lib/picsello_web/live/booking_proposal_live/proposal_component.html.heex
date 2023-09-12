@@ -1,22 +1,34 @@
 <div class="modal">
   <.close_x />
+  
+  <div class="mb-4 md:mb-8">
+    <.maybe_show_photographer_logo? organization={@organization} />
+  </div>
+  
+  <.visual_banner 
+    title="Proposal"
+    job={@job}
+    package={@package}
+    proposal={@proposal}
+    photographer={@photographer}
+    client={@client}
+  />
 
-  <.banner title="Proposal" job={@job} package={@package}>
-    <div class="mt-2 mb-4" phx-hook="PackageDescription" id={"package-description-#{@package.id}"} data-event="click">
-      <div class="line-clamp-2 raw_html raw_html_inline mb-4">
-        <%= raw @package.description %>
-      </div>
-      <%= if package_description_length_long?(@package.description) do %>
-        <button class="flex items-center font-bold text-base-250 view_more_click" type="button"><.icon name="down" class="text-base-250 h-4 w-4 stroke-current stroke-2 mr-1 transition-transform" /> <span>See more</span></button>
-      <% end %>
-    </div>
+  <hr class="mt-8 mb-8" />
 
-    <%=if @proposal.accepted_at do %>
-      <p>Accepted on <%= strftime(@photographer.time_zone, @proposal.accepted_at, "%b %d, %Y") %></p>
-    <% end %>
-  </.banner>
+  <h2 class="text-2xl">Quote</h2>
 
-    <.items photographer={@photographer} proposal={@proposal} organization={@organization} shoots={@shoots} package={@package} client={@client} socket={@socket}/>
+  <.items 
+    photographer={@photographer}
+    proposal={@proposal}
+    organization={@organization}
+    shoots={@shoots}
+    package={@package}
+    client={@client}
+    socket={@socket}
+    show_header={false}
+    total_heading="Quote Total"
+  />
 
   <.footer>
     <%= unless @read_only do %>

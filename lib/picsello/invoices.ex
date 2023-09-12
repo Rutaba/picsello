@@ -58,9 +58,15 @@ defmodule Picsello.Invoices do
 
       %{
         params
-        | amount_due: Money.new(amount_due, currency),
-          amount_paid: Money.new(amount_paid, currency),
-          amount_remaining: Money.new(amount_remaining, currency)
+        | amount_due:
+            if(is_map(amount_due), do: amount_due, else: Money.new(amount_due, currency)),
+          amount_paid:
+            if(is_map(amount_paid), do: amount_paid, else: Money.new(amount_paid, currency)),
+          amount_remaining:
+            if(is_map(amount_remaining),
+              do: amount_remaining,
+              else: Money.new(amount_remaining, currency)
+            )
       }
     end
   end

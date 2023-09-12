@@ -121,7 +121,7 @@ defmodule Picsello.ClientProofingAlbumTest do
     |> click(testid("next"))
     |> click(testid("product_option_digital_download"))
     |> assert_has(testid("selections", text: "Selections 2"))
-    |> click(link("close"))
+    |> click(css("[phx-click='close']"))
     |> click(button("Review my Selections"))
     |> assert_has(definition("Total", text: "$0.00"))
     |> find(css("*[data-testid^='digital-']", count: 2, at: 0), fn cart_item ->
@@ -147,7 +147,7 @@ defmodule Picsello.ClientProofingAlbumTest do
     |> click(testid("next"))
     |> click(button("Add to cart"))
     |> assert_has(testid("selections", text: "Selections 3"))
-    |> click(link("close"))
+    |> click(css("[phx-click='close']"))
     |> click(button("Review my Selections"))
     |> assert_has(definition("Total", text: "$0.10"))
     |> find(css("*[data-testid^='digital-']", count: 3, at: 2), fn cart_item ->

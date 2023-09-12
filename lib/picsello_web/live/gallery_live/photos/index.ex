@@ -731,6 +731,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       |> Enum.each(&ProcessingManager.start(&1, Watermark.build(name, gallery)))
     end
 
+    Galleries.sort_album_photo_positions_by_name(String.to_integer(album_id))
+
     socket
     |> close_modal()
     |> assign(:selected_photos, [])
@@ -1162,5 +1164,14 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         "Hooray! Your gallery has been created. You're now ready to upload photos."
       }
     }
+  end
+
+  defp grid_padding(%{photos_error_count: error_count, first_visit?: first_visit?}) do
+    cond do
+      first_visit? && error_count != 0 -> "pt-80 mt-4"
+      first_visit? && error_count == 0 -> "pt-72"
+      error_count == 0 -> "lg:pt-44 pt-48"
+      true -> "pt-64"
+    end
   end
 end
