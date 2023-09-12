@@ -98,9 +98,16 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
   end
 
   def total(assigns) do
+    discount =
+      Money.subtract(
+        Package.price_before_discounts(assigns.package),
+        Package.price(assigns.package)
+      )
+
     assigns =
       Enum.into(assigns, %{
-        total_heading: "Total"
+        total_heading: "Total",
+        discount: discount
       })
 
     ~H"""
@@ -108,11 +115,11 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       <%= with discount_percent when discount_percent != nil <- Packages.discount_percent(@package) do %>
         <dl class="flex justify-between">
           <dt>Session fee</dt>
-          <dd><%= Money.to_string(Package.base_price(@package), symbol: false, code: true)%></dd>
+          <dd><%= Money.to_string(Package.price_before_discounts(@package), symbol: false, code: true)%></dd>
         </dl>
         <dl class="flex justify-between text-green-finances-300 my-2">
           <dt>Discount</dt>
-          <dd><%= discount_percent %>%</dd>
+          <dd><%= Money.to_string(@discount, symbol: false, code: true) %></dd>
         </dl>
       <% end %>
       <dl class="flex justify-between text-xl font-light mt-4">
