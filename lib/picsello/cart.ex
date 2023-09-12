@@ -2,7 +2,7 @@ defmodule Picsello.Cart do
   @moduledoc """
   Context for cart and order related functions
   """
-
+  require Logger
   import Ecto.Query
   import Money.Sigils
 
@@ -90,16 +90,18 @@ defmodule Picsello.Cart do
   end
 
   def credit_remaining(%{id: gallery_id} = gallery) do
+    Logger.info("Reached credit_remaining for #{gallery_id}")
     currency = Picsello.Currency.for_gallery(gallery)
+    Logger.info("Reached after currency in credit_remaining for #{gallery_id} and #{currency}")
     zero_price = Money.new(0, currency)
-
+    Logger.info("Reached after zero price in credit_remaining for #{gallery_id}}")
     {digital_credit, print_credit} =
       if Map.get(gallery, :credits_available) do
         {digital_credit_remaining(gallery_id), print_credit_remaining(gallery_id)}
       else
         {%{digital: 0}, %{print: zero_price}}
       end
-
+    Logger.info("Reached end in credit_remaining for #{gallery_id}}")
     if digital_credit && print_credit do
       Map.merge(digital_credit, print_credit)
     else
