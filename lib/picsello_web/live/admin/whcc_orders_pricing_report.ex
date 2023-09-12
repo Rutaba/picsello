@@ -28,9 +28,8 @@ defmodule PicselloWeb.Live.Admin.WHCCOrdersPricingReport do
               <th> Shipping </th>
               <th> Print Cost for Photog</th>
               <th> Stripe fee </th>
-              <th> Photographer Paid </th>
+              <th> Photographer Paid to us </th>
               <th> Photographer Got </th>
-              <th> Discounted WHCC cost </th>
           </tr>
             <tr class="text-center w-full">
               <td><%= Cart.Order.total_cost(@order) %></td>
@@ -39,7 +38,6 @@ defmodule PicselloWeb.Live.Admin.WHCCOrdersPricingReport do
               <td><%= @stripe_fee %></td>
               <td><%= @photographer_charge %></td>
               <td><%= @photographer_payment %></td>
-              <td><%= discounted_price(@order) %></td>
             </tr>
         </table>
       </div>
@@ -50,21 +48,5 @@ defmodule PicselloWeb.Live.Admin.WHCCOrdersPricingReport do
 
   defp print_cost(%{whcc_order: whcc_order}) do
     whcc_order |> WHCCOrder.total()
-  end
-
-  defp discounted_price(order) do
-    account_id = Picsello.Galleries.account_id(order.gallery_id)
-
-    discounted_price =
-      Enum.reduce(order.products, Money.new(0), fn %{editor_id: editor_id}, acc ->
-        %{total_markuped_price: price} = WHCC.get_item_attrs(account_id, editor_id)
-        if price do
-          Money.add(price, acc)
-        else
-          Money.add(Money.new(0), acc)
-        end
-      end)
-
-    discounted_price
   end
 end
