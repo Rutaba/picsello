@@ -63,7 +63,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
                   <.icon name="forth" class="stroke-2 stroke-current h-4 w-4 mt-2" />
                 </span>
               </button>
-              <%= if(@organization.user.allow_cash_payment) do %>
+              <%= if(@organization.payment_options.allow_cash) do %>
                 <button class="btn-secondary flex gap-10 text-left" phx-click="pay_offline" phx-target={@myself} type="button">
                   <span class="flex flex-col">
                     <strong>Pay with cash/check</strong> We'll send an invoice
@@ -74,9 +74,6 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
                 </button>
               <% end %>
           <% end %>
-              <button class="btn-secondary" phx-click="modal" phx-value-action="close" type="button">
-                Close
-              </button>
         </.footer>
       </form>
     </div>

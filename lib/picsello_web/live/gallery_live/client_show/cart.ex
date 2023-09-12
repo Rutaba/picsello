@@ -24,7 +24,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
         _session,
         %{assigns: %{gallery: gallery, client_email: client_email} = assigns} = socket
       ) do
-    gallery = Picsello.Repo.preload(gallery, :gallery_digital_pricing)
+    gallery = Picsello.Repo.preload(gallery, [:gallery_digital_pricing, :organization])
 
     gallery =
       Map.put(
@@ -117,7 +117,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       Cart.store_order_delivery_info(order, delivery_info_changeset)
     end)
     |> Multi.run(:update_shipping, fn _, _ ->
-      {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
+      {:ok, order} =
+        get_unconfirmed_order(socket,
+          preload: [:products, :digitals, :package]
+        )
 
       unless Enum.empty?(order.products) do
         %{delivery_info: %{address: %{zip: zipcode}}} = order
@@ -332,7 +335,11 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
       changeset = DeliveryInfo.changeset_for_zipcode(%{"address" => %{"zip" => input}})
 
       {:ok, _order} = Cart.store_order_delivery_info(order, changeset)
-      {:ok, order} = get_unconfirmed_order(socket, preload: [:products, :digitals, :package])
+
+      {:ok, order} =
+        get_unconfirmed_order(socket,
+          preload: [:products, :digitals, :package]
+        )
 
       socket
       |> assign(:order, order)
@@ -346,7 +353,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
 
   defp continue_summary(assigns) do
     ~H"""
-    <.summary caller={checkout_type(@is_proofing)} order={@order} id={@id}>
+    <.summary caller={checkout_type(@is_proofing)} order={@order} id={@id} gallery={@gallery}>
       <%= live_patch to: @checkout_routes.cart_address, class: "mx-5 text-lg mb-7 btn-primary text-center" do %>
         Continue
       <% end %>
@@ -359,12 +366,12 @@ defmodule PicselloWeb.GalleryLive.ClientShow.Cart do
     assigns = assign(assigns, title: title, back_btn: back_btn, back_route: back_route)
 
     ~H"""
-    <%= live_redirect to: @back_route, class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8" do %>
+    <%= live_redirect to: @back_route, class: "flex font-extrabold text-base-250 items-center mt-6 lg:mt-8 px-4 md:px-0" do %>
       <.icon name="back" class="h-3.5 w-1.5 stroke-2 mr-2" />
       <p class="mt-1"><%= @back_btn %></p>
     <% end %>
 
-    <div class="py-5 lg:pt-8 lg:pb-10">
+    <div class="py-5 lg:pt-8 lg:pb-10 px-4 md:px-0">
       <div class=" text-xl font-extrabold lg:text-3xl"><%= @title %></div>
       <%= if @title != "Review Selections" do%>
         <div class="mt-2 text-lg">
