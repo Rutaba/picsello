@@ -175,7 +175,7 @@
                       </span>
                     </button>
                   <% end %>
-                  <button type="button" class="btn-tertiary flex gap-2 text-left flex-grow order-1 md:order-2" phx-click="handle_checkout" disabled={invoice_disabled?(@proposal, @stripe_status, @answer)} {testid("payment-portal-online")}>
+                  <button {testid("pay-online")} type="button" class="btn-tertiary flex gap-2 text-left flex-grow order-1 md:order-2" phx-click="handle_checkout" disabled={invoice_disabled?(@proposal, @stripe_status, @answer)} {testid("payment-portal-online")}>
                     <span class="flex flex-col">
                       <strong>Pay online</strong> Fast, easy and secure
                     </span>
