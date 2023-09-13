@@ -30,6 +30,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     field :position, :integer
     field :private_name, :string
     field :immediately, :boolean, default: true, virtual: true
+    field :is_global, :boolean, default: false, virtual: true
     field :count, :integer, virtual: true
     field :calendar, :string, virtual: true
     field :sign, :string, virtual: true
@@ -54,7 +55,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
     email_preset
     |> cast(
       attrs,
-      ~w[status total_hours state condition email_automation_pipeline_id organization_id immediately count calendar sign template_id private_name type job_type name position subject_template body_template]a
+      ~w[status total_hours state condition email_automation_pipeline_id organization_id is_global immediately count calendar sign template_id private_name type job_type name position subject_template body_template]a
     )
     |> validate_required(
       ~w[status email_automation_pipeline_id type name position subject_template body_template]a
@@ -116,6 +117,7 @@ defmodule Picsello.EmailPresets.EmailPreset do
           total_hours: integer(),
           condition: String.t(),
           immediately: boolean(),
+          is_global: boolean(),
           count: integer(),
           calendar: String.t(),
           sign: String.t(),

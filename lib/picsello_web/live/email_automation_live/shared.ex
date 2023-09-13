@@ -85,11 +85,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     Process.send_after(self(), {:load_template_preview, module_name, body_html}, 50)
 
-    changeset = Ecto.Changeset.change(changeset, %{body_template: body_html})
-
     socket
     |> assign(:template_preview, :loading)
-    |> assign(:email_preset_changeset, changeset)
     |> assign(step: next_step(assigns))
     |> noreply()
   end

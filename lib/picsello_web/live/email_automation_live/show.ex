@@ -170,6 +170,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
+  def handle_info({:update_automation, %{message: message}}, socket) do
+    socket
+    |> assign_email_schedules()
+    |> put_flash(:success, message)
+    |> noreply()
+  end
+
+  @impl true
   defdelegate handle_info(message, socket), to: PicselloWeb.EmailAutomationLive.Shared
 
   defp pipeline_section(assigns) do

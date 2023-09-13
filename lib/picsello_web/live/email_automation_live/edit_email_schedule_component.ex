@@ -318,10 +318,10 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
     )
     |> Repo.transaction()
     |> case do
-      {:ok, %{email_preset: email_preset}} ->
+      {:ok, _} ->
         send(
           self(),
-          {:update_automation, %{message: "Successfully updated", email_preset: email_preset}}
+          {:update_automation, %{message: "Successfully updated"}}
         )
 
         :ok
