@@ -29,4 +29,16 @@ defmodule Picsello.Utils do
   def payment_options_currency() do
     ["USD"]
   end
+
+  @doc """
+  Expects a date_time in string format such as '2023-10-08T00:00:00' and returns
+  it in unix with given offset. Default offset is 60 seconds or 00:01.
+  Example
+  > to_unix("2023-10-08T00:00:00")
+  {:ok, ~U[2023-10-08 00:01:00Z], -60}
+  """
+  def to_unix(datetime, offset \\ "00:01") do
+    {:ok, datetime, _} = DateTime.from_iso8601(datetime <> "-" <> offset)
+    DateTime.to_unix(datetime)
+  end
 end

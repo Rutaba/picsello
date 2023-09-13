@@ -134,7 +134,7 @@ defmodule PicselloWeb.Router do
   scope "/", PicselloWeb do
     live_session :default, on_mount: PicselloWeb.LiveAuth do
       pipe_through [:browser, :require_authenticated_user]
-
+      get "/nylas/callback", NylasController, :callback
       put "/users/settings", UserSettingsController, :update
       get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
@@ -189,7 +189,6 @@ defmodule PicselloWeb.Router do
       live "/leads/:id", LeadLive.Show, :leads, as: :job
       live "/leads", JobLive.Index, :leads, as: :job
       live "/jobs/:id", JobLive.Show, :jobs, as: :job
-
       live "/jobs", JobLive.Index, :jobs, as: :job
       live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :jobs, as: :shoot
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot

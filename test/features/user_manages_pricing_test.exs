@@ -32,8 +32,7 @@ defmodule Picsello.UserManagesPricingTest do
     lustre_attribute = "Surface Lustre"
 
     session
-    |> click(testid("subnav-Settings"))
-    |> click(css("a", text: "Public Profile"))
+    |> visit("/profile/settings")
     |> click(link("Gallery Store Pricing"))
     |> click(link("Loose Prints"))
     |> assert_text("Adjust Pricing: Loose Prints")
