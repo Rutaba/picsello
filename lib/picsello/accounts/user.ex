@@ -3,7 +3,14 @@ defmodule Picsello.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
   import TzExtra.Changeset
-  alias Picsello.{Onboardings.Onboarding, Subscription, SubscriptionEvent, Organization}
+
+  alias Picsello.{
+    Onboardings.Onboarding,
+    Subscription,
+    SubscriptionEvent,
+    Organization,
+    NylasDetail
+  }
 
   @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
   @derive {Inspect, except: [:password]}
@@ -22,11 +29,21 @@ defmodule Picsello.Accounts.User do
     embeds_one(:onboarding, Onboarding, on_replace: :update)
     has_one(:subscription, Subscription)
     has_one(:subscription_event, SubscriptionEvent)
+    has_one(:nylas_detail, NylasDetail)
     belongs_to(:organization, Organization)
 
     timestamps()
   end
 
+  @spec registration_changeset(
+          {map, map}
+          | %{
+              :__struct__ => atom | %{:__changeset__ => map, optional(any) => any},
+              optional(atom) => any
+            },
+          map,
+          keyword
+        ) :: map
   @doc """
   A user changeset for registration.
 
@@ -55,6 +72,7 @@ defmodule Picsello.Accounts.User do
     |> validate_required([:name])
     |> validate_email()
     |> validate_password(opts)
+    |> put_assoc(:nylas_detail, NylasDetail.changeset())
     |> then(fn changeset ->
       cast_assoc(changeset, :organization,
         with: &Organization.registration_changeset(&1, &2, get_field(changeset, :name))
@@ -79,6 +97,7 @@ defmodule Picsello.Accounts.User do
     |> validate_email_format()
   end
 
+  @spec validate_email_format(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   def validate_email_format(changeset) do
     changeset
     |> validate_required([:email])

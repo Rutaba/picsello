@@ -3,12 +3,9 @@ defmodule Picsello.GlobalSettings do
   alias Picsello.GlobalSettings.GalleryProduct, as: GSGalleryProduct
   alias Picsello.GlobalSettings.PrintProduct, as: GSPrintProduct
   alias Picsello.GlobalSettings.Gallery, as: GSGallery
-  alias Picsello.{Repo, Category, UserCurrency}
-  alias Ecto.Multi
-  alias Picsello.Galleries.GalleryProduct
-  alias Ecto.Changeset
+  alias Picsello.{Repo, Category, UserCurrency, Galleries.GalleryProduct}
+  alias Ecto.{Multi, Changeset}
   import Ecto.Query
-  alias Ecto.Changeset
 
   @whcc_print_category Category.print_category()
 
