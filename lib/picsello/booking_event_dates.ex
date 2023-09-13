@@ -2,6 +2,7 @@ defmodule Picsello.BookingEventDates do
   @moduledoc "context module for booking events dates"
 
   alias Picsello.{Repo, BookingEventDate, BookingEventDate.SlotBlock, BookingEvent, BookingEvents}
+  alias Ecto.Changeset
   import Ecto.Query
 
   @doc """
@@ -9,7 +10,7 @@ defmodule Picsello.BookingEventDates do
 
   This function creates a new `BookingEventDate` record using the provided parameters and inserts it into
   the database. It returns either a successful `{:ok, %BookingEventDate{}}` tuple with the created record
-  or an `{:error, Ecto.Changeset.t()}` tuple with validation errors if the insertion fails.
+  or an `{:error, Changeset.t()}` tuple with validation errors if the insertion fails.
 
   ## Parameters
 
@@ -20,7 +21,7 @@ defmodule Picsello.BookingEventDates do
 
   - `{:ok, %BookingEventDate{}}`: A successful tuple containing the created `BookingEventDate` record if the
     insertion is successful.
-  - `{:error, Ecto.Changeset.t()}`: An error tuple containing an `Ecto.Changeset` with validation errors if
+  - `{:error, Changeset.t()}`: An error tuple containing an `Changeset` with validation errors if
     the insertion fails.
 
   ## Example
@@ -35,7 +36,7 @@ defmodule Picsello.BookingEventDates do
   ...> end
   """
   @spec create_booking_event_dates(params :: map()) ::
-          {:ok, %BookingEventDate{}} | {:error, Ecto.Changeset.t()}
+          {:ok, %BookingEventDate{}} | {:error, Changeset.t()}
   def create_booking_event_dates(params) do
     %BookingEventDate{}
     |> BookingEventDate.changeset(params)
@@ -177,14 +178,14 @@ defmodule Picsello.BookingEventDates do
 
   ## Parameters
 
-  - `changeset` (Ecto.Changeset.t()): An Ecto changeset representing the changes to be made
+  - `changeset` (Changeset.t()): An Ecto changeset representing the changes to be made
     to the `BookingEventDate` record.
 
   ## Returns
 
   - `{:ok, BookingEventDate.t()}`: If the upsert operation is successful, it returns `{:ok, record}`
     where `record` is the inserted or updated `BookingEventDate` struct.
-  - `{:error, Ecto.Changeset.t()}`: If there are errors during the upsert operation, it returns
+  - `{:error, Changeset.t()}`: If there are errors during the upsert operation, it returns
     `{:error, changeset}` with the changeset containing validation or other errors.
 
   ## Example
@@ -210,8 +211,8 @@ defmodule Picsello.BookingEventDates do
     # ... other updated fields
   }
   """
-  @spec upsert_booking_event_date(changeset :: Ecto.Changeset.t()) ::
-          {:ok, BookingEventDate.t()} | {:error, Ecto.Changeset.t()}
+  @spec upsert_booking_event_date(changeset :: Changeset.t()) ::
+          {:ok, BookingEventDate.t()} | {:error, Changeset.t()}
   def upsert_booking_event_date(changeset) do
     changeset |> Repo.insert_or_update()
   end
@@ -228,7 +229,7 @@ defmodule Picsello.BookingEventDates do
 
   ## Parameters
 
-  - `changeset` (Ecto.Changeset.t()): An Ecto changeset representing the common attributes
+  - `changeset` (Changeset.t()): An Ecto changeset representing the common attributes
     for all generated `BookingEventDate` records.
   - `repeat_dates` ([Date.t()]): A list of dates for which to generate new records.
 
@@ -253,16 +254,16 @@ defmodule Picsello.BookingEventDates do
   ...> end)
   """
   @spec generate_rows_for_repeat_dates(
-          changeset :: Ecto.Changeset.t(),
+          changeset :: Changeset.t(),
           repeat_dates :: [Date.t()]
-        ) :: [Ecto.Changeset.t()]
+        ) :: [Changeset.t()]
   def generate_rows_for_repeat_dates(changeset, repeat_dates) do
     default_repeat_changeset = set_defaults_for_repeat_dates_changeset(changeset)
 
     Enum.map(repeat_dates, fn date ->
       default_repeat_changeset
-      |> Ecto.Changeset.put_change(:date, date)
-      |> Ecto.Changeset.apply_changes()
+      |> Changeset.put_change(:date, date)
+      |> Changeset.apply_changes()
       |> prepare_params()
     end)
   end
@@ -277,15 +278,58 @@ defmodule Picsello.BookingEventDates do
   # Sets default values for a changeset representing a `BookingEventDate` record with repeat dates.
   defp set_defaults_for_repeat_dates_changeset(booking_event) do
     booking_event
-    |> Ecto.Changeset.change(%{
+    |> Changeset.change(%{
       calendar: "",
       count_calendar: nil,
       stop_repeating: nil,
       is_repeat: false,
       repetition: false,
+      slots: booking_event |> Changeset.get_field(:slots) |> transform_slots,
       inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
       updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     })
+  end
+
+  @doc """
+  Transforms a list of slot blocks by applying a default transformation to each slot.
+
+  This function takes a list of slot blocks (`input_slots`) and applies a default transformation to each slot using
+  the `transform_slot/1` private function. The default transformation updates the `client_id` to `nil`, `job_id` to `nil` and sets the
+  `status` to `:open`. The resulting list of transformed slot blocks is returned.
+
+  ## Parameters
+
+  - `input_slots` ([%SlotBlock{}]): A list of slot blocks to be transformed.
+
+  ## Returns
+
+  A list of slot blocks with default transformations applied.
+
+  ## Example
+
+  ```elixir
+  # Transform a list of slot blocks with default values
+  iex> input_slots = [%SlotBlock{job_id: 1, client_id: 1, status: :hide}, %SlotBlock{job_id: 1, client_id: 2, status: :booked}]
+  iex> transform_slots(input_slots)
+  [%SlotBlock{job_id: nil, client_id: nil, status: :open}, %SlotBlock{job_id: nil, client_id: nil, status: :open}]
+
+  ## Notes
+  This function is useful for applying a consistent default transformation to a list of slot blocks.
+  """
+  @spec transform_slots(input_slots :: [%SlotBlock{}]) :: [%SlotBlock{}]
+  def transform_slots(input_slots), do: Enum.map(input_slots, &transform_slot/1)
+
+  defp transform_slot(slot) do
+    if slot.status in [:book, :reserve] do
+      %SlotBlock{
+        slot
+        | client_id: nil,
+          job_id: nil,
+          status: :open
+      }
+    else
+      slot
+    end
   end
 
   @doc """
