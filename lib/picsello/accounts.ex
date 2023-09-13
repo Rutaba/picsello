@@ -17,7 +17,7 @@ defmodule Picsello.Accounts do
 
   ## Database getters
 
-  @spec get_user_by_email(String.t()) :: User.t()
+  @spec get_user_by_email(String.t()) :: User.t() | nil
   @doc """
   Gets a user by email.
 
