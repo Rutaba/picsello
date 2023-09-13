@@ -10,6 +10,10 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign_new(:job, fn -> nil end)
+    |> assign_new(:client, fn -> nil end)
+    |> assign_new(:proposal, fn -> nil end)
+    |> assign_new(:booking_event, fn -> nil end)
     |> assign_changeset()
     |> ok()
   end
@@ -34,6 +38,10 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
         |> put_flash(:error, "Failed to sign contract. Please try again.")
         |> noreply()
     end
+  end
+
+  defp build_changeset(%{assigns: %{proposal: nil}}, params) do
+    BookingProposal.sign_changeset(%BookingProposal{}, params)
   end
 
   defp build_changeset(%{assigns: %{proposal: proposal}}, params) do
@@ -69,6 +77,31 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
         ),
       proposal: proposal,
       package: package,
+      photographer: photographer,
+      organization: organization
+    })
+  end
+
+  def open_modal_from_booking_events(
+        %{
+          assigns: %{
+            current_user: %{organization: organization} = photographer,
+            package: %{contract: contract} = package,
+            booking_event: booking_event
+          }
+        } = socket
+      ) do
+    socket
+    |> open_modal(__MODULE__, %{
+      read_only: true,
+      contract_content:
+        Contracts.contract_content(
+          contract,
+          package,
+          PicselloWeb.Helpers
+        ),
+      package: package,
+      booking_event: booking_event,
       photographer: photographer,
       organization: organization
     })

@@ -60,12 +60,14 @@
                         </div>  
                     <% else %>
                         <.booking_slot_tabs_nav booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
-                        <%= for booking_event_date <- @booking_event.dates do %>
-                            <.booking_slot_tabs_content booking_event_date={booking_event_date} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} collapsed_sections={@collapsed_sections} client={@client} socket={@socket} />
-                        <% end  %>
+                        <%= if Enum.any?(@booking_event.dates) do %>
+                            <%= for booking_event_date <- @booking_event.dates do %>
+                                <.booking_slot_tabs_content booking_event_date={booking_event_date} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} collapsed_sections={@collapsed_sections} client={@client} socket={@socket} />
+                            <% end  %>
+                        <% end %>
                     <% end %>
                     
-                    <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-red-sales-300", %{"border-base-200" => @package})}>
+                    <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-base-200", %{"border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">
                             <div class="mr-2 flex items-center gap-3">
                                 <.icon name="package" class="inline-block w-5 h-5 text-blue-planning-300 mt-1" />
@@ -135,7 +137,7 @@
                         <% end %>
                     </div>
 
-                    <div class={classes("mt-10 p-3 flex border-2 items-center border-red-sales-300 rounded-lg", %{"border-base-200" => @package})}>
+                    <div class={classes("mt-10 p-3 flex border-2 items-center border-base-200 rounded-lg", %{"border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">
                             <div class="flex items-center">
                                 <div class="flex flex-col">
@@ -166,7 +168,7 @@
                                     </div>
                                     <div class="flex items-center ml-auto gap-2">
                                         <.icon_button phx-click="add-questionnaire" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
-                                        <button phx-click="add-questionnaire" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
+                                        <button phx-click="open-questionnaire" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
                                             <.icon name="eye" class="inline-block w-4 h-4 fill-current text-blue-planning-300" />
                                         </button>
                                     </div>
@@ -179,7 +181,7 @@
                                     </div>
                                     <div class="flex items-center ml-auto gap-2">
                                         <.icon_button phx-click="add-contract" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>                                        
-                                        <button phx-click="add-contract" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
+                                        <button phx-click="open-contract" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
                                             <.icon name="eye" class="inline-block w-4 h-4 fill-current text-blue-planning-300" />
                                         </button>
                                     </div>

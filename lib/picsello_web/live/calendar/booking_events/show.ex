@@ -9,7 +9,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   alias Picsello.{Repo, BookingEvent, BookingEvents, Package, BookingEventDate}
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
-  alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
+  alias PicselloWeb.BookingProposalLive.{QuestionnaireComponent, ContractComponent}
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
 
   @impl true
@@ -95,11 +95,22 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @impl true
   def handle_event(
         "add-questionnaire",
-        %{},
+        _,
         socket
       ) do
     socket
     |> update_package_questionnaire()
+  end
+
+  @impl true
+  def handle_event(
+        "open-contract",
+        _,
+        socket
+      ) do
+    socket
+    |> ContractComponent.open_modal_from_booking_events()
+    |> noreply()
   end
 
   @impl true
@@ -183,9 +194,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_info({:update, %{booking_event_date: _booking_event}}, socket) do
+  def handle_info({:update, %{booking_event_date: booking_event}}, socket) do
     socket
     |> put_flash(:success, "Booking event date saved successfully")
+    |> assign(:booking_event, booking_event)
     |> noreply()
   end
 
@@ -333,7 +345,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     <div>
       <%= case @booking_slot_tab_active do %>
       <% "list" -> %>
-        <div class={classes("mt-10 p-3 border-2 rounded-lg border-red-sales-300", %{"border-base-200" => !is_nil(@booking_event_date.date)})}>
+        <div class={classes("mt-10 p-3 border-2 rounded-lg border-base-200", %{"border-red-sales-300" => is_nil(@booking_event_date.date)})}>
           <div class="flex mb-1">
             <%= if is_nil(@booking_event_date.date) do %>
               <p class="text-2xl font-bold text-red-sales-300">Select day</p>
@@ -609,13 +621,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <%= if package_description_length_long?(@description) do %>
               <p>
                 <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
-                  <%= @package.description |> slice_description() |> raw() %>
+                  <%= @description |> slice_description() |> raw() %>
                 <% else %>
                   <%= @description %>
                 <% end %>
               </p>
               <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
-                <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                <%= if Enum.member?(@collapsed_sections, "Read more") do %>
                   Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
                 <% else %>
                   Read more <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
@@ -630,7 +642,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <p>Pick a package and update your marketing details to get started</p>
           </div>
         <% end %>
-        <button phx-click="edit-marketing-event" phx-value-event-id={@booking_event.id} class="p-2 bg-base-250/20 font-bold rounded-lg">
+        <button phx-click="edit-marketing-event" phx-value-event-id={@booking_event.id} class="p-2 px-4 w-fit bg-base-250/20 font-bold rounded-lg">
             Edit marketing details
         </button>
       </div>
@@ -656,15 +668,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     booking_event =
       BookingEvents.get_booking_event!(organization_id, id)
       |> BookingEvents.preload_booking_event()
-      |> Map.merge(%{
-        # please remove them when real implementaiton is complete
-        slots: [
-          %{id: 1, title: "Open", status: "open", time: "4:45am - 5:00am"},
-          %{id: 2, title: "Booked", status: "booked", time: "4:45am - 5:20am"},
-          %{id: 3, title: "Booked (hidden)", status: "booked_hidden", time: "4:45am - 5:15am"}
-        ]
-      })
-      |> sort_by_date()
 
     socket
     |> assign(:booking_event, booking_event)
@@ -790,9 +793,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       %{title: "Replace package", action: "replace-package", icon: "package"}
     ]
   end
-
-  defp sort_by_date(%{dates: dates} = booking_event),
-    do: Map.replace(booking_event, :dates, Enum.sort(dates, :desc))
 
   defp slot_time_formatter(slot),
     do: Time.to_string(slot.slot_start) <> " - " <> Time.to_string(slot.slot_end)
