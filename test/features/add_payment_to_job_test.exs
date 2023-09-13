@@ -19,10 +19,6 @@ defmodule Picsello.AddPaymentsToJobTest do
       })
       |> promote_to_job()
 
-    user
-    |> Ecto.Changeset.change(%{allow_cash_payment: true})
-    |> Picsello.Repo.update!()
-
     [job: job, session: session, user: user]
   end
 

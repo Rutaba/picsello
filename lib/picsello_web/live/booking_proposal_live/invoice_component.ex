@@ -55,7 +55,7 @@ defmodule PicselloWeb.BookingProposalLive.InvoiceComponent do
                 Finish booking
               </button>
             <% !PaymentSchedules.free?(@job) -> %>
-              <button type="submit" class="btn-tertiary flex gap-10 text-left" phx-disabled-with="Pay with card">
+              <button {testid("pay-online")} type="submit" class="btn-tertiary flex gap-10 text-left" phx-disabled-with="Pay with card">
                 <span class="flex flex-col">
                   <strong>Pay online</strong> Fast, easy and secure
                 </span>
