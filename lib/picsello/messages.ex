@@ -15,7 +15,9 @@ defmodule Picsello.Messages do
     Repo,
     ClientMessage,
     ClientMessageRecipient,
-    Notifiers.UserNotifier
+    Notifiers.UserNotifier,
+    Accounts.User,
+    Organization
   }
 
   def add_message_to_job(
@@ -55,25 +57,38 @@ defmodule Picsello.Messages do
   end
 
   def notify_inbound_message(%ClientMessage{} = message, helpers) do
-    if Map.get(message, :job_id) do
-      job = message |> Repo.preload(job: :client) |> Map.get(:job)
-      UserNotifier.deliver_new_inbound_message_email(message, helpers)
+    %{client_message_recipients: [%{client: %{organization: org}} | _]} =
+      Repo.preload(message, client_message_recipients: [client: :organization])
 
-      Phoenix.PubSub.broadcast(
-        Picsello.PubSub,
-        "inbound_messages:#{job.client.organization_id}",
-        {:inbound_messages, message}
-      )
+    Phoenix.PubSub.broadcast(
+      Picsello.PubSub,
+      "inbound_messages:#{org.id}",
+      {:inbound_messages, message}
+    )
+
+    if Map.get(message, :job_id) do
+      UserNotifier.deliver_new_inbound_message_email(message, helpers)
     end
   end
 
   def token(%Job{} = job), do: token(job, "JOB_ID")
-  def token(%Client{} = client), do: token(client, "CLIENT_ID")
+  def token(%Organization{} = org), do: token(org, "ORGANIZATION_ID")
 
-  def token(%{id: id, inserted_at: inserted_at}, key),
-    do:
-      PicselloWeb.Endpoint
-      |> Phoenix.Token.sign(key, id, signed_at: DateTime.to_unix(inserted_at))
+  def token(%{id: id, inserted_at: inserted_at}, key) do
+    signed_at =
+      case inserted_at do
+        %DateTime{} ->
+          DateTime.to_unix(inserted_at)
+
+        %NaiveDateTime{} ->
+          inserted_at
+          |> DateTime.from_naive("Etc/UTC")
+          |> elem(1)
+          |> DateTime.to_unix()
+      end
+
+    Phoenix.Token.sign(PicselloWeb.Endpoint, key, id, signed_at: signed_at)
+  end
 
   def email_address(record) do
     domain = Application.get_env(:picsello, Picsello.Mailer) |> Keyword.get(:reply_to_domain)
@@ -90,10 +105,10 @@ defmodule Picsello.Messages do
     case result do
       {:ok, id} ->
         job = Repo.get(Job, id)
-        if job, do: job, else: find_by_token(token, "CLIENT_ID")
+        if job, do: job, else: find_by_token(token, "ORGANIZATION_ID")
 
       _ ->
-        find_by_token(token, "CLIENT_ID")
+        find_by_token(token, "ORGANIZATION_ID")
     end
   end
 
@@ -105,7 +120,7 @@ defmodule Picsello.Messages do
     )
 
     case result do
-      {:ok, id} -> Repo.get(Client, id)
+      {:ok, id} -> Repo.get(Organization, id)
       _ -> nil
     end
   end
@@ -201,5 +216,89 @@ defmodule Picsello.Messages do
   def get_emails(recipients, type \\ "to") do
     emails = Map.get(recipients, type)
     if is_list(emails), do: Enum.join(emails, "; "), else: emails
+  end
+
+  def job_threads(%User{} = user) do
+    job_query = Job.for_user(user)
+    preload_query = from(c in ClientMessageRecipient, where: c.recipient_type == :to)
+
+    from(message in ClientMessage,
+      join: jobs in subquery(job_query),
+      on: jobs.id == message.job_id,
+      distinct: message.job_id,
+      where: is_nil(message.deleted_at) and not is_nil(message.job_id),
+      order_by: [desc: message.inserted_at]
+    )
+    |> Repo.all()
+    |> Repo.preload([:job, client_message_recipients: {preload_query, [:client]}])
+  end
+
+  def client_threads(%User{} = user) do
+    from(client in Client,
+      as: :client,
+      join: message_receipent in ClientMessageRecipient,
+      on: client.id == message_receipent.client_id,
+      join: message in ClientMessage,
+      on: message_receipent.client_message_id == message.id,
+      inner_lateral_join:
+        top_one in subquery(
+          from cmr in ClientMessageRecipient,
+            join: cm in assoc(cmr, :client_message),
+            where: cmr.client_id == parent_as(:client).id,
+            where: is_nil(cm.job_id) and is_nil(cm.deleted_at),
+            order_by: [desc: cm.inserted_at],
+            limit: 1,
+            select: [:client_id]
+        ),
+      on: top_one.client_id == client.id,
+      distinct: client.id,
+      where: client.organization_id == ^user.organization_id,
+      where: is_nil(message.job_id) and is_nil(message.deleted_at),
+      order_by: [desc: message.inserted_at],
+      preload: [client_message_recipients: {message_receipent, :client_message}]
+    )
+    |> Repo.all()
+    |> Enum.reduce([], fn %{
+                            client_message_recipients: [
+                              %{client_message: client_message} = recipient
+                            ]
+                          } = client,
+                          acc ->
+      client = Map.delete(client, :client_message_recipients)
+      recipient = recipient |> Map.delete(:client_message) |> Map.put(:client, client)
+
+      acc ++ [Map.merge(client_message, %{client_message_recipients: [recipient], job: nil})]
+    end)
+  end
+
+  def message_recipient_query(%User{organization_id: organization_id}) do
+    from(cmr in ClientMessageRecipient,
+      join: client in Client,
+      on: client.id == cmr.client_id,
+      where: client.organization_id == ^organization_id
+    )
+  end
+
+  def for_job(job) do
+    from(message in ClientMessage,
+      where: message.job_id == ^job.id and is_nil(message.deleted_at),
+      order_by: [asc: message.inserted_at],
+      preload: [client_message_recipients: [:client], job: [:client]]
+    )
+    |> Repo.all()
+  end
+
+  def for_client(client) do
+    preload_query =
+      from cmr in ClientMessageRecipient, where: cmr.client_id == ^client.id, preload: :client
+
+    from(message in ClientMessage,
+      join: crm in assoc(message, :client_message_recipients),
+      where: crm.client_id == ^client.id and is_nil(message.deleted_at),
+      distinct: message.id,
+      order_by: [asc: message.inserted_at],
+      preload: [client_message_recipients: ^preload_query]
+    )
+    |> Repo.all()
   end
 end

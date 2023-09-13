@@ -1,7 +1,7 @@
 defmodule PicselloWeb.InboxLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Repo, ClientMessage, Messages, Notifiers.ClientNotifier}
+  alias Picsello.{Job, Jobs, Repo, ClientMessage, Notifiers.ClientNotifier, Messages}
   import Ecto.Query
   import Picsello.Galleries.Workers.PhotoStorage, only: [path_to_url: 1]
 
@@ -9,25 +9,33 @@ defmodule PicselloWeb.InboxLive.Index do
   def mount(_params, _session, socket) do
     socket
     |> assign(:page_title, "Inbox")
-    |> assign(:current_thread, nil)
-    |> assign_threads()
     |> assign_unread()
     |> subscribe_inbound_messages()
-    |> assign(:tabs, tabs_list(socket))
-    |> assign(:tab_active, "all")
+    |> assign(:tabs, tabs_list())
     |> ok()
   end
 
   @impl true
-  def handle_params(%{"id" => thread_id, "type" => type}, _uri, socket) do
+  def handle_params(%{"id" => thread_id} = params, _uri, socket) do
+    [current_thread_type, thread_id] = String.split(thread_id, "-")
+
     socket
-    |> assign_unread()
-    |> assign_current_thread(thread_id, type)
+    |> assign_tab(params)
+    |> assign(:current_thread_type, current_thread_type)
+    |> assign_tab_data()
+    |> assign_current_thread(thread_id)
     |> noreply()
   end
 
   @impl true
-  def handle_params(_params, _uri, socket), do: socket |> noreply()
+  def handle_params(params, _uri, socket) do
+    socket
+    |> assign_tab(params)
+    |> assign_tab_data()
+    |> noreply()
+  end
+
+  defp assign_tab(socket, params), do: assign(socket, :tab_active, params["type"] || "all")
 
   @impl true
   def render(assigns) do
@@ -37,7 +45,7 @@ defmodule PicselloWeb.InboxLive.Index do
       <div class={classes("flex bg-gray-100 py-6 items-center mb-6 px-4 rounded-lg", %{"hidden sm:flex" => @current_thread})}>
         <h2 class="font-bold text-2xl">Viewing all messages</h2>
         <div class="flex ml-auto gap-3">
-          <%= for {true, %{name: name, action: action, concise_name: concise_name}} <- @tabs do %>
+          <%= for %{name: name, action: action, concise_name: concise_name} <- @tabs do %>
             <button class={classes("border rounded-lg border-blue-planning-300 text-blue-planning-300 py-1 px-4", %{"text-white bg-blue-planning-300" => @tab_active === concise_name, "hover:opacity-100" => @tab_active !== concise_name})} type="button" phx-click={action} phx-value-tab={concise_name}><%= name %></button>
           <% end %>
         </div>
@@ -45,9 +53,6 @@ defmodule PicselloWeb.InboxLive.Index do
 
       <div class="flex sm:h-[calc(100vh-18rem)]">
         <div class={classes("border-t w-full sm:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden sm:block" => @current_thread, "hidden" => Enum.empty?(@threads)})}>
-          <%= if @current_thread && !Enum.find(@threads, & &1.id == @current_thread.id) do %>
-            <.thread_card {@current_thread} message={nil} date={nil} unread={false} selected={true} />
-          <% end %>
           <%= for thread <- @threads do %>
             <.thread_card {thread} unread={Enum.member?(@unread_job_ids, thread.id)} selected={@current_thread && thread.id == @current_thread.id} />
           <% end %>
@@ -78,7 +83,7 @@ defmodule PicselloWeb.InboxLive.Index do
 
   defp thread_card(assigns) do
     ~H"""
-    <div {testid("thread-card")} {scroll_to_thread(@selected, @id)} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class={classes("flex justify-between py-6 border-b pl-2 p-8 hover:bg-gray-100 hover:text-black cursor-pointer", %{"bg-blue-planning-300 rounded-lg text-white" => @selected})}>
+    <div {testid("thread-card")} {scroll_to_thread(@selected, @id)} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class={classes("flex justify-between py-6 border-b pl-2 p-8 cursor-pointer", %{"bg-blue-planning-300 rounded-lg text-white" => @selected, "hover:bg-gray-100 hover:text-black" => !@selected})}>
       <div class="px-4">
         <div class="flex items-center">
           <div class="font-bold	text-2xl line-clamp-1"><%= @title %></div>
@@ -139,6 +144,7 @@ defmodule PicselloWeb.InboxLive.Index do
                 <div class="flex-1 h-px bg-orange-inbox-300"></div>
               </div>
             <% end %>
+
             <div {testid("thread-message")} {scroll_to_message(message)} class="m-2" style="scroll-margin-bottom: 7rem">
               <div class={classes("mb-3 flex justify-between items-end", %{"flex-row-reverse" => !message.outbound})}>
                 <div class="mx-1">
@@ -213,7 +219,7 @@ defmodule PicselloWeb.InboxLive.Index do
           <% end %>
         </div>
         <div class="sticky bottom-0 bg-white flex flex-col p-6 bg-white sm:flex-row-reverse">
-          <button class="btn-primary" phx-click="compose-message">
+          <button class="btn-primary" phx-click="compose-message" phx-value-thread-id={@id}>
             Reply
           </button>
         </div>
@@ -238,17 +244,20 @@ defmodule PicselloWeb.InboxLive.Index do
   end
 
   @impl true
-  def handle_event("open-thread", %{"id" => id, "type" => type}, socket) do
+  def handle_event(
+        "open-thread",
+        %{"id" => id, "type" => type},
+        %{assigns: %{tab_active: tab}} = socket
+      ) do
     socket
-    |> push_patch(to: Routes.inbox_path(socket, :show, id, type))
+    |> push_patch(to: Routes.inbox_path(socket, :show, "#{type}-#{id}", type: tab))
     |> noreply()
   end
 
   @impl true
   def handle_event("change-tab", %{"tab" => tab}, socket) do
     socket
-    |> assign(:tab_active, tab)
-    |> assign_tab_data(tab)
+    |> push_patch(to: Routes.inbox_path(socket, :index, type: tab))
     |> noreply()
   end
 
@@ -276,9 +285,13 @@ defmodule PicselloWeb.InboxLive.Index do
   end
 
   @impl true
-  def handle_event("collapse-section", %{"id" => id}, socket) do
+  def handle_event(
+        "collapse-section",
+        %{"id" => id},
+        %{assigns: %{current_thread: %{messages: messages} = current_thread}} = socket
+      ) do
     new_messages =
-      Enum.map(socket.assigns.current_thread.messages, fn entry ->
+      Enum.map(messages, fn entry ->
         if entry.id == String.to_integer(id) do
           collapsed_sections = Map.get(entry, :collapsed_sections, false)
           Map.update!(entry, :collapsed_sections, fn _ -> !collapsed_sections end)
@@ -288,13 +301,7 @@ defmodule PicselloWeb.InboxLive.Index do
       end)
 
     socket
-    |> assign(
-      :current_thread,
-      %{
-        socket.assigns.current_thread
-        | messages: new_messages
-      }
-    )
+    |> assign(:current_thread, %{current_thread | messages: new_messages})
     |> noreply()
   end
 
@@ -302,7 +309,7 @@ defmodule PicselloWeb.InboxLive.Index do
   def handle_event(
         "compose-message",
         %{},
-        %{assigns: %{job: job, current_user: current_user}} = socket
+        %{assigns: %{job: job, current_user: current_user, current_thread_type: "job"}} = socket
       ) do
     socket
     |> PicselloWeb.ClientMessageComponent.open(%{
@@ -311,6 +318,24 @@ defmodule PicselloWeb.InboxLive.Index do
       enable_size: true,
       enable_image: true,
       client: Job.client(job)
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "compose-message",
+        %{"thread-id" => thread_id},
+        %{assigns: %{current_user: current_user, current_thread_type: "client"}} = socket
+      ) do
+    client = Picsello.Clients.get_client!(thread_id)
+
+    socket
+    |> PicselloWeb.ClientMessageComponent.open(%{
+      current_user: current_user,
+      enable_size: true,
+      enable_image: true,
+      client: client
     })
     |> noreply()
   end
@@ -333,73 +358,39 @@ defmodule PicselloWeb.InboxLive.Index do
   def handle_event("intro_js" = event, params, socket),
     do: PicselloWeb.LiveHelpers.handle_event(event, params, socket)
 
-  defp assign_threads(%{assigns: %{current_user: current_user}} = socket, type \\ :all) do
-    message_query =
-      case type do
-        :job ->
-          job_query = Job.for_user(current_user)
+  defp assign_threads(%{assigns: %{current_user: current_user, tab_active: tab}} = socket) do
+    tab
+    |> then(fn
+      "job" ->
+        Messages.job_threads(current_user)
 
-          from(message in ClientMessage,
-            where: not is_nil(message.job_id),
-            distinct: message.job_id,
-            join: jobs in subquery(job_query),
-            on: jobs.id == message.job_id,
-            where: is_nil(message.deleted_at),
-            order_by: [desc: message.inserted_at]
-          )
+      "client" ->
+        Messages.client_threads(current_user)
 
-        :client ->
-          client_message_receipent_query = Picsello.ClientMessageRecipient.for_user(current_user)
-
-          from(message in ClientMessage,
-            where: is_nil(message.job_id),
-            where: is_nil(message.deleted_at),
-            join: client_message_receipents in subquery(client_message_receipent_query),
-            on: client_message_receipents.client_message_id == message.id,
-            distinct: client_message_receipents.client_id,
-            order_by: [desc: message.inserted_at]
-          )
-
-        :all ->
-          job_query = Job.for_user(current_user)
-
-          from(message in ClientMessage,
-            distinct: message.job_id,
-            join: jobs in subquery(job_query),
-            on: jobs.id == message.job_id,
-            where: is_nil(message.deleted_at),
-            order_by: [desc: message.inserted_at]
-          )
-      end
-
-    threads =
-      from(message in subquery(message_query), order_by: [desc: message.inserted_at])
-      |> Repo.all()
-      |> Repo.preload(client_message_recipients: [:client], job: [:client])
-      |> Enum.map(fn message ->
-        body = if(message.body_text, do: message.body_text, else: message.body_html)
-        type = check_and_assign_type(message.job_id)
-
-        title =
-          if message.job,
-            do: message.job.client.name,
-            else: hd(message.client_message_recipients).client.name
-
-        subtitle = if message.job, do: Job.name(message.job), else: "CLIENTS SUBTITLE"
-
-        %{
-          id: message.job_id || hd(message.client_message_recipients).client_id,
-          title: title,
-          subtitle: subtitle,
-          message: body,
-          type: type,
-          date: strftime(current_user.time_zone, message.inserted_at, "%a, %B %d, %I:%M:%S %p")
-        }
-      end)
-
-    socket
-    |> assign(:threads, threads)
+      "all" ->
+        current_user
+        |> Messages.job_threads()
+        |> Enum.concat(Messages.client_threads(current_user))
+        |> Enum.sort_by(& &1.inserted_at, {:desc, DateTime})
+    end)
+    |> Enum.map(fn message ->
+      %{
+        id: message.job_id || hd(message.client_message_recipients).client_id,
+        title: thread_title(message),
+        subtitle: if(message.job, do: Job.name(message.job), else: "CLIENTS SUBTITLE"),
+        message: if(message.body_text, do: message.body_text, else: message.body_html),
+        type: thread_type(message),
+        date: strftime(current_user.time_zone, message.inserted_at, "%a, %B %d, %I:%M:%S %p")
+      }
+    end)
+    |> then(&assign(socket, :threads, &1))
   end
+
+  defp thread_type(%{job_id: nil}), do: :client
+  defp thread_type(_message), do: :job
+
+  defp thread_title(%{client_message_recipients: [%{client: %{name: name}} | _]}), do: name
+  defp thread_title(_), do: "name"
 
   defp assign_unread(%{assigns: %{current_user: current_user}} = socket) do
     query =
@@ -420,85 +411,82 @@ defmodule PicselloWeb.InboxLive.Index do
     |> assign(:unread_job_ids, Map.keys(unread_messages_by_job))
   end
 
+  defp assign_current_thread(socket, thread_id, message_id_to_scroll \\ nil)
+
   defp assign_current_thread(
-         %{assigns: %{current_user: current_user, unread_message_ids: unread_message_ids}} =
-           socket,
+         %{assigns: %{current_thread_type: "job"}} = socket,
          thread_id,
-         type \\ "job",
-         message_id_to_scroll \\ nil
+         message_id_to_scroll
        ) do
-    job =
-      if type == "job" do
-        Job.for_user(current_user)
-        |> Repo.get!(thread_id)
-        |> Repo.preload([:client, :job_status])
-      end
+    %{client: %{name: name}, job_status: job_status} =
+      job = Jobs.get_job_by_id(thread_id) |> Repo.preload([:client, :job_status])
 
-    client_message_recipients =
-      if type == "client" do
-        Picsello.ClientMessageRecipient.for_user(current_user)
-        |> where(client_id: ^thread_id)
-        |> preload(:client)
-        |> limit(1)
-        |> Repo.one()
-      end
+    client_messages = Messages.for_job(job)
 
-    client_messages =
-      case type do
-        "job" ->
-          from(message in ClientMessage,
-            where: message.job_id == ^job.id and is_nil(message.deleted_at),
-            order_by: [asc: message.inserted_at],
-            preload: [:client_message_recipients, job: [:client]]
-          )
-          |> Repo.all()
+    socket
+    |> assign(:current_thread, %{
+      id: job.id,
+      messages: build_messages(socket, client_messages, message_id_to_scroll),
+      title: name,
+      subtitle: Job.name(job),
+      is_lead: job_status.is_lead
+    })
+    |> assign(:job, job)
+    |> mark_current_thread_as_read()
+  end
 
-        "client" ->
-          from(message in ClientMessage,
-            where:
-              message.id == ^client_message_recipients.client_message_id and
-                is_nil(message.deleted_at),
-            order_by: [asc: message.inserted_at],
-            preload: [client_message_recipients: [:client]]
-          )
-          |> Repo.all()
-      end
+  defp assign_current_thread(
+         %{
+           assigns: %{
+             current_thread_type: "client"
+           }
+         } = socket,
+         thread_id,
+         message_id_to_scroll
+       ) do
+    client = Picsello.Clients.get_client!(thread_id)
+    client_messages = Messages.for_client(client)
 
-    thread_messages =
-      client_messages
-      |> Enum.with_index()
-      |> Enum.reduce(%{last: nil, messages: []}, fn {message, index},
-                                                    %{last: last, messages: messages} ->
+    socket
+    |> assign(:current_thread, %{
+      id: client.id,
+      messages: build_messages(socket, client_messages, message_id_to_scroll),
+      title: client.name,
+      subtitle: "Client Subtitle",
+      is_lead: false
+    })
+    |> assign(:job, nil)
+    |> assign(:client, client)
+    |> mark_current_thread_as_read()
+  end
+
+  defp build_messages(
+         %{
+           assigns: %{
+             current_user: %{time_zone: time_zone},
+             unread_message_ids: unread_message_ids,
+             current_thread_type: current_thread_type
+           }
+         },
+         client_messages,
+         message_id_to_scroll
+       ) do
+    client_messages
+    |> Enum.with_index()
+    |> Enum.reduce(
+      %{last: nil, messages: []},
+      fn {%{
+            client_message_recipients: recipients,
+            outbound: outbound,
+            body_text: body_text,
+            body_html: body_html,
+            read_at: read_at
+          } = message, index},
+         %{last: last, messages: messages} ->
         {sender, receiver} =
-          case type do
-            "job" ->
-              sender = if message.outbound, do: "You", else: message.job.client.name
-              receiver = if message.outbound, do: message.job.client.email, else: "You"
-              {sender, receiver}
-
-            "client" ->
-              sender =
-                if message.outbound,
-                  do: "You",
-                  else: hd(message.client_message_recipients).client.name
-
-              receiver =
-                if message.outbound,
-                  do: hd(message.client_message_recipients).client.email,
-                  else: "You"
-
-              {sender, receiver}
-          end
-
-        same_sender = last && last.outbound == message.outbound
-        body = if message.body_text, do: message.body_text, else: message.body_html
-        cc = assign_message_recipients(message, :cc)
-        bcc = assign_message_recipients(message, :bcc)
-
-        read_at =
-          if message.read_at,
-            do: strftime(current_user.time_zone, message.read_at, "%a, %B %d, %I:%M:%S %p"),
-            else: nil
+          message
+          |> extract_client()
+          |> get_sender_receiver(recipients, outbound, current_thread_type)
 
         %{
           last: message,
@@ -507,16 +495,15 @@ defmodule PicselloWeb.InboxLive.Index do
               [
                 %{
                   id: message.id,
-                  body: body,
-                  date:
-                    strftime(current_user.time_zone, message.inserted_at, "%a %b %-d, %-I:%0M %p"),
-                  outbound: message.outbound,
+                  body: if(body_text, do: body_text, else: body_html),
+                  date: strftime(time_zone, message.inserted_at, "%a %b %-d, %-I:%0M %p"),
+                  outbound: outbound,
                   sender: sender,
                   receiver: receiver,
-                  cc: cc,
-                  bcc: bcc,
+                  cc: assign_message_recipients(message, :cc),
+                  bcc: assign_message_recipients(message, :bcc),
                   subject: message.subject,
-                  same_sender: same_sender,
+                  same_sender: last && last.outbound == outbound,
                   is_first_unread: Enum.member?(unread_message_ids, message.id),
                   scroll:
                     message.id == message_id_to_scroll || index == length(client_messages) - 1,
@@ -524,98 +511,59 @@ defmodule PicselloWeb.InboxLive.Index do
                   client_message_attachments: message.client_message_attachments,
                   show_cc?: false,
                   collapsed_sections: true,
-                  read_at: read_at
+                  read_at: if(read_at, do: strftime(time_zone, read_at, "%a, %B %d, %I:%M:%S %p"))
                 }
               ]
         }
-      end)
-      |> Map.get(:messages)
-
-    id = if type == "job", do: job.id, else: client_message_recipients.client_id
-    title = if type == "job", do: job.client.name, else: client_message_recipients.client.name
-    subtitle = if type == "job", do: Job.name(job), else: "Client Subtitle"
-    is_lead = if type == "job", do: job.job_status.is_lead, else: false
-
-    socket
-    |> assign(:current_thread, %{
-      id: id,
-      messages: thread_messages,
-      title: title,
-      subtitle: subtitle,
-      is_lead: is_lead
-    })
-    |> assign(:job, job)
-    |> mark_current_thread_as_read()
+      end
+    )
+    |> Map.get(:messages)
   end
+
+  defp get_sender_receiver(client, recipients, outbound, "job") do
+    sender = (outbound && "You") || client.name
+    recipient = Enum.find(recipients, &(&1.recipient_type == :to))
+    client = (recipient && recipient.client) || client
+    receiver = (outbound && client.email) || "You"
+
+    {sender, receiver}
+  end
+
+  defp get_sender_receiver(client, _recipients, outbound, "client") do
+    sender = (outbound && "You") || client.name
+    receiver = (outbound && client.email) || "You"
+
+    {sender, receiver}
+  end
+
+  defp extract_client(%{client_message_recipients: [%{client: client} | _]}), do: client
+  defp extract_client(%{job: %{client: client}}), do: client
 
   defp assign_message_recipients(%{client_message_recipients: client_message_recipients}, type) do
     client_message_recipients
-    |> Enum.filter(fn x -> x.recipient_type == type end)
+    |> Enum.filter(&(&1.recipient_type == type))
+    |> Enum.map(& &1.client_id)
+    |> Picsello.Clients.fetch_multiple()
     |> case do
-      [] ->
-        nil
-
-      list ->
-        Enum.map_join(list, ";", fn x ->
-          Repo.get(Picsello.Client, x.client_id).email
-        end)
+      [] -> nil
+      clients -> Enum.map_join(clients, ";", & &1.email)
     end
   end
 
-  defp check_and_assign_type(nil), do: :client
-  defp check_and_assign_type(_job_id), do: :job
-
-  defp tabs_list(_socket) do
-    [
-      {true,
-       %{
-         name: "All",
-         concise_name: "all",
-         action: "change-tab"
-       }},
-      {true,
-       %{
-         name: "Jobs/Leads",
-         concise_name: "jobs-leads",
-         action: "change-tab"
-       }},
-      {true,
-       %{
-         name: "Clients",
-         concise_name: "clients",
-         action: "change-tab"
-       }},
-      {true,
-       %{
-         name: "Marketing",
-         concise_name: "marketing",
-         action: "change-tab"
-       }}
-    ]
+  @tabs [{"All", "all"}, {"Jobs/Leads", "job"}, {"Clients", "client"}]
+  defp tabs_list() do
+    Enum.map(@tabs, fn {name, concise_name} ->
+      %{
+        name: name,
+        concise_name: concise_name,
+        action: "change-tab"
+      }
+    end)
   end
 
-  defp assign_tab_data(socket, tab) do
-    case tab do
-      "all" ->
-        socket
-        |> assign_threads()
-
-      "jobs-leads" ->
-        socket
-        |> assign_threads(:job)
-        |> assign(:current_thread, nil)
-
-      "clients" ->
-        socket
-        |> assign_threads(:client)
-        |> assign(:current_thread, nil)
-
-      "marketing" ->
-        socket |> assign_threads()
-
-      _ ->
-        socket
-    end
+  defp assign_tab_data(socket) do
+    socket
+    |> assign_threads()
     |> assign(:current_thread, nil)
   end
 
@@ -637,13 +585,16 @@ defmodule PicselloWeb.InboxLive.Index do
     socket
   end
 
-  def handle_info({:inbound_messages, message}, socket) do
+  def handle_info(
+        {:inbound_messages, message},
+        %{assigns: %{current_thread: current_thread}} = socket
+      ) do
     socket
     |> assign_threads()
     |> assign_unread()
     |> then(fn socket ->
-      if socket.assigns.current_thread do
-        assign_current_thread(socket, socket.assigns.current_thread.id, message.id)
+      if current_thread do
+        assign_current_thread(socket, current_thread.id, message.id)
       else
         socket
       end
@@ -653,16 +604,17 @@ defmodule PicselloWeb.InboxLive.Index do
 
   def handle_info(
         {:message_composed, message_changeset, recipients},
-        %{assigns: %{job: job, current_user: user}} = socket
+        %{assigns: %{job: job, current_user: user, client: client}} = socket
       ) do
+    thread_id = (job && job.id) || client.id
+
     with {:ok, %{client_message: message, client_message_recipients: _}} <-
-           Messages.add_message_to_job(message_changeset, job, recipients, user)
-           |> Repo.transaction(),
+           add_message(message_changeset, job, recipients, user),
          {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> close_modal()
       |> assign_threads()
-      |> assign_current_thread(job.id, message.id)
+      |> assign_current_thread(thread_id, message.id)
       |> noreply()
     else
       _error ->
@@ -679,5 +631,13 @@ defmodule PicselloWeb.InboxLive.Index do
     |> close_modal()
     |> push_redirect(to: Routes.inbox_path(socket, :index), replace: true)
     |> noreply()
+  end
+
+  defp add_message(message_changeset, %{} = job, recipients, user) do
+    Messages.add_message_to_job(message_changeset, job, recipients, user) |> Repo.transaction()
+  end
+
+  defp add_message(message_changeset, _job, recipients, user) do
+    Messages.add_message_to_client(message_changeset, recipients, user) |> Repo.transaction()
   end
 end

@@ -338,7 +338,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     assign(socket, changeset: changeset)
   end
 
-  defp assign_presets(%{assigns: %{job: job}} = socket),
+  defp assign_presets(%{assigns: %{job: %{} = job}} = socket),
     do: assign_new(socket, :presets, fn -> Picsello.EmailPresets.for(job) end)
 
   defp assign_presets(socket), do: socket

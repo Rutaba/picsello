@@ -7,29 +7,37 @@ defmodule PicselloWeb.SendgridInboundParseController do
     ClientMessageRecipient,
     ClientMessage,
     Messages,
-    Client,
     Job,
-    Galleries.Workers.PhotoStorage
+    Galleries.Workers.PhotoStorage,
+    Organization
   }
 
   alias Ecto.Multi
 
   def parse(conn, params) do
     %{"envelope" => envelope} = params
-    to_email = envelope |> Jason.decode!() |> Map.get("to")
+
+    %{"to" => to_email, "from" => from} =
+      envelope |> Jason.decode!() |> IO.inspect() |> Map.take(["to", "from"])
+
     to_email = if is_list(to_email), do: to_email |> hd, else: to_email
     [token | _] = to_email |> String.split("@")
 
-    {initail_obj, required_fields} =
+    {initail_obj, required_fields, client_id} =
       case Messages.find_by_token(token) do
-        %Client{id: id} ->
-          {%{client_id: id}, []}
+        %Organization{} = org ->
+          client = Clients.client_by_email(org.id, from)
 
-        %Job{id: id} ->
-          {%{job_id: id}, [:job_id]}
+          {%{client_id: client.id}, [], client.id}
+
+        %Job{id: id} = job ->
+          %{client: %{organization: org}} = Repo.preload(job, client: :organization)
+          client = Clients.client_by_email(org.id, from)
+
+          {%{job_id: id}, [:job_id], client.id}
 
         _ ->
-          {nil, []}
+          {nil, [], nil}
       end
 
     body_text = Map.get(params, "text")
@@ -48,25 +56,14 @@ defmodule PicselloWeb.SendgridInboundParseController do
         )
         |> ClientMessage.create_inbound_changeset(required_fields)
 
-      Multi.new()
-      |> Multi.insert(:message, changeset)
-      |> Multi.merge(fn %{message: %{id: message_id}} ->
-        multi = Multi.new()
-
-        case initail_obj do
-          %{client_id: client_id} ->
-            params =
-              ClientMessageRecipient.create_changeset(%{
-                client_id: client_id,
-                client_message_id: message_id,
-                recipient_type: :to
-              })
-
-            multi |> Multi.insert(:message_recipient, params)
-
-          _ ->
-            multi
-        end
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:message, changeset)
+      |> Ecto.Multi.insert(:recipient, fn %{message: %{id: message_id}} ->
+        ClientMessageRecipient.create_changeset(%{
+          client_id: client_id,
+          client_message_id: message_id,
+          recipient_type: :to
+        })
       end)
       |> Multi.merge(fn %{message: %{id: message_id}} ->
         Multi.new()

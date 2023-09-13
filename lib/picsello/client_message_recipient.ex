@@ -28,12 +28,4 @@ defmodule Picsello.ClientMessageRecipient do
     |> cast(attrs, @attrs)
     |> validate_required(@attrs)
   end
-
-  def for_user(%Picsello.Accounts.User{organization_id: organization_id}) do
-    from(cmr in __MODULE__,
-      join: client in Client,
-      on: client.id == cmr.client_id,
-      where: client.organization_id == ^organization_id
-    )
-  end
 end
