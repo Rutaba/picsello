@@ -1,4 +1,5 @@
 defmodule Picsello.EditLeadContractTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   @edit_contract_button button("Edit or Select New", at: 0, count: 2)
@@ -14,6 +15,19 @@ defmodule Picsello.EditLeadContractTest do
       })
 
     [lead: lead]
+  end
+
+  feature "user archives lead", %{session: session, lead: lead} do
+    session
+    |> visit("/leads/#{lead.id}")
+    |> click(css("#manage"))
+    |> click(css("li", text: "Archive lead"))
+    |> wait_for_enabled_submit_button()
+    |> click(button("Yes, archive the lead"))
+    |> assert_flash(:success, text: "Lead has been archived")
+    |> assert_has(css("*[role='status']", text: "Archived"))
+    |> click(button("Manage"))
+    |> refute_has(button("Archive lead"))
   end
 
   feature "user sees message when package is missing", %{
