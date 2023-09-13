@@ -1,6 +1,8 @@
 defmodule Picsello.AddPaymentsToJobTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.Job
+
   setup :onboarded
   setup :authenticated
 
@@ -18,10 +20,6 @@ defmodule Picsello.AddPaymentsToJobTest do
         client: %{name: "John"}
       })
       |> promote_to_job()
-
-    user
-    |> Ecto.Changeset.change(%{allow_cash_payment: true})
-    |> Picsello.Repo.update!()
 
     [job: job, session: session, user: user]
   end

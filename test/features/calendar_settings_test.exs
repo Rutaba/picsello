@@ -1,6 +1,6 @@
 defmodule Picsello.CalendarSettingsTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
-  require Ecto.Query
 
   setup :onboarded
   setup :authenticated

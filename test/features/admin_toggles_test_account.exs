@@ -1,4 +1,5 @@
 defmodule Picsello.AdminTogglesTestAccount do
+  @moduledoc false
   use Picsello.FeatureCase, async: false
 
   setup :onboarded

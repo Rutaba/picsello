@@ -1,4 +1,5 @@
 defmodule Picsello.ClientsIndexTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   import Ecto.Query
 

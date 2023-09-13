@@ -1,4 +1,5 @@
 defmodule Picsello.InboxTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   setup :onboarded

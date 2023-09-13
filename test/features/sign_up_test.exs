@@ -1,4 +1,5 @@
 defmodule Picsello.SignUpTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: false
 
   alias Picsello.{Repo, Accounts.User}
