@@ -11,6 +11,7 @@ defmodule PicselloWeb.GalleryLive.GlobalSettings.Index do
   alias Phoenix.PubSub
   require Logger
 
+  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
   import PicselloWeb.JobLive.Shared, only: [assign_existing_uploads: 2]
   import Picsello.Utils, only: [products_currency: 0]
 

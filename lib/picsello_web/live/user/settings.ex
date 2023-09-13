@@ -422,16 +422,22 @@ defmodule PicselloWeb.Live.User.Settings do
     assigns = assigns |> Enum.into(%{container_class: "", intro_id: nil})
 
     ~H"""
-    <div><h1 class="px-6 py-10 text-4xl font-bold center-container">Your Settings</h1></div>
+    <div class="flex items-center gap-1 center-container px-6 pt-10">
+      <.back_button_history />
+      <h1 class="text-4xl font-bold">Your Settings</h1>
+    </div>
 
     <div class={"flex flex-col flex-1 px-6 center-container #{@container_class}"} {if @intro_id, do: intro(@current_user, @intro_id), else: []}>
       <._settings_nav socket={@socket} live_action={@live_action} current_user={@current_user}>
-        <:link to={{:user_settings, :edit}} >Account</:link>
-        <:link to={{:package_templates, :index}} >Package Templates</:link>
-        <:link hide={!show_pricing_tab?()} to={{:pricing, :index}} >Gallery Store Pricing</:link>
-        <:link to={{:profile_settings, :index}} >Public Profile</:link>
-        <:link to={{:brand_settings, :index}} >Brand</:link>
-        <:link to={{:finance_settings, :index}} >Finances</:link>
+        <:link to={{:package_templates, :index}}>Packages</:link>
+        <:link to={{:contracts_index, :index}}>Contracts</:link>
+        <:link to={{:questionnaires_index, :index}}>Questionnaires</:link>
+        <:link to={{:gallery_global_settings_index, :edit}}>Gallery</:link>
+        <:link to={{:finance_settings, :index}}>Finances</:link>
+        <:link to={{:brand_settings, :index}}>Brand</:link>
+        <:link hide={!show_pricing_tab?()} to={{:pricing, :index}}>Gallery Store Pricing</:link>
+        <:link to={{:profile_settings, :index}}>Public Profile</:link>
+        <:link to={{:user_settings, :edit}}>Account</:link>
       </._settings_nav>
       <hr />
 
@@ -472,11 +478,11 @@ defmodule PicselloWeb.Live.User.Settings do
 
   defp _settings_nav(assigns) do
     ~H"""
-    <ul class="flex py-4 -ml-4 overflow-auto font-bold text-blue-planning-300">
+    <ul class="flex py-4 overflow-auto font-bold text-blue-planning-300">
     <%= for %{to: {path, action}} = link <- @link, !Map.get(link, :hide) do %>
         <li>
-          <.nav_link title={path} :let={active} to={apply(Routes, :"#{path}_path", [@socket, action])} class="block rounded-lg whitespace-nowrap" active_class="bg-blue-planning-100 text-base-300" socket={@socket} live_action={@live_action}>
-            <div {if active, do: %{id: "active-settings-nav-link", phx_hook: "ScrollIntoView"}, else: %{}} class="px-4 py-3">
+          <.nav_link title={path} :let={active} to={apply(Routes, :"#{path}_path", [@socket, action])} class="block whitespace-nowrap border-b-4 border-transparent transition-all duration-300 hover:border-b-blue-planning-300" active_class="border-b-blue-planning-300" socket={@socket} live_action={@live_action}>
+            <div {if active, do: %{id: "active-settings-nav-link", phx_hook: "ScrollIntoView"}, else: %{}} class="px-3 py-2">
               <%= render_slot(link) %>
             </div>
           </.nav_link>
