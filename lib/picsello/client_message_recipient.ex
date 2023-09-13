@@ -1,7 +1,7 @@
 defmodule Picsello.ClientMessageRecipient do
   @moduledoc false
   use Ecto.Schema
-  import Ecto.{Changeset, Query}
+  import Ecto.Changeset
 
   alias Picsello.{Client, ClientMessage}
 

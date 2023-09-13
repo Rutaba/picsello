@@ -21,8 +21,9 @@ defmodule PicselloWeb.InboxLive.Index do
 
     socket
     |> assign_tab(params)
-    |> assign(:current_thread_type, current_thread_type)
+    |> assign(:current_thread_type, String.to_atom(current_thread_type))
     |> assign_tab_data()
+    |> assign_unread()
     |> assign_current_thread(thread_id)
     |> noreply()
   end
@@ -42,9 +43,9 @@ defmodule PicselloWeb.InboxLive.Index do
     ~H"""
     <div class={classes(%{"hidden sm:block" => @current_thread})} {intro(@current_user, "intro_inbox")}><h1 class="px-6 py-10 text-4xl font-bold center-container" {testid("inbox-title")}>Inbox</h1></div>
     <div class={classes("center-container pb-6", %{"pt-0" => @current_thread})}>
-      <div class={classes("flex bg-gray-100 py-6 items-center mb-6 px-4 rounded-lg", %{"hidden sm:flex" => @current_thread})}>
-        <h2 class="font-bold text-2xl">Viewing all messages</h2>
-        <div class="flex ml-auto gap-3">
+      <div class={classes("flex flex-col sm:flex-row bg-gray-100 py-6 items-center mb-6 px-4 rounded-lg", %{"hidden sm:flex" => @current_thread})}>
+        <h2 class="font-bold text-2xl mb-4">Viewing all messages</h2>
+        <div class="flex sm:ml-auto gap-3">
           <%= for %{name: name, action: action, concise_name: concise_name} <- @tabs do %>
             <button class={classes("border rounded-lg border-blue-planning-300 text-blue-planning-300 py-1 px-4", %{"text-white bg-blue-planning-300" => @tab_active === concise_name, "hover:opacity-100" => @tab_active !== concise_name})} type="button" phx-click={action} phx-value-tab={concise_name}><%= name %></button>
           <% end %>
@@ -52,20 +53,20 @@ defmodule PicselloWeb.InboxLive.Index do
       </div>
 
       <div class="flex sm:h-[calc(100vh-18rem)]">
-        <div class={classes("border-t w-full sm:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden sm:block" => @current_thread, "hidden" => Enum.empty?(@threads)})}>
+        <div class={classes("border-t w-full lg:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden sm:block" => @current_thread, "hidden" => Enum.empty?(@threads)})}>
           <%= for thread <- @threads do %>
-            <.thread_card {thread} unread={Enum.member?(@unread_job_ids, thread.id)} selected={@current_thread && thread.id == @current_thread.id} />
+            <.thread_card {thread} unread={member?(assigns, thread.id)} selected={@current_thread && thread.id == @current_thread.id && @current_thread_type == thread.type} />
           <% end %>
         </div>
         <%= cond do %>
           <% @current_thread != nil -> %>
-            <.current_thread {@current_thread} socket={@socket} />
+            <.current_thread {@current_thread} current_thread_type={@current_thread_type} socket={@socket} />
           <% Enum.empty?(@threads) -> %>
-            <div class="flex w-full items-center justify-center p-6 border">
+            <div class="flex w-full items-center justify-center p-6 border m-5">
               <div class="flex items-center flex-col text-blue-planning-300 text-xl">
-                <.icon name="envelope" class="text-blue-planning-300 w-20 h-32" />
-                <p>You don’t have any new messages.</p>
-                <p>Go to a job or lead to send a new message. <.tooltip id="inbox-lead" content="You haven’t sent any booking proposals or client communications yet - once you have, those conversations will all be logged here, and you’ll be able to send and receive messages to your clients. " /></p>
+                <.icon name="envelope" class="text-blue-planning-300 w-20 h-20" />
+                <p class="text-center">You don’t have any new messages.</p>
+                <p class="text-center">Go to a job or lead to send a new message.</p>
               </div>
             </div>
           <% true -> %>
@@ -83,15 +84,27 @@ defmodule PicselloWeb.InboxLive.Index do
 
   defp thread_card(assigns) do
     ~H"""
-    <div {testid("thread-card")} {scroll_to_thread(@selected, @id)} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class={classes("flex justify-between py-6 border-b pl-2 p-8 cursor-pointer", %{"bg-blue-planning-300 rounded-lg text-white" => @selected, "hover:bg-gray-100 hover:text-black" => !@selected})}>
+    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class={classes("flex justify-between py-6 border-b pl-2 p-8 cursor-pointer", %{"bg-blue-planning-300 rounded-lg text-white" => @selected, "hover:bg-gray-100 hover:text-black" => !@selected})}>
       <div class="px-4">
         <div class="flex items-center">
-          <div class="font-bold	text-2xl line-clamp-1"><%= @title %></div>
+          <div class="font-bold	text-2xl line-clamp-1">
+            <%= if String.length(@title)>12 do %>
+              <%= String.slice(@title, 0..12) <> "..."%>
+            <% else %>
+              <%= @title %>
+            <% end %>
+          </div>
           <%= if @unread do %>
             <span {testid("new-badge")} class="mx-4 px-2 py-0.5 text-xs rounded bg-orange-inbox-300 text-white">New</span>
           <% end %>
         </div>
-        <div class="line-clamp-1 font-semibold py-0.5"><%= @subtitle %></div>
+        <div class="line-clamp-1 font-semibold py-0.5">
+          <%= if String.length(@subtitle)>17 do %>
+              <%= String.slice(@subtitle, 0..4) <> "..." <> " " <> (String.split(@subtitle, " ") |> List.last())  %>
+          <% else %>
+            <%= @subtitle %>
+          <% end %>
+        </div>
         <%= if (@message) do %>
           <div class={classes("line-clamp-1", %{"w-48" => String.length(@message) > 28})}><%= raw @message %></div>
         <% end %>
@@ -108,136 +121,152 @@ defmodule PicselloWeb.InboxLive.Index do
   defp current_thread(assigns) do
     ~H"""
       <div class="flex flex-col w-full sm:overflow-y-auto sm:border rounded-lg ml-2">
-        <div class="sticky z-10 top-0 px-6 py-3 flex shadow-sm sm:shadow-none bg-base-200">
-          <.live_link to={Routes.inbox_path(@socket, :index)} class="sm:hidden pt-2 pr-4">
-            <.icon name="left-arrow" class="w-6 h-6" />
-          </.live_link>
-          <div>
-            <div class="sm:font-semibold text-2xl line-clamp-1 text-blue-planning-300"><%= @title %></div>
-          </div>
-          <button title="Delete" type="button" phx-click="confirm-delete" class="ml-auto flex items-center hover:opacity-80">
-            <.icon name="trash" class="sm:w-5 sm:h-5 w-6 h-6 mr-3 text-red-sales-300" />
-          </button>
-        </div>
-          <div class="bg-white sticky top-14 z-10 pt-4">
-            <div class="flex items-center ml-4">
-              <.icon name="camera-check" class="text-blue-planning-300 w-6 h-6 mr-2" />
-              <%= if @is_lead do %>
-                <.live_link to={Routes.job_path(@socket, :leads, @id)} class="rounded-lg bg-gray-100 py-1 px-4 text-blue-planning-300">
-                  View lead
-                </.live_link>
-              <% else %>
-                <.live_link to={Routes.job_path(@socket, :jobs, @id)} class="flex gap-2 items-center rounded-lg bg-gray-100 py-1 px-4 text-blue-planning-300">
-                  View job
-                  <.icon name="forth" class="stroke-2 h-3 w-2 mt-1" />
-                </.live_link>
-              <% end %>
+          <div class="sticky z-10 top-0 px-6 py-3 flex shadow-sm sm:shadow-none bg-base-200">
+            <.live_link to={Routes.inbox_path(@socket, :index)} class="sm:hidden pt-2 pr-4">
+              <.icon name="left-arrow" class="w-6 h-6" />
+            </.live_link>
+            <div>
+              <div class="sm:font-semibold text-2xl line-clamp-1 text-blue-planning-300"><%= @title %></div>
             </div>
-            <hr class="my-4 sm:my-4" />
+            <button title="Delete" type="button" phx-click="confirm-delete" class="ml-auto flex items-center hover:opacity-80">
+              <.icon name="trash" class="sm:w-5 sm:h-5 w-6 h-6 mr-3 text-red-sales-300" />
+            </button>
           </div>
-        <div class="flex flex-1 flex-col p-6">
-          <%= for message <- @messages do %>
-            <%= if message.is_first_unread do %>
-              <div class="flex items-center my-1">
-                <div class="flex-1 h-px bg-orange-inbox-300"></div>
-                <div class="text-orange-inbox-300 px-4">new message</div>
-                <div class="flex-1 h-px bg-orange-inbox-300"></div>
-              </div>
-            <% end %>
-
-            <div {testid("thread-message")} {scroll_to_message(message)} class="m-2" style="scroll-margin-bottom: 7rem">
-              <div class={classes("mb-3 flex justify-between items-end", %{"flex-row-reverse" => !message.outbound})}>
-                <div class="mx-1">
-                  <%= unless message.same_sender do %>
-                    <%= message.sender %> wrote:
+            <div class="bg-white sticky top-14 z-10 pt-4">
+              <div class="flex items-center ml-4">
+              <%= if @current_thread_type == :client do %>
+                <.icon name="client-icon" class="text-blue-planning-300 w-6 h-6 mr-2" />
+              <% else %>
+                <.icon name="camera-check" class="text-blue-planning-300 w-6 h-6 mr-2" />
+              <% end %>
+                <%= case @current_thread_type do %>
+                  <% :client -> %>
+                    <.view_link name="View client" route={Routes.client_path(@socket, :show, @id)} />
+                  <% :job -> %>
+                    <%= if @is_lead do %>
+                      <.view_link name="View lead" route={Routes.job_path(@socket, :leads, @id)} />
+                    <% else %>
+                      <.view_link name="View job" route={Routes.job_path(@socket, :jobs, @id)} />
+                    <% end %>
                   <% end %>
-                </div>
               </div>
+              <hr class="my-4 sm:my-4" />
+            </div>
+          <div class="flex flex-1 flex-col p-6">
+            <%= for message <- @messages do %>
+              <%= if message.is_first_unread do %>
+                <div class="flex items-center my-1">
+                  <div class="flex-1 h-px bg-orange-inbox-300"></div>
+                  <div class="text-orange-inbox-300 px-4">new message</div>
+                  <div class="flex-1 h-px bg-orange-inbox-300"></div>
+                </div>
+              <% end %>
 
-              <div class="relative border rounded p-4">
-                <%= if message.unread do %>
-                  <div class="absolute bg-orange-inbox-300 rounded-full -top-2 -right-2 w-4 h-4"></div>
-                <% end %>
-                <span class="whitespace-pre-line"><%= raw message.body %></span>
+              <div {testid("thread-message")} {scroll_to_message(message)} class="m-2" style="scroll-margin-bottom: 7rem">
+                <div class={classes("mb-3 flex justify-between items-end", %{"flex-row-reverse" => !message.outbound})}>
 
-                <%= unless Enum.empty?(message.client_message_attachments) do %>
-                  <div class="p-2 border mt-4 rounded-lg">
-                    <h4 class="text-sm mb-2 font-bold">Client attachments:</h4>
-                    <div class="flex flex-col gap-2">
-                      <%= for client_attachment <- message.client_message_attachments do %>
-                        <a href={path_to_url(client_attachment.url)} target="_blank">
-                          <div class="text-sm text-blue-planning-300 bg-base-200 border border-base-200 hover:bg-white transition-colors duration-300 px-2 py-1 rounded-lg flex items-center">
-                            <.icon name="paperclip" class="w-4 h-4 mr-1" /> <%= client_attachment.name %>
-                          </div>
-                        </a>
+                  <div class="mx-1">
+                    <%= unless message.same_sender do %>
+                      <%= message.sender %> wrote:
+                    <% end %>
+                  </div>
+                </div>
+
+                <div class={classes("flex items-center font-bold text-xl px-4 py-2", %{"rounded-t-lg" => message.collapsed_sections, "rounded-lg" => !message.collapsed_sections, "bg-blue-planning-300 text-white" => message.outbound, "bg-gray-300" => !message.outbound})} phx-click="collapse-section" phx-value-id={message.id}>
+                  <%= message.subject %>
+                  <div class="flex gap-2 text-xs ml-auto">
+                    <%= message.date %>
+                    <%= if message.collapsed_sections do %>
+                      <.icon name="down" class="w-4 h-4 stroke-current stroke-2" />
+                    <% else %>
+                      <.icon name="up" class="w-4 h-4 stroke-current stroke-2" />
+                    <% end %>
+                  </div>
+                </div>
+                <%= if message.collapsed_sections do %>
+                  <div class="flex border px-4 py-2 text-base-250">
+                    <div class="flex flex-col">
+                      <p> To: <%= message.receiver %> </p>
+                      <%= if(message.show_cc?) do %>
+                        <p> Cc: <%= message.cc %> </p>
+                        <p> Bcc: <%= message.bcc %> </p>
+                      <% end %>
+                    </div>
+                    <div class={"ml-auto text-blue-planning-300 underline cursor-pointer #{@current_thread_type == :client && 'hidden'}"} phx-click="show-cc" phx-value-id={message.id}>
+                      <%= if(message.show_cc?) do %>
+                        Hide Cc/Bcc
+                      <% else %>
+                        Show Cc/Bcc
                       <% end %>
                     </div>
                   </div>
-                <% end %>
+                  <div class="flex flex-col relative border rounded-b-lg p-6">
+                    <%= if message.unread do %>
+                      <div class="absolute bg-orange-inbox-300 rounded-full -top-2 -right-2 w-4 h-4"></div>
+                    <% end %>
+                    <span class="whitespace-pre-line"><%= raw message.body %></span>
 
-              <div class={classes("flex items-center font-bold text-xl px-4 py-2", %{"rounded-t-lg" => message.collapsed_sections, "rounded-lg" => !message.collapsed_sections, "bg-blue-planning-300 text-white" => message.outbound, "bg-gray-300" => !message.outbound})} phx-click="collapse-section" phx-value-id={message.id}>
-                <%= message.subject %>
-                <div class="flex gap-2 text-xs ml-auto">
-                  <%= message.date %>
-                  <%= if message.collapsed_sections do %>
-                    <.icon name="down" class="w-4 h-4 stroke-current stroke-2" />
-                  <% else %>
-                    <.icon name="up" class="w-4 h-4 stroke-current stroke-2" />
-                  <% end %>
-                </div>
+                    <%= unless Enum.empty?(message.client_message_attachments) do %>
+                      <div class="p-2 border mt-4 rounded-lg">
+                        <h4 class="text-sm mb-2 font-bold">Client attachments:</h4>
+                        <div class="flex flex-col gap-2">
+                          <%= for client_attachment <- message.client_message_attachments do %>
+                            <a href={path_to_url(client_attachment.url)} target="_blank">
+                              <div class="text-sm text-blue-planning-300 bg-base-200 border border-base-200 hover:bg-white transition-colors duration-300 px-2 py-1 rounded-lg flex items-center">
+                                <.icon name="paperclip" class="w-4 h-4 mr-1" /> <%= client_attachment.name %>
+                              </div>
+                            </a>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+
+                    <%= if message.read_at do %>
+                      <span class="ml-auto text-base-250 text-sm">
+                          <%= message.read_at %>
+                      </span>
+                    <% end %>
+                  </div>
+                <% end %>
               </div>
-              <%= if message.collapsed_sections do %>
-                <div class="flex border px-4 py-2 text-base-250">
-                  <div class="flex flex-col">
-                    <p> To: <%= message.receiver %> </p>
-                    <%= if(message.show_cc?) do %>
-                      <p> Cc: <%= message.cc %> </p>
-                      <p> Bcc: <%= message.bcc %> </p>
-                    <% end %>
-                  </div>
-                  <div class="ml-auto text-blue-planning-300 underline cursor-pointer" phx-click="show-cc" phx-value-id={message.id}>
-                    <%= if(message.show_cc?) do %>
-                      Hide Cc/Bcc
-                    <% else %>
-                      Show Cc/Bcc
-                    <% end %>
-                  </div>
-                </div>
-                <div class="flex flex-col relative border rounded-b-lg p-6">
-                  <%= if message.unread do %>
-                    <div class="absolute bg-orange-inbox-300 rounded-full -top-2 -right-2 w-4 h-4"></div>
-                  <% end %>
-                  <span class="whitespace-pre-line"><%= raw message.body %></span>
-                  <%= if message.read_at do %>
-                    <span class="ml-auto text-base-250 text-sm">
-                        <%= message.read_at %>
-                    </span>
-                  <% end %>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
-        </div>
-        <div class="sticky bottom-0 bg-white flex flex-col p-6 bg-white sm:flex-row-reverse">
-          <button class="btn-primary" phx-click="compose-message" phx-value-thread-id={@id}>
-            Reply
-          </button>
-        </div>
+            <% end %>
+
+          </div>
+          <div class="sticky bottom-0 bg-white flex flex-col p-6 sm:pr-8 bg-white sm:flex-row-reverse">
+            <button class="btn-primary" phx-click="compose-message" phx-value-thread-id={@id}>
+              Reply
+            </button>
+          </div>
       </div>
     """
+  end
+
+  defp view_link(assigns) do
+    ~H"""
+      <.live_link to={@route} class="flex gap-2 items-center rounded-lg bg-gray-100 py-1 px-4 text-blue-planning-300">
+        <%= @name %>
+        <.icon name="forth" class="stroke-2 h-3 w-2 mt-1" />
+      </.live_link>
+    """
+  end
+
+  defp member?(
+         %{
+           unread_job_ids: unread_job_ids,
+           unread_client_ids: unread_client_ids,
+           current_thread_type: type
+         },
+         thread_id
+       ) do
+    case type do
+      :job -> is_map_key(unread_job_ids, thread_id)
+      :client -> is_map_key(unread_client_ids, thread_id)
+    end
   end
 
   def scroll_to_message(message) do
     if message.scroll do
       %{phx_hook: "ScrollIntoView", id: "message-#{message.id}"}
-    else
-      %{}
-    end
-  end
-
-  def scroll_to_thread(selected, id) do
-    if selected do
-      %{phx_hook: "ScrollIntoView", id: "thread-#{id}"}
     else
       %{}
     end
@@ -309,7 +338,7 @@ defmodule PicselloWeb.InboxLive.Index do
   def handle_event(
         "compose-message",
         %{},
-        %{assigns: %{job: job, current_user: current_user, current_thread_type: "job"}} = socket
+        %{assigns: %{job: job, current_user: current_user, current_thread_type: :job}} = socket
       ) do
     socket
     |> PicselloWeb.ClientMessageComponent.open(%{
@@ -326,7 +355,7 @@ defmodule PicselloWeb.InboxLive.Index do
   def handle_event(
         "compose-message",
         %{"thread-id" => thread_id},
-        %{assigns: %{current_user: current_user, current_thread_type: "client"}} = socket
+        %{assigns: %{current_user: current_user, current_thread_type: :client}} = socket
       ) do
     client = Picsello.Clients.get_client!(thread_id)
 
@@ -380,7 +409,7 @@ defmodule PicselloWeb.InboxLive.Index do
         subtitle: if(message.job, do: Job.name(message.job), else: "CLIENTS SUBTITLE"),
         message: if(message.body_text, do: message.body_text, else: message.body_html),
         type: thread_type(message),
-        date: strftime(current_user.time_zone, message.inserted_at, "%a, %B %d, %I:%M:%S %p")
+        date: strftime(current_user.time_zone, message.inserted_at, "%a %b %d, %-I:%M %p")
       }
     end)
     |> then(&assign(socket, :threads, &1))
@@ -393,28 +422,18 @@ defmodule PicselloWeb.InboxLive.Index do
   defp thread_title(_), do: "name"
 
   defp assign_unread(%{assigns: %{current_user: current_user}} = socket) do
-    query =
-      Job.for_user(current_user)
-      |> ClientMessage.unread_messages()
-
-    unread_messages_by_job =
-      from(message in query,
-        distinct: message.job_id,
-        order_by: [asc: message.inserted_at],
-        select: {message.job_id, message.id}
-      )
-      |> Repo.all()
-      |> Map.new()
+    {job_ids, client_ids, message_ids} = Messages.unread_messages(current_user)
 
     socket
-    |> assign(:unread_message_ids, Map.values(unread_messages_by_job))
-    |> assign(:unread_job_ids, Map.keys(unread_messages_by_job))
+    |> assign(:unread_message_ids, Map.new(message_ids, &{&1, &1}))
+    |> assign(:unread_job_ids, Map.new(job_ids, &{&1, &1}))
+    |> assign(:unread_client_ids, Map.new(client_ids, &{&1, &1}))
   end
 
   defp assign_current_thread(socket, thread_id, message_id_to_scroll \\ nil)
 
   defp assign_current_thread(
-         %{assigns: %{current_thread_type: "job"}} = socket,
+         %{assigns: %{current_thread_type: :job}} = socket,
          thread_id,
          message_id_to_scroll
        ) do
@@ -438,7 +457,7 @@ defmodule PicselloWeb.InboxLive.Index do
   defp assign_current_thread(
          %{
            assigns: %{
-             current_thread_type: "client"
+             current_thread_type: :client
            }
          } = socket,
          thread_id,
@@ -520,7 +539,7 @@ defmodule PicselloWeb.InboxLive.Index do
     |> Map.get(:messages)
   end
 
-  defp get_sender_receiver(client, recipients, outbound, "job") do
+  defp get_sender_receiver(client, recipients, outbound, :job) do
     sender = (outbound && "You") || client.name
     recipient = Enum.find(recipients, &(&1.recipient_type == :to))
     client = (recipient && recipient.client) || client
@@ -529,7 +548,7 @@ defmodule PicselloWeb.InboxLive.Index do
     {sender, receiver}
   end
 
-  defp get_sender_receiver(client, _recipients, outbound, "client") do
+  defp get_sender_receiver(client, _recipients, outbound, :client) do
     sender = (outbound && "You") || client.name
     receiver = (outbound && client.email) || "You"
 
@@ -567,10 +586,11 @@ defmodule PicselloWeb.InboxLive.Index do
     |> assign(:current_thread, nil)
   end
 
-  defp mark_current_thread_as_read(%{assigns: %{current_thread: %{id: id}}} = socket) do
+  defp mark_current_thread_as_read(
+         %{assigns: %{current_thread: %{id: id}, current_thread_type: type}} = socket
+       ) do
     if connected?(socket) do
-      from(m in ClientMessage, where: m.job_id == ^id and is_nil(m.read_at))
-      |> Repo.update_all(set: [read_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+      Messages.update_all(id, type)
     end
 
     socket

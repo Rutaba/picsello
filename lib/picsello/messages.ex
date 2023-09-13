@@ -218,7 +218,9 @@ defmodule Picsello.Messages do
     if is_list(emails), do: Enum.join(emails, "; "), else: emails
   end
 
-  def job_threads(%User{} = user) do
+  def job_threads(%User{} = user, opts \\ []) do
+    unread? = Keyword.get(opts, :unread?, false)
+
     job_query = Job.for_user(user)
     preload_query = from(c in ClientMessageRecipient, where: c.recipient_type == :to)
 
@@ -229,16 +231,23 @@ defmodule Picsello.Messages do
       where: is_nil(message.deleted_at) and not is_nil(message.job_id),
       order_by: [desc: message.inserted_at]
     )
+    |> then(fn
+      query when unread? == true -> from q in query, where: is_nil(q.read_at)
+      query -> query
+    end)
     |> Repo.all()
     |> Repo.preload([:job, client_message_recipients: {preload_query, [:client]}])
   end
 
-  def client_threads(%User{} = user) do
+  def client_threads(%User{} = user, opts \\ []) do
+    unread? = Keyword.get(opts, :unread?, false)
+
     from(client in Client,
       as: :client,
       join: message_receipent in ClientMessageRecipient,
       on: client.id == message_receipent.client_id,
       join: message in ClientMessage,
+      as: :client_message,
       on: message_receipent.client_message_id == message.id,
       inner_lateral_join:
         top_one in subquery(
@@ -257,6 +266,10 @@ defmodule Picsello.Messages do
       order_by: [desc: message.inserted_at],
       preload: [client_message_recipients: {message_receipent, :client_message}]
     )
+    |> then(fn
+      query when unread? == true -> from([client_message: cm] in query, where: is_nil(cm.read_at))
+      query -> query
+    end)
     |> Repo.all()
     |> Enum.reduce([], fn %{
                             client_message_recipients: [
@@ -269,14 +282,6 @@ defmodule Picsello.Messages do
 
       acc ++ [Map.merge(client_message, %{client_message_recipients: [recipient], job: nil})]
     end)
-  end
-
-  def message_recipient_query(%User{organization_id: organization_id}) do
-    from(cmr in ClientMessageRecipient,
-      join: client in Client,
-      on: client.id == cmr.client_id,
-      where: client.organization_id == ^organization_id
-    )
   end
 
   def for_job(job) do
@@ -300,5 +305,45 @@ defmodule Picsello.Messages do
       preload: [client_message_recipients: ^preload_query]
     )
     |> Repo.all()
+  end
+
+  def unread_messages(%User{organization_id: organization_id} = user) do
+    job_ids =
+      user
+      |> Job.for_user()
+      |> ClientMessage.unread_messages()
+      |> distinct([m], m.id)
+      |> order_by([m], asc: m.inserted_at)
+      |> select([m], m.job_id)
+      |> Repo.all()
+
+    client_ids =
+      user
+      |> client_threads(unread?: true)
+      |> Enum.map(&hd(&1.client_message_recipients).client_id)
+
+    message_ids =
+      from(m in ClientMessage,
+        left_join: cmr in assoc(m, :client_message_recipients),
+        left_join: c in assoc(cmr, :client),
+        where: c.organization_id == ^organization_id and is_nil(m.read_at),
+        select: m.id
+      )
+      |> Repo.all()
+
+    {job_ids, client_ids, message_ids}
+  end
+
+  def update_all(client_id, :client) do
+    from(m in ClientMessage,
+      join: cmr in assoc(m, :client_message_recipients),
+      where: is_nil(m.job_id) and is_nil(m.read_at) and cmr.client_id == ^client_id
+    )
+    |> Repo.update_all(set: [read_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+  end
+
+  def update_all(job_id, :job) do
+    from(m in ClientMessage, where: m.job_id == ^job_id and is_nil(m.read_at))
+    |> Repo.update_all(set: [read_at: DateTime.utc_now() |> DateTime.truncate(:second)])
   end
 end
