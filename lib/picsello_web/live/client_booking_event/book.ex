@@ -96,10 +96,10 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
           <%= unless slot.status == :break do  %>
             <label class={classes("flex items-center justify-center border border-black py-3 my-4 cursor-pointer", %{
                 "bg-black text-white" => Time.compare(slot.slot_start, @selected_time || Time.utc_now) == :eq,
-                "bg-white !text-grey !border-grey pointer-events-none opacity-40 hover:cursor-not-allowed" => (disabled_slot(slot.status))}
+                "bg-white !text-grey !border-grey pointer-events-none opacity-40 hover:cursor-not-allowed" => (disabled_slot?(slot.status))}
                 )}>
                 <%= slot.slot_start |> Calendar.strftime("%-I:%M%P") %>
-                <input type="radio" name={@name} value={slot.slot_start} class="hidden" disabled={disabled_slot(slot.status)}/>
+                <input type="radio" name={@name} value={slot.slot_start} class="hidden" disabled={disabled_slot?(slot.status)}/>
               </label>
           <% end %>
         <% end )%>
@@ -195,13 +195,12 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
        ) do
     booking = current(changeset)
 
-    booking_date =
+    [booking_date | _] =
       BookingEventDates.get_booking_events_dates_with_same_date(booking_event.id, booking.date)
-      |> Enum.at(0)
 
     socket |> assign(booking_date: booking_date)
   end
 
-  defp disabled_slot(:open), do: false
-  defp disabled_slot(_status), do: true
+  defp disabled_slot?(:open), do: false
+  defp disabled_slot?(_status), do: true
 end

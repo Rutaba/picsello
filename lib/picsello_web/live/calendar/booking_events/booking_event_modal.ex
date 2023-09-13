@@ -5,8 +5,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
-  alias Picsello.{BookingEventDate, BookingEventDates}
+  alias Picsello.{BookingEventDate, BookingEventDates, Repo}
   alias PicselloWeb.Calendar.BookingEvents.Shared
+  alias Ecto.Multi
   import Ecto.Changeset
 
   @occurences [0, 5, 10, 15, 20, 30, 45, 60]
@@ -168,26 +169,50 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   @impl true
   def handle_event("submit", %{"booking_event_date" => params}, socket) do
-    %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
+    %{
+      assigns: %{
+        changeset: changeset,
+        booking_date: booking_date,
+        current_user: %{organization_id: _organization_id}
+      }
+    } = socket = assign_changeset(socket, params)
 
-    repeat_dates = get_repeat_dates(changeset)
-    # TODO: Repeat dates delete & insert functionality
-    is_booked_dates = BookingEventDates.is_booked_any_date?(repeat_dates)
+    %{dates: repeat_dates, params: repeat_dates_rows} =
+      if get_field(changeset, :is_repeat) do
+        repeat_dates = get_repeat_dates(changeset)
 
-    _repeat_dates_rows =
-      cond do
-        is_booked_dates -> []
-        true -> BookingEventDates.generate_rows_for_repeat_dates(changeset, repeat_dates)
+        is_booked_dates =
+          BookingEventDates.is_booked_any_date?(repeat_dates, booking_date.booking_event_id)
+
+        if is_booked_dates,
+          do: %{dates: [], params: []},
+          else: %{
+            dates: repeat_dates,
+            params: BookingEventDates.generate_rows_for_repeat_dates(changeset, repeat_dates)
+          }
+      else
+        %{dates: [], params: []}
       end
 
-    case BookingEventDates.upsert_booking_event_date(changeset) do
-      {:ok, booking_event} ->
-        socket
-        |> successfull_save(booking_event)
+    {:ok,
+     %{
+       upsert_booking_event_date: booking_event_date
+     }} =
+      Multi.new()
+      |> Multi.insert_or_update(:upsert_booking_event_date, changeset)
+      |> Multi.delete_all(
+        :delete_all_repeating_dates,
+        BookingEventDates.repeat_dates_queryable(repeat_dates, booking_date.booking_event_id)
+      )
+      |> Multi.insert_all(
+        :insert_all_repeating_booking_dates,
+        BookingEventDate,
+        repeat_dates_rows
+      )
+      |> Repo.transaction()
 
-      _ ->
-        socket |> noreply()
-    end
+    socket
+    |> successfull_save(booking_event_date)
   end
 
   defp get_repeat_dates(changeset) do

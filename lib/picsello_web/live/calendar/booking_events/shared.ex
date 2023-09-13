@@ -13,6 +13,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   }
 
   alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, Repo}
+  alias BookingEventDate.SlotBlock
   alias Ecto.Multi
 
   def handle_event(
@@ -220,6 +221,37 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> noreply()
   end
 
+  def overlap_time?(blocks), do: BookingEvents.overlap_time?(blocks)
+
+  @doc """
+  Edits the status of booking event date slots.
+
+  This function takes a list of booking event date slots and edits their status. It iterates through each slot
+  in the list and sets the status to either `:hide` or `:open` based on the existing status. If the current
+  status is `:hide`, it remains unchanged; otherwise, it is updated to `:open`. This function is typically
+  used to toggle the visibility of slots.
+
+  ## Parameters
+
+  - `slots` ([%SlotBlock{}]): A list of booking event date slots to edit.
+
+  ## Returns
+
+  A list of updated booking event date slots with modified status.
+
+  ## Example
+
+  ```elixir
+  # Edit the status of booking event date slots
+  iex> slots = [%SlotBlock{status: :hide}, %SlotBlock{status: :open}]
+  iex> edit_slots_status(%{slots: slots})
+  [%SlotBlock{status: :hide}, %SlotBlock{status: :open}]
+
+  ## Notes
+
+  This function is useful for modifying the status of booking event date slots, typically used to control their visibility
+  """
+  @spec edit_slots_status(map()) :: [%SlotBlock{}]
   def edit_slots_status(%{slots: slots}) do
     slots
     |> Enum.map(fn s ->
@@ -231,9 +263,35 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     end)
   end
 
-  def to_map(data) do
-    Enum.map(data, &Map.from_struct(&1))
-  end
+  @doc """
+  Converts a list of structs to a list of maps.
+
+  This function takes a list of structs and converts each struct into a map using the `Map.from_struct/1` function.
+  It returns a new list containing the converted maps. This can be useful when you need to work with data in map
+  format, such as when interacting with certain Elixir functions or libraries that expect map data.
+
+  ## Parameters
+
+  - `data` ([struct()]): A list of structs to be converted into maps.
+
+  ## Returns
+
+  A list of maps, where each map corresponds to a struct in the original list.
+
+  ## Example
+
+  ```elixir
+  # Convert a list of structs to a list of maps
+  iex> data = [%MyStruct{id: 1, name: "Alice"}, %MyStruct{id: 2, name: "Bob"}]
+  iex> to_map(data)
+  [%{id: 1, name: "Alice"}, %{id: 2, name: "Bob"}]
+
+  ## Notes
+
+  This function simplifies the process of converting structs to maps for various Elixir operations that work with maps.
+  """
+  @spec to_map(data :: [struct()]) :: [map()]
+  def to_map(data), do: Enum.map(data, &Map.from_struct(&1))
 
   def assign_events(%{assigns: %{booking_event: _booking_event}} = socket, event),
     do: assign(socket, :booking_event, event)
@@ -267,131 +325,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   defp fetch_booking_event_id(%{}, %{assigns: %{booking_event: booking_event}}),
     do: booking_event.id
 
-  @doc """
-  Calculates a list of recurring dates based on a given booking event date and selected days.
+  def calculate_dates(booking_event_date, selected_days),
+    do: BookingEvents.calculate_dates(booking_event_date, selected_days)
 
-  This function takes a booking event date and a list of selected days and calculates a
-  list of recurring dates based on the provided parameters. The recurring dates are
-  determined by the `occurences`, `calendar`, `repeat_interval`, and `selected_days` parameters.
-  The calculation continues until the specified number of occurrences is reached or until the date
-  exceeds the `stop_repeating` date, whichever comes first.
-
-  ## Parameters
-
-  - `booking_event_date` (map): A map containing the booking event date and other relevant parameters.
-    - `:date` (date): The initial booking event date.
-    - `:stop_repeating` (date): The date at which the recurrence should stop.
-    - `:occurences` (integer): The maximum number of occurrences (or 0 for unlimited).
-    - `:calendar` (string): The calendar type (e.g., "week", "month" or "year").
-    - `:count_calendar` (integer): The calendar count.
-
-  - `selected_days` (list of integers): A list of selected days of the week
-  (1-7, where 1 is Sunday, 2 is Monday, etc.) on which the event should recur.
-
-  ## Returns
-
-  - A list of recurring dates.
-
-  ## Examples
-
-  booking_event_date = %{
-    date: ~D[2023-09-01],
-    stop_repeating: ~D[2023-09-30],
-    occurences: 0,
-    calendar: "week",
-    count_calendar: 1
-  }
-  selected_days = [2, 4] # Recur on Tuesdays and Thursdays
-
-  # Returns a list of recurring dates.
-  result = calculate_dates(booking_event_date, selected_days)
-  """
-  @spec calculate_dates(map(), [map()]) :: [Datetime.t()]
-  def calculate_dates(booking_event_date, selected_days) do
-    selected_days = selected_days_indexed_array(selected_days)
-
-    calculate_dates(
-      Map.get(booking_event_date, :date),
-      Map.get(booking_event_date, :stop_repeating),
-      Map.get(booking_event_date, :occurences),
-      Map.get(booking_event_date, :calendar),
-      Map.get(booking_event_date, :count_calendar),
-      selected_days,
-      []
-    )
-  end
-
-  defp date_valid?(date, stopped_date), do: Date.compare(date, stopped_date) == :lt
-  defp day_of_week(date), do: Timex.weekday(date, :sunday)
-
-  defp calculate_dates(
-         booking_date,
-         stopped_date,
-         occurences,
-         calendar,
-         repeat_interval,
-         selected_days,
-         acc_dates
-       ) do
-    recursive_cond? =
-      if occurences > 0,
-        do: Enum.count(acc_dates) <= occurences,
-        else: date_valid?(booking_date, stopped_date)
-
-    if recursive_cond? do
-      shifted_date = calendar_shift(calendar, repeat_interval, booking_date)
-
-      dates =
-        calculate_week_day_date(
-          acc_dates,
-          shifted_date,
-          occurences,
-          stopped_date,
-          selected_days
-        )
-
-      calculate_dates(
-        shifted_date,
-        stopped_date,
-        occurences,
-        calendar,
-        repeat_interval,
-        selected_days,
-        dates
-      )
-    else
-      Enum.reverse(acc_dates) |> Enum.sort()
-    end
-  end
-
-  defp calculate_week_day_date(dates, shifted_date, occurences, stopped_date, selected_days) do
-    shifted_date = Timex.shift(shifted_date, days: -1)
-
-    Enum.reduce_while(1..7, dates, fn n, acc ->
-      next_day = Timex.shift(shifted_date, days: n)
-      weekday = day_of_week(next_day)
-
-      halt_condition =
-        if occurences > 0,
-          do: Enum.count(acc) > occurences,
-          else: !date_valid?(next_day, stopped_date)
-
-      cond do
-        halt_condition -> {:halt, acc}
-        weekday in selected_days -> {:cont, acc ++ [next_day]}
-        true -> {:cont, acc}
-      end
-    end)
-  end
-
-  defp selected_days_indexed_array(selected_days) do
-    selected_days
-    |> Enum.filter(& &1.active)
-    |> Enum.with_index()
-    |> Enum.map(fn {_map, value} -> value + 1 end)
-  end
-
-  defp calendar_shift("week", shift_count, date), do: Timex.shift(date, weeks: shift_count)
-  defp calendar_shift("month", shift_count, date), do: Timex.shift(date, months: shift_count)
-  defp calendar_shift("year", shift_count, date), do: Timex.shift(date, years: shift_count)
 end
