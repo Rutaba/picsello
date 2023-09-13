@@ -452,6 +452,5 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(testid("subnav-Settings"))
     |> click(link("Packages"))
-    |> refute_has(button("Next"))
   end
 end

@@ -535,8 +535,7 @@ defmodule Picsello.ImportJobTest do
     |> assert_text("Owed")
     |> assert_text("800.00 USD")
     |> assert_has(button("Pay online", at: 1))
-    |> click(button("Close"))
-    |> click(button("Pay online"))
+    |> click(button("Pay online", at: 1))
     |> assert_url_contains("stripe-checkout")
 
     assert_receive {:checkout_linked,

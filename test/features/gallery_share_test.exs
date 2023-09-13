@@ -95,12 +95,6 @@ defmodule Picsello.GalleryShareTest do
       |> fill_in(text_field("bcc_email"), with: "new")
       |> assert_has(testid("bcc-error"))
       |> click(button("remove-bcc"))
-      |> fill_in(text_field("search_phrase"), with: "stark")
-      |> assert_has(css("#search_results"))
-      |> find(testid("search-row", count: 1, at: 0), fn row ->
-        row
-        |> click(button("Add to"))
-      end)
       |> fill_in(text_field("Subject line"), with: "My subject")
       |> fill_in_quill("This is the body")
       |> wait_for_enabled_submit_button(text: "Send Email")

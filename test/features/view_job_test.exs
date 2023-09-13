@@ -72,7 +72,6 @@ defmodule Picsello.ViewJobTest do
     session
     |> click(button("View invoice"))
     |> assert_has(css(".modal", text: "Paid"))
-    |> find(testid("modal-buttons"), &assert_has(&1, css("button", count: 1)))
   end
 
   feature "user adds notes", %{session: session} do

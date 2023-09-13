@@ -1,7 +1,7 @@
 defmodule PicselloWeb.Live.Admin.WHCCOrdersPricingReport do
   @moduledoc false
   use PicselloWeb, live_view: [layout: false]
-  alias Picsello.{Orders, Cart, WHCC}
+  alias Picsello.{Orders, Cart}
   alias Picsello.WHCC.Order.Created, as: WHCCOrder
 
   def mount(%{"order_number" => order_number}, _, socket) do
