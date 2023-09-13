@@ -152,7 +152,8 @@ defmodule PicselloWeb.LayoutView do
             icon: "calendar",
             path: Routes.calendar_booking_events_path(socket, :index)
           },
-          %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)}
+          %{title: "Leads", icon: "three-people", path: Routes.job_path(socket, :leads)},
+          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
         ]
       },
       %{
@@ -183,17 +184,6 @@ defmodule PicselloWeb.LayoutView do
             icon: "calendar",
             path: Routes.calendar_index_path(socket, :index)
           }
-        ]
-      },
-      %{
-        heading: "Market",
-        items: [
-          %{
-            title: "Public Profile",
-            icon: "website",
-            path: Routes.profile_settings_path(socket, :index)
-          },
-          %{title: "Marketing", icon: "bullhorn", path: Routes.marketing_path(socket, :index)}
         ]
       },
       %{
@@ -228,6 +218,11 @@ defmodule PicselloWeb.LayoutView do
             title: "Brand",
             icon: "brand",
             path: Routes.brand_settings_path(socket, :index)
+          },
+          %{
+            title: "Public Profile",
+            icon: "website",
+            path: Routes.profile_settings_path(socket, :index)
           },
           %{
             title: "Account",
