@@ -1,10 +1,8 @@
 defmodule PicselloWeb.ClientBookingEventLive.Book do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-  alias Picsello.{BookingEvents, BookingEvent, BookingEventDates, BookingEventDate.SlotBlock}
+  alias Picsello.{BookingEvents, BookingEvent, BookingEventDates}
 
-  import Ecto.Query
-  import Ecto.Changeset
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
   import PicselloWeb.Live.Profile.Shared,
@@ -145,7 +143,8 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
          {:available, true} <- {:available, time_available?(booking, booking_date.slots)},
          {:ok, %{proposal: proposal, shoot: shoot}} <-
            BookingEvents.save_booking(booking_event, booking_date, booking),
-         {:ok, _slots_update} <- update_slots(socket) do
+         {:ok, _slots_update} <-
+           BookingEventDates.update_booking_event_date_slots(booking_event, booking_date) do
       Picsello.Shoots.broadcast_shoot_change(shoot)
 
       socket
@@ -168,7 +167,6 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
 
   def handle_info({:shoot_updated, _shoot}, socket) do
     socket
-    |> update_slots()
     |> assign_available_times()
     |> noreply()
   end
@@ -196,13 +194,12 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
          %{assigns: %{booking_event: booking_event, changeset: changeset}} = socket
        ) do
     booking = current(changeset)
-    booking_date = BookingEventDates.get_booking_events_dates_with_same_date(booking_event.id, booking.date) |> Enum.at(0)
-    socket |> assign(booking_date: booking_date)
-  end
 
-  defp update_slots( %{assigns: %{booking_event: booking_event, booking_date: booking_date}} = socket) do
-    slots = booking_date |> BookingEventDates.available_slots(booking_event)
-    BookingEventDates.update_booking_event_dates(booking_date, %{slots: slots})
+    booking_date =
+      BookingEventDates.get_booking_events_dates_with_same_date(booking_event.id, booking.date)
+      |> Enum.at(0)
+
+    socket |> assign(booking_date: booking_date)
   end
 
   defp disabled_slot(:open), do: false

@@ -521,7 +521,10 @@ defmodule Picsello.BookingEvents do
     |> Oban.insert(:oban_job, fn changes ->
       # multiply booking reservation by 2 to account for time spent on Stripe checkout
       expiration = Application.get_env(:picsello, :booking_reservation_seconds) * 2
-      Picsello.Workers.ExpireBooking.new(%{id: changes.job.id}, schedule_in: expiration)
+
+      Picsello.Workers.ExpireBooking.new(%{id: changes.job.id, booking_date_id: booking_date.id},
+        schedule_in: expiration
+      )
     end)
     |> Repo.transaction()
   end
