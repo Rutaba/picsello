@@ -16,9 +16,7 @@ defmodule PicselloWeb.SendgridInboundParseController do
 
   def parse(conn, params) do
     %{"envelope" => envelope} = params
-
-    %{"to" => to_email, "from" => from} =
-      envelope |> Jason.decode!() |> IO.inspect() |> Map.take(["to", "from"])
+    %{"to" => to_email, "from" => from} = envelope |> Jason.decode!() |> Map.take(["to", "from"])
 
     to_email = if is_list(to_email), do: to_email |> hd, else: to_email
     [token | _] = to_email |> String.split("@")
