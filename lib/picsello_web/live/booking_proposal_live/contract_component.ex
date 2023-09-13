@@ -10,6 +10,10 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
+    |> assign_new(:job, fn -> nil end)
+    |> assign_new(:client, fn -> nil end)
+    |> assign_new(:proposal, fn -> nil end)
+    |> assign_new(:booking_event, fn -> nil end)
     |> assign_changeset()
     |> ok()
   end
@@ -73,7 +77,6 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
         ),
       proposal: proposal,
       package: package,
-      booking_event: nil,
       photographer: photographer,
       organization: organization
     })
@@ -97,9 +100,6 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
           package,
           PicselloWeb.Helpers
         ),
-      job: nil,
-      client: nil,
-      proposal: nil,
       package: package,
       booking_event: booking_event,
       photographer: photographer,
