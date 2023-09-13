@@ -1,7 +1,11 @@
 defmodule Picsello.Shoot do
   @moduledoc false
   use Ecto.Schema
+  alias Picsello.NylasDetail
   import Ecto.{Changeset, Query}
+
+  @config Application.compile_env(:picsello, :nylas)
+  @picsello_tag @config[:picsello_tag]
 
   @locations ~w[studio on_location home]a
   @durations [
@@ -26,7 +30,9 @@ defmodule Picsello.Shoot do
     720
   ]
 
+  @spec locations :: [:home | :on_location | :studio]
   def locations(), do: @locations
+
   def durations(), do: @durations
 
   schema "shoots" do
@@ -38,6 +44,7 @@ defmodule Picsello.Shoot do
     field :reminded_at, :utc_datetime
     field :thanked_at, :utc_datetime
     field :address, :string
+    field :external_event_id, :string
     belongs_to(:job, Picsello.Job)
 
     timestamps()
@@ -45,13 +52,22 @@ defmodule Picsello.Shoot do
 
   def changeset_for_create_gallery(%__MODULE__{} = shoot, attrs \\ %{}) do
     shoot
-    |> cast(attrs, [:starts_at, :job_id])
+    |> cast(attrs, [:starts_at, :job_id, :external_event_id])
     |> validate_required([:starts_at])
   end
 
   def create_changeset(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:starts_at, :duration_minutes, :name, :location, :notes, :job_id, :address])
+    |> cast(attrs, [
+      :starts_at,
+      :duration_minutes,
+      :name,
+      :location,
+      :notes,
+      :job_id,
+      :address,
+      :external_event_id
+    ])
     |> validate_required([:starts_at, :duration_minutes, :name, :location, :job_id])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)
@@ -59,7 +75,15 @@ defmodule Picsello.Shoot do
 
   def update_changeset(%__MODULE__{} = shoot, attrs) do
     shoot
-    |> cast(attrs, [:address, :starts_at, :duration_minutes, :name, :location, :notes])
+    |> cast(attrs, [
+      :address,
+      :starts_at,
+      :duration_minutes,
+      :name,
+      :location,
+      :notes,
+      :external_event_id
+    ])
     |> validate_required([:starts_at, :duration_minutes, :name, :location])
     |> validate_inclusion(:location, @locations)
     |> validate_inclusion(:duration_minutes, @durations)
@@ -81,12 +105,43 @@ defmodule Picsello.Shoot do
     __MODULE__ |> where(job_id: ^job_id) |> by_starts_at()
   end
 
+  def map_event(
+        %__MODULE__{
+          duration_minutes: duration_minutes,
+          name: name,
+          notes: notes,
+          starts_at: starts_at,
+          address: address,
+          external_event_id: external_event_id
+        },
+        %NylasDetail{external_calendar_rw_id: calendar_id},
+        action \\ :insert
+      ) do
+    end_time = DateTime.add(starts_at, duration_minutes * 60) |> DateTime.to_unix()
+
+    event = %{
+      when: %{start_time: DateTime.to_unix(starts_at), end_time: end_time},
+      location: address,
+      title: name,
+      description: set_notes(notes)
+    }
+
+    case action do
+      :insert -> Map.put(event, :calendar_id, calendar_id)
+      :update -> Map.put(event, :id, external_event_id)
+    end
+  end
+
+  defp set_notes(nil), do: "\n#{@picsello_tag}\n"
+  defp set_notes(notes), do: notes <> set_notes(nil)
+
   @type t :: %__MODULE__{
           id: integer(),
           duration_minutes: integer(),
           location: String.t(),
           name: String.t(),
           notes: String.t(),
+          external_event_id: String.t(),
           reminded_at: DateTime.t(),
           thanked_at: DateTime.t(),
           starts_at: DateTime.t(),
