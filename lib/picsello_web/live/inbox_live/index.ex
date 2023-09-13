@@ -11,6 +11,7 @@ defmodule PicselloWeb.InboxLive.Index do
     |> assign(:page_title, "Inbox")
     |> assign_unread()
     |> subscribe_inbound_messages()
+    |> assign(:current_thread_type, nil)
     |> assign(:tabs, tabs_list())
     |> ok()
   end
@@ -260,7 +261,7 @@ defmodule PicselloWeb.InboxLive.Index do
        ) do
     case type do
       :job -> is_map_key(unread_job_ids, thread_id)
-      :client -> is_map_key(unread_client_ids, thread_id)
+      _ -> is_map_key(unread_client_ids, thread_id)
     end
   end
 
@@ -490,8 +491,10 @@ defmodule PicselloWeb.InboxLive.Index do
          client_messages,
          message_id_to_scroll
        ) do
+    length = length(client_messages)
+
     client_messages
-    |> Enum.with_index()
+    |> Enum.with_index(1)
     |> Enum.reduce(
       %{last: nil, messages: []},
       fn {%{
@@ -524,8 +527,7 @@ defmodule PicselloWeb.InboxLive.Index do
                   subject: message.subject,
                   same_sender: last && last.outbound == outbound,
                   is_first_unread: Enum.member?(unread_message_ids, message.id),
-                  scroll:
-                    message.id == message_id_to_scroll || index == length(client_messages) - 1,
+                  scroll: message.id == message_id_to_scroll || index == length,
                   unread: message.read_at == nil,
                   client_message_attachments: message.client_message_attachments,
                   show_cc?: false,
