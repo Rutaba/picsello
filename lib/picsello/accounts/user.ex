@@ -5,7 +5,6 @@ defmodule Picsello.Accounts.User do
   import TzExtra.Changeset
 
   alias Picsello.{
-    Repo,
     Onboardings.Onboarding,
     Subscription,
     SubscriptionEvent,
@@ -79,16 +78,6 @@ defmodule Picsello.Accounts.User do
         with: &Organization.registration_changeset(&1, &2, get_field(changeset, :name))
       )
     end)
-  end
-
-  def enabled?(%{allow_cash_payment: allow_cash_payment}), do: allow_cash_payment
-
-  def enabled?(_), do: false
-
-  def toggle(%__MODULE__{} = current_user) do
-    current_user
-    |> Ecto.Changeset.change(%{allow_cash_payment: !enabled?(current_user)})
-    |> Repo.update!()
   end
 
   def is_test_account_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
