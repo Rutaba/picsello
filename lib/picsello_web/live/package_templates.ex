@@ -115,7 +115,7 @@ defmodule PicselloWeb.Live.PackageTemplates do
 
       <hr class="my-4" />
       <div class={classes("lg:mt-10", %{"hidden" => is_nil(@is_mobile)})}>
-        <div class="flex flex-col lg:flex-row lg:mt-8">
+        <div class="flex flex-col lg:flex-row">
           <div class={classes("lg:block", %{"hidden" => !@is_mobile})}>
             <div class="h-auto">
               <div id={"replace-#{@package_name}"} phx-update="replace" class="w-full p-5 mt-auto sm:mt-0 sm:bottom-auto sm:static sm:items-start sm:w-auto grid grid-cols-1 bg-base-200 rounded-xl lg:w-80 gap-y-1">

@@ -205,6 +205,11 @@ defmodule PicselloWeb.LayoutView do
             path: Routes.questionnaires_index_path(socket, :index)
           },
           %{
+            title: "Calendar",
+            icon: "calendar",
+            path: Routes.calendar_settings_path(socket, :settings)
+          },
+          %{
             title: "Gallery",
             icon: "gallery-settings",
             path: Routes.gallery_global_settings_index_path(socket, :edit)
@@ -261,6 +266,11 @@ defmodule PicselloWeb.LayoutView do
         title: "Questionnaires",
         icon: "questionnaire",
         path: Routes.questionnaires_index_path(socket, :index)
+      },
+      %{
+        title: "Calendar",
+        icon: "calendar",
+        path: Routes.calendar_settings_path(socket, :settings)
       },
       %{
         title: "Gallery",
