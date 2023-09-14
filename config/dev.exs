@@ -66,7 +66,6 @@ config :picsello, PicselloWeb.Endpoint,
     ]
   ]
 
-
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n", infinity: true
 
@@ -93,4 +92,3 @@ config :picsello, :render_test_ids, true
 config :picsello,
        :feature_flags,
        ~w[sync_whcc_design_details show_pricing_tab automated_proposal_emails balance_due_emails]a
-

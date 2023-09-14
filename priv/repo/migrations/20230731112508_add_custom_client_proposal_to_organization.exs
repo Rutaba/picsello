@@ -1,7 +1,6 @@
 defmodule Picsello.Repo.Migrations.AddCustomClientProposalToOrganization do
   use Ecto.Migration
-  alias Picsello.Repo
-
+  # TODO: move it to a separate table
   def up do
     alter table("organizations") do
       add(:client_proposal, :map, default: nil)

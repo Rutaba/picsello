@@ -1,4 +1,5 @@
 defmodule Picsello.CompleteJobTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.Job
 

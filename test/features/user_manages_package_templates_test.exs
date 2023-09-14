@@ -1,4 +1,5 @@
 defmodule Picsello.UserManagesPackageTemplatesTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, Package, JobType}
   import Ecto.Query

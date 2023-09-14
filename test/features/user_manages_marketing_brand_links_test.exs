@@ -1,4 +1,5 @@
 defmodule Picsello.UserManagesMarketingBrandLinksTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: false
 
   setup do

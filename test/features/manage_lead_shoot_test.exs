@@ -1,4 +1,5 @@
 defmodule Picsello.ManageLeadShootTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.Job
 

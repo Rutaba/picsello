@@ -1,4 +1,5 @@
 defmodule Picsello.ClientAcceptsBookingProposalTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{Job, Repo, Organization, BookingProposal, PaymentSchedule, Package}
 
