@@ -1,4 +1,5 @@
 defmodule Picsello.GalleryShareTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   use Oban.Testing, repo: Picsello.Repo
 

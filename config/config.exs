@@ -189,7 +189,7 @@ config :picsello, :exchange_rates,
   access_key: System.get_env("EXCHANGE_RATES_API_KEY")
 
 config :picsello, :nylas, %{
-  client_id: System.get_env("NYLAS_CLIENT_ID"),
+  client_id: System.get_env("NYLAS_CLIENT_ID", ""),
   client_secret: System.get_env("NYLAS_CLIENT_SECRET"),
   token: System.get_env("NYLAS_TOKEN"),
   redirect_uri: "/nylas/callback",

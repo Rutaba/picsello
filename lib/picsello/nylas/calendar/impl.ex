@@ -143,7 +143,7 @@ defmodule Picsello.NylasCalendar.Impl do
   @doc """
   Retrieves a list of events on the specified calendar.
   """
-  @timeout 15000
+  @timeout 15_000
   @impl NylasCalendar
   def get_events(calendar_id, token, datetimes) do
     headers = build_headers(token)

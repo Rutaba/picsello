@@ -64,7 +64,7 @@ defmodule Picsello.Workers.CalendarEvent do
       fn %{external_event_id: event_id} = shoot ->
         {NylasCalendar.delete_event(event_id, nylas_detail.previous_oauth_token), shoot}
       end,
-      timeout: 10000
+      timeout: 10_000
     )
     |> Enum.reduce({[], []}, fn
       {:ok, {{:ok, _}, shoot}}, {pass, fail} ->

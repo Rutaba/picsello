@@ -1,4 +1,5 @@
 defmodule Picsello.ImportJobTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, Package, Job, Client, PaymentSchedule, BookingProposal, Organization}
 

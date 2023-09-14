@@ -1,4 +1,5 @@
 defmodule Picsello.ContractsIndexTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, Contract}
 

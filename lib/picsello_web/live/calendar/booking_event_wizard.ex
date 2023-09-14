@@ -10,7 +10,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
-  alias Picsello.{BookingEvent, BookingEvents, Packages}
+  alias Picsello.{Payments, BookingEvent, BookingEvents, Packages}
 
   @impl true
   def update(assigns, socket) do
@@ -541,9 +541,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
   @impl true
   def handle_event("submit", %{"step" => "customize", "booking_event" => params}, socket) do
     params = Map.put_new(params, "buffer_minutes", "")
-    %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
 
-    case BookingEvents.upsert_booking_event(changeset) do
+    %{assigns: %{changeset: changeset, current_user: current_user}} =
+      socket = assign_changeset(socket, params)
+
+    if [:charges_enabled, :loading] |> Enum.member?(Payments.status(current_user)) do
+      changeset
+    else
+      changeset
+      |> Ecto.Changeset.put_change(:status, :disabled)
+    end
+    |> BookingEvents.upsert_booking_event()
+    |> case do
       {:ok, booking_event} ->
         successfull_save(socket, booking_event)
 
