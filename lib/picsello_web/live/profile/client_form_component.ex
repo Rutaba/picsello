@@ -7,7 +7,6 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
   def update(assigns, socket) do
     socket
     |> assign(assigns)
-    |> assign_job_types()
     |> assign_changeset()
     |> assign(:additional_field?, false)
     |> ok()
@@ -140,8 +139,10 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
   def handle_event(
         "validate-client",
         %{"contact" => params},
-        socket
+        %{assigns: %{job_types: job_types}} = socket
       ) do
+    params = assign_default_job_type(job_types, params)
+
     socket
     |> assign(:additional_field?, should_show_additional_field?(params["referred_by"]))
     |> assign(changeset: params |> Profiles.contact_changeset() |> Map.put(:action, :validate))
@@ -152,8 +153,10 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
   def handle_event(
         "save-client",
         %{"contact" => params},
-        %{assigns: %{organization: organization}} = socket
+        %{assigns: %{organization: organization, job_types: job_types}} = socket
       ) do
+    params = assign_default_job_type(job_types, params)
+
     case Profiles.handle_contact(organization, params, PicselloWeb.Helpers) do
       {:ok, _client} ->
         socket
@@ -165,8 +168,25 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
     |> noreply()
   end
 
-  defp assign_job_types(%{assigns: %{job_types: []}} = socket),
-    do: assign(socket, :job_types, ["other"])
+  defp assign_default_job_type(job_types, params) do
+    if job_types == [] do
+      params |> Map.put("job_type", "other")
+    else
+      params
+    end
+  end
 
-  defp assign_job_types(socket), do: socket
+  defp assign_changeset(%{assigns: %{job_type: job_type}} = socket) do
+    assign(socket, :changeset, Profiles.contact_changeset(%{job_type: job_type}))
+  end
+
+  defp assign_changeset(%{assigns: %{job_types: types}} = socket) do
+    params =
+      case types do
+        [job_type] -> %{job_type: job_type}
+        _ -> %{}
+      end
+
+    assign(socket, :changeset, Profiles.contact_changeset(params))
+  end
 end
