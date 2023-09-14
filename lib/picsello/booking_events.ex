@@ -186,8 +186,8 @@ defmodule Picsello.BookingEvents do
         |> List.flatten()
         |> Enum.uniq()
         |> Enum.filter(&(!is_nil(&1)))
-        |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
-        |> filter_is_break_slots(booking_event, date)
+                |> filter_overlapping_shoots(booking_event, date, skip_overlapping_shoots)
+                |> filter_is_break_slots(booking_event, date)
 
       _ ->
         []
@@ -218,11 +218,11 @@ defmodule Picsello.BookingEvents do
          start_time,
          end_time
        ) do
-    if available_slots > 0 do
+            if available_slots > 0 do
       Enum.reduce_while(slot, [], fn x, acc ->
-        %{slot_start: slot_time, slot_end: slot_end} =
-          if x != available_slots - 1 do
-            %{
+                %{slot_start: slot_time, slot_end: slot_end} =
+          if x != available_slots do
+                        %{
               slot_start: start_time |> Time.add(duration_buffer * x),
               slot_end: start_time |> Time.add(duration_buffer * (x + 1))
             }
