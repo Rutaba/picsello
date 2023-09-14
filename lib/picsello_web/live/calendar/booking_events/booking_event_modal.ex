@@ -18,7 +18,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     |> assign(assigns)
     |> assign(:open_slots, 0)
     |> case do
-      %{assigns: %{booking_date: %BookingEventDate{id: nil}}} = socket ->
+      %{assigns: %{booking_date: %BookingEventDate{id: nil, session_length: nil}}} = socket ->
         socket |> assign_changeset(%{"time_blocks" => [%{}], "slots" => []})
 
       socket ->
@@ -28,11 +28,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   end
 
   @impl true
-  def render(assigns) do
+  def render(%{booking_date: %{date: date, booking_event_id: booking_event_id}} = assigns) do
+    assigns =
+      assigns
+      |> Enum.into(%{
+        has_booking?:
+          if(date,
+            do: BookingEventDates.is_booked_any_date?([date], booking_event_id),
+            else: false
+          )
+      })
+
     ~H"""
     <div class="modal">
       <.close_x />
-      <div class="text-4xl font-bold"><%= heading_title(@booking_date) %></div>
+      <div class="text-4xl font-bold"><%= @title %></div>
       <div class="grid grid-cols-2 mt-4 gap-5">
         <div>
           <div class="text-blue-planning-300 bg-blue-100 w-14 h-6 pt-0.5 ml-1 text-center font-bold text-sm rounded-lg">Note</div>
@@ -46,28 +56,30 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
       <.form :let={f} for={@changeset} phx-change="validate" phx-submit="submit" phx-target={@myself} >
         <div class="grid grid-cols-11 gap-5 mt-8">
           <div class="col-span-3">
-            <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full" %>
+            <%= labeled_input f, :date, type: :date_input, min: Date.utc_today(), class: "w-full", disabled: @has_booking? %>
           </div>
-          <%= error_tag(f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
           <%= inputs_for f, :time_blocks, fn t -> %>
             <div class="col-span-4 flex items-center pl-4">
               <div class="grow">
-                <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "w-11/12" %>
+                <%= labeled_input t, :start_time, type: :time_input, label: "Event Start", class: "w-11/12", disabled: @has_booking? %>
               </div>
               <div class="pt-5 mr-4"> - </div>
               <div class="grow">
-                <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "w-11/12" %>
+                <%= labeled_input t, :end_time, type: :time_input, label: "Event End", class: "w-11/12" , disabled: @has_booking?%>
               </div>
             </div>
           <% end %>
           <div class="col-span-4 flex gap-5">
             <div class="grow">
-              <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below" %>
+              <%= labeled_select f, :session_length, duration_options(), label: "Session length", prompt: "Select below", disabled: @has_booking? %>
             </div>
             <div class="grow">
-              <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true %>
+              <%= labeled_select f, :session_gap, buffer_options(), label: "Session Gap", prompt: "Select below", optional: true, disabled: @has_booking? %>
             </div>
           </div>
+        </div>
+        <div class="flex justify-center mr-16">
+          <%= error_tag(f, :time_blocks, prefix: "Times", class: "text-red-sales-300 text-sm mb-2") %>
         </div>
 
         <div class="mt-6 flex items-center">
@@ -129,12 +141,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
             <%= parse_time(input_value(s, :slot_start)) <> "-" <> parse_time(input_value(s, :slot_end))%>
             </div>
             <div>
-              <%= if to_string(input_value(s, :status)) == "hide", do: "Booked (Hidden)", else: input_value(s, :status) |> to_string() |> String.capitalize() %>
+              <%= if to_string(s |> current |> Map.get(:status)) == "hide", do: "Booked (Hidden)", else: s |> current |> Map.get(:status) |> to_string() |> String.capitalize() %>
             </div>
             <div class="col-span-2 flex justify-end pr-2">
-              <%= input s, :is_hide, type: :checkbox, checked: hidden_time?(s |> current |> Map.get(:status)), class: "checkbox w-6 h-6"%>
-              <div class="ml-2"> Show block as booked (break)</div>
+              <%= input s, :is_hide, type: :checkbox, disabled: (s |> current |> Map.get(:status) == :booked), checked: hidden_time?(s |> current |> Map.get(:status)), class: "checkbox w-6 h-6"%>
+              <div class={classes("ml-2", %{"text-gray-300" => s |> current |> Map.get(:status) == :booked})}> Show block as booked (break)</div>
             </div>
+            <%= hidden_input s, :status, value: s |> current |> Map.get(:status) %>
           </div>
         <% end %>
         <.footer>
@@ -160,6 +173,25 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
         socket
       ) do
     socket |> assign_changeset(params, :validate) |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "validate",
+        %{
+          "booking_event_date" => params,
+          "_target" => ["booking_event_date", "date"]
+        },
+        %{
+          assigns: %{
+            booking_date: %BookingEventDate{session_length: session_length}
+          }
+        } = socket
+      )
+      when not is_nil(session_length) do
+    socket
+    |> assign_changeset_with_existing_slots(params)
+    |> noreply()
   end
 
   @impl true
@@ -229,8 +261,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     |> noreply()
   end
 
-  defp heading_title(booking_date), do: if(booking_date.id, do: "Edit Date", else: "Add Date")
-
   defp buffer_options() do
     for(
       duration <- [5, 10, 15, 20, 30, 45, 60],
@@ -246,10 +276,24 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   end
 
   defp assign_changeset(%{assigns: %{booking_date: booking_date}} = socket, params, action \\ nil) do
-    changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)
+    changeset =
+      booking_date
+      |> BookingEventDate.changeset(params)
+      |> Map.put(:action, action)
+
     event = current(changeset)
     open_slots = Enum.count(event.slots, &(&1.status == :open))
     socket |> assign(changeset: changeset, open_slots: open_slots)
+  end
+
+  defp assign_changeset_with_existing_slots(socket, params, action \\ :validate) do
+    slots =
+      params
+      |> Map.get("slots")
+      |> Map.values()
+      |> Enum.sort(&(&1["slot_start"] < &2["slot_start"]))
+
+    socket |> assign_changeset(Map.replace(params, "slots", slots), action)
   end
 
   defp assign_changeset_with_slots(
@@ -263,12 +307,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
     slots = event |> BookingEventDates.available_slots(booking_event)
     open_slots = Enum.count(slots, &(&1.status == :open))
+
+    slots =
+      slots
+      |> Enum.map(&(&1 |> Map.from_struct()))
+      |> Enum.map(&(&1 |> Map.drop([:__meta__, :job, :client])))
+
     params = Map.put(params, "slots", slots)
     changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)
     socket |> assign(changeset: changeset, open_slots: open_slots)
   end
 
-  defp hidden_time?(:hide), do: true
+  defp hidden_time?(:hidden), do: true
   defp hidden_time?(_state), do: false
 
   defp parse_time(time), do: time |> Timex.format("{h12}:{0m} {am}") |> elem(1)

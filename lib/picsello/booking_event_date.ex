@@ -46,7 +46,7 @@ defmodule Picsello.BookingEventDate do
       field(:slot_end, :time)
       belongs_to(:client, Client)
       belongs_to(:job, Job)
-      field(:status, Ecto.Enum, values: [:open, :book, :reserve, :hide], default: :open)
+      field(:status, Ecto.Enum, values: [:open, :booked, :reserved, :hidden], default: :open)
       field(:is_hide, :boolean, default: false, virtual: true)
     end
 
@@ -54,12 +54,18 @@ defmodule Picsello.BookingEventDate do
       slot_block
       |> cast(attrs, [:slot_start, :slot_end, :client_id, :job_id, :status, :is_hide])
       |> validate_required([:slot_start, :slot_end])
-      |> foreign_key_constraint(:client_id)
-      |> foreign_key_constraint(:job_id)
       |> then(fn changeset ->
-        if get_field(changeset, :is_hide),
-          do: put_change(changeset, :status, :hide),
-          else: put_change(changeset, :status, :open)
+        cond do
+          get_field(changeset, :is_hide) ->
+            put_change(changeset, :status, :hidden)
+
+          !get_field(changeset, :is_hide) &&
+              get_field(changeset, :status) not in [:booked, :reserved] ->
+            put_change(changeset, :status, :open)
+
+          true ->
+            changeset
+        end
       end)
     end
   end
@@ -187,20 +193,25 @@ defmodule Picsello.BookingEventDate do
 
   # Validates the time blocks to ensure they do not overlap with existing blocks.
   defp validate_time_blocks(changeset) do
-    [date, organization_id, current_time_block] =
-      get_fields(changeset, [:date, :organization_id, :time_blocks])
+    [date, organization_id, current_time_block, date_id] =
+      get_fields(changeset, [:date, :organization_id, :time_blocks, :id])
 
-    overlap_times =
-      BookingEventDates.booking_date_time_block_overlap?(
-        organization_id,
-        date,
-        current_time_block
-      )
-
-    if overlap_times do
-      changeset |> add_error(:time_blocks, "can't be overlapping")
-    else
+    if is_nil(date) do
       changeset
+    else
+      overlap_times =
+        BookingEventDates.booking_date_time_block_overlap?(
+          organization_id,
+          date,
+          current_time_block,
+          date_id
+        )
+
+      if overlap_times do
+        changeset |> add_error(:time_blocks, "can't be overlapping")
+      else
+        changeset
+      end
     end
   end
 

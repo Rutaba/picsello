@@ -633,10 +633,10 @@ defmodule Picsello.BookingEvents do
 
   def preload_booking_event(event),
     do:
-      Repo.preload(event, [
-        :dates,
+      Repo.preload(event,
+        dates: [slots: :client],
         package_template: [:package_payment_schedules, :contract, :questionnaire_template]
-      ])
+      )
 
   @doc """
   This function, overlap_time?, takes a list of time blocks represented as maps and determines if there is any overlap between consecutive time blocks based on their end and start times.

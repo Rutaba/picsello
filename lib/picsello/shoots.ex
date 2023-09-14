@@ -33,6 +33,35 @@ defmodule Picsello.Shoots do
   def load_user(shoot),
     do: Repo.preload(shoot, job: [client: [organization: [user: :nylas_detail]]])
 
+  def get_shoots_for_booking_event(
+        %{organization_id: organization_id, time_zone: time_zone},
+        beginning_of_day,
+        end_of_day_with_buffer
+      ) do
+    from(shoot in Shoot,
+      join: job in assoc(shoot, :job),
+      join: client in assoc(job, :client),
+      where:
+        client.organization_id == ^organization_id and is_nil(job.archived_at) and
+          is_nil(job.completed_at),
+      where: shoot.starts_at >= ^beginning_of_day and shoot.starts_at <= ^end_of_day_with_buffer
+    )
+    |> Repo.all()
+    |> Repo.preload(job: [:client])
+    |> Enum.map(fn shoot ->
+      Map.merge(
+        shoot,
+        %{
+          start_time: shoot.starts_at |> DateTime.shift_zone!(time_zone),
+          end_time:
+            shoot.starts_at
+            |> DateTime.add(shoot.duration_minutes * 60)
+            |> DateTime.shift_zone!(time_zone)
+        }
+      )
+    end)
+  end
+
   def get_next_shoot(%Job{shoots: shoots}) when is_nil(shoots), do: nil
 
   def get_next_shoot(%Job{shoots: shoots}) do

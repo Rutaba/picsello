@@ -196,7 +196,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     booking = current(changeset)
 
     [booking_date | _] =
-      BookingEventDates.get_booking_events_dates_with_same_date(booking_event.id, booking.date)
+      BookingEventDates.get_booking_events_dates_with_same_date([booking_event.id], booking.date)
 
     socket |> assign(booking_date: booking_date)
   end

@@ -14,6 +14,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   alias PicselloWeb.Router.Helpers, as: Routes
   alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, Repo}
+  alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, BookingEventDates, Repo}
   alias BookingEventDate.SlotBlock
   alias Ecto.Multi
 
@@ -36,7 +37,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       |> Enum.map(fn t ->
         t
         |> Map.replace(:date, nil)
-        |> Map.replace(:slots, edit_slots_status(t))
+        |> Map.replace(:slots, BookingEventDates.transform_slots(t.slots))
       end)
 
     multi =
@@ -256,11 +257,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def edit_slots_status(%{slots: slots}) do
     slots
     |> Enum.map(fn s ->
-      if s.status == :hide do
-        %{s | status: :hide}
-      else
-        %{s | status: :open}
-      end
+      if s.status == :hidden, do: %{s | is_hide: true}, else: s
     end)
   end
 
@@ -305,10 +302,10 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     do: Index.assign_booking_events(socket)
 
   def count_booked_slots(slot),
-    do: Enum.count(slot, fn s -> s.status == :book || s.status == :reserve end)
+    do: Enum.count(slot, fn s -> s.status == :booked || s.status == :reserved end)
 
   def count_available_slots(slot), do: Enum.count(slot, fn s -> s.status == :open end)
-  def count_hidden_slots(slot), do: Enum.count(slot, fn s -> s.status == :hide end)
+  def count_hidden_slots(slot), do: Enum.count(slot, fn s -> s.status == :hidden end)
 
   def date_formatter(date), do: "#{Timex.month_name(date.month)} #{date.day}, #{date.year}"
 

@@ -11,6 +11,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     composed_event: :message_composed,
     modal_title: "Send an email",
     send_button: "Send Email",
+    client: nil,
     show_cc: false,
     show_bcc: false,
     show_client_email: true,
@@ -27,6 +28,7 @@ defmodule PicselloWeb.ClientMessageComponent do
     |> assign_new(:recipients, fn ->
       if Map.has_key?(assigns, :client), do: %{"to" => assigns.client.email}, else: nil
     end)
+    |> then(&(&1 |> assign(:show_bcc, Map.has_key?(&1.assigns.recipients, "bcc"))))
     |> assign(:search_results, [])
     |> assign(:search_phrase, nil)
     |> assign(:current_focus, -1)
