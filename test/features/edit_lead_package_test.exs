@@ -93,7 +93,7 @@ defmodule Picsello.EditLeadPackageTest do
     |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("September")))
     |> click(css("[aria-label='September 1, 2092']"))
     |> scroll_into_view(testid("select-preset-type"))
-    |> assert_has(testid("preset-summary", text: "$0.50 to To Book"))
+    |> assert_has(testid("preset-summary", text: "$0.50 To Book"))
     |> fill_in(css("#custom_payments_payment_schedules_1_price"), with: "1.50")
     |> wait_for_enabled_submit_button(text: "Save")
     |> click(button("Save"))
