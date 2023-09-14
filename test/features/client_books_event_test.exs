@@ -1,4 +1,5 @@
 defmodule Picsello.ClientBooksEventTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: false
   import Money.Sigils
   require Ecto.Query

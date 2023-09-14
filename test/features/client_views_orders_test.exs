@@ -1,4 +1,5 @@
 defmodule Picsello.ClientViewsOrdersTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   use Oban.Testing, repo: Picsello.Repo
   import Money.Sigils
@@ -14,6 +15,7 @@ defmodule Picsello.ClientViewsOrdersTest do
 
   setup do
     gallery = insert(:gallery, job: insert(:lead, package: insert(:package)))
+
     gallery_client =
       insert(:gallery_client, %{email: "client-1@example.com", gallery_id: gallery.id})
 

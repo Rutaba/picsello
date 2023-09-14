@@ -302,7 +302,7 @@ defmodule Picsello.Accounts.User do
           name: String.t(),
           email: String.t(),
           hashed_password: String.t(),
-          sign_up_auth_provider: String.t(),
+          sign_up_auth_provider: atom(),
           stripe_customer_id: String.t(),
           time_zone: String.t(),
           confirmed_at: DateTime.t(),

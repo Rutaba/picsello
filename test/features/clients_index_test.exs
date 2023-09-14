@@ -1,4 +1,5 @@
 defmodule Picsello.ClientsIndexTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   import Ecto.Query
 
@@ -203,6 +204,7 @@ defmodule Picsello.ClientsIndexTest do
     |> click(button("Manage", count: 3, at: 0))
     |> click(button("Create gallery"))
     |> click(button("Next", at: 1))
+    |> scroll_into_view(css("label", text: "Wedding"))
     |> click(css("label", text: "Wedding"))
     |> find(select("# of Shoots"), &click(&1, option("2")))
     |> wait_for_enabled_submit_button(text: "Next")

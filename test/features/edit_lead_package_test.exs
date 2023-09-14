@@ -1,4 +1,5 @@
 defmodule Picsello.EditLeadPackageTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.Repo
 

@@ -1,4 +1,5 @@
 defmodule Picsello.UserEditsPublicProfileTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   require Ecto.Query
 
