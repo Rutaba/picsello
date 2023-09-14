@@ -1,37 +1,22 @@
-<section class="pt-6 px-6 py-2 center-container">
-  <div class="flex text-4xl items-center">
-    <.back_button to={Routes.calendar_index_path(@socket, :index)} class="lg:hidden"/>
-    <.crumbs class="text-sm text-base-250">
-      <:crumb to={Routes.calendar_index_path(@socket, :index)}>Calendar</:crumb>
-      <:crumb>Settings</:crumb>
-    </.crumbs>
-  </div>
-
-  <hr class="mt-2 border-white" />
-
-  <div>
-    <div class="flex items-center justify-between lg:mt-2 md:justify-start">
-      <div class="flex text-4xl font-bold items-center">
-        <.back_button to={Routes.calendar_index_path(@socket, :index)} class="hidden lg:flex mt-2"/>
-        Calendar Settings
+<.settings_nav socket={@socket} live_action={@live_action} current_user={@current_user} container_class="sm:pb-0 pb-28">
+  <div class="flex flex-col justify-between flex-1 mt-5 sm:flex-row">
+    <div>
+      <h1 class="text-2xl font-bold">Calendar</h1>
+      <div class="max-w-4xl mt-2 text-base-250">
+        <p>Choose from 2-way Calendar Sync or 1-way Calendar Subscription to make managing your Picsello and 
+        external calendars easier.</p>
       </div>
     </div>
-    <h2 class="text-xl mt-4 text-base-250">
-      Choose from  2-way Calendar Sync or 1-way Calendar Subscription to make managing your Picsello and 
-      external calendars easier.
-    </h2>
   </div>
 
-  <hr class="my-4 sm:my-10" />
-</section>
+  <hr class="my-4" />
+  
+  <%= if @error do %>
+    <h1 id="error"><%= @error %></h1>
+  <% end %>
 
-<%= if @error do %>
-  <h1 id="error"><%= @error %></h1>
-<% end %>
-
-<%= if @has_token do %>
-  <section class="px-6 center-container" id="calendar_read">
-    <div class="border rounded-lg p-4">
+  <%= if @has_token do %>
+    <div class="border rounded-lg p-4" id="calendar_read">
       <h1 class="text-3xl font-bold mb-6">
         2-way Calendar Sync
       </h1>
@@ -92,13 +77,13 @@
           <div class="grid-col items-center flex-col lg:order-first order-last">
             <h2 class="text-lg font-bold text-red-sales-300 sm:mt-0 mt-4 mb-1">Disconnect Calendar</h2>
             <p class="text-base-250 mb-4">
-             If at any point you need to switch to a different calendar or re-sync, you can do so by using the Disconnect button below. <br>
-             As always, hit the message icon in the bottom right-hand corner to reach <a href="https://support.picsello.com/" class="text-blue-planning-300">Customer Success</a> for additional help. 
+            If at any point you need to switch to a different calendar or re-sync, you can do so by using the Disconnect button below. <br>
+            As always, hit the message icon in the bottom right-hand corner to reach <a href="https://support.picsello.com/" class="text-blue-planning-300">Customer Success</a> for additional help. 
             </p>
             <button type="button" disabled={@disable_settings_buttons?} id="disconnect_button" class="btn-tertiary btn-warning" phx-click="disconnect_calendar">Disconnect</button>
           </div>
           <div class="grid-col order-first lg:order-last">
-           <.icon name="calendar-4" height="179" class="2xl:pl-16 w-11/12"/>
+          <.icon name="calendar-4" height="179" class="2xl:pl-16 w-11/12"/>
           </div>
         </div>
         
@@ -107,9 +92,7 @@
         <% end %>
       </div>
     </div>
-  </section>
-<% else %>
-  <section class="px-6 center-container">
+  <% else %>
     <div class="border rounded-lg p-4">
       <h1 class="text-3xl font-bold mb-6">2-way Calendar Sync</h1>
       <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20">
@@ -124,17 +107,15 @@
             <span id="connect">Connect Calendar</span>
           </button>
         </div>
- 
+
         <div class="grid-col order-first lg:order-last">
           <.icon name="calendar-1" height="179" class="2xl:pl-16 w-11/12"/>
         </div>
       </div>
     </div>
-  </section>
-<% end %>
+  <% end %>
 
-<section class="px-6 center-container mt-8" id="share">
-  <div class="border p-4 rounded-lg">
+  <div class="border p-4 rounded-lg mt-4" id="share">
     <h1 class="text-3xl font-bold mb-3">1-way Calendar Sync</h1>
     <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20">
       <div class="grid-col items-center flex-col text-xl lg:order-first order-last">
@@ -160,4 +141,4 @@
       </div>
     </div>
   </div>
-</section>
+</.settings_nav>

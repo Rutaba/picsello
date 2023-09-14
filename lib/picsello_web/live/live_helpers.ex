@@ -384,14 +384,6 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
-  def back_button_history(assigns) do
-    ~H"""
-    <button class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4 md:block" type="button" onclick="history.back()">
-      <.icon name="back" class="w-4 h-4 stroke-2" />
-    </button>
-    """
-  end
-
   def empty_state_base(assigns) do
     assigns =
       assigns

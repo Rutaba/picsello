@@ -5,6 +5,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   alias PicselloWeb.Endpoint
   alias Phoenix.{LiveView.Socket, PubSub}
 
+  import PicselloWeb.Live.User.Settings, only: [settings_nav: 1]
   import PicselloWeb.Live.Calendar.Shared
   require Logger
 
