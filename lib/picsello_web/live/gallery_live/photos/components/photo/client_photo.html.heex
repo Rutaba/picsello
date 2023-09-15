@@ -1,6 +1,6 @@
 <div class="flex item flex-col" id={"photo-item-#{@photo.id}"} style={wrapper_style(@photo_width, @photo)}>
     <div id={"item-#{@id}"} class="relative cursor-pointer toggle-item item-content preview">
-        <div class={"galleryItem toggle-parent #{@is_proofing && @digitals[@photo.id] && 'grayscale-[60%]'}"}>
+        <div class={"galleryItem toggle-parent #{@is_proofing && @digitals[@photo.id] && 'grayscale-[70%]'}"}>
             <div id={"img-#{@id}"} class="galleryItem" phx-click="click" phx-value-preview_photo_id={@photo.id}>
                 <.photo target={@component} preview={@photo.preview_url} photo_id={@photo.id} url={preview_url(@photo, proofing_client_view?: @is_proofing)}/>
             </div>
@@ -22,7 +22,7 @@
                 </button>
             <% else %>
                 <%= if @digitals[@photo.id] do %>
-                    <div class={"flex items-center p-1 bg-base-200 absolute opacity-100 z-10 right-2 top-2 #{@photo.is_selected && 'hidden'}"}>
+                    <div class={"flex gap-1 items-center p-1 bg-base-200 absolute opacity-100 z-10 right-2 top-2 #{@photo.is_selected && 'hidden'}"}>
                         <.icon name="shopping-cart" class="w-4 h-4 text-base-300" />
                         In cart
                     </div>
