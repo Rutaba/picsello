@@ -56,8 +56,8 @@ defmodule Picsello.BookingEvent do
 
     defp validate_time_blocks(changeset) do
       blocks = changeset |> get_field(:time_blocks)
-
-      filter_blocks = Enum.filter(blocks, fn block -> !block.is_break end)
+      sort_blocks = Enum.sort_by(blocks, &{&1.start_time, &1.end_time})
+      filter_blocks = Enum.filter(sort_blocks, fn block -> !block.is_break end)
 
       overlap_times =
         for(
