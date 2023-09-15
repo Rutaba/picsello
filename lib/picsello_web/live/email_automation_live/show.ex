@@ -75,7 +75,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_event("confirm-stop-email", %{"email_id" => email_id}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
-      title: "Are you sure you want to {stop/send} this email?",
+      title: "Are you sure you want to stop this email?",
       subtitle:
         "Stop this email and your client will get the next email in the sequence. To stop the full automation sequence from sending, you will need to Stop each email individually.",
       confirm_event: "stop-email-schedule-" <> email_id,
@@ -87,11 +87,50 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
+  def handle_event("confirm-send-email", %{"email_id" => email_id, "pipeline_id" => pipeline_id}, socket) do
+    socket
+    |> PicselloWeb.ConfirmationComponent.open(%{
+      title: "Are you sure you want to send this email?",
+      subtitle:
+        "Send your email now will complete this email and the next email will go out at the specified time that you set up in global automation settings",
+      confirm_event: "send-email-now-" <> email_id <> "-" <> pipeline_id,
+      confirm_label: "Yes, send email",
+      close_label: "Cancel",
+      icon: "warning-orange"
+    })
+    |> noreply()
+  end
+
+  @impl true
   def handle_event(
-        "send-email-now",
+        "edit-email",
         %{"email_id" => id, "pipeline_id" => pipeline_id},
-        %{assigns: %{job_id: job_id}} = socket
+        %{assigns: %{current_user: current_user, type: type, job_types: job_types}} = socket
       ) do
+    selected_job_type = job_types |> Enum.filter(fn x -> x.job_type == type end) |> List.first()
+    schedule_id = to_integer(id)
+    pipeline_id = to_integer(pipeline_id)
+
+    socket
+    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent, %{
+      current_user: current_user,
+      job_type: selected_job_type.jobtype,
+      job_types: job_types,
+      pipeline: get_pipline(pipeline_id),
+      email: EmailAutomationSchedules.get_schedule_by_id(schedule_id)
+    })
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event("email-preview", %{"email_preview_id" => id}, socket) do
+    _email_preview = EmailAutomationSchedules.get_schedule_by_id(id)
+    socket |> noreply()
+  end
+
+  @impl true
+  def handle_info({:confirm_event, "send-email-now-" <> param},  %{assigns: %{job_id: job_id}} = socket) do
+    [id, pipeline_id] = String.split(param, "-")
     id = to_integer(id)
     pipeline_id = to_integer(pipeline_id)
 
@@ -125,35 +164,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       {:ok, _} -> socket |> put_flash(:success, "Email Sent Successfully")
       _ -> socket |> put_flash(:error, "Error in Sending Email")
     end
+    |> close_modal()
     |> assign_email_schedules()
     |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "edit-email",
-        %{"email_id" => id, "pipeline_id" => pipeline_id},
-        %{assigns: %{current_user: current_user, type: type, job_types: job_types}} = socket
-      ) do
-    selected_job_type = job_types |> Enum.filter(fn x -> x.job_type == type end) |> List.first()
-    schedule_id = to_integer(id)
-    pipeline_id = to_integer(pipeline_id)
-
-    socket
-    |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent, %{
-      current_user: current_user,
-      job_type: selected_job_type.jobtype,
-      job_types: job_types,
-      pipeline: get_pipline(pipeline_id),
-      email: EmailAutomationSchedules.get_schedule_by_id(schedule_id)
-    })
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event("email-preview", %{"email_preview_id" => id}, socket) do
-    _email_preview = EmailAutomationSchedules.get_schedule_by_id(id)
-    socket |> noreply()
   end
 
   @impl true
@@ -186,7 +199,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     <%= if Enum.member?(@collapsed_sections, @subcategory) do %>
       <% sorted_emails = sort_emails(@pipeline.emails, @pipeline.state) %>
       <div class="mb-3 md:mr-4 border border-base-200 rounded-lg">
-        <% next_email = get_next_email_schdule_date(@category_type, @gallery_id, @job_id, @pipeline.id, @pipeline.state) %>
+        <% next_email = get_next_email_schdule_date(@category_type, @gallery_id, @job_id, @pipeline.id, @pipeline.state, @subcategory_slug) %>
         <div class={classes("flex justify-between p-2", %{"opacity-60" => next_email.is_completed})}>
           <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text <> " " <> next_email.date %>
           </span>
@@ -254,13 +267,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
               </div>
 
               <div class="flex justify-end mr-2">
-                <%= if not (is_state_manually_trigger(@pipeline.state) and index == 0) do %>
-                  <button disabled={!is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => email.is_stopped || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
+                <%= if not (is_state_manually_trigger(@pipeline.state) and index == 0) and @subcategory_slug != "payment_reminder_emails" do %>
+                  <button disabled={email.is_stopped || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => email.is_stopped || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
                     <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
                   </button>
                 <% end %>
 
-                <button disabled={!is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)})} phx-click="send-email-now" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
+                <button disabled={!is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index), "hidden" => @subcategory_slug == "payment_reminder_emails"})} phx-click="confirm-send-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
                   <%= if is_state_manually_trigger(@pipeline.state) and index == 0 do %>
                       Start Sequence
                     <% else %>
@@ -311,7 +324,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     |> assign(email_schedules: email_schedules)
   end
 
-  defp get_next_email_schdule_date(category_type, gallery_id, job_id, pipeline_id, state) do
+  defp get_next_email_schdule_date(category_type, gallery_id, job_id, pipeline_id, state, subcategory) do
     email_schedule =
       EmailAutomationSchedules.query_get_email_schedule(
         category_type,
@@ -349,17 +362,16 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
         date = get_conditional_date(state, email_schedule, pipeline_id, job, gallery)
 
-        case date do
-          nil ->
-            %{text: "Transactional", date: "", email_preview_id: nil, is_completed: false}
-
-          date ->
-            %{
-              text: "Next Email",
-              date: next_schedule_format(date, sign, email_schedule.total_hours),
-              email_preview_id: email_schedule.id,
-              is_completed: false
-            }
+        cond  do
+          not is_nil(date) ->  %{
+            text: "Next Email",
+            date: next_schedule_format(date, sign, email_schedule.total_hours),
+            email_preview_id: email_schedule.id,
+            is_completed: false
+          }
+          subcategory == "payment_reminder_emails" -> %{text: "Transactional", date: "", email_preview_id: nil, is_completed: false}
+          true ->
+            %{text: "", date: "", email_preview_id: nil, is_completed: false}
         end
     end
   end

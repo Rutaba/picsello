@@ -291,7 +291,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                     Add email
               </button>
             </div>
-            <%= if !is_state_manually_trigger(@pipeline.state) do %>
+            <%= if !is_state_manually_trigger(@pipeline.state) and @subcategory_slug != "payment_reminder_emails" do %>
               <div class="flex flex-row">
                 <.form :let={_} for={%{}} as={:toggle} phx-click="toggle" phx-value-pipeline_id={@pipeline.id} phx-value-active={is_pipeline_active?(@pipeline.status) |> to_string}>
                 <label class="flex">
@@ -300,13 +300,13 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
                     <div class="rounded-full bg-blue-planning-300 border border-base-100 w-16 p-1 flex justify-end mr-4">
                       <div class="rounded-full h-5 w-5 bg-base-100"></div>
                     </div>
-                    Enable automation
+                    Enable Sequence
                   </div>
                   <div class="flex peer-checked:hidden cursor-pointer">
                     <div class="rounded-full w-16 p-1 flex mr-4 border border-blue-planning-300">
                       <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
                     </div>
-                    Disable automation
+                    Disable Sequence
                   </div>
                 </label>
                 </.form>
