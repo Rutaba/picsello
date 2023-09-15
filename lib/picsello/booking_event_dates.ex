@@ -1,8 +1,10 @@
 defmodule Picsello.BookingEventDates do
   @moduledoc "context module for booking events dates"
 
+  alias Picsello.{Repo, BookingEventDate, BookingEventDate.SlotBlock}
   alias Picsello.{Repo, BookingEventDate, BookingEventDate.SlotBlock, BookingEvent, BookingEvents}
   import Ecto.Query
+  import Ecto.Changeset
 
   @doc """
   Creates and inserts a new BookingEventDate record into the database.
@@ -40,6 +42,23 @@ defmodule Picsello.BookingEventDates do
     %BookingEventDate{}
     |> BookingEventDate.changeset(params)
     |> Repo.insert()
+  end
+
+  def update_booking_event_dates(booking_date, attrs) do
+    booking_date
+    |> change(attrs)
+    |> Repo.update()
+  end
+
+  def update_booking_event_date_slots(booking_event, booking_date) do
+    slots = update_slots_status(booking_event, booking_date)
+    update_booking_event_dates(booking_date, %{slots: slots})
+  end
+
+  def get_booking_date(id) do
+    from(event_date in BookingEventDate, where: event_date.id == ^id)
+    |> Repo.one()
+    |> Repo.preload(:booking_event)
   end
 
   @doc """
@@ -407,7 +426,7 @@ defmodule Picsello.BookingEventDates do
       end_trunc = end_time |> Time.add(time) |> Time.truncate(:second)
 
       flag_type = if slot_trunc > end_trunc, do: :halt, else: :cont
-      {flag_type, [%{slot_start: slot_start, slot_end: slot_end}] ++ acc}
+      {flag_type, [%SlotBlock{slot_start: slot_start, slot_end: slot_end} | acc]}
     end)
     |> Enum.reverse()
   end
@@ -416,14 +435,14 @@ defmodule Picsello.BookingEventDates do
   defp filter_overlapping_shoots_slots(_, _, %{date: date, session_length: session_length}, _)
        when is_nil(date) or is_nil(session_length),
        do: []
-
   # Filters time slots based on overlapping shoots and assigns booking status.
-  defp filter_overlapping_shoots_slots(
-         slot_times,
-         booking_event,
-         %{date: date} = booking_date,
-         false
-       ) do
+  defp filter_overlapping_shoots_slots(slot_times, booking_event, booking_date, false) do
+    booking_date = Map.put(booking_date, :slots, slot_times)
+    update_slots_status(booking_event, booking_date)
+  end
+
+  defp update_slots_status(booking_event, booking_date) do
+    %{date: date, session_length: session_length, session_gap: session_gap,slots: slot_times} = booking_date
     %{package_template: %{organization: %{user: user} = organization}} =
       booking_event
       |> Repo.preload(package_template: [organization: :user])
@@ -444,12 +463,16 @@ defmodule Picsello.BookingEventDates do
         where: shoot.starts_at >= ^beginning_of_day and shoot.starts_at <= ^end_of_day_with_buffer
       )
       |> Repo.all()
+      |> Repo.preload(job: [:client])
       |> Enum.map(fn shoot ->
         Map.merge(
           shoot,
           %{
             start_time: shoot.starts_at |> DateTime.shift_zone!(user.time_zone),
-            end_time: shoot.starts_at |> DateTime.add(shoot.duration_minutes * 60)
+            end_time:
+              shoot.starts_at
+              |> DateTime.add(shoot.duration_minutes * 60)
+              |> DateTime.shift_zone!(user.time_zone)
           }
         )
       end)
@@ -460,17 +483,35 @@ defmodule Picsello.BookingEventDates do
 
       slot_end =
         slot_start
-        |> DateTime.add(booking_date.session_length * 60)
-        |> DateTime.add((booking_date.session_gap || 0) * 60 - 1)
+        |> DateTime.add(session_length * 60)
+        |> DateTime.add((session_gap || 0) * 60 - 1)
 
-      is_available =
-        !Enum.any?(shoots, fn %{start_time: start_time, end_time: end_time} ->
-          is_slot_booked?(booking_date.session_gap, slot_start, slot_end, start_time, end_time)
+      slot_booked =
+        Enum.reduce_while(shoots, %{is_booked: false, client_id: nil, job_id: nil}, fn shoot,
+                                                                                       acc ->
+          is_booked =
+            is_slot_booked?(session_gap, slot_start, slot_end, shoot.start_time, shoot.end_time)
+
+          if is_booked do
+            {:halt, %{is_booked: is_booked, client_id: shoot.job.client.id, job_id: shoot.job.id}}
+          else
+            {:cont, acc}
+          end
         end)
 
-      status = if is_available, do: :open, else: :booked
+      slot_status = Map.get(slot, :status, :open)
 
-      Map.put(slot, :status, status)
+      status =
+        cond do
+          slot_booked.is_booked -> :book
+          !slot_booked.is_booked and is_nil(slot_booked.job_id) -> :open
+          true -> slot_status
+        end
+
+      slot
+      |> Map.put(:status, status)
+      |> Map.put(:client_id, slot_booked.client_id)
+      |> Map.put(:job_id, slot_booked.job_id)
     end)
   end
 

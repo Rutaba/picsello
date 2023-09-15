@@ -1,7 +1,7 @@
 defmodule PicselloWeb.ClientBookingEventLive.Book do
   @moduledoc false
   use PicselloWeb, live_view: [layout: "live_client"]
-  alias Picsello.{BookingEvents, BookingEvent}
+  alias Picsello.{BookingEvents, BookingEvent, BookingEventDates}
 
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
 
@@ -59,7 +59,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
 
           <div class="grid sm:grid-cols-2 gap-10">
             <.date_picker name={input_name(f, :date)} selected_date={input_value(f, :date)} available_dates={available_dates(@booking_event)} />
-            <.time_picker name={input_name(f, :time)} selected_date={input_value(f, :date)} selected_time={input_value(f, :time)} available_times={@available_times} />
+            <.time_picker name={input_name(f, :time)} selected_date={input_value(f, :date)} selected_time={input_value(f, :time)} available_slots={@booking_date.slots}/>
           </div>
 
           <div class="flex flex-col py-6 bg-white gap-5 mt-4 sm:mt-2 sm:flex-row-reverse">
@@ -89,18 +89,18 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
         <p class="font-semibold"><%= @selected_date |> Calendar.strftime("%A, %B %-d") %></p>
       <% end %>
       <div class="max-h-96 overflow-auto px-4">
-        <%= if Enum.empty?(@available_times) do %>
+        <%= if Enum.empty?(@available_slots) do %>
           <p class="mt-2">No available times</p>
         <% end %>
-        <%= Enum.map(@available_times, fn {time, is_available, is_break, is_hidden} ->  %>
-          <%= if !is_break do  %>
+        <%= Enum.map(@available_slots, fn slot ->  %>
+          <%= unless slot.status == :break do  %>
             <label class={classes("flex items-center justify-center border border-black py-3 my-4 cursor-pointer", %{
-              "bg-black text-white" => Time.compare(time, @selected_time || Time.utc_now) == :eq,
-              "bg-white !text-grey !border-grey pointer-events-none opacity-40 hover:cursor-not-allowed" => (!is_available || is_break || is_hidden)}
-              )}>
-              <%= time |> Calendar.strftime("%-I:%M%P") %>
-              <input type="radio" name={@name} value={time} class="hidden" disabled={!is_available || is_break || is_hidden}/>
-            </label>
+                "bg-black text-white" => Time.compare(slot.slot_start, @selected_time || Time.utc_now) == :eq,
+                "bg-white !text-grey !border-grey pointer-events-none opacity-40 hover:cursor-not-allowed" => (disabled_slot?(slot.status))}
+                )}>
+                <%= slot.slot_start |> Calendar.strftime("%-I:%M%P") %>
+                <input type="radio" name={@name} value={slot.slot_start} class="hidden" disabled={disabled_slot?(slot.status)}/>
+              </label>
           <% end %>
         <% end )%>
       </div>
@@ -110,7 +110,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
 
   defp assign_booking_event(%{assigns: %{organization: organization}} = socket, event_id) do
     socket
-    |> assign(booking_event: BookingEvents.get_booking_event!(organization.id, event_id))
+    |> assign(booking_event: BookingEvents.get_booking_event_preload!(organization.id, event_id))
   end
 
   @impl true
@@ -132,7 +132,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
       assigns: %{
         changeset: changeset,
         booking_event: booking_event,
-        available_times: available_times
+        booking_date: booking_date
       }
     } =
       socket
@@ -140,9 +140,11 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
       |> assign_available_times()
 
     with booking <- current(changeset),
-         {:available, true} <- {:available, time_available?(booking, available_times)},
+         {:available, true} <- {:available, time_available?(booking, booking_date.slots)},
          {:ok, %{proposal: proposal, shoot: shoot}} <-
-           BookingEvents.save_booking(booking_event, booking) do
+           BookingEvents.save_booking(booking_event, booking_date, booking),
+         {:ok, _slots_update} <-
+           BookingEventDates.update_booking_event_date_slots(booking_event, booking_date) do
       Picsello.Shoots.broadcast_shoot_change(shoot)
 
       socket
@@ -184,15 +186,21 @@ defmodule PicselloWeb.ClientBookingEventLive.Book do
     end)
   end
 
-  defp time_available?(booking, available_times) do
-    Enum.any?(available_times, &(Time.compare(elem(&1, 0), booking.time) == :eq))
+  defp time_available?(booking, available_slots) do
+    Enum.any?(available_slots, &(Time.compare(&1.slot_start, booking.time) == :eq))
   end
 
   defp assign_available_times(
          %{assigns: %{booking_event: booking_event, changeset: changeset}} = socket
        ) do
     booking = current(changeset)
-    times = BookingEvents.available_times(booking_event, booking.date)
-    socket |> assign(available_times: times)
+
+    [booking_date | _] =
+      BookingEventDates.get_booking_events_dates_with_same_date(booking_event.id, booking.date)
+
+    socket |> assign(booking_date: booking_date)
   end
+
+  defp disabled_slot?(:open), do: false
+  defp disabled_slot?(_status), do: true
 end

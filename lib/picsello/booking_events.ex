@@ -1,6 +1,8 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
   alias Picsello.{Repo, BookingEvent, Job, Package}
+  alias Ecto.Multi
+  alias Picsello.Workers.ExpireBooking
   import Ecto.Query
 
   defmodule Booking do
@@ -19,8 +21,8 @@ defmodule Picsello.BookingEvents do
 
     def changeset(attrs \\ %{}) do
       %__MODULE__{}
-      |> cast(attrs, [:name, :organization_id, :email, :phone, :date, :time])
-      |> validate_required([:name, :organization_id, :email, :phone, :date, :time])
+      |> cast(attrs, [:name, :email, :phone, :date, :time])
+      |> validate_required([:name, :email, :phone, :date, :time])
     end
   end
 
@@ -450,7 +452,7 @@ defmodule Picsello.BookingEvents do
          DateTime.compare(slot_end, end_time) in [:lt, :eq])
   end
 
-  def save_booking(booking_event, %Booking{
+  def save_booking(booking_event, booking_date, %Booking{
         email: email,
         name: name,
         phone: phone,
@@ -463,19 +465,19 @@ defmodule Picsello.BookingEvents do
 
     starts_at = shoot_start_at(date, time, photographer.time_zone)
 
-    Ecto.Multi.new()
+    Multi.new()
     |> Picsello.Jobs.maybe_upsert_client(
       %Picsello.Client{email: email, name: name, phone: phone},
       photographer
     )
-    |> Ecto.Multi.insert(:job, fn changes ->
+    |> Multi.insert(:job, fn changes ->
       Picsello.Job.create_changeset(%{
         type: package_template.job_type,
         client_id: changes.client.id
       })
-      |> Ecto.Changeset.put_change(:booking_event_id, booking_event.id)
+      |> Changeset.put_change(:booking_event_id, booking_event.id)
     end)
-    |> Ecto.Multi.merge(fn %{job: job} ->
+    |> Multi.merge(fn %{job: job} ->
       package_payment_schedules =
         package_template
         |> Repo.preload(:package_payment_schedules, force: true)
@@ -505,18 +507,19 @@ defmodule Picsello.BookingEvents do
       |> Picsello.Packages.changeset_from_template()
       |> Picsello.Packages.insert_package_and_update_job(job, opts)
     end)
-    |> Ecto.Multi.merge(fn %{package: package} ->
+    |> Multi.merge(fn %{package: package} ->
       Picsello.Contracts.maybe_add_default_contract_to_package_multi(package)
     end)
-    |> Ecto.Multi.insert(:shoot, fn changes ->
+    |> Multi.insert(:shoot, fn changes ->
       Picsello.Shoot.create_changeset(
         booking_event
-        |> Map.take([:name, :duration_minutes, :location, :address])
+        |> Map.take([:name, :location, :address])
         |> Map.put(:starts_at, starts_at)
         |> Map.put(:job_id, changes.job.id)
+        |> Map.put(:duration_minutes, booking_date.session_length)
       )
     end)
-    |> Ecto.Multi.insert(:proposal, fn changes ->
+    |> Multi.insert(:proposal, fn changes ->
       Picsello.BookingProposal.create_changeset(%{
         job_id: changes.job.id,
         questionnaire_id: changes.package_update.questionnaire_template_id
@@ -525,7 +528,10 @@ defmodule Picsello.BookingEvents do
     |> Oban.insert(:oban_job, fn changes ->
       # multiply booking reservation by 2 to account for time spent on Stripe checkout
       expiration = Application.get_env(:picsello, :booking_reservation_seconds) * 2
-      Picsello.Workers.ExpireBooking.new(%{id: changes.job.id}, schedule_in: expiration)
+
+      ExpireBooking.new(%{id: changes.job.id, booking_date_id: booking_date.id},
+        schedule_in: expiration
+      )
     end)
     |> Repo.transaction()
   end
