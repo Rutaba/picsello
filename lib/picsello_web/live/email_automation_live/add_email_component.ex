@@ -201,7 +201,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
             <div class="mr-auto md:hidden flex w-full">
               <.multi_select
                 id="job_types_mobile"
-                select_class="w-full"
+                select_class="w-full font-bold"
+                placeholder_class="opacity-100"
                 hide_tags={true}
                 placeholder="Add to:"
                 search_on={false}
@@ -225,7 +226,8 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
             <div class="mr-auto hidden md:flex">
               <.multi_select
                 id="job_types"
-                select_class="w-52"
+                select_class="w-52 font-bold"
+                placeholder_class="opacity-100"
                 hide_tags={true}
                 placeholder="Add to:"
                 search_on={false}
@@ -261,79 +263,109 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   def step(%{step: :timing} = assigns) do
     ~H"""
       <div class="rounded-lg border-base-200 border">
-        <div class="bg-base-200 p-4 flex rounded-t-lg">
-          <div class="flex flex-row items-center">
-            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center mr-3">
-              <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+
+        <div class="bg-base-200 p-4 flex flex-col lg:flex-row rounded-t-lg">
+              <div class="flex items-center">
+                <div>
+                  <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center mr-3">
+                    <.icon name="envelope" class="w-5 h-5 text-blue-planning-300" />
+                  </div>
+                </div>
+                <div class="text-blue-planning-300 text-lg"><b>Send email:</b> <%= @pipeline.name %></div>
+              </div>
+              <div class="flex lg:ml-auto items-center mt-3 lg:mt-0">
+                <div class="w-8 h-8 rounded-full bg-blue-planning-300 flex items-center justify-center mr-3">
+                  <.icon name="play-icon" class="w-4 h-4 fill-current text-white" />
+                </div>
+                <span class="font-semibold">Job Automation</span>
+              </div>
             </div>
-            <span class="text-blue-planning-300 text-lg"><b>Send email:</b> <%= @pipeline.name %></span>
-          </div>
-          <div class="flex ml-auto items-center">
-            <div class="w-8 h-8 rounded-full bg-blue-planning-300 flex items-center justify-center mr-3">
-              <.icon name="play-icon" class="w-4 h-4 fill-current text-white" />
-            </div>
-            <span>Job Automation</span>
-          </div>
-        </div>
 
         <% f = to_form(@email_preset_changeset) %>
         <%= hidden_input f, :subject_template %>
         <%= hidden_input f, :template_id %>
         <%= hidden_input f, :body_template %>
 
-        <div class="flex flex-col md:px-14 px-6 py-6">
-          <b>Automation timing</b>
-          <span class="text-base-250">Choose when you’d like your automation to run</span>
-          <div class="flex gap-4 flex-col my-4">
-            <label class="flex items-center cursor-pointer">
-              <%= radio_button(f, :immediately, true, class: "w-5 h-5 mr-4 radio") %>
-              <p class="font-semibold">Send immediately when event happens</p>
-            </label>
-            <label class="flex items-center cursor-pointer">
-              <%= radio_button(f, :immediately, false, class: "w-5 h-5 mr-4 radio") %>
-              <p class="font-semibold">Send at a certain time</p>
-            </label>
-            <%= unless input_value(f, :immediately) do %>
-              <div class="flex flex-col ml-8 md:w-1/2">
-                <div class="flex w-full my-2">
-                  <div class="w-1/5">
-                    <%= input f, :count, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer w-full" %>
+        <div class="flex flex-col px-6 py-6 md:px-14">
+          <div class="flex flex-col lg:flex-row ">
+            <div class="flex flex-col w-full lg:w-1/2 lg:pr-6 md:border-base-200 pr-6">
+              <b>Automation timing</b>
+              <span class="text-base-250">Choose when you’d like your automation to run</span>
+              <div class="flex gap-4 flex-col my-4">
+                <label class="flex items-center cursor-pointer">
+                  <%= radio_button(f, :immediately, true, class: "w-5 h-5 mr-4 radio") %>
+                  <p class="font-semibold">Send immediately when event happens</p>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <%= radio_button(f, :immediately, false, class: "w-5 h-5 mr-4 radio") %>
+                  <p class="font-semibold">Send at a certain time</p>
+                </label>
+                <%= unless input_value(f, :immediately) do %>
+                  <div class="flex flex-col ml-8">
+                    <div class="flex w-full my-2">
+                      <div class="w-1/5 min-w-[40px]">
+                        <%= input f, :count, class: "border-base-200 hover:border-blue-planning-300 cursor-pointer w-full text-center" %>
+                      </div>
+                        <div class="ml-2 w-3/5">
+                        <%= select f, :calendar, ["Hour", "Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full bg-white p-3 border rounded-lg border-base-200", phx_update: "update" %>
+                      </div>
+                      <div class="ml-2 w-3/5">
+                        <%= select f, :sign, make_sign_options(@pipeline.state), wrapper_class: "mt-4", class: "w-full bg-white p-3 border rounded-lg border-base-200", phx_update: "update" %>
+                      </div>
+                    </div>
+                    <%= if message = @email_preset_changeset.errors[:count] do %>
+                      <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+                    <% end %>
                   </div>
-                    <div class="ml-2 w-3/5">
-                    <%= select f, :calendar, ["Hour", "Day", "Month", "Year"], wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
-                  </div>
-                  <div class="ml-2 w-3/5">
-                    <%= select f, :sign, make_sign_options(@pipeline.state), wrapper_class: "mt-4", class: "w-full py-3 border rounded-lg border-base-200", phx_update: "update" %>
-                  </div>
-                </div>
-                <%= if message = @email_preset_changeset.errors[:count] do %>
-                  <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
                 <% end %>
               </div>
-            <% end %>
-          </div>
-          <b>Email Status</b>
-          <span class="text-base-250">Choose is if this email step is enabled or not to send</span>
-
-          <div>
-            <label class="flex pt-4">
-              <%= checkbox f, :status, class: "peer hidden", checked: Changeset.get_field(@email_preset_changeset, :status) == :active %>
-              <div class="hidden peer-checked:flex cursor-pointer">
-                <div class="rounded-full bg-blue-planning-300 border border-base-100 w-14 p-1 flex justify-end mr-4">
-                  <div class="rounded-full h-5 w-5 bg-base-100"></div>
-                </div>
-                Email enabled
+              <%= if message = @email_preset_changeset.errors[:status] do %>
+                <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
+              <% end %>
               </div>
-              <div class="flex peer-checked:hidden cursor-pointer">
-                <div class="rounded-full w-14 p-1 flex mr-4 border border-blue-planning-300">
-                  <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+              <%= unless input_value(f, :immediately) do %>
+                <div class="flex flex-col w-full lg:w-1/2 lg:pl-6 lg:border-l md:border-base-200">
+                  <b>Email Automation sequence conditions</b>
+                  <span class="text-base-250">Choose to run automatically or when conditions are met</span>
+                  <div class="flex gap-4 flex-col my-4">
+                    <label class="flex items-center cursor-pointer">
+                      <%= radio_button(f, :normally, true, class: "w-5 h-5 mr-4 radio") %>
+                      <p class="font-semibold">Run automation normally</p>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                      <%= radio_button(f, :normally, false, class: "w-5 h-5 mr-4 radio") %>
+                      <p class="font-semibold">Run automation only if:</p>
+                    </label>
+                    <%= if input_value(f, :normally) === "false" do %>
+                      <div class="flex my-2 ml-8">
+                        <%= select_field f, :condition, ["Client doesn’t respond by email send time", "Month", "Year"], wrapper_class: "mt-4", class: "w-full pr-10 border rounded-lg border-base-200", phx_update: "update" %>
+                      </div>
+                    <% end %>
+                  </div>
                 </div>
-                Email disabled
-              </div>
-            </label>
-            <%= if message = @email_preset_changeset.errors[:status] do %>
-              <div class="flex py-1 w-full text-red-sales-300 text-sm"><%= translate_error(message) %></div>
-            <% end %>
+              <% end %>
+            </div>
+            <hr class="my-4 flex md:hidden">
+            <div>
+              <b>Email Status</b>
+              <span class="text-base-250">Choose is if this email step is enabled or not to send</span>
+              <div>
+              <label class="flex pt-4">
+                <%= checkbox f, :status, class: "peer hidden", checked: Changeset.get_field(@email_preset_changeset, :status) == :active %>
+                <div class="hidden peer-checked:flex cursor-pointer">
+                  <div class="rounded-full bg-blue-planning-300 border border-base-100 w-14 p-1 flex justify-end mr-4">
+                    <div class="rounded-full h-5 w-5 bg-base-100"></div>
+                  </div>
+                  Email enabled
+                </div>
+                <div class="flex peer-checked:hidden cursor-pointer">
+                  <div class="rounded-full w-14 p-1 flex mr-4 border border-blue-planning-300">
+                    <div class="rounded-full h-5 w-5 bg-blue-planning-300"></div>
+                  </div>
+                  Email disabled
+                </div>
+              </label>
+            </div>
           </div>
         </div>
       </div>

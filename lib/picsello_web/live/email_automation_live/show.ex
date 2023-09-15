@@ -75,9 +75,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_event("confirm-stop-email", %{"email_id" => email_id}, socket) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
+      modal_name: :automation_email_modal,
       title: "Are you sure you want to stop this email?",
       subtitle:
-        "Stop this email and your client will get the next email in the sequence. To stop the full automation sequence from sending, you will need to Stop each email individually.",
+        "<strong>Stop</strong> this email and your client will get the next email in the sequence. To stop the full automation sequence from sending, you will need to <strong>Stop</strong> each email individually.",
       confirm_event: "stop-email-schedule-" <> email_id,
       confirm_label: "Yes, stop email",
       close_label: "Cancel",
@@ -95,6 +96,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
         "Send your email now will complete this email and the next email will go out at the specified time that you set up in global automation settings",
       confirm_event: "send-email-now-" <> email_id <> "-" <> pipeline_id,
       confirm_label: "Yes, send email",
+      modal_name: :automation_email_modal,
       close_label: "Cancel",
       icon: "warning-orange"
     })
@@ -204,7 +206,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
           <span class="pl-1 text-blue-planning-300 font-bold"> <%= next_email.text <> " " <> next_email.date %>
           </span>
         <%= if not is_nil(next_email.email_preview_id) do %>
-          <span class="text-blue-planning-300 pr-4 underline" phx-click="email-preview" phx-value-email_preview_id={next_email.email_preview_id} >Preview</span>
+          <span class="text-blue-planning-300 pr-4 underline hover:cursor-pointer" phx-click="email-preview" phx-value-email_preview_id={next_email.email_preview_id} >Preview</span>
         <% end %>
         </div>
 
@@ -212,7 +214,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
           <div class="flex flex-col">
             <div class=" flex flex-row items-center">
-              <div class="flex flex-row w-8 h-8 rounded-full bg-white flex items-center justify-center">
+              <div class="flex-row w-8 h-8 rounded-full bg-white flex items-center justify-center">
                 <.icon name="play-icon" class="w-5 h-5 text-blue-planning-300" />
               </div>
               <span class="flex items-center text-blue-planning-300 text-xl font-bold ml-2">
@@ -267,12 +269,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
               </div>
 
               <div class="flex justify-end mr-2">
-                <%= if not (is_state_manually_trigger(@pipeline.state) and index == 0) and @subcategory_slug != "payment_reminder_emails" do %>
-                  <button disabled={email.is_stopped || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => email.is_stopped || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
-                    <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
+                <%= if not (is_state_manually_trigger(@pipeline.state) and index == 0) do %>
+                  <button disabled={email.is_stopped || is_nil(next_email.email_preview_id) || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("flex flex-row items-center justify-center w-8 h-8 bg-base-200 mr-2 rounded-xl", %{"opacity-30 hover:cursor-not-allowed" => email.is_stopped || is_nil(next_email.email_preview_id) || !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)})} phx-click="confirm-stop-email" phx-value-email_id={email.id}>
+                   <.icon name="stop" class="flex flex-col items-center justify-center w-5 h-5 text-red-sales-300"/>
                   </button>
                 <% end %>
-
                 <button disabled={!is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index)} class={classes("h-8 flex items-center px-2 py-1 btn-tertiary text-black font-bold  hover:border-blue-planning-300 mr-2 whitespace-nowrap", %{"opacity-30 hover:cursor-not-allowed" => !is_nil(email.reminded_at) || disable_pipeline?(sorted_emails, @pipeline.state, index), "hidden" => @subcategory_slug == "payment_reminder_emails"})} phx-click="confirm-send-email" phx-value-email_id={email.id} phx-value-pipeline_id={@pipeline.id}>
                   <%= if is_state_manually_trigger(@pipeline.state) and index == 0 do %>
                       Start Sequence

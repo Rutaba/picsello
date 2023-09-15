@@ -197,7 +197,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
                   <span>Apply Changes to all job types</span>
                 </label>
               </div>
-
             </div>
             <.step_buttons step={@step} form={f} is_valid={step_valid?(assigns)} myself={@myself} />
 
@@ -230,7 +229,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
                   <span>Apply Changes to all job types</span>
                 </label>
               </div>
-
             </div>
           </.footer>
         </.form>
@@ -320,8 +318,8 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
 
   def step_buttons(%{step: step} = assigns) when step in [:timing, :edit_email] do
     ~H"""
-    <button class="btn-primary" title="Next" disabled={!@is_valid} type="submit" phx-disable-with="Next">
-      Next
+    <button class="btn-primary" title="Review" disabled={!@is_valid} type="submit" phx-disable-with="Review">
+      Review
     </button>
     """
   end
@@ -329,7 +327,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
   def step_buttons(%{step: :preview_email} = assigns) do
     ~H"""
     <button class="btn-primary" title="Save" disabled={!@is_valid} type="submit" phx-disable-with="Save">
-      Save
+      Finish
     </button>
     """
   end
