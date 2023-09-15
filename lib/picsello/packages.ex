@@ -148,8 +148,8 @@ defmodule Picsello.Packages do
     def sign_options(), do: @sign_options
 
     def from_decimal(%{base_multiplier: d} = package) do
-      case d |> Decimal.sub(1) |> Decimal.mult(100) |> Decimal.to_integer() do
-        0 ->
+      case d |> Decimal.sub(1) |> Decimal.mult(100) |> Decimal.to_float() do
+        0.0 ->
           %__MODULE__{is_enabled: false}
 
         percent when percent < 0 ->
