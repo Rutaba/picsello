@@ -23,6 +23,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   import Ecto.Query
 
   alias Picsello.{
+    Marketing,
     Galleries,
     Jobs,
     Orders,
@@ -30,6 +31,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     EmailAutomationSchedules,
     Repo
   }
+
+  import PicselloWeb.EmailAutomationLive.Shared
 
   @impl true
   def mount(%{"id" => id} = _params, _session, socket) do
@@ -88,7 +91,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
-  def handle_event("confirm-send-email", %{"email_id" => email_id, "pipeline_id" => pipeline_id}, socket) do
+  def handle_event(
+        "confirm-send-email",
+        %{"email_id" => email_id, "pipeline_id" => pipeline_id},
+        socket
+      ) do
     socket
     |> PicselloWeb.ConfirmationComponent.open(%{
       title: "Are you sure you want to send this email?",
@@ -125,13 +132,29 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   end
 
   @impl true
-  def handle_event("email-preview", %{"email_preview_id" => id}, socket) do
-    _email_preview = EmailAutomationSchedules.get_schedule_by_id(id)
-    socket |> noreply()
+  def handle_event(
+        "email-preview",
+        %{"email_preview_id" => id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    body_html =
+      EmailAutomationSchedules.get_schedule_by_id(id).body_template
+      |> :bbmustache.render(get_sample_values(), key_type: :atom)
+
+    template_preview = Marketing.template_preview(current_user, body_html)
+
+    socket
+    |> PicselloWeb.EmailAutomationLive.TemplatePreviewComponent.open(%{
+      template_preview: template_preview
+    })
+    |> noreply()
   end
 
   @impl true
-  def handle_info({:confirm_event, "send-email-now-" <> param},  %{assigns: %{job_id: job_id}} = socket) do
+  def handle_info(
+        {:confirm_event, "send-email-now-" <> param},
+        %{assigns: %{job_id: job_id}} = socket
+      ) do
     [id, pipeline_id] = String.split(param, "-")
     id = to_integer(id)
     pipeline_id = to_integer(pipeline_id)
@@ -325,7 +348,14 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     |> assign(email_schedules: email_schedules)
   end
 
-  defp get_next_email_schdule_date(category_type, gallery_id, job_id, pipeline_id, state, subcategory) do
+  defp get_next_email_schdule_date(
+         category_type,
+         gallery_id,
+         job_id,
+         pipeline_id,
+         state,
+         subcategory
+       ) do
     email_schedule =
       EmailAutomationSchedules.query_get_email_schedule(
         category_type,
@@ -363,14 +393,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
 
         date = get_conditional_date(state, email_schedule, pipeline_id, job, gallery)
 
-        cond  do
-          not is_nil(date) ->  %{
-            text: "Next Email",
-            date: next_schedule_format(date, sign, email_schedule.total_hours),
-            email_preview_id: email_schedule.id,
-            is_completed: false
-          }
-          subcategory == "payment_reminder_emails" -> %{text: "Transactional", date: "", email_preview_id: nil, is_completed: false}
+        cond do
+          not is_nil(date) ->
+            %{
+              text: "Next Email",
+              date: next_schedule_format(date, sign, email_schedule.total_hours),
+              email_preview_id: email_schedule.id,
+              is_completed: false
+            }
+
+          subcategory == "payment_reminder_emails" ->
+            %{text: "Transactional", date: "", email_preview_id: nil, is_completed: false}
+
           true ->
             %{text: "", date: "", email_preview_id: nil, is_completed: false}
         end
