@@ -82,8 +82,8 @@ defmodule PicselloWeb.Live.FinanceSettings do
                   <hr class=""/>
                   <div class="grid gap-6 sm:gap-x-16 sm:gap-y-4 sm:grid-cols-2">
                     <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Afterpay" description="Buy now pay later" input_name={:allow_afterpay_clearpay} f={fp} icon="payment-afterpay" />
-                    <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Klarna" description="Buy now pay later" input_name={:allow_klarna} f={fp} icon="payment-klarna" />
-                    <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Affirm" description="Buy now pay later" input_name={:allow_affirm} f={fp} icon="payment-affirm" />
+                    <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Klarna" description="Make sure to add Klarna in your Stripe account payment settings" input_name={:allow_klarna} f={fp} icon="payment-klarna" />
+                    <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Affirm" description="Make sure to add Affirm in your Stripe account payment settings" input_name={:allow_affirm} f={fp} icon="payment-affirm" />
                     <.toggle stripe_status={@stripe_status} current_user={@current_user} heading="Cash App Pay" description="Pay with CashApp" input_name={:allow_cashapp} f={fp} icon="payment-cashapp" />
                   </div>
                 </div>
@@ -132,7 +132,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
     <div class={classes("grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-2 items-center mt-2 justify-between" , %{"opacity-50 pointer-events-none" => !Enum.member?([:charges_enabled, :loading], @stripe_status)})}>
       <div class="flex">
         <%= if @icon do %>
-          <.icon name={@icon} class="mr-2 mt-2 w-6 h-6" />
+          <.icon name={@icon} class="mr-2 mt-2 w-6 h-6 flex-shrink-0" />
         <% end %>
         <div>
           <p class="font-semibold"><%= @heading %></p>
