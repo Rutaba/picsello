@@ -3,7 +3,14 @@ defmodule Picsello.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
   import TzExtra.Changeset
-  alias Picsello.{Repo, Onboardings.Onboarding, Subscription, SubscriptionEvent, Organization}
+
+  alias Picsello.{
+    Onboardings.Onboarding,
+    Subscription,
+    SubscriptionEvent,
+    Organization,
+    NylasDetail
+  }
 
   @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
   @derive {Inspect, except: [:password]}
@@ -14,7 +21,6 @@ defmodule Picsello.Accounts.User do
     field :email, :string
     field :hashed_password, :string
     field :name, :string
-    field :allow_cash_payment, :boolean, default: false
     field :is_test_account, :boolean, default: false
     field :password, :string, virtual: true
     field :time_zone, :string
@@ -23,11 +29,21 @@ defmodule Picsello.Accounts.User do
     embeds_one(:onboarding, Onboarding, on_replace: :update)
     has_one(:subscription, Subscription)
     has_one(:subscription_event, SubscriptionEvent)
+    has_one(:nylas_detail, NylasDetail)
     belongs_to(:organization, Organization)
 
     timestamps()
   end
 
+  @spec registration_changeset(
+          {map, map}
+          | %{
+              :__struct__ => atom | %{:__changeset__ => map, optional(any) => any},
+              optional(atom) => any
+            },
+          map,
+          keyword
+        ) :: map
   @doc """
   A user changeset for registration.
 
@@ -56,21 +72,12 @@ defmodule Picsello.Accounts.User do
     |> validate_required([:name])
     |> validate_email()
     |> validate_password(opts)
+    |> put_assoc(:nylas_detail, NylasDetail.changeset())
     |> then(fn changeset ->
       cast_assoc(changeset, :organization,
         with: &Organization.registration_changeset(&1, &2, get_field(changeset, :name))
       )
     end)
-  end
-
-  def enabled?(%{allow_cash_payment: allow_cash_payment}), do: allow_cash_payment
-
-  def enabled?(_), do: false
-
-  def toggle(%__MODULE__{} = current_user) do
-    current_user
-    |> Ecto.Changeset.change(%{allow_cash_payment: !enabled?(current_user)})
-    |> Repo.update!()
   end
 
   def is_test_account_changeset(user \\ %__MODULE__{}, attrs \\ %{}) do
@@ -90,6 +97,7 @@ defmodule Picsello.Accounts.User do
     |> validate_email_format()
   end
 
+  @spec validate_email_format(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   def validate_email_format(changeset) do
     changeset
     |> validate_required([:email])
@@ -294,7 +302,7 @@ defmodule Picsello.Accounts.User do
           name: String.t(),
           email: String.t(),
           hashed_password: String.t(),
-          sign_up_auth_provider: String.t(),
+          sign_up_auth_provider: atom(),
           stripe_customer_id: String.t(),
           time_zone: String.t(),
           confirmed_at: DateTime.t(),

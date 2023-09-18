@@ -1,4 +1,5 @@
 defmodule Picsello.GalleryCartTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{Cart, Repo}
   alias Cart.Order

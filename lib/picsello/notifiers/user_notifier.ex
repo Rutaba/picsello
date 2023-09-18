@@ -395,18 +395,18 @@ defmodule Picsello.Notifiers.UserNotifier do
     }
   end
 
-  defp photographer_payment(%{intent: nil}), do: %{}
+  def photographer_payment(%{intent: nil}), do: %{}
 
-  defp photographer_payment(
-         %{
-           currency: currency,
-           whcc_order: whcc_order,
-           intent: %{
-             amount: amount,
-             application_fee_amount: _application_fee_amount
-           }
-         } = order
-       ) do
+  def photographer_payment(
+        %{
+          currency: currency,
+          whcc_order: whcc_order,
+          intent: %{
+            amount: amount,
+            application_fee_amount: _application_fee_amount
+          }
+        } = order
+      ) do
     zero_price = Money.new(0, currency)
 
     cost =

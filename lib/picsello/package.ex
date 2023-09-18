@@ -298,6 +298,26 @@ defmodule Picsello.Package do
     Money.add(digitals_price, update_price)
   end
 
+  def price_before_discounts(%__MODULE__{currency: currency} = package) do
+    print_credits_price =
+      if package.print_credits_include_in_total do
+        print_credits(package)
+      else
+        Money.new(0, currency)
+      end
+
+    digitals_price =
+      if package.digitals_include_in_total do
+        Money.add(print_credits_price, digitals_price(package))
+      else
+        print_credits_price
+      end
+
+    base_price = base_price(package)
+
+    Money.add(digitals_price, base_price)
+  end
+
   def templates_for_organization(organization_id) do
     templates_for_organization_query(organization_id)
     |> where([package], package.show_on_public_profile)

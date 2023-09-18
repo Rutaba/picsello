@@ -2016,7 +2016,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     value = input_value(form, field) |> is_value_set()
 
     if value && value != Money.Currency.symbol(currency),
-      do: "#{value} to #{input_value(form, :due_interval)}",
+      do: "#{value} #{input_value(form, :due_interval)}",
       else: ""
   end
 

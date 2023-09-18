@@ -1,6 +1,8 @@
 defmodule Picsello.UserManagesBookingEventsTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   require Ecto.Query
+  alias Picsello.{Repo, Organization}
 
   setup :onboarded
   setup :authenticated
@@ -51,6 +53,12 @@ defmodule Picsello.UserManagesBookingEventsTest do
   end
 
   feature "creates new booking event", %{session: session, user: user} do
+    Repo.update_all(Organization, set: [stripe_account_id: "stripe_id"])
+
+    Mox.stub(Picsello.MockPayments, :retrieve_account, fn _, _ ->
+      {:ok, %Stripe.Account{charges_enabled: true}}
+    end)
+
     insert(:package_template, user: user, job_type: "wedding", show_on_public_profile: true)
 
     template_id =
@@ -386,6 +394,12 @@ defmodule Picsello.UserManagesBookingEventsTest do
   end
 
   feature "disable/enable event", %{session: session, user: user} do
+    Repo.update_all(Organization, set: [stripe_account_id: "stripe_id"])
+
+    Mox.stub(Picsello.MockPayments, :retrieve_account, fn _, _ ->
+      {:ok, %Stripe.Account{charges_enabled: true}}
+    end)
+
     template = insert(:package_template, user: user)
     insert(:booking_event, package_template_id: template.id, name: "Event 1")
 

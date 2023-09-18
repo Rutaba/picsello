@@ -54,6 +54,7 @@ config :money, default_currency: :USD
 config :picsello, :modal_transition_ms, 400
 config :picsello, :plug_parser_length, System.get_env("PLUG_PARSER_LENGTH") || 100_000_000
 config :picsello, :payments, Picsello.StripePayments
+config :picsello, :nylas_calendar, Picsello.NylasCalendar.Impl
 config :picsello, :google_site_verification, System.get_env("GOOGLE_SITE_VERIFICATION")
 config :picsello, :google_analytics_api_key, System.get_env("GOOGLE_ANALYTICS_API_KEY")
 config :picsello, :google_tag_manager_api_key, System.get_env("GOOGLE_TAG_MANAGER_API_KEY")
@@ -186,6 +187,16 @@ config :mime, :types, %{
 config :picsello, :exchange_rates,
   url: System.get_env("EXCHANGE_RATES_API_URL"),
   access_key: System.get_env("EXCHANGE_RATES_API_KEY")
+
+config :picsello, :nylas, %{
+  client_id: System.get_env("NYLAS_CLIENT_ID", ""),
+  client_secret: System.get_env("NYLAS_CLIENT_SECRET"),
+  token: System.get_env("NYLAS_TOKEN"),
+  redirect_uri: "/nylas/callback",
+  base_url: "https://api.nylas.com",
+  base_color: "#585DF6",
+  picsello_tag: "[From Picsello]"
+}
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

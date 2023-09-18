@@ -148,8 +148,8 @@ defmodule Picsello.Packages do
     def sign_options(), do: @sign_options
 
     def from_decimal(%{base_multiplier: d} = package) do
-      case d |> Decimal.sub(1) |> Decimal.mult(100) |> Decimal.to_integer() do
-        0 ->
+      case d |> Decimal.sub(1) |> Decimal.mult(100) |> Decimal.to_float() do
+        0.0 ->
           %__MODULE__{is_enabled: false}
 
         percent when percent < 0 ->
@@ -504,6 +504,8 @@ defmodule Picsello.Packages do
       do: %{download | count: count, includes_credits: true}
   end
 
+  def get_payment_defaults(), do: @payment_defaults_fixed
+
   def get_payment_defaults(schedule_type) do
     Map.get(@payment_defaults_fixed, schedule_type, ["To Book", "6 Months Before", "Week Before"])
   end
@@ -766,7 +768,7 @@ defmodule Picsello.Packages do
         %{
           package_id: package.id,
           price: Money.new(get_price(base_price, count, index) * 100),
-          description: "$#{get_price(base_price, count, index)} to #{default}",
+          description: "$#{get_price(base_price, count, index)} #{default}",
           schedule_date: future_date(),
           interval: true,
           due_interval: default,

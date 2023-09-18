@@ -1,4 +1,5 @@
 defmodule Picsello.CreateClientTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{ClientMessage, Galleries.Gallery, Repo, Client, Job, PaymentSchedule, Package}
 
