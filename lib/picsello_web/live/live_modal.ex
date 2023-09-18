@@ -9,6 +9,7 @@ defmodule PicselloWeb.LiveModal do
               closable: true,
               assigns: %{},
               close_event: nil,
+              background: "bg-base-300/90",
               transition_ms: 0
 
     def new() do
@@ -22,6 +23,7 @@ defmodule PicselloWeb.LiveModal do
         | component: component,
           state: :opening,
           assigns: Map.get(config, :assigns, %{}),
+          background: Map.get(config, :background, "bg-base-300/90"),
           close_event: Map.get(config, :close_event),
           closable: Map.get(config, :closable, true)
       }
@@ -75,7 +77,7 @@ defmodule PicselloWeb.LiveModal do
   @impl true
   def render(assigns) do
     ~H"""
-    <div role="dialog" id="modal-wrapper" data-closable={@modal.closable} phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full bg-base-300/95 backdrop-blur-sm z-50 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
+    <div role="dialog" id="modal-wrapper" data-closable={@modal.closable} phx-hook="Modal" style={"transition-duration: #{@modal.transition_ms}ms"} class={classes(["flex items-center justify-center w-full h-full #{@modal.background} z-50 fixed transition-opacity ease-in-out", %{open: "opacity-100 bottom-0 top-0", opening: "opacity-0", closed: "opacity-0 hidden"}[@modal.state]])}>
       <%= if @modal.state != :closed do %>
         <div class="modal-container">
           <%= live_component @modal.component, @modal.assigns |> Map.merge(%{id: @modal.component}) %>
