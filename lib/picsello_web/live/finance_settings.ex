@@ -25,8 +25,6 @@ defmodule PicselloWeb.Live.FinanceSettings do
   def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
     user_currency = UserCurrencies.get_user_currency(current_user.organization.id)
 
-    IO.inspect(Payments.retrieve_account(current_user.organization.stripe_account_id))
-
     socket
     |> assign(:page_title, "Settings")
     |> assign_stripe_status()
