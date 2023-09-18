@@ -93,7 +93,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   defp assign_section_value(section_value, section_to_compare),
     do:
-      if(is_nil(section_value),
+      if(is_nil(section_to_compare),
         do: false,
         else: get_section_value(section_value, section_to_compare)
       )
