@@ -70,17 +70,17 @@ defmodule PicselloWeb.GalleryLive.Shared do
     end
   end
 
+  def handle_event("download-photo", %{"uri" => uri}, socket) do
+    socket
+    |> push_event("download", %{uri: uri})
+    |> noreply
+  end
+
   def handle_info(:update_cart_count, %{assigns: %{gallery: gallery}} = socket) do
     socket
     |> assign(:order, nil)
     |> assign_cart_count(gallery)
     |> noreply()
-  end
-
-  def handle_event("download-photo", %{"uri" => uri}, socket) do
-    socket
-    |> push_event("download", %{uri: uri})
-    |> noreply
   end
 
   defp schemas(%{type: :standard} = gallery), do: {gallery}

@@ -330,7 +330,7 @@
       rgba(31, 28, 30, 0.65) 0%,
       rgba(31, 28, 30, 0.065) 100%
     );
-    @apply absolute top-0 z-10 block w-full h-full rounded-lg opacity-0 transition-all duration-300;
+    @apply absolute top-0 z-10 block w-full h-full opacity-0 transition-all duration-300;
   }
 
   .item-content.preview .galleryItem:before {
