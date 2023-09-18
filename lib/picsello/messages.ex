@@ -236,7 +236,7 @@ defmodule Picsello.Messages do
       query -> query
     end)
     |> Repo.all()
-    |> Repo.preload([:job, client_message_recipients: {preload_query, [:client]}])
+    |> Repo.preload(job: [:client], client_message_recipients: {preload_query, [:client]})
   end
 
   def client_threads(%User{} = user, opts \\ []) do

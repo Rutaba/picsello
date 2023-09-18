@@ -164,7 +164,7 @@ defmodule PicselloWeb.InboxLive.Index do
               <% end %>
 
               <div {testid("thread-message")} {scroll_to_message(message)} class="m-2" style="scroll-margin-bottom: 7rem">
-                <div class={classes("mb-3 flex justify-between items-end", %{"flex-row-reverse" => !message.outbound})}>
+                <div class={classes("mb-3 flex justify-between items-end", %{"flex-row-reverse" => message.outbound})}>
 
                   <div class="mx-1">
                     <%= unless message.same_sender do %>
@@ -420,6 +420,7 @@ defmodule PicselloWeb.InboxLive.Index do
   defp thread_type(_message), do: :job
 
   defp thread_title(%{client_message_recipients: [%{client: %{name: name}} | _]}), do: name
+  defp thread_title(%{job: %{client: %{name: name}}}), do: name
   defp thread_title(_), do: "name"
 
   defp assign_unread(%{assigns: %{current_user: current_user}} = socket) do
