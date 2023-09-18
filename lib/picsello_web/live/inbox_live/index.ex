@@ -175,6 +175,9 @@ defmodule PicselloWeb.InboxLive.Index do
 
                 <div class={classes("flex items-center font-bold text-xl px-4 py-2", %{"rounded-t-lg" => message.collapsed_sections, "rounded-lg" => !message.collapsed_sections, "bg-blue-planning-300 text-white" => message.outbound, "bg-gray-300" => !message.outbound})} phx-click="collapse-section" phx-value-id={message.id}>
                   <%= message.subject %>
+                  <%= if message.unread do %>
+                      <span {testid("new-badge")} class="mx-4 px-2 py-0.5 text-xs rounded bg-orange-inbox-300 text-white">New</span>
+                  <% end %>
                   <div class="flex gap-2 text-xs ml-auto">
                     <%= message.date %>
                     <%= if message.collapsed_sections do %>
@@ -202,9 +205,6 @@ defmodule PicselloWeb.InboxLive.Index do
                     </div>
                   </div>
                   <div class="flex flex-col relative border rounded-b-lg p-6">
-                    <%= if message.unread do %>
-                      <div class="absolute bg-orange-inbox-300 rounded-full -top-2 -right-2 w-4 h-4"></div>
-                    <% end %>
                     <span class="whitespace-pre-line"><%= raw message.body %></span>
 
                     <%= unless Enum.empty?(message.client_message_attachments) do %>
