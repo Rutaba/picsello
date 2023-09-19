@@ -1,7 +1,7 @@
 defmodule Picsello.Shoot do
   @moduledoc false
   use Ecto.Schema
-  alias Picsello.NylasDetail
+  alias Picsello.{NylasDetail, Repo}
   import Ecto.{Changeset, Query}
 
   @config Application.compile_env(:picsello, :nylas)
@@ -105,6 +105,9 @@ defmodule Picsello.Shoot do
     __MODULE__ |> where(job_id: ^job_id) |> by_starts_at()
   end
 
+  @doc """
+  Map external event by taking Shoot and NylasDetail to insert or update external event.
+  """
   def map_event(
         %__MODULE__{
           duration_minutes: duration_minutes,
@@ -114,13 +117,20 @@ defmodule Picsello.Shoot do
           address: address,
           external_event_id: external_event_id
         },
-        %NylasDetail{external_calendar_rw_id: calendar_id},
+        %NylasDetail{external_calendar_rw_id: calendar_id} = nylas,
         action \\ :insert
       ) do
-    end_time = DateTime.add(starts_at, duration_minutes * 60) |> DateTime.to_unix()
+    %{user: %{time_zone: timezone}} = nylas |> Repo.preload(:user)
+
+    end_time = starts_at |> DateTime.add(duration_minutes * 60) |> DateTime.to_unix()
 
     event = %{
-      when: %{start_time: DateTime.to_unix(starts_at), end_time: end_time},
+      when: %{
+        start_time: starts_at |> IO.inspect() |> DateTime.to_unix(),
+        end_time: end_time,
+        start_timezone: timezone,
+        end_timezone: timezone
+      },
       location: address,
       title: name,
       description: set_notes(notes)
