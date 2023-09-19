@@ -299,7 +299,8 @@ defmodule Picsello.Messages do
 
     from(message in ClientMessage,
       join: crm in assoc(message, :client_message_recipients),
-      where: crm.client_id == ^client.id and is_nil(message.deleted_at),
+      where:
+        crm.client_id == ^client.id and is_nil(message.deleted_at) and is_nil(message.job_id),
       distinct: message.id,
       order_by: [asc: message.inserted_at],
       preload: [client_message_recipients: ^preload_query]

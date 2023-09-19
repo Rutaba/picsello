@@ -627,22 +627,22 @@ defmodule PicselloWeb.InboxLive.Index do
 
   def handle_info(
         {:message_composed, message_changeset, recipients},
-        %{assigns: %{job: job, current_user: user, client: client}} = socket
+        %{assigns: assings} = socket
       ) do
-    thread_id = (job && job.id) || client.id
+    {thread_id, message_result} = insert_messages_query(message_changeset, recipients, assings)
 
     with {:ok, %{client_message: message, client_message_recipients: _}} <-
-           add_message(message_changeset, job, recipients, user),
+           Repo.transaction(message_result),
          {:ok, _email} <- ClientNotifier.deliver_email(message, recipients) do
       socket
       |> close_modal()
       |> assign_threads()
       |> assign_current_thread(thread_id, message.id)
-      |> noreply()
     else
       _error ->
-        socket |> put_flash(:error, "Something went wrong") |> close_modal() |> noreply()
+        socket |> put_flash(:error, "Something went wrong") |> close_modal()
     end
+    |> noreply()
   end
 
   @impl true
@@ -656,11 +656,14 @@ defmodule PicselloWeb.InboxLive.Index do
     |> noreply()
   end
 
-  defp add_message(message_changeset, %{} = job, recipients, user) do
-    Messages.add_message_to_job(message_changeset, job, recipients, user) |> Repo.transaction()
+  defp insert_messages_query(message_changeset, recipients, %{
+         current_user: user,
+         job: %{client: _client} = job
+       }) do
+    {job.id, Messages.add_message_to_job(message_changeset, job, recipients, user)}
   end
 
-  defp add_message(message_changeset, _job, recipients, user) do
-    Messages.add_message_to_client(message_changeset, recipients, user) |> Repo.transaction()
+  defp insert_messages_query(message_changeset, recipients, %{current_user: user, client: client}) do
+    {client.id, Messages.add_message_to_client(message_changeset, recipients, user)}
   end
 end
