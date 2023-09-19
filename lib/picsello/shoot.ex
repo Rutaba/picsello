@@ -126,7 +126,7 @@ defmodule Picsello.Shoot do
 
     event = %{
       when: %{
-        start_time: starts_at |> IO.inspect() |> DateTime.to_unix(),
+        start_time: starts_at |> DateTime.to_unix(),
         end_time: end_time,
         start_timezone: timezone,
         end_timezone: timezone
