@@ -878,6 +878,24 @@ defmodule PicselloWeb.JobLive.Shared do
   def status_content(_, status),
     do: %{label: status |> Phoenix.Naming.humanize(), color: :blue}
 
+  def title_header(assigns) do
+    ~H"""
+    <h1 class="flex items-center mt-4 text-4xl font-bold md:justify-start">
+      <div class="flex items-center max-w-4xl">
+        <.live_link to={@back_path} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
+          <.icon name="back" class="w-4 h-4 stroke-2"/>
+        </.live_link>
+        <%= Job.name @job %>
+      </div>
+      <div class="px-5">
+        <button type="button" phx-click="open_name_change" class="bg-base-200 p-2 rounded-lg btn-tertiary">
+          <.icon name="pencil" class="w-4 h-4 fill-current text-blue-planning-300" />
+        </button>
+      </div>
+    </h1>
+    """
+  end
+
   def section(assigns) do
     assigns = assigns |> Enum.into(%{badge: 0})
 

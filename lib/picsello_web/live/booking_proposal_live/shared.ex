@@ -31,7 +31,7 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
       <.badge color={:gray} mode={:outlined}>Read-only</.badge>
     <% end %>
 
-    <h1 class="mb-4 text-3xl font-bold"><%= @title %></h1>
+    <h1 class="mb-4 text-3xl font-light"><%= @title %></h1>
 
       <div class="py-4 bg-base-200 modal-banner">
         <div class="text-2xl font-bold">

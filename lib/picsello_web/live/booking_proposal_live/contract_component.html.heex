@@ -1,7 +1,7 @@
 <div class="modal">
   <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself}>
     <.close_x />
-
+    
     <.banner title="Contract" job={@job} package={@package}, booking_event={@booking_event}>
       <p class="py-2">Terms and Conditions</p>
       <%= if @proposal && @proposal.signed_at do %>

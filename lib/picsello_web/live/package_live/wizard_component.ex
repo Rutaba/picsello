@@ -546,6 +546,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <p class="text-black">Clear</p>
             </.icon_button>
           </.input_label>
+
           <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your #{@placeholder_job_type} offering and pricing"} />
         </div>
       </div>
