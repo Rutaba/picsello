@@ -43,15 +43,15 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         "booking_response_emails"
       )
 
-    {:ok, automation_prep} =
-      maybe_insert_email_automation_slug(sub_categories, "Shoot prep emails", "shoot_prep_emails")
-
     {:ok, automation_reminder} =
       maybe_insert_email_automation_slug(
         sub_categories,
         "Payment reminder emails",
         "payment_reminder_emails"
       )
+
+    {:ok, automation_prep} =
+      maybe_insert_email_automation_slug(sub_categories, "Shoot prep emails", "shoot_prep_emails")
 
     {:ok, automation_post} =
       maybe_insert_email_automation_slug(sub_categories, "Post shoot emails", "post_shoot_emails")
@@ -82,21 +82,21 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
       %{
         name: "Client contacts you",
         state: "client_contact",
-        description: "Runs after a contact/lead form submission",
+        description: "Sends after your client contacts you via your Picsello public profile or contact form unless you disable the automation",
         email_automation_sub_category_id: automation_inquiry.id,
         email_automation_category_id: email_automation_lead.id
       },
       %{
-        name: "Thank you for contacting me",
+        name: "Inquiry and Follow Up Emails",
         state: "manual_thank_you_lead",
-        description: "Manually triggered automation",
+        description: "Sending the Inquiry Email will trigger follow up emails unless the follow up emails are deleted",
         email_automation_sub_category_id: automation_inquiry.id,
         email_automation_category_id: email_automation_lead.id
       },
       %{
-        name: "Proposal Sent/Initiated",
+        name: "Booking Proposal and Follow Up Emails",
         state: "manual_booking_proposal_sent",
-        description: "Manually triggered automation",
+        description: "Sending the Booking Proposal Email will trigger follow up emails unless the follow up emails are deleted",
         email_automation_sub_category_id: automation_proposal.id,
         email_automation_category_id: email_automation_lead.id
       },
@@ -113,7 +113,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         state: "pays_retainer_offline",
         description:
           "Runs after client clicks they will pay you offline (if you have this enabled)",
-        email_automation_sub_category_id: automation_reminder.id,
+        email_automation_sub_category_id: automation_response.id,
         email_automation_category_id: email_automation_job.id
       },
       %{
@@ -145,16 +145,16 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         email_automation_category_id: email_automation_job.id
       },
       %{
-        name: "Paid in Full (Offline)",
-        state: "paid_offline_full",
-        description: "Triggered when a payment schedule is completed from offline payments",
+        name: "Paid in Full",
+        state: "paid_full",
+        description: "Triggered when a payment schedule is completed",
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id
       },
       %{
-        name: "Paid in Full",
-        state: "paid_full",
-        description: "Triggered when a payment schedule is completed",
+        name: "Paid in Full (Offline)",
+        state: "paid_offline_full",
+        description: "Triggered when a payment schedule is completed from offline payments",
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id
       },
@@ -175,8 +175,22 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
       },
       # gallery
       %{
-        name: "Send Gallery Link",
+        name: "Send Standard Gallery Link",
         state: "manual_gallery_send_link",
+        description: "Manually triggered automation",
+        email_automation_sub_category_id: automation_notification.id,
+        email_automation_category_id: email_automation_gallery.id
+      },
+      %{
+        name: "Send Proofing Gallery For Selection",
+        state: "manual_send_proofing_gallery",
+        description: "Manually triggered automation",
+        email_automation_sub_category_id: automation_notification.id,
+        email_automation_category_id: email_automation_gallery.id
+      },
+      %{
+        name: "Send Proofing Gallery Finals",
+        state: "manual_send_proofing_gallery_finals",
         description: "Manually triggered automation",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id
@@ -199,20 +213,6 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         name: "Gallery Password Changed",
         state: "gallery_password_changed",
         description: "This will trigger when a gallery password has changed",
-        email_automation_sub_category_id: automation_notification.id,
-        email_automation_category_id: email_automation_gallery.id
-      },
-      %{
-        name: "Send Proofing Gallery For Selection",
-        state: "manual_send_proofing_gallery",
-        description: "Manually triggered automation",
-        email_automation_sub_category_id: automation_notification.id,
-        email_automation_category_id: email_automation_gallery.id
-      },
-      %{
-        name: "Send Proofing Gallery Finals",
-        state: "manual_send_proofing_gallery_finals",
-        description: "Manually triggered automation",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id
       },

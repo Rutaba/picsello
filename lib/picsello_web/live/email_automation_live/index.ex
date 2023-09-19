@@ -20,6 +20,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     Repo
   }
 
+  alias PicselloWeb.ConfirmationComponent
+
   @impl true
   def mount(params, _session, socket) do
     socket
@@ -120,18 +122,18 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       ) do
     email_delete =
       to_integer(email_id)
-      |> EmailAutomations.delete_email()
 
-    case email_delete do
-      {:ok, _} ->
-        socket
-        |> put_flash(:success, "Successfully created")
-
-      _ ->
-        socket
-        |> put_flash(:error, "Failed to delete email")
-    end
-    |> assign_automation_pipelines()
+    socket
+    |> assign(:email_id, email_delete)
+    |> ConfirmationComponent.open(%{
+      close_label: "No! Get me out of here",
+      confirm_event: "confirm-delete-email",
+      confirm_label: "Yes, delete",
+      icon: "warning-orange",
+      subtitle: "Do you wish to permanently delete this email template. It will remove the email from the current email automation pipeline sub-category!",
+      title:
+        "Are you sure you want to delete this email template?"
+    })
     |> noreply()
   end
 
@@ -170,6 +172,25 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         socket
         |> put_flash(:error, "Failed to update pipeline s tatus")
     end
+    |> assign_automation_pipelines()
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "confirm-delete-email"},
+        %{assigns: %{email_id: email_id}} = socket
+      ) do
+    case EmailAutomations.delete_email(email_id) do
+      {:ok, _} ->
+        socket
+        |> put_flash(:success, "Email template successfully deleted")
+
+        _ ->
+          socket
+        |> put_flash(:success, "Failed to delete the email template")
+    end
+    |> close_modal()
     |> assign_automation_pipelines()
     |> noreply()
   end
@@ -264,10 +285,10 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
 
                 <div class="flex items-center md:mt-0 ml-auto md:pb-0 pb-6 md:pt-6">
                   <div class="custom-tooltip">
-                    <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 mr-2 px-2 py-2" title="remove" phx-click="delete-email" phx-value-email_id={email.id} color="red-sales-300" icon="trash"/>
+                    <.icon_button id={"email-#{email.id}"} disabled={disabled_email?(index)} class="ml-8 mr-2 px-2 py-2" title={!(index === 0) && "remove"} phx-click="delete-email" phx-value-email_id={email.id} color="red-sales-300" icon="trash"/>
                     <%= if index == 0 do %>
-                      <span class="text-black font-normal w-64 text-start" style="white-space: normal;">
-                          Can't delete first email; disable the entire sequence if you don't want it to send
+                      <span class={classes("text-black font-normal w-64 text-start", %{" !-left-20" => is_state_manually_trigger(@pipeline.state)})} style="white-space: normal;">
+                          Can't delete first email, disable the entire sequence if you don't want it to send
                       </span>
                     <% end %>
                   </div>

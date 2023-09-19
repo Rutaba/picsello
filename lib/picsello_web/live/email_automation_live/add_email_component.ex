@@ -534,7 +534,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
       {:ok, %{email_preset: email_preset}} ->
         send(
           self(),
-          {:update_automation, %{message: "Successfully created", email_preset: email_preset}}
+          {:update_automation, %{message: "Email template successfully created", email_preset: email_preset}}
         )
 
         :ok

@@ -53,7 +53,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         state: "client_contact",
         position: 0,
-        name: "Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply email to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -262,7 +262,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -300,7 +300,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "job",
         position: 0,
-        name: "Payments - paid in full OFFLINE",
+        name: "Payments - paid in full - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -317,7 +317,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking email",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -473,7 +473,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -494,7 +494,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -515,7 +515,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -533,7 +533,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -551,7 +551,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -569,7 +569,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart - follow up 2",
         subject_template:
           "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
@@ -589,7 +589,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -608,7 +608,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -627,7 +627,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "wedding",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring - follow up 2",
         subject_template:
           "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
@@ -807,7 +807,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "lead",
         position: 0,
-        name: "Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply email to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -1013,7 +1013,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1051,7 +1051,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "job",
         position: 0,
-        name: "Payments - paid in full OFFLINE",
+        name: "Payments - paid in full - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1068,7 +1068,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking email",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1264,7 +1264,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1285,7 +1285,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1306,7 +1306,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1324,7 +1324,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -1341,7 +1341,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -1358,7 +1358,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart - follow up 2",
         subject_template:
           "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
@@ -1378,7 +1378,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1397,7 +1397,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring - follow up 1",
         subject_template: "Don't forget your gallery!",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1416,7 +1416,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "newborn",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring - follow up 2",
         subject_template:
           "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
@@ -1596,7 +1596,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "lead",
         position: 0,
-        name: "Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply email to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -1802,7 +1802,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1840,7 +1840,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "job",
         position: 0,
-        name: "Payments - paid in full OFFLINE",
+        name: "Payments - paid in full - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -1857,7 +1857,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking email",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2026,7 +2026,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2047,7 +2047,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -2068,7 +2068,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -2086,7 +2086,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -2103,7 +2103,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -2120,7 +2120,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart - follow up 2",
         subject_template:
           "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
@@ -2140,7 +2140,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2159,7 +2159,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2178,7 +2178,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "family",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring - follow up 2",
         subject_template:
           "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
@@ -2358,7 +2358,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "lead",
         position: 0,
-        name: "Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply email to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -2565,7 +2565,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2603,7 +2603,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "job",
         position: 0,
-        name: "Payments - paid in full OFFLINE",
+        name: "Payments - paid in full - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2620,7 +2620,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking email",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2790,7 +2790,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2811,7 +2811,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -2832,7 +2832,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -2850,7 +2850,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -2867,7 +2867,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -2884,7 +2884,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart - follow up 2",
         subject_template:
           "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
@@ -2904,7 +2904,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2923,7 +2923,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -2942,7 +2942,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "mini",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring - follow up 2",
         subject_template:
           "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
@@ -3122,7 +3122,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "lead",
         position: 0,
-        name: "Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply email to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -3329,7 +3329,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -3367,7 +3367,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "job",
         position: 0,
-        name: "Payments - paid in full OFFLINE",
+        name: "Payments - paid in full - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -3384,7 +3384,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking email",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -3542,7 +3542,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -3563,7 +3563,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -3584,7 +3584,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -3602,7 +3602,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -3619,7 +3619,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -3636,7 +3636,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart - follow up 2",
         subject_template:
           "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
@@ -3656,7 +3656,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -3675,7 +3675,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -3694,7 +3694,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "headshot",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring - follow up 2",
         subject_template:
           "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
@@ -3874,7 +3874,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "lead",
         position: 0,
-        name: "Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply email to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -4081,7 +4081,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4119,7 +4119,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "job",
         position: 0,
-        name: "Payments - paid in full OFFLINE",
+        name: "Payments - paid in full - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4136,7 +4136,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking email",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4294,7 +4294,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4315,7 +4315,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -4336,7 +4336,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -4354,7 +4354,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -4371,7 +4371,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -4388,7 +4388,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart - follow up 2",
         subject_template:
           "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
@@ -4408,7 +4408,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4427,7 +4427,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4446,7 +4446,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "portrait",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring - follow up 2",
         subject_template:
           "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
@@ -4626,7 +4626,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "lead",
         position: 0,
-        name: "Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply email to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -4833,7 +4833,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4871,7 +4871,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "job",
         position: 0,
-        name: "Payments - paid in full OFFLINE",
+        name: "Payments - paid in full - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -4888,7 +4888,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking email",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5048,7 +5048,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5069,7 +5069,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -5090,7 +5090,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -5108,7 +5108,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -5125,7 +5125,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -5142,7 +5142,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart - follow up 2",
         subject_template:
           "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
@@ -5162,7 +5162,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5181,7 +5181,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5200,7 +5200,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "boudoir",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring - follow up 2",
         subject_template:
           "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
@@ -5380,7 +5380,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "lead",
         position: 0,
-        name: "Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply email to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -5587,7 +5587,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5625,7 +5625,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "job",
         position: 0,
-        name: "Payments - paid in full OFFLINE",
+        name: "Payments - paid in full - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5642,7 +5642,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking email",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5802,7 +5802,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5823,7 +5823,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -5844,7 +5844,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -5862,7 +5862,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -5879,7 +5879,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -5896,7 +5896,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart - follow up 2",
         subject_template:
           "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
@@ -5916,7 +5916,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5935,7 +5935,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -5954,7 +5954,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "other",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring - follow up 2",
         subject_template:
           "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
@@ -6134,7 +6134,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "lead",
         position: 0,
-        name: "Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply email to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -6341,7 +6341,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -6379,7 +6379,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "job",
         position: 0,
-        name: "Payments - paid in full OFFLINE",
+        name: "Payments - paid in full - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -6396,7 +6396,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking email",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -6556,7 +6556,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -6577,7 +6577,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -6598,7 +6598,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -6616,7 +6616,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -6633,7 +6633,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -6650,7 +6650,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart - follow up 2",
         subject_template:
           "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
@@ -6670,7 +6670,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -6689,7 +6689,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -6708,7 +6708,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "maternity",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring - follow up 2",
         subject_template:
           "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
@@ -6888,7 +6888,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "lead",
         position: 0,
-        name: "Lead - Auto reply to contact form submission",
+        name: "Lead - Auto reply email to contact form submission",
         subject_template: "{{photography_company_s_name}} received your inquiry!",
         body_template: """
         <p>Hello {{client_first_name}}!</p>
@@ -7095,7 +7095,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - retainer marked for OFFLINE Payment",
+        name: "Pre-Shoot - retainer marked for - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -7133,7 +7133,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "job",
         position: 0,
-        name: "Payments - paid in full OFFLINE",
+        name: "Payments - paid in full - Offline payment email",
         subject_template: "Next Steps from {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -7150,7 +7150,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "job",
         position: 0,
-        name: "Pre-Shoot - Thank you for booking",
+        name: "Pre-Shoot - Thank you for booking email",
         subject_template: "Thank you for booking with {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -7306,7 +7306,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Release Email",
+        name: "Gallery - Gallery Release email",
         subject_template: "Your Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -7327,7 +7327,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery For Selects Email",
+        name: "Proofing Gallery For Selects email",
         subject_template: "Your Proofing Album is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -7348,7 +7348,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "gallery",
         position: 0,
-        name: "Proofing Gallery Finals Email",
+        name: "Proofing Gallery Finals email",
         subject_template: "Your Finals Gallery is ready! | {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}},</p>
@@ -7366,7 +7366,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email",
+        name: "Gallery - Abandoned Cart email",
         subject_template: "Finish your order from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -7383,7 +7383,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 1",
+        name: "Gallery - Abandoned Cart - follow up 1",
         subject_template: "Don't forget your products from {{photography_company_s_name}}!",
         body_template: """
         <p>Hello {{order_first_name}},</p>
@@ -7400,7 +7400,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "gallery",
         position: 0,
-        name: "Gallery - Abandoned Cart Email - follow up 2",
+        name: "Gallery - Abandoned Cart - follow up 2",
         subject_template:
           "Any questions about your  products from {{photography_company_s_name}}?",
         body_template: """
@@ -7420,7 +7420,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email",
+        name: "Gallery - Gallery Expiring email",
         subject_template: "Your Gallery is about to expire! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -7439,7 +7439,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 1",
+        name: "Gallery - Gallery Expiring - follow up 1",
         subject_template: "Don't forget your gallery! | {{photography_company_s_name}}",
         body_template: """
         <p>Hello {{client_first_name}},</p>
@@ -7458,7 +7458,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         job_type: "event",
         type: "gallery",
         position: 0,
-        name: "Gallery - Gallery Expiring Soon Email - follow up 2",
+        name: "Gallery - Gallery Expiring - follow up 2",
         subject_template:
           "Last Day to get your photos and products! | {{photography_company_s_name}}",
         body_template: """
