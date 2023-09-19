@@ -1,6 +1,6 @@
 <div class="relative">
   <div class="relative choose-product__modal">
-    <a href="#" phx-click="close" title="close" phx-target={@myself} class="absolute cursor-pointer right-5 top-5">
+    <a phx-click="close" title="close" phx-target={@myself} class="absolute cursor-pointer right-5 top-5">
       <.icon name="close-x" class="w-4 h-4 stroke-current lg:w-5 lg:h-5 stroke-2" />
     </a>
 
@@ -68,7 +68,7 @@
           <.button_option {assigns} />
           <%= if @cart_count > 0 do %>
             <.go_to_cart_wrapper route={@checkout_routes.cart} count={@cart_count} >
-              <button type="button" class="text-base-100 bg-base-300 border-base-250 text-base-250 text-sm w-full py-2 mb-4 h-10">Go to cart</button>
+              <button type="button" class="bg-base-300 border-base-100 text-base-250 text-sm w-full py-2 mb-4 h-10">Go to cart</button>
             </.go_to_cart_wrapper>
           <% end %>
         </div>

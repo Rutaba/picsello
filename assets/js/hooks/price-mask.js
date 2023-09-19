@@ -6,7 +6,7 @@ export default {
 };
 
 function applyPrefix(currentObj) {
-  const { currency } = currentObj.el.dataset
+  let { currency } = currentObj.el.dataset
 
   if (currency == 'undefind' || currency == null || currency == "") {
     currency = "$"

@@ -77,6 +77,11 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   end
 
   @impl true
+  def handle_info({:message_composed_for_album, message_changeset, recipients}, socket) do
+    add_message_and_notify(socket, message_changeset, recipients, "album")
+  end
+
+  @impl true
   def handle_info(
         {:save, %{title: title}},
         %{assigns: %{gallery: gallery}} = socket
@@ -170,6 +175,15 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
         </div>
       </div>
     """
+  end
+
+  def maybe_get_unlimited_downloads?(gallery) do
+    if get_pricing_value(gallery).download_count == 0 and
+         get_pricing_value(gallery).download_each_price.amount == 0 do
+      "All images included"
+    else
+      get_pricing_value(gallery).download_count || "-"
+    end
   end
 
   def get_pricing_value(gallery) do

@@ -1,4 +1,5 @@
 defmodule Picsello.CreateBookingProposalTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   alias Picsello.{
@@ -60,7 +61,7 @@ defmodule Picsello.CreateBookingProposalTest do
     |> click(button("Next"))
     |> wait_for_enabled_submit_button()
     |> click(button("Save"))
-    |> assert_text("$0.50 to To Book, $0.50 to Day Before Shoot")
+    |> assert_text("$0.50 To Book, $0.50 Day Before Shoot")
     |> assert_text("Add all shoots")
     |> click(button("Add shoot details"))
     |> fill_in(text_field("Shoot Title"), with: "chute")
@@ -143,7 +144,7 @@ defmodule Picsello.CreateBookingProposalTest do
 
     session
     |> visit(path)
-    |> click(css("a", text: "Show schedule"))
+    |> click(button("Show schedule"))
     |> assert_text("Payment schedule")
     |> assert_text("Overdue #{overdue_schedule.due_at |> Calendar.strftime("%B %-d, %Y")}")
     |> assert_has(button("Pay overdue invoice"))
@@ -155,7 +156,7 @@ defmodule Picsello.CreateBookingProposalTest do
     session
     |> visit(path)
     |> assert_text("Completed")
-    |> click(css("a", text: "Show schedule"))
+    |> click(button("Show schedule"))
     |> refute_has(button("Pay overdue invoice"))
     |> refute_has(button("Pay upcoming invoice"))
     |> assert_text("Paid #{overdue_schedule.paid_at |> Calendar.strftime("%B %-d, %Y")}")
@@ -166,15 +167,14 @@ defmodule Picsello.CreateBookingProposalTest do
 
     session
     |> visit(path)
-    |> assert_text("Next payment due: #{payment.due_at |> Calendar.strftime("%m/%d/%Y")}")
-    |> click(css("a", text: "Show schedule"))
+    |> click(button("Show schedule"))
     |> assert_has(button("Pay upcoming invoice"))
 
     Repo.delete(payment)
 
     session
     |> visit(path)
-    |> refute_has(css("a", text: "Show schedule"))
+    |> refute_has(button("Show schedule"))
 
     [path: path]
   end

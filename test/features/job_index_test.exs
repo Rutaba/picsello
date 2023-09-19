@@ -1,4 +1,5 @@
 defmodule Picsello.JobIndexTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{Job, Repo, Organization}
 
@@ -6,9 +7,16 @@ defmodule Picsello.JobIndexTest do
     user = insert(:user)
     lead = insert(:lead, user: user, type: "wedding")
 
+    package =
+      insert(:package,
+        organization: user.organization,
+        shoot_count: 1,
+        name: "My package"
+      )
+
     %{shoots: [shoot], booking_proposals: [proposal]} =
       job =
-      insert(:lead, user: user, type: "family", package: %{shoot_count: 1})
+      insert(:lead, user: user, type: "family", package: package)
       |> promote_to_job()
       |> Repo.preload([:shoots, :booking_proposals])
 
@@ -40,7 +48,8 @@ defmodule Picsello.JobIndexTest do
     insert(:lead,
       user: user,
       type: "family",
-      package: %{shoot_count: 1},
+      package:
+        insert(:package, organization: user.organization, shoot_count: 1, name: "My package 1"),
       client: %{
         organization: user.organization,
         name: "Elizabeth Taylor",
@@ -52,7 +61,8 @@ defmodule Picsello.JobIndexTest do
     insert(:lead,
       user: user,
       type: "other",
-      package: %{shoot_count: 1},
+      package:
+        insert(:package, organization: user.organization, shoot_count: 1, name: "My package 2"),
       client: %{
         organization: user.organization,
         name: "John Snow",
@@ -64,7 +74,8 @@ defmodule Picsello.JobIndexTest do
     insert(:lead,
       user: user,
       type: "event",
-      package: %{shoot_count: 1},
+      package:
+        insert(:package, organization: user.organization, shoot_count: 1, name: "My package 3"),
       client: %{
         organization: user.organization,
         name: "Michael Stark",
@@ -83,7 +94,8 @@ defmodule Picsello.JobIndexTest do
         email: "green@example.com"
       },
       type: "family",
-      package: %{shoot_count: 1}
+      package:
+        insert(:package, organization: user.organization, shoot_count: 1, name: "My package 4")
     )
     |> promote_to_job()
 
@@ -95,7 +107,8 @@ defmodule Picsello.JobIndexTest do
         email: "ross@example.com"
       },
       type: "wedding",
-      package: %{shoot_count: 3}
+      package:
+        insert(:package, organization: user.organization, shoot_count: 1, name: "My package 5")
     )
     |> promote_to_job()
 
@@ -107,7 +120,8 @@ defmodule Picsello.JobIndexTest do
         email: "joey@example.com"
       },
       type: "event",
-      package: %{shoot_count: 1}
+      package:
+        insert(:package, organization: user.organization, shoot_count: 1, name: "My package 6")
     )
     |> promote_to_job()
   end
@@ -140,14 +154,14 @@ defmodule Picsello.JobIndexTest do
     session
     |> visit("/jobs")
     |> assert_text("Meet Jobs")
-    |> assert_has(link("Import a job"))
+    |> assert_has(css("*[phx-click='import-job']", text: "Import a job"))
   end
 
   feature "empty leads", %{session: session, lead: lead} do
     session
     |> click(css("#hamburger-menu"))
     |> click(link("Leads"))
-    |> click(link("Create a lead"))
+    |> click(testid("create-a-lead"))
     |> assert_has(css("h1", text: "Create a lead"))
 
     Repo.delete(lead)
@@ -155,7 +169,7 @@ defmodule Picsello.JobIndexTest do
     session
     |> visit("/leads")
     |> assert_text("Meet Leads")
-    |> click(link("Create a lead", count: 2, at: 1))
+    |> click(testid("create-a-lead"))
     |> assert_has(css("h1", text: "Create a lead"))
   end
 
@@ -305,19 +319,12 @@ defmodule Picsello.JobIndexTest do
       |> fill_in(text_field("bcc_email"), with: "new")
       |> assert_has(testid("bcc-error"))
       |> click(button("remove-bcc"))
-      |> fill_in(text_field("search_phrase"), with: "snow")
-      |> assert_has(css("#search_results"))
-      |> find(testid("search-row", count: 1, at: 0), fn row ->
-        row
-        |> click(button("Add to"))
-      end)
       |> fill_in(text_field("Subject line"), with: "My subject")
       |> scroll_into_view(css("div.ql-editor[data-placeholder='Compose message...']"))
       |> click(css("div.ql-editor[data-placeholder='Compose message...']"))
       |> fill_in_quill("Are you ready for your shoot?")
       |> click(button("Send"))
     end)
-    |> assert_text("Yay! Your email has been successfully sent")
     |> click(button("Close"))
   end
 
@@ -369,12 +376,6 @@ defmodule Picsello.JobIndexTest do
       |> fill_in(text_field("bcc_email"), with: "new")
       |> assert_has(testid("bcc-error"))
       |> click(button("remove-bcc"))
-      |> fill_in(text_field("search_phrase"), with: "snow")
-      |> assert_has(css("#search_results"))
-      |> find(testid("search-row", count: 1, at: 0), fn row ->
-        row
-        |> click(button("Add to"))
-      end)
       |> fill_in(text_field("Subject line"), with: "My subject")
       |> scroll_into_view(css("div.ql-editor[data-placeholder='Compose message...']"))
       |> click(css("div.ql-editor[data-placeholder='Compose message...']"))

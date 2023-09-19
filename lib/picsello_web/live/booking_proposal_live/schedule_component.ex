@@ -20,7 +20,7 @@ defmodule PicselloWeb.BookingProposalLive.ScheduleComponent do
     end
   end
 
-  defp make_status(schedule) do
+  def make_status(schedule) do
     cond do
       not is_nil(schedule.paid_at) ->
         "Paid #{schedule.paid_at |> format_date_via_type()}"
@@ -33,7 +33,7 @@ defmodule PicselloWeb.BookingProposalLive.ScheduleComponent do
     end
   end
 
-  defp status_class(status_string) do
+  def status_class(status_string) do
     status = String.split(status_string, " ") |> Enum.at(0)
 
     case status do

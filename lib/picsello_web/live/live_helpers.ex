@@ -8,6 +8,7 @@ defmodule PicselloWeb.LiveHelpers do
   import Phoenix.Component
   import PicselloWeb.Router.Helpers, only: [static_path: 2]
   import PicselloWeb.Gettext, only: [dyn_gettext: 1]
+  import Picsello.Profiles, only: [logo_url: 1]
   require Logger
 
   def live_modal(_socket, component, opts) do
@@ -146,6 +147,17 @@ defmodule PicselloWeb.LiveHelpers do
       <button class={"btn-primary whitespace-nowrap #{@class}"} disabled={@disabled}>
         <%= render_slot(@inner_block) %>
       </button>
+    """
+  end
+
+  def maybe_show_photographer_logo?(assigns) do
+    assigns = Enum.into(assigns, %{heading_class: "", logo_class: ""})
+
+    ~H"""
+    <%= case logo_url(@organization) do %>
+      <% nil -> %> <h1 class="pt-3 text-3xl font-light font-client text-base-300 mb-2 #{@heading_class}"><%= @organization.name %></h1>
+      <% url -> %> <img class="h-20 #{@logo_class}" src={url} />
+    <% end %>
     """
   end
 
@@ -355,21 +367,14 @@ defmodule PicselloWeb.LiveHelpers do
     ]
   end
 
-  def intro_hints_only(intro_id) do
-    [
-      phx_hook: "IntroJS",
-      id: intro_id
-    ]
-  end
-
-  def intro_hint(assigns) do
+  def tooltip(assigns) do
     assigns =
       assigns
       |> Map.put(:rest, Map.drop(assigns, [:content, :class]))
-      |> Enum.into(%{class: ""})
+      |> Enum.into(%{class: "", id: nil})
 
     ~H"""
-    <span class={"inline-block relative #{@class}"} data-hint={"#{@content}"} data-hintposition="middle-middle"><.icon name="tooltip" class="inline-block w-4 h-4 mr-2 rounded-sm fill-current text-blue-planning-300" /></span>
+    <span class={"inline-block relative cursor-pointer #{@class}"} data-hint={"#{@content}"} data-hintposition="middle-middle" phx-hook="Tooltip" id={@id}><.icon name="tooltip" class="inline-block w-4 h-4 mr-2 rounded-sm fill-current text-blue-planning-300" /></span>
     """
   end
 

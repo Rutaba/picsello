@@ -53,7 +53,7 @@
               delete_event="delete_album_popup"
               delete_title="Delete Album"
               delete_value={album.id}
-              galllery_type={@gallery.type}
+              favorite_album?={album.is_client_liked}
               has_orders={Enum.empty?(album.orders)}>
                 <li phx-click="go_to_album" phx-value-album={album.id} class="relative flex items-center py-1.5 justify-between hover:bg-blue-planning-100">
                   <button class="w-full album-actions">Go to album</button>

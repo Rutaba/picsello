@@ -1,4 +1,5 @@
 defmodule Picsello.WelcomePageTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   describe "signed in cards" do

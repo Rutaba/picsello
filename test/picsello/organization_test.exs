@@ -12,19 +12,28 @@ defmodule Picsello.OrganizaitonTest do
                |> Repo.insert()
     end
 
-    test "slug - adds a number on the end" do
+    test "slug - error name already exists" do
       insert(:organization, slug: "jane-s-photography")
 
-      assert {:ok, %{slug: "jane-s-photography-2"}} =
+      assert {:error, _} =
                Organization.registration_changeset(%Organization{}, %{name: "Jane's Photography"})
                |> Repo.insert()
     end
 
-    test "slug - increments a number on the end" do
-      insert(:organization, slug: "jane-s-photography-23")
+    test "slug - adds a number on the end" do
+      insert(:organization, slug: "jane-photography")
 
-      assert {:ok, %{slug: "jane-s-photography-24"}} =
-               Organization.registration_changeset(%Organization{}, %{name: "Jane's Photography"})
+      assert {:ok, %{slug: "jane-photography-1"}} =
+               Organization.registration_changeset(%Organization{}, %{}, "Jane")
+               |> Repo.insert()
+    end
+
+    test "slug - increments a number on the end" do
+      insert(:organization, slug: "jane-photography")
+      insert(:organization, slug: "jane-photography-1")
+
+      assert {:ok, %{slug: "jane-photography-2"}} =
+               Organization.registration_changeset(%Organization{}, %{}, "Jane")
                |> Repo.insert()
     end
 

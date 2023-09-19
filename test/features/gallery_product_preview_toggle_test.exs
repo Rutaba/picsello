@@ -1,4 +1,5 @@
 defmodule Picsello.GalleryProductPreviewToggleTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, Accounts.User}
 
@@ -75,7 +76,11 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
     end)
 
-    [gallery: gallery, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
+    [
+      gallery: gallery,
+      photo_ids: photo_ids,
+      gallery_digital_pricing: gallery_digital_pricing
+    ]
   end
 
   test "Toggle disable product and view in client preview", %{
@@ -98,7 +103,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     )
     |> assert_has(css("a[href*='/gallery/#{gallery.client_link_hash}']", text: "Preview gallery"))
     |> visit("/gallery/#{gallery.client_link_hash}")
-    |> click(link("View Gallery"))
+    |> click(css("a", text: "View Gallery"))
     |> assert_text("Test Client Wedding Gallery")
     |> assert_has(css("*[data-testid='products'] li", count: 5))
   end
@@ -139,7 +144,7 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
     end)
     |> click(css("span", text: "Show product preview in gallery", count: 5, at: 0))
     |> visit("/gallery/#{gallery.client_link_hash}")
-    |> click(link("View Gallery"))
+    |> click(css("a", text: "View Gallery"))
     |> assert_text("Test Client Wedding Gallery")
     |> assert_has(css("*[data-testid='products'] li", count: 5))
     |> scroll_to_bottom()

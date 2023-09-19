@@ -1,4 +1,5 @@
 defmodule Picsello.ClientBooksEventTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: false
   import Money.Sigils
   require Ecto.Query
@@ -131,25 +132,28 @@ defmodule Picsello.ClientBooksEventTest do
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
     |> assert_text("Your booking reservation expires in 9:")
-    |> assert_text(
-      "Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment."
-    )
     |> assert_text("Event 1")
-    |> assert_text("3 images include | 45 min session | In Studio")
+    |> assert_text("3 images | 45 min session | In Studio")
     |> assert_text("Sunday, December 11 @ 11:00 am")
     |> assert_text("320 1st St N")
     |> click(button("To-Do Review and accept your proposal"))
     |> assert_has(definition("Total", text: "15.00 USD"))
     |> click(button("Accept Quote"))
-    |> scroll_to_bottom()
-    |> click(button("To-Do Review and sign your contract"))
-    |> assert_text("Retainer and Payment")
+    |> assert_text("PICSELLO DEFAULT CONTRACT")
     |> fill_in(text_field("Type your full legal name"), with: "Chad Smith")
     |> wait_for_enabled_submit_button()
     |> click(button("Accept Contract"))
-    |> click(button("To-Do Make payment"))
-    |> assert_has(definition("1.00 USD due to book", text: "1.00 USD"))
-    |> click(button("Pay with card Fast easy and secure"))
+    |> click(checkbox("My partner", selected: false))
+    |> assert_has(css("button:disabled", text: "Save"))
+    |> fill_in(text_field("why?"), with: "it's the best.")
+    |> click(css("label", text: "Of course"))
+    |> fill_in(text_field("Describe it"), with: "it's great.")
+    |> fill_in_date(text_field("When"), with: ~D[2021-10-10])
+    |> fill_in(text_field("Email"), with: "email@example.com")
+    |> fill_in(text_field("Phone"), with: "(255) 123-1234")
+    |> wait_for_enabled_submit_button()
+    |> click(button("Save"))
+    |> click(button("Pay online Fast, easy and secure"))
     |> assert_url_contains("stripe-checkout")
 
     assert [
@@ -267,12 +271,9 @@ defmodule Picsello.ClientBooksEventTest do
     |> click(css("label", text: "9:00am"))
     |> wait_for_enabled_submit_button(text: "Next")
     |> click(button("Next"))
-    |> assert_text(
-      "Please note that your session will be considered officially booked once you accept the proposal, review and sign the contract, complete the questionnaire, and make payment."
-    )
     |> scroll_to_bottom()
     |> click(button("To-Do Review and accept your proposal"))
-    |> assert_text("My custom package")
+    |> assert_text("Package description")
   end
 
   feature "client tries to book unavailable time", %{

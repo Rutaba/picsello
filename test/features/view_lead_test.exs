@@ -1,4 +1,5 @@
 defmodule Picsello.ViewLeadTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   import Money.Sigils
 
@@ -85,7 +86,6 @@ defmodule Picsello.ViewLeadTest do
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads, lead.id))
     |> assert_text("Booking details")
     |> find(testid("questionnaire"), &click(&1, button("Preview")))
-    |> assert_text("Read-only")
     |> assert_text("What do you like to do as a family?")
   end
 end

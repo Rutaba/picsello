@@ -1,4 +1,5 @@
 defmodule Picsello.ClientUsesPrintCreditsTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   alias Picsello.{Cart.Order, Repo}
@@ -328,7 +329,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       photo_ids: photo_ids
     } do
       session
-      |> click(link("View Gallery"))
+      |> click(css("a", text: "View Gallery"))
       |> assert_has(definition("Print Credit", text: "$5,000.00"))
       |> scroll_to_bottom()
       |> click(css("#img-#{List.first(photo_ids)}"))
@@ -398,7 +399,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
       photo_ids: photo_ids
     }) do
       session
-      |> click(link("View Gallery"))
+      |> click(css("a", text: "View Gallery"))
       |> assert_has(definition("Print Credit", text: "$5,000.00"))
       |> scroll_to_bottom()
       |> click(css("#img-#{List.first(photo_ids)}"))
@@ -465,10 +466,11 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     feature("only charges client", %{session: session, photo_ids: photo_ids}) do
       session
-      |> click(link("View Gallery"))
+      |> click(css("a", text: "View Gallery"))
       |> scroll_to_bottom()
       |> click(css("#img-#{List.first(photo_ids)}"))
       |> click(button("Add to cart"))
+      |> click(css("[phx-click='close']"))
       |> click(link("Home"))
       |> assert_has(definition("Print Credit", text: "$5,000.00"))
       |> scroll_to_bottom()
@@ -526,7 +528,7 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     def place_order(session, photo_ids) do
       session
-      |> click(link("View Gallery"))
+      |> click(css("a", text: "View Gallery"))
       |> assert_has(definition("Print Credit", text: "$5,000.00"))
       |> scroll_to_bottom()
       |> click(css("#img-#{List.first(photo_ids)}"))

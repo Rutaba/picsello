@@ -1,4 +1,5 @@
 defmodule Picsello.SignUpTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: false
 
   alias Picsello.{Repo, Accounts.User}
@@ -43,7 +44,7 @@ defmodule Picsello.SignUpTest do
     session
     |> visit("/")
     |> click(css("a", text: "Sign Up"))
-    |> fill_in(text_field("Name"), with: "Mary Jane")
+    |> fill_in(text_field("Your first & last name"), with: "Mary Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "ThisIsAStrongP@ssw0rd")
     |> set_cookie("time_zone", "FakeTimeZone")
@@ -93,7 +94,7 @@ defmodule Picsello.SignUpTest do
     session
     |> visit("/")
     |> click(css("a", text: "Sign Up"))
-    |> fill_in(text_field("Name"), with: "Mary Jane")
+    |> fill_in(text_field("Your first & last name"), with: "Mary Jane")
     |> fill_in(text_field("Email"), with: "user@example.com")
     |> fill_in(text_field("Password"), with: "123")
     |> assert_has(css("label", text: "Password should be at least 12 characters"))

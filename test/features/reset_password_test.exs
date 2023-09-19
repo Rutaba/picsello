@@ -1,4 +1,5 @@
 defmodule Picsello.ResetPasswordTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.Accounts.User
 

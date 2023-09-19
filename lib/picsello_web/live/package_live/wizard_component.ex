@@ -42,6 +42,13 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
       digitals_total: 1
     ]
 
+  import PicselloWeb.ClientBookingEventLive.Shared,
+    only: [
+      blurred_thumbnail: 1
+    ]
+
+  import PicselloWeb.Shared.ImageUploadInput, only: [image_upload_input: 1]
+
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
 
   @all_fields Package.__schema__(:fields)
@@ -514,15 +521,33 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
 
       <.package_basic_fields form={@f} job_type={@placeholder_job_type} />
 
-      <div class="flex flex-col mt-4">
-
-        <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:description}>
-          <span>Description <%= error_tag(@f, :description) %></span>
-          <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(@f,:description)}>
-            <p class="text-black">Clear</p>
-          </.icon_button>
-        </.input_label>
-        <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your #{@placeholder_job_type} offering and pricing"} />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mt-4">
+        <div class="flex flex-col">
+          <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:thumbnail_url}
+          >
+            <span>Package Thumbnail <%= error_tag(@f, :thumbnail_url) %></span>
+          </.input_label>
+          <.image_upload_input
+            current_user={@current_user}
+            upload_folder="package_image"
+            name={input_name(@f, :thumbnail_url)}
+            url={input_value(@f, :thumbnail_url)}
+            class="mt-3 flex-grow"
+          >
+            <:image_slot>
+              <.blurred_thumbnail class="h-full w-full" url={input_value(@f, :thumbnail_url)} />
+            </:image_slot>
+          </.image_upload_input>
+        </div>
+        <div>
+          <.input_label form={@f} class="flex items-end justify-between mb-1 text-sm font-semibold" field={:description}>
+            <span>Description <%= error_tag(@f, :description) %></span>
+            <.icon_button color="red-sales-300" phx_hook="ClearQuillInput" icon="trash" id="clear-description" data-input-name={input_name(@f,:description)}>
+              <p class="text-black">Clear</p>
+            </.icon_button>
+          </.input_label>
+          <.quill_input f={@f} html_field={:description} editor_class="min-h-[16rem]" placeholder={"Description of your #{@placeholder_job_type} offering and pricing"} />
+        </div>
       </div>
 
       <%= if @is_template || @is_booking_event do %>
@@ -538,9 +563,10 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
               <.job_type_option type="radio" name={input_name(@f, :job_type)} job_type={job_type} checked={input_value(@f, :job_type) == job_type} />
             <% end %>
           </div>
+
           <%= unless @is_booking_event do %>
             <div class="col-start-7">
-              <label class="flex items-center mt-8" {intro_hints_only("intro_hints_only_1")}>
+              <label class="flex items-center mt-8">
                 <%= checkbox @f, :show_on_public_profile, class: "w-6 h-6 checkbox" %>
                 <h1 class="text-xl ml-2 mr-1 font-bold">Show package on my Public Profile</h1>
               </label>
@@ -687,9 +713,9 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
                   <div class="flex flex-col items-center pl-0 my-6 sm:flex-row sm:pl-16">
                     <h2 class="self-start mt-3 text-base-250 sm:self-auto sm:mt-0 justify-self-start sm:mr-4 whitespace-nowrap">Apply a</h2>
 
-                    <div class="flex w-full mt-3 sm:mt-0">
-                      <%= select_field(m, :percent, Multiplier.percent_options(), class: "text-left py-4 pl-4 pr-8 mr-6 sm:mr-9") %>
-
+                    <div class="flex w-full mt-3 sm:mt-0 gap-2 items-center">
+                      <%= input m, :percent, placeholder: "0.00%", value: "#{input_value(m, :percent)}", class: "w-24 text-center p-3 border rounded-lg border-blue-planning-300", phx_hook: "PercentMask", data_include: false, data_include_sign: "false" %>
+                      <p>%</p>
                       <%= select_field(m, :sign, Multiplier.sign_options(), class: "text-center flex-grow sm:flex-grow-0 px-4 py-4 pr-10") %>
                     </div>
                   </div>
@@ -1647,7 +1673,8 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     params =
       if params && params.package_payment_schedules != [] do
         presets =
-          map_keys(params.package_payment_schedules)
+          sort_payment_schedules(params.package_payment_schedules)
+          |> map_keys()
           |> Enum.with_index(
             &Map.merge(
               &1,
@@ -1669,7 +1696,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
           "schedule_type" => params.schedule_type
         }
       else
-        default_presets = Packages.get_payment_defaults(job_type)
+        default_presets = Packages.get_payment_defaults(job_type) |> sort_payment_schedules()
 
         presets =
           default_presets
@@ -1695,6 +1722,19 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     socket
     |> assign_payments_changeset(params, :insert)
     |> assign(step: :payment)
+  end
+
+  defp sort_payment_schedules(presets) do
+    {first, remaining} =
+      Enum.split_with(presets, fn preset ->
+        if is_binary(preset) do
+          preset == "To Book"
+        else
+          preset.due_interval == "To Book"
+        end
+      end)
+
+    List.flatten([first | remaining])
   end
 
   defp save_payment(socket, %{"custom_payments" => payment_params} = params, job_id \\ nil) do
@@ -2113,7 +2153,7 @@ defmodule PicselloWeb.PackageLive.WizardComponent do
     value = input_value(form, field) |> is_value_set()
 
     if value && value != Money.Currency.symbol(currency),
-      do: "#{value} to #{input_value(form, :due_interval)}",
+      do: "#{value} #{input_value(form, :due_interval)}",
       else: ""
   end
 

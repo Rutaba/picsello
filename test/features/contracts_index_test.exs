@@ -1,4 +1,5 @@
 defmodule Picsello.ContractsIndexTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, Contract}
 
@@ -57,7 +58,8 @@ defmodule Picsello.ContractsIndexTest do
     )
     |> assert_flash(:success, text: "Contract saved")
 
-    contract = Repo.all(Contract) |> Enum.at(-1)
+    contract =
+      Repo.all(Contract) |> Enum.filter(fn c -> c.name == "Contract 1" end) |> List.first()
 
     assert %Contract{
              name: "Contract 1",
@@ -87,7 +89,10 @@ defmodule Picsello.ContractsIndexTest do
     |> assert_has(button("Contract 1"))
     |> assert_has(button("Picsello Default Contract"))
 
-    contract = Repo.all(Contract) |> Enum.at(-1)
+    contract =
+      Repo.all(Contract)
+      |> Enum.filter(fn c -> c.name == "Duplicate Contract" end)
+      |> List.first()
 
     assert %Contract{
              name: "Duplicate Contract",
@@ -106,9 +111,8 @@ defmodule Picsello.ContractsIndexTest do
     |> click(button("Yes, archive"))
     |> assert_flash(:success, text: "Contract archived")
     |> scroll_to_bottom()
-    |> assert_has(testid("contracts-row", count: 3))
-    |> assert_has(button("Duplicate Contract"))
-    |> assert_has(testid("archived-badge", count: 1))
+    |> assert_has(button("Duplicate"))
+    |> refute_has(testid("archived-badge", count: 1))
     |> assert_has(button("Contract 1"))
     |> assert_has(button("Picsello Default Contract"))
 
@@ -119,8 +123,8 @@ defmodule Picsello.ContractsIndexTest do
     |> click(link("Contracts"))
     |> assert_text("Meet Contracts")
     |> scroll_to_bottom()
-    |> assert_has(testid("contracts-row", count: 3))
-    |> click(button("Manage", count: 3, at: 2))
+    |> assert_has(testid("contracts-row", count: 2))
+    |> click(button("Manage", count: 2, at: 1))
     |> refute_has(button("Archive"))
     |> assert_has(button("Edit", count: 1))
     |> assert_has(button("View"))

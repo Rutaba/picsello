@@ -8,6 +8,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
     socket
     |> assign(assigns)
     |> assign_changeset()
+    |> assign(:additional_field?, false)
     |> ok()
   end
 
@@ -24,23 +25,37 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
           <div class="flex flex-col mt-3">
             <%= label_for f, :name, autocapitalize: "words", autocorrect: "false", spellcheck: "false", autocomplete: "name", label: "Your name", class: "py-2 font-light" %>
 
-            <%= input f, :name, placeholder: "First and last name", phx_debounce: 300 %>
+            <%= input f, :name, placeholder: "Type your first and last name...", phx_debounce: 300 %>
           </div>
 
           <div class="flex flex-col lg:flex-row">
             <div class="flex flex-col flex-1 mt-3 mr-0 lg:mr-4">
               <%= label_for f, :email, label: "Your email", class: "py-2 font-light" %>
 
-              <%= input f, :email, type: :email_input, placeholder: "email@example.com", phx_debounce: 300 %>
+              <%= input f, :email, type: :email_input, placeholder: "Type email...", phx_debounce: 300 %>
             </div>
 
             <div class="flex flex-col flex-1 mt-3">
               <%= label_for f, :phone, label: "Your phone number", class: "py-2 font-light" %>
 
-              <%= input f, :phone, type: :telephone_input, placeholder: "(555) 555-5555", phx_debounce: 300 %>
+              <%= input f, :phone, type: :telephone_input, placeholder: "Type phone number...", phx_debounce: 300 %>
             </div>
           </div>
 
+          <div class="flex flex-col mt-3">
+            <%= labeled_select f, :referred_by, referred_by_options(), label: "How did you hear about #{@organization.name}?", prompt: "select one...", phx_debounce: 300, phx_update: "ignore" %>
+            <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
+          </div>
+
+            <%= if @additional_field? do %>
+              <div class="flex flex-col mt-3">
+                <% info = referral_info(f.params) %>
+                <%= label_for f, :referral_name, label: info.label, class: "py-2 font-bold" %>
+
+                <%= input f, :referral_name, placeholder: info.placeholder, phx_debounce: 300 %>
+                <em class="text-base-250 font-normal pt-1 text-xs">optional</em>
+              </div>
+            <% end %>
           <%= if Enum.any?(@job_types) do %>
             <div class="mt-4">
               <%= label_for f, :job_type, label: "What type of session are you looking for?", class: "font-light" %>
@@ -55,7 +70,7 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
           <div class="flex flex-col mt-3">
             <%= label_for f, :message, label: "Your message", class: "py-2 font-light" %>
 
-            <%= input f, :message, type: :textarea, placeholder: "e.g. Date(s), what you're looking for, any relevant information, etc.", rows: 5, phx_debounce: 300 %>
+            <%= input f, :message, type: :textarea, placeholder: "Type your message...", rows: 5, phx_debounce: 300 %>
           </div>
 
           <div class="mt-8 text-right"><button type="submit" disabled={!@changeset.valid?} class="w-full lg:w-auto btn-primary">Submit</button></div>
@@ -73,6 +88,80 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
     """
   end
 
+  defp referred_by_options() do
+    [
+      "Friend",
+      "Google",
+      "Facebook",
+      "Instagram",
+      "Tiktok",
+      "Pinterest",
+      "Event / Tradeshow",
+      "Other"
+    ]
+  end
+
+  defp should_show_additional_field?(referred_by) do
+    referred_by in ["Friend", "Other"]
+  end
+
+  defp referral_info(params) do
+    case params["referred_by"] do
+      "Friend" ->
+        %{
+          label: "Would you mind sharing their name?",
+          placeholder: "Type name..."
+        }
+
+      "Other" ->
+        %{
+          label: "Would you mind sharing where?",
+          placeholder: "Type where..."
+        }
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "validate-client",
+        %{"contact" => params},
+        %{assigns: %{job_types: job_types}} = socket
+      ) do
+    params = assign_default_job_type(job_types, params)
+
+    socket
+    |> assign(:additional_field?, should_show_additional_field?(params["referred_by"]))
+    |> assign(changeset: params |> Profiles.contact_changeset() |> Map.put(:action, :validate))
+    |> noreply()
+  end
+
+  @impl true
+  def handle_event(
+        "save-client",
+        %{"contact" => params},
+        %{assigns: %{organization: organization, job_types: job_types}} = socket
+      ) do
+    params = assign_default_job_type(job_types, params)
+
+    case Profiles.handle_contact(organization, params, PicselloWeb.Helpers) do
+      {:ok, _client} ->
+        socket
+        |> assign(changeset: nil)
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset)
+    end
+    |> noreply()
+  end
+
+  defp assign_default_job_type(job_types, params) do
+    if job_types == [] do
+      params |> Map.put("job_type", "other")
+    else
+      params
+    end
+  end
+
   defp assign_changeset(%{assigns: %{job_type: job_type}} = socket) do
     assign(socket, :changeset, Profiles.contact_changeset(%{job_type: job_type}))
   end
@@ -85,29 +174,5 @@ defmodule PicselloWeb.Live.Profile.ClientFormComponent do
       end
 
     assign(socket, :changeset, Profiles.contact_changeset(params))
-  end
-
-  @impl true
-  def handle_event("validate-client", %{"contact" => params}, socket) do
-    socket
-    |> assign(changeset: params |> Profiles.contact_changeset() |> Map.put(:action, :validate))
-    |> noreply()
-  end
-
-  @impl true
-  def handle_event(
-        "save-client",
-        %{"contact" => params},
-        %{assigns: %{organization: organization}} = socket
-      ) do
-    case Profiles.handle_contact(organization, params, PicselloWeb.Helpers) do
-      {:ok, _client} ->
-        socket
-        |> assign(changeset: nil)
-
-      {:error, changeset} ->
-        socket |> assign(changeset: changeset)
-    end
-    |> noreply()
   end
 end

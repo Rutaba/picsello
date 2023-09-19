@@ -95,12 +95,16 @@ defmodule PicselloWeb.Router do
     live "/pricing_calculator", Live.Admin.PricingCalculator, :index
     live "/next_up_cards", Live.Admin.NextUpCards, :index
     live "/subscription_pricing", Live.Admin.SubscriptionPricing, :index
+    live "/whcc_orders_report", Live.Admin.WHCCOrdersReport, :index
+    live "/whcc_orders_report/:order_number", Live.Admin.WHCCOrdersPricingReport, :index
     live "/product_pricing", Live.Admin.ProductPricing, :index
     live "/product_pricing/:id", Live.Admin.ProductPricing, :show
     live "/user", Live.Admin.User.Index, :index
     live "/user/:id/contact_upload", Live.Admin.User.ContactUpload, :show
     live "/workers", Live.Admin.Workers, :index
     live "/", Live.Admin.Index, :index
+    live "/global_settings", Live.Admin.GlobalSettings, :index
+
     post "/users/log_in", UserAdminSessionController, :create
   end
 
@@ -130,7 +134,7 @@ defmodule PicselloWeb.Router do
   scope "/", PicselloWeb do
     live_session :default, on_mount: PicselloWeb.LiveAuth do
       pipe_through [:browser, :require_authenticated_user]
-
+      get "/nylas/callback", NylasController, :callback
       put "/users/settings", UserSettingsController, :update
       get "/users/settings/stripe-refresh", UserSettingsController, :stripe_refresh
       get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
@@ -185,7 +189,6 @@ defmodule PicselloWeb.Router do
       live "/leads/:id", LeadLive.Show, :leads, as: :job
       live "/leads", JobLive.Index, :leads, as: :job
       live "/jobs/:id", JobLive.Show, :jobs, as: :job
-
       live "/jobs", JobLive.Index, :jobs, as: :job
       live "/jobs/:id/shoot/:shoot_number", JobLive.Shoot, :jobs, as: :shoot
       live "/leads/:id/shoot/:shoot_number", JobLive.Shoot, :leads, as: :shoot
@@ -261,6 +264,7 @@ defmodule PicselloWeb.Router do
 
           live "/paid", GalleryLive.ClientOrder, :paid
           get "/csv", GalleryDownloadsController, :download_csv
+          get "/csv-lightroom", GalleryDownloadsController, :download_lightroom_csv
         end
       end
 

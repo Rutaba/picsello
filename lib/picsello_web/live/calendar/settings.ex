@@ -1,86 +1,147 @@
 defmodule PicselloWeb.Live.Calendar.Settings do
   @moduledoc false
   use PicselloWeb, :live_view
-
+  alias Picsello.{NylasCalendar, NylasDetails}
   alias PicselloWeb.Endpoint
-  import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+  alias Phoenix.{LiveView.Socket, PubSub}
+
+  import PicselloWeb.Live.Calendar.Shared
+  require Logger
 
   @impl true
-  def mount(_params, _session, socket) do
+
+  @spec mount(
+          map(),
+          map(),
+          Phoenix.LiveView.Socket.t()
+        ) :: {:ok, Phoenix.LiveView.Socket.t()}
+  def mount(
+        _params,
+        _session,
+        %{assigns: %{current_user: %{nylas_detail: nylas_detail} = user}} = socket
+      ) do
+    url = Routes.i_calendar_url(socket, :index, Phoenix.Token.sign(Endpoint, "USER_ID", user.id))
+    {:ok, nylas_url} = NylasCalendar.generate_login_link()
+
+    if connected?(socket) do
+      PubSub.subscribe(Picsello.PubSub, "move_events:#{nylas_detail.id}")
+    end
+
     socket
+    |> assign(%{
+      url: url,
+      error: false,
+      calendars: [],
+      has_token: false,
+      token: "",
+      nylas_url: nylas_url,
+      rw_calendar: nylas_detail.external_calendar_rw_id,
+      read_calendars: to_set(nylas_detail)
+    })
+    |> disable_settings_buttons?(nylas_detail)
+    |> assign_from_token(user)
     |> ok()
   end
 
-  @impl true
-  def render(%{current_user: user} = assigns) do
-    assigns =
-      assign(assigns,
-        url:
-          Routes.i_calendar_url(
-            assigns.socket,
-            :index,
-            Phoenix.Token.sign(Endpoint, "USER_ID", user.id)
-          )
-      )
-
-    ~H"""
-    <div class="pt-6 px-6 py-2 center-container">
-      <div class="flex text-4xl items-center">
-        <.back_button to={Routes.calendar_index_path(@socket, :index)} class="lg:hidden"/>
-        <.crumbs class="text-sm text-base-250">
-          <:crumb to={Routes.calendar_index_path(@socket, :index)}>Calendar</:crumb>
-          <:crumb>Settings</:crumb>
-        </.crumbs>
-      </div>
-
-      <hr class="mt-2 border-white" />
-
-      <div class="flex items-center justify-between lg:mt-2 md:justify-start">
-        <div class="flex text-4xl font-bold items-center">
-          <.back_button to={Routes.calendar_index_path(@socket, :index)} class="hidden lg:flex mt-2"/>
-          Calendar Settings
-        </div>
-      </div>
-    </div>
-
-    <hr class="my-4 sm:my-10" />
-
-    <div class="px-6 center-container">
-      <div class="grid lg:grid-cols-2 grid-cols-1 gap-x-20">
-        <div class="grid-col items-center flex-col py-4 lg:mt-0 mt-6 text-xl lg:order-first order-last">
-          <p><strong>Subscribe to your Picsello calendar using an external provider:</strong></p>
-          <p class="text-base-250">Copy this link if you need to subscribe to your the Picsello calendar from another provider. They need to use the ICAL protocol.</p>
-
-          <div class="flex flex-col my-7">
-            <div {testid("url")} class="text-input text-clip overflow-hidden"><%= @url %></div>
-          </div>
-
-          <.icon_button icon="anchor" color="blue-planning-300" class="flex-shrink-0 transition-colors text-blue-planning-300" id="copy-calendar-link" data-clipboard-text={@url} phx-hook="Clipboard">
-            <span>Copy link</span>
-            <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
-              Copied!
-            </div>
-           </.icon_button>
-        </div>
-        <div class="mt-4 grid-col order-first lg:order-last">
-          <div class="flex flex-row items-center md:px-20 px-10 bg-base-200 rounded-lg">
-            <div>
-              <.icon name="picsello" class="w-12 h-12 bg-white rounded p-2"/>
-              <div class="absolute ml-[34px] -mt-[25px] md:ml-[42px] md:-mt-[30px] bg-blue-planning-300 rounded-full w-3 h-3"></div>
-            </div>
-            <div class="flex w-full">
-              <.icon name="long-right-arrow" class="text-blue-planning-300 px-2 w-full"/>
-            </div>
-            <div>
-              <.icon name="calendar" class="w-12 h-12 bg-white rounded p-2"/>
-              <div class="absolute -ml-[5px] -mt-[25px] md:-mt-[30px] bg-blue-planning-300 rounded-full w-3 h-3"></div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-    """
+  defp disable_settings_buttons?(socket, %{
+         event_status: event_status,
+         external_calendar_rw_id: id
+       }) do
+    assign(socket, :disable_settings_buttons?, event_status == :in_progress && is_binary(id))
   end
+
+  defp to_set(%{external_calendar_read_list: nil}), do: MapSet.new([])
+  defp to_set(%{external_calendar_read_list: list}), do: MapSet.new(list)
+
+  @impl true
+  @spec handle_event(String.t(), any, Socket.t()) ::
+          {:noreply, Socket.t()}
+  def handle_event(
+        "disconnect_calendar",
+        _,
+        %Socket{assigns: %{current_user: %{nylas_detail: nylas_detail} = user}} = socket
+      ) do
+    NylasDetails.clear_nylas_token!(nylas_detail)
+
+    {:noreply,
+     socket
+     |> assign_from_token(user)
+     |> assign(%{has_token: false, token: ""})
+     |> put_flash(:success, "Calendar disconnected")}
+  end
+
+  def handle_event(
+        "calendar-read",
+        %{"calendar" => cal_id},
+        %Socket{assigns: %{read_calendars: read_calendars}} = socket
+      ) do
+    newset = toggle(read_calendars, cal_id)
+    {:noreply, assign(socket, :read_calendars, newset)}
+  end
+
+  def handle_event("calendar-read-write", %{"calendar" => cal_id}, socket) do
+    Logger.debug("Calendar id \e[0;32m#{cal_id}\e[0;30m")
+
+    {:noreply, assign(socket, :rw_calendar, cal_id)}
+  end
+
+  def handle_event(
+        "save",
+        _,
+        %Socket{
+          assigns: %{
+            read_calendars: read_calendars,
+            rw_calendar: rw_calendar,
+            current_user: %{nylas_detail: nylas_detail} = user
+          }
+        } = socket
+      ) do
+    nylas_detail =
+      NylasDetails.set_nylas_calendars!(nylas_detail, %{
+        external_calendar_rw_id: rw_calendar,
+        external_calendar_read_list: MapSet.to_list(read_calendars)
+      })
+
+    socket
+    |> assign(:current_user, user)
+    |> disable_settings_buttons?(nylas_detail)
+    |> put_flash(:success, "Calendar settings saved")
+    |> noreply
+  end
+
+  defdelegate handle_event(event, params, socket), to: PicselloWeb.Live.Calendar.Shared
+
+  def handle_info(
+        {:move_events, nylas_detail},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    current_user
+    |> Map.put(:nylas_detail, nylas_detail)
+    |> then(&assign(socket, :current_user, &1))
+    |> disable_settings_buttons?(nylas_detail)
+    |> noreply()
+  end
+
+  defp toggle(calendars, key) do
+    if MapSet.member?(calendars, key) do
+      MapSet.delete(calendars, key)
+    else
+      MapSet.put(calendars, key)
+    end
+  end
+
+  defp is_member(calendars, cal_id), do: MapSet.member?(calendars, cal_id)
+
+  defp assign_from_token(socket, %{nylas_detail: %{oauth_token: token}})
+       when is_binary(token) do
+    case NylasCalendar.get_calendars(token) do
+      {:ok, calendars} ->
+        assign(socket, %{has_token: true, token: token, calendars: calendars})
+
+      {:error, msg} ->
+        assign(socket, %{error: msg})
+    end
+  end
+
+  defp assign_from_token(socket, _), do: socket
 end

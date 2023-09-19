@@ -2,6 +2,7 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
   @moduledoc false
   use PicselloWeb, :live_component
   alias Picsello.Galleries
+  import Picsello.Profiles, only: [logo_url: 1]
 
   def mount(socket) do
     socket
@@ -33,10 +34,10 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
 
     if valid_email? do
       gallery
-      |> Galleries.build_gallery_session_token(password, email)
+      |> Galleries.build_gallery_session_token(password, String.downcase(email))
       |> case do
         {:ok, token} ->
-          update_emails_map(email, gallery)
+          update_emails_map(String.downcase(email), gallery)
           assign(socket, submit: true, session_token: token)
 
         _ ->
@@ -46,6 +47,31 @@ defmodule PicselloWeb.GalleryLive.ClientShow.AuthenticationComponent do
       assign(socket, password_is_correct: false, submit: false)
     end
     |> noreply()
+  end
+
+  def maybe_show_logo?(%{gallery: %{job: %{client: %{organization: organization}}}} = assigns) do
+    assigns = Map.put(assigns, :organization, organization)
+
+    ~H"""
+      <%= case logo_url(@organization) do %>
+        <% nil -> %> <h1 class="pt-3 text-3xl font-light font-client text-base-300 mb-2 text-center"><%= @organization.name %></h1>
+        <% url -> %> <img class="h-20 mx-auto" src={url} />
+      <% end %>
+      <.welcome_message />
+    """
+  end
+
+  def maybe_show_logo?(assigns) do
+    ~H"""
+    <h1 class="pt-3 text-2xl font-light font-client text-base-300 text-center mb-2">Welcome!</h1>
+    <.welcome_message />
+    """
+  end
+
+  def welcome_message(assigns) do
+    ~H"""
+    <p class="text-base-300/75 text-center">Welcome! To view your gallery and access any digital image and print credits, enter the email address that matches the inbox to which you received your gallery link and password below.</p>
+    """
   end
 
   defp assign_password_change(socket, params \\ %{}) do

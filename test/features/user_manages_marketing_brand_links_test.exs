@@ -1,4 +1,5 @@
 defmodule Picsello.UserManagesMarketingBrandLinksTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: false
 
   setup do
@@ -100,10 +101,12 @@ defmodule Picsello.UserManagesMarketingBrandLinksTest do
     |> click(css("#hamburger-menu"))
     |> click(link("Marketing"))
     |> click(button("Manage links"))
+    |> clear(css("#brand-link_link"))
     |> fill_in(css("#brand-link_link"), with: "https://xyz.com")
     |> force_simulate_click(testid("active?"))
     |> assert_has(css("#delete-link", count: 0))
     |> click(css("#save"))
+    |> scroll_into_view(testid("marketing-links"))
     |> find(css("[data-testid='marketing-links']:first-child"), fn card ->
       card
       |> assert_has(css("a[href='https://xyz.com']", text: "Open"))

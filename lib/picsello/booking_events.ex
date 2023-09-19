@@ -264,7 +264,7 @@ defmodule Picsello.BookingEvents do
     if available_slots > 0 do
       Enum.reduce_while(slot, [], fn x, acc ->
         %{slot_start: slot_time, slot_end: slot_end} =
-          if x != available_slots - 1 do
+          if x != available_slots do
             %{
               slot_start: start_time |> Time.add(duration_buffer * x),
               slot_end: start_time |> Time.add(duration_buffer * (x + 1))

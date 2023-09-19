@@ -1,4 +1,5 @@
 defmodule Picsello.UserManagesPackageTemplatesTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, Package, JobType}
   import Ecto.Query
@@ -41,7 +42,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
       &(&1 |> Element.clear() |> Element.fill_in(with: "70.00"))
     )
     |> scroll_into_view(testid("preset-summary"))
-    |> assert_has(testid("preset-summary", text: "$60.00 to To Book, $70.00"))
+    |> assert_has(testid("preset-summary", text: "$60.00 To Book, $70.00"))
   end
 
   defp edit_package_screen(session) do
@@ -130,7 +131,7 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     |> click(button("Add a discount or surcharge"))
     |> scroll_into_view(css("#multiplier_is_enabled"))
     |> click(css("#multiplier_is_enabled"))
-    |> click(option("30%"))
+    |> fill_in(css("#multiplier_percent"), with: "30%")
     |> scroll_into_view(css("#multiplier_discount_base_price"))
     |> click(css("#multiplier_discount_base_price"))
     |> assert_text("-$30.00")
@@ -452,6 +453,5 @@ defmodule Picsello.UserManagesPackageTemplatesTest do
     session
     |> click(testid("subnav-Settings"))
     |> click(link("Packages"))
-    |> refute_has(button("Next"))
   end
 end

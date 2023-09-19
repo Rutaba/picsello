@@ -1,4 +1,5 @@
 defmodule Picsello.CreateLeadTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   setup :onboarded
@@ -9,8 +10,8 @@ defmodule Picsello.CreateLeadTest do
       insert(:client,
         user: user,
         name: "Elizabeth Taylor",
-        phone: "taylor@example.com",
-        email: "(210) 111-1234"
+        email: "taylor@example.com",
+        phone: "(210) 111-1234"
       )
 
     [client: client]
@@ -44,7 +45,7 @@ defmodule Picsello.CreateLeadTest do
     |> click(button("Create lead"))
     |> click(button("Add a new client"))
     |> fill_in(text_field("Client Name"), with: "Elizabeth Taylor")
-    |> fill_in(text_field("Client Email"), with: "taylor@example.com")
+    |> fill_in(text_field("Client Email"), with: "taylor-test@example.com")
     |> fill_in(text_field("Client Phone"), with: "(210) 111-1234")
     |> scroll_into_view(css("label", text: "Event"))
     |> click(css("label", text: "Event"))
@@ -52,7 +53,7 @@ defmodule Picsello.CreateLeadTest do
     |> click(button("Save"))
     |> assert_has(css("h1", text: "Elizabeth Taylor Event"))
     |> assert_has(testid("card-Communications", text: "Elizabeth Taylor"))
-    |> assert_has(testid("card-Communications", text: "taylor@example.com"))
+    |> assert_has(testid("card-Communications", text: "taylor-test@example.com"))
     |> assert_has(testid("card-Communications", text: "(210) 111-1234"))
     |> click(link("Picsello"))
     |> click(button("Leads"))
@@ -61,14 +62,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(testid("job-row", count: 1))
   end
 
-  feature "user cannot create client with existing email", %{session: session, user: user} do
-    insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "(210) 111-1234",
-      email: "taylor@example.com"
-    )
-
+  feature "user cannot create client with existing email", %{session: session} do
     session
     |> click(button("Actions"))
     |> click(button("Create lead"))
@@ -78,14 +72,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("button:disabled[type='submit']"))
   end
 
-  feature "user cannot create lead without job type", %{session: session, user: user} do
-    insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "(210) 111-1234",
-      email: "taylor@example.com"
-    )
-
+  feature "user cannot create lead without job type", %{session: session} do
     session
     |> click(button("Actions"))
     |> click(button("Create lead"))
@@ -96,14 +83,7 @@ defmodule Picsello.CreateLeadTest do
     |> assert_has(css("button:disabled[type='submit']"))
   end
 
-  feature "user creates lead with job type 'other'", %{session: session, user: user} do
-    insert(:client,
-      user: user,
-      name: "Elizabeth Taylor",
-      phone: "(210) 111-1234",
-      email: "taylor@example.com"
-    )
-
+  feature "user creates lead with job type 'other'", %{session: session} do
     session
     |> click(button("Actions"))
     |> click(button("Create lead"))

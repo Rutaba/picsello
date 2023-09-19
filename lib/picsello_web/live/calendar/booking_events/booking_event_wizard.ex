@@ -10,7 +10,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.BookingEventWizard do
   import PicselloWeb.Shared.Quill, only: [quill_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.Live.Calendar.Shared, only: [is_checked: 2]
-  alias Picsello.{BookingEvent, BookingEvents, Packages}
+  alias Picsello.{Payments, BookingEvent, BookingEvents, Packages}
 
   @impl true
   def update(assigns, socket) do
@@ -302,7 +302,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.BookingEventWizard do
           <% end %>
         </div>
       </div>
-      <div class={classes("p-4 grid gap-5 lg:grid-cols-3 grid-cols-1", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})} {intro_hints_only("intro_hints_only")}>
+      <div class={classes("p-4 grid gap-5 lg:grid-cols-3 grid-cols-1", %{"hidden" => Enum.member?(@collapsed_dates, @f.index)})}>
         <div class="flex flex-col">
           <h3 class="text-md font-bold">When is your event?</h3>
           <%= labeled_input @f, :date, type: :date_input, label: "Select Date", min: Date.utc_today(), disabled: is_date_booked(@event_form, input_value(@f, :date)) %>
@@ -327,10 +327,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.BookingEventWizard do
               </div>
               <div class="flex items-center justify-between w-full mt-2 lg:mt-6">
                   <%= if get_is_break!(@changeset, @f.index,t.index) do %>
-                    <span class="italic text-base-250 ml-2"> Break Block <.intro_hint class="ml-2 hidden lg:inline-block" content="Breaks are important so you can catch your breath!"/></span>
+                    <span class="italic text-base-250 ml-2"> Break Block <.tooltip class="ml-2 hidden lg:inline-block" content="Breaks are important so you can catch your breath!" id={"break-#{@f.index}-#{t.index}"} /></span>
                   <% end %>
                   <%= if get_is_hidden!(@changeset, @f.index,t.index) do %>
-                    <span class="italic text-base-250 ml-2"> Hidden Block <.intro_hint class="ml-2 hidden lg:inline-block" content="This is a great way to add some urgency for clients to book!"/></span>
+                    <span class="italic text-base-250 ml-2"> Hidden Block <.tooltip class="ml-2 hidden lg:inline-block" content="This is a great way to add some urgency for clients to book!" id={"hidden-#{@f.index}-#{t.index}"}/></span>
                   <% end %>
                 <div class="flex ml-auto">
                   <div data-offset="0" phx-hook="Select" id={"manage-event-#{@f.index}-#{t.index}"} class={classes(%{"pointer-events-none opacity-40" => t |> current |> Map.get(:is_break)})}>
@@ -541,9 +541,18 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.BookingEventWizard do
   @impl true
   def handle_event("submit", %{"step" => "customize", "booking_event" => params}, socket) do
     params = Map.put_new(params, "buffer_minutes", "")
-    %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
 
-    case BookingEvents.upsert_booking_event(changeset) do
+    %{assigns: %{changeset: changeset, current_user: current_user}} =
+      socket = assign_changeset(socket, params)
+
+    if [:charges_enabled, :loading] |> Enum.member?(Payments.status(current_user)) do
+      changeset
+    else
+      changeset
+      |> Ecto.Changeset.put_change(:status, :disabled)
+    end
+    |> BookingEvents.upsert_booking_event()
+    |> case do
       {:ok, booking_event} ->
         successfull_save(socket, booking_event)
 

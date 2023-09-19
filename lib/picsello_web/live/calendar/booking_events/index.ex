@@ -6,11 +6,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
   alias Picsello.BookingEvents, as: BE
   alias PicselloWeb.Live.Calendar.EditMarketingEvent
+  alias Picsello.{Payments, BookingEvents}
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, _session, %{assigns: %{current_user: current_user}} = socket) do
     socket
     |> assign(:page_title, "Booking Events")
+    |> assign(stripe_status: Payments.status(current_user))
     |> assign_events()
     |> assign_booking_events()
     |> ok()
@@ -46,7 +48,20 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
           </a>
         </div>
       </div>
-
+      <%= unless [:charges_enabled, :loading] |> Enum.member?(@stripe_status) do %>
+        <div class="flex flex-col items-center px-4 py-2 mt-8 text-center rounded-lg md:flex-row bg-red-sales-300/10 sm:text-left">
+          <.icon name="warning-orange-dark" class="inline-block w-4 h-4 mr-2"/>
+            It looks like you haven’t setup Stripe yet. You won’t be able to enable your events until that is setup.
+          <div class="flex-shrink-0 my-1 mt-4 md:ml-auto sm:max-w-xs sm:mt-0">
+            <%= live_component PicselloWeb.StripeOnboardingComponent, id: :stripe_onboarding_banner,
+                  error_class: "text-center",
+                  current_user: @current_user,
+                  class: "btn-primary py-1 px-3 text-sm intro-stripe mx-auto block",
+                  return_url: PicselloWeb.Helpers.booking_events_url(),
+                  stripe_status: @stripe_status %>
+          </div>
+        </div>
+      <% end %>
       <hr class="mt-4 sm:mt-10" />
     </div>
     <div class="p-6 center-container">
@@ -199,6 +214,54 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
       event_id: id,
       current_user: current_user
     })
+  end
+
+  @impl true
+  def handle_event(
+        "unarchive-event",
+        %{"event-id" => id},
+        %{assigns: %{current_user: current_user, stripe_status: stripe_status}} = socket
+      ) do
+    with true <- [:charges_enabled, :loading] |> Enum.member?(stripe_status),
+         {:ok, _event} <- BookingEvents.enable_booking_event(id, current_user.organization_id) do
+      socket
+      |> assign_booking_events()
+      |> put_flash(:success, "Event enabled successfully")
+    else
+      false ->
+        socket
+        |> put_flash(:error, "Please setup stripe first")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Error enabling event")
+    end
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info({:stripe_status, status}, socket) do
+    socket
+    |> assign(stripe_status: status)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:confirm_event, "disable_event_" <> id},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case BookingEvents.disable_booking_event(id, current_user.organization_id) do
+      {:ok, _event} ->
+        socket
+        |> assign_booking_events()
+        |> put_flash(:success, "Event disabled successfully")
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Error disabling event")
+    end
+    |> close_modal()
     |> noreply()
   end
 

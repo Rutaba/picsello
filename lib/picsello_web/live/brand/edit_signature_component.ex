@@ -78,7 +78,7 @@ defmodule PicselloWeb.Live.Brand.EditSignatureComponent do
       ) do
     case socket |> build_changeset(params) |> Repo.update() do
       {:ok, organization} ->
-        send(socket.parent_pid, {:update, organization})
+        send(socket.parent_pid, {:update, organization, "Email signature saved"})
         socket |> close_modal() |> noreply()
 
       {:error, changeset} ->

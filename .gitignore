@@ -46,3 +46,8 @@ npm-debug.log
 .DS_Store
 service-account.json
 .vscode
+
+## Emacs stuff       
+*-emacs-elixir-format.exs
+*-emacs-elixir-format.ex
+\#*\#        
