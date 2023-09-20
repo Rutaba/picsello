@@ -226,7 +226,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
       get_and_update_in(
         params,
         ["status"],
-        &{&1, if(&1 == "true", do: :active, else: :disabled)}
+        &{&1, if(&1 in ["true", "active"], do: :active, else: :disabled)}
       )
 
     params

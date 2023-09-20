@@ -263,7 +263,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
           </div>
         <% content -> %>
           <div class="flex justify-center p-2 mt-4 rounded-lg bg-base-200">
-            <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" id="template-preview">
+            <iframe srcdoc={content} class="w-[30rem]" scrolling="no" phx-hook="IFrameAutoHeight" phx-update="ignore" id="template-preview">
             </iframe>
           </div>
       <% end %>
@@ -293,7 +293,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent do
       get_and_update_in(
         params,
         ["status"],
-        &{&1, if(&1 == "true", do: :active, else: :disabled)}
+        &{&1, if(&1 in ["true", "active"], do: :active, else: :disabled)}
       )
 
     params
