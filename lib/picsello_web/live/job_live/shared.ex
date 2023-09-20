@@ -952,7 +952,7 @@ defmodule PicselloWeb.JobLive.Shared do
     <.card color="orange-inbox-300" title="Communications" class="md:col-span-2">
       <div {testid("inbox")} class="flex flex-col lg:flex-row gap-x-4">
 
-        <div class="flex-1 border border-base-200 rounded-lg p-3">
+        <div class="flex-1 flex flex-col border border-base-200 rounded-lg p-3">
 
           <div class="flex flex-row items-center mb-4">
             <span class="flex w-8 h-8 justify-center items-center">
@@ -973,8 +973,8 @@ defmodule PicselloWeb.JobLive.Shared do
             </span>
           </div>
 
-          <div class="flex flex-row justify-end mt-8 items-center">
-            <button type="button" class="link mx-5" phx-click="open-inbox">
+          <div class="flex flex-row lg:flex-col xl:flex-row gap-2 justify-end mt-auto items-center">
+            <button type="button" class="link mx-5 whitespace-nowrap" phx-click="open-inbox">
               View inbox
             </button>
             <button class="h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
@@ -986,7 +986,7 @@ defmodule PicselloWeb.JobLive.Shared do
           </div>
         </div>
 
-        <div class="flex-1 border border-base-200 rounded-lg p-3">
+        <div class="flex-1 flex flex-col border border-base-200 rounded-lg p-3">
 
           <div class="flex flex-row items-center mb-4">
             <span class="flex w-8 h-8 justify-center items-center">
@@ -1004,7 +1004,7 @@ defmodule PicselloWeb.JobLive.Shared do
             </span>
           </div>
 
-          <button class="h-8 mt-8 ml-auto flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="email-automation">
+          <button class="h-8 mt-auto ml-auto flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="email-automation">
             <span class="flex w-8 h-8 justify-center items-center">
             <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
             </span>
@@ -1012,7 +1012,7 @@ defmodule PicselloWeb.JobLive.Shared do
           </button>
         </div>
 
-        <div class="flex-1 border border-base-200 rounded-lg p-3">
+        <div class="flex-1 flex flex-col border border-base-200 rounded-lg p-3">
 
           <div class="flex flex-row items-center mb-1">
             <span class="flex w-8 h-8 justify-center items-center">
@@ -1029,7 +1029,7 @@ defmodule PicselloWeb.JobLive.Shared do
               </a>
             <% end %>
             <a phx-click="open-compose" phx-value-client_id={@job.client_id} class="flex items-center hover:cursor-pointer">
-              <span class="text-base-250"><%= @job.client.email %></span>
+              <span class="text-base-250 mb-2"><%= @job.client.email %></span>
             </a>
             <%= if !@job.client.phone do %>
               <a href="" class="flex items-center">
@@ -1038,7 +1038,7 @@ defmodule PicselloWeb.JobLive.Shared do
             <% end %>
           </div>
 
-          <button class="ml-auto h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
+          <button class="ml-auto mt-auto h-8 flex content-center items-center px-2 py-1 btn-tertiary text-blue-planning-300  hover:border-blue-planning-300 mr-2 whitespace-nowrap" phx-click="open-compose" phx-value-client_id={@job.client_id}>
             <span class="flex w-8 h-8 justify-center items-center">
             <.icon name="eye" class="text-blue-planning-300 mr-2 w-6 h-6" />
             </span>
