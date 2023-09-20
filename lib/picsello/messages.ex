@@ -335,23 +335,24 @@ defmodule Picsello.Messages do
     {job_ids, client_ids, message_ids}
   end
 
-  def update_all(client_id, :client, field) do
+  def update_all(client_id, :client, column) do
     from(m in ClientMessage,
       join: cmr in assoc(m, :client_message_recipients),
       where: is_nil(m.job_id) and cmr.client_id == ^client_id,
-      where: is_nil(field(m, ^field))
+      where: is_nil(field(m, ^column))
     )
-    |> update_field(field)
+    |> update_field(column)
   end
 
-  def update_all(job_id, :job, field) do
+  def update_all(job_id, :job, column) do
     from(m in ClientMessage,
       where: m.job_id == ^job_id,
-      where: is_nil(field(m, ^field))
+      where: is_nil(field(m, ^column))
     )
-    |> update_field(field)
+    |> update_field(column)
   end
 
-  defp update_field(query, field),
-    do: query |> Repo.update_all(set: [{field, DateTime.utc_now() |> DateTime.truncate(:second)}])
+  defp update_field(query, column),
+    do:
+      query |> Repo.update_all(set: [{column, DateTime.utc_now() |> DateTime.truncate(:second)}])
 end
