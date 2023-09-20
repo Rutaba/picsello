@@ -1,4 +1,5 @@
 defmodule Picsello.ClientVisitsPhotographerProfileTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   import Money.Sigils
   alias Picsello.{Job, Repo, Onboardings}

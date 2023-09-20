@@ -1,6 +1,6 @@
 defmodule Picsello.CalendarSettingsTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
-  require Ecto.Query
 
   setup :onboarded
   setup :authenticated
@@ -17,8 +17,8 @@ defmodule Picsello.CalendarSettingsTest do
   feature "Calendar settings copy url test", %{session: session} do
     session
     |> visit("/calendar/settings")
-    |> assert_text("Subscribe to your Picsello calendar")
-    |> assert_text("Copy this link if you need to subscribe")
+    |> assert_text("2-way Calendar Sync")
+    |> assert_text("1-way Calendar Sync")
     |> click(button("Copy link"))
     |> assert_text("Copied!")
   end

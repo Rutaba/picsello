@@ -14,7 +14,8 @@ defmodule PicselloWeb.ShootLive.EditComponent do
     Repo,
     PackagePaymentSchedule,
     PaymentSchedule,
-    PackagePayments
+    PackagePayments,
+    Workers.CalendarEvent
   }
 
   alias Ecto.{Changeset, Multi}
@@ -38,44 +39,6 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       end
     end)
     |> ok()
-  end
-
-  @impl true
-  def render(assigns) do
-    assigns = assign(assigns, message: get_messgae(assigns))
-
-    ~H"""
-      <div class="flex flex-col modal">
-        <div class="flex items-start justify-between flex-shrink-0">
-          <h1 class="mb-4 text-3xl font-bold">Edit Shoot Details</h1>
-
-          <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
-            <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
-          </button>
-        </div>
-
-        <.error message={@message} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => is_nil(@shoot) || is_nil(@message)})}/>
-
-        <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
-
-          <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
-            <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. #{dyn_gettext @job.type} Session, etc.", wrapper_class: "sm:col-span-3" %>
-            <.date_picker_field class="sm:col-span-3" id="shoot-time" placeholder="Select shoot time…" form={f} field={:starts_at} input_placeholder="mm/dd/yyyy" input_label="Shoot Date" data_custom_date_format="Y-m-d\\TH:i" data_time_picker="true" data_time_zone={@current_user.time_zone} />
-            <%= labeled_select f, :duration_minutes, duration_options(),
-                  label: "Shoot Duration",
-                  prompt: "Select below",
-                  wrapper_class: classes(%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
-            %>
-
-            <.location f={f} address_field={@address_field} myself={@myself} />
-
-            <%= labeled_input f, :notes, type: :textarea, label: "Shoot Notes", placeholder: "e.g. Anything you'd like to remember", wrapper_class: "sm:col-span-6" %>
-          </div>
-
-          <PicselloWeb.LiveModal.footer disabled={!@changeset.valid?} />
-        </.form>
-      </div>
-    """
   end
 
   @impl true
@@ -108,13 +71,34 @@ defmodule PicselloWeb.ShootLive.EditComponent do
   def handle_event(
         "save",
         %{"shoot" => params},
-        %{assigns: %{job: %{job_status: job_status}}} = socket
+        %{
+          assigns: %{
+            current_user: %{
+              nylas_detail: %{
+                oauth_token: oauth_token,
+                external_calendar_rw_id: external_calendar_rw_id
+              }
+            },
+            job: %{job_status: job_status}
+          }
+        } = socket
       ) do
     socket
     |> build_changeset(params |> Enum.into(%{"address" => nil}))
     |> then(fn changeset ->
       Multi.new()
       |> Multi.insert_or_update(:shoot, changeset)
+      |> Multi.merge(fn
+        %{shoot: shoot}
+        when not is_nil(oauth_token) and not is_nil(external_calendar_rw_id) ->
+          changeset
+          |> params_for_event_job(shoot)
+          |> CalendarEvent.new()
+          |> then(&Oban.insert(Multi.new(), :event, &1))
+
+        _ ->
+          Multi.new()
+      end)
       |> Multi.merge(fn _ ->
         if job_status.is_lead do
           {updated_package_payment_schedules, updated_payment_schedules,
@@ -163,6 +147,18 @@ defmodule PicselloWeb.ShootLive.EditComponent do
           socket |> assign(changeset: changeset) |> noreply()
       end)
     end)
+  end
+
+  defp params_for_event_job(changeset, shoot) do
+    changeset
+    |> Ecto.Changeset.apply_changes()
+    |> case do
+      %{id: nil} ->
+        %{type: :insert, shoot_id: shoot.id}
+
+      %{id: _id} ->
+        %{type: :update, shoot_id: shoot.id}
+    end
   end
 
   defp get_messgae(%{
@@ -364,19 +360,12 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       else
         case parse_in_zone(starts_at, time_zone) do
           {:ok, datetime} -> datetime
-          {:error, _} -> nil
           _ -> nil
         end
       end
 
-    socket
-    |> build_changeset(
-      params
-      |> Map.put(
-        "starts_at",
-        new_date
-      )
-    )
+    params = Map.put(params, "starts_at", new_date)
+    build_changeset(socket, params)
   end
 
   defp build_changeset(%{assigns: %{shoot: shoot}}, params) when shoot != nil do
@@ -409,5 +398,43 @@ defmodule PicselloWeb.ShootLive.EditComponent do
       {:ok, _, _} -> true
       _ -> false
     end
+  end
+
+  @impl true
+  def render(assigns) do
+    assigns = assign(assigns, message: get_messgae(assigns))
+
+    ~H"""
+      <div class="flex flex-col modal">
+        <div class="flex items-start justify-between flex-shrink-0">
+          <h1 class="mb-4 text-3xl font-bold">Edit Shoot Details</h1>
+
+          <button phx-click="modal" phx-value-action="close" title="close modal" type="button" class="p-2">
+            <.icon name="close-x" class="w-3 h-3 stroke-current stroke-2 sm:stroke-1 sm:w-6 sm:h-6"/>
+          </button>
+        </div>
+
+        <.error message={@message} icon_class="w-6 h-6" class={classes(%{"md:hidden hidden" => is_nil(@shoot) || is_nil(@message)})}/>
+
+        <.form :let={f} for={@changeset} phx-change="validate" phx-submit="save" phx-target={@myself}>
+
+          <div class="px-1.5 grid grid-cols-1 sm:grid-cols-6 gap-5">
+            <%= labeled_input f, :name, label: "Shoot Title", placeholder: "e.g. #{dyn_gettext @job.type} Session, etc.", wrapper_class: "sm:col-span-3" %>
+            <.date_picker_field class="sm:col-span-3" id="shoot-time" placeholder="Select shoot time…" form={f} field={:starts_at} input_placeholder="mm/dd/yyyy" input_label="Shoot Date" data_custom_date_format="Y-m-d\\TH:i" data_time_picker="true" data_time_zone={@current_user.time_zone} />
+            <%= labeled_select f, :duration_minutes, duration_options(),
+                  label: "Shoot Duration",
+                  prompt: "Select below",
+                  wrapper_class: classes(%{"sm:col-span-3" => !@address_field, "sm:col-span-2" => @address_field})
+            %>
+
+            <.location f={f} address_field={@address_field} myself={@myself} />
+
+            <%= labeled_input f, :notes, type: :textarea, label: "Shoot Notes", placeholder: "e.g. Anything you'd like to remember", wrapper_class: "sm:col-span-6" %>
+          </div>
+
+          <PicselloWeb.LiveModal.footer disabled={!@changeset.valid?} />
+        </.form>
+      </div>
+    """
   end
 end

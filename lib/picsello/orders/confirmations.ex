@@ -159,6 +159,8 @@ defmodule Picsello.Orders.Confirmations do
         new()
         |> run(:stripe_invoice, fn _, _ -> create_stripe_invoice(order, photographer_owes) end)
         |> insert(:invoice, &insert_invoice_changeset(&1, order))
+        |> run(:confirm_order, fn _, _ -> confirm_order(order) end)
+        |> update(:confirmed_order, Order.whcc_confirmation_changeset(order))
         |> run(:capture, fn _, _ -> capture(multi) end)
     end)
     |> run(:insert_card, fn _repo, %{order: order} ->

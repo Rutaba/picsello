@@ -14,7 +14,8 @@ defmodule Picsello.PaymentSchedules do
     Client,
     Shoot,
     Currency,
-    UserCurrencies
+    UserCurrencies,
+    Workers.CalendarEvent
   }
 
   def get_description(%Job{package: nil} = job),
@@ -297,6 +298,10 @@ defmodule Picsello.PaymentSchedules do
     remainder_payment(job) |> Map.get(:price)
   end
 
+  @doc """
+  Update status of payment schedule by filling paid_at field.
+  Create oban job to create external event if user is connected to external calendar.
+  """
   def handle_payment(
         %Stripe.Session{
           client_reference_id: "proposal_" <> proposal_id,
@@ -321,6 +326,18 @@ defmodule Picsello.PaymentSchedules do
         payment_schedule,
         helpers
       )
+
+      %{job: %{shoots: shoots, client: %{organization: %{user: %{nylas_detail: nylas_detail}}}}} =
+        Repo.preload(payment_schedule,
+          job: [:shoots, client: [organization: [user: :nylas_detail]]]
+        )
+
+      if nylas_detail.oauth_token && nylas_detail.external_calendar_rw_id do
+        shoots
+        |> Enum.filter(&is_nil(&1.external_event_id))
+        |> Enum.map(&CalendarEvent.new(%{type: :insert, shoot_id: &1.id}))
+        |> Oban.insert_all()
+      end
 
       {:ok, payment_schedule}
     else
@@ -353,9 +370,14 @@ defmodule Picsello.PaymentSchedules do
     %{job: %{client: %{organization: organization} = client} = job} =
       proposal |> Repo.preload(job: [client: :organization])
 
+    payment_method_types = Payments.map_payment_opts_to_stripe_opts(organization)
     currency = Currency.for_job(job)
 
     stripe_params = %{
+      shipping_address_collection: %{
+        allowed_countries: ["US", "NZ", "AU", "GB", "CA"]
+      },
+      payment_method_types: payment_method_types,
       client_reference_id: "proposal_#{proposal.id}",
       cancel_url: Keyword.get(opts, :cancel_url),
       success_url: Keyword.get(opts, :success_url),
@@ -371,14 +393,13 @@ defmodule Picsello.PaymentSchedules do
             unit_amount: payment.price.amount,
             product_data: %{
               name: "#{Job.name(job)} #{payment.description}",
-              tax_code: Picsello.Payments.tax_code(:services)
+              tax_code: Payments.tax_code(:services)
             },
             tax_behavior: "exclusive"
           },
           quantity: 1
         }
       ],
-      payment_intent_data: %{setup_future_usage: "off_session"},
       metadata: Keyword.get(opts, :metadata, %{})
     }
 

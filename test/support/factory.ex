@@ -354,7 +354,7 @@ defmodule Picsello.Factory do
       price: price,
       interval: true,
       due_interval: "To Book",
-      description: "#{price} to To Book",
+      description: "#{price} To Book",
       schedule_date: "3022-01-01 00:00:00",
       package: package
     }

@@ -1,4 +1,5 @@
 defmodule Picsello.GalleryProductPreviewToggleTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
   alias Picsello.{Repo, Accounts.User}
 
@@ -75,7 +76,11 @@ defmodule Picsello.GalleryProductPreviewToggleTest do
       {:ok, %Stripe.Customer{invoice_settings: %{default_payment_method: "pm_12345"}}}
     end)
 
-    [gallery: gallery, photo_ids: photo_ids, gallery_digital_pricing: gallery_digital_pricing]
+    [
+      gallery: gallery,
+      photo_ids: photo_ids,
+      gallery_digital_pricing: gallery_digital_pricing
+    ]
   end
 
   test "Toggle disable product and view in client preview", %{

@@ -1,4 +1,5 @@
 defmodule Picsello.ClientUsesPrintCreditsTest do
+  @moduledoc false
   use Picsello.FeatureCase, async: true
 
   alias Picsello.{Cart.Order, Repo}
