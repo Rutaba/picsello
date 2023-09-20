@@ -23,6 +23,8 @@ defmodule PicselloWeb.SendgridInboundParseController do
     body_text = Map.get(params, "text")
 
     if initail_obj do
+      maybe_upload_attachments?(params) |> IO.inspect()
+
       changeset =
         Map.merge(
           %{
@@ -70,4 +72,65 @@ defmodule PicselloWeb.SendgridInboundParseController do
     |> put_resp_content_type("text/plain")
     |> send_resp(200, "ok")
   end
+
+  @doc """
+  Checks if the returned map has the key "attachment-info"
+
+  ## Examples
+
+      iex> maybe_has_attachments?(%{"attachment-info" => "something"})
+      true
+
+      iex> maybe_has_attachments?(%{"subject" => "something"})
+      false
+
+  """
+  def maybe_has_attachments?(params) do
+    case Map.get(params, "attachment-info", nil) do
+      nil -> false
+      _ -> true
+    end
+  end
+
+  @doc """
+  Checks if the returned map has the key "attachment-info" and uploads the docs to google cloud storage
+
+  returns a list of maps with the keys "message_id", "name" and "url"
+
+  ## Examples
+
+      iex> maybe_upload_attachments?(params)
+      [
+        %{
+          message_id: "some_id",
+          name: "some_name",
+          url: "some_url"
+        }
+      ]
+
+      iex> maybe_has_attachments?(%{"subject" => "something"})
+      nil
+
+  """
+  def maybe_upload_attachments?(params) do
+    case maybe_has_attachments?(params) do
+      true ->
+        params |> Map.get("attachment-info", nil) |> Jason.decode!() |> IO.inspect()
+        params |> Map.get("attachments", nil) |> Jason.decode!() |> IO.inspect()
+        params |> Map.get("attachment1", nil)
+
+      _ ->
+        nil
+    end
+  end
+
+  # defp upload_attachment(%PlugUpload{} = upload) do
+  #   upload
+  #   |> PlugUpload.stream()
+  #   |> IO.inspect()
+  # end
+
+  # defp get_all_attachments(params) do
+
+  # end
 end
