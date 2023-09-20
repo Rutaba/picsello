@@ -101,7 +101,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -256,7 +256,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans?| {{photography_company_s_name}}",
+        subject_template: "Change of plans? | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -324,7 +324,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -370,7 +370,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -668,7 +668,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Abandoned Cart email",
-        subject_template: "Finish your order from {{photography_company_s_name}}!",
+        subject_template: "Your order with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><br></p>
@@ -1096,7 +1096,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -1251,7 +1251,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans?| {{photography_company_s_name}}",
+        subject_template: "Change of plans? | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -1319,7 +1319,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -1365,7 +1365,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -1386,7 +1386,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - week before email",
-        subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
+        subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -1552,7 +1552,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Post Shoot - Next Shoot email",
-        subject_template: "Hello again!|{{photography_company_s_name}}",
+        subject_template: "Hello again! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -1663,7 +1663,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Abandoned Cart email",
-        subject_template: "Finish your order from {{photography_company_s_name}}!",
+        subject_template: "Your order with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><br></p>
@@ -2091,7 +2091,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -2246,7 +2246,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans?| {{photography_company_s_name}}",
+        subject_template: "Change of plans? | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -2314,7 +2314,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -2360,7 +2360,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -2410,7 +2410,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - day before email",
-        subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -2658,7 +2658,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Abandoned Cart email",
-        subject_template: "Finish your order from {{photography_company_s_name}}!",
+        subject_template: "Your order with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><br></p>
@@ -3086,7 +3086,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -3241,7 +3241,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans?| {{photography_company_s_name}}",
+        subject_template: "Change of plans? | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -3309,7 +3309,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -3355,7 +3355,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -3405,7 +3405,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - day before email",
-        subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -3653,7 +3653,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Abandoned Cart email",
-        subject_template: "Finish your order from {{photography_company_s_name}}!",
+        subject_template: "Your order with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><br></p>
@@ -4081,7 +4081,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -4236,7 +4236,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans?| {{photography_company_s_name}}",
+        subject_template: "Change of plans? | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -4304,7 +4304,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -4350,7 +4350,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -4371,7 +4371,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - week before email",
-        subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
+        subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -4400,7 +4400,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - day before email",
-        subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -4648,7 +4648,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Abandoned Cart email",
-        subject_template: "Finish your order from {{photography_company_s_name}}!",
+        subject_template: "Your order with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><br></p>
@@ -5075,7 +5075,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -5230,7 +5230,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans?| {{photography_company_s_name}}",
+        subject_template: "Change of plans? | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -5298,7 +5298,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -5344,7 +5344,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -5365,7 +5365,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - week before email",
-        subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
+        subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -5394,7 +5394,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - day before email",
-        subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -5642,7 +5642,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Abandoned Cart email",
-        subject_template: "Finish your order from {{photography_company_s_name}}!",
+        subject_template: "Your order with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><br></p>
@@ -6070,7 +6070,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -6225,7 +6225,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans?| {{photography_company_s_name}}",
+        subject_template: "Change of plans? | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -6293,7 +6293,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -6339,7 +6339,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -6360,7 +6360,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - week before email",
-        subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
+        subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -6389,7 +6389,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - day before email",
-        subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -6637,7 +6637,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Abandoned Cart email",
-        subject_template: "Finish your order from {{photography_company_s_name}}!",
+        subject_template: "Your order with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><br></p>
@@ -7065,7 +7065,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -7220,7 +7220,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans?| {{photography_company_s_name}}",
+        subject_template: "Change of plans? | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -7288,7 +7288,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -7334,7 +7334,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -7355,7 +7355,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - week before email",
-        subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
+        subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -7384,7 +7384,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - day before email",
-        subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -7632,7 +7632,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Abandoned Cart email",
-        subject_template: "Finish your order from {{photography_company_s_name}}!",
+        subject_template: "Your order with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><br></p>
@@ -8060,7 +8060,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -8215,7 +8215,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans?| {{photography_company_s_name}}",
+        subject_template: "Change of plans? | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -8283,7 +8283,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -8329,7 +8329,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -8350,7 +8350,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - week before email",
-        subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
+        subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -8379,7 +8379,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - day before email",
-        subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -8627,7 +8627,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Abandoned Cart email",
-        subject_template: "Finish your order from {{photography_company_s_name}}!",
+        subject_template: "Your order with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><br></p>
@@ -9055,7 +9055,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Lead - Initial Inquiry - follow up 2",
-        subject_template: "It's me again!|{{photography_company_s_name}}",
+        subject_template: "Checking in!|{{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -9210,7 +9210,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Booking Proposal Email - follow up 3",
-        subject_template: "Change of plans?| {{photography_company_s_name}}",
+        subject_template: "Change of plans? | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -9278,7 +9278,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Payments - paid in full email",
-        subject_template: "Your account is now paid in full.| {{photography_company_s_name}}",
+        subject_template: "Thank you for your payment! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
         <p><br></p>
@@ -9324,7 +9324,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - Thank you for booking email",
-        subject_template: "Thank you for booking with {{photography_company_s_name}}",
+        subject_template: "Next Steps with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -9345,7 +9345,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - week before email",
-        subject_template: "Prepping for your shoot with {{photography_company_s_name}}",
+        subject_template: "One week reminder from {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -9374,7 +9374,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "job",
         position: 0,
         name: "Pre-Shoot - day before email",
-        subject_template: "Our Shoot Tomorrow | {{photography_company_s_name}}",
+        subject_template: "The Big Day Tomorrow | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}}, </span></p>
         <p><br></p>
@@ -9622,7 +9622,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "gallery",
         position: 0,
         name: "Gallery - Abandoned Cart email",
-        subject_template: "Finish your order from {{photography_company_s_name}}!",
+        subject_template: "Your order with {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{order_first_name}},</span></p>
         <p><br></p>
