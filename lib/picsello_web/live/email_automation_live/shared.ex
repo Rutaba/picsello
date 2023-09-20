@@ -576,15 +576,16 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     offline_dues =
       PaymentSchedules.payment_schedules(job)
-      |> Enum.filter(&is_nil(&1.paid_at))
+      |> Enum.filter(& is_nil(&1.paid_at) and &1.type in ["cash", "check"])
       |> Enum.sort_by(& &1.due_at, :asc)
 
-    if is_nil(invoiced_due_date) and Enum.empty?(offline_dues) do
-      nil
-    else
+
+    if !is_nil(invoiced_due_date) and !Enum.empty?(offline_dues) do
       due_at = List.first(offline_dues) |> Map.get(:due_at)
 
       get_date_for_schedule(last_completed_email, due_at)
+    else
+      nil
     end
   end
 

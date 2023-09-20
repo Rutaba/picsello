@@ -45,29 +45,30 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
         job = Task.await(job_task)
         job = if is_nil(gallery_id), do: job, else: gallery.job
+        if is_nil(job.archived_at) do
+          subjects = Task.await(subjects_task)
+          Logger.info("Email Subjects #{subjects}")
 
-        subjects = Task.await(subjects_task)
-        Logger.info("Email Subjects #{subjects}")
+          # Each pipeline emails subjects resolve variables
+          subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
+          Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
 
-        # Each pipeline emails subjects resolve variables
-        subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
-        Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
+          # Check client reply for any email of current pipeline
+          is_reply =
+            if state in [:client_contact, :manual_thank_you_lead, :manual_booking_proposal_sent] do
+              is_reply_receive!(job, subjects_resolve)
+            else
+              false
+            end
 
-        # Check client reply for any email of current pipeline
-        is_reply =
-          if state in [:client_contact, :manual_thank_you_lead, :manual_booking_proposal_sent] do
-            is_reply_receive!(job, subjects_resolve)
-          else
-            false
+          Logger.info(
+            "Reply of any email from client for job #{job_id} and pipeline_id #{job_pipeline.pipeline_id}"
+          )
+
+          # This condition only run when no reply recieve from any email for that job & pipeline
+          if !is_reply do
+            send_email_each_pipeline(job_pipeline, job, gallery)
           end
-
-        Logger.info(
-          "Reply of any email from client for job #{job_id} and pipeline_id #{job_pipeline.pipeline_id}"
-        )
-
-        # This condition only run when no reply recieve from any email for that job & pipeline
-        if !is_reply and is_nil(job.archived_at) do
-          send_email_each_pipeline(job_pipeline, job, gallery)
         end
       end)
     end)

@@ -1907,8 +1907,8 @@ defmodule PicselloWeb.JobLive.Shared do
     client = Repo.get(Client, client_id)
     pipeline = EmailAutomations.get_pipeline_by_state(:manual_thank_you_lead)
     email_by_state = get_job_email_by_pipeline(job.id, pipeline)
-
-    manual_toggle = is_manual_toggle?(email_by_state)
+    last_completed_email = EmailAutomationSchedules.get_last_completed_email(:lead, nil,job.id, pipeline.id, :manual_thank_you_lead)
+    manual_toggle = if is_manual_toggle?(email_by_state) and is_nil(last_completed_email), do: true, else: false
 
     %{body_template: body_html, subject_template: subject} =
       get_email_body_subject(email_by_state, job, :manual_thank_you_lead)

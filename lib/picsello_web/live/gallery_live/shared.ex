@@ -44,8 +44,8 @@ defmodule PicselloWeb.GalleryLive.Shared do
         state = automation_state(type)
         pipeline = EmailAutomations.get_pipeline_by_state(state)
         email_by_state = get_gallery_email_by_pipeline(gallery.id, pipeline)
-
-        manual_toggle = is_manual_toggle?(email_by_state)
+        last_completed_email = EmailAutomationSchedules.get_last_completed_email(:gallery, gallery.id, nil, pipeline.id, state)
+        manual_toggle = if is_manual_toggle?(email_by_state) and is_nil(last_completed_email), do: true, else: false
 
         %{body_template: body_html, subject_template: subject} =
           get_email_body_subject(email_by_state, gallery, preset_state)
