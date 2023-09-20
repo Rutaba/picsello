@@ -82,21 +82,24 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
       %{
         name: "Client contacts you",
         state: "client_contact",
-        description: "Sends after your client contacts you via your Picsello public profile or contact form unless you disable the automation",
+        description:
+          "Sends after your client contacts you via your Picsello public profile or contact form unless you disable the automation",
         email_automation_sub_category_id: automation_inquiry.id,
         email_automation_category_id: email_automation_lead.id
       },
       %{
         name: "Inquiry and Follow Up Emails",
         state: "manual_thank_you_lead",
-        description: "Sending the Inquiry Email will trigger follow up emails unless the follow up emails are deleted",
+        description:
+          "Sending the Inquiry Email will trigger follow up emails unless the follow up emails are deleted",
         email_automation_sub_category_id: automation_inquiry.id,
         email_automation_category_id: email_automation_lead.id
       },
       %{
         name: "Booking Proposal and Follow Up Emails",
         state: "manual_booking_proposal_sent",
-        description: "Sending the Booking Proposal Email will trigger follow up emails unless the follow up emails are deleted",
+        description:
+          "Sending the Booking Proposal Email will trigger follow up emails unless the follow up emails are deleted",
         email_automation_sub_category_id: automation_proposal.id,
         email_automation_category_id: email_automation_lead.id
       },

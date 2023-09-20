@@ -45,6 +45,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
 
         job = Task.await(job_task)
         job = if is_nil(gallery_id), do: job, else: gallery.job
+
         if is_nil(job.archived_at) do
           subjects = Task.await(subjects_task)
           Logger.info("Email Subjects #{subjects}")

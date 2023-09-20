@@ -120,8 +120,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         %{"email-id" => email_id},
         socket
       ) do
-    email_delete =
-      to_integer(email_id)
+    email_delete = to_integer(email_id)
 
     socket
     |> assign(:email_id, email_delete)
@@ -130,9 +129,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
       confirm_event: "confirm-delete-email",
       confirm_label: "Yes, delete",
       icon: "warning-orange",
-      subtitle: "Do you wish to permanently delete this email template. It will remove the email from the current email automation pipeline sub-category!",
-      title:
-        "Are you sure you want to delete this email template?"
+      subtitle:
+        "Do you wish to permanently delete this email template. It will remove the email from the current email automation pipeline sub-category!",
+      title: "Are you sure you want to delete this email template?"
     })
     |> noreply()
   end
@@ -186,8 +185,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
         socket
         |> put_flash(:success, "Email template successfully deleted")
 
-        _ ->
-          socket
+      _ ->
+        socket
         |> put_flash(:success, "Failed to delete the email template")
     end
     |> close_modal()
