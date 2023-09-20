@@ -347,4 +347,17 @@ defmodule Picsello.Messages do
     from(m in ClientMessage, where: m.job_id == ^job_id and is_nil(m.read_at))
     |> Repo.update_all(set: [read_at: DateTime.utc_now() |> DateTime.truncate(:second)])
   end
+
+  def delete_client_thread(client_id) do
+    from(m in ClientMessage,
+      join: cmr in assoc(m, :client_message_recipients),
+      where: is_nil(m.job_id) and cmr.client_id == ^client_id
+    )
+    |> Repo.update_all(set: [deleted_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+  end
+
+  def delete_job_thread(job_id) do
+    from(m in ClientMessage, where: m.job_id == ^job_id and is_nil(m.deleted_at))
+    |> Repo.update_all(set: [deleted_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+  end
 end

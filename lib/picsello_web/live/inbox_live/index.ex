@@ -646,14 +646,21 @@ defmodule PicselloWeb.InboxLive.Index do
   end
 
   @impl true
-  def handle_info({:confirm_event, "delete"}, %{assigns: %{job: job}} = socket) do
-    from(m in ClientMessage, where: m.job_id == ^job.id and is_nil(m.deleted_at))
-    |> Repo.update_all(set: [deleted_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+  def handle_info({:confirm_event, "delete"}, %{assigns: %{job: nil, client: client}} = socket) do
+    client.id
+    |> Messages.delete_client_thread()
 
     socket
-    |> close_modal()
-    |> push_redirect(to: Routes.inbox_path(socket, :index), replace: true)
-    |> noreply()
+    |> redirect_to_inbox()
+  end
+
+  @impl true
+  def handle_info({:confirm_event, "delete"}, %{assigns: %{job: job}} = socket) do
+    job.id
+    |> Messages.delete_job_thread()
+
+    socket
+    |> redirect_to_inbox()
   end
 
   defp insert_messages_query(message_changeset, recipients, %{
@@ -665,5 +672,12 @@ defmodule PicselloWeb.InboxLive.Index do
 
   defp insert_messages_query(message_changeset, recipients, %{current_user: user, client: client}) do
     {client.id, Messages.add_message_to_client(message_changeset, recipients, user)}
+  end
+
+  defp redirect_to_inbox(socket) do
+    socket
+    |> close_modal()
+    |> push_redirect(to: Routes.inbox_path(socket, :index), replace: true)
+    |> noreply()
   end
 end
