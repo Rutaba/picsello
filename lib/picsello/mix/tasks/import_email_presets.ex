@@ -149,8 +149,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for inquiring! </span> I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         <p>Warm regards,</p>
         <p>{{email_signature}}</p>
         """
@@ -408,8 +406,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><br></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         """
       },
       %{
@@ -1144,8 +1140,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for inquiring! </span> I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         <p>Warm regards,</p>
         <p>{{email_signature}}</p>
         """
@@ -1403,8 +1397,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><br></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         """
       },
       %{
@@ -2139,8 +2131,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for inquiring! </span> I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         <p>Warm regards,</p>
         <p>{{email_signature}}</p>
         """
@@ -2398,8 +2388,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><br></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         """
       },
       %{
@@ -3134,8 +3122,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for inquiring! </span> I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         <p>Warm regards,</p>
         <p>{{email_signature}}</p>
         """
@@ -3393,8 +3379,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><br></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         """
       },
       %{
@@ -4129,8 +4113,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for inquiring! </span> I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         <p>Warm regards,</p>
         <p>{{email_signature}}</p>
         """
@@ -4388,8 +4370,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><br></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         """
       },
       %{
@@ -5123,8 +5103,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for inquiring! </span> I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         <p>Warm regards,</p>
         <p>{{email_signature}}</p>
         """
@@ -5382,8 +5360,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><br></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         """
       },
       %{
@@ -6118,8 +6094,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for inquiring! </span> I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         <p>Warm regards,</p>
         <p>{{email_signature}}</p>
         """
@@ -6377,8 +6351,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><br></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         """
       },
       %{
@@ -7113,8 +7085,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for inquiring! </span> I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         <p>Warm regards,</p>
         <p>{{email_signature}}</p>
         """
@@ -7372,8 +7342,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><br></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         """
       },
       %{
@@ -8108,8 +8076,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for inquiring! </span> I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         <p>Warm regards,</p>
         <p>{{email_signature}}</p>
         """
@@ -8367,8 +8333,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><br></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         """
       },
       %{
@@ -9103,8 +9067,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         body_template: """
         <p>Hello {{client_first_name}},</p>
         <p><span style="color: rgb(0, 0, 0);">Thank you for inquiring! </span> I am thrilled to hear from you and am looking forward to creating photographs that capture your special day and that you will treasure for years to come.</p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         <p>Warm regards,</p>
         <p>{{email_signature}}</p>
         """
@@ -9362,8 +9324,6 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Warm regards, </span></p>
         <p><br></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
-        <p>{{#first_red_section}}</p>
-        <p>{{/first_red_section}}</p>
         """
       },
       %{
