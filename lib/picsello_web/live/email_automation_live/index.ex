@@ -234,7 +234,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
             <div class="flex flex-col">
               <span class="text-blue-planning-300 text-xl font-bold ml-3">
                 <%= @pipeline.name %>
-                <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(@pipeline.emails)%> emails</span>
+                <span class="text-base-300 ml-2 rounded-md bg-white px-2 text-sm font-bold whitespace-nowrap"><%= Enum.count(@pipeline.emails) %> <%= ngettext("email", "emails", Enum.count(@pipeline.emails)) %></span>
               </span>
               <div class="text-base-250 text-sm ml-3">
                 <%= @pipeline.description %>
