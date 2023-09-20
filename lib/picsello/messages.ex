@@ -335,29 +335,23 @@ defmodule Picsello.Messages do
     {job_ids, client_ids, message_ids}
   end
 
-  def update_all(client_id, :client) do
+  def update_all(client_id, :client, field) do
     from(m in ClientMessage,
       join: cmr in assoc(m, :client_message_recipients),
-      where: is_nil(m.job_id) and is_nil(m.read_at) and cmr.client_id == ^client_id
+      where: is_nil(m.job_id) and cmr.client_id == ^client_id,
+      where: is_nil(field(m, ^field))
     )
-    |> Repo.update_all(set: [read_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+    |> update_field(field)
   end
 
-  def update_all(job_id, :job) do
-    from(m in ClientMessage, where: m.job_id == ^job_id and is_nil(m.read_at))
-    |> Repo.update_all(set: [read_at: DateTime.utc_now() |> DateTime.truncate(:second)])
-  end
-
-  def delete_client_thread(client_id) do
+  def update_all(job_id, :job, field) do
     from(m in ClientMessage,
-      join: cmr in assoc(m, :client_message_recipients),
-      where: is_nil(m.job_id) and cmr.client_id == ^client_id
+      where: m.job_id == ^job_id,
+      where: is_nil(field(m, ^field))
     )
-    |> Repo.update_all(set: [deleted_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+    |> update_field(field)
   end
 
-  def delete_job_thread(job_id) do
-    from(m in ClientMessage, where: m.job_id == ^job_id and is_nil(m.deleted_at))
-    |> Repo.update_all(set: [deleted_at: DateTime.utc_now() |> DateTime.truncate(:second)])
-  end
+  defp update_field(query, field),
+    do: query |> Repo.update_all(set: [{field, DateTime.utc_now() |> DateTime.truncate(:second)}])
 end

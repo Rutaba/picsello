@@ -1,8 +1,9 @@
 defmodule PicselloWeb.InboxLive.Index do
   @moduledoc false
   use PicselloWeb, :live_view
-  alias Picsello.{Job, Jobs, Repo, ClientMessage, Notifiers.ClientNotifier, Messages}
-  import Ecto.Query
+
+  alias Picsello.{Job, Jobs, Repo, Notifiers.ClientNotifier, Messages}
+
   import Picsello.Galleries.Workers.PhotoStorage, only: [path_to_url: 1]
 
   @impl true
@@ -593,7 +594,7 @@ defmodule PicselloWeb.InboxLive.Index do
          %{assigns: %{current_thread: %{id: id}, current_thread_type: type}} = socket
        ) do
     if connected?(socket) do
-      Messages.update_all(id, type)
+      Messages.update_all(id, type, :read_at)
     end
 
     socket
@@ -648,7 +649,7 @@ defmodule PicselloWeb.InboxLive.Index do
   @impl true
   def handle_info({:confirm_event, "delete"}, %{assigns: %{job: nil, client: client}} = socket) do
     client.id
-    |> Messages.delete_client_thread()
+    |> Messages.update_all(:client, :deleted_at)
 
     socket
     |> redirect_to_inbox()
@@ -657,7 +658,7 @@ defmodule PicselloWeb.InboxLive.Index do
   @impl true
   def handle_info({:confirm_event, "delete"}, %{assigns: %{job: job}} = socket) do
     job.id
-    |> Messages.delete_job_thread()
+    |> Messages.update_all(:job, :deleted_at)
 
     socket
     |> redirect_to_inbox()
