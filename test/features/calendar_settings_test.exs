@@ -10,7 +10,7 @@ defmodule Picsello.CalendarSettingsTest do
     |> visit("/calendar/settings")
     |> assert_text("Calendar Settings")
     |> assert_has(css("a[href*='/calendar']", count: 3))
-    |> click(link("Calendar", count: 2, at: 1))
+    |> click(css("#copy-calendar-link"))
     |> assert_url_contains("calendar")
   end
 
