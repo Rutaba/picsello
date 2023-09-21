@@ -1,0 +1,30 @@
+defmodule Picsello.ClientMessageAttachment do
+  @moduledoc false
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  alias Picsello.{ClientMessage}
+
+  schema "client_message_attachments" do
+    belongs_to(:client_message, ClientMessage)
+    field(:name, :string)
+    field(:url, :string)
+
+    timestamps(type: :utc_datetime)
+  end
+
+  @attrs [:client_message_id, :name, :url]
+  @doc false
+  def changeset(client_message_attachment \\ %__MODULE__{}, attrs) do
+    client_message_attachment
+    |> cast(attrs, @attrs)
+    |> validate_required(@attrs)
+    |> assoc_constraint(:client_message)
+  end
+
+  def create_changeset(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, @attrs)
+    |> validate_required(@attrs)
+  end
+end

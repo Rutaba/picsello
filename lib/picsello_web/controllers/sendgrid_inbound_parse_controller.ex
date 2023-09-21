@@ -1,6 +1,16 @@
 defmodule PicselloWeb.SendgridInboundParseController do
   use PicselloWeb, :controller
-  alias Picsello.{Repo, ClientMessageRecipient, ClientMessage, Messages, Client, Job}
+
+  alias Picsello.{
+    Repo,
+    ClientMessageAttachment,
+    ClientMessageRecipient,
+    ClientMessage,
+    Messages,
+    Client,
+    Job,
+    Galleries.Workers.PhotoStorage
+  }
 
   def parse(conn, params) do
     %{"envelope" => envelope} = params
@@ -23,8 +33,6 @@ defmodule PicselloWeb.SendgridInboundParseController do
     body_text = Map.get(params, "text")
 
     if initail_obj do
-      maybe_upload_attachments?(params) |> IO.inspect()
-
       changeset =
         Map.merge(
           %{
@@ -57,6 +65,10 @@ defmodule PicselloWeb.SendgridInboundParseController do
           _ ->
             multi
         end
+      end)
+      |> Ecto.Multi.merge(fn %{message: %{id: message_id}} ->
+        Ecto.Multi.new()
+        |> maybe_upload_attachments?(message_id, params)
       end)
       |> Repo.transaction()
       |> then(fn
@@ -95,16 +107,18 @@ defmodule PicselloWeb.SendgridInboundParseController do
   @doc """
   Checks if the returned map has the key "attachment-info" and uploads the docs to google cloud storage
 
-  returns a list of maps with the keys "message_id", "name" and "url"
+  returns a list of maps with the keys: client_message_id, name, and url
 
   ## Examples
 
       iex> maybe_upload_attachments?(params)
       [
         %{
-          message_id: "some_id",
+          client_message_id: 1,
           name: "some_name",
-          url: "some_url"
+          url: "inbox-attachments/1/some_name",
+          inserted_at: ~U[2020-01-01 00:00:00Z],
+          updated_at: ~U[2020-01-01 00:00:00Z]
         }
       ]
 
@@ -112,25 +126,55 @@ defmodule PicselloWeb.SendgridInboundParseController do
       nil
 
   """
-  def maybe_upload_attachments?(params) do
+  def maybe_upload_attachments?(multi, message_id, params) do
     case maybe_has_attachments?(params) do
       true ->
-        params |> Map.get("attachment-info", nil) |> Jason.decode!() |> IO.inspect()
-        params |> Map.get("attachments", nil) |> Jason.decode!() |> IO.inspect()
-        params |> Map.get("attachment1", nil)
+        attachments =
+          get_all_attachments(params)
+          |> Enum.map(&upload_attachment(&1, message_id))
+
+        Ecto.Multi.insert_all(multi, :attachments, ClientMessageAttachment, attachments)
 
       _ ->
-        nil
+        multi
     end
   end
 
-  # defp upload_attachment(%PlugUpload{} = upload) do
-  #   upload
-  #   |> PlugUpload.stream()
-  #   |> IO.inspect()
-  # end
+  # Upload to google cloud storage
+  # return path, message_id, and filename
+  defp upload_attachment(
+         %{filename: filename, path: path} = _attachment,
+         message_id
+       ) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-  # defp get_all_attachments(params) do
+    upload_path =
+      Path.join([
+        "inbox-attachments",
+        Integer.to_string(message_id),
+        filename
+      ])
 
-  # end
+    file = File.read!(path)
+    {:ok, _object} = PhotoStorage.insert(upload_path, file)
+
+    %{
+      client_message_id: message_id,
+      name: filename,
+      url: upload_path,
+      inserted_at: now,
+      updated_at: now
+    }
+  end
+
+  # Need this step to pull the keys from "attachment-info"
+  # and use them to get the actual attachments from plug
+  defp get_all_attachments(params) do
+    params
+    |> Map.get("attachment-info", nil)
+    |> Jason.decode!()
+    |> Enum.map(fn {key, _} ->
+      Map.get(params, key, nil)
+    end)
+  end
 end
