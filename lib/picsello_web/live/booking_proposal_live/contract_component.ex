@@ -4,13 +4,14 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
   use PicselloWeb, :live_component
   alias Picsello.{Repo, BookingProposal, Contracts}
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
-  import PicselloWeb.BookingProposalLive.Shared, only: [visual_banner: 1, items: 1, banner: 1]
+  import PicselloWeb.BookingProposalLive.Shared, only: [visual_banner: 1, items: 1]
 
   @impl true
   def update(assigns, socket) do
     socket
     |> assign(assigns)
     |> assign_new(:job, fn -> nil end)
+    |> assign_new(:shoots, fn -> nil end)
     |> assign_new(:client, fn -> nil end)
     |> assign_new(:proposal, fn -> nil end)
     |> assign_new(:booking_event, fn -> nil end)

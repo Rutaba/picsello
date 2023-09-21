@@ -1,13 +1,6 @@
 <div class="modal">
   <.form for={@changeset} :let={f} phx-change="validate" phx-submit="submit" phx-target={@myself}>
     <.close_x />
-    
-    <.banner title="Contract" job={@job} package={@package}, booking_event={@booking_event}>
-      <p class="py-2">Terms and Conditions</p>
-      <%= if @proposal && @proposal.signed_at do %>
-        <p>Signed on <%= strftime(@photographer.time_zone, @proposal.signed_at, "%b %d, %Y") %></p>
-      <% end %>
-    </.banner>
 
     <div class="mt-4 grid grid-cols-2 sm:grid-cols-[2fr,3fr] gap-4 sm:gap-6">
       <dl class="flex flex-col">

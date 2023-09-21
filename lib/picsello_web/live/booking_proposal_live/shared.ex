@@ -25,24 +25,6 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
   alias Picsello.{Repo, PaymentSchedules, Notifiers, Job, Package, Packages}
   alias PicselloWeb.Router.Helpers, as: Routes
 
-  def banner(assigns) do
-    ~H"""
-    <%= if assigns[:read_only] do %>
-      <.badge color={:gray} mode={:outlined}>Read-only</.badge>
-    <% end %>
-
-    <h1 class="mb-4 text-3xl font-light"><%= @title %></h1>
-
-      <div class="py-4 bg-base-200 modal-banner">
-        <div class="text-2xl font-bold">
-          <h2><%= if @job, do: Job.name(@job), else: @booking_event.name %> Shoot <%= if @package, do: @package.name %></h2>
-        </div>
-
-        <%= render_slot @inner_block%>
-      </div>
-    """
-  end
-
   def visual_banner(assigns) do
     assigns =
       Enum.into(assigns, %{
@@ -68,7 +50,9 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         <% end %>
 
         <%= if @package do %>
-          <p class="mt-2 text-base-250"><%= Money.to_string(PaymentSchedules.total_price(@job), symbol: false, code: true) %></p>
+          <%= if @job do %>
+            <p class="mt-2 text-base-250"><%= Money.to_string(PaymentSchedules.total_price(@job), symbol: false, code: true) %></p>
+          <% end %>
           <.photo_dowloads_display package={@package} class="text-base-250 mt-2" />
         <% end %>
 
@@ -190,21 +174,23 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
         <h2>Details</h2>
       </div>
 
-      <%= for shoot <- @shoots do %>
-        <div {testid("shoot-title")} class="flex flex-col col-span-1 sm:col-span-1 pl-4 md:pl-8">
-          <h3 class="font-light"><%= shoot.name %></h3>
-          <%= strftime(@photographer.time_zone, shoot.starts_at, "%B %d, %Y") %>
-        </div>
+      <%= if @shoots do %>
+        <%= for shoot <- @shoots do %>
+          <div {testid("shoot-title")} class="flex flex-col col-span-1 sm:col-span-1 pl-4 md:pl-8">
+            <h3 class="font-light"><%= shoot.name %></h3>
+            <%= strftime(@photographer.time_zone, shoot.starts_at, "%B %d, %Y") %>
+          </div>
 
-        <div {testid("shoot-description")} class="flex flex-col col-span-1 sm:col-span-1">
-          <p>
-            <%= dyn_gettext("duration-#{shoot.duration_minutes}") %>
-            starting at <%= strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
-          </p>
-          <p><%= shoot_location(shoot) %></p>
-        </div>
+          <div {testid("shoot-description")} class="flex flex-col col-span-1 sm:col-span-1">
+            <p>
+              <%= dyn_gettext("duration-#{shoot.duration_minutes}") %>
+              starting at <%= strftime(@photographer.time_zone, shoot.starts_at, "%-I:%M %P") %>
+            </p>
+            <p><%= shoot_location(shoot) %></p>
+          </div>
 
-        <hr class="col-span-2">
+          <hr class="col-span-2">
+        <% end %>
       <% end %>
 
       <div class="flex flex-col col-span-1 sm:col-span-1 pl-4 md:pl-8">

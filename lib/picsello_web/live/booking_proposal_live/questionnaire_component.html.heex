@@ -7,7 +7,7 @@
     </div>
 
     <h1 class="text-3xl font-light">
-      Questionnaire for <%= @job.client.name %>
+      Questionnaire for <%= if @job, do: @job.client.name, else: @booking_event.name %>
     </h1>
 
     <%= if @answer.id do %>

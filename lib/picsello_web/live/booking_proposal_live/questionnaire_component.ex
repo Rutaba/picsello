@@ -162,6 +162,8 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
         %{assigns: %{current_user: current_user, package: package, booking_event: booking_event}} =
           socket
       ) do
+    package = package |> Repo.preload([:organization])
+
     socket
     |> open_modal(__MODULE__, %{
       booking_event: booking_event,
@@ -169,6 +171,7 @@ defmodule PicselloWeb.BookingProposalLive.QuestionnaireComponent do
       answer: %Answer{
         answers: List.duplicate([], Enum.count(package.questionnaire_template.questions))
       },
+      organization: package.organization,
       questionnaire: package.questionnaire_template,
       photographer: current_user
     })
