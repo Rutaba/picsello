@@ -29,6 +29,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
   alias PicselloWeb.GalleryLive.Photos.FolderUpload
   alias PicselloWeb.GalleryLive.Photos.{Photo, PhotoPreview, PhotoView, UploadError}
   alias PicselloWeb.GalleryLive.Albums.{AlbumThumbnail, AlbumSettings}
+  alias PicselloWeb.GalleryLive.Photos.CloudError
   alias Ecto.Multi
 
   @per_page 500
@@ -260,6 +261,13 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
 
     socket
     |> open_modal(UploadError, socket.assigns)
+    |> noreply
+  end
+
+  @impl true
+  def handle_event("re-upload", _, %{assigns: assigns} = socket) do
+    socket
+    |> open_modal(CloudError, assigns)
     |> noreply
   end
 
@@ -747,6 +755,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
         {:photo_processed, _, photo},
         %{assigns: %{total_progress: total_progress}} = socket
       ) do
+    send(self(), :invalid_preview)
+
     if total_progress == 100 || total_progress == 0 do
       photo_update =
         %{
@@ -933,6 +943,17 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> process_favorites(@per_page)
   end
 
+  @re_call_time 310_000
+  def handle_info(:invalid_preview, %{assigns: %{gallery: gallery}} = socket) do
+    Process.send_after(self(), :invalid_preview, @re_call_time)
+
+    invalid_preview_photos = Galleries.get_gallery_photos(gallery.id, invalid_preview: true)
+
+    socket
+    |> assign(invalid_preview_photos: invalid_preview_photos)
+    |> noreply()
+  end
+
   defp assigns(socket, gallery_id, album \\ nil) do
     gallery = get_gallery!(gallery_id)
 
@@ -941,6 +962,9 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       PubSub.subscribe(Picsello.PubSub, "clear_photos_error:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "photo_uploaded:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "uploading:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "invalid_preview:#{gallery_id}")
+
+      send(self(), :invalid_preview)
     end
 
     currency = Picsello.Currency.for_gallery(gallery)
@@ -952,7 +976,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
       gallery: gallery,
       album: album,
       page_title: page_title(socket.assigns.live_action),
-      products: Galleries.products(gallery)
+      products: Galleries.products(gallery),
+      invalid_preview_photos: []
     )
     |> assign_photos(@per_page)
     |> then(&assign(&1, photo_ids: Enum.map(&1.assigns.photos, fn photo -> photo.id end)))
@@ -1023,6 +1048,8 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> Repo.transaction()
     |> then(fn
       {:ok, %{update_gallery: gallery, delete_photos: {count, _}}} ->
+        send(self(), :invalid_preview)
+
         socket
         |> assign(:gallery, gallery)
         |> assign(:selected_photos, [])

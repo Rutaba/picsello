@@ -187,6 +187,7 @@ defmodule Picsello.Galleries do
           | {:album_id, number()}
           | {:exclude_album, boolean()}
           | {:favorites_filter, boolean()}
+          | {:invalid_preview, boolean()}
   @doc """
   Gets paginated photos by gallery id
 
@@ -197,6 +198,7 @@ defmodule Picsello.Galleries do
     * :offset
     * :limit
     * :photographer_favorites_filter
+    * :invalid_preview
   """
   @spec get_gallery_photos(id :: integer, opts :: list(get_gallery_photos_option)) ::
           list(Photo)
@@ -227,6 +229,14 @@ defmodule Picsello.Galleries do
 
   @doc """
   Get list of photo ids from gallery.
+  Options:
+    * :favorites_filter. If set to `true`, then only liked photos will be returned. Defaults to `false`;
+    * :exclude_album. if set to `true`, then only unsorted photos(photos not associated with any album) will be returned. Defaluts to `false`;
+    * :album_id
+    * :offset
+    * :limit
+    * :photographer_favorites_filter
+    * :invalid_preview
   """
   @spec get_gallery_photo_ids(id :: integer, opts :: keyword) :: list(integer)
   def get_gallery_photo_ids(id, opts) do
@@ -257,6 +267,7 @@ defmodule Picsello.Galleries do
     |> Repo.aggregate(:count, [])
   end
 
+  @minutes_to_consider_photos_invalid 5
   defp conditions(id, opts) do
     exclude_album = Keyword.get(opts, :exclude_album, false)
     album_id = Keyword.get(opts, :album_id, false)
@@ -274,6 +285,14 @@ defmodule Picsello.Galleries do
 
       {:exclude_album, true}, conditions ->
         dynamic([p], is_nil(p.album_id) and ^conditions)
+
+      {:invalid_preview, true}, conditions ->
+        datetime = DateTime.add(DateTime.utc_now(), -@minutes_to_consider_photos_invalid, :minute)
+
+        dynamic(
+          [p],
+          is_nil(p.preview_url) and p.updated_at < ^datetime and ^conditions
+        )
 
       _, conditions ->
         conditions

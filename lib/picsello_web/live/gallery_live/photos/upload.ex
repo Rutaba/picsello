@@ -10,13 +10,12 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
     Photo,
     Watermark,
     PhotoProcessing.GalleryUploadProgress,
-    PhotoProcessing.ProcessingManager,
     Workers.PhotoStorage
   }
 
   alias Phoenix.PubSub
 
-  import PicselloWeb.GalleryLive.Shared, only: [disabled?: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [disabled?: 1, start_photo_processing: 2]
 
   @upload_options [
     accept: ~w(.jpg .jpeg .png image/jpeg image/png),
@@ -40,6 +39,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
       PubSub.subscribe(Picsello.PubSub, "inprogress_upload_update:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "delete_photos:#{gallery_id}")
       PubSub.subscribe(Picsello.PubSub, "folder_albums:#{gallery_id}")
+      PubSub.subscribe(Picsello.PubSub, "upload_stuck_photos:#{gallery_id}")
     end
 
     {:ok,
@@ -379,15 +379,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
        }) do
     uploaded = length(inprogress_photos)
     "#{uploaded}/#{total(entries)} #{ngettext("photo", "photos", uploaded)} uploaded successfully"
-  end
-
-  defp start_photo_processing(%{album: %{is_proofing: true}} = photo, %{watermark: nil} = gallery) do
-    %{job: %{client: %{organization: %{name: name}}}} = Galleries.populate_organization(gallery)
-    ProcessingManager.start(photo, Watermark.build(name, gallery))
-  end
-
-  defp start_photo_processing(photo, %{watermark: watermark}) do
-    ProcessingManager.start(photo, watermark)
   end
 
   defp apply_limits(
