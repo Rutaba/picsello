@@ -1,6 +1,6 @@
 defmodule Picsello.CalendarSettingsTest do
   @moduledoc false
-  use Picsello.FeatureCase, async: true
+  use Picsello.FeatureCase, async: false
 
   setup :onboarded
   setup :authenticated
