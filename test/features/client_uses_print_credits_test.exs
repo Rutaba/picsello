@@ -465,8 +465,6 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
     setup [:stub_whcc, :expect_stripe_checkout]
 
     feature("only charges client", %{session: session, photo_ids: photo_ids, gallery: gallery}) do
-      IO.inspect(gallery)
-
       session
       |> click(css("a", text: "View Gallery"))
       |> click(css("#img-#{List.first(photo_ids)}"))
