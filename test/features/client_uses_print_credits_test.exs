@@ -464,19 +464,22 @@ defmodule Picsello.ClientUsesPrintCreditsTest do
 
     setup [:stub_whcc, :expect_stripe_checkout]
 
-    feature("only charges client", %{session: session, photo_ids: photo_ids}) do
+    feature("only charges client", %{session: session, photo_ids: photo_ids, gallery: gallery}) do
+      IO.inspect(gallery)
+
       session
       |> click(css("a", text: "View Gallery"))
-      |> scroll_to_bottom()
-      |> click(css("#img-#{List.first(photo_ids)}"))
-      |> click(button("Add to cart"))
-      |> click(css("[phx-click='close']"))
-      |> click(link("Home"))
-      |> assert_has(definition("Print Credit", text: "$5,000.00"))
-      |> scroll_to_bottom()
       |> click(css("#img-#{List.first(photo_ids)}"))
       |> click(button("Select"))
       |> click(button("Customize & buy"))
+      |> click(link("Home"))
+      |> click(css("#img-#{List.first(photo_ids)}"))
+      |> within_modal(fn modal ->
+        modal
+        |> click(button("Add to cart"))
+        |> click(css("[phx-click='close']"))
+      end)
+      |> click(css("[title='cart']"))
       |> assert_text("Cart & Shipping Review")
       |> assert_has(definition("Products (1)", text: "2,020.00"))
       |> assert_has(definition("Digital downloads (1)", text: "55.00"))

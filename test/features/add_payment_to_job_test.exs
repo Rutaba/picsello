@@ -67,16 +67,22 @@ defmodule Picsello.AddPaymentsToJobTest do
     |> visit("/jobs/#{job.id}")
     |> click(css("#options"))
     |> click(button("Mark as paid"))
-    |> assert_has(css("#add-payment", count: 1))
-    |> click(css("#add-payment"))
-    |> fill_in(text_field("add-payment-form_price"), with: "5")
-    |> click(css("#mark_as_paid_payment"))
+    |> within_modal(fn modal ->
+      modal
+      |> assert_has(css("#add-payment", count: 1))
+      |> click(css("#add-payment"))
+      |> fill_in(text_field("add-payment-form_price"), with: "5")
+      |> click(css("#mark_as_paid_payment"))
+    end)
     |> fill_in(css(".numInput.cur-year"), with: "3022")
     |> find(css(".flatpickr-monthDropdown-months"), &click(&1, option("January")))
     |> click(css("[aria-label='January 1, 3022']"))
-    |> click(button("Save"))
-    |> assert_has(css("#payments", count: 1, text: "Payment 1"))
-    |> assert_has(css("#offline-amount", count: 1, text: "$5.00"))
+    |> within_modal(fn modal ->
+      modal
+      |> click(button("Save"))
+      |> assert_has(css("#payments", count: 1, text: "Payment 1"))
+      |> assert_has(css("#offline-amount", count: 1, text: "$5.00"))
+    end)
   end
 
   feature "send email reminder to client", %{session: session, job: job} do
