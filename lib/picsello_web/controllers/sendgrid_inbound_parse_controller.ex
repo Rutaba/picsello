@@ -9,7 +9,8 @@ defmodule PicselloWeb.SendgridInboundParseController do
     Messages,
     Job,
     Galleries.Workers.PhotoStorage,
-    Organization
+    Organization,
+    Clients
   }
 
   alias Ecto.Multi

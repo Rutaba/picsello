@@ -49,7 +49,7 @@ defmodule PicselloWeb.InboxLive.Index do
         <h2 class="font-bold text-2xl mb-4">Viewing all messages</h2>
         <div class="flex sm:ml-auto gap-3">
           <%= for %{name: name, action: action, concise_name: concise_name} <- @tabs do %>
-            <button class={classes("border rounded-lg border-blue-planning-300 text-blue-planning-300 py-1 px-4", %{"text-white bg-blue-planning-300" => @tab_active === concise_name, "hover:opacity-100" => @tab_active !== concise_name})} type="button" phx-click={action} phx-value-tab={concise_name}><%= name %></button>
+            <button class={classes("border rounded-lg border-blue-planning-300 text-blue-planning-300 py-1 px-4", %{"text-white bg-blue-planning-300" => @tab_active === concise_name, "hover:opacity-100" => @tab_active !== concise_name})} type="button" phx-click={action} phx-value-tab={concise_name}><%=  name %></button>
           <% end %>
         </div>
       </div>
@@ -57,7 +57,7 @@ defmodule PicselloWeb.InboxLive.Index do
       <div class="flex sm:h-[calc(100vh-18rem)]">
         <div class={classes("border-t w-full lg:w-1/3 overflow-y-auto flex-shrink-0", %{"hidden sm:block" => @current_thread, "hidden" => Enum.empty?(@threads)})}>
           <%= for thread <- @threads do %>
-            <.thread_card {thread} unread={member?(assigns, thread.id)} selected={@current_thread && thread.id == @current_thread.id && @current_thread_type == thread.type} />
+            <.thread_card {thread} unread={member?(assigns, thread.id, thread.type)} selected={@current_thread && thread.id == @current_thread.id && @current_thread_type == thread.type} />
           <% end %>
         </div>
         <%= cond do %>
@@ -86,7 +86,7 @@ defmodule PicselloWeb.InboxLive.Index do
 
   defp thread_card(assigns) do
     ~H"""
-    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class={classes("flex justify-between py-6 border-b pl-2 p-8 cursor-pointer", %{"bg-blue-planning-300 rounded-lg text-white" => @selected, "hover:bg-gray-100 hover:text-black" => !@selected})}>
+    <div {testid("thread-card")} phx-click="open-thread" phx-value-id={@id} phx-value-type={@type} class={classes("lg:flex justify-between py-6 border-b pl-2 p-8 cursor-pointer", %{"bg-blue-planning-300 rounded-lg text-white" => @selected, "hover:bg-gray-100 hover:text-black" => !@selected})}>
       <div class="px-4">
         <div class="flex items-center">
           <div class="font-bold	text-2xl line-clamp-1">
@@ -110,9 +110,11 @@ defmodule PicselloWeb.InboxLive.Index do
         <%= if (@message) do %>
           <div class={classes("line-clamp-1", %{"w-48" => String.length(@message) > 28})}><%= raw @message %></div>
         <% end %>
-        <span class="px-2 py-0.5 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300 capitalize"><%= @type %></span>
+        <span class="px-2 py-0.5 text-xs font-semibold rounded bg-blue-planning-100 text-blue-planning-300 capitalize">
+          <%= @type %>
+        </span>
       </div>
-      <div class="relative flex flex-shrink-0">
+      <div class="relative flex flex-shrink-0 pl-4">
         <%= @date %>
         <.icon name="forth" class="sm:hidden absolute top-1.5 -right-6 w-4 h-4 stroke-current text-base-300 stroke-2" />
       </div>
@@ -174,7 +176,7 @@ defmodule PicselloWeb.InboxLive.Index do
                   </div>
                 </div>
 
-                <div class={classes("flex items-center font-bold text-xl px-4 py-2", %{"rounded-t-lg" => message.collapsed_sections, "rounded-lg" => !message.collapsed_sections, "bg-blue-planning-300 text-white" => message.outbound, "bg-gray-300" => !message.outbound})} phx-click="collapse-section" phx-value-id={message.id}>
+                <div class={classes("flex items-center font-bold text-xl px-4 py-2", %{"rounded-t-lg" => message.collapsed_sections, "rounded-lg" => !message.collapsed_sections, "bg-blue-planning-300 text-white" => message.outbound, "bg-gray-200" => !message.outbound})} phx-click="collapse-section" phx-value-id={message.id}>
                   <%= message.subject %>
                   <%= if message.unread do %>
                       <span {testid("new-badge")} class="mx-4 px-2 py-0.5 text-xs rounded bg-orange-inbox-300 text-white">New</span>
@@ -255,10 +257,10 @@ defmodule PicselloWeb.InboxLive.Index do
   defp member?(
          %{
            unread_job_ids: unread_job_ids,
-           unread_client_ids: unread_client_ids,
-           current_thread_type: type
+           unread_client_ids: unread_client_ids
          },
-         thread_id
+         thread_id,
+         type
        ) do
     case type do
       :job -> is_map_key(unread_job_ids, thread_id)
@@ -404,13 +406,14 @@ defmodule PicselloWeb.InboxLive.Index do
         |> Enum.concat(Messages.client_threads(current_user))
         |> Enum.sort_by(& &1.inserted_at, {:desc, DateTime})
     end)
-    |> Enum.map(fn message ->
+    |> Enum.map(fn %{client_message_recipients: client_message_recipients} = message ->
       %{
-        id: message.job_id || hd(message.client_message_recipients).client_id,
+        id: message.job_id || hd(client_message_recipients).client_id,
         title: thread_title(message),
         subtitle: if(message.job, do: Job.name(message.job), else: "CLIENTS SUBTITLE"),
         message: if(message.body_text, do: message.body_text, else: message.body_html),
         type: thread_type(message),
+        outbound: message.outbound,
         date: strftime(current_user.time_zone, message.inserted_at, "%a %b %d, %-I:%M %p")
       }
     end)

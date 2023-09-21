@@ -288,7 +288,7 @@ defmodule Picsello.Messages do
     from(message in ClientMessage,
       where: message.job_id == ^job.id and is_nil(message.deleted_at),
       order_by: [asc: message.inserted_at],
-      preload: [client_message_recipients: [:client], job: [:client]]
+      preload: [:client_message_attachments, client_message_recipients: [:client], job: [:client]]
     )
     |> Repo.all()
   end
@@ -303,7 +303,7 @@ defmodule Picsello.Messages do
         crm.client_id == ^client.id and is_nil(message.deleted_at) and is_nil(message.job_id),
       distinct: message.id,
       order_by: [asc: message.inserted_at],
-      preload: [client_message_recipients: ^preload_query]
+      preload: [:client_message_attachments, client_message_recipients: ^preload_query]
     )
     |> Repo.all()
   end
