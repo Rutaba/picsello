@@ -25,6 +25,7 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
     field :description, :string
     # please emails presets
     field :state, Ecto.Enum, values: @states
+    field :position, :float
     belongs_to(:email_automation_category, EmailAutomationCategory)
     belongs_to(:email_automation_sub_category, EmailAutomationSubCategory)
     has_many(:email_presets, EmailPreset)
@@ -35,10 +36,10 @@ defmodule Picsello.EmailAutomation.EmailAutomationPipeline do
     email_pipeline
     |> cast(
       attrs,
-      ~w[state name description email_automation_category_id email_automation_sub_category_id]a
+      ~w[state name position description email_automation_category_id email_automation_sub_category_id]a
     )
     |> validate_required(
-      ~w[state name description email_automation_category_id email_automation_sub_category_id]a
+      ~w[state name position description email_automation_category_id email_automation_sub_category_id]a
     )
   end
 

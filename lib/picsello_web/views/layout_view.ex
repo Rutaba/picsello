@@ -159,11 +159,6 @@ defmodule PicselloWeb.LayoutView do
         heading: "Manage",
         items: [
           %{
-            title: "Automations",
-            icon: "play-icon",
-            path: Routes.email_automations_index_path(socket, :index)
-          },
-          %{
             title: "Clients",
             icon: "client-icon",
             path: Routes.clients_path(socket, :index)
@@ -204,6 +199,11 @@ defmodule PicselloWeb.LayoutView do
       %{
         heading: "Settings",
         items: [
+          %{
+            title: "Automations",
+            icon: "play-icon",
+            path: Routes.email_automations_index_path(socket, :index)
+          },
           %{
             title: "Packages",
             icon: "package",

@@ -189,9 +189,11 @@ defmodule Picsello.EmailAutomations do
       select: %{
         category_type: c.type,
         category_name: c.name,
+        category_position: c.position,
         category_id: c.id,
         subcategory_slug: s.slug,
         subcategory_name: s.name,
+        subcategory_position: s.position,
         subcategory_id: s.id,
         pipelines:
           fragment(
@@ -203,32 +205,34 @@ defmodule Picsello.EmailAutomations do
           )
       },
       group_by: [c.name, c.type, c.id, s.slug, s.name, s.id, p.id],
-      order_by: [asc: p.id, asc: c.type, asc: s.slug]
+      order_by: [asc: p.position, asc: c.type, asc: s.slug]
     )
     |> Repo.all()
   end
 
   defp group_by_sub_category(automation_pipelines) do
     automation_pipelines
-    |> Enum.group_by(&{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id})
-    |> Enum.map(fn {{slug, name, id}, automation_pipelines} ->
+    |> Enum.group_by(&{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id, &1.subcategory_position})
+    |> Enum.map(fn {{slug, name, id, position}, automation_pipelines} ->
       %{
         category_type: List.first(automation_pipelines).category_type,
         category_name: List.first(automation_pipelines).category_name,
         category_id: List.first(automation_pipelines).category_id,
+        category_position: List.first(automation_pipelines).category_position,
         subcategory_slug: slug,
         subcategory_name: name,
         subcategory_id: id,
+        subcategory_position: position,
         pipelines: automation_pipelines |> Enum.flat_map(& &1.pipelines)
       }
     end)
-    |> Enum.sort_by(& &1.subcategory_id, :asc)
-    |> Enum.group_by(&{&1.category_type, &1.category_name, &1.category_id}, & &1)
-    |> Enum.map(fn {{type, name, id}, pipelines} ->
+    |> Enum.sort_by(& &1.subcategory_position, :asc)
+    |> Enum.group_by(&{&1.category_type, &1.category_name, &1.category_id, &1.category_position}, & &1)
+    |> Enum.map(fn {{type, name, id, position}, pipelines} ->
       subcategories = remove_categories_from_list(pipelines)
-      %{category_type: type, category_name: name, category_id: id, subcategories: subcategories}
+      %{category_type: type, category_name: name, category_id: id, category_position: position, subcategories: subcategories}
     end)
-    |> Enum.sort_by(& &1.category_type, :desc)
+    |> Enum.sort_by(& &1.category_position, :asc)
   end
 
   defp update_schedule(result, id) do

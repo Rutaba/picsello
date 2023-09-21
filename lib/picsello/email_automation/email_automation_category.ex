@@ -8,12 +8,13 @@ defmodule Picsello.EmailAutomation.EmailAutomationCategory do
   schema "email_automation_categories" do
     field :name, :string
     field :type, Ecto.Enum, values: @types
+    field :position, :float
     has_many(:email_automation_pipleines, EmailAutomationPipeline)
   end
 
   def changeset(email_category \\ %__MODULE__{}, attrs) do
     email_category
-    |> cast(attrs, ~w[type name]a)
-    |> validate_required(~w[type name]a)
+    |> cast(attrs, ~w[type name position]a)
+    |> validate_required(~w[type name position]a)
   end
 end

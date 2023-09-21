@@ -18,6 +18,8 @@ defmodule Picsello.Repo.Migrations.CreateTableEmailAutomationPipelines do
         references(:email_automation_categories, on_delete: :nothing)
       )
 
+      add(:position, :float, null: false)
+
       timestamps()
     end
 

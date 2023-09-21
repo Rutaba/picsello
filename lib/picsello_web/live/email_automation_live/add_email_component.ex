@@ -478,19 +478,6 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     |> email_preset_changeset(email_preset, automation_params)
   end
 
-  defp maybe_normalize_params(nil), do: nil
-
-  defp maybe_normalize_params(params) do
-    {_, params} =
-      get_and_update_in(
-        params,
-        ["status"],
-        &{&1, if(&1 in ["true", "active"], do: :active, else: :disabled)}
-      )
-
-    params
-  end
-
   defp save(
          %{
            assigns: %{

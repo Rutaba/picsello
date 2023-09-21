@@ -810,6 +810,50 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   @doc """
+  Normalizes the "status" parameter in a map of parameters.
+
+  This function accepts a map of parameters (`params`) and normalizes the "status" parameter. It checks if "status" is
+  equal to "true" or "active" and replaces it with `:active`, or if it's anything else, it replaces it with `:disabled`.
+  The normalized parameters are then returned.
+
+  ## Parameters
+
+      - `params` (map()): A map of parameters.
+
+  ## Returns
+
+      map(): A map of parameters with the "status" parameter normalized.
+
+  ## Example
+
+      ```elixir
+      # Normalize the "status" parameter in a map of parameters
+      iex> params = %{"status" => "true", "name" => "John"}
+      iex> maybe_normalize_params(params)
+      %{"status" => :active, "name" => "John"}
+      iex> maybe_normalize_params(nil)
+      nil
+
+  ## Notes
+
+      This function is useful for normalizing specific parameters within a map.
+  """
+  @spec maybe_normalize_params(nil) :: nil
+  def maybe_normalize_params(nil), do: nil
+
+  @spec maybe_normalize_params(map()) :: map()
+  def maybe_normalize_params(params) do
+    {_, params} =
+      get_and_update_in(
+        params,
+        ["status"],
+        &{&1, if(&1 in ["true", "active"], do: :active, else: :disabled)}
+      )
+
+    params
+  end
+
+  @doc """
   Takes the html body and split it on the basis of search_param
   and flattens the html body to plain-text.
 

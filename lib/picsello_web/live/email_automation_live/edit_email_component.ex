@@ -332,17 +332,6 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     """
   end
 
-  defp maybe_normalize_params(params) do
-    {_, params} =
-      get_and_update_in(
-        params,
-        ["status"],
-        &{&1, if(&1 in ["true", "active"], do: :active, else: :disabled)}
-      )
-
-    params
-  end
-
   defp save(
          %{
            assigns: %{
