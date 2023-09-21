@@ -5,8 +5,15 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   import Phoenix.LiveView
   import PicselloWeb.LiveHelpers
-  alias PicselloWeb.{Live.Calendar.BookingEvents.Index, Shared.SelectionPopupModal, PackageLive.WizardComponent}
+
+  alias PicselloWeb.{
+    Live.Calendar.BookingEvents.Index,
+    Shared.SelectionPopupModal,
+    PackageLive.WizardComponent
+  }
+
   alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, Repo}
+  alias BookingEventDate.SlotBlock
   alias Ecto.Multi
 
   def handle_event(
@@ -214,6 +221,37 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     |> noreply()
   end
 
+  def overlap_time?(blocks), do: BookingEvents.overlap_time?(blocks)
+
+  @doc """
+  Edits the status of booking event date slots.
+
+  This function takes a list of booking event date slots and edits their status. It iterates through each slot
+  in the list and sets the status to either `:hide` or `:open` based on the existing status. If the current
+  status is `:hide`, it remains unchanged; otherwise, it is updated to `:open`. This function is typically
+  used to toggle the visibility of slots.
+
+  ## Parameters
+
+  - `slots` ([%SlotBlock{}]): A list of booking event date slots to edit.
+
+  ## Returns
+
+  A list of updated booking event date slots with modified status.
+
+  ## Example
+
+  ```elixir
+  # Edit the status of booking event date slots
+  iex> slots = [%SlotBlock{status: :hide}, %SlotBlock{status: :open}]
+  iex> edit_slots_status(%{slots: slots})
+  [%SlotBlock{status: :hide}, %SlotBlock{status: :open}]
+
+  ## Notes
+
+  This function is useful for modifying the status of booking event date slots, typically used to control their visibility
+  """
+  @spec edit_slots_status(map()) :: [%SlotBlock{}]
   def edit_slots_status(%{slots: slots}) do
     slots
     |> Enum.map(fn s ->
@@ -225,9 +263,35 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     end)
   end
 
-  def to_map(data) do
-    Enum.map(data, &Map.from_struct(&1))
-  end
+  @doc """
+  Converts a list of structs to a list of maps.
+
+  This function takes a list of structs and converts each struct into a map using the `Map.from_struct/1` function.
+  It returns a new list containing the converted maps. This can be useful when you need to work with data in map
+  format, such as when interacting with certain Elixir functions or libraries that expect map data.
+
+  ## Parameters
+
+  - `data` ([struct()]): A list of structs to be converted into maps.
+
+  ## Returns
+
+  A list of maps, where each map corresponds to a struct in the original list.
+
+  ## Example
+
+  ```elixir
+  # Convert a list of structs to a list of maps
+  iex> data = [%MyStruct{id: 1, name: "Alice"}, %MyStruct{id: 2, name: "Bob"}]
+  iex> to_map(data)
+  [%{id: 1, name: "Alice"}, %{id: 2, name: "Bob"}]
+
+  ## Notes
+
+  This function simplifies the process of converting structs to maps for various Elixir operations that work with maps.
+  """
+  @spec to_map(data :: [struct()]) :: [map()]
+  def to_map(data), do: Enum.map(data, &Map.from_struct(&1))
 
   def assign_events(%{assigns: %{booking_event: _booking_event}} = socket, event),
     do: assign(socket, :booking_event, event)
@@ -260,4 +324,8 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   defp fetch_booking_event_id(%{}, %{assigns: %{booking_event: booking_event}}),
     do: booking_event.id
+
+  def calculate_dates(booking_event_date, selected_days),
+    do: BookingEvents.calculate_dates(booking_event_date, selected_days)
+
 end

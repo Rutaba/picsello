@@ -11,6 +11,11 @@ defmodule Picsello.Repo.Migrations.CreateBookingEventDates do
       add(:session_gap, :integer)
       add(:time_blocks, :map, null: false)
       add(:slots, :map, null: false)
+      add(:calendar, :string)
+      add(:count_calendar, :integer)
+      add(:repeat_on, :map)
+      add(:stop_repeating, :date)
+      add(:occurences, :integer, default: 0)
 
       add(:booking_event_id, references(:booking_events, on_delete: :nothing), null: false)
       timestamps()

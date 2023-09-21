@@ -247,18 +247,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   defp actions_cell(assigns) do
     ~H"""
     <div class="flex flex-wrap gap-3 items-center lg:ml-auto justify-start md:w-auto w-full col-span-2">
-      <.icon_button phx-click="edit-event" phx-value-event-id={@booking_event.id} icon="pencil" color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full px-4" rel="noopener noreferrer">
-        Edit
-      </.icon_button>
-      <.icon_button icon="eye" disabled={BEShared.incomplete_status?(@booking_event)} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
-        Preview
-      </.icon_button>
-      <.icon_button icon="anchor" disabled={BEShared.incomplete_status?(@booking_event)} color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
-        <span>Copy link</span>
-        <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
-          Copied!
-        </div>
-      </.icon_button>
+      <%= if BEShared.incomplete_status?(@booking_event) do %>
+        <.icon_button phx-click="edit-event" phx-value-event-id={@booking_event.id} icon="pencil" color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full p-1 px-3" rel="noopener noreferrer">
+          Edit
+        </.icon_button>
+      <% else %>
+        <.icon_button icon="eye" disabled={BEShared.incomplete_status?(@booking_event)} color="white" class="justify-center bg-blue-planning-300 hover:bg-blue-planning-300/75 grow sm:grow-0 flex-shrink-0 xl:w-auto sm:w-full" href={@booking_event.url} target="_blank" rel="noopener noreferrer">
+          Preview
+        </.icon_button>
+        <.icon_button icon="anchor" disabled={BEShared.incomplete_status?(@booking_event)} color="blue-planning-300" class="justify-center text-blue-planning-300 grow md:grow-0 flex-shrink-0 xl:w-auto sm:w-full p-1 px-2" id={"copy-event-link-#{@booking_event.id}"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard">
+          <span>Copy link</span>
+          <div class="hidden p-1 text-sm rounded shadow" role="tooltip">
+            Copied!
+          </div>
+        </.icon_button>
+      <% end %>
       <div class="flex items-center w-full xl:w-auto grow sm:grow-0" data-offset-x="-21" data-placement="bottom-end" phx-hook="Select" id={"manage-event-#{@booking_event.id}-#{@booking_event.status}"}>
         <button {testid("actions")} title="Manage" class="btn-tertiary px-2 py-1 flex items-center gap-3 mr-2 text-blue-planning-300 w-full">
           Actions
@@ -375,16 +378,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   def assign_booking_events(
-         %{
-           assigns: %{
-             current_user: current_user,
-             sort_col: sort_by,
-             sort_direction: sort_direction,
-             search_phrase: search_phrase,
-             event_status: event_status
-           }
-         } = socket
-       ) do
+        %{
+          assigns: %{
+            current_user: current_user,
+            sort_col: sort_by,
+            sort_direction: sort_direction,
+            search_phrase: search_phrase,
+            event_status: event_status
+          }
+        } = socket
+      ) do
     booking_events =
       BE.get_booking_events(current_user.organization_id,
         filters: %{

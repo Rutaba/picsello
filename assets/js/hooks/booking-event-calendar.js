@@ -9,7 +9,8 @@ const getView = () => {
 };
 
 const calendar_render = (el, component) => {
-  const { timeZone } = el.dataset;
+  const { timeZone, feedPath, bookingEventDateId } = el.dataset;
+  console.log("this feedPath is ---> ", el.dataset)
 
   const calendar = new Calendar(el, {
     themeSystem: 'cosmo',
@@ -22,7 +23,8 @@ const calendar_render = (el, component) => {
       left: 'title',
       // right: 'dayGridMonth,timeGridWeek',
     },
-    editable: true,
+    eventSources: [{ url: feedPath }],
+    // editable: true,
     selectable: true,
     windowResize: function (view) {
       const newView = getView();
@@ -33,10 +35,10 @@ const calendar_render = (el, component) => {
   });
 
   calendar.render();
-  calendar.on('dateClick', function(info) {
-    console.log(info);
-    component.pushEvent("calendar-date-changed", {date: info.dateStr})
-  });
+  // calendar.on('dateClick', function(info) {
+  //   console.log(info);
+  //   component.pushEvent("calendar-date-changed", {date: info.dateStr})
+  // });
 };
 
 export default {

@@ -11,6 +11,15 @@ defmodule PicselloWeb.CalendarFeedController do
     |> send_resp(200, Jason.encode!(feeds))
   end
 
+  def booking_event_calendar(conn, params) do
+
+    conn
+
+    # conn
+    # |> put_resp_content_type("application/json")
+    # |> send_resp(200, Jason.encode!(feeds))
+  end
+
   defp map(feeds, conn, user) do
     feeds
     |> Enum.map(fn {shoot, job, client, status} ->

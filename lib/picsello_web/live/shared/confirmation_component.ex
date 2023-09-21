@@ -90,7 +90,6 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
   end
 
   @impl true
-
   def handle_event(
         event,
         %{"dropdown" => %{"item_id" => item_id}},
@@ -101,6 +100,7 @@ defmodule PicselloWeb.Shared.ConfirmationComponent do
     socket |> noreply()
   end
 
+  @impl true
   def handle_event(event, %{}, %{assigns: %{parent_pid: parent_pid, payload: payload}} = socket) do
     send(parent_pid, {:confirm_event, event, payload})
 

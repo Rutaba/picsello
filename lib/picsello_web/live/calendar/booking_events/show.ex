@@ -1,14 +1,15 @@
 defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @moduledoc false
   use PicselloWeb, :live_view
-  import PicselloWeb.Live.Calendar.Shared, only: [back_button: 1]
+
   import PicselloWeb.Live.Shared, only: [update_package_questionnaire: 1]
+  import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.BookingProposalLive.Shared, only: [package_description_length_long?: 1]
 
-  alias Picsello.{Repo, BookingEvents, Package, BookingEventDate}
-  alias PicselloWeb.BookingProposalLive.QuestionnaireComponent
+  alias Picsello.{Repo, BookingEvent, BookingEvents, Package, BookingEventDate}
   alias PicselloWeb.Live.Calendar.{BookingEventModal, EditMarketingEvent}
+  alias PicselloWeb.BookingProposalLive.{QuestionnaireComponent, ContractComponent}
   alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
 
   @impl true
@@ -22,7 +23,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_params(%{"id" => event_id}, _session, socket) do
     socket
     |> assign(:id, to_integer(event_id))
+    |> assign(:edit_name, false)
     |> assign_booking_event()
+    |> assign_changeset(%{})
     |> assign(:client, %{id: 1, name: "hammad"})
     |> assign(:booking_slot_tab_active, "calendar")
     |> assign(:booking_slot_tabs, booking_slot_tabs())
@@ -50,8 +53,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_event("add-date", _, %{assigns: %{booking_event: booking_event}} = socket) do
-    booking_date = %BookingEventDate{booking_event_id: booking_event.id}
+  def handle_event("add-date", _, %{assigns: %{booking_event: booking_event, current_user: %{organization_id: organization_id}}} = socket) do
+    booking_date = %BookingEventDate{booking_event_id: booking_event.id, organization_id: organization_id}
 
     socket
     |> open_wizard(%{booking_date: booking_date})
@@ -62,9 +65,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   def handle_event(
         "edit-date",
         %{"index" => index},
-        %{assigns: %{booking_event: booking_event}} = socket
+        %{assigns: %{booking_event: booking_event, current_user: %{organization_id: organization_id}}} = socket
       ) do
-    booking_date = booking_event |> Map.get(:dates, []) |> Enum.at(to_integer(index))
+    booking_date = booking_event |> Map.get(:dates, []) |> Enum.at(to_integer(index)) |> Map.put(:organization_id, organization_id)
 
     socket
     |> open_wizard(%{booking_date: booking_date})
@@ -103,11 +106,22 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   @impl true
   def handle_event(
         "add-questionnaire",
-        %{},
+        _,
         socket
       ) do
     socket
     |> update_package_questionnaire()
+  end
+
+  @impl true
+  def handle_event(
+        "open-contract",
+        _,
+        socket
+      ) do
+    socket
+    |> ContractComponent.open_modal_from_booking_events()
+    |> noreply()
   end
 
   @impl true
@@ -191,9 +205,10 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   @impl true
-  def handle_info({:update, %{booking_event_date: _booking_event}}, socket) do
+  def handle_info({:update, %{booking_event_date: booking_event}}, socket) do
     socket
     |> put_flash(:success, "Booking event date saved successfully")
+    |> assign(:booking_event, booking_event)
     |> noreply()
   end
 
@@ -255,6 +270,34 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     |> noreply()
   end
 
+  def handle_info(
+        {:validate, %{"booking_event" => params}},
+        socket
+      ) do
+    socket
+    |> assign(:edit_name, true)
+    |> assign_changeset(params)
+    |> noreply()
+  end
+
+  @impl true
+  def handle_info(
+        {:save, %{"booking_event" => %{"name" => _}}},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    case BookingEvents.upsert_booking_event(changeset) do
+      {:ok, booking_event} ->
+        socket
+        |> assign(:edit_name, false)
+        |> assign(:booking_event, booking_event)
+        |> put_flash(:success, "Booking Event updated successfully")
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset)
+    end
+    |> noreply()
+  end
+
   @impl true
   defdelegate handle_info(message, socket), to: BEShared
 
@@ -309,7 +352,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <% "list" -> %>
         <%= if @booking_event_dates != [] do %>
           <%= for booking_event_date <- @booking_event_dates do %>
-            <div class={classes("mt-10 p-3 border-2 rounded-lg border-base-200", %{"border-red-sales-300" => !is_nil(booking_event_date.slots)})}>
+            <div class={classes("mt-10 p-3 border-2 rounded-lg border-base-200", %{"border-red-sales-300" => is_nil(booking_event_date.slots)})}>
               <div class="flex mb-1">
                 <%= if is_nil(booking_event_date) do %>
                   <p class="text-2xl font-bold text-red-sales-300">Select day</p>
@@ -357,12 +400,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <% "calendar" -> %>
         <div class="mt-10 grid grid-cols-1 md:grid-cols-5 gap-5">
           <div class="md:col-span-2 bg-base-200">
-            <div phx-hook="BookingEventCalendar" phx-update="replace" class="w-[300px] h-[220px]" id="booking_event_calendar" data-time-zone={@current_user.time_zone}></div>
+            <div phx-hook="BookingEventCalendar" phx-update="replace" class="w-[300px] h-[300px]" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :index)} data-booking-event-date-id={@booking_event_date.id}></div>
           </div>
           <div class="md:col-span-3 flex flex-col justify-center">
-            <%= if @calendar_date_event != [] do %>
+            <%= if @booking_event_date != [] do %>
               <div class="flex">
-                <div class="flex text-2xl font-bold"><%= BEShared.date_formatter(@calendar_date_event.date) %></div>
+                <div class="flex text-2xl font-bold"><%= BEShared.date_formatter(@booking_event_date.date) %></div>
                 <div class="flex justify-end ml-auto">
                   <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
                     <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
@@ -376,9 +419,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 </div>
               </div>
               <div class="flex mt-2">
-                <p class="text-blue-planning-300 mr-4"><b>0</b> bookings</p>
-                <p class="text-blue-planning-300 mr-4"><b>12</b> available</p>
-                <p class="text-blue-planning-300"><b>1</b> hidden</p>
+                <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_booked_slots(@booking_event_date.slots) %></b> bookings</p>
+                <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_available_slots(@booking_event_date.slots) %></b> available</p>
+                <p class="text-blue-planning-300"><b><%= BEShared.count_hidden_slots(@booking_event_date.slots) %></b> hidden</p>
               </div>
               <.render_slots {assigns} />
             <% else %>
@@ -395,7 +438,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
 
   defp render_slots(assigns) do
     ~H"""
-      <%= for slot <- (if @booking_slot_tab_active == "list", do: @booking_event_date.slots, else: @calendar_date_event.slots) do %>
+      <%= for slot <-  @booking_event_date.slots do %>
         <%= case slot.status do %>
           <% "open" -> %>
             <.slots_description client={@client} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} slot={slot} button_actions={hidden_slot_actions()} />
@@ -605,14 +648,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 <% end %>
               </p>
               <button class="mt-2 flex text-base-250 items-center justify-center" phx-click="toggle-section" phx-value-section_id="Read more">
-                <%= if !Enum.member?(@collapsed_sections, "Read more") do %>
+                <%= if Enum.member?(@collapsed_sections, "Read more") do %>
                   Read less <.icon name="up" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
                 <% else %>
                   Read more <.icon name="down" class="mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-base-250"/>
                 <% end %>
               </button>
             <% else %>
-              <%= @description |> slice_description() |> raw() %>
+              <%= @description %>
             <% end %>
           </div>
         <% else %>
@@ -620,11 +663,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
             <p>Pick a package and update your marketing details to get started</p>
           </div>
         <% end %>
-        <button phx-click="edit-marketing-event" phx-value-event-id={@booking_event.id} class="p-2 bg-base-250/20 font-bold rounded-lg">
+        <button phx-click="edit-marketing-event" phx-value-event-id={@booking_event.id} class="p-2 px-4 w-fit bg-base-250/20 font-bold rounded-lg">
             Edit marketing details
         </button>
       </div>
     """
+  end
+
+  defp assign_changeset(%{assigns: %{booking_event: booking_event}} = socket, params) do
+    socket
+    |> assign(:changeset, BookingEvent.create_changeset(booking_event, params))
   end
 
   defp open_wizard(socket, assigns) do
@@ -772,7 +820,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   defp sort_by_date(%{dates: dates} = booking_event),
     do: Map.replace(booking_event, :dates, Enum.sort(dates, :desc))
 
-  def slot_time_formatter(slot), do: Time.to_string(slot.slot_start) <> " - " <> Time.to_string(slot.slot_end)
+  defp slot_time_formatter(slot),
+    do: Time.to_string(slot.slot_start) <> " - " <> Time.to_string(slot.slot_end)
 
   defp slice_description(description) do
     if String.length(description) > 100 do

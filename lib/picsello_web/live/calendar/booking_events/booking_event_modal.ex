@@ -5,7 +5,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
   import PicselloWeb.ShootLive.Shared, only: [duration_options: 0]
   import PicselloWeb.LiveModal, only: [close_x: 1, footer: 1]
   import PicselloWeb.PackageLive.Shared, only: [current: 1]
-  alias Picsello.{BookingEventDate, BookingEventDates}
+  alias Picsello.{BookingEventDate, BookingEventDates, Repo}
+  alias PicselloWeb.Calendar.BookingEvents.Shared
+  alias Ecto.Multi
+  import Ecto.Changeset
+
+  @occurences [0, 5, 10, 15, 20, 30, 45, 60]
+
   @impl true
   def update(assigns, socket) do
     socket
@@ -63,21 +69,53 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
             </div>
           </div>
         </div>
+
         <div class="mt-6 flex items-center">
-          <%= input f, :repeat, type: :checkbox, class: "checkbox w-6 h-6" %>
+          <%= input f, :is_repeat, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
           <div class="ml-2"> Repeat dates?</div>
         </div>
-
-        <div class="w-2/3 border-2 border-base-200 rounded-lg mt-4">
-          <div class="font-bold p-4 bg-base-200">
-            Repeat settings
+        <% is_repeat = if is_atom(input_value(f, :is_repeat)), do: input_value(f, :is_repeat), else: String.to_atom(input_value(f, :is_repeat))%>
+        <%= if is_repeat do %>
+          <div class="lg:w-2/3 border-2 border-base-200 rounded-lg mt-4">
+            <div class="font-bold p-4 bg-base-200 text-md">
+              Repeat settings
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 p-4">
+              <div class="md:col-span-3">
+                <div class="font-bold mb-1">Repeat every:</div>
+                <div class="flex gap-4 items-center w-full">
+                  <%= input f, :count_calendar, placeholder: 0, class: "w-24 bg-white p-3 focus:ring-0 focus:outline-none border-2 focus:border-blue-planning-300 text-lg sm:mt-0 font-normal text-center", phx_hook: "PriceMask"%>
+                  <%= select f, :calendar, ["week", "month", "year"], class: "w-28 select", phx_hook: "PriceMask"%>
+                </div>
+                <div class="mt-5 font-bold mb-1">Repeat on:</div>
+                <div class="flex gap-6 font-bold">
+                <%= inputs_for f, :repeat_on, fn r -> %>
+                  <div class="flex flex-col items-center">
+                    <div>
+                      <%= input r, :active, type: :checkbox, class: "checkbox border-blue-planning-300 w-6 h-6" %>
+                      <%= hidden_input r, :day, value: input_value(r, :day) %>
+                    </div>
+                    <div class="text-blue-planning-300">
+                      <%= input_value(r, :day) %>
+                    </div>
+                   </div>
+                <% end %>
+                </div>
+              </div>
+              <div class="md:col-span-2">
+                <div class="font-bold mb-2 mt-2 md:mt-0">Stop repeating:</div>
+                <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, false, class: "w-5 h-5 radio cursor-pointer mb-1" %> On</div>
+                <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) === true})}>
+                  <%= input f, :stop_repeating, type: :date_input, min: Date.utc_today(), class: "w-40" %>
+                </div>
+                <div class="flex gap-5 mb-2"><%= radio_button f, :repetition, true, class: "w-5 h-5 radio cursor-pointer mb-2" %>After</div>
+                <div class={classes("pl-10 mb-2", %{"pointer-events-none text-gray-400" => input_value(f, :repetition) != true})}>
+                  <%= select f, :occurences, occurence_options(), class: "select w-40" %>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="p-4">
-           Demo
-          </div>
-
-        </div>
-
+        <% end %>
         <div class="font-bold mt-6">You'll have <span class="text-blue-planning-300"><%= @open_slots %></span> open session blocks</div>
         <div class="mt-6 grid grid-cols-5 border-b-4 border-blue-planning-300 text-lg font-bold">
           <div class="col-span-2">Time</div>
@@ -94,7 +132,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
               <%= if to_string(input_value(s, :status)) == "hide", do: "Booked (Hidden)", else: input_value(s, :status) |> to_string() |> String.capitalize() %>
             </div>
             <div class="col-span-2 flex justify-end pr-2">
-              <%= input s, :is_hide, type: :checkbox, checked: hidden_time?(s |> current |> Map.get(:status)), class: "checkbox w-6 h-6" %>
+              <%= input s, :is_hide, type: :checkbox, checked: hidden_time?(s |> current |> Map.get(:status)), class: "checkbox w-6 h-6"%>
               <div class="ml-2"> Show block as booked (break)</div>
             </div>
           </div>
@@ -131,15 +169,56 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
   @impl true
   def handle_event("submit", %{"booking_event_date" => params}, socket) do
-    %{assigns: %{changeset: changeset}} = socket = assign_changeset(socket, params)
+    %{
+      assigns: %{
+        changeset: changeset,
+        booking_date: booking_date,
+        current_user: %{organization_id: _organization_id}
+      }
+    } = socket = assign_changeset(socket, params)
 
-    case BookingEventDates.upsert_booking_event_date(changeset) do
-      {:ok, booking_event} ->
-        successfull_save(socket, booking_event)
+    %{dates: repeat_dates, params: repeat_dates_rows} =
+      if get_field(changeset, :is_repeat) do
+        repeat_dates = get_repeat_dates(changeset)
 
-      _ ->
-        socket |> noreply()
-    end
+        is_booked_dates =
+          BookingEventDates.is_booked_any_date?(repeat_dates, booking_date.booking_event_id)
+
+        if is_booked_dates,
+          do: %{dates: [], params: []},
+          else: %{
+            dates: repeat_dates,
+            params: BookingEventDates.generate_rows_for_repeat_dates(changeset, repeat_dates)
+          }
+      else
+        %{dates: [], params: []}
+      end
+
+    {:ok,
+     %{
+       upsert_booking_event_date: booking_event_date
+     }} =
+      Multi.new()
+      |> Multi.insert_or_update(:upsert_booking_event_date, changeset)
+      |> Multi.delete_all(
+        :delete_all_repeating_dates,
+        BookingEventDates.repeat_dates_queryable(repeat_dates, booking_date.booking_event_id)
+      )
+      |> Multi.insert_all(
+        :insert_all_repeating_booking_dates,
+        BookingEventDate,
+        repeat_dates_rows
+      )
+      |> Repo.transaction()
+
+    socket
+    |> successfull_save(booking_event_date)
+  end
+
+  defp get_repeat_dates(changeset) do
+    selected_days = get_field(changeset, :repeat_on) |> Enum.map(&Map.from_struct(&1))
+    booking_event_date = current(changeset)
+    Shared.calculate_dates(booking_event_date, selected_days)
   end
 
   defp successfull_save(socket, booking_event_date) do
@@ -159,11 +238,17 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     )
   end
 
+  defp occurence_options() do
+    for(
+      occurence <- @occurences,
+      do: {dyn_gettext("#{occurence} occurences"), occurence}
+    )
+  end
+
   defp assign_changeset(%{assigns: %{booking_date: booking_date}} = socket, params, action \\ nil) do
     changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)
     event = current(changeset)
     open_slots = Enum.count(event.slots, &(&1.status == :open))
-
     socket |> assign(changeset: changeset, open_slots: open_slots)
   end
 
@@ -177,10 +262,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
     event = current(changeset)
 
     slots = event |> BookingEventDates.available_slots(booking_event)
-    open_slots = Enum.count(event.slots, &(&1.status == :open))
+    open_slots = Enum.count(slots, &(&1.status == :open))
     params = Map.put(params, "slots", slots)
     changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)
-
     socket |> assign(changeset: changeset, open_slots: open_slots)
   end
 

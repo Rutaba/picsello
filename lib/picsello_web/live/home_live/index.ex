@@ -279,21 +279,6 @@ defmodule PicselloWeb.HomeLive.Index do
     socket |> noreply()
   end
 
-  # TODO: need to change it
-  # @impl true
-  # def handle_event("create-booking-event", _, socket),
-  #   do:
-  #     socket
-  #     |> push_redirect(to: Routes.calendar_booking_events_show_path(socket, :edit))
-  #     |> noreply()
-
-  # @impl true
-  # def handle_event("duplicate-event", %{"event-id" => id}, socket),
-  #   do:
-  #     socket
-  #     |> push_redirect(to: Routes.calendar_booking_events_path(socket, :new, duplicate: id))
-  #     |> noreply()
-
   @impl true
   def handle_event("add-client", _, socket),
     do:
@@ -484,8 +469,8 @@ defmodule PicselloWeb.HomeLive.Index do
   end
 
   @impl true
-  defdelegate handle_event(name, params, socket),
-    to: PicselloWeb.Live.Calendar.BookingEvents.Index
+  defdelegate handle_event(event, params, socket),
+    to: PicselloWeb.Calendar.BookingEvents.Shared
 
   @impl true
   def handle_info(
@@ -678,65 +663,65 @@ defmodule PicselloWeb.HomeLive.Index do
           </.recents_card>
 
         <% "leads" -> %>
-        <.recents_card add_event="create-lead" view_event="view-leads" hidden={Enum.empty?(@leads)} button_title="Create a lead" title="Recent Leads" class="h-auto" color="blue-planning-300">
-          <hr class="mb-4 mt-4" />
-          <%= case @leads do %>
-            <% [] -> %>
-              <div class="flex md:flex-row flex-col items-center p-4 gap-6">
-                <iframe src="https://www.youtube.com/embed/V90oycrU45g" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
-                <p class="md:max-w-md text-base-250 text-normal mb-8">Generating leads is the pipeline to booked clients. <span class="font-normal text-normal text-blue-planning-300"><a class="underline" target="_blank" rel="noopener noreferrer" href="https://support.picsello.com/article/40-create-a-lead">Learn more</a></span> and create some now.</p>
-              </div>
-            <% leads -> %>
-            <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
-              <%= for lead <- leads do %>
-                <%= live_redirect to: Routes.job_path(@socket, :leads, lead.id) do %>
-                  <div class="flex flex-row">
-                    <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
-                      <%= if String.length(Job.name(lead)) <= 40 do
-                          Job.name(lead) || "-"
-                        else
-                          "#{Job.name(lead) |> String.slice(0..40)} ..."
-                        end %>
+          <.recents_card add_event="create-lead" view_event="view-leads" hidden={Enum.empty?(@leads)} button_title="Create a lead" title="Recent Leads" class="h-auto" color="blue-planning-300">
+            <hr class="mb-4 mt-4" />
+            <%= case @leads do %>
+              <% [] -> %>
+                <div class="flex md:flex-row flex-col items-center p-4 gap-6">
+                  <iframe src="https://www.youtube.com/embed/V90oycrU45g" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
+                  <p class="md:max-w-md text-base-250 text-normal mb-8">Generating leads is the pipeline to booked clients. <span class="font-normal text-normal text-blue-planning-300"><a class="underline" target="_blank" rel="noopener noreferrer" href="https://support.picsello.com/article/40-create-a-lead">Learn more</a></span> and create some now.</p>
+                </div>
+              <% leads -> %>
+              <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
+                <%= for lead <- leads do %>
+                  <%= live_redirect to: Routes.job_path(@socket, :leads, lead.id) do %>
+                    <div class="flex flex-row">
+                      <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
+                        <%= if String.length(Job.name(lead)) <= 40 do
+                            Job.name(lead) || "-"
+                          else
+                            "#{Job.name(lead) |> String.slice(0..40)} ..."
+                          end %>
+                      </p>
+                      <.status_badge class="ml-4 w-fit" job={lead}/>
+                    </div>
+                    <p class="text-gray-400 font-normal text-sm">
+                      Created <%= lead.inserted_at |> format_date_via_type("MM/DD/YY") |> String.trim("0") %>
                     </p>
-                    <.status_badge class="ml-4 w-fit" job={lead}/>
-                  </div>
-                  <p class="text-gray-400 font-normal text-sm">
-                    Created <%= lead.inserted_at |> format_date_via_type("MM/DD/YY") |> String.trim("0") %>
-                  </p>
+                  <% end %>
                 <% end %>
-              <% end %>
-            </div>
-          <% end %>
-        </.recents_card>
+              </div>
+            <% end %>
+          </.recents_card>
 
         <% "jobs" -> %>
-        <.recents_card add_event="import-job" view_event="view-jobs" hidden={Enum.empty?(@jobs)} button_title="Import a job" title="Upcoming Jobs" class="h-auto">
-          <hr class="mt-4 mb-4" />
-          <%= case @jobs do %>
-            <% [] -> %>
-              <div class="flex md:flex-row flex-col items-center p-4 gap-6">
-                <iframe src="https://www.youtube.com/embed/XWZH_65evuM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
-                <p class="md:max-w-md text-base-250 text-normal mb-8">Booking jobs will get you on your way to making a profit. If you are migrating existing jobs from another platform, use our import a job button above.</p>
-              </div>
-            <% jobs -> %>
-            <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
-              <%= for job <- jobs do %>
-                <%= live_redirect to: Routes.job_path(@socket, :jobs, job.id) do %>
-                  <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
-                    <%= if String.length(Job.name(job)) <= 40 do
-                        Job.name(job) || "-"
-                      else
-                        "#{Job.name(job) |> String.slice(0..40)} ..."
-                      end %>
-                  </p>
-                  <p class="text-gray-400 font-normal text-sm">
-                    Next Shoot <%= if Shoots.get_next_shoot(job), do:  Shoots.get_next_shoot(job) |> Map.get(:starts_at) |> format_date_via_type("MM/DD/YY") |> String.trim("0"), else: "(To be decided)" %>
-                  </p>
+          <.recents_card add_event="import-job" view_event="view-jobs" hidden={Enum.empty?(@jobs)} button_title="Import a job" title="Upcoming Jobs" class="h-auto">
+            <hr class="mt-4 mb-4" />
+            <%= case @jobs do %>
+              <% [] -> %>
+                <div class="flex md:flex-row flex-col items-center p-4 gap-6">
+                  <iframe src="https://www.youtube.com/embed/XWZH_65evuM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="aspect-video"></iframe>
+                  <p class="md:max-w-md text-base-250 text-normal mb-8">Booking jobs will get you on your way to making a profit. If you are migrating existing jobs from another platform, use our import a job button above.</p>
+                </div>
+              <% jobs -> %>
+              <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5">
+                <%= for job <- jobs do %>
+                  <%= live_redirect to: Routes.job_path(@socket, :jobs, job.id) do %>
+                    <p class="text-blue-planning-300 text-18px font-bold underline hover:cursor-pointer capitalize">
+                      <%= if String.length(Job.name(job)) <= 40 do
+                          Job.name(job) || "-"
+                        else
+                          "#{Job.name(job) |> String.slice(0..40)} ..."
+                        end %>
+                    </p>
+                    <p class="text-gray-400 font-normal text-sm">
+                      Next Shoot <%= if Shoots.get_next_shoot(job), do:  Shoots.get_next_shoot(job) |> Map.get(:starts_at) |> format_date_via_type("MM/DD/YY") |> String.trim("0"), else: "(To be decided)" %>
+                    </p>
+                  <% end %>
                 <% end %>
-              <% end %>
-            </div>
-          <% end %>
-        </.recents_card>
+              </div>
+            <% end %>
+          </.recents_card>
 
         <% "galleries" -> %>
           <.recents_card add_event="create-gallery" view_event="view-galleries" hidden={Enum.empty?(@galleries)} button_title="Create a gallery" title="Recent Galleries" class="h-auto" color="blue-planning-300">
@@ -757,7 +742,7 @@ defmodule PicselloWeb.HomeLive.Index do
           </.recents_card>
 
         <% "booking-events" -> %>
-          <.recents_card add_event="create-booking-event" view_event="view-booking-events" hidden={Enum.empty?(@booking_events)} button_title="Create a booking event" title="Recent Booking Events" class="h-auto" color="blue-planning-300">
+          <.recents_card add_event="new-event" view_event="view-booking-events" hidden={Enum.empty?(@booking_events)} button_title="Create a booking event" title="Recent Booking Events" class="h-auto" color="blue-planning-300">
             <hr class="mt-4 mb-4" />
             <%= case @booking_events |> Enum.take(6) do %>
               <% [] -> %>
@@ -1252,7 +1237,7 @@ defmodule PicselloWeb.HomeLive.Index do
             <% end %>
           <% else %>
               <%= if @data.cover_photo do %>
-                <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_show_path(@socket, :edit, @data.id)) do %>
+                <%= live_redirect to: (if Map.has_key?(@data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_show_path(@socket, :edit, @data.id)) do %>
                 <div class="rounded-lg float-left w-[100px] min-h-[65px]" style={"background-image: url('#{if Map.has_key?(@data, :client_link_hash), do: cover_photo_url(@data), else: @data.thumbnail_url}'); background-repeat: no-repeat; background-size: cover; background-position: center;"}></div>
               <% end %>
             <% else %>
@@ -1269,7 +1254,7 @@ defmodule PicselloWeb.HomeLive.Index do
 
           <div class="flex flex-col w-2/3 text-sm">
             <div class={"font-bold w-full"}>
-              <%= live_redirect to: (if Map.has_key?(assigns.data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_show_path(@socket, :edit, @data.id)) do %>
+              <%= live_redirect to: (if Map.has_key?(@data, :client_link_hash), do: Routes.gallery_photographer_index_path(@socket, :index, @data.id, is_mobile: false), else: Routes.calendar_booking_events_show_path(@socket, :edit, @data.id)) do %>
                 <span class="w-full text-blue-planning-300 underline">
                   <%= if String.length(@data.name) < 30 do
                     @data.name
@@ -1280,7 +1265,7 @@ defmodule PicselloWeb.HomeLive.Index do
               <% end %>
             </div>
             <div class="text-base-250 font-normal ">
-              <%= if Map.has_key?(assigns.data, :client_link_hash), do: @data.inserted_at |> Calendar.strftime("%m/%d/%y") |> String.trim("0"), else: @data.dates |> hd() |> Map.get(:date) |> Calendar.strftime("%m/%d/%y") |> String.trim("0") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
+              <%= if Map.has_key?(@data, :client_link_hash), do: @data.inserted_at |> Calendar.strftime("%m/%d/%y") |> String.trim("0"), else: @data.dates |> hd() |> Map.get(:date) |> Calendar.strftime("%m/%d/%y") |> String.trim("0") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
             </div>
             <div class="flex md:gap-2 gap-3">
               <button {testid("copy-link")} id={"copy-link-#{@data.id}"} class={classes("flex  w-full md:w-auto items-center justify-center text-center px-1 py-0.5 font-sans border rounded-lg btn-tertiary text-blue-planning-300", %{"pointer-events-none text-gray-300 border-gray-200" => @data.status in [:archive, :disabled]})} data-clipboard-text={if Map.has_key?(@data, :client_link_hash), do: clip_board(@socket, @data), else: @data.url} phx-hook="Clipboard">

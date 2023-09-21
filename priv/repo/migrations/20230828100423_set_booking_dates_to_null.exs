@@ -13,7 +13,7 @@ defmodule Picsello.Repo.Migrations.SetBookingDatesToNull do
   end
 
   def down do
-    alter table (@table) do
+    alter table(@table) do
       modify(:dates, :map, null: false)
       remove(:old_dates)
     end

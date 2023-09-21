@@ -17,10 +17,12 @@ defmodule PicselloWeb.LeadLive.Show do
   alias PicselloWeb.JobLive
 
   import PicselloWeb.Live.Shared, only: [update_package_questionnaire: 1]
+  import PicselloWeb.Shared.EditNameComponent, only: [edit_name_input: 1]
 
   import PicselloWeb.JobLive.Shared,
     only: [
       assign_job: 2,
+      assign_changeset: 2,
       assign_proposal: 1,
       assign_disabled_copy_link: 1,
       proposal_disabled_message: 1,
@@ -31,7 +33,6 @@ defmodule PicselloWeb.LeadLive.Show do
       private_notes_card: 1,
       section: 1,
       shoot_details_section: 1,
-      title_header: 1,
       validate_payment_schedule: 1,
       error: 1
     ]
@@ -40,10 +41,12 @@ defmodule PicselloWeb.LeadLive.Show do
   def mount(%{"id" => job_id} = assigns, _session, socket) do
     socket
     |> assign_stripe_status()
+    |> assign(:edit_name, false)
     |> assign(include_questionnaire: true)
     |> assign(:type, %{singular: "lead", plural: "leads"})
     |> assign(:request_from, assigns["request_from"])
     |> assign_job(job_id)
+    |> assign_changeset(%{})
     |> assign(:request_from, assigns["request_from"])
     |> assign(:collapsed_sections, [])
     |> then(fn %{assigns: assigns} = socket ->
@@ -174,20 +177,6 @@ defmodule PicselloWeb.LeadLive.Show do
       subject: subject,
       client: Job.client(job)
     })
-    |> noreply()
-  end
-
-  def handle_event("open_lead_name_change", %{}, %{assigns: %{job: job}} = socket) do
-    assigns = %{
-      job: job,
-      current_user: Map.take(socket.assigns, [:current_user])
-    }
-
-    socket
-    |> open_modal(
-      PicselloWeb.Live.Profile.EditNameSharedComponent,
-      Map.put(assigns, :parent_pid, self())
-    )
     |> noreply()
   end
 

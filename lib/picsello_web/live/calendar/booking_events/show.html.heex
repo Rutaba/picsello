@@ -1,18 +1,18 @@
 <div class="center-container px-6 pt-6">
-    <div class="flex text-4xl items-center">
-        <.back_button to={Routes.home_path(@socket, :index)} icon_dimensions="w-3 h-3" icon_stroke="stroke-3" live_link_padding="p-1.5" live_link_right_padding="mr-2"/>
+    <div class="flex items-center">
         <.crumbs class="text-sm text-base-250">
-        <:crumb to={}>Calendar</:crumb>
-        <:crumb>Booking Events</:crumb>
+            <:crumb to={Routes.calendar_index_path(@socket, :index)}>Calendar</:crumb>
+            <:crumb to={Routes.calendar_booking_events_index_path(@socket, :index)}>Booking Events</:crumb>
+            <:crumb><%= @booking_event.name %></:crumb>
         </.crumbs>
     </div>
-    <div class="flex flex-col md:items-center md:flex-row mt-2 gap-4">
-        <div class="flex">        
-            <h1 class="text-4xl font-bold"><%= @booking_event.name %></h1>
-            <div class="flex items-center justify-center w-7 h-7 bg-base-200 rounded-lg p-1 ml-2 mt-2.5">
-                <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
-            </div>
-        </div>
+    <div class="flex flex-col md:items-center md:flex-row gap-4">
+        <.edit_name_input
+          data={@booking_event}
+          edit_name={@edit_name}
+          changeset={@changeset}
+          back_path={Routes.calendar_booking_events_index_path(@socket, :index)} 
+        />
         <div class="flex gap-2 ml-auto py-2">
             <.actions id="header" main_button_class="h-12" archive_option={false} booking_event={@booking_event} button_actions={header_actions(@booking_event)} />
             <.icon_button icon="eye" color="blue-planning-300" class="text-black" disabled={BEShared.incomplete_status?(@booking_event)}>Client preview</.icon_button>
@@ -55,7 +55,11 @@
                     </div>
                     <hr class="mt-6 w-full"> 
                         <.booking_slot_tabs_nav booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
-                        <.booking_slot_tabs_content {assigns} />
+                        <%= if Enum.any?(@booking_event.dates) do %>
+                            <%= for booking_event_date <- @booking_event.dates do %>
+                                <.booking_slot_tabs_content booking_event_dates={@booking_event.dates} booking_event_date={booking_event_date} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} collapsed_sections={@collapsed_sections} client={@client} socket={@socket} current_user={@current_user} calendar_date_event={@calendar_date_event}/>
+                            <% end  %>
+                        <% end %>
                     
                     <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-base-200", %{"border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">
@@ -158,7 +162,7 @@
                                     </div>
                                     <div class="flex items-center ml-auto gap-2">
                                         <.icon_button phx-click="add-questionnaire" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
-                                        <button phx-click="add-questionnaire" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
+                                        <button phx-click="open-questionnaire" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
                                             <.icon name="eye" class="inline-block w-4 h-4 fill-current text-blue-planning-300" />
                                         </button>
                                     </div>
@@ -171,7 +175,7 @@
                                     </div>
                                     <div class="flex items-center ml-auto gap-2">
                                         <.icon_button phx-click="add-contract" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>                                        
-                                        <button phx-click="add-contract" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
+                                        <button phx-click="open-contract" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
                                             <.icon name="eye" class="inline-block w-4 h-4 fill-current text-blue-planning-300" />
                                         </button>
                                     </div>

@@ -164,12 +164,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_event("open_name_change", %{}, %{assigns: assigns} = socket) do
-    params = Map.take(assigns, [:current_user, :job]) |> Map.put(:parent_pid, self())
-
-    socket |> open_modal(PicselloWeb.Live.Profile.EditNameSharedComponent, params) |> noreply()
-  end
-
   def handle_event("search", %{"search_phrase" => search_phrase}, socket) do
     if blank?(search_phrase) do
       socket
@@ -560,6 +554,36 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def handle_info(
+        {:validate, %{"job" => %{"name" => name}}},
+        socket
+      ) do
+    socket
+    |> assign_changeset(%{job_name: name})
+    |> assign(:edit_name, true)
+    |> noreply()
+  end
+
+  def handle_info(
+        {:save, %{"job" => %{"name" => _}}},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    case Repo.update(changeset) do
+      {:ok, job} ->
+        socket
+        |> assign_job(job.id)
+        |> assign(:edit_name, false)
+        |> put_flash(
+          :success,
+          "#{if job.job_status.is_lead, do: "Lead", else: "Job"} updated successfully"
+        )
+
+      {:error, changeset} ->
+        socket |> assign(changeset: changeset)
+    end
+    |> noreply()
+  end
+
+  def handle_info(
         {:update, %{shoot_number: shoot_number, shoot: new_shoot}},
         %{assigns: %{shoots: shoots, job: job}} = socket
       ) do
@@ -635,6 +659,11 @@ defmodule PicselloWeb.JobLive.Shared do
 
     socket
     |> noreply()
+  end
+
+  def assign_changeset(%{assigns: %{job: job}} = socket, params \\ %{}) do
+    socket
+    |> assign(:changeset, Job.edit_job_changeset(job, params))
   end
 
   def assign_proposal(%{assigns: %{job: %{id: job_id}}} = socket) do
@@ -744,24 +773,6 @@ defmodule PicselloWeb.JobLive.Shared do
   def status_content(true, _), do: %{label: "Active", color: :blue}
 
   def status_content(_, status), do: %{label: status |> Phoenix.Naming.humanize(), color: :blue}
-
-  def title_header(assigns) do
-    ~H"""
-    <h1 class="flex items-center mt-4 text-4xl font-bold md:justify-start">
-      <div class="flex items-center max-w-4xl">
-        <.live_link to={@back_path} class="rounded-full bg-base-200 flex items-center justify-center p-2.5 mt-2 mr-4">
-          <.icon name="back" class="w-4 h-4 stroke-2"/>
-        </.live_link>
-        <%= Job.name @job %>
-      </div>
-      <div class="px-5">
-        <button type="button" phx-click="open_name_change" class="bg-base-200 p-2 rounded-lg btn-tertiary">
-          <.icon name="pencil" class="w-4 h-4 fill-current text-blue-planning-300" />
-        </button>
-      </div>
-    </h1>
-    """
-  end
 
   def section(assigns) do
     assigns = assigns |> Enum.into(%{badge: 0})

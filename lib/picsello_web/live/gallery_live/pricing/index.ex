@@ -8,6 +8,7 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
   import Picsello.Utils, only: [products_currency: 0]
 
   alias Picsello.{Galleries, Repo, Orders}
+  alias PicselloWeb.GalleryLive.Shared
 
   @impl true
   def mount(_params, _session, socket) do
@@ -150,6 +151,10 @@ defmodule PicselloWeb.GalleryLive.Pricing.Index do
     |> close_modal()
     |> noreply()
   end
+
+  # for validating and saving gallery name
+  @impl true
+  defdelegate handle_info(message, socket), to: Shared
 
   def grid_item(assigns) do
     ~H"""
