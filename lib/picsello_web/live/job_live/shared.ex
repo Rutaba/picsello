@@ -165,7 +165,7 @@ defmodule PicselloWeb.JobLive.Shared do
 
   def handle_event("open-inbox", _, %{assigns: %{job: job}} = socket) do
     socket
-    |> push_redirect(to: Routes.inbox_path(socket, :show, job.id))
+    |> push_redirect(to: Routes.inbox_path(socket, :show, "job-#{job.id}"))
     |> noreply()
   end
 
