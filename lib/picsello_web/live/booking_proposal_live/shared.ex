@@ -25,6 +25,24 @@ defmodule PicselloWeb.BookingProposalLive.Shared do
   alias Picsello.{Repo, PaymentSchedules, Notifiers, Job, Package, Packages}
   alias PicselloWeb.Router.Helpers, as: Routes
 
+  def banner(assigns) do
+    ~H"""
+    <%= if assigns[:read_only] do %>
+      <.badge color={:gray} mode={:outlined}>Read-only</.badge>
+    <% end %>
+
+    <h1 class="mb-4 text-3xl font-light"><%= @title %></h1>
+
+    <div class="py-4 bg-base-200 modal-banner">
+      <div class="text-2xl font-light">
+        <h2><%= Job.name @job %> Shoot <%= if @package, do: @package.name %></h2>
+      </div>
+
+      <%= render_slot @inner_block%>
+    </div>
+    """
+  end
+
   def visual_banner(assigns) do
     assigns =
       Enum.into(assigns, %{

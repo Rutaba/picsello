@@ -247,13 +247,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   end
 
   @impl true
-  def handle_info({:stripe_status, status}, socket) do
-    socket
-    |> assign(stripe_status: status)
-    |> noreply()
-  end
-
-  @impl true
   def handle_info(
         {:confirm_event, "disable_event_" <> id},
         %{assigns: %{current_user: current_user}} = socket

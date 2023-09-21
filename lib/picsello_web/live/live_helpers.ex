@@ -161,17 +161,6 @@ defmodule PicselloWeb.LiveHelpers do
     """
   end
 
-  def maybe_show_photographer_logo?(assigns) do
-    assigns = Enum.into(assigns, %{heading_class: "", logo_class: ""})
-
-    ~H"""
-    <%= case logo_url(@organization) do %>
-      <% nil -> %> <h1 class="pt-3 text-3xl font-light font-client text-base-300 mb-2 #{@heading_class}"><%= @organization.name %></h1>
-      <% url -> %> <img class="h-20 #{@logo_class}" src={url} />
-    <% end %>
-    """
-  end
-
   def ok(socket), do: {:ok, socket}
   def ok(socket, opts), do: {:ok, socket, opts}
   def noreply(socket), do: {:noreply, socket}

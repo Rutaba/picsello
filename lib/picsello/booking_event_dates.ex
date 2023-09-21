@@ -479,6 +479,7 @@ defmodule Picsello.BookingEventDates do
   defp filter_overlapping_shoots_slots(_, _, %{date: date, session_length: session_length}, _)
        when is_nil(date) or is_nil(session_length),
        do: []
+
   # Filters time slots based on overlapping shoots and assigns booking status.
   defp filter_overlapping_shoots_slots(slot_times, booking_event, booking_date, false) do
     booking_date = Map.put(booking_date, :slots, slot_times)
@@ -486,7 +487,9 @@ defmodule Picsello.BookingEventDates do
   end
 
   defp update_slots_status(booking_event, booking_date) do
-    %{date: date, session_length: session_length, session_gap: session_gap,slots: slot_times} = booking_date
+    %{date: date, session_length: session_length, session_gap: session_gap, slots: slot_times} =
+      booking_date
+
     %{package_template: %{organization: %{user: user} = organization}} =
       booking_event
       |> Repo.preload(package_template: [organization: :user])

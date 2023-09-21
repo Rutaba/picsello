@@ -1,7 +1,7 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
   alias Picsello.{Repo, BookingEvent, Job, Package}
-  alias Ecto.Multi
+  alias Ecto.{Multi, Changeset}
   alias Picsello.Workers.ExpireBooking
   import Ecto.Query
 

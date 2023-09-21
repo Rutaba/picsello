@@ -327,5 +327,4 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   def calculate_dates(booking_event_date, selected_days),
     do: BookingEvents.calculate_dates(booking_event_date, selected_days)
-
 end
