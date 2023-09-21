@@ -55,11 +55,7 @@
                     </div>
                     <hr class="mt-6 w-full"> 
                         <.booking_slot_tabs_nav booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
-                        <%= if Enum.any?(@booking_event.dates) do %>
-                            <%= for booking_event_date <- @booking_event.dates do %>
-                                <.booking_slot_tabs_content booking_event_dates={@booking_event.dates} booking_event_date={booking_event_date} booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} collapsed_sections={@collapsed_sections} client={@client} socket={@socket} current_user={@current_user} calendar_date_event={@calendar_date_event}/>
-                            <% end  %>
-                        <% end %>
+                        <.booking_slot_tabs_content booking_event_dates={@booking_event.dates} {assigns} />
                     
                     <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-base-200", %{"border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">

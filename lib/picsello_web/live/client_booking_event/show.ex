@@ -70,7 +70,7 @@ defmodule PicselloWeb.ClientBookingEventLive.Show do
   end
 
   defp assign_booking_event(%{assigns: %{organization: organization}} = socket, event_id) do
-    booking_event = BookingEvents.get_booking_event_preload!(organization.id, event_id)
+    booking_event = BookingEvents.get_preloaded_booking_event!(organization.id, event_id)
     title = "#{booking_event.name} | Book with #{organization.name}"
     description = HtmlSanitizeEx.strip_tags(booking_event.description)
 

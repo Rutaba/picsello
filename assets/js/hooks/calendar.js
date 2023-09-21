@@ -19,7 +19,7 @@ const calendar_render = (el) => {
     height: 'auto',
     initialView: getView(),
     headerToolbar: {
-      left: 'prev,next today',
+      left: 'prev,next Today',
       center: 'title',
       right: 'dayGridMonth,timeGridWeek',
     },

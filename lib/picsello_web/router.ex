@@ -154,7 +154,7 @@ defmodule PicselloWeb.Router do
       live "/booking-events/:id/edit", Live.Calendar.BookingEvents, :edit
       live "/questionnaires", Live.Questionnaires.Index, :index
       get "/calendar-feed", CalendarFeedController, :index
-      get "/calendar-feed-booking-event", CalendarFeedController, :booking_event_calendar
+      get "/calendar-feed/:id", CalendarFeedController, :show
 
       scope "/galleries/:id", GalleryLive do
         live "/", PhotographerIndex, :index

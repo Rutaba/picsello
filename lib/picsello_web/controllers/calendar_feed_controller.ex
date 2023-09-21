@@ -1,7 +1,7 @@
 defmodule PicselloWeb.CalendarFeedController do
   use PicselloWeb, :controller
 
-  alias Picsello.{Shoots, Job}
+  alias Picsello.{Shoots, Job, BookingEvents}
 
   def index(%{assigns: %{current_user: user}} = conn, params) do
     feeds = Shoots.get_shoots(user, params) |> map(conn, user)
@@ -11,13 +11,13 @@ defmodule PicselloWeb.CalendarFeedController do
     |> send_resp(200, Jason.encode!(feeds))
   end
 
-  def booking_event_calendar(conn, params) do
+  def show(%{assigns: %{current_user: user}} = conn, %{"id" => event_id} = params) do
+    IO.inspect(params, label: "Event ID --------->")
+    booking_event = BookingEvents.get_preloaded_booking_event!(user.organization_id, event_id) |> Map.get(:dates) |> map_event() |> IO.inspect(label: "Booking Event --------------->")
 
     conn
-
-    # conn
-    # |> put_resp_content_type("application/json")
-    # |> send_resp(200, Jason.encode!(feeds))
+    |> put_resp_content_type("application/json")
+    |> send_resp(200, Jason.encode!(booking_event))
   end
 
   defp map(feeds, conn, user) do
@@ -44,5 +44,29 @@ defmodule PicselloWeb.CalendarFeedController do
         end: end_date
       }
     end)
+  end
+
+
+  defp map_event(dates) do
+    if Enum.empty?(dates) do
+      %{}
+    else
+      start_date =
+        dates
+        |> List.first()
+        |> Map.get(:date)
+        |> Date.to_iso8601()
+
+      end_date =
+        dates
+        |> List.last()
+        |> Map.get(:date)
+        |> Date.to_iso8601()
+
+      %{
+        start: start_date,
+        end: end_date
+      }
+    end
   end
 end

@@ -42,13 +42,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     {:ok, calendar_date} =
       calendar_date
       |> Date.from_iso8601()
+      |> IO.inspect
 
     calendar_event =
       booking_event.dates
       |> Enum.filter(fn date -> date.date == calendar_date end)
+      |> hd()
+      |> IO.inspect
+
+    event_source = [
+      %{
+        start: calendar_event.date |> Date.to_iso8601()
+      }
+    ] |> Jason.encode!()
 
     socket
-    |> assign(:calendar_event, calendar_event)
+    |> assign(:calendar_date_event, calendar_event)
+    |> assign(:calendar_event_source, event_source)
     |> noreply()
   end
 
@@ -350,7 +360,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     <div>
       <%= case @booking_slot_tab_active do %>
       <% "list" -> %>
-        <%= if @booking_event_dates != [] do %>
+        <%= if @booking_event_dates && @booking_event_dates != [] do %>
           <%= for booking_event_date <- @booking_event_dates do %>
             <div class={classes("mt-10 p-3 border-2 rounded-lg border-base-200", %{"border-red-sales-300" => is_nil(booking_event_date.slots)})}>
               <div class="flex mb-1">
@@ -381,7 +391,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                   <div class="col-span-2">Status</div>
                   <div class="col-span-2">Client</div>
                 </div>
-                <.render_slots {assigns} />
+                <.render_slot booking_event_date={booking_event_date} {assigns} />
                 <div class="flex justify-end gap-2">
                   <.icon_button icon="envelope" color="blue-planning-300"/>
                   <.icon_button icon="pencil" color="blue-planning-300"/>
@@ -400,12 +410,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <% "calendar" -> %>
         <div class="mt-10 grid grid-cols-1 md:grid-cols-5 gap-5">
           <div class="md:col-span-2 bg-base-200">
-            <div phx-hook="BookingEventCalendar" phx-update="replace" class="w-[300px] h-[300px]" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :index)} data-booking-event-date-id={@booking_event_date.id}></div>
+            <% IO.inspect(@calendar_date_event) %>
+            <div phx-hook="BookingEventCalendar" phx-update="replace" class="w-[300px] h-[220px]" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @calendar_date_event.booking_event_id)}/>
           </div>
           <div class="md:col-span-3 flex flex-col justify-center">
-            <%= if @booking_event_date != [] do %>
+            <%= if @calendar_date_event && @calendar_date_event != [] do %>
               <div class="flex">
-                <div class="flex text-2xl font-bold"><%= BEShared.date_formatter(@booking_event_date.date) %></div>
+                <div class="flex text-2xl font-bold"><%= BEShared.date_formatter(@calendar_date_event.date) %></div>
                 <div class="flex justify-end ml-auto">
                   <div class="flex items-center justify-center w-8 h-8 bg-base-200 rounded-lg p-1 ml-2 mt-1">
                     <.icon name="pencil" class="w-4 h-4 fill-blue-planning-300" />
@@ -419,11 +430,11 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 </div>
               </div>
               <div class="flex mt-2">
-                <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_booked_slots(@booking_event_date.slots) %></b> bookings</p>
-                <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_available_slots(@booking_event_date.slots) %></b> available</p>
-                <p class="text-blue-planning-300"><b><%= BEShared.count_hidden_slots(@booking_event_date.slots) %></b> hidden</p>
+                <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_booked_slots(@calendar_date_event.slots) %></b> bookings</p>
+                <p class="text-blue-planning-300 mr-4"><b><%= BEShared.count_available_slots(@calendar_date_event.slots) %></b> available</p>
+                <p class="text-blue-planning-300"><b><%= BEShared.count_hidden_slots(@calendar_date_event.slots) %></b> hidden</p>
               </div>
-              <.render_slots {assigns} />
+              <.render_slots booking_event_date={@calendar_date_event} {assigns} />
             <% else %>
               <div class="p-3 border-2 border-base-200 rounded-lg">
                 <div class="font-bold text-base-250 text-xl flex items-center justify-center p-3 opacity-50"> <div> Add booking event dates </div> </div>
@@ -687,14 +698,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{assigns: %{current_user: %{organization_id: organization_id}, id: id}} = socket
       ) do
     booking_event =
-      BookingEvents.get_booking_event!(organization_id, id)
-      |> BookingEvents.preload_booking_event()
+      BookingEvents.get_preloaded_booking_event!(organization_id, id)
 
     socket
     |> assign(:booking_event, booking_event)
     |> assign(:payments_description, payments_description(booking_event))
     |> assign(:package, booking_event.package_template)
-    |> assign(:calendar_date_event, (Map.get(booking_event, :dates, [])))
+    |> assign(:calendar_date_event, (if Map.has_key?(booking_event, :dates), do: booking_event |> Map.get(:dates) |> hd(), else: []))
+    |> then(fn %{assigns: %{calendar_date_event: event} }= socket -> assign(socket, :calendar_event_source, [%{start: event.date |> Date.to_iso8601()}] |> Jason.encode!() |> IO.inspect) end)
 
   end
 
