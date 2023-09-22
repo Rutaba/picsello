@@ -41,19 +41,19 @@ defmodule Picsello.Jobs do
   end
 
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
-    from(j in query,
+        from(j in query,
       as: :j,
       left_join: shoots in assoc(j, :shoots),
-      inner_lateral_join:
-        sorted_shoot in subquery(
-          from Shoot,
-            as: :s,
-            where: [job_id: parent_as(:j).id],
-            order_by: [{^sort_direction, field(as(:s), :starts_at)}],
-            limit: 1,
-            select: [:id, :starts_at, :job_id]
-        ),
-      on: sorted_shoot.id == shoots.id,
+      # inner_lateral_join:
+      #   sorted_shoot in subquery(
+      #     from Shoot,
+      #       as: :s,
+      #       where: [job_id: parent_as(:j).id],
+      #       order_by: [{^sort_direction, field(as(:s), :starts_at)}],
+      #       limit: 1,
+      #       select: [:id, :starts_at, :job_id]
+      #   ),
+      # on: sorted_shoot.id == shoots.id,
       left_join: package in assoc(j, :package),
       left_join: payment_schedules in assoc(j, :payment_schedules),
       where: ^filters_where(opts),
@@ -150,7 +150,7 @@ defmodule Picsello.Jobs do
       |> Repo.all()
 
   defp filters_where(opts) do
-    Enum.reduce(opts, dynamic(true), fn
+        Enum.reduce(opts, dynamic(true), fn
       {:type, "all"}, dynamic ->
         dynamic
 
