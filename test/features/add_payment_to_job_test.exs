@@ -7,6 +7,8 @@ defmodule Picsello.AddPaymentsToJobTest do
   setup :authenticated
 
   setup %{session: session, user: user} do
+    Mox.stub_with(Picsello.MockBambooAdapter, Picsello.Sandbox.BambooAdapter)
+
     job =
       insert(:lead, %{
         user: user,
