@@ -54,8 +54,8 @@ defmodule Picsello.BookingEventDate do
       slot_block
       |> cast(attrs, [:slot_start, :slot_end, :client_id, :job_id, :status, :is_hide])
       |> validate_required([:slot_start, :slot_end])
-      # |> foreign_key_constraint(:client_id)
-      # |> foreign_key_constraint(:job_id)
+      |> foreign_key_constraint(:client_id)
+      |> foreign_key_constraint(:job_id)
       |> then(fn changeset ->
         if get_field(changeset, :is_hide),
           do: put_change(changeset, :status, :hide),
