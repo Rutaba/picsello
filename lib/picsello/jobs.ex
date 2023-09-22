@@ -46,12 +46,13 @@ defmodule Picsello.Jobs do
       left_join: shoots in assoc(j, :shoots),
       inner_lateral_join:
         sorted_shoot in subquery(
-          from Shoot,
+          from(Shoot,
             as: :s,
             where: [job_id: parent_as(:j).id],
             order_by: [{^sort_direction, field(as(:s), :starts_at)}],
             limit: 1,
             select: [:id, :starts_at, :job_id]
+          )
         ),
       on: sorted_shoot.id == shoots.id,
       left_join: package in assoc(j, :package),
