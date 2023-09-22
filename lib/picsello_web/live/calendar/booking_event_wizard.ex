@@ -197,6 +197,15 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
         </div>
       </div>
     <% end %>
+
+    <%= if @can_edit? do %>
+      <h3 class="font-bold text-xl mt-6">Questionnaire</h3>
+      <label class="flex my-4 cursor-pointer">
+        <%= checkbox(@f, :include_questionnaire?, class: "w-6 h-6 mt-1 checkbox") %>
+        <p class="ml-3">Include questionnaire in booking event?</p>
+      </label>
+    <% end %>
+
     <div class={classes("hidden sm:flex items-center border-b-8 border-blue-planning-300 font-semibold text-lg pb-3 mt-4 text-base-250", %{"justify-between" => @can_edit?})}>
       <%= for title <- ["Package name", "Package Pricing", "Select package"] do %>
         <%= if (!@can_edit? and title !=  "Select package") || @can_edit? do %>
@@ -223,22 +232,14 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       </div>
     <% end %>
     <%= if @can_edit? do %>
-      <div class="overflow-scroll sm:max-h-[290px]">
-        <%= for package <- @package_templates do %>
-          <% checked = is_checked(input_value(@f, :package_template_id), package) %>
-          <label class={classes(%{"cursor-not-allowed pointer-events-none" => !@can_edit?})}>
-            <.package_row package={package} checked={checked}>
-              <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={package.id} />
-            </.package_row>
-          </label>
-        <% end %>
-      </div>
-
-      <h3 class="font-bold text-xl mt-6">Questionnaire</h3>
-      <label class="flex my-4 cursor-pointer">
-        <%= checkbox(@f, :include_questionnaire?, class: "w-6 h-6 mt-1 checkbox") %>
-        <p class="ml-3">Include questionnaire in booking event?</p>
-      </label>
+      <%= for package <- @package_templates do %>
+        <% checked = is_checked(input_value(@f, :package_template_id), package) %>
+        <label class={classes(%{"cursor-not-allowed pointer-events-none" => !@can_edit?})}>
+          <.package_row package={package} checked={checked}>
+            <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={package.id} />
+          </.package_row>
+        </label>
+      <% end %>
     <% else %>
       <% package_id = input_value(@f, :package_template_id) |> to_integer() %>
       <% package = Enum.filter(@package_templates, fn template -> template.id == package_id end) |> List.first() %>
