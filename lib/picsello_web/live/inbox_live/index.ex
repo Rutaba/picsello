@@ -125,7 +125,7 @@ defmodule PicselloWeb.InboxLive.Index do
                 <div class="flex-1 h-px bg-orange-inbox-300"></div>
               </div>
             <% end %>
-            <div {testid("thread-message")} {scroll_to_message(message)} class={classes("m-2 max-w-lg sm:max-w-xl", %{"self-end" => message.outbound, "self-start" => !message.outbound})} style="scroll-margin-bottom: 7rem">
+            <div {testid("thread-message")} {scroll_to_message(message)} class={classes("m-2 max-w-lg sm:max-w-xl scroll-mb-28", %{"self-end" => message.outbound, "self-start" => !message.outbound})}>
               <div class={classes("mb-3 flex justify-between items-end text-base-250", %{"flex-row-reverse" => !message.outbound})}>
                 <div class="text-xs"><%= message.date %></div>
                 <div class="mx-1">
@@ -140,7 +140,7 @@ defmodule PicselloWeb.InboxLive.Index do
                 <% end %>
                 <span class="whitespace-pre-line"><%= raw message.body %></span>
 
-                <%= if !Enum.empty?(message.client_message_attachments) do %>
+                <%= unless Enum.empty?(message.client_message_attachments) do %>
                   <div class="p-2 border mt-4 rounded-lg">
                     <h4 class="text-sm mb-2 font-bold">Client attachments:</h4>
                     <div class="flex flex-col gap-2">

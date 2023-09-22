@@ -6,9 +6,9 @@ defmodule Picsello.ClientMessageAttachment do
   alias Picsello.{ClientMessage}
 
   schema "client_message_attachments" do
-    belongs_to(:client_message, ClientMessage)
     field(:name, :string)
     field(:url, :string)
+    belongs_to(:client_message, ClientMessage)
 
     timestamps(type: :utc_datetime)
   end
@@ -20,11 +20,5 @@ defmodule Picsello.ClientMessageAttachment do
     |> cast(attrs, @attrs)
     |> validate_required(@attrs)
     |> assoc_constraint(:client_message)
-  end
-
-  def create_changeset(attrs) do
-    %__MODULE__{}
-    |> cast(attrs, @attrs)
-    |> validate_required(@attrs)
   end
 end

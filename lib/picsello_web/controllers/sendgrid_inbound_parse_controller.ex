@@ -12,6 +12,8 @@ defmodule PicselloWeb.SendgridInboundParseController do
     Galleries.Workers.PhotoStorage
   }
 
+  alias Ecto.Multi
+
   def parse(conn, params) do
     %{"envelope" => envelope} = params
     to_email = envelope |> Jason.decode!() |> Map.get("to")
@@ -46,10 +48,10 @@ defmodule PicselloWeb.SendgridInboundParseController do
         )
         |> ClientMessage.create_inbound_changeset(required_fields)
 
-      Ecto.Multi.new()
-      |> Ecto.Multi.insert(:message, changeset)
-      |> Ecto.Multi.merge(fn %{message: %{id: message_id}} ->
-        multi = Ecto.Multi.new()
+      Multi.new()
+      |> Multi.insert(:message, changeset)
+      |> Multi.merge(fn %{message: %{id: message_id}} ->
+        multi = Multi.new()
 
         case initail_obj do
           %{client_id: client_id} ->
@@ -60,15 +62,15 @@ defmodule PicselloWeb.SendgridInboundParseController do
                 recipient_type: :to
               })
 
-            multi |> Ecto.Multi.insert(:message_recipient, params)
+            multi |> Multi.insert(:message_recipient, params)
 
           _ ->
             multi
         end
       end)
-      |> Ecto.Multi.merge(fn %{message: %{id: message_id}} ->
-        Ecto.Multi.new()
-        |> maybe_upload_attachments?(message_id, params)
+      |> Multi.merge(fn %{message: %{id: message_id}} ->
+        Multi.new()
+        |> maybe_upload_attachments(message_id, params)
       end)
       |> Repo.transaction()
       |> then(fn
@@ -86,54 +88,28 @@ defmodule PicselloWeb.SendgridInboundParseController do
   end
 
   @doc """
-  Checks if the returned map has the key "attachment-info"
-
-  ## Examples
-
-      iex> maybe_has_attachments?(%{"attachment-info" => "something"})
-      true
-
-      iex> maybe_has_attachments?(%{"subject" => "something"})
-      false
-
-  """
-  def maybe_has_attachments?(params) do
-    case Map.get(params, "attachment-info", nil) do
-      nil -> false
-      _ -> true
-    end
-  end
-
-  @doc """
   Checks if the returned map has the key "attachment-info" and uploads the docs to google cloud storage
 
   returns a list of maps with the keys: client_message_id, name, and url
 
   ## Examples
 
-      iex> maybe_upload_attachments?(params)
-      [
-        %{
-          client_message_id: 1,
-          name: "some_name",
-          url: "inbox-attachments/1/some_name",
-          inserted_at: ~U[2020-01-01 00:00:00Z],
-          updated_at: ~U[2020-01-01 00:00:00Z]
-        }
-      ]
+      iex> maybe_upload_attachments(params)
+      multi
 
       iex> maybe_has_attachments?(%{"subject" => "something"})
-      nil
+      multi
 
   """
-  def maybe_upload_attachments?(multi, message_id, params) do
+  def maybe_upload_attachments(multi, message_id, params) do
     case maybe_has_attachments?(params) do
       true ->
         attachments =
-          get_all_attachments(params)
+          params
+          |> get_all_attachments()
           |> Enum.map(&upload_attachment(&1, message_id))
 
-        Ecto.Multi.insert_all(multi, :attachments, ClientMessageAttachment, attachments)
+        Multi.insert_all(multi, :attachments, ClientMessageAttachment, attachments)
 
       _ ->
         multi
@@ -151,8 +127,11 @@ defmodule PicselloWeb.SendgridInboundParseController do
     upload_path =
       Path.join([
         "inbox-attachments",
+        get_date(now, :year),
+        get_date(now, :month),
+        get_date(now, :day),
         Integer.to_string(message_id),
-        filename
+        "#{now |> DateTime.to_unix()}_#{filename}"
       ])
 
     file = File.read!(path)
@@ -171,10 +150,17 @@ defmodule PicselloWeb.SendgridInboundParseController do
   # and use them to get the actual attachments from plug
   defp get_all_attachments(params) do
     params
-    |> Map.get("attachment-info", nil)
+    |> Map.get("attachment-info")
     |> Jason.decode!()
     |> Enum.map(fn {key, _} ->
-      Map.get(params, key, nil)
+      Map.get(params, key)
     end)
   end
+
+  defp maybe_has_attachments?(%{"attachment-info" => _}), do: true
+  defp maybe_has_attachments?(_), do: false
+
+  defp get_date(datetime, :year), do: Integer.to_string(datetime.year)
+  defp get_date(datetime, :month), do: Integer.to_string(datetime.month)
+  defp get_date(datetime, :day), do: Integer.to_string(datetime.day)
 end
