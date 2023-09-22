@@ -29,12 +29,15 @@ defmodule Picsello.AddPaymentsToJobTest do
     |> visit("/jobs/#{job.id}")
     |> click(css("#options"))
     |> click(button("Mark as paid"))
-    |> assert_has(css("#payment-modal", count: 1))
-    |> assert_has(css("#close", count: 1))
-    |> assert_has(css("#amount", count: 1))
-    |> assert_has(css("#job-name", count: 1, text: Job.name(job)))
-    |> assert_has(css("#add-payment", count: 1))
-    |> assert_has(css("#done", count: 1))
+    |> within_modal(fn modal ->
+      modal
+      |> assert_has(css("#payment-modal", count: 1))
+      |> assert_has(css("#close", count: 1))
+      |> assert_has(css("#amount", count: 1))
+      |> assert_has(css("#job-name", count: 1, text: Job.name(job)))
+      |> assert_has(css("#add-payment", count: 1))
+      |> assert_has(css("#done", count: 1))
+    end)
   end
 
   feature "renders add payment modal", %{session: session, job: job} do
@@ -42,9 +45,12 @@ defmodule Picsello.AddPaymentsToJobTest do
     |> visit("/jobs/#{job.id}")
     |> click(css("#options"))
     |> click(button("Mark as paid"))
-    |> assert_has(css("#add-payment", count: 1))
-    |> click(css("#add-payment"))
-    |> assert_has(css("#add-payment-form"))
+    |> within_modal(fn modal ->
+      modal
+      |> assert_has(css("#add-payment", count: 1))
+      |> click(css("#add-payment"))
+      |> assert_has(css("#add-payment-form"))
+    end)
   end
 
   feature "photog add offline payments", %{session: session, job: job} do
@@ -97,14 +103,20 @@ defmodule Picsello.AddPaymentsToJobTest do
     |> click(css("#options"))
     |> click(button("Mark as paid"))
     |> click(button("Send reminder email"))
-    |> assert_text("Send an email")
-    |> click(button("Cancel"))
+    |> within_modal(fn modal ->
+      modal
+      |> assert_text("Send an email")
+      |> click(button("Cancel"))
+    end)
     |> click(css("#options"))
     |> click(button("Mark as paid"))
     |> click(button("Send reminder email"))
-    |> fill_in(css("#client_message_subject"), with: "Test subject")
-    |> fill_in(css(".ql-editor"), with: "Test message")
-    |> wait_for_enabled_submit_button()
-    |> click(button("Send Email"))
+    |> within_modal(fn modal ->
+      modal
+      |> fill_in(css("#client_message_subject"), with: "Test subject")
+      |> fill_in(css(".ql-editor"), with: "Test message")
+      |> wait_for_enabled_submit_button()
+      |> click(button("Send Email"))
+    end)
   end
 end
