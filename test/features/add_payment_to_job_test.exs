@@ -1,6 +1,6 @@
 defmodule Picsello.AddPaymentsToJobTest do
   @moduledoc false
-  use Picsello.FeatureCase, async: true
+  use Picsello.FeatureCase, async: false
   alias Picsello.Job
 
   setup :onboarded
