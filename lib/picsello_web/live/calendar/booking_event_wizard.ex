@@ -223,14 +223,16 @@ defmodule PicselloWeb.Live.Calendar.BookingEventWizard do
       </div>
     <% end %>
     <%= if @can_edit? do %>
-      <%= for package <- @package_templates do %>
-        <% checked = is_checked(input_value(@f, :package_template_id), package) %>
-        <label class={classes(%{"cursor-not-allowed pointer-events-none" => !@can_edit?})}>
-          <.package_row package={package} checked={checked}>
-            <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={package.id} />
-          </.package_row>
-        </label>
-      <% end %>
+      <div class="overflow-scroll sm:max-h-[290px]">
+        <%= for package <- @package_templates do %>
+          <% checked = is_checked(input_value(@f, :package_template_id), package) %>
+          <label class={classes(%{"cursor-not-allowed pointer-events-none" => !@can_edit?})}>
+            <.package_row package={package} checked={checked}>
+              <input class={classes("w-5 h-5 mr-2.5 radio", %{"checked" => checked})} type="radio" name={input_name(@f, :package_template_id)} value={package.id} />
+            </.package_row>
+          </label>
+        <% end %>
+      </div>
 
       <h3 class="font-bold text-xl mt-6">Questionnaire</h3>
       <label class="flex my-4 cursor-pointer">
