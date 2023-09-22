@@ -41,7 +41,7 @@ defmodule Picsello.Jobs do
   end
 
   def get_jobs(query, %{sort_by: sort_by, sort_direction: sort_direction} = opts) do
-        from(j in query,
+    from(j in query,
       as: :j,
       left_join: shoots in assoc(j, :shoots),
       # inner_lateral_join:
@@ -150,7 +150,7 @@ defmodule Picsello.Jobs do
       |> Repo.all()
 
   defp filters_where(opts) do
-        Enum.reduce(opts, dynamic(true), fn
+    Enum.reduce(opts, dynamic(true), fn
       {:type, "all"}, dynamic ->
         dynamic
 
