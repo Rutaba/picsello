@@ -13,22 +13,15 @@ const calendar_render = (el, component) => {
 
   const calendar = new Calendar(el, {
     themeSystem: 'cosmo',
-    height: 'auto',
+    height: 600,
     plugins: [dayGridPlugin, interactionPlugin],
     timeZone,
     initialView: getView(),
     headerToolbar: {
-      right: 'Today prev next',
-      left: 'title',
-      // right: 'dayGridMonth,timeGridWeek',
+      right: 'today prev next'
     },
     eventSources: [{ url: feedPath }],
-    // editable: true,
     selectable: true,
-    eventDisplay: 'block',
-    eventBackgroundColor: '#4daac6',
-    eventSources: [{ url: feedPath }],
-    eventTextColor: '#FFFFFF',
     windowResize: function (view) {
       const newView = getView();
       if (view !== newView) {

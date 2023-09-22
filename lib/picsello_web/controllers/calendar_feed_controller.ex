@@ -11,9 +11,12 @@ defmodule PicselloWeb.CalendarFeedController do
     |> send_resp(200, Jason.encode!(feeds))
   end
 
-  def show(%{assigns: %{current_user: user}} = conn, %{"id" => event_id} = params) do
-    IO.inspect(params, label: "Event ID --------->")
-    booking_event = BookingEvents.get_preloaded_booking_event!(user.organization_id, event_id) |> Map.get(:dates) |> map_event() |> IO.inspect(label: "Booking Event --------------->")
+  def show(%{assigns: %{current_user: user}} = conn, %{"id" => event_id}) do
+
+    booking_event =
+      BookingEvents.get_preloaded_booking_event!(user.organization_id, event_id)
+      |> Map.get(:dates)
+      |> map_event()
 
     conn
     |> put_resp_content_type("application/json")
@@ -46,27 +49,16 @@ defmodule PicselloWeb.CalendarFeedController do
     end)
   end
 
-
   defp map_event(dates) do
     if Enum.empty?(dates) do
-      %{}
+      [%{}]
     else
-      start_date =
-        dates
-        |> List.first()
-        |> Map.get(:date)
-        |> Date.to_iso8601()
-
-      end_date =
-        dates
-        |> List.last()
-        |> Map.get(:date)
-        |> Date.to_iso8601()
-
-      %{
-        start: start_date,
-        end: end_date
-      }
+      Enum.map(dates, fn d ->
+        %{
+          start: d.date,
+          color: "#65A8C3"
+        }
+      end)
     end
   end
 end

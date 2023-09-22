@@ -42,23 +42,24 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
     {:ok, calendar_date} =
       calendar_date
       |> Date.from_iso8601()
-      |> IO.inspect
 
     calendar_event =
       booking_event.dates
       |> Enum.filter(fn date -> date.date == calendar_date end)
-      |> hd()
-      |> IO.inspect
+      |> case do
+        [] ->  []
+        dates -> hd(dates)
+      end
 
-    event_source = [
-      %{
-        start: calendar_event.date |> Date.to_iso8601()
-      }
-    ] |> Jason.encode!()
+    # event_source = [
+    #   %{
+    #     start: calendar_event.date |> Date.to_iso8601()
+    #   }
+    # ] |> Jason.encode!()
 
     socket
     |> assign(:calendar_date_event, calendar_event)
-    |> assign(:calendar_event_source, event_source)
+    # |> assign(:calendar_event_source, event_source)
     |> noreply()
   end
 
@@ -408,10 +409,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <% end %>
 
       <% "calendar" -> %>
-        <div class="mt-10 grid grid-cols-1 md:grid-cols-5 gap-5">
-          <div class="md:col-span-2 bg-base-200">
-            <% IO.inspect(@calendar_date_event) %>
-            <div phx-hook="BookingEventCalendar" phx-update="replace" class="w-[300px] h-[220px]" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @calendar_date_event.booking_event_id)}/>
+        <div class="mt-10 flex">
+          <div class="w-1/2">
+            <div phx-hook="BookingEventCalendar" phx-update="replace" class="w-[450px]" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
           </div>
           <div class="md:col-span-3 flex flex-col justify-center">
             <%= if @calendar_date_event && @calendar_date_event != [] do %>
@@ -698,14 +698,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{assigns: %{current_user: %{organization_id: organization_id}, id: id}} = socket
       ) do
     booking_event =
-      BookingEvents.get_preloaded_booking_event!(organization_id, id)
+      organization_id
+      |> BookingEvents.get_booking_event!(id)
+      |> BookingEvents.preload_booking_event()
+
+    calendar_date_event =
+      Map.get(booking_event, :dates, [])
+      |> case do
+        [] -> []
+        event -> hd(event)
+      end
 
     socket
     |> assign(:booking_event, booking_event)
     |> assign(:payments_description, payments_description(booking_event))
     |> assign(:package, booking_event.package_template)
-    |> assign(:calendar_date_event, (if Map.has_key?(booking_event, :dates), do: booking_event |> Map.get(:dates) |> hd(), else: []))
-    |> then(fn %{assigns: %{calendar_date_event: event} }= socket -> assign(socket, :calendar_event_source, [%{start: event.date |> Date.to_iso8601()}] |> Jason.encode!() |> IO.inspect) end)
+    |> assign(:calendar_date_event, calendar_date_event)
+    # |> then(fn %{assigns: %{calendar_date_event: event} }= socket -> assign(socket, :calendar_event_source, [%{start: event.date |> Date.to_iso8601()}] |> Jason.encode!() |> IO.inspect) end)
 
   end
 
