@@ -306,7 +306,7 @@ defmodule PicselloWeb.Live.FinanceSettings do
           payment_schedule_params = %{
             price: payment_schedule.price |> convert_currency(currency, rate),
             description:
-              "#{currency}#{payment_schedule.price} to #{payment_schedule.due_interval}"
+              "#{Money.to_string(payment_schedule.price, symbol: false)} #{currency} #{payment_schedule.due_interval}"
           }
 
           Multi.update(
