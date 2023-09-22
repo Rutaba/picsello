@@ -4,9 +4,9 @@ defmodule Picsello.Repo.Migrations.ClientMessageAttachments do
 
   def up do
     create table(@table) do
-      add(:client_message_id, references(:client_messages, on_delete: :nothing), null: false)
       add(:name, :string, null: false)
       add(:url, :string, null: false)
+      add(:client_message_id, references(:client_messages, on_delete: :nothing), null: false)
 
       timestamps(type: :utc_datetime)
     end
