@@ -125,7 +125,7 @@ defmodule Picsello.EditQuestionnaireTest do
       |> assert_text("Question 2")
       |> scroll_into_view(testid("question-1"))
       |> fill_in(text_field("questionnaire_questions_1_prompt"),
-        with: "Testing test test?"
+        with: "What is the vibe?"
       )
       |> find(
         select("questionnaire_questions_1_type"),
@@ -217,7 +217,7 @@ defmodule Picsello.EditQuestionnaireTest do
         |> assert_text("Question 2")
         |> scroll_into_view(testid("question-1"))
         |> fill_in(text_field("questionnaire_questions_1_prompt"),
-          with: "Testing test test?"
+          with: "What is the vibe?"
         )
         |> find(
           select("questionnaire_questions_1_type"),
@@ -266,7 +266,7 @@ defmodule Picsello.EditQuestionnaireTest do
         |> scroll_into_view(testid("question-1"))
         |> assert_value(
           text_field("questionnaire_questions_1_prompt"),
-          "Testing test test?"
+          "What is the vibe?"
         )
         |> scroll_into_view(testid("add-question"))
         |> click(button("Add question"))
