@@ -21,16 +21,18 @@ defmodule Picsello.ViewLeadTest do
 
     [
       leads:
-        for {client_name, job_type} <- [{"Rick Sanchez", "family"}, {"Morty Smith", "wedding"}] do
-          package = insert(:package, user: user)
-
-          insert(:lead, %{
-            user: user,
-            type: job_type,
-            client: %{name: client_name},
-            package_id: package.id
-          })
-        end
+        for(
+          {client_name, job_type} <- [{"Rick Sanchez", "family"}, {"Morty Smith", "wedding"}],
+          do:
+            insert(:lead, %{
+              user: user,
+              type: job_type,
+              client: %{name: client_name},
+              shoots: [
+                %{name: "test_name"}
+              ]
+            })
+        )
     ]
   end
 

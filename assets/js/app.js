@@ -77,6 +77,7 @@ import DatePicker from './hooks/date-picker';
 import BeforeUnload from './hooks/before-unload';
 import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
+import SearchResultSelect from './hooks/search-result-select';
 import Tooltip from './hooks/tooltip';
 
 const Modal = {
@@ -248,6 +249,7 @@ const showAdminBanner = {
   },
 };
 
+
 const Hooks = {
   AutoHeight,
   Calendar,
@@ -296,7 +298,8 @@ const Hooks = {
   GetGalleryCookie,
   showWelcomeModal,
   showAdminBanner,
-  FolderUpload
+  FolderUpload,
+  SearchResultSelect
 };
 
 window.addEventListener(`phx:download`, (event) => {
