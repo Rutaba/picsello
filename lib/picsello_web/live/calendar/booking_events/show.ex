@@ -409,11 +409,12 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <% end %>
 
       <% "calendar" -> %>
-        <div class="mt-10 flex">
-          <div class="w-1/2">
-            <div phx-hook="BookingEventCalendar" phx-update="replace" class="sm:w-[450px] sm:flex sm:flex-wrap" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
+        <div class="mt-10 flex flex-col xl:flex-row gap-8">
+          <div class="flex xl:w-2/5 flex-col">
+            <%!-- <div phx-hook="BookingEventCalendar" phx-update="replace" class="sm:w-[450px] sm:flex sm:flex-wrap" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/> --%>
+            <div phx-hook="BookingEventCalendar" phx-update="replace" class="" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
           </div>
-          <div class="md:col-span-3 flex flex-col justify-center">
+          <div class="md:col-span-3 xl:w-3/5 flex flex-col xl:overflow-y-scroll xl:max-h-[600px]">
             <%= if @calendar_date_event && @calendar_date_event != [] do %>
               <div class="flex">
                 <div class="flex text-2xl font-bold"><%= BEShared.date_formatter(@calendar_date_event.date) %></div>
@@ -513,13 +514,13 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         <% "calendar" -> %>
           <div class="border-2 border-base-200 rounded-lg flex p-3 my-1.5">
             <div class="flex flex-col">
-              <p class="mb-1 font-bold text-black text-lg">
+              <div class="mb-1 font-bold text-black text-lg">
                 <%= if @slot.status == :book do %>
                   <button class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
                 <% else %>
-                  <div><%= slot_time_formatter(@slot) %></div>
+                  <p><%= slot_time_formatter(@slot) %></p>
                 <% end %>
-              </p>
+              </div>
               <p class="text-blue-planning-300 underline">
                 <%= if @client && @slot.status == :book do %>
                   <button class="text-blue-planning-300 underline"><%= "Booked with " <> String.capitalize(@client.name) %></button>

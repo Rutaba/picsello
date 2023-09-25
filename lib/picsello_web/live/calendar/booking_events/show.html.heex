@@ -11,17 +11,17 @@
           data={@booking_event}
           edit_name={@edit_name}
           changeset={@changeset}
-          back_path={Routes.calendar_booking_events_index_path(@socket, :index)} 
+          back_path={Routes.calendar_booking_events_index_path(@socket, :index)}
         />
         <div class="flex gap-2 ml-auto py-2">
             <.actions id="header" main_button_class="h-12" archive_option={false} booking_event={@booking_event} button_actions={header_actions(@booking_event)} />
             <.icon_button icon="eye" color="blue-planning-300" class="text-black" disabled={BEShared.incomplete_status?(@booking_event)}>Client preview</.icon_button>
             <.button_simple disabled={BEShared.incomplete_status?(@booking_event)}>Copy Link</.button_simple>
         </div>
-    </div> 
+    </div>
     <div class="ml-2 pb-1.5 mt-10 w-20 text-center border-b-4 border-blue-planning-300 text-blue-planning-300 font-bold">
         Overview
-    </div> 
+    </div>
 </div>
 
 <div class="bg-base-200 h-auto">
@@ -30,9 +30,9 @@
             <div class="uppercase text-base-250 font-bold tracking-widest tracking-widestplus">Section Menu</div>
             <div class="text-blue-planning-300 underline ml-auto">Details</div>
             <div class="text-blue-planning-300 underline ml-4">Marketing</div>
-            <div class="text-blue-planning-300 underline ml-4">Coupons</div> 
+            <div class="text-blue-planning-300 underline ml-4">Coupons</div>
         </div>
-        <div class="p-6 grid grid-cols-1 lg:grid-cols-10 gap-8">
+        <div class="p-6 grid grid-cols-1 lg:grid-cols-10 gap-y-8 lg:gap-8">
             <div class="lg:col-span-7 rounded-lg">
                 <div class="flex flex-col bg-white p-7 rounded-lg">
                     <div class="flex flex-col">
@@ -50,13 +50,13 @@
                                 <button phx-click="add-date" class="btn-primary whitespace-nowrap h-8 py-0.5">
                                     Add date
                                 </button>
-                            </div> 
+                            </div>
                         </div>
                     </div>
-                    <hr class="mt-6 w-full"> 
+                    <hr class="mt-6 w-full">
                         <.booking_slot_tabs_nav booking_event={@booking_event} booking_slot_tab_active={@booking_slot_tab_active} booking_slot_tabs={@booking_slot_tabs} socket={@socket} />
                         <.booking_slot_tabs_content booking_event_dates={@booking_event.dates} {assigns} />
-                    
+
                     <div class={classes("mt-10 p-3 border-2 flex items-center rounded-lg border-base-200", %{"border-red-sales-300" => !@package})}>
                         <div class="flex flex-col w-full">
                             <div class="mr-2 flex items-center gap-3">
@@ -110,8 +110,8 @@
                                             </div>
                                         </div>
                                         <hr class="my-3 block md:hidden">
-                                        <div class="flex items-center ml-auto">
-                                            <.icon_button phx-click="add-package" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75 mr-1">Edit</.icon_button>
+                                        <div class="flex items-center md:flex-col xl:flex-row gap-3 ml-auto">
+                                            <.icon_button phx-click="add-package" icon="pencil" color="white" class="px-2 py-1 mr-1 w-full bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
                                             <.actions id="package" booking_event={@booking_event} button_actions={package_actions()} />
                                         </div>
                                     </div>
@@ -120,7 +120,7 @@
                                 <div class="text-base-250 pr-2">Looks like you need to choose a package</div>
                             <% end %>
                         </div>
-                        <%= unless @package do %>  
+                        <%= unless @package do %>
                             <button phx-click="add-package" class="ml-auto mt-1 btn-primary px-4 h-8 py-0.5 flex gap-3 text-white bg-black">
                             Choose
                             </button>
@@ -141,7 +141,7 @@
                                         <div class="text-base-250 pr-2">Looks like you need to choose a package</div>
                                     <% end %>
                                 </div>
-                                <%= unless @package do %>  
+                                <%= unless @package do %>
                                     <button phx-click="add-package" class="ml-auto mt-1 btn-primary px-4 h-8 py-0.5 flex gap-3 text-white bg-black">
                                         Choose
                                     </button>
@@ -170,7 +170,7 @@
                                         <p class="text-base-250"><%= if @package.contract, do: @package.contract.name, else: "Choose your contract" %></p>
                                     </div>
                                     <div class="flex items-center ml-auto gap-2">
-                                        <.icon_button phx-click="add-contract" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>                                        
+                                        <.icon_button phx-click="add-contract" icon="pencil" color="white" class="px-2 py-1 bg-blue-planning-300 hover:bg-blue-planning-300/75">Edit</.icon_button>
                                         <button phx-click="open-contract" class="flex bg-base-200 px-2 py-2 rounded-lg items-center">
                                             <.icon name="eye" class="inline-block w-4 h-4 fill-current text-blue-planning-300" />
                                         </button>
@@ -194,7 +194,7 @@
                                 Coupons
                             </div>
                         </div>
-                        <div class=""> 
+                        <div class="">
                             If you’d like to provide a coupon code to your clients to use at checkout, you can do so here!
                         </div>
                         <.add_coupon uses={0}/>
@@ -207,6 +207,6 @@
                     </div>
                 <% end %>
             </div>
-        </div> 
+        </div>
     </div>
 </div>
