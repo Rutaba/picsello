@@ -71,20 +71,22 @@
             <span class="ml-2 rounded-md bg-base-200 px-2 text-sm font-bold"><%= automation_pipeline.total_emails_count %> <%= ngettext("email", "emails", automation_pipeline.total_emails_count) %></span>
           </div>
           <%= Enum.map(automation_pipeline.subcategories, fn subcategory -> %>
-            <div class="mb-3 flex text-base-250 uppercase font-bold tracking-[.3em] mr-5 mt-5 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
-              <div class="ml-auto">
-                <%= if !Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
-                  <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
-                <% else %>
-                  <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
-                <% end %>
+            <%= if subcategory.subcategory_slug != "order_status_emails" do %>
+              <div class="mb-3 flex text-base-250 uppercase font-bold tracking-[.3em] mr-5 mt-5 pr-3 cursor-pointer" phx-click="toggle-section" phx-value-section_id={subcategory.subcategory_name}> <%= subcategory.subcategory_name %> 
+                <div class="ml-auto">
+                  <%= if !Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
+                    <.icon name="down" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+                  <% else %>
+                    <.icon name="up" class="w-5 h-5 stroke-2 text-blue-planning-300" />
+                  <% end %>
+                </div>
               </div>
-            </div>
-            <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
-              <%= if Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
-                <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={automation_pipeline.category_id} subcategory={subcategory.subcategory_id} subcategory_slug={subcategory.subcategory_slug}/>
-              <% end %>
-            <% end) %>
+              <%= Enum.map(subcategory.pipelines, fn pipeline -> %>
+                <%= if Enum.member?(@collapsed_sections, subcategory.subcategory_name) do %>
+                  <.pipeline_section id="pipepline-#{pipeline.id}" collapsed_sections={@collapsed_sections} pipeline={pipeline} category={automation_pipeline.category_id} subcategory={subcategory.subcategory_id} subcategory_slug={subcategory.subcategory_slug}/>
+                <% end %>
+              <% end) %>
+            <% end %>
           <% end) %>
         <% end) %>
       </div>

@@ -747,7 +747,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
     skip_sub_categories =
       if order,
-        do: ["gallery_notification_emails"],
+        do: ["gallery_notification_emails", "order_status_emails"],
         else: ["order_confirmation_emails", "order_status_emails"]
 
     order_id = if order, do: order.id, else: nil

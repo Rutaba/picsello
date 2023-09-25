@@ -165,11 +165,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Index do
     case EmailAutomations.update_pipeline_and_settings_status(id, active) do
       {_count, nil} ->
         socket
-        |> put_flash(:success, "Pipeline successfully #{message}")
+        |> put_flash(:success, "Email template successfully #{message}")
 
       _error ->
         socket
-        |> put_flash(:error, "Failed to update pipeline s tatus")
+        |> put_flash(:error, "Failed to update email template status")
     end
     |> assign_automation_pipelines()
     |> noreply()

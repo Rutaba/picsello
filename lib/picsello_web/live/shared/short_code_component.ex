@@ -89,42 +89,54 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         variables: [
           %{
             id: 1,
+            name: "gallery_name",
+            sameple: "Gallery name",
+            description: "Gallery name"
+          },
+          %{
+            id: 2,
             name: "password",
             sample: "81234",
             description: "Password that has been generated for a client gallery"
           },
           %{
-            id: 2,
+            id: 3,
             name: "gallery_link",
             sample: "https://gallerylinkhere.com",
             description: "Link to the client gallery"
           },
           %{
-            id: 3,
+            id: 4,
             name: "album_password",
             sample: "75642",
             description: "Password that has been generaged for a gallery album"
           },
           %{
-            id: 4,
+            id: 5,
             name: "gallery_expiration_date",
             sample: "August 15, 2023",
             description: "Expiration date of the specific gallery formatted as Month DD, YYYY"
           },
           %{
-            id: 5,
+            id: 6,
+            name: "download_photos",
+            sample: "https://gallerydownloadshere.com",
+            description: "Link to the download gallery photos"
+          },
+          %{
+            id: 7,
             name: "order_first_name",
             sample: "Jane",
             description: "First name to personalize gallery order emails"
           },
           %{
-            id: 6,
+            id: 8,
             name: "album_link",
             sample: "https://albumlinkhere.com",
             description: "Link to individual album, such as proofing, within client gallery"
           },
           %{
-            id: 7,
+            id: 9,
             name: "client_gallery_order_page",
             sample: "https://clientgalleryorderpage.com",
             description: "Link for client to view their completed gallery order"
