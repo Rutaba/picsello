@@ -15,6 +15,9 @@ defmodule Picsello.Galleries.Workers.PhotoStorage do
   @callback initiate_resumable(String.t(), map()) :: {:ok | :error, Tesla.Env.t()}
   @callback continue_resumable(String.t(), any(), Keyword.t()) :: {:ok | :error, Tesla.Env.t()}
 
+  @callback insert(String.t(), any()) ::
+              {:ok, GoogleApi.Storage.V1.Model.Object.t()} | {:error, any()}
+
   def impl, do: Application.get_env(:picsello, :photo_storage_service)
 
   def path_to_url(path), do: impl().path_to_url(path)
