@@ -56,6 +56,7 @@ defmodule Picsello.Galleries.Workers.PhotoStorage.Impl do
     )
   end
 
+  @impl PhotoStorage
   def insert(path, object) do
     Objects.storage_objects_insert_iodata(
       connection(),
