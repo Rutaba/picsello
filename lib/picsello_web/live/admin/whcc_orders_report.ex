@@ -61,13 +61,11 @@ defmodule PicselloWeb.Live.Admin.WHCCOrdersReport do
   end
 
   defp tracking_info(%{whcc_order: %{orders: sub_orders}}) do
-    Enum.find_value(sub_orders, fn
+    Enum.find_value(sub_orders, %{url: nil, whcc_order_number: nil}, fn
       %{whcc_tracking: tracking} ->
         if tracking do
           %{shipping_info: [%{tracking_url: url}], order_number: whcc_order_number} = tracking
           %{url: url, whcc_order_number: whcc_order_number}
-        else
-          %{url: nil, whcc_order_number: nil}
         end
     end)
   end
