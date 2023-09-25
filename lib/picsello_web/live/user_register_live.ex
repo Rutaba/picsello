@@ -8,12 +8,16 @@ defmodule PicselloWeb.UserRegisterLive do
   import Picsello.Subscriptions,
     only: [get_subscription_plan_metadata: 0, get_subscription_plan_metadata: 1]
 
+  import PicselloWeb.OnboardingLive.Shared, only: [signup_container: 1]
+
   @steps [1, 2, 3]
 
   @impl true
   def mount(_params, session, socket) do
     socket
+    |> assign(:main_class, "bg-gray-100")
     |> assign_defaults(session)
+    |> assign(:onboarding_type, nil)
     |> assign(step: 1, steps: @steps)
     |> assign(
       :subscription_plan_metadata,
@@ -41,31 +45,104 @@ defmodule PicselloWeb.UserRegisterLive do
     |> noreply()
   end
 
-  def handle_params(_params, _uri, socket) do
-    socket |> noreply()
+  @impl true
+  def handle_params(%{"onboarding_type" => onboarding_type}, _uri, socket) do
+    socket
+    |> assign(:onboarding_type, onboarding_type)
+    |> noreply()
   end
 
+  def handle_params(_params, _uri, socket), do: noreply(socket)
+
   @impl true
-  def handle_event("validate", %{"user" => %{"trigger_submit" => "true"}}, socket) do
-    socket |> noreply()
-  end
+  def handle_event("validate", %{"user" => %{"trigger_submit" => "true"}}, socket),
+    do: noreply(socket)
 
   @impl true
   def handle_event("validate", %{"user" => params}, socket) do
+    params = Map.put(params, "onboarding_flow_source", [socket.assigns.onboarding_type])
+
     socket |> assign_changeset(params, :validate) |> noreply()
   end
 
   @impl true
-  def handle_event("previous", %{}, socket) do
-    socket |> noreply()
-  end
+  def handle_event("previous", %{}, socket), do: noreply(socket)
 
   @impl true
   def handle_event("save", %{"user" => user_params}, socket) do
+    user_params = Map.put(user_params, "onboarding_flow_source", [socket.assigns.onboarding_type])
+
     socket
     |> assign_changeset(user_params, :validate)
     |> assign_trigger_submit()
     |> noreply()
+  end
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+      <.onboarding_view {assigns} />
+    """
+  end
+
+  defp onboarding_view(%{onboarding_type: nil} = assigns) do
+    ~H"""
+      <.optimized_container step={@step} steps={@steps} color_class="bg-blue-planning-200">
+        <.signup_hooks />
+        <h1 class="text-3xl font-bold sm:leading-tight mt-2"><%= @subscription_plan_metadata.signup_title %></h1>
+        <h2 class="text-base mt-4 font-normal"><%= @subscription_plan_metadata.signup_description %> or <%= link "log in", to: Routes.user_session_path(@socket, :new), class: "underline text-blue-planning-300" %>.</h2>
+        <.signup_form {assigns} />
+      </.optimized_container>
+    """
+  end
+
+  defp onboarding_view(%{onboarding_type: "mastermind"} = assigns) do
+    ~H"""
+      <.signup_container {assigns}>
+        <h1>test</h1>
+        <:right_panel>
+          <.signup_hooks />
+          <.signup_form {assigns} />
+        </:right_panel>
+      </.signup_container>
+    """
+  end
+
+  defp signup_form(assigns) do
+    ~H"""
+      <a href={Routes.auth_path(@socket, :request, :google)} class="flex items-center justify-center w-full mt-8 text-center btn-primary">
+        <.icon name="google" width="25" height="24" class="mr-4" />
+        Continue with Google
+      </a>
+      <p class="m-6 text-center">or</p>
+      <.form :let={f} for={@changeset} action={Routes.user_registration_path(@socket, :create)} phx-change="validate" phx-submit="save" phx-trigger-action={@trigger_submit}>
+        <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
+        <%= hidden_input f, :onboarding_flow_source, value: @onboarding_type %>
+        <%= labeled_input f, :name, placeholder: "Jack Nimble", phx_debounce: "500", label: "Your first & last name", autocomplete: "name" %>
+        <%= labeled_input f, :email, type: :email_input, placeholder: "jack.nimble@example.com", phx_debounce: "500", wrapper_class: "mt-4" %>
+        <%= live_component PicselloWeb.PasswordFieldComponent, f: f, id: :register_password, placeholder: "something secret"%>
+
+        <p class="text-sm text-gray-400 mt-6 sm:pr-6 mb-8">By signing up you agree to our
+          <a href="https://www.picsello.com/privacy-policy" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Privacy Policy</a> and
+          <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms</a>
+        </p>
+
+        <div class="flex mt-4">
+          <%= submit "Sign up",
+            class: "btn-primary sm:flex-1 px-6 sm:px-10 flex-grow",
+            disabled: !@changeset.valid?,
+            phx_disable_with: "Saving..."
+          %>
+        </div>
+      </.form>
+    """
+  end
+
+  defp signup_hooks(assigns) do
+    ~H"""
+      <div id="tz-cookie" phx-hook="TZCookie"></div>
+      <div phx-hook="HandleTrialCode" id="handle-trial-code" data-handle="save"></div>
+    """
   end
 
   defp assign_trigger_submit(%{assigns: %{changeset: changeset}} = socket) do
