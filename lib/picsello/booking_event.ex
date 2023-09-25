@@ -86,6 +86,7 @@ defmodule Picsello.BookingEvent do
     field :location, :string
     field :address, :string
     field :thumbnail_url, :string
+    field :include_questionnaire?, :boolean, default: true
     field(:status, Ecto.Enum, values: [:active, :disabled, :archive])
     belongs_to :package_template, Picsello.Package
     embeds_many :dates, EventDate, on_replace: :delete
@@ -161,7 +162,7 @@ defmodule Picsello.BookingEvent do
 
   defp update_package_template(booking_event, attrs) do
     booking_event
-    |> cast(attrs, [:package_template_id])
+    |> cast(attrs, [:package_template_id, :include_questionnaire?])
     |> validate_required([:package_template_id])
   end
 

@@ -116,7 +116,7 @@ defmodule PicselloWeb.GalleryLive.Photos.PhotoView do
                   </div>
                 </button>
               <% end %>
-              <h4 class="text-base-200 font-light text-sm items-center flex-shrink-0"><%= @photo.name %></h4>
+              <h4 class="text-base-200 font-light text-sm items-center flex-shrink-0" {testid("lightbox-photo-name")}><%= @photo.name %></h4>
             </div>
             <div phx-click="next" phx-target={@myself} class="bg-inherit border-2 flex items-center justify-center w-10 h-10 rounded-full">
               <.icon name="forth" class="w-full h-full p-2 cursor-pointer text-base-100 stroke-2" />

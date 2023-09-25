@@ -1,6 +1,6 @@
 defmodule Picsello.ChooseEmailPresetsTest do
   @moduledoc false
-  use Picsello.FeatureCase, async: true
+  use Picsello.FeatureCase, async: false
   import Money.Sigils
 
   setup :onboarded
