@@ -411,7 +411,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       <% "calendar" -> %>
         <div class="mt-10 flex">
           <div class="w-1/2">
-            <div phx-hook="BookingEventCalendar" phx-update="replace" class="w-[450px]" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
+            <div phx-hook="BookingEventCalendar" phx-update="replace" class="sm:w-[450px] sm:flex sm:flex-wrap" id="booking_event_calendar" data-time-zone={@current_user.time_zone} data-feed-path={Routes.calendar_feed_path(@socket, :show, @booking_event.id)}/>
           </div>
           <div class="md:col-span-3 flex flex-col justify-center">
             <%= if @calendar_date_event && @calendar_date_event != [] do %>
