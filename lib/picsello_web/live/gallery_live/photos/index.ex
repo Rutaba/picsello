@@ -943,7 +943,7 @@ defmodule PicselloWeb.GalleryLive.Photos.Index do
     |> process_favorites(@per_page)
   end
 
-  @re_call_time 310_000
+  @re_call_time 5000
   def handle_info(:invalid_preview, %{assigns: %{gallery: gallery}} = socket) do
     Process.send_after(self(), :invalid_preview, @re_call_time)
 

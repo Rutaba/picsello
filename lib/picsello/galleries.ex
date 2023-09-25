@@ -267,7 +267,7 @@ defmodule Picsello.Galleries do
     |> Repo.aggregate(:count, [])
   end
 
-  @minutes_to_consider_photos_invalid 5
+  @mseonds_to_consider_photos_invalid 20
   defp conditions(id, opts) do
     exclude_album = Keyword.get(opts, :exclude_album, false)
     album_id = Keyword.get(opts, :album_id, false)
@@ -287,12 +287,21 @@ defmodule Picsello.Galleries do
         dynamic([p], is_nil(p.album_id) and ^conditions)
 
       {:invalid_preview, true}, conditions ->
-        datetime = DateTime.add(DateTime.utc_now(), -@minutes_to_consider_photos_invalid, :minute)
+        %{watermark: watermark} = Repo.get!(Gallery, id) |> Repo.preload(:watermark)
+        datetime = DateTime.add(DateTime.utc_now(), -@mseonds_to_consider_photos_invalid, :second)
 
-        dynamic(
-          [p],
-          is_nil(p.preview_url) and p.updated_at < ^datetime and ^conditions
-        )
+        if watermark do
+          dynamic(
+            [p],
+            (is_nil(p.preview_url) or is_nil(p.watermarked_preview_url)) and
+              p.updated_at < ^datetime and ^conditions
+          )
+        else
+          dynamic(
+            [p],
+            is_nil(p.preview_url) and p.updated_at < ^datetime and ^conditions
+          )
+        end
 
       _, conditions ->
         conditions

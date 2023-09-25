@@ -8,7 +8,6 @@ defmodule PicselloWeb.GalleryLive.Photos.Upload do
 
   alias Galleries.{
     Photo,
-    Watermark,
     PhotoProcessing.GalleryUploadProgress,
     Workers.PhotoStorage
   }
