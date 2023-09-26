@@ -1,10 +1,12 @@
 <div class="pt-6 px-6 py-2 center-container">
   <div class="flex text-4xl items-center">
-    <.back_button to={Routes.job_path(@socket, :leads, @job_id)} class="lg:hidden"/>
+    <.back_button to={Routes.job_path(@socket, @live_action, @job_id)} class="lg:hidden"/>
     <.crumbs class="text-sm text-base-250">
-      <:crumb to={Routes.home_path(@socket, :index)}>Home</:crumb>
-      <:crumb to={Routes.job_path(@socket, :leads, @job_id)}>Automations</:crumb>
-      <:crumb><%= String.capitalize(@type) %></:crumb>
+      <:crumb to={Routes.job_path(@socket, @live_action)}>
+        <%= action_name(@live_action, :plural) %>
+      </:crumb>
+      <:crumb to={Routes.job_path(@socket, @live_action, @job_id)}><%= Job.name @job %></:crumb>
+      <:crumb> Automations </:crumb>
     </.crumbs>
   </div>
 
@@ -16,7 +18,7 @@
         <.back_button to={Routes.job_path(@socket, :leads, @job_id)} class="hidden lg:flex mt-2"/>
       </div>
       <div>
-        <h1 class="text-4xl font-bold"><%= String.capitalize(@type) %> Automation History</h1>
+        <h1 class="text-4xl font-bold"><%= String.capitalize(@type) %> Automated Emails</h1>
         <div class="max-w-4xl mt-2 text-base-250">
           <p>Email automation sequences are scheduled to send for Leads, Jobs and Galleries. View status, preview email content and, as needed, choose to stop the emails for this specific job. To make global changes <.live_link class="link" to={Routes.email_automations_index_path(@socket, :index)}>CLICK HERE</.live_link></p>
         </div>

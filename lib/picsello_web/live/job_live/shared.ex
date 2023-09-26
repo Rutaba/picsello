@@ -483,9 +483,13 @@ defmodule PicselloWeb.JobLive.Shared do
     |> noreply()
   end
 
-  def handle_event("email-automation", _, %{assigns: %{job: job}} = socket) do
+  def handle_event(
+        "email-automation",
+        _,
+        %{assigns: %{job: job, live_action: live_action}} = socket
+      ) do
     socket
-    |> push_redirect(to: Routes.email_automations_show_path(socket, :show, job.id))
+    |> push_redirect(to: Routes.email_automations_show_path(socket, :show, live_action, job.id))
     |> noreply()
   end
 
@@ -1885,20 +1889,6 @@ defmodule PicselloWeb.JobLive.Shared do
     |> assign_inbox_count()
   end
 
-  def open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
-    do:
-      socket
-      |> ClientMessageComponent.open(%{
-        current_user: current_user,
-        modal_title: "Send an email",
-        show_client_email: true,
-        show_subject: true,
-        presets: [],
-        send_button: "Send",
-        client: Job.client(job)
-      })
-      |> noreply()
-
   def open_email_compose(
         %{assigns: %{current_user: current_user, job: job, is_thanks: true}} = socket,
         client_id
@@ -1953,6 +1943,20 @@ defmodule PicselloWeb.JobLive.Shared do
     })
     |> noreply()
   end
+
+  def open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
+  do:
+    socket
+    |> ClientMessageComponent.open(%{
+      current_user: current_user,
+      modal_title: "Send an email",
+      show_client_email: true,
+      show_subject: true,
+      presets: [],
+      send_button: "Send",
+      client: Job.client(job)
+    })
+    |> noreply()
 
   defp assign_payment_schedules(socket) do
     socket

@@ -19,12 +19,12 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
       fetch_date_for_state_maybe_manual: 6
     ]
 
-  import PicselloWeb.Gettext, only: [ngettext: 3]
   import Ecto.Query
 
   alias Picsello.{
     Marketing,
     Galleries,
+    Job,
     Jobs,
     Orders,
     EmailAutomations,
@@ -35,8 +35,9 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   import PicselloWeb.EmailAutomationLive.Shared
 
   @impl true
-  def mount(%{"id" => id} = _params, _session, socket) do
+  def mount(%{"live_action" => live_action, "id" => id} = _params, _session, socket) do
     socket
+    |> assign(:live_action, String.to_atom(live_action))
     |> assign_job(to_integer(id))
     |> assign(:job_id, to_integer(id))
     |> assign_email_schedules()
