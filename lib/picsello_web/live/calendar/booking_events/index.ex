@@ -443,7 +443,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
   def assign_booking_events(
         %{
           assigns: %{
-            current_user: current_user,
+            current_user: %{organization: organization},
             sort_col: sort_by,
             sort_direction: sort_direction,
             search_phrase: search_phrase,
@@ -452,7 +452,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
         } = socket
       ) do
     booking_events =
-      BE.get_booking_events(current_user.organization_id,
+      BE.get_booking_events(organization.id,
         filters: %{
           sort_by: String.to_atom(sort_by),
           sort_direction: String.to_atom(sort_direction),
@@ -463,15 +463,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Index do
       |> Enum.map(fn booking_event ->
         booking_event
         |> assign_sort_date(sort_direction, sort_by, event_status)
-        |> Map.put(
-          :url,
-          Routes.client_booking_event_url(
-            socket,
-            :show,
-            current_user.organization.slug,
-            booking_event.id
-          )
-        )
+        |> BEShared.put_url_booking_event(organization, socket)
       end)
       |> filter_date(event_status)
       |> sort_by_date(sort_direction, sort_by)

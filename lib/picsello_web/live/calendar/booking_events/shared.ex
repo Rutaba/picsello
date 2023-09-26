@@ -136,11 +136,11 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def handle_event(
         "enable-event",
         params,
-        %{assigns: %{current_user: current_user}} = socket
+        %{assigns: %{current_user: %{organization: organization}}} = socket
       ) do
     params
     |> fetch_booking_event_id(socket)
-    |> BookingEvents.enable_booking_event(current_user.organization_id)
+    |> BookingEvents.enable_booking_event(organization.id)
     |> case do
       {:ok, event} ->
         socket
@@ -157,11 +157,11 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   def handle_event(
         "unarchive-event",
         params,
-        %{assigns: %{current_user: current_user}} = socket
+        %{assigns: %{current_user: %{organization: organization}}} = socket
       ) do
     params
     |> fetch_booking_event_id(socket)
-    |> BookingEvents.enable_booking_event(current_user.organization_id)
+    |> BookingEvents.enable_booking_event(organization.id)
     |> case do
       {:ok, event} ->
         socket
@@ -293,8 +293,12 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   @spec to_map(data :: [struct()]) :: [map()]
   def to_map(data), do: Enum.map(data, &Map.from_struct(&1))
 
-  def assign_events(%{assigns: %{booking_event: _booking_event}} = socket, event),
-    do: assign(socket, :booking_event, event)
+  def assign_events(
+        %{assigns: %{booking_event: _booking_event, current_user: %{organization: organization}}} =
+          socket,
+        event
+      ),
+      do: assign(socket, :booking_event, put_url_booking_event(event, organization, socket))
 
   def assign_events(%{assigns: %{booking_events: _booking_events}} = socket, _event),
     do: Index.assign_booking_events(socket)
@@ -316,6 +320,19 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   # will be true if the status matches in the array <status_list>
   def disabled?(booking_event, status_list), do: booking_event.status in status_list
+
+  def put_url_booking_event(booking_event, organization, socket),
+    do:
+      booking_event
+      |> Map.put(
+        :url,
+        PicselloWeb.Router.Helpers.client_booking_event_url(
+          socket,
+          :show,
+          organization.slug,
+          booking_event.id
+        )
+      )
 
   # to cater different handle_event and info calls
   # if we get booking-event-id in params (1st argument) it returns the id
