@@ -403,7 +403,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         :gallery_send_link,
         _email,
         last_completed_email,
-        nil,
+        _job,
         gallery,
         _order
       ) do
@@ -412,7 +412,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
       else: get_date_for_schedule(last_completed_email, gallery.gallery_send_at)
   end
 
-  def fetch_date_for_state(:cart_abandoned, _email, last_completed_email, nil, gallery, _order) do
+  def fetch_date_for_state(:cart_abandoned, _email, last_completed_email, _job, gallery, _order) do
     card_abandoned? =
       Enum.any?(gallery.orders, fn order ->
         is_nil(order.placed_at) and is_nil(order.intent) and Enum.any?(order.digitals)
@@ -427,22 +427,18 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         :gallery_expiration_soon,
         email,
         _last_completed_email,
-        nil,
+        _job,
         gallery,
         _order
       ) do
     %{calendar: calendar, count: count} = explode_hours(email.total_hours)
     time_calendar = get_timex_calendar(calendar)
     today = NaiveDateTime.utc_now() |> Timex.end_of_day()
-
     cond do
+      is_nil(gallery.expired_at) -> nil
       not is_nil(gallery.expired_at) and
           Timex.compare(gallery.expired_at, today, time_calendar) >= count ->
         gallery.expired_at
-
-      Timex.compare(gallery.expired_at, today, time_calendar) < count ->
-        nil
-
       true ->
         nil
     end
@@ -452,7 +448,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         :gallery_password_changed,
         _email,
         last_completed_email,
-        nil,
+        _job,
         gallery,
         _order
       ) do
@@ -465,7 +461,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         :order_confirmation_physical,
         _email,
         last_completed_email,
-        nil,
+        _job,
         _gallery,
         order
       ) do
@@ -478,7 +474,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         :order_confirmation_digital,
         _email,
         last_completed_email,
-        nil,
+        _job,
         _gallery,
         order
       ) do
@@ -492,7 +488,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         :order_confirmation_digital_physical,
         _email,
         last_completed_email,
-        nil,
+        _job,
         _gallery,
         order
       ) do

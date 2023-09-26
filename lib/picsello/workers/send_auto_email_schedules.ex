@@ -144,7 +144,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   end
 
   defp get_gallery(nil), do: nil
-  defp get_gallery(id), do: Galleries.get_gallery!(id) |> Repo.preload([:albums, job: :client])
+  defp get_gallery(id), do: Galleries.get_gallery!(id) |> Repo.preload([:orders, :albums, job: :client])
 
   defp group_key(email_schedule) do
     if email_schedule.job_id != nil do
