@@ -825,6 +825,23 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
+        total_hours: 0,
+        status: "active",
+        job_type: "wedding",
+        type: "lead",
+        position: 0,
+        name: "Abandoned Booking Event Email",
+        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        body_template: """
+        <p>Hi {{client_first_name}}</p>
+        <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
+        <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>{{email_signature}}</p>
+        """
+      },
       # newborn
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
@@ -1602,6 +1619,23 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Thanks again for choosing me as your photographer, it was a pleasure to work with you!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Kind regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
+        total_hours: 0,
+        status: "active",
+        job_type: "newborn",
+        type: "lead",
+        position: 0,
+        name: "Abandoned Booking Event Email",
+        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        body_template: """
+        <p>Hi {{client_first_name}}</p>
+        <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
+        <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>{{email_signature}}</p>
         """
       },
       # family
@@ -2383,6 +2417,23 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
+        total_hours: 0,
+        status: "active",
+        job_type: "family",
+        type: "lead",
+        position: 0,
+        name: "Abandoned Booking Event Email",
+        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        body_template: """
+        <p>Hi {{client_first_name}}</p>
+        <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
+        <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>{{email_signature}}</p>
+        """
+      },
       # mini-session
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
@@ -3162,6 +3213,23 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
+        total_hours: 0,
+        status: "active",
+        job_type: "mini",
+        type: "lead",
+        position: 0,
+        name: "Abandoned Booking Event Email",
+        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        body_template: """
+        <p>Hi {{client_first_name}}</p>
+        <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
+        <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>{{email_signature}}</p>
+        """
+      },
       # headshot
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
@@ -3938,6 +4006,23 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Thanks again for choosing me as your photographer, it was a pleasure to work with you!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Kind regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
+        total_hours: 0,
+        status: "active",
+        job_type: "headshot",
+        type: "lead",
+        position: 0,
+        name: "Abandoned Booking Event Email",
+        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        body_template: """
+        <p>Hi {{client_first_name}}</p>
+        <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
+        <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>{{email_signature}}</p>
         """
       },
       # portrait
@@ -4719,6 +4804,23 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
+        total_hours: 0,
+        status: "active",
+        job_type: "portrait",
+        type: "lead",
+        position: 0,
+        name: "Abandoned Booking Event Email",
+        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        body_template: """
+        <p>Hi {{client_first_name}}</p>
+        <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
+        <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>{{email_signature}}</p>
+        """
+      },
       # boudoir
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
@@ -5496,6 +5598,23 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Thanks again for choosing me as your photographer, it was a pleasure to work with you!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Kind regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
+        total_hours: 0,
+        status: "active",
+        job_type: "boudoir",
+        type: "lead",
+        position: 0,
+        name: "Abandoned Booking Event Email",
+        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        body_template: """
+        <p>Hi {{client_first_name}}</p>
+        <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
+        <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>{{email_signature}}</p>
         """
       },
       # other
@@ -6277,6 +6396,23 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
       },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
+        total_hours: 0,
+        status: "active",
+        job_type: "other",
+        type: "lead",
+        position: 0,
+        name: "Abandoned Booking Event Email",
+        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        body_template: """
+        <p>Hi {{client_first_name}}</p>
+        <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
+        <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>{{email_signature}}</p>
+        """
+      },
       # maternity
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
@@ -7054,6 +7190,23 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Thanks again for choosing me as your photographer, it was a pleasure to work with you!</span></p>
         <p><span style="color: rgb(0, 0, 0);">Kind regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
+        total_hours: 0,
+        status: "active",
+        job_type: "maternity",
+        type: "lead",
+        position: 0,
+        name: "Abandoned Booking Event Email",
+        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        body_template: """
+        <p>Hi {{client_first_name}}</p>
+        <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
+        <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>{{email_signature}}</p>
         """
       },
       # event
@@ -7834,7 +7987,24 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p><span style="color: rgb(0, 0, 0);">Kind regards, </span></p>
         <p><span style="color: rgb(0, 0, 0);">{{email_signature}}</span></p>
         """
-      }
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "abandoned_emails"),
+        total_hours: 0,
+        status: "active",
+        job_type: "event",
+        type: "lead",
+        position: 0,
+        name: "Abandoned Booking Event Email",
+        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        body_template: """
+        <p>Hi {{client_first_name}}</p>
+        <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
+        <p>I understand that life can get busy, and I want to make sure you don't miss out on capturing those special moments.</p>
+        <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
+        <p>{{email_signature}}</p>
+        """
+      },
     ]
     |> Enum.each(fn attrs ->
       state = get_state_by_pipeline_id(pipelines, attrs.email_automation_pipeline_id)
