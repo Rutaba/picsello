@@ -90,7 +90,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 1,
             name: "gallery_name",
-            sameple: "Gallery name",
+            sample: "Gallery name",
             description: "Gallery name"
           },
           %{
