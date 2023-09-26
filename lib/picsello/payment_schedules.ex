@@ -370,7 +370,16 @@ defmodule Picsello.PaymentSchedules do
     %{job: %{client: %{organization: organization} = client} = job} =
       proposal |> Repo.preload(job: [client: :organization])
 
-    payment_method_types = Payments.map_payment_opts_to_stripe_opts(organization)
+    payment_method_types =
+      Payments.map_payment_opts_to_stripe_opts(organization)
+      |> Enum.filter(fn method ->
+        if payment.price.amount < 5000 do
+          method != "affirm"
+        else
+          true
+        end
+      end)
+
     currency = Currency.for_job(job)
 
     stripe_params = %{

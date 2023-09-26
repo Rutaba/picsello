@@ -120,6 +120,7 @@ config :picsello, :whcc,
   whcc_sync_process_count: System.get_env("WHCC_SYNC_PROCESS_COUNT") || "2"
 
 config :picsello, :products,
+  currency: "USD",
   whcc_album_id: "2qNgr3zcSx9wvTAo9",
   whcc_wall_art_id: "tfhysKwZafFtmGqpQ",
   whcc_books_id: "B9FcAHDH5T63yvvgX",

@@ -313,26 +313,32 @@ defmodule PicselloWeb.GalleryLive.Shared do
     )
   end
 
-  defp editor_urls(%{assigns: %{album: %Album{is_finals: true} = album}} = socket) do
+  defp editor_urls(
+         %{assigns: %{gallery_client: gallery_client, album: %Album{is_finals: true} = album}} =
+           socket
+       ) do
     [
       complete_url:
         Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
           "?editorId=%EDITOR_ID%",
       secondary_url:
         Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash) <>
-          "?editorId=%EDITOR_ID%&clone=true",
+          "?editorId=%EDITOR_ID%&clone=true&clientEmail=#{gallery_client.email}",
       cancel_url: Routes.gallery_client_album_url(socket, :proofing_album, album.client_link_hash)
     ]
   end
 
-  defp editor_urls(%{assigns: %{gallery: %Galleries.Gallery{} = gallery}} = socket) do
+  defp editor_urls(
+         %{assigns: %{gallery_client: gallery_client, gallery: %Galleries.Gallery{} = gallery}} =
+           socket
+       ) do
     [
       complete_url:
         Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
           "?editorId=%EDITOR_ID%",
       secondary_url:
         Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash) <>
-          "?editorId=%EDITOR_ID%&clone=true",
+          "?editorId=%EDITOR_ID%&clone=true&clientEmail=#{gallery_client.email}",
       cancel_url: Routes.gallery_client_index_url(socket, :index, gallery.client_link_hash)
     ]
   end

@@ -27,13 +27,21 @@ defmodule Picsello.ViewLeadTest do
             insert(:lead, %{
               user: user,
               type: job_type,
-              client: %{name: client_name}
+              client: %{name: client_name},
+              shoots: [
+                %{name: "test_name"}
+              ]
             })
         )
     ]
   end
 
-  feature "user views lead list", %{session: session} do
+  feature "user views lead list", %{session: session, leads: leads} do
+    leads
+    |> Enum.each(fn lead ->
+      insert(:shoot, job: lead, starts_at: ~U[2050-12-10 10:00:00Z])
+    end)
+
     session
     |> visit(Routes.job_path(PicselloWeb.Endpoint, :leads))
     |> assert_has(link("Rick Sanchez Family"))
@@ -49,6 +57,8 @@ defmodule Picsello.ViewLeadTest do
   } do
     insert(:payment_schedule, job: lead, price: ~M[5000]USD)
     insert(:proposal, job: lead)
+
+    insert(:shoot, job: lead, starts_at: ~U[2050-12-10 10:00:00Z])
 
     first_reminder_on =
       DateTime.utc_now() |> DateTime.add(3 * 24 * 60 * 60) |> Calendar.strftime("%B %d, %Y")

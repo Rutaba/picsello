@@ -367,12 +367,20 @@ defmodule PicselloWeb.OnboardingLive.Index do
     |> Multi.insert(:global_gallery_settings, fn %{user: %{organization: organization}} ->
       GSGallery.price_changeset(%GSGallery{}, %{organization_id: organization.id})
     end)
-    |> Multi.insert(:user_currencies, fn %{user: %{organization: organization}} ->
-      UserCurrency.currency_changeset(%UserCurrency{}, %{
-        organization_id: organization.id,
-        currency: "USD"
-      })
-    end)
+    |> Multi.insert(
+      :user_currencies,
+      fn %{user: %{organization: organization}} ->
+        UserCurrency.currency_changeset(
+          %UserCurrency{},
+          %{
+            organization_id: organization.id,
+            currency: "USD"
+          }
+        )
+      end,
+      conflict_target: [:organization_id],
+      on_conflict: :nothing
+    )
     |> Multi.run(:subscription, fn _repo, %{user: user} ->
       with :ok <-
              Subscriptions.subscription_base(user, "month",

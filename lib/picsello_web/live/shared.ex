@@ -8,6 +8,7 @@ defmodule PicselloWeb.Live.Shared do
   import Phoenix.HTML.Form
 
   import PicselloWeb.LiveModal, only: [footer: 1]
+  import PicselloWeb.GalleryLive.Shared, only: [new_gallery_path: 2]
 
   import PicselloWeb.PackageLive.Shared,
     only: [package_basic_fields: 1, digital_download_fields: 1, current: 1]
@@ -787,5 +788,12 @@ defmodule PicselloWeb.Live.Shared do
     else
       socket |> noreply()
     end
+  end
+
+  def handle_info({:redirect_to_gallery, gallery}, socket) do
+    socket
+    |> put_flash(:success, "Gallery created—You’re now ready to upload photos!")
+    |> push_redirect(to: new_gallery_path(socket, gallery))
+    |> noreply()
   end
 end
