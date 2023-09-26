@@ -94,19 +94,23 @@ defmodule PicselloWeb.BookingProposalLive.ContractComponent do
           }
         } = socket
       ) do
-    socket
-    |> open_modal(__MODULE__, %{
-      read_only: true,
-      contract_content:
-        Contracts.contract_content(
-          contract,
-          package,
-          PicselloWeb.Helpers
-        ),
-      package: package,
-      booking_event: booking_event,
-      photographer: photographer,
-      organization: organization
-    })
+    if is_nil(contract) do
+      socket |> put_flash(:error, "Please select a contract first.")
+    else
+      socket
+      |> open_modal(__MODULE__, %{
+        read_only: true,
+        contract_content:
+          Contracts.contract_content(
+            contract,
+            package,
+            PicselloWeb.Helpers
+          ),
+        package: package,
+        booking_event: booking_event,
+        photographer: photographer,
+        organization: organization
+      })
+    end
   end
 end

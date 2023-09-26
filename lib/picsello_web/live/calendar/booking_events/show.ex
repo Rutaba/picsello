@@ -506,7 +506,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <%= if @slot.status == :book do %>
                 <button class="text-blue-planning-300 underline"><%= slot_time_formatter(@slot) %></button>
               <% else %>
-                slot_time_formatter(@slot)
+              <%= slot_time_formatter(@slot) %>
               <% end %>
             </p>
             <p class="text-blue-planning-300 underline">
