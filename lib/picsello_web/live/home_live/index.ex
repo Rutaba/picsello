@@ -1266,7 +1266,6 @@ defmodule PicselloWeb.HomeLive.Index do
               <% end %>
             </div>
             <div class="text-base-250 font-normal ">
-            <% IO.inspect(@data, label: "whats the data ---> ") %>
               <%= if Map.has_key?(@data, :client_link_hash), do: @data.inserted_at |> Calendar.strftime("%m/%d/%y") |> String.trim("0"), else: @data.dates |> hd() |> Map.get("date") |> String.trim("0") %> - <%= @count %> <%= if @count == 1, do: "booking", else: "bookings" %> so far
             </div>
             <div class="flex md:gap-2 gap-3">

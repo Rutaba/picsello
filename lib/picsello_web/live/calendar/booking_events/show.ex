@@ -684,11 +684,23 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
   end
 
   def assign_booking_event(
-        %{assigns: %{current_user: %{organization_id: organization_id}, id: id}} = socket
+        %{assigns: %{current_user: %{organization: organization}, id: id}} = socket
       ) do
     booking_event =
-      BookingEvents.get_booking_event!(organization_id, id)
+      BookingEvents.get_booking_event!(organization.id, id)
       |> BookingEvents.preload_booking_event()
+
+    booking_event =
+      booking_event
+      |> Map.put(
+        :url,
+        Routes.client_booking_event_url(
+          socket,
+          :show,
+          organization.slug,
+          booking_event.id
+        )
+      )
 
     socket
     |> assign(:booking_event, booking_event)

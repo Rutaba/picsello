@@ -15,8 +15,13 @@
         />
         <div class="flex gap-2 ml-auto py-2">
             <.actions id="header" main_button_class="h-12" archive_option={false} booking_event={@booking_event} button_actions={header_actions(@booking_event)} />
-            <.icon_button icon="eye" color="blue-planning-300" class="text-black" disabled={BEShared.incomplete_status?(@booking_event)}>Client preview</.icon_button>
-            <.button_simple disabled={BEShared.incomplete_status?(@booking_event)}>Copy Link</.button_simple>
+            <.icon_button icon="eye" color="blue-planning-300" class="text-black" disabled={BEShared.incomplete_status?(@booking_event)} href={@booking_event.url} target="_blank" rel="noopener noreferrer">Client preview</.icon_button>
+             <button id={"copy-event-link-#{@booking_event.id}"} class={"btn-primary whitespace-nowrap"} data-clipboard-text={@booking_event.url} phx-hook="Clipboard" disabled={BEShared.incomplete_status?(@booking_event)}>
+                Copy Link
+                <div class="hidden p-1 text-sm rounded shadow text-blue-planning-300" role="tooltip">
+                    Copied!
+                </div>
+            </button>
         </div>
     </div> 
     <div class="ml-2 pb-1.5 mt-10 w-20 text-center border-b-4 border-blue-planning-300 text-blue-planning-300 font-bold">
