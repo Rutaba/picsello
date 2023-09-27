@@ -1241,17 +1241,41 @@ defmodule Mix.Tasks.ImportEmailPresets do
       },
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
+        total_hours: EmailPreset.calculate_total_hours(3, %{calendar: "Month", sign: "+"}),
+        status: "active",
+        job_type: "newborn",
+        type: "job",
+        position: 0,
+        name: "Post Shoot - 3 months follow up email",
+        subject_template: "Hello again! | {{photography_company_s_name}}",
+        body_template: """
+        <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope everyone is doing well and you are loving your newborn portraits!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">As you know, little ones change so fast. I know how much joy it brings us to look back at the many stages of kids’ lives through beautiful photographs. I’d love the chance to document your family as you grow.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">So you don't miss how fast your little one grows, I do offer a baby's first year package - this includes sitter session and one year portraits and cake smash.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I do book up months in advance, so be sure to get started as soon as possible to ensure you get your preferred date is available.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Forgive me if we already discussed this - I have to schedule automated emails or I would forget!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Reply to this email if you don't see a date you need or if you have any questions! </span></p>
+        <p><span style="color: rgb(0, 0, 0);">I can’t wait to see you again!</span></p>
+        <p>{{email_signature}}</p>
+        """
+      },
+      %{
+        email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "post_shoot"),
         total_hours: EmailPreset.calculate_total_hours(9, %{calendar: "Month", sign: "+"}),
         status: "active",
         job_type: "newborn",
         type: "job",
         position: 0,
-        name: "Post Shoot - Next Shoot email",
+        name: "Post Shoot - 9 months follow up email",
         subject_template: "Hello again! | {{photography_company_s_name}}",
         body_template: """
         <p><span style="color: rgb(0, 0, 0);">Hello {{client_first_name}},</span></p>
-        <p><span style="color: rgb(0, 0, 0);">I hope you are doing well. It's been a while since your wedding and I’d love to talk with you if you’re ready for some anniversary portraits, family photos, or any other photography needs! </span></p>
-        <p><span style="color: rgb(0, 0, 0);">I do book up months in advance, so be sure to get started as soon as possible to ensure your preferred date is available. Simply reply to this email and we can get your next shoot on the calendar!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I hope you are doing well. It's been a while!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">It's getting close to when I usually schedule One Year Portraits for your little one so I wanted to send along a reminder!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">I do book up months in advance, so be sure to get started as soon as possible to ensure your preferred date is available.</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Forgive me if we already discussed this - I have to schedule these automated emails or I would forget!</span></p>
+        <p><span style="color: rgb(0, 0, 0);">Reply to this email if you don't see a date you need or if you have any questions!</span></p>
         <p><span style="color: rgb(0, 0, 0);">I can’t wait to see you again!</span></p>
         <p>{{email_signature}}</p>
         """
