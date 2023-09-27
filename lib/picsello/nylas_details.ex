@@ -21,16 +21,17 @@ defmodule Picsello.NylasDetails do
   def set_nylas_calendars!(%NylasDetail{user_id: user_id} = nylas_detail, calendars) do
     changeset = NylasDetail.set_calendars_changeset(nylas_detail, calendars)
 
-    case nylas_detail do
-      %{event_status: :initial} ->
-        update_nylas_detail!(changeset, user_id, "initial")
+    case changeset |> Changeset.apply_changes() do
+      %{event_status: :initial, external_calendar_rw_id: rw_id} when not is_nil(rw_id) ->
+        changeset
+        |> update_nylas_detail!(user_id, "initial")
 
-      %{event_status: :in_progress} ->
-        update_nylas_detail!(changeset, user_id, "move")
+      %{event_status: :in_progress, external_calendar_rw_id: rw_id} when not is_nil(rw_id) ->
+        changeset
+        |> update_nylas_detail!(user_id, "move")
 
       _ ->
         changeset
-        |> NylasDetail.event_status_change()
         |> Repo.update!()
     end
   end

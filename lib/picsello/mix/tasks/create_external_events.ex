@@ -12,8 +12,19 @@ defmodule Mix.Tasks.CreateExternalEvents do
 
     get_shoots()
     |> Shoots.load_user()
-    |> Task.async_stream(&Shoots.create_event(&1), max_concurrency: 100, timeout: 10_000)
+    |> Task.async_stream(&Shoots.create_event(&1),
+      max_concurrency: System.schedulers_online() * 3,
+      timeout: 10_000
+    )
     |> Stream.run()
+
+    from(nl in Picsello.NylasDetail,
+      where: not is_nil(nl.account_id) and is_nil(nl.oauth_token),
+      update: [
+        set: [account_id: nil, external_calendar_rw_id: nil, external_calendar_read_list: []]
+      ]
+    )
+    |> Repo.update_all([])
   end
 
   defp get_shoots() do
@@ -27,6 +38,7 @@ defmodule Mix.Tasks.CreateExternalEvents do
       where:
         is_nil(shoot.external_event_id) and is_nil(job.archived_at) and
           is_nil(job.completed_at) and not is_nil(nylas.account_id) and
+          not is_nil(nylas.external_calendar_rw_id) and
           (status.is_lead == false or is_nil(job.booking_event_id))
     )
     |> Repo.all()

@@ -34,12 +34,13 @@ defmodule PicselloWeb.Live.Calendar.Settings do
       calendars: [],
       has_token: false,
       token: "",
+      nylas_detail: nylas_detail,
       nylas_url: nylas_url,
       rw_calendar: nylas_detail.external_calendar_rw_id,
       read_calendars: to_set(nylas_detail)
     })
     |> disable_settings_buttons?(nylas_detail)
-    |> assign_from_token(user)
+    |> assign_from_token()
     |> ok()
   end
 
@@ -47,7 +48,11 @@ defmodule PicselloWeb.Live.Calendar.Settings do
          event_status: event_status,
          external_calendar_rw_id: id
        }) do
-    assign(socket, :disable_settings_buttons?, event_status == :in_progress && is_binary(id))
+    assign(
+      socket,
+      :disable_settings_buttons?,
+      event_status in [:in_progress, :initial] && is_binary(id)
+    )
   end
 
   defp to_set(%{external_calendar_read_list: nil}), do: MapSet.new([])
@@ -59,13 +64,14 @@ defmodule PicselloWeb.Live.Calendar.Settings do
   def handle_event(
         "disconnect_calendar",
         _,
-        %Socket{assigns: %{current_user: %{nylas_detail: nylas_detail} = user}} = socket
+        %Socket{assigns: %{nylas_detail: nylas_detail}} = socket
       ) do
-    NylasDetails.clear_nylas_token!(nylas_detail)
+    nylas_detail = NylasDetails.clear_nylas_token!(nylas_detail)
 
     {:noreply,
      socket
-     |> assign_from_token(user)
+     |> assign(:nylas_detail, nylas_detail)
+     |> assign_from_token()
      |> assign(%{has_token: false, token: ""})
      |> put_flash(:success, "Calendar disconnected")}
   end
@@ -92,7 +98,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
           assigns: %{
             read_calendars: read_calendars,
             rw_calendar: rw_calendar,
-            current_user: %{nylas_detail: nylas_detail} = user
+            nylas_detail: nylas_detail
           }
         } = socket
       ) do
@@ -103,7 +109,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
       })
 
     socket
-    |> assign(:current_user, user)
+    |> assign(:nylas_detail, nylas_detail)
     |> disable_settings_buttons?(nylas_detail)
     |> put_flash(:success, "Calendar settings saved")
     |> noreply
@@ -132,7 +138,7 @@ defmodule PicselloWeb.Live.Calendar.Settings do
 
   defp is_member(calendars, cal_id), do: MapSet.member?(calendars, cal_id)
 
-  defp assign_from_token(socket, %{nylas_detail: %{oauth_token: token}})
+  defp assign_from_token(%{assigns: %{nylas_detail: %{oauth_token: token}}} = socket)
        when is_binary(token) do
     case NylasCalendar.get_calendars(token) do
       {:ok, calendars} ->
@@ -143,5 +149,5 @@ defmodule PicselloWeb.Live.Calendar.Settings do
     end
   end
 
-  defp assign_from_token(socket, _), do: socket
+  defp assign_from_token(socket), do: socket
 end

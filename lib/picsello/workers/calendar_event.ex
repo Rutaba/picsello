@@ -72,7 +72,7 @@ defmodule Picsello.Workers.CalendarEvent do
 
   defp run_shoots(shoots) do
     shoots
-    |> Task.async_stream(&Shoots.create_event(&1))
+    |> Task.async_stream(&Shoots.create_event(&1), timeout: 10_000)
     |> Stream.run()
   end
 
