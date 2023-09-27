@@ -515,6 +515,12 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     end
   end
 
+  def fetch_date_for_state(:abandoned_emails, _email, last_completed_email, job, _gallery, _order) do
+    if is_nil(job.expired_at),
+    do: nil,
+    else: get_date_for_schedule(last_completed_email, job.expired_at)
+  end
+
   def fetch_date_for_state(
         state,
         _email,
@@ -791,6 +797,15 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
 
   def insert_order_emails(gallery, order) do
     emails = gallery_order_emails(gallery, order)
+
+    case Repo.insert_all(EmailSchedule, emails) do
+      {count, nil} -> {:ok, count}
+      _ -> {:error, "error insertion"}
+    end
+  end
+
+  def insert_job_emails(type, organization_id, job_id, types, skip_states \\ [""]) do
+    emails = job_emails(type, organization_id, job_id, types, skip_states)
 
     case Repo.insert_all(EmailSchedule, emails) do
       {count, nil} -> {:ok, count}

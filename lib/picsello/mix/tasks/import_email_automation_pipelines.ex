@@ -33,15 +33,23 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
     {:ok, automation_inquiry} =
       maybe_insert_email_automation_slug(sub_categories, "Inquiry emails", "inquiry_emails", 1.0)
 
+    {:ok, booking_events} =
+        maybe_insert_email_automation_slug(
+          sub_categories,
+          "Booking Events",
+          "booking_events",
+          2.0
+        )
     {:ok, automation_proposal} =
-      maybe_insert_email_automation_slug(sub_categories, "Booking proposal", "booking_proposal", 2.0)
+      maybe_insert_email_automation_slug(sub_categories, "Booking proposal", "booking_proposal", 3.0)
+
 
     {:ok, automation_response} =
       maybe_insert_email_automation_slug(
         sub_categories,
         "Booking response emails",
         "booking_response_emails",
-        3.0
+        4.0
       )
 
     {:ok, automation_reminder} =
@@ -49,21 +57,21 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         sub_categories,
         "Payment reminder emails",
         "payment_reminder_emails",
-        4.0
+        5.0
       )
 
     {:ok, automation_prep} =
-      maybe_insert_email_automation_slug(sub_categories, "Shoot prep emails", "shoot_prep_emails", 5.0)
+      maybe_insert_email_automation_slug(sub_categories, "Shoot prep emails", "shoot_prep_emails", 6.0)
 
     {:ok, automation_post} =
-      maybe_insert_email_automation_slug(sub_categories, "Post shoot emails", "post_shoot_emails", 6.0)
+      maybe_insert_email_automation_slug(sub_categories, "Post shoot emails", "post_shoot_emails", 7.0)
 
     {:ok, automation_notification} =
       maybe_insert_email_automation_slug(
         sub_categories,
         "Gallery notification emails",
         "gallery_notification_emails",
-        7.0
+        8.0
       )
 
     {:ok, automation_confirmation} =
@@ -71,7 +79,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         sub_categories,
         "Order Confirmation emails",
         "order_confirmation_emails",
-        8.0
+        9.0
       )
 
     {:ok, automation_status} =
@@ -79,15 +87,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         sub_categories,
         "Order status emails",
         "order_status_emails",
-        9.0
-      )
-
-    {:ok, booking_events} =
-      maybe_insert_email_automation_slug(
-        sub_categories,
-        "Booking Events",
-        "booking_events",
-        2.1
+        10.0
       )
 
     [
@@ -126,7 +126,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
           "Commencing the Booking Event will set in motion a series of successive email reminders, unless the recipient opts to remove them.",
         email_automation_sub_category_id: booking_events.id,
         email_automation_category_id: email_automation_lead.id,
-        position: 3.0
+        position: 4.0
       },
       # jobs
       %{
@@ -135,7 +135,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Runs after client has paid their retainer online",
         email_automation_sub_category_id: automation_response.id,
         email_automation_category_id: email_automation_job.id,
-        position: 4.0
+        position: 5.0
       },
       %{
         name: "Client Pays Retainer (Offline)",
@@ -144,7 +144,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
           "Runs after client clicks they will pay you offline (if you have this enabled)",
         email_automation_sub_category_id: automation_response.id,
         email_automation_category_id: email_automation_job.id,
-        position: 5.0
+        position: 6.0
       },
       %{
         name: "Thank You for Booking",
@@ -152,7 +152,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Sent when the questionnaire, contract is signed and retainer is paid",
         email_automation_sub_category_id: automation_response.id,
         email_automation_category_id: email_automation_job.id,
-        position: 6.0
+        position: 7.0
       },
       %{
         name: "Balance Due",
@@ -160,7 +160,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Triggered when a payment is due within a payment schedule",
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id,
-        position: 7.0
+        position: 8.0
       },
       %{
         name: "Balance Due (Offline)",
@@ -168,7 +168,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Triggered when a payment is due within a payment schedule that is offline",
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id,
-        position: 8.0
+        position: 9.0
       },
       %{
         name: "Paid in Full",
@@ -176,7 +176,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Triggered when a payment schedule is completed",
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id,
-        position: 9.0
+        position: 10.0
       },
       %{
         name: "Paid in Full (Offline)",
@@ -184,7 +184,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Triggered when a payment schedule is completed from offline payments",
         email_automation_sub_category_id: automation_reminder.id,
         email_automation_category_id: email_automation_job.id,
-        position: 10.0
+        position: 11.0
       },
       %{
         name: "Before the Shoot",
@@ -192,7 +192,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Starts a week before the shoot and sends another day before the shoot",
         email_automation_sub_category_id: automation_prep.id,
         email_automation_category_id: email_automation_job.id,
-        position: 11.0
+        position: 12.0
       },
       %{
         name: "Thank You",
@@ -201,7 +201,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
           "Triggered after a shoot with emails 1 day & 1–9 months later to encourage reviews/bookings",
         email_automation_sub_category_id: automation_post.id,
         email_automation_category_id: email_automation_job.id,
-        position: 12.0
+        position: 13.0
       },
       %{
         name: "Post Shoot Follow Up",
@@ -209,7 +209,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Starts when client completes a booking event",
         email_automation_sub_category_id: automation_post.id,
         email_automation_category_id: email_automation_job.id,
-        position: 13.0
+        position: 14.0
       },
       # gallery
       %{
@@ -218,7 +218,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Manually triggered automation",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 14.0
+        position: 15.0
       },
       %{
         name: "Send Proofing Gallery For Selection",
@@ -226,7 +226,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Manually triggered automation",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 15.0
+        position: 16.0
       },
       %{
         name: "Send Proofing Gallery Finals",
@@ -234,7 +234,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "Manually triggered automation",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 16.0
+        position: 17.0
       },
       %{
         name: "Cart Abandoned",
@@ -242,7 +242,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "This will trigger when your client leaves product in their cart",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 17.0
+        position: 18.0
       },
       %{
         name: "Gallery Expiring Soon",
@@ -250,7 +250,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "This will trigger when a gallery is close to expiring",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 18.0
+        position: 19.0
       },
       %{
         name: "Gallery Password Changed",
@@ -258,7 +258,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "This will trigger when a gallery password has changed",
         email_automation_sub_category_id: automation_notification.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 19.0
+        position: 20.0
       },
       %{
         name: "Order Received (Physical Products Only)",
@@ -266,7 +266,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "This will trigger when an order has been completed",
         email_automation_sub_category_id: automation_confirmation.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 20.0
+        position: 21.0
       },
       %{
         name: "Order Received (Digital Products Only)",
@@ -274,7 +274,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "This will trigger when an order has been completed",
         email_automation_sub_category_id: automation_confirmation.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 21.0
+        position: 22.0
       },
       %{
         name: "Order Received (Physical/Digital Products)",
@@ -282,7 +282,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "This will trigger when an order has been completed",
         email_automation_sub_category_id: automation_confirmation.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 22.0
+        position: 23.0
       },
       %{
         name: "Digitals Ready For Download",
@@ -290,7 +290,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "This will trigger when digitals are packed and ready for download",
         email_automation_sub_category_id: automation_confirmation.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 23.0
+        position: 24.0
       },
       %{
         name: "Order Has Shipped",
@@ -298,7 +298,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "This will trigger when digitals are packed and ready for download",
         email_automation_sub_category_id: automation_status.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 24.0
+        position: 25.0
       },
       %{
         name: "Order Is Delayed",
@@ -306,7 +306,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "This will trigger when an order is delayed",
         email_automation_sub_category_id: automation_status.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 25.0
+        position: 26.0
       },
       %{
         name: "Order Has Arrived",
@@ -314,7 +314,7 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description: "This will trigger when an order has arrived",
         email_automation_sub_category_id: automation_status.id,
         email_automation_category_id: email_automation_gallery.id,
-        position: 26.0
+        position: 27.0
       }
     ]
     |> Enum.each(fn attrs ->

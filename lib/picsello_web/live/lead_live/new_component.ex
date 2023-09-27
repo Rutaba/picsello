@@ -112,7 +112,8 @@ defmodule PicselloWeb.JobLive.NewComponent do
          )
          |> Ecto.Multi.insert_all(:email_automation, EmailSchedule, fn %{lead: %Job{id: job_id}} ->
            Shared.job_emails(job.type, current_user.organization_id, job_id, [:lead, :job], [
-             :client_contact
+             :client_contact,
+             :abandoned_emails
            ])
          end)
          |> Repo.transaction() do
