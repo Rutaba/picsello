@@ -59,8 +59,7 @@ defmodule Picsello.BookingEventDate do
           get_field(changeset, :is_hide) ->
             put_change(changeset, :status, :hidden)
 
-          !get_field(changeset, :is_hide) &&
-              get_field(changeset, :status) not in [:booked, :reserved] ->
+          get_field(changeset, :status) not in [:booked, :reserved] ->
             put_change(changeset, :status, :open)
 
           true ->
@@ -199,7 +198,7 @@ defmodule Picsello.BookingEventDate do
     if is_nil(date) do
       changeset
     else
-      overlap_times =
+      overlap_times? =
         BookingEventDates.booking_date_time_block_overlap?(
           organization_id,
           date,
@@ -207,7 +206,7 @@ defmodule Picsello.BookingEventDate do
           date_id
         )
 
-      if overlap_times do
+      if overlap_times? do
         changeset |> add_error(:time_blocks, "can't be overlapping")
       else
         changeset
@@ -252,7 +251,7 @@ defmodule Picsello.BookingEventDate do
     %{day: "sat", active: false}
   ]
   defp set_default_repeat_on(changeset) do
-    if Enum.empty?(get_field(changeset, :repeat_on)) do
+    if changeset |> get_field(:repeat_on) |> Enum.empty?() do
       put_change(changeset, :repeat_on, @default_values)
     else
       changeset

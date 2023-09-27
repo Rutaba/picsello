@@ -153,7 +153,8 @@ defmodule Picsello.BookingEventDates do
 
   @doc "gets a single booking_Event_date that has the given id"
   def get_booking_event_date(date_id) do
-    booking_event_date_query(date_id)
+    date_id
+    |> booking_event_date_query()
     |> Repo.one()
   end
 
@@ -318,7 +319,7 @@ defmodule Picsello.BookingEventDates do
 
   ```elixir
   # Transform a list of slot blocks with default values
-  iex> input_slots = [%SlotBlock{job_id: 1, client_id: 1, status: :hidden}, %SlotBlock{job_id: 1, client_id: 2, status: :bookeded}]
+  iex> input_slots = [%SlotBlock{job_id: 1, client_id: 1, status: :hidden}, %SlotBlock{job_id: 1, client_id: 2, status: :booked}]
   iex> transform_slots(input_slots)
   [%SlotBlock{job_id: nil, client_id: nil, status: :open}, %SlotBlock{job_id: nil, client_id: nil, status: :open}]
 
@@ -339,7 +340,7 @@ defmodule Picsello.BookingEventDates do
         }
 
       slot.status == :hidden ->
-        %{slot | is_hide: true}
+        %SlotBlock{slot | is_hide: true}
 
       true ->
         slot
@@ -437,15 +438,16 @@ defmodule Picsello.BookingEventDates do
 
   # Sets default values for a changeset representing a `BookingEventDate` record with repeat dates.
   defp set_defaults_for_repeat_dates_changeset(booking_event) do
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     booking_event
-    |> Ecto.Changeset.change(%{
+    |> Changeset.change(%{
       calendar: "",
       count_calendar: nil,
       stop_repeating: nil,
       is_repeat: false,
       repetition: false,
-      inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
-      updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+      inserted_at: now,
+      updated_at: now
     })
   end
 

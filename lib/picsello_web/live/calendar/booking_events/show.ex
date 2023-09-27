@@ -468,11 +468,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
                 <p class="text-2xl font-bold"> <%= BEShared.date_formatter(booking_event_date.date) %> </p>
                 <button class="flex text-blue-planning-300 ml-auto items-center justify-center whitespace-nowrap" phx-click="toggle-section" phx-value-section_id="first">
                   View details
-                  <%= if !Enum.member?(@collapsed_sections, "first") do %>
-                    <.icon name="down" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
-                  <% else %>
-                    <.icon name="up" class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
-                  <% end %>
+                  <.icon name={if Enum.member?(@collapsed_sections, "first"), do: "up", else: "down"} class="mt-1.5 md:mt-1 w-4 h-4 ml-2 stroke-current stroke-3 text-blue-planning-300"/>
                 </button>
               </div>
               <div class="flex">
@@ -483,9 +479,9 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
               <hr class="block md:hidden my-2">
               <%= if Enum.member?(@collapsed_sections, "first") do %>
                 <div class="hidden md:grid grid-cols-7 border-b-4 border-blue-planning-300 font-bold text-lg my-4">
-                  <div class="col-span-2">Time</div>
-                  <div class="col-span-2">Status</div>
-                  <div class="col-span-2">Client</div>
+                <%= for title <- ["Time", "Status", "Client"] do %>
+                  <div class="col-span-2"><%= title %></div>
+                <% end %>
                 </div>
                 <.render_slots booking_event_date={booking_event_date} {assigns} />
                 <div class="flex justify-end gap-2">
@@ -934,6 +930,6 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
       |> Enum.filter(fn date -> date.id == date_id end)
       |> hd()
       |> Map.get(:slots)
-      |> Enum.filter(fn slot -> !is_nil(Map.get(slot, :client)) end)
+      |> Enum.filter(fn slot -> Map.get(slot, :client) end)
       |> Enum.reduce([], fn slot, acc -> [slot.client.email | acc] end)
 end

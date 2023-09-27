@@ -24,21 +24,21 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
       socket ->
         socket |> assign_changeset(%{})
     end
+    |> then(fn %{assigns: %{booking_date: %{date: date, booking_event_id: booking_event_id}}} = socket ->
+      socket
+      |> assign(
+        :has_booking?,
+        if(date,
+          do: BookingEventDates.is_booked_any_date?([date], booking_event_id),
+          else: false
+        )
+      )
+    end)
     |> ok()
   end
 
   @impl true
-  def render(%{booking_date: %{date: date, booking_event_id: booking_event_id}} = assigns) do
-    assigns =
-      assigns
-      |> Enum.into(%{
-        has_booking?:
-          if(date,
-            do: BookingEventDates.is_booked_any_date?([date], booking_event_id),
-            else: false
-          )
-      })
-
+  def render(assigns) do
     ~H"""
     <div class="modal">
       <.close_x />
@@ -310,8 +310,7 @@ defmodule PicselloWeb.Live.Calendar.BookingEventModal do
 
     slots =
       slots
-      |> Enum.map(&(&1 |> Map.from_struct()))
-      |> Enum.map(&(&1 |> Map.drop([:__meta__, :job, :client])))
+      |> Enum.map(&(&1 |> Map.from_struct() |> Map.drop([:__meta__, :job, :client])))
 
     params = Map.put(params, "slots", slots)
     changeset = booking_date |> BookingEventDate.changeset(params) |> Map.put(:action, action)

@@ -302,7 +302,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     do: Index.assign_booking_events(socket)
 
   def count_booked_slots(slot),
-    do: Enum.count(slot, fn s -> s.status == :booked || s.status == :reserved end)
+    do: Enum.count(slot, fn s -> s.status in [:booked, :reserved] end)
 
   def count_available_slots(slot), do: Enum.count(slot, fn s -> s.status == :open end)
   def count_hidden_slots(slot), do: Enum.count(slot, fn s -> s.status == :hidden end)
