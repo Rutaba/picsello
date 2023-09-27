@@ -492,7 +492,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         _gallery,
         order
       ) do
-    if(Enum.any?(order.digital_line_items) and not is_nil(order.whcc_order),
+    if(Enum.any?(order.digital_line_items) or not is_nil(order.whcc_order),
       do: get_date_for_schedule(last_completed_email, order.placed_at),
       else: nil
     )

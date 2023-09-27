@@ -260,22 +260,22 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         email_automation_category_id: email_automation_gallery.id,
         position: 20.0
       },
-      %{
-        name: "Order Received (Physical Products Only)",
-        state: "order_confirmation_physical",
-        description: "This will trigger when an order has been completed",
-        email_automation_sub_category_id: automation_confirmation.id,
-        email_automation_category_id: email_automation_gallery.id,
-        position: 21.0
-      },
-      %{
-        name: "Order Received (Digital Products Only)",
-        state: "order_confirmation_digital",
-        description: "This will trigger when an order has been completed",
-        email_automation_sub_category_id: automation_confirmation.id,
-        email_automation_category_id: email_automation_gallery.id,
-        position: 22.0
-      },
+      # %{
+      #   name: "Order Received (Physical Products Only)",
+      #   state: "order_confirmation_physical",
+      #   description: "This will trigger when an order has been completed",
+      #   email_automation_sub_category_id: automation_confirmation.id,
+      #   email_automation_category_id: email_automation_gallery.id,
+      #   position: 21.0
+      # },
+      # %{
+      #   name: "Order Received (Digital Products Only)",
+      #   state: "order_confirmation_digital",
+      #   description: "This will trigger when an order has been completed",
+      #   email_automation_sub_category_id: automation_confirmation.id,
+      #   email_automation_category_id: email_automation_gallery.id,
+      #   position: 22.0
+      # },
       %{
         name: "Order Received (Physical/Digital Products)",
         state: "order_confirmation_digital_physical",
