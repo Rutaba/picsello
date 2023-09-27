@@ -41,7 +41,7 @@ defmodule PicselloWeb.NylasController do
     end
   end
 
-  defp event_status(nil, _account_id), do: :moved
+  defp event_status(nil, _account_id), do: :initial
   defp event_status(account_id, account_id), do: :moved
   defp event_status(_, _), do: :in_progress
 end
