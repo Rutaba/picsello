@@ -687,7 +687,8 @@ defmodule PicselloWeb.Live.Calendar.BookingEvents.Show do
         %{assigns: %{current_user: %{organization: organization}, id: id}} = socket
       ) do
     booking_event =
-      BookingEvents.get_booking_event!(organization.id, id)
+      organization.id
+      |> BookingEvents.get_booking_event!(id)
       |> BookingEvents.preload_booking_event()
       |> BEShared.put_url_booking_event(organization, socket)
 

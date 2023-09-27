@@ -35,6 +35,8 @@ defmodule PicselloWeb.HomeLive.Index do
     QuestionnaireFormComponent
   }
 
+  alias PicselloWeb.Calendar.BookingEvents.Shared, as: BEShared
+
   import PicselloWeb.JobLive.Shared, only: [status_badge: 1, open_email_compose: 1]
   import PicselloWeb.ClientBookingEventLive.Shared, only: [blurred_thumbnail: 1]
   import PicselloWeb.Gettext, only: [ngettext: 3]
@@ -1042,7 +1044,7 @@ defmodule PicselloWeb.HomeLive.Index do
     ]
   end
 
-  defp assign_tab_data(%{assigns: %{current_user: current_user}} = socket, tab) do
+  defp assign_tab_data(%{assigns: %{current_user: %{organization: organization}} = current_user} = socket, tab) do
     case tab do
       "clients" ->
         socket |> assign(:clients, Clients.get_recent_clients(current_user))
@@ -1060,21 +1062,12 @@ defmodule PicselloWeb.HomeLive.Index do
         socket
         |> assign(
           :booking_events,
-          BookingEvents.get_booking_events(current_user.organization_id,
+          BookingEvents.get_booking_events(organization.id,
             filters: %{sort_by: :inserted_at, sort_direction: :desc}
           )
-          |> Enum.filter(fn b_e -> Enum.any?(b_e.dates, fn d -> !is_nil(d["date"]) end) end)
+          |> Enum.filter(fn b_e -> Enum.any?(b_e.dates, & &1["date"] not in [nil, ""]) end)
           |> Enum.map(fn booking_event ->
-            booking_event
-            |> Map.put(
-              :url,
-              Routes.client_booking_event_url(
-                socket,
-                :show,
-                current_user.organization.slug,
-                booking_event.id
-              )
-            )
+            BEShared.put_url_booking_event(booking_event, organization, socket)
           end)
         )
 

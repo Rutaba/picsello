@@ -38,7 +38,7 @@ defmodule Picsello.BookingEventDates do
   ...> end
   """
   @spec create_booking_event_dates(params :: map()) ::
-          {:ok, %BookingEventDate{}} | {:error, Changeset.t()}
+          {:ok, %{}} | {:error, Changeset.t()}
   def create_booking_event_dates(params) do
     %BookingEventDate{}
     |> BookingEventDate.changeset(params)
@@ -335,7 +335,7 @@ defmodule Picsello.BookingEventDates do
   ## Notes
   This function is useful for applying a consistent default transformation to a list of slot blocks.
   """
-  @spec transform_slots(input_slots :: [%SlotBlock{}]) :: [%SlotBlock{}]
+  @spec transform_slots(input_slots :: [SlotBlock.t()]) :: [SlotBlock.t()]
   def transform_slots(input_slots), do: Enum.map(input_slots, &transform_slot/1)
 
   defp transform_slot(slot) do
@@ -408,7 +408,7 @@ defmodule Picsello.BookingEventDates do
     # ... more available slots
   ]
   """
-  @spec available_slots(booking_date :: %BookingEventDate{}, booking_event :: %BookingEvent{}) ::
+  @spec available_slots(booking_date :: BookingEventDate.t(), booking_event :: BookingEvent.t()) ::
           [SlotBlock.t()] | nil
   def available_slots(%BookingEventDate{} = booking_date, booking_event) do
     duration = (booking_date.session_length || Picsello.Shoot.durations() |> hd) * 60

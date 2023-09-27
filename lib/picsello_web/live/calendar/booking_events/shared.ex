@@ -12,6 +12,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
     PackageLive.WizardComponent
   }
 
+  alias PicselloWeb.Router.Helpers, as: Routes
   alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, Repo}
   alias BookingEventDate.SlotBlock
   alias Ecto.Multi
@@ -251,7 +252,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
 
   This function is useful for modifying the status of booking event date slots, typically used to control their visibility
   """
-  @spec edit_slots_status(map()) :: [%SlotBlock{}]
+  @spec edit_slots_status(map()) :: [SlotBlock.t()]
   def edit_slots_status(%{slots: slots}) do
     slots
     |> Enum.map(fn s ->
@@ -326,7 +327,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
       booking_event
       |> Map.put(
         :url,
-        PicselloWeb.Router.Helpers.client_booking_event_url(
+        Routes.client_booking_event_url(
           socket,
           :show,
           organization.slug,
