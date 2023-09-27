@@ -335,7 +335,7 @@ defmodule PicselloWeb.JobLive.Index do
       |> Job.for_user()
       |> then(fn query ->
         case type.plural do
-          "leads" -> query |> Job.leads() |> Job.not_booking()
+          "leads" -> query |> Job.leads() #|> Job.not_booking() #Remove this because on leads when job abondoned we have to show
           "jobs" -> query |> Job.not_leads()
         end
       end)

@@ -48,10 +48,10 @@ defmodule PicselloWeb.Helpers do
       |> Map.put(:fragment, type)
       |> URI.to_string()
 
+  def client_booking_event_url(_slug, nil), do: nil
   def client_booking_event_url(slug, id) do
     Endpoint
-    |> Routes.client_booking_event_path(:show, slug, id)
-    |> URI.to_string()
+    |> Routes.client_booking_event_url(:show, slug, id)
   end
 
   def ngettext(singular, plural, count) do

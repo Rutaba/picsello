@@ -47,7 +47,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
         job = Task.await(job_task)
         job = if is_nil(gallery_id), do: job, else: gallery.job
 
-        if job_archived?(job) do
+        if is_job_emails?(job) do
           subjects = Task.await(subjects_task)
           Logger.info("Email Subjects #{subjects}")
 
@@ -212,7 +212,7 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     Repo.all(Organization) |> Enum.map(& &1.id)
   end
 
-  defp job_archived?(%Job{job_status: %{is_lead: true}, booking_event_id: booking_event_id, archived_at: archived_at}) when not is_nil(booking_event_id) and not is_nil(archived_at), do: false
-  defp job_archived?(%Job{archived_at: nil}), do: false
-  defp job_archived?(_), do: true
+  defp is_job_emails?(%Job{job_status: %{is_lead: true}, booking_event_id: booking_event_id, archived_at: archived_at}) when not is_nil(booking_event_id) and not is_nil(archived_at), do: true
+  defp is_job_emails?(%Job{archived_at: nil}), do: true
+  defp is_job_emails?(_), do: false
 end

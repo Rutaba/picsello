@@ -516,9 +516,9 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   end
 
   def fetch_date_for_state(:abandoned_emails, _email, last_completed_email, job, _gallery, _order) do
-    if is_nil(job.expired_at),
+    if is_nil(job.archived_at),
     do: nil,
-    else: get_date_for_schedule(last_completed_email, job.expired_at)
+    else: get_date_for_schedule(last_completed_email, job.archived_at)
   end
 
   def fetch_date_for_state(

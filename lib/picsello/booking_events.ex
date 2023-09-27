@@ -1,6 +1,6 @@
 defmodule Picsello.BookingEvents do
   @moduledoc "context module for booking events"
-  alias Picsello.{Repo, BookingEvent, Job, Package, EmailAutomation.EmailSchedule}
+  alias Picsello.{Repo, BookingEvent, Job, Package}
   alias PicselloWeb.EmailAutomationLive.Shared
   import Ecto.Query
 
@@ -482,10 +482,6 @@ defmodule Picsello.BookingEvents do
         |> Map.put(:job_id, changes.job.id)
       )
     end)
-    |> Ecto.Multi.insert_all(:email_automation_job, EmailSchedule, fn %{job: job} ->
-      job = job |> Repo.preload(client: [organization: [:user]])
-      Shared.job_emails(job.type, job.client.organization.id, job.id, [:job])
-    end)
     |> Ecto.Multi.insert(:proposal, fn changes ->
       questionnaire_id =
         if booking_event.include_questionnaire?,
@@ -586,6 +582,7 @@ defmodule Picsello.BookingEvents do
          } <-
            job |> Repo.preload([:payment_schedules, :job_status, client: :organization]),
          %Picsello.JobStatus{is_lead: true} <- job_status,
+         {:ok, _} <- Shared.insert_job_emails(job.type, organization.id, job.id, [:lead, :job], [:client_contact]),
          {:ok, _} <- Picsello.Jobs.archive_job(job) do
       for %{stripe_session_id: "" <> session_id} <- payment_schedules,
           do:

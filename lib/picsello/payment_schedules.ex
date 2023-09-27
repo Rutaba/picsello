@@ -17,6 +17,7 @@ defmodule Picsello.PaymentSchedules do
     UserCurrencies,
     Workers.CalendarEvent
   }
+  alias PicselloWeb.EmailAutomationLive.Shared
 
   def get_description(%Job{package: nil} = job),
     do: build_payment_schedules_for_lead(job) |> Map.get(:details)
@@ -327,7 +328,7 @@ defmodule Picsello.PaymentSchedules do
         helpers
       )
 
-      %{job: %{shoots: shoots, client: %{organization: %{user: %{nylas_detail: nylas_detail}}}}} =
+      %{job: %{shoots: shoots, client: %{organization: %{user: %{nylas_detail: nylas_detail}} = organization}}} =
         Repo.preload(payment_schedule,
           job: [:shoots, client: [organization: [user: :nylas_detail]]]
         )
@@ -338,6 +339,8 @@ defmodule Picsello.PaymentSchedules do
         |> Enum.map(&CalendarEvent.new(%{type: :insert, shoot_id: &1.id}))
         |> Oban.insert_all()
       end
+
+      Shared.insert_job_emails(proposal.job.type, organization.id, proposal.job.id, [:lead, :job], [:client_contact, :abandoned_emails])
 
       {:ok, payment_schedule}
     else

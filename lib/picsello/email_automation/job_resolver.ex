@@ -59,7 +59,7 @@ defmodule Picsello.EmailPresets.JobResolver do
     if booking_event, do: booking_event.name, else: Picsello.Job.name(job)
   end
 
-  defp booking_event_id(job), do: Map.get(job, :booking_event_id, "nil")
+  defp booking_event_id(job), do: Map.get(job, :booking_event_id, nil)
 
 
   defp strftime(%__MODULE__{helpers: helpers} = resolver, date, format) do
