@@ -82,6 +82,14 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         9.0
       )
 
+    {:ok, booking_events} =
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Booking Events",
+        "booking_events",
+        2.1
+      )
+
     [
       # leads
       %{
@@ -108,6 +116,15 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
         description:
           "Sending the Booking Proposal Email will trigger follow up emails unless the follow up emails are deleted",
         email_automation_sub_category_id: automation_proposal.id,
+        email_automation_category_id: email_automation_lead.id,
+        position: 3.0
+      },
+      %{
+        name: "Abandoned Booking Event Emails",
+        state: "abandoned_emails",
+        description:
+          "Commencing the Booking Event will set in motion a series of successive email reminders, unless the recipient opts to remove them.",
+        email_automation_sub_category_id: booking_events.id,
         email_automation_category_id: email_automation_lead.id,
         position: 3.0
       },
