@@ -167,11 +167,6 @@ export default {
     if (isMobile()) {
       this.el.style.width = '100%';
       const offset = (w - iw - count * 12) / 2;
-      if (offset > 0) {
-        this.el.style.marginLeft = offset + 'px';
-      } else {
-        this.el.style.marginLeft = '10px';
-      }
     }
   },
 
@@ -231,7 +226,7 @@ export default {
 
   remove_loader() {
     const items_class = '#' + this.el.dataset.id + ' .photo-loader';
-    const elements = document.querySelectorAll(items_class)
+    const elements = document.querySelectorAll(items_class);
     const grid = this.get_grid();
     let items = [];
     elements.forEach((item) => {

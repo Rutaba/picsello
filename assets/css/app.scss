@@ -113,12 +113,6 @@ canvas {
   width: 100%;
   box-sizing: border-box;
 
-  .item {
-    display: flex;
-    position: absolute;
-    z-index: 1;
-  }
-
   .item.muuri-item-dragging {
     z-index: 3;
   }
@@ -138,10 +132,11 @@ canvas {
   }
 
   .item {
-    @apply m-[5px] w-[200px];
+    @apply flex absolute items-center m-[5px] w-[200px] z-10;
 
+    
     .galleryItem {
-      height: 100%;
+      @apply h-full;
     }
 
     &:hover {
@@ -193,6 +188,18 @@ canvas {
 
     svg {
       filter: drop-shadow(3px 5px 2px rgba(0, 0, 0, 0.4));
+    }
+  }
+}
+
+.client-app {
+  .muuri.grid {
+    .item-content {
+      @apply h-full;
+    }
+    
+    .item {
+      @apply md:w-[calc(25%-10px)] w-full items-center bg-gray-100;
     }
   }
 }
