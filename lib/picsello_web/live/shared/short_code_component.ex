@@ -7,6 +7,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   @impl true
   def render(assigns) do
     job = Map.get(assigns, :job, nil)
+
     assigns =
       assigns
       |> Enum.into(%{
@@ -149,6 +150,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
 
   defp client_variables(job) do
     name = get_client_data(job)
+
     [
       %{
         type: "client",
@@ -172,6 +174,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
 
   defp photograopher_variables(user) do
     name = get_photopgrapher_data(user)
+
     [
       %{
         type: "photographer",
@@ -272,8 +275,8 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
   end
 
   defp get_client_data(nil), do: "Jane Goodrich"
+
   defp get_client_data(job) do
     Map.get(job.client, :name, "John Goodrich") |> String.capitalize()
   end
-
 end

@@ -145,7 +145,9 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
   end
 
   defp get_gallery(nil), do: nil
-  defp get_gallery(id), do: Galleries.get_gallery!(id) |> Repo.preload([:orders, :albums, job: :client])
+
+  defp get_gallery(id),
+    do: Galleries.get_gallery!(id) |> Repo.preload([:orders, :albums, job: :client])
 
   defp group_key(email_schedule) do
     if email_schedule.job_id != nil do
@@ -212,7 +214,14 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     Repo.all(Organization) |> Enum.map(& &1.id)
   end
 
-  defp is_job_emails?(%Job{job_status: %{is_lead: true}, booking_event_id: booking_event_id, archived_at: archived_at}) when not is_nil(booking_event_id) and not is_nil(archived_at), do: true
+  defp is_job_emails?(%Job{
+         job_status: %{is_lead: true},
+         booking_event_id: booking_event_id,
+         archived_at: archived_at
+       })
+       when not is_nil(booking_event_id) and not is_nil(archived_at),
+       do: true
+
   defp is_job_emails?(%Job{archived_at: nil}), do: true
   defp is_job_emails?(_), do: false
 end

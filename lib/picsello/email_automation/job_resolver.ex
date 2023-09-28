@@ -61,7 +61,6 @@ defmodule Picsello.EmailPresets.JobResolver do
 
   defp booking_event_id(job), do: Map.get(job, :booking_event_id, nil)
 
-
   defp strftime(%__MODULE__{helpers: helpers} = resolver, date, format) do
     resolver |> photographer() |> Map.get(:time_zone) |> helpers.strftime(date, format)
   end

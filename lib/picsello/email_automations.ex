@@ -212,7 +212,9 @@ defmodule Picsello.EmailAutomations do
 
   defp group_by_sub_category(automation_pipelines) do
     automation_pipelines
-    |> Enum.group_by(&{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id, &1.subcategory_position})
+    |> Enum.group_by(
+      &{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id, &1.subcategory_position}
+    )
     |> Enum.map(fn {{slug, name, id, position}, automation_pipelines} ->
       %{
         category_type: List.first(automation_pipelines).category_type,
@@ -227,10 +229,20 @@ defmodule Picsello.EmailAutomations do
       }
     end)
     |> Enum.sort_by(& &1.subcategory_position, :asc)
-    |> Enum.group_by(&{&1.category_type, &1.category_name, &1.category_id, &1.category_position}, & &1)
+    |> Enum.group_by(
+      &{&1.category_type, &1.category_name, &1.category_id, &1.category_position},
+      & &1
+    )
     |> Enum.map(fn {{type, name, id, position}, pipelines} ->
       subcategories = remove_categories_from_list(pipelines)
-      %{category_type: type, category_name: name, category_id: id, category_position: position, subcategories: subcategories}
+
+      %{
+        category_type: type,
+        category_name: name,
+        category_id: id,
+        category_position: position,
+        subcategories: subcategories
+      }
     end)
     |> Enum.sort_by(& &1.category_position, :asc)
   end

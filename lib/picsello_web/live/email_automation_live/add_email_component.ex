@@ -148,7 +148,10 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   def handle_event(
         "submit",
         %{"step" => "edit_email"},
-        %{assigns: %{email_preset_changeset: changeset, current_user: current_user, job: job} = assigns} = socket
+        %{
+          assigns:
+            %{email_preset_changeset: changeset, current_user: current_user, job: job} = assigns
+        } = socket
       ) do
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)

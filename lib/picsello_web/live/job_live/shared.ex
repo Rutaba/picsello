@@ -1945,18 +1945,18 @@ defmodule PicselloWeb.JobLive.Shared do
   end
 
   def open_email_compose(%{assigns: %{current_user: current_user, job: job}} = socket),
-  do:
-    socket
-    |> ClientMessageComponent.open(%{
-      current_user: current_user,
-      modal_title: "Send an email",
-      show_client_email: true,
-      show_subject: true,
-      presets: [],
-      send_button: "Send",
-      client: Job.client(job)
-    })
-    |> noreply()
+    do:
+      socket
+      |> ClientMessageComponent.open(%{
+        current_user: current_user,
+        modal_title: "Send an email",
+        show_client_email: true,
+        show_subject: true,
+        presets: [],
+        send_button: "Send",
+        client: Job.client(job)
+      })
+      |> noreply()
 
   defp assign_payment_schedules(socket) do
     socket

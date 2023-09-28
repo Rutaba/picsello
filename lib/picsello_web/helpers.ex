@@ -49,6 +49,7 @@ defmodule PicselloWeb.Helpers do
       |> URI.to_string()
 
   def client_booking_event_url(_slug, nil), do: nil
+
   def client_booking_event_url(slug, id) do
     Endpoint
     |> Routes.client_booking_event_url(:show, slug, id)

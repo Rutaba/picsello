@@ -115,7 +115,8 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_event(
         "edit-email",
         %{"email_id" => id, "pipeline_id" => pipeline_id},
-        %{assigns: %{current_user: current_user, type: type, job_types: job_types, job: job}} = socket
+        %{assigns: %{current_user: current_user, type: type, job_types: job_types, job: job}} =
+          socket
       ) do
     selected_job_type = job_types |> Enum.filter(fn x -> x.job_type == type end) |> List.first()
     schedule_id = to_integer(id)

@@ -44,7 +44,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
     Logger.warning("[orgs count] #{Enum.count(organizations)}")
 
     [
-      #wedding
+      # wedding
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -833,7 +833,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Abandoned Booking Event Email",
-        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        subject_template:
+          "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
@@ -842,7 +843,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      #newborn
+      # newborn
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -1653,7 +1654,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Abandoned Booking Event Email",
-        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        subject_template:
+          "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
@@ -1662,7 +1664,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      #family
+      # family
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -2449,7 +2451,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Abandoned Booking Event Email",
-        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        subject_template:
+          "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
@@ -2458,7 +2461,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      #mini-session
+      # mini-session
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -3245,7 +3248,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Abandoned Booking Event Email",
-        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        subject_template:
+          "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
@@ -3254,7 +3258,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      #headshot
+      # headshot
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -4040,7 +4044,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Abandoned Booking Event Email",
-        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        subject_template:
+          "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
@@ -4049,7 +4054,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      #portrait
+      # portrait
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -4836,7 +4841,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Abandoned Booking Event Email",
-        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        subject_template:
+          "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
@@ -4845,7 +4851,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      #boudoir
+      # boudoir
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -5632,7 +5638,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Abandoned Booking Event Email",
-        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        subject_template:
+          "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
@@ -5641,7 +5648,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      #other
+      # other
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -6428,7 +6435,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Abandoned Booking Event Email",
-        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        subject_template:
+          "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
@@ -6437,7 +6445,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      #maternity
+      # maternity
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -7224,7 +7232,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Abandoned Booking Event Email",
-        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        subject_template:
+          "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
@@ -7233,7 +7242,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>{{email_signature}}</p>
         """
       },
-      #event
+      # event
       %{
         email_automation_pipeline_id: get_pipeline_id_by_state(pipelines, "client_contact"),
         total_hours: 0,
@@ -8020,7 +8029,8 @@ defmodule Mix.Tasks.ImportEmailPresets do
         type: "lead",
         position: 0,
         name: "Abandoned Booking Event Email",
-        subject_template: "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
+        subject_template:
+          "Complete Your Booking for Your Session witth {{photography_company_s_name}}",
         body_template: """
         <p>Hi {{client_first_name}}</p>
         <p>I hope this email finds you well. I noticed that you recently started booking process for a photography session with {{photography_company_s_name}}, but it seems that your booking was left incomplete.</p>
@@ -8028,7 +8038,7 @@ defmodule Mix.Tasks.ImportEmailPresets do
         <p>To complete your booking now, simply follow this link: {{booking_event_client_url}}
         <p>{{email_signature}}</p>
         """
-      },
+      }
     ]
     |> Enum.each(fn attrs ->
       state = get_state_by_pipeline_id(pipelines, attrs.email_automation_pipeline_id)

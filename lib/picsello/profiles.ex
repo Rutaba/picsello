@@ -204,7 +204,10 @@ defmodule Picsello.Profiles do
           )
           |> Ecto.Multi.insert_all(:email_automation_job, EmailSchedule, fn %{lead: job} ->
             job = job |> Repo.preload(client: [organization: [:user]])
-            Shared.job_emails(job.type, job.client.organization.id, job.id, [:lead, :job], [:abandoned_emails])
+
+            Shared.job_emails(job.type, job.client.organization.id, job.id, [:lead, :job], [
+              :abandoned_emails
+            ])
           end)
           |> Ecto.Multi.insert(
             :message,

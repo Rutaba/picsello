@@ -51,7 +51,8 @@ defmodule PicselloWeb.EmailAutomationLive.EditTimeComponent do
         %{"email_preset" => params},
         %{assigns: %{email_automation_setting: email_automation_setting}} = socket
       ) do
-    changeset = EmailPreset.changeset(email_automation_setting, Shared.maybe_normalize_params(params))
+    changeset =
+      EmailPreset.changeset(email_automation_setting, Shared.maybe_normalize_params(params))
 
     socket
     |> assign(changeset: changeset)

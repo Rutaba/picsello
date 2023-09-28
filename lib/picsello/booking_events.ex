@@ -582,7 +582,10 @@ defmodule Picsello.BookingEvents do
          } <-
            job |> Repo.preload([:payment_schedules, :job_status, client: :organization]),
          %Picsello.JobStatus{is_lead: true} <- job_status,
-         {:ok, _} <- Shared.insert_job_emails(job.type, organization.id, job.id, [:lead, :job], [:client_contact]),
+         {:ok, _} <-
+           Shared.insert_job_emails(job.type, organization.id, job.id, [:lead, :job], [
+             :client_contact
+           ]),
          {:ok, _} <- Picsello.Jobs.archive_job(job) do
       for %{stripe_session_id: "" <> session_id} <- payment_schedules,
           do:

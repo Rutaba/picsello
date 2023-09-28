@@ -180,8 +180,8 @@ defmodule Picsello.EmailAutomationSchedules do
   defp email_schedules_group_by_categories(emails_schedules) do
     emails_schedules
     |> Enum.group_by(
-      &{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id, &1.subcategory_position, &1.gallery_id, &1.job_id,
-       &1.order_id, &1.order_number}
+      &{&1.subcategory_slug, &1.subcategory_name, &1.subcategory_id, &1.subcategory_position,
+       &1.gallery_id, &1.job_id, &1.order_id, &1.order_number}
     )
     |> Enum.map(fn {{slug, name, id, position, gallery_id, job_id, order_id, order_number},
                     automation_pipelines} ->
@@ -217,7 +217,8 @@ defmodule Picsello.EmailAutomationSchedules do
     end)
     |> Enum.sort_by(&{&1.subcategory_position, &1.subcategory_name}, :asc)
     |> Enum.group_by(
-      &{&1.category_id, &1.category_name, &1.category_type, &1.category_position, &1.gallery_id, &1.job_id}
+      &{&1.category_id, &1.category_name, &1.category_type, &1.category_position, &1.gallery_id,
+       &1.job_id}
     )
     |> Enum.map(fn {{id, name, type, position, gallery_id, job_id}, pipelines} ->
       subcategories = EmailAutomations.remove_categories_from_list(pipelines)

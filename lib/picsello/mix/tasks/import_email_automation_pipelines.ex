@@ -34,15 +34,20 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
       maybe_insert_email_automation_slug(sub_categories, "Inquiry emails", "inquiry_emails", 1.0)
 
     {:ok, booking_events} =
-        maybe_insert_email_automation_slug(
-          sub_categories,
-          "Booking Events",
-          "booking_events",
-          2.0
-        )
-    {:ok, automation_proposal} =
-      maybe_insert_email_automation_slug(sub_categories, "Booking proposal", "booking_proposal", 3.0)
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Booking Events",
+        "booking_events",
+        2.0
+      )
 
+    {:ok, automation_proposal} =
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Booking proposal",
+        "booking_proposal",
+        3.0
+      )
 
     {:ok, automation_response} =
       maybe_insert_email_automation_slug(
@@ -61,10 +66,20 @@ defmodule Mix.Tasks.ImportEmailAutomationPipelines do
       )
 
     {:ok, automation_prep} =
-      maybe_insert_email_automation_slug(sub_categories, "Shoot prep emails", "shoot_prep_emails", 6.0)
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Shoot prep emails",
+        "shoot_prep_emails",
+        6.0
+      )
 
     {:ok, automation_post} =
-      maybe_insert_email_automation_slug(sub_categories, "Post shoot emails", "post_shoot_emails", 7.0)
+      maybe_insert_email_automation_slug(
+        sub_categories,
+        "Post shoot emails",
+        "post_shoot_emails",
+        7.0
+      )
 
     {:ok, automation_notification} =
       maybe_insert_email_automation_slug(
