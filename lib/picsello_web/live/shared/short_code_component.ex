@@ -6,10 +6,11 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
 
   @impl true
   def render(assigns) do
+    job = Map.get(assigns, :job, nil)
     assigns =
       assigns
       |> Enum.into(%{
-        variables_list: variables_codes(assigns.job_type)
+        variables_list: variables_codes(assigns.job_type, assigns.current_user, job)
       })
 
     ~H"""
@@ -56,7 +57,9 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     """
   end
 
-  def variables_codes(job_type) do
+  def variables_codes(job_type, current_user, job) do
+    photographer(current_user.organization) |> IO.inspect()
+
     leads = [
       %{
         type: "lead",
@@ -79,7 +82,7 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
         _ -> []
       end
 
-    client_variables() ++ photograopher_variables() ++ leads ++ other
+    client_variables(job) ++ photograopher_variables(current_user) ++ leads ++ other
   end
 
   defp gallery_variables() do
@@ -146,7 +149,8 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     ]
   end
 
-  defp client_variables() do
+  defp client_variables(job) do
+    name = get_client_data(job)
     [
       %{
         type: "client",
@@ -154,19 +158,13 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 1,
             name: "client_first_name",
-            sample: "Jane",
+            sample: name |> String.split(" ") |> List.first(),
             description: "Client first name to personalize emails"
           },
           %{
             id: 2,
-            name: "email_signature",
-            sample: "Jane Goodrich",
-            description: "Included on every email sent from your Picsello account"
-          },
-          %{
-            id: 3,
             name: "client_full_name",
-            sample: "Jane Goodrich",
+            sample: name,
             description: "Client full name to personalize emails"
           }
         ]
@@ -174,7 +172,8 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
     ]
   end
 
-  defp photograopher_variables() do
+  defp photograopher_variables(user) do
+    name = get_photopgrapher_data(user)
     [
       %{
         type: "photographer",
@@ -182,11 +181,17 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 1,
             name: "photography_company_s_name",
-            sample: "John lee",
+            sample: name,
             description: "photohrapher company"
           },
           %{
             id: 2,
+            name: "email_signature",
+            sample: name,
+            description: "Included on every email sent from your Picsello account"
+          },
+          %{
+            id: 3,
             name: "photographer_cell",
             sample: "(123) 456-7891",
             description:
@@ -218,19 +223,19 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
           %{
             id: 3,
             name: "invoice_amount",
-            sample: "450",
+            sample: "450 USD",
             description: "Invoice amount; use in context with payments and balances due"
           },
           %{
             id: 4,
             name: "payment_amount",
-            sample: "775",
+            sample: "775 USD",
             description: "Current payment being made"
           },
           %{
             id: 5,
             name: "remaining_amount",
-            sample: "650",
+            sample: "650 USD",
             description: "Outstanding balance due; use in context with payments, invoices"
           },
           %{
@@ -263,4 +268,14 @@ defmodule PicselloWeb.Shared.ShortCodeComponent do
       }
     ]
   end
+
+  defp get_photopgrapher_data(user) do
+    Map.get(user.organization, :name, "John lee") |> String.capitalize()
+  end
+
+  defp get_client_data(nil), do: "Jane Goodrich"
+  defp get_client_data(job) do
+    Map.get(job.client, :name, "John Goodrich") |> String.capitalize()
+  end
+
 end

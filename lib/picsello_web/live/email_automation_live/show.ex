@@ -115,7 +115,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_event(
         "edit-email",
         %{"email_id" => id, "pipeline_id" => pipeline_id},
-        %{assigns: %{current_user: current_user, type: type, job_types: job_types}} = socket
+        %{assigns: %{current_user: current_user, type: type, job_types: job_types, job: job}} = socket
       ) do
     selected_job_type = job_types |> Enum.filter(fn x -> x.job_type == type end) |> List.first()
     schedule_id = to_integer(id)
@@ -124,6 +124,7 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
     socket
     |> open_modal(PicselloWeb.EmailAutomationLive.EditEmailScheduleComponent, %{
       current_user: current_user,
+      job: job,
       job_type: selected_job_type.jobtype,
       job_types: job_types,
       pipeline: get_pipline(pipeline_id),
@@ -136,11 +137,11 @@ defmodule PicselloWeb.Live.EmailAutomations.Show do
   def handle_event(
         "email-preview",
         %{"email_preview_id" => id},
-        %{assigns: %{current_user: current_user}} = socket
+        %{assigns: %{current_user: current_user, job: job}} = socket
       ) do
     body_html =
       EmailAutomationSchedules.get_schedule_by_id(id).body_template
-      |> :bbmustache.render(get_sample_values(), key_type: :atom)
+      |> :bbmustache.render(get_sample_values(current_user, job), key_type: :atom)
 
     template_preview = Marketing.template_preview(current_user, body_html)
 

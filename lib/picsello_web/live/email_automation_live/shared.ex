@@ -59,6 +59,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
         %{
           assigns:
             %{
+              job: job,
+              current_user: current_user,
               email_preset_changeset: changeset,
               first_red_section: first_red_section_value,
               second_red_section: second_red_section_value,
@@ -75,7 +77,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
       |> :bbmustache.render(
-        get_sample_values()
+        get_sample_values(current_user, job)
         |> Map.merge(%{
           first_red_section: assign_section_value(first_red_section_value, first_red_section),
           second_red_section: assign_section_value(second_red_section_value, second_red_section)
@@ -163,8 +165,8 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
     |> Enum.map(&%{id: &1.job_type, label: &1.job_type, selected: &1.job_type == job_type.name})
   end
 
-  def get_sample_values() do
-    ShortCodeComponent.variables_codes(:gallery)
+  def get_sample_values(user, job) do
+    ShortCodeComponent.variables_codes(:gallery, user, job)
     |> Enum.map(&Enum.map(&1.variables, fn variable -> {variable.name, variable.sample} end))
     |> List.flatten()
     |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)

@@ -33,6 +33,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
+    |> assign(:job, nil)
     |> assign(email_presets: remove_duplicate(email_presets, email))
     |> assign(email_preset: email)
     |> assign(steps: @steps)
@@ -283,7 +284,7 @@ defmodule PicselloWeb.EmailAutomationLive.EditEmailComponent do
             </div>
 
             <div class={"flex flex-col w-full md:w-1/3 md:ml-2 min-h-[16rem] md:mt-0 mt-6 #{!@show_variables && "hidden"}"}>
-              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} />
+              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} current_user={@current_user}/>
             </div>
           </div>
         </div>

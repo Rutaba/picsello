@@ -31,6 +31,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
     socket
     |> assign(assigns)
     |> assign(job_types: job_types)
+    |> assign(job: nil)
     |> assign(email_presets: email_presets)
     |> assign(email_preset: List.first(email_presets))
     |> assign(steps: @steps)
@@ -147,11 +148,11 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
   def handle_event(
         "submit",
         %{"step" => "edit_email"},
-        %{assigns: %{email_preset_changeset: changeset} = assigns} = socket
+        %{assigns: %{email_preset_changeset: changeset, current_user: current_user, job: job} = assigns} = socket
       ) do
     body_html =
       Ecto.Changeset.get_field(changeset, :body_template)
-      |> :bbmustache.render(get_sample_values(), key_type: :atom)
+      |> :bbmustache.render(get_sample_values(current_user, job), key_type: :atom)
 
     Process.send_after(self(), {:load_template_preview, __MODULE__, body_html}, 50)
 
@@ -418,7 +419,7 @@ defmodule PicselloWeb.EmailAutomationLive.AddEmailComponent do
             </div>
 
             <div class={"flex flex-col w-full md:w-1/3 md:ml-2 min-h-[16rem] md:mt-0 mt-6 #{!@show_variables && "hidden"}"}>
-              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} />
+              <.short_codes_select id="short-codes" show_variables={"#{@show_variables}"} target={@myself} job_type={@pipeline.email_automation_category.type} current_user={@current_user}/>
             </div>
           </div>
         </div>
