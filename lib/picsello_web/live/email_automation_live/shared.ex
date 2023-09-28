@@ -898,7 +898,7 @@ defmodule PicselloWeb.EmailAutomationLive.Shared do
   Returns a string
   """
   def get_plain_text(html_text, to_search) do
-    if(html_text |> String.contains?(to_search)) do
+    if html_text |> String.contains?(to_search) do
       html_text
       |> String.split("{{##{to_search}}}")
       |> Enum.at(1)

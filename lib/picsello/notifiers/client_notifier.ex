@@ -406,6 +406,8 @@ defmodule Picsello.Notifiers.ClientNotifier do
         helpers
       )
 
+    body = Utils.normalize_body_template(body)
+
     deliver_transactional_email(
       %{
         subject: subject,
@@ -422,6 +424,8 @@ defmodule Picsello.Notifiers.ClientNotifier do
              {order.gallery, order},
              helpers
            ) do
+      body = Utils.normalize_body_template(body)
+
       deliver_transactional_email(
         %{
           subject: subject,

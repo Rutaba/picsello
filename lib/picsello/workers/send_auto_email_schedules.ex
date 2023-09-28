@@ -24,58 +24,54 @@ defmodule Picsello.Workers.ScheduleAutomationEmail do
     |> Enum.each(fn organizations ->
       get_all_emails(organizations)
       |> Enum.map(fn job_pipeline ->
-        job_id = job_pipeline.job_id
-        gallery_id = job_pipeline.gallery_id
-        state = job_pipeline.state
-
-        gallery_task = Task.async(fn -> get_gallery(gallery_id) end)
-        gallery = Task.await(gallery_task)
-
-        job_task = Task.async(fn -> EmailAutomations.get_job(job_id) end)
-
-        type =
-          job_pipeline.emails
-          |> List.first()
-          |> Map.get(:email_automation_pipeline)
-          |> Map.get(:email_automation_category)
-          |> Map.get(:type)
-
-        Logger.info("[email category] #{type}")
-
-        subjects_task = Task.async(fn -> get_subjects_for_job_pipeline(job_pipeline.emails) end)
-
-        job = Task.await(job_task)
-        job = if is_nil(gallery_id), do: job, else: gallery.job
-
-        if is_job_emails?(job) do
-          subjects = Task.await(subjects_task)
-          Logger.info("Email Subjects #{subjects}")
-
-          # Each pipeline emails subjects resolve variables
-          subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
-          Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
-
-          # Check client reply for any email of current pipeline
-          is_reply =
-            if state in [:client_contact, :manual_thank_you_lead, :manual_booking_proposal_sent] do
-              is_reply_receive!(job, subjects_resolve)
-            else
-              false
-            end
-
-          Logger.info(
-            "Reply of any email from client for job #{job_id} and pipeline_id #{job_pipeline.pipeline_id}"
-          )
-
-          # This condition only run when no reply recieve from any email for that job & pipeline
-          if !is_reply do
-            send_email_each_pipeline(job_pipeline, job, gallery)
-          end
-        end
+        gallery = Task.async(fn -> get_gallery(job_pipeline.gallery_id) end) |> Task.await()
+        job = Task.async(fn -> EmailAutomations.get_job(job_pipeline.job_id) end) |> Task.await()
+        job = if is_nil(gallery.id), do: job, else: gallery.job
+        send_email_by(job, gallery, job_pipeline)
       end)
     end)
 
     :ok
+  end
+
+  defp send_email_by(job, gallery, job_pipeline) do
+    subjects_task = Task.async(fn -> get_subjects_for_job_pipeline(job_pipeline.emails) end)
+    state = job_pipeline.state
+
+    type =
+      job_pipeline.emails
+      |> List.first()
+      |> Map.get(:email_automation_pipeline)
+      |> Map.get(:email_automation_category)
+      |> Map.get(:type)
+
+    Logger.info("[email category] #{type}")
+
+    if is_job_emails?(job) do
+      subjects = Task.await(subjects_task)
+      Logger.info("Email Subjects #{subjects}")
+
+      # Each pipeline emails subjects resolve variables
+      subjects_resolve = EmailAutomations.resolve_all_subjects(job, gallery, type, subjects)
+      Logger.info("Email Subjects Resolve [#{subjects_resolve}]")
+
+      # Check client reply for any email of current pipeline
+      is_reply =
+        if state in [:client_contact, :manual_thank_you_lead, :manual_booking_proposal_sent] do
+          is_reply_receive!(job, subjects_resolve)
+        else
+          false
+        end
+
+      Logger.info(
+        "Reply of any email from client for job #{job.id} and pipeline_id #{job_pipeline.pipeline_id}"
+      )
+
+      # This condition only run when no reply recieve from any email for that job & pipeline
+      if !is_reply do
+        send_email_each_pipeline(job_pipeline, job, gallery)
+      end
+    end
   end
 
   def get_all_emails(organizations) do
