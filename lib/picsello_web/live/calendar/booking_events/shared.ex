@@ -13,8 +13,7 @@ defmodule PicselloWeb.Calendar.BookingEvents.Shared do
   }
 
   alias PicselloWeb.Router.Helpers, as: Routes
-  alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, Repo}
-  alias Picsello.{BookingEvents, BookingEvent, BookingEventDate, BookingEventDates, Repo}
+  alias Picsello.{Repo, BookingEvent, BookingEvents, BookingEventDate, BookingEventDates}
   alias BookingEventDate.SlotBlock
   alias Ecto.Multi
 
