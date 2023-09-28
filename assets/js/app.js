@@ -78,6 +78,7 @@ import BeforeUnload from './hooks/before-unload';
 import Cookies from 'js-cookie';
 import FolderUpload from './hooks/folder-upload';
 import Tooltip from './hooks/tooltip';
+import StripeElements from './hooks/stripe-elements';
 
 const Modal = {
   mounted() {
@@ -296,12 +297,13 @@ const Hooks = {
   GetGalleryCookie,
   showWelcomeModal,
   showAdminBanner,
-  FolderUpload
+  FolderUpload,
+  StripeElements,
 };
 
 window.addEventListener(`phx:download`, (event) => {
-  let frame = document.createElement("iframe");
-  frame.setAttribute("src", event.detail.uri);
+  let frame = document.createElement('iframe');
+  frame.setAttribute('src', event.detail.uri);
   frame.style.visibility = 'hidden';
   frame.style.display = 'none';
   document.body.appendChild(frame);

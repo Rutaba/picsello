@@ -301,6 +301,23 @@ defmodule Picsello.Subscriptions do
     end
   end
 
+  def user_customer_id(%User{stripe_customer_id: nil} = user, attrs) do
+    params = %{name: user.name, email: user.email} |> Map.merge(attrs)
+
+    with {:ok, %{id: customer_id}} <- Payments.create_customer(params, []),
+         {:ok, user} <-
+           user
+           |> User.assign_stripe_customer_changeset(customer_id)
+           |> Repo.update() do
+      user.stripe_customer_id
+    else
+      {:error, _} = e -> e
+      e -> {:error, e}
+    end
+  end
+
+  def user_customer_id(%User{stripe_customer_id: customer_id}, attrs), do: customer_id
+
   def user_customer_id(%User{stripe_customer_id: nil} = user) do
     params = %{name: user.name, email: user.email}
 
@@ -315,6 +332,8 @@ defmodule Picsello.Subscriptions do
       e -> {:error, e}
     end
   end
+
+
 
   def user_customer_id(%User{stripe_customer_id: customer_id}), do: customer_id
 

@@ -20,7 +20,7 @@ defmodule PicselloWeb.OnboardingLive.Shared do
       })
 
     ~H"""
-      <div>
+      <div class="bg-white">
         <div class="bg-base-200 flex justify-center p-8">
           <h3 class="text-4xl text-purple-marketing-300">
             <%= if @original_price do %>
@@ -41,23 +41,24 @@ defmodule PicselloWeb.OnboardingLive.Shared do
   def signup_container(assigns) do
     assigns =
       Enum.into(assigns, %{
-        bg_color: "bg-purple-marketing-300",
+        left_classes: "p-8 bg-purple-marketing-300 text-white",
         show_logout?: false,
+        right_classes: "p-8",
         step: nil,
         step_total: nil,
         step_title: nil
       })
 
     ~H"""
-      <div class="min-h-screen container mx-auto">
-        <div class="py-10 flex items-center justify-center">
+      <div class="min-h-screen md:max-w-6xl container mx-auto">
+        <div class="py-8 flex items-center justify-center">
           <.icon name="logo-shoot-higher" class="w-32 h-12 sm:h-20 sm:w-48" />
         </div>
         <div class="grid sm:grid-cols-2 bg-white rounded-lg">
-          <div class={"p-10 sm:rounded-l-lg #{@bg_color}"}>
+          <div class={"order-2 sm:order-1 sm:rounded-l-lg #{@left_classes}"}>
             <%= render_slot(@inner_block) %>
           </div>
-          <div class="p-10">
+          <div class={"#{@right_classes} order-1 sm:order-2 flex flex-col"}>
             <%= if @step && @step_total do %>
               <div class="text-sm font-bold text-gray-500">
                 <%= @step %> / <%= @step_total %>
@@ -70,7 +71,7 @@ defmodule PicselloWeb.OnboardingLive.Shared do
           </div>
         </div>
         <%= if @show_logout? do %>
-          <div class="flex items-center justify-center mt-8">
+          <div class="flex items-center justify-center my-8">
             <%= link("Logout", to: Routes.user_session_path(@socket, :delete), method: :delete) %>
           </div>
         <% end %>

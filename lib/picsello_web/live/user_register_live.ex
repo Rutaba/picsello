@@ -8,9 +8,9 @@ defmodule PicselloWeb.UserRegisterLive do
   import Picsello.Subscriptions,
     only: [get_subscription_plan_metadata: 0, get_subscription_plan_metadata: 1]
 
-  import PicselloWeb.OnboardingLive.Shared, only: [signup_container: 1]
+  import PicselloWeb.OnboardingLive.Shared, only: [signup_container: 1, signup_deal: 1]
 
-  @steps [1, 2, 3]
+  @steps [1, 2, 3, 4]
 
   @impl true
   def mount(_params, session, socket) do
@@ -98,24 +98,43 @@ defmodule PicselloWeb.UserRegisterLive do
 
   defp onboarding_view(%{onboarding_type: "mastermind"} = assigns) do
     ~H"""
-      <.signup_container {assigns}>
-        <h1>test</h1>
+      <.signup_container {assigns} step={1} step_total={length(@steps)} step_title="Let’s get to know you" left_classes="p-8 pb-0 bg-purple-marketing-300 text-white">
+        <h2 class="text-3xl md:text-4xl font-bold text-center mb-2">
+          Join Picsello’s
+          <br />
+          <span class="underline underline-offset-1 text-decoration-blue-planning-300">Business Mastermind</span>
+        </h2>
+        <p class="text-xl text-center">Build a strong foundation for every part of your business so it supports growth and sustainable profit.</p>
+        <div class="max-w-md mx-auto my-8">
+          <.signup_deal original_price={Money.new(35000, :USD)} price={Money.new(24500, :USD)} expires_at="22 days, 1 hour, 15 seconds" />
+        </div>
+        <ul class="mb-8 space-y-2">
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 x a month expert session with Q&As</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 x a month hot seat - ask Jane anything</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> Private community where you can connect with photographers who have shared experiences</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1:1 access to Jane and the Picsello coaches</li>
+          <li class="flex gap-2"><.icon name="checkcircle" class="h-4 w-4 flex-shrink-0 mt-1.5" /> 1 year of the entire Picsello Platform</li>
+        </ul>
+        <img src={Routes.static_path(@socket, "/images/mastermind-hero.png")} loading="lazy" alt="Images of the Picsello App" />
         <:right_panel>
           <.signup_hooks />
-          <.signup_form {assigns} />
+          <.signup_form {assigns} form_classes="flex-grow" />
         </:right_panel>
       </.signup_container>
     """
   end
 
   defp signup_form(assigns) do
+    assigns = Enum.into(assigns, %{
+      form_classes: ""
+    })
     ~H"""
       <a href={Routes.auth_path(@socket, :request, :google)} class="flex items-center justify-center w-full mt-8 text-center btn-primary">
         <.icon name="google" width="25" height="24" class="mr-4" />
         Continue with Google
       </a>
       <p class="m-6 text-center">or</p>
-      <.form :let={f} for={@changeset} action={Routes.user_registration_path(@socket, :create)} phx-change="validate" phx-submit="save" phx-trigger-action={@trigger_submit}>
+      <.form :let={f} for={@changeset} action={Routes.user_registration_path(@socket, :create)} phx-change="validate" phx-submit="save" phx-trigger-action={@trigger_submit} class={"flex flex-col #{@form_classes}"}>
         <%= hidden_input f, :trigger_submit, value: @trigger_submit %>
         <%= hidden_input f, :onboarding_flow_source, value: @onboarding_type %>
         <%= labeled_input f, :name, placeholder: "Jack Nimble", phx_debounce: "500", label: "Your first & last name", autocomplete: "name" %>
@@ -127,7 +146,7 @@ defmodule PicselloWeb.UserRegisterLive do
           <a href="https://www.picsello.com/terms-conditions" target="_blank" rel="noopener noreferrer" class="border-b border-gray-400">Terms</a>
         </p>
 
-        <div class="flex mt-4">
+        <div class="flex mt-auto">
           <%= submit "Sign up",
             class: "btn-primary sm:flex-1 px-6 sm:px-10 flex-grow",
             disabled: !@changeset.valid?,

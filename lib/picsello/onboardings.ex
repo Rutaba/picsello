@@ -101,7 +101,8 @@ defmodule Picsello.Onboardings do
         :welcome_count,
         :promotion_code
       ])
-      |> validate_required([:state, :photographer_years, :schedule])
+      # |> validate_required([:state, :photographer_years, :schedule])
+      |> validate_required([:photographer_years, :schedule])
       |> validate_change(:promotion_code, &valid_promotion_codes/2)
     end
 
@@ -143,6 +144,7 @@ defmodule Picsello.Onboardings do
 
   def changeset(%User{} = user, attrs, opts \\ []) do
     step = Keyword.get(opts, :step, 3)
+    onboarding_type = Keyword.get(opts, :onboarding_type, nil)
 
     user
     |> cast(
@@ -158,7 +160,7 @@ defmodule Picsello.Onboardings do
     )
     |> cast_embed(:onboarding, with: &onboarding_changeset(&1, &2, step), required: true)
     |> cast_assoc(:organization,
-      with: &organization_onboarding_changeset(&1, &2, step),
+      with: &organization_onboarding_changeset(&1, &2, step, onboarding_type),
       required: true
     )
   end
@@ -262,17 +264,27 @@ defmodule Picsello.Onboardings do
     |> Repo.update!()
   end
 
-  defp organization_onboarding_changeset(organization, attrs, step) do
+  defp organization_onboarding_changeset(organization, attrs, step, onboarding_type) do
+    is_required? =
+      if is_nil(onboarding_type) do
+        step > 2
+      else
+        step > 3
+      end
+
     organization
     |> Organization.registration_changeset(attrs)
-    |> cast_embed(:profile, required: step > 2, with: &profile_onboarding_changeset(&1, &2, step))
+    |> cast_embed(:profile,
+      required: is_required?,
+      with: &profile_onboarding_changeset(&1, &2, step)
+    )
     |> cast_assoc(:organization_job_types,
-      required: step > 2,
+      required: is_required?,
       with: &job_types_changeset(&1, &2, step)
     )
   end
 
-  defp job_types_changeset(job_types, attrs, step) when step in [2, 3] do
+  defp job_types_changeset(job_types, attrs, step) when step in [2, 3, 4] do
     attrs =
       if attrs && Map.has_key?(attrs, "job_type"),
         do:
@@ -288,7 +300,7 @@ defmodule Picsello.Onboardings do
     |> Profile.changeset(attrs)
   end
 
-  defp profile_onboarding_changeset(profile, attrs, step) when step in [2, 3] do
+  defp profile_onboarding_changeset(profile, attrs, step) when step in [2, 3, 4] do
     profile
     |> profile_onboarding_changeset(attrs, 3)
   end
