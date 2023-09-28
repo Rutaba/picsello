@@ -4,8 +4,8 @@ defmodule Picsello.Repo.Migrations.ChangeUseGlobalDefaultValue do
   @default %{products: true}
 
   def change do
-    # alter table(:galleries) do
-    #   modify(:use_global, :map, default: @default)
-    # end
+    alter table(:galleries) do
+      modify(:use_global, :map, default: @default)
+    end
   end
 end
