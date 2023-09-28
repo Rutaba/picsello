@@ -68,7 +68,7 @@ export default {
 
       this.handleEvent(
         'stripe-elements-success',
-        async ({ type, client_secret }) => {
+        async ({ type, client_secret, state }) => {
           const confirmIntent =
             type === 'setup' ? stripe.confirmSetup : stripe.confirmPayment;
 
@@ -77,7 +77,7 @@ export default {
             elements,
             clientSecret: client_secret,
             confirmParams: {
-              return_url: returnUrl,
+              return_url: `${returnUrl}?state=${state}`,
             },
           });
 

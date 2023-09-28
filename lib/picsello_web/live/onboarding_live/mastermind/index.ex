@@ -28,6 +28,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
     |> assign(:main_class, "bg-gray-100")
     |> assign(:step_total, 4)
     |> assign_step()
+    |> assign(:state, nil)
     |> assign(:stripe_elements_loading, false)
     |> assign(:stripe_publishable_key, Application.get_env(:stripity_stripe, :publishable_key))
     |> assign(:loading_stripe, false)
@@ -36,10 +37,15 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   end
 
   @impl true
-  def handle_params(%{"payment_intent" => _, "redirect_status" => "succeeded"}, _url, socket) do
+  def handle_params(
+        %{"payment_intent" => _, "redirect_status" => "succeeded", "state" => state},
+        _url,
+        socket
+      ) do
     socket
     |> assign(:loading_stripe, false)
     |> assign(:stripe_elements_loading, false)
+    |> assign(:state, state)
     |> assign_step(3)
     |> noreply()
   end
@@ -116,15 +122,32 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
     return =
       if !is_nil(subscription.pending_setup_intent) do
-        %{type: "setup", client_secret: subscription.pending_setup_intent.client_secret}
+        %{
+          type: "setup",
+          client_secret: subscription.pending_setup_intent.client_secret,
+          state:
+            if Map.get(address, "country") == "US" do
+              Map.get(address, "state")
+            else
+              "Non-US"
+            end
+        }
       else
         %{
           type: "payment",
-          client_secret: subscription.latest_invoice.payment_intent.client_secret
+          client_secret: subscription.latest_invoice.payment_intent.client_secret,
+          state:
+            if Map.get(address, "country") == "US" do
+              Map.get(address, "state")
+            else
+              "Non-US"
+            end
         }
       end
 
-    socket |> push_event("stripe-elements-success", return) |> noreply()
+    socket
+    |> push_event("stripe-elements-success", return)
+    |> noreply()
   end
 
   @impl true
@@ -210,6 +233,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
             </.form_field>
           <% end %>
           <%= for onboarding <- inputs_for(@f, :onboarding) do %>
+            <%= hidden_input onboarding, :state, value: @state %>
             <.form_field label="Are you a full-time or part-time photographer?" error={:schedule} f={onboarding} >
               <%= select onboarding, :schedule, %{"Full-time" => :full_time, "Part-time" => :part_time}, class: "select #{@input_class}" %>
             </.form_field>
@@ -316,7 +340,7 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
   end
 
   defp assign_step(%{assigns: %{current_user: %{onboarding: onboarding}}} = socket) do
-    if is_nil(onboarding.state) && is_nil(onboarding.photographer_years) &&
+    if is_nil(onboarding.photographer_years) &&
          is_nil(onboarding.schedule),
        do: assign_step(socket, 3),
        else: assign_step(socket, 4)
@@ -331,7 +355,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
       subtitle: "",
       page_title: "Onboarding Step 2"
     )
-    |> assign_new(:states, &states/0)
   end
 
   defp assign_step(socket, 3) do
@@ -369,15 +392,6 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
         currency: "USD"
       })
     end)
-    # |> Multi.run(:subscription, fn _repo, %{user: user} ->
-    #   with :ok <-
-    #          Subscriptions.subscription_base(user, "month",
-    #            trial_days: socket.assigns.subscription_plan_metadata.trial_length
-    #          )
-    #          |> Picsello.Subscriptions.handle_stripe_subscription() do
-    #     {:ok, nil}
-    #   end
-    # end)
     |> Multi.run(:user_final, fn _repo, %{user: user} ->
       with _ <- Onboardings.complete!(user) do
         {:ok, nil}
@@ -446,6 +460,4 @@ defmodule PicselloWeb.OnboardingLive.Mastermind.Index do
 
     socket
   end
-
-  defdelegate states(), to: Onboardings, as: :state_options
 end

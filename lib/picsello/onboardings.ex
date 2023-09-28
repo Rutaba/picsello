@@ -101,7 +101,7 @@ defmodule Picsello.Onboardings do
         :welcome_count,
         :promotion_code
       ])
-      # |> validate_required([:state, :photographer_years, :schedule])
+      |> validate_required([:photographer_years, :schedule])
       |> validate_required([:photographer_years, :schedule])
       |> validate_change(:promotion_code, &valid_promotion_codes/2)
     end
